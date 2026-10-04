@@ -20,3 +20,20 @@ export function networkRoute(value: string, localOrigin: string) {
     return "ATTESTATION";
   return "OTHER_EXTERNAL";
 }
+
+// Shared with browser regression tests: cache modules stay under node_modules.
+export function approvedLocalGet(
+  value: string,
+  method: string,
+  localOrigin: string,
+) {
+  const url = new URL(value);
+  return (
+    method === "GET" &&
+    url.origin === localOrigin &&
+    (url.pathname === "/" ||
+      ["/src/", "/shared/", "/evaluation/", "/node_modules/", "/@"].some(
+        (prefix) => url.pathname.startsWith(prefix),
+      ))
+  );
+}

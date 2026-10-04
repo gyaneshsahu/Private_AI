@@ -1,6 +1,6 @@
 import { implementationIdentity } from "./implementation";
 import { reviewResult } from "./review-result";
-import { networkRoute } from "./network-observation";
+import { networkRoute, approvedLocalGet } from "./network-observation";
 import type { Request as BrowserRequest } from "@playwright/test";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -172,7 +172,7 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
     vite = await createServer({
       root,
       configFile: false,
-      cacheDir: resolve(root, ".local/vite-experiment"),
+      cacheDir: resolve(root, "node_modules/.vite-experiment"),
       appType: "custom",
       logLevel: "error",
       server: { middlewareMode: true, hmr: false },
@@ -214,13 +214,11 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
       const request = route.request();
       const url = new URL(request.url());
       const local = url.origin === config.origin;
-      const approvedGet =
-        local &&
-        request.method() === "GET" &&
-        (url.pathname === "/" ||
-          ["/src/", "/shared/", "/evaluation/", "/node_modules/", "/@"].some(
-            (prefix) => url.pathname.startsWith(prefix),
-          ));
+      const approvedGet = approvedLocalGet(
+        request.url(),
+        request.method(),
+        config.origin,
+      );
       const relay =
         local &&
         url.pathname === "/api/inference/v1/chat/completions" &&

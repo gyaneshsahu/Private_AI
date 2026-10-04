@@ -50,3 +50,29 @@ attempt, and an identifiable relay terminal event. A relay failure, missing
 terminal event, missing usage, verification mismatch or truncated answer blocks
 live-compatibility acceptance pending review. No automatic retry. The original
 unknown events stay in historical evidence regardless of a later result.
+
+## Compatibility startup failure, 2026-10-04 21:55 UTC
+
+The user supplied a clean c7b2cfb run with `FAILED_OR_INTERRUPTED`, no
+relay attempts, no client result, and one `OTHER_LOCAL` policy block. The
+second invocation was refused by the existing single-use claim. This is
+separate from the older post-response `ERR_ABORTED` observations.
+
+Offline reproduction with the actual runner GET policy fails to load
+`evaluation/browser-entry.ts` when Vite's dependency cache is beneath
+`.local`. The previous browser test allowed all local resources and missed
+this mismatch. Move the runner's isolated cache to
+`node_modules/.vite-experiment`; do not allow browser access to `.local`
+(which contains permits and transcripts). The browser regression now uses
+the shared runner GET policy. The old cache location fails this check;
+the corrected location passes. This establishes a reproducible startup
+bug consistent with the supplied evidence, not proof of every historical
+network failure's cause.
+
+Next local action: update Git and run
+`npx tsx evaluation/run-local.ts --diagnose --compatibility`.
+Both browser and server block inference in that mode. Preserve the existing
+consumed approval and result. No additional model request was made in the
+reported failed compatibility run; the one-request spending authorization
+remains subject to the existing cumulative USD 2 cap. Do not reset the
+claim or rerun paid mode while diagnosing startup.

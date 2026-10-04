@@ -2,12 +2,13 @@ import { it, expect } from "vitest";
 import { chromium } from "@playwright/test";
 import { createServer } from "vite";
 import { existsSync } from "node:fs";
+import { approvedLocalGet } from "../evaluation/network-observation";
 import { invoiceText } from "../evaluation/experiment";
 
 it("runs real browser extraction and follow-up state with an explicitly mocked model, and stops on unknown cost", async () => {
   const vite = await createServer({
     configFile: false,
-    cacheDir: ".local/vite-tests/experiment-client",
+    cacheDir: "node_modules/.vite-experiment-client-test",
     appType: "custom",
     logLevel: "silent",
     server: { host: "127.0.0.1", port: 0, hmr: false },
@@ -33,7 +34,7 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
     const context = await browser.newContext({ serviceWorkers: "block" });
     await context.route("**/*", async (route) => {
       const url = new URL(route.request().url());
-      if (url.origin !== origin) {
+      if (!approvedLocalGet(url.href, route.request().method(), origin)) {
         external.push(url.hostname);
         await route.abort();
         return;

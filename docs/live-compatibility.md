@@ -1,4 +1,4 @@
-# Smallest revised-adapter live check — prepared, not authorized or run
+# Smallest revised-adapter live check — authorized, startup failure under diagnosis
 
 Purpose: verify the new bounded SSE parser and existing browser-verification /
 EHBP path against Tinfoil once. This is not a quality benchmark, retention test,
@@ -26,12 +26,14 @@ The existing USD 2 account cap and disabled auto-recharge must remain unchanged;
 prior spending counts toward the same total. No deposit, credit purchase or new
 monthly service is proposed.
 
-## Confirmation required before paid execution
+## Current authorization and execution state
 
-The original approval covered the completed two-turn test. Confirm that **one
-additional synthetic compatibility request is authorized within the existing
-USD 2 total**, not an additional USD 2 budget. Without that confirmation only
-source preparation, offline checks and no-inference preflight are authorized.
+The user explicitly approved one additional synthetic request within the existing
+USD 2 total cap. The WSL execution at 2026-10-04 21:55 UTC failed during local
+module loading with zero relay attempts. Its single-use claim is preserved.
+The next action is a nonbillable diagnostic after the cache-path fix; see
+[the investigation](network-abort-review.md). Do not repeat the paid commands
+below or recreate the existing permit. These commands document initial setup.
 
 No compatibility permit has been generated in the cloud. The CLI requires a
 specific confirmation flag to record the added scope, creates a different
