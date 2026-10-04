@@ -1,0 +1,55 @@
+{
+  "name": "private-ai",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0 <25"
+  },
+  "scripts": {
+    "dev": "tsx server/index.ts --dev",
+    "build": "npm run assets && tsc --noEmit && vite build",
+    "start": "tsx server/index.ts",
+    "assets": "node scripts/assets.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "check": "npm run typecheck && npm test && npm run build",
+    "eval:check": "tsx evaluation/check.ts",
+    "experiment:prepare": "tsx evaluation/prepare-experiment.ts",
+    "experiment:check": "tsx evaluation/run-local.ts --check",
+    "experiment:run": "tsx evaluation/run-local.ts --run",
+    "experiment:review": "tsx evaluation/review-local.ts"
+  },
+  "dependencies": {
+    "@tesseract.js-data/eng": "1.0.0",
+    "cheerio": "1.2.0",
+    "decimal.js": "10.6.0",
+    "ehbp": "0.3.3",
+    "express": "5.2.1",
+    "idb": "8.0.3",
+    "ipaddr.js": "2.5.0",
+    "openai": "6.46.0",
+    "pdfjs-dist": "6.4.299",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tesseract.js": "7.0.0",
+    "tinfoil": "1.2.2",
+    "undici": "8.11.2",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/express": "5.0.6",
+    "@types/node": "26.6.4",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "fake-indexeddb": "6.2.5",
+    "prettier": "3.9.9",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vite": "8.3.2",
+    "vitest": "5.0.3"
+  }
+}

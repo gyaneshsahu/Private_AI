@@ -1,0 +1,27 @@
+{
+  "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
+  "approvalId": null,
+  "approvedAt": null,
+  "expiresAt": null,
+  "approvalEvidence": null,
+  "approvedCapUSD": null,
+  "providerCapUSD": null,
+  "providerLimitEvidence": null,
+  "pricingEvidence": null,
+  "pricingCheckedAt": null,
+  "browserPreflightEvidence": null,
+  "releaseReviewEvidence": null,
+  "policy": {
+    "origin": "https://inference.tinfoil.sh",
+    "repository": "tinfoilsh/confidential-model-router",
+    "releaseDigests": [],
+    "model": null,
+    "maxInputCharacters": 8000,
+    "maxOutputTokens": 1024,
+    "pricing": {
+      "inputPerMillion": null,
+      "outputPerMillion": null,
+      "currency": "USD"
+    }
+  }
+}
