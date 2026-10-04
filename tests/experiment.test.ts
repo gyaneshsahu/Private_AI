@@ -16,6 +16,7 @@ function fixture(): Experiment {
   return {
     purpose: "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
     approvalId: "test-fixture-only",
+    scenario: "two_turn_invoice",
     approvedAt: new Date(Date.now() - 1000).toISOString(),
     expiresAt: new Date(Date.now() + 60000).toISOString(),
     approvalEvidence: "TEST ONLY: no real spending approval",
@@ -183,4 +184,19 @@ describe("synthetic experiment gates (no provider calls)", () => {
     expect((await send()).status).toBe(403);
     expect(forward).not.toHaveBeenCalled();
   });
+});
+
+it("enforces the compatibility scenario's one-request limit at the gateway", async () => {
+  const forward = vi.fn(mockEncryptedResponse);
+  const service = await gateway(forward);
+  service.options.permit.scenario = "adapter_compatibility";
+  service.options.permit.policy.model = "gpt-oss-120b";
+  service.options.permit.policy.maxInputCharacters = 2000;
+  const first = await service.send();
+  expect(first.status).toBe(200);
+  await first.arrayBuffer();
+  const second = await service.send();
+  expect(second.status).toBe(429);
+  expect(forward).toHaveBeenCalledTimes(1);
+  expect(service.attempts).toHaveLength(1);
 });

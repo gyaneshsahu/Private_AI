@@ -5,6 +5,9 @@ import { qualificationSchema } from "../shared/contracts";
 export const experimentSchema = z
   .object({
     purpose: z.literal("SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION"),
+    scenario: z
+      .enum(["two_turn_invoice", "adapter_compatibility"])
+      .default("two_turn_invoice"),
     approvalId: z.string().regex(/^[a-zA-Z0-9_-]{8,80}$/),
     approvedAt: z.string().datetime(),
     expiresAt: z.string().datetime(),
@@ -41,6 +44,10 @@ export function validateExperiment(
     Date.parse(x.expiresAt) <= Date.parse(x.approvedAt) ||
     Date.parse(x.pricingCheckedAt) > now ||
     x.providerCapUSD > x.approvedCapUSD ||
+    (x.scenario === "adapter_compatibility" &&
+      (x.policy.maxOutputTokens > 512 ||
+        x.policy.maxInputCharacters > 2000 ||
+        x.policy.model !== "gpt-oss-120b")) ||
     x.policy.origin !== "https://inference.tinfoil.sh" ||
     x.policy.repository !== "tinfoilsh/confidential-model-router"
   )
@@ -59,3 +66,9 @@ export const expectedInvoice = [
   { subtotal: "95.00", vat: "19.00", total: "114.00" },
   { subtotal: "90.00", vat: "18.00", total: "108.00", reduction: "6.00" },
 ];
+
+export const compatibilityPrompt =
+  "Calculate 2 + 2. Reply with just the number.";
+export function experimentRequestLimit(permit: Pick<Experiment, "scenario">) {
+  return permit.scenario === "adapter_compatibility" ? 1 : 2;
+}

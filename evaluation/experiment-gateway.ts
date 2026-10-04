@@ -1,6 +1,10 @@
 import express from "express";
 import { once } from "node:events";
-import { validateExperiment, type Experiment } from "./experiment";
+import {
+  validateExperiment,
+  experimentRequestLimit,
+  type Experiment,
+} from "./experiment";
 
 export type Forward = (
   body: Uint8Array,
@@ -68,7 +72,11 @@ export function experimentGateway(options: {
         res.status(400).end();
         return;
       }
-      if (active || stopped || attempts.length >= 2) {
+      if (
+        active ||
+        stopped ||
+        attempts.length >= experimentRequestLimit(options.permit)
+      ) {
         res.status(429).end();
         return;
       }

@@ -19,8 +19,8 @@ rounded 1.1K output tokens. It does not show an actual charged amount.
   conversation, not held-out coverage, a family-level pass or comparative evidence.
 - Source ID `7283fc55` exists and supports the cited original invoice facts.
   The model emitted `【7283fc55】` instead of the requested `[7283fc55]`.
-  The current UI only links square-bracket citations. Source fidelity passes
-  for this transcript; clickable citation usability is unresolved and needs repair.
+  At the time of this run, the UI only linked square-bracket citations. Source fidelity passed
+  for this transcript; the delimiter mismatch was subsequently repaired and locally tested (see follow-up below).
   Markdown/LaTeX presentation was not evaluated in the product UI by this run.
 
 ## Transport and performance evidence

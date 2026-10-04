@@ -99,3 +99,42 @@ it("distinguishes the intentional diagnostic stop from a paid completion", () =>
     reviewResult({ ...diagnostic, attempts: result.attempts }, permit).outcome,
   ).toBe("INCOMPLETE_REVIEW_REQUIRED");
 });
+
+it("reviews one compatibility completion without calling it two-turn or provider qualified", () => {
+  const { result, permit } = fixture();
+  permit.scenario = "adapter_compatibility";
+  result.attempts.pop();
+  result.client.evidence.pop();
+  result.client.conversation.messages.pop();
+  result.client.conversation.usage.pop();
+  expect(reviewResult(result, permit).outcome).toBe(
+    "COMPATIBILITY_RETURNED_REVIEW_REQUIRED",
+  );
+});
+
+it("requires an identified relay finish for compatibility and retains relay failures", () => {
+  const { result, permit } = fixture();
+  permit.scenario = "adapter_compatibility";
+  result.attempts.pop();
+  result.client.evidence.pop();
+  result.client.conversation.messages.pop();
+  result.client.conversation.usage.pop();
+  expect(reviewResult(result, permit).compatibilityEvidence).toBe("NOT_PASSED");
+  const network = [
+    { outcome: "REQUEST_FINISHED", route: "INFERENCE_RELAY", requestId: 1 },
+  ];
+  expect(
+    reviewResult({ ...result, network }, permit).compatibilityEvidence,
+  ).toBe("READY_FOR_HUMAN_REVIEW");
+  network.push({
+    outcome: "REQUEST_FAILED",
+    route: "INFERENCE_RELAY",
+    requestId: 1,
+  });
+  expect(reviewResult({ ...result, network }, permit).relayClosure).toBe(
+    "FAILED",
+  );
+  expect(
+    reviewResult({ ...result, network }, permit).compatibilityEvidence,
+  ).toBe("NOT_PASSED");
+});

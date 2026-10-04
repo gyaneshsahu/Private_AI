@@ -1,3 +1,4 @@
+import { mkdir, writeFile } from "node:fs/promises";
 import { it, expect } from "vitest";
 import { createServer } from "vite";
 import { chromium } from "@playwright/test";
@@ -41,6 +42,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
   const logs: string[] = [];
   const vite = await createServer({
     configFile: false,
+    cacheDir: ".local/vite-tests/browser-transport",
     appType: "custom",
     logLevel: "silent",
     optimizeDeps: { exclude: ["tinfoil"] },
@@ -224,6 +226,43 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       }
       if (mode === "truncated") expect(result.usage.total).toBe(5);
     }
+    // Replay the historical SDK composition offline, with request identity.
+    // Either terminal event is evidence; do not silently suppress aborts.
+    mode = "legacy_valid";
+    const legacyTerminal = Promise.race([
+      page
+        .waitForEvent("requestfinished", {
+          predicate: (r) =>
+            new URL(r.url()).pathname === "/api/inference/v1/chat/completions",
+        })
+        .then(() => "FINISHED"),
+      page
+        .waitForEvent("requestfailed", {
+          predicate: (r) =>
+            new URL(r.url()).pathname === "/api/inference/v1/chat/completions",
+        })
+        .then((r) => r.failure()?.errorText ?? "FAILED"),
+    ]);
+    const legacyResult = await page.evaluate(async () =>
+      (
+        window as unknown as { runFaultCase: (mode: string) => Promise<any> }
+      ).runFaultCase("legacy_valid"),
+    );
+    expect(legacyResult.failure).toBe(false);
+    expect(legacyResult.usage.total).toBe(5);
+    const legacyEvidence = {
+      kind: "OFFLINE_LEGACY_TRANSPORT_REPLAY",
+      replyComplete: true,
+      terminalEvent: await legacyTerminal,
+      providerEvidence: false,
+      limits:
+        "Local synthetic peer, mocked attestation. Historical WSL request identity was not recorded.",
+    };
+    await mkdir(".local/reliability", { recursive: true });
+    await writeFile(
+      ".local/reliability/legacy-replay.json",
+      JSON.stringify(legacyEvidence, null, 2),
+    );
     expect(external).toEqual([]);
     expect(requests.every((r) => r.encrypted && !r.authorization)).toBe(true);
     expect(

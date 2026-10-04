@@ -1,3 +1,4 @@
+import { streamLegacyConversation } from "./legacy-stream";
 // TEST ONLY. Verification evidence is injected by the test server, never live.
 import { streamVerifiedConversation } from "../../src/verified-chat";
 import { emptyConversation } from "../../shared/contracts";
@@ -25,7 +26,11 @@ Object.assign(window, {
     let usage;
     const evidence: unknown[] = [];
     try {
-      usage = await streamVerifiedConversation(
+      usage = await (
+        mode === "legacy_valid"
+          ? streamLegacyConversation
+          : streamVerifiedConversation
+      )(
         conversation,
         {
           origin: "https://inference.tinfoil.sh",

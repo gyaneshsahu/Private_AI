@@ -1,6 +1,18 @@
 # Validation record — 4 October 2026
 
-The repository was initially empty. Implementation is local to `/workspace/PoketAI_0.2`, with origin `https://github.com/gyaneshsahu/Private_AI.git`. No existing application code was replaced. No commit or push was performed.
+Current summary: the earlier WSL adapter completed a real two-turn synthetic
+conversation. The current adapter is connected to the app and has passed local
+crypto/browser failure tests; a new live check is prepared but not authorized.
+Provider qualification remains incomplete. See [qualification ledger](provider-qualification.md),
+[chain review](provider-chain-review.md) and [abort investigation](network-abort-review.md).
+Git baseline `87d4acb` preserves previous work; source updates now use the
+[Git workflow](git-workflow.md). Current batch validation is appended below.
+
+## Historical record — initial foundation before WSL inference
+
+The repository was initially empty. No pre-existing application code was replaced.
+The following observations describe that earlier development stage, not current
+provider or Git status.
 
 ## Passed in this cloud instance
 
@@ -21,7 +33,7 @@ Tests use synthetic data. Unit tests use fake IndexedDB for database semantics a
 - Clearing a workspace now also clears calculator inputs/results and edit drafts.
 - Deletion uses an atomic opaque-ID tombstone so a stale save cannot recreate deleted content. It removes the encrypted record and wrapped key; this does not guarantee device-level forensic erasure.
 
-## Not established / blocked
+## Not established at the initial foundation stage
 
 - Live confidential inference, full router/worker/CPU/GPU protection, provider retention and freshness/revocation behavior.
 - Actual model quality, grounded model citations, follow-up quality, repeated-task reliability, comparative ChatGPT/Gemini performance, latency distribution and complete billed task cost.
@@ -44,7 +56,7 @@ Type checking and production build passed; seven existing Chromium browser check
 
 Published network revision 13 is enforced. Direct router attestation and the Trust Center application shell returned HTTP 200. Pricing API access remains HTTP 403 with provider-side Cloudflare error 1010, not a missing hostname. No current API rates, subprocessor inventory or spending controls were validated.
 
-An isolated Chromium browser-SDK probe failed on the environment proxy CA (`ERR_CERT_AUTHORITY_INVALID`). A request to import the already system-trusted CA into Chromium's NSS store was rejected by automatic approval review as an unapproved persistent trust expansion. No TLS bypass or trust modification occurred. This is an unresolved browser setup prerequisite, not a passing browser attestation result. Application code was unchanged; no model inference or paid test ran. Details: [provider source review](provider-source-review.md).
+An isolated Chromium browser-SDK probe failed on the environment proxy CA (`ERR_CERT_AUTHORITY_INVALID`). A request to import the already system-trusted CA into Chromium's NSS store was rejected by automatic approval review as an unapproved persistent trust expansion. No TLS bypass or trust modification occurred. This was a Cloud browser prerequisite. The later WSL preflight succeeded without that trust change; the Cloud setup remains paused. Application code was unchanged; no model inference or paid test ran. Details: [provider source review](provider-source-review.md).
 
 # Stream completion validation — 4 October 2026
 
@@ -101,3 +113,34 @@ promote qualification or quality. Historical cost can be reviewed offline with
 [privacy/failure review](privacy-failure-review.md) for exact scope and remaining
 gates. Live compatibility of this revised adapter is pending; no additional
 provider call, private data transfer or spending occurred during this batch.
+
+## 2026-10-04 — qualification, reliability and Git handoff batch
+
+- `npm run check`: typecheck, **78 tests across 15 files**, production build passed.
+- `npm run test:e2e`: **7 Chromium product tests passed**.
+- `npm run eval:check`: frozen 24 development + 24 reserved cases unchanged;
+  dataset-model evaluation remains unrun. The earlier two-turn smoke test is
+  separate evidence, not part of this dataset evaluation.
+- Offline legacy SDK/EHBP replay: complete synthetic answer and usage, identified
+  relay `FINISHED`; no historical abort reproduced. The concurrent Vite fixture
+  cache collision was reproduced, isolated and fixed; combined suites passed.
+- One-request compatibility scope, 512-output-token limit, explicit confirmation,
+  different single-use ID, one-request gateway cap and zero-document client
+  workflow are tested. `compatibility:check` correctly exited 1 for the absent
+  confirmation permit with `networkRequests: 0`; this is an expected refusal.
+- Read-only provider work: fresh public inventory succeeded; pinned router and
+  worker source reviewed. The attempted public worker bundle lookup failed with
+  HTTP 501 before verification. No inference or API credential was involved,
+  and it was not retried unchanged. Worker/GPU evidence remains incomplete.
+- Git read/write access to `gyaneshsahu/Private_AI` succeeded. Existing source
+  preserved in baseline `87d4acb` on `main`; current work uses the review branch
+  `codex/provider-qualification`. GitHub's separate API returned Forbidden;
+  branch publication works without requesting another credential or using ZIPs.
+- Local document links and `git diff --check` passed. Known browser `zlib`
+  fallback and test-only experimental WebCrypto warnings remain documented.
+
+See [qualification ledger](provider-qualification.md), [chain review](provider-chain-review.md),
+[abort investigation](network-abort-review.md), [minimal check](live-compatibility.md)
+and [Git workflow](git-workflow.md). No further paid inference was run. The
+current adapter remains unqualified for private data and awaits confirmed scope
+plus WSL execution for its smallest live compatibility check.

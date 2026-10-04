@@ -1,3 +1,4 @@
+import { implementationIdentity } from "./implementation";
 import { reviewResult } from "./review-result";
 import { networkRoute } from "./network-observation";
 import type { Request as BrowserRequest } from "@playwright/test";
@@ -8,14 +9,19 @@ import { fileURLToPath } from "node:url";
 import { randomBytes } from "node:crypto";
 import { chromium } from "@playwright/test";
 import { createServer } from "vite";
-import { validateExperiment, expectedInvoice } from "./experiment";
+import {
+  validateExperiment,
+  expectedInvoice,
+  experimentRequestLimit,
+} from "./experiment";
 import { experimentGateway } from "./experiment-gateway";
 import { claimExperiment } from "./run-claim";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
 if (
-  args.length !== 1 ||
+  (args.length !== 1 &&
+    !(args.length === 2 && args[1] === "--compatibility")) ||
   !["--check", "--run", "--diagnose"].includes(args[0])
 ) {
   console.error(
@@ -23,7 +29,11 @@ if (
   );
   process.exitCode = 1;
 } else {
-  await main(args[0] === "--run", args[0] === "--diagnose").catch(() => {
+  await main(
+    args[0] === "--run",
+    args[0] === "--diagnose",
+    args[1] === "--compatibility",
+  ).catch(() => {
     console.error(
       "Experiment could not start/finish. Check the permit, browser setup and any local result file. No automatic retry. Never delete a consumed approval to rerun.",
     );
@@ -31,20 +41,31 @@ if (
   });
 }
 
-async function main(run: boolean, diagnose: boolean) {
+async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
   let permit;
   try {
     permit = validateExperiment(
       JSON.parse(
-        await readFile(resolve(root, ".local/experiment.json"), "utf8"),
+        await readFile(
+          resolve(
+            root,
+            compatibility
+              ? ".local/compatibility.json"
+              : ".local/experiment.json",
+          ),
+          "utf8",
+        ),
       ),
     );
+    if (compatibility !== (permit.scenario === "adapter_compatibility"))
+      throw new Error("Wrong scenario");
   } catch {
     console.log(
       JSON.stringify({
         ready: false,
-        missing:
-          "A valid, reviewed experiment permit at .local/experiment.json",
+        missing: compatibility
+          ? "A separately confirmed compatibility permit at .local/compatibility.json"
+          : "A valid, reviewed experiment permit at .local/experiment.json",
         qualification: "NOT_PASSED",
         networkRequests: 0,
       }),
@@ -77,7 +98,7 @@ async function main(run: boolean, diagnose: boolean) {
       JSON.stringify(
         {
           prerequisites,
-          requestLimit: 2,
+          requestLimit: experimentRequestLimit(permit),
           approvalId: permit.approvalId,
           approvedCapUSD: permit.approvedCapUSD,
           note: "Permit fields record reviewed decisions; they do not independently prove spending limits or authorize a new charge.",
@@ -135,10 +156,12 @@ async function main(run: boolean, diagnose: boolean) {
   let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
   const result: Record<string, unknown> = {
     observedAt: new Date().toISOString(),
+    implementation: await implementationIdentity(root),
     status: "FAILED_OR_INTERRUPTED",
     kind: diagnose ? "NONBILLABLE_DIAGNOSTIC" : "SYNTHETIC_EXPERIMENT",
     qualification: "NOT_PASSED",
-    expectedInvoice,
+    scenario: permit.scenario,
+    ...(compatibility ? { expectedReply: "4" } : { expectedInvoice }),
     attempts,
     charges:
       "Reconcile with provider billing; estimates do not include every possible fee.",
@@ -149,6 +172,7 @@ async function main(run: boolean, diagnose: boolean) {
     vite = await createServer({
       root,
       configFile: false,
+      cacheDir: resolve(root, ".local/vite-experiment"),
       appType: "custom",
       logLevel: "error",
       server: { middlewareMode: true, hmr: false },
@@ -228,7 +252,17 @@ async function main(run: boolean, diagnose: boolean) {
       }
     });
     const page = await context.newPage();
+    const relayTerminals: Promise<void>[] = [];
+    const finishRelay = new WeakMap<BrowserRequest, () => void>();
+    page.on("request", (request) => {
+      if (networkRoute(request.url(), config.origin) !== "INFERENCE_RELAY")
+        return;
+      relayTerminals.push(
+        new Promise<void>((resolve) => finishRelay.set(request, resolve)),
+      );
+    });
     page.on("requestfailed", (request) => {
+      finishRelay.get(request)?.();
       const url = new URL(request.url());
       const code = request.failure()?.errorText;
       network.push({
@@ -258,6 +292,7 @@ async function main(run: boolean, diagnose: boolean) {
         });
     });
     page.on("requestfinished", (request) => {
+      finishRelay.get(request)?.();
       if (networkRoute(request.url(), config.origin) === "INFERENCE_RELAY")
         network.push({ ...observation(request), outcome: "REQUEST_FINISHED" });
     });
@@ -288,23 +323,37 @@ async function main(run: boolean, diagnose: boolean) {
     result.status = client.failure
       ? "FAILED_FOR_HUMAN_REVIEW"
       : "RETURNED_FOR_HUMAN_REVIEW";
-    const summary = reviewResult(result, permit);
-    result.summary = summary;
-    if (
-      diagnose &&
-      summary.outcome === "DIAGNOSTIC_REACHED_INFERENCE_BOUNDARY"
-    ) {
-      result.status = summary.outcome;
-    } else if (
-      client.failure ||
-      summary.outcome === "INCOMPLETE_REVIEW_REQUIRED"
-    )
-      process.exitCode = 1;
-    console.log(JSON.stringify(summary, null, 2));
+    await new Promise<void>((resolve) => {
+      const timer = setTimeout(resolve, 2000);
+      Promise.all(relayTerminals).then(() => {
+        clearTimeout(timer);
+        resolve();
+      });
+    });
   } finally {
     await browser?.close();
     await vite?.close();
     if (server) await new Promise<void>((ok) => server!.close(() => ok()));
+    if (result.client) {
+      try {
+        const summary = reviewResult(result, permit);
+        result.summary = summary;
+        if (
+          diagnose &&
+          summary.outcome === "DIAGNOSTIC_REACHED_INFERENCE_BOUNDARY"
+        ) {
+          result.status = summary.outcome;
+        } else if (
+          (result.client as { failure?: unknown }).failure ||
+          summary.outcome === "INCOMPLETE_REVIEW_REQUIRED"
+        )
+          process.exitCode = 1;
+        console.log(JSON.stringify(summary, null, 2));
+      } catch {
+        result.status = "INVALID_EVIDENCE_REVIEW_REQUIRED";
+        process.exitCode = 1;
+      }
+    }
     await writeFile(
       resolve(runDir, "result.json"),
       JSON.stringify(result, null, 2),

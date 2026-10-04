@@ -7,6 +7,7 @@ import { invoiceText } from "../evaluation/experiment";
 it("runs real browser extraction and follow-up state with an explicitly mocked model, and stops on unknown cost", async () => {
   const vite = await createServer({
     configFile: false,
+    cacheDir: ".local/vite-tests/experiment-client",
     appType: "custom",
     logLevel: "silent",
     server: { host: "127.0.0.1", port: 0, hmr: false },
@@ -97,12 +98,28 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
       const completed = await runSynthetic(permit, "fixture");
       const calls = state.mockCalls;
       state.mockCalls = [];
+      const compatibility = await runSynthetic(
+        {
+          ...permit,
+          scenario: "adapter_compatibility",
+          policy: {
+            ...permit.policy,
+            model: "gpt-oss-120b",
+            maxInputCharacters: 2000,
+          },
+        },
+        "fixture",
+      );
+      const compatibilityCalls = state.mockCalls.length;
+      state.mockCalls = [];
       state.mockUnknownUsage = true;
       const unknownCost = await runSynthetic(permit, "fixture");
       const unknownCalls = state.mockCalls.length;
       state.mockModuleFailure = true;
       const moduleFailure = await runSynthetic(permit, "fixture");
       return {
+        compatibility,
+        compatibilityCalls,
         moduleFailure,
         completed,
         calls,
@@ -110,6 +127,9 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
         unknownCalls,
       };
     });
+    expect(result.compatibilityCalls).toBe(1);
+    expect(result.compatibility.conversation.attachments).toHaveLength(0);
+    expect(result.compatibility.conversation.messages).toHaveLength(2);
     expect(external).toEqual([]);
     expect(result.moduleFailure.diagnostic).toEqual({
       stage: "Loading inference libraries…",

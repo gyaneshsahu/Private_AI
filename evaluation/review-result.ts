@@ -1,6 +1,6 @@
 import { z } from "zod";
 import Decimal from "decimal.js";
-import { experimentSchema } from "./experiment";
+import { experimentSchema, experimentRequestLimit } from "./experiment";
 
 const usageSchema = z
   .object({
@@ -12,7 +12,15 @@ const usageSchema = z
 const resultSchema = z.object({
   kind: z.enum(["SYNTHETIC_EXPERIMENT", "NONBILLABLE_DIAGNOSTIC"]),
   attempts: z.array(z.object({ outcome: z.string() })).max(2),
-  network: z.array(z.object({ outcome: z.string() })).default([]),
+  network: z
+    .array(
+      z.object({
+        outcome: z.string(),
+        route: z.string().optional(),
+        requestId: z.number().int().optional(),
+      }),
+    )
+    .default([]),
   client: z
     .object({
       failure: z.string().nullable(),
@@ -33,6 +41,7 @@ const resultSchema = z.object({
 export function reviewResult(input: unknown, permitInput: unknown) {
   const r = resultSchema.parse(input);
   const permit = experimentSchema.parse(permitInput); // Historical record, not fresh authorization.
+  const expectedTurns = experimentRequestLimit(permit);
   const c = r.client;
   const matches =
     !!c?.evidence.length &&
@@ -50,15 +59,29 @@ export function reviewResult(input: unknown, permitInput: unknown) {
     r.kind === "SYNTHETIC_EXPERIMENT" &&
     c?.failure === null &&
     matches &&
-    c.evidence.length === 2 &&
-    r.attempts.length === 2 &&
+    c.evidence.length === expectedTurns &&
+    r.attempts.length === expectedTurns &&
     r.attempts.every(
       (a) => a.outcome === "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
     ) &&
     c.conversation.messages.filter(
       (m) => m.role === "assistant" && m.status === "complete",
-    ).length === 2 &&
-    c.conversation.usage.length === 2;
+    ).length === expectedTurns &&
+    c.conversation.usage.length === expectedTurns;
+  const relayEvents = r.network.filter((n) => n.route === "INFERENCE_RELAY");
+  const finished = new Set(
+    relayEvents
+      .filter((n) => n.outcome === "REQUEST_FINISHED")
+      .map((n) => n.requestId)
+      .filter((id) => id != null),
+  );
+  const relayClosure = relayEvents.some((n) => n.outcome === "REQUEST_FAILED")
+    ? "FAILED"
+    : finished.size === expectedTurns
+      ? "FINISHED"
+      : relayEvents.length
+        ? "MISSING_TERMINAL_EVENT"
+        : "NOT_RECORDED";
   const usage = c?.conversation.usage ?? [];
   const inputTokens = usage.reduce((n, u) => n + u.input, 0);
   const outputTokens = usage.reduce((n, u) => n + u.output, 0);
@@ -70,8 +93,15 @@ export function reviewResult(input: unknown, permitInput: unknown) {
     outcome: boundaryReached
       ? "DIAGNOSTIC_REACHED_INFERENCE_BOUNDARY"
       : completed
-        ? "TWO_TURNS_RETURNED_REVIEW_REQUIRED"
+        ? expectedTurns === 1
+          ? "COMPATIBILITY_RETURNED_REVIEW_REQUIRED"
+          : "TWO_TURNS_RETURNED_REVIEW_REQUIRED"
         : "INCOMPLETE_REVIEW_REQUIRED",
+    relayClosure,
+    compatibilityEvidence:
+      expectedTurns === 1 && completed && relayClosure === "FINISHED"
+        ? "READY_FOR_HUMAN_REVIEW"
+        : "NOT_PASSED",
     recordedInferenceAttempts: r.attempts.length,
     recordedMatchingVerifications: matches ? c!.evidence.length : 0,
     completedReplies:

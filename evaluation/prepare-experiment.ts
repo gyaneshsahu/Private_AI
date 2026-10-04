@@ -1,11 +1,8 @@
-import { readdir, readFile, mkdir, writeFile } from "node:fs/promises";
-import { resolve, dirname } from "node:path";
+import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { validateExperiment } from "./experiment";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const local = resolve(root, ".local");
 const selectedDigest =
   "ad95d02b2e27b3c1d5c327f2ee9616634f841e4b2ed5a48f404e4e9f595a4876";
 const approvalId = "synthetic_20261004_two_turns_usd2";
@@ -86,41 +83,8 @@ if (
   process.argv[1] &&
   resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 ) {
-  try {
-    const files = (await readdir(local)).filter((name) =>
-      /^browser-preflight-\d+\.json$/.test(name),
-    );
-    const approved = [];
-    for (const name of files) {
-      try {
-        const raw = JSON.parse(await readFile(resolve(local, name), "utf8"));
-        approved.push({
-          name,
-          observedAt: Date.parse(raw.observedAt),
-          permit: prepareFromPreflight(raw),
-        });
-      } catch {
-        /* Ignore stale or failed probe files. */
-      }
-    }
-    approved.sort((a, b) => b.observedAt - a.observedAt);
-    if (!approved.length)
-      throw new Error(
-        "No recent matching browser preflight. Run the no-key preflight again.",
-      );
-    await mkdir(local, { recursive: true, mode: 0o700 });
-    await writeFile(
-      resolve(local, "experiment.json"),
-      JSON.stringify(approved[0].permit, null, 2) + "\n",
-      { flag: "wx", mode: 0o600 },
-    );
-    console.log(
-      `Prepared one synthetic permit from ${approved[0].name}; model gpt-oss-120b; USD 2 approved/account cap; expires in 24 hours. No API request made.`,
-    );
-  } catch (error) {
-    console.error(
-      error instanceof Error ? error.message : "Permit preparation failed.",
-    );
-    process.exitCode = 1;
-  }
+  console.error(
+    "The original two-turn test is complete. Its approval cannot be reissued. Review existing evidence; a compatibility check requires separate confirmation of the additional request scope.",
+  );
+  process.exitCode = 1;
 }

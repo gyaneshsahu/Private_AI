@@ -5,6 +5,7 @@ import { streamVerifiedConversation } from "../src/verified-chat";
 import { IncompleteReplyError } from "../src/reply-stream";
 import {
   invoiceText,
+  compatibilityPrompt,
   experimentPrompts,
   validateExperiment,
 } from "./experiment";
@@ -19,13 +20,21 @@ export async function runSynthetic(input: unknown, csrf: string) {
   let stage = "Extracting synthetic document";
   let diagnostic: { stage: string; category: string } | null = null;
   try {
-    const attachment = await extract(
-      new File([invoiceText], "synthetic-invoice.txt", { type: "text/plain" }),
-      signal,
-      () => {},
-    );
-    conversation.attachments.push(attachment);
-    for (const prompt of experimentPrompts) {
+    if (permit.scenario === "two_turn_invoice") {
+      const attachment = await extract(
+        new File([invoiceText], "synthetic-invoice.txt", {
+          type: "text/plain",
+        }),
+        signal,
+        () => {},
+      );
+      conversation.attachments.push(attachment);
+    }
+    const prompts =
+      permit.scenario === "adapter_compatibility"
+        ? [compatibilityPrompt]
+        : experimentPrompts;
+    for (const prompt of prompts) {
       conversation.messages.push(newMessage("user", prompt));
       const answer = {
         ...newMessage("assistant", ""),

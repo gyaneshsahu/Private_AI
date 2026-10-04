@@ -1,64 +1,57 @@
-# Provider qualification — BLOCKED
+# Provider qualification — NOT_PASSED
 
-Current decision report: [provider recommendation](provider-recommendation.md). Tinfoil is the provisional first local-test candidate, Privatemode the fallback. The Cloud certificate work is paused by user instruction; no SDK switch or paid test is authorized by the recommendation.
+Current state, 4 October 2026: **the inference path is implemented and connected
+to the web app**. Production use is intentionally gated by a complete provider
+review. The isolated WSL experiment completed two real turns on the earlier
+adapter. The revised streaming parser is locally validated and awaits one small
+live compatibility check. Do not describe chat wiring as missing or claim the
+full confidential processing chain is qualified.
 
-Next actionable workflow: [local experiment](local-experiment.md), including a no-credential browser verification command. This preflight does not enable paid conversations or mark qualification as passed.
+Candidate: Tinfoil, fixed `gpt-oss-120b`, `https://inference.tinfoil.sh`, locked
+Tinfoil JS 1.2.2 and EHBP 0.3.3. Privatemode remains an unintegrated fallback.
+Tinfoil is not approved for private user data. Cloud browser certificate changes
+remain paused; WSL browser verification already worked without weakening TLS.
 
-Candidate: Tinfoil JS SDK 1.2.2, EHBP 0.3.3. Alternative: Privatemode, not integrated or qualified. Tinfoil remains a synthetic-test candidate, not approved for private user data.
+## Evidence ledger
 
-Latest progress: the user supplied a successful two-turn live WSL experiment on 4 October 2026, under the approved USD 2 cap. Both answers, the correction, router verification and encrypted response relay are recorded. See [first live experiment review](first-live-experiment-review.md) for grading, token cost estimates, citation UI limitations and unresolved network events. Full downstream processing, retention, freshness/revocation and actual billing remain unqualified. Earlier access and no-inference observations below are historical.
+| Qualification dimension | Established evidence | Remaining gate |
+| --- | --- | --- |
+| Browser verification | Node probe and user-supplied WSL Chromium preflight passed; both live turns recorded the approved router digest | Actual policy for freshness, revocation, rollback and supported devices |
+| Live streaming | Earlier adapter returned two encrypted, complete, numerically correct answers with usage | Revised parser/adapter needs the [one-request check](live-compatibility.md); old success does not automatically validate new code |
+| Protected worker chain | Reviewed router source verifies measurements and pins downstream TLS; worker source/configuration was inspected | Bind source/build to router digest; identify admitted worker/GPU evidence and delegated release policy. The attempted public worker bundle lookup returned HTTP 501; [chain review](provider-chain-review.md) |
+| Retention and logs | Supplier API no-content-retention/no-training statements; local malformed-stream logging removed; metadata billing source inspected | Deployed cache/diagnostic/moderation applicability, subprocessors and deletion/retention corroboration |
+| External tools/disclosure | Local grants enforce research approval. Our fixed inference request includes no tool options; router source supports plain dispatch in that case | Bind reviewed code/settings to deployment. Router network egress is open; no hardware no-egress promise |
+| Failure handling | Local real-crypto/browser negative tests cover verification rejection, tampering, cancellation and malformed/truncated replies | Historical network aborts remain unidentified; live failure/revocation/rotation assurance is incomplete |
+| Usage and spending | Prior run: 846 input + 1,070 output tokens; estimated USD 0.00076890. Dashboard showed two requests and matching rounded tokens | Actual charge and full-task billing reconciliation; hard account-limit semantics remain user-reported |
+| Answer quality | One synthetic invoice conversation met correctness, completeness and context criteria | Frozen evaluation, broader fresh tasks and named ChatGPT/Gemini comparisons remain outstanding |
 
-## Verified from source, not from a live deployment
+Reference evidence: [first live review](first-live-experiment-review.md),
+[privacy/failure tests](privacy-failure-review.md), [abort investigation](network-abort-review.md),
+[source history](provider-source-review.md), [validation record](validation.md).
 
-- The official JS SDK exposes browser-compatible attestation verification and encrypted bodies. The SDK default router represents another trust boundary before the model worker.
-- EHBP encrypts bodies, not HTTP headers, paths or query strings. The gateway forwards only explicitly constructed authentication/protocol headers. It does not forward browser cookies or CSRF tokens upstream.
-- The normal SDK may re-attest on a key mismatch. PrivateAI instead composes the maintained verifier and EHBP transport directly, checks the approved release and host, and disables automatic retries. A rotated key requires a new explicit request and verification. This adapter still needs live compatibility tests.
-- The verifier's `verifiedAt` is a local timestamp, not replay resistance. Calling it again does not itself establish evidence freshness or revocation. Default hardware policy and minimum firmware/TCB assumptions require review.
-- The SDK verifier's browser gzip branch uses native DecompressionStream. The build warns that its Node-only `zlib` fallback is externalized. Unsupported browser capabilities must fail, not disable verification.
+## Authorization
 
-Primary sources inspected:
+The user approved up to USD 2 actual spending **for one two-turn synthetic test**.
+That test completed. The account limit remains USD 2 with auto-recharge disabled,
+as reported by the user. Remaining budget is not permission for more requests.
+The proposed one-request compatibility check needs confirmation that its added
+scope is covered by that same total cap. No new credits, cap reset, new USD 2
+allowance or private-data transfer is authorized. The original permit preparer
+now refuses to reissue the completed test. No additional inference ran in this batch.
 
-- https://github.com/tinfoilsh/tinfoil-js/tree/eac102f50ad3c1bfc3fd3cefe8a615671d86fa52
-- https://github.com/tinfoilsh/encrypted-http-body-protocol
-- https://github.com/tinfoilsh/confidential-model-router
-- https://github.com/edgelesssys/privatemode-public
+## What prevents enabling private-user inference
 
-Further read-only deployment discovery and router review are recorded in [provider source review](provider-source-review.md). Public inventory/status are reachable. The observed router supports tool execution and conditional first-party chat moderation; their applicability must be established for the chosen API path. No qualification gate has passed as a result of this source review.
+1. Establish the full verified router/CPU/GPU/worker path and release bindings.
+   Router pinning delegates worker release admission to reviewed router code;
+   it does not independently pin every worker build in the browser.
+2. Establish freshness/revocation/rollback and minimum firmware/TCB behavior.
+3. Corroborate retention, cache, moderation, metadata and egress boundaries.
+4. Complete current-adapter live compatibility and reconcile actual charges.
+5. Record honest, linked evidence in the qualification report only when these
+   gates pass; never copy test fixtures or set `pass` to unlock the app.
 
-## Required work before enabling user inference
-
-1. Obtain current documentation and deployment evidence for the full router/CPU/GPU/worker chain. Identify plaintext recipients, admission/billing metadata, moderation, diagnostics, caches, retention and external tool behavior.
-2. Verify browser evidence freshness, certificate validity, revocation, trust-root updates and approved release policy. Confirm what an adversarial infrastructure operator can and cannot substitute.
-3. Identify one actual supported model and exact enclave origin. Verify terms, SDK licenses, context limits, output/reasoning billing and current pricing. Do not select `auto` routing.
-4. Present a concrete live-test service and spending cap for user approval. Have credentials supplied securely in environment settings. Do not put them in a qualification file or chat.
-5. Run isolated synthetic live probes first: browser verification, encrypted relay, actual streaming, cancellation, usage accounting and failures. Inspect the whole network path, including verification-service requests, which can reveal the browser IP. Establish provider-enforced spend/quota controls; browser token limits and session request counts alone cannot enforce a monetary budget.
-6. Exercise wrong keys, altered ciphertext, unapproved releases, expiry/revocation, outages and rotation. Label injected faults versus actual provider events. Retention claims need source/configuration/contract evidence beyond traffic captures.
-7. Record the resulting review and measured evidence in the qualification schema, with reviewed digests, origin, model, pricing, validity period and links to each check's artifacts. Only then load it as `.local/qualification.json` and supply `TINFOIL_API_KEY`.
-
-No passing qualification file ships in the repository. Test fixtures are synthetic and must never be copied into operational configuration. The report is an operator review artifact, not a cryptographic attestation, and cannot create assurance by setting fields to `pass`.
-
-## Environment access still needed
-
-Read-only recheck on 4 October 2026: runtime configuration lists `docs.tinfoil.sh`, `docs.privatemode.ai` and `atc.tinfoil.sh`; network enforcement status is reported as unknown. Both documentation roots and their `/llms.txt` endpoints returned HTTP 403; root responses contained `error code: 1010`. This does not establish that the configured allowlist is missing or identify which intermediary rejected the request. `https://atc.tinfoil.sh/` returned HTTP 200 with the Air Traffic Control landing page. That establishes landing-page reachability only, not attestation validity, model availability or protected inference.
-
-No provider credentials are configured: `TINFOIL_API_KEY` and `BRAVE_SEARCH_API_KEY` were checked for presence only and are absent. Current documentation, terms/prices and deployment evidence still need an accessible authoritative source before selecting the live service and proposing a spending cap. Add exact additional inference/verification destinations only after discovering the selected deployment; do not open a wildcard to make it pass. No inference or paid request was made during this recheck.
-
-Search remains unqualified and disabled without `BRAVE_SEARCH_API_KEY`. Current public documentation retrieval through an explicitly approved public host was tested without credentials or spend. That does not validate live search, comprehensive research quality or arbitrary-host fetches.
-
-## Explicit limits
-
-- Inference gateway is for one trusted local operator, not internet-facing multiuser use.
-- Browser-delivered code, dependencies, operating system and device are trusted. A malicious site update can capture plaintext.
-- Provider review must establish that model-side tool/external egress is disabled. Prompt instructions alone are insufficient.
-- HTTP metadata, timing and IP remain visible. Anonymous access is not implemented.
-- HTTPS proxy fetch mode trusts operator-approved public hosts and the platform proxy. It cannot establish DNS pinning through an opaque proxy. Other hosts fail closed.
-- Request limits are operational protections, not billing enforcement. Pricing estimates are not reconciled invoices.
-
-## Post-live adapter revision
-
-The response parser was revised after the successful two-turn WSL test to avoid
-SDK error paths logging decrypted frames. Its local browser/crypto/fault checks
-are recorded in [privacy/failure review](privacy-failure-review.md). The previous
-live test remains historical evidence for the previous adapter; compatibility of
-the current revision with live provider streaming is pending. All other provider
-qualification gates remain unchanged. No new paid run was made.
+The schema validates an operator report, not security truth. The gateway is
+single-operator loopback infrastructure; no internet-facing multiuser assurance.
+Browser-delivered code, dependencies, OS and device remain trusted. Provider and
+network operators still see metadata; anonymity is deferred. Technical readiness,
+security assurance and customer demand require separate evidence.

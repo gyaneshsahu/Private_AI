@@ -2,6 +2,24 @@
 // Success is partial evidence, never a provider qualification report.
 import { fetch, EnvHttpProxyAgent } from "undici";
 
+if (
+  process.argv.length > 3 ||
+  (process.argv[2] && process.argv[2] !== "--worker")
+) {
+  console.error(
+    "Use no argument for router verification or --worker for the fixed public-inventory worker probe. No inference is available.",
+  );
+  process.exit(1);
+}
+const worker = process.argv[2] === "--worker";
+const host = worker
+  ? "gpt-oss-120b-inf12-0.tinfoil.containers.tinfoil.dev"
+  : "inference.tinfoil.sh";
+const repository = worker
+  ? "tinfoilsh/confidential-gpt-oss-120b"
+  : "tinfoilsh/confidential-model-router";
+const origin = `https://${host}`;
+
 const allowed = new Set([
   "inference.tinfoil.sh",
   "atc.tinfoil.sh",
@@ -23,8 +41,8 @@ globalThis.fetch = async (input, init) => {
     lookup &&
     body !==
       JSON.stringify({
-        enclaveUrl: "https://inference.tinfoil.sh",
-        repo: "tinfoilsh/confidential-model-router",
+        enclaveUrl: origin,
+        repo: repository,
       })
   )
     throw new Error("Unexpected attestation lookup payload.");
@@ -59,13 +77,11 @@ globalThis.fetch = async (input, init) => {
 
 try {
   const { fetchAttestationBundle, Verifier } = await import("tinfoil");
-  const repository = "tinfoilsh/confidential-model-router";
   const bundle = await fetchAttestationBundle({
-    enclaveURL: "https://inference.tinfoil.sh",
+    enclaveURL: origin,
     configRepo: repository,
   });
-  if (bundle.domain !== "inference.tinfoil.sh")
-    throw new Error("Unexpected bundle host.");
+  if (bundle.domain !== host) throw new Error("Unexpected bundle host.");
   const verifier = new Verifier({ configRepo: repository });
   await verifier.verifyBundle(bundle);
   const doc = verifier.getVerificationDocument();
@@ -80,6 +96,7 @@ try {
     JSON.stringify(
       {
         observedAt: new Date().toISOString(),
+        target: worker ? "PUBLIC_INVENTORY_WORKER" : "ROUTER",
         result:
           "SDK attestation verification passed; qualification remains incomplete",
         host: doc.enclaveHost,
@@ -87,7 +104,7 @@ try {
         releaseDigest: doc.releaseDigest,
         requests,
         limits:
-          "Latest release is not an independently approved release. No browser, downstream model, freshness/revocation, retention, billing or inference validation.",
+          "Latest release is not independently approved. No request-to-worker binding, independent GPU-policy review, browser streaming, freshness/revocation, retention or billing validation. Zero inference requests.",
       },
       null,
       2,

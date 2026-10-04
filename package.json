@@ -19,7 +19,10 @@
     "experiment:prepare": "tsx evaluation/prepare-experiment.ts",
     "experiment:check": "tsx evaluation/run-local.ts --check",
     "experiment:run": "tsx evaluation/run-local.ts --run",
-    "experiment:review": "tsx evaluation/review-local.ts"
+    "experiment:review": "tsx evaluation/review-local.ts",
+    "compatibility:prepare": "tsx evaluation/prepare-compatibility.ts",
+    "compatibility:check": "tsx evaluation/run-local.ts --check --compatibility",
+    "compatibility:run": "tsx evaluation/run-local.ts --run --compatibility"
   },
   "dependencies": {
     "@tesseract.js-data/eng": "1.0.0",

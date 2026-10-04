@@ -1,8 +1,8 @@
 # PrivateAI — architecture and trust boundaries
 
-**Review draft v0.1 · 4 October 2026**
+**Working architecture v0.2 · 4 October 2026**
 
-Companion to the [PRD](PRD.md). This records the current local foundation and intended qualified inference path. **Live confidential inference has not been demonstrated.** See [provider qualification](provider-qualification.md) for the mandatory gate and [validation](validation.md) for historical test evidence.
+Companion to the [PRD](PRD.md). The browser-to-gateway inference path is implemented and wired into the web app. A synthetic two-turn exchange succeeded on the earlier adapter; current-adapter live compatibility and the full protected-processing claim remain unqualified. See the [qualification ledger](provider-qualification.md) and [validation](validation.md).
 
 ## 1. Components and flow
 
@@ -97,7 +97,7 @@ Credentials belong in secure environment settings, not chat, browser bundles or 
 
 ## 6. Current evidence and unresolved assumptions
 
-The [validation record](validation.md) reports local automated tests for extraction, storage, consent and browser interactions, plus a real public-page retrieval. Those checks do not establish model quality, end-to-end confidential inference or production security. Reserved evaluation files exist, but no live model evaluation is recorded.
+The [validation record](validation.md) reports local automated tests for extraction, storage, consent and browser interactions, plus a real public-page retrieval. The [first live review](first-live-experiment-review.md) separately records one successful two-turn synthetic conversation. It is narrow functionality evidence, not broad quality, full-chain confidentiality or production assurance. The revised adapter still needs [live compatibility](live-compatibility.md); the reserved evaluation has not been run against models.
 
 Blocking qualification questions:
 

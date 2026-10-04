@@ -1,8 +1,10 @@
 # PrivateAI — product requirements
 
-**Review draft v0.1 · 4 October 2026**
+**Working requirements v0.2 · 4 October 2026**
 
 This consolidates the agreed direction for the first working evaluation. It does not certify existing code or authorize spending. Read with the [architecture](ARCHITECTURE.md), [detailed acceptance contract](acceptance.md), and [observed validation](validation.md). Requirements below are targets, not claims that tests have passed.
+
+Current implementation: web chat inference is wired, with a successful earlier two-turn synthetic exchange. Full qualification and current-adapter live compatibility remain open; see the [qualification ledger](provider-qualification.md). Requirements below are unchanged by that narrow success.
 
 ## 1. Purpose and first release
 

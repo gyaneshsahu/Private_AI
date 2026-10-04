@@ -2,7 +2,7 @@
 
 Status: implementation authorized; repository access confirmed; implementation in progress. No paid services authorized.
 
-This supplements the architecture and stages approved in the conversation, now consolidated for review in the [PRD](PRD.md) and [architecture](ARCHITECTURE.md). It does not replace or weaken their privacy requirements. Local functionality and public-page retrieval have validation evidence; live confidential inference and model answer quality have not been demonstrated. See the [validation record](validation.md).
+This supplements the architecture and stages approved in the conversation, now consolidated for review in the [PRD](PRD.md) and [architecture](ARCHITECTURE.md). It does not replace or weaken their privacy requirements. Local functionality and public-page retrieval have validation evidence. One earlier-adapter live synthetic conversation passed narrow review; current-adapter compatibility, full-chain confidentiality and broad answer quality remain unproven. See the [validation record](validation.md).
 
 ## Scope and stage gates
 
