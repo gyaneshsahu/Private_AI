@@ -65,3 +65,7 @@ Offline review of a saved experiment: `npm run experiment:review -- /path/to/res
 (with its original `permit.json` alongside it). This reports recorded evidence
 without another inference request. See [privacy/failure review](docs/privacy-failure-review.md)
 for the current adapter's tests and remaining live qualification work.
+
+Restricted hosting preparation and remaining access requirements:
+[development deployment](docs/development-deployment.md). The Docker package
+reuses the current app and gateway; it does not enable unqualified inference.

@@ -1,4 +1,5 @@
 import express from "express";
+import { deploymentAccess } from "./deployment";
 import { randomBytes } from "node:crypto";
 import { once } from "node:events";
 import { z } from "zod";
@@ -17,10 +18,12 @@ export interface Config {
   apiKey?: string;
   searchKey?: string;
   dev?: boolean;
+  accessKey?: string;
 }
 export function createApp(config: Config) {
   const app = express();
   app.disable("x-powered-by");
+  app.use(deploymentAccess(config.origin, config.accessKey));
   const approvals = new Approvals();
   const sessions = new Map<
     string,
@@ -43,7 +46,7 @@ export function createApp(config: Config) {
       "X-Frame-Options": "DENY",
       "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     });
-    // This build is intentionally loopback-only. Public deployment needs real user authentication.
+    // Hosted access is restricted before session, API and static-file handling.
     if (
       req.headers.host !== new URL(config.origin).host ||
       (req.headers.origin && req.headers.origin !== config.origin) ||
@@ -89,7 +92,7 @@ export function createApp(config: Config) {
       });
       res.setHeader(
         "Set-Cookie",
-        `privateai-session=${id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600`,
+        `privateai-session=${id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600${config.origin.startsWith("https:") ? "; Secure" : ""}`,
       );
     }
     const session = sessions.get(id)!;

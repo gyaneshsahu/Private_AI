@@ -17,8 +17,12 @@ try {
   /* Missing or malformed evidence keeps live inference disabled. */
 }
 const dev = process.argv.includes("--dev");
+const origin = process.env.PRIVATEAI_ORIGIN ?? `http://127.0.0.1:${port}`;
+const hosted = origin.startsWith("https:");
+if (hosted && dev) throw new Error("Development middleware cannot be hosted.");
 const app = createApp({
-  origin: `http://127.0.0.1:${port}`,
+  origin,
+  accessKey: process.env.PRIVATEAI_ACCESS_KEY,
   dev,
   qualification,
   apiKey: process.env.TINFOIL_API_KEY,
@@ -37,8 +41,16 @@ if (dev) {
     res.sendFile(resolve("dist/index.html"));
   });
 }
-app.listen(port, "127.0.0.1", () => {
+const server = app.listen(port, hosted ? "0.0.0.0" : "127.0.0.1", () => {
   console.log(
-    `PrivateAI listening on loopback port ${port}. No request content logging enabled.`,
+    `PrivateAI ${hosted ? "restricted hosted evaluation" : "loopback"} listening on port ${port}. No request content logging enabled.`,
   );
 });
+
+// A rolling replacement invalidates in-memory sessions and research approvals.
+for (const signal of ["SIGTERM", "SIGINT"] as const) {
+  process.once(signal, () => {
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(1), 10000).unref();
+  });
+}
