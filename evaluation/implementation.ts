@@ -17,6 +17,7 @@ export async function implementationIdentity(root: string) {
     "evaluation/experiment.ts",
     "evaluation/experiment-gateway.ts",
     "evaluation/run-local.ts",
+    "evaluation/review-result.ts",
     "scripts/browser-runtime.mjs",
   ].sort();
   const hash = createHash("sha256");

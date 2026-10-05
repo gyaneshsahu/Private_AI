@@ -3,6 +3,7 @@ import { afterEach, describe, it, expect } from "vitest";
 import { openDB } from "idb";
 import { Vault } from "../src/vault";
 import { emptyConversation } from "../shared/contracts";
+import { composeContext } from "../src/conversation";
 const stores: Vault[] = [];
 function store() {
   const v = new Vault();
@@ -19,6 +20,8 @@ describe("real WebCrypto vault, synthetic inputs only", () => {
     await v.unlock("correct horse battery staple");
     const c = emptyConversation();
     c.title = "SECRET TITLE 927";
+    c.draft = "UNSENT DRAFT 732";
+    expect(JSON.stringify(composeContext(c, 20000))).not.toContain(c.draft);
     c.messages = [
       {
         id: "m",
@@ -35,10 +38,12 @@ describe("real WebCrypto vault, synthetic inputs only", () => {
       "PRIVATE MESSAGE",
     );
     expect(JSON.stringify(raw)).not.toContain("SECRET TITLE");
+    expect(new TextDecoder().decode(raw.data.data)).not.toContain(c.draft);
     v.lock(false);
     await expect(v.list()).rejects.toThrow();
     await expect(v.unlock("wrong password long enough")).rejects.toThrow();
     await v.unlock("correct horse battery staple");
+    expect((await v.list()).find((x) => x.id === c.id)?.draft).toBe(c.draft);
     expect((await v.list()).find((x) => x.id === c.id)?.messages[0].text).toBe(
       "PRIVATE MESSAGE 821",
     );

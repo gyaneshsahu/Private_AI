@@ -124,3 +124,13 @@ export function reviewResult(input: unknown, permitInput: unknown) {
     automaticRetry: false,
   };
 }
+
+export function reviewExitCode(
+  summary: ReturnType<typeof reviewResult>,
+): 0 | 1 {
+  if (summary.outcome === "DIAGNOSTIC_REACHED_INFERENCE_BOUNDARY") return 0;
+  return summary.outcome === "INCOMPLETE_REVIEW_REQUIRED" ||
+    summary.relayClosure !== "FINISHED"
+    ? 1
+    : 0;
+}

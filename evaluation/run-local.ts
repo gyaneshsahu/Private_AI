@@ -1,5 +1,5 @@
 import { implementationIdentity } from "./implementation";
-import { reviewResult } from "./review-result";
+import { reviewExitCode, reviewResult } from "./review-result";
 import { networkRoute, approvedLocalGet } from "./network-observation";
 import type { Request as BrowserRequest } from "@playwright/test";
 import {
@@ -256,6 +256,34 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
       }
     });
     const page = await context.newPage();
+    // Count cancellation without inspecting request bodies, secrets or errors.
+    await page.addInitScript(() => {
+      const lifecycle = { requestSignalAborts: 0, readerCancels: 0 };
+      Object.assign(window, { privateAiStreamLifecycle: lifecycle });
+      const originalFetch = window.fetch;
+      window.fetch = function (input, init) {
+        const url = input instanceof Request ? input.url : String(input);
+        if (
+          new URL(url, location.href).pathname ===
+          "/api/inference/v1/chat/completions"
+        ) {
+          const signal =
+            init?.signal ??
+            (input instanceof Request ? input.signal : undefined);
+          signal?.addEventListener(
+            "abort",
+            () => lifecycle.requestSignalAborts++,
+            { once: true },
+          );
+        }
+        return originalFetch.call(this, input, init);
+      };
+      const originalCancel = ReadableStreamDefaultReader.prototype.cancel;
+      ReadableStreamDefaultReader.prototype.cancel = function (reason) {
+        lifecycle.readerCancels++;
+        return originalCancel.call(this, reason);
+      };
+    });
     const relayTerminals: Promise<void>[] = [];
     const finishRelay = new WeakMap<BrowserRequest, () => void>();
     page.on("request", (request) => {
@@ -324,6 +352,11 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
       { permit, csrf },
     );
     const client = result.client as { failure?: unknown };
+    result.browserStreamLifecycle = await page.evaluate(
+      () =>
+        (window as unknown as { privateAiStreamLifecycle: unknown })
+          .privateAiStreamLifecycle,
+    );
     phase = "WAITING_FOR_RELAY_CLOSE";
     result.status = client.failure
       ? "FAILED_FOR_HUMAN_REVIEW"
@@ -349,11 +382,8 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
           summary.outcome === "DIAGNOSTIC_REACHED_INFERENCE_BOUNDARY"
         ) {
           result.status = summary.outcome;
-        } else if (
-          (result.client as { failure?: unknown }).failure ||
-          summary.outcome === "INCOMPLETE_REVIEW_REQUIRED"
-        )
-          process.exitCode = 1;
+        }
+        process.exitCode = reviewExitCode(summary);
         console.log(JSON.stringify(summary, null, 2));
       } catch {
         result.status = "INVALID_EVIDENCE_REVIEW_REQUIRED";

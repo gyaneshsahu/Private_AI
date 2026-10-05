@@ -80,7 +80,7 @@ Technical readiness, security assurance and customer demand are separate decisio
 
 Local work on B/C may proceed while A is blocked, but does not imply A has passed. Existing local implementation is reusable work, not proof of completion. The previous 6–10 engineering-week estimate is provisional, not a minimum duration; progress follows evidence.
 
-Current authorization, updated 5 October 2026: **USD 10 cumulative inference ceiling**, including prior usage, for the bounded synthetic batch in the [local handoff](LOCAL_CODEX_HANDOFF.md). Confirm actual usage, provider cap and key/account scope before paid execution. No deposits, subscriptions or paid hosting are authorized. Earlier $25/$50–100 planning figures are not approved budgets. Local tools and synthetic fixtures need no supplier charge.
+Current authorization, updated 5 October 2026: **USD 2 cumulative account cap**, including prior usage, with auto-recharge disabled and the key confirmed for that account. This supersedes the older USD 10 ceiling in the [local handoff](LOCAL_CODEX_HANDOFF.md); a possible future increase is not approval. Routine bounded synthetic debugging proceeds within the user's approved batch; preserve consumed permits and record attempts. Ask only for new payment, higher caps, material privacy decisions or real-user-data use. No deposits, subscriptions or paid hosting are authorized. Track delivery in the [roadmap](ROADMAP.md).
 
 ## 7. Deferred scope and review decisions
 

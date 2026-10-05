@@ -99,6 +99,10 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       const frame = (content: string, finish: string | null) =>
         `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content }, finish_reason: finish }] })}\n\n`;
       let text = frame("TEST answer: 4", mode === "truncated" ? null : "stop");
+      if (mode === "valid") {
+        const initial = `data: ${JSON.stringify({ choices: [], usage: { prompt_tokens: 2, completion_tokens: 0, total_tokens: 2 } })}\n\n`;
+        text = initial + initial + text;
+      }
       text += `data: ${JSON.stringify({ choices: [], usage: { prompt_tokens: 2, completion_tokens: 3, total_tokens: 5 } })}\n\n`;
       if (mode !== "truncated") text += "data: [DONE]\n\n";
       if (mode === "malformed")

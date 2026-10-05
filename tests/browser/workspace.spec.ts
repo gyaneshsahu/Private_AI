@@ -20,15 +20,13 @@ test("temporary text extraction, context corrections and calculator work without
     .getByRole("button", { name: "Context", exact: false })
     .first()
     .click();
-  await page
-    .getByLabel("Add documents or screenshots")
-    .setInputFiles({
-      name: "bill.txt",
-      mimeType: "text/plain",
-      buffer: Buffer.from(
-        "Electricity bill: 120.50 EUR. Due 15 November. PRIVATE CANARY 4829",
-      ),
-    });
+  await page.getByLabel("Add documents or screenshots").setInputFiles({
+    name: "bill.txt",
+    mimeType: "text/plain",
+    buffer: Buffer.from(
+      "Electricity bill: 120.50 EUR. Due 15 November. PRIVATE CANARY 4829",
+    ),
+  });
   await expect(
     page.getByText("bill.txt", { exact: false }).first(),
   ).toBeVisible();
@@ -49,6 +47,7 @@ test("temporary text extraction, context corrections and calculator work without
     ),
   ).toBe(0);
   await page
+    .getByRole("navigation", { name: "Workspace" })
     .getByRole("button", { name: "Conversation", exact: false })
     .first()
     .click();
@@ -104,15 +103,13 @@ test("encrypted snapshots survive reload, lock clears content and deletion persi
     .getByRole("button", { name: "Context", exact: false })
     .first()
     .click();
-  await page
-    .getByLabel("Add documents or screenshots")
-    .setInputFiles({
-      name: "private.txt",
-      mimeType: "text/plain",
-      buffer: Buffer.from(
-        "SENSITIVE NOTE 991: only an encrypted snapshot should persist.",
-      ),
-    });
+  await page.getByLabel("Add documents or screenshots").setInputFiles({
+    name: "private.txt",
+    mimeType: "text/plain",
+    buffer: Buffer.from(
+      "SENSITIVE NOTE 991: only an encrypted snapshot should persist.",
+    ),
+  });
   await expect(
     page.getByText("private.txt", { exact: false }).first(),
   ).toBeVisible();
@@ -188,13 +185,11 @@ test("real local screenshot OCR reads printed text without a remote OCR service"
     .getByRole("button", { name: "Context", exact: false })
     .first()
     .click();
-  await page
-    .getByLabel("Add documents or screenshots")
-    .setInputFiles({
-      name: "screenshot.png",
-      mimeType: "image/png",
-      buffer: Buffer.from(image, "base64"),
-    });
+  await page.getByLabel("Add documents or screenshots").setInputFiles({
+    name: "screenshot.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(image, "base64"),
+  });
   await expect(page.locator("details summary")).toBeVisible({ timeout: 45000 });
   await page.locator("details summary").click();
   await expect(page.getByLabel("Text for screenshot.png page 1")).toContainText(
@@ -211,6 +206,7 @@ test("desktop and basic phone layouts have no horizontal overflow", async ({
     await page.setViewportSize({ width, height: 900 });
     for (const tab of ["Conversation", "Context", "Research", "Saved"]) {
       await page
+        .getByRole("navigation", { name: "Workspace" })
         .getByRole("button", { name: tab, exact: false })
         .first()
         .click();
@@ -224,6 +220,7 @@ test("desktop and basic phone layouts have no horizontal overflow", async ({
   await page.screenshot({ path: "test-results/phone.png", fullPage: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page
+    .getByRole("navigation", { name: "Workspace" })
     .getByRole("button", { name: "Conversation", exact: false })
     .first()
     .click();

@@ -1,5 +1,28 @@
 # Windows compatibility failure — 5 October 2026
 
+## Invited-trial preparation follow-up
+
+The next user instruction authorized at most one fresh bounded synthetic check in
+this batch. `windows_20261005_trial_compat_1` consumed a new one-use permit and
+returned the complete correct answer `4` in 1.81 seconds, with 169 input / 38 output
+tokens. Gateway outcome: successful encrypted relay delivery, upstream HTTP 200.
+The original and subsequent consumed permits were not reused or changed.
+
+Read-only lifecycle counters around browser fetch signals and reader cancellation
+recorded zero request-signal aborts and zero reader cancellations. Chromium still
+reported the correlated relay `ERR_ABORTED`. These counters narrow the investigation;
+they do not prove normal network closure or full supplier behavior. Compatibility
+remains NOT_PASSED. The next useful step is offline reproduction through the actual
+relay, not another unchanged paid 2+2 probe.
+
+The offline encrypted-browser regression now includes repeated initial usage
+snapshots followed by final accounting, across encrypted frames and fragmented HTTP
+writes. It passes without double counting. Launcher exit status now fails for an
+unresolved/failed relay even if the answer completed; a successful diagnostic boundary
+stop remains distinct. Review tests cover both terminal outcomes. No production
+provider gate was relaxed. See the [roadmap](ROADMAP.md) for trial dependencies and
+the independently completed draft/document workspace flow.
+
 ## Subsequent authorized development batch
 
 The user subsequently renewed authorization for bounded synthetic API testing

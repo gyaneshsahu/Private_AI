@@ -1,5 +1,5 @@
 import { it, expect } from "vitest";
-import { reviewResult } from "../evaluation/review-result";
+import { reviewExitCode, reviewResult } from "../evaluation/review-result";
 import { prepareFromPreflight } from "../evaluation/prepare-experiment";
 const now = new Date("2026-10-04T19:00:00Z");
 const digest =
@@ -95,6 +95,7 @@ it("distinguishes the intentional diagnostic stop from a paid completion", () =>
   expect(reviewResult(diagnostic, permit).outcome).toBe(
     "DIAGNOSTIC_REACHED_INFERENCE_BOUNDARY",
   );
+  expect(reviewExitCode(reviewResult(diagnostic, permit))).toBe(0);
   expect(
     reviewResult({ ...diagnostic, attempts: result.attempts }, permit).outcome,
   ).toBe("INCOMPLETE_REVIEW_REQUIRED");
@@ -120,12 +121,14 @@ it("requires an identified relay finish for compatibility and retains relay fail
   result.client.conversation.messages.pop();
   result.client.conversation.usage.pop();
   expect(reviewResult(result, permit).compatibilityEvidence).toBe("NOT_PASSED");
+  expect(reviewExitCode(reviewResult(result, permit))).toBe(1);
   const network = [
     { outcome: "REQUEST_FINISHED", route: "INFERENCE_RELAY", requestId: 1 },
   ];
   expect(
     reviewResult({ ...result, network }, permit).compatibilityEvidence,
   ).toBe("READY_FOR_HUMAN_REVIEW");
+  expect(reviewExitCode(reviewResult({ ...result, network }, permit))).toBe(0);
   network.push({
     outcome: "REQUEST_FAILED",
     route: "INFERENCE_RELAY",
@@ -137,4 +140,5 @@ it("requires an identified relay finish for compatibility and retains relay fail
   expect(
     reviewResult({ ...result, network }, permit).compatibilityEvidence,
   ).toBe("NOT_PASSED");
+  expect(reviewExitCode(reviewResult({ ...result, network }, permit))).toBe(1);
 });

@@ -1,5 +1,5 @@
 import { Answer } from "./Answer";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   emptyConversation,
   type AppStatus,
@@ -39,6 +39,24 @@ export function App() {
   const vault = useRef<Vault | null>(null);
   const epoch = useRef(0);
   const outputEnd = useRef<HTMLDivElement>(null);
+  const unsaved = useMemo(() => {
+    const previous = saved.find((item) => item.id === conversation.id);
+    if (!previous)
+      return !!(
+        input.length ||
+        conversation.messages.length ||
+        conversation.attachments.length
+      );
+    return (
+      JSON.stringify({ ...conversation, draft: input }) !==
+      JSON.stringify({ ...previous, draft: previous.draft ?? "" })
+    );
+  }, [conversation, input, saved]);
+  const allowReplace = () =>
+    !unsaved ||
+    window.confirm(
+      "Discard unsaved workspace changes? Cancel to keep working or save an encrypted snapshot first.",
+    );
   useEffect(() => {
     if (!source) return;
     const previous = document.activeElement as HTMLElement;
@@ -336,36 +354,44 @@ export function App() {
     }
   }
   async function unlockVault() {
+    const current = epoch.current;
     const secret = passphrase;
     setPassphrase("");
     setBusy("Unlocking encrypted history…");
     try {
       await vault.current!.unlock(secret);
+      const snapshots = await vault.current!.list();
+      if (current !== epoch.current) return;
       setUnlocked(true);
-      setSaved(await vault.current!.list());
+      setSaved(snapshots);
       setNotice(
         "Vault unlocked on this device. Saving is explicit; temporary chats are not saved automatically.",
       );
     } catch {
+      if (current !== epoch.current) return;
       fail(
         "Could not unlock the vault. Check the passphrase (at least 12 characters).",
       );
     } finally {
-      setBusy("");
+      if (current === epoch.current) setBusy("");
     }
   }
   async function save() {
+    const current = epoch.current;
     setBusy("Encrypting your conversation…");
     try {
-      await vault.current!.save(conversation);
-      setSaved(await vault.current!.list());
+      await vault.current!.save({ ...conversation, draft: input });
+      const snapshots = await vault.current!.list();
+      if (current !== epoch.current) return;
+      setSaved(snapshots);
       setNotice(
         "Encrypted snapshot saved on this browser. Later changes require saving again.",
       );
     } catch {
+      if (current !== epoch.current) return;
       fail("Save failed. Unlock the vault and try again.");
     } finally {
-      setBusy("");
+      if (current === epoch.current) setBusy("");
     }
   }
   const sources = conversation.attachments.flatMap((a) => a.sources);
@@ -378,7 +404,9 @@ export function App() {
         <p className="eyebrow">YOUR PERSONAL SPACE</p>
         <button
           className="new-chat"
+          disabled={!!busy}
           onClick={() => {
+            if (!allowReplace()) return;
             reset();
             setTab("Conversation");
           }}
@@ -945,6 +973,13 @@ export function App() {
               Optional encrypted snapshots, stored only in this browser. No
               cloud sync and no password recovery.
             </p>
+            <p role="status">
+              {unsaved
+                ? "Unsaved workspace changes. Save explicitly to keep your draft and documents."
+                : "No unsaved workspace changes."}{" "}
+              Reloading clears temporary work. Locking clears the workspace even
+              when changes are unsaved.
+            </p>
             {!unlocked ? (
               <form
                 className="panel"
@@ -981,7 +1016,8 @@ export function App() {
                     disabled={
                       !!busy ||
                       (!conversation.messages.length &&
-                        !conversation.attachments.length)
+                        !conversation.attachments.length &&
+                        !input.length)
                     }
                     onClick={() => void save()}
                   >
@@ -1008,18 +1044,27 @@ export function App() {
                 {saved.map((c) => (
                   <div className="panel row" key={c.id}>
                     <div>
-                      <strong>{c.title}</strong>
+                      <strong>
+                        {c.title === "New conversation"
+                          ? c.draft?.slice(0, 60) ||
+                            c.attachments[0]?.name ||
+                            c.title
+                          : c.title}
+                      </strong>
                       <p className="muted">
                         {new Date(c.createdAt).toLocaleDateString()} ·{" "}
                         {c.messages.length} messages · {c.attachments.length}{" "}
                         attachments
+                        {c.draft ? " · Unsent draft" : ""}
                       </p>
                     </div>
                     <button
                       disabled={!!busy}
                       onClick={() => {
+                        if (!allowReplace()) return;
                         reset();
                         setConversation(structuredClone(c));
+                        setInput(c.draft ?? "");
                         setTab("Conversation");
                         setNotice(
                           "Opened a saved snapshot. Save again to keep later changes.",
