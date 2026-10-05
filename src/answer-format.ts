@@ -18,14 +18,14 @@ export function sourceCitations() {
     visit(tree, "text", (node, index, parent) => {
       if (index == null || !parent || parent.type === "link") return;
       const parts = node.value.split(
-        /(\[[a-zA-Z0-9-]{6,36}\]|【[a-zA-Z0-9-]{6,36}】)/g,
+        /(\[[a-zA-Z0-9-]{6,36}(?:,\s*(?:page|p\.)\s*[1-9]\d{0,3})?\]|【[a-zA-Z0-9-]{6,36}(?:,\s*(?:page|p\.)\s*[1-9]\d{0,3})?】)/gi,
       );
       if (parts.length === 1) return;
       const children: PhrasingContent[] = parts.filter(Boolean).map((part) =>
         /^[\[【]/.test(part)
           ? {
               type: "link",
-              url: "#source-" + part.slice(1, -1),
+              url: "#source-" + part.slice(1, -1).split(",")[0],
               children: [{ type: "text", value: part }],
             }
           : { type: "text", value: part },

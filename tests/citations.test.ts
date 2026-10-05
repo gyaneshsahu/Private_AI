@@ -61,3 +61,25 @@ it("preserves currency, unknown sources and fenced math/code literally", () => {
   expect(html).toContain("[deadbeef]");
   expect(html).not.toContain("<button");
 });
+
+it("opens page-qualified citations without treating a model's page claim as verified source metadata", () => {
+  const html = renderToStaticMarkup(
+    createElement(Answer, {
+      text: "Invoice 72 EUR [documents-04, page 1]. Also 【documents-04, p. 2】. Unknown [missing-01, page 1]. `Code [documents-04, page 1]`.",
+      sources: [
+        {
+          id: "documents-04",
+          title: "invoice.txt",
+          page: 2,
+          text: "Synthetic source",
+        },
+      ],
+      open: () => {},
+    }),
+  );
+  expect(html.match(/<button/g)).toHaveLength(2);
+  expect(html).toContain("invoice.txt · p2 · cited p1");
+  expect(html).toContain("[missing-01, page 1]");
+  expect(html).toContain("<code>Code [documents-04, page 1]</code>");
+  expect(html).not.toContain("href=");
+});

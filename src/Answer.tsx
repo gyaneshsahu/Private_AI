@@ -31,6 +31,14 @@ export function Answer({
         ]}
         components={{
           a: ({ href, children }) => {
+            const citedPage =
+              typeof children === "string"
+                ? Number(
+                    /,\s*(?:page|p\.)\s*([1-9]\d{0,3})[\]】]$/i.exec(
+                      children,
+                    )?.[1],
+                  ) || undefined
+                : undefined;
             const source = href?.startsWith("#source-")
               ? sources.find((item) => item.id === href.slice(8))
               : undefined;
@@ -38,6 +46,9 @@ export function Answer({
               <button className="citation" onClick={() => open(source)}>
                 {source.title}
                 {source.page ? ` · p${source.page}` : ""}
+                {citedPage && citedPage !== source.page
+                  ? ` · cited p${citedPage}`
+                  : ""}
               </button>
             ) : (
               <span>

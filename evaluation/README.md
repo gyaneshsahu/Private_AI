@@ -1,6 +1,6 @@
 # Evaluation evidence
 
-`cases/development.json` contains 24 synthetic, two-turn development cases across six task families. `cases/heldout.json` contains 24 different reserved cases frozen before any model tuning. These were developer-authored, not independently contributed or blinded; do not describe them as independent customer validation. Three distinct development cases have live observations in [the development review](../docs/development-family-review.md); the reserved set remains unrun.
+`cases/development.json` contains 24 synthetic, two-turn development cases across six task families. `cases/heldout.json` contains 24 different reserved cases frozen before any model tuning. These were developer-authored, not independently contributed or blinded; do not describe them as independent customer validation. Five distinct development cases have live observations in [the development review](../docs/development-family-review.md); the reserved set remains unrun.
 
 `frozen-manifest.json` records SHA-256 file hashes. `npm run eval:check` validates counts, shapes, coverage and hashes; success is fixture integrity only. If a reserved case informs a fix, retain it as a regression case and prepare a new, separately versioned hold-out set. Never silently regenerate the manifest to hide a changed acceptance baseline.
 

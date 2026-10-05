@@ -3,6 +3,7 @@ import { chromium, expect as ui } from "@playwright/test";
 type FixtureWindow = Window & {
   fixtureCalls: Array<Array<{ role: string; content: string }>>;
   fixturePending: boolean;
+  copiedAnswer?: string;
 };
 import { createServer } from "vite";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
@@ -35,7 +36,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
             throw new IncompleteReplyError('TEST interrupted response');
           }
           const source=c.attachments[0]?.sources[0];
-          chunk((window.fixtureAnswer ?? 'TEST complete answer') + (source ? ' ['+source.id+']' : ''));
+          chunk((window.fixtureAnswer ?? 'TEST complete answer') + (source ? ' ['+source.id+', page 1]'  : ''));
           return {input:2,output:3,total:5,estimatedUSD:0};
         }
       `;
@@ -89,6 +90,12 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       .fill("TEST question with a source");
     await page.getByRole("button", { name: "Send ↑", exact: true }).click();
     await ui(page.getByText("TEST_PARTIAL", { exact: true })).toBeVisible();
+    await ui(
+      page
+        .locator("article.assistant")
+        .last()
+        .getByRole("button", { name: "Copy answer" }),
+    ).toBeDisabled();
     await page.getByRole("button", { name: "Stop", exact: true }).click();
     await ui(
       page.getByText("Response stopped.", { exact: false }),
@@ -114,6 +121,51 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     await ui(
       page.getByText("TEST complete answer", { exact: false }),
     ).toBeVisible();
+    await page.evaluate(() => {
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: {
+          writeText: async (text: string) => {
+            (window as unknown as FixtureWindow).copiedAnswer = text;
+          },
+        },
+      });
+    });
+    expect(
+      await page.evaluate(
+        () => (window as unknown as FixtureWindow).copiedAnswer,
+      ),
+    ).toBeUndefined();
+    await page
+      .getByRole("button", { name: "Copy answer", exact: true })
+      .click();
+    await ui(
+      page.getByText("Answer copied to your clipboard.", { exact: false }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => (window as unknown as FixtureWindow).copiedAnswer,
+      ),
+    ).toMatch(/^TEST complete answer \[.+\]$/);
+    await page.evaluate(() =>
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: {
+          writeText: async () => {
+            throw new Error("TEST clipboard denied");
+          },
+        },
+      }),
+    );
+    await page
+      .getByRole("button", { name: "Copy answer", exact: true })
+      .click();
+    await ui(
+      page.getByText(
+        "Could not copy. Select the answer text and copy it manually.",
+        { exact: false },
+      ),
+    ).toBeVisible();
     const calls = await page.evaluate(
       () =>
         (window as unknown as FixtureWindow).fixtureCalls as Array<
@@ -132,7 +184,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       .fill("CORRECTED SYNTHETIC SOURCE: 90 EUR");
     await tab("Conversation").click();
     await page
-      .getByRole("button", { name: "synthetic-source.txt", exact: true })
+      .getByRole("button", { name: "synthetic-source.txt", exact: false })
       .click();
     await ui(page.getByRole("dialog")).toContainText(
       "ORIGINAL SYNTHETIC SOURCE: 95 EUR",
