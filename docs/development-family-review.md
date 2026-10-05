@@ -150,3 +150,23 @@ cases remain unrun, human grading is outstanding, and neither candidate is promo
 Next targeted work: provide a trustworthy current-date context and avoid invented
 purchase assumptions, then use fresh transfer cases rather than repeat unchanged
 experiments. Keep the two observed failures as regression evidence.
+
+## Targeted temporal-context repair
+
+Fresh `windows_20261005_temporal_gemma_1` and `windows_20261005_temporal_gptoss_1`
+permits reran `development-research-02` after a specific context change: the
+system message now supplies the request's UTC device date, explicitly labels
+the clock as fallible, and warns against historical years presented as current
+or unsupported purchase assumptions. Source retrieval timestamps remain untrusted
+reference data and are explicitly distinguished from publication dates. Redundant
+policy wording was removed to retain the existing compatibility input limit.
+
+Both two-turn requests completed with matching verification and the scoped abort
+assessment. Gemma dropped the stale 2023–2024 claim and gave largely general checks
+for current laptop information (2.91/1.35 seconds); this narrow agent regression
+is acceptable. GPT-OSS still assumed a laptop-battery replacement purchase
+(2.71/2.43 seconds), retaining the material unsupported-intent finding. No further
+unchanged repeat was attempted. Profile-aware agent reviews and historical failed
+results are preserved. Combined reported estimate: USD 0.00098550; actual billing
+remains unreconciled. This adds no distinct-case coverage and cannot establish a
+research-family pass. Fresh transfer cases and human grading remain necessary.

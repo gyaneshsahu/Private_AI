@@ -199,3 +199,13 @@ G1–G6 and U1 independently while Q1 needs supplier evidence.
   remain open. The next quality work targets observed temporal/purchase-assumption
   defects. Q1 still needs supplier artifacts; the prepared request is ready for
   the founder to send through the provider's support channel.
+
+- 5 October 2026: addressed the observed research failures with request-date context,
+  explicit retrieval/publication distinction and guidance against invented purchase
+  assumptions. Offline tests cover saved-conversation date rollover, untrusted
+  source dates and the unchanged compatibility input cap. Two separately permitted
+  targeted live regressions show partial repair: Gemma removes stale “latest” years;
+  GPT-OSS retains its unsupported replacement-battery assumption. Preserve that
+  material finding and continue toward fresh transfer/human evaluation, not repeated
+  unchanged prompts. Q1 and hosted trial validation remain open.
+  Validation: 127 unit/integration tests, typecheck and production build passed.
