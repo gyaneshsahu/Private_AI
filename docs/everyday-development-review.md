@@ -56,7 +56,7 @@ account cap stays USD 2, including prior usage, with auto-recharge disabled.
 Planning remains an ordinary-quality blocker for that capability, not grounds to
 weaken privacy checks or halt unrelated UI/reliability work. Broader everyday
 quality, named comparators, real-phone observation and human review remain open.
-The [trial-quality proposal](trial-quality-gate-proposal.md) is awaiting a founder
-decision before the reserved evaluation; no numerical threshold was silently set.
+The founder approved the [trial-quality floors](trial-quality-gate-proposal.md) on
+5 October 2026. Reserved evaluation and human grading remain outstanding.
 
 Validation: 102 unit/integration tests, ten production-build browser workflows, TypeScript, production build and fixture integrity passed. Dependency audit reported zero vulnerabilities at installation; this is not independent security assurance.

@@ -296,10 +296,13 @@ export function App() {
     setNotice("");
     try {
       for (const file of Array.from(files)) {
+        abort.signal.throwIfAborted();
         const attachment = await extract(file, abort.signal, (message) => {
           if (current === epoch.current && !abort.signal.aborted)
             setBusy(message);
         });
+        abort.signal.throwIfAborted();
+        if (current !== epoch.current) return;
         if (current === epoch.current)
           setConversation((c) => ({
             ...c,
@@ -336,11 +339,14 @@ export function App() {
         approved,
         abort.signal,
       );
+      abort.signal.throwIfAborted();
+      if (current !== epoch.current) return;
       const result = (await api(
         "/api/research/execute",
         { id: prepared.id },
         abort.signal,
       )) as { sources: Source[] };
+      abort.signal.throwIfAborted();
       if (current === epoch.current) {
         if (result.sources.length)
           setConversation((c) => ({

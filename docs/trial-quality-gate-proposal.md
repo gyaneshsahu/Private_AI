@@ -1,7 +1,7 @@
-# Proposed ordinary-quality gate for the first invited trial
+# Approved ordinary-quality gate for the first invited trial
 
-Status: **proposal for founder decision, not an approved gate** · 5 October 2026.
-This fills E1's pending numerical decision. It does not qualify the provider,
+Status: **approved by the founder (“ok approve continue”)** · 5 October 2026.
+This resolves E1's numerical decision. It does not qualify the provider,
 authorize real private data or claim parity with ChatGPT/Gemini.
 
 Keep the frozen 24 held-out conversations, four in each of six families, repeated
@@ -10,7 +10,7 @@ correctness, completeness and context preservation each at least 2, all mandator
 assertions, no serious error. Count failures honestly even if trial readiness can
 tolerate an isolated ordinary miss.
 
-Proposed minimum for a bounded trial:
+Approved minimum for a bounded trial:
 
 - At least **65/72 successful executions overall** (90.3%).
 - At least **10/12 in every task family** (83.3%); aggregate strength cannot hide
@@ -34,6 +34,6 @@ reserved evaluation starts, change them with a recorded reason and founder revie
 Do not move them after seeing results. Cases used to tune leave the held-out pool
 and require new replacements.
 
-Decision requested: approve these floors for the limited invited trial, or specify
-a different floor before reserved evaluation. Ordinary development cases and
-independent product improvements can proceed while this decision is pending.
+Approval covers these trial-entry floors, not a claim that they have been met,
+public deployment, real private data, or the entire roadmap. The existing USD 2
+cumulative account cap and separate privacy gates remain unchanged.
