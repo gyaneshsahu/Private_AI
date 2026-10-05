@@ -22,6 +22,7 @@ COPY --from=build --chown=node:node /app/package.json ./package.json
 COPY --from=build --chown=node:node /app/server ./server
 COPY --from=build --chown=node:node /app/shared ./shared
 COPY --from=build --chown=node:node /app/dist ./dist
+COPY --chown=node:node scripts/invites.ts ./scripts/invites.ts
 USER node
 EXPOSE 4173
 CMD ["node", "--import", "tsx", "server/index.ts"]

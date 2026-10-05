@@ -66,7 +66,7 @@ Local DONE does not imply provider qualification or deployed release.
 Current dependency review: [trial readiness and six-family scope](trial-readiness.md).
 Prioritize complete access workflows and uncovered development quality evidence;
 do not substitute repeated prompt refinements for the outstanding Q1/E1/U1 gates.
-Release-readiness actions: founder sends the prepared supplier request; complete
+Release-readiness actions: supplier request sent by founder, reply pending; complete
 the [first human review and bounded Gemma plan](gemma-release-evaluation-plan.md);
 decide the [durable hosting arrangement](trial-hosting-decision.md) before deploying
 individual access. Existing IDs, order and acceptance thresholds remain unchanged.
@@ -147,6 +147,16 @@ Do not expand scope to avoid failing current requirements. Record the need, alte
 expected benefit, risks, cost and founder decision before promoting a deferred area.
 
 ## Evidence and change log
+
+- 5 October 2026: founder confirmed sending the supplier evidence email; Q1 awaits
+  a reply and remains blocked. Independent U1 work adds a hosted-startup guard
+  against missing, uninitialized or invalid registries and packages the invitation
+  CLI in the Docker runtime. This prevents ordinary missing-path startup from
+  silently creating new access state; it does not prove mount durability. Container
+  validation is pending because the local Docker engine is unavailable. Paid
+  hosting and human quality review remain separate outstanding decisions/evidence.
+  Local validation passed: 140 unit/integration tests across 38 files, 15 production
+  browser workflows, typecheck, build and frozen fixture integrity.
 
 - 5 October 2026: focused release-readiness preparation for Q1/E1/U1/G6/R1.
   Founder will send the candidate-specific provider request; it remains unsent

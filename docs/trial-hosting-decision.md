@@ -60,11 +60,14 @@ trial or pass provider/quality gates.
 
 ## Required work before deployment
 
-1. Package the existing invitation CLI in the runtime image. Current Dockerfile
-   omits `scripts/invites.ts`, so the runbook command cannot work inside that image.
-   Validate the resulting image from a clean Git export and use non-root execution.
-2. Validate mount presence/ownership and fail startup on a missing/unwritable
-   configured registry path. No silent replacement with an ephemeral empty registry.
+1. The Dockerfile now packages `scripts/invites.ts`; the container smoke check
+   exercises its `list` command against an isolated synthetic database as non-root.
+   Actual image build/smoke remains pending: the local Docker engine is unavailable.
+   Validate the resulting image from a clean Git export before deployment.
+2. Hosted startup now requires an absolute existing regular registry file with a
+   recognized schema and successful SQLite integrity check before writable opening.
+   Missing/invalid storage stops startup instead of initializing an empty registry.
+   Mount presence/ownership and actual persistence still need host validation.
    Confirm that redeploying with the same mount preserves identity and revocation.
 3. Keep provider/search keys and operational qualification absent for the first
    hosted access rehearsal. Check auth cookies, origin/proxy headers and anonymous

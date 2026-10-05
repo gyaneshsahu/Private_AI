@@ -66,12 +66,13 @@ and rejection after qualification expiry even when the service started qualified
 The upstream is mocked; qualification is an explicit test fixture. These cannot
 qualify the live provider. No retry behavior or privacy gate changed.
 
-## Concrete remaining evidence request — draft, not sent
+## Provider evidence request — sent, awaiting reply
 
-5 October follow-up: the founder chose to send the final subject/body personally
+5 October follow-up: the founder confirmed sending the final subject/body personally
 to `contact@tinfoil.sh`, the address published on
-[Tinfoil's contact page](https://tinfoil.sh/contact). Status remains **not sent by
-Codex; founder confirmation/reply pending**. No credentials, transcript or local
+[Tinfoil's contact page](https://tinfoil.sh/contact). Status: **sent by founder;
+supplier reply pending**. This is founder-reported delivery, not an independently
+verified support receipt. No credentials, transcript or local
 evidence attachments are included. Receiving a supplier answer does not by itself
 qualify either candidate.
 
@@ -108,7 +109,7 @@ No credentials, transcript, personal data or private source are needed in this
 request. A supplier reply would still need review; it is not an automatic pass.
 For every answer, include artifact URL/hash, software version, deployment scope,
 validity interval, failure behavior and any unsupported guarantee. Please do not
-request our API key or private prompts. This request is prepared but **not sent**.
+request our API key or private prompts. The founder has confirmed sending the request.
 The simplest next step for Q1 is obtaining these version/deployment-specific
 artifacts, while continuing ordinary product and quality work.
 

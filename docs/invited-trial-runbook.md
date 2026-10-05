@@ -37,6 +37,26 @@ hashes/salts, expiry/revocation and request counters. It contains no conversatio
 Use a private persistent path with operator-only filesystem access; keep the file
 and any SQLite sidecars out of Git, shared folders and diagnostic uploads.
 
+Hosted startup requires an absolute path to an already initialized regular SQLite
+registry; missing, empty, unrelated or corrupt files stop startup. No fallback
+registry is created. Before enabling `PRIVATEAI_INVITES_FILE` on the hosted service,
+verify the persistent mount/permissions and initialize it in the interactive
+operator shell with `PRIVATEAI_INVITES_FILE=/var/data/privateai/invites.sqlite node
+--import tsx scripts/invites.ts list`. This creates an empty registry without issuing
+an invitation. The parent directory must already exist with private permissions.
+Then configure the same absolute path on the service. Do not run initialization
+automatically at every startup: that would hide a lost mount. The path/schema check
+does not establish disk durability; use the hosted restart/redeploy rehearsal in
+the [storage decision](trial-hosting-decision.md). Local Windows setup below retains
+its existing explicit operator initialization behavior.
+
+Storage-guard batch validation: 140 unit/integration tests across 38 files, 15
+production browser workflows, typecheck/build and fixture integrity passed. New
+tests reject missing/relative/empty/unrelated/corrupt storage without creating or
+rewriting it and verify reopened identity, credential versions, revocation and
+exhausted request limits. Docker packaging smoke is updated but unrun locally
+because the Docker engine is unavailable; hosted mount/restore evidence is pending.
+
 Example Windows operator setup, for local synthetic rehearsal only:
 
 ```powershell

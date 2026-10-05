@@ -79,6 +79,24 @@ try {
   console.log(
     "Container smoke passed (non-root, read-only filesystem). No inference requests.",
   );
+  const invitations = JSON.parse(
+    docker(
+      "exec",
+      "-e",
+      "PRIVATEAI_INVITES_FILE=/tmp/synthetic-invitations.sqlite",
+      name,
+      "node",
+      "--import",
+      "tsx",
+      "scripts/invites.ts",
+      "list",
+    ),
+  );
+  if (invitations.paused !== false || invitations.invitations.length !== 0)
+    throw new Error("Unexpected synthetic registry");
+  console.log(
+    "Packaged invitation CLI initializes an isolated synthetic registry as the non-root runtime user.",
+  );
 } catch {
   console.error(
     "Container smoke failed. Inspect the local build/runtime; no provider request was configured.",

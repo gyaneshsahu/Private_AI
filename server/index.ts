@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import express from "express";
 import { createApp } from "./app";
-import { InviteRegistry } from "./invite-registry";
+import { openInviteRegistry } from "./registry-storage";
 const port = Number(process.env.PORT ?? "4173");
 if (!Number.isInteger(port) || port < 1024 || port > 65535)
   throw new Error("Invalid PORT");
@@ -25,7 +25,7 @@ const app = createApp({
   origin,
   accessKey: process.env.PRIVATEAI_ACCESS_KEY,
   invites: process.env.PRIVATEAI_INVITES_FILE
-    ? new InviteRegistry(process.env.PRIVATEAI_INVITES_FILE)
+    ? openInviteRegistry(process.env.PRIVATEAI_INVITES_FILE, hosted)
     : undefined,
   dev,
   qualification,
