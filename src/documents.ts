@@ -4,6 +4,7 @@ export async function extract(
   signal: AbortSignal,
   progress: (value: string) => void,
 ): Promise<Attachment> {
+  if (signal.aborted) throw new Error("Extraction cancelled.");
   if (file.size > 10 * 1024 * 1024 || file.size === 0)
     throw new Error("Choose a nonempty document of at most 10 MB.");
   const worker = new Worker(
@@ -11,12 +12,25 @@ export async function extract(
     { type: "module" },
   );
   return new Promise((resolve, reject) => {
+    let settled = false;
+    const deadline = setTimeout(() => {
+      if (!finish()) return;
+      reject(
+        new Error(
+          "Document processing took too long. Try a smaller file or a clearer screenshot.",
+        ),
+      );
+    }, 90000);
     const finish = () => {
+      if (settled) return false;
+      settled = true;
+      clearTimeout(deadline);
       signal.removeEventListener("abort", abort);
       worker.terminate();
+      return true;
     };
     const abort = () => {
-      finish();
+      if (!finish()) return;
       reject(new Error("Extraction cancelled."));
     };
     if (signal.aborted) {
@@ -25,7 +39,7 @@ export async function extract(
     }
     signal.addEventListener("abort", abort, { once: true });
     worker.onerror = () => {
-      finish();
+      if (!finish()) return;
       reject(new Error("Document could not be processed locally."));
     };
     worker.onmessage = (
@@ -36,13 +50,14 @@ export async function extract(
         warning?: string;
       }>,
     ) => {
+      if (settled) return;
       if (!event.data.progress && !event.data.error && !event.data.pages)
         return;
       if (event.data.progress) {
         progress(event.data.progress);
         return;
       }
-      finish();
+      if (!finish()) return;
       if (event.data.error) {
         reject(new Error(event.data.error));
         return;
@@ -77,6 +92,11 @@ export async function extract(
         kind: file.type.startsWith("image/") ? "screenshot" : "document",
       });
     };
-    worker.postMessage(file);
+    try {
+      worker.postMessage(file);
+    } catch {
+      if (finish())
+        reject(new Error("Document could not be processed locally."));
+    }
   });
 }

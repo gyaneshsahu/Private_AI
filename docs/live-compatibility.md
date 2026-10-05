@@ -1,5 +1,9 @@
 # Smallest revised-adapter live check — access and billing confirmation pending
 
+Current Windows instructions: [masked-key launcher and fresh bounded preparation](windows-live-test.md).
+The active account/key cap was reconfirmed at USD 2, auto-recharge disabled.
+The older commands below remain historical and must not be used to recreate claims.
+
 Update, 5 October 2026: continue only in the Windows checkout. The latest
 [handoff](LOCAL_CODEX_HANDOFF.md) supersedes the historical USD 2 authorization
 below with a USD 10 cumulative ceiling and a conditional three-request batch.

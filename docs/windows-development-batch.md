@@ -1,5 +1,11 @@
 # Windows development batch — 5 October 2026
 
+Follow-up: fixes committed as `8d944dd`, with changed GitHub validation and
+hosted smoke passing. The user's reconfirmed active provider/account/key cap is
+USD 2, auto-recharge off; future increases are not automatic. See the
+[safe Windows test launcher](windows-live-test.md) and
+[WSL retirement/archive inventory](wsl-retirement.md).
+
 Working checkout: `C:\Gyanesh\Startups\Private_AI`, branch
 `codex/provider-qualification`, starting commit `46a03e2`. The checkout was clean;
 `git pull --ff-only` reported already up to date. WSL was not accessed or changed.
