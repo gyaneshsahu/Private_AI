@@ -620,6 +620,19 @@ export function App() {
         <div className="connection-banner">
           {status?.accountId && (
             <button
+              onClick={() => {
+                if (!allowReplace()) return;
+                vault.current?.lock();
+                vault.current?.onInvalidate?.();
+                accessNavigation.current = true;
+                window.location.assign("/auth/password");
+              }}
+            >
+              Change sign-in password
+            </button>
+          )}
+          {status?.accountId && (
+            <button
               onClick={async () => {
                 if (!allowReplace()) return;
                 vault.current?.lock();

@@ -1,0 +1,59 @@
+# Invited-trial capability and dependency review
+
+5 October 2026. Roadmap items **G6, U1, E1, Q1 and R1**.
+Working release review, not permission to invite users. The general personal
+assistant remains the product goal; no family has been silently removed.
+
+## Capability coverage
+
+The local product supports conversation, follow-up corrections, cancellation,
+explicit retry, source inspection and manual encrypted snapshots. Automated
+workflows establish application behavior. They do not establish model quality,
+provider confidentiality, real-device usability or competitive parity.
+
+| Family | Working experience and current model evidence | Remaining release evidence |
+| --- | --- | --- |
+| Writing/revision (G1) | Chat, editable starters and branching. One Gemma thank-you/revision case preserves supplied facts. | More task variety and human grading; unsupported embellishments remain a historical failure mode. |
+| Explanation/planning (G2) | Follow-up revisions and readable tables. Both candidates handle the cancelled-study-session case. | Gemma's accessible itinerary still misstates three hours as four; earlier timing/verbosity failures remain. A changed response policy has not established reliable planning. |
+| Personal discussion (G3) | Context-preserving conversational follow-ups. Gemma uses placeholders on one workplace case; GPT-OSS invents details. | Broader preferences, ambiguity and interpersonal scenarios; human assessment of unsupported assumptions and overconfident advice. |
+| Bills/calculations (G4) | Local exact decimal calculator, inspectable sources and invoice corrections. Gemma's latest ambiguous-OCR regression asks for source checking before payment. | GPT-OSS still gives an unqualified payment amount. The manual calculator does not verify model arithmetic. More dates, units and source ambiguity; human grading. |
+| Document questions (G4) | Local TXT/PDF/printed-English OCR, editable extracted text, selection, retained citations and encrypted snapshots. Narrow invoice and conflicting-note cases have useful results. | Varied real layouts, extraction/device performance, citation correctness and grounded synthesis. Scanned PDFs/handwriting/general vision remain unsupported. |
+| Research-assisted decisions (G5) | Explicit query/URL approval, bounded retrieval and source inspection; synthetic browser workflow covers save/resume. Model comparison uses frozen references. | Current live search-service integration plus retrieval-to-answer/follow-up validation; date/freshness and invented purchasing assumptions remain review points. Fixture synthesis is not live research evidence. |
+
+Recorded Windows evidence covers **11 distinct frozen development cases**. This
+is sparse coverage, not 11 approved capabilities. Current inventory contains
+zero human reviews; the 24 held-out cases remain reserved and unrun. Candidate
+and code configurations differ: do not pool them into one release score.
+See [development findings](development-family-review.md) and
+[evaluation procedure](../evaluation/README.md).
+
+## Release dependencies and next actions
+
+| Roadmap item | Current disposition | Next action and exit evidence |
+| --- | --- | --- |
+| Q1 provider chain | Externally blocked. Repeating successful inference cannot establish the missing chain. | Obtain the already prepared [candidate-specific supplier artifacts](provider-evidence-update.md#concrete-remaining-evidence-request--draft-not-sent), then review browser freshness/rollback, router-worker-build/GPU binding and content/billing handling. Sending the request still needs an approved recipient and explicit authorization. |
+| E1 quality | Development remains open; neither candidate is a release selection. | Select a bounded, predeclared set of uncovered development cases across families, compare candidates where results can change selection, then review severity and recurring defects. Do not run unchanged probes for cosmetic improvements. Freeze a candidate/configuration only when development evidence supports it; then execute and human-grade the reserved gate within an approved cost allocation. |
+| G6 supported scope | This six-family review is prepared; release scope is not approved or frozen. | Reconcile the candidate's reviewed results with each family above, publish the resulting limitations, and seek a material scope decision only if essential supported tasks must be excluded. Preserve the broader assistant route. |
+| U1 access and recovery | Local individual access and password changes are implemented. | Hosted TLS/proxy/cookie/isolation review and real-device observation remain. Password changes require the current password; lost sign-in passwords and lost vault passphrases have no recovery in the trial. Do not silently issue a new identity as recovery. |
+| R1 trial release | Blocked by the above gates. | Tie deployed release/configuration to validation, reconcile actual billing, then obtain audience/hosting/real-data approval. Automated checks alone cannot approve the trial. |
+
+## Execution order
+
+1. Complete U1's current password/session lifecycle batch and full local workflow
+   validation. Preserve identity, expiry, quotas and encrypted records.
+2. Advance E1 with a coherent coverage batch, chosen before execution and bounded
+   against the remaining USD 2 cumulative account cap. Preserve every attempt,
+   consumed permit and failure; stop on unexpected accounting or transport errors.
+   Current local estimated usage is not an authoritative account balance.
+3. Continue independent G5 integration only when configured service access and
+   disclosure approval permit a useful complete retrieval/synthesis test. Do not
+   refine search without an observed defect or integration finding.
+4. Incorporate supplier evidence when available. Keep private-data inference
+   gated; do not manufacture a qualification artifact to unlock the UI.
+5. Prepare one release review with quality, security, operations and usability
+   evidence together. Request real-device/user testing when that experience is
+   ready for useful observation, not after each engineering batch.
+
+The supplier request and hosted target are external dependencies, not reasons to
+repeat local work that already passes. A deployment or real-user-data decision is
+separate from routine authorized implementation and synthetic evaluation.

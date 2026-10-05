@@ -136,6 +136,56 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
       "ALICE SYNTHETIC PRIVATE DRAFT",
     );
+    await page
+      .getByRole("button", { name: "Change sign-in password", exact: true })
+      .click();
+    await ui(page).toHaveURL(origin + "/auth/password");
+    for (const width of [1280, 360]) {
+      await page.setViewportSize({ width, height: 900 });
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    }
+    const passwordForm = page.locator('form[action="/auth/password"]');
+    await passwordForm
+      .getByLabel("Current password", { exact: true })
+      .fill("synthetic access password");
+    await passwordForm
+      .getByLabel("New password (at least 12 characters)", { exact: true })
+      .fill("synthetic changed password");
+    await passwordForm
+      .getByLabel("Confirm new password", { exact: true })
+      .fill("wrong confirmation");
+    await passwordForm.getByRole("button").click();
+    await ui(page.getByRole("alert")).toBeVisible();
+    await ui(
+      passwordForm.getByLabel("Current password", { exact: true }),
+    ).toHaveValue("");
+    await passwordForm
+      .getByLabel("Current password", { exact: true })
+      .fill("synthetic access password");
+    await passwordForm
+      .getByLabel("New password (at least 12 characters)", { exact: true })
+      .fill("synthetic changed password");
+    await passwordForm
+      .getByLabel("Confirm new password", { exact: true })
+      .fill("synthetic changed password");
+    await passwordForm.getByRole("button").click();
+    await ui(page).toHaveURL(origin + "/auth");
+    await login.getByLabel("Access ID").fill(alice.id);
+    await login.getByLabel("Password").fill("synthetic changed password");
+    await login.getByRole("button", { name: "Sign in", exact: true }).click();
+    await unlock();
+    await page.getByRole("button", { name: "Open", exact: true }).click();
+    await page
+      .getByRole("navigation", { name: "Workspace" })
+      .getByRole("button", { name: "Conversation", exact: false })
+      .click();
+    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
+      "ALICE SYNTHETIC PRIVATE DRAFT",
+    );
     const oldEpoch = await page.evaluate(
       async () => (await (await fetch("/api/status")).json()).accessEpoch,
     );
@@ -143,7 +193,9 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     await sibling.goto(origin + "/auth");
     const siblingLogin = sibling.locator('form[action="/auth/login"]');
     await siblingLogin.getByLabel("Access ID").fill(alice.id);
-    await siblingLogin.getByLabel("Password").fill("synthetic access password");
+    await siblingLogin
+      .getByLabel("Password")
+      .fill("synthetic changed password");
     await siblingLogin
       .getByRole("button", { name: "Sign in", exact: true })
       .click();

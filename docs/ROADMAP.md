@@ -63,6 +63,10 @@ Local DONE does not imply provider qualification or deployed release.
 
 ## Ordered path to the invited-user trial
 
+Current dependency review: [trial readiness and six-family scope](trial-readiness.md).
+Prioritize complete access workflows and uncovered development quality evidence;
+do not substitute repeated prompt refinements for the outstanding Q1/E1/U1 gates.
+
 | ID / priority | Outcome and status | Dependencies and concrete exit evidence |
 | --- | --- | --- |
 | T1 — first | **DONE (local): cumulative streaming usage parser** | Accept repeated/nondecreasing output snapshots, never sum them, require final accounting when usage starts. Reject regressions, invalid totals, malformed/truncated streams and incomplete answers. Encrypted fragmented-browser regression passes; live fixed adapter returns `4`. |
@@ -99,7 +103,7 @@ private-data use depends on Q1.
 | G3 — alongside G2 | **IN PROGRESS:** Personal discussion: reflect stated preferences, ask useful clarifying questions, avoid unsupported assumptions | GPT-OSS single-incident correction retains the correction but invents workplace details; prompt changes only partly help. One matched Gemma candidate case uses placeholders correctly, with minor overconfident advice; human/broader review remains open. [Development review](development-family-review.md). Not passed |
 | G4 — integrated with T3 | **IN PROGRESS:** Calculations and document questions: combine evidence, citations and exact calculations | T3 correction evidence plus a fresh Gemma invoice case returns the correct facts and ignores embedded upload instructions. Page-qualified citations now open retained sources, with model-claimed pages distinguished from source metadata. Broader grounding and human review remain; distinguish model reasoning from actual calculator use |
 | G5 — after core follow-ups | **IN PROGRESS:** Research-assisted everyday decisions with explicit disclosure approval | Context now offers direct source inspection including URL/retrieval time before inference. Browser rehearsal covers approval, synthetic retrieval, inspection, encrypted save/lock/reopen and draft isolation. Live service retrieval plus grounded synthesis/follow-up remain open; injected content cannot authorize network actions |
-| G6 — before trial scope is frozen | Review coverage across all six task families | Publish supported capabilities and known limitations per family; any narrower trial scope is explicit, not an implicit pivot to a document-only product |
+| G6 — before trial scope is frozen | **IN PROGRESS:** six-family capability/limitation review prepared | [Current scope review](trial-readiness.md) separates local workflows, narrow model evidence and missing release evidence. Candidate-specific human quality and final supported scope remain open; any narrower trial scope requires an explicit decision. |
 
 G1–G6 feed E1 and U1. R1 requires G6's scope review; one successful invoice or saved
 draft cannot establish general-assistant readiness.
@@ -139,6 +143,17 @@ Do not expand scope to avoid failing current requirements. Record the need, alte
 expected benefit, risks, cost and founder decision before promoting a deferred area.
 
 ## Evidence and change log
+
+- 5 October 2026: reprioritized against the trial dependencies and prepared the
+  six-family [capability and blocker review](trial-readiness.md) for G6. U1 now
+  supports current-password-verified sign-in password changes, persisted
+  invalidation of all old sessions, active-response cancellation and preservation
+  of account-scoped encrypted history. This is credential maintenance, not lost
+  password/vault recovery. Q1/E1/hosted validation and release approval remain
+  open; no model or privacy gate was promoted. See the
+  [operator runbook](invited-trial-runbook.md).
+  Validation: 138 unit/integration tests across 37 files, 15 production browser
+  workflows, typecheck, build and frozen fixture integrity passed.
 
 - 5 October 2026: addressed the observed OCR overconfidence with uncertainty-first
   guidance and an explicit prohibition on acting on guessed source values. Fresh

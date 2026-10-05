@@ -25,6 +25,11 @@ export class InviteRegistry {
       );
       CREATE TABLE IF NOT EXISTS access_settings (id INTEGER PRIMARY KEY CHECK(id=1), paused INTEGER NOT NULL);
       INSERT OR IGNORE INTO access_settings(id,paused) VALUES(1,0);`);
+    const columns = this.db.prepare("PRAGMA table_info(invites)").all();
+    if (!columns.some((column) => column.name === "credential_version"))
+      this.db.exec(
+        "ALTER TABLE invites ADD COLUMN credential_version INTEGER NOT NULL DEFAULT 0",
+      );
   }
   issue(expires: number) {
     if (
@@ -83,7 +88,46 @@ export class InviteRegistry {
     )) as Buffer;
     const expected = Buffer.from(row?.password ?? "00".repeat(64), "hex");
     return (
-      timingSafeEqual(actual, expected) && !!row?.password && this.active(id)
+      timingSafeEqual(actual, expected) &&
+      !!row?.password &&
+      this.active(id) &&
+      this.db.prepare("SELECT password FROM invites WHERE id=?").get(id)
+        ?.password === row.password
+    );
+  }
+  credentialVersion(id: string): number | undefined {
+    const row = this.db
+      .prepare(
+        "SELECT credential_version FROM invites WHERE id=? AND password IS NOT NULL",
+      )
+      .get(id);
+    return row ? Number(row.credential_version) : undefined;
+  }
+  async changePassword(
+    id: string,
+    version: number,
+    current: string,
+    replacement: string,
+  ) {
+    if (
+      replacement.length < 12 ||
+      replacement.length > 256 ||
+      current === replacement ||
+      version !== this.credentialVersion(id) ||
+      !(await this.login(id, current))
+    )
+      return false;
+    const salt = randomBytes(16).toString("hex");
+    const hash = ((await derive(replacement, salt, 64)) as Buffer).toString(
+      "hex",
+    );
+    if (!this.active(id)) return false;
+    return (
+      this.db
+        .prepare(
+          "UPDATE invites SET password=?,salt=?,credential_version=credential_version+1 WHERE id=? AND credential_version=? AND revoked=0 AND expires>?",
+        )
+        .run(hash, salt, id, version, this.now()).changes === 1
     );
   }
   revoke(id: string) {

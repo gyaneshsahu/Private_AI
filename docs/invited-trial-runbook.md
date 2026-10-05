@@ -51,8 +51,46 @@ and code privately through the approved invitation channel. No real invitation
 was issued during implementation. Users enter the code at `/auth`, choose a
 password of at least 12 characters and retain their access ID for later sign-in.
 Invitation redemption is one-use; the configured expiry also ends account access.
-The sign-in password and local vault passphrase are separate. Recovery/reset and
-account migration are not implemented; do not promise recovery of lost passwords.
+The sign-in password and local vault passphrase are separate. Users can change
+their sign-in password using their current password, as described below. Lost
+password recovery/reset and account migration are not implemented.
+
+### Change a known sign-in password
+
+Choose **Change sign-in password** in the signed-in workspace. Unsaved changes
+require confirmation before leaving; save an encrypted snapshot first if needed.
+Navigation locks and clears the current workspace. The account page requires the
+current password, a different new password of 12–256 characters and confirmation.
+It uses same-origin POST forms, no external assets/scripts, no-store responses and
+cleared fields on failure. It shares the existing 30 attempts/minute and two
+concurrent password-check bounds with sign-in and invitation redemption.
+
+Successful change signs out every existing session for that identity. Persisted
+credential versions make old cookies unusable on their next protected request;
+active responses close within approximately one second. Other open screens clear
+on the existing focus/visibility or 30-second access check. This is not instant
+remote erasure of an offline browser's memory. Sign in again with the same access
+ID and new password, then unlock saved history with the unchanged vault passphrase.
+Access expiry, revocation, per-account quota and stored encrypted records do not
+change. Other accounts remain unaffected. Interrupted requests never restart.
+
+The SQLite schema adds a credential-version column when an older registry opens.
+Existing invitation IDs, password hashes and expiry are preserved. Keep the normal
+private operator backup before a deployment migration; local tests cover migration
+and reopen, but no deployed registry was migrated by this development batch.
+The server still uses one process and restart-invalidated in-memory sessions.
+
+This workflow cannot recover a forgotten current password or vault passphrase.
+An operator reset would need a reviewed identity-verification and delivery process;
+do not introduce one silently or claim that a new invitation recovers old history.
+
+Local validation: 138 unit/integration tests across 37 files and 15 production
+browser workflows passed, with typecheck, build and fixture integrity. Password
+tests cover concurrent changes, legacy schema migration/reopen, unchanged quotas,
+old-session rejection, active-response cancellation, cross-account isolation,
+cleared error forms and encrypted history reopening at the same identity. Browser
+checks cover 360-pixel and desktop password-page layouts. Hosted validation remains
+pending.
 
 ```powershell
 node --import tsx scripts/invites.ts revoke <access-id>

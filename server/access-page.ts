@@ -30,3 +30,22 @@ ${error ? `<p role="alert">${errors[error]}</p>` : ""}
 <p class="note">Keep your access ID. Your encrypted local vault uses a separate passphrase. Password recovery is not available in this trial.</p><p class="note">Access is not anonymous: PrivateAI and its hosting provider receive relevant identity and network metadata. Private-data chat remains subject to separate privacy checks.</p>
 </main></body></html>`);
 }
+
+export function sendPasswordPage(
+  res: Response,
+  status = 200,
+  error?: keyof typeof errors,
+) {
+  res.setHeader("Referrer-Policy", "same-origin");
+  res.setHeader(
+    "Content-Security-Policy",
+    `default-src 'none'; style-src 'sha256-${styleHash}'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'`,
+  );
+  res.status(status).type("html")
+    .send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>PrivateAI · Change password</title><style>${style}</style></head><body><main>
+<p class="brand">PrivateAI</p><h1>Change your sign-in password</h1>
+<p class="intro">This signs out every session for your account, including this one. Save work in other tabs first. Your access ID, expiry and saved encrypted workspaces stay the same. Your separate vault passphrase does not change.</p>
+${error ? `<p role="alert">${errors[error]}</p>` : ""}
+<section><form method="post" action="/auth/password"><label>Current password<input name="password" type="password" autocomplete="current-password" required maxlength="256"></label><label>New password (at least 12 characters)<input name="replacement" type="password" autocomplete="new-password" required minlength="12" maxlength="256"></label><label>Confirm new password<input name="confirmation" type="password" autocomplete="new-password" required minlength="12" maxlength="256"></label><button>Change password and sign out</button></form></section>
+<p class="note">Use a different password, and keep it in your password manager. Lost sign-in passwords and vault passphrases cannot be recovered in this trial.</p><a href="/">Back to conversation</a></main></body></html>`);
+}

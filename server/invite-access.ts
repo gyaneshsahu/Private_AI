@@ -3,12 +3,13 @@ import session from "express-session";
 import memoryStore from "memorystore";
 import { randomBytes } from "node:crypto";
 import type { InviteRegistry } from "./invite-registry";
-import { sendAccessPage } from "./access-page";
+import { sendAccessPage, sendPasswordPage } from "./access-page";
 declare module "express-session" {
   interface SessionData {
     accountId: string;
     until: number;
     accessEpoch: string;
+    credentialVersion: number;
   }
 }
 export function inviteAccess(origin: string, registry: InviteRegistry) {
@@ -60,61 +61,105 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
   let attempts = 0,
     attemptWindow = 0,
     verifying = 0;
+  const validSession = (req: express.Request) =>
+    !!req.session.accountId &&
+    (req.session.until ?? 0) > Date.now() &&
+    registry.active(req.session.accountId) &&
+    req.session.credentialVersion ===
+      registry.credentialVersion(req.session.accountId);
   router.post(
-    ["/auth/login", "/auth/register"],
+    ["/auth/login", "/auth/register", "/auth/password"],
     (_req, res, next) => {
+      const page =
+        _req.path === "/auth/password" ? sendPasswordPage : sendAccessPage;
+      if (_req.path === "/auth/password" && !validSession(_req)) {
+        sendAccessPage(res, 401, "invalid");
+        return;
+      }
       if (Date.now() - attemptWindow > 60000) {
         attemptWindow = Date.now();
         attempts = 0;
       }
       if (++attempts > 30) {
         res.setHeader("Retry-After", "60");
-        sendAccessPage(res, 429, "limited");
+        page(res, 429, "limited");
         return;
       }
       next();
     },
     express.urlencoded({ extended: false, limit: "2kb" }),
     async (req, res) => {
-      const { id, password, token } = req.body ?? {};
+      const changing = req.path === "/auth/password";
+      const page = changing ? sendPasswordPage : sendAccessPage;
+      const { password, token, replacement, confirmation } = req.body ?? {};
+      const id = changing ? req.session.accountId : req.body?.id;
       if (
         typeof id !== "string" ||
         !/^[a-f0-9-]{36}$/.test(id) ||
         typeof password !== "string" ||
         password.length > 256
       ) {
-        sendAccessPage(res, 401, "invalid");
+        page(res, 401, "invalid");
         return;
       }
       if (verifying >= 2) {
         res.setHeader("Retry-After", "5");
-        sendAccessPage(res, 503, "busy");
+        page(res, 503, "busy");
         return;
       }
       let valid = false;
+      let version: number | undefined;
       verifying++;
       try {
-        valid =
-          req.path === "/auth/register"
+        version = registry.credentialVersion(id);
+        valid = changing
+          ? typeof req.session.credentialVersion === "number" &&
+            typeof replacement === "string" &&
+            confirmation === replacement &&
+            (await registry.changePassword(
+              id,
+              req.session.credentialVersion,
+              password,
+              replacement,
+            ))
+          : req.path === "/auth/register"
             ? typeof token === "string" &&
               (await registry.register(id, token, password))
             : await registry.login(id, password);
       } catch {
-        sendAccessPage(res, 503, "unavailable");
+        page(res, 503, "unavailable");
         return;
       } finally {
         verifying--;
       }
       if (!valid) {
-        sendAccessPage(res, 401, "invalid");
+        page(res, 401, "invalid");
         return;
       }
+      if (changing) {
+        // The persisted version already invalidates every old session, even if destruction fails.
+        req.session.destroy(() => {
+          res.clearCookie("privateai-access", {
+            path: "/",
+            secure,
+            httpOnly: true,
+            sameSite: "strict",
+          });
+          res.redirect(303, "/auth");
+        });
+        return;
+      }
+      const authenticatedVersion =
+        req.path === "/auth/register"
+          ? registry.credentialVersion(id)
+          : version;
       req.session.regenerate((error) => {
         if (error) {
           sendAccessPage(res, 503, "unavailable");
           return;
         }
         req.session.accountId = id;
+        req.session.credentialVersion = authenticatedVersion!;
         req.session.accessEpoch = randomBytes(16).toString("hex");
         req.session.until = Date.now() + 3600000;
         req.session.save((error) => {
@@ -125,7 +170,7 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
     },
   );
   router.use(
-    ["/auth/login", "/auth/register"],
+    ["/auth/login", "/auth/register", "/auth/password"],
     (
       error: unknown,
       _req: express.Request,
@@ -136,7 +181,7 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
         typeof error === "object" && error !== null && "status" in error
           ? error.status
           : undefined;
-      sendAccessPage(
+      (_req.path === "/auth/password" ? sendPasswordPage : sendAccessPage)(
         res,
         status === 413 ? 413 : status === 400 ? 400 : 503,
         status === 413 || status === 400 ? "invalid" : "unavailable",
@@ -164,8 +209,7 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
     window = 0;
   router.use((req, res, next) => {
     const id = req.session.accountId;
-    const expiry = req.session.until ?? 0;
-    if (!id || expiry <= Date.now() || !registry.active(id)) {
+    if (!id || !validSession(req)) {
       if (req.path === "/" && req.method === "GET") res.redirect(303, "/auth");
       else
         res.status(401).json({
@@ -190,7 +234,7 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
     const accessSession = req.sessionID;
     const timer = setInterval(() => {
       try {
-        if (Date.now() >= expiry || !registry.active(id)) {
+        if (!validSession(req)) {
           res.destroy();
           return;
         }
@@ -212,5 +256,6 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
     res.on("finish", () => clearInterval(timer));
     next();
   });
+  router.get("/auth/password", (_req, res) => sendPasswordPage(res));
   return router;
 }
