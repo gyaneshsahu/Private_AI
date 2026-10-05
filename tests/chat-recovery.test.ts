@@ -65,7 +65,11 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
         return route.fulfill({
           json: {
             csrf: "TEST_ONLY",
-            inference: { ready: true, reason: "TEST TRANSPORT ONLY" },
+            inference: {
+              ready: true,
+              reason: "TEST TRANSPORT ONLY",
+              qualification: { maxInputCharacters: 4000 },
+            },
             search: false,
           },
         });
@@ -115,9 +119,15 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       Object.assign(window, { fixtureMode: "complete" }),
     );
     await page
+      .getByLabel("Message PrivateAI")
+      .fill("UNSENT FOLLOW-UP DURING RETRY");
+    await page
       .getByRole("button", { name: "Retry last turn explicitly", exact: false })
       .click();
     await ui(page.locator("article.assistant")).toHaveCount(1);
+    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
+      "UNSENT FOLLOW-UP DURING RETRY",
+    );
     await ui(
       page.getByText("TEST complete answer", { exact: false }),
     ).toBeVisible();
@@ -174,6 +184,9 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     );
     expect(calls).toHaveLength(2);
     expect(JSON.stringify(calls[1])).not.toContain("TEST_PARTIAL");
+    expect(JSON.stringify(calls[1])).not.toContain(
+      "UNSENT FOLLOW-UP DURING RETRY",
+    );
     expect(
       calls[1].filter((m) => m.content === "TEST question with a source"),
     ).toHaveLength(1);
@@ -214,6 +227,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       ),
     ).toBe(true);
     expect(JSON.stringify(followup)).toContain("CORRECTED SYNTHETIC SOURCE");
+    await page.getByLabel("Message PrivateAI").fill("UNSENT NEXT QUESTION");
     await page
       .getByRole("button", { name: "Edit into a new branch" })
       .first()
@@ -225,10 +239,14 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       .getByRole("button", { name: "Create branch", exact: true })
       .click();
     await ui(page.locator("article.assistant")).toHaveCount(0);
+    expect(
+      await page.evaluate(
+        () => (window as unknown as FixtureWindow).fixtureCalls.length,
+      ),
+    ).toBe(3);
     await page
-      .getByLabel("Message PrivateAI")
-      .fill("TEST continue revised branch");
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+      .getByRole("button", { name: "Answer this question", exact: false })
+      .click();
     await ui(
       page.getByRole("button", { name: "Stop", exact: true }),
     ).toHaveCount(0);
@@ -243,6 +261,13 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       branch.some((m) => m.content === "TEST revised original question"),
     ).toBe(true);
     expect(branch.some((m) => m.role === "assistant")).toBe(false);
+    expect(
+      branch.filter((m) => m.content === "TEST revised original question"),
+    ).toHaveLength(1);
+    expect(JSON.stringify(branch)).not.toContain("UNSENT NEXT QUESTION");
+    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
+      "UNSENT NEXT QUESTION",
+    );
     expect(JSON.stringify(branch)).not.toContain("TEST follow-up correction");
     await page.evaluate(() => Object.assign(window, { fixtureMode: "stall" }));
     await page
@@ -322,6 +347,34 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       path: ".local/answer-format-phone.png",
       fullPage: true,
     });
+    const callsBeforeLimit = await page.evaluate(
+      () => (window as unknown as FixtureWindow).fixtureCalls.length,
+    );
+    const messagesBeforeLimit = await page.locator("article.message").count();
+    const oversizedDraft = "SYNTHETIC_LONG_".repeat(400);
+    await page.getByLabel("Message PrivateAI").fill(oversizedDraft);
+    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await ui(
+      page.getByText("Selected context is too large.", { exact: false }),
+    ).toBeVisible();
+    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(oversizedDraft);
+    await ui(page.locator("article.message")).toHaveCount(messagesBeforeLimit);
+    expect(
+      await page.evaluate(
+        () => (window as unknown as FixtureWindow).fixtureCalls.length,
+      ),
+    ).toBe(callsBeforeLimit);
+    await page.getByLabel("Message PrivateAI").fill("TEST shortened question");
+    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await ui(
+      page.getByRole("button", { name: "Stop", exact: true }),
+    ).toHaveCount(0);
+    expect(
+      await page.evaluate(
+        () => (window as unknown as FixtureWindow).fixtureCalls.length,
+      ),
+    ).toBe(callsBeforeLimit + 1);
+    await ui(page.getByLabel("Message PrivateAI")).toHaveValue("");
     expect(external).toEqual([]);
   } finally {
     await browser.close();

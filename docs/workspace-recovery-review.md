@@ -60,3 +60,26 @@ full provider qualification, held-out human grading, comparator evidence and tri
 operations are still unresolved. No held-out fixture or historical permit/result
 was changed. Next product work is planning constraint reliability and trial
 onboarding, with the real-private-data gate retained.
+
+## Draft-preserving retry and edit workflow — 5 October 2026
+
+The previous retry action cleared a follow-up already typed into the composer.
+Retry now preserves that draft and sends only the explicitly retried question and
+selected context. Editing into a new branch still invalidates later messages and
+never sends automatically. The branch now offers **Answer this question** so the
+user can request its reply directly without writing an artificial follow-up. This
+action also preserves the separate composer draft and includes the edited question
+exactly once.
+
+Context size is checked before replacing messages or clearing the composer. An
+oversized question/context selection retains the original draft and conversation,
+with guidance to shorten the question or reduce included context. The verified
+transport retains its own authoritative size and qualification checks.
+
+The real UI synthetic-transport regression covers draft preservation across retry,
+draft exclusion from the request, explicit edited-question execution, exclusion of
+invalidated answers, rejected oversized context without a transport call, and a
+successful explicit send after shortening the draft. These tests are UI evidence,
+not live model-quality or provider-qualification evidence.
+Full batch validation passed: 132 unit/integration tests, 15 production browser
+workflows, typecheck, production build and frozen evaluation-fixture integrity.

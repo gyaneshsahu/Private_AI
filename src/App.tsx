@@ -6,7 +6,12 @@ import {
   type Disclosure,
   type Source,
 } from "../shared/contracts";
-import { forkAt, newMessage, selectedSources } from "./conversation";
+import {
+  composeContext,
+  forkAt,
+  newMessage,
+  selectedSources,
+} from "./conversation";
 import { extract } from "./documents";
 import { Vault } from "./vault";
 import { calculate } from "./calculator";
@@ -272,20 +277,31 @@ export function App() {
     if (!response.ok) throw new Error(result.error ?? "Request failed.");
     return result;
   }
-  async function send(base = conversation, text = input) {
+  async function send(base = conversation, text = input, consumeDraft = true) {
     if (busy || !status?.inference.ready || !text.trim()) return;
     const next = {
       ...base,
       title: base.messages.length ? base.title : text.trim().slice(0, 60),
       messages: [...base.messages, newMessage("user", text.trim())],
     };
+    try {
+      composeContext(
+        next,
+        status.inference.qualification?.maxInputCharacters ?? 100000,
+      );
+    } catch {
+      fail(
+        "Selected context is too large. Reduce included messages or attachments, or shorten your question. Your draft and conversation are unchanged.",
+      );
+      return;
+    }
     const answer = {
       ...newMessage("assistant", ""),
       status: "partial" as const,
       sourceSnapshot: structuredClone(selectedSources(next)),
     };
     setConversation({ ...next, messages: [...next.messages, answer] });
-    setInput("");
+    if (consumeDraft) setInput("");
     setNotice("");
     setBusy("Preparing private context…");
     const abort = new AbortController();
@@ -793,7 +809,7 @@ export function App() {
                     setConversation(forkAt(conversation, editId, editText));
                     setEditId(undefined);
                     setNotice(
-                      "New branch created. Add a follow-up message to continue.",
+                      "New branch created. Choose Answer this question to request a reply. Your draft is unchanged.",
                     );
                   }}
                 >
@@ -868,11 +884,14 @@ export function App() {
                         messages: conversation.messages.slice(0, index),
                       },
                       last.text,
+                      false,
                     );
                   }
                 }}
               >
-                Retry last turn explicitly (may incur another charge)
+                {conversation.messages.at(-1)?.role === "user"
+                  ? "Answer this question (may incur a charge)"
+                  : "Retry last turn explicitly (may incur another charge)"}
               </button>
             )}
             <details className="panel">

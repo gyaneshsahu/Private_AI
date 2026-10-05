@@ -140,6 +140,18 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 5 October 2026: repaired a conversation recovery defect where retry erased a
+  separately composed follow-up draft. Retry now preserves and excludes that
+  draft. Edited branches expose an explicit Answer this question action without
+  automatic sending or an artificial follow-up. Added pre-send context-size checks
+  so an oversized selection leaves the draft/history intact and gives actionable
+  recovery guidance. Browser fixture coverage verifies explicit request counts,
+  draft exclusion, invalidated-answer exclusion and successful shortened sends.
+  See [recovery evidence](workspace-recovery-review.md); full provider and answer
+  quality gates remain open.
+  Validation: 132 unit/integration tests, 15 production browser workflows,
+  typecheck, build and frozen-fixture integrity passed.
+
 - 5 October 2026: added an individual-access deployment check because the prior
   hosted smoke command only exercised legacy shared Basic access. The new bounded
   command validates anonymous denial, authentication cookies, cross-origin logout
