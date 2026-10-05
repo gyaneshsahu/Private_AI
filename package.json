@@ -16,6 +16,7 @@
     "test:e2e": "playwright test",
     "check": "npm run typecheck && npm test && npm run build",
     "trial:check": "npm run check && npm run test:e2e && npm run eval:check",
+    "trial:access": "tsx scripts/trial-access-check.ts",
     "eval:check": "tsx evaluation/check.ts",
     "experiment:prepare": "tsx evaluation/prepare-experiment.ts",
     "experiment:check": "tsx evaluation/run-local.ts --check",

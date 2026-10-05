@@ -83,6 +83,55 @@ because encrypted workspaces are scoped to the original identity.
 
 ## Repeatable local rehearsal
 
+### Individual-access deployment check
+
+`npm run trial:access` checks the individual-invitation deployment. The older
+`scripts/hosted-smoke.mjs` checks shared Basic development access and cannot stand
+in for this check. Use a dedicated, already registered synthetic account, never a
+real user's password or an unredeemed invitation. The check creates and signs out
+its own session; it does not alter the account or existing sessions.
+
+Set `PRIVATEAI_TRIAL_ORIGIN` to the exact approved HTTPS origin (no trailing slash)
+and `PRIVATEAI_TRIAL_ID` to that synthetic account's ID. Supply
+`PRIVATEAI_TRIAL_PASSWORD` through a trusted process secret. On Windows, the
+existing credential store supports a separate name:
+
+```powershell
+pwsh -NoProfile -File .\scripts\windows-secret.ps1 -Action Set -Name PRIVATEAI_TRIAL_PASSWORD
+# In PowerShell 7, after configuring the approved origin and synthetic access ID:
+Import-Module .\scripts\WindowsSecrets.psm1
+Invoke-WithPrivateAiSecret -Name PRIVATEAI_TRIAL_PASSWORD -Action { npm run trial:access }
+```
+
+The Set command uses masked input. Replace/remove this credential with the same
+script and name; do not put the password into command arguments, repository files
+or evidence. The origin/account ID are operator metadata and are not printed by
+the checker. Keep their mapping in private operator records.
+
+The bounded check verifies anonymous denial, the protected sign-in page, a
+host-only HttpOnly/SameSite=Strict access cookie (Secure on HTTPS), cross-origin
+logout rejection, the expected individual identity and login marker, disabled
+inference, explicit logout and rejection of the old session afterward. It makes
+eight requests on success to fixed auth/status/root paths, follows no redirects,
+uses normal TLS verification and has a ten-second timeout per request. It does
+not call inference/research or retry failures. After a failure before logout it
+attempts one cleanup logout if a session cookie was received. `logout: FAILED`
+means the synthetic session may remain active: revoke that dedicated account or
+investigate before rerunning. No password, ID, cookie, raw server response or raw
+exception enters the printed JSON evidence.
+
+`npm run trial:access -- --local` explicitly permits only HTTP `127.0.0.1` for
+synthetic local rehearsal and labels its evidence `LOCAL_HTTP`. It does not prove
+TLS, proxy or deployed security. The automated suite exercises this local mode,
+failure cleanup and no-retry behavior. Actual hosted execution remains pending.
+
+Record an actual hosted result alongside the operator-verified deployed commit
+and configuration identity. The checker does not attest the release identity,
+render browser UI, test two-user isolation or qualify provider privacy. Those
+retain their separate release checks; a passing report is not trial approval.
+
+### Full local workflow suite
+
 With the local preview on port 4173 stopped, run `npm run trial:check`. It performs
 typecheck, the complete unit/integration suite, production build, browser workflows
 and frozen evaluation-fixture integrity, stopping on the first failure. Browser

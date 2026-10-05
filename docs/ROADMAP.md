@@ -140,6 +140,19 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 5 October 2026: added an individual-access deployment check because the prior
+  hosted smoke command only exercised legacy shared Basic access. The new bounded
+  command validates anonymous denial, authentication cookies, cross-origin logout
+  rejection, individual status, disabled inference and logout replay protection.
+  Output contains fixed check/stage labels without credentials or server bodies;
+  failed sessions receive one cleanup attempt, with failed logout explicitly
+  reported and never retried. Real local HTTP tests exercise success, invalid
+  configuration, wrong passwords, unexpected inference readiness and cleanup
+  failure. This prepares U1's hosted validation; no hosted pass, release identity
+  attestation or provider qualification is claimed.
+  Validation: `npm run trial:check` passed 132 unit/integration tests,
+  15 production browser workflows, typecheck/build and fixture integrity.
+
 - 5 October 2026: bounded trial authentication work to two concurrent password
   checks across sign-in and redemption. The existing attempt limit now runs before
   parsing, including oversized bodies. Busy, storage-failure and malformed-form
