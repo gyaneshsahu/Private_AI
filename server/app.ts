@@ -160,7 +160,9 @@ export function createApp(config: Config) {
       }
       active++;
       const abort = new AbortController();
-      res.on("close", () => abort.abort());
+      res.on("close", () => {
+        if (!res.writableFinished) abort.abort();
+      });
       try {
         const upstream = await fetch(
           new URL("/v1/chat/completions", approvedOrigin),

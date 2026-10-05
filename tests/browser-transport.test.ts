@@ -250,7 +250,12 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         ).toBe(false);
       }
       if (mode === "truncated") expect(result.usage.total).toBe(5);
+      if (!preSend) {
+        const secret = JSON.parse(requests[before].plaintext).user_cache_secret;
+        expect(JSON.stringify(result).includes(secret)).toBe(false);
+      }
     }
+    const currentAdapterRequestCount = requests.length;
     // Replay the historical SDK composition offline, with request identity.
     // Either terminal event is evidence; do not silently suppress aborts.
     mode = "legacy_valid";
@@ -296,6 +301,25 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
     expect(logs.join("\n")).not.toMatch(
       /SYNTHETIC_(REQUEST|RESPONSE|ERROR)_CANARY/,
     );
+    const cacheSecrets = requests
+      .slice(0, currentAdapterRequestCount)
+      .map((r) => JSON.parse(r.plaintext).user_cache_secret);
+    expect(
+      cacheSecrets.every(
+        (secret) => typeof secret === "string" && secret.length >= 32,
+      ),
+    ).toBe(true);
+    expect(new Set(cacheSecrets).size === cacheSecrets.length).toBe(true);
+    expect(
+      cacheSecrets.some((secret) => logs.some((line) => line.includes(secret))),
+    ).toBe(false);
+    const storage = await page.evaluate(() =>
+      JSON.stringify({
+        local: { ...localStorage },
+        session: { ...sessionStorage },
+      }),
+    );
+    expect(cacheSecrets.some((secret) => storage.includes(secret))).toBe(false);
   } finally {
     await browser.close();
     await vite.close();

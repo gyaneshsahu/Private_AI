@@ -12,6 +12,10 @@ Tinfoil JS 1.2.2 and EHBP 0.3.3. Privatemode remains an unintegrated fallback.
 Tinfoil is not approved for private user data. Cloud browser certificate changes
 remain paused; WSL browser verification already worked without weakening TLS.
 
+Latest [documentation and pinned-SDK review](provider-evidence-update.md) narrows
+the remaining freshness/worker-evidence questions and verifies existing per-request
+cache isolation in our adapter. It does not close Q1.
+
 ## Evidence ledger
 
 | Qualification dimension | Established evidence | Remaining gate |
