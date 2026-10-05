@@ -917,6 +917,19 @@ export function App() {
                     <button onClick={() => setSource({ ...s })}>
                       Inspect source
                     </button>
+                    {s.url && (
+                      <button
+                        disabled={!!busy}
+                        onClick={() => {
+                          setResearchKind("page");
+                          setQuery(s.url!);
+                          setProposal(undefined);
+                          setTab("Research");
+                        }}
+                      >
+                        Review page retrieval
+                      </button>
+                    )}
                     <label>
                       Review or correct extracted text
                       <textarea
