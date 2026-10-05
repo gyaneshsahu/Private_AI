@@ -8,6 +8,7 @@ declare module "express-session" {
   interface SessionData {
     accountId: string;
     until: number;
+    accessEpoch: string;
   }
 }
 export function inviteAccess(origin: string, registry: InviteRegistry) {
@@ -96,6 +97,7 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
           return;
         }
         req.session.accountId = id;
+        req.session.accessEpoch = randomBytes(16).toString("hex");
         req.session.until = Date.now() + 3600000;
         req.session.save((error) => {
           if (error) sendAccessPage(res, 503, "unavailable");
@@ -147,6 +149,7 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
     }
     res.locals.accountId = id;
     res.locals.accessSession = req.sessionID;
+    res.locals.accessEpoch = req.session.accessEpoch;
     const accessSession = req.sessionID;
     const timer = setInterval(() => {
       try {

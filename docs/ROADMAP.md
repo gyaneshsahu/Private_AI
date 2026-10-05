@@ -245,3 +245,17 @@ G1–G6 and U1 independently while Q1 needs supplier evidence.
   Pending invitation recovery is documented as revoke/reissue; registered-account
   and vault recovery remain unimplemented. Q1 still needs supplier artifacts and
   release readiness still needs human quality and actual hosted validation.
+
+- 5 October 2026: repaired cross-tab login transitions. A new login marker lets
+  older tabs detect replacement sessions even for the same account, clear their
+  in-memory workspace and reload. Access probes are serialized, cancelled on
+  cleanup and refreshed on visibility/focus; same-session status refreshes current
+  request credentials. Account-scoped vault lock notifications prevent unrelated
+  accounts from invalidating each other, and obsolete-tab cleanup preserves the
+  newer login's unsaved draft. Browser coverage reopens the previous encrypted
+  snapshot after the transition. Background browser timer throttling still limits
+  how quickly an inactive screen can clear; server access checks remain enforced.
+  Provider qualification, human quality review and actual hosted validation remain
+  open; this change does not promote any privacy or quality gate.
+  Validation: `npm run trial:check` passed all 129 unit/integration tests,
+  14 production browser workflows, typecheck/build and fixture integrity.

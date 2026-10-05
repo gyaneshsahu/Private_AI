@@ -184,3 +184,14 @@ The browser test accepts two identities, saves Alice's draft, signs out, verifie
 Bob has an empty vault even with the same vault passphrase, revokes Bob and reopens
 Alice's draft after fresh sign-in. HTTP tests cover cross-user session rejection,
 one-use redemption, expiry, secure hosted cookie flags and active-response revocation.
+
+Tabs check access on focus, return to visibility and every 30 seconds while the
+browser runs timers. A fresh sign-in carries a non-authenticating login marker;
+older tabs clear their in-memory workspace and reload when that marker or account
+changes. Unsaved work in those older tabs is discarded. Saved encrypted snapshots
+remain available after unlocking the appropriate account's vault. Background-tab
+timer throttling means this is not an instantaneous screen-clearing guarantee;
+server authorization and response termination remain independent controls.
+Vault lock notifications are scoped to the account. Clearing an obsolete tab
+does not lock the newer login's draft. Browser regression coverage verifies a
+same-account replacement login, preserved new draft and reopening saved work.

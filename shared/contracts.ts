@@ -123,6 +123,7 @@ export interface Conversation {
 }
 export interface AppStatus {
   accountId?: string;
+  accessEpoch?: string;
   csrf: string;
   inference: { ready: boolean; reason: string; qualification?: Qualification };
   search: boolean;

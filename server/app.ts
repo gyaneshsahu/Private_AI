@@ -135,7 +135,12 @@ export function createApp(config: Config) {
     const ready = !!q && !!config.apiKey;
     res.json({
       csrf: res.locals.csrf,
-      ...(res.locals.accountId ? { accountId: res.locals.accountId } : {}),
+      ...(res.locals.accountId
+        ? {
+            accountId: res.locals.accountId,
+            accessEpoch: res.locals.accessEpoch,
+          }
+        : {}),
       inference: {
         ready,
         reason: ready

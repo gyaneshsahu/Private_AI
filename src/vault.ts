@@ -68,16 +68,22 @@ export class Vault {
       throw new Error("Invalid account scope.");
     this.lock(false);
     this.databaseName = id ? `privateai-vault-${id}` : "privateai-vault";
+    this.connectChannel();
   }
   private key?: CryptoKey;
   private generation = 0;
   private queue: Promise<unknown> = Promise.resolve();
-  private channel =
-    typeof BroadcastChannel !== "undefined"
-      ? new BroadcastChannel("privateai-vault")
-      : undefined;
+  private channel?: BroadcastChannel;
   onInvalidate?: () => void;
   constructor() {
+    this.connectChannel();
+  }
+  private connectChannel() {
+    this.channel?.close();
+    this.channel =
+      typeof BroadcastChannel !== "undefined"
+        ? new BroadcastChannel(this.databaseName)
+        : undefined;
     if (this.channel)
       this.channel.onmessage = () => {
         this.lock(false);
@@ -92,9 +98,10 @@ export class Vault {
     this.generation++;
     if (broadcast) this.channel?.postMessage("lock");
   }
-  close() {
-    this.lock();
+  close(broadcast = true) {
+    this.lock(broadcast);
     this.channel?.close();
+    this.channel = undefined;
   }
   async unlock(passphrase: string) {
     const generation = ++this.generation;

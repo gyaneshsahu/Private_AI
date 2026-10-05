@@ -22,7 +22,8 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
   server.on("request", app);
   const browser = await chromium.launch(browserLaunchOptions());
   try {
-    const page = await browser.newPage();
+    const context = await browser.newContext();
+    const page = await context.newPage();
     page.on("pageerror", (error) =>
       console.error("Browser fixture:", error.message),
     );
@@ -126,6 +127,39 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     await login.getByLabel("Access ID").fill(alice.id);
     await login.getByLabel("Password").fill("synthetic access password");
     await login.getByRole("button", { name: "Sign in", exact: true }).click();
+    await unlock();
+    await page.getByRole("button", { name: "Open", exact: true }).click();
+    await page
+      .getByRole("navigation", { name: "Workspace" })
+      .getByRole("button", { name: "Conversation", exact: false })
+      .click();
+    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
+      "ALICE SYNTHETIC PRIVATE DRAFT",
+    );
+    const oldEpoch = await page.evaluate(
+      async () => (await (await fetch("/api/status")).json()).accessEpoch,
+    );
+    const sibling = await page.context().newPage();
+    await sibling.goto(origin + "/auth");
+    const siblingLogin = sibling.locator('form[action="/auth/login"]');
+    await siblingLogin.getByLabel("Access ID").fill(alice.id);
+    await siblingLogin.getByLabel("Password").fill("synthetic access password");
+    await siblingLogin
+      .getByRole("button", { name: "Sign in", exact: true })
+      .click();
+    await ui(sibling.getByLabel("Message PrivateAI")).toBeVisible();
+    const newEpoch = await sibling.evaluate(
+      async () => (await (await fetch("/api/status")).json()).accessEpoch,
+    );
+    expect(newEpoch).not.toBe(oldEpoch);
+    await sibling
+      .getByLabel("Message PrivateAI")
+      .fill("NEW LOGIN UNSAVED DRAFT");
+    await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+    await ui(page.getByLabel("Message PrivateAI")).toHaveValue("");
+    await ui(sibling.getByLabel("Message PrivateAI")).toHaveValue(
+      "NEW LOGIN UNSAVED DRAFT",
+    );
     await unlock();
     await page.getByRole("button", { name: "Open", exact: true }).click();
     await page

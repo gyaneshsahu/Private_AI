@@ -192,32 +192,53 @@ export function App() {
   useEffect(() => {
     if (!status?.accountId) return;
     let active = true;
+    let pending = false;
+    const abort = new AbortController();
     const checkAccess = async () => {
+      if (pending || !active) return;
+      pending = true;
       try {
-        const response = await fetch("/api/status", { cache: "no-store" });
+        const response = await fetch("/api/status", {
+          cache: "no-store",
+          signal: abort.signal,
+        });
+        const next: AppStatus | undefined = response.ok
+          ? await response.json()
+          : undefined;
         if (!active) return;
         if (
           response.status === 401 ||
-          (response.ok &&
-            (await response.json()).accountId !== status.accountId)
+          (next &&
+            (next.accountId !== status.accountId ||
+              next.accessEpoch !== status.accessEpoch))
         ) {
-          vault.current?.lock();
+          vault.current?.close(false);
           vault.current?.onInvalidate?.();
-          window.location.assign("/auth");
+          window.location.assign(response.status === 401 ? "/auth" : "/");
+        } else if (next) {
+          setStatus(next);
         }
       } catch {
         /* A network outage does not grant access or delete saved data. */
+      } finally {
+        pending = false;
       }
     };
     const timer = setInterval(() => void checkAccess(), 30000);
     const focus = () => void checkAccess();
     window.addEventListener("focus", focus);
+    const visible = () => {
+      if (document.visibilityState === "visible") void checkAccess();
+    };
+    document.addEventListener("visibilitychange", visible);
     return () => {
       active = false;
+      abort.abort();
       clearInterval(timer);
       window.removeEventListener("focus", focus);
+      document.removeEventListener("visibilitychange", visible);
     };
-  }, [status?.accountId]);
+  }, [status?.accountId, status?.accessEpoch]);
   async function api(path: string, data: unknown, signal?: AbortSignal) {
     if (!status) throw new Error("Service is unavailable.");
     const response = await fetch(path, {

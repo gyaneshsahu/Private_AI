@@ -24,10 +24,10 @@ describe("real WebCrypto vault, synthetic inputs only", () => {
     const c = emptyConversation();
     c.title = "Alice synthetic workspace";
     await alice.save(c);
-    alice.lock(false);
+    alice.lock();
     await bob.unlock("same synthetic vault password");
     expect(await bob.list()).toEqual([]);
-    bob.lock(false);
+    bob.lock();
     await alice.unlock("same synthetic vault password");
     expect((await alice.list()).map((item) => item.id)).toContain(c.id);
   });
