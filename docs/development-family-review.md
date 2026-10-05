@@ -294,3 +294,29 @@ escaped, active content and networking are disabled, and desktop/mobile renderin
 was checked. Packet creation neither modifies evidence nor produces a human grade.
 The OCR result is the next targeted uncertainty defect; do not characterize Gemma
 as reliably cautious based only on its successful conflicting-notes case.
+
+## Uncertainty-first policy regression
+
+The shared answer policy now requires stating uncertainty before suggesting an
+interpretation and prohibits recommending payment/action on a guessed source
+value. Concision wording was shortened to retain the existing 2,000-character
+compatibility bound. It does not add an output filter or automatically normalize
+OCR text.
+
+Fresh permits `windows_20261005_ocr_guard_gemma_1` and
+`windows_20261005_ocr_guard_gptoss_1` rerun the observed development-bills-04 defect
+after this specific change. Gemma now explicitly calls the amount ambiguous,
+says not to pay on a guess and requires checking the original receipt; its
+follow-up retains that caution. Narrow acceptable agent regression. GPT-OSS still
+starts with “Pay: €10.50” and treats the O as a misread zero; retain material
+`unqualified-ocr-payment-amount`. The later verification instructions do not
+erase the first-turn failure. No unchanged repeat was attempted.
+
+All four replies completed with matched verifications and the scoped abort
+assessment. Gemma durations 2.11/1.11 seconds; GPT-OSS 3.57/3.67 seconds. Combined
+reported estimate USD 0.00094565; actual billing unreconciled. Both runs have
+hash-bound agent reviews and newly generated unscored human-review packets.
+Inventory: 38 runs, 23 bound agent reviews, zero human reviews, eleven distinct
+frozen development cases. This regression adds no new-case coverage. The observed
+Gemma repair does not establish broad uncertainty reliability or promote a model;
+fresh transfer and human adjudication remain necessary.

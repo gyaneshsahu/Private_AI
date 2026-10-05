@@ -140,6 +140,18 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 5 October 2026: addressed the observed OCR overconfidence with uncertainty-first
+  guidance and an explicit prohibition on acting on guessed source values. Fresh
+  matched regressions show a narrow Gemma repair: ambiguity and source checking
+  now precede any payment interpretation. GPT-OSS retains its initial unqualified
+  payment instruction, so the defect remains open for that candidate. Source
+  results, prior failures and consumed permits are preserved; unscored review
+  packets are available for both. Eleven-case coverage and all human/provider
+  gates remain unchanged. See [development evidence](development-family-review.md).
+  Validation: 136 unit/integration tests, 15 production browser workflows,
+  typecheck/build and fixture integrity passed; the original compatibility input
+  cap remains intact. Offline checks do not override the GPT-OSS live failure.
+
 - 5 October 2026: evaluated two fresh uncertainty cases. Gemma correctly leaves
   conflicting delivery notes unresolved, but initially converts ambiguous receipt
   OCR into unqualified payment advice; the follow-up correction does not erase
