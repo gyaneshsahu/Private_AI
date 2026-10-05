@@ -49,6 +49,15 @@ The later success does not explain the earlier timeout. It did not reproduce in
 the Windows suite; no timeout increase or automatic retry was added to hide it.
 Hosted smoke confirms restricted foundation behavior, not inference capability.
 
+Follow-up: the same 30-second experiment-client startup timeout recurred in
+GitHub run `37303755014`. The synthetic mock now replaces the module in Vite's
+load hook before dependency discovery, rather than only intercepting its browser
+request after the real SDK can be scanned. A native browser import surfaces
+module failures directly instead of waiting silently for a global. The test
+forces a cold dependency cache; it and the 87-test suite pass locally without
+increased timeouts or retries. This addresses a discovered test-isolation flaw;
+it does not establish the exact cause of historical provider-network aborts.
+
 ## Windows provider route preparation
 
 The public preflight initially failed at browser launch, with no external request.

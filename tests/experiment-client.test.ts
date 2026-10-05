@@ -11,6 +11,27 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
     cacheDir: "node_modules/.vite-experiment-client-test",
     appType: "custom",
     logLevel: "silent",
+    optimizeDeps: { force: true },
+    plugins: [
+      {
+        name: "synthetic-test-model-only",
+        enforce: "pre",
+        load(id) {
+          if (!id.replaceAll("\\", "/").endsWith("/src/verified-chat.ts"))
+            return;
+          // Mock before dependency discovery, not after Vite scans the real SDK.
+          return `
+          export async function streamVerifiedConversation(c, policy, csrf, signal, chunk, status, authorize) {
+            authorize();
+            if (window.mockModuleFailure) { status("Loading inference libraries…"); throw new TypeError("Failed to fetch dynamically imported module: SECRET_TEST_MARKER"); }
+            window.mockCalls.push(structuredClone(c));
+            chunk('MOCK response; not model-quality evidence.');
+            if (window.mockUnknownUsage) return undefined;
+            return {input: 1, output: 1, total: 2, estimatedUSD: 0};
+          }`;
+        },
+      },
+    ],
     server: { host: "127.0.0.1", port: 0, hmr: false },
     worker: { format: "es" },
   });
@@ -39,29 +60,15 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
         await route.abort();
         return;
       }
-      if (url.pathname === "/src/verified-chat.ts") {
-        await route.fulfill({
-          contentType: "application/javascript",
-          body: `
-          // TEST MOCK ONLY: no encryption, provider verification or model call.
-          export async function streamVerifiedConversation(c, policy, csrf, signal, chunk, status, authorize) {
-            authorize();
-            if (window.mockModuleFailure) { status("Loading inference libraries…"); throw new TypeError("Failed to fetch dynamically imported module: SECRET_TEST_MARKER"); }
-            window.mockCalls.push(structuredClone(c));
-            chunk('MOCK response; not model-quality evidence.');
-            if (window.mockUnknownUsage) return undefined;
-            return {input: 1, output: 1, total: 2, estimatedUSD: 0};
-          }`,
-        });
-      } else await route.continue();
+      await route.continue();
     });
     const page = await context.newPage();
     await page.goto(origin);
-    await page.addScriptTag({
-      type: "module",
-      url: `${origin}/evaluation/browser-entry.ts`,
-    });
-    await page.waitForFunction(() => "privateAiSyntheticRun" in window);
+    // String keeps Vitest's SSR transform out of the browser's native import.
+    await page.evaluate("import('/evaluation/browser-entry.ts')");
+    expect(await page.evaluate(() => "privateAiSyntheticRun" in window)).toBe(
+      true,
+    );
     const result = await page.evaluate(async () => {
       const state = window as unknown as {
         mockCalls: Array<{ messages: Array<{ text: string }> }>;
