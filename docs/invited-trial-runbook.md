@@ -77,6 +77,15 @@ page is a functional first version; hosted TLS/proxy validation, security review
 recovery design and usability review remain release work. Session middleware
 guidance: [Express session documentation](https://expressjs.com/en/resources/middleware/session/).
 
+Access-page recovery now keeps usable sign-in/invitation forms on rejected input,
+rate limiting or temporary session-store failure. Error responses never echo
+submitted passwords/codes; a failed invitation attempt does not consume a valid
+code. The page uses local, hash-authorized CSS with no scripts or external assets.
+Automated checks cover successful redemption after rejection, cleared secret
+fields, desktop/360-pixel layout and applied CSP-constrained styling. The mobile
+render was inspected locally. This is not a substitute for later real-device or
+prospective-user observation before opening the trial.
+
 ## Before the first invitation
 
 1. Complete Q1 and quality/canonical-workflow evidence. Publish supported families

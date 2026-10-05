@@ -209,3 +209,13 @@ G1–G6 and U1 independently while Q1 needs supplier evidence.
   material finding and continue toward fresh transfer/human evaluation, not repeated
   unchanged prompts. Q1 and hosted trial validation remain open.
   Validation: 127 unit/integration tests, typecheck and production build passed.
+
+- 5 October 2026: improved the individual invitation workflow after finding that
+  rejected sign-in attempts left users on a plain error page. Errors now retain
+  usable forms with cleared secrets and generic recovery guidance. Added responsive
+  PrivateAI styling under hash-based CSP, without scripts or external assets.
+  Browser coverage includes rejected-code recovery into successful registration,
+  no reflected credentials, desktop/mobile overflow and applied styles. Hosted
+  access validation and later real-user usability review remain open.
+  Validation: 127 unit/integration tests, typecheck and build passed; invitation
+  browser tests include the complete two-user workspace-isolation workflow.

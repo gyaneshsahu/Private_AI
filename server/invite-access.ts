@@ -3,6 +3,7 @@ import session from "express-session";
 import memoryStore from "memorystore";
 import { randomBytes } from "node:crypto";
 import type { InviteRegistry } from "./invite-registry";
+import { sendAccessPage } from "./access-page";
 declare module "express-session" {
   interface SessionData {
     accountId: string;
@@ -53,16 +54,7 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
     }),
   );
   router.get("/auth", (_req, res) => {
-    res.setHeader("Referrer-Policy", "same-origin");
-    res.setHeader(
-      "Content-Security-Policy",
-      "default-src 'none'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'",
-    );
-    res
-      .type("html")
-      .send(
-        `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>PrivateAI access</title><main><h1>PrivateAI trial access</h1><p>Use your individual access ID. Access is not anonymous. PrivateAI and its host receive identity and network metadata.</p><h2>Sign in</h2><form method="post" action="/auth/login"><label>Access ID <input name="id" autocomplete="username" required maxlength="36"></label><label>Password <input name="password" type="password" autocomplete="current-password" required maxlength="256"></label><button>Sign in</button></form><h2>Accept invitation</h2><form method="post" action="/auth/register"><label>Access ID <input name="id" autocomplete="username" required maxlength="36"></label><label>Invitation code <input name="token" type="password" autocomplete="off" required maxlength="100"></label><label>Choose password (at least 12 characters) <input name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="256"></label><button>Accept invitation</button></form><p>Keep your access ID. Your local vault has a separate passphrase. No password recovery service is provided in this trial.</p></main></html>`,
-      );
+    sendAccessPage(res);
   });
   let attempts = 0,
     attemptWindow = 0;
@@ -75,7 +67,8 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
         attempts = 0;
       }
       if (++attempts > 30) {
-        res.status(429).send("Too many sign-in attempts. Try later.");
+        res.setHeader("Retry-After", "60");
+        sendAccessPage(res, 429, "limited");
         return;
       }
       const { id, password, token } = req.body ?? {};
@@ -85,7 +78,7 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
         typeof password !== "string" ||
         password.length > 256
       ) {
-        res.status(401).send("Access could not be verified.");
+        sendAccessPage(res, 401, "invalid");
         return;
       }
       const valid =
@@ -94,18 +87,18 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
             (await registry.register(id, token, password))
           : await registry.login(id, password);
       if (!valid) {
-        res.status(401).send("Access could not be verified.");
+        sendAccessPage(res, 401, "invalid");
         return;
       }
       req.session.regenerate((error) => {
         if (error) {
-          res.status(503).end();
+          sendAccessPage(res, 503, "unavailable");
           return;
         }
         req.session.accountId = id;
         req.session.until = Date.now() + 3600000;
         req.session.save((error) => {
-          if (error) res.status(503).end();
+          if (error) sendAccessPage(res, 503, "unavailable");
           else res.redirect(303, "/");
         });
       });

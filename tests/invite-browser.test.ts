@@ -36,9 +36,45 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     });
     const alice = registry.issue(Date.now() + 600000),
       bob = registry.issue(Date.now() + 600000);
+    await page.goto(origin);
+    for (const width of [1280, 360]) {
+      await page.setViewportSize({ width, height: 900 });
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      expect(
+        await page
+          .locator("body")
+          .evaluate((node) => getComputedStyle(node).backgroundColor),
+      ).toBe("rgb(247, 246, 242)");
+    }
+    await page.screenshot({
+      path: ".local/diagnostics/invite-access-mobile.png",
+      fullPage: true,
+    });
+    await page.setViewportSize({ width: 1280, height: 900 });
     const accept = async (invite: typeof alice) => {
       await page.goto(origin);
       const form = page.locator('form[action="/auth/register"]');
+      if (invite.id === alice.id) {
+        await form.getByLabel("Access ID").fill(invite.id);
+        await form.getByLabel("Invitation code").fill("SYNTHETIC_WRONG_CODE");
+        await form
+          .getByLabel("Choose password", { exact: false })
+          .fill("SYNTHETIC_SECRET_PASSWORD");
+        await form.getByRole("button", { name: "Accept invitation" }).click();
+        await ui(page.getByRole("alert")).toContainText(
+          "Access could not be verified",
+        );
+        expect(await page.content()).not.toContain("SYNTHETIC_WRONG_CODE");
+        expect(await page.content()).not.toContain("SYNTHETIC_SECRET_PASSWORD");
+        await ui(form.getByLabel("Invitation code")).toHaveValue("");
+        await ui(
+          form.getByLabel("Choose password", { exact: false }),
+        ).toHaveValue("");
+      }
       await form.getByLabel("Access ID").fill(invite.id);
       await form.getByLabel("Invitation code").fill(invite.token);
       await form
