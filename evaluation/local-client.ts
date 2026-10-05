@@ -18,7 +18,11 @@ export async function runSynthetic(input: unknown, csrf: string) {
   const timings: number[] = [];
   let failure: string | null = null;
   let stage = "Extracting synthetic document";
-  let diagnostic: { stage: string; category: string } | null = null;
+  let diagnostic: {
+    stage: string;
+    category: string;
+    stream?: IncompleteReplyError["diagnostic"];
+  } | null = null;
   try {
     if (permit.scenario === "two_turn_invoice") {
       const attachment = await extract(
@@ -72,6 +76,9 @@ export async function runSynthetic(input: unknown, csrf: string) {
     const message = error instanceof Error ? error.message : "";
     diagnostic = {
       stage,
+      ...(error instanceof IncompleteReplyError
+        ? { stream: error.diagnostic }
+        : {}),
       category:
         /dynamically imported module|module script|module specifier/i.test(
           message,

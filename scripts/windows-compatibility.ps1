@@ -39,23 +39,18 @@ try {
         throw 'This launcher requires the fresh Windows USD 2 compatibility approval, not a historical permit.'
     }
     if (Test-Path -LiteralPath '.local/experiment-runs/windows_20261005_compat_usd2') { throw 'Approval already consumed. No retry.' }
-    # The key is entered through a masked prompt, never as a command argument.
-    $secret = Read-Host 'Tinfoil API key (masked; process memory only)' -AsSecureString
-    $pointer = [IntPtr]::Zero
-    try {
-        $pointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
-        [Environment]::SetEnvironmentVariable('TINFOIL_API_KEY', [Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer), 'Process')
-        [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer)
-        $pointer = [IntPtr]::Zero
-        & node --import tsx evaluation/run-local.ts --check --compatibility
+    & node scripts/browser-runtime.mjs
+    if ($LASTEXITCODE -ne 0) { throw 'Browser cannot launch. Follow the setup instruction above; no secret was loaded and no inference sent.' }
+    Import-Module (Join-Path $PSScriptRoot 'WindowsSecrets.psm1')
+    if (-not (Test-PrivateAiSecret -Name 'TINFOIL_API_KEY')) {
+        throw 'Store the key once with: pwsh -NoProfile -File .\scripts\windows-secret.ps1 -Action Set'
+    }
+    Invoke-WithPrivateAiSecret -Name 'TINFOIL_API_KEY' -Action {
+        & node --use-system-ca --import tsx evaluation/run-local.ts --check --compatibility
         if ($LASTEXITCODE -ne 0) { throw 'Readiness failed. No inference request made.' }
         if ($Run) {
-            & node --import tsx evaluation/run-local.ts --run --compatibility
+            & node --use-system-ca --import tsx evaluation/run-local.ts --run --compatibility
             if ($LASTEXITCODE -ne 0) { throw 'Run stopped. No retry. Preserve its result and consumed claim.' }
         }
-    } finally {
-        [Environment]::SetEnvironmentVariable('TINFOIL_API_KEY', $null, 'Process')
-        if ($pointer -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer) }
-        $secret.Dispose()
     }
 } finally { Pop-Location }

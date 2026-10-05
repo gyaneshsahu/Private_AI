@@ -109,7 +109,7 @@ describe("synthetic stream protocol checks, not live provider evidence", () => {
   });
 });
 
-it("rejects non-text deltas, duplicate choices and duplicate accounting without losing the first valid usage", async () => {
+it("rejects non-text deltas, duplicate choices and regressing accounting without losing valid usage", async () => {
   const malformed = chunk("text", "stop");
   malformed.choices[0].delta.content = {
     secret: "PRIVATE_TEST",
@@ -119,6 +119,41 @@ it("rejects non-text deltas, duplicate choices and duplicate accounting without 
   duplicate.choices.push(duplicate.choices[0]);
   await expect(run([duplicate])).rejects.toBeInstanceOf(IncompleteReplyError);
   await expect(
-    run([chunk("done", "stop"), usage, usage]),
+    run([
+      chunk("done", "stop"),
+      usage,
+      {
+        ...usage,
+        usage: { prompt_tokens: 10, completion_tokens: 4, total_tokens: 14 },
+      },
+    ]),
   ).rejects.toMatchObject({ usage: { total: 15 } });
+});
+
+it("accepts cumulative per-chunk usage without double-counting and requires final accounting", async () => {
+  const initial = {
+    ...usage,
+    usage: { prompt_tokens: 10, completion_tokens: 0, total_tokens: 10 },
+  };
+  await expect(
+    run([
+      initial,
+      initial,
+      chunk("Hello"),
+      { ...chunk("", "stop"), usage: usage.usage },
+      usage,
+    ]),
+  ).resolves.toMatchObject({ input: 10, output: 5, total: 15 });
+  await expect(run([initial, chunk("Hello", "stop")])).rejects.toMatchObject({
+    diagnostic: { code: "MISSING_FINAL_USAGE" },
+  });
+  await expect(
+    run([
+      initial,
+      {
+        ...usage,
+        usage: { prompt_tokens: 11, completion_tokens: 5, total_tokens: 16 },
+      },
+    ]),
+  ).rejects.toMatchObject({ diagnostic: { code: "USAGE_REGRESSION" } });
 });

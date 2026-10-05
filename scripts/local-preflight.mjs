@@ -1,5 +1,5 @@
 // Isolated browser verification only. Never reads an API key or sends inference.
-import { existsSync } from "node:fs";
+import { browserLaunchOptions, browserReady } from "./browser-runtime.mjs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,13 +8,8 @@ import { chromium } from "@playwright/test";
 import { createServer as createViteServer } from "vite";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const executablePath =
-  process.env.CHROMIUM_PATH ||
-  (existsSync("/usr/bin/chromium")
-    ? "/usr/bin/chromium"
-    : undefined);
 const nodeOK = Number(process.versions.node.split(".")[0]) === 24;
-const browserOK = existsSync(executablePath ?? chromium.executablePath());
+const browserOK = await browserReady();
 if (process.argv.includes("--check")) {
   console.log(
     JSON.stringify(
@@ -97,7 +92,7 @@ if (process.argv.includes("--check")) {
     });
     const origin = `http://127.0.0.1:${server.address().port}`;
     evidence.stage = "LAUNCH_BROWSER";
-    browser = await chromium.launch({ executablePath, headless: true });
+    browser = await chromium.launch(browserLaunchOptions());
     evidence.stage = "CONFIGURE_BROWSER";
     const context = await browser.newContext({
       ignoreHTTPSErrors: false,

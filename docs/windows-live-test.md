@@ -37,26 +37,54 @@ its billing receipt for review; do not delete consumed run directories.
 
 ## Enter the key safely and run once
 
-After preparation succeeds:
+Preparation already succeeded for the reported readiness failure. Do not repeat
+`-Prepare` or delete its permit. That failure sent zero inference requests and
+did not consume the approval. The old browser check tested full Chrome's path
+while launching the headless browser. Readiness now actually launches/closes
+the selected browser without navigating, before loading a credential.
+
+Save the key once for your Windows user on this computer:
 
 ```powershell
-pwsh.exe -NoProfile -File .\scripts\windows-compatibility.ps1 -Run
+pwsh.exe -NoProfile -File .\scripts\windows-secret.ps1 -Action Set
+pwsh.exe -NoProfile -File .\scripts\windows-compatibility.ps1
 ```
 
-Enter the key only at its **masked `Read-Host -AsSecureString` prompt**. Do not
-put it in the command, chat, `.env`, a profile, `setx`, or a saved script. The
-launcher converts it in memory, sets TINFOIL_API_KEY for its own process and its
-Node child, checks readiness, then invokes the one-request runner once. It clears
-the environment variable and unmanaged buffer in `finally`; closing the child
-PowerShell also discards its process environment. No key is printed or written
-to the repository. The provider client necessarily holds the key in process
-memory during the request; this is not a guarantee against privileged memory
-inspection or operating-system dumps.
+Enter the key only at the masked prompt. The second command checks readiness
+only: no inference or attestation request. All prerequisites must be true before
+using `pwsh.exe -NoProfile -File .\scripts\windows-compatibility.ps1 -Run` once.
+No automatic retry is performed.
 
-Omit `-Run` for readiness only (zero network requests). Setting a variable in a
-separate terminal cannot update an already running Codex process; the launcher
-runs the test in the same process tree that receives the key. This avoids
-copying credentials into this chat or persistent settings.
+The native Windows Credential Manager entry is `PrivateAI/Local/TINFOIL_API_KEY`.
+It uses generic credentials with local-machine persistence: the same Windows
+user on this computer, with no enterprise roaming. This follows Microsoft's
+[credential persistence definitions](https://learn.microsoft.com/en-us/windows/win32/api/wincred/ns-wincred-credentialw).
+It is outside the repo, Git, evidence and logs. The launcher loads it into only
+its process environment for the Node child and restores that environment in
+`finally`. Unmanaged buffers are cleared. The credential remains stored until
+replaced or removed; same-user software can access it, and process memory is
+necessarily plaintext while a client uses the key.
+
+Do not put the key in chat, command arguments, `.env`, profiles or `setx`.
+There is deliberately no command to display/export it. Manage it with:
+
+```powershell
+pwsh.exe -NoProfile -File .\scripts\windows-secret.ps1 -Action Status
+pwsh.exe -NoProfile -File .\scripts\windows-secret.ps1 -Action Set
+pwsh.exe -NoProfile -File .\scripts\windows-secret.ps1 -Action Remove
+```
+
+`Status` prints only presence. `Set` replaces the entry using another masked
+prompt. `Remove` removes the local copy; revoke a compromised key separately at
+the provider. `-Name ANOTHER_API_KEY` supports future providers under separate
+named entries, but does not enable an integration or authorize spending.
+
+If the browser cannot launch, check the non-secret diagnostic with
+`node scripts/browser-runtime.mjs`. Without a custom CHROMIUM_PATH, install the
+pinned browser for the same Windows user with
+`npx playwright install chromium-headless-shell`, then check again. An explicit
+invalid override fails closed rather than silently selecting another browser.
+No TLS or Windows security policy is disabled.
 
 The request is fixed: `Calculate 2 + 2. Reply with just the number.` Maximum
 2,000 input characters, 512 output tokens, 90-second relay deadline, one forward

@@ -10,12 +10,14 @@ export async function implementationIdentity(root: string) {
     "src/verified-chat.ts",
     "src/completion-events.ts",
     "src/reply-stream.ts",
+    "src/stream-failure.ts",
     "src/abortable.ts",
     "src/conversation.ts",
     "evaluation/local-client.ts",
     "evaluation/experiment.ts",
     "evaluation/experiment-gateway.ts",
     "evaluation/run-local.ts",
+    "scripts/browser-runtime.mjs",
   ].sort();
   const hash = createHash("sha256");
   for (const file of files)

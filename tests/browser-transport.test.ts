@@ -117,14 +117,35 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         0,
         new TextEncoder().encode(text),
       );
-      const framed = Buffer.alloc(4 + cipher.length);
+      let framed = Buffer.alloc(4 + cipher.length);
       framed.writeUInt32BE(cipher.length);
       framed.set(cipher, 4);
+      if (mode === "valid") {
+        const frames: Buffer[] = [];
+        let sequence = 0;
+        for (const event of text.split(/(?<=\n\n)/).filter(Boolean)) {
+          const encrypted = await encryptChunk(
+            material,
+            sequence++,
+            new TextEncoder().encode(event),
+          );
+          const record = Buffer.alloc(4 + encrypted.length);
+          record.writeUInt32BE(encrypted.length);
+          record.set(encrypted, 4);
+          frames.push(record);
+        }
+        framed = Buffer.concat(frames);
+      }
       if (mode === "tampered") framed[framed.length - 1] ^= 1;
       res.setHeader("Content-Type", "text/event-stream");
       if (mode !== "missing_nonce")
         res.setHeader("Ehbp-Response-Nonce", bytesToHex(nonce));
-      res.end(framed);
+      for (let offset = 0; offset < framed.length; offset += 37) {
+        res.write(framed.subarray(offset, offset + 37));
+        if (mode === "valid")
+          await new Promise((resolve) => setTimeout(resolve, 2));
+      }
+      res.end();
     } catch (error) {
       res.statusCode = 500;
       res.end("TEST peer error");

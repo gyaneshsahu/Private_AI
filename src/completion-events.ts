@@ -1,4 +1,5 @@
 import type { ChatCompletionChunk } from "openai/resources/chat/completions";
+import { StreamProtocolError } from "./stream-failure";
 
 const MAX_FRAME_CHARACTERS = 256 * 1024;
 
@@ -11,7 +12,7 @@ export async function* completionEvents(
 ): AsyncGenerator<ChatCompletionChunk> {
   if (!response.ok || !response.body) {
     await response.body?.cancel();
-    throw new Error("Protected response unavailable.");
+    throw new StreamProtocolError("HTTP_RESPONSE_INVALID");
   }
   const reader = response.body.getReader();
   const decoder = new TextDecoder("utf-8", { fatal: true });
@@ -42,7 +43,7 @@ export async function* completionEvents(
           const frame = buffer.slice(0, boundary.index);
           buffer = buffer.slice(boundary.index + boundary[0].length);
           if (frame.length > MAX_FRAME_CHARACTERS)
-            throw new Error("Response frame limit exceeded.");
+            throw new StreamProtocolError("FRAME_TOO_LARGE");
           const lines = frame.split(/\r?\n/);
           const data: string[] = [];
           for (const line of lines) {
@@ -53,12 +54,11 @@ export async function* completionEvents(
             const content = raw.startsWith(" ") ? raw.slice(1) : raw;
             if (field === "data") data.push(content);
             else if (field === "event" && content !== "message")
-              throw new Error("Unsupported response event.");
+              throw new StreamProtocolError("UNSUPPORTED_EVENT");
             // SSE id/retry fields do not grant permissions or trigger retries.
           }
           if (!data.length) continue;
-          if (ended)
-            throw new Error("Unexpected data after stream completion.");
+          if (ended) throw new StreamProtocolError("DATA_AFTER_DONE");
           const payload = data.join("\n");
           if (payload === "[DONE]") {
             ended = true;
@@ -68,7 +68,7 @@ export async function* completionEvents(
           try {
             event = JSON.parse(payload);
           } catch {
-            throw new Error("Invalid response event.");
+            throw new StreamProtocolError("INVALID_JSON");
           }
           if (
             !event ||
@@ -76,16 +76,15 @@ export async function* completionEvents(
             "error" in event ||
             !Array.isArray((event as { choices?: unknown }).choices)
           )
-            throw new Error("Invalid response event.");
+            throw new StreamProtocolError("INVALID_EVENT");
           yield event as ChatCompletionChunk;
         }
         if (buffer.length > MAX_FRAME_CHARACTERS)
-          throw new Error("Response frame limit exceeded.");
+          throw new StreamProtocolError("FRAME_TOO_LARGE");
       }
     }
     buffer += decoder.decode();
-    if (buffer.trim() || !ended)
-      throw new Error("Response stream ended prematurely.");
+    if (buffer.trim() || !ended) throw new StreamProtocolError("MISSING_DONE");
   } finally {
     signal.removeEventListener("abort", abort);
     if (!eof) await reader.cancel().catch(() => {});

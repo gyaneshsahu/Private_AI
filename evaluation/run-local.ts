@@ -2,7 +2,10 @@ import { implementationIdentity } from "./implementation";
 import { reviewResult } from "./review-result";
 import { networkRoute, approvedLocalGet } from "./network-observation";
 import type { Request as BrowserRequest } from "@playwright/test";
-import { existsSync } from "node:fs";
+import {
+  browserLaunchOptions,
+  browserReady,
+} from "../scripts/browser-runtime.mjs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,7 +22,11 @@ import { claimExperiment } from "./run-claim";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
+const customPermit = args.find((arg) => arg.startsWith("--permit="));
+if (customPermit) args.splice(args.indexOf(customPermit), 1);
+const permitFile = customPermit?.slice("--permit=".length);
 if (
+  (permitFile !== undefined && !/^[a-zA-Z0-9_-]+\.json$/.test(permitFile)) ||
   (args.length !== 1 &&
     !(args.length === 2 && args[1] === "--compatibility")) ||
   !["--check", "--run", "--diagnose"].includes(args[0])
@@ -49,9 +56,11 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
         await readFile(
           resolve(
             root,
-            compatibility
-              ? ".local/compatibility.json"
-              : ".local/experiment.json",
+            permitFile
+              ? `.local/${permitFile}`
+              : compatibility
+                ? ".local/compatibility.json"
+                : ".local/experiment.json",
           ),
           "utf8",
         ),
@@ -73,11 +82,6 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
     process.exitCode = 1;
     return;
   }
-  const executablePath =
-    process.env.CHROMIUM_PATH ||
-    (existsSync("/usr/bin/chromium")
-      ? "/usr/bin/chromium"
-      : undefined);
   const proxy = [
     "HTTPS_PROXY",
     "HTTP_PROXY",
@@ -89,7 +93,7 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
   const apiKey = process.env.TINFOIL_API_KEY;
   const prerequisites = {
     node24: process.versions.node.startsWith("24."),
-    browser: existsSync(executablePath ?? chromium.executablePath()),
+    browser: await browserReady(),
     apiKeyPresent: !!apiKey,
     suitableLocalNetwork: !proxy,
   };
@@ -167,6 +171,7 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
       "Reconcile with provider billing; estimates do not include every possible fee.",
   };
   const network: Array<Record<string, unknown>> = [];
+  let phase = "CLIENT_RUNNING";
   result.network = network;
   try {
     vite = await createServer({
@@ -194,7 +199,7 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
     if (!address || typeof address === "string")
       throw new Error("No loopback listener");
     config.origin = `http://127.0.0.1:${address.port}`;
-    browser = await chromium.launch({ executablePath, headless: true });
+    browser = await chromium.launch(browserLaunchOptions());
     const context = await browser.newContext({
       ignoreHTTPSErrors: false,
       serviceWorkers: "block",
@@ -207,6 +212,7 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
       return {
         requestId: requestIds.get(request),
         elapsedMs: Math.round(performance.now() - networkStarted),
+        phase,
         route: networkRoute(request.url(), config.origin),
       };
     };
@@ -318,6 +324,7 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
       { permit, csrf },
     );
     const client = result.client as { failure?: unknown };
+    phase = "WAITING_FOR_RELAY_CLOSE";
     result.status = client.failure
       ? "FAILED_FOR_HUMAN_REVIEW"
       : "RETURNED_FOR_HUMAN_REVIEW";
@@ -329,6 +336,7 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
       });
     });
   } finally {
+    phase = "BROWSER_TEARDOWN";
     await browser?.close();
     await vite?.close();
     if (server) await new Promise<void>((ok) => server!.close(() => ok()));

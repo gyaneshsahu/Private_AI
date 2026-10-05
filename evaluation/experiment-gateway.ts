@@ -24,6 +24,8 @@ export function experimentGateway(options: {
     bytes: number;
     protocolHeaderValid: boolean;
     syntheticPlaintextMarkerAbsent: boolean;
+    upstreamStatus: number | null;
+    failureCode: string | null;
   }> = [];
   let active = false;
   let stopped = false;
@@ -85,6 +87,8 @@ export function experimentGateway(options: {
         bytes: req.body.length,
         protocolHeaderValid: true,
         syntheticPlaintextMarkerAbsent: true,
+        upstreamStatus: null as number | null,
+        failureCode: null as string | null,
       };
       attempts.push(attempt); // Count before network I/O, even when it fails.
       active = true;
@@ -97,6 +101,7 @@ export function experimentGateway(options: {
           AbortSignal.any([abort.signal, AbortSignal.timeout(90000)]),
         );
         const nonce = response.headers.get("ehbp-response-nonce");
+        attempt.upstreamStatus = response.status;
         if (!response.ok || !nonce || !response.body) {
           await response.body?.cancel();
           throw new Error("Encrypted upstream response required");
@@ -120,7 +125,26 @@ export function experimentGateway(options: {
         }
         attempt.outcome = "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED";
         res.end();
-      } catch {
+      } catch (error) {
+        const cause = error instanceof Error ? error.cause : undefined;
+        const code =
+          cause && typeof cause === "object" && "code" in cause
+            ? cause.code
+            : undefined;
+        attempt.failureCode =
+          typeof code === "string" &&
+          [
+            "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+            "CERT_HAS_EXPIRED",
+            "SELF_SIGNED_CERT_IN_CHAIN",
+            "ECONNRESET",
+            "ETIMEDOUT",
+            "ENOTFOUND",
+          ].includes(code)
+            ? code
+            : abort.signal.aborted
+              ? "CLIENT_DISCONNECTED"
+              : "UPSTREAM_OR_STREAM_FAILURE";
         attempt.outcome = "FAILED_COST_UNKNOWN";
         stopped = true;
         if (!res.headersSent)
