@@ -36,7 +36,13 @@ Six families: writing/revision, explanation/planning, personal discussion, bills
 
 Create 24 development and 24 frozen held-out cases, four distinct cases per family in each set. Run held-out cases three times to expose variability. Report 24 distinct cases and 72 executions, never 72 independent tasks. Keep case-level and family-level results; do not hide weak families in an overall average.
 
-Gate for a bounded user evaluation: all canonical supported workflows work; every initial held-out execution meets the acceptable task-success definition (each dimension >=2, not 3); no unresolved material/serious errors or essential security failures. Minor findings remain visible but do not fail a run. This is a deliberately strict regression gate on a small supported set, not a perfection requirement or an estimated universal success rate. If it cannot be met, repair the system or explicitly narrow supported scope. Never silently remove failures. Once used for tuning, a held-out case becomes a regression case and requires a fresh replacement.
+Trial quality gate under review, following founder feedback on 5 October 2026: the earlier requirement that every dimension pass in all 72 executions is not an approved final trial threshold. Keep the per-task success rubric and planned coverage above, but assess trial readiness by severity and task family rather than treating every ordinary quality miss as an automatic product-wide blocker.
+
+Before evaluation begins, record and obtain approval for each family's minimum task-success threshold, treatment of isolated material failures, recurrence rules, and required repairs or explicit scope limits. Numerical replacements are not yet agreed; do not invent them or change them after seeing held-out results. Report counts, denominators, dimensions, severity and repeat variability for each family. Strong aggregate performance cannot conceal a weak family.
+
+Critical privacy/security failures and serious task-critical errors remain blockers. Minor findings remain visible without automatically failing readiness; recurring material failures in a supported family require repair or an explicitly reviewed scope change. All canonical workflows in the agreed trial scope must work. No trial is approved merely because the old numerical gate is under review. Preserve every failed result. Once used for tuning, a held-out case becomes a regression case and requires a fresh replacement.
+
+Transport diagnostics are assessed by demonstrated impact, under the roadmap's one-batch time box: answer integrity, reliability, cancellation, cleanup and security. A browser error alone is not a permanent product-wide gate, but an unexplained event cannot be silently suppressed. Any change to the current transport gate requires recorded evidence and corresponding tests; full provider qualification remains mandatory.
 
 ## Comparators
 

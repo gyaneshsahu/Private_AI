@@ -1,6 +1,9 @@
 # PrivateAI delivery roadmap
 
-Working plan · 5 October 2026 · Owner: project founder; implementation: Codex.
+**Working draft — direction accepted; detailed gates under review.**
+
+Updated 5 October 2026 · Owner: project founder; implementation: Codex.
+This is not yet an approved backbone for the entire product.
 
 The next product milestone is a usable, bounded invited-user trial. It is **not
 ready for real private-data trials today**. Useful local document and encrypted
@@ -18,8 +21,7 @@ Preserve stable IDs so progress and changed priorities remain traceable.
 Codex may change implementation, split tasks or reorder independent work when new
 evidence supports a better approach. Record why; do not silently erase failures or
 mark tests as live evidence. Changes to supported scope, privacy promises, spending
-limits or real-user-data use require the founder's decision. A roadmap is a working
-backbone, not a reason to preserve a disproven design.
+limits or real-user-data use require the founder's decision. This working roadmap must evolve with evidence; it is not a reason to preserve a disproven design.
 
 Sources of requirements: [PRD](PRD.md), [architecture](ARCHITECTURE.md),
 [acceptance contract](acceptance.md). Operational evidence:
@@ -55,14 +57,42 @@ Local DONE does not imply provider qualification or deployed release.
 | ID / priority | Outcome and status | Dependencies and concrete exit evidence |
 | --- | --- | --- |
 | T1 — first | **DONE (local): cumulative streaming usage parser** | Accept repeated/nondecreasing output snapshots, never sum them, require final accounting when usage starts. Reject regressions, invalid totals, malformed/truncated streams and incomplete answers. Encrypted fragmented-browser regression passes; live fixed adapter returns `4`. |
-| T2 — first | **BLOCKED: unambiguous live stream closure** | T1. One fresh check in this batch returned `4` in 1.81 s with 169 input / 38 output tokens; no observed request-signal abort or reader cancellation, but Chromium reported `ERR_ABORTED`. Reproduce using the real relay with a controlled peer; establish terminal HTTP/stream behavior without suppressing the event. A passing review must record correct answer, complete usage and normal relay closure. |
+| T2 — first | **BLOCKED pending impact assessment: live relay abort** | T1. One fresh check in this batch returned `4` in 1.81 s with 169 input / 38 output tokens; no observed request-signal abort or reader cancellation, but Chromium reported `ERR_ABORTED`. Time-box investigation to one focused engineering batch, at most one engineering day. Assess complete answers, truncation detection, cancellation, resource cleanup, repeat reliability and security using controlled relay tests. End with the evidence-based disposition below; eliminating a browser message alone is not an exit requirement. |
 | W1 — parallel | **DONE (local): save and resume a document workspace with its draft** | Import, correct source text, compose unsent draft, explicitly encrypt/save, lock, reload, unlock and reopen both. Cancel/confirm replacement of unsaved work; delete clears saved record/current draft. Browser storage inspection finds no plaintext canaries; no inference or research is triggered by this flow. |
 | W2 — next independent workflow | **NEXT: recover from interruption without losing context** | Extend complete UI tests for cancelled/partial chat, explicit retry, branching and retained source evidence using labelled synthetic transport fixtures. Verify new session/lock during pending extraction/research/save cannot restore cleared content. Follow with current-adapter live document correction after T2 and appropriate bounded authorization. |
 | T3 | **BLOCKED: live document/follow-up workflow** | T2. Current adapter must return supported invoice arithmetic and citations for both turns: 95/19/114 EUR, then 90/18/108 EUR, reduction 6 EUR. Inspect actual source support, context correction, stream closure and accounting. Historical earlier-adapter success is supporting evidence, not this exit criterion. |
 | Q1 — parallel evidence work | **BLOCKED: qualify the complete provider path** | Router-to-worker/GPU binding, software/build identity, freshness/revocation/rollback, caching/retention/diagnostics/moderation/egress and billing controls reviewed from primary evidence. Complete live/negative checks in the acceptance contract. Do not invent a passing report or accept a changed pin automatically. |
-| E1 | **NEXT after T3: initial supported-task evaluation** | Freeze implementation/rubric; run development cases, fix failures, then preserve reserved separation. All 24 held-out cases × 3 runs must meet existing acceptable-task criteria (each dimension ≥2, mandatory assertions, no serious error). Report family results; replace any reserved case used for tuning. Plan costs against remaining authorized balance before starting this larger batch. |
+| E1 | **NEXT after T3: initial supported-task evaluation** | Freeze implementation/rubric; run development cases, fix failures, then preserve reserved separation. Keep 24 held-out cases × 3 runs as the planned coverage, but review the all-72-pass trial threshold before evaluation starts. Pre-register family-level minimums, severity rules and treatment of recurring material failures; founder approval of those numerical thresholds is pending. Preserve the per-task rubric and every failure; replace any reserved case used for tuning. Plan costs against remaining authorized balance before starting this larger batch. |
 | U1 — parallel | **NEXT: trial onboarding and operational readiness** | Explain supported inputs, local-only storage, unsaved/locked state, research disclosure and recovery limits. Observe keyboard and real-phone workflows. Document invitation/revocation, individual access boundary, incident stop procedure and minimal content-free diagnostics. Shared Basic credentials alone are not a multi-user account design. No private-content analytics or automatic feedback uploads. |
-| R1 | **BLOCKED: open the bounded invited-user trial** | T2/T3/Q1/E1/U1 complete, actual cost reconciled, deployment validation tied to release, no unresolved material/essential security failures. Founder authorizes audience, hosting/privacy boundary and real-user-data scope. Supported scope and known minor limitations are explicit. |
+| R1 | **BLOCKED: open the bounded invited-user trial** | T2/T3/Q1/E1/U1 complete, actual cost reconciled, deployment validation tied to release, the reviewed severity/family quality gate met and no unresolved critical or essential security failures. Founder authorizes audience, hosting/privacy boundary and real-user-data scope. Supported scope and known minor limitations are explicit. |
+
+### T2 disposition at the time-box boundary
+
+- **Functional, reliability or security defect:** keep the affected capability blocked; record the reproducer, impact and bounded repair task.
+- **Demonstrated instrumentation-only discrepancy:** retain the event and evidence, revise the specific transport criterion in code/tests/docs, and proceed only when application completion, truncation detection, cancellation and resource cleanup are independently supported. A correct answer alone is insufficient evidence.
+- **Impact still unknown:** record uncertainty and block only dependent capabilities. Schedule another investigation only with a new hypothesis or evidence, not an unchanged probe. Continue W2, general-assistant fixtures and onboarding in parallel.
+
+The time box does not authorize another paid call, weaken provider qualification or automatically convert an unknown into a pass. Existing runtime gates remain unchanged until a supported disposition is implemented and tested.
+
+## General-assistant delivery track
+
+Documents and drafts are entry workflows, not the product's destination. Track these
+capabilities alongside the transport and workspace work, using the same six-family
+rubric and privacy boundaries. Fixture preparation and UI work can proceed now;
+live evaluation depends on transport readiness and bounded authorization, and real
+private-data use depends on Q1.
+
+| ID / sequence | Everyday outcome | Exit evidence |
+| --- | --- | --- |
+| G1 — parallel now | Writing and revision: draft, change tone/length, preserve facts and user corrections | Multi-turn fixtures and then live tasks show requested edits without invented facts or lost constraints |
+| G2 — after G1 | Explanation and planning: explain at the user's level, compare choices, revise a practical plan | Family-level review checks clarity, uncertainty, constraints and follow-up consistency |
+| G3 — alongside G2 | Personal discussion: reflect stated preferences, ask useful clarifying questions, avoid unsupported assumptions | Synthetic sensitive-context scenarios assess usefulness, context preservation and appropriate boundaries before any private-user trial |
+| G4 — integrated with T3 | Calculations and document questions: combine evidence, citations and exact calculations | Ground-truth arithmetic, source support and correction workflows; distinguish model reasoning from actual calculator use |
+| G5 — after core follow-ups | Research-assisted everyday decisions with explicit disclosure approval | End-to-end approved-query/page retrieval, inspectable evidence, synthesis and follow-up; injected content cannot authorize network actions |
+| G6 — before trial scope is frozen | Review coverage across all six task families | Publish supported capabilities and known limitations per family; any narrower trial scope is explicit, not an implicit pivot to a document-only product |
+
+G1–G6 feed E1 and U1. R1 requires G6's scope review; one successful invoice or saved
+draft cannot establish general-assistant readiness.
 
 While Q1 is unresolved, operator rehearsal uses synthetic inputs and local workflows.
 The production inference gate remains enforced on client and gateway. Do not add a
@@ -83,9 +113,28 @@ not an automatic workaround for Q1.
 
 Cloud sync, automatic long-term memory, anonymous access, family sharing, autonomous
 account actions, voice/video, general vision, model routing and custom GPU hosting
-remain deferred per the PRD. Each needs its own value evidence and threat-model review.
+remain deferred per the PRD. Reconsider them during trial reviews when repeated user
+needs or measured capability gaps justify the work, not merely because a feature is
+available. Reconsideration starts a design review; it is not implementation approval.
+
+| Deferred area | Evidence needed to reconsider |
+| --- | --- |
+| Cloud sync, memory and family sharing | Repeated cross-device/continuity needs; explicit consent, access isolation, deletion/recovery design and affordable operation |
+| Anonymous access | Demonstrated demand plus a credible identity/metadata threat model, abuse controls and sustainable entitlement design |
+| Voice/video and general vision | Repeated tasks that text/local extraction cannot serve; modality quality/accessibility evidence and reviewed capture, retention and provider boundaries |
+| Autonomous account actions | Repeated valuable workflows; scoped permissions, review/confirmation, auditability and recovery from incorrect actions |
+| Model routing or custom GPU hosting | Measured quality, reliability, privacy or cost limitations of the current path; benchmarked alternatives and a viable full-chain security/operating model |
+
+Do not expand scope to avoid failing current requirements. Record the need, alternatives,
+expected benefit, risks, cost and founder decision before promoting a deferred area.
 
 ## Evidence and change log
+
+- 5 October 2026, founder review: overall direction accepted; detailed gates remain
+  under review. Added a bounded T2 impact assessment, pre-evaluation quality-gate
+  review, G1–G6 general-assistant track and explicit deferred-feature reconsideration
+  criteria. Privacy boundaries, evidence retention and parallel development remain.
+
 
 - 5 October 2026: roadmap created from requirements and inspected code. T1's fix
   landed in `f48c943`; this batch extends its encrypted browser regression to the
