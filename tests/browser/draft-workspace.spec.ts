@@ -29,13 +29,11 @@ test("draft and corrected document survive explicit encrypted save; switching pr
     "DRAFT CANARY 732: compare this bill",
   );
   await tab("Context").click();
-  await page
-    .getByLabel("Add documents or screenshots")
-    .setInputFiles({
-      name: "draft-bill.txt",
-      mimeType: "text/plain",
-      buffer: Buffer.from("SYNTHETIC amount 80 EUR"),
-    });
+  await page.getByLabel("Add documents or screenshots").setInputFiles({
+    name: "draft-bill.txt",
+    mimeType: "text/plain",
+    buffer: Buffer.from("SYNTHETIC amount 80 EUR"),
+  });
   await page.locator("details summary").first().click();
   await page
     .getByLabel("Text for draft-bill.txt", { exact: true })
@@ -145,4 +143,35 @@ test("a draft without attachments can be saved and reopened", async ({
   await saved.click();
   await page.getByRole("button", { name: "Open", exact: true }).click();
   await expect(page.getByLabel("Message PrivateAI")).toHaveValue("Draft only");
+});
+
+test("everyday starters prepare editable drafts and keep research an explicit action", async ({
+  page,
+}) => {
+  const outbound: string[] = [];
+  page.on("request", (request) => {
+    if (request.method() === "POST") outbound.push(request.url());
+  });
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Write or revise", exact: false })
+    .click();
+  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+    /Help me write/,
+  );
+  await page.getByLabel("Message PrivateAI").fill("My existing unsent draft");
+  await page
+    .getByRole("button", { name: "Plan something", exact: false })
+    .click();
+  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+    "My existing unsent draft",
+  );
+  await page
+    .locator(".composer")
+    .getByRole("button", { name: "Research", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Review disclosure" }),
+  ).toBeVisible();
+  expect(outbound).toEqual([]);
 });

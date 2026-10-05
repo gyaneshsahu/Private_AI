@@ -35,7 +35,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
             throw new IncompleteReplyError('TEST interrupted response');
           }
           const source=c.attachments[0]?.sources[0];
-          chunk('TEST complete answer' + (source ? ' ['+source.id+']' : ''));
+          chunk((window.fixtureAnswer ?? 'TEST complete answer') + (source ? ' ['+source.id+']' : ''));
           return {input:2,output:3,total:5,estimatedUSD:0};
         }
       `;
@@ -240,6 +240,36 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       0,
     );
     await ui(page.getByText("Local vault unlocked")).toHaveCount(0);
+    await page.evaluate(() =>
+      Object.assign(window, {
+        fixtureMode: "complete",
+        fixtureAnswer:
+          "# Formatted answer\n\n**Summary**\n\n| Item | EUR |\n| --- | --- |\n| Net | 95 |\n\n- VAT is 19\n\n\\[\n95+19=114\n\\]\n\n```text\n" +
+          "LONG_CODE_".repeat(40) +
+          "\n```\n\n![tracking](https://invalid.example/pixel) <script>window.injected=true</script>",
+      }),
+    );
+    await page.getByLabel("Message PrivateAI").fill("TEST render formatting");
+    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await ui(page.locator("article.assistant table")).toBeVisible();
+    await ui(page.locator("article.assistant .katex")).toBeVisible();
+    await ui(
+      page.locator(
+        "article.assistant img, article.assistant script, article.assistant a",
+      ),
+    ).toHaveCount(0);
+    for (const width of [1440, 360]) {
+      await page.setViewportSize({ width, height: 900 });
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    }
+    await page.screenshot({
+      path: ".local/answer-format-phone.png",
+      fullPage: true,
+    });
     expect(external).toEqual([]);
   } finally {
     await browser.close();

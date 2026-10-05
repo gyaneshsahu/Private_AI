@@ -1,5 +1,4 @@
-import { Answer } from "./Answer";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   emptyConversation,
   type AppStatus,
@@ -15,6 +14,9 @@ import { IncompleteReplyError } from "./reply-stream";
 import { abortable } from "./abortable";
 
 type Tab = "Conversation" | "Context" | "Research" | "Saved";
+const Answer = lazy(() =>
+  import("./Answer").then((module) => ({ default: module.Answer })),
+);
 export function App() {
   const [tab, setTab] = useState<Tab>("Conversation");
   const [conversation, setConversation] =
@@ -534,22 +536,35 @@ export function App() {
                 <div className="starter-grid">
                   {[
                     [
+                      "Write or revise",
+                      "Find clear words for what you want to say.",
+                      "Help me write a clear, friendly message. Here’s what I want to say: ",
+                    ],
+                    [
+                      "Plan something",
+                      "Turn a goal and constraints into next steps.",
+                      "Help me make a practical plan. My goal and constraints are: ",
+                    ],
+                    [
                       "Understand a document",
                       "Bring a bill, a letter or a few notes.",
                       "Context",
                     ],
-                    [
-                      "Research your options",
-                      "Choose exactly what gets shared.",
-                      "Research",
-                    ],
-                    [
-                      "Keep something for later",
-                      "Save an encrypted copy on this device.",
-                      "Saved",
-                    ],
                   ].map(([title, description, target]) => (
-                    <button key={title} onClick={() => setTab(target as Tab)}>
+                    <button
+                      key={title}
+                      onClick={() => {
+                        if (target === "Context") setTab("Context");
+                        else {
+                          if (input.trim()) {
+                            document.getElementById("message-input")?.focus();
+                            return;
+                          }
+                          setInput(target);
+                          document.getElementById("message-input")?.focus();
+                        }
+                      }}
+                    >
                       <span>{title} ↗</span>
                       <p>{description}</p>
                     </button>
@@ -572,11 +587,17 @@ export function App() {
                       </span>
                     )}
                   </div>
-                  <Answer
-                    text={message.text}
-                    sources={message.sourceSnapshot ?? sources}
-                    open={setSource}
-                  />
+                  <Suspense
+                    fallback={
+                      <div className="message-text">{message.text}</div>
+                    }
+                  >
+                    <Answer
+                      text={message.text}
+                      sources={message.sourceSnapshot ?? sources}
+                      open={setSource}
+                    />
+                  </Suspense>
                   <div className="message-actions">
                     <label>
                       <input
@@ -665,6 +686,13 @@ export function App() {
                     {conversation.attachments.filter((a) => a.selected).length}{" "}
                     selected
                   </span>
+                </button>
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() => setTab("Research")}
+                >
+                  Research
                 </button>
                 <button
                   className="primary"

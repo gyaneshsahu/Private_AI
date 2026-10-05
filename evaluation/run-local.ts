@@ -15,6 +15,7 @@ import { createServer } from "vite";
 import {
   validateExperiment,
   expectedInvoice,
+  everydayAssertions,
   experimentRequestLimit,
 } from "./experiment";
 import { experimentGateway } from "./experiment-gateway";
@@ -165,7 +166,13 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
     kind: diagnose ? "NONBILLABLE_DIAGNOSTIC" : "SYNTHETIC_EXPERIMENT",
     qualification: "NOT_PASSED",
     scenario: permit.scenario,
-    ...(compatibility ? { expectedReply: "4" } : { expectedInvoice }),
+    ...(permit.scenario === "adapter_compatibility"
+      ? { expectedReply: "4" }
+      : permit.scenario === "two_turn_invoice"
+        ? { expectedInvoice }
+        : {
+            expectedAssertions: everydayAssertions[permit.scenario],
+          }),
     attempts,
     charges:
       "Reconcile with provider billing; estimates do not include every possible fee.",
@@ -180,7 +187,10 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
       cacheDir: resolve(root, "node_modules/.vite-experiment"),
       appType: "custom",
       logLevel: "error",
-      optimizeDeps: { include: ["tinfoil", "ehbp", "pdfjs-dist", "tesseract.js"], noDiscovery: true },
+      optimizeDeps: {
+        include: ["tinfoil", "ehbp", "pdfjs-dist", "tesseract.js"],
+        noDiscovery: true,
+      },
       server: { middlewareMode: true, hmr: false },
       worker: { format: "es" },
     });
@@ -402,4 +412,3 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
     );
   }
 }
-

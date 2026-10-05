@@ -6,7 +6,12 @@ export const experimentSchema = z
   .object({
     purpose: z.literal("SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION"),
     scenario: z
-      .enum(["two_turn_invoice", "adapter_compatibility"])
+      .enum([
+        "two_turn_invoice",
+        "adapter_compatibility",
+        "writing_revision",
+        "everyday_planning",
+      ])
       .default("two_turn_invoice"),
     approvalId: z.string().regex(/^[a-zA-Z0-9_-]{8,80}$/),
     approvedAt: z.string().datetime(),
@@ -69,6 +74,34 @@ export const expectedInvoice = [
 
 export const compatibilityPrompt =
   "Calculate 2 + 2. Reply with just the number.";
+export const writingPrompts = [
+  "Synthetic writing task: draft a friendly invitation email for a free community workshop on Saturday 17 October 2026, 10:00–12:00. Ask people to bring a notebook and reply by Thursday 15 October. Keep it under 120 words. No venue or signup URL was supplied; do not invent one.",
+  "Revise the invitation: the workshop is now Sunday 18 October, 11:00–13:00, and replies are due Friday 16 October. Make it shorter while keeping the free admission and notebook instruction. Do not invent a location or link.",
+] as const;
+export const planningPrompts = [
+  "Synthetic planning task: make a one-week English presentation practice plan. I have three 30-minute sessions, Tuesday, Thursday and Saturday, each starting at 19:00. Include concrete activities and a self-check at the end of each session. Use no paid tools. Keep the plan concise.",
+  "Thursday is no longer available; replace it with Friday. Keep three sessions of 30 minutes, 90 minutes total, starting at 19:00. Make Saturday a full rehearsal and retain a self-check for each session. Show the revised complete plan.",
+] as const;
+export function scenarioPrompts(
+  scenario: Experiment["scenario"],
+): readonly string[] {
+  return {
+    adapter_compatibility: [compatibilityPrompt],
+    two_turn_invoice: experimentPrompts,
+    writing_revision: writingPrompts,
+    everyday_planning: planningPrompts,
+  }[scenario];
+}
+export const everydayAssertions = {
+  writing_revision: [
+    "Original dates, time, free admission and notebook retained; under 120 words; no invented venue/link",
+    "Revised dates and time replace old details; Friday reply deadline; shorter email; free admission and notebook retained",
+  ],
+  everyday_planning: [
+    "Tuesday/Thursday/Saturday, 19:00, 30 minutes each; concrete activities and self-checks; no paid tools",
+    "Tuesday/Friday/Saturday, 19:00, 90 minutes total; Saturday rehearsal; self-checks retained",
+  ],
+} as const;
 export function experimentRequestLimit(permit: Pick<Experiment, "scenario">) {
   return permit.scenario === "adapter_compatibility" ? 1 : 2;
 }

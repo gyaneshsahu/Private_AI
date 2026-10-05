@@ -5,6 +5,16 @@
 Updated 5 October 2026 · Owner: project founder; implementation: Codex.
 This is not yet an approved backbone for the entire product.
 
+The product goal is a general-purpose conversational assistant targeting
+ChatGPT/Gemini-level quality across most everyday tasks, with strong, verifiable
+privacy. That quality is a target to demonstrate, not a current claim. Documents,
+drafts and controlled research are initial evaluation workflows, not final scope.
+
+UI direction: clean, familiar and conversation-first, with PrivateAI's own identity.
+Integrate documents/research naturally; show clear privacy indicators and reveal
+advanced controls when relevant. Keep desktop/mobile workflows free of clutter and
+technical jargon.
+
 The next product milestone is a usable, bounded invited-user trial. It is **not
 ready for real private-data trials today**. Useful local document and encrypted
 workspace workflows are available; full provider qualification and trial quality/operational gates remain blockers. This roadmap tracks outcomes and evidence,
@@ -61,9 +71,10 @@ Local DONE does not imply provider qualification or deployed release.
 | W2 — next independent workflow | **IN PROGRESS: interruption recovery** | Complete chat UI fixture now verifies stop, explicit retry, follow-ups, branching and retained citation snapshots. New session/lock cancels active chat and ignores late output/status. Extraction progress now respects cancellation/generation. Broader pending extraction/research/save race coverage remains before marking W2 complete; current-adapter live document correction passed T3. |
 | T3 | **DONE (narrow live case): document/follow-up workflow** | Fresh current-adapter run `windows_20261005_invoice_2` returned 95/19/114 EUR then 90/18/108 EUR, reduction 6 EUR, with matching citations and explicit distinction between source discount and user correction. Both streams independently validated complete; durations 4.39/4.20 s. Agent review supports this one case only, not broad quality or privacy qualification. |
 | Q1 — parallel evidence work | **BLOCKED: qualify the complete provider path** | Router-to-worker/GPU binding, software/build identity, freshness/revocation/rollback, caching/retention/diagnostics/moderation/egress and billing controls reviewed from primary evidence. Complete live/negative checks in the acceptance contract. Do not invent a passing report or accept a changed pin automatically. |
-| E1 | **NEXT: initial supported-task evaluation** | Freeze implementation/rubric; run development cases, fix failures, then preserve reserved separation. Keep 24 held-out cases × 3 runs as the planned coverage, but review the all-72-pass trial threshold before evaluation starts. Pre-register family-level minimums, severity rules and treatment of recurring material failures; founder approval of those numerical thresholds is pending. Preserve the per-task rubric and every failure; replace any reserved case used for tuning. Plan costs against remaining authorized balance before starting this larger batch. |
+| E1 | **NEXT: initial supported-task evaluation** | Freeze implementation/rubric; run development cases, fix failures, then preserve reserved separation. Keep 24 held-out cases × 3 runs as the planned coverage, but review the all-72-pass trial threshold before evaluation starts. Pre-register family-level minimums, severity rules and treatment of recurring material failures; founder approval of the [proposed numerical thresholds](trial-quality-gate-proposal.md) is pending. Preserve the per-task rubric and every failure; replace any reserved case used for tuning. Plan costs against remaining authorized balance before starting this larger batch. |
+| U2 — parallel | **DONE (local): readable conversation answers and everyday starters** | Markdown tables/lists/code/math, retained source citations, local assets, inert external content, and desktop/mobile coverage. Writing/planning starters prepare editable drafts without automatic sending. [Everyday review](everyday-development-review.md). |
 | U1 — parallel | **NEXT: trial onboarding and operational readiness** | Explain supported inputs, local-only storage, unsaved/locked state, research disclosure and recovery limits. Observe keyboard and real-phone workflows. Document invitation/revocation, individual access boundary, incident stop procedure and minimal content-free diagnostics. Shared Basic credentials alone are not a multi-user account design. No private-content analytics or automatic feedback uploads. |
-| R1 | **BLOCKED: open the bounded invited-user trial** | T2/T3/Q1/E1/U1 complete, actual cost reconciled, deployment validation tied to release, the reviewed severity/family quality gate met and no unresolved critical or essential security failures. Founder authorizes audience, hosting/privacy boundary and real-user-data scope. Supported scope and known minor limitations are explicit. |
+| R1 | **BLOCKED: open the bounded invited-user trial** | T2/T3/W2/Q1/E1/G6/U1 complete, actual cost reconciled, deployment validation tied to release, the reviewed severity/family quality gate met and no unresolved critical or essential security failures. Founder authorizes audience, hosting/privacy boundary and real-user-data scope. Supported scope and known minor limitations are explicit. |
 
 ### T2 disposition at the time-box boundary
 
@@ -83,8 +94,8 @@ private-data use depends on Q1.
 
 | ID / sequence | Everyday outcome | Exit evidence |
 | --- | --- | --- |
-| G1 — parallel now | Writing and revision: draft, change tone/length, preserve facts and user corrections | Multi-turn fixtures and then live tasks show requested edits without invented facts or lost constraints |
-| G2 — after G1 | Explanation and planning: explain at the user's level, compare choices, revise a practical plan | Family-level review checks clarity, uncertainty, constraints and follow-up consistency |
+| G1 — parallel now | **IN PROGRESS:** Writing and revision: draft, change tone/length, preserve facts and user corrections | One fresh live revision case preserves core facts and changes, but adds unsupported embellishments. Further development and human grading remain; updated policy needs regression. See everyday review |
+| G2 — alongside G1 | **IN PROGRESS:** Explanation and planning: explain at the user's level, compare choices, revise a practical plan | Live planning exposed length-limit failures and a time-budget error. A larger bounded profile completed but did not pass quality. Explanation and broader family review remain pending; no unchanged paid repeats |
 | G3 — alongside G2 | Personal discussion: reflect stated preferences, ask useful clarifying questions, avoid unsupported assumptions | Synthetic sensitive-context scenarios assess usefulness, context preservation and appropriate boundaries before any private-user trial |
 | G4 — integrated with T3 | Calculations and document questions: combine evidence, citations and exact calculations | Ground-truth arithmetic, source support and correction workflows; distinguish model reasoning from actual calculator use |
 | G5 — after core follow-ups | Research-assisted everyday decisions with explicit disclosure approval | End-to-end approved-query/page retrieval, inspectable evidence, synthesis and follow-up; injected content cannot authorize network actions |
@@ -153,3 +164,8 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 Next: complete W2 race coverage and make live answer formatting readable; progress
 G1–G6 and U1 independently while Q1 needs supplier evidence.
+
+- 5 October 2026: U2 implemented with maintained local rendering integrations;
+  G1/G2 gained fresh synthetic live development evidence, including preserved
+  material planning failures. The general-assistant goal and conversation-first UI
+  direction are now explicit. Quality proposal sent for founder review; not yet approved.

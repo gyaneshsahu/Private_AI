@@ -3,12 +3,7 @@ import { newMessage } from "../src/conversation";
 import { extract } from "../src/documents";
 import { streamVerifiedConversation } from "../src/verified-chat";
 import { IncompleteReplyError } from "../src/reply-stream";
-import {
-  invoiceText,
-  compatibilityPrompt,
-  experimentPrompts,
-  validateExperiment,
-} from "./experiment";
+import { invoiceText, scenarioPrompts, validateExperiment } from "./experiment";
 
 export async function runSynthetic(input: unknown, csrf: string) {
   const permit = validateExperiment(input);
@@ -17,7 +12,10 @@ export async function runSynthetic(input: unknown, csrf: string) {
   const evidence: { host: string; releaseDigest: string }[] = [];
   const timings: number[] = [];
   let failure: string | null = null;
-  let stage = "Extracting synthetic document";
+  let stage =
+    permit.scenario === "two_turn_invoice"
+      ? "Extracting synthetic document"
+      : "Preparing synthetic conversation";
   let diagnostic: {
     stage: string;
     category: string;
@@ -34,10 +32,7 @@ export async function runSynthetic(input: unknown, csrf: string) {
       );
       conversation.attachments.push(attachment);
     }
-    const prompts =
-      permit.scenario === "adapter_compatibility"
-        ? [compatibilityPrompt]
-        : experimentPrompts;
+    const prompts = scenarioPrompts(permit.scenario);
     for (const prompt of prompts) {
       conversation.messages.push(newMessage("user", prompt));
       const answer = {

@@ -1,5 +1,7 @@
 # Windows compatibility failure — 5 October 2026
 
+**Latest disposition:** the subsequent time-boxed [transport impact review](transport-impact-review.md) reproduces the no-store terminal-event discrepancy and records a fresh compatible run plus two-turn invoice success. Earlier unresolved findings below remain historical evidence, not the current scoped transport decision. Full provider qualification is still NOT_PASSED.
+
 ## Invited-trial preparation follow-up
 
 The next user instruction authorized at most one fresh bounded synthetic check in

@@ -123,6 +123,12 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
         "fixture",
       );
       const compatibilityCalls = state.mockCalls.length;
+      const everyday = [];
+      for (const scenario of ["writing_revision", "everyday_planning"]) {
+        state.mockCalls = [];
+        const outcome = await runSynthetic({ ...permit, scenario }, "fixture");
+        everyday.push({ outcome, calls: state.mockCalls });
+      }
       state.mockCalls = [];
       state.mockUnknownUsage = true;
       const unknownCost = await runSynthetic(permit, "fixture");
@@ -130,6 +136,7 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
       state.mockModuleFailure = true;
       const moduleFailure = await runSynthetic(permit, "fixture");
       return {
+        everyday,
         compatibility,
         compatibilityCalls,
         moduleFailure,
@@ -140,6 +147,18 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
       };
     });
     expect(result.compatibilityCalls).toBe(1);
+    for (const task of result.everyday) {
+      expect(task.outcome.failure).toBeNull();
+      expect(task.outcome.conversation.attachments).toHaveLength(0);
+      expect(task.calls).toHaveLength(2);
+      expect(task.calls[1].messages).toHaveLength(3);
+    }
+    expect(result.everyday[0].calls[1].messages[2].text).toContain(
+      "Sunday 18 October",
+    );
+    expect(result.everyday[1].calls[1].messages[2].text).toContain(
+      "replace it with Friday",
+    );
     expect(result.compatibility.conversation.attachments).toHaveLength(0);
     expect(result.compatibility.conversation.messages).toHaveLength(2);
     expect(external).toEqual([]);
