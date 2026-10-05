@@ -58,11 +58,11 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
     sendAccessPage(res);
   });
   let attempts = 0,
-    attemptWindow = 0;
+    attemptWindow = 0,
+    verifying = 0;
   router.post(
     ["/auth/login", "/auth/register"],
-    express.urlencoded({ extended: false, limit: "2kb" }),
-    async (req, res) => {
+    (_req, res, next) => {
       if (Date.now() - attemptWindow > 60000) {
         attemptWindow = Date.now();
         attempts = 0;
@@ -72,6 +72,10 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
         sendAccessPage(res, 429, "limited");
         return;
       }
+      next();
+    },
+    express.urlencoded({ extended: false, limit: "2kb" }),
+    async (req, res) => {
       const { id, password, token } = req.body ?? {};
       if (
         typeof id !== "string" ||
@@ -82,11 +86,25 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
         sendAccessPage(res, 401, "invalid");
         return;
       }
-      const valid =
-        req.path === "/auth/register"
-          ? typeof token === "string" &&
-            (await registry.register(id, token, password))
-          : await registry.login(id, password);
+      if (verifying >= 2) {
+        res.setHeader("Retry-After", "5");
+        sendAccessPage(res, 503, "busy");
+        return;
+      }
+      let valid = false;
+      verifying++;
+      try {
+        valid =
+          req.path === "/auth/register"
+            ? typeof token === "string" &&
+              (await registry.register(id, token, password))
+            : await registry.login(id, password);
+      } catch {
+        sendAccessPage(res, 503, "unavailable");
+        return;
+      } finally {
+        verifying--;
+      }
       if (!valid) {
         sendAccessPage(res, 401, "invalid");
         return;
@@ -104,6 +122,25 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
           else res.redirect(303, "/");
         });
       });
+    },
+  );
+  router.use(
+    ["/auth/login", "/auth/register"],
+    (
+      error: unknown,
+      _req: express.Request,
+      res: express.Response,
+      _next: express.NextFunction,
+    ) => {
+      const status =
+        typeof error === "object" && error !== null && "status" in error
+          ? error.status
+          : undefined;
+      sendAccessPage(
+        res,
+        status === 413 ? 413 : status === 400 ? 400 : 503,
+        status === 413 || status === 400 ? "invalid" : "unavailable",
+      );
     },
   );
   router.post("/auth/logout", (req, res) => {

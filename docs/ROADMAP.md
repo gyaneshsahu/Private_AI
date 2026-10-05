@@ -140,6 +140,22 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 5 October 2026: bounded trial authentication work to two concurrent password
+  checks across sign-in and redemption. The existing attempt limit now runs before
+  parsing, including oversized bodies. Busy, storage-failure and malformed-form
+  paths retain usable cleared forms without reflecting submitted credentials or
+  raw errors. Real HTTP regression covers saturation, slot recovery after failure,
+  unused invitation preservation, subsequent successful sign-in and oversized-body
+  rate limiting. Hosting-edge abuse review and multi-instance controls remain open.
+  Added best-effort browser reload/navigation warnings for unsaved work, with
+  cancellation preserving the draft and successful encrypted save removing the
+  warning. Security-triggered navigation bypasses the warning; no autosave or
+  mobile/crash recovery guarantee is introduced.
+  Validation: 130 unit/integration tests, 15 production browser workflows,
+  typecheck, build and evaluation-fixture integrity passed. The initial reload
+  test awaited a cancelled navigation; corrected browser interaction and the full
+  browser rerun passed. Provider and human quality gates remain unchanged.
+
 - 5 October 2026, founder review: overall direction accepted; detailed gates remain
   under review. Added a bounded T2 impact assessment, pre-evaluation quality-gate
   review, G1–G6 general-assistant track and explicit deferred-feature reconsideration

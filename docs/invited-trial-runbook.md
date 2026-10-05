@@ -12,6 +12,12 @@ reload/lock behavior, deletion scope, research approval and interrupted replies.
 Privacy boundaries remain separately accessible. The guide is not legal consent
 or evidence that users understand the product.
 
+Browsers now warn before reload/navigation when workspace changes are unsaved;
+cancelling keeps the draft. Saving an encrypted snapshot removes the warning until
+another change. Sign-out and access-invalidating navigation bypass it so it cannot
+retain an expired session's screen. Browser warnings are best-effort (especially
+on mobile, forced termination or crashes); they do not autosave or guarantee recovery.
+
 Existing hosted Basic access is a shared development credential. It cannot revoke
 one person, attribute service limits to an invite, or separate customer accounts.
 Do not distribute it as an invited-user account system. Browser-local encrypted
@@ -98,6 +104,15 @@ Same-origin POST checks protect login/logout and API actions; API CSRF/grants ar
 bound to both account and login session. Login attempts are capped at 30/minute
 per instance; application POSTs at 200/hour per invite and 2,000/hour per instance.
 These are request limits, not a substitute for provider spending controls.
+
+Sign-in and invitation redemption share a two-check concurrency bound per process.
+Excess work receives a recoverable busy page (503, five-second Retry-After), without
+queueing passwords or consuming an invitation. There is no automatic retry.
+The 30-per-minute attempt limit runs before form parsing, so oversized submissions
+also count. Invalid/oversized forms and unavailable authentication storage retain
+cleared sign-in forms; raw exceptions, submitted secrets and storage paths are not
+reflected. Failed password checks release their slot. These local controls do not
+replace hosting-edge abuse protection or a multi-instance shared limiter.
 
 Signing out also closes active responses belonging to that login session within
 approximately one second. A separate login by the same account and other invited

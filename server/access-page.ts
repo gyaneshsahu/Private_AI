@@ -7,6 +7,7 @@ const errors = {
   invalid:
     "Access could not be verified. Check your details and try again. If your invitation has expired or access was revoked, contact the trial operator.",
   limited: "Too many sign-in attempts. Wait one minute before trying again.",
+  busy: "Sign-in is busy. Wait a few seconds before trying again.",
   unavailable: "Sign-in is temporarily unavailable. Please try again later.",
 } as const;
 

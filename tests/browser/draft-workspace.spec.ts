@@ -1,6 +1,42 @@
 import { test, expect } from "@playwright/test";
 import { Buffer } from "node:buffer";
 
+test("reload warns for unsaved drafts and stops warning after an encrypted save", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByLabel("Message PrivateAI").click();
+  await page.getByLabel("Message PrivateAI").fill("SYNTHETIC RELOAD DRAFT");
+  const warning = page.waitForEvent("dialog");
+  await page.evaluate(() => {
+    setTimeout(() => window.location.reload(), 0);
+  });
+  const dialog = await warning;
+  expect(dialog.type()).toBe("beforeunload");
+  await dialog.dismiss();
+  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+    "SYNTHETIC RELOAD DRAFT",
+  );
+  await page
+    .getByRole("navigation", { name: "Workspace" })
+    .getByRole("button", { name: "Saved", exact: false })
+    .click();
+  await page.getByLabel("Vault passphrase").fill("synthetic reload passphrase");
+  await page.getByRole("button", { name: "Create or unlock vault" }).click();
+  await page.getByRole("button", { name: "Save encrypted snapshot" }).click();
+  await expect(
+    page.getByText("No unsaved workspace changes.", { exact: false }),
+  ).toBeVisible();
+  const unexpected: string[] = [];
+  page.on("dialog", async (event) => {
+    unexpected.push(event.type());
+    await event.dismiss();
+  });
+  await page.reload();
+  expect(unexpected).toEqual([]);
+  await expect(page.getByLabel("Message PrivateAI")).toHaveValue("");
+});
+
 test("draft and corrected document survive explicit encrypted save; switching protects unsaved changes", async ({
   page,
 }) => {

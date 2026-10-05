@@ -42,6 +42,7 @@ export function App() {
   const controller = useRef<AbortController | null>(null);
   const vault = useRef<Vault | null>(null);
   const epoch = useRef(0);
+  const accessNavigation = useRef(false);
   const outputEnd = useRef<HTMLDivElement>(null);
   const unsaved = useMemo(() => {
     const previous = saved.find((item) => item.id === conversation.id);
@@ -56,6 +57,16 @@ export function App() {
       JSON.stringify({ ...previous, draft: previous.draft ?? "" })
     );
   }, [conversation, input, saved]);
+  useEffect(() => {
+    if (!unsaved) return;
+    const warn = (event: BeforeUnloadEvent) => {
+      if (accessNavigation.current) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [unsaved]);
   const allowReplace = () =>
     !unsaved ||
     window.confirm(
@@ -214,6 +225,7 @@ export function App() {
         ) {
           vault.current?.close(false);
           vault.current?.onInvalidate?.();
+          accessNavigation.current = true;
           window.location.assign(response.status === 401 ? "/auth" : "/");
         } else if (next) {
           setStatus(next);
@@ -254,6 +266,7 @@ export function App() {
     if (response.status === 401 && status.accountId) {
       vault.current?.lock();
       vault.current?.onInvalidate?.();
+      accessNavigation.current = true;
       window.location.assign("/auth");
     }
     if (!response.ok) throw new Error(result.error ?? "Request failed.");
@@ -600,6 +613,7 @@ export function App() {
                     method: "POST",
                   });
                   if (!response.ok) throw new Error();
+                  accessNavigation.current = true;
                   window.location.assign("/auth");
                 } catch {
                   fail("Workspace locked. Sign out failed; try again.");
