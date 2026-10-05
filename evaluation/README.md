@@ -1,6 +1,6 @@
 # Evaluation evidence
 
-`cases/development.json` contains 24 synthetic, two-turn development cases across six task families. `cases/heldout.json` contains 24 different reserved cases frozen before any model tuning. These were developer-authored, not independently contributed or blinded; do not describe them as independent customer validation. Neither set has been run against a model.
+`cases/development.json` contains 24 synthetic, two-turn development cases across six task families. `cases/heldout.json` contains 24 different reserved cases frozen before any model tuning. These were developer-authored, not independently contributed or blinded; do not describe them as independent customer validation. Three distinct development cases have live observations in [the development review](../docs/development-family-review.md); the reserved set remains unrun.
 
 `frozen-manifest.json` records SHA-256 file hashes. `npm run eval:check` validates counts, shapes, coverage and hashes; success is fixture integrity only. If a reserved case informs a fix, retain it as a regression case and prepare a new, separately versioned hold-out set. Never silently regenerate the manifest to hide a changed acceptance baseline.
 
@@ -13,3 +13,7 @@ Record real comparator configurations before use: current named ChatGPT and Gemi
 Before broader investment: at least 120 fresh distinct conversations, varied documents and prospective-user tasks, then human evaluation across repeated sessions. Repetitions measure variability, not new coverage. Paired uncertainty and family-specific failure patterns must accompany any competitiveness claim. The proposed noninferiority margin is a product decision, not an industry standard. If evidence is insufficient, say so; do not equate failure to detect a difference with proof of equality.
 
 Security tests, live-provider qualification, task quality and customer demand are separate records. No result currently establishes broad ChatGPT/Gemini parity or production readiness.
+
+The bounded runner accepts scenario `development_case` with `developmentCaseId` from the frozen development set only. Prompts and references cannot be supplied in a permit. Each case requires a fresh claim; see the development review for evidence and limitations.
+
+New results include `modelConfiguration` and `configurationSHA256` alongside code identity. Use the configuration identity for grading; code hashes alone cannot distinguish model or limit changes. Profile-aware agent-review sidecars preserve this distinction for earlier results.

@@ -2,6 +2,29 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
+import type { Experiment } from "./experiment";
+
+export function configurationIdentity(
+  codeHash: string,
+  policy: Experiment["policy"],
+) {
+  return createHash("sha256")
+    .update(
+      JSON.stringify({
+        codeHash,
+        model: policy.model,
+        origin: policy.origin,
+        repository: policy.repository,
+        releaseDigests: [...policy.releaseDigests].sort(),
+        maxInputCharacters: policy.maxInputCharacters,
+        maxOutputTokens: policy.maxOutputTokens,
+        inputPerMillion: policy.pricing.inputPerMillion,
+        outputPerMillion: policy.pricing.outputPerMillion,
+        currency: policy.pricing.currency,
+      }),
+    )
+    .digest("hex");
+}
 
 // Evidence identity only. No credentials, local transcripts or environment values.
 export async function implementationIdentity(root: string) {
@@ -15,6 +38,8 @@ export async function implementationIdentity(root: string) {
     "src/conversation.ts",
     "evaluation/local-client.ts",
     "evaluation/experiment.ts",
+    "evaluation/cases/development.json",
+    "evaluation/frozen-manifest.json",
     "evaluation/experiment-gateway.ts",
     "evaluation/run-local.ts",
     "evaluation/review-result.ts",

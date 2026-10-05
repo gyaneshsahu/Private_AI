@@ -79,6 +79,31 @@ const mockEncryptedResponse = async () =>
   });
 
 describe("synthetic experiment gates (no provider calls)", () => {
+  it("allows only frozen development case IDs and refuses reserved/custom prompts", () => {
+    const base = {
+      ...fixture(),
+      scenario: "development_case",
+      developmentCaseId: "development-planning-02",
+    };
+    expect(validateExperiment(base).developmentCaseId).toBe(
+      "development-planning-02",
+    );
+    for (const developmentCaseId of [
+      undefined,
+      "heldout-planning-02",
+      "../../private.txt",
+      "unknown",
+    ])
+      expect(() =>
+        validateExperiment({ ...base, developmentCaseId }),
+      ).toThrow();
+    expect(() =>
+      validateExperiment({ ...base, turns: ["custom prompt"] }),
+    ).toThrow();
+    expect(() =>
+      validateExperiment({ ...base, scenario: "two_turn_invoice" }),
+    ).toThrow();
+  });
   it("consumes an approval atomically across concurrent starts and later restarts", async () => {
     const folder = await mkdtemp(join(tmpdir(), "privateai-claim-test-"));
     try {

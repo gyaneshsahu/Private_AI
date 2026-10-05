@@ -3,6 +3,7 @@ import { chromium } from "@playwright/test";
 import { createServer } from "vite";
 import { existsSync } from "node:fs";
 import { approvedLocalGet } from "../evaluation/network-observation";
+import developmentCases from "../evaluation/cases/development.json";
 import { invoiceText } from "../evaluation/experiment";
 
 it("runs real browser extraction and follow-up state with an explicitly mocked model, and stops on unknown cost", async () => {
@@ -73,7 +74,7 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
     expect(await page.evaluate(() => "privateAiSyntheticRun" in window)).toBe(
       true,
     );
-    const result = await page.evaluate(async () => {
+    const result = await page.evaluate(async (fixtures) => {
       const state = window as unknown as {
         mockCalls: Array<{ messages: Array<{ text: string }> }>;
         mockUnknownUsage: boolean;
@@ -133,6 +134,19 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
         const outcome = await runSynthetic({ ...permit, scenario }, "fixture");
         everyday.push({ outcome, calls: state.mockCalls });
       }
+      const development = [];
+      for (const fixture of fixtures) {
+        state.mockCalls = [];
+        const outcome = await runSynthetic(
+          {
+            ...permit,
+            scenario: "development_case",
+            developmentCaseId: fixture.id,
+          },
+          "fixture",
+        );
+        development.push({ outcome, calls: state.mockCalls });
+      }
       state.mockCalls = [];
       state.mockUnknownUsage = true;
       const unknownCost = await runSynthetic(permit, "fixture");
@@ -140,6 +154,7 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
       state.mockModuleFailure = true;
       const moduleFailure = await runSynthetic(permit, "fixture");
       return {
+        development,
         everyday,
         compatibility,
         compatibilityCalls,
@@ -149,8 +164,26 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
         unknownCost,
         unknownCalls,
       };
-    });
+    }, developmentCases);
     expect(result.compatibilityCalls).toBe(1);
+    expect(result.development).toHaveLength(24);
+    for (const [index, task] of result.development.entries()) {
+      const fixture = developmentCases[index];
+      expect(task.outcome.failure).toBeNull();
+      expect(task.calls).toHaveLength(2);
+      expect(task.calls[0].messages[0].text).toBe(fixture.turns[0]);
+      expect(task.calls[1].messages[2].text).toBe(fixture.turns[1]);
+      expect(
+        task.outcome.conversation.attachments
+          .flatMap(
+            (a: { sources: Array<{ id: string; text: string }> }) => a.sources,
+          )
+          .map((source: { id: string; text: string }) => ({
+            id: source.id,
+            text: source.text,
+          })),
+      ).toEqual(fixture.sources);
+    }
     for (const task of result.everyday) {
       expect(task.outcome.failure).toBeNull();
       expect(task.outcome.conversation.attachments).toHaveLength(0);

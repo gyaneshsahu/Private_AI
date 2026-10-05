@@ -1,4 +1,5 @@
 import { z } from "zod";
+import developmentCases from "./cases/development.json";
 import { qualificationSchema } from "../shared/contracts";
 
 // An experiment permit is explicitly NOT an operational qualification report.
@@ -12,8 +13,10 @@ export const experimentSchema = z
         "writing_revision",
         "everyday_planning",
         "planning_transfer",
+        "development_case",
       ])
       .default("two_turn_invoice"),
+    developmentCaseId: z.string().optional(),
     approvalId: z.string().regex(/^[a-zA-Z0-9_-]{8,80}$/),
     approvedAt: z.string().datetime(),
     expiresAt: z.string().datetime(),
@@ -44,6 +47,9 @@ export function validateExperiment(
   now = Date.now(),
 ): Experiment {
   const x = experimentSchema.parse(input);
+  if (x.scenario === "development_case") developmentCase(x.developmentCaseId);
+  else if (x.developmentCaseId !== undefined)
+    throw new Error("Development case does not match scenario.");
   if (
     Date.parse(x.approvedAt) > now ||
     Date.parse(x.expiresAt) <= now ||
@@ -89,7 +95,10 @@ export const planningTransferPrompts = [
 ] as const;
 export function scenarioPrompts(
   scenario: Experiment["scenario"],
+  developmentCaseId?: string,
 ): readonly string[] {
+  if (scenario === "development_case")
+    return developmentCase(developmentCaseId).turns;
   return {
     adapter_compatibility: [compatibilityPrompt],
     two_turn_invoice: experimentPrompts,
@@ -112,6 +121,14 @@ export const everydayAssertions = {
     "Tuesday/Friday/Saturday, 19:00, 90 minutes total; Saturday rehearsal; self-checks retained",
   ],
 } as const;
+export function developmentCase(id: string | undefined) {
+  const selected = developmentCases.find((c) => c.id === id);
+  if (!selected || !selected.synthetic || selected.turns.length !== 2)
+    throw new Error(
+      "Choose one frozen two-turn synthetic development case; reserved or custom inputs are not permitted.",
+    );
+  return selected;
+}
 export function experimentRequestLimit(permit: Pick<Experiment, "scenario">) {
   return permit.scenario === "adapter_compatibility" ? 1 : 2;
 }

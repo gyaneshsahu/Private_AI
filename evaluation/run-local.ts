@@ -1,4 +1,7 @@
-import { implementationIdentity } from "./implementation";
+import {
+  implementationIdentity,
+  configurationIdentity,
+} from "./implementation";
 import { reviewExitCode, reviewResult } from "./review-result";
 import { networkRoute, approvedLocalGet } from "./network-observation";
 import type { Request as BrowserRequest } from "@playwright/test";
@@ -14,6 +17,7 @@ import { chromium } from "@playwright/test";
 import { createServer } from "vite";
 import {
   validateExperiment,
+  developmentCase,
   expectedInvoice,
   everydayAssertions,
   experimentRequestLimit,
@@ -159,20 +163,28 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
   let vite: Awaited<ReturnType<typeof createServer>> | undefined;
   let server: ReturnType<typeof app.listen> | undefined;
   let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
+  const implementation = await implementationIdentity(root);
   const result: Record<string, unknown> = {
     observedAt: new Date().toISOString(),
-    implementation: await implementationIdentity(root),
+    implementation,
+    modelConfiguration: permit.policy,
+    configurationSHA256: configurationIdentity(
+      implementation.adapterAndLockfileSHA256,
+      permit.policy,
+    ),
     status: "FAILED_OR_INTERRUPTED",
     kind: diagnose ? "NONBILLABLE_DIAGNOSTIC" : "SYNTHETIC_EXPERIMENT",
     qualification: "NOT_PASSED",
     scenario: permit.scenario,
-    ...(permit.scenario === "adapter_compatibility"
-      ? { expectedReply: "4" }
-      : permit.scenario === "two_turn_invoice"
-        ? { expectedInvoice }
-        : {
-            expectedAssertions: everydayAssertions[permit.scenario],
-          }),
+    ...(permit.scenario === "development_case"
+      ? { developmentCase: developmentCase(permit.developmentCaseId) }
+      : permit.scenario === "adapter_compatibility"
+        ? { expectedReply: "4" }
+        : permit.scenario === "two_turn_invoice"
+          ? { expectedInvoice }
+          : {
+              expectedAssertions: everydayAssertions[permit.scenario],
+            }),
     attempts,
     charges:
       "Reconcile with provider billing; estimates do not include every possible fee.",

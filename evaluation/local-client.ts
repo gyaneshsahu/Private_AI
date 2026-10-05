@@ -3,7 +3,12 @@ import { newMessage } from "../src/conversation";
 import { extract } from "../src/documents";
 import { streamVerifiedConversation } from "../src/verified-chat";
 import { IncompleteReplyError } from "../src/reply-stream";
-import { invoiceText, scenarioPrompts, validateExperiment } from "./experiment";
+import {
+  invoiceText,
+  scenarioPrompts,
+  validateExperiment,
+  developmentCase,
+} from "./experiment";
 
 export async function runSynthetic(input: unknown, csrf: string) {
   const permit = validateExperiment(input);
@@ -32,7 +37,20 @@ export async function runSynthetic(input: unknown, csrf: string) {
       );
       conversation.attachments.push(attachment);
     }
-    const prompts = scenarioPrompts(permit.scenario);
+    if (permit.scenario === "development_case") {
+      const fixture = developmentCase(permit.developmentCaseId);
+      if (fixture.sources.length)
+        conversation.attachments.push({
+          id: crypto.randomUUID(),
+          name: "Synthetic development references",
+          selected: true,
+          sources: fixture.sources.map((source) => ({
+            ...source,
+            title: "Synthetic development reference",
+          })),
+        });
+    }
+    const prompts = scenarioPrompts(permit.scenario, permit.developmentCaseId);
     for (const prompt of prompts) {
       conversation.messages.push(newMessage("user", prompt));
       const answer = {
