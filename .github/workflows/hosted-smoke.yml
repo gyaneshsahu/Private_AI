@@ -1,10 +1,13 @@
 name: Hosted foundation smoke (no inference)
 on:
   workflow_dispatch:
+  push:
+    branches: [codex/provider-qualification]
 permissions:
   contents: read
 jobs:
   smoke:
+    if: vars.PRIVATEAI_DEV_ORIGIN != ''
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

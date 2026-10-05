@@ -123,3 +123,24 @@ Local image build evidence: Node 24 base resolved to
 `sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6`;
 application image `sha256:f3bc6c77078c05d12c4466dfdbcdba53dcc8806a0864b58ef7ff4a1fd6539aea`.
 These identify this local build only, not a future host deployment.
+
+## Render build correction — 2026-10-05
+
+The first Render build failed because Docker copied `public`, a directory with
+only generated/ignored OCR assets that does not exist in a fresh Git checkout.
+Remove that COPY: `npm run build` already generates the directory and its assets.
+A clean Git export plus the corrected Dockerfile builds successfully. CI now
+builds from `git archive HEAD`, so preceding local asset generation cannot conceal
+missing tracked build inputs. Runtime container smoke is rerun against that image.
+
+Reported host: `https://private-ai-deployment.onrender.com`, Free service, no
+Tinfoil key. Live health is NOT VERIFIED: Cloud proxy rejected the hostname before
+TLS/HTTP reached Render. A saved domain allowlist draft requires environment
+review/save/publish; saving it alone does not grant current access.
+
+For no-inference browser testing through GitHub (avoiding Cloud browser CA changes),
+set Actions variable `PRIVATEAI_DEV_ORIGIN` to the exact host origin and Actions
+secret `PRIVATEAI_DEV_ACCESS_KEY` to the same development access key set in Render.
+The hosted smoke workflow now also triggers on pushes to the development branch
+when that origin variable is configured. It does not need a Tinfoil key. Actual
+GitHub workflow execution and the Render redeployment remain to be observed.

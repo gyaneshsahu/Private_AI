@@ -22,7 +22,11 @@ jobs:
       - run: npm run check
       - run: npm run test:e2e
       - run: npm run eval:check
-      - run: docker build -t privateai-evaluation .
+      - name: Build from committed files only
+        run: |
+          mkdir -p "$RUNNER_TEMP/privateai-build"
+          git archive HEAD | tar -x -C "$RUNNER_TEMP/privateai-build"
+          docker build -t privateai-evaluation "$RUNNER_TEMP/privateai-build"
       - run: node scripts/container-smoke.mjs
 # No provider keys, inference calls, deployments or paid services in CI.
 # Configure a selected host to deploy this branch only after this job succeeds.
