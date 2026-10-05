@@ -908,6 +908,9 @@ export function App() {
                       {s.title}
                       {s.page ? ` · page ${s.page}` : ""} · [{s.id}]
                     </summary>
+                    <button onClick={() => setSource({ ...s })}>
+                      Inspect source
+                    </button>
                     <label>
                       Review or correct extracted text
                       <textarea
