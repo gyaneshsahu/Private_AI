@@ -191,3 +191,28 @@ assessment. Original results, claims and profile-aware review sidecars remain
 separate. Reported combined estimate USD 0.00140720; actual charges unreconciled.
 Nine distinct development cases now have evidence. Reserved cases remain unrun;
 there is no research/planning-family pass or provider qualification from this batch.
+
+## Planning conditions regression
+
+`windows_20261005_planning_conditions_gemma_1` is a fresh, separately consumed
+two-turn permit for `development-planning-03` after a targeted policy change:
+unverified access, opening hours and availability must be treated as conditions
+to confirm. Existing placeholder and arithmetic guidance was shortened to retain
+the compatibility input bound, not to remove those requirements.
+
+The first reply now explicitly lists ramps/elevators as conditions to confirm,
+improving the observed access assumption. It nevertheless labels a 13:00–16:00
+itinerary as four hours. The museum interval is two hours and the cafe interval
+one hour; departure is at 16:00. Record `itinerary-total-mismatch` as a material
+agent finding. The follow-up provides the requested accessibility checklist without
+invented named venues. Its offer of future “verified locations” is also unsupported
+by this tool-free path and remains a broader review concern.
+
+Both replies completed with matched verifications and the scoped Chromium-abort
+assessment; durations were 4.39/3.08 seconds. Reported estimate USD 0.00087760;
+actual charge remains unreconciled. Historical evidence is unchanged, and the new
+result has a hash-bound, profile-aware agent-review sidecar. No unchanged repeat
+was attempted. Distinct development coverage remains nine cases; this regression
+does not pass the planning family, human quality gate or provider privacy gate.
+Next useful quality evidence is a fresh transfer case or matched candidate
+comparison focused on time constraints, not another unchanged rerun of this case.

@@ -140,6 +140,18 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 5 October 2026: tightened planning guidance after an observed assumption about
+  available accessibility infrastructure. One fresh bounded Gemma regression now
+  states explicit conditions to confirm, but its 13:00–16:00 schedule is labelled
+  four hours. Preserve the material `itinerary-total-mismatch` finding and do not
+  promote G2/E1. Both replies completed; hash-bound agent review and the consumed
+  permit remain separate from historical results. No unchanged retry was made.
+  See [development review](development-family-review.md). Broader model comparison
+  and human grading remain necessary; privacy qualification remains blocked.
+  Validation: 132 unit/integration tests, 15 production browser workflows,
+  typecheck/build and fixture integrity passed, including the existing 2,000-character
+  compatibility bound. Offline success does not override the live quality finding.
+
 - 5 October 2026: repaired a conversation recovery defect where retry erased a
   separately composed follow-up draft. Retry now preserves and excludes that
   draft. Edited branches expose an explicit Answer this question action without
