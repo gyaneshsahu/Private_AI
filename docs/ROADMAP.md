@@ -144,6 +144,19 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 5 October 2026: E1/G1–G6 advanced with a predeclared matched six-family batch:
+  twelve two-turn conversations, 24 completed replies, six new distinct frozen
+  development cases. Both candidates handle writing, basic time budgeting and
+  bill correction; GPT-OSS exposes serious ambiguous-deadline advice and material
+  identifier-exclusion failure. Gemma's six narrow results are acceptable with
+  minor findings, not a trial pass; earlier failures remain open. Coverage is now
+  17 cases, 35 bound agent reviews and zero human reviews. New permits/results,
+  failed findings and unscored review packets are retained. Reported batch estimate
+  USD 0.00556685; actual billing unreconciled. Prioritize Gemma's remaining uncovered
+  development tasks, without operational promotion or a claim of broad superiority.
+  See [family findings](development-family-review.md) and updated
+  [release dependencies](trial-readiness.md).
+
 - 5 October 2026: reprioritized against the trial dependencies and prepared the
   six-family [capability and blocker review](trial-readiness.md) for G6. U1 now
   supports current-password-verified sign-in password changes, persisted

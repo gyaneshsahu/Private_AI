@@ -177,6 +177,11 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     await login.getByLabel("Access ID").fill(alice.id);
     await login.getByLabel("Password").fill("synthetic changed password");
     await login.getByRole("button", { name: "Sign in", exact: true }).click();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
     await unlock();
     await page.getByRole("button", { name: "Open", exact: true }).click();
     await page

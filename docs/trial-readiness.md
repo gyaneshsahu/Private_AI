@@ -13,15 +13,15 @@ provider confidentiality, real-device usability or competitive parity.
 
 | Family | Working experience and current model evidence | Remaining release evidence |
 | --- | --- | --- |
-| Writing/revision (G1) | Chat, editable starters and branching. One Gemma thank-you/revision case preserves supplied facts. | More task variety and human grading; unsupported embellishments remain a historical failure mode. |
-| Explanation/planning (G2) | Follow-up revisions and readable tables. Both candidates handle the cancelled-study-session case. | Gemma's accessible itinerary still misstates three hours as four; earlier timing/verbosity failures remain. A changed response policy has not established reliable planning. |
+| Writing/revision (G1) | Chat, editable starters and branching. Gemma thank-you/revision case and both candidates' heater-repair message preserve supplied facts. | More task variety and human grading; unsupported embellishments remain a historical failure mode. |
+| Explanation/planning (G2) | Follow-up revisions and readable tables. Both candidates handle cancelled-study-session and cooking/walking budget cases. | Gemma's accessible itinerary still misstates three hours as four; earlier timing/verbosity failures remain. A changed response policy has not established reliable planning. |
 | Personal discussion (G3) | Context-preserving conversational follow-ups. Gemma uses placeholders on one workplace case; GPT-OSS invents details. | Broader preferences, ambiguity and interpersonal scenarios; human assessment of unsupported assumptions and overconfident advice. |
 | Bills/calculations (G4) | Local exact decimal calculator, inspectable sources and invoice corrections. Gemma's latest ambiguous-OCR regression asks for source checking before payment. | GPT-OSS still gives an unqualified payment amount. The manual calculator does not verify model arithmetic. More dates, units and source ambiguity; human grading. |
-| Document questions (G4) | Local TXT/PDF/printed-English OCR, editable extracted text, selection, retained citations and encrypted snapshots. Narrow invoice and conflicting-note cases have useful results. | Varied real layouts, extraction/device performance, citation correctness and grounded synthesis. Scanned PDFs/handwriting/general vision remain unsupported. |
-| Research-assisted decisions (G5) | Explicit query/URL approval, bounded retrieval and source inspection; synthetic browser workflow covers save/resume. Model comparison uses frozen references. | Current live search-service integration plus retrieval-to-answer/follow-up validation; date/freshness and invented purchasing assumptions remain review points. Fixture synthesis is not live research evidence. |
+| Document questions (G4) | Local TXT/PDF/printed-English OCR, editable extracted text, selection, retained citations and encrypted snapshots. Gemma leaves an ambiguous lease notice unresolved. | GPT-OSS gives unsafe deadline advice and invents jurisdictional context. Varied layouts, extraction/device performance, citation correctness and grounded synthesis remain open. Scanned PDFs/handwriting/general vision remain unsupported. |
+| Research-assisted decisions (G5) | Explicit query/URL approval, bounded retrieval and source inspection; synthetic browser workflow covers save/resume. Model comparison uses frozen references and generic query drafting. | GPT-OSS echoes identifiers after an exclusion instruction. Current live search-service integration plus retrieval-to-answer/follow-up validation remain; fixture synthesis is not live research evidence. |
 
-Recorded Windows evidence covers **11 distinct frozen development cases**. This
-is sparse coverage, not 11 approved capabilities. Current inventory contains
+Recorded Windows evidence covers **17 distinct frozen development cases**. This
+is sparse coverage, not 17 approved capabilities. Current inventory contains
 zero human reviews; the 24 held-out cases remain reserved and unrun. Candidate
 and code configurations differ: do not pool them into one release score.
 See [development findings](development-family-review.md) and
@@ -39,9 +39,12 @@ See [development findings](development-family-review.md) and
 
 ## Execution order
 
-1. Complete U1's current password/session lifecycle batch and full local workflow
-   validation. Preserve identity, expiry, quotas and encrypted records.
-2. Advance E1 with a coherent coverage batch, chosen before execution and bounded
+1. U1's password/session lifecycle batch is locally validated: identity, expiry,
+   quotas and encrypted records are preserved. Hosted validation remains open.
+2. E1's six-family matched batch is complete with preserved serious/material
+   GPT-OSS failures. Prioritize Gemma for the remaining uncovered development
+   tasks, retaining its unresolved failures and no operational model promotion.
+   Advance coverage in a batch chosen before execution and bounded
    against the remaining USD 2 cumulative account cap. Preserve every attempt,
    consumed permit and failure; stop on unexpected accounting or transport errors.
    Current local estimated usage is not an authoritative account balance.

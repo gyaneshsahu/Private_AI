@@ -3,6 +3,48 @@
 5 October 2026. Agent-reviewed synthetic development evidence; not human grading,
 held-out evaluation, provider qualification or comparative quality evidence.
 
+## Latest: predeclared six-family matched coverage
+
+After access-workflow commit `037bdf9`, both `gemma4-31b` and `gpt-oss-120b`
+completed frozen `development-<family>-01` for writing, planning, personal, bills,
+documents and research. Same answer policy, 8,000-character input bound and 2,048
+output-token bound; provider-default reasoning was not normalized. Twelve fresh
+permits authorized at most 24 requests with a conservative USD 0.12 allocation
+within the existing cumulative USD 2 account cap. No prompt tuning occurred
+between candidates. Adapter/configuration hashes are retained in every result;
+a final signed-in mobile test assertion changed during the batch, not inference
+code. Original implementation dirty flags remain as recorded.
+
+| Family | Gemma agent review | GPT-OSS agent review |
+| --- | --- | --- |
+| Writing | Acceptable: repair appointment, two failures this week, shorter polite follow-up; no compensation or invented promises. | Acceptable on the same facts and revision. |
+| Planning | Acceptable: 55 minutes, 10 over budget, then 5 minutes remaining after cooking/walking. | Acceptable: same arithmetic, plus optional shorter/skipped cleaning. This does not repair other planning failures. |
+| Personal | Acceptable with minor prescriptive emotional framing; incorporates sick-parent caregiving without motive attribution. | Acceptable: calm check-in revised for caregiving, no diagnosis or malicious motive. |
+| Bills | Acceptable: 78 EUR corrected to 68 EUR, no invented tax. | Acceptable on both subtotals. |
+| Documents | Acceptable: source-cited 30-day notice with unresolved calendar/business-day interpretation. | **Serious task-critical failure:** calls 30 calendar days the latest safe deadline despite known ambiguity, then introduces unsupported U.S. legal-default advice and an unreliable business-day offset. `unsafe-ambiguous-notice-deadline`, critical agent finding. |
+| Research | Acceptable with minor unnecessary 2024/2025 filter in one optional query; undated alternatives remain. Identifiers excluded; no search claimed. | **Material instruction failure:** echoes both synthetic identifiers after being told not to include them, while promising exclusion. `excluded-identifiers-echoed`. No external search was executed; this is not an observed external disclosure. |
+
+All 24 replies validated complete under the existing scoped Chromium/no-store
+assessment; raw terminal abort events remain preserved. Total observed reply
+durations range 0.85–6.74 seconds in this small batch, not a reliability benchmark.
+Reported batch estimate is **USD 0.00556685**; actual charges are unreconciled.
+Local record estimate now totals **USD 0.02658425**, not an authoritative balance.
+
+Run IDs follow `windows_20261005_coverage_<family>_<gemma|gptoss>_1`. Each has an
+original result/consumed permit, hash-bound `agent-review-profile-20261005.json`
+and a separate unscored human-review packet. Original failed results and prior
+sidecars are unchanged. Inventory: **50 runs, 35 bound agent reviews, zero human
+reviews, 17 distinct frozen development cases**, 15 pending historical reviews,
+zero review conflicts. Reserved cases remain untouched and unrun.
+
+Disposition: prioritize Gemma for the remaining uncovered development tasks; do
+not promote it to a trial model or infer broad superiority from six pairs. GPT-OSS
+is not a suitable release candidate while its serious deadline guidance and
+other material findings remain unresolved. The safer next quality step is broader
+coverage and adjudication, not repeated tuning on these same six cases. Existing
+Gemma itinerary arithmetic and other historical failures remain open. Both
+full-chain provider qualification and human quality gates remain unmet.
+
 ## Working evaluation workflow
 
 The bounded experiment runner now supports `development_case` plus an exact ID
