@@ -15,7 +15,7 @@ In a Windows PowerShell terminal:
 
 ```powershell
 Set-Location -LiteralPath 'C:\Gyanesh\Startups\Private_AI'
-powershell.exe -NoProfile -File .\scripts\windows-compatibility.ps1 -Prepare
+pwsh.exe -NoProfile -File .\scripts\windows-compatibility.ps1 -Prepare
 ```
 
 The prompt asks for current dashboard cumulative charges, remaining balance and
@@ -40,7 +40,7 @@ its billing receipt for review; do not delete consumed run directories.
 After preparation succeeds:
 
 ```powershell
-powershell.exe -NoProfile -File .\scripts\windows-compatibility.ps1 -Run
+pwsh.exe -NoProfile -File .\scripts\windows-compatibility.ps1 -Run
 ```
 
 Enter the key only at its **masked `Read-Host -AsSecureString` prompt**. Do not
