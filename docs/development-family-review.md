@@ -170,3 +170,24 @@ unchanged repeat was attempted. Profile-aware agent reviews and historical faile
 results are preserved. Combined reported estimate: USD 0.00098550; actual billing
 remains unreconciled. This adds no distinct-case coverage and cannot establish a
 research-family pass. Fresh transfer cases and human grading remain necessary.
+
+## Fresh transfer cases after the context repair
+
+`windows_20261005_transfer_research_gemma_1` runs `development-research-03`:
+correct A/B battery and weight comparison, explicit manufacturer-claim attribution,
+then the requested battery preference. No invented independent tests or overall
+winner. Narrow acceptable agent review; 2.65/0.97-second turns.
+
+`windows_20261005_transfer_planning_gemma_1` runs `development-planning-03`:
+avoids invented venues and considers step-free access. However, the first itinerary
+uses an accessible ramp/elevator without explicitly conditioning the plan on
+confirmed availability; the follow-up accessibility checklist improves verification.
+Retain a material agent finding for the initial assumption, pending human
+adjudication. Turns took 15.96/13.33 seconds, substantially slower than the research
+case; two observations do not establish a latency distribution.
+
+All four replies completed with matching verifications and the scoped abort
+assessment. Original results, claims and profile-aware review sidecars remain
+separate. Reported combined estimate USD 0.00140720; actual charges unreconciled.
+Nine distinct development cases now have evidence. Reserved cases remain unrun;
+there is no research/planning-family pass or provider qualification from this batch.

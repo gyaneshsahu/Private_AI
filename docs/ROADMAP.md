@@ -230,3 +230,18 @@ G1–G6 and U1 independently while Q1 needs supplier evidence.
   invitation browser and hosted-cookie regressions also pass.
   Validation: all 127 unit/integration tests and typecheck passed. Provider
   qualification, human quality review and actual hosted validation remain open.
+
+- 5 October 2026: completed a larger trial-operations batch. Added persistent
+  operator pause/resume, credential-free invitation status and honest unknown-ID
+  revocation errors. Reopen tests retain pause, revocation and per-user counters;
+  HTTP tests verify separate user quotas, resume without reset and response closure
+  on pause/expiry. Added `npm run trial:check`; browser rehearsal explicitly clears
+  ambient credentials, qualification and invitation-database configuration.
+  Full rehearsal passed: 129 unit/integration tests, 14 production browser flows,
+  typecheck/build and fixture integrity. Two fresh Gemma development transfer cases
+  extend coverage to nine distinct cases: research comparison is narrowly acceptable;
+  accessible planning retains a material agent finding about assumed infrastructure
+  and showed 13–16-second turns. No family-quality or private-data gate is passed.
+  Pending invitation recovery is documented as revoke/reissue; registered-account
+  and vault recovery remain unimplemented. Q1 still needs supplier artifacts and
+  release readiness still needs human quality and actual hosted validation.

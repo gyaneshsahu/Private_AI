@@ -52,6 +52,44 @@ account migration are not implemented; do not promise recovery of lost passwords
 node --import tsx scripts/invites.ts revoke <access-id>
 ```
 
+Operator controls now also support:
+
+```powershell
+node --import tsx scripts/invites.ts list
+node --import tsx scripts/invites.ts pause
+node --import tsx scripts/invites.ts resume
+```
+
+`list` displays only access IDs, expiration and pending/registered/expired/revoked
+state, plus the global pause state. It never returns password hashes, salts or
+invitation codes. Keep this identity metadata in operator-only records.
+`pause` persists in the registry across restarts, denies access/redemption/sign-in
+and closes active responses within approximately one second. `resume` restores
+eligible access without resetting expiry, revocation or per-invite request limits;
+interrupted requests are not restarted. Existing unexpired login cookies may
+become usable again after resume. Use revocation for compromised identities.
+An unknown access ID now produces an error rather than claiming revocation.
+
+For a lost **unredeemed** invitation, inspect its status, revoke it and issue a
+new invitation. This is not registered-account password recovery or vault recovery;
+neither is implemented. Do not replace registered users silently with new IDs,
+because encrypted workspaces are scoped to the original identity.
+
+## Repeatable local rehearsal
+
+With the local preview on port 4173 stopped, run `npm run trial:check`. It performs
+typecheck, the complete unit/integration suite, production build, browser workflows
+and frozen evaluation-fixture integrity, stopping on the first failure. Browser
+test startup explicitly clears provider/search keys, qualification, shared access
+and invitation-database configuration and fixes the loopback origin; it cannot
+inherit a real trial registry from the operator shell. Other tests use synthetic
+identities and isolated registries. This command does not run live model experiments.
+
+Additional coverage now verifies pause/revocation and per-user counters survive
+registry reopen, credential-free status listings, HTTP request limits independent
+between users, resume without quota reset and expiry during an active response.
+Passing this rehearsal is local evidence, not hosted deployment approval.
+
 Revocation is checked on every protected request and closes active responses
 within approximately one second. Login sessions expire after one hour and rotate
 on sign-in. `express-session` plus bounded TTL-cleaned `memorystore` provide cookie

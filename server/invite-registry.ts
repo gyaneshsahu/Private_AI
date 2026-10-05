@@ -22,7 +22,9 @@ export class InviteRegistry {
         id TEXT PRIMARY KEY, invite TEXT, expires INTEGER NOT NULL,
         revoked INTEGER NOT NULL DEFAULT 0, salt TEXT, password TEXT,
         window INTEGER NOT NULL DEFAULT 0, requests INTEGER NOT NULL DEFAULT 0
-      );`);
+      );
+      CREATE TABLE IF NOT EXISTS access_settings (id INTEGER PRIMARY KEY CHECK(id=1), paused INTEGER NOT NULL);
+      INSERT OR IGNORE INTO access_settings(id,paused) VALUES(1,0);`);
   }
   issue(expires: number) {
     if (
@@ -39,15 +41,26 @@ export class InviteRegistry {
     return { id, token, expires };
   }
   active(id: string) {
-    return !!this.db
-      .prepare("SELECT id FROM invites WHERE id=? AND revoked=0 AND expires>?")
-      .get(id, this.now());
+    return (
+      !this.paused &&
+      !!this.db
+        .prepare(
+          "SELECT id FROM invites WHERE id=? AND revoked=0 AND expires>?",
+        )
+        .get(id, this.now())
+    );
   }
   async register(id: string, token: string, password: string) {
-    if (password.length < 12 || password.length > 256 || token.length > 100)
+    if (
+      this.paused ||
+      password.length < 12 ||
+      password.length > 256 ||
+      token.length > 100
+    )
       return false;
     const salt = randomBytes(16).toString("hex");
     const hash = ((await derive(password, salt, 64)) as Buffer).toString("hex");
+    if (this.paused) return false;
     return (
       this.db
         .prepare(
@@ -69,14 +82,56 @@ export class InviteRegistry {
       64,
     )) as Buffer;
     const expected = Buffer.from(row?.password ?? "00".repeat(64), "hex");
-    return timingSafeEqual(actual, expected) && !!row?.password;
+    return (
+      timingSafeEqual(actual, expected) && !!row?.password && this.active(id)
+    );
   }
   revoke(id: string) {
+    return (
+      this.db
+        .prepare("UPDATE invites SET revoked=1,invite=NULL WHERE id=?")
+        .run(id).changes === 1
+    );
+  }
+  get paused() {
+    return (
+      (
+        this.db
+          .prepare("SELECT paused FROM access_settings WHERE id=1")
+          .get() as { paused: number }
+      ).paused !== 0
+    );
+  }
+  pause(paused: boolean) {
     this.db
-      .prepare("UPDATE invites SET revoked=1,invite=NULL WHERE id=?")
-      .run(id);
+      .prepare("UPDATE access_settings SET paused=? WHERE id=1")
+      .run(paused ? 1 : 0);
+  }
+  list() {
+    const rows = this.db
+      .prepare(
+        "SELECT id,expires,revoked,password IS NOT NULL AS registered FROM invites ORDER BY expires,id",
+      )
+      .all() as Array<{
+      id: string;
+      expires: number;
+      revoked: number;
+      registered: number;
+    }>;
+    return rows.map((row) => ({
+      id: row.id,
+      expires: new Date(row.expires).toISOString(),
+      status: row.revoked
+        ? "revoked"
+        : row.expires <= this.now()
+          ? "expired"
+          : row.registered
+            ? "registered"
+            : "pending",
+    }));
   }
   allowRequest(id: string) {
+    if (this.paused) return false;
     const now = this.now();
     this.db
       .prepare(
