@@ -216,3 +216,37 @@ was attempted. Distinct development coverage remains nine cases; this regression
 does not pass the planning family, human quality gate or provider privacy gate.
 Next useful quality evidence is a fresh transfer case or matched candidate
 comparison focused on time constraints, not another unchanged rerun of this case.
+
+## Matched time-constraint transfer and evidence inventory
+
+Fresh permits `windows_20261005_time_transfer_gemma_1` and
+`windows_20261005_time_transfer_gptoss_1` execute `development-planning-04` with
+the same current policy, 8,000 input characters and 2,048 output tokens per turn.
+Both candidates divide the initial 90 minutes across three 30-minute sessions.
+After Wednesday is cancelled, both require an additional day instead of claiming
+90 minutes fits into two sessions. Both are narrowly acceptable agent reviews;
+previous material planning defects remain open.
+
+Gemma is compact, with potentially ambiguous 00:00–00:30 relative-time labels
+(minor); durations 2.31/1.69 seconds. GPT-OSS adds unnecessary tips/next steps
+(minor); durations 4.21/3.91 seconds. Its `<br>` tags are already supported safely
+by the renderer. An initial mistaken HTML review finding was corrected after code
+inspection; the superseded review is retained beside the corrected review. Neither
+candidate receives a general winner/family-pass designation from this one task.
+Provider-default reasoning was not normalized.
+
+All four replies completed with matching router verifications and the scoped
+Chromium-abort assessment. Combined reported estimate USD 0.00147685; actual
+charges remain unreconciled. Source results and consumed claims are unchanged.
+
+The new `npm run eval:inventory` reads the Windows experiment directory and binds
+active review records to exact result bytes, configuration, date, transcript and
+frozen case assertions. Current inventory: 33 run directories, 18 bound agent
+reviews, zero human reviews, 15 records pending bound development review, and nine
+distinct frozen development IDs. Some pending records are custom scenarios or
+diagnostics outside this development-review format. Three older review files are
+unbound/stale-format; their valid profile-aware replacements are separate. Earlier
+narrative counts overstated distinct frozen IDs: this fresh case raises the
+Windows frozen-case count from eight to nine. Custom scenarios and repeated runs
+must not be counted as additional frozen cases. These counts do not imply quality
+acceptance, human adjudication or account-balance reconciliation.

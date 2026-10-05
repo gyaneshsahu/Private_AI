@@ -17,3 +17,29 @@ Security tests, live-provider qualification, task quality and customer demand ar
 The bounded runner accepts scenario `development_case` with `developmentCaseId` from the frozen development set only. Prompts and references cannot be supplied in a permit. Each case requires a fresh claim; see the development review for evidence and limitations.
 
 New results include `modelConfiguration` and `configurationSHA256` alongside code identity. Use the configuration identity for grading; code hashes alone cannot distinguish model or limit changes. Profile-aware agent-review sidecars preserve this distinction for earlier results.
+
+`npm run eval:inventory` produces a local, read-only JSON inventory of
+`.local/experiment-runs`. It prints metadata/counts, not transcripts, rubric prose,
+credentials, raw server errors or full file paths. No network calls or new runs are
+made. Files are bounded to 10 MiB and symbolic-link files/directories are excluded.
+Only original `result.json` / `permit.json` pairs and active
+`agent-review[-profile]-<numeric-date>.json` or
+`human-review[-profile]-<numeric-date>.json` sidecars are read. A deliberately
+superseded review can be preserved with `.superseded.json`; it is not active input.
+
+Review binding checks source SHA-256, configuration/model policy, run date, exact
+transcript, original frozen development prompts and mandatory assertion membership.
+Incomplete transport cannot receive an accepted bound review. Conflicting active
+reviews remain conflicts; the command does not choose the newest file. Historical
+records without embedded model identity derive it from their recorded code hash
+and original permit and are labelled accordingly; original files are not rewritten.
+Missing or malformed evidence remains visible, with unbound review counts.
+
+`VALID` means record consistency, not cryptographic proof of a live observation.
+`acceptableUnderRubric` is the bound reviewer's conclusion, and agent/human review
+statuses remain separate. The inventory never runs or passes the human quality or
+provider gate and never merges different model configurations into a quality score.
+`validatedRecordEstimateUSD` covers only readable, internally consistent local
+records; it is neither actual billing nor an authoritative remaining account budget.
+The frozen-case count excludes custom scenarios and repetitions. Keep historical
+failures and superseded review corrections; do not remove records to improve counts.

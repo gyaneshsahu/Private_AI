@@ -140,6 +140,21 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 5 October 2026: compared Gemma and GPT-OSS on a fresh cancelled-study-session
+  transfer case. Both preserve 30-minute sessions and require another day for the
+  missing 30 minutes; narrow agent results are acceptable with minor presentation
+  findings. Earlier arithmetic failures remain blockers. Added a read-only local
+  evidence inventory with result/configuration/transcript/case binding, explicit
+  agent/human separation, conflict detection and legacy provenance. It reports
+  nine distinct frozen development cases in Windows records after this batch;
+  earlier narrative counts overstated frozen-ID coverage. Historical results and
+  consumed permits remain preserved. No human or provider gate is promoted.
+  See [development review](development-family-review.md) and [inventory use](../evaluation/README.md).
+  Validation: 135 unit/integration tests, 15 production browser workflows,
+  typecheck/build and fixture integrity passed. Final inventory refinements also
+  passed focused tests/typecheck; coverage requires exact prompts and completed
+  replies, and filesystem fixtures confirm source records remain unchanged.
+
 - 5 October 2026: tightened planning guidance after an observed assumption about
   available accessibility infrastructure. One fresh bounded Gemma regression now
   states explicit conditions to confirm, but its 13:00–16:00 schedule is labelled

@@ -18,6 +18,7 @@
     "trial:check": "npm run check && npm run test:e2e && npm run eval:check",
     "trial:access": "tsx scripts/trial-access-check.ts",
     "eval:check": "tsx evaluation/check.ts",
+    "eval:inventory": "tsx evaluation/inventory.ts",
     "experiment:prepare": "tsx evaluation/prepare-experiment.ts",
     "experiment:check": "tsx evaluation/run-local.ts --check",
     "experiment:run": "tsx evaluation/run-local.ts --run",
