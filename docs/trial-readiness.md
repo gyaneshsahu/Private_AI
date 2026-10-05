@@ -22,7 +22,8 @@ provider confidentiality, real-device usability or competitive parity.
 
 Recorded Windows evidence covers **17 distinct frozen development cases**. This
 is sparse coverage, not 17 approved capabilities. Current inventory contains
-zero human reviews; the 24 held-out cases remain reserved and unrun. Candidate
+eight founder human development reviews, including the failed itinerary case;
+the 24 held-out cases remain reserved and unrun. Candidate
 and code configurations differ: do not pool them into one release score.
 See [development findings](development-family-review.md) and
 [evaluation procedure](../evaluation/README.md).
@@ -39,9 +40,9 @@ See [development findings](development-family-review.md) and
 
 ## Execution order
 
-Immediate human action is now available: [eight-conversation review and bounded
-Gemma plan](gemma-release-evaluation-plan.md), in two manageable sittings. This
-does not substitute for reserved grading or real-device observation.
+The first human review is complete: [founder findings](human-development-review.md).
+The [bounded Gemma plan](gemma-release-evaluation-plan.md) remains applicable;
+development review does not substitute for reserved grading or real-device observation.
 
 1. U1's password/session lifecycle batch is locally validated: identity, expiry,
    quotas and encrypted records are preserved. Hosted validation remains open.

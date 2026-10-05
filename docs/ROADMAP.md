@@ -148,6 +148,15 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 6 October 2026: incorporated the founder's eight human development reviews with
+  exact scores and preserved source/configuration bindings. Seven are acceptable;
+  accessible-afternoon arithmetic remains a material failure. Added eight separate
+  supplemental spelling, reasoning and ambiguity fixtures; their model execution
+  is UNRUN and the original frozen sets/thresholds are unchanged. See
+  [human findings and coverage](human-development-review.md). General vision remains
+  deferred; OCR does not establish it. Supplier reply and hosted approval/validation
+  remain pending. Existing roadmap IDs and layout are retained.
+
 - 5 October 2026: founder confirmed sending the supplier evidence email; Q1 awaits
   a reply and remains blocked. Independent U1 work adds a hosted-startup guard
   against missing, uninitialized or invalid registries and packages the invitation

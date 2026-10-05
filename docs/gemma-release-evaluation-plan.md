@@ -4,6 +4,12 @@
 
 ## Human work available now
 
+**6 October update:** the founder completed this packet. Eight human development
+reviews are recorded, with Case 7 failed for material arithmetic error. See
+[scores, provenance and supplemental coverage](human-development-review.md).
+The preparation instructions below remain as the packet's historical procedure;
+the founder does not need to repeat this review.
+
 An ignored local packet at
 `.local/review-batches/first-human-review-20261005-a9d4560a-94ed-4c19-b792-ced3849037b9/`
 contains `review.html`, `worksheet.md`, a source-hash/configuration manifest and

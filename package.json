@@ -17,7 +17,7 @@
     "check": "npm run typecheck && npm test && npm run build",
     "trial:check": "npm run check && npm run test:e2e && npm run eval:check",
     "trial:access": "tsx scripts/trial-access-check.ts",
-    "eval:check": "tsx evaluation/check.ts",
+    "eval:check": "tsx evaluation/check.ts && tsx evaluation/check-robustness.ts",
     "eval:inventory": "tsx evaluation/inventory.ts",
     "eval:packet": "tsx evaluation/review-packet.ts",
     "experiment:prepare": "tsx evaluation/prepare-experiment.ts",
