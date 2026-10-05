@@ -3,6 +3,7 @@ import { lookup } from "node:dns/promises";
 import { Agent, fetch } from "undici";
 import ipaddr from "ipaddr.js";
 import { load } from "cheerio";
+import { z } from "zod";
 import {
   proxyConfigured,
   serviceDispatcher,
@@ -216,16 +217,29 @@ export async function searchWeb(
       "Search provider unavailable. No automatic retry was made.",
     );
   }
-  const data = JSON.parse(await boundedText(response)) as {
-    web?: {
-      results?: Array<{ title: string; url: string; description: string }>;
-    };
-  };
-  return (data.web?.results ?? []).slice(0, 5).map((result) => ({
-    id: randomBytes(6).toString("hex"),
-    title: load(result.title).text(),
-    url: pageUrl(result.url).href,
-    text: `Search excerpt only (full page not fetched): ${load(result.description).text()}`,
-    retrievedAt: new Date().toISOString(),
-  }));
+  try {
+    const data = z.object({
+      error: z.never().optional(),
+      web: z.object({ results: z.array(z.object({
+        title: z.string().min(1).max(10000),
+        url: z.string().url().max(2000),
+        description: z.string().min(1).max(60000),
+      })).max(100) }),
+    }).parse(JSON.parse(await boundedText(response)));
+    return data.web.results.slice(0, 5).map((result) => {
+      const title = load(result.title).text().trim();
+      const excerpt = load(result.description).text().trim();
+      if (!title || title.length > 2000 || !excerpt || excerpt.length > 59900)
+        throw new Error("Invalid excerpt");
+      return {
+        id: randomBytes(6).toString("hex"),
+        title,
+        url: pageUrl(result.url).href,
+        text: `Search excerpt only (full page not fetched): ${excerpt}`,
+        retrievedAt: new Date().toISOString(),
+      };
+    });
+  } catch {
+    throw new Error("Search returned invalid source information. No automatic retry was made.");
+  }
 }
