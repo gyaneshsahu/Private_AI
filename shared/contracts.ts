@@ -122,6 +122,7 @@ export interface Conversation {
   draft?: string;
 }
 export interface AppStatus {
+  accountId?: string;
   csrf: string;
   inference: { ready: boolean; reason: string; qualification?: Qualification };
   search: boolean;

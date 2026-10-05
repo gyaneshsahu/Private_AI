@@ -17,14 +17,74 @@ one person, attribute service limits to an invite, or separate customer accounts
 Do not distribute it as an invited-user account system. Browser-local encrypted
 vaults do not substitute for service access control.
 
+## Individual access implementation (local validation)
+
+The founder selected PrivateAI-only, operator-issued invitations. No external
+identity service is involved. This is **not anonymous access**: PrivateAI and the
+host still receive identity/network metadata. External identity integration can
+be reconsidered for public launch.
+
+Opt-in configuration `PRIVATEAI_INVITES_FILE` enables individual access and
+disables shared-key access as an alternative. The registry is a private SQLite
+file containing opaque IDs, hashed one-use invitation codes, scrypt password
+hashes/salts, expiry/revocation and request counters. It contains no conversations.
+Use a private persistent path with operator-only filesystem access; keep the file
+and any SQLite sidecars out of Git, shared folders and diagnostic uploads.
+
+Example Windows operator setup, for local synthetic rehearsal only:
+
+```powershell
+$env:PRIVATEAI_INVITES_FILE = 'C:\Gyanesh\Startups\Private_AI\.local\trial-access.sqlite'
+node --import tsx scripts/invites.ts issue 24
+npm start
+```
+
+The issue command requires an interactive terminal and shows the invitation once.
+Do not redirect it, paste it into chat, or capture it in evidence. Deliver the ID
+and code privately through the approved invitation channel. No real invitation
+was issued during implementation. Users enter the code at `/auth`, choose a
+password of at least 12 characters and retain their access ID for later sign-in.
+Invitation redemption is one-use; the configured expiry also ends account access.
+The sign-in password and local vault passphrase are separate. Recovery/reset and
+account migration are not implemented; do not promise recovery of lost passwords.
+
+```powershell
+node --import tsx scripts/invites.ts revoke <access-id>
+```
+
+Revocation is checked on every protected request and closes active responses
+within approximately one second. Login sessions expire after one hour and rotate
+on sign-in. `express-session` plus bounded TTL-cleaned `memorystore` provide cookie
+session handling; hosted cookies are Secure, HttpOnly and SameSite=Strict.
+Same-origin POST checks protect login/logout and API actions; API CSRF/grants are
+bound to both account and login session. Login attempts are capped at 30/minute
+per instance; application POSTs at 200/hour per invite and 2,000/hour per instance.
+These are request limits, not a substitute for provider spending controls.
+
+Encrypted vault databases are scoped to opaque account IDs. Sign out locks and
+clears current work; other tabs receive the lock signal. Account expiry/change is
+checked on focus and every 30 seconds while the page is active. Server access is
+denied immediately on the next request even if a suspended tab has not updated.
+Same-origin storage remains accessible to that browser/device and application
+code; this is logical account separation plus encryption, not an OS-user boundary.
+Saved ciphertext is retained on logout/revocation. Private-data inference remains
+gated independently; access acceptance cannot qualify the provider.
+
+Single instance only: the session store is in memory and restart signs everyone
+out. The registry must persist securely across restarts. Do not scale to multiple
+processes without shared session/rate state and further validation. The access
+page is a functional first version; hosted TLS/proxy validation, security review,
+recovery design and usability review remain release work. Session middleware
+guidance: [Express session documentation](https://expressjs.com/en/resources/middleware/session/).
+
 ## Before the first invitation
 
 1. Complete Q1 and quality/canonical-workflow evidence. Publish supported families
    and observed limits. Do not claim ChatGPT/Gemini parity from development cases.
 2. Founder approves audience, exact deployed origin and hosting/privacy boundary,
    data scope, and invitation/feedback channel. Synthetic testing remains separate.
-3. Implement individual access using a maintained authentication integration once
-   the identity/hosting boundary is selected. Require expiring invitation access,
+3. Validate the implemented PrivateAI-only individual access against the selected
+   deployed origin and hosting boundary. Require expiring invitation access,
    explicit logout and revocation checked on every protected request. Never put
    credentials or bearer tokens in URLs, frontend configuration or logs.
 4. Validate two independent invited identities: denied without invitation, no
@@ -40,10 +100,11 @@ vaults do not substitute for service access control.
 
 ## Operator stop and recovery
 
-For the current single-instance development service, stop the service to prevent
-new work and terminate active connections. Rotate the deployment access secret
-and restart before reopening compromised access; this revokes everyone, not one
-invite. Remove provider/search credentials and qualification configuration before
+For the current single-instance service, stop the service to prevent
+new work and terminate active connections. In individual-access mode, revoke
+affected IDs before reopening; restart invalidates every login session but does
+not revoke registered accounts. In legacy shared-key mode, rotate the deployment
+access secret before restarting. Remove provider/search credentials and qualification configuration before
 starting a disabled-inference diagnostic deployment. Do not alter provider gates
 or populate qualification from test fixtures to restore availability.
 
@@ -62,5 +123,9 @@ a reviewed response decision before wider disclosure or changed privacy promises
 
 Full provider-chain qualification, human quality grades, realistic planning
 reliability, individual access implementation, current hosted validation and
-real-device/user observation remain open. The next access implementation depends
-on the selected identity boundary, not another inference experiment.
+real-device/user observation were the original open items. Individual access now
+has local HTTP and browser evidence; deployed operation and review remain open.
+The browser test accepts two identities, saves Alice's draft, signs out, verifies
+Bob has an empty vault even with the same vault passphrase, revokes Bob and reopens
+Alice's draft after fresh sign-in. HTTP tests cover cross-user session rejection,
+one-use redemption, expiry, secure hosted cookie flags and active-response revocation.

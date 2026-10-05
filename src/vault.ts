@@ -1,8 +1,8 @@
 import { openDB } from "idb";
 import type { Conversation } from "../shared/contracts";
 const encoder = new TextEncoder();
-const db = () =>
-  openDB("privateai-vault", 1, {
+const db = (name: string) =>
+  openDB(name, 1, {
     upgrade(database) {
       database.createObjectStore("meta");
       database.createObjectStore("conversations");
@@ -60,6 +60,15 @@ async function derive(
   );
 }
 export class Vault {
+  private databaseName = "privateai-vault";
+  selectAccount(id?: string) {
+    if (this.unlocked)
+      throw new Error("Lock the vault before switching accounts.");
+    if (id !== undefined && !/^[a-f0-9-]{36}$/.test(id))
+      throw new Error("Invalid account scope.");
+    this.lock(false);
+    this.databaseName = id ? `privateai-vault-${id}` : "privateai-vault";
+  }
   private key?: CryptoKey;
   private generation = 0;
   private queue: Promise<unknown> = Promise.resolve();
@@ -93,7 +102,7 @@ export class Vault {
       throw new Error(
         "Use a passphrase of at least 12 characters. There is no recovery service.",
       );
-    const database = await db();
+    const database = await db(this.databaseName);
     const existing = (await database.get("meta", "vault")) as
       { salt: Uint8Array<ArrayBuffer>; check: Cipher } | undefined;
     const salt = existing?.salt ?? random(16);
@@ -143,7 +152,7 @@ export class Vault {
       );
       if (generation !== this.generation || !this.key)
         throw new Error("Vault locked before save completed.");
-      const tx = (await db()).transaction(
+      const tx = (await db(this.databaseName)).transaction(
         ["meta", "conversations"],
         "readwrite",
       );
@@ -162,7 +171,7 @@ export class Vault {
       generation = this.generation;
     if (!key) throw new Error("Vault is locked.");
     await this.queue;
-    const database = await db();
+    const database = await db(this.databaseName);
     const ids = await database.getAllKeys("conversations");
     const output: Conversation[] = [];
     for (const id of ids) {
@@ -187,7 +196,7 @@ export class Vault {
   }
   delete(id: string) {
     return this.enqueue(async () => {
-      const tx = (await db()).transaction(
+      const tx = (await db(this.databaseName)).transaction(
         ["meta", "conversations"],
         "readwrite",
       );

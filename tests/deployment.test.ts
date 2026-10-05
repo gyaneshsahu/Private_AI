@@ -35,6 +35,7 @@ async function fetch(
   });
 }
 import { createApp } from "../server/app";
+import { InviteRegistry } from "../server/invite-registry";
 const servers: Server[] = [];
 const key = "synthetic_test_access_key_only_0123456789";
 const origin = "https://privateai.example";
@@ -49,8 +50,8 @@ afterEach(async () => {
     await new Promise<void>((resolve) => server.close(() => resolve()));
   }
 });
-async function start() {
-  const app = createApp({ origin, accessKey: key });
+async function start(invites?: InviteRegistry) {
+  const app = createApp({ origin, accessKey: key, invites });
   app.get("/", (_req, res) => res.send("restricted app fixture"));
   const server = await new Promise<Server>((resolve) => {
     const s = app.listen(0, "127.0.0.1", () => resolve(s));
@@ -60,6 +61,35 @@ async function start() {
   if (!address || typeof address === "string") throw new Error();
   return `http://127.0.0.1:${address.port}`;
 }
+it("sets secure hosted invite cookies and cannot bypass individual access with the shared key", async () => {
+  const registry = new InviteRegistry(":memory:");
+  try {
+    const root = await start(registry);
+    expect(
+      (await fetch(root + "/api/status", { headers: authorized })).status,
+    ).toBe(401);
+    const invite = registry.issue(Date.now() + 60000);
+    const response = await fetch(root + "/auth/register", {
+      method: "POST",
+      headers: {
+        ...authorized,
+        Origin: origin,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        id: invite.id,
+        token: invite.token,
+        password: "synthetic hosted password",
+      }).toString(),
+    });
+    expect(response.status).toBe(303);
+    expect(response.headers.get("set-cookie")).toContain("Secure");
+    expect(response.headers.get("set-cookie")).toContain("HttpOnly");
+    expect(response.headers.get("set-cookie")).toContain("SameSite=Strict");
+  } finally {
+    registry.close();
+  }
+});
 it("refuses public startup without HTTPS, exact origin and strong access configuration", () => {
   for (const value of [
     "http://privateai.example",

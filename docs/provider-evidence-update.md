@@ -68,11 +68,24 @@ qualify the live provider. No retry behavior or privacy gate changed.
 
 ## Concrete remaining evidence request — draft, not sent
 
-Ask the supplier for these artifacts for the selected router/model combination:
+Subject: Deployment-specific evidence for PrivateAI's GPT-OSS and Gemma browser trials
+
+We are evaluating `gpt-oss-120b` and `gemma4-31b` through
+`https://inference.tinfoil.sh`, using Tinfoil JavaScript 1.2.2 and EHBP 0.3.3.
+Neither candidate is approved for private user data. Please provide independently
+inspectable deployment artifacts for each candidate, not only general architecture
+statements. The observed router repository is `tinfoilsh/confidential-model-router`.
+The public catalog names `tinfoilsh/confidential-gemma4-31b` for the Gemma candidate;
+please confirm the actual admitted repository/build for both models.
+
+Requested artifacts for **each** candidate:
 
 1. The deployment artifact/build binding for router digest
    `ad95d02b2e27b3c1d5c327f2ee9616634f841e4b2ed5a48f404e4e9f595a4876`, and admitted
-   `gpt-oss-120b` worker releases, measured configuration and GPU/firmware policy.
+   `gpt-oss-120b` and `gemma4-31b` worker releases, measured configuration and
+   GPU/firmware policy. Map model ID → worker repository → build/provenance →
+   admitted measurement → hardware/firmware policy; identify shared versus
+   model-specific components and how updates invalidate this evidence.
 2. A supported public worker-evidence retrieval path; the earlier ATC worker
    lookup returned 501. Include how router admission is bound to those releases.
 3. Freshness, revocation and rollback checks available in browser verifier 1.2.2,
@@ -86,6 +99,9 @@ Ask the supplier for these artifacts for the selected router/model combination:
 
 No credentials, transcript, personal data or private source are needed in this
 request. A supplier reply would still need review; it is not an automatic pass.
+For every answer, include artifact URL/hash, software version, deployment scope,
+validity interval, failure behavior and any unsupported guarantee. Please do not
+request our API key or private prompts. This request is prepared but **not sent**.
 The simplest next step for Q1 is obtaining these version/deployment-specific
 artifacts, while continuing ordinary product and quality work.
 

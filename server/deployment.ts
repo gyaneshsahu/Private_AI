@@ -4,6 +4,7 @@ import type { RequestHandler } from "express";
 export function deploymentAccess(
   origin: string,
   accessKey?: string,
+  individualAccess = false,
 ): RequestHandler {
   const url = new URL(origin);
   if (url.origin !== origin || url.username || url.password)
@@ -12,8 +13,8 @@ export function deploymentAccess(
   if (
     !local &&
     (url.protocol !== "https:" ||
-      !accessKey ||
-      !/^[A-Za-z0-9_-]{32,128}$/.test(accessKey))
+      (!individualAccess &&
+        (!accessKey || !/^[A-Za-z0-9_-]{32,128}$/.test(accessKey))))
   )
     throw new Error(
       "Hosted evaluation requires HTTPS and a strong deployment access key.",
@@ -40,6 +41,10 @@ export function deploymentAccess(
       return;
     }
     res.setHeader("Strict-Transport-Security", "max-age=31536000");
+    if (individualAccess) {
+      next();
+      return;
+    }
     const authorization = req.headers.authorization ?? "";
     const encoded = /^Basic ([A-Za-z0-9+/]+={0,2})$/.exec(authorization)?.[1];
     const supplied =

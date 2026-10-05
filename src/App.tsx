@@ -96,7 +96,10 @@ export function App() {
         return r.json();
       })
       .then((data) => {
-        if (active) setStatus(data);
+        if (active) {
+          store.selectAccount(data.accountId);
+          setStatus(data);
+        }
       })
       .catch(() => {
         if (active)
@@ -186,6 +189,35 @@ export function App() {
         fail("Could not copy. Select the answer text and copy it manually.");
     }
   }
+  useEffect(() => {
+    if (!status?.accountId) return;
+    let active = true;
+    const checkAccess = async () => {
+      try {
+        const response = await fetch("/api/status", { cache: "no-store" });
+        if (!active) return;
+        if (
+          response.status === 401 ||
+          (response.ok &&
+            (await response.json()).accountId !== status.accountId)
+        ) {
+          vault.current?.lock();
+          vault.current?.onInvalidate?.();
+          window.location.assign("/auth");
+        }
+      } catch {
+        /* A network outage does not grant access or delete saved data. */
+      }
+    };
+    const timer = setInterval(() => void checkAccess(), 30000);
+    const focus = () => void checkAccess();
+    window.addEventListener("focus", focus);
+    return () => {
+      active = false;
+      clearInterval(timer);
+      window.removeEventListener("focus", focus);
+    };
+  }, [status?.accountId]);
   async function api(path: string, data: unknown, signal?: AbortSignal) {
     if (!status) throw new Error("Service is unavailable.");
     const response = await fetch(path, {
@@ -198,6 +230,11 @@ export function App() {
       signal,
     });
     const result = await response.json();
+    if (response.status === 401 && status.accountId) {
+      vault.current?.lock();
+      vault.current?.onInvalidate?.();
+      window.location.assign("/auth");
+    }
     if (!response.ok) throw new Error(result.error ?? "Request failed.");
     return result;
   }
@@ -362,7 +399,9 @@ export function App() {
       if (current === epoch.current) {
         const sources = parseResearchResult(
           result,
-          conversation.attachments.flatMap((attachment) => attachment.sources.map((source) => source.id)),
+          conversation.attachments.flatMap((attachment) =>
+            attachment.sources.map((source) => source.id),
+          ),
         );
         if (sources.length)
           setConversation((c) => ({
@@ -398,6 +437,10 @@ export function App() {
     }
   }
   async function unlockVault() {
+    if (!status) {
+      fail("Wait for service access before opening saved history.");
+      return;
+    }
     const current = epoch.current;
     const secret = passphrase;
     setPassphrase("");
@@ -525,6 +568,26 @@ export function App() {
           </span>
         </header>
         <div className="connection-banner">
+          {status?.accountId && (
+            <button
+              onClick={async () => {
+                if (!allowReplace()) return;
+                vault.current?.lock();
+                vault.current?.onInvalidate?.();
+                try {
+                  const response = await fetch("/auth/logout", {
+                    method: "POST",
+                  });
+                  if (!response.ok) throw new Error();
+                  window.location.assign("/auth");
+                } catch {
+                  fail("Workspace locked. Sign out failed; try again.");
+                }
+              }}
+            >
+              Sign out
+            </button>
+          )}
           <span className="status-icon">◇</span>
           <div>
             <strong>

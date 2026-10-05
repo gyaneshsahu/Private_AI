@@ -15,6 +15,22 @@ afterEach(async () => {
   stores.length = 0; /* Each test uses distinct records; IndexedDB connections stay managed by idb. */
 });
 describe("real WebCrypto vault, synthetic inputs only", () => {
+  it("isolates saved workspaces by account even when vault passphrases match", async () => {
+    const alice = store(),
+      bob = store();
+    alice.selectAccount("aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa");
+    bob.selectAccount("bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb");
+    await alice.unlock("same synthetic vault password");
+    const c = emptyConversation();
+    c.title = "Alice synthetic workspace";
+    await alice.save(c);
+    alice.lock(false);
+    await bob.unlock("same synthetic vault password");
+    expect(await bob.list()).toEqual([]);
+    bob.lock(false);
+    await alice.unlock("same synthetic vault password");
+    expect((await alice.list()).map((item) => item.id)).toContain(c.id);
+  });
   it("encrypts content and per-conversation keys, rejects wrong password, reloads and deletes", async () => {
     const v = store();
     await v.unlock("correct horse battery staple");

@@ -124,3 +124,29 @@ remain outside that coverage. Five distinct frozen development cases now have
 live observations, four with Gemma; reserved evaluation remains unrun. Broader
 family coverage and human grading are next, without promoting a small success
 set into a general quality claim.
+
+## Matched bills and research comparison
+
+5 October 2026: the founder requested comparisons across more task families.
+Four fresh permits ran the same two cases on `gemma4-31b` and `gpt-oss-120b`,
+with the same answer policy, 8,000-character input and 2,048-token output limits.
+Provider-default reasoning was not normalized. All eight replies completed with
+matching router verifications and the existing scoped Chromium-abort assessment;
+raw events and consumed claims remain intact. Each directory below has a validated
+agent-review sidecar with its result hash and exact model/configuration identity.
+
+| Run suffix after `windows_20261005_compare_` | Case | Observed review | Turn durations |
+| --- | --- | --- | --- |
+| `bills_gemma_1` | `development-bills-02` | Correct EUR 20 / 25% increase and 20% reverse decrease; concise. Narrow acceptable agent result. | 2.59 / 2.96 s |
+| `bills_gptoss_1` | Same case | Same correct results with denominator explanation. Narrow acceptable agent result. | 2.03 / 1.95 s |
+| `research_gemma_1` | `development-research-02` | Recognizes 2020 source as insufficiently current, but follow-up calls 2023–2024 hardware “latest.” Material temporal-grounding failure in this 2026 run. | 1.99 / 4.51 s |
+| `research_gptoss_1` | Same case | Recognizes old evidence, but shifts to replacement-battery compatibility and warranty advice without a stated purchase type. Material unsupported-intent finding. | 2.56 / 2.82 s |
+
+Reported batch estimate: USD 0.00159165; actual charges remain unreconciled.
+Seven distinct frozen development cases now have live evidence; Gemma has one
+case in each of the six families. This is sparse development coverage, not a
+six-family pass. Research uses fixed excerpts, not actual web retrieval. Reserved
+cases remain unrun, human grading is outstanding, and neither candidate is promoted.
+Next targeted work: provide a trustworthy current-date context and avoid invented
+purchase assumptions, then use fresh transfer cases rather than repeat unchanged
+experiments. Keep the two observed failures as regression evidence.
