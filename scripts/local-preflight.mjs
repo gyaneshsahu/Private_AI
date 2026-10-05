@@ -12,9 +12,9 @@ const executablePath =
   process.env.CHROMIUM_PATH ||
   (existsSync("/usr/bin/chromium")
     ? "/usr/bin/chromium"
-    : chromium.executablePath());
+    : undefined);
 const nodeOK = Number(process.versions.node.split(".")[0]) === 24;
-const browserOK = existsSync(executablePath);
+const browserOK = existsSync(executablePath ?? chromium.executablePath());
 if (process.argv.includes("--check")) {
   console.log(
     JSON.stringify(
@@ -82,6 +82,7 @@ if (process.argv.includes("--check")) {
     observedAt: new Date().toISOString(),
     kind: "LIVE_BROWSER_PREFLIGHT",
     result: "FAILED",
+    stage: "START_LOCAL_SERVER",
     inferenceRequests: 0,
     requests: [],
     verification: null,
@@ -95,7 +96,9 @@ if (process.argv.includes("--check")) {
       server.listen(0, "127.0.0.1", ok);
     });
     const origin = `http://127.0.0.1:${server.address().port}`;
+    evidence.stage = "LAUNCH_BROWSER";
     browser = await chromium.launch({ executablePath, headless: true });
+    evidence.stage = "CONFIGURE_BROWSER";
     const context = await browser.newContext({
       ignoreHTTPSErrors: false,
       serviceWorkers: "block",
@@ -142,7 +145,9 @@ if (process.argv.includes("--check")) {
         outcome: req.failure()?.errorText || "NETWORK_FAILED",
       }),
     );
+    evidence.stage = "LOAD_LOCAL_PAGE";
     await page.goto(origin);
+    evidence.stage = "VERIFY_ROUTER";
     evidence.verification = await page.evaluate(async () => {
       return Promise.race([
         (async () => {
@@ -178,10 +183,16 @@ if (process.argv.includes("--check")) {
       ]);
     });
     evidence.result = "ROUTER_VERIFICATION_PASSED";
-  } catch {
+    evidence.stage = "COMPLETE";
+  } catch (error) {
     // Do not print arbitrary provider errors or headers into durable artifacts.
     evidence.result =
       "FAILED: inspect network outcomes; do not weaken TLS or attestation";
+    evidence.failureKind =
+      error instanceof Error &&
+      ["Error", "TypeError", "ReferenceError", "TimeoutError"].includes(error.name)
+        ? error.name
+        : "UNKNOWN_ERROR";
     process.exitCode = 1;
   } finally {
     await browser?.close();

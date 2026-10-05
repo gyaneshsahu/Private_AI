@@ -1,8 +1,11 @@
 # Restricted development deployment
 
-Status: portable service built and tested locally; not deployed. No hosting or
-provider credentials are present in Codex. Existing application and gateway are
-reused. This is a synthetic evaluation foundation, not public launch readiness.
+Status, 5 October 2026: deployed on the reported Render Free service at
+https://private-ai-deployment.onrender.com. Authenticated GitHub API inspection
+confirmed successful hosted smoke and full validation at `46a03e2`; see
+[Windows batch evidence](windows-development-batch.md). Inference remains disabled
+and the user reports no provider key on Render. This is a restricted synthetic
+evaluation foundation, not public launch readiness.
 
 ## Hosting decision
 
@@ -53,7 +56,7 @@ secrets into VITE-prefixed variables or frontend build settings.
 integrity and Docker build/smoke with NO provider secrets. Configure the selected
 host's Git integration to deploy only after checks pass. If the host cannot gate
 on CI, keep automatic deployment disabled until a gated mechanism is installed.
-CI is committed; execution on GitHub has not been observed. Workflow-dispatch UI
+CI execution on GitHub is confirmed successful at `46a03e2`. Workflow-dispatch UI
 may require the workflow to exist on the repository's default branch; do not
 merge or reset branches simply to hide that setup requirement.
 
@@ -68,7 +71,7 @@ After hosting, configure repository variable `PRIVATEAI_DEV_ORIGIN` and secret
 script can run in a suitable trusted environment with these variables. It checks
 real TLS, anonymous denial, authenticated browser rendering and secure cookies;
 it blocks browser POSTs and external requests and requires inference disabled.
-The hosted check is prepared but NOT RUN. Cloud Chromium proxy trust remains a
+The hosted check passed at `4476f6e` and `46a03e2`. Cloud Chromium proxy trust remains a
 separate constraint; do not import a persistent proxy certificate to force it.
 
 ## Privacy and observable failures
@@ -134,7 +137,7 @@ builds from `git archive HEAD`, so preceding local asset generation cannot conce
 missing tracked build inputs. Runtime container smoke is rerun against that image.
 
 Reported host: `https://private-ai-deployment.onrender.com`, Free service, no
-Tinfoil key. Live health is NOT VERIFIED: Cloud proxy rejected the hostname before
+Tinfoil key. At that earlier build stage, live health was NOT VERIFIED: Cloud proxy rejected the hostname before
 TLS/HTTP reached Render. A saved domain allowlist draft requires environment
 review/save/publish; saving it alone does not grant current access.
 
@@ -143,7 +146,7 @@ set Actions variable `PRIVATEAI_DEV_ORIGIN` to the exact host origin and Actions
 secret `PRIVATEAI_DEV_ACCESS_KEY` to the same development access key set in Render.
 The hosted smoke workflow now also triggers on pushes to the development branch
 when that origin variable is configured. It does not need a Tinfoil key. Actual
-GitHub workflow execution and the Render redeployment remain to be observed.
+GitHub workflow execution was subsequently confirmed; see the current status above.
 
 ### Public endpoint check after Render recovery — 2026-10-05
 
@@ -153,4 +156,5 @@ service liveness and anonymous denial, not authenticated browser or inference
 readiness. The user reports configuring the GitHub Actions origin variable and
 access secret. This commit triggers the no-inference hosted workflow on the
 development branch. GitHub Actions API inspection from Cloud returns `Forbidden`,
-so its run result must still be observed in Actions; no passing result is assumed.
+so that Cloud check could not establish a passing result. Subsequent Windows
+GitHub API inspection confirmed the smoke job passed (current status above).

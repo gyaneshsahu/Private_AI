@@ -14,7 +14,8 @@ export default defineConfig({
   },
   workers: 1,
   webServer: {
-    command: "PORT=4173 npm start",
+    command: "npm start",
+    env: { PORT: "4173" },
     url: "http://127.0.0.1:4173/api/status",
     reuseExistingServer: false,
   },

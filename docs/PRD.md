@@ -80,7 +80,7 @@ Technical readiness, security assurance and customer demand are separate decisio
 
 Local work on B/C may proceed while A is blocked, but does not imply A has passed. Existing local implementation is reusable work, not proof of completion. The previous 6–10 engineering-week estimate is provisional, not a minimum duration; progress follows evidence.
 
-Current authorization: **no paid services**. Local tools and synthetic fixtures need no new supplier charge. A possible $25 qualification cap and later $50–100 cumulative evaluation allowance are planning placeholders, not approved spending or verified quotations. Request a specific service, current unit prices and cap before any charge. Recurring hosting is unnecessary for the local evaluation.
+Current authorization, updated 5 October 2026: **USD 10 cumulative inference ceiling**, including prior usage, for the bounded synthetic batch in the [local handoff](LOCAL_CODEX_HANDOFF.md). Confirm actual usage, provider cap and key/account scope before paid execution. No deposits, subscriptions or paid hosting are authorized. Earlier $25/$50–100 planning figures are not approved budgets. Local tools and synthetic fixtures need no supplier charge.
 
 ## 7. Deferred scope and review decisions
 

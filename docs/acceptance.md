@@ -1,6 +1,6 @@
 # PrivateAI: approved implementation and acceptance contract
 
-Status: implementation authorized; repository access confirmed; implementation in progress. No paid services authorized.
+Status: implementation authorized; repository access confirmed; implementation in progress. The 5 October [handoff](LOCAL_CODEX_HANDOFF.md) records a USD 10 cumulative synthetic-inference ceiling, subject to actual usage/cap/access confirmation. No new paid service is authorized.
 
 This supplements the architecture and stages approved in the conversation, now consolidated for review in the [PRD](PRD.md) and [architecture](ARCHITECTURE.md). It does not replace or weaken their privacy requirements. Local functionality and public-page retrieval have validation evidence. One earlier-adapter live synthetic conversation passed narrow review; current-adapter compatibility, full-chain confidentiality and broad answer quality remain unproven. See the [validation record](validation.md).
 
@@ -77,6 +77,6 @@ Stage A stays BLOCKED until these checks support the selected live path. A green
 
 Implementation is authorized within the agreed scope. Routine reversible decisions, debugging and relevant testing proceed autonomously once repository access works. Preserve existing work; use the existing checkout appropriately and do not create a worktree unless requested.
 
-No new paid service or spending is authorized. Request a concrete service and capped amount before incurring charges. Secure credentials belong in environment settings, never chat or tracked files. Independent review and deployment are not implied by local development authorization.
+No new paid service is authorized. The handoff's bounded synthetic batch is covered by the USD 10 cumulative ceiling only after actual usage, account cap and key scope are confirmed. Ask before deposits, subscriptions or spending beyond approval. Secure credentials belong in environment settings, never chat or tracked files. Independent review and deployment are not implied by local development authorization.
 
 The 6-10 engineering-week range is an estimate, not a required duration. Advance by working outcomes; simplify unnecessary components while retaining essential privacy boundaries. A passing evaluation informs the next investment decision and does not certify production readiness or the future platform.

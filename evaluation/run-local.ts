@@ -77,7 +77,7 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
     process.env.CHROMIUM_PATH ||
     (existsSync("/usr/bin/chromium")
       ? "/usr/bin/chromium"
-      : chromium.executablePath());
+      : undefined);
   const proxy = [
     "HTTPS_PROXY",
     "HTTP_PROXY",
@@ -89,7 +89,7 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
   const apiKey = process.env.TINFOIL_API_KEY;
   const prerequisites = {
     node24: process.versions.node.startsWith("24."),
-    browser: existsSync(executablePath),
+    browser: existsSync(executablePath ?? chromium.executablePath()),
     apiKeyPresent: !!apiKey,
     suitableLocalNetwork: !proxy,
   };

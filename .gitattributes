@@ -1,0 +1,2 @@
+# Frozen fixtures are hashed as bytes; Windows checkouts must preserve LF.
+evaluation/cases/*.json text eol=lf

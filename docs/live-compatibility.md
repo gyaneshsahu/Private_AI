@@ -1,4 +1,12 @@
-# Smallest revised-adapter live check — authorized, startup failure under diagnosis
+# Smallest revised-adapter live check — access and billing confirmation pending
+
+Update, 5 October 2026: continue only in the Windows checkout. The latest
+[handoff](LOCAL_CODEX_HANDOFF.md) supersedes the historical USD 2 authorization
+below with a USD 10 cumulative ceiling and a conditional three-request batch.
+The WSL startup failure's cache fix passed an offline regression. Existing WSL
+permits/claims must remain untouched; the historical commands below must not be
+used to reissue that approval in Windows. See [current preparation and remaining
+gates](windows-development-batch.md). No new permit or paid request was made.
 
 Purpose: verify the new bounded SSE parser and existing browser-verification /
 EHBP path against Tinfoil once. This is not a quality benchmark, retention test,
@@ -40,7 +48,7 @@ specific confirmation flag to record the added scope, creates a different
 single-use ID and refuses to overwrite a permit. It does not itself make a model
 request. The operator must not use that flag merely to bypass missing approval.
 
-## Commands after confirmation, in the Git-based WSL checkout
+## Historical setup commands — not a new-run instruction
 
 Keep the API key in the local process environment; never paste it in chat. First
 use the [Git workflow](git-workflow.md) and a matching browser preflight less than

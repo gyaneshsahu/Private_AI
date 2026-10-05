@@ -1,6 +1,6 @@
 # Provider qualification — NOT_PASSED
 
-Current state, 4 October 2026: **the inference path is implemented and connected
+Current state, 5 October 2026: **the inference path is implemented and connected
 to the web app**. Production use is intentionally gated by a complete provider
 review. The isolated WSL experiment completed two real turns on the earlier
 adapter. The revised streaming parser is locally validated and awaits one small
@@ -31,13 +31,15 @@ Reference evidence: [first live review](first-live-experiment-review.md),
 
 ## Authorization
 
-The user approved up to USD 2 actual spending **for one two-turn synthetic test**.
-That test completed. The account limit remains USD 2 with auto-recharge disabled,
-as reported by the user. Remaining budget is not permission for more requests.
-The proposed one-request compatibility check needs confirmation that its added
-scope is covered by that same total cap. No new credits, cap reset, new USD 2
-allowance or private-data transfer is authorized. The original permit preparer
-now refuses to reissue the completed test. No additional inference ran in this batch.
+The latest [handoff](LOCAL_CODEX_HANDOFF.md) authorizes USD 10 cumulative
+inference spending, including prior usage. The planned batch is one synthetic
+compatibility request, then one two-turn synthetic invoice only if it succeeds
+(three requests maximum, no retries). Actual remaining usage, account cap and
+key/account scope must be confirmed first. The last reported provider cap was
+USD 2 with auto-recharge disabled; the higher authorization does not change it.
+No deposit, subscription or private-data transfer is authorized. Historical
+permits and consumed claims remain intact; do not reuse their IDs in Windows.
+No additional inference ran in this local development batch.
 
 ## What prevents enabling private-user inference
 
