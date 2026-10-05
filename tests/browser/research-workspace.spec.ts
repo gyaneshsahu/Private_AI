@@ -1,5 +1,27 @@
 import { expect, test } from "@playwright/test";
 
+test("malformed research is rejected without changing the draft or retrying", async ({ page }) => {
+  let executions = 0;
+  await page.route("**/api/research/execute", async (route) => {
+    executions++;
+    await route.fulfill({ json: { sources: [{ id: "broken-source", text: { unexpected: true } }] } });
+  });
+  const tab = (name: string) => page.getByRole("navigation", { name: "Workspace" }).getByRole("button", { name, exact: false });
+  await page.goto("/");
+  await page.getByLabel("Message PrivateAI").fill("SYNTHETIC preserved draft");
+  await tab("Research").click();
+  await page.getByLabel("Research method").selectOption("page");
+  await page.getByLabel("Exact HTTPS URL").fill("https://example.com/synthetic");
+  await page.getByRole("button", { name: "Review disclosure" }).click();
+  await page.getByRole("button", { name: "Approve and retrieve" }).click();
+  await expect(page.getByRole("status")).toContainText("Research returned invalid source information");
+  await tab("Context").click();
+  await expect(page.getByText("Your context is empty.", { exact: false })).toBeVisible();
+  await tab("Conversation").click();
+  await expect(page.getByLabel("Message PrivateAI")).toHaveValue("SYNTHETIC preserved draft");
+  expect(executions).toBe(1);
+});
+
 test("approved research retains inspectable provenance through encrypted save and reopen", async ({ page }) => {
   const disclosures: unknown[] = [];
   const external: string[] = [];

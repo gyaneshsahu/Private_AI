@@ -12,6 +12,7 @@ import { Vault } from "./vault";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { abortable } from "./abortable";
+import { parseResearchResult } from "./research-result";
 
 type Tab = "Conversation" | "Context" | "Research" | "Saved";
 const Answer = lazy(() =>
@@ -352,14 +353,18 @@ export function App() {
       );
       abort.signal.throwIfAborted();
       if (current !== epoch.current) return;
-      const result = (await api(
+      const result = await api(
         "/api/research/execute",
         { id: prepared.id },
         abort.signal,
-      )) as { sources: Source[] };
+      );
       abort.signal.throwIfAborted();
       if (current === epoch.current) {
-        if (result.sources.length)
+        const sources = parseResearchResult(
+          result,
+          conversation.attachments.flatMap((attachment) => attachment.sources.map((source) => source.id)),
+        );
+        if (sources.length)
           setConversation((c) => ({
             ...c,
             attachments: [
@@ -371,12 +376,13 @@ export function App() {
                     ? "Public search results"
                     : "Public page",
                 selected: true,
-                sources: result.sources,
+                kind: "research",
+                sources,
               },
             ],
           }));
         setNotice(
-          result.sources.length
+          sources.length
             ? "Public sources added to your selected context. Search excerpts are labelled; pages are fetched only with approval."
             : "The search returned no sources.",
         );
