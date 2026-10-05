@@ -60,3 +60,7 @@ The founder approved the [trial-quality floors](trial-quality-gate-proposal.md) 
 5 October 2026. Reserved evaluation and human grading remain outstanding.
 
 Validation: 102 unit/integration tests, ten production-build browser workflows, TypeScript, production build and fixture integrity passed. Dependency audit reported zero vulnerabilities at installation; this is not independent security assurance.
+
+Follow-up: the [allocation-first planning batch](planning-intervals-review.md)
+completed four additional bounded live turns. Interval arithmetic improved on the
+original and transfer tasks; semantic self-check timing and concision remain open.

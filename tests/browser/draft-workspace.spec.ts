@@ -175,3 +175,40 @@ test("everyday starters prepare editable drafts and keep research an explicit ac
   ).toBeVisible();
   expect(outbound).toEqual([]);
 });
+
+test("workspace guide preserves a draft and supports keyboard dismissal without disclosure", async ({
+  page,
+}) => {
+  const disclosures: string[] = [];
+  page.on("request", (request) => {
+    if (
+      request.method() === "POST" ||
+      new URL(request.url()).origin !== "http://127.0.0.1:4173"
+    )
+      disclosures.push(request.url());
+  });
+  await page.goto("/");
+  await page.getByLabel("Message PrivateAI").fill("SYNTHETIC guide draft");
+  for (const width of [1440, 360]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page
+      .getByRole("button", { name: "Getting started", exact: true })
+      .click();
+    const guide = page.getByRole("dialog", { name: "Using PrivateAI" });
+    await expect(guide).toBeVisible();
+    await expect(guide).toContainText("Temporary work disappears on reload");
+    await expect(guide).toContainText("passphrase cannot be recovered");
+    await expect(guide).toContainText("review the exact query", {
+      ignoreCase: true,
+    });
+    await page.keyboard.press("Escape");
+    await expect(guide).toHaveCount(0);
+    await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+      "SYNTHETIC guide draft",
+    );
+    await expect(
+      page.getByRole("button", { name: "Getting started", exact: true }),
+    ).toBeFocused();
+  }
+  expect(disclosures).toEqual([]);
+});

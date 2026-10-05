@@ -11,6 +11,7 @@ export const experimentSchema = z
         "adapter_compatibility",
         "writing_revision",
         "everyday_planning",
+        "planning_transfer",
       ])
       .default("two_turn_invoice"),
     approvalId: z.string().regex(/^[a-zA-Z0-9_-]{8,80}$/),
@@ -82,6 +83,10 @@ export const planningPrompts = [
   "Synthetic planning task: make a one-week English presentation practice plan. I have three 30-minute sessions, Tuesday, Thursday and Saturday, each starting at 19:00. Include concrete activities and a self-check at the end of each session. Use no paid tools. Keep the plan concise.",
   "Thursday is no longer available; replace it with Friday. Keep three sessions of 30 minutes, 90 minutes total, starting at 19:00. Make Saturday a full rehearsal and retain a self-check for each session. Show the revised complete plan.",
 ] as const;
+export const planningTransferPrompts = [
+  "Synthetic planning task: I want to practice sketching this weekend using a pencil and paper I already own. I have 25 minutes on Saturday at 09:00 and 25 minutes on Sunday at 16:00, 50 minutes total. Give me a short beginner plan with concrete practice and a final check of my work within each session. Do not suggest purchases.",
+  "Change the allocation: I now have 15 minutes on Saturday at 09:00 and 35 minutes on Sunday at 16:00. Keep 50 minutes total and the final check within each session. Show the complete revised plan; Sunday should include drawing one household object from observation.",
+] as const;
 export function scenarioPrompts(
   scenario: Experiment["scenario"],
 ): readonly string[] {
@@ -90,9 +95,14 @@ export function scenarioPrompts(
     two_turn_invoice: experimentPrompts,
     writing_revision: writingPrompts,
     everyday_planning: planningPrompts,
+    planning_transfer: planningTransferPrompts,
   }[scenario];
 }
 export const everydayAssertions = {
+  planning_transfer: [
+    "Saturday 09:00 and Sunday 16:00, exactly 25 minutes each; concrete sketching practice and final checks within 50 minutes; no purchases",
+    "Saturday 15 minutes and Sunday 35 minutes at unchanged starts; exactly 50 total including checks; Sunday household object from observation; concise complete revision",
+  ],
   writing_revision: [
     "Original dates, time, free admission and notebook retained; under 120 words; no invented venue/link",
     "Revised dates and time replace old details; Friday reply deadline; shorter email; free admission and notebook retained",

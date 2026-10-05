@@ -465,6 +465,20 @@ export function App() {
             Your workspace stays on this device. Sharing starts with your
             choice.
           </p>
+        </div>
+        <div className="workspace-help">
+          <button
+            className="text-button"
+            onClick={() =>
+              setSource({
+                id: "workspace-guide",
+                title: "Using PrivateAI",
+                text: "Start in Conversation. Write a message or use a starter to prepare an editable draft. Nothing sends until you choose Send. This evaluation is for synthetic examples; private chat remains unavailable until its privacy checks pass.\n\nAdd context when you need it. In Context, import a text PDF, TXT, PNG or JPEG. Files are read on your device. Limits: five files (up to three screenshots), 10 MB each, 20 PDF pages; printed English text. Review extracted numbers, tables and wording before using them. Scanned PDFs and handwriting are not supported. Select only the context you want included.\n\nSave deliberately. Temporary work disappears on reload. In Saved, create or unlock a vault, then choose Save encrypted snapshot. Save again after changes. Your passphrase cannot be recovered; history stays in this browser, without cloud sync. Locking clears unsaved work. Removing an attachment does not remove its earlier messages or saved snapshots.\n\nResearch is your choice. Review the exact query or public URL before approving it. The research service and recipient can see it; your chat is not added automatically.\n\nStay in control. Stop ends an active response; an incomplete reply is excluded from later context. Retry is a separate request. Edit an earlier message to start a new branch. To remove a saved conversation, delete its snapshot in Saved. A new conversation clears the current workspace but does not delete saved snapshots.",
+              })
+            }
+          >
+            Getting started
+          </button>
           <button
             className="text-button"
             onClick={() =>
@@ -1164,7 +1178,6 @@ export function App() {
             <div className="row">
               <h2>{source.title}</h2>
               <button
-                autoFocus
                 onClick={() => setSource(undefined)}
                 aria-label="Close source"
               >

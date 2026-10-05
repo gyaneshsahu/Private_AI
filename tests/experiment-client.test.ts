@@ -124,7 +124,11 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
       );
       const compatibilityCalls = state.mockCalls.length;
       const everyday = [];
-      for (const scenario of ["writing_revision", "everyday_planning"]) {
+      for (const scenario of [
+        "writing_revision",
+        "everyday_planning",
+        "planning_transfer",
+      ]) {
         state.mockCalls = [];
         const outcome = await runSynthetic({ ...permit, scenario }, "fixture");
         everyday.push({ outcome, calls: state.mockCalls });

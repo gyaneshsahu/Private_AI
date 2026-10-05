@@ -27,7 +27,7 @@ free, always-on plan is made and no hosting subscription is authorized.
 
 Connect `gyaneshsahu/Private_AI`, branch `codex/provider-qualification`, as a
 single Docker web service using the root Dockerfile. Select a plan only after its
-price and constraints are reviewed; the USD 10 inference budget does not cover
+price and constraints are reviewed; the USD 2 cumulative inference cap does not cover
 hosting. Use the host's HTTPS domain, no custom domain required. The edge must
 preserve Host, overwrite X-Forwarded-Proto with `https`, redirect public HTTP to
 HTTPS, support streaming for at least 90 seconds and prevent direct public access
