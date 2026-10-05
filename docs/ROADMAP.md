@@ -66,6 +66,10 @@ Local DONE does not imply provider qualification or deployed release.
 Current dependency review: [trial readiness and six-family scope](trial-readiness.md).
 Prioritize complete access workflows and uncovered development quality evidence;
 do not substitute repeated prompt refinements for the outstanding Q1/E1/U1 gates.
+Release-readiness actions: founder sends the prepared supplier request; complete
+the [first human review and bounded Gemma plan](gemma-release-evaluation-plan.md);
+decide the [durable hosting arrangement](trial-hosting-decision.md) before deploying
+individual access. Existing IDs, order and acceptance thresholds remain unchanged.
 
 | ID / priority | Outcome and status | Dependencies and concrete exit evidence |
 | --- | --- | --- |
@@ -143,6 +147,15 @@ Do not expand scope to avoid failing current requirements. Record the need, alte
 expected benefit, risks, cost and founder decision before promoting a deferred area.
 
 ## Evidence and change log
+
+- 5 October 2026: focused release-readiness preparation for Q1/E1/U1/G6/R1.
+  Founder will send the candidate-specific provider request; it remains unsent
+  until confirmed. Prepared an eight-conversation, two-sitting human review packet
+  with blank scores and exact source bindings, plus a bounded seven-case Gemma
+  coverage plan. Verified Render is still Free on live commit `dbccbe0`; proposed
+  paid single-instance compute plus persistent SQLite storage, with backup/restore
+  and hosted access validation still required. No paid hosting approval, deployment,
+  human grades or privacy/quality pass is implied. Roadmap format/IDs are preserved.
 
 - 5 October 2026: E1/G1–G6 advanced with a predeclared matched six-family batch:
   twelve two-turn conversations, 24 completed replies, six new distinct frozen

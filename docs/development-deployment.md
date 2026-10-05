@@ -9,9 +9,16 @@ evaluation foundation, not public launch readiness.
 
 ## Hosting decision
 
+**Current individual-access decision:** the existing Render Free filesystem is
+not durable registry storage. See the [paid single-instance/disk proposal and
+release checklist](trial-hosting-decision.md). Read-only dashboard inspection on
+5 October shows live commit `dbccbe0`, older than the local invitation/password
+implementation. Do not deploy that access system onto ephemeral storage.
+
 Use one persistent Node 24 service with the existing app and gateway on the same
-HTTPS origin. Docker packaging is included. Sessions, request counters and one-use
-research approvals are intentionally in-memory: deploy exactly one process and
+HTTPS origin. Docker packaging is included. Sessions, instance-wide counters and
+one-use research approvals are intentionally in-memory; individual account state
+and per-account counters now use SQLite. Deploy exactly one process and
 one instance. Restart invalidates sessions and approvals; reload to continue.
 Do not use horizontal scaling, Node cluster or serverless functions with this
 state design. Future scaling requires an atomic shared session/approval store.
@@ -100,10 +107,12 @@ source for actual charges, client token estimates are not invoices. Never upload
 
 ## Budget and next live batch
 
-The user's latest approval raises the total inference ceiling to USD 10, including
-prior usage, not USD 10 per run. Auto-recharge remains off. Provider limit behavior
-and key/account scope need confirmation at setup. No live or paid inference ran
-in this deployment batch. Existing consumed WSL claims remain untouched.
+Current authorization is **USD 2 cumulative inference spending**, including prior
+usage, with auto-recharge disabled. This supersedes the older USD 10 text in this
+historical deployment plan. Hosting is a separate, unapproved recurring expense.
+Current quality work follows the [bounded Gemma plan](gemma-release-evaluation-plan.md);
+the compatibility sequence below is historical and is not a reusable permit.
+Existing consumed WSL and Windows claims remain untouched.
 
 After hosted foundation smoke and provider-path preparation: first one short
 synthetic compatibility request, then at most one two-turn synthetic invoice

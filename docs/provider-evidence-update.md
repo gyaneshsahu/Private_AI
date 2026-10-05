@@ -68,6 +68,13 @@ qualify the live provider. No retry behavior or privacy gate changed.
 
 ## Concrete remaining evidence request — draft, not sent
 
+5 October follow-up: the founder chose to send the final subject/body personally
+to `contact@tinfoil.sh`, the address published on
+[Tinfoil's contact page](https://tinfoil.sh/contact). Status remains **not sent by
+Codex; founder confirmation/reply pending**. No credentials, transcript or local
+evidence attachments are included. Receiving a supplier answer does not by itself
+qualify either candidate.
+
 Subject: Deployment-specific evidence for PrivateAI's GPT-OSS and Gemma browser trials
 
 We are evaluating `gpt-oss-120b` and `gemma4-31b` through

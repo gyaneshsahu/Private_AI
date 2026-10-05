@@ -31,13 +31,17 @@ See [development findings](development-family-review.md) and
 
 | Roadmap item | Current disposition | Next action and exit evidence |
 | --- | --- | --- |
-| Q1 provider chain | Externally blocked. Repeating successful inference cannot establish the missing chain. | Obtain the already prepared [candidate-specific supplier artifacts](provider-evidence-update.md#concrete-remaining-evidence-request--draft-not-sent), then review browser freshness/rollback, router-worker-build/GPU binding and content/billing handling. Sending the request still needs an approved recipient and explicit authorization. |
+| Q1 provider chain | Externally blocked. Repeating successful inference cannot establish the missing chain. | Founder will send the prepared [candidate-specific supplier request](provider-evidence-update.md#concrete-remaining-evidence-request--draft-not-sent) to contact@tinfoil.sh. Await confirmation/reply, then review browser freshness/rollback, router-worker-build/GPU binding and content/billing handling. |
 | E1 quality | Development remains open; neither candidate is a release selection. | Select a bounded, predeclared set of uncovered development cases across families, compare candidates where results can change selection, then review severity and recurring defects. Do not run unchanged probes for cosmetic improvements. Freeze a candidate/configuration only when development evidence supports it; then execute and human-grade the reserved gate within an approved cost allocation. |
 | G6 supported scope | This six-family review is prepared; release scope is not approved or frozen. | Reconcile the candidate's reviewed results with each family above, publish the resulting limitations, and seek a material scope decision only if essential supported tasks must be excluded. Preserve the broader assistant route. |
-| U1 access and recovery | Local individual access and password changes are implemented. | Hosted TLS/proxy/cookie/isolation review and real-device observation remain. Password changes require the current password; lost sign-in passwords and lost vault passphrases have no recovery in the trial. Do not silently issue a new identity as recovery. |
+| U1 access and recovery | Local individual access and password changes are implemented. | Approve a [durable registry hosting arrangement](trial-hosting-decision.md) before deployment; Render Free is ephemeral. Hosted TLS/proxy/cookie/isolation/restart review and real-device observation remain. Lost sign-in passwords and vault passphrases have no recovery in the trial; do not silently issue a new identity as recovery. |
 | R1 trial release | Blocked by the above gates. | Tie deployed release/configuration to validation, reconcile actual billing, then obtain audience/hosting/real-data approval. Automated checks alone cannot approve the trial. |
 
 ## Execution order
+
+Immediate human action is now available: [eight-conversation review and bounded
+Gemma plan](gemma-release-evaluation-plan.md), in two manageable sittings. This
+does not substitute for reserved grading or real-device observation.
 
 1. U1's password/session lifecycle batch is locally validated: identity, expiry,
    quotas and encrypted records are preserved. Hosted validation remains open.
