@@ -11,7 +11,12 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+import { chromium } from "@playwright/test";
+import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { configurationIdentity } from "../evaluation/implementation";
+import { buildReviewPacket } from "../evaluation/review-packet";
+import { resultSchema } from "../evaluation/grade";
 import { developmentCase, type Experiment } from "../evaluation/experiment";
 
 // Fabricated offline records test inventory validation, not provider behavior.
@@ -105,6 +110,82 @@ function fixture() {
   };
   return { permit, result, text, review };
 }
+
+it("prepares unscored review packets with inert transcripts and exact source binding", async () => {
+  const { permit, result } = fixture();
+  result.client.conversation.messages[1].text =
+    '</pre><script>alert(1)</script><img src="https://invalid.example/pixel">';
+  const text = JSON.stringify(result);
+  const packet = buildReviewPacket(permit.approvalId, text, permit);
+  expect(packet.html).not.toMatch(/<(script|img|iframe|a)\b/);
+  expect(packet.html).toContain("&lt;script&gt;");
+  expect(packet.html).toContain("default-src 'none'");
+  expect(packet.draft.transcript[1].text).toBe(
+    result.client.conversation.messages[1].text,
+  );
+  expect(packet.draft.sourceResultSHA256).toBe(
+    createHash("sha256").update(text).digest("hex"),
+  );
+  expect(resultSchema.safeParse(packet.draft).success).toBe(false);
+  expect(packet.draft.correctness).toBeNull();
+  expect(packet.draft.reviewer).toBe("");
+  const unexpectedSource = {
+    ...result,
+    client: {
+      ...result.client,
+      conversation: {
+        ...result.client.conversation,
+        attachments: [
+          {
+            selected: true,
+            sources: [{ id: "unexpected", text: "Unrecorded source" }],
+          },
+        ],
+      },
+    },
+  };
+  expect(() =>
+    buildReviewPacket(
+      permit.approvalId,
+      JSON.stringify(unexpectedSource),
+      permit,
+    ),
+  ).toThrow();
+  const folder = await mkdtemp(join(tmpdir(), "privateai-packet-fixture-"));
+  const file = join(folder, "review.html");
+  const browser = await chromium.launch(browserLaunchOptions());
+  try {
+    await writeFile(file, packet.html, { flag: "wx" });
+    const page = await browser.newPage();
+    let external = 0;
+    await page.route("**/*", (route) => {
+      if (new URL(route.request().url()).protocol !== "file:") {
+        external++;
+        return route.abort();
+      }
+      return route.continue();
+    });
+    await page.goto(pathToFileURL(file).href);
+    for (const width of [1280, 360]) {
+      await page.setViewportSize({ width, height: 900 });
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    }
+    expect(await page.locator("script,img,iframe,a").count()).toBe(0);
+    expect(external).toBe(0);
+  } finally {
+    await browser.close();
+    await unlink(file);
+    await rmdir(folder);
+  }
+  result.client.conversation.messages[0].text = "Wrong case prompt";
+  expect(() =>
+    buildReviewPacket(permit.approvalId, JSON.stringify(result), permit),
+  ).toThrow();
+});
 it("binds reviews to exact bytes, configuration, transcript and case without leaking content", () => {
   const { permit, text, review } = fixture();
   const entry = inspectEvidence(permit.approvalId, text, permit, [review]);

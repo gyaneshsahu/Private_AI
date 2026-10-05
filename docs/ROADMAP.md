@@ -140,6 +140,22 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 5 October 2026: evaluated two fresh uncertainty cases. Gemma correctly leaves
+  conflicting delivery notes unresolved, but initially converts ambiguous receipt
+  OCR into unqualified payment advice; the follow-up correction does not erase
+  that material defect. Frozen development coverage is eleven cases, with zero
+  human reviews and no promoted family/provider gate. Added local unscored review
+  packets with exact transcript/source/configuration binding, escaped readable
+  HTML and blank human-review drafts. Real browser checks cover mobile wrapping,
+  inert malicious transcript text and no external requests. See
+  [development findings](development-family-review.md) and
+  [review packet workflow](../evaluation/README.md).
+  A separate GPT-OSS comparison also gives an overconfident initial OCR amount,
+  improving only after correction. Both candidate findings remain open; model
+  switching is not a demonstrated repair. Final inventory has 36 runs and 21 bound
+  agent reviews, still zero human reviews. Validation passed 136 unit/integration
+  tests, 15 production browser workflows, typecheck/build and fixture integrity.
+
 - 5 October 2026: compared Gemma and GPT-OSS on a fresh cancelled-study-session
   transfer case. Both preserve 30-minute sessions and require another day for the
   missing 30 minutes; narrow agent results are acceptable with minor presentation

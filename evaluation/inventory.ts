@@ -163,7 +163,7 @@ export function inspectEvidence(
   return entry;
 }
 
-async function boundedRead(path: string) {
+export async function boundedRead(path: string) {
   const stat = await lstat(path);
   if (!stat.isFile() || stat.isSymbolicLink() || stat.size > 10 * 1024 * 1024)
     throw Error();

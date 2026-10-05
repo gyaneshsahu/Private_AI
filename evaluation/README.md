@@ -1,6 +1,6 @@
 # Evaluation evidence
 
-`cases/development.json` contains 24 synthetic, two-turn development cases across six task families. `cases/heldout.json` contains 24 different reserved cases frozen before any model tuning. These were developer-authored, not independently contributed or blinded; do not describe them as independent customer validation. Nine distinct development cases have live observations in [the development review](../docs/development-family-review.md); the reserved set remains unrun. Gemma has sparse coverage of all six families, with preserved historical failures and an unresolved planning finding; this is not a quality-gate pass.
+`cases/development.json` contains 24 synthetic, two-turn development cases across six task families. `cases/heldout.json` contains 24 different reserved cases frozen before any model tuning. These were developer-authored, not independently contributed or blinded; do not describe them as independent customer validation. Eleven distinct development cases have live observations in [the development review](../docs/development-family-review.md); the reserved set remains unrun. Gemma has sparse coverage of all six families, with preserved historical failures and unresolved planning/OCR findings; this is not a quality-gate pass.
 
 `frozen-manifest.json` records SHA-256 file hashes. `npm run eval:check` validates counts, shapes, coverage and hashes; success is fixture integrity only. If a reserved case informs a fix, retain it as a regression case and prepare a new, separately versioned hold-out set. Never silently regenerate the manifest to hide a changed acceptance baseline.
 
@@ -43,3 +43,24 @@ provider gate and never merges different model configurations into a quality sco
 records; it is neither actual billing nor an authoritative remaining account budget.
 The frozen-case count excludes custom scenarios and repetitions. Keep historical
 failures and superseded review corrections; do not remove records to improve counts.
+
+`npm run eval:packet -- <run-id>` prepares one recorded synthetic development run
+for later human review. It requires matching frozen prompts, recorded references
+and internally consistent configuration. It creates a fresh directory under
+ignored `.local/review-packets/` containing `review.html` and
+`human-review-draft.json`, without changing source results or active review files.
+Repeated packet generation creates a new directory; it does not rerun inference.
+
+The HTML uses escaped original text, a network-blocking CSP and no scripts or
+active model links. It shows the supplied references, mandatory facts, forbidden
+conclusions and execution status, not an agent's preselected score. The JSON draft
+has blank/null scores, assertion decisions, repetition and reviewer identity; it
+deliberately fails the grading schema and is ignored by the inventory. Only actual
+human grading can fill those fields. Do not relabel agent judgments as human work.
+Completed human review records must retain their exact transcript/configuration/
+source hash, identify the reviewer, and be validated before becoming an active
+sidecar. Development reviews remain separate from the reserved trial gate.
+
+Keep packets local/non-public: they duplicate synthetic transcript evidence, not
+credentials, and are not a new upload or public feedback channel. File permissions
+inherit Windows directory ACLs; `mode: 0600` is not a Windows access-control claim.

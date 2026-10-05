@@ -250,3 +250,47 @@ narrative counts overstated distinct frozen IDs: this fresh case raises the
 Windows frozen-case count from eight to nine. Custom scenarios and repeated runs
 must not be counted as additional frozen cases. These counts do not imply quality
 acceptance, human adjudication or account-balance reconciliation.
+
+## Fresh uncertainty cases
+
+`windows_20261005_uncertainty_bills_04_gemma_1` executes `development-bills-04`.
+The initial response says to pay EUR 10.50 and calls that the only logical
+interpretation of ambiguous OCR `1O.50`. The follow-up requests original-receipt
+verification, but this does not erase the first-turn unqualified payment advice.
+Retain material finding `unqualified-ocr-payment-amount`; correctness is below
+acceptable in the agent review. The follow-up verification assertion is credited
+separately rather than marking every assertion failed. The earlier review version
+is preserved as superseded.
+
+`windows_20261005_uncertainty_documents_03_gemma_1` executes
+`development-documents-03`. It identifies the 12/14 June difference, cites the
+supplied source, and asks to verify both notes because authority is unspecified.
+Narrow acceptable agent review, with a minor unnecessary assumption about a
+project-manager contact. It does not invent a winning date.
+
+Both two-turn conversations completed with matched verification and the scoped
+Chromium-abort assessment. Receipt durations: 2.19/1.22 seconds; conflicting dates:
+1.81/1.21 seconds. Combined reported estimate USD 0.00097840; actual charges remain
+unreconciled. Frozen development coverage is now eleven distinct cases. Inventory
+shows 35 run directories, 20 bound agent reviews, zero human reviews and 15 records
+pending bound development review. These are coverage counts, not acceptance rates.
+
+A separate matched comparison, `windows_20261005_uncertainty_bills_04_gptoss_1`,
+also gives an overconfident first amount: “almost certainly” EUR 10.50, with source
+verification phrased conditionally. Its second reply correctly makes confirmation
+a prerequisite to payment. Preserve the same material agent finding for the first
+reply; changing between these two candidates does not fix the observed ambiguity
+problem. This is the same case on another model, not distinct-case recurrence.
+Both replies completed in 3.39/3.44 seconds, reported estimate USD 0.00038400.
+The complete batch contains six requests with reported estimate USD 0.00136240;
+actual billing remains unreconciled. Final inventory: 36 runs, 21 bound agent
+reviews, zero human reviews, eleven frozen cases and fifteen pending development
+review records. No additional unchanged comparison is indicated.
+
+Local unscored review packets were generated for both runs. Their readable HTML
+includes frozen references, original replies and assertion criteria; the separate
+human-review draft contains null scores and no reviewer identity. Model text is
+escaped, active content and networking are disabled, and desktop/mobile rendering
+was checked. Packet creation neither modifies evidence nor produces a human grade.
+The OCR result is the next targeted uncertainty defect; do not characterize Gemma
+as reliably cautious based only on its successful conflicting-notes case.
