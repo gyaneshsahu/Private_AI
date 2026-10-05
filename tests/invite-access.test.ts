@@ -87,6 +87,18 @@ it("enforces individual login, origin checks, session-bound grants, logout and r
       body: JSON.stringify({ kind: "page", value: "https://example.com/" }),
     });
     expect(staleGrant.status).toBe(401);
+    const beforeLogout = await fetch(root + "/held-response", {
+      headers: { Cookie: ac },
+    });
+    expect((await post("/auth/logout", "", ac)).status).toBe(204);
+    await expect(beforeLogout.text()).rejects.toThrow();
+    expect(
+      (await fetch(root + "/api/status", { headers: { Cookie: ac } })).status,
+    ).toBe(401);
+    expect(
+      (await fetch(root + "/api/status", { headers: { Cookie: freshCookie } }))
+        .status,
+    ).toBe(200);
     registry.revoke(alice.id);
     expect(
       (await fetch(root + "/api/status", { headers: { Cookie: ac } })).status,

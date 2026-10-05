@@ -61,6 +61,14 @@ bound to both account and login session. Login attempts are capped at 30/minute
 per instance; application POSTs at 200/hour per invite and 2,000/hour per instance.
 These are request limits, not a substitute for provider spending controls.
 
+Signing out also closes active responses belonging to that login session within
+approximately one second. A separate login by the same account and other invited
+users remain active. The periodic check verifies the session still exists as well
+as account expiry/revocation; session-store errors or registry-check errors close
+the affected response. A failed server-side session deletion returns an error,
+not a successful sign-out confirmation. The client locks its workspace before
+attempting sign-out and tells the user to retry if server sign-out fails.
+
 Encrypted vault databases are scoped to opaque account IDs. Sign out locks and
 clears current work; other tabs receive the lock signal. Account expiry/change is
 checked on focus and every 30 seconds while the page is active. Server access is

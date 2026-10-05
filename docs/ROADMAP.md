@@ -219,3 +219,14 @@ G1–G6 and U1 independently while Q1 needs supplier evidence.
   access validation and later real-user usability review remain open.
   Validation: 127 unit/integration tests, typecheck and build passed; invitation
   browser tests include the complete two-user workspace-isolation workflow.
+
+- 5 October 2026: found and repaired an active-response sign-out gap in trial
+  access. Existing revocation closed streams, but logout previously only denied
+  new requests. Active responses now check their login session still exists;
+  sign-out terminates that session's response within approximately one second
+  while other logins remain usable. Store/registry check failures close the
+  response, and failed session deletion no longer reports successful logout.
+  Real HTTP tests cover active logout, independent sessions and active revocation;
+  invitation browser and hosted-cookie regressions also pass.
+  Validation: all 127 unit/integration tests and typecheck passed. Provider
+  qualification, human quality review and actual hosted validation remain open.

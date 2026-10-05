@@ -105,7 +105,13 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
     },
   );
   router.post("/auth/logout", (req, res) => {
-    req.session.destroy(() => {
+    req.session.destroy((error) => {
+      if (error) {
+        res
+          .status(503)
+          .json({ error: "Sign out could not complete. Try again." });
+        return;
+      }
       res.clearCookie("privateai-access", {
         path: "/",
         secure,
@@ -141,8 +147,25 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
     }
     res.locals.accountId = id;
     res.locals.accessSession = req.sessionID;
+    const accessSession = req.sessionID;
     const timer = setInterval(() => {
-      if (Date.now() >= expiry || !registry.active(id)) res.destroy();
+      try {
+        if (Date.now() >= expiry || !registry.active(id)) {
+          res.destroy();
+          return;
+        }
+        store.get(accessSession, (error, current) => {
+          if (
+            error ||
+            !current ||
+            current.accountId !== id ||
+            (current.until ?? 0) <= Date.now()
+          )
+            res.destroy();
+        });
+      } catch {
+        res.destroy();
+      }
     }, 1000);
     timer.unref();
     res.on("close", () => clearInterval(timer));
