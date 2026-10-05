@@ -142,3 +142,67 @@ it("requires an identified relay finish for compatibility and retains relay fail
   ).toBe("NOT_PASSED");
   expect(reviewExitCode(reviewResult({ ...result, network }, permit))).toBe(1);
 });
+it("accepts only independently completed no-store browser aborts and preserves their raw failure", () => {
+  const { result, permit } = fixture();
+  permit.scenario = "adapter_compatibility";
+  result.client.evidence.pop();
+  result.client.conversation.messages.pop();
+  result.client.conversation.usage.pop();
+  const observed = {
+    ...result,
+    attempts: [
+      {
+        outcome: "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+        responseFinished: true,
+      },
+    ],
+    browserStreamLifecycle: { requestSignalAborts: 0, readerCancels: 0 },
+    network: [
+      {
+        outcome: "HTTP_RESPONSE",
+        route: "INFERENCE_RELAY",
+        requestId: 1,
+        status: 200,
+        noStore: true,
+      },
+      {
+        outcome: "REQUEST_FAILED",
+        route: "INFERENCE_RELAY",
+        requestId: 1,
+        code: "net::ERR_ABORTED",
+      },
+    ],
+  };
+  const review = reviewResult(observed, permit);
+  expect(review.relayClosure).toBe("FAILED");
+  expect(review.recordedNetworkFailures).toBe(1);
+  expect(review.relayAssessment).toBe("VALIDATED_COMPLETE_WITH_CHROMIUM_ABORT");
+  expect(review.compatibilityEvidence).toBe("READY_FOR_HUMAN_REVIEW");
+  expect(review.providerQualification).toBe("NOT_PASSED");
+  expect(reviewExitCode(review)).toBe(0);
+  for (const change of [
+    { browserStreamLifecycle: undefined },
+    { browserStreamLifecycle: { requestSignalAborts: 1, readerCancels: 0 } },
+    { browserStreamLifecycle: { requestSignalAborts: 0, readerCancels: 1 } },
+    { attempts: [{ outcome: "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED" }] },
+    { network: observed.network.map((n) => ({ ...n, noStore: false })) },
+    {
+      network: observed.network.map((n) => ({
+        ...n,
+        code: "net::ERR_CONNECTION_RESET",
+      })),
+    },
+    { network: [...observed.network, observed.network[1]] },
+    {
+      network: [
+        ...observed.network,
+        { outcome: "REQUEST_FAILED", route: "ATTESTATION", requestId: 2 },
+      ],
+    },
+    { client: { ...observed.client, failure: "TEST truncated" } },
+  ]) {
+    const rejected = reviewResult({ ...observed, ...change }, permit);
+    expect(rejected.relayAssessment).toBe("UNRESOLVED");
+    expect(reviewExitCode(rejected)).toBe(1);
+  }
+});

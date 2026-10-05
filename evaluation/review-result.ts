@@ -11,13 +11,29 @@ const usageSchema = z
   .refine((x) => x.input + x.output === x.total);
 const resultSchema = z.object({
   kind: z.enum(["SYNTHETIC_EXPERIMENT", "NONBILLABLE_DIAGNOSTIC"]),
-  attempts: z.array(z.object({ outcome: z.string() })).max(2),
+  attempts: z
+    .array(
+      z.object({
+        outcome: z.string(),
+        responseFinished: z.boolean().optional(),
+      }),
+    )
+    .max(2),
+  browserStreamLifecycle: z
+    .object({
+      requestSignalAborts: z.number().int().nonnegative(),
+      readerCancels: z.number().int().nonnegative(),
+    })
+    .optional(),
   network: z
     .array(
       z.object({
         outcome: z.string(),
         route: z.string().optional(),
         requestId: z.number().int().optional(),
+        code: z.string().optional(),
+        status: z.number().int().optional(),
+        noStore: z.boolean().optional(),
       }),
     )
     .default([]),
@@ -83,6 +99,40 @@ export function reviewResult(input: unknown, permitInput: unknown) {
         ? "MISSING_TERMINAL_EVENT"
         : "NOT_RECORDED";
   const usage = c?.conversation.usage ?? [];
+  const terminals = relayEvents.filter((n) =>
+    ["REQUEST_FAILED", "REQUEST_FINISHED"].includes(n.outcome),
+  );
+  // Chromium can report ERR_ABORTED for a fully consumed no-store response.
+  // Retain the failure event; require independent client/server completion and
+  // zero cancellation. Historical records lacking this evidence stay unresolved.
+  const browserAbortAfterCompletion =
+    completed &&
+    relayClosure === "FAILED" &&
+    r.attempts.every((a) => a.responseFinished === true) &&
+    r.browserStreamLifecycle?.requestSignalAborts === 0 &&
+    r.browserStreamLifecycle.readerCancels === 0 &&
+    terminals.length === expectedTurns &&
+    new Set(terminals.map((n) => n.requestId)).size === expectedTurns &&
+    terminals.every(
+      (n) =>
+        n.requestId != null &&
+        (n.outcome === "REQUEST_FINISHED" || n.code === "net::ERR_ABORTED") &&
+        relayEvents.some(
+          (response) =>
+            response.requestId === n.requestId &&
+            response.outcome === "HTTP_RESPONSE" &&
+            response.status === 200 &&
+            response.noStore === true,
+        ),
+    ) &&
+    !r.network.some(
+      (n) => n.outcome === "REQUEST_FAILED" && n.route !== "INFERENCE_RELAY",
+    );
+  const relayAssessment = browserAbortAfterCompletion
+    ? "VALIDATED_COMPLETE_WITH_CHROMIUM_ABORT"
+    : relayClosure === "FINISHED"
+      ? "NORMAL_COMPLETION"
+      : "UNRESOLVED";
   const inputTokens = usage.reduce((n, u) => n + u.input, 0);
   const outputTokens = usage.reduce((n, u) => n + u.output, 0);
   const estimate = new Decimal(inputTokens)
@@ -98,8 +148,9 @@ export function reviewResult(input: unknown, permitInput: unknown) {
           : "TWO_TURNS_RETURNED_REVIEW_REQUIRED"
         : "INCOMPLETE_REVIEW_REQUIRED",
     relayClosure,
+    relayAssessment,
     compatibilityEvidence:
-      expectedTurns === 1 && completed && relayClosure === "FINISHED"
+      expectedTurns === 1 && completed && relayAssessment !== "UNRESOLVED"
         ? "READY_FOR_HUMAN_REVIEW"
         : "NOT_PASSED",
     recordedInferenceAttempts: r.attempts.length,
@@ -130,7 +181,7 @@ export function reviewExitCode(
 ): 0 | 1 {
   if (summary.outcome === "DIAGNOSTIC_REACHED_INFERENCE_BOUNDARY") return 0;
   return summary.outcome === "INCOMPLETE_REVIEW_REQUIRED" ||
-    summary.relayClosure !== "FINISHED"
+    summary.relayAssessment === "UNRESOLVED"
     ? 1
     : 0;
 }

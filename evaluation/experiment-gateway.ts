@@ -26,6 +26,7 @@ export function experimentGateway(options: {
     syntheticPlaintextMarkerAbsent: boolean;
     upstreamStatus: number | null;
     failureCode: string | null;
+    responseFinished: boolean;
   }> = [];
   let active = false;
   let stopped = false;
@@ -89,11 +90,17 @@ export function experimentGateway(options: {
         syntheticPlaintextMarkerAbsent: true,
         upstreamStatus: null as number | null,
         failureCode: null as string | null,
+        responseFinished: false,
       };
       attempts.push(attempt); // Count before network I/O, even when it fails.
       active = true;
       const abort = new AbortController();
-      res.on("close", () => abort.abort());
+      res.once("finish", () => {
+        attempt.responseFinished = true;
+      });
+      res.on("close", () => {
+        if (!res.writableFinished) abort.abort();
+      });
       try {
         const response = await options.forward(
           new Uint8Array(req.body),

@@ -11,7 +11,11 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
     cacheDir: "node_modules/.vite-experiment-client-test",
     appType: "custom",
     logLevel: "silent",
-    optimizeDeps: { force: true },
+    optimizeDeps: {
+      force: true,
+      noDiscovery: true,
+      include: ["pdfjs-dist", "tesseract.js", "zod"],
+    },
     plugins: [
       {
         name: "synthetic-test-model-only",
@@ -146,7 +150,10 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
     expect(JSON.stringify(result.moduleFailure)).not.toContain(
       "SECRET_TEST_MARKER",
     );
-    expect(result.completed.failure).toBeNull();
+    expect(
+      result.completed.failure,
+      JSON.stringify(result.completed.diagnostic),
+    ).toBeNull();
     expect(result.completed.conversation.messages).toHaveLength(4);
     expect(result.completed.conversation.attachments[0].sources[0].text).toBe(
       invoiceText,

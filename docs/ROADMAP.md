@@ -7,8 +7,7 @@ This is not yet an approved backbone for the entire product.
 
 The next product milestone is a usable, bounded invited-user trial. It is **not
 ready for real private-data trials today**. Useful local document and encrypted
-workspace workflows are available; full provider qualification and current live
-transport compatibility remain blockers. This roadmap tracks outcomes and evidence,
+workspace workflows are available; full provider qualification and trial quality/operational gates remain blockers. This roadmap tracks outcomes and evidence,
 not dates inferred from engineering estimates.
 
 ## How to use this plan
@@ -43,12 +42,12 @@ Local DONE does not imply provider qualification or deployed release.
 | Capability | Actual implementation/evidence | Limits |
 | --- | --- | --- |
 | Text/PDF/printed-English screenshot extraction | `src/documents.ts`, extraction worker; real browser PDF and OCR tests | Local processing, editable source/page text; complex-layout fidelity and real-phone performance need evaluation |
-| Context, corrections and citations | `src/conversation.ts`, `src/Answer.tsx`; bounded selection, partial-answer exclusion, source snapshots and citation tests | Live current-adapter document workflow remains pending; citations still require correctness review |
+| Context, corrections and citations | `src/conversation.ts`, `src/Answer.tsx`; bounded selection, partial-answer exclusion, source snapshots and citation tests | One fresh live two-turn case passed narrow review; broader grounding quality remains unproven |
 | Exact decimal calculator | `src/calculator.ts`, browser workflow | Explicit user calculations; no claim that model arithmetic is tool-verified |
 | Research approval | `server/research.ts`, session-bound single-use grants, SSRF/redirect/expiry tests and UI disclosure preview | Search needs configured service access; external privacy/fees stay separate; no automatic agent browsing |
 | Temporary and encrypted workspaces | `src/vault.ts`, WebCrypto/IndexedDB tests, save/lock/reload/delete browser workflow | Manual local snapshots, no recovery or cloud sync; device backups outside deletion guarantee |
 | Saved unsent drafts | `src/App.tsx`, optional `Conversation.draft`; new complete browser workflow | Explicit save only; draft excluded from inference until submitted; reload clears unsaved work |
-| Browser verification and encrypted transport | Maintained Tinfoil/EHBP libraries; pinned router verification, encrypted fault fixtures and real synthetic answers | Full chain NOT_PASSED; correlated live relay abort remains unresolved |
+| Browser verification and encrypted transport | Maintained Tinfoil/EHBP libraries; pinned router verification, encrypted fault fixtures and real synthetic answers | Full chain NOT_PASSED; Chromium no-store abort has a scoped, tested completion assessment |
 | Restricted hosting foundation | `server/deployment.ts`, Docker and historical CI/hosted-smoke evidence | Shared evaluator access key, single process; no individual accounts/revocation/tenant isolation; current batch not deployed |
 | Evaluation infrastructure | 24 development + 24 reserved fixtures, integrity checks, isolated experiment claims and review summaries | Fixture integrity is not model-quality evaluation; reserved/comparator execution remains pending |
 
@@ -57,12 +56,12 @@ Local DONE does not imply provider qualification or deployed release.
 | ID / priority | Outcome and status | Dependencies and concrete exit evidence |
 | --- | --- | --- |
 | T1 — first | **DONE (local): cumulative streaming usage parser** | Accept repeated/nondecreasing output snapshots, never sum them, require final accounting when usage starts. Reject regressions, invalid totals, malformed/truncated streams and incomplete answers. Encrypted fragmented-browser regression passes; live fixed adapter returns `4`. |
-| T2 — first | **BLOCKED pending impact assessment: live relay abort** | T1. One fresh check in this batch returned `4` in 1.81 s with 169 input / 38 output tokens; no observed request-signal abort or reader cancellation, but Chromium reported `ERR_ABORTED`. Time-box investigation to one focused engineering batch, at most one engineering day. Assess complete answers, truncation detection, cancellation, resource cleanup, repeat reliability and security using controlled relay tests. End with the evidence-based disposition below; eliminating a browser message alone is not an exit requirement. |
+| T2 — first | **DONE (scoped compatibility): abort impact assessed** | Closed within one focused batch: actual relay comparison isolates Chromium’s terminal abort to `Cache-Control: no-store` while all bytes arrive. Truncation/cancellation still fail. Keep no-store and raw failure events; accept only validated client completion, gateway finish, matched no-store HTTP response and zero cancellations. Fresh live compatibility returned `4`; full-chain privacy and broad reliability remain separate. See transport impact review. |
 | W1 — parallel | **DONE (local): save and resume a document workspace with its draft** | Import, correct source text, compose unsent draft, explicitly encrypt/save, lock, reload, unlock and reopen both. Cancel/confirm replacement of unsaved work; delete clears saved record/current draft. Browser storage inspection finds no plaintext canaries; no inference or research is triggered by this flow. |
-| W2 — next independent workflow | **NEXT: recover from interruption without losing context** | Extend complete UI tests for cancelled/partial chat, explicit retry, branching and retained source evidence using labelled synthetic transport fixtures. Verify new session/lock during pending extraction/research/save cannot restore cleared content. Follow with current-adapter live document correction after T2 and appropriate bounded authorization. |
-| T3 | **BLOCKED: live document/follow-up workflow** | T2. Current adapter must return supported invoice arithmetic and citations for both turns: 95/19/114 EUR, then 90/18/108 EUR, reduction 6 EUR. Inspect actual source support, context correction, stream closure and accounting. Historical earlier-adapter success is supporting evidence, not this exit criterion. |
+| W2 — next independent workflow | **IN PROGRESS: interruption recovery** | Complete chat UI fixture now verifies stop, explicit retry, follow-ups, branching and retained citation snapshots. New session/lock cancels active chat and ignores late output/status. Extraction progress now respects cancellation/generation. Broader pending extraction/research/save race coverage remains before marking W2 complete; current-adapter live document correction passed T3. |
+| T3 | **DONE (narrow live case): document/follow-up workflow** | Fresh current-adapter run `windows_20261005_invoice_2` returned 95/19/114 EUR then 90/18/108 EUR, reduction 6 EUR, with matching citations and explicit distinction between source discount and user correction. Both streams independently validated complete; durations 4.39/4.20 s. Agent review supports this one case only, not broad quality or privacy qualification. |
 | Q1 — parallel evidence work | **BLOCKED: qualify the complete provider path** | Router-to-worker/GPU binding, software/build identity, freshness/revocation/rollback, caching/retention/diagnostics/moderation/egress and billing controls reviewed from primary evidence. Complete live/negative checks in the acceptance contract. Do not invent a passing report or accept a changed pin automatically. |
-| E1 | **NEXT after T3: initial supported-task evaluation** | Freeze implementation/rubric; run development cases, fix failures, then preserve reserved separation. Keep 24 held-out cases × 3 runs as the planned coverage, but review the all-72-pass trial threshold before evaluation starts. Pre-register family-level minimums, severity rules and treatment of recurring material failures; founder approval of those numerical thresholds is pending. Preserve the per-task rubric and every failure; replace any reserved case used for tuning. Plan costs against remaining authorized balance before starting this larger batch. |
+| E1 | **NEXT: initial supported-task evaluation** | Freeze implementation/rubric; run development cases, fix failures, then preserve reserved separation. Keep 24 held-out cases × 3 runs as the planned coverage, but review the all-72-pass trial threshold before evaluation starts. Pre-register family-level minimums, severity rules and treatment of recurring material failures; founder approval of those numerical thresholds is pending. Preserve the per-task rubric and every failure; replace any reserved case used for tuning. Plan costs against remaining authorized balance before starting this larger batch. |
 | U1 — parallel | **NEXT: trial onboarding and operational readiness** | Explain supported inputs, local-only storage, unsaved/locked state, research disclosure and recovery limits. Observe keyboard and real-phone workflows. Document invitation/revocation, individual access boundary, incident stop procedure and minimal content-free diagnostics. Shared Basic credentials alone are not a multi-user account design. No private-content analytics or automatic feedback uploads. |
 | R1 | **BLOCKED: open the bounded invited-user trial** | T2/T3/Q1/E1/U1 complete, actual cost reconciled, deployment validation tied to release, the reviewed severity/family quality gate met and no unresolved critical or essential security failures. Founder authorizes audience, hosting/privacy boundary and real-user-data scope. Supported scope and known minor limitations are explicit. |
 
@@ -146,5 +145,11 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
   validation: 96 unit/integration tests, nine browser workflows, typecheck, build
   and fixture integrity. These are local evidence; no new hosted release is claimed.
 
-Next update should address T2's actual relay reproduction and W2's interruption
-workflow. Do not spend further calls repeating the unchanged 2+2 symptom.
+- 5 October 2026: T2 closed within its investigation time box using a controlled
+  actual-relay header comparison, not removal of the privacy header. T3 passed a
+  narrow fresh live review. W2 chat recovery now has real UI fixture coverage.
+  See [transport impact review](transport-impact-review.md). No broad competitive
+  quality, full provider qualification or invited-user readiness is implied.
+
+Next: complete W2 race coverage and make live answer formatting readable; progress
+G1–G6 and U1 independently while Q1 needs supplier evidence.

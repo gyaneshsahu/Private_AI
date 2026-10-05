@@ -180,6 +180,7 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
       cacheDir: resolve(root, "node_modules/.vite-experiment"),
       appType: "custom",
       logLevel: "error",
+      optimizeDeps: { include: ["tinfoil", "ehbp", "pdfjs-dist", "tesseract.js"], noDiscovery: true },
       server: { middlewareMode: true, hmr: false },
       worker: { format: "es" },
     });
@@ -321,6 +322,7 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
           outcome: "HTTP_RESPONSE",
           destination: url.origin === config.origin ? "LOCAL" : "ATTESTATION",
           status: response.status(),
+          noStore: response.headers()["cache-control"] === "no-store",
         });
     });
     page.on("requestfinished", (request) => {
@@ -400,3 +402,4 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
     );
   }
 }
+

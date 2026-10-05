@@ -12,6 +12,7 @@ import { extract } from "./documents";
 import { Vault } from "./vault";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
+import { abortable } from "./abortable";
 
 type Tab = "Conversation" | "Context" | "Research" | "Saved";
 export function App() {
@@ -206,14 +207,18 @@ export function App() {
     controller.current = abort;
     const current = epoch.current;
     try {
-      const { streamReply } = await import("./inference");
+      const { streamReply } = await abortable(
+        import("./inference"),
+        abort.signal,
+      );
+      abort.signal.throwIfAborted();
       const usage = await streamReply(
         next,
         status.inference.qualification,
         status.csrf,
         abort.signal,
         (chunk) => {
-          if (epoch.current === current)
+          if (epoch.current === current && !abort.signal.aborted)
             setConversation((c) => ({
               ...c,
               messages: c.messages.map((m) =>
@@ -222,9 +227,11 @@ export function App() {
             }));
         },
         (message) => {
-          if (epoch.current === current) setBusy(message);
+          if (epoch.current === current && !abort.signal.aborted)
+            setBusy(message);
         },
       );
+      abort.signal.throwIfAborted();
       if (epoch.current === current) {
         setConversation((c) => ({
           ...c,
@@ -261,7 +268,10 @@ export function App() {
         );
       }
     } finally {
-      if (epoch.current === current) setBusy("");
+      if (epoch.current === current) {
+        controller.current = null;
+        setBusy("");
+      }
     }
   }
   async function importFiles(files: FileList | null) {
@@ -284,7 +294,10 @@ export function App() {
     setNotice("");
     try {
       for (const file of Array.from(files)) {
-        const attachment = await extract(file, abort.signal, setBusy);
+        const attachment = await extract(file, abort.signal, (message) => {
+          if (current === epoch.current && !abort.signal.aborted)
+            setBusy(message);
+        });
         if (current === epoch.current)
           setConversation((c) => ({
             ...c,
@@ -295,7 +308,10 @@ export function App() {
       if (current === epoch.current)
         fail(e instanceof Error ? e.message : "Extraction failed.");
     } finally {
-      if (current === epoch.current) setBusy("");
+      if (current === epoch.current) {
+        controller.current = null;
+        setBusy("");
+      }
     }
   }
   async function research() {
@@ -350,7 +366,10 @@ export function App() {
       if (current === epoch.current)
         fail(e instanceof Error ? e.message : "Research failed.");
     } finally {
-      if (current === epoch.current) setBusy("");
+      if (current === epoch.current) {
+        controller.current = null;
+        setBusy("");
+      }
     }
   }
   async function unlockVault() {
@@ -404,7 +423,7 @@ export function App() {
         <p className="eyebrow">YOUR PERSONAL SPACE</p>
         <button
           className="new-chat"
-          disabled={!!busy}
+          disabled={!!busy && !controller.current}
           onClick={() => {
             if (!allowReplace()) return;
             reset();
@@ -1024,7 +1043,6 @@ export function App() {
                     Save encrypted snapshot
                   </button>
                   <button
-                    disabled={!!busy}
                     onClick={() => {
                       vault.current!.lock();
                       setUnlocked(false);
