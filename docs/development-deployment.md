@@ -144,3 +144,13 @@ secret `PRIVATEAI_DEV_ACCESS_KEY` to the same development access key set in Rend
 The hosted smoke workflow now also triggers on pushes to the development branch
 when that origin variable is configured. It does not need a Tinfoil key. Actual
 GitHub workflow execution and the Render redeployment remain to be observed.
+
+### Public endpoint check after Render recovery — 2026-10-05
+
+Cloud HTTPS checks now reach the host: `/healthz` returns HTTP 200 and `ok`;
+unauthenticated `/` and `/api/status` both return HTTP 401. This establishes
+service liveness and anonymous denial, not authenticated browser or inference
+readiness. The user reports configuring the GitHub Actions origin variable and
+access secret. This commit triggers the no-inference hosted workflow on the
+development branch. GitHub Actions API inspection from Cloud returns `Forbidden`,
+so its run result must still be observed in Actions; no passing result is assumed.
