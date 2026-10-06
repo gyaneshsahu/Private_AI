@@ -2,23 +2,7 @@ import { DatabaseSync, backup } from "node:sqlite";
 import { existsSync, lstatSync } from "node:fs";
 import { chmod, mkdtemp, realpath, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join } from "node:path";
-
-function validateRegistry(db: DatabaseSync) {
-  db.prepare(
-    "SELECT id,invite,expires,revoked,salt,password,window,requests,credential_version FROM invites LIMIT 0",
-  ).all();
-  const settings = db
-    .prepare("SELECT paused FROM access_settings WHERE id=1")
-    .get();
-  const check = db.prepare("PRAGMA quick_check").all();
-  if (
-    !settings ||
-    ![0, 1].includes(Number(settings.paused)) ||
-    check.length !== 1 ||
-    check[0].quick_check !== "ok"
-  )
-    throw Error("Invalid registry");
-}
+import { validateInviteRegistry } from "./registry-validation";
 
 async function snapshot(
   source: string,
@@ -45,7 +29,7 @@ async function snapshot(
     }
     stage = "SOURCE_VALIDATION";
     db = new DatabaseSync(source, { readOnly: true });
-    validateRegistry(db);
+    validateInviteRegistry(db);
     // The SQLite backup API includes committed WAL data without copying live sidecars.
     stage = "DESTINATION_CREATION";
     const directory = await mkdtemp(
@@ -60,7 +44,7 @@ async function snapshot(
     const copied = new DatabaseSync(database);
     let paused: boolean;
     try {
-      validateRegistry(copied);
+      validateInviteRegistry(copied);
       if (recovery)
         copied.exec(
           "BEGIN IMMEDIATE; UPDATE access_settings SET paused=1 WHERE id=1; COMMIT;",
@@ -69,7 +53,7 @@ async function snapshot(
         copied.prepare("SELECT paused FROM access_settings WHERE id=1").get()!
           .paused === 1;
       if (recovery && !paused) throw Error("Recovery must remain paused");
-      validateRegistry(copied);
+      validateInviteRegistry(copied);
     } finally {
       copied.close();
     }

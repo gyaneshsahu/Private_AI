@@ -68,6 +68,8 @@ trial or pass provider/quality gates.
    recognized schema and successful SQLite integrity check before writable opening.
    Missing/invalid storage stops startup instead of initializing an empty registry.
    Mount presence/ownership and actual persistence still need host validation.
+   The guard also requires credential versions and exactly one valid pause setting;
+   missing security metadata is not silently recreated as enabled access.
    Confirm that redeploying with the same mount preserves identity and revocation.
 3. Keep provider/search keys and operational qualification absent for the first
    hosted access rehearsal. Check auth cookies, origin/proxy headers and anonymous

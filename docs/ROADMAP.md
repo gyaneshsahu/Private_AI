@@ -148,6 +148,15 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 6 October 2026: U1 recovery review found hosted startup could accept an invitation
+  table with missing pause metadata and recreate that state as unpaused. Startup,
+  backup and staged recovery now share read-only current-schema/security-state
+  validation. Missing settings, malformed pause state and missing credential
+  versions are rejected without source modification. Valid paused registries stay
+  paused. All 150 unit/integration tests, typecheck and production build passed.
+  This closes a demonstrated startup/recovery gap; actual-host durability
+  and provider/quality gates remain separate.
+
 - 6 October 2026: U1 release rehearsal now includes a reusable two-identity
   deployment check: distinct sessions, crossed cookie/CSRF rejection in both
   directions, legitimate access, isolated logout and old-cookie denial. Fixed

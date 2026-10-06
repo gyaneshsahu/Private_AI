@@ -341,6 +341,14 @@ a reviewed response decision before wider disclosure or changed privacy promises
 
 ## Registry backup and paused recovery
 
+Hosted startup, backup and recovery staging share read-only validation of the
+current registry schema, credential-version column and exactly one valid pause
+setting. A missing settings table/row or invalid pause value is rejected, rather
+than recreated as unpaused. Incomplete sources stay unchanged. Older schemas
+require explicit operator-reviewed migration/recovery; starting the hosted service
+must not silently repair security state. Do not use the initializing operator CLI
+on a damaged registry as a substitute for reconciliation.
+
 Local synthetic rehearsal passes; actual hosted restore, retention and storage
 access are still unvalidated. These commands use Node 24 and operate on an existing
 registry. They never replace the live registry or resume access automatically.

@@ -2,6 +2,7 @@ import { lstatSync } from "node:fs";
 import { isAbsolute } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { InviteRegistry } from "./invite-registry";
+import { validateInviteRegistry } from "./registry-validation";
 
 export function openInviteRegistry(path: string, hosted: boolean) {
   if (!hosted) return new InviteRegistry(path);
@@ -12,13 +13,7 @@ export function openInviteRegistry(path: string, hosted: boolean) {
     if (!file.isFile() || file.isSymbolicLink()) throw Error();
     // Read-only validation prevents a missing mount from silently becoming a new registry.
     probe = new DatabaseSync(path, { readOnly: true });
-    probe
-      .prepare(
-        "SELECT id,invite,expires,revoked,salt,password,window,requests FROM invites LIMIT 0",
-      )
-      .all();
-    const check = probe.prepare("PRAGMA quick_check").all();
-    if (check.length !== 1 || check[0].quick_check !== "ok") throw Error();
+    validateInviteRegistry(probe);
     probe.close();
     probe = undefined;
     return new InviteRegistry(path);

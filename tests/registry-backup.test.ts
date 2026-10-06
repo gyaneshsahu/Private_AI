@@ -157,6 +157,18 @@ it("refuses missing/corrupt sources and Git destinations without creating a misl
     const valid = join(root, "valid.sqlite");
     const registry = new InviteRegistry(valid);
     registry.close();
+    const incomplete = new DatabaseSync(valid);
+    incomplete.exec("DELETE FROM access_settings");
+    incomplete.close();
+    const incompleteBefore = await readFile(valid);
+    await expect(backupRegistry(valid, output)).rejects.toThrow(
+      "SOURCE_VALIDATION",
+    );
+    await expect(stageRegistryRecovery(valid, output)).rejects.toThrow(
+      "SOURCE_VALIDATION",
+    );
+    expect(await readFile(valid)).toEqual(incompleteBefore);
+    expect(await readdir(output)).toEqual([]);
     await mkdir(join(output, ".git"));
     await expect(backupRegistry(valid, output)).rejects.toThrow(
       "snapshot failed",
