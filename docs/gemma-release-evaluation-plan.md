@@ -11,11 +11,11 @@ floor (maximum 8/12). Four human reserved reviews are complete; 68 remain unrevi
 This is a known family failure, not merely pending acceptance. Fresh development
 comparison is separate from any future fresh held-out assessment.
 
-**Priority review update:** the founder supplied AI-proposed scores 1/3/2,
-1/3/2, 1/3/1 and 1/3/1, without human confirmation. Preserve those separately
-from the existing agent 1/2/1 grades. Both identify four material failed drafts;
-the conditional 8/12 writing ceiling and 10/12 requirement remain unchanged.
-See [development diagnosis and next comparison](writing-failure-diagnosis.md).
+**Fresh comparison complete:** four new writing questions on each of Gemma and
+GLM returned sixteen replies. Agent assessment is narrowly acceptable for both;
+minor additions remain and GLM shows no clear advantage. Keep Gemma thinking as
+the fixed development candidate, with the failed release assessment intact.
+See [development diagnosis and comparison](writing-failure-diagnosis.md).
 Any configuration informed by this assessment needs fresh held-out evidence.
 
 **Collection complete, 6 October:** all 72 reserved conversations returned both
@@ -29,18 +29,18 @@ Post-run dashboard shows USD 0.87 balance, USD 0.13 rounded period spend,
 batch within dashboard precision; exact per-run charges remain unreconciled.
 Observed turn durations were 1.39–29.77 seconds, not a production latency SLA.
 
-**Review four conversations first:**
+**Completed priority packet (retained unchanged):**
 `.local/review-batches/reserved-priority-20261006/review.html` contains writing-01
 repetitions 1–2 and writing-02 repetitions 1–2. The full 72-conversation packet is
 `.local/review-batches/reserved-full-20261006/review.html`. Both keep human grades
 blank and agent scores hidden. Source/transcript binding, navigation and 1280/360
-pixel layouts passed with zero external requests. Human reserved grades: **zero**;
-the quality gate is **NOT_PASSED / human adjudication required**, not an execution
+pixel layouts passed with zero external requests. Human reserved grades: **four**;
+the quality gate is **NOT_PASSED / writing failed**, not an execution
 success converted into answer-quality success.
 
-Inventory: 161 runs, zero invalid/conflicting active records, 54 agent reviews,
-24 human development reviews and 83 pending records (15 historical, 68 reserved).
-The other four reserved records have agent triage only. Local plan, progress and
+Current inventory: 169 runs, zero invalid/conflicting active records, 58 agent
+reviews, 24 human development reviews, four human reserved reviews and 83 pending
+records (15 historical, 68 reserved). Local reserved plan, progress and
 summary are `.local/reserved-{plan,progress,summary}-20261006.json`.
 
 **Reserved assessment:** frozen configuration

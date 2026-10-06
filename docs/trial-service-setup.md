@@ -6,7 +6,7 @@ not authorization for new subscriptions or a change to privacy promises.
 | Service | Needed now? | Action |
 | --- | --- | --- |
 | Tinfoil inference | Already configured locally | Keep the existing key, USD 2 cumulative account cap and auto-reload off. Supplier privacy evidence remains pending. No second model account is needed for the selected Gemma assessment. |
-| Search API, supplier selection pending | One new API integration dependency | Five suppliers compared; none yet has established saved-citation rights and acceptable privacy conditions. Seek one Brave clarification first; do not create five accounts. See the [comparison](search-provider-comparison.md). |
+| Search API, supplier selection pending | One new API integration dependency | Five suppliers compared; Brave, Exa and Tavily replies pending. Compare saved-citation rights, privacy and prices before activation. See the [comparison](search-provider-comparison.md). |
 | Render hosting and durable disk | Existing account; separate spending decision | Paid hosting remains unapproved. Follow [storage decision](trial-hosting-decision.md); the existing free filesystem cannot safely host the invitation registry. No new hosting API key is required for manual operator deployment. |
 | External login, email/SMS delivery, cloud OCR, vector database, analytics | Not required for the agreed small trial | Invitations are operator-issued, extraction and encrypted history are local. Do not create these accounts merely in anticipation of public launch. Reconsider against roadmap requirements. |
 
@@ -19,9 +19,8 @@ conditions. No additional accounts or duplicate contact requests are needed now.
 The [five-provider comparison](search-provider-comparison.md) covers Brave,
 Tavily, Exa, SearchApi and SerpApi. No reviewed offer is yet eligible for our
 saved-citation workflow. This is an evidence assessment, not a blanket claim that
-storage is prohibited. Ask Brave first because its storage-plan requirement is
-explicit and the adapter exists. Do not email all suppliers or create accounts
-before this dependency is resolved.
+storage is prohibited. Await the three requested replies; the existing Brave
+adapter alone does not establish eligibility. No further outreach is needed now.
 
 The current [Brave pricing page](https://api-dashboard.search.brave.com/documentation/pricing)
 lists Search at USD 5 per 1,000 requests with USD 5 monthly credits. The

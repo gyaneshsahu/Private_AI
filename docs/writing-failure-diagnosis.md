@@ -18,9 +18,8 @@ Historical provenance: initially recorded as **AI-proposed**, unconfirmed scores
 1/3/1. They are recorded with original findings and result hashes in
 `.local/review-batches/reserved-priority-20261006/user-proposed-ai-scores.json`.
 Original agent grades remain 1/2/1 for each; the completeness/context disagreements
-are retained. No human grades were added. Both sets imply failed tasks. If human
-adjudication confirms these four failures, writing can score at most **8/12**,
-below the unchanged **10/12** requirement. Current release disposition is
+are retained. Four human grades were subsequently added following clarification.
+Both sets imply failed tasks. Current release disposition is
 **NOT_PASSED**, independently of whether the remaining answers are acceptable.
 
 ## Diagnosis using existing development evidence
@@ -49,19 +48,43 @@ it conclusively isolated or fixed. Adding another near-duplicate policy sentence
 would not demonstrate general improvement; regex deletion risks altering legitimate
 user commitments and is not an appropriate semantic repair.
 
-## Bounded next decision
+## Fresh comparison completed
 
-Compare four fresh writing development fixtures on Gemma and one justified alternative
-configuration, using the same application policy and input/output bounds. GLM is
-available through the existing provider but is a comparison candidate, not an
-assumed upgrade: its attribution failure stays open. Inspect its current price,
-remaining account budget and worst-case token bound before allocating fresh permits.
-Use `evaluation/cases/writing-transfer.json`: undecided studio enquiry, withheld
+Executed four fresh writing development fixtures on Gemma thinking and GLM low,
+using the same unchanged application policy and 8,000-character/2,048-token bounds.
+GLM is a comparison candidate, not an assumed upgrade; its attribution failure
+stays open. Current catalog prices and dashboard balance were verified first.
+`evaluation/cases/writing-transfer.json` covers undecided studio enquiry, withheld
 volunteer reason, library reservation ownership and an authorized bike-repair
 commitment control. These are exposed development questions, not held-out cases.
-Use one execution per model/conversation, no automatic retries, and judge both
-turns for supplied facts, intent, commitments and invented reasons. A writing gain
-must subsequently survive broader family coverage on the same configuration.
+Eight conversations / sixteen replies and matching verifications completed, once
+per model/case. Agent assessment: **4/4 narrowly acceptable for each model**;
+this is not a human review, broad success rate or repair of the prior failure.
+Gemma preserved undecided intent, withheld reasons, reservation ownership and the
+intentional commitment; it added an unsupported pronoun for Mira. GLM also passed
+mandatory outcomes, but added locality/enthusiasm and a promise to check with Mira;
+its casual revision did not explicitly address the library team. These are retained
+minor findings, not maximal grades. No evidence here establishes GLM superiority.
+
+Keep **Gemma with thinking enabled as the fixed development candidate**, unchanged
+answer policy and bounds. Do not promote it to a trial release or rerun reserved
+acceptance to make the known failure disappear. GLM remains an alternative; broader
+comparison needs a concrete hypothesis beyond repeatedly rephrasing this defect.
+
+Source commit `a1c87ec`; Gemma configuration
+`5ecdbaf658c86c7c985faadd509356b0b44c8153ac0964a699ce06c81f630642`, GLM
+`e7e694102845564ff9e905d5fc7d849c572804a65c8e2c93e4d1ec7ca9a4e521`.
+Identity changes from the reserved run reflect added harness fixtures, not prompt
+repairs. Do not pool the two configurations into one acceptance score.
+
+Batch estimate USD **0.01276740**, cumulative local estimate **0.14590545**.
+Post-run dashboard: USD 0.85 balance, USD 0.15 rounded period spend, 328 requests,
+USD 2 limit and auto-reload off. Exact per-run actual charges remain unknown.
+All runs retain the established scoped Chromium completion assessment and raw
+network events. Fresh claims/evidence: `.local/experiment-runs/windows_20261006_fresh_writing_*`.
+Unscored human packet: `.local/review-batches/fresh-writing-20261006/review.html`;
+eight exact transcript/source bindings, navigation and 1280/360 layouts passed
+with zero external requests. Review is useful but does not block independent work.
 
 Do not re-run the exposed reserved tasks as acceptance evidence. If these findings
 guide a model/policy change, retain them as regression examples and establish a
@@ -69,7 +92,7 @@ fresh, predeclared held-out set before the next acceptance assessment. Finish
 adjudicating the preserved assessment separately; do not lower its threshold,
 pool configurations or remove writing from the general-assistant goal.
 
-This batch performed offline diagnosis, not a new live comparison. Provider chain,
+Provider chain,
 search eligibility, actual-host validation and real-device usability remain
 independent blockers. No new privacy promise or automatic corrective inference
 step has been introduced.

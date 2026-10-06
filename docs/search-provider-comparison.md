@@ -9,10 +9,9 @@ pending. This supersedes the earlier single-contact recommendation. Record actua
 storage rights, query handling and prices from their replies before selecting;
 do not send duplicate requests or activate a provider just to occupy development.
 This is an evidence gap, not a claim that every supplier prohibits our workflow.
-Do not open five accounts or replace the existing Brave adapter yet. Seek one
-targeted clarification from Brave first, because its storage-plan requirement is
-explicit and our integration already exists. Reconsider Exa if Brave cannot offer
-acceptable storage rights and query handling at an approved price.
+Do not open five accounts or replace the existing Brave adapter yet. Compare the
+three replies together when available; Brave's existing adapter reduces integration
+work, but does not outweigh unacceptable rights, privacy or price conditions.
 
 PrivateAI needs to retain URLs, titles and short excerpts in temporary conversations,
 optional browser-local encrypted history and synthetic test evidence, then display

@@ -14,9 +14,13 @@ Gemma with explicit thinking is selected for reserved assessment on an unchanged
 answer policy, not approved for private-data operation or competitive claims.
 The reserved runner now separately binds frozen fixture/configuration/repetition
 and rejects reuse of consumed slots under new permit IDs. All 72 reserved
-conversations completed (144 replies). Four source-bound agent writing failures
-need human adjudication; if confirmed, writing can reach at most 8/12 against
-the required 10/12. Its human quality gate remains incomplete, not passed.
+conversations completed (144 replies). The founder confirmed four material writing
+failures: writing reaches at most 8/12 against the required 10/12 and fails.
+The remaining 68 reserved reviews are incomplete; they cannot reverse that result.
+Eight fresh development conversations compare Gemma thinking and GLM low: both
+are narrowly agent-acceptable on four writing questions, with minor additions.
+This does not repair the failed assessment; Gemma remains the fixed development
+candidate, not a trial-approved configuration.
 See the [four-conversation priority review](gemma-release-evaluation-plan.md).
 
 Clean-export container build/smoke and a three-container persistent-volume
@@ -24,9 +28,9 @@ rehearsal passed; see [exact image and limits](trial-hosting-decision.md).
 Actual hosted TLS, deployment persistence and devices still need the separately
 approved hosting arrangement. Local Docker success does not authorize deployment.
 
-Live search has two concrete dependencies: a missing Brave account/key and
-permission to retain returned sources for citations/encrypted history. Current
-published terms require clarification of that use. See the consolidated
+Live search needs an eligible plan and configured credential, including permission
+to retain returned sources for citations/encrypted history. The founder reports
+Brave, Exa and Tavily contacted; compare their replies before activation. See the consolidated
 [service setup list](trial-service-setup.md). No extra identity, OCR, database or
 email API is required for the current trial. Supplier privacy evidence remains
 awaiting Tinfoil's response. Older dated sections below are historical context.

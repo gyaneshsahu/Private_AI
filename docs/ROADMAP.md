@@ -148,6 +148,15 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 6 October 2026: E1/G1 fresh writing comparison completed eight conversations /
+  sixteen replies. Both Gemma thinking and GLM low narrowly meet the four new
+  development tasks in agent review, with minor unsupported additions retained.
+  No clear GLM advantage: freeze Gemma as development candidate, not trial release.
+  Confirmed reserved writing failure remains. Estimated batch USD 0.01276740;
+  cumulative local USD 0.14590545, dashboard rounded USD 0.15 / USD 2 cap.
+  Offline harness covers all 39 development/supplemental fixtures; unscored packet
+  source bindings and desktop/mobile layouts pass. See [comparison](writing-failure-diagnosis.md).
+
 - 6 October 2026: founder clarified the four reserved priority scores are their
   own review; source-bound human grades preserve agent disagreements. E1 writing
   fails the 10/12 floor (maximum 8/12). A fresh four-question, two-candidate writing
