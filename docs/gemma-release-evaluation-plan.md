@@ -32,7 +32,7 @@ identity. A later correction does not erase an earlier bad answer. The founder c
 return case-numbered notes in chat rather than editing JSON; record their actual
 judgments and validate the resulting grades without inventing missing decisions.
 
-This is the next useful human action. Real-device observation follows a validated
+This was the first useful human action and is complete. Real-device observation follows a validated
 hosted synthetic workflow; neither replaces full provider qualification. Eight
 development reviews cannot pass the 72-execution reserved gate.
 
@@ -42,11 +42,17 @@ desktop and 360-pixel width found no horizontal overflow, confirmed case navigat
 and observed no active embedded content or outbound requests. Fixture integrity
 and the evidence inventory remain unchanged (17 distinct cases, zero human grades).
 
-## Next development batch, after review triage
+## Completed development batch (6 October)
 
 Candidate: `gemma4-31b`, current fixed answer policy, 8,000 input characters and
 2,048 output tokens per request. No repeated prompt tuning during the batch.
-Seven currently uncovered frozen development cases:
+The following seven previously uncovered cases are now executed and agent-reviewed:
+six acceptable, personal-03 failed for invented personal reasons after an explicit
+privacy preference. Supplemental coverage also completed: six of eight acceptable.
+See [results](development-family-review.md). Do not rerun this table unchanged; it
+remains the original batch definition.
+
+Cases:
 
 | Family | IDs |
 | --- | --- |

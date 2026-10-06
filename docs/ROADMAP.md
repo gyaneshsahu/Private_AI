@@ -2,7 +2,7 @@
 
 **Working draft — direction accepted; detailed gates under review.**
 
-Updated 5 October 2026 · Owner: project founder; implementation: Codex.
+Updated 6 October 2026 · Owner: project founder; implementation: Codex.
 This is not yet an approved backbone for the entire product.
 
 The product goal is a general-purpose conversational assistant targeting
@@ -64,10 +64,10 @@ Local DONE does not imply provider qualification or deployed release.
 ## Ordered path to the invited-user trial
 
 Current dependency review: [trial readiness and six-family scope](trial-readiness.md).
-Prioritize complete access workflows and uncovered development quality evidence;
+Prioritize complete access workflows and unresolved development quality failures;
 do not substitute repeated prompt refinements for the outstanding Q1/E1/U1 gates.
-Release-readiness actions: supplier request sent by founder, reply pending; complete
-the [first human review and bounded Gemma plan](gemma-release-evaluation-plan.md);
+Release-readiness actions: supplier request sent by founder, reply pending; follow
+the [completed human review and bounded Gemma plan](gemma-release-evaluation-plan.md);
 decide the [durable hosting arrangement](trial-hosting-decision.md) before deploying
 individual access. Existing IDs, order and acceptance thresholds remain unchanged.
 
@@ -78,7 +78,7 @@ individual access. Existing IDs, order and acceptance thresholds remain unchange
 | W1 — parallel | **DONE (local): save and resume a document workspace with its draft** | Import, correct source text, compose unsent draft, explicitly encrypt/save, lock, reload, unlock and reopen both. Cancel/confirm replacement of unsaved work; delete clears saved record/current draft. Browser storage inspection finds no plaintext canaries; no inference or research is triggered by this flow. |
 | W2 — independent workflow | **DONE: scoped interruption recovery** | Real UI tests cover stop, explicit retry, branching/citations, new conversation during multi-file import and research preparation/execution, lock during real encryption, and cross-tab lock during unlock. Stale callbacks cannot restore cleared context; cancellation stops the next file/request. See [recovery evidence](workspace-recovery-review.md). Current-adapter live document correction passed T3; production provider gate remains separate. |
 | T3 | **DONE (narrow live case): document/follow-up workflow** | Fresh current-adapter run `windows_20261005_invoice_2` returned 95/19/114 EUR then 90/18/108 EUR, reduction 6 EUR, with matching citations and explicit distinction between source discount and user correction. Both streams independently validated complete; durations 4.39/4.20 s. Agent review supports this one case only, not broad quality or privacy qualification. |
-| Q1 — parallel evidence work | **BLOCKED: qualify the complete provider path** | Current [provider evidence review](provider-evidence-update.md) identifies version-specific browser freshness and worker/build binding gaps; supplier artifact questions are drafted. Existing per-request cache isolation is tested. Router-to-worker/GPU binding, software/build identity, freshness/revocation/rollback, caching/retention/diagnostics/moderation/egress and billing controls still require deployment evidence. Complete live/negative checks in the acceptance contract. Do not invent a passing report or accept a changed pin automatically. |
+| Q1 — parallel evidence work | **BLOCKED: qualify the complete provider path** | Current [provider evidence review](provider-evidence-update.md) identifies version-specific browser freshness and worker/build binding gaps; supplier request is sent and reply pending. Existing per-request cache isolation is tested. Router-to-worker/GPU binding, software/build identity, freshness/revocation/rollback, caching/retention/diagnostics/moderation/egress and billing controls still require deployment evidence. Complete live/negative checks in the acceptance contract. Do not invent a passing report or accept a changed pin automatically. |
 | E1 | **IN PROGRESS: development harness and reviewed failures** | Freeze implementation/rubric; run development cases, fix failures, then preserve reserved separation. Keep 24 held-out cases × 3 runs as the planned coverage, using the founder-approved [trial thresholds](trial-quality-gate-proposal.md): 65/72 overall and 10/12 per family, with critical/serious blockers and material-failure recurrence rules. Preserve the per-task rubric and every failure; replace any reserved case used for tuning. Plan costs against remaining authorized balance before starting this larger batch. |
 | U2 — parallel | **DONE (local): readable conversation answers and everyday starters** | Markdown tables/lists/code/math, retained source citations, local assets, inert external content, and desktop/mobile coverage. Writing/planning starters prepare editable drafts without automatic sending. [Everyday review](everyday-development-review.md). |
 | U1 — parallel | **IN PROGRESS: local guide, individual access and trial runbook** | Founder selected PrivateAI-only invitations. Local implementation covers one-use redemption, expiring sessions, per-user revocation/limits and encrypted workspace separation; real browser tests exercise two identities and logout/relogin. [Trial runbook](invited-trial-runbook.md) documents operation and limits. Hosted TLS/proxy/security review, recovery design and real-phone/user observation remain open. No private-content analytics or automatic feedback uploads. |
@@ -147,6 +147,17 @@ Do not expand scope to avoid failing current requirements. Record the need, alte
 expected benefit, risks, cost and founder decision before promoting a deferred area.
 
 ## Evidence and change log
+
+- 6 October 2026: executed and agent-reviewed all eight supplemental and seven
+  remaining frozen cases, with 30 complete replies and fresh consumed permits.
+  Six of eight supplemental and six of seven frozen cases were acceptable;
+  planning contradictions, invented meeting roles and invented personal reasons
+  remain material failures. Coverage now spans 24 frozen cases plus eight separate
+  supplemental cases. Eight founder reviews are unchanged; reserved evaluation
+  remains unrun. See [batch evidence](development-family-review.md). Corrected the
+  dashboard's unset usage limit to authorized USD 2 with auto-reload off. Local
+  cumulative estimate USD 0.03509105 is not actual billing. Candidate freeze remains
+  blocked; existing roadmap IDs, format, scope and privacy gates are unchanged.
 
 - 6 October 2026: incorporated the founder's eight human development reviews with
   exact scores and preserved source/configuration bindings. Seven are acceptable;

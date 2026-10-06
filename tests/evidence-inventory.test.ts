@@ -111,6 +111,22 @@ function fixture() {
   return { permit, result, text, review };
 }
 
+it("identifies supplemental transcripts separately in inventory and review packets", () => {
+  const { permit, result } = fixture();
+  permit.scenario = "robustness_case";
+  permit.developmentCaseId = "robustness-writing-noisy";
+  const c = developmentCase(permit.developmentCaseId, permit.scenario);
+  result.client.conversation.messages[0].text = c.turns[0];
+  result.client.conversation.messages[2].text = c.turns[1];
+  const text = JSON.stringify(result);
+  const entry = inspectEvidence(permit.approvalId, text, permit, []);
+  expect(entry.caseSet).toBe("robustness_case");
+  expect(entry.casePromptsMatch).toBe(true);
+  expect(buildReviewPacket(permit.approvalId, text, permit).html).toContain(
+    "Case set: robustness_case",
+  );
+});
+
 it("prepares unscored review packets with inert transcripts and exact source binding", async () => {
   const { permit, result } = fixture();
   result.client.conversation.messages[1].text =

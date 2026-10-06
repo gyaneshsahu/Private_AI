@@ -37,8 +37,14 @@ export async function runSynthetic(input: unknown, csrf: string) {
       );
       conversation.attachments.push(attachment);
     }
-    if (permit.scenario === "development_case") {
-      const fixture = developmentCase(permit.developmentCaseId);
+    if (
+      permit.scenario === "development_case" ||
+      permit.scenario === "robustness_case"
+    ) {
+      const fixture = developmentCase(
+        permit.developmentCaseId,
+        permit.scenario,
+      );
       if (fixture.sources.length)
         conversation.attachments.push({
           id: crypto.randomUUID(),

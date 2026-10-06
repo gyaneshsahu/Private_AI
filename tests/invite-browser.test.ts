@@ -13,7 +13,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
   if (!address || typeof address === "string") throw Error("port");
   const origin = `http://127.0.0.1:${address.port}`;
   const vite = await createViteServer({
-    server: { middlewareMode: true },
+    server: { middlewareMode: true, hmr: false },
     appType: "spa",
     logLevel: "silent",
   });

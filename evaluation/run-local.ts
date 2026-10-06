@@ -176,8 +176,15 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
     kind: diagnose ? "NONBILLABLE_DIAGNOSTIC" : "SYNTHETIC_EXPERIMENT",
     qualification: "NOT_PASSED",
     scenario: permit.scenario,
-    ...(permit.scenario === "development_case"
-      ? { developmentCase: developmentCase(permit.developmentCaseId) }
+    ...(permit.scenario === "development_case" ||
+    permit.scenario === "robustness_case"
+      ? {
+          caseSet: permit.scenario,
+          developmentCase: developmentCase(
+            permit.developmentCaseId,
+            permit.scenario,
+          ),
+        }
       : permit.scenario === "adapter_compatibility"
         ? { expectedReply: "4" }
         : permit.scenario === "two_turn_invoice"

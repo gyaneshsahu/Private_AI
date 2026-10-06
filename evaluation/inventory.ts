@@ -31,6 +31,7 @@ type Entry = {
   configuration?: string;
   identitySource?: "RECORDED" | "DERIVED_FROM_CODE_AND_PERMIT";
   caseId?: string;
+  caseSet?: "development_case" | "robustness_case";
   casePromptsMatch?: boolean;
   family?: string;
   outcome?: string;
@@ -86,8 +87,9 @@ export function inspectEvidence(
       throw Error();
     const summary = reviewResult(raw, permit);
     const c =
-      permit.scenario === "development_case"
-        ? developmentCase(permit.developmentCaseId)
+      permit.scenario === "development_case" ||
+      permit.scenario === "robustness_case"
+        ? developmentCase(permit.developmentCaseId, permit.scenario)
         : undefined;
     Object.assign(entry, {
       integrity: "VALID",
@@ -96,7 +98,13 @@ export function inspectEvidence(
       identitySource: identity.configurationSHA256
         ? "RECORDED"
         : "DERIVED_FROM_CODE_AND_PERMIT",
-      ...(c ? { caseId: c.id, family: c.family } : {}),
+      ...(c
+        ? {
+            caseId: c.id,
+            family: c.family,
+            caseSet: permit.scenario as "development_case" | "robustness_case",
+          }
+        : {}),
       outcome: summary.outcome,
       attempts: summary.recordedInferenceAttempts,
       completedReplies: summary.completedReplies,
@@ -215,7 +223,20 @@ export async function inventory(root: string) {
       invalidOrLegacy: entries.length - valid.length,
       distinctDevelopmentCases: new Set(
         valid.flatMap((e) =>
-          e.caseId && e.casePromptsMatch && (e.completedReplies ?? 0) > 0
+          e.caseSet === "development_case" &&
+          e.caseId &&
+          e.casePromptsMatch &&
+          (e.completedReplies ?? 0) > 0
+            ? [e.caseId]
+            : [],
+        ),
+      ).size,
+      distinctSupplementalCases: new Set(
+        valid.flatMap((e) =>
+          e.caseSet === "robustness_case" &&
+          e.caseId &&
+          e.casePromptsMatch &&
+          (e.completedReplies ?? 0) > 0
             ? [e.caseId]
             : [],
         ),

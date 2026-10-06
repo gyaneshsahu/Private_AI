@@ -1,5 +1,6 @@
 import { z } from "zod";
 import developmentCases from "./cases/development.json";
+import robustnessCases from "./cases/robustness-development.json";
 import { qualificationSchema } from "../shared/contracts";
 
 // An experiment permit is explicitly NOT an operational qualification report.
@@ -14,6 +15,7 @@ export const experimentSchema = z
         "everyday_planning",
         "planning_transfer",
         "development_case",
+        "robustness_case",
       ])
       .default("two_turn_invoice"),
     developmentCaseId: z.string().optional(),
@@ -47,7 +49,8 @@ export function validateExperiment(
   now = Date.now(),
 ): Experiment {
   const x = experimentSchema.parse(input);
-  if (x.scenario === "development_case") developmentCase(x.developmentCaseId);
+  if (x.scenario === "development_case" || x.scenario === "robustness_case")
+    developmentCase(x.developmentCaseId, x.scenario);
   else if (x.developmentCaseId !== undefined)
     throw new Error("Development case does not match scenario.");
   if (
@@ -97,8 +100,8 @@ export function scenarioPrompts(
   scenario: Experiment["scenario"],
   developmentCaseId?: string,
 ): readonly string[] {
-  if (scenario === "development_case")
-    return developmentCase(developmentCaseId).turns;
+  if (scenario === "development_case" || scenario === "robustness_case")
+    return developmentCase(developmentCaseId, scenario).turns;
   return {
     adapter_compatibility: [compatibilityPrompt],
     two_turn_invoice: experimentPrompts,
@@ -121,8 +124,13 @@ export const everydayAssertions = {
     "Tuesday/Friday/Saturday, 19:00, 90 minutes total; Saturday rehearsal; self-checks retained",
   ],
 } as const;
-export function developmentCase(id: string | undefined) {
-  const selected = developmentCases.find((c) => c.id === id);
+export function developmentCase(
+  id: string | undefined,
+  scenario: "development_case" | "robustness_case" = "development_case",
+) {
+  const selected = (
+    scenario === "robustness_case" ? robustnessCases : developmentCases
+  ).find((c) => c.id === id);
   if (!selected || !selected.synthetic || selected.turns.length !== 2)
     throw new Error(
       "Choose one frozen two-turn synthetic development case; reserved or custom inputs are not permitted.",

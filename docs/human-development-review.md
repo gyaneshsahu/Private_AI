@@ -48,16 +48,18 @@ authoring; fixture validation is not reasoning-performance evidence.
 `npm run eval:check` now checks this supplemental file separately after verifying
 the original frozen hashes. It validates structure, distinct IDs, pair equality and
 reasoning/ambiguity coverage, reporting zero model executions and zero reserved
-gate contribution. **Supplemental live execution is not yet wired into the permit
-runner.** Do not pass these IDs as frozen development cases or modify the frozen
-manifest to make them fit. The next harness extension must preserve set-specific
-identity and separate coverage counts before a bounded live batch.
+gate contribution. The runner now supports `robustness_case` with separate IDs and
+coverage counts. Do not pass these IDs as frozen development cases or modify the
+frozen manifest to make them fit.
 
-Next quality sequence: extend supplemental execution without touching held-out
-cases; run the approved bounded uncovered Gemma development batch after current
-price/balance checks; use one focused evidence-based planning repair cycle rather
-than repeated prompt tweaking. Supplemental cases remain development/tuning data,
-never replacement held-out evidence without an explicit separately frozen set.
+6 October execution update: all eight supplemental cases now have one Gemma run
+and agent review (six acceptable, two material failures). The seven remaining
+frozen cases also ran (six acceptable, one material failure). See
+[live findings](development-family-review.md). Founder scores above are unchanged.
+Fixture checks themselves make zero model requests; that is not a claim that
+separate live runs do not exist. Runner support and separate coverage counts are
+now implemented. Next is one bounded repair/transfer cycle before release freeze;
+supplemental cases remain development data, never replacement reserved evidence.
 
 General photograph/chart/scene understanding remains deferred and requires its
 own capability/privacy decision. OCR success does not qualify general vision.

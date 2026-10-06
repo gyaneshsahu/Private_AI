@@ -4,10 +4,11 @@
 are recorded with exact scores and result/configuration bindings; Case 7 remains
 failed. They are not reserved acceptance evidence. Eight additional fixtures in
 `cases/robustness-development.json` cover clean/noisy prompt pairs, reasoning and
-ambiguity. `eval:check` validates these separately; supplemental model execution is
-UNRUN and is not yet supported by the live permit runner. Frozen files are unchanged.
+ambiguity. `eval:check` validates these separately; the live runner now supports these via `robustness_case`. All eight have one
+Gemma execution and bound agent review: six acceptable, two material failures.
+Frozen files are unchanged.
 
-`cases/development.json` contains 24 synthetic, two-turn development cases across six task families. `cases/heldout.json` contains 24 different reserved cases frozen before any model tuning. These were developer-authored, not independently contributed or blinded; do not describe them as independent customer validation. Seventeen distinct development cases have live observations in [the development review](../docs/development-family-review.md); the reserved set remains unrun. The latest six-family matched batch adds serious GPT-OSS deadline guidance and material identifier-exclusion findings. Gemma has sparse coverage of all six families with preserved historical failures; the narrow OCR repair does not resolve its planning findings or establish a quality-gate pass.
+`cases/development.json` contains 24 synthetic, two-turn development cases across six task families. `cases/heldout.json` contains 24 different reserved cases frozen before any model tuning. These were developer-authored, not independently contributed or blinded; do not describe them as independent customer validation. All 24 distinct development cases now have live observations in [the development review](../docs/development-family-review.md); the reserved set remains unrun. The latest six-family matched batch adds serious GPT-OSS deadline guidance and material identifier-exclusion findings. Gemma has sparse coverage of all six families with preserved historical failures; the narrow OCR repair does not resolve its planning findings or establish a quality-gate pass.
 
 `frozen-manifest.json` records SHA-256 file hashes. `npm run eval:check` validates counts, shapes, coverage and hashes; success is fixture integrity only. If a reserved case informs a fix, retain it as a regression case and prepare a new, separately versioned hold-out set. Never silently regenerate the manifest to hide a changed acceptance baseline.
 
@@ -21,7 +22,7 @@ Before broader investment: at least 120 fresh distinct conversations, varied doc
 
 Security tests, live-provider qualification, task quality and customer demand are separate records. No result currently establishes broad ChatGPT/Gemini parity or production readiness.
 
-The bounded runner accepts scenario `development_case` with `developmentCaseId` from the frozen development set only. Prompts and references cannot be supplied in a permit. Each case requires a fresh claim; see the development review for evidence and limitations.
+The runner accepts `development_case` for frozen IDs and `robustness_case` for supplemental IDs. Both use the historical `developmentCaseId` field; scenario selects the set. Cross-set, reserved and custom IDs are rejected. Prompts and references cannot be supplied in a permit. Each case requires a fresh claim; see the development review for evidence and limitations.
 
 New results include `modelConfiguration` and `configurationSHA256` alongside code identity. Use the configuration identity for grading; code hashes alone cannot distinguish model or limit changes. Profile-aware agent-review sidecars preserve this distinction for earlier results.
 
@@ -48,7 +49,8 @@ statuses remain separate. The inventory never runs or passes the human quality o
 provider gate and never merges different model configurations into a quality score.
 `validatedRecordEstimateUSD` covers only readable, internally consistent local
 records; it is neither actual billing nor an authoritative remaining account budget.
-The frozen-case count excludes custom scenarios and repetitions. Keep historical
+`distinctDevelopmentCases` excludes supplemental/custom scenarios and repetitions;
+`distinctSupplementalCases` counts supplemental observations separately. Keep historical
 failures and superseded review corrections; do not remove records to improve counts.
 
 `npm run eval:packet -- <run-id>` prepares one recorded synthetic development run

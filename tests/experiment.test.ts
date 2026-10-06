@@ -104,6 +104,26 @@ describe("synthetic experiment gates (no provider calls)", () => {
       validateExperiment({ ...base, scenario: "two_turn_invoice" }),
     ).toThrow();
   });
+  it("keeps supplemental cases separate and rejects cross-set or reserved IDs", () => {
+    const base = {
+      ...fixture(),
+      scenario: "robustness_case",
+      developmentCaseId: "robustness-writing-noisy",
+    };
+    expect(validateExperiment(base).scenario).toBe("robustness_case");
+    for (const developmentCaseId of [
+      "development-writing-01",
+      "heldout-writing-01",
+      undefined,
+    ])
+      expect(() =>
+        validateExperiment({ ...base, developmentCaseId }),
+      ).toThrow();
+    expect(() =>
+      validateExperiment({ ...base, scenario: "development_case" }),
+    ).toThrow();
+    expect(() => validateExperiment({ ...base, turns: ["custom"] })).toThrow();
+  });
   it("consumes an approval atomically across concurrent starts and later restarts", async () => {
     const folder = await mkdtemp(join(tmpdir(), "privateai-claim-test-"));
     try {

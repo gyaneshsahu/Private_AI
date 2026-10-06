@@ -4,6 +4,8 @@ import { createServer } from "vite";
 import { existsSync } from "node:fs";
 import { approvedLocalGet } from "../evaluation/network-observation";
 import developmentCases from "../evaluation/cases/development.json";
+import robustnessCases from "../evaluation/cases/robustness-development.json";
+const allCases = [...developmentCases, ...robustnessCases];
 import { invoiceText } from "../evaluation/experiment";
 
 it("runs real browser extraction and follow-up state with an explicitly mocked model, and stops on unknown cost", async () => {
@@ -140,7 +142,9 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
         const outcome = await runSynthetic(
           {
             ...permit,
-            scenario: "development_case",
+            scenario: fixture.id.startsWith("robustness-")
+              ? "robustness_case"
+              : "development_case",
             developmentCaseId: fixture.id,
           },
           "fixture",
@@ -164,11 +168,11 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
         unknownCost,
         unknownCalls,
       };
-    }, developmentCases);
+    }, allCases);
     expect(result.compatibilityCalls).toBe(1);
-    expect(result.development).toHaveLength(24);
+    expect(result.development).toHaveLength(32);
     for (const [index, task] of result.development.entries()) {
-      const fixture = developmentCases[index];
+      const fixture = allCases[index];
       expect(task.outcome.failure).toBeNull();
       expect(task.calls).toHaveLength(2);
       expect(task.calls[0].messages[0].text).toBe(fixture.turns[0]);
