@@ -27,6 +27,11 @@ Clean-export container build/smoke and a three-container persistent-volume
 rehearsal passed; see [exact image and limits](trial-hosting-decision.md).
 Actual hosted TLS, deployment persistence and devices still need the separately
 approved hosting arrangement. Local Docker success does not authorize deployment.
+Update: founder upgraded to 0.5 CPU / 512 MB and added 1 GB at `/var/data`;
+both are verified in Render. The selected compute price is USD 7/month; disk
+billing is separate from that displayed figure. Render still serves `dbccbe0`,
+before individual access; current branch publication/deployment and actual-host
+registry initialization/validation remain pending.
 The packaged individual-access HTTP rehearsal additionally passes under 512 MiB /
 0.5 CPU: password change, per-user revocation, restart session invalidation and
 paused restart denial. This closes the packaged-access integration gap without

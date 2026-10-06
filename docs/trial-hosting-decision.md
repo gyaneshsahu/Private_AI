@@ -1,10 +1,16 @@
 # Durable hosting decision for individual trial access
 
-5 October 2026 · U1/R1 · **Proposal; paid upgrade and deployment not authorized.**
+6 October 2026 · U1/R1 · **Founder upgraded hosting; current access release not deployed.**
 
 ## Current deployment
 
-Read-only Render dashboard inspection shows Docker **Free**, branch
+Read-only Render dashboard inspection on 6 October confirms Docker **0.5c-512mb**,
+0.5 CPU / 512 MB, selected compute price **USD 7/month**, and a **1 GB disk at
+`/var/data`**. The founder reports completing the upgrade. The displayed compute
+price is not an independently verified combined invoice total; the separately
+published disk rate remains USD 0.25/GB/month before taxes/overages.
+
+The service remains on branch
 `codex/provider-qualification`, with live commit
 `dbccbe0a8605b5d2c2c3f3f72bc965b3e7563f04`. This is older than the locally validated
 individual-access release. Earlier hosted smoke evidence does not validate the
@@ -39,12 +45,11 @@ not an all-in cap. No Pro workspace upgrade is required by this proposal.
 Confirm the account's actual quote and available smallest disk before purchase.
 This is a separate recurring hosting expense, not part of the USD 2 Tinfoil cap.
 
-The user decision needed is whether to approve this paid service/disk arrangement
-and its recurring base expense, with an explicit acceptable total spending limit
-including taxes/overages. Until then, retain the existing restricted foundation and
-local rehearsal. Do not buy, attach a billable disk, deploy invitations, or expose
-real-user data automatically. Hosting approval would not approve the private-data
-trial or pass provider/quality gates.
+The founder has completed the service/disk purchase. Do not purchase additional
+capacity or infer a higher spending ceiling. Publication/deployment of the current
+committed Windows branch and initialization of the persistent registry remain
+separate pending steps. The upgraded disk alone does not prove mount ownership,
+application persistence, recovery or private-data trial readiness.
 
 ## Tradeoffs and alternatives
 

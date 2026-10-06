@@ -148,6 +148,13 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 6 October 2026: founder reports hosting upgraded; dashboard confirms 0.5 CPU /
+  512 MB compute at USD 7/month and 1 GB disk mounted at `/var/data`. The displayed
+  price is compute-only, not a verified combined invoice. Render still runs
+  `dbccbe0`, predating individual access. Current release publication/deployment,
+  persistent registry setup and actual-host validation remain pending; privacy
+  and quality gates are unchanged.
+
 - 6 October 2026: U1 packaged individual-access rehearsal added to CI and passed
   locally against the existing validated application image with 512 MiB / 0.5 CPU,
   network disabled and an isolated synthetic volume. HTTP sign-in/password change,
