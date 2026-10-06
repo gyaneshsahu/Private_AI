@@ -4,6 +4,13 @@
 
 ## Human work available now
 
+**Priority review update:** the founder supplied AI-proposed scores 1/3/2,
+1/3/2, 1/3/1 and 1/3/1, without human confirmation. Preserve those separately
+from the existing agent 1/2/1 grades. Both identify four material failed drafts;
+the conditional 8/12 writing ceiling and 10/12 requirement remain unchanged.
+See [development diagnosis and next comparison](writing-failure-diagnosis.md).
+Any configuration informed by this assessment needs fresh held-out evidence.
+
 **Collection complete, 6 October:** all 72 reserved conversations returned both
 answers: **144 attempts, 144 completed replies and 144 matching verifications**,
 12 conversations per family on one frozen configuration. All have accounted

@@ -6,11 +6,18 @@ not authorization for new subscriptions or a change to privacy promises.
 | Service | Needed now? | Action |
 | --- | --- | --- |
 | Tinfoil inference | Already configured locally | Keep the existing key, USD 2 cumulative account cap and auto-reload off. Supplier privacy evidence remains pending. No second model account is needed for the selected Gemma assessment. |
-| Brave Search API, Search plan | One new API integration dependency | Account/key is absent. Resolve result-retention rights before activation or integration testing; see below. We use web search, not the separately priced Answers, Spellcheck or Autosuggest services. |
+| Search API, supplier selection pending | One new API integration dependency | Five suppliers compared; none yet has established saved-citation rights and acceptable privacy conditions. Seek one Brave clarification first; do not create five accounts. See the [comparison](search-provider-comparison.md). |
 | Render hosting and durable disk | Existing account; separate spending decision | Paid hosting remains unapproved. Follow [storage decision](trial-hosting-decision.md); the existing free filesystem cannot safely host the invitation registry. No new hosting API key is required for manual operator deployment. |
 | External login, email/SMS delivery, cloud OCR, vector database, analytics | Not required for the agreed small trial | Invitations are operator-issued, extraction and encrypted history are local. Do not create these accounts merely in anticipation of public launch. Reconsider against roadmap requirements. |
 
 ## Search account and retention prerequisite
+
+The [five-provider comparison](search-provider-comparison.md) covers Brave,
+Tavily, Exa, SearchApi and SerpApi. No reviewed offer is yet eligible for our
+saved-citation workflow. This is an evidence assessment, not a blanket claim that
+storage is prohibited. Ask Brave first because its storage-plan requirement is
+explicit and the adapter exists. Do not email all suppliers or create accounts
+before this dependency is resolved.
 
 The current [Brave pricing page](https://api-dashboard.search.brave.com/documentation/pricing)
 lists Search at USD 5 per 1,000 requests with USD 5 monthly credits. The
@@ -31,6 +38,12 @@ activating a plan, obtain written confirmation from Brave covering:
 > when reopened, and retain synthetic integration-test evidence? No model training,
 > redistribution dataset or public search-results cache is intended. Which plan
 > and retention conditions permit these uses?
+
+Also request the exact enabling plan/order clause, whether saved citations may
+remain after termination, and query retention/subprocessor conditions. Brave's
+[API privacy notice](https://api-dashboard.search.brave.com/documentation/resources/privacy-notice)
+currently permits up to 90 days of query retention; ZDR is an enterprise option.
+Do not describe the ordinary plan as zero-retention or assume its DPA covers queries.
 
 This is a prepared question, not a sent message. The founder can contact the
 support address linked in Brave's official help page. If required rights are
@@ -57,6 +70,6 @@ The same command replaces it. `-Action Status` reports presence only;
 The existing process-scoped loader restores the previous environment on exit.
 Do not create a repository `.env` or save the credential in evidence files.
 
-Only this Brave account/key and the separately approved durable hosting arrangement
+Only one selected search account/key and the separately approved durable hosting arrangement
 are additional current-trial setup items. Voice, general vision and public-launch
 integrations remain deferred until a capability/privacy decision justifies them.

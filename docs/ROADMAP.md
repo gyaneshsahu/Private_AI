@@ -59,7 +59,7 @@ Local DONE does not imply provider qualification or deployed release.
 | Saved unsent drafts | `src/App.tsx`, optional `Conversation.draft`; new complete browser workflow | Explicit save only; draft excluded from inference until submitted; reload clears unsaved work |
 | Browser verification and encrypted transport | Maintained Tinfoil/EHBP libraries; pinned router verification, encrypted fault fixtures and real synthetic answers | Full chain NOT_PASSED; Chromium no-store abort has a scoped, tested completion assessment |
 | Restricted hosting foundation and individual trial access | `server/deployment.ts`, `server/invite-access.ts`, SQLite registry, real HTTP/browser identity tests | Opt-in expiring invitations, sign-in/logout, revocation and account-scoped encrypted vaults; single process, no recovery/sync, current batch not deployed |
-| Evaluation infrastructure | 24 development + 24 reserved fixtures, integrity checks, isolated experiment claims and review summaries | Fixture integrity is not model-quality evaluation; reserved/comparator execution remains pending |
+| Evaluation infrastructure | 24 development + 24 reserved fixtures, integrity checks, isolated experiment claims and review summaries; 72 reserved conversations collected | Four material writing failures in agent triage; human reserved adjudication pending, quality NOT_PASSED; no competitive parity established |
 
 ## Ordered path to the invited-user trial
 
@@ -147,6 +147,16 @@ Do not expand scope to avoid failing current requirements. Record the need, alte
 expected benefit, risks, cost and founder decision before promoting a deferred area.
 
 ## Evidence and change log
+
+- 6 October 2026: E1/G1 diagnosis preserves four failed reserved drafts and the
+  founder's separately labelled AI-proposed scores; no human grades or thresholds
+  changed. Six offline context reconstructions retain the policy and exact prompts;
+  existing development evidence also shows unsupported commitments. See
+  [writing diagnosis](writing-failure-diagnosis.md). G6 now has a
+  [five-provider terms comparison](search-provider-comparison.md): no established
+  eligible saved-citation offer; pursue one Brave clarification before accounts or
+  adapter replacement. Provider evidence, hosted release and device checks remain
+  separate blockers. General-assistant scope and roadmap IDs/order are unchanged.
 
 - 6 October 2026: E1 reserved collection completed at frozen `bbb802e` assessment
   configuration: 72 conversations, 144 replies and matching verifications, estimated
