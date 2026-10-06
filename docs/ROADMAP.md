@@ -148,6 +148,16 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 6 October 2026: E1's next useful step is human adjudication of retained attribution
+  failures. Prepared one four-conversation local review page: Gemma/GLM meeting
+  reference and reservation transfer, exact source bindings, blank human scores
+  and plain-text reply instructions. Verified original transcripts, desktop/phone
+  layout, navigation and zero external requests. [Packet and procedure](gemma-release-evaluation-plan.md#human-work-available-now).
+  Human review is now requested; do not count repeated versions of the same
+  fixture as distinct-conversation recurrence. No reserved cases consumed or
+  historical grades changed. Further candidate selection depends on adjudication
+  and justified broader evidence; passing access rehearsals do not resolve E1.
+
 - 6 October 2026: U1 recovery review found hosted startup could accept an invitation
   table with missing pause metadata and recreate that state as unpaused. Startup,
   backup and staged recovery now share read-only current-schema/security-state

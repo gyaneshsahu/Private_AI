@@ -4,6 +4,28 @@
 
 ## Human work available now
 
+**Next review prepared, 6 October:** four retained conversations are ready in the
+Windows-local ignored folder
+`.local/review-batches/attribution-20261006-653a930a-3185-4d9a-8846-82ab2322d29f/review.html`.
+Cases 1–2 are the meeting-reference task with explicit-thinking Gemma and GLM low
+effort; cases 3–4 are the reservation transfer with those models. Read both turns,
+score correctness/completeness/context 0–3 and identify any error/severity. Reply
+with case numbers in chat; no JSON editing is needed. Scores remain blank and
+human adjudication is **pending**. This selected, unblinded development packet
+does not establish model ranking or replace the reserved quality gate.
+
+All four exact transcripts and source SHA-256 bindings were verified. Browser
+checks passed at 1280 and 360 pixels, with working case navigation and no external
+requests. Original results, permits and active reviews remain unchanged.
+
+Repeated observations of one fixture across model/configuration changes do not
+count as two distinct conversations under the approved recurrence rule. Human
+adjudication must distinguish an isolated ordinary material miss from a serious
+task-critical error; do not redefine thresholds or erase historical failures.
+Use the resulting decision to justify the next bounded development assessment,
+instead of another prompt-tweak loop. The founder has been asked for this review;
+it is a useful current human action, separate from later real-device testing.
+
 **6 October update:** the founder completed this packet. Eight human development
 reviews are recorded, with Case 7 failed for material arithmetic error. See
 [scores, provenance and supplemental coverage](human-development-review.md).
