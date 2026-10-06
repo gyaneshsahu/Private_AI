@@ -1,4 +1,25 @@
 import type { Attachment, Source } from "../shared/contracts";
+import { z } from "zod";
+
+const workerResult = z.union([
+  z.object({ progress: z.string().min(1).max(200) }).strict(),
+  z.object({ error: z.string().min(1).max(500) }).strict(),
+  z
+    .object({
+      pages: z
+        .array(
+          z
+            .object({
+              text: z.string(),
+              page: z.number().int().positive().optional(),
+            })
+            .strict(),
+        )
+        .max(20),
+      warning: z.string().max(500).optional(),
+    })
+    .strict(),
+]);
 export async function extract(
   file: File,
   signal: AbortSignal,
@@ -42,27 +63,29 @@ export async function extract(
       if (!finish()) return;
       reject(new Error("Document could not be processed locally."));
     };
-    worker.onmessage = (
-      event: MessageEvent<{
-        progress?: string;
-        error?: string;
-        pages?: Array<{ text: string; page?: number }>;
-        warning?: string;
-      }>,
-    ) => {
+    worker.onmessage = (event: MessageEvent<unknown>) => {
       if (settled) return;
-      if (!event.data.progress && !event.data.error && !event.data.pages)
+      const parsed = workerResult.safeParse(event.data);
+      if (!parsed.success) {
+        if (finish())
+          reject(
+            new Error(
+              "Document processing returned an invalid result. Try another file.",
+            ),
+          );
         return;
-      if (event.data.progress) {
-        progress(event.data.progress);
+      }
+      const data = parsed.data;
+      if ("progress" in data) {
+        progress(data.progress);
         return;
       }
       if (!finish()) return;
-      if (event.data.error) {
-        reject(new Error(event.data.error));
+      if ("error" in data) {
+        reject(new Error(data.error));
         return;
       }
-      const sources: Source[] = (event.data.pages ?? []).map((page) => ({
+      const sources: Source[] = data.pages.map((page) => ({
         ...page,
         id: crypto.randomUUID().slice(0, 8),
         title: file.name,
@@ -88,7 +111,7 @@ export async function extract(
         name: file.name,
         selected: true,
         sources,
-        warning: event.data.warning,
+        warning: data.warning,
         kind: file.type.startsWith("image/") ? "screenshot" : "document",
       });
     };

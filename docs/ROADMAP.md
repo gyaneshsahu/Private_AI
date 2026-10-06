@@ -148,6 +148,15 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 6 October 2026: independent W2 document-import review fixes malformed worker
+  completion leaving the UI busy after its deadline was cancelled. Runtime message
+  validation now rejects invalid output and settles/cleans up the operation;
+  six fault fixtures verify a later intact import still succeeds. Existing
+  extraction limits and local-processing boundaries remain unchanged. Human
+  attribution adjudication remains the next model-selection dependency.
+  Validation: 160 unit/integration tests, 16 browser workflows, typecheck/build
+  and fixture integrity passed.
+
 - 6 October 2026: W2 saved-history recovery no longer lets one unreadable snapshot
   block all intact conversations. Decrypted structure/identity is validated; the
   UI shows intact snapshots plus an explicit unreadable count, preserving damaged

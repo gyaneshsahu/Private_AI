@@ -4,6 +4,20 @@
 
 ## Usable recovery
 
+### Invalid document-worker output — 6 October 2026
+
+Previously a malformed completion such as a non-string page text could terminate
+the worker and cancel its deadline, then throw before resolving/rejecting the
+import promise. The interface could remain busy indefinitely. Worker messages
+now receive runtime validation before handling: bounded progress/error messages,
+unambiguous completion shape, string page text, positive page numbers and at most
+20 pages. Invalid output rejects promptly with a generic error and cleans up the
+worker, abort listener and deadline. Late events cannot revive the operation.
+
+Six injected invalid message forms verify rejection and successful subsequent
+import. Existing real PDF/OCR browser workflows remain the integration checks;
+the injected fixtures do not establish extraction accuracy on arbitrary files.
+
 ### Partial saved-history recovery — 6 October 2026
 
 Previously, one unreadable encrypted snapshot made the whole saved-history list

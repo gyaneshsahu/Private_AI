@@ -56,3 +56,31 @@ it("cleans up a successful extraction before its deadline", async () => {
   expect(vi.getTimerCount()).toBe(0);
   expect(WorkerFixture.instances[0].terminate).toHaveBeenCalledTimes(1);
 });
+
+it.each([
+  null,
+  {},
+  { pages: [{ text: 123 }] },
+  { pages: [{ text: "synthetic", page: -1 }] },
+  { pages: Array.from({ length: 21 }, () => ({ text: "synthetic" })) },
+  { progress: "reading", pages: [{ text: "synthetic" }] },
+])(
+  "settles invalid worker output and allows a subsequent extraction: %j",
+  async (data) => {
+    const progress = vi.fn();
+    const result = extract(file(), new AbortController().signal, progress);
+    const rejected = expect(result).rejects.toThrow("invalid result");
+    const worker = WorkerFixture.instances[0];
+    worker.onmessage?.({ data });
+    await rejected;
+    expect(worker.terminate).toHaveBeenCalledTimes(1);
+    expect(vi.getTimerCount()).toBe(0);
+    worker.onmessage?.({ data: { progress: "late" } });
+    expect(progress).not.toHaveBeenCalled();
+    const next = extract(file(), new AbortController().signal, progress);
+    WorkerFixture.instances[1].onmessage?.({
+      data: { pages: [{ text: "next intact source" }] },
+    });
+    expect((await next).sources[0].text).toBe("next intact source");
+  },
+);
