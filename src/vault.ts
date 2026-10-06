@@ -134,7 +134,8 @@ export class Vault {
   }
   save(conversation: Conversation) {
     const key = this.key,
-      generation = this.generation;
+      generation = this.generation,
+      databaseName = this.databaseName;
     if (!key)
       return Promise.reject(new Error("Unlock your vault before saving."));
     const snapshot = structuredClone(conversation);
@@ -159,18 +160,29 @@ export class Vault {
       );
       if (generation !== this.generation || !this.key)
         throw new Error("Vault locked before save completed.");
-      const tx = (await db(this.databaseName)).transaction(
-        ["meta", "conversations"],
-        "readwrite",
-      );
-      if (await tx.objectStore("meta").get(`deleted:${snapshot.id}`)) {
+      const database = await db(databaseName);
+      try {
+        if (generation !== this.generation || !this.key)
+          throw new Error("Vault locked before save completed.");
+        const tx = database.transaction(["meta", "conversations"], "readwrite");
+        if (await tx.objectStore("meta").get(`deleted:${snapshot.id}`)) {
+          await tx.done;
+          throw new Error(
+            "This conversation was deleted. Create a new conversation instead.",
+          );
+        }
+        if (generation !== this.generation || !this.key) {
+          tx.abort();
+          await tx.done.catch(() => {});
+          throw new Error("Vault locked before save completed.");
+        }
+        await tx
+          .objectStore("conversations")
+          .put({ wrapped, data }, snapshot.id);
         await tx.done;
-        throw new Error(
-          "This conversation was deleted. Create a new conversation instead.",
-        );
+      } finally {
+        database.close();
       }
-      await tx.objectStore("conversations").put({ wrapped, data }, snapshot.id);
-      await tx.done;
     });
   }
   async list(): Promise<Conversation[]> {
@@ -202,15 +214,30 @@ export class Vault {
     return output;
   }
   delete(id: string) {
+    const generation = this.generation,
+      databaseName = this.databaseName;
+    if (!this.key)
+      return Promise.reject(new Error("Unlock your vault before deleting."));
     return this.enqueue(async () => {
-      const tx = (await db(this.databaseName)).transaction(
-        ["meta", "conversations"],
-        "readwrite",
-      );
-      await tx.objectStore("meta").put(true, `deleted:${id}`);
-      await tx.objectStore("conversations").delete(id);
-      await tx.done;
-      this.channel?.postMessage("delete");
+      if (generation !== this.generation || !this.key)
+        throw new Error("Deletion cancelled because the vault changed.");
+      const database = await db(databaseName);
+      try {
+        if (generation !== this.generation || !this.key)
+          throw new Error("Deletion cancelled because the vault changed.");
+        const tx = database.transaction(["meta", "conversations"], "readwrite");
+        await tx.objectStore("meta").put(true, `deleted:${id}`);
+        if (generation !== this.generation || !this.key) {
+          tx.abort();
+          await tx.done.catch(() => {});
+          throw new Error("Deletion cancelled because the vault changed.");
+        }
+        await tx.objectStore("conversations").delete(id);
+        await tx.done;
+        if (generation === this.generation) this.channel?.postMessage("delete");
+      } finally {
+        database.close();
+      }
     });
   }
 }

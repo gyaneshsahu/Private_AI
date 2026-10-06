@@ -148,6 +148,16 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 6 October 2026: independent W2/U1 work while human attribution review is pending
+  fixes queued vault deletion crossing an account switch. Save/delete capture the
+  originating scope and recheck lock state at storage boundaries; stale deletion
+  callbacks cannot update the cleared UI. Tests preserve same-ID snapshots in two
+  accounts and exercise locking during database opening and after committed
+  deletion. [Recovery evidence](workspace-recovery-review.md#account-switch-mutation-fix--6-october-2026).
+  Already committed transactions are not undone by locking. Model selection and
+  provider/hosted gates remain unchanged. Validation: 153 unit/integration tests,
+  15 browser workflows, typecheck/build and fixture integrity passed.
+
 - 6 October 2026: E1's next useful step is human adjudication of retained attribution
   failures. Prepared one four-conversation local review page: Gemma/GLM meeting
   reference and reservation transfer, exact source bindings, blank human scores

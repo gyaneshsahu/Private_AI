@@ -4,6 +4,27 @@
 
 ## Usable recovery
 
+### Account-switch mutation fix — 6 October 2026
+
+Review while human quality adjudication is pending found queued deletion selected
+the database at execution time. Switching accounts before that work ran could
+target the new account's same-ID record or create a deletion tombstone there.
+Deletion now captures the originating account/generation, requires an unlocked
+vault and cancels if that context changes before mutation. Save also rechecks
+after opening IndexedDB and after reading deletion state. Mutation connections
+close on completion or failure.
+
+Regression tests use two accounts with the same snapshot ID and verify both
+survive a cancelled queued deletion. Separate tests lock during database opening
+for save and deletion and preserve the original snapshot. The browser workflow
+delays completion after a real deletion, locks, then delivers the completion;
+stale callbacks cannot change the cleared UI or show a misleading failure.
+Deletion disables overlapping actions while pending, with lock still available.
+
+Locking does not undo a transaction that already committed. The fix binds each
+mutation to its original account and suppresses stale UI results; it does not
+promise secure erasure of device backups or recover deleted snapshots.
+
 The real conversation UI already covered stop, explicit retry, branching and source
 snapshots. `tests/workspace-races.test.ts` now also exercises:
 

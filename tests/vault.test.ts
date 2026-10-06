@@ -1,5 +1,5 @@
 import "fake-indexeddb/auto";
-import { afterEach, describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import { openDB } from "idb";
 import { Vault } from "../src/vault";
 import { emptyConversation } from "../shared/contracts";
@@ -15,6 +15,73 @@ afterEach(async () => {
   stores.length = 0; /* Each test uses distinct records; IndexedDB connections stay managed by idb. */
 });
 describe("real WebCrypto vault, synthetic inputs only", () => {
+  it.each(["save", "delete"] as const)(
+    "cancels %s if locking happens while IndexedDB opens",
+    async (operation) => {
+      const v = store();
+      v.selectAccount(crypto.randomUUID());
+      const password = "synthetic storage opening password";
+      await v.unlock(password);
+      const original = { ...emptyConversation(), title: "Retained original" };
+      await v.save(original);
+      const open = indexedDB.open.bind(indexedDB);
+      const intercepted = vi
+        .spyOn(indexedDB, "open")
+        .mockImplementation((...args) => {
+          intercepted.mockRestore();
+          const request = open(...args);
+          request.addEventListener("success", () => v.lock(false), {
+            once: true,
+          });
+          return request;
+        });
+      try {
+        const pending =
+          operation === "save"
+            ? v.save({ ...original, title: "Must not replace" })
+            : v.delete(original.id);
+        await expect(pending).rejects.toThrow(/locked|cancelled/);
+        await v.unlock(password);
+        expect(
+          (await v.list()).find((item) => item.id === original.id)?.title,
+        ).toBe("Retained original");
+      } finally {
+        intercepted.mockRestore();
+      }
+    },
+  );
+  it("cancels queued deletion on lock/account switch without deleting either account's same-ID snapshot", async () => {
+    const v = store();
+    const alice = "cccccccc-cccc-4ccc-accc-cccccccccccc";
+    const bob = "dddddddd-dddd-4ddd-addd-dddddddddddd";
+    const password = "synthetic race vault password";
+    const c = emptyConversation();
+    v.selectAccount(alice);
+    await v.unlock(password);
+    await v.save({ ...c, title: "Alice retained" });
+    v.lock(false);
+    v.selectAccount(bob);
+    await v.unlock(password);
+    await v.save({ ...c, title: "Bob retained" });
+    v.lock(false);
+    v.selectAccount(alice);
+    await v.unlock(password);
+    const deletion = v.delete(c.id);
+    v.lock(false);
+    v.selectAccount(bob);
+    await expect(deletion).rejects.toThrow(/cancelled/);
+    await expect(v.delete(c.id)).rejects.toThrow(/Unlock/);
+    await v.unlock(password);
+    expect((await v.list()).find((item) => item.id === c.id)?.title).toBe(
+      "Bob retained",
+    );
+    v.lock(false);
+    v.selectAccount(alice);
+    await v.unlock(password);
+    expect((await v.list()).find((item) => item.id === c.id)?.title).toBe(
+      "Alice retained",
+    );
+  });
   it("isolates saved workspaces by account even when vault passphrases match", async () => {
     const alice = store(),
       bob = store();

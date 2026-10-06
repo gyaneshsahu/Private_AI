@@ -16,6 +16,9 @@ type Fixture = Window & {
   releaseSave: () => void;
   savePending: boolean;
   saveDone: boolean;
+  deletePending: boolean;
+  deleteDone: boolean;
+  releaseDelete: () => void;
 };
 
 it("clearing pending imports and locking pending encrypted saves cannot restore discarded work", async () => {
@@ -251,6 +254,48 @@ it("clearing pending imports and locking pending encrypted saves cannot restore 
       page.getByRole("button", { name: "Lock and clear workspace" }),
     ).toHaveCount(0);
     await ui(page.getByText("Local vault unlocked")).toHaveCount(0);
+    await page
+      .getByLabel("Vault passphrase")
+      .fill("synthetic race test passphrase");
+    await page.getByRole("button", { name: "Create or unlock vault" }).click();
+    await ui(
+      page.getByRole("button", { name: "Lock and clear workspace" }),
+    ).toBeVisible();
+    await tab("Conversation").click();
+    await page.getByLabel("Message PrivateAI").fill("SYNTHETIC_DELETE_RACE");
+    await tab("Saved").click();
+    await page.getByRole("button", { name: "Save encrypted snapshot" }).click();
+    await ui(
+      page.getByRole("button", { name: "Delete", exact: true }),
+    ).toBeEnabled();
+    // Keep the browser import out of Vitest's server-side module transform.
+    await page.evaluate(`(async () => {
+      const w = window;
+      const { Vault } = await import("/src/vault.ts");
+      const original = Vault.prototype.delete;
+      Vault.prototype.delete = async function (id) {
+        Vault.prototype.delete = original;
+        await original.call(this, id);
+        w.deletePending = true;
+        await new Promise((resolve) => (w.releaseDelete = resolve));
+        w.deleteDone = true;
+      };
+    })()`);
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
+    await page.waitForFunction(
+      () => (window as unknown as Fixture).deletePending,
+    );
+    await page
+      .getByRole("button", { name: "Lock and clear workspace" })
+      .click();
+    await page.evaluate(() => (window as unknown as Fixture).releaseDelete());
+    await page.waitForFunction(() => (window as unknown as Fixture).deleteDone);
+    await ui(page.getByText("Deletion failed.", { exact: false })).toHaveCount(
+      0,
+    );
+    await ui(
+      page.getByRole("button", { name: "Create or unlock vault" }),
+    ).toBeEnabled();
     expect(unexpected).toEqual([]);
   } finally {
     await browser.close();

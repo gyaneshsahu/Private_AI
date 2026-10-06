@@ -1315,15 +1315,22 @@ export function App() {
                     <button
                       disabled={!!busy}
                       onClick={async () => {
+                        const current = epoch.current;
+                        setBusy("Deleting encrypted snapshot…");
                         try {
                           await vault.current!.delete(c.id);
-                          setSaved(await vault.current!.list());
+                          const snapshots = await vault.current!.list();
+                          if (current !== epoch.current) return;
+                          setSaved(snapshots);
                           if (conversation.id === c.id) reset();
                           setNotice(
                             "Encrypted records and wrapped key deleted. Device backups and exported copies are outside this deletion.",
                           );
                         } catch {
-                          fail("Deletion failed. Try again after unlocking.");
+                          if (current === epoch.current)
+                            fail("Deletion failed. Try again after unlocking.");
+                        } finally {
+                          if (current === epoch.current) setBusy("");
                         }
                       }}
                     >
