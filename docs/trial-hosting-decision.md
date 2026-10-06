@@ -60,10 +60,27 @@ trial or pass provider/quality gates.
 
 ## Required work before deployment
 
+**6 October local container evidence:** Docker Desktop engine 29.8.0 became
+available. Clean Git export of `bbb802e` built successfully; image identity
+`sha256:10e5f9b74b962c76f7a57d38c210e8017d515ab655f0a70a2fba767d25cfd257`.
+The packaged smoke passed protected pages/assets/API, secure cookie configuration,
+non-root/read-only operation and invitation backup/paused recovery commands.
+A separate network-disabled synthetic named-volume rehearsal passed across three
+fresh non-root containers: password replacement, revocation, credential version
+and pause survived, and hosted registry validation accepted the mounted database.
+Its initial test caller omitted the password-version argument; correcting that
+caller produced the passing run without application changes. The test-created
+volume was removed afterward; no real registry or WSL checkout was touched.
+Local evidence: `.local/container-volume-evidence-20261006.json`.
+The reusable `scripts/container-persistence.mjs` now runs after the image smoke
+in CI, using a unique synthetic volume and removing only that test volume.
+This resolves the local image-build blocker, not actual hosted TLS/proxy/storage,
+backup operations, capacity or device validation. No paid hosting was activated.
+
 1. The Dockerfile now packages `scripts/invites.ts`; the container smoke check
    exercises its `list` command against an isolated synthetic database as non-root.
-   Actual image build/smoke remains pending: the local Docker engine is unavailable.
-   Validate the resulting image from a clean Git export before deployment.
+   Actual local image build/smoke passed as recorded above. Validate the eventual
+   deployed image identity and host separately before inviting users.
 2. Hosted startup now requires an absolute existing regular registry file with a
    recognized schema and successful SQLite integrity check before writable opening.
    Missing/invalid storage stops startup instead of initializing an empty registry.

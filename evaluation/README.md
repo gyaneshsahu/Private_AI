@@ -2,6 +2,11 @@
 
 ## Reserved execution safeguards (6 October)
 
+Execution update: 72 reserved conversations / 144 replies completed on one frozen
+configuration. Human reserved grading is pending; four agent-identified material
+writing failures are prioritized for review. [Evidence and packet](../docs/gemma-release-evaluation-plan.md).
+No execution count is an answer-quality pass.
+
 `reserved_case` is separate from development/supplemental permits and inventory.
 It requires a `reservedAssessment` binding: exact configuration SHA-256, frozen
 held-out fixture SHA-256, repetition 1–3 and reviewed selection evidence.
@@ -23,7 +28,7 @@ confirmed by the founder. There are now 24 human development reviews; see
 [provenance](../docs/human-development-review.md). Gemma with thinking enabled is
 selected for reserved assessment, not approved for private-data operation.
 
-6 October update: eight [founder human development reviews](../docs/human-development-review.md)
+Earlier 6 October update: eight [founder human development reviews](../docs/human-development-review.md)
 are recorded with exact scores and result/configuration bindings; Case 7 remains
 failed. They are not reserved acceptance evidence. Eight additional fixtures in
 `cases/robustness-development.json` cover clean/noisy prompt pairs, reasoning and

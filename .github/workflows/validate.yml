@@ -28,5 +28,6 @@ jobs:
           git archive HEAD | tar -x -C "$RUNNER_TEMP/privateai-build"
           docker build -t privateai-evaluation "$RUNNER_TEMP/privateai-build"
       - run: node scripts/container-smoke.mjs
+      - run: node scripts/container-persistence.mjs
 # No provider keys, inference calls, deployments or paid services in CI.
 # Configure a selected host to deploy this branch only after this job succeeds.

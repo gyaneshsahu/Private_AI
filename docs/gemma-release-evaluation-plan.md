@@ -4,6 +4,53 @@
 
 ## Human work available now
 
+**Collection complete, 6 October:** all 72 reserved conversations returned both
+answers: **144 attempts, 144 completed replies and 144 matching verifications**,
+12 conversations per family on one frozen configuration. All have accounted
+usage and the existing scoped Chromium completion assessment; raw observations
+and consumed permits/slots remain preserved. No retries or tuning. Estimated
+batch usage **USD 0.07035160**, cumulative local estimate **USD 0.13313805**.
+Post-run dashboard shows USD 0.87 balance, USD 0.13 rounded period spend,
+312 requests (144 more), USD 2 limit and auto-reload off. This corroborates the
+batch within dashboard precision; exact per-run charges remain unreconciled.
+Observed turn durations were 1.39–29.77 seconds, not a production latency SLA.
+
+**Review four conversations first:**
+`.local/review-batches/reserved-priority-20261006/review.html` contains writing-01
+repetitions 1–2 and writing-02 repetitions 1–2. The full 72-conversation packet is
+`.local/review-batches/reserved-full-20261006/review.html`. Both keep human grades
+blank and agent scores hidden. Source/transcript binding, navigation and 1280/360
+pixel layouts passed with zero external requests. Human reserved grades: **zero**;
+the quality gate is **NOT_PASSED / human adjudication required**, not an execution
+success converted into answer-quality success.
+
+Inventory: 161 runs, zero invalid/conflicting active records, 54 agent reviews,
+24 human development reviews and 83 pending records (15 historical, 68 reserved).
+The other four reserved records have agent triage only. Local plan, progress and
+summary are `.local/reserved-{plan,progress,summary}-20261006.json`.
+
+**Reserved assessment:** frozen configuration
+`7e7c7d8d1d18f389d80d4400e9ce8b46f8a2ae51d279b12a5e097701356e48e5`
+at validated commit `bbb802e`, with unchanged model/prompt/output policy. The
+predeclared plan uses 24 cases × three repetitions, each with a fresh consumed
+permit and reserved slot. Allocation USD 0.40 within the existing USD 2 cumulative
+cap; fresh pre-run dashboard showed USD 0.94 balance, USD 0.06 rounded spend,
+168 requests and auto-reload off. Before every conversation, the sequential
+controller reserves USD 0.029696 plus recorded spend against that allocation.
+The theoretical full-batch maximum is USD 2.138112, so completion is conditional
+on actual accounted usage fitting the smaller allocation. It never preauthorizes
+that theoretical maximum, runs concurrent requests or retries failed slots.
+
+Targeted agent triage finds material failures in writing-01 repetitions 1–2
+(unrequested purchase commitment) and writing-02 repetitions 1–2 (invented
+personal circumstances). Later corrections do not erase initial failures.
+These four have source-bound agent sidecars; human adjudication is pending.
+If confirmed, writing can reach at most 8/12, below the approved 10/12 floor,
+regardless of results elsewhere. Do not claim a pass, tune these reserved cases,
+or silently narrow writing out of the general-assistant scope. If failures drive
+model/prompt changes, treat exposed cases as regression evidence and establish
+fresh held-out evaluation for subsequent release claims.
+
 **Latest:** the founder explicitly confirmed the twelve fixed-profile scores as
 their own review after initially withholding confirmation. All twelve are
 acceptable, with five minor findings and original agent disagreements retained.

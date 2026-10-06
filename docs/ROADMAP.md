@@ -148,6 +148,25 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 6 October 2026: E1 reserved collection completed at frozen `bbb802e` assessment
+  configuration: 72 conversations, 144 replies and matching verifications, estimated
+  USD 0.07035160 within the USD 0.40 allocation and existing USD 2 account cap.
+  Four source-bound agent writing failures await human adjudication; if confirmed,
+  writing's best possible 8/12 misses its 10/12 floor. No quality pass, prompt
+  tuning or retry. A focused four-conversation packet and full 72-run packet passed
+  source/layout checks. [Results and next review](gemma-release-evaluation-plan.md).
+  Validation: 162-test full suite, final targeted reserved-evidence tests,
+  typecheck/build, frozen fixtures and actual container smoke/persistence passed.
+
+- 6 October 2026: U1 clean-export image build and packaged smoke passed at
+  `bbb802e`; synthetic named-volume data retained password replacement,
+  revocation and pause across three non-root, network-disabled containers.
+  Actual hosted TLS/storage/device validation remains separate and unpaid hosting
+  is not assumed durable. G5 inspection found a concrete search retention-rights
+  dependency in Brave's published terms, alongside the missing credential.
+  [Consolidated account/API setup](trial-service-setup.md) avoids unnecessary new
+  services and preserves the existing saved-source workflow pending clarification.
+
 - 6 October 2026: E1 fixed-profile scores explicitly confirmed as founder review
   after initial AI-proposed status. All twelve acceptable with five minor findings;
   historical attribution failure retained. Gemma thinking is selected for reserved

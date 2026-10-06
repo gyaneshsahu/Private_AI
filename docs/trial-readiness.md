@@ -4,6 +4,33 @@
 Working release review, not permission to invite users. The general personal
 assistant remains the product goal; no family has been silently removed.
 
+## Latest release-readiness batch (6 October)
+
+The founder confirmed the twelve fixed-profile scores after explicitly clarifying
+their initial AI-proposed status. Together with earlier packets, **24 human
+development reviews** are now recorded. All twelve fixed-profile cases are
+acceptable with minor findings; prior material failures remain preserved.
+Gemma with explicit thinking is selected for reserved assessment on an unchanged
+answer policy, not approved for private-data operation or competitive claims.
+The reserved runner now separately binds frozen fixture/configuration/repetition
+and rejects reuse of consumed slots under new permit IDs. All 72 reserved
+conversations completed (144 replies). Four source-bound agent writing failures
+need human adjudication; if confirmed, writing can reach at most 8/12 against
+the required 10/12. Its human quality gate remains incomplete, not passed.
+See the [four-conversation priority review](gemma-release-evaluation-plan.md).
+
+Clean-export container build/smoke and a three-container persistent-volume
+rehearsal passed; see [exact image and limits](trial-hosting-decision.md).
+Actual hosted TLS, deployment persistence and devices still need the separately
+approved hosting arrangement. Local Docker success does not authorize deployment.
+
+Live search has two concrete dependencies: a missing Brave account/key and
+permission to retain returned sources for citations/encrypted history. Current
+published terms require clarification of that use. See the consolidated
+[service setup list](trial-service-setup.md). No extra identity, OCR, database or
+email API is required for the current trial. Supplier privacy evidence remains
+awaiting Tinfoil's response. Older dated sections below are historical context.
+
 ## Capability coverage
 
 The local product supports conversation, follow-up corrections, cancellation,
