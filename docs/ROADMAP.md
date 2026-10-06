@@ -148,6 +148,17 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 6 October 2026: E1 attribution review completed. Preserve founder scores
+  2/2/2, 1/2/2, 3/3/3, 3/3/3 and disagreements with agent grades; both meeting
+  failures remain material. Executed a predeclared fixed Gemma-thinking assessment:
+  twelve conversations across six families, 24 complete verified replies, 12/12
+  narrowly acceptable agent reviews with five minor findings. No prompt tuning,
+  retries or reserved execution. [Results](development-family-review.md) and
+  [human provenance](human-development-review.md). A twelve-case consistent-profile
+  human packet is ready; review precedes release selection and reserved costing.
+  Q1, live research, durable hosting and actual-device gates remain open. Existing
+  roadmap IDs, general-assistant scope and acceptance thresholds are unchanged.
+
 - 6 October 2026: independent W2 document-import review fixes malformed worker
   completion leaving the UI busy after its deadline was cancelled. Runtime message
   validation now rejects invalid output and settles/cleans up the operation;

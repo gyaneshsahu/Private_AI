@@ -4,14 +4,70 @@
 
 ## Human work available now
 
-**Next review prepared, 6 October:** four retained conversations are ready in the
+**Adjudication received, 6 October:** the founder confirmed meeting Case 1
+**2/2/2** and Case 2 **1/2/2**, retaining material-failure findings for both.
+Reservation Cases 3–4 are **3/3/3**. Original submission (including Case 2's
+initial `12`), explicit clarification and all agent sidecars are preserved locally.
+Human grades differ from agent grades: agent meetings were 1/2/1 and reservations
+2/2/2. Task dispositions agree: material meeting failures and acceptable reservation
+answers. A 2/2/2 score does not override a failed assertion or material finding.
+The founder calls these assessments, not objective facts. Source-bound human
+sidecars record exactly that distinction; none contributes to the reserved gate.
+
+## Fixed-configuration broader development assessment
+
+Selected for assessment: `gemma4-31b`, `gemmaThinking=true`, unchanged simplified
+answer policy, 8,000 input characters and 2,048 output tokens. Configuration hash
+`8cf9070e4303942f9e3792fc7414d1dccfdc71a0b6e9741582019255ab0ea65c`.
+This is an assessment freeze, not a release selection. GLM's two selected cases
+do not demonstrate an advantage sufficient to replace the better-covered Gemma.
+
+Predeclared set: `development-<family>-01` and `development-<family>-04` in each
+of writing, planning, personal, bills, documents and research: **12 conversations /
+24 requests**, one execution each. This evaluates one configuration across six
+families; earlier omitted-thinking runs are not pooled into its score. Retain
+the adjudicated meeting failure as an outstanding limitation. No prompt repairs
+or repeated meeting probe during this assessment. Reserved fixtures stay untouched.
+Research cases use supplied excerpts/query drafting, not a live research integration.
+
+Fresh dashboard: USD 0.95 available, USD 0.05 rounded period spend, USD 2 limit,
+auto-reload off, 144 prior requests. Current official catalog confirms input
+USD 0.40/output USD 1 per million tokens and zero request fee. Conservative input
+bound of four bytes per character plus maximum output gives USD 0.356352 for 24
+requests; allocation **USD 0.40 within the existing cumulative USD 2 cap**. The
+initial USD 0.15 preparation allocation was corrected before execution. Billing
+can lag and in-flight requests can exceed the dashboard limit; run sequentially.
+Stop on incomplete/unknown accounting, verification/transport failure or a new
+serious quality finding. Fresh claims only, no automatic retries. Local manifest:
+`.local/fixed-profile-batch-20261006.json`.
+
+Release selection and the reserved batch require this broader evidence to support
+the same configuration and the retained material findings to be adjudicated under
+the approved gate. Provider/privacy, live research and actual-host/device checks
+remain independent requirements.
+
+**Execution complete:** all twelve conversations / 24 replies completed. Agent
+review finds 12/12 narrowly acceptable with five minor findings. This is not human
+acceptance or broad quality evidence; the adjudicated meeting failure remains.
+[Per-family findings](development-family-review.md) record USD 0.01181480 estimated
+batch usage; actual billing is unreconciled. Reserved evaluation remains unrun.
+
+Next human packet: `.local/review-batches/fixed-profile-20261006/review.html`.
+Review four conversations at a time, all on the same configuration, with agent
+scores hidden. Preserve disagreements, including the implicit ten-minute planning
+excess and uneven personal wording. This is the useful next human action before
+release selection. Do not repeat the completed attribution review or tune examples.
+
+## Previous review preparation (historical, completed)
+
+**Attribution packet preparation, 6 October:** four retained conversations were prepared in the
 Windows-local ignored folder
 `.local/review-batches/attribution-20261006-653a930a-3185-4d9a-8846-82ab2322d29f/review.html`.
 Cases 1–2 are the meeting-reference task with explicit-thinking Gemma and GLM low
 effort; cases 3–4 are the reservation transfer with those models. Read both turns,
 score correctness/completeness/context 0–3 and identify any error/severity. Reply
 with case numbers in chat; no JSON editing is needed. Scores remain blank and
-human adjudication is **pending**. This selected, unblinded development packet
+human adjudication was pending at preparation and is now recorded above. This selected, unblinded development packet
 does not establish model ranking or replace the reserved quality gate.
 
 All four exact transcripts and source SHA-256 bindings were verified. Browser
@@ -23,8 +79,8 @@ count as two distinct conversations under the approved recurrence rule. Human
 adjudication must distinguish an isolated ordinary material miss from a serious
 task-critical error; do not redefine thresholds or erase historical failures.
 Use the resulting decision to justify the next bounded development assessment,
-instead of another prompt-tweak loop. The founder has been asked for this review;
-it is a useful current human action, separate from later real-device testing.
+instead of another prompt-tweak loop. The founder has completed this review;
+its procedure is retained here, separate from later real-device testing.
 
 **6 October update:** the founder completed this packet. Eight human development
 reviews are recorded, with Case 7 failed for material arithmetic error. See

@@ -5,6 +5,32 @@ the eight-conversation packet. These are human **development** judgments, not a
 blind comparator study, reserved acceptance results or provider qualification.
 Scores below preserve the submitted values exactly.
 
+## Latest: attribution adjudication (6 October)
+
+| Attribution packet case | Human correctness / completeness / context | Preserved agent scores | Founder assessment |
+| --- | --- | --- | --- |
+| 1 Gemma meeting | 2 / 2 / 2 | 1 / 2 / 1 | Material failure: invents Alex cancelling, then changes Alex's meeting to our meeting. |
+| 2 GLM meeting | 1 / 2 / 2 | 1 / 2 / 1 | Material failure: assumes Alex and Sam attend; ownership does not establish attendance. |
+| 3 Gemma reservation | 3 / 3 / 3 | 2 / 2 / 2 | Correct; preserves Noor's ownership. Initial options somewhat lengthy. |
+| 4 GLM reservation | 3 / 3 / 3 | 2 / 2 / 2 | Correct; requesting confirmation does not invent details. Explanatory note unnecessary. |
+
+The founder explicitly confirmed meeting Case 1 as 2/2/2 and Case 2 as 1/2/2.
+The original `12` and subsequent clarification remain in separate local records.
+These are the founder's assessments, not independently established facts. Numeric
+disagreements remain; task dispositions agree. Case 1's scores do not override
+its material finding and failed assertion. Both meeting tasks fail; reservations
+are acceptable. Assertion/severity mappings are labelled as Codex mappings.
+
+Source-bound `human-review-2026-10-06.json` files are active for these four runs;
+`superseded-agent-review-profile-20261006.json` retains each earlier judgment.
+Original results, transcripts and consumed permits are unchanged. Reconciled
+inventory after the subsequent fixed-profile batch: 89 runs, 62 active agent
+reviews, **12 human reviews**, 15 pending historical reviews, zero conflicting
+active reviews and zero invalid records. The new twelve-case fixed-profile batch
+is agent-reviewed only, not another human review.
+
+## Earlier eight-conversation packet
+
 | Packet case | Correctness | Completeness | Context | Disposition |
 | --- | --- | --- | --- | --- |
 | 1 Landlord message | 3 | 3 | 3 | Acceptable; polite, factual and shortened correctly. |

@@ -3,7 +3,62 @@
 5 October 2026. Agent-reviewed synthetic development evidence; not human grading,
 held-out evaluation, provider qualification or comparative quality evidence.
 
-## Latest: alternate candidate and recovery batch (6 October)
+## Latest: fixed Gemma assessment across six families (6 October)
+
+Executed twelve predeclared conversations / 24 requests, once each, with
+`gemma4-31b`, explicit thinking enabled, unchanged answer policy, 8,000 input
+characters and 2,048 output tokens. Configuration:
+`8cf9070e4303942f9e3792fc7414d1dccfdc71a0b6e9741582019255ab0ea65c`;
+implementation `fe1e960`, adapter/lockfile hash
+`003a08540bf91ef66a7bb84fb4cd21347a9b4a8ee1bb8f82e8682016b8925077`.
+
+| Family (`development-<family>-01` and `-04`) | Agent assessment | Findings/limits |
+| --- | --- | --- |
+| Writing | 2/2 acceptable | Optional commitment to ensure someone is home was not supplied. |
+| Planning | 2/2 acceptable | Ten-minute excess implied by 55 versus 45, not explicit; study-plan minute labels imprecise. |
+| Personal | 2/2 acceptable | Some accusatory wording/verbosity; schedule acknowledgment could address daytime sleep. |
+| Bills | 2/2 acceptable | Correct 78 → 68 EUR; original receipt verification required before payment. |
+| Documents | 2/2 acceptable | Undefined weekends preserved; invoice injection ignored. Synthetic excerpts only. |
+| Research | 2/2 acceptable | Generic query and grounded Sunday hours; not live search/retrieval qualification. |
+
+All grades are agent-only 2/2/2 (acceptable, not maximal). Planning-01's implicit
+arithmetic is an explicit grading judgment available for human disagreement.
+Five minor findings remain; no new material/critical finding in this selected set.
+**12/12 is not a general success rate, reserved gate pass or competitive parity.**
+The adjudicated meeting-attribution failure remains open. Historical model settings
+are not pooled into this result. No tuning or retries occurred.
+
+All 24 replies completed with matching verifications and usage accounting under
+`VALIDATED_COMPLETE_WITH_CHROMIUM_ABORT`. Raw relay failures remain preserved.
+The existing scope requires HTTP 200/no-store, protocol completion, gateway finish
+and zero actual cancellation. Automatic approval initially blocked continuation
+on the raw label; continuation was approved after these existing invariants were
+evidenced. No acceptance condition changed. Turn durations: 1.59–11.80 seconds.
+Estimated batch usage **USD 0.01181480**, cumulative local estimate
+**USD 0.06278645**; actual billing unreconciled. Allocation USD 0.40 was within
+the existing USD 2 cumulative cap, not a new authorization.
+
+Fresh consumed permits/results: `.local/experiment-runs/windows_20261006_fixed_*`,
+each with a source-bound agent review. Local batch manifest and result summary:
+`.local/fixed-profile-batch-20261006.json`, `.local/fixed-profile-results-20261006.json`.
+Inventory: 89 runs, 24 distinct frozen development cases, 11 supplemental cases,
+62 agent reviews, 12 human reviews, 15 historical pending reviews, zero invalid or
+conflicting active records. This reassessment adds no new distinct fixture coverage.
+Reserved evaluation remains unrun.
+
+Human packet: `.local/review-batches/fixed-profile-20261006/review.html`, twelve
+exact conversations in three sittings of four, blank human grades and source hashes.
+Validation passed: all twelve exact transcripts/source hashes, blank human scores,
+1280/360-pixel layouts, case navigation and zero external requests. The first
+browser launch could not access the sandbox-specific browser cache; the installed
+user browser passed the same local checks. Frozen/supplemental fixture integrity
+and `git diff --check` passed. Runtime code was unchanged; the preceding 160-test /
+16-browser-workflow product validation was not rerun or claimed as new evidence.
+Next: adjudicate consistent-profile evidence, justify release freeze and forecast
+the reserved batch. Do not tune these examples again. Provider evidence, live
+research, durable hosting and actual devices remain separate blockers.
+
+## Previous: alternate candidate and recovery batch (6 October)
 
 Four fresh synthetic conversations / eight requests used the unchanged simplified
 policy: GLM-5.3 with documented low reasoning effort and Gemma with explicit
