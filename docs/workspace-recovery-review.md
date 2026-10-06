@@ -4,6 +4,30 @@
 
 ## Usable recovery
 
+### Partial saved-history recovery — 6 October 2026
+
+Previously, one unreadable encrypted snapshot made the whole saved-history list
+fail, and the UI reported a passphrase problem even when the passphrase was valid.
+The UI now opens intact snapshots and reports the count of unreadable records.
+Unreadable records remain unchanged; they are not automatically deleted, repaired
+or overwritten. If only unreadable records remain, the UI does not claim the vault
+is empty. Locking clears the warning along with decrypted workspace state.
+
+Decrypted snapshots receive structural and stored-ID validation before entering
+React state. Older snapshots without drafts or optional provenance remain supported.
+Authentication failures and invalid structures are never exposed as usable content.
+Failure to open/read the database itself still fails the operation; it is not
+silently presented as partial success. The strict internal `list()` helper still
+rejects an incomplete list; the UI explicitly uses the result and warning count
+from `readAvailable()`.
+
+Synthetic tests retain an intact draft alongside tampered ciphertext and a
+structurally invalid encrypted snapshot, confirm subsequent saves work and compare
+the unreadable stored records before/after. A production-browser workflow unlocks,
+opens, updates and deletes the intact draft while retaining the unreadable record
+and warning. This is partial availability, not recovery of damaged content or a
+new backup/cloud-sync promise.
+
 ### Account-switch mutation fix — 6 October 2026
 
 Review while human quality adjudication is pending found queued deletion selected

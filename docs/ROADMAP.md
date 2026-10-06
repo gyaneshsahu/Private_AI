@@ -148,6 +148,19 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 6 October 2026: W2 saved-history recovery no longer lets one unreadable snapshot
+  block all intact conversations. Decrypted structure/identity is validated; the
+  UI shows intact snapshots plus an explicit unreadable count, preserving damaged
+  records and avoiding a false empty-vault message. Tests cover tampered ciphertext,
+  invalid encrypted structures and the open/update/delete browser workflow.
+  [Recovery evidence](workspace-recovery-review.md#partial-saved-history-recovery--6-october-2026).
+  No damaged-content recovery or cloud-backup capability is claimed. Human model
+  review, supplier evidence and actual-host validation remain pending separately.
+  Validation: 154 unit/integration tests, 16 browser workflows, typecheck/build and
+  fixture integrity passed. An initial full run caught schema reserialization
+  triggering a false unsaved-change warning; validation now preserves original
+  snapshot representation, and the sign-out and full workflow suites pass.
+
 - 6 October 2026: independent W2/U1 work while human attribution review is pending
   fixes queued vault deletion crossing an account switch. Save/delete capture the
   originating scope and recheck lock state at storage boundaries; stale deletion

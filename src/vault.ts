@@ -1,5 +1,6 @@
 import { openDB } from "idb";
 import type { Conversation } from "../shared/contracts";
+import { savedConversationSchema } from "./saved-conversation";
 const encoder = new TextEncoder();
 const db = (name: string) =>
   openDB(name, 1, {
@@ -186,32 +187,60 @@ export class Vault {
     });
   }
   async list(): Promise<Conversation[]> {
+    const result = await this.readAvailable();
+    if (result.unreadable)
+      throw new Error("Some saved snapshots could not be read.");
+    return result.conversations;
+  }
+  async readAvailable(): Promise<{
+    conversations: Conversation[];
+    unreadable: number;
+  }> {
     const key = this.key,
-      generation = this.generation;
+      generation = this.generation,
+      databaseName = this.databaseName;
     if (!key) throw new Error("Vault is locked.");
     await this.queue;
-    const database = await db(this.databaseName);
-    const ids = await database.getAllKeys("conversations");
-    const output: Conversation[] = [];
-    for (const id of ids) {
-      const record = await database.get("conversations", id);
-      if (!record) continue;
-      const raw = new Uint8Array(
-        JSON.parse(await unseal(key, record.wrapped, `key:${id}`)),
-      );
-      const dataKey = await crypto.subtle.importKey(
-        "raw",
-        raw,
-        "AES-GCM",
-        false,
-        ["decrypt"],
-      );
-      output.push(
-        JSON.parse(await unseal(dataKey, record.data, `conversation:${id}`)),
-      );
-    }
     if (generation !== this.generation) throw new Error("Vault was locked.");
-    return output;
+    const database = await db(databaseName);
+    try {
+      const ids = await database.getAllKeys("conversations");
+      const output: Conversation[] = [];
+      let unreadable = 0;
+      for (const id of ids) {
+        const record = await database.get("conversations", id);
+        if (record === undefined) continue;
+        try {
+          const raw = new Uint8Array(
+            JSON.parse(await unseal(key, record.wrapped, `key:${id}`)),
+          );
+          const dataKey = await crypto.subtle.importKey(
+            "raw",
+            raw,
+            "AES-GCM",
+            false,
+            ["decrypt"],
+          );
+          const decoded: unknown = JSON.parse(
+            await unseal(dataKey, record.data, `conversation:${id}`),
+          );
+          savedConversationSchema.parse(decoded);
+          // Validate without rewriting snapshots or dropping fields from older writers.
+          const conversation = decoded as Conversation;
+          if (conversation.id !== id)
+            throw new Error("Snapshot identity mismatch.");
+          output.push(conversation);
+        } catch {
+          unreadable++;
+        }
+        if (generation !== this.generation)
+          throw new Error("Vault was locked.");
+      }
+      if (generation !== this.generation) throw new Error("Vault was locked.");
+      return { conversations: output, unreadable };
+    } finally {
+      database.close();
+    }
   }
   delete(id: string) {
     const generation = this.generation,

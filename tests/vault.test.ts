@@ -15,6 +15,49 @@ afterEach(async () => {
   stores.length = 0; /* Each test uses distinct records; IndexedDB connections stay managed by idb. */
 });
 describe("real WebCrypto vault, synthetic inputs only", () => {
+  it("keeps intact snapshots usable and preserves corrupted or invalid encrypted records unchanged", async () => {
+    const v = store(),
+      account = crypto.randomUUID();
+    v.selectAccount(account);
+    await v.unlock("synthetic partial recovery password");
+    const intact = {
+      ...emptyConversation(),
+      draft: "SYNTHETIC retained draft",
+    };
+    const corrupt = emptyConversation();
+    const malformed = emptyConversation();
+    await v.save(intact);
+    await v.save(corrupt);
+    // Simulate a prior writer's structurally invalid, but authentically encrypted, payload.
+    await v.save({
+      ...malformed,
+      messages: null,
+    } as unknown as typeof malformed);
+    const database = await openDB(`privateai-vault-${account}`, 1);
+    const record = await database.get("conversations", corrupt.id);
+    new Uint8Array(record.data.data)[0] ^= 1;
+    await database.put("conversations", record, corrupt.id);
+    const originalMalformed = await database.get("conversations", malformed.id);
+    try {
+      const result = await v.readAvailable();
+      expect(result.unreadable).toBe(2);
+      expect(result.conversations).toEqual([intact]);
+      expect(JSON.stringify(result.conversations[0])).toBe(
+        JSON.stringify(intact),
+      );
+      await expect(v.list()).rejects.toThrow(/could not be read/);
+      await v.save({ ...intact, draft: "SYNTHETIC updated draft" });
+      expect((await v.readAvailable()).conversations[0].draft).toBe(
+        "SYNTHETIC updated draft",
+      );
+      expect(await database.get("conversations", corrupt.id)).toEqual(record);
+      expect(await database.get("conversations", malformed.id)).toEqual(
+        originalMalformed,
+      );
+    } finally {
+      database.close();
+    }
+  });
   it.each(["save", "delete"] as const)(
     "cancels %s if locking happens while IndexedDB opens",
     async (operation) => {

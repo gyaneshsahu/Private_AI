@@ -38,6 +38,7 @@ export function App() {
   const [passphrase, setPassphrase] = useState("");
   const [unlocked, setUnlocked] = useState(false);
   const [saved, setSaved] = useState<Conversation[]>([]);
+  const [unreadableSnapshots, setUnreadableSnapshots] = useState(0);
   const [editId, setEditId] = useState<string>();
   const [editText, setEditText] = useState("");
   const [operandA, setOperandA] = useState("");
@@ -132,6 +133,7 @@ export function App() {
       setSource(undefined);
       setUnlocked(false);
       setSaved([]);
+      setUnreadableSnapshots(0);
       setInput("");
       setQuery("");
       setProposal(undefined);
@@ -497,10 +499,11 @@ export function App() {
     setBusy("Unlocking encrypted history…");
     try {
       await vault.current!.unlock(secret);
-      const snapshots = await vault.current!.list();
+      const snapshots = await vault.current!.readAvailable();
       if (current !== epoch.current) return;
       setUnlocked(true);
-      setSaved(snapshots);
+      setSaved(snapshots.conversations);
+      setUnreadableSnapshots(snapshots.unreadable);
       setNotice(
         "Vault unlocked on this device. Saving is explicit; temporary chats are not saved automatically.",
       );
@@ -518,9 +521,10 @@ export function App() {
     setBusy("Encrypting your conversation…");
     try {
       await vault.current!.save({ ...conversation, draft: input });
-      const snapshots = await vault.current!.list();
+      const snapshots = await vault.current!.readAvailable();
       if (current !== epoch.current) return;
-      setSaved(snapshots);
+      setSaved(snapshots.conversations);
+      setUnreadableSnapshots(snapshots.unreadable);
       setNotice(
         "Encrypted snapshot saved on this browser. Later changes require saving again.",
       );
@@ -1268,6 +1272,7 @@ export function App() {
                       vault.current!.lock();
                       setUnlocked(false);
                       setSaved([]);
+                      setUnreadableSnapshots(0);
                       reset();
                       setPassphrase("");
                     }}
@@ -1275,7 +1280,18 @@ export function App() {
                     Lock and clear workspace
                   </button>
                 </div>
-                {!saved.length && (
+                {unreadableSnapshots > 0 && (
+                  <p role="alert">
+                    {unreadableSnapshots} saved{" "}
+                    {unreadableSnapshots === 1
+                      ? "snapshot could"
+                      : "snapshots could"}{" "}
+                    not be read. Unreadable records remain stored unchanged.
+                    Other snapshots are available. Do not clear this browser's
+                    storage if you want to preserve them.
+                  </p>
+                )}
+                {!saved.length && !unreadableSnapshots && (
                   <p className="empty-note">
                     No saved conversations yet. Saving is always your choice.
                   </p>
@@ -1319,9 +1335,11 @@ export function App() {
                         setBusy("Deleting encrypted snapshot…");
                         try {
                           await vault.current!.delete(c.id);
-                          const snapshots = await vault.current!.list();
+                          const snapshots =
+                            await vault.current!.readAvailable();
                           if (current !== epoch.current) return;
-                          setSaved(snapshots);
+                          setSaved(snapshots.conversations);
+                          setUnreadableSnapshots(snapshots.unreadable);
                           if (conversation.id === c.id) reset();
                           setNotice(
                             "Encrypted records and wrapped key deleted. Device backups and exported copies are outside this deletion.",
