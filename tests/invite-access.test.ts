@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
 import { createServer, type Server } from "node:http";
+import { request } from "undici";
 import { createApp } from "../server/app";
 import { InviteRegistry } from "../server/invite-registry";
 it("enforces individual login, origin checks, session-bound grants, logout and revocation over HTTP", async () => {
@@ -34,6 +35,47 @@ it("enforces individual login, origin checks, session-bound grants, logout and r
         body,
       });
     expect((await fetch(root + "/api/status")).status).toBe(401);
+    const externalNavigation = {
+      "Sec-Fetch-Site": "cross-site",
+      "Sec-Fetch-Mode": "navigate",
+      "Sec-Fetch-Dest": "document",
+    };
+    const navigate = async (
+      path: string,
+      headers: Record<string, string> = externalNavigation,
+    ) => {
+      const response = await request(root + path, { method: "GET", headers });
+      return {
+        status: response.statusCode,
+        headers: response.headers,
+        text: await response.body.text(),
+      };
+    };
+    const externalEntry = await navigate("/");
+    expect(externalEntry.status).toBe(303);
+    expect(externalEntry.headers.location).toBe("/auth");
+    const externalSignIn = await navigate("/auth");
+    expect(externalSignIn.status).toBe(200);
+    expect(externalSignIn.text).toContain("Your conversation starts here.");
+    expect(externalSignIn.headers["set-cookie"]).toBeUndefined();
+    for (const path of ["/api/status", "/auth/password", "/assets/app.js"])
+      expect((await navigate(path)).status).toBe(403);
+    expect(
+      (
+        await navigate("/auth", {
+          ...externalNavigation,
+          "Sec-Fetch-Dest": "iframe",
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await navigate("/auth", {
+          ...externalNavigation,
+          Origin: "https://evil.example",
+        })
+      ).status,
+    ).toBe(403);
     const data = (invite: typeof alice) =>
       new URLSearchParams({
         id: invite.id,
@@ -43,6 +85,19 @@ it("enforces individual login, origin checks, session-bound grants, logout and r
     expect(
       (await post("/auth/register", data(alice), "", "https://evil.example"))
         .status,
+    ).toBe(403);
+    expect(
+      (
+        await fetch(root + "/auth/register", {
+          method: "POST",
+          headers: {
+            ...externalNavigation,
+            Origin: root,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: data(alice),
+        })
+      ).status,
     ).toBe(403);
     const a = await post("/auth/register", data(alice));
     expect(a.status).toBe(303);

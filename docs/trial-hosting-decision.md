@@ -54,6 +54,14 @@ device usability or provider qualification. Two browser vaults on the actual hos
 real-device observation, off-disk backup policy and metadata-log retention remain
 separate trial prerequisites. No extra hosting resources were purchased.
 
+Final navigation follow-up: opening the public sign-in link from a browser exposed
+the blanket cross-site rejection. The access middleware now serves only the public
+sign-in page (or redirects `/` to it) for top-level cross-site GET navigation,
+before session processing. Origin/HTTPS checks remain required; cross-site POST,
+API/assets, password-page requests and frames remain denied. Local HTTP and actual
+browser link-navigation regressions cover this narrow change. The 163-test suite,
+typecheck and build passed; deployment verification follows the new commit.
+
 Render's default filesystem is ephemeral. A local SQLite reopen test proves
 database behavior, not survival of a hosting restart/redeploy. Never configure
 the invitation registry on a Free instance as durable trial storage.

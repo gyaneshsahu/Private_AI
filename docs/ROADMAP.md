@@ -148,6 +148,12 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 7 October 2026: final hosted navigation exposed rejection of external entry
+  links. Public top-level GET navigation now reaches the sign-in page without
+  creating a session; cross-site API, asset, password, iframe and POST requests
+  remain denied. Real-browser regression follows both entry and direct sign-in
+  links from an intercepted external fixture origin. No private-data gate changed.
+
 - 7 October 2026: U1/R1 hosted dependency advanced with founder-approved push and
   deployment to the existing paid Render service and 1 GB `/var/data` mount.
   Clean-image CI passed after correcting Linux browser selection. Actual HTTPS

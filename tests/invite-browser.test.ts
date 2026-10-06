@@ -37,6 +37,19 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     });
     const alice = registry.issue(Date.now() + 600000),
       bob = registry.issue(Date.now() + 600000);
+    await page.route("http://invitation.example/**", (route) =>
+      route.fulfill({
+        contentType: "text/html",
+        body: `<a href="${origin}/">Open PrivateAI</a><a href="${origin}/auth">Sign in</a>`,
+      }),
+    );
+    for (const name of ["Open PrivateAI", "Sign in"]) {
+      await page.goto("http://invitation.example/");
+      await page.getByRole("link", { name, exact: true }).click();
+      await ui(
+        page.getByRole("heading", { name: "Your conversation starts here." }),
+      ).toBeVisible();
+    }
     await page.goto(origin);
     for (const width of [1280, 360]) {
       await page.setViewportSize({ width, height: 900 });

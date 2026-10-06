@@ -29,13 +29,26 @@ export function inviteAccess(origin: string, registry: InviteRegistry) {
       req.headers.host !== url.host ||
       (secure && req.headers["x-forwarded-proto"] !== "https") ||
       (req.headers.origin && req.headers.origin !== origin) ||
-      req.headers["sec-fetch-site"] === "cross-site" ||
       (req.method === "POST" && req.headers.origin !== origin)
     ) {
       res.status(403).send("Same-origin access required.");
       return;
     }
     if (secure) res.setHeader("Strict-Transport-Security", "max-age=31536000");
+    if (req.headers["sec-fetch-site"] === "cross-site") {
+      const publicNavigation =
+        req.method === "GET" &&
+        req.headers["sec-fetch-mode"] === "navigate" &&
+        req.headers["sec-fetch-dest"] === "document";
+      if (publicNavigation && req.path === "/auth") {
+        sendAccessPage(res);
+      } else if (publicNavigation && req.path === "/") {
+        res.redirect(303, "/auth");
+      } else {
+        res.status(403).send("Same-origin access required.");
+      }
+      return;
+    }
     next();
   });
   router.use(
