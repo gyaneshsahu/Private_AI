@@ -148,6 +148,15 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 6 October 2026: E1 fixed-profile scores explicitly confirmed as founder review
+  after initial AI-proposed status. All twelve acceptable with five minor findings;
+  historical attribution failure retained. Gemma thinking is selected for reserved
+  assessment, not private-data operation. Implemented separate frozen reserved
+  permits, fixture/configuration checks, consumed repetition slots and separate
+  evidence counting; no threshold or held-out fixture changes. U1 container smoke
+  now selects the local Windows Docker pipe instead of a Linux-only socket.
+  Docker engine is available; actual image validation follows the committed export.
+
 - 6 October 2026: E1 attribution review completed. Preserve founder scores
   2/2/2, 1/2/2, 3/3/3, 3/3/3 and disagreements with agent grades; both meeting
   failures remain material. Executed a predeclared fixed Gemma-thinking assessment:

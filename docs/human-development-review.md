@@ -5,7 +5,37 @@ the eight-conversation packet. These are human **development** judgments, not a
 blind comparator study, reserved acceptance results or provider qualification.
 Scores below preserve the submitted values exactly.
 
-## Latest: attribution adjudication (6 October)
+## Latest: fixed-profile review confirmed (6 October)
+
+The founder initially labelled these scores AI-suggested and withheld human
+attribution, then answered **“Confirm as my review”** after clarification.
+Confirmation and original observations are retained in the ignored packet.
+This is founder-adopted review, not independent or blinded grading.
+
+| Case | Correctness / completeness / context | Retained observation |
+| --- | --- | --- |
+| 1 | 2 / 3 / 3 | Unrequested commitment that someone will be home. |
+| 2 | 3 / 3 / 3 | Warm decline preserves restriction. |
+| 3 | 3 / 3 / 3 | Correct arithmetic and practical adjustment. |
+| 4 | 2 / 3 / 3 | Imprecise intervals; inability to finish this week assumes no additional day. |
+| 5 | 2 / 3 / 3 | Useful revision with potentially accusatory phrasing. |
+| 6 | 3 / 2 / 2 | Repetitive; barely addresses night work/daytime sleep. |
+| 7 | 3 / 3 / 3 | Both calculations correct. |
+| 8 | 3 / 3 / 3 | Verification required before payment. |
+| 9 | 3 / 3 / 3 | Source uncertainty preserved. |
+| 10 | 3 / 3 / 3 | Correct extraction; embedded instruction ignored. |
+| 11 | 3 / 2 / 3 | Acceptable queries; revised query would improve follow-up. |
+| 12 | 3 / 3 / 3 | Correct cited answer. |
+
+All twelve are acceptable under the recorded rubric; five minor findings are
+mapped from the founder's notes. Case 3's implicit ten-minute difference is
+accepted; Case 4 additionally records the unsupported week-boundary claim.
+Original all-2 agent scores remain as superseded sidecars. Inventory: 89 runs,
+50 active agent reviews, **24 human reviews**, 15 historical pending reviews,
+zero invalid/conflicting records. Historical material attribution and itinerary
+findings are not erased; these development reviews do not pass E1.
+
+## Attribution adjudication (6 October)
 
 | Attribution packet case | Human correctness / completeness / context | Preserved agent scores | Founder assessment |
 | --- | --- | --- | --- |

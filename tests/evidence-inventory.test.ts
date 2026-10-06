@@ -18,6 +18,7 @@ import { configurationIdentity } from "../evaluation/implementation";
 import { buildReviewPacket } from "../evaluation/review-packet";
 import { resultSchema } from "../evaluation/grade";
 import { developmentCase, type Experiment } from "../evaluation/experiment";
+import frozenManifest from "../evaluation/frozen-manifest.json";
 
 // Fabricated offline records test inventory validation, not provider behavior.
 function fixture() {
@@ -110,6 +111,67 @@ function fixture() {
   };
   return { permit, result, text, review };
 }
+
+it("keeps reserved repetitions separate and rejects an incorrectly bound review", () => {
+  const { permit, result, review } = fixture();
+  permit.scenario = "reserved_case";
+  permit.developmentCaseId = "heldout-writing-01";
+  permit.reservedAssessment = {
+    configurationSHA256: result.configurationSHA256,
+    fixtureSHA256: frozenManifest["heldout.json"],
+    repetition: 2,
+    reviewEvidence: "Offline test of frozen review binding only",
+  };
+  const c = developmentCase(permit.developmentCaseId, permit.scenario);
+  result.client.conversation.messages[0].text = c.turns[0];
+  result.client.conversation.messages[2].text = c.turns[1];
+  const text = JSON.stringify({
+    ...result,
+    client: {
+      ...result.client,
+      conversation: {
+        ...result.client.conversation,
+        attachments: [{ selected: true, sources: c.sources }],
+      },
+    },
+  });
+  const packet = buildReviewPacket(permit.approvalId, text, permit);
+  expect(packet.draft.repetition).toBe(2);
+  expect(packet.html).toContain("Reserved assessment; do not use for tuning");
+  const bound = {
+    ...review,
+    caseId: c.id,
+    transcript: packet.draft.transcript,
+    sourceResultSHA256: packet.draft.sourceResultSHA256,
+    assertions: c.mandatoryFacts.map((fact) => ({
+      fact,
+      passed: true,
+      evidence: "Offline fixture only",
+    })),
+  };
+  expect(
+    inspectEvidence(permit.approvalId, text, permit, [bound]).reviewIssues,
+  ).toBe(1);
+  const accepted = inspectEvidence(permit.approvalId, text, permit, [
+    { ...bound, repetition: 2 },
+  ]);
+  expect(accepted.caseSet).toBe("reserved_case");
+  expect(accepted.review).toBe("AGENT_REVIEWED");
+  expect(
+    inspectEvidence(
+      permit.approvalId,
+      text,
+      {
+        ...permit,
+        reservedAssessment: {
+          ...permit.reservedAssessment,
+          configurationSHA256: "f".repeat(64),
+        },
+      },
+      [],
+    ).integrity,
+  ).toBe("INVALID_OR_LEGACY");
+});
 
 it("identifies supplemental transcripts separately in inventory and review packets", () => {
   const { permit, result } = fixture();

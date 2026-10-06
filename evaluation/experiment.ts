@@ -3,6 +3,7 @@ import developmentCases from "./cases/development.json";
 import originalRobustnessCases from "./cases/robustness-development.json";
 import transferCases from "./cases/repair-transfer.json";
 import attributionCases from "./cases/attribution-transfer.json";
+import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
   ...originalRobustnessCases,
@@ -23,9 +24,19 @@ export const experimentSchema = z
         "planning_transfer",
         "development_case",
         "robustness_case",
+        "reserved_case",
       ])
       .default("two_turn_invoice"),
     developmentCaseId: z.string().optional(),
+    reservedAssessment: z
+      .object({
+        configurationSHA256: z.string().regex(/^[a-f0-9]{64}$/),
+        fixtureSHA256: z.string().regex(/^[a-f0-9]{64}$/),
+        repetition: z.number().int().min(1).max(3),
+        reviewEvidence: z.string().min(20),
+      })
+      .strict()
+      .optional(),
     approvalId: z.string().regex(/^[a-zA-Z0-9_-]{8,80}$/),
     approvedAt: z.string().datetime(),
     expiresAt: z.string().datetime(),
@@ -68,7 +79,15 @@ export function validateExperiment(
     throw new Error(
       "GLM reasoning effort requires the explicit GLM candidate.",
     );
-  if (x.scenario === "development_case" || x.scenario === "robustness_case")
+  if ((x.scenario === "reserved_case") !== (x.reservedAssessment !== undefined))
+    throw new Error(
+      "Reserved execution requires a separate frozen assessment binding.",
+    );
+  if (
+    x.scenario === "development_case" ||
+    x.scenario === "robustness_case" ||
+    x.scenario === "reserved_case"
+  )
     developmentCase(x.developmentCaseId, x.scenario);
   else if (x.developmentCaseId !== undefined)
     throw new Error("Development case does not match scenario.");
@@ -119,7 +138,11 @@ export function scenarioPrompts(
   scenario: Experiment["scenario"],
   developmentCaseId?: string,
 ): readonly string[] {
-  if (scenario === "development_case" || scenario === "robustness_case")
+  if (
+    scenario === "development_case" ||
+    scenario === "robustness_case" ||
+    scenario === "reserved_case"
+  )
     return developmentCase(developmentCaseId, scenario).turns;
   return {
     adapter_compatibility: [compatibilityPrompt],
@@ -145,10 +168,17 @@ export const everydayAssertions = {
 } as const;
 export function developmentCase(
   id: string | undefined,
-  scenario: "development_case" | "robustness_case" = "development_case",
+  scenario:
+    | "development_case"
+    | "robustness_case"
+    | "reserved_case" = "development_case",
 ) {
   const selected = (
-    scenario === "robustness_case" ? robustnessCases : developmentCases
+    scenario === "reserved_case"
+      ? heldoutCases
+      : scenario === "robustness_case"
+        ? robustnessCases
+        : developmentCases
   ).find((c) => c.id === id);
   if (!selected || !selected.synthetic || selected.turns.length !== 2)
     throw new Error(

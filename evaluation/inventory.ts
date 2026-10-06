@@ -8,6 +8,7 @@ import { experimentSchema, developmentCase } from "./experiment";
 import { resultSchema as gradeSchema, taskPassed } from "./grade";
 import { configurationIdentity } from "./implementation";
 import { reviewResult } from "./review-result";
+import frozenManifest from "./frozen-manifest.json";
 
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const identitySchema = z.object({
@@ -31,7 +32,7 @@ type Entry = {
   configuration?: string;
   identitySource?: "RECORDED" | "DERIVED_FROM_CODE_AND_PERMIT";
   caseId?: string;
-  caseSet?: "development_case" | "robustness_case";
+  caseSet?: "development_case" | "robustness_case" | "reserved_case";
   casePromptsMatch?: boolean;
   family?: string;
   outcome?: string;
@@ -75,6 +76,14 @@ export function inspectEvidence(
       permit.policy,
     );
     if (
+      permit.scenario === "reserved_case" &&
+      (!permit.reservedAssessment ||
+        permit.reservedAssessment.configurationSHA256 !== expected ||
+        permit.reservedAssessment.fixtureSHA256 !==
+          frozenManifest["heldout.json"])
+    )
+      throw Error();
+    if (
       (identity.configurationSHA256 === undefined) !==
         (identity.modelConfiguration === undefined) ||
       (identity.configurationSHA256 !== undefined &&
@@ -88,7 +97,8 @@ export function inspectEvidence(
     const summary = reviewResult(raw, permit);
     const c =
       permit.scenario === "development_case" ||
-      permit.scenario === "robustness_case"
+      permit.scenario === "robustness_case" ||
+      permit.scenario === "reserved_case"
         ? developmentCase(permit.developmentCaseId, permit.scenario)
         : undefined;
     Object.assign(entry, {
@@ -102,7 +112,8 @@ export function inspectEvidence(
         ? {
             caseId: c.id,
             family: c.family,
-            caseSet: permit.scenario as "development_case" | "robustness_case",
+            caseSet: permit.scenario as
+              "development_case" | "robustness_case" | "reserved_case",
           }
         : {}),
       outcome: summary.outcome,
@@ -134,6 +145,8 @@ export function inspectEvidence(
         review.evidenceKind !== "live" ||
         !c ||
         review.caseId !== c.id ||
+        (permit.scenario === "reserved_case" &&
+          review.repetition !== permit.reservedAssessment?.repetition) ||
         JSON.stringify(
           transcript?.filter((m) => m.role === "user").map((m) => m.text),
         ) !== JSON.stringify(c.turns) ||
@@ -240,6 +253,11 @@ export async function inventory(root: string) {
             ? [e.caseId]
             : [],
         ),
+      ).size,
+      distinctReservedCases: new Set(
+        valid
+          .filter((e) => e.caseSet === "reserved_case" && e.casePromptsMatch)
+          .map((e) => e.caseId),
       ).size,
       pendingReviews: entries.filter((e) => e.review === "PENDING").length,
       agentReviewed: entries.filter((e) => e.review === "AGENT_REVIEWED")

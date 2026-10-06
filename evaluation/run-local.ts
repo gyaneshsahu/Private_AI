@@ -24,6 +24,10 @@ import {
 } from "./experiment";
 import { experimentGateway } from "./experiment-gateway";
 import { claimExperiment } from "./run-claim";
+import {
+  validateReservedBinding,
+  claimReservedSlot,
+} from "./reserved-assessment";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
@@ -87,6 +91,12 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
     process.exitCode = 1;
     return;
   }
+  const implementation = await implementationIdentity(root);
+  await validateReservedBinding(
+    root,
+    permit,
+    implementation.adapterAndLockfileSHA256,
+  );
   const proxy = [
     "HTTPS_PROXY",
     "HTTP_PROXY",
@@ -129,6 +139,7 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
   )
     throw new Error("Missing prerequisites");
   const runs = resolve(root, ".local/experiment-runs");
+  if (!diagnose) await claimReservedSlot(root, permit);
   const runDir = diagnose
     ? resolve(root, `.local/diagnostic-${Date.now()}`)
     : await claimExperiment(runs, permit.approvalId);
@@ -163,7 +174,6 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
   let vite: Awaited<ReturnType<typeof createServer>> | undefined;
   let server: ReturnType<typeof app.listen> | undefined;
   let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
-  const implementation = await implementationIdentity(root);
   const result: Record<string, unknown> = {
     observedAt: new Date().toISOString(),
     implementation,
@@ -176,8 +186,12 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
     kind: diagnose ? "NONBILLABLE_DIAGNOSTIC" : "SYNTHETIC_EXPERIMENT",
     qualification: "NOT_PASSED",
     scenario: permit.scenario,
+    ...(permit.reservedAssessment
+      ? { reservedAssessment: permit.reservedAssessment }
+      : {}),
     ...(permit.scenario === "development_case" ||
-    permit.scenario === "robustness_case"
+    permit.scenario === "robustness_case" ||
+    permit.scenario === "reserved_case"
       ? {
           caseSet: permit.scenario,
           developmentCase: developmentCase(

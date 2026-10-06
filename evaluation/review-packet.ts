@@ -51,7 +51,8 @@ export function buildReviewPacket(
   const transcript = recorded.messages;
   if (
     permit.scenario !== "development_case" &&
-    permit.scenario !== "robustness_case"
+    permit.scenario !== "robustness_case" &&
+    permit.scenario !== "reserved_case"
   )
     throw Error("Reviewable case required");
   const c = developmentCase(entry.caseId, permit.scenario);
@@ -65,7 +66,7 @@ export function buildReviewPacket(
     throw Error("Recorded references differ from the frozen case.");
   const draft = {
     caseId: c.id,
-    repetition: null,
+    repetition: permit.reservedAssessment?.repetition ?? null,
     system: "PrivateAI",
     configuration: entry.configuration,
     runAt: (JSON.parse(resultText) as { observedAt: string }).observedAt,
@@ -87,7 +88,7 @@ export function buildReviewPacket(
     sourceResultSHA256: createHash("sha256").update(resultText).digest("hex"),
   };
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><title>PrivateAI synthetic review</title><style>body{overflow-wrap:anywhere;font:16px/1.55 system-ui;max-width:900px;margin:2rem auto;padding:0 1rem;color:#203a30;background:#fafbf8}section{border:1px solid #cbd5cd;padding:1rem;margin:1rem 0;border-radius:8px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}code{overflow-wrap:anywhere}h1{font-size:1.6rem}.note{background:#fff0cf;padding:1rem}@media print{section{break-inside:avoid}}</style></head><body>
-<h1>PrivateAI · Synthetic development review</h1><p class="note">Unscored review packet. No human grade or provider approval is implied. This is a development case, not reserved acceptance evidence. Keep this packet local; it contains the synthetic transcript.</p>
+<h1>PrivateAI · Synthetic development review</h1><p class="note">Unscored review packet. No human grade or provider approval is implied. ${permit.scenario === "reserved_case" ? "Reserved assessment; do not use for tuning. Human grading is required." : "This is a development case, not reserved acceptance evidence."} Keep this packet local; it contains the synthetic transcript.</p>
 <p>Run: <code>${escape(run)}</code><br>Case set: ${escape(permit.scenario)}<br>Case: ${escape(c.id)} · ${escape(c.family)}<br>Model: ${escape(permit.policy.model)}<br>Configuration: <code>${escape(entry.configuration!)}</code><br>Source SHA-256: <code>${draft.sourceResultSHA256}</code></p>
 <h2>Recorded execution</h2><p>${escape(summary.outcome)} · ${escape(summary.relayAssessment)}<br>Completed replies: ${summary.completedReplies}. Original stream observations remain in the result file.</p>
 <h2>Review instructions</h2><p>Read both turns before scoring correctness, completeness and context from 0 to 3. A score of 2 is acceptable. Check every mandatory fact. Classify defects as minor, material or critical; record serious errors separately. A later correction does not erase an earlier failure. Use the repository acceptance rubric for adjudication. The adjacent human-review-draft.json intentionally has blank scores and reviewer identity and cannot pass validation.</p>

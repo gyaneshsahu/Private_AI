@@ -1,5 +1,28 @@
 # Evaluation evidence
 
+## Reserved execution safeguards (6 October)
+
+`reserved_case` is separate from development/supplemental permits and inventory.
+It requires a `reservedAssessment` binding: exact configuration SHA-256, frozen
+held-out fixture SHA-256, repetition 1–3 and reviewed selection evidence.
+Before claiming or forwarding, the runner verifies actual fixture bytes against
+the frozen manifest and current code/model configuration against that binding.
+Each configuration/case/repetition has a separate consumed directory under
+`.local/reserved-claims`; changing the approval ID cannot repeat that slot.
+Crashes preserve both claim types. No automatic retries or claim resets.
+
+Review packets retain repetition and mark reserved evidence explicitly; inventory
+rejects misbound reviews and counts reserved coverage separately. A run is still
+ungraded until human review; the existing 65/72, 10/12 per-family and severity
+rules remain unchanged. No held-out prompt was changed for this implementation.
+The harness change produces a new implementation/configuration hash: retain that
+identity rather than relabel earlier development evidence.
+
+The twelve fixed-profile scores were initially AI-proposed, then explicitly
+confirmed by the founder. There are now 24 human development reviews; see
+[provenance](../docs/human-development-review.md). Gemma with thinking enabled is
+selected for reserved assessment, not approved for private-data operation.
+
 6 October update: eight [founder human development reviews](../docs/human-development-review.md)
 are recorded with exact scores and result/configuration bindings; Case 7 remains
 failed. They are not reserved acceptance evidence. Eight additional fixtures in

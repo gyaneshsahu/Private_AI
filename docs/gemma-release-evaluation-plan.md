@@ -4,6 +4,25 @@
 
 ## Human work available now
 
+**Latest:** the founder explicitly confirmed the twelve fixed-profile scores as
+their own review after initially withholding confirmation. All twelve are
+acceptable, with five minor findings and original agent disagreements retained.
+See [confirmed scores](human-development-review.md). Do not repeat this packet.
+
+Select `gemma4-31b` with explicit thinking, the unchanged answer policy and
+8,000-character/2,048-token bounds for reserved assessment. It has consistent
+six-family development evidence and confirmed human review; GLM failed the same
+meeting attribution case without demonstrating broader advantage, and GPT-OSS
+has unresolved task-critical findings. This is a bounded trial-candidate choice,
+not competitive superiority or provider qualification. Attribution remains an
+isolated material development finding; it is not silently repaired or excused.
+Apply the approved recurrence/severity rules to reserved results, and escalate
+any recurring/serious failure rather than tuning reserved examples.
+
+The newly required reserved harness changes implementation identity, but not
+the prompt, model, thinking mode or production reply path. Freeze its validated
+hash before execution; do not pool prior hashes into the reserved score.
+
 **Adjudication received, 6 October:** the founder confirmed meeting Case 1
 **2/2/2** and Case 2 **1/2/2**, retaining material-failure findings for both.
 Reservation Cases 3–4 are **3/3/3**. Original submission (including Case 2's

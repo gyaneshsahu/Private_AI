@@ -39,7 +39,8 @@ export async function runSynthetic(input: unknown, csrf: string) {
     }
     if (
       permit.scenario === "development_case" ||
-      permit.scenario === "robustness_case"
+      permit.scenario === "robustness_case" ||
+      permit.scenario === "reserved_case"
     ) {
       const fixture = developmentCase(
         permit.developmentCaseId,

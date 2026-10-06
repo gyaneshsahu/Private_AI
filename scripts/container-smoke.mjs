@@ -11,11 +11,20 @@ for (const key of [
 ])
   delete env[key];
 const docker = (...args) =>
-  execFileSync("docker", ["--host=unix:///var/run/docker.sock", ...args], {
-    env,
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "pipe"],
-  });
+  execFileSync(
+    "docker",
+    [
+      process.platform === "win32"
+        ? "--host=npipe:////./pipe/dockerDesktopLinuxEngine"
+        : "--host=unix:///var/run/docker.sock",
+      ...args,
+    ],
+    {
+      env,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
 try {
   docker(
     "run",
