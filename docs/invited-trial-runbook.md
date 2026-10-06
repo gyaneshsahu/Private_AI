@@ -188,6 +188,42 @@ and configuration identity. The checker does not attest the release identity,
 render browser UI, test two-user isolation or qualify provider privacy. Those
 retain their separate release checks; a passing report is not trial approval.
 
+### Two-identity deployment check
+
+`npm run trial:isolation` complements the single-account check with two distinct,
+already registered synthetic identities. Set the same approved origin and first
+account variables, plus `PRIVATEAI_TRIAL_PEER_ID` and the securely supplied
+`PRIVATEAI_TRIAL_PEER_PASSWORD`. Both accounts must be dedicated to diagnostics;
+the check consumes three protected POST allowances per account on success.
+The existing Windows credential store supports the peer password under that name.
+After storing it through the masked Set command, inject both only for the process:
+
+```powershell
+Invoke-WithPrivateAiSecret -Name PRIVATEAI_TRIAL_PASSWORD -Action {
+  Invoke-WithPrivateAiSecret -Name PRIVATEAI_TRIAL_PEER_PASSWORD -Action {
+    npm run trial:isolation
+  }
+}
+```
+
+Sixteen requests on success check distinct account/session/CSRF identities,
+protected access and API cookies, disabled inference, crossed session cookies and
+crossed CSRF rejection in both directions, continued legitimate access, isolated
+logout and rejection of both logged-out sessions. Probes use only status, auth and
+research **cancellation** with a nonexistent approval; they never execute research
+or submit inference. Redirects are not followed; each request has a ten-second
+timeout. A failure triggers at most one cleanup logout for each obtained session;
+failed logout is recorded and never automatically retried. Treat `logout: FAILED`
+as potentially active access and revoke the dedicated identity before repeating.
+Evidence excludes IDs, passwords, cookies, CSRF values and raw server responses.
+
+`--local` permits only loopback HTTP and explicitly labels local evidence. The
+automated rehearsal catches injected wrong identities, accepted crossed sessions,
+accepted crossed CSRF, enabled inference and logout failure. Both diagnostic scripts
+are included in the runtime image; actual image and HTTPS-host execution remain
+pending. These checks do not establish browser vault separation, durable hosting,
+provider privacy or release identity: retain those separate checks.
+
 ### Full local workflow suite
 
 With the local preview on port 4173 stopped, run `npm run trial:check`. It performs
@@ -202,6 +238,13 @@ Additional coverage now verifies pause/revocation and per-user counters survive
 registry reopen, credential-free status listings, HTTP request limits independent
 between users, resume without quota reset and expiry during an active response.
 Passing this rehearsal is local evidence, not hosted deployment approval.
+
+The suite also starts the actual application entry point in an isolated child
+process with a synthetic SQLite registry and no provider/search credentials. It
+changes a password, revokes another account, exhausts a per-user allowance and
+restarts twice. Changed credentials, revocation, quotas and paused access persist;
+pre-restart sessions fail. This is process-restart evidence on local storage,
+not redeploy/disk-loss recovery or validation of the proposed hosting plan.
 
 Revocation is checked on every protected request and closes active responses
 within approximately one second. Login sessions expire after one hour and rotate

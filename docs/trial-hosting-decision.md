@@ -75,6 +75,10 @@ trial or pass provider/quality gates.
 4. Use only dedicated synthetic accounts: redeem two invitations, save separate
    browser workspaces, change a password, revoke one account, restart/redeploy and
    verify IDs/password changes/revocations/counters remain while old sessions fail.
+   The local suite now tests the actual application process across two restarts,
+   including paused access and credential versions. `npm run trial:isolation`
+   provides the repeatable two-identity API/session check for the future approved
+   HTTPS origin; local success does not replace this actual-host step.
 5. Local synthetic SQLite-consistent backup and paused recovery staging now pass,
    including committed WAL state, password version, revocation and quota retention.
    Repeat the [recovery procedure](invited-trial-runbook.md#registry-backup-and-paused-recovery)

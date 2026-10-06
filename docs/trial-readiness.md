@@ -39,6 +39,12 @@ repeat prompt tweaks or unchanged experiments. Local registry backup and paused
 recovery staging now pass synthetic CLI/WAL/password/revocation/quota tests;
 actual-host recovery and current access reconciliation remain required.
 
+The next U1 batch adds a reusable two-identity deployment diagnostic and an actual
+application-process restart rehearsal. Local checks confirm crossed credentials
+are rejected and changed passwords, revocations, quotas and pause survive restart
+while old sessions fail. The hosted checker is prepared, not executed against the
+existing deployment. Durable hosting, real-device review and Q1/E1 remain blockers.
+
 ## Release dependencies and next actions
 
 | Roadmap item | Current disposition | Next action and exit evidence |

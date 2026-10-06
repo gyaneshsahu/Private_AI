@@ -148,6 +148,19 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 6 October 2026: U1 release rehearsal now includes a reusable two-identity
+  deployment check: distinct sessions, crossed cookie/CSRF rejection in both
+  directions, legitimate access, isolated logout and old-cookie denial. Fixed
+  cancellation probes cannot execute research; failure evidence is redacted and
+  cleanup has no automatic retries. An actual application child-process test
+  confirms password changes, revocation, quotas and paused access survive two
+  restarts while old sessions fail. Both operator diagnostics are packaged in the
+  runtime image. [Procedure](invited-trial-runbook.md#two-identity-deployment-check).
+  Actual image/HTTPS-host execution and durable hosting remain pending; Q1/E1 and
+  real-device gates are unchanged. Validation: 149 unit/integration tests, 15
+  browser workflows, typecheck/build and fixture integrity passed. This batch
+  does not repeat model experiments.
+
 - 6 October 2026: E1 candidate comparison completed four conversations / eight
   requests with fresh permits. GLM-5.3 low effort also failed meeting attribution;
   both GLM and explicit-thinking Gemma handled a new reservation transfer. Gemma's
