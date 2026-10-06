@@ -33,9 +33,11 @@ const attributionBytes = await readFile(
 const attribution = caseSchema
   .length(1)
   .parse(JSON.parse(attributionBytes.toString()));
+const writingBytes = await readFile("evaluation/cases/writing-transfer.json");
+const writing = caseSchema.length(4).parse(JSON.parse(writingBytes.toString()));
 if (
-  new Set([...cases, ...transfer, ...attribution].map((c) => c.id)).size !==
-  cases.length + transfer.length + attribution.length
+  new Set([...cases, ...transfer, ...attribution, ...writing].map((c) => c.id)).size !==
+  cases.length + transfer.length + attribution.length + writing.length
 )
   throw Error("Duplicate transfer case");
 if (new Set(cases.map((c) => c.id)).size !== cases.length)
@@ -66,6 +68,8 @@ console.log(
     cases: cases.length,
     transferCases: transfer.length,
     attributionCases: attribution.length,
+    writingCases: writing.length,
+    writingSHA256: createHash("sha256").update(writingBytes).digest("hex"),
     attributionSHA256: createHash("sha256")
       .update(attributionBytes)
       .digest("hex"),

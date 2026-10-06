@@ -3,12 +3,14 @@ import developmentCases from "./cases/development.json";
 import originalRobustnessCases from "./cases/robustness-development.json";
 import transferCases from "./cases/repair-transfer.json";
 import attributionCases from "./cases/attribution-transfer.json";
+import writingCases from "./cases/writing-transfer.json";
 import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
   ...originalRobustnessCases,
   ...transferCases,
   ...attributionCases,
+  ...writingCases,
 ];
 
 // An experiment permit is explicitly NOT an operational qualification report.

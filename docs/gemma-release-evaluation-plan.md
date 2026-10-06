@@ -4,6 +4,13 @@
 
 ## Human work available now
 
+**Superseding clarification:** the founder confirms the four priority scores are
+their own review. Human sidecars now record 1/3/2, 1/3/2, 1/3/1 and 1/3/1;
+original agent disagreements are archived intact. Writing **fails** its 10/12
+floor (maximum 8/12). Four human reserved reviews are complete; 68 remain unreviewed.
+This is a known family failure, not merely pending acceptance. Fresh development
+comparison is separate from any future fresh held-out assessment.
+
 **Priority review update:** the founder supplied AI-proposed scores 1/3/2,
 1/3/2, 1/3/1 and 1/3/1, without human confirmation. Preserve those separately
 from the existing agent 1/2/1 grades. Both identify four material failed drafts;

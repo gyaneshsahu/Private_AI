@@ -148,6 +148,13 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 6 October 2026: founder clarified the four reserved priority scores are their
+  own review; source-bound human grades preserve agent disagreements. E1 writing
+  fails the 10/12 floor (maximum 8/12). A fresh four-question, two-candidate writing
+  development comparison is prepared with unchanged answer policy, plus an
+  authorized-commitment control. Brave/Exa/Tavily emails are reported sent and
+  awaiting replies; no duplicate supplier outreach or activation is needed.
+
 - 6 October 2026: E1/G1 diagnosis preserves four failed reserved drafts and the
   founder's separately labelled AI-proposed scores; no human grades or thresholds
   changed. Six offline context reconstructions retain the policy and exact prompts;

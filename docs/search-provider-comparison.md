@@ -4,6 +4,10 @@
 
 Decision: **none of the five reviewed public offers establishes all required
 rights and privacy conditions clearly enough to activate saved-citation search.**
+The founder now reports emails sent to **Brave, Exa and Tavily**; replies are
+pending. This supersedes the earlier single-contact recommendation. Record actual
+storage rights, query handling and prices from their replies before selecting;
+do not send duplicate requests or activate a provider just to occupy development.
 This is an evidence gap, not a claim that every supplier prohibits our workflow.
 Do not open five accounts or replace the existing Brave adapter yet. Seek one
 targeted clarification from Brave first, because its storage-plan requirement is
@@ -36,7 +40,8 @@ and bounded excerpts rather than copying full pages into a redistribution datase
 Use the prepared Brave question in [service setup](trial-service-setup.md), adding:
 ask for the exact plan/order clause covering titles, URLs and excerpts, retention
 after subscription termination, and query handling/retention including subprocessors.
-This request is prepared, **not sent**. Do not email the other four by default.
+The founder reports the Brave request sent, with Exa and Tavily also contacted.
+No further supplier emails are needed while these replies are pending.
 
 Once a provider has an enabling clause, acceptable query handling and an account
 with included credits or separately approved search spend, record those facts and

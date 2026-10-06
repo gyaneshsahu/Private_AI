@@ -12,6 +12,10 @@ not authorization for new subscriptions or a change to privacy promises.
 
 ## Search account and retention prerequisite
 
+**Contact status:** founder reports Brave, Exa and Tavily emails sent; all three
+await replies. Compare quoted prices together with storage rights and privacy
+conditions. No additional accounts or duplicate contact requests are needed now.
+
 The [five-provider comparison](search-provider-comparison.md) covers Brave,
 Tavily, Exa, SearchApi and SerpApi. No reviewed offer is yet eligible for our
 saved-citation workflow. This is an evidence assessment, not a blanket claim that
@@ -45,8 +49,7 @@ remain after termination, and query retention/subprocessor conditions. Brave's
 currently permits up to 90 days of query retention; ZDR is an enterprise option.
 Do not describe the ordinary plan as zero-retention or assume its DPA covers queries.
 
-This is a prepared question, not a sent message. The founder can contact the
-support address linked in Brave's official help page. If required rights are
+The founder reports this supplier contact sent. If required rights are
 unavailable, compare a search supplier that permits this workflow before making
 a material service/privacy or cost decision. Do not rebuild search prematurely.
 

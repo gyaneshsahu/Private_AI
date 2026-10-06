@@ -7,10 +7,17 @@ purchase drafts add commitments; the extension drafts add a reason. Follow-up
 corrections do not erase the original failures. These are answer-quality failures,
 not observed privacy leaks. Preserve the original evaluation and consumed permits.
 
-The founder supplied **AI-proposed**, unconfirmed scores: 1/3/2, 1/3/2, 1/3/1,
+**Founder clarification received:** the four scores were the founder's own review,
+expressed through an AI prompt. They are now source-bound human sidecars; original
+proposed records and differing agent grades remain preserved. All four tasks fail,
+so writing can score at most **8/12** and **fails the 10/12 requirement**. The
+remaining 68 reviews cannot reverse that family failure. No fresh acceptance run
+may reuse this exposed set after it informs configuration changes.
+
+Historical provenance: initially recorded as **AI-proposed**, unconfirmed scores: 1/3/2, 1/3/2, 1/3/1,
 1/3/1. They are recorded with original findings and result hashes in
 `.local/review-batches/reserved-priority-20261006/user-proposed-ai-scores.json`.
-Existing agent grades remain 1/2/1 for each; the completeness/context disagreements
+Original agent grades remain 1/2/1 for each; the completeness/context disagreements
 are retained. No human grades were added. Both sets imply failed tasks. If human
 adjudication confirms these four failures, writing can score at most **8/12**,
 below the unchanged **10/12** requirement. Current release disposition is
@@ -44,12 +51,15 @@ user commitments and is not an appropriate semantic repair.
 
 ## Bounded next decision
 
-Compare the existing four writing development fixtures on one justified alternative
+Compare four fresh writing development fixtures on Gemma and one justified alternative
 configuration, using the same application policy and input/output bounds. GLM is
 available through the existing provider but is a comparison candidate, not an
 assumed upgrade: its attribution failure stays open. Inspect its current price,
 remaining account budget and worst-case token bound before allocating fresh permits.
-Use one execution per selected conversation, no automatic retries, and judge both
+Use `evaluation/cases/writing-transfer.json`: undecided studio enquiry, withheld
+volunteer reason, library reservation ownership and an authorized bike-repair
+commitment control. These are exposed development questions, not held-out cases.
+Use one execution per model/conversation, no automatic retries, and judge both
 turns for supplied facts, intent, commitments and invented reasons. A writing gain
 must subsequently survive broader family coverage on the same configuration.
 
