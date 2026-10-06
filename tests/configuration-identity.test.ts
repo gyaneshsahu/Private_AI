@@ -25,6 +25,8 @@ it("distinguishes model, limits, release, pricing and code without depending on 
   ).toBe(original);
   for (const changed of [
     { ...policy, model: "different-model" },
+    { ...policy, gemmaThinking: true },
+    { ...policy, gemmaThinking: false },
     { ...policy, maxOutputTokens: 4096 },
     { ...policy, releaseDigests: ["c".repeat(64)] },
     { ...policy, pricing: { ...policy.pricing, inputPerMillion: 1 } },
@@ -34,4 +36,27 @@ it("distinguishes model, limits, release, pricing and code without depending on 
   expect(JSON.stringify(policy.releaseDigests)).toBe(
     JSON.stringify(["b".repeat(64), "a".repeat(64)]),
   );
+});
+
+it("distinguishes explicitly enabled and disabled thinking from provider defaults", () => {
+  const p = {
+    model: "gemma4-31b",
+    origin: "https://inference.tinfoil.sh",
+    repository: "tinfoilsh/confidential-model-router",
+    releaseDigests: ["a".repeat(64)],
+    maxInputCharacters: 8000,
+    maxOutputTokens: 2048,
+    pricing: {
+      inputPerMillion: 0.4,
+      outputPerMillion: 1,
+      currency: "USD" as const,
+    },
+  };
+  expect(
+    new Set(
+      [undefined, false, true].map((gemmaThinking) =>
+        configurationIdentity("code", { ...p, gemmaThinking }),
+      ),
+    ).size,
+  ).toBe(3);
 });

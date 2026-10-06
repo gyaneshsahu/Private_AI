@@ -1,7 +1,9 @@
 import { z } from "zod";
 import developmentCases from "./cases/development.json";
-import robustnessCases from "./cases/robustness-development.json";
+import originalRobustnessCases from "./cases/robustness-development.json";
+import transferCases from "./cases/repair-transfer.json";
 import { qualificationSchema } from "../shared/contracts";
+const robustnessCases = [...originalRobustnessCases, ...transferCases];
 
 // An experiment permit is explicitly NOT an operational qualification report.
 export const experimentSchema = z
@@ -40,6 +42,7 @@ export const experimentSchema = z
         maxOutputTokens: true,
         pricing: true,
       })
+      .extend({ gemmaThinking: z.boolean().optional() })
       .strict(),
   })
   .strict();
@@ -49,6 +52,10 @@ export function validateExperiment(
   now = Date.now(),
 ): Experiment {
   const x = experimentSchema.parse(input);
+  if (x.policy.gemmaThinking !== undefined && x.policy.model !== "gemma4-31b")
+    throw new Error(
+      "Gemma thinking mode requires the explicit Gemma candidate.",
+    );
   if (x.scenario === "development_case" || x.scenario === "robustness_case")
     developmentCase(x.developmentCaseId, x.scenario);
   else if (x.developmentCaseId !== undefined)

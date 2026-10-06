@@ -147,6 +147,7 @@ describe("synthetic experiment gates (no provider calls)", () => {
       { approvalEvidence: "" },
       { policy: { ...fixture().policy, origin: "https://attacker.example" } },
       { policy: { ...fixture().policy, model: "auto" } },
+      { policy: { ...fixture().policy, gemmaThinking: true } },
     ])
       expect(() => validateExperiment({ ...fixture(), ...change })).toThrow();
   });

@@ -3,7 +3,71 @@
 5 October 2026. Agent-reviewed synthetic development evidence; not human grading,
 held-out evaluation, provider qualification or comparative quality evidence.
 
-## Latest: supplemental and remaining development batch (6 October)
+## Latest: bounded repair and explicit thinking comparison (6 October)
+
+One policy simplification removed mandatory self-checks and blanket non-overlap
+instructions from ordinary plans. It requires consistent conclusions, preserves
+personal relationships, and respects withheld reasons without proposing excuses.
+Three affected regressions and two new transfer cases ran under this fixed policy.
+The original eight supplemental fixtures and both frozen sets were not edited;
+`evaluation/cases/repair-transfer.json` adds two separately identified transfer cases.
+
+| Case | Simplified policy, thinking unspecified | Same policy, explicitly enabled thinking |
+| --- | --- | --- |
+| Dependency planning | **Material failure:** revised answer still starts Yes to 14:35, then corrects to No / 14:40. Initial 14:45 answer is consistent. | Narrowly acceptable: consistent 14:45, then No / 14:40; dependencies respected. |
+| New machine/labeling transfer | **Material failure:** 09:50 then 09:55; revised 09:40 headline contradicts 09:45 schedule. | Narrowly acceptable: consistent 09:55, then No / 09:45; sequential person work and machine dependency correct. |
+| Ambiguous meeting reference | **Material failure:** invented canceller and meeting-with-Alex remain. | **Material failure:** invented sender/canceller; revision changes Alex's meeting to our meeting. |
+| Return-to-work privacy preference | Narrowly acceptable: neutral replies instead of invented family/recharge reasons. | Not rerun in this comparison. |
+| New appointment/absence transfer | Narrowly acceptable: retains Robin's appointment and away-last-week fact, no invented reasons or attendees. | Not rerun in this comparison. |
+
+All **eight conversations / 16 requests** completed with matching verification and
+scoped Chromium-abort evidence. Grades are agent-only, not human adjudication.
+The prompt-repair cycle is finished; no further rules were appended after its
+failures. Two planning successes under a changed model setting do not close the
+historical itinerary finding or establish family reliability. One run per setting,
+provider sampling defaults and selected tasks do not prove causation or parity.
+
+The configuration check found PrivateAI omitted a thinking parameter. The current
+[Tinfoil catalog](https://api.tinfoil.sh/api/config/models) exposes
+`chat_template_kwargs.enable_thinking`; its UI `defaultEnabled` does not prove a
+worker API default. [Google's Gemma documentation](https://ai.google.dev/gemma/docs/capabilities/thinking)
+also documents explicit thinking activation. Added optional `gemmaThinking` only
+to the synthetic permit policy, restricted to `gemma4-31b`. Undefined, false and
+true retain separate configuration identities; undefined preserves historical
+hashes and request bodies. The product qualification schema is unchanged.
+Encrypted-peer tests verify parameter wiring and that reasoning-only deltas do not
+enter answer transcripts/logs. This does not add a privacy qualification.
+
+Run prefixes `.local/experiment-runs/windows_20261006_repair_` (five cases) and
+`windows_20261006_thinking_` (three cases) preserve originals and fresh consumed
+permits; each has a source-bound `agent-review-profile-20261006.json`.
+Repair configuration: `8e55ab43de4d6ac88cb198307ad4908eb0cebf9a3f1c75d05b2a7cabe8cd3659`.
+Explicit-thinking configuration: `37113833a0783d428506d83811aafe472771502facf7247766d89e511a0dfab1`.
+The latter includes additional request-option implementation; the answer policy
+and 8,000-character / 2,048-token limits were identical during the comparison.
+
+Estimated costs: repair USD 0.00330520, thinking comparison USD 0.00447480;
+combined **USD 0.00778000**, cumulative local estimate **USD 0.04287105**.
+The dashboard before this batch showed USD 0.96 available, approximately USD 0.04
+period spend, 120 requests, USD 2 limit and auto-reload off. Allocations USD 0.06
+and USD 0.04 stayed within the cumulative USD 2 approval. Actual charges are not
+inferred from local token estimates. No consumed permit was reused.
+
+Inventory: **73 runs, 24 distinct frozen cases, 10 supplemental cases, 50 active
+agent reviews, eight human reviews, 15 pending historical reviews, zero conflicts**.
+Full validation passed **143 unit/integration tests, 15 production-browser workflows,
+typecheck/build and fixture integrity**. Prior cross-tab timeout did not recur in
+these full runs; its original cause remains unproven.
+
+Disposition: retain the simpler policy and experimental configuration support, but
+keep candidate freeze blocked. Before a release selection, compare the persistent
+attribution failure against another documented candidate/configuration with fresh
+transfer cases, and review planning under explicit settings across broader tasks.
+Do not continue prompt tweaking or consume reserved evaluation while these blockers
+remain. Supplier reply, durable hosted validation and later human/device evidence
+remain separate. General vision remains deferred.
+
+## Previous: supplemental and remaining development batch (6 October)
 
 Executed all eight supplemental cases and seven remaining frozen cases against
 `gemma4-31b`: **15 conversations / 30 requests**, each with a fresh consumed permit.

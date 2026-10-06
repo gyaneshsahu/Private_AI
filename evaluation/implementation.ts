@@ -13,6 +13,9 @@ export function configurationIdentity(
       JSON.stringify({
         codeHash,
         model: policy.model,
+        ...(policy.gemmaThinking !== undefined
+          ? { gemmaThinking: policy.gemmaThinking }
+          : {}),
         origin: policy.origin,
         repository: policy.repository,
         releaseDigests: [...policy.releaseDigests].sort(),
@@ -40,6 +43,7 @@ export async function implementationIdentity(root: string) {
     "evaluation/experiment.ts",
     "evaluation/cases/development.json",
     "evaluation/cases/robustness-development.json",
+    "evaluation/cases/repair-transfer.json",
     "evaluation/frozen-manifest.json",
     "evaluation/experiment-gateway.ts",
     "evaluation/run-local.ts",

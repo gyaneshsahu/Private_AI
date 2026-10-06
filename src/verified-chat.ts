@@ -17,7 +17,7 @@ export type VerifiedChatPolicy = Pick<
   | "maxInputCharacters"
   | "maxOutputTokens"
   | "pricing"
->;
+> & { gemmaThinking?: boolean };
 
 export function assertVerification(
   doc: {
@@ -51,6 +51,8 @@ export async function streamVerifiedConversation(
   onVerified?: (evidence: { host: string; releaseDigest: string }) => void,
 ): Promise<Usage | undefined> {
   authorize();
+  if (report.gemmaThinking !== undefined && report.model !== "gemma4-31b")
+    throw new Error("Unsupported model-specific inference setting.");
   signal = AbortSignal.any([signal, AbortSignal.timeout(90000)]);
   signal.throwIfAborted();
   const messages = composeContext(conversation, report.maxInputCharacters);
@@ -100,6 +102,9 @@ export async function streamVerifiedConversation(
       body: JSON.stringify({
         model: report.model,
         messages,
+        ...(report.gemmaThinking !== undefined
+          ? { chat_template_kwargs: { enable_thinking: report.gemmaThinking } }
+          : {}),
         stream: true,
         stream_options: { include_usage: true },
         max_completion_tokens: report.maxOutputTokens,

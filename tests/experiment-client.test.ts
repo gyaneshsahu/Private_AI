@@ -5,8 +5,9 @@ import { existsSync } from "node:fs";
 import { approvedLocalGet } from "../evaluation/network-observation";
 import developmentCases from "../evaluation/cases/development.json";
 import robustnessCases from "../evaluation/cases/robustness-development.json";
-const allCases = [...developmentCases, ...robustnessCases];
+import transferCases from "../evaluation/cases/repair-transfer.json";
 import { invoiceText } from "../evaluation/experiment";
+const allCases = [...developmentCases, ...robustnessCases, ...transferCases];
 
 it("runs real browser extraction and follow-up state with an explicitly mocked model, and stops on unknown cost", async () => {
   const vite = await createServer({
@@ -170,7 +171,7 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
       };
     }, allCases);
     expect(result.compatibilityCalls).toBe(1);
-    expect(result.development).toHaveLength(32);
+    expect(result.development).toHaveLength(34);
     for (const [index, task] of result.development.entries()) {
       const fixture = allCases[index];
       expect(task.outcome.failure).toBeNull();

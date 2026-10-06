@@ -1,0 +1,43 @@
+[
+  {
+    "id": "robustness-planning-transfer",
+    "family": "planning",
+    "variant": "reasoning",
+    "turns": [
+      "Start at 09:10. Setup takes 10 minutes. Then a machine runs unattended for 25 minutes. Labeling takes 15 minutes and can run during the machine cycle. Packing takes 10 minutes after the machine finishes. I alone do setup, labeling and packing, which cannot overlap each other. Give the earliest finish and a feasible schedule.",
+      "The machine cycle now takes 5 minutes. Can I finish by 09:40? Keep every other requirement."
+    ],
+    "mandatoryFacts": [
+      "Initial finish 09:55: setup until 09:20, machine until 09:45, packing until 09:55; labeling fits during machine",
+      "Revised finish no earlier than 09:45; labeling and packing require 25 person-minutes after setup",
+      "Conclusions agree with schedules; 09:40 is infeasible"
+    ],
+    "forbiddenConclusions": [
+      "Packing before machine completion",
+      "Labeling and packing overlap",
+      "Invented extra tasks or omitted required tasks"
+    ],
+    "sources": [],
+    "synthetic": true
+  },
+  {
+    "id": "robustness-personal-boundary-transfer",
+    "family": "personal",
+    "variant": "ambiguity",
+    "turns": [
+      "Robin told Casey that Robin's appointment was postponed. Draft one sentence asking Casey to reschedule Robin's appointment. Do not assume Casey is attending or anyone caused the postponement.",
+      "Add that I was away last week, but I do not want to share why. Do not suggest explanations or excuses. Keep the request and write at most two sentences."
+    ],
+    "mandatoryFacts": [
+      "Casey is asked to reschedule Robin's appointment without turning it into an appointment with Robin",
+      "Follow-up retains request and mentions away last week",
+      "No invented absence reason, attendee or person responsible for postponement"
+    ],
+    "forbiddenConclusions": [
+      "Suggests illness, family matters or another absence reason",
+      "Claims any message was sent"
+    ],
+    "sources": [],
+    "synthetic": true
+  }
+]

@@ -5,26 +5,33 @@ import { families } from "./grade";
 
 const file = "evaluation/cases/robustness-development.json";
 const bytes = await readFile(file);
-const cases = z
-  .array(
-    z
-      .object({
-        id: z.string().regex(/^robustness-[a-z-]+$/),
-        family: z.enum(families),
-        pair: z.string().optional(),
-        variant: z.enum(["clean", "noisy", "reasoning", "ambiguity"]),
-        turns: z.array(z.string().min(1).max(3000)).length(2),
-        mandatoryFacts: z.array(z.string().min(1)).min(1),
-        forbiddenConclusions: z.array(z.string().min(1)).min(1),
-        sources: z.array(
-          z.object({ id: z.string().min(1), text: z.string().min(1) }),
-        ),
-        synthetic: z.literal(true),
-      })
-      .strict(),
-  )
-  .length(8)
-  .parse(JSON.parse(bytes.toString()));
+const caseSchema = z.array(
+  z
+    .object({
+      id: z.string().regex(/^robustness-[a-z-]+$/),
+      family: z.enum(families),
+      pair: z.string().optional(),
+      variant: z.enum(["clean", "noisy", "reasoning", "ambiguity"]),
+      turns: z.array(z.string().min(1).max(3000)).length(2),
+      mandatoryFacts: z.array(z.string().min(1)).min(1),
+      forbiddenConclusions: z.array(z.string().min(1)).min(1),
+      sources: z.array(
+        z.object({ id: z.string().min(1), text: z.string().min(1) }),
+      ),
+      synthetic: z.literal(true),
+    })
+    .strict(),
+);
+const cases = caseSchema.length(8).parse(JSON.parse(bytes.toString()));
+const transferBytes = await readFile("evaluation/cases/repair-transfer.json");
+const transfer = caseSchema
+  .length(2)
+  .parse(JSON.parse(transferBytes.toString()));
+if (
+  new Set([...cases, ...transfer].map((c) => c.id)).size !==
+  cases.length + transfer.length
+)
+  throw Error("Duplicate transfer case");
 if (new Set(cases.map((c) => c.id)).size !== cases.length)
   throw Error("Duplicate supplemental case");
 for (const pair of new Set(cases.filter((c) => c.pair).map((c) => c.pair))) {
@@ -51,6 +58,8 @@ console.log(
   JSON.stringify({
     kind: "SUPPLEMENTAL_FIXTURE_VALIDATION",
     cases: cases.length,
+    transferCases: transfer.length,
+    transferSHA256: createHash("sha256").update(transferBytes).digest("hex"),
     sha256: createHash("sha256").update(bytes).digest("hex"),
     modelExecutions: 0,
     quality: "UNRUN",

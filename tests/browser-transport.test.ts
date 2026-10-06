@@ -99,6 +99,11 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       const frame = (content: string, finish: string | null) =>
         `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content }, finish_reason: finish }] })}\n\n`;
       let text = frame("TEST answer: 4", mode === "truncated" ? null : "stop");
+      if (mode === "thinking_on") {
+        text =
+          `data: ${JSON.stringify({ choices: [{ index: 0, delta: { reasoning_content: "SYNTHETIC_REASONING_CANARY" }, finish_reason: null }] })}\n\n` +
+          text;
+      }
       if (mode === "valid") {
         const initial = `data: ${JSON.stringify({ choices: [], usage: { prompt_tokens: 2, completion_tokens: 0, total_tokens: 2 } })}\n\n`;
         text = initial + initial + text;
@@ -187,6 +192,8 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
     await page.waitForFunction(() => "runFaultCase" in window);
     for (const scenario of [
       "valid",
+      "thinking_on",
+      "thinking_off",
       "pre_cancel",
       "stalled_verification",
       "wrong_host",
@@ -204,14 +211,14 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
     ]) {
       mode = scenario;
       const before = requests.length;
-      const finished =
-        mode === "valid"
-          ? page.waitForEvent("requestfinished", {
-              predicate: (request) =>
-                new URL(request.url()).pathname ===
-                "/api/inference/v1/chat/completions",
-            })
-          : undefined;
+      const succeeds = ["valid", "thinking_on", "thinking_off"].includes(mode);
+      const finished = succeeds
+        ? page.waitForEvent("requestfinished", {
+            predicate: (request) =>
+              new URL(request.url()).pathname ===
+              "/api/inference/v1/chat/completions",
+          })
+        : undefined;
       const result = await page.evaluate(
         async (mode) =>
           (
@@ -222,6 +229,9 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         mode,
       );
       if (finished) await finished;
+      expect(JSON.stringify(result)).not.toContain(
+        "SYNTHETIC_REASONING_CANARY",
+      );
       const preSend = [
         "pre_cancel",
         "stalled_verification",
@@ -235,8 +245,8 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         requests.length - before,
         `${mode}: ${result.testError}; ${logs.join(";")}; blocked=${external.join(";")}`,
       ).toBe(preSend ? 0 : 1);
-      expect(result.failure, mode).toBe(mode !== "valid");
-      if (mode === "valid") {
+      expect(result.failure, mode).toBe(!succeeds);
+      if (succeeds) {
         expect(result.answer.status).toBe("complete");
         expect(result.usage.total).toBe(5);
         // Inspect events now, before fault cases or closing the page.
@@ -251,7 +261,13 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       }
       if (mode === "truncated") expect(result.usage.total).toBe(5);
       if (!preSend) {
-        const secret = JSON.parse(requests[before].plaintext).user_cache_secret;
+        const payload = JSON.parse(requests[before].plaintext);
+        expect(payload.chat_template_kwargs).toEqual(
+          mode.startsWith("thinking_")
+            ? { enable_thinking: mode === "thinking_on" }
+            : undefined,
+        );
+        const secret = payload.user_cache_secret;
         expect(JSON.stringify(result).includes(secret)).toBe(false);
       }
     }
@@ -296,10 +312,15 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
     expect(external).toEqual([]);
     expect(requests.every((r) => r.encrypted && !r.authorization)).toBe(true);
     expect(
-      requests.every((r) => JSON.parse(r.plaintext).model === "TEST_ONLY"),
+      requests.every((r) => {
+        const p = JSON.parse(r.plaintext);
+        return (
+          p.model === (p.chat_template_kwargs ? "gemma4-31b" : "TEST_ONLY")
+        );
+      }),
     ).toBe(true);
     expect(logs.join("\n")).not.toMatch(
-      /SYNTHETIC_(REQUEST|RESPONSE|ERROR)_CANARY/,
+      /SYNTHETIC_(REQUEST|RESPONSE|ERROR|REASONING)_CANARY/,
     );
     const cacheSecrets = requests
       .slice(0, currentAdapterRequestCount)

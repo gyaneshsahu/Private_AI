@@ -73,3 +73,17 @@ sidecar. Development reviews remain separate from the reserved trial gate.
 Keep packets local/non-public: they duplicate synthetic transcript evidence, not
 credentials, and are not a new upload or public feedback channel. File permissions
 inherit Windows directory ACLs; `mode: 0600` is not a Windows access-control claim.
+
+`cases/repair-transfer.json` adds two supplemental transfer fixtures separately
+from the unchanged original eight. All ten now have live observations. The latest
+[repair/configuration comparison](../docs/development-family-review.md) preserves
+failed regressions; the reserved quality gate remains unrun.
+
+Synthetic permits may set `policy.gemmaThinking` to true or false only for
+`gemma4-31b`. The adapter maps this to `chat_template_kwargs.enable_thinking`.
+Omission keeps the provider default; do not describe omission as thinking off.
+All three states have distinct configuration hashes; old omitted-field hashes
+remain compatible. This is experimental configuration support, not a production
+qualification setting or UI control. Output-token bounds still apply, including
+provider-reported generation usage; truncation stops the run without retry.
+Reasoning-only stream deltas do not become saved assistant text or logs.

@@ -148,6 +148,20 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 6 October 2026: completed the single policy-simplification repair cycle and a
+  separate explicit-thinking comparison, eight conversations / 16 requests total.
+  Neutral personal-reason handling was narrowly acceptable; planning and ambiguous
+  roles still failed with unspecified thinking. Explicit Gemma thinking produced
+  consistent answers on two planning cases, but attribution still failed. Stop
+  further prompt tweaks; compare candidate/configuration alternatives before
+  release freeze. Added two transfer fixtures without changing frozen sets or
+  earlier results. [Evidence](development-family-review.md): 24 frozen + 10
+  supplemental cases, eight unchanged founder grades; reserved evaluation unrun.
+  Validation: 143 unit/integration tests, 15 browser workflows, typecheck/build and
+  fixture integrity passed. Cumulative local estimate USD 0.04287105, not actual
+  billing. Q1, hosted validation and quality gates remain open; roadmap format and
+  IDs are preserved.
+
 - 6 October 2026: executed and agent-reviewed all eight supplemental and seven
   remaining frozen cases, with 30 complete replies and fresh consumed permits.
   Six of eight supplemental and six of seven frozen cases were acceptable;

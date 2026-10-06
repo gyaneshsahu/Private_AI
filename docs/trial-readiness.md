@@ -21,7 +21,7 @@ provider confidentiality, real-device usability or competitive parity.
 | Research-assisted decisions (G5) | Explicit query/URL approval, bounded retrieval and source inspection; synthetic browser workflow covers save/resume. Model comparison uses frozen references and generic query drafting. | GPT-OSS echoes identifiers after an exclusion instruction. Current live search-service integration plus retrieval-to-answer/follow-up validation remain; fixture synthesis is not live research evidence. |
 
 Recorded Windows evidence covers **24 distinct frozen development cases** plus
-**8 separate supplemental cases**. These are observations across configurations,
+**10 separate supplemental cases**. These are observations across configurations,
 not approved capabilities. Latest material failures concern planning contradictions,
 ambiguous roles and invented personal reasons. Current inventory contains
 eight founder human development reviews, including the failed itinerary case;
@@ -35,7 +35,7 @@ See [development findings](development-family-review.md) and
 | Roadmap item | Current disposition | Next action and exit evidence |
 | --- | --- | --- |
 | Q1 provider chain | Externally blocked; founder confirmed sending the email. | Await the [candidate-specific supplier reply](provider-evidence-update.md#provider-evidence-request--sent-awaiting-reply), then review browser freshness/rollback, router-worker-build/GPU binding and content/billing handling. Sending the request does not pass Q1. |
-| E1 quality | Development remains open; neither candidate is a release selection. | Review the completed supplemental/remaining batch and address its material planning and invented-fact failures in one bounded repair/transfer cycle. Compare another candidate if failures persist. Do not run unchanged probes for cosmetic improvements. Freeze a candidate/configuration only when development evidence supports it; then execute and human-grade the reserved gate within an approved cost allocation. |
+| E1 quality | Development remains open; neither candidate is a release selection. | The bounded repair cycle and explicit-thinking comparison are complete. Attribution still fails; two planning observations improved with explicit thinking. Compare another documented candidate/configuration and fresh transfers before release selection. Do not run unchanged probes for cosmetic improvements. Freeze a candidate/configuration only when development evidence supports it; then execute and human-grade the reserved gate within an approved cost allocation. |
 | G6 supported scope | This six-family review is prepared; release scope is not approved or frozen. | Reconcile the candidate's reviewed results with each family above, publish the resulting limitations, and seek a material scope decision only if essential supported tasks must be excluded. Preserve the broader assistant route. |
 | U1 access and recovery | Local individual access and password changes are implemented. | Approve a [durable registry hosting arrangement](trial-hosting-decision.md) before deployment; Render Free is ephemeral. Hosted TLS/proxy/cookie/isolation/restart review and real-device observation remain. Lost sign-in passwords and vault passphrases have no recovery in the trial; do not silently issue a new identity as recovery. |
 | R1 trial release | Blocked by the above gates. | Tie deployed release/configuration to validation, reconcile actual billing, then obtain audience/hosting/real-data approval. Automated checks alone cannot approve the trial. |
@@ -49,8 +49,9 @@ development review does not substitute for reserved grading or real-device obser
 1. U1's password/session lifecycle batch is locally validated: identity, expiry,
    quotas and encrypted records are preserved. Hosted validation remains open.
 2. E1's remaining development and supplemental batch is complete. Preserve its
-   three material findings and historical failures. Use one evidence-based
-   repair/transfer cycle before reconsidering the candidate. Do not run reserved
+   three material findings and historical failures. The single repair cycle is complete; explicit thinking improved two planning
+   observations but attribution still fails. Compare another documented candidate
+   or configuration before release selection. Do not run reserved
    evaluation while release-freeze blockers remain. The cumulative USD 2 cap
    applies; local estimates are not authoritative billing.
 3. Continue independent G5 integration only when configured service access and

@@ -77,6 +77,16 @@ superiority. No operational model is promoted.
 
 ## Planning and release freeze
 
+**6 October disposition:** the one prompt-repair cycle has now run. It did not
+resolve planning contradictions or ambiguous personal roles. A separate explicit
+thinking configuration comparison returned acceptable answers on two planning
+cases, but still failed attribution. See [exact outcomes](development-family-review.md).
+No further prompt-rule iteration is planned. Candidate freeze remains blocked;
+next compare documented model/configuration alternatives on attribution and fresh
+transfer tasks, and broaden explicit-thinking planning evidence before any release
+selection. The earlier itinerary failure and human review obligations remain open.
+The instructions below preserve the original repair bounds, not a renewed retry.
+
 Gemma's itinerary arithmetic is unresolved. Review the full conversation and
 requirements first. If evidence identifies a concrete repair, allow one focused
 repair cycle followed by the affected development regression and one independently
