@@ -1,6 +1,6 @@
 # Durable hosting decision for individual trial access
 
-6 October 2026 · U1/R1 · **Founder upgraded hosting; current access release not deployed.**
+7 October 2026 · U1/R1 · **Synthetic hosted access, persistence and staged recovery passed; trial access paused.**
 
 ## Current deployment
 
@@ -10,15 +10,53 @@ Read-only Render dashboard inspection on 6 October confirms Docker **0.5c-512mb*
 price is not an independently verified combined invoice total; the separately
 published disk rate remains USD 0.25/GB/month before taxes/overages.
 
-The service remains on branch
-`codex/provider-qualification`, with live commit
-`dbccbe0a8605b5d2c2c3f3f72bc965b3e7563f04`. This is older than the locally validated
-individual-access release. Earlier hosted smoke evidence does not validate the
-current invitation/password/session system.
+The founder explicitly approved branch publication and deployment for synthetic
+hosted testing. The application at `b7e5ea7cd4c3cba82347e8c0810a643969d4e39f`
+was deployed from `codex/provider-qualification` and configured with
+`PRIVATEAI_INVITES_FILE=/var/data/privateai/invites.sqlite`. The private directory
+is owned by runtime user `node` with mode 2700 (setgid plus owner-only access);
+the registry is mode 600. There are no provider/search keys or qualification file
+configured. Existing shared Basic access is superseded by individual access.
+
+### Actual-host evidence, 7 October (6 October UTC)
+
+- GitHub [Validate run 37537411000](https://github.com/gyaneshsahu/Private_AI/actions/runs/37537411000)
+  passed all 163 tests, 16 browser workflows, build/fixture checks and fresh-image
+  smoke, persistence and individual-access container checks. The preceding CI
+  attempt failed because it selected system Chromium; CI now explicitly selects
+  its installed Playwright Chromium. No application behavior changed for that fix.
+- Render configuration deployment `dep-db2n0g5g1s2s73fnvaqg` succeeded. The
+  public HTTPS origin passed anonymous API/private-file denial, sign-in rendering,
+  secure/HttpOnly/SameSite cookies and cross-origin rejection.
+- At `2026-10-06T22:05:20Z`, the packaged individual-access and two-identity
+  checks passed over public HTTPS. Crossed sessions and CSRF were rejected in
+  both directions; each own session remained usable; logout affected only its
+  own session. Two one-use invitations were redeemed and replay was denied.
+- Password replacement invalidated the old session without affecting the peer.
+  Revocation denied the peer's existing session. A Render restart replaced
+  instance `hxkpb` with `sq9sh`; at `22:06:31Z`, the new password and revocation
+  persisted, old sessions/old password were denied, and inference stayed disabled.
+- SQLite's backup API captured the live synthetic registry under the persistent
+  mount. A separate staged recovery copy began paused; isolated credential checks
+  verified its password/revocation state before leaving it paused again. The live
+  database was not overwritten. This is same-disk backup/recovery evidence, not
+  an off-host disaster restore or permission to restore stale real-account state.
+- Both synthetic accounts were revoked and the live registry left paused. Generated
+  fixture passwords/cookies never appeared in logs, chat or Git and were removed
+  from the temporary state document. Credential-free JSONL results and the diagnostic
+  source remain private under `/var/data/privateai/hosted-check*`; backup/recovery
+  copies remain under `/var/data/privateai/recovery-checks`. Do not publish them.
+
+The lifecycle checks made 45 bounded HTTP requests (8 access, 16 isolation,
+14 preparation and 7 restart/recovery), in addition to anonymous readiness/browser
+checks. This is functional access evidence, not capacity, model quality, general
+device usability or provider qualification. Two browser vaults on the actual host,
+real-device observation, off-disk backup policy and metadata-log retention remain
+separate trial prerequisites. No extra hosting resources were purchased.
 
 Render's default filesystem is ephemeral. A local SQLite reopen test proves
-database behavior, not survival of a hosting restart/redeploy. Do not configure
-the invitation registry on the existing Free instance as durable trial storage.
+database behavior, not survival of a hosting restart/redeploy. Never configure
+the invitation registry on a Free instance as durable trial storage.
 Only files under an attached persistent mount survive. See
 [Render disks](https://render.com/docs/disks) and
 [Free limitations](https://render.com/docs/free).
@@ -46,10 +84,9 @@ Confirm the account's actual quote and available smallest disk before purchase.
 This is a separate recurring hosting expense, not part of the USD 2 Tinfoil cap.
 
 The founder has completed the service/disk purchase. Do not purchase additional
-capacity or infer a higher spending ceiling. Publication/deployment of the current
-committed Windows branch and initialization of the persistent registry remain
-separate pending steps. The upgraded disk alone does not prove mount ownership,
-application persistence, recovery or private-data trial readiness.
+capacity or infer a higher spending ceiling. Publication, registry initialization,
+and the bounded hosted checks above are now complete. Private-data trial readiness
+still depends on the remaining privacy, quality and usability gates.
 
 ## Tradeoffs and alternatives
 
@@ -63,7 +100,7 @@ application persistence, recovery or private-data trial readiness.
   TLS, proxy, persistence or access readiness. It is the fallback while approval is
   pending, not a deployed invited trial.
 
-## Required work before deployment
+## Earlier container evidence and remaining release checks
 
 **Additional packaged access evidence, 6 October:**
 `scripts/container-invite-access.mjs` now exercises the actual application HTTP
@@ -84,8 +121,8 @@ test's uniquely named container/volume are removed; no real registry is used.
 The published pricing was rechecked on 6 October: the proposed base remains
 USD 7/month compute plus USD 0.25/month for 1 GB disk. Account-specific taxes and
 metered overages require checking before purchase; a spending target is not a
-provider-enforced hard cap. Founder approval of recurring hosting and a total
-monthly spending ceiling is now the next actual-host dependency. Keep inference
+provider-enforced hard cap. The founder subsequently bought the existing service
+and disk and approved synthetic deployment; no further capacity is authorized. Keep inference
 and search credentials absent for the first synthetic hosted access rehearsal.
 
 **6 October local container evidence:** Docker Desktop engine 29.8.0 became
@@ -141,6 +178,7 @@ backup operations, capacity or device validation. No paid hosting was activated.
    the quoted plan is a candidate, not a measured capacity guarantee. Any larger
    plan or backup service needs separate cost approval.
 
-No host settings, subscriptions, disks, registry contents or deployment were
-changed by this review. Source documentation describes encrypted disks/snapshots,
-single-instance mounts and deploy interruptions; it is not our restore evidence.
+The earlier read-only review made no host changes. The explicitly approved hosted
+batch above subsequently deployed the branch, initialized the synthetic registry,
+configured its path and tested restart/recovery. Published disk/snapshot promises
+remain distinct from our bounded functional evidence.

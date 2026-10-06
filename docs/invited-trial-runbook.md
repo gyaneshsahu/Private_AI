@@ -1,7 +1,7 @@
 # Invited-trial preparation
 
-Status: local onboarding implemented; invited-user release **NOT READY**.
-5 October 2026. This runbook records prerequisites, not permission to invite users.
+Status: synthetic hosted access/restart/staged recovery validated; invited-user release **NOT READY**.
+7 October 2026. This runbook records prerequisites, not permission to invite users.
 
 ## Current experience
 
@@ -18,10 +18,12 @@ another change. Sign-out and access-invalidating navigation bypass it so it cann
 retain an expired session's screen. Browser warnings are best-effort (especially
 on mobile, forced termination or crashes); they do not autosave or guarantee recovery.
 
-Existing hosted Basic access is a shared development credential. It cannot revoke
-one person, attribute service limits to an invite, or separate customer accounts.
-Do not distribute it as an invited-user account system. Browser-local encrypted
-vaults do not substitute for service access control.
+The current Render service uses individual access with its registry at
+`/var/data/privateai/invites.sqlite`; shared Basic access is superseded. The
+synthetic hosted rehearsal passed and left access paused with both test accounts
+revoked. See [hosted evidence](trial-hosting-decision.md). Do not resume or issue
+real-user invitations merely because these engineering checks passed.
+Browser-local encrypted vaults do not substitute for service access control.
 
 ## Individual access implementation (local validation)
 

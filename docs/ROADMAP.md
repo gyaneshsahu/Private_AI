@@ -2,7 +2,7 @@
 
 **Working draft — direction accepted; detailed gates under review.**
 
-Updated 6 October 2026 · Owner: project founder; implementation: Codex.
+Updated 7 October 2026 · Owner: project founder; implementation: Codex.
 This is not yet an approved backbone for the entire product.
 
 The product goal is a general-purpose conversational assistant targeting
@@ -81,7 +81,7 @@ individual access. Existing IDs, order and acceptance thresholds remain unchange
 | Q1 — parallel evidence work | **BLOCKED: qualify the complete provider path** | Current [provider evidence review](provider-evidence-update.md) identifies version-specific browser freshness and worker/build binding gaps; supplier request is sent and reply pending. Existing per-request cache isolation is tested. Router-to-worker/GPU binding, software/build identity, freshness/revocation/rollback, caching/retention/diagnostics/moderation/egress and billing controls still require deployment evidence. Complete live/negative checks in the acceptance contract. Do not invent a passing report or accept a changed pin automatically. |
 | E1 | **IN PROGRESS: development harness and reviewed failures** | Freeze implementation/rubric; run development cases, fix failures, then preserve reserved separation. Keep 24 held-out cases × 3 runs as the planned coverage, using the founder-approved [trial thresholds](trial-quality-gate-proposal.md): 65/72 overall and 10/12 per family, with critical/serious blockers and material-failure recurrence rules. Preserve the per-task rubric and every failure; replace any reserved case used for tuning. Plan costs against remaining authorized balance before starting this larger batch. |
 | U2 — parallel | **DONE (local): readable conversation answers and everyday starters** | Markdown tables/lists/code/math, retained source citations, local assets, inert external content, and desktop/mobile coverage. Writing/planning starters prepare editable drafts without automatic sending. [Everyday review](everyday-development-review.md). |
-| U1 — parallel | **IN PROGRESS: local guide, individual access and trial runbook** | Founder selected PrivateAI-only invitations. Local implementation covers one-use redemption, expiring sessions, per-user revocation/limits and encrypted workspace separation; real browser tests exercise two identities and logout/relogin. [Trial runbook](invited-trial-runbook.md) documents operation and limits. Local consistent backup and paused recovery staging are tested; hosted TLS/proxy/security review, actual-host recovery and real-phone/user observation remain open. No private-content analytics or automatic feedback uploads. |
+| U1 — parallel | **IN PROGRESS: hosted individual access validated; user observation pending** | Founder selected PrivateAI-only invitations. Local implementation covers one-use redemption, expiring sessions, per-user revocation/limits and encrypted workspace separation; real browser tests exercise two identities and logout/relogin. [Trial runbook](invited-trial-runbook.md) documents operation and limits. Actual hosted HTTPS/session isolation, restart persistence and same-disk paused recovery staging passed. Hosted browser-vault/device observation, off-disk backup policy and metadata-log review remain open. No private-content analytics or automatic feedback uploads. |
 | R1 | **BLOCKED: open the bounded invited-user trial** | T2/T3/W2/Q1/E1/G6/U1 complete, actual cost reconciled, deployment validation tied to release, the reviewed severity/family quality gate met and no unresolved critical or essential security failures. Founder authorizes audience, hosting/privacy boundary and real-user-data scope. Supported scope and known minor limitations are explicit. |
 
 ### T2 disposition at the time-box boundary
@@ -147,6 +147,17 @@ Do not expand scope to avoid failing current requirements. Record the need, alte
 expected benefit, risks, cost and founder decision before promoting a deferred area.
 
 ## Evidence and change log
+
+- 7 October 2026: U1/R1 hosted dependency advanced with founder-approved push and
+  deployment to the existing paid Render service and 1 GB `/var/data` mount.
+  Clean-image CI passed after correcting Linux browser selection. Actual HTTPS
+  one-use registration, secure sessions, two-account session/CSRF isolation,
+  password replacement, revocation, restart persistence and paused recovery-copy
+  checks passed at application commit `b7e5ea7`. Both synthetic accounts are revoked
+  and access is paused. [Exact hosted evidence](trial-hosting-decision.md) distinguishes
+  same-disk recovery from disaster recovery. Provider privacy, failed writing
+  assessment, live-search rights, hosted vault/device observation and operating
+  backup/metadata policy remain open; R1 is still blocked.
 
 - 6 October 2026: founder reports hosting upgraded; dashboard confirms 0.5 CPU /
   512 MB compute at USD 7/month and 1 GB disk mounted at `/var/data`. The displayed

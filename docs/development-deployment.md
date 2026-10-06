@@ -1,19 +1,19 @@
 # Restricted development deployment
 
-Status, 5 October 2026: deployed on the reported Render Free service at
-https://private-ai-deployment.onrender.com. Authenticated GitHub API inspection
-confirmed successful hosted smoke and full validation at `46a03e2`; see
-[Windows batch evidence](windows-development-batch.md). Inference remains disabled
-and the user reports no provider key on Render. This is a restricted synthetic
-evaluation foundation, not public launch readiness.
+Status, 7 October 2026: the founder-approved individual-access release is deployed
+at https://private-ai-deployment.onrender.com on the existing upgraded Render
+service. Application commit `b7e5ea7` passed CI and actual hosted access, isolation,
+restart persistence and paused recovery staging; see [exact evidence and limits](trial-hosting-decision.md).
+The registry is persistent, both synthetic accounts are revoked, and trial access
+is paused. Inference remains disabled. This is not public launch readiness.
 
 ## Hosting decision
 
-**Current individual-access decision:** the existing Render Free filesystem is
-not durable registry storage. See the [paid single-instance/disk proposal and
-release checklist](trial-hosting-decision.md). Read-only dashboard inspection on
-5 October shows live commit `dbccbe0`, older than the local invitation/password
-implementation. Do not deploy that access system onto ephemeral storage.
+**Current individual-access decision:** one 0.5 CPU / 512 MB Docker instance and
+one 1 GB disk at `/var/data`, purchased by the founder. Registry path:
+`/var/data/privateai/invites.sqlite`. The USD 7 displayed compute price excludes
+separate disk billing. No additional capacity is approved. Do not move this
+registry onto ephemeral storage.
 
 Use one persistent Node 24 service with the existing app and gateway on the same
 HTTPS origin. Docker packaging is included. Sessions, instance-wide counters and
@@ -25,10 +25,9 @@ state design. Future scaling requires an atomic shared session/approval store.
 
 Vercel functions would require that state redesign before moving the current
 gateway. GitHub Pages cannot run it. A container web-service host such as Render
-is the candidate for the smallest change. Current hosting prices, terms, idle
-sleep, streaming timeouts and proxy behavior remain unverified: Vercel's official
-documentation request was rejected by the Cloud network proxy. No claim of a
-free, always-on plan is made and no hosting subscription is authorized.
+is the selected arrangement. Actual hosted access checks cover the current HTTPS
+edge; long-running streaming, capacity, metadata-log retention and disaster
+recovery still require their own evidence.
 
 ## Concrete host setup
 
@@ -43,7 +42,11 @@ to the unencrypted backend port. Health check: `GET /healthz` (liveness only).
 Set server environment/secrets:
 
 - `PRIVATEAI_ORIGIN`: exact HTTPS origin, no trailing slash.
-- `PRIVATEAI_ACCESS_KEY`: random base64url secret, 32–128 characters. Generate with
+- `PRIVATEAI_INVITES_FILE`: `/var/data/privateai/invites.sqlite`. Initialize an
+  empty registry explicitly with the invitation CLI before setting this variable;
+  hosted startup rejects missing/invalid registries. Keep directory owner-only
+  and database mode 600. Existing individual access supersedes shared Basic access.
+- Historical shared-access mode only, `PRIVATEAI_ACCESS_KEY`: random base64url secret, 32–128 characters. Generate with
   a password manager or `node -e 'console.log(require("node:crypto").randomBytes(32).toString("base64url"))'`
   locally and enter in host secrets, never chat or Git. Browser login username:
   `evaluator`, password: this development access key, NOT the Tinfoil API key.
@@ -59,11 +62,12 @@ secrets into VITE-prefixed variables or frontend build settings.
 
 ## Deployment and tests
 
-`Validate` runs type checking, 82 tests, build, seven browser workflows, fixture
-integrity and Docker build/smoke with NO provider secrets. Configure the selected
+`Validate` runs type checking, 163 tests, build, 16 browser workflows, fixture
+integrity and clean-export Docker build/smoke/persistence/access checks with no
+provider secrets. Configure the selected
 host's Git integration to deploy only after checks pass. If the host cannot gate
 on CI, keep automatic deployment disabled until a gated mechanism is installed.
-CI execution on GitHub is confirmed successful at `46a03e2`. Workflow-dispatch UI
+CI execution on GitHub is confirmed successful at `b7e5ea7`. Workflow-dispatch UI
 may require the workflow to exist on the repository's default branch; do not
 merge or reset branches simply to hide that setup requirement.
 
@@ -76,10 +80,19 @@ record the resolved image digest for every deployment. No private data mounts.
 After hosting, configure repository variable `PRIVATEAI_DEV_ORIGIN` and secret
 `PRIVATEAI_DEV_ACCESS_KEY` for `Hosted foundation smoke (no inference)`. The same
 script can run in a suitable trusted environment with these variables. It checks
-real TLS, anonymous denial, authenticated browser rendering and secure cookies;
+real TLS and anonymous denial. In legacy shared-access mode it also checks
+authenticated browser rendering and secure cookies;
 it blocks browser POSTs and external requests and requires inference disabled.
 The hosted check passed at `4476f6e` and `46a03e2`. Cloud Chromium proxy trust remains a
 separate constraint; do not import a persistent proxy certificate to force it.
+
+On individual-access deployments, the smoke reports `HOSTED_ACCESS_BOUNDARY_SMOKE`
+and explicitly records `authenticatedChecks: NOT_RUN`: it checks the sign-in page
+and denied anonymous API/private paths without storing individual credentials in
+CI. The packaged `trial:access`/`trial:isolation` checks and lifecycle rehearsal
+provide the separate authenticated evidence. On Windows, this batch used the
+existing system CA store (`NODE_OPTIONS=--use-system-ca`) after Node's bundled CA
+store rejected the certificate chain; certificate verification was never disabled.
 
 ## Privacy and observable failures
 
@@ -109,7 +122,8 @@ source for actual charges, client token estimates are not invoices. Never upload
 
 Current authorization is **USD 2 cumulative inference spending**, including prior
 usage, with auto-recharge disabled. This supersedes the older USD 10 text in this
-historical deployment plan. Hosting is a separate, unapproved recurring expense.
+historical deployment plan. The existing service/disk purchase and synthetic
+deployment are approved; additional recurring hosting capacity is not.
 Current quality work follows the [bounded Gemma plan](gemma-release-evaluation-plan.md);
 the compatibility sequence below is historical and is not a reusable permit.
 Existing consumed WSL and Windows claims remain untouched.

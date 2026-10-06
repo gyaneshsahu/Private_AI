@@ -25,18 +25,21 @@ See the [four-conversation priority review](gemma-release-evaluation-plan.md).
 
 Clean-export container build/smoke and a three-container persistent-volume
 rehearsal passed; see [exact image and limits](trial-hosting-decision.md).
-Actual hosted TLS, deployment persistence and devices still need the separately
-approved hosting arrangement. Local Docker success does not authorize deployment.
-Update: founder upgraded to 0.5 CPU / 512 MB and added 1 GB at `/var/data`;
-both are verified in Render. The selected compute price is USD 7/month; disk
-billing is separate from that displayed figure. Render still serves `dbccbe0`,
-before individual access; current branch publication/deployment and actual-host
-registry initialization/validation remain pending.
+Update, 7 October: the founder approved and completed hosting upgrade and synthetic
+deployment. Render now runs the individual-access application with the registry
+under the 1 GB `/var/data` disk on 0.5 CPU / 512 MB compute. Public HTTPS access,
+two-account session/CSRF isolation, one-use redemption, password replacement,
+revocation, actual restart persistence and paused recovery staging passed; see
+[hosted evidence and limitations](trial-hosting-decision.md#actual-host-evidence-7-october-6-october-utc).
+Both synthetic accounts are revoked and the live registry is paused. Actual-device
+usability, hosted browser-vault separation, off-disk backup policy and metadata-log
+retention remain open. The selected compute price is USD 7/month; disk billing is
+separate. No additional hosting capacity or private-data access was authorized.
 The packaged individual-access HTTP rehearsal additionally passes under 512 MiB /
 0.5 CPU: password change, per-user revocation, restart session invalidation and
 paused restart denial. This closes the packaged-access integration gap without
-claiming concurrency capacity or actual-host readiness. Recurring hosting approval
-and a monthly ceiling are needed to advance that dependency.
+claiming concurrency capacity. The hosted evidence above advances U1 but does not
+pass the remaining provider, quality or invited-user release gates.
 
 Live search needs an eligible plan and configured credential, including permission
 to retain returned sources for citations/encrypted history. The founder reports
