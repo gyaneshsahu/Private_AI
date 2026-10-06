@@ -27,9 +27,15 @@ const transferBytes = await readFile("evaluation/cases/repair-transfer.json");
 const transfer = caseSchema
   .length(2)
   .parse(JSON.parse(transferBytes.toString()));
+const attributionBytes = await readFile(
+  "evaluation/cases/attribution-transfer.json",
+);
+const attribution = caseSchema
+  .length(1)
+  .parse(JSON.parse(attributionBytes.toString()));
 if (
-  new Set([...cases, ...transfer].map((c) => c.id)).size !==
-  cases.length + transfer.length
+  new Set([...cases, ...transfer, ...attribution].map((c) => c.id)).size !==
+  cases.length + transfer.length + attribution.length
 )
   throw Error("Duplicate transfer case");
 if (new Set(cases.map((c) => c.id)).size !== cases.length)
@@ -59,6 +65,10 @@ console.log(
     kind: "SUPPLEMENTAL_FIXTURE_VALIDATION",
     cases: cases.length,
     transferCases: transfer.length,
+    attributionCases: attribution.length,
+    attributionSHA256: createHash("sha256")
+      .update(attributionBytes)
+      .digest("hex"),
     transferSHA256: createHash("sha256").update(transferBytes).digest("hex"),
     sha256: createHash("sha256").update(bytes).digest("hex"),
     modelExecutions: 0,

@@ -194,6 +194,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       "valid",
       "thinking_on",
       "thinking_off",
+      "glm_low",
       "pre_cancel",
       "stalled_verification",
       "wrong_host",
@@ -211,7 +212,12 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
     ]) {
       mode = scenario;
       const before = requests.length;
-      const succeeds = ["valid", "thinking_on", "thinking_off"].includes(mode);
+      const succeeds = [
+        "valid",
+        "thinking_on",
+        "thinking_off",
+        "glm_low",
+      ].includes(mode);
       const finished = succeeds
         ? page.waitForEvent("requestfinished", {
             predicate: (request) =>
@@ -265,7 +271,9 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         expect(payload.chat_template_kwargs).toEqual(
           mode.startsWith("thinking_")
             ? { enable_thinking: mode === "thinking_on" }
-            : undefined,
+            : mode === "glm_low"
+              ? { reasoning_effort: "low" }
+              : undefined,
         );
         const secret = payload.user_cache_secret;
         expect(JSON.stringify(result).includes(secret)).toBe(false);
@@ -315,7 +323,12 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       requests.every((r) => {
         const p = JSON.parse(r.plaintext);
         return (
-          p.model === (p.chat_template_kwargs ? "gemma4-31b" : "TEST_ONLY")
+          p.model ===
+          (p.chat_template_kwargs?.reasoning_effort
+            ? "glm-5-3"
+            : p.chat_template_kwargs
+              ? "gemma4-31b"
+              : "TEST_ONLY")
         );
       }),
     ).toBe(true);

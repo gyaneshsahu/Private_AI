@@ -36,10 +36,15 @@ Object.assign(window, {
           origin: "https://inference.tinfoil.sh",
           repository: "tinfoilsh/confidential-model-router",
           releaseDigests: ["a".repeat(64)],
-          model: mode.startsWith("thinking_") ? "gemma4-31b" : "TEST_ONLY",
+          model: mode.startsWith("thinking_")
+            ? "gemma4-31b"
+            : mode === "glm_low"
+              ? "glm-5-3"
+              : "TEST_ONLY",
           ...(mode.startsWith("thinking_")
             ? { gemmaThinking: mode === "thinking_on" }
             : {}),
+          ...(mode === "glm_low" ? { glmReasoningEffort: "low" as const } : {}),
           maxInputCharacters: 8000,
           maxOutputTokens: 100,
           pricing: { inputPerMillion: 1, outputPerMillion: 1, currency: "USD" },

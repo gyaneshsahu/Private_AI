@@ -27,6 +27,8 @@ it("distinguishes model, limits, release, pricing and code without depending on 
     { ...policy, model: "different-model" },
     { ...policy, gemmaThinking: true },
     { ...policy, gemmaThinking: false },
+    { ...policy, glmReasoningEffort: "low" as const },
+    { ...policy, glmReasoningEffort: "high" as const },
     { ...policy, maxOutputTokens: 4096 },
     { ...policy, releaseDigests: ["c".repeat(64)] },
     { ...policy, pricing: { ...policy.pricing, inputPerMillion: 1 } },

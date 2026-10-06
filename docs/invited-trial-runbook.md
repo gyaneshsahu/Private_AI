@@ -296,6 +296,43 @@ responses, authorization headers, cookies, keys or full request URLs. Feedback
 has no automatic upload. If an incident involves personal data, pause and obtain
 a reviewed response decision before wider disclosure or changed privacy promises.
 
+## Registry backup and paused recovery
+
+Local synthetic rehearsal passes; actual hosted restore, retention and storage
+access are still unvalidated. These commands use Node 24 and operate on an existing
+registry. They never replace the live registry or resume access automatically.
+
+1. Choose an existing private absolute destination outside **every Git checkout**,
+   public folders and automatic sync. Restrict its OS permissions first; Windows
+   requires appropriate directory ACLs, not Unix mode bits. Backups contain sensitive
+   password/token hashes and are **not encrypted by this tool**. Define authorized
+   access, retention and deletion before backing up real accounts.
+2. Set `PRIVATEAI_INVITES_FILE` to the absolute source registry path. Run
+   `node --import tsx scripts/invites.ts backup <private-directory>`.
+   SQLite's online backup API includes committed WAL state. Output is a fresh
+   directory containing `invites.sqlite` and a content-free `receipt.json` written
+   after validation. No receipt means incomplete output: preserve it for inspection.
+3. For recovery rehearsal, point `PRIVATEAI_INVITES_FILE` at that backup's database
+   and run `node --import tsx scripts/invites.ts stage-recovery <private-directory>`.
+   This produces another unique copy with access **paused**. It does not modify
+   either source or running service. Do not publish database files as evidence.
+4. Keep the service stopped or paused during an actual operator-reviewed recovery.
+   An older snapshot may revive revoked users, old passwords, invitation codes or
+   request allowances. Reconcile against trusted current access decisions before
+   any resume; if reconciliation is impossible, keep access disabled or revoke
+   affected invitations. Check expiry, credential versions and quotas as well.
+5. Switching the service to the reviewed staged database is a separate deployment
+   operation, requiring the chosen durable mount and hosted validation. New startup
+   invalidates in-memory sessions. Only explicitly resume after reconciliation and
+   access checks. Retain the prior registry for incident review under the approved
+   retention policy; never silently overwrite it.
+
+Tests exercise synthetic CLI backup/staging, committed WAL data, password changes,
+revocation, quota retention and denied login/registration/requests while paused.
+They do not prove host disaster recovery, power-loss durability or lost-password
+recovery. The container smoke check includes this workflow but remains unrun while
+the local Docker engine is unavailable.
+
 ## Open evidence
 
 Full provider-chain qualification, human quality grades, realistic planning

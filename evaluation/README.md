@@ -75,7 +75,9 @@ credentials, and are not a new upload or public feedback channel. File permissio
 inherit Windows directory ACLs; `mode: 0600` is not a Windows access-control claim.
 
 `cases/repair-transfer.json` adds two supplemental transfer fixtures separately
-from the unchanged original eight. All ten now have live observations. The latest
+from the unchanged original eight. `cases/attribution-transfer.json` adds one
+separately identified reservation/ownership transfer; all eleven supplemental
+cases now have live observations. The latest
 [repair/configuration comparison](../docs/development-family-review.md) preserves
 failed regressions; the reserved quality gate remains unrun.
 
@@ -87,3 +89,9 @@ remain compatible. This is experimental configuration support, not a production
 qualification setting or UI control. Output-token bounds still apply, including
 provider-reported generation usage; truncation stops the run without retry.
 Reasoning-only stream deltas do not become saved assistant text or logs.
+
+Synthetic permits may alternatively set `policy.glmReasoningEffort` to `low`,
+`high` or `max` only for `glm-5-3`; this maps to
+`chat_template_kwargs.reasoning_effort`. Unsupported values and wrong-model
+combinations fail before inference. Effort settings have distinct configuration
+identities; omission preserves old identities. This is not production qualification.

@@ -82,9 +82,11 @@ resolve planning contradictions or ambiguous personal roles. A separate explicit
 thinking configuration comparison returned acceptable answers on two planning
 cases, but still failed attribution. See [exact outcomes](development-family-review.md).
 No further prompt-rule iteration is planned. Candidate freeze remains blocked;
-next compare documented model/configuration alternatives on attribution and fresh
-transfer tasks, and broaden explicit-thinking planning evidence before any release
-selection. The earlier itinerary failure and human review obligations remain open.
+the subsequent GLM-5.3 low-effort comparison also failed attribution. Both candidates
+handled a new reservation transfer; explicit-thinking Gemma produced one acceptable
+itinerary regression. Adjudicate the retained attribution findings and justify any
+broader candidate assessment before release selection. The earlier itinerary
+failure and human review obligations remain recorded and open.
 The instructions below preserve the original repair bounds, not a renewed retry.
 
 Gemma's itinerary arithmetic is unresolved. Review the full conversation and

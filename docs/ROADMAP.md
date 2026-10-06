@@ -81,7 +81,7 @@ individual access. Existing IDs, order and acceptance thresholds remain unchange
 | Q1 — parallel evidence work | **BLOCKED: qualify the complete provider path** | Current [provider evidence review](provider-evidence-update.md) identifies version-specific browser freshness and worker/build binding gaps; supplier request is sent and reply pending. Existing per-request cache isolation is tested. Router-to-worker/GPU binding, software/build identity, freshness/revocation/rollback, caching/retention/diagnostics/moderation/egress and billing controls still require deployment evidence. Complete live/negative checks in the acceptance contract. Do not invent a passing report or accept a changed pin automatically. |
 | E1 | **IN PROGRESS: development harness and reviewed failures** | Freeze implementation/rubric; run development cases, fix failures, then preserve reserved separation. Keep 24 held-out cases × 3 runs as the planned coverage, using the founder-approved [trial thresholds](trial-quality-gate-proposal.md): 65/72 overall and 10/12 per family, with critical/serious blockers and material-failure recurrence rules. Preserve the per-task rubric and every failure; replace any reserved case used for tuning. Plan costs against remaining authorized balance before starting this larger batch. |
 | U2 — parallel | **DONE (local): readable conversation answers and everyday starters** | Markdown tables/lists/code/math, retained source citations, local assets, inert external content, and desktop/mobile coverage. Writing/planning starters prepare editable drafts without automatic sending. [Everyday review](everyday-development-review.md). |
-| U1 — parallel | **IN PROGRESS: local guide, individual access and trial runbook** | Founder selected PrivateAI-only invitations. Local implementation covers one-use redemption, expiring sessions, per-user revocation/limits and encrypted workspace separation; real browser tests exercise two identities and logout/relogin. [Trial runbook](invited-trial-runbook.md) documents operation and limits. Hosted TLS/proxy/security review, recovery design and real-phone/user observation remain open. No private-content analytics or automatic feedback uploads. |
+| U1 — parallel | **IN PROGRESS: local guide, individual access and trial runbook** | Founder selected PrivateAI-only invitations. Local implementation covers one-use redemption, expiring sessions, per-user revocation/limits and encrypted workspace separation; real browser tests exercise two identities and logout/relogin. [Trial runbook](invited-trial-runbook.md) documents operation and limits. Local consistent backup and paused recovery staging are tested; hosted TLS/proxy/security review, actual-host recovery and real-phone/user observation remain open. No private-content analytics or automatic feedback uploads. |
 | R1 | **BLOCKED: open the bounded invited-user trial** | T2/T3/W2/Q1/E1/G6/U1 complete, actual cost reconciled, deployment validation tied to release, the reviewed severity/family quality gate met and no unresolved critical or essential security failures. Founder authorizes audience, hosting/privacy boundary and real-user-data scope. Supported scope and known minor limitations are explicit. |
 
 ### T2 disposition at the time-box boundary
@@ -147,6 +147,22 @@ Do not expand scope to avoid failing current requirements. Record the need, alte
 expected benefit, risks, cost and founder decision before promoting a deferred area.
 
 ## Evidence and change log
+
+- 6 October 2026: E1 candidate comparison completed four conversations / eight
+  requests with fresh permits. GLM-5.3 low effort also failed meeting attribution;
+  both GLM and explicit-thinking Gemma handled a new reservation transfer. Gemma's
+  accessible-afternoon regression was narrowly acceptable; prior human failure
+  remains preserved. No model selected or privacy gate changed. Coverage is now
+  24 frozen development plus 11 supplemental cases; reserved evaluation is unrun.
+  [Exact findings and identities](development-family-review.md). Batch estimate
+  USD 0.00810060; cumulative local estimate USD 0.05097165, actual charges unreconciled.
+  U1 now has SQLite online backup and separate paused recovery staging, with
+  synthetic tests for WAL state, password versions, revocation and quotas. Staging
+  never replaces live data; current access decisions require reconciliation before
+  resume. [Operator procedure](invited-trial-runbook.md#registry-backup-and-paused-recovery).
+  Hosted storage/access and container execution remain unvalidated; no hosting
+  purchase or deployment. Validation: 146 unit/integration tests, 15 browser
+  workflows, typecheck/build and fixture integrity passed.
 
 - 6 October 2026: completed the single policy-simplification repair cycle and a
   separate explicit-thinking comparison, eight conversations / 16 requests total.

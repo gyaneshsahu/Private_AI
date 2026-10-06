@@ -16,6 +16,9 @@ export function configurationIdentity(
         ...(policy.gemmaThinking !== undefined
           ? { gemmaThinking: policy.gemmaThinking }
           : {}),
+        ...(policy.glmReasoningEffort !== undefined
+          ? { glmReasoningEffort: policy.glmReasoningEffort }
+          : {}),
         origin: policy.origin,
         repository: policy.repository,
         releaseDigests: [...policy.releaseDigests].sort(),
@@ -44,6 +47,7 @@ export async function implementationIdentity(root: string) {
     "evaluation/cases/development.json",
     "evaluation/cases/robustness-development.json",
     "evaluation/cases/repair-transfer.json",
+    "evaluation/cases/attribution-transfer.json",
     "evaluation/frozen-manifest.json",
     "evaluation/experiment-gateway.ts",
     "evaluation/run-local.ts",

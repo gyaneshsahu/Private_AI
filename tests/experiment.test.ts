@@ -148,6 +148,14 @@ describe("synthetic experiment gates (no provider calls)", () => {
       { policy: { ...fixture().policy, origin: "https://attacker.example" } },
       { policy: { ...fixture().policy, model: "auto" } },
       { policy: { ...fixture().policy, gemmaThinking: true } },
+      { policy: { ...fixture().policy, glmReasoningEffort: "low" } },
+      {
+        policy: {
+          ...fixture().policy,
+          model: "glm-5-3",
+          glmReasoningEffort: "unbounded",
+        },
+      },
     ])
       expect(() => validateExperiment({ ...fixture(), ...change })).toThrow();
   });

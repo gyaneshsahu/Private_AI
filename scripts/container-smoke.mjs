@@ -94,8 +94,42 @@ try {
   );
   if (invitations.paused !== false || invitations.invitations.length !== 0)
     throw new Error("Unexpected synthetic registry");
+  const snapshot = JSON.parse(
+    docker(
+      "exec",
+      "-e",
+      "PRIVATEAI_INVITES_FILE=/tmp/synthetic-invitations.sqlite",
+      name,
+      "node",
+      "--import",
+      "tsx",
+      "scripts/invites.ts",
+      "backup",
+      "/tmp",
+    ),
+  );
+  const recovered = JSON.parse(
+    docker(
+      "exec",
+      "-e",
+      `PRIVATEAI_INVITES_FILE=${snapshot.directory}/invites.sqlite`,
+      name,
+      "node",
+      "--import",
+      "tsx",
+      "scripts/invites.ts",
+      "stage-recovery",
+      "/tmp",
+    ),
+  );
+  if (
+    recovered.kind !== "PAUSED_RECOVERY_COPY" ||
+    !recovered.paused ||
+    !recovered.operatorReconciliationRequired
+  )
+    throw new Error("Recovery did not remain paused");
   console.log(
-    "Packaged invitation CLI initializes an isolated synthetic registry as the non-root runtime user.",
+    "Packaged invitation CLI initializes, backs up and stages a paused synthetic recovery as the non-root runtime user.",
   );
 } catch {
   console.error(

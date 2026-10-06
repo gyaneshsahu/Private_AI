@@ -2,8 +2,13 @@ import { z } from "zod";
 import developmentCases from "./cases/development.json";
 import originalRobustnessCases from "./cases/robustness-development.json";
 import transferCases from "./cases/repair-transfer.json";
+import attributionCases from "./cases/attribution-transfer.json";
 import { qualificationSchema } from "../shared/contracts";
-const robustnessCases = [...originalRobustnessCases, ...transferCases];
+const robustnessCases = [
+  ...originalRobustnessCases,
+  ...transferCases,
+  ...attributionCases,
+];
 
 // An experiment permit is explicitly NOT an operational qualification report.
 export const experimentSchema = z
@@ -42,7 +47,10 @@ export const experimentSchema = z
         maxOutputTokens: true,
         pricing: true,
       })
-      .extend({ gemmaThinking: z.boolean().optional() })
+      .extend({
+        gemmaThinking: z.boolean().optional(),
+        glmReasoningEffort: z.enum(["low", "high", "max"]).optional(),
+      })
       .strict(),
   })
   .strict();
@@ -55,6 +63,10 @@ export function validateExperiment(
   if (x.policy.gemmaThinking !== undefined && x.policy.model !== "gemma4-31b")
     throw new Error(
       "Gemma thinking mode requires the explicit Gemma candidate.",
+    );
+  if (x.policy.glmReasoningEffort !== undefined && x.policy.model !== "glm-5-3")
+    throw new Error(
+      "GLM reasoning effort requires the explicit GLM candidate.",
     );
   if (x.scenario === "development_case" || x.scenario === "robustness_case")
     developmentCase(x.developmentCaseId, x.scenario);

@@ -75,8 +75,10 @@ trial or pass provider/quality gates.
 4. Use only dedicated synthetic accounts: redeem two invitations, save separate
    browser workspaces, change a password, revoke one account, restart/redeploy and
    verify IDs/password changes/revocations/counters remain while old sessions fail.
-5. Validate a SQLite-consistent backup/restore in an isolated private destination
-   with synthetic credentials first. Keep backups outside Git and public artifacts.
+5. Local synthetic SQLite-consistent backup and paused recovery staging now pass,
+   including committed WAL state, password version, revocation and quota retention.
+   Repeat the [recovery procedure](invited-trial-runbook.md#registry-backup-and-paused-recovery)
+   against the selected host's storage before deployment approval. Keep backups outside Git and public artifacts.
    Do not copy a live SQLite file casually or treat disk snapshots as a tested
    database backup. Never copy production password hashes into a developer checkout.
 6. Keep access paused during recovery. An older registry backup can resurrect

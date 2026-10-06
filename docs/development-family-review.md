@@ -3,7 +3,42 @@
 5 October 2026. Agent-reviewed synthetic development evidence; not human grading,
 held-out evaluation, provider qualification or comparative quality evidence.
 
-## Latest: bounded repair and explicit thinking comparison (6 October)
+## Latest: alternate candidate and recovery batch (6 October)
+
+Four fresh synthetic conversations / eight requests used the unchanged simplified
+policy: GLM-5.3 with documented low reasoning effort and Gemma with explicit
+thinking. These are different configurations, not an equal-compute benchmark.
+
+| Run (prefix `windows_20261006_compare_`) | Agent finding |
+| --- | --- |
+| `personal_reference_glm_1` | **Material failure:** changes Alex's meeting into a meeting with Alex that works for both Alex and Sam; ownership does not establish attendance. |
+| `personal_reservation_transfer_glm_1` | Narrowly acceptable: neutral initial placeholders; asks the venue to confirm Noor's reservation without invented attendance or reasons. |
+| `personal_reservation_transfer_gemma_1` | Narrowly acceptable on the same new transfer. |
+| `planning_03_gemma_1` | Narrowly acceptable accessible-afternoon response; no repeated four-hour claim or invented venue availability. The founder's earlier failure remains recorded. |
+
+All four produced two complete replies with matching verifications and
+`VALIDATED_COMPLETE_WITH_CHROMIUM_ABORT`; original relay failures remain preserved.
+Batch token estimate: **USD 0.00810060**; cumulative local estimate **USD 0.05097165**,
+not reconciled charges. Pre-batch dashboard showed USD 0.96 balance, USD 0.04 rounded
+period spending, USD 2 limit and auto-reload disabled. Fresh consumed permits and
+results remain under ignored `.local/experiment-runs/`; no retries were made.
+
+Configuration hashes: GLM `2c97e6ffcab4f5394db94ff7d08fe9d6180acd474e8bcaf8f1a7177704aa62ec`;
+Gemma `8cf9070e4303942f9e3792fc7414d1dccfdc71a0b6e9741582019255ab0ea65c`.
+`agent-review-profile-20261006.json` sidecars bind judgments to exact transcripts.
+Inventory: 77 runs, zero invalid, 24 distinct frozen development cases plus 11
+supplemental cases, 54 agent reviews, eight human reviews and 15 historical runs
+pending review. The reserved set remains untouched.
+
+GLM did not resolve the persistent attribution defect; neither candidate is a
+release selection. Do not start another prompt-tweak loop. The next quality step
+is severity adjudication of the retained attribution examples and a bounded,
+predeclared broader candidate assessment when justified by new evidence.
+GLM's [published worker configuration](https://github.com/tinfoilsh/confidential-glm5-3-nvfp4)
+is a supplier claim, not verified live worker binding. The sent supplier request
+covers Gemma/GPT-OSS; GLM would need its own deployment evidence before promotion.
+
+## Previous: bounded repair and explicit thinking comparison (6 October)
 
 One policy simplification removed mandatory self-checks and blanket non-overlap
 instructions from ordinary plans. It requires consistent conclusions, preserves
