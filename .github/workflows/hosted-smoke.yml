@@ -18,6 +18,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - name: Use the installed Playwright browser
+        run: node --input-type=module -e 'import { chromium } from "@playwright/test"; console.log("CHROMIUM_PATH=" + chromium.executablePath())' >> "$GITHUB_ENV"
       - run: node scripts/hosted-smoke.mjs
         env:
           PRIVATEAI_DEV_ORIGIN: ${{ vars.PRIVATEAI_DEV_ORIGIN }}
