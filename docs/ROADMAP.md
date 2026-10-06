@@ -148,6 +148,14 @@ expected benefit, risks, cost and founder decision before promoting a deferred a
 
 ## Evidence and change log
 
+- 6 October 2026: U1 packaged individual-access rehearsal added to CI and passed
+  locally against the existing validated application image with 512 MiB / 0.5 CPU,
+  network disabled and an isolated synthetic volume. HTTP sign-in/password change,
+  secure cookies, per-user revocation, restart session invalidation, persistent
+  credentials and paused restart denial pass. No actual-host TLS or capacity pass
+  is claimed. [Hosting decision](trial-hosting-decision.md) now identifies the
+  recurring expense/ceiling approval as the next hosted-validation dependency.
+
 - 6 October 2026: E1/G1 fresh writing comparison completed eight conversations /
   sixteen replies. Both Gemma thinking and GLM low narrowly meet the four new
   development tasks in agent review, with minor unsupported additions retained.

@@ -29,5 +29,6 @@ jobs:
           docker build -t privateai-evaluation "$RUNNER_TEMP/privateai-build"
       - run: node scripts/container-smoke.mjs
       - run: node scripts/container-persistence.mjs
+      - run: node scripts/container-invite-access.mjs
 # No provider keys, inference calls, deployments or paid services in CI.
 # Configure a selected host to deploy this branch only after this job succeeds.

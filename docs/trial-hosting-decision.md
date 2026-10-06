@@ -60,6 +60,29 @@ trial or pass provider/quality gates.
 
 ## Required work before deployment
 
+**Additional packaged access evidence, 6 October:**
+`scripts/container-invite-access.mjs` now exercises the actual application HTTP
+routes inside a network-disabled container with a synthetic persistent volume,
+512 MiB memory, no swap and 0.5 CPU. It passes anonymous denial, forwarded-HTTPS
+enforcement, secure/HttpOnly/SameSite cookies, password replacement, unaffected
+second-user access, revocation, old-cookie invalidation after restart, persistent
+new password/revocation and denied login after a paused restart. The container
+remained running without an OOM kill. This is bounded functional evidence, not
+concurrent capacity qualification or actual TLS/proxy-host validation.
+
+Tested image is the `bbb802e` image below. `git diff bbb802e HEAD` showed no changes
+in `src`, `server`, `shared`, Dockerfile, package files or the invitation CLI before
+this rehearsal, so rebuilding unchanged application components was unnecessary.
+CI now runs this additional check on its freshly built committed image. Only the
+test's uniquely named container/volume are removed; no real registry is used.
+
+The published pricing was rechecked on 6 October: the proposed base remains
+USD 7/month compute plus USD 0.25/month for 1 GB disk. Account-specific taxes and
+metered overages require checking before purchase; a spending target is not a
+provider-enforced hard cap. Founder approval of recurring hosting and a total
+monthly spending ceiling is now the next actual-host dependency. Keep inference
+and search credentials absent for the first synthetic hosted access rehearsal.
+
 **6 October local container evidence:** Docker Desktop engine 29.8.0 became
 available. Clean Git export of `bbb802e` built successfully; image identity
 `sha256:10e5f9b74b962c76f7a57d38c210e8017d515ab655f0a70a2fba767d25cfd257`.

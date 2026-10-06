@@ -27,6 +27,11 @@ Clean-export container build/smoke and a three-container persistent-volume
 rehearsal passed; see [exact image and limits](trial-hosting-decision.md).
 Actual hosted TLS, deployment persistence and devices still need the separately
 approved hosting arrangement. Local Docker success does not authorize deployment.
+The packaged individual-access HTTP rehearsal additionally passes under 512 MiB /
+0.5 CPU: password change, per-user revocation, restart session invalidation and
+paused restart denial. This closes the packaged-access integration gap without
+claiming concurrency capacity or actual-host readiness. Recurring hosting approval
+and a monthly ceiling are needed to advance that dependency.
 
 Live search needs an eligible plan and configured credential, including permission
 to retain returned sources for citations/encrypted history. The founder reports
