@@ -15,7 +15,9 @@ COPY index.html tsconfig.json vite.config.ts ./
 RUN npm run build
 
 FROM node:24-bookworm-slim AS runtime
-ENV NODE_ENV=production PORT=4173
+RUN apt-get update && apt-get install -y --no-install-recommends age \
+    && rm -rf /var/lib/apt/lists/*
+ENV NODE_ENV=production PORT=4173 PRIVATEAI_AGE_BINARY=/usr/bin/age
 WORKDIR /app
 COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/package.json ./package.json
@@ -23,6 +25,7 @@ COPY --from=build --chown=node:node /app/server ./server
 COPY --from=build --chown=node:node /app/shared ./shared
 COPY --from=build --chown=node:node /app/dist ./dist
 COPY --chown=node:node scripts/invites.ts ./scripts/invites.ts
+COPY --chown=node:node scripts/encrypted-registry.ts ./scripts/encrypted-registry.ts
 COPY --chown=node:node scripts/trial-access-check.ts scripts/trial-isolation-check.ts ./scripts/
 USER node
 EXPOSE 4173

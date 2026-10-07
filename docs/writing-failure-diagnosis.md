@@ -161,3 +161,14 @@ The requested eight-score review is complete. No repeat review or prompt change 
 needed just to remove the minor GLM findings. Continue safety and transfer coverage,
 then freeze a justified release configuration. Earlier reserved writing still fails
 at at most 8/12; these development scores contribute zero to that acceptance gate.
+
+7 October frozen policy-transfer development: configuration
+`9edaef40e7ec0e94fd5731f096ddbf681ed005c7c0b202f6147dae213a31fda2`
+completed four fresh two-turn questions alongside safety coverage. The decline
+case still invents invitation/scheduling context despite withholding an excuse or
+replacement offer. Agent inspection flags this recurrence for human review (case
+20 in local `policy-20261007`); do not record it as a human grade. The enquiry,
+time-budget and numeric-sort observations are encouraging but are not acceptance
+evidence. Preserve the failed reserved evaluation; no threshold or failed score is
+changed. Review the recurring unsupported-addition mechanism before choosing a
+further intervention, rather than adding another example-specific prompt rule.

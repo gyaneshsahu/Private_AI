@@ -18,6 +18,12 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Install distribution age for encrypted recovery verification
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends age
+          age --version
+          echo 'PRIVATEAI_TEST_AGE=/usr/bin/age' >> "$GITHUB_ENV"
       - run: npx playwright install --with-deps chromium
       - name: Use the installed Playwright browser
         run: node --input-type=module -e 'import { chromium } from "@playwright/test"; console.log("CHROMIUM_PATH=" + chromium.executablePath())' >> "$GITHUB_ENV"

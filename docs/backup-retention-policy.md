@@ -1,9 +1,11 @@
 # Trial backup and metadata-retention policy
 
-7 October 2026. **Proposed operational policy, not implemented retention guarantees.**
+7 October 2026. **Approved destination; local encryption verified; hosted transfer and operational retention not yet verified.**
 Owner: founder/operator. Applies to the existing single-instance Render service.
-No off-disk export, new storage purchase or credential copy is authorized by this
-document. The current trial remains paused and private-data access gated.
+The founder authorized encrypted registry transfer to `C:\PrivateAI-backups`,
+Windows-account-protected keys, seven-day retention and an independently secured
+recovery-key copy. No additional storage purchase is authorized. The current trial
+remains paused and private-data access gated.
 
 ## Current evidence and gaps
 
@@ -39,10 +41,10 @@ snapshots; a registry backup does not recover their contents or forgotten passwo
   encrypted-object checksum, without account IDs, credentials or transcript data.
   Alert the operator when the latest verified backup exceeds 24 hours.
 
-Before activation the founder must approve destination, region, access boundary,
-cost and retention, and authorize the encrypted authentication-material export.
-Confirm supplier deletion/versioning behavior and recovery-key custody. No storage
-vendor or new service is selected merely to fill this plan.
+The founder approved the Windows destination, account access boundary, encrypted
+authentication-material export and seven-day retention without a new subscription.
+Before activation verify recovery-key custody and the actual transfer/lifecycle.
+No storage vendor or new service is selected merely to fill this plan.
 
 ## Recovery acceptance
 
@@ -93,6 +95,58 @@ or historical experiment evidence was used or changed.
 
 ## Concrete destination recommendation and fallback — 7 October
 
-Recommend the existing operator Windows computer, `C:\Users\sahug\PrivateAI-backups`, outside Git and automatic cloud sync, for the first encrypted off-host backup. Use maintained recipient encryption on the host before transfer, with the private recovery key held off-host in protected operator storage and separately secured recovery custody. No additional service subscription is needed for this arrangement. It protects against Render disk loss, not simultaneous loss of the host and operator computer. Destination/key custody and authentication-material transfer still need approval; encryption and timed restore are not yet implemented.
+The approved destination is `C:\PrivateAI-backups`. The original home-directory recommendation was rejected after finding a Git repository at `C:\Users\sahug`; do not use that location. The approved directory is initialized with inheritance disabled and only the current Windows account granted FullControl. The private age identity is stored in Windows Credential Manager, outside the archive directory; no private identity was printed or written to a plaintext file. Independent recovery-key custody remains unresolved. No additional subscription is needed. This protects against Render disk loss, not simultaneous loss of the host and operator computer.
 
 The CLI now offers `stage-recovery-revoke-all <private-directory>`: creates a new paused copy, atomically revokes every restored identity and clears pending invitation hashes, leaves the source untouched, and emits a content-free receipt. Use when current credential/revocation state cannot be reconciled. Installing the copy, reissuing access and resuming remain separate operator decisions. The packaged synthetic CLI test proves old invitations remain denied after explicit resume. This is not off-disk backup or reconciliation of quotas for replacement identities.
+
+## Encrypted backup implementation and remaining activation work
+
+`server/encrypted-registry.ts` serializes a committed SQLite snapshot in memory,
+passes it to maintained age encryption through stdin, and emits ciphertext only.
+There is no plaintext export file. Runtime support for SQLite serialize/deserialize
+is checked and fails closed. Authenticated decryption and schema validation happen
+in memory. Restore creates a separate operational database with access paused and
+all identities revoked; it never replaces the live registry. That restored database
+is sensitive and remains within the protected destination.
+
+`tests/encrypted-registry.test.ts` exercises actual age encryption, WAL snapshots,
+wrong keys, tampering, source preservation and revoked paused recovery. CI explicitly
+installs distribution age and enables this test; ordinary runs without
+`PRIVATEAI_TEST_AGE` report it skipped and are not encryption evidence. Windows
+verification uses official age 1.3.2, downloaded with its release SHA-256 verified.
+The container uses Debian's maintained age package; hosted validation remains pending.
+
+`scripts/windows-backup.ps1` provides Initialize, Configure, Backup, Verify,
+Restore, Status and Schedule. Transfer uses SSH with strict host-key checking,
+batch authentication, a total 90-second stream deadline and a 16 MiB bound.
+Only ciphertext is written during transfer. Configure requires the exact Render
+SSH target; verification must succeed before a partial archive becomes complete.
+Retention removes only strictly named archives older than seven days inside the
+approved directory, not historical experiment evidence or restored databases.
+Restore copies need deliberate disposal after review; they are not silently purged.
+
+Scheduling is prepared but **not activated**: daily at 09:00 Windows local time,
+current-user interactive logon, no overlapping tasks, five-minute execution limit,
+start when available. A successful real transfer and independently verified key
+copy are prerequisites. The PC must be awake, connected and signed in; seven-day
+expiry cannot run while it is unavailable. Therefore neither a 24-hour recovery
+point nor strict continuous expiry is guaranteed by this arrangement.
+
+Content-free status records report last attempt/success and failure; Status exits
+nonzero for failure or a backup older than 24 hours. Task failure/status is only a
+local signal: proactive operator alerts, release/checksum receipts, retention
+rehearsal and timed off-host recovery remain unfinished. Do not call monitoring or
+disaster recovery passed until those checks complete.
+
+Render's Connect → SSH currently requires an SSH public key to be registered.
+No real registry transfer has occurred. Register operator SSH access, verify the
+host key through an authoritative channel, select independent recovery-key custody,
+then validate a deployed encrypted export and isolated paused restore before
+activating scheduling. Never disable strict SSH checks to make transfer work.
+
+Validation at this checkpoint: 165 tests across 43 files, typecheck and production
+build passed with the real Windows age test enabled. PowerShell syntax passes;
+Initialize created the approved directory and credential successfully, ACL readback
+confirmed current-user-only access, and Status correctly fails without a verified
+transfer receipt. Docker build could not start because the local Linux engine is
+unavailable. Container/CI changes are prepared, not verified or deployed.
