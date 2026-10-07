@@ -74,3 +74,19 @@ part of a rehearsal or delete existing evidence without authorization.
 Before real invitations: resolve host/provider metadata retention, implement and
 test the chosen lifecycle, rehearse off-disk recovery, and publish disclosures
 matching actual settings. Do not advertise these proposed durations before that.
+
+## Synthetic recovery evidence — 7 October
+
+`tests/registry-backup.test.ts` now demonstrates the dangerous stale state explicitly:
+a snapshot contains an older password version and one request, while the source
+later contains a changed password, exhausted quota, revoked invitation and elapsed
+expiry. Recovery remains paused and denies login, registration and requests. With
+no independent reconciliation record, revoking every restored row before resuming
+keeps old passwords and invitation tokens unusable. The live synthetic registry
+retains its current password, quota and revocation state unchanged.
+
+All four backup tests pass. The first sandboxed attempt could not create the
+required temporary directory outside Git; the approved run passed without weakening
+path checks. This tests the documented operator fallback, not an automatic recovery
+command, encryption, off-disk storage, RPO/RTO or production restore. No live registry
+or historical experiment evidence was used or changed.

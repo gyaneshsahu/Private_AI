@@ -138,6 +138,89 @@ it("backs up committed WAL state and stages recovery paused without overwriting 
   }
 });
 
+it("contains stale passwords and quotas behind pause until every unreconciled account is revoked", async () => {
+  const root = await temporary(),
+    source = join(root, "live.sqlite"),
+    output = join(root, "recovery");
+  await mkdir(output);
+  let now = Date.now();
+  const live = new InviteRegistry(source, () => now);
+  const oldPassword = "SYNTHETIC before snapshot",
+    newPassword = "SYNTHETIC after snapshot";
+  try {
+    const changed = live.issue(now + 600000),
+      expired = live.issue(now + 1000),
+      pending = live.issue(now + 600000);
+    expect(await live.register(changed.id, changed.token, oldPassword)).toBe(
+      true,
+    );
+    expect(live.allowRequest(changed.id)).toBe(true);
+    const snapshot = await backupRegistry(source, output);
+    expect(
+      await live.changePassword(changed.id, 0, oldPassword, newPassword),
+    ).toBe(true);
+    for (let i = 1; i < 200; i++)
+      expect(live.allowRequest(changed.id)).toBe(true);
+    expect(live.allowRequest(changed.id)).toBe(false);
+    live.revoke(pending.id);
+    now += 2000;
+
+    const recovery = await stageRegistryRecovery(
+      join(snapshot.directory, "invites.sqlite"),
+      output,
+    );
+    const stagedFile = join(recovery.directory, "invites.sqlite");
+    const inspect = new DatabaseSync(stagedFile, { readOnly: true });
+    try {
+      // These intentionally stale values show why a valid backup is not safe to resume.
+      expect(
+        inspect
+          .prepare("SELECT requests,credential_version FROM invites WHERE id=?")
+          .get(changed.id),
+      ).toMatchObject({ requests: 1, credential_version: 0 });
+    } finally {
+      inspect.close();
+    }
+    const staged = new InviteRegistry(stagedFile, () => now);
+    try {
+      expect(staged.paused).toBe(true);
+      expect(await staged.login(changed.id, oldPassword)).toBe(false);
+      expect(await staged.login(changed.id, newPassword)).toBe(false);
+      expect(staged.allowRequest(changed.id)).toBe(false);
+      expect(
+        await staged.register(pending.id, pending.token, oldPassword),
+      ).toBe(false);
+      expect(staged.list().find((row) => row.id === expired.id)?.status).toBe(
+        "expired",
+      );
+
+      // Rehearse the documented fallback when no current reconciliation record survives.
+      for (const row of staged.list()) expect(staged.revoke(row.id)).toBe(true);
+      staged.pause(false);
+      expect(await staged.login(changed.id, oldPassword)).toBe(false);
+      expect(await staged.login(changed.id, newPassword)).toBe(false);
+      expect(staged.allowRequest(changed.id)).toBe(false);
+      expect(
+        await staged.register(pending.id, pending.token, oldPassword),
+      ).toBe(false);
+      expect(
+        await staged.register(expired.id, expired.token, oldPassword),
+      ).toBe(false);
+    } finally {
+      staged.close();
+    }
+    expect(await live.login(changed.id, newPassword)).toBe(true);
+    expect(await live.login(changed.id, oldPassword)).toBe(false);
+    expect(live.credentialVersion(changed.id)).toBe(1);
+    expect(live.allowRequest(changed.id)).toBe(false);
+    expect(live.active(pending.id)).toBe(false);
+    expect(live.paused).toBe(false);
+  } finally {
+    live.close();
+    await cleanup(root);
+  }
+});
+
 it("refuses missing/corrupt sources and Git destinations without creating a misleading completed backup", async () => {
   const root = await temporary(),
     source = join(root, "source.sqlite"),

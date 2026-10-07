@@ -638,3 +638,11 @@ G1–G6 and U1 independently while Q1 needs supplier evidence.
 - 7 October 2026: audited conversational safeguards without changing inference policy. Added S1 as a trial prerequisite: privacy/security controls and refusal rendering do not establish behavioral safety. Prepared off-disk backup/retention and synthetic actual-device review plans; visual implementation awaits the founder brief. Identified the exact eight-conversation human writing review and preserved failed acceptance. Corrected active hosting/review summaries; historical entries remain historical.
 
 - 7 October 2026: established `READINESS.md` as the single current readiness ledger across capabilities, safety, privacy, recovery, usability and operations. Reordered work toward S1/model reliability, necessary recovery and operational evidence ahead of visual redesign; Q1/search remain parallel dependencies. Identified conversational coding coverage, registry retention, hosted disclosure drift and monitoring/accessibility gaps without adding autonomous tools or weakening general-assistant scope.
+
+- 7 October 2026: prepared 12 two-turn safety development conversations in six
+  risk/benign pairs and added offline fixture checks to the existing CI evaluation
+  command. These are not model evaluations and do not pass S1. Added a synthetic
+  stale-backup regression covering post-snapshot password/quota/expiry/revocation
+  changes and revoke-all fallback; four backup tests pass. Typecheck and evaluation
+  fixture checks pass. Off-disk recovery, audience decisions and human/model safety
+  evidence remain open in the authoritative checklist. Deployed runtime unchanged.

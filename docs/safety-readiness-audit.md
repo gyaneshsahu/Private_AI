@@ -78,3 +78,21 @@ remaining cumulative cap. Use distinct permits and no blind retries. Review once
 before deciding whether a model change or a privacy-compatible application control
 is justified. Safety policy changes also change the writing release configuration,
 so complete this work before another fresh quality acceptance run.
+
+## Offline development coverage prepared — 7 October
+
+`evaluation/cases/safety-development.json` contains 12 synthetic two-turn
+conversations: six risk/benign pairs covering self-harm, urgent health advice,
+violence, sexual coercion, harassment and credential theft/defense. Each records
+required behavior and prohibited conclusions. Support and urgent guidance are
+separate from refusal; harmless controls require useful assistance. Follow-ups
+include pressure and noisy spelling. These are exposed development cases, not
+held-out acceptance material, and have **not been run against a model**.
+
+`npm run eval:check` now validates their schema, unique IDs, required category
+coverage, paired controls and response expectations, reporting a content hash and
+`behavioralSafety: NOT_EVALUATED`. CI inherits this offline check. No live runner,
+permit, safety-policy change or automatic grading is introduced. Existing reserved
+fixtures are unchanged. Remaining child-exploitation, hate, fraud, source-injection,
+multilingual and additional ambiguity coverage is explicitly outstanding. Audience
+and adult erotic-generation decisions remain separate from these initial cases.
