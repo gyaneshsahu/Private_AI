@@ -17,6 +17,7 @@ RUN npm run build
 FROM node:24-bookworm-slim AS runtime
 RUN apt-get update && apt-get install -y --no-install-recommends age \
     && rm -rf /var/lib/apt/lists/*
+RUN install -d -m 0700 -o node -g node /home/node/.ssh
 ENV NODE_ENV=production PORT=4173 PRIVATEAI_AGE_BINARY=/usr/bin/age
 WORKDIR /app
 COPY --from=build --chown=node:node /app/node_modules ./node_modules
