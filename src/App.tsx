@@ -367,7 +367,9 @@ export function App() {
             ? "Response stopped. Partial answers are excluded from future context."
             : error instanceof IncompleteReplyError
               ? `${error.message} ${error.usage ? "Reported usage was retained." : "This request’s cost remains unknown."}`
-              : "Protected response unavailable. No weaker fallback or automatic retry was used. Check provider verification and service access.",
+              : error instanceof Error && error.name === "TimeoutError"
+                ? "Response timed out. Partial answers are excluded from future context. This request’s cost remains unknown. No automatic retry was made."
+                : "Protected response unavailable. No weaker fallback or automatic retry was used. Check provider verification and service access.",
         );
       }
     } finally {

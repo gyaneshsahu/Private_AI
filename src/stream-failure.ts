@@ -15,6 +15,7 @@ export type StreamFailureCode =
   | "INVALID_USAGE"
   | "INCOMPLETE_ANSWER"
   | "ABORTED"
+  | "TIMED_OUT"
   | "TRANSPORT_OR_DECRYPTION";
 
 export class StreamProtocolError extends Error {

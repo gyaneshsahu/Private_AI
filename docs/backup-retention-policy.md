@@ -150,3 +150,30 @@ Initialize created the approved directory and credential successfully, ACL readb
 confirmed current-user-only access, and Status correctly fails without a verified
 transfer receipt. Docker build could not start because the local Linux engine is
 unavailable. Container/CI changes are prepared, not verified or deployed.
+
+### Subsequent Linux/Windows rehearsal — 7 October
+
+Docker Desktop was started and the container now builds successfully. Node 24.21.0
+exposes the required SQLite memory APIs; Debian age 1.1.1 and Windows age 1.3.2
+interoperate. Container smoke, persistent invitation state and packaged individual
+access checks pass as non-root with synthetic data; the access rehearsal used
+512 MiB/0.5 CPU. These do not qualify production capacity or hosted TLS.
+
+The real age integration test passes inside the packaged Linux runtime with
+network disabled. Its first attempt exposed a test assumption that `/app` contained
+Git metadata; the fixture now creates its own synthetic Git directory, preserving
+the negative path check without adding Git metadata to the image. CI now runs this
+container test explicitly.
+
+A separate read-only, network-disabled Linux container encrypted a one-account
+synthetic registry to the approved Windows public recipient. Only its 16,584-byte
+ciphertext crossed to `C:\PrivateAI-backups`. Windows verified authentication/schema
+using the Credential Manager key and restored a separate paused registry with all
+accounts revoked. The command group completed in approximately three seconds;
+this is a local interoperability rehearsal, not a measured production RTO. The
+local receipt is `.local/container-encrypted-rehearsal.json`. The isolated source
+container was removed; ciphertext and the protected paused restore are retained.
+
+Render still shows SSH unavailable until a public key is registered. Real hosted
+transfer, independent recovery-key copy, verified retention scheduling and
+proactive failure alerts remain open; this rehearsal does not pass D05.

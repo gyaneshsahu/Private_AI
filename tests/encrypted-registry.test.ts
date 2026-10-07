@@ -99,8 +99,10 @@ it.skipIf(!binary)(
         await registry.login(invitation.id, "SYNTHETIC backup password"),
       ).toBe(true);
       expect(await readFile(encrypted)).toEqual(cipher);
+      const gitDestination = join(root, "git-destination");
+      await mkdir(join(gitDestination, ".git"), { recursive: true });
       await expect(
-        restoreEncryptedRegistry(encrypted, identity, binary!, process.cwd()),
+        restoreEncryptedRegistry(encrypted, identity, binary!, gitDestination),
       ).rejects.toThrow("outside Git");
     } finally {
       registry.close();

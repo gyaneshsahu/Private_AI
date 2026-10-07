@@ -107,15 +107,18 @@ export async function consumeReply(
       throw new StreamProtocolError("MISSING_FINAL_USAGE");
     return usage;
   } catch (error) {
+    const timedOut = signal.aborted && signal.reason?.name === "TimeoutError";
     throw new IncompleteReplyError(
-      "Response incomplete. Partial answers are excluded from future context. No automatic retry was made.",
+      `${timedOut ? "Response timed out." : "Response incomplete."} Partial answers are excluded from future context. No automatic retry was made.`,
       usage,
       {
         code:
           error instanceof StreamProtocolError
             ? error.code
             : signal.aborted
-              ? "ABORTED"
+              ? timedOut
+                ? "TIMED_OUT"
+                : "ABORTED"
               : "TRANSPORT_OR_DECRYPTION",
         events,
         usageEvents,

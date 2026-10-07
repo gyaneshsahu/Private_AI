@@ -172,3 +172,11 @@ time-budget and numeric-sort observations are encouraging but are not acceptance
 evidence. Preserve the failed reserved evaluation; no threshold or failed score is
 changed. Review the recurring unsupported-addition mechanism before choosing a
 further intervention, rather than adding another example-specific prompt rule.
+
+Founder adjudication, 7 October: case 20 is mostly acceptable; invented invitation
+and opportunity wording are **minor** additions in this example. No numeric scores
+were supplied, and none are inferred. Preserve this severity alongside the earlier
+agent observation; it does not change the historical reserved writing failure.
+The general policy now requires fact preservation even in polite wording, with
+fresh decline and explicitly authorized acceptance controls prepared. They remain
+unrun because the preceding crisis and harmless-stress attempts both timed out.

@@ -32,6 +32,28 @@ const run = (
   signal = new AbortController().signal,
 ) => consumeReply(events(items), pricing, signal, () => {});
 
+it("distinguishes a deadline from user cancellation while retaining reported usage", async () => {
+  for (const timeout of [true, false]) {
+    const controller = new AbortController();
+    async function* interrupted() {
+      yield usage;
+      controller.abort(
+        new DOMException(
+          "PRIVATE_DETAIL",
+          timeout ? "TimeoutError" : "AbortError",
+        ),
+      );
+      controller.signal.throwIfAborted();
+    }
+    await expect(
+      consumeReply(interrupted(), pricing, controller.signal, () => {}),
+    ).rejects.toMatchObject({
+      usage: { total: 15 },
+      diagnostic: { code: timeout ? "TIMED_OUT" : "ABORTED" },
+    });
+  }
+});
+
 describe("synthetic stream protocol checks, not live provider evidence", () => {
   it("accepts explicit text completion and a later usage-only frame", async () => {
     await expect(

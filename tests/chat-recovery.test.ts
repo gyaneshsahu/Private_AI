@@ -26,6 +26,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
           window.fixtureCalls ??= [];
           window.fixtureCalls.push(composeContext(c, 20000));
           status('TEST synthetic response');
+          if (window.fixtureMode === 'timeout') throw new DOMException('PRIVATE_PROVIDER_DETAIL', 'TimeoutError');
           if (window.fixtureMode === 'stall') {
             window.fixturePending = true;
             chunk('TEST_PARTIAL');
@@ -381,6 +382,9 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
         () => (window as unknown as FixtureWindow).fixtureCalls.length,
       ),
     ).toBe(callsBeforeLimit);
+    await page.evaluate(() =>
+      Object.assign(window, { fixtureMode: "timeout" }),
+    );
     await page.getByLabel("Message PrivateAI").fill("TEST shortened question");
     await page.getByRole("button", { name: "Send ↑", exact: true }).click();
     await ui(
@@ -392,6 +396,12 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       ),
     ).toBe(callsBeforeLimit + 1);
     await ui(page.getByLabel("Message PrivateAI")).toHaveValue("");
+    await ui(
+      page.getByText("Response timed out.", { exact: false }),
+    ).toBeVisible();
+    await ui(
+      page.getByText("PRIVATE_PROVIDER_DETAIL", { exact: false }),
+    ).toHaveCount(0);
     expect(external).toEqual([]);
   } finally {
     await browser.close();
