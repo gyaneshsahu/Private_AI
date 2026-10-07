@@ -4,13 +4,16 @@
 
 This consolidates the agreed direction for the first working evaluation. It does not certify existing code or authorize spending. Read with the [architecture](ARCHITECTURE.md), [detailed acceptance contract](acceptance.md), and [observed validation](validation.md). Requirements below are targets, not claims that tests have passed.
 
-Current implementation: web chat inference is wired, with a successful earlier two-turn synthetic exchange. Full qualification and current-adapter live compatibility remain open; see the [qualification ledger](provider-qualification.md). Requirements below are unchanged by that narrow success.
+Current implementation and verification status are maintained only in the
+[readiness checklist](READINESS.md). Requirements below remain targets until their
+completion evidence exists. Local, live synthetic and hosted access evidence are
+separate from model acceptance, full provider qualification and release approval.
 
 ## 1. Purpose and first release
 
 Help a person understand information, complete everyday tasks, and research decisions while controlling disclosure of private context. Start with one capable model and a real responsive web chat. Evaluate usefulness and confidentiality before investing in a broader platform.
 
-The first deliverable is a single-operator evaluation running through a local web gateway. The longer-term product is a web service; public hosting requires authentication, tenant isolation, abuse controls and deployment review that this local foundation does not yet provide.
+The initial deliverable was a single-operator evaluation through a local web gateway. Restricted hosted individual access is now implemented. The next milestone remains an invited-user trial; public-service launch needs broader security, quality and operational assurance, as tracked in the checklist.
 
 Supported evaluation language: English. Use synthetic or non-sensitive inputs until the protected processing path is qualified. No canned answers, fake integrations or static demonstrations count as working functionality. Labelled mocks belong only in tests.
 

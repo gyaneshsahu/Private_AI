@@ -1,8 +1,8 @@
 # PrivateAI: approved implementation and acceptance contract
 
-Status: implementation authorized; repository access confirmed; implementation in progress. The latest 5 October user instruction sets a USD 2 cumulative account cap with auto-recharge disabled, superseding the older USD 10 ceiling in the [handoff](LOCAL_CODEX_HANDOFF.md). No new paid service is authorized. The [roadmap](ROADMAP.md) tracks delivery without weakening this acceptance contract.
+Status: implementation authorized; repository access confirmed; implementation in progress. The latest 5 October user instruction sets a USD 2 cumulative account cap with auto-recharge disabled, superseding the older USD 10 ceiling in the [handoff](LOCAL_CODEX_HANDOFF.md). No new paid service is authorized. The [roadmap](ROADMAP.md) tracks order and the [readiness checklist](READINESS.md) maintains current implementation/verification status without weakening this acceptance contract.
 
-This supplements the architecture and stages approved in the conversation, now consolidated for review in the [PRD](PRD.md) and [architecture](ARCHITECTURE.md). It does not replace or weaken their privacy requirements. Local functionality and public-page retrieval have validation evidence. One earlier-adapter live synthetic conversation passed narrow review; current-adapter compatibility, full-chain confidentiality and broad answer quality remain unproven. See the [validation record](validation.md).
+This supplements the architecture and stages approved in the conversation, now consolidated for review in the [PRD](PRD.md) and [architecture](ARCHITECTURE.md). It does not replace or weaken their privacy requirements. Local functionality and public-page retrieval have validation evidence. One earlier-adapter live synthetic conversation passed narrow review; current-adapter narrow compatibility now has evidence, while full-chain confidentiality and broad answer quality remain unqualified. See the [validation record](validation.md).
 
 ## Scope and stage gates
 

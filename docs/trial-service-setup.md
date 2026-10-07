@@ -1,13 +1,13 @@
 # Trial accounts and service setup
 
-6 October 2026. Consolidated setup list for the current general-assistant trial,
+Updated 7 October 2026. Service setup reference; current readiness lives in [READINESS.md](READINESS.md). Consolidated setup list for the current general-assistant trial,
 not authorization for new subscriptions or a change to privacy promises.
 
 | Service | Needed now? | Action |
 | --- | --- | --- |
 | Tinfoil inference | Already configured locally | Keep the existing key, USD 2 cumulative account cap and auto-reload off. Supplier privacy evidence remains pending. No second model account is needed for the selected Gemma assessment. |
 | Search API, supplier selection pending | One new API integration dependency | Five suppliers compared; Brave, Exa and Tavily replies pending. Compare saved-citation rights, privacy and prices before activation. See the [comparison](search-provider-comparison.md). |
-| Render hosting and durable disk | Existing account; separate spending decision | Paid hosting remains unapproved. Follow [storage decision](trial-hosting-decision.md); the existing free filesystem cannot safely host the invitation registry. No new hosting API key is required for manual operator deployment. |
+| Render hosting and durable disk | Existing upgraded service and 1 GB disk approved | Registry is deployed under `/var/data`; hosted access/restart evidence is in the [storage decision](trial-hosting-decision.md). Off-disk recovery and additional spending remain separate. No new hosting API key is required for manual operator deployment. |
 | External login, email/SMS delivery, cloud OCR, vector database, analytics | Not required for the agreed small trial | Invitations are operator-issued, extraction and encrypted history are local. Do not create these accounts merely in anticipation of public launch. Reconsider against roadmap requirements. |
 
 ## Search account and retention prerequisite

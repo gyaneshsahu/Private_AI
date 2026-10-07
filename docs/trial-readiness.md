@@ -1,4 +1,10 @@
-# Invited-trial capability and dependency review
+# Historical invited-trial capability and dependency review
+
+**Archived evidence as of 7 October 2026; not maintained as a current checklist.**
+Use [READINESS.md](READINESS.md) for current status, missing work and completion
+criteria, and the [roadmap](ROADMAP.md) for execution order. Statements below reflect
+different dated stages, including superseded deployment/evaluation status; preserve
+them as history, not instructions to rerun completed work.
 
 5 October 2026. Roadmap items **G6, U1, E1, Q1 and R1**.
 Working release review, not permission to invite users. The general personal

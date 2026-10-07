@@ -5,6 +5,10 @@
 Updated 7 October 2026 · Owner: project founder; implementation: Codex.
 This is not yet an approved backbone for the entire product.
 
+The [maintained readiness checklist](READINESS.md) is the authoritative current
+status ledger. This roadmap defines priorities and stable IDs; dated reviews retain
+evidence. Update checklist rows whenever implementation or evidence changes.
+
 The product goal is a general-purpose conversational assistant targeting
 ChatGPT/Gemini-level quality across most everyday tasks, with strong, verifiable
 privacy. That quality is a target to demonstrate, not a current claim. Documents,
@@ -64,12 +68,24 @@ Local DONE does not imply provider qualification or deployed release.
 
 ## Ordered path to the invited-user trial
 
-Current dependency review: [trial readiness and six-family scope](trial-readiness.md).
-Prioritize complete access workflows and unresolved development quality failures;
-do not substitute repeated prompt refinements for the outstanding Q1/E1/U1 gates.
-Release-readiness actions: supplier request sent by founder, reply pending; follow
-the [completed human review and bounded Gemma plan](gemma-release-evaluation-plan.md);
-complete off-disk recovery and metadata retention after the [hosted access validation](trial-hosting-decision.md). Review the existing eight-conversation fresh-writing packet before any new acceptance run. Behavioral safety is now an explicit additional trial prerequisite; existing quality thresholds remain unchanged.
+Current status and completion criteria: [authoritative readiness checklist](READINESS.md).
+The [earlier capability review](trial-readiness.md) is historical evidence, not a
+second current ledger. Existing IDs and acceptance floors are preserved.
+
+Execution priority now supersedes the historical table order:
+
+1. **S1 + E1/G1–G4:** paired safety/harmless coverage, audience boundaries, existing
+   fresh-writing human review, reasoning/coding scope and a justified fixed candidate.
+   Freeze safety and answer policy together before fresh held-out acceptance.
+2. **U1/W2/L2:** necessary recovery, off-disk backup, deletion/retention, operational
+   signals and safe rollback. Advance synthetic preparation while storage decisions
+   are pending; do not export authentication material without authorization.
+3. **Q1/G5 in parallel:** resolve supplier privacy evidence and saved-search rights,
+   then perform useful bounded live integration checks. External waits do not block
+   the independent work above.
+4. **U1/U2/G6/R1:** complete release-specific accessibility, actual-device workflows,
+   support and truthful disclosures; fix functional defects before visual polish.
+   Extensive UI redesign remains deferred until these dependencies advance.
 
 | ID / priority | Outcome and status | Dependencies and concrete exit evidence |
 | --- | --- | --- |
@@ -79,8 +95,8 @@ complete off-disk recovery and metadata retention after the [hosted access valid
 | W2 — independent workflow | **DONE: scoped interruption recovery** | Real UI tests cover stop, explicit retry, branching/citations, new conversation during multi-file import and research preparation/execution, lock during real encryption, and cross-tab lock during unlock. Stale callbacks cannot restore cleared context; cancellation stops the next file/request. See [recovery evidence](workspace-recovery-review.md). Current-adapter live document correction passed T3; production provider gate remains separate. |
 | T3 | **DONE (narrow live case): document/follow-up workflow** | Fresh current-adapter run `windows_20261005_invoice_2` returned 95/19/114 EUR then 90/18/108 EUR, reduction 6 EUR, with matching citations and explicit distinction between source discount and user correction. Both streams independently validated complete; durations 4.39/4.20 s. Agent review supports this one case only, not broad quality or privacy qualification. |
 | Q1 — parallel evidence work | **BLOCKED: qualify the complete provider path** | Current [provider evidence review](provider-evidence-update.md) identifies version-specific browser freshness and worker/build binding gaps; supplier request is sent and reply pending. Existing per-request cache isolation is tested. Router-to-worker/GPU binding, software/build identity, freshness/revocation/rollback, caching/retention/diagnostics/moderation/egress and billing controls still require deployment evidence. Complete live/negative checks in the acceptance contract. Do not invent a passing report or accept a changed pin automatically. |
-| E1 | **IN PROGRESS: development harness and reviewed failures** | Freeze implementation/rubric; run development cases, fix failures, then preserve reserved separation. Keep 24 held-out cases × 3 runs as the planned coverage, using the founder-approved [trial thresholds](trial-quality-gate-proposal.md): 65/72 overall and 10/12 per family, with critical/serious blockers and material-failure recurrence rules. Preserve the per-task rubric and every failure; replace any reserved case used for tuning. Plan costs against remaining authorized balance before starting this larger batch. |
-| U2 — parallel | **DONE (local): readable conversation answers and everyday starters** | Markdown tables/lists/code/math, retained source citations, local assets, inert external content, and desktop/mobile coverage. Writing/planning starters prepare editable drafts without automatic sending. [Everyday review](everyday-development-review.md). |
+| E1 | **BLOCKED acceptance; development evidence available** | Reserved writing failed with a best possible 8/12; preserve that result. Adjudicate the existing fresh-writing packet once, justify any intervention, then freeze answer/safety policy together and use fresh held-out cases. Keep 24 held-out cases × 3 runs as the planned coverage, using the founder-approved [trial thresholds](trial-quality-gate-proposal.md): 65/72 overall and 10/12 per family, with critical/serious blockers and material-failure recurrence rules. Preserve the per-task rubric and every failure; replace any reserved case used for tuning. Plan costs against remaining authorized balance before starting this larger batch. |
+| U2 — parallel | **DONE (local): readable conversation answers and everyday starters** | Markdown tables/lists/code/math, retained source citations, local assets, inert external content, and desktop/mobile coverage. Writing/planning starters prepare editable drafts without automatic sending. Functional accessibility/device gaps remain in the checklist; extensive visual redesign is deferred. [Everyday review](everyday-development-review.md). |
 | U1 — parallel | **IN PROGRESS: hosted individual access validated; user observation pending** | Founder selected PrivateAI-only invitations. Local implementation covers one-use redemption, expiring sessions, per-user revocation/limits and encrypted workspace separation; real browser tests exercise two identities and logout/relogin. [Trial runbook](invited-trial-runbook.md) documents operation and limits. Actual hosted HTTPS/session isolation, restart persistence and same-disk paused recovery staging passed. [Actual-device observation](ui-device-test-plan.md), [off-disk backup and metadata retention](backup-retention-policy.md) remain open; proposed policies are prepared, not enforced. No private-content analytics or automatic feedback uploads. |
 | S1 — before invitations | **BLOCKED: behavioral safety evidence missing** | [Source audit and test plan](safety-readiness-audit.md): provider refusal transport is tested, semantic safeguards are not qualified. Specify audience/content boundaries; assess dangerous and paired harmless requests, multi-turn pressure and streamed output on the frozen release. Human review, zero unresolved critical failures, privacy-qualified safety components and false-refusal review are required. |
 | R1 | **BLOCKED: open the bounded invited-user trial** | T2/T3/W2/Q1/E1/G6/U1/S1 complete, actual cost reconciled, deployment validation tied to release, the reviewed severity/family quality gate met and no unresolved critical or essential security failures. Founder authorizes audience, hosting/privacy boundary and real-user-data scope. Supported scope and known minor limitations are explicit. |
@@ -620,3 +636,5 @@ G1–G6 and U1 independently while Q1 needs supplier evidence.
   14 production browser workflows, typecheck/build and fixture integrity.
 
 - 7 October 2026: audited conversational safeguards without changing inference policy. Added S1 as a trial prerequisite: privacy/security controls and refusal rendering do not establish behavioral safety. Prepared off-disk backup/retention and synthetic actual-device review plans; visual implementation awaits the founder brief. Identified the exact eight-conversation human writing review and preserved failed acceptance. Corrected active hosting/review summaries; historical entries remain historical.
+
+- 7 October 2026: established `READINESS.md` as the single current readiness ledger across capabilities, safety, privacy, recovery, usability and operations. Reordered work toward S1/model reliability, necessary recovery and operational evidence ahead of visual redesign; Q1/search remain parallel dependencies. Identified conversational coding coverage, registry retention, hosted disclosure drift and monitoring/accessibility gaps without adding autonomous tools or weakening general-assistant scope.
