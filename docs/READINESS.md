@@ -15,7 +15,8 @@ Do not add a feature just because another product has it.
 
 1. **S1 safety:** approved adult-trial policy is implemented. The frozen development
    batch completed 18 paired safety and four transfer conversations; review found
-   dangerous overconfidence in benign safety advice. Review priority cases 1/4/6/20;
+   dangerous overconfidence in benign safety advice. Founder reviewed cases 1/4/6/20;
+   address confirmed prevention guarantees and crisis-support continuity first;
    do not treat refusal compliance as proof of safe advice or complete coverage.
 2. **E1/G1–G4 model reliability:** reserved writing fails (at most 8/12, required
    10/12). The eight fresh-writing scores are now founder-confirmed; keep Gemma as the

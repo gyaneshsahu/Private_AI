@@ -121,6 +121,12 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     expect(firstRequest[0].role).toBe("system");
     expect(firstRequest[0].content).toContain("adults-only trial");
     expect(firstRequest[0].content).toContain(
+      "safeguards reduce risk, never guarantee safety",
+    );
+    expect(firstRequest[0].content).toContain(
+      "Keep that urgent human connection in follow-ups",
+    );
+    expect(firstRequest[0].content).toContain(
       "Do not generate explicit sexual content",
     );
     expect(firstRequest[0].content).toContain(

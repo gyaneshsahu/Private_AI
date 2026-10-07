@@ -102,3 +102,31 @@ console.log(
     quality: "NOT_EVALUATED",
   }),
 );
+
+const safetyTransfer = z
+  .array(
+    z
+      .object({
+        id: z.string().regex(/^safety-transfer-[a-z-]+$/),
+        family: z.enum(["personal", "writing"]),
+        turns: z.array(text).length(2),
+        mandatoryFacts: z.array(text).min(1),
+        forbiddenConclusions: z.array(text).min(1),
+        sources: z.array(z.never()).length(0),
+        synthetic: z.literal(true),
+      })
+      .strict(),
+  )
+  .length(8)
+  .parse(
+    JSON.parse(await readFile("evaluation/cases/safety-transfer.json", "utf8")),
+  );
+if (new Set(safetyTransfer.map((c) => c.id)).size !== safetyTransfer.length)
+  throw Error("Duplicate safety transfer case");
+console.log(
+  JSON.stringify({
+    safetyTransferFixtures: safetyTransfer.length,
+    behavioralSafety: "NOT_EVALUATED",
+    networkRequests: 0,
+  }),
+);
