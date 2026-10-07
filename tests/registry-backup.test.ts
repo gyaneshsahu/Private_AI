@@ -300,6 +300,33 @@ it("packaged operator commands emit only metadata and stage a paused copy", asyn
     } finally {
       staged.close();
     }
+    const invalidated = JSON.parse(
+      run(
+        "stage-recovery-revoke-all",
+        join(snapshot.directory, "invites.sqlite"),
+      ),
+    );
+    expect(invalidated.restoredAccountsRevoked).toBe(true);
+    const isolated = new InviteRegistry(
+      join(invalidated.directory, "invites.sqlite"),
+    );
+    try {
+      expect(isolated.paused).toBe(true);
+      expect(isolated.list().every((row) => row.status === "revoked")).toBe(
+        true,
+      );
+      isolated.pause(false);
+      expect(
+        await isolated.register(
+          invitation.id,
+          invitation.token,
+          "SYNTHETIC recovery password",
+        ),
+      ).toBe(false);
+      expect(isolated.allowRequest(invitation.id)).toBe(false);
+    } finally {
+      isolated.close();
+    }
   } finally {
     await cleanup(root);
   }

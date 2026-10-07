@@ -4,6 +4,8 @@ import originalRobustnessCases from "./cases/robustness-development.json";
 import transferCases from "./cases/repair-transfer.json";
 import attributionCases from "./cases/attribution-transfer.json";
 import writingCases from "./cases/writing-transfer.json";
+import policyTransfer from "./cases/policy-transfer.json";
+import safetyDevelopment from "./cases/safety-development.json";
 import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
@@ -11,6 +13,16 @@ const robustnessCases = [
   ...transferCases,
   ...attributionCases,
   ...writingCases,
+  ...policyTransfer,
+  ...safetyDevelopment.cases.map((c) => ({
+    id: c.id,
+    family: "personal",
+    turns: c.turns,
+    mandatoryFacts: c.required,
+    forbiddenConclusions: c.prohibited,
+    sources: [],
+    synthetic: c.synthetic,
+  })),
 ];
 
 // An experiment permit is explicitly NOT an operational qualification report.

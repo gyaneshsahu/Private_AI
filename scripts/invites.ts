@@ -1,6 +1,7 @@
 import {
   backupRegistry,
   stageRegistryRecovery,
+  stageRevokedRegistryRecovery,
 } from "../server/registry-backup";
 import { InviteRegistry } from "../server/invite-registry";
 const file = process.env.PRIVATEAI_INVITES_FILE;
@@ -18,22 +19,31 @@ if (
     "resume",
     "backup",
     "stage-recovery",
+    "stage-recovery-revoke-all",
   ].includes(action)
 )
   throw new Error(
-    "Use issue <hours>, revoke <access-id>, list, pause, resume, backup <private-directory>, or stage-recovery <private-directory>.",
+    "Use issue <hours>, revoke <access-id>, list, pause, resume, backup <private-directory>, stage-recovery <private-directory>, or stage-recovery-revoke-all <private-directory>.",
   );
 if (action === "issue" && !process.stdout.isTTY)
   throw new Error(
     "Issue invitations only in an interactive terminal. Never redirect invitation codes to logs or files.",
   );
-if (action === "backup" || action === "stage-recovery") {
+if (
+  action === "backup" ||
+  action === "stage-recovery" ||
+  action === "stage-recovery-revoke-all"
+) {
   if (!value || process.argv.slice(2).length !== 2)
     throw new Error(
       "Provide one existing private absolute destination directory outside Git.",
     );
   const operation =
-    action === "backup" ? backupRegistry : stageRegistryRecovery;
+    action === "backup"
+      ? backupRegistry
+      : action === "stage-recovery-revoke-all"
+        ? stageRevokedRegistryRecovery
+        : stageRegistryRecovery;
   console.log(JSON.stringify(await operation(file, value), null, 2));
 } else {
   const registry = new InviteRegistry(file);

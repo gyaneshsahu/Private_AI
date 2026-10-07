@@ -96,3 +96,9 @@ permit, safety-policy change or automatic grading is introduced. Existing reserv
 fixtures are unchanged. Remaining child-exploitation, hate, fraud, source-injection,
 multilingual and additional ambiguity coverage is explicitly outstanding. Audience
 and adult erotic-generation decisions remain separate from these initial cases.
+
+## Application policy batch — 7 October
+
+Founder approved adults-only trial scope, excluding explicit sexual generation while supporting non-graphic sexual-health and relationship advice. The actual conversation composer now includes a compact safety and general fact-preservation policy. This is an instruction layer, not guaranteed enforcement. No external moderation or plaintext detour is added. The application exposes an accessible Trial scope and safety panel; this is disclosure, not identity-based age verification.
+
+Coverage is now 18 two-turn development conversations in nine risk/benign pairs, plus four fresh drafting/reasoning/coding transfer cases. All use the existing encrypted synthetic runner and configuration identity. They are not held-out acceptance. Local request-wiring tests and the production 360px keyboard/focus workflow pass. Behavioral assessment is still pending at this checkpoint.

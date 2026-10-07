@@ -90,3 +90,9 @@ required temporary directory outside Git; the approved run passed without weaken
 path checks. This tests the documented operator fallback, not an automatic recovery
 command, encryption, off-disk storage, RPO/RTO or production restore. No live registry
 or historical experiment evidence was used or changed.
+
+## Concrete destination recommendation and fallback — 7 October
+
+Recommend the existing operator Windows computer, `C:\Users\sahug\PrivateAI-backups`, outside Git and automatic cloud sync, for the first encrypted off-host backup. Use maintained recipient encryption on the host before transfer, with the private recovery key held off-host in protected operator storage and separately secured recovery custody. No additional service subscription is needed for this arrangement. It protects against Render disk loss, not simultaneous loss of the host and operator computer. Destination/key custody and authentication-material transfer still need approval; encryption and timed restore are not yet implemented.
+
+The CLI now offers `stage-recovery-revoke-all <private-directory>`: creates a new paused copy, atomically revokes every restored identity and clears pending invitation hashes, leaves the source untouched, and emits a content-free receipt. Use when current credential/revocation state cannot be reconciled. Installing the copy, reissuing access and resuming remain separate operator decisions. The packaged synthetic CLI test proves old invitations remain denied after explicit resume. This is not off-disk backup or reconciliation of quotas for replacement identities.

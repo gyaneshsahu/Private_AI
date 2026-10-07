@@ -661,3 +661,5 @@ G1–G6 and U1 independently while Q1 needs supplier evidence.
   reserved writing failure remains. Clarified that T requirements precede trial,
   P precedes public launch and O is deferred; high-impact work determines sequence,
   not a reduced trial checklist. The eight-score review is no longer pending.
+
+- 7 October 2026: implemented approved adults-only safety instructions and general fact-preservation in the real conversation composer, plus accessible trial-scope disclosure. Added 18 safety and four fresh transfer development conversations to the bounded runner/configuration identity. Added explicit paused revoke-all recovery staging. 164 local tests and 17 production browser workflows pass after fixing a context-limit regression without raising the compatibility bound. Behavioral live assessment follows the frozen code; private-data gates remain closed.

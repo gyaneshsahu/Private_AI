@@ -597,9 +597,21 @@ export function App() {
             className="text-button"
             onClick={() =>
               setSource({
+                id: "trial-safety",
+                title: "Trial scope and safety",
+                text: "This initial trial is for adults aged 18 and over. Explicit sexual generation is outside its scope; non-graphic sexual-health, consent and relationship advice are supported. The assistant should refuse help enabling serious harm and respond supportively to distress. These instructions are being evaluated, not a guarantee that every unsafe answer will be prevented. Check important advice; PrivateAI is not an emergency service and cannot contact help for you. If you are in immediate danger, contact local emergency services or someone you trust. No separate moderation service receives your messages. Private-data chat remains gated until provider privacy qualification passes.",
+              })
+            }
+          >
+            Trial scope and safety
+          </button>
+          <button
+            className="text-button"
+            onClick={() =>
+              setSource({
                 id: "privacy",
                 title: "Your privacy boundaries",
-                text: "This is a local evaluation, not a production privacy guarantee. Chat stays disabled until live confidential processing is qualified. Your device and browser can read local content. Saved history is encrypted when locked; there is no recovery or cloud sync. Temporary content is not intentionally written to application storage, but device memory, browser internals and backups are outside that guarantee. Approved queries and URLs are visible to our research service and the recipient. Anonymous access is not implemented. A malicious website update could capture content before encryption.",
+                text: "This is a restricted evaluation, not a production privacy guarantee. Chat stays disabled until live confidential processing is qualified. Your device and browser can read local content. Saved history is encrypted when locked; there is no recovery or cloud sync. Temporary content is not intentionally written to application storage, but device memory, browser internals and backups are outside that guarantee. Approved queries and URLs are visible to our research service and the recipient. Anonymous access is not implemented. A malicious website update could capture content before encryption.",
               })
             }
           >
@@ -607,7 +619,7 @@ export function App() {
           </button>
         </div>
         <div className="workspace-label">
-          LOCAL EVALUATION <span>0.1</span>
+          RESTRICTED EVALUATION <span>0.1</span>
         </div>
       </aside>
       <main>

@@ -44,6 +44,9 @@ const requiredPairs = [
   "sexual-exploitation",
   "harassment",
   "cyber-privacy",
+  "adult-explicit",
+  "child-exploitation",
+  "fraud",
 ];
 if (requiredPairs.some((pair) => !packet.cases.some((c) => c.pair === pair)))
   throw Error("Missing required safety development category");
@@ -70,5 +73,32 @@ console.log(
     pairs: packet.cases.length / 2,
     sha256: createHash("sha256").update(bytes).digest("hex"),
     networkRequests: 0,
+  }),
+);
+
+const transfer = z
+  .array(
+    z
+      .object({
+        id: z.string().regex(/^policy-transfer-[a-z-]+$/),
+        family: z.enum(["writing", "planning"]),
+        turns: z.array(text).length(2),
+        mandatoryFacts: z.array(text).min(1),
+        forbiddenConclusions: z.array(text).min(1),
+        sources: z.array(z.never()).length(0),
+        synthetic: z.literal(true),
+      })
+      .strict(),
+  )
+  .length(4)
+  .parse(
+    JSON.parse(await readFile("evaluation/cases/policy-transfer.json", "utf8")),
+  );
+if (new Set(transfer.map((c) => c.id)).size !== transfer.length)
+  throw Error("Duplicate policy transfer case");
+console.log(
+  JSON.stringify({
+    policyTransferFixtures: transfer.length,
+    quality: "NOT_EVALUATED",
   }),
 );

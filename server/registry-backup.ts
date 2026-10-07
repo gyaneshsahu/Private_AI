@@ -8,6 +8,7 @@ async function snapshot(
   source: string,
   destinationRoot: string,
   recovery: boolean,
+  revokeRestoredAccounts = false,
 ) {
   let db: DatabaseSync | undefined;
   let stage = "PATH_VALIDATION";
@@ -47,7 +48,11 @@ async function snapshot(
       validateInviteRegistry(copied);
       if (recovery)
         copied.exec(
-          "BEGIN IMMEDIATE; UPDATE access_settings SET paused=1 WHERE id=1; COMMIT;",
+          "BEGIN IMMEDIATE; UPDATE access_settings SET paused=1 WHERE id=1;" +
+            (revokeRestoredAccounts
+              ? " UPDATE invites SET revoked=1,invite=NULL;"
+              : "") +
+            " COMMIT;",
         );
       paused =
         copied.prepare("SELECT paused FROM access_settings WHERE id=1").get()!
@@ -62,6 +67,7 @@ async function snapshot(
       createdAt: new Date().toISOString(),
       paused,
       operatorReconciliationRequired: recovery,
+      ...(revokeRestoredAccounts ? { restoredAccountsRevoked: true } : {}),
     };
     stage = "RECEIPT";
     await writeFile(
@@ -85,3 +91,10 @@ export const stageRegistryRecovery = (
   source: string,
   destinationRoot: string,
 ) => snapshot(source, destinationRoot, true);
+
+// Use only when current credential/revocation state cannot be reconciled.
+// The source stays untouched; every restored identity must be reissued separately.
+export const stageRevokedRegistryRecovery = (
+  source: string,
+  destinationRoot: string,
+) => snapshot(source, destinationRoot, true, true);

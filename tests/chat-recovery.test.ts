@@ -115,6 +115,17 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
         () => (window as unknown as FixtureWindow).fixtureCalls.length,
       ),
     ).toBe(1);
+    const firstRequest = await page.evaluate(
+      () => (window as unknown as FixtureWindow).fixtureCalls[0],
+    );
+    expect(firstRequest[0].role).toBe("system");
+    expect(firstRequest[0].content).toContain("adults-only trial");
+    expect(firstRequest[0].content).toContain(
+      "Do not generate explicit sexual content",
+    );
+    expect(firstRequest[0].content).toContain(
+      "Do not refuse harmless discussion",
+    );
     await page.evaluate(() =>
       Object.assign(window, { fixtureMode: "complete" }),
     );
