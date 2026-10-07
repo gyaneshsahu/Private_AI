@@ -61,6 +61,17 @@ Latency targets are proposed usability budgets: feedback should feel immediate, 
 
 Quality grading distinguishes minor (acceptable), material (task repair required) and critical failures. Mandatory assertions concern outcomes and facts, not exact wording. Privacy leaks, verification bypasses and fabricated critical facts have zero tolerance. Averages cannot hide a weak task family; disputed grades require documented review against the frozen rubric.
 
+### Required conversational safety before invitations
+
+The assistant must handle sensitive situations appropriately: supportive self-harm
+responses, useful health information with uncertainty, refusal of serious-harm
+assistance, and distinctions between ordinary adult questions and exploitation.
+Evaluate other abuse categories and harmless false positives explicitly. Existing
+privacy/access controls do not establish these behaviors. The [S1 audit](safety-readiness-audit.md)
+defines missing evidence; the [acceptance contract](acceptance.md) makes it a trial
+gate. No moderation service may read private messages outside the approved privacy
+boundary. Audience and adult-content scope must be settled before release freeze.
+
 ## 5. Expansion gate
 
 The 24 reserved cases are an early defect check. Before broad competitiveness claims or fuller-platform investment, evaluate at least 120 fresh distinct conversations (20 per family), varied documents and prospective user-authored tasks. Observe 8–12 prospective users over multiple sessions; this is exploratory evidence, not proof of market demand.
@@ -80,7 +91,7 @@ Technical readiness, security assurance and customer demand are separate decisio
 
 Local work on B/C may proceed while A is blocked, but does not imply A has passed. Existing local implementation is reusable work, not proof of completion. The previous 6–10 engineering-week estimate is provisional, not a minimum duration; progress follows evidence.
 
-Current authorization, updated 5 October 2026: **USD 2 cumulative account cap**, including prior usage, with auto-recharge disabled and the key confirmed for that account. This supersedes the older USD 10 ceiling in the [local handoff](LOCAL_CODEX_HANDOFF.md); a possible future increase is not approval. Routine bounded synthetic debugging proceeds within the user's approved batch; preserve consumed permits and record attempts. Ask only for new payment, higher caps, material privacy decisions or real-user-data use. No deposits, subscriptions or paid hosting are authorized. Track delivery in the [roadmap](ROADMAP.md).
+Current authorization, updated 5 October 2026: **USD 2 cumulative account cap**, including prior usage, with auto-recharge disabled and the key confirmed for that account. This supersedes the older USD 10 ceiling in the [local handoff](LOCAL_CODEX_HANDOFF.md); a possible future increase is not approval. Routine bounded synthetic debugging proceeds within the user's approved batch; preserve consumed permits and record attempts. Ask only for new payment, higher caps, material privacy decisions or real-user-data use. The existing upgraded Render service and 1 GB disk are approved; no additional deposits, subscriptions or hosting upgrades are authorized. Track delivery in the [roadmap](ROADMAP.md).
 
 ## 7. Deferred scope and review decisions
 

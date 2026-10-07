@@ -96,3 +96,38 @@ Provider chain,
 search eligibility, actual-host validation and real-device usability remain
 independent blockers. No new privacy promise or automatic corrective inference
 step has been introduced.
+
+## Exact next human review and acceptance decision — 7 October
+
+Review the existing local packet, not another model run:
+`.local/review-batches/fresh-writing-20261006/review.html`.
+The manifest binds eight completed conversations to their original results; current
+sidecars are agent reviews, not founder judgments. Read both turns, use correctness /
+completeness / context scores 0–3 (2 acceptable), and record errors even if corrected
+later. Review cases 1–4 first, then 5–8; preserve disagreements with agent grades.
+
+| Cases | Scenario | Model order |
+| --- | --- | --- |
+| 1–2 | Undecided studio enquiry | Gemma, GLM |
+| 3–4 | Volunteer boundary with no disclosed reason | Gemma, GLM |
+| 5–6 | Library reservation ownership | Gemma, GLM |
+| 7–8 | Explicitly authorized repair commitment | Gemma, GLM |
+
+The earlier reserved assessment remains **NOT_PASSED**: four founder-confirmed
+material writing failures bound that family at 8/12, below 10/12. This new development
+review cannot overturn that result, even if all eight conversations are acceptable.
+The remaining historical grades may characterize failures but cannot rescue the floor.
+
+Adjudicate this packet once. If the comparison does not establish a meaningful
+alternative advantage, keep Gemma as the development candidate; do not switch or
+tune prompts on cosmetic preference. If material defects recur, record the precise
+failure and one justified candidate/configuration intervention, then test fresh
+transfer cases. No unchanged acceptance rerun to obtain a lucky pass.
+
+Complete the newly required S1 safety policy/evidence work before freezing the
+release configuration. Any ensuing policy change needs ordinary-writing regressions
+as well as safety checks. Only a justified candidate/configuration decision with
+adequate development evidence warrants a fresh, preregistered held-out assessment
+under the unchanged family/overall thresholds. Preserve old failures and do not pool
+models, configurations or exposed examples. Quality acceptance remains blocked
+until that evidence exists; no additional inference is needed to review this packet.

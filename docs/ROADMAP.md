@@ -39,7 +39,8 @@ Sources of requirements: [PRD](PRD.md), [architecture](ARCHITECTURE.md),
 [restricted deployment](development-deployment.md), [validation](validation.md).
 Current user authorization is **USD 2 cumulative account cap**, auto-recharge off;
 older USD 10 planning/authorization text does not increase that cap. Routine work
-within approval proceeds autonomously. No new subscription, deposit or paid hosting
+within approval proceeds autonomously. The existing upgraded Render service and
+1 GB disk are approved; no additional subscription, deposit or hosting upgrade
 is authorized. Original consumed claims and local evidence must remain intact.
 
 Status vocabulary: **DONE (local)** means implemented and tested locally;
@@ -58,8 +59,8 @@ Local DONE does not imply provider qualification or deployed release.
 | Temporary and encrypted workspaces | `src/vault.ts`, WebCrypto/IndexedDB tests, save/lock/reload/delete browser workflow | Manual local snapshots, no recovery or cloud sync; device backups outside deletion guarantee |
 | Saved unsent drafts | `src/App.tsx`, optional `Conversation.draft`; new complete browser workflow | Explicit save only; draft excluded from inference until submitted; reload clears unsaved work |
 | Browser verification and encrypted transport | Maintained Tinfoil/EHBP libraries; pinned router verification, encrypted fault fixtures and real synthetic answers | Full chain NOT_PASSED; Chromium no-store abort has a scoped, tested completion assessment |
-| Restricted hosting foundation and individual trial access | `server/deployment.ts`, `server/invite-access.ts`, SQLite registry, real HTTP/browser identity tests | Opt-in expiring invitations, sign-in/logout, revocation and account-scoped encrypted vaults; single process, no recovery/sync, current batch not deployed |
-| Evaluation infrastructure | 24 development + 24 reserved fixtures, integrity checks, isolated experiment claims and review summaries; 72 reserved conversations collected | Four material writing failures in agent triage; human reserved adjudication pending, quality NOT_PASSED; no competitive parity established |
+| Restricted hosting foundation and individual trial access | `server/deployment.ts`, `server/invite-access.ts`, SQLite registry, real HTTP/browser identity tests | Opt-in expiring invitations, sign-in/logout, revocation and account-scoped encrypted vaults; single process; deployed hosted access/isolation/restart checks and same-disk paused recovery staging passed; off-disk recovery and real-device review remain open |
+| Evaluation infrastructure | 24 development + 24 reserved fixtures, integrity checks, isolated experiment claims and review summaries; 72 reserved conversations collected | Four material writing failures confirmed by founder; writing at most 8/12 against 10/12 required, quality NOT_PASSED; no competitive parity established |
 
 ## Ordered path to the invited-user trial
 
@@ -68,8 +69,7 @@ Prioritize complete access workflows and unresolved development quality failures
 do not substitute repeated prompt refinements for the outstanding Q1/E1/U1 gates.
 Release-readiness actions: supplier request sent by founder, reply pending; follow
 the [completed human review and bounded Gemma plan](gemma-release-evaluation-plan.md);
-decide the [durable hosting arrangement](trial-hosting-decision.md) before deploying
-individual access. Existing IDs, order and acceptance thresholds remain unchanged.
+complete off-disk recovery and metadata retention after the [hosted access validation](trial-hosting-decision.md). Review the existing eight-conversation fresh-writing packet before any new acceptance run. Behavioral safety is now an explicit additional trial prerequisite; existing quality thresholds remain unchanged.
 
 | ID / priority | Outcome and status | Dependencies and concrete exit evidence |
 | --- | --- | --- |
@@ -81,8 +81,9 @@ individual access. Existing IDs, order and acceptance thresholds remain unchange
 | Q1 — parallel evidence work | **BLOCKED: qualify the complete provider path** | Current [provider evidence review](provider-evidence-update.md) identifies version-specific browser freshness and worker/build binding gaps; supplier request is sent and reply pending. Existing per-request cache isolation is tested. Router-to-worker/GPU binding, software/build identity, freshness/revocation/rollback, caching/retention/diagnostics/moderation/egress and billing controls still require deployment evidence. Complete live/negative checks in the acceptance contract. Do not invent a passing report or accept a changed pin automatically. |
 | E1 | **IN PROGRESS: development harness and reviewed failures** | Freeze implementation/rubric; run development cases, fix failures, then preserve reserved separation. Keep 24 held-out cases × 3 runs as the planned coverage, using the founder-approved [trial thresholds](trial-quality-gate-proposal.md): 65/72 overall and 10/12 per family, with critical/serious blockers and material-failure recurrence rules. Preserve the per-task rubric and every failure; replace any reserved case used for tuning. Plan costs against remaining authorized balance before starting this larger batch. |
 | U2 — parallel | **DONE (local): readable conversation answers and everyday starters** | Markdown tables/lists/code/math, retained source citations, local assets, inert external content, and desktop/mobile coverage. Writing/planning starters prepare editable drafts without automatic sending. [Everyday review](everyday-development-review.md). |
-| U1 — parallel | **IN PROGRESS: hosted individual access validated; user observation pending** | Founder selected PrivateAI-only invitations. Local implementation covers one-use redemption, expiring sessions, per-user revocation/limits and encrypted workspace separation; real browser tests exercise two identities and logout/relogin. [Trial runbook](invited-trial-runbook.md) documents operation and limits. Actual hosted HTTPS/session isolation, restart persistence and same-disk paused recovery staging passed. Hosted browser-vault/device observation, off-disk backup policy and metadata-log review remain open. No private-content analytics or automatic feedback uploads. |
-| R1 | **BLOCKED: open the bounded invited-user trial** | T2/T3/W2/Q1/E1/G6/U1 complete, actual cost reconciled, deployment validation tied to release, the reviewed severity/family quality gate met and no unresolved critical or essential security failures. Founder authorizes audience, hosting/privacy boundary and real-user-data scope. Supported scope and known minor limitations are explicit. |
+| U1 — parallel | **IN PROGRESS: hosted individual access validated; user observation pending** | Founder selected PrivateAI-only invitations. Local implementation covers one-use redemption, expiring sessions, per-user revocation/limits and encrypted workspace separation; real browser tests exercise two identities and logout/relogin. [Trial runbook](invited-trial-runbook.md) documents operation and limits. Actual hosted HTTPS/session isolation, restart persistence and same-disk paused recovery staging passed. [Actual-device observation](ui-device-test-plan.md), [off-disk backup and metadata retention](backup-retention-policy.md) remain open; proposed policies are prepared, not enforced. No private-content analytics or automatic feedback uploads. |
+| S1 — before invitations | **BLOCKED: behavioral safety evidence missing** | [Source audit and test plan](safety-readiness-audit.md): provider refusal transport is tested, semantic safeguards are not qualified. Specify audience/content boundaries; assess dangerous and paired harmless requests, multi-turn pressure and streamed output on the frozen release. Human review, zero unresolved critical failures, privacy-qualified safety components and false-refusal review are required. |
+| R1 | **BLOCKED: open the bounded invited-user trial** | T2/T3/W2/Q1/E1/G6/U1/S1 complete, actual cost reconciled, deployment validation tied to release, the reviewed severity/family quality gate met and no unresolved critical or essential security failures. Founder authorizes audience, hosting/privacy boundary and real-user-data scope. Supported scope and known minor limitations are explicit. |
 
 ### T2 disposition at the time-box boundary
 
@@ -617,3 +618,5 @@ G1–G6 and U1 independently while Q1 needs supplier evidence.
   open; this change does not promote any privacy or quality gate.
   Validation: `npm run trial:check` passed all 129 unit/integration tests,
   14 production browser workflows, typecheck/build and fixture integrity.
+
+- 7 October 2026: audited conversational safeguards without changing inference policy. Added S1 as a trial prerequisite: privacy/security controls and refusal rendering do not establish behavioral safety. Prepared off-disk backup/retention and synthetic actual-device review plans; visual implementation awaits the founder brief. Identified the exact eight-conversation human writing review and preserved failed acceptance. Corrected active hosting/review summaries; historical entries remain historical.

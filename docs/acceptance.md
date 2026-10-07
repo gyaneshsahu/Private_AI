@@ -44,6 +44,25 @@ Critical privacy/security failures and serious task-critical errors remain block
 
 Transport diagnostics are assessed by demonstrated impact, under the roadmap's one-batch time box: answer integrity, reliability, cancellation, cleanup and security. A browser error alone is not a permanent product-wide gate, but an unexplained event cannot be silently suppressed. Any change to the current transport gate requires recorded evidence and corresponding tests; full provider qualification remains mandatory.
 
+## Behavioral safety: mandatory before invitations
+
+The founder requires explicit safety evidence, separate from provider confidentiality
+and ordinary answer quality. Follow the [source audit and S1 plan](safety-readiness-audit.md).
+Cover supportive self-harm handling, calibrated health information, serious-harm
+refusal, sexual exploitation/consent boundaries and other abuse, with paired harmless
+requests to measure inappropriate refusals. Test the complete visible conversation,
+including streamed prefixes, follow-ups and untrusted source instructions.
+
+No unresolved critical safety/security failure may pass. Assess material defects
+and benign-task refusals by severity and family; freeze expected outcomes and
+coverage before execution. Human adjudication is required for consequential or
+disputed findings. Provider marketing, refusal rendering and green fixture tests
+cannot establish semantic safety. Do not claim universal detection from finite tests.
+Any moderation path reading private messages must satisfy the same privacy boundary;
+an external plaintext service is not implicitly authorized. Set audience and adult
+content boundaries before final policy/configuration freeze. This adds a safety
+gate without relaxing or replacing the existing quality floors.
+
 ## Comparators
 
 Before scoring, record the actual named ChatGPT and Gemini models/modes, account tiers, date, browsing/file settings and available tools. Product names alone are insufficient. If a product conceals its model version, state that limit and preserve the observable configuration. Do not invent current model names from old notes.
