@@ -681,3 +681,13 @@ G1–G6 and U1 independently while Q1 needs supplier evidence.
   changed timeout path subsequently tested through the real chat UI. Container
   health, persistence, individual access and actual age recovery passed locally.
   New runtime changes are not yet deployed; provider/privacy gates remain closed.
+
+- 7 October 2026: deployed `12bd405` after GitHub validation, including the
+  non-root Render SSH prerequisite. Registered public key and pinned host verified;
+  local passphrase unlock/agent setup still blocks hosted backup. Independent key
+  custody recommendation is Bitwarden free, pending founder setup and recovery
+  verification. Further S1/E1 investigation fixed deadline classification during
+  SDK waits and added content-free upstream timing diagnostics; the two consumed
+  attempts remain unresolved and untouched. Current local validation: 166 tests
+  passed, one optional encryption integration test skipped, typecheck/build passed.
+  These latest diagnostic changes are not yet deployed. All trial gates remain open.

@@ -2,6 +2,7 @@
 param(
     [Parameter(Mandatory)][ValidateSet('Initialize','Configure','Backup','Verify','Restore','Status','Schedule')][string]$Action,
     [string]$SshTarget,
+    [string]$SshIdentityFile,
     [string]$Archive,
     [string]$RestoreDirectory,
     [string]$AgeBinary
@@ -88,6 +89,10 @@ $config = Get-Content -Raw -LiteralPath (Join-Path $root 'config.json') | Conver
 if ($Action -eq 'Configure') {
     if ($SshTarget -notmatch '^srv-[a-z0-9]+@ssh\.[a-z0-9-]+\.render\.com$') { throw 'Use the exact target displayed by Render.' }
     $config.sshTarget = $SshTarget
+    if ($SshIdentityFile) {
+        if (-not [IO.Path]::IsPathFullyQualified($SshIdentityFile) -or -not (Test-Path -LiteralPath $SshIdentityFile -PathType Leaf)) { throw 'Choose an existing absolute SSH identity path.' }
+        $config | Add-Member -NotePropertyName sshIdentityFile -NotePropertyValue $SshIdentityFile -Force
+    }
     $config | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $root 'config.json')
     Write-Output 'SSH target configured. Transfer remains unverified.'
     exit
@@ -136,7 +141,10 @@ try {
     $partial = Join-Path $root ($name + '.partial')
     $start = [Diagnostics.ProcessStartInfo]::new('ssh.exe')
     $start.UseShellExecute=$false; $start.CreateNoWindow=$true; $start.RedirectStandardOutput=$true; $start.RedirectStandardError=$true
-    foreach ($arg in @('-T','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ConnectTimeout=15',$config.sshTarget,'node --import tsx scripts/encrypted-registry.ts export ' + $config.recipient)) { $start.ArgumentList.Add($arg) }
+    if (-not $config.PSObject.Properties['sshIdentityFile'] -or -not (Test-Path -LiteralPath $config.sshIdentityFile -PathType Leaf)) { throw 'Configure the registered SSH identity path.' }
+    $knownHosts = Join-Path $root 'known_hosts'
+    if (-not (Test-Path -LiteralPath $knownHosts -PathType Leaf)) { throw 'Pin the verified Render host key before transfer.' }
+    foreach ($arg in @('-T','-i',$config.sshIdentityFile,'-o','IdentitiesOnly=yes','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o',('UserKnownHostsFile='+$knownHosts),'-o','ConnectTimeout=15',$config.sshTarget,'node --import tsx scripts/encrypted-registry.ts export ' + $config.recipient)) { $start.ArgumentList.Add($arg) }
     $process = [Diagnostics.Process]::Start($start)
     $errorTask = $process.StandardError.ReadToEndAsync()
     $stream = [IO.File]::Open($partial,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write)

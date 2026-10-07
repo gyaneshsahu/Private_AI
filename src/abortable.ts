@@ -7,7 +7,16 @@ export function abortable<T>(
   return new Promise((resolve, reject) => {
     const abort = () => {
       signal.removeEventListener("abort", abort);
-      reject(new DOMException("Operation stopped.", "AbortError"));
+      reject(
+        new DOMException(
+          signal.reason?.name === "TimeoutError"
+            ? "Operation timed out."
+            : "Operation stopped.",
+          signal.reason?.name === "TimeoutError"
+            ? "TimeoutError"
+            : "AbortError",
+        ),
+      );
     };
     const cleanup = () => signal.removeEventListener("abort", abort);
     signal.addEventListener("abort", abort, { once: true });

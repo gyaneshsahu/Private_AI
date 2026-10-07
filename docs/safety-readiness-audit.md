@@ -196,3 +196,26 @@ context and never retries automatically. Actual chat-UI and stream tests verify
 that status and prevent provider error details from appearing in the UI. This
 diagnostic improvement changes future configuration identity; do not blend future
 runs with the frozen failed batch. Behavioral S1 and quality E1 remain NOT_PASSED.
+
+### Non-billable follow-up investigation
+
+The client deadline starts before library loading and attestation; the relay has
+its own 90-second upstream bound. Consequently the client can terminate first.
+Existing evidence records attestation around two seconds, but cannot distinguish
+upstream header wait, first encrypted response byte, model queueing or network delay.
+The first request's browser HTTP event is not proof of when upstream headers arrived:
+the relay writes headers with response bytes. No cause is attributed to the model
+from these observations alone, and timeout bounds remain unchanged.
+
+The SDK-wait helper now preserves TimeoutError instead of flattening every abort
+into AbortError, while removing private reason/error text. Synthetic gateway
+receipts now record elapsed time, upstream headers and first encrypted byte, and
+distinguish an upstream deadline from a client disconnect. No plaintext, keys,
+URLs containing credentials or hidden model reasoning are collected. Offline
+gateway, cancellation and browser relay tests pass. These measurements apply only
+to future justified attempts; historical evidence is untouched.
+
+[Tinfoil status](https://status.tinfoil.sh/) reported operational services when
+checked 7 October, with its displayed update preceding the failed requests. No
+matching incident was established. A green status page alone is insufficient
+reason to repeat either consumed case. Safety and answer-quality acceptance stay open.

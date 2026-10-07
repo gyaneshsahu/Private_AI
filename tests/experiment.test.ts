@@ -218,6 +218,15 @@ describe("synthetic experiment gates (no provider calls)", () => {
     expect((await send()).status).toBe(429);
     expect(forward).toHaveBeenCalledTimes(2);
     expect(attempts).toHaveLength(2);
+    for (const attempt of attempts) {
+      expect(attempt.upstreamHeadersMs).toBeGreaterThanOrEqual(0);
+      expect(attempt.firstEncryptedByteMs).toBeGreaterThanOrEqual(
+        attempt.upstreamHeadersMs!,
+      );
+      expect(attempt.elapsedMs).toBeGreaterThanOrEqual(
+        attempt.firstEncryptedByteMs!,
+      );
+    }
   });
   it("stops after ambiguous failure without reflecting upstream plaintext", async () => {
     const forward = vi.fn(
@@ -230,6 +239,8 @@ describe("synthetic experiment gates (no provider calls)", () => {
     expect((await send()).status).toBe(429);
     expect(forward).toHaveBeenCalledTimes(1);
     expect(attempts[0].outcome).toBe("FAILED_COST_UNKNOWN");
+    expect(attempts[0].upstreamHeadersMs).toBeGreaterThanOrEqual(0);
+    expect(attempts[0].firstEncryptedByteMs).toBeNull();
   });
   it("rechecks expiry before each request", async () => {
     const forward = vi.fn(mockEncryptedResponse);

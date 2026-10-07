@@ -177,3 +177,43 @@ container was removed; ciphertext and the protected paused restore are retained.
 Render still shows SSH unavailable until a public key is registered. Real hosted
 transfer, independent recovery-key copy, verified retention scheduling and
 proactive failure alerts remain open; this rehearsal does not pass D05.
+
+### SSH access and independent key setup
+
+The founder registered the Windows public SSH key; its fingerprint matches the
+local `privateai-render.pub`. The Frankfurt host key was checked against
+[Render's published fingerprint](https://render.com/docs/ssh#renders-public-key-fingerprints)
+and pinned in the protected backup directory. Configure now records the existing
+identity path; transfers explicitly select that key, permit no interactive
+authentication, and require the pinned host key. Private SSH key contents are
+neither copied nor recorded. The container now creates `/home/node/.ssh` owned by
+the non-root runtime user with mode 0700, as required by Render.
+
+Recommended independent custody: a personal Bitwarden free account, which includes
+[secure notes and access across devices](https://bitwarden.com/help/password-manager-plans/).
+This is a recommendation, not activation or approval to transmit the backup key.
+The founder must create the account with a unique master passphrase, enable
+two-step login and retain its [recovery code](https://bitwarden.com/help/two-step-recovery-code/)
+offline. Ensure the vault can be accessed from another device independently of
+this Windows account. Do not save the only master-password/2FA recovery record
+inside that same vault.
+
+After account setup and approval of key storage there, transfer the existing age
+identity directly in a user-operated local session into a secure note named
+`PrivateAI registry recovery`. Include its public recipient, archive location and
+the restore instructions; keep the private identity out of terminal transcripts,
+screenshots, chat and repository files. Do not create a new identity: existing
+archives require the original one. Before marking custody verified, retrieve the
+stored identity from the independent vault and authenticate a real archive in
+memory, then rehearse paused/revoked restore. Account creation alone, or a second
+copy under the same Windows account, does not satisfy this gate. The precise local
+transfer command remains pending selection/setup; never print the key to make a
+copy through chat.
+
+Current access checkpoint: Render deployed `12bd405` after passing GitHub validation.
+The server accepts the registered public key, but batch authentication cannot
+unlock its passphrase-protected private key. A local diagnostic discarded public
+key output and confirmed passphrase protection without recording the passphrase.
+The Windows OpenSSH agent service is unavailable. Hosted transfer is still absent;
+do not remove key protection or enable scheduling to work around this blocker.
+User-operated local unlocking/agent setup is required before unattended transfer.

@@ -181,3 +181,13 @@ access secret. This commit triggers the no-inference hosted workflow on the
 development branch. GitHub Actions API inspection from Cloud returns `Forbidden`,
 so that Cloud check could not establish a passing result. Subsequent Windows
 GitHub API inspection confirmed the smoke job passed (current status above).
+
+### SSH-ready container deployment — 2026-10-07
+
+Render reports commit `12bd405` live after GitHub Validate run
+[37643770996](https://github.com/gyaneshsahu/Private_AI/actions/runs/37643770996)
+passed. The image includes the non-root SSH directory prerequisite. Render accepts
+the registered public key, but the local passphrase-protected identity requires
+unlocking; no hosted registry transfer has been verified. Local diagnostics added
+subsequently are not included in this deployment. Safety, quality, provider privacy
+and recovery readiness remain open; deployment is not trial approval.
