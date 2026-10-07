@@ -72,10 +72,18 @@ Current status and completion criteria: [authoritative readiness checklist](READ
 The [earlier capability review](trial-readiness.md) is historical evidence, not a
 second current ledger. Existing IDs and acceptance floors are preserved.
 
+The checklist is not 42 tasks that all precede UI work. Complete all **T** requirements
+before the agreed invited-user trial; **P** requirements precede public launch;
+**O** items remain deferred unless justified. High-impact items determine order,
+not permission to omit other trial requirements. Functional accessibility and mobile
+usability are trial work, while extensive visual polish follows safety, model
+reliability and necessary recovery progress; it need not await optional features
+or every externally blocked supplier reply.
+
 Execution priority now supersedes the historical table order:
 
-1. **S1 + E1/G1–G4:** paired safety/harmless coverage, audience boundaries, existing
-   fresh-writing human review, reasoning/coding scope and a justified fixed candidate.
+1. **S1 + E1/G1–G4:** paired safety/harmless coverage, audience boundaries, confirmed
+   fresh-writing findings, reasoning/coding scope and a justified fixed candidate.
    Freeze safety and answer policy together before fresh held-out acceptance.
 2. **U1/W2/L2:** necessary recovery, off-disk backup, deletion/retention, operational
    signals and safe rollback. Advance synthetic preparation while storage decisions
@@ -646,3 +654,10 @@ G1–G6 and U1 independently while Q1 needs supplier evidence.
   changes and revoke-all fallback; four backup tests pass. Typecheck and evaluation
   fixture checks pass. Off-disk recovery, audience decisions and human/model safety
   evidence remain open in the authoritative checklist. Deployed runtime unchanged.
+
+- 7 October 2026: recorded eight founder-approved fresh-writing scores, preserving
+  original agent findings and source hashes. All supplied dimensions are acceptable;
+  keep Gemma as development candidate, with no cosmetic prompt tuning. The old
+  reserved writing failure remains. Clarified that T requirements precede trial,
+  P precedes public launch and O is deferred; high-impact work determines sequence,
+  not a reduced trial checklist. The eight-score review is no longer pending.

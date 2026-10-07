@@ -17,8 +17,8 @@ Do not add a feature just because another product has it.
    response policy. Refusal parsing is not harmful-request detection. Resolve
    audience/content boundaries and build paired harmful/harmless synthetic coverage.
 2. **E1/G1–G4 model reliability:** reserved writing fails (at most 8/12, required
-   10/12). Review the existing eight fresh conversations once, decide any justified
-   intervention, and freeze safety plus answer policy together before fresh held-out
+   10/12). The eight fresh-writing scores are now founder-confirmed; keep Gemma as the
+   development candidate, decide any justified intervention, and freeze safety plus answer policy together before fresh held-out
    assessment. Reasoning transfer and ordinary coding usefulness need explicit coverage.
 3. **U1 recovery/deletion:** same-disk copies are not disaster recovery. Off-disk
    encrypted recovery, reconciliation of revoked credentials and enforced retention
@@ -59,7 +59,7 @@ gaps here and map them to existing roadmap IDs rather than creating another ledg
 | Requirement / roadmap | Priority | Current status | Supporting evidence | Missing work | Completion criterion |
 | --- | --- | --- | --- | --- | --- |
 | C01 General-assistant scope and honest limits — G6/R1 | T/P1 | Goal documented; release claims not finalized | [PRD](PRD.md), [acceptance](acceptance.md) | Tie supported tasks/languages and limitations to the selected release; English is the evaluated language | Reviewed trial scope preserves all six families; no silent narrowing or parity claim |
-| C02 Writing without invented commitments/reasons — G1/E1 | T/P0 | Implemented chat; live reserved assessment failed, human-confirmed | [Writing diagnosis](writing-failure-diagnosis.md) | Human review of fresh packet cases 1–8; justified candidate/configuration decision | Fresh held-out writing meets unchanged 10/12 floor and severity/recurrence rules; old failure preserved |
+| C02 Writing without invented commitments/reasons — G1/E1 | T/P0 | Implemented chat; live reserved assessment failed, human-confirmed | [Writing diagnosis](writing-failure-diagnosis.md) | Fresh packet scores 1–8 founder-confirmed, all dimensions at least 2; retain Gemma development candidate; fresh release acceptance still needed | Fresh held-out writing meets unchanged 10/12 floor and severity/recurrence rules; old failure preserved |
 | C03 Reasoning, planning, ambiguity and noisy language — G2/E1 | T/P0 | Narrow live development evidence, historical arithmetic/planning failures | [Development review](development-family-review.md), [planning](planning-intervals-review.md), `evaluation/cases` | Assess transfer across multi-step constraints, units/dates and misspellings on one release | Ground-truth tasks and follow-ups meet family thresholds; no unreviewed recurring material errors |
 | C04 Ordinary code explanation/debugging/generation scope — G2/G6/E1 | T/P1 | Text/code rendering exists; dedicated coding-quality coverage not established | `src/Answer.tsx`, `src/answer-format.ts`; existing six-family rubric | Define representative conversational coding tasks within explanation/planning; verify code in an isolated offline test harness, not a user execution tool | Demonstrated correctness for declared languages/task bounds; identify untested code; do not imply execution or broad coding parity |
 | C05 Personal discussion and calibrated consequential advice — G3/S1 | T/P0 | Development observations; unsafe assumptions remain a known risk | [Trial review history](trial-readiness.md), `src/conversation.ts` | Health/legal/financial uncertainty, empathy and unsupported assumptions in fresh tasks | Human-reviewed appropriate advice/clarification with no serious unsafe conclusions; disclaimers cannot repair wrong guidance |
@@ -119,8 +119,8 @@ gaps here and map them to existing roadmap IDs rather than creating another ledg
 ## Immediate coherent batches
 
 - **A — safety and reliability foundations:** offline paired safety fixtures and
-  expected outcomes; obtain audience decision; adjudicate the already-produced
-  writing packet. Define a small coding/reasoning development set without modifying
+  expected outcomes; obtain audience decision; apply the confirmed fresh-writing review without
+  repeating that packet. Define a small coding/reasoning development set without modifying
   the already exposed held-out set. No new inference merely to keep work moving.
 - **B — recovery and operational controls:** validate proposed retention against
   actual lifecycle, prepare safe purge/recovery tests with synthetic registries,
@@ -136,3 +136,11 @@ gaps here and map them to existing roadmap IDs rather than creating another ledg
 it did not rerun live inference, independently certify security, or re-execute the
 historical hosted checks. Missing coverage is recorded rather than converted into
 an implementation defect. Future checks must record their actual outcomes here.
+
+
+### Review update — 7 October
+
+The eight fresh-writing scores are founder-confirmed; see [recorded scores and
+candidate decision](writing-failure-diagnosis.md#founder-confirmed-fresh-writing-scores--7-october).
+This closes that human-review action, not C02/C07 acceptance. Original agent
+assessments and the failed reserved evaluation remain preserved.

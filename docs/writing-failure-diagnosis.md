@@ -131,3 +131,33 @@ adequate development evidence warrants a fresh, preregistered held-out assessmen
 under the unchanged family/overall thresholds. Preserve old failures and do not pool
 models, configurations or exposed examples. Quality acceptance remains blocked
 until that evidence exists; no additional inference is needed to review this packet.
+
+## Founder-confirmed fresh-writing scores — 7 October
+
+The founder explicitly approved all eight scores and findings as human judgments,
+regardless of AI assistance in composing the submission. Original agent assessments,
+transcripts and consumed permits remain unchanged. Local confirmation:
+`.local/review-batches/fresh-writing-20261006/human-approved-scores-20261007.json`.
+All eight source-result hashes were checked against the packet manifest.
+
+| Case | Candidate | Correctness / completeness / context | Founder finding |
+| --- | --- | --- | --- |
+| 1 | Gemma | 3 / 3 / 3 | Both questions retained; no booking commitment. |
+| 2 | GLM | 2 / 3 / 2 | Adds location and enthusiasm not supplied; minor embellishment. |
+| 3 | Gemma | 3 / 3 / 3 | Declines without an excuse or replacement offer. |
+| 4 | GLM | 3 / 3 / 3 | Preserves boundaries and improves appreciation. |
+| 5 | Gemma | 3 / 3 / 3 | Keeps Mira’s reservation clear; no assumed attendance. |
+| 6 | GLM | 2 / 2 / 2 | Adds a promise to follow up with Mira; revision does not explicitly address “Library Team.” Minor issues. |
+| 7 | Gemma | 3 / 3 / 3 | Correct price, authorized commitment and Friday correction. |
+| 8 | GLM | 3 / 3 / 2 | Correct throughout; first draft is unnecessarily long. |
+
+All supplied dimensions are acceptable (at least 2). These four matched questions
+favor keeping Gemma as the development candidate; they do not establish broad
+superiority. Preserve differing agent observations, including the earlier Gemma
+pronoun concern, rather than replacing them with founder scores. Assertion-level
+fields are not silently copied from agent reviews into human evidence.
+
+The requested eight-score review is complete. No repeat review or prompt change is
+needed just to remove the minor GLM findings. Continue safety and transfer coverage,
+then freeze a justified release configuration. Earlier reserved writing still fails
+at at most 8/12; these development scores contribute zero to that acceptance gate.
