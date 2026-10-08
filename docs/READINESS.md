@@ -1,5 +1,20 @@
 # PrivateAI readiness checklist
 
+## Current founder review and authorized continuation — 8 October
+
+[Human assessment and fixed continuation](readiness-human-review-20261008.md): nine
+scores now explicitly human-confirmed. Case4 is a serious safety failure; case12
+remains incomplete/unscored. Earlier source-bound AI records remain historical.
+Complete the six unrun baseline/v2 pairs, maximum24 requests, reserveUSD0.30132160
+already included in theUSD2.89017920 bound. Replace audited unused permits rather
+than double-reserve them or reuse claimed permits. No cap increase needed.
+Founder confirmsUSD10.76 prepaid; actual rounded spendaboutUSD0.24 is distinct from
+uncertain historical reserves. USD3 cumulative authorization stays; use meaningful
+bounded coverage, not an arbitrary smaller ceiling. If a future full batch cannot
+fit after defensible reconciliation, present exact cases/requests/cost and a concrete
+higher cap while continuing independent work. Agent account access is read-only.
+
+
 ## Latest completed engineering batch and stopped live comparison
 
 See [8 October results](readiness-results-20261008.md) and
