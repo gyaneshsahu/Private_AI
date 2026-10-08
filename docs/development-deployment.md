@@ -191,3 +191,13 @@ the registered public key, but the local passphrase-protected identity requires
 unlocking; no hosted registry transfer has been verified. Local diagnostics added
 subsequently are not included in this deployment. Safety, quality, provider privacy
 and recovery readiness remain open; deployment is not trial approval.
+
+### Off-host registry recovery — 2026-10-08
+
+Read-only SSH confirms deployed `12bd405a8355cdbe422e066ea7006486d2901f39`,
+paused individual access, two accounts and zero unrevoked accounts. Encrypted
+registry export to the approved Windows destination and separate paused/revoked
+restore passed. The local backup launcher now uses `/app` explicitly because SSH
+starts in `/home/node`; no deployment change was needed. Daily scheduled backup
+was exercised successfully. See `backup-retention-policy.md` for archive evidence
+and operational gaps; the live registry was not replaced or resumed.

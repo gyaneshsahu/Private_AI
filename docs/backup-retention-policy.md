@@ -1,6 +1,6 @@
 # Trial backup and metadata-retention policy
 
-7 October 2026. **Approved destination; local encryption verified; hosted transfer and operational retention not yet verified.**
+8 October 2026. **Hosted encrypted transfer, separate restore and scheduled execution verified; proactive alerts and sustained recovery objectives remain open.**
 Owner: founder/operator. Applies to the existing single-instance Render service.
 The founder authorized encrypted registry transfer to `C:\PrivateAI-backups`,
 Windows-account-protected keys, seven-day retention and an independently secured
@@ -8,6 +8,12 @@ recovery-key copy. No additional storage purchase is authorized. The current tri
 remains paused and private-data access gated.
 
 ## Current evidence and gaps
+
+The 8 October hosted rehearsal below supersedes earlier pending SSH/key-custody
+entries. The independent Bitwarden key copy is verified; the Windows task is active.
+Registry row deletion, proactive failure/staleness alerts and a full service
+recovery drill remain incomplete. A one-second database restore is not proof of
+the four-hour end-to-end recovery objective or continuous 24-hour backup coverage.
 
 `server/registry-backup.ts` takes a consistent SQLite backup, validates its schema
 and integrity, uses restrictive permissions and stages recovery paused. Hosted
@@ -252,3 +258,36 @@ transferred and restored before D05 passes. Never paste the identity into chat.
 
 Validation: PowerShell syntax and the real age encrypted-registry integration test
 passed. The user-operated dialog and independent-vault round trip remain pending.
+
+### Verified hosted backup and task — 8 October
+
+Founder confirmed retrieval from Bitwarden; protected configuration records recovery
+verification at 10:04:21 UTC. SSH now authenticates using the existing unlocked key.
+The first transfer failed because SSH starts in `/home/node`; the launcher now
+explicitly changes to `/app`. Its empty partial file is preserved under normal
+seven-day retention. No plaintext export was created.
+
+The corrected hosted transfer authenticated a 16,584-byte encrypted registry:
+`registry-20261008T100833Z-513eabd7650d42ce8f80dfda3a62b63e.age`, SHA-256
+`127D268A505C88B684E44D7BD44FC00F5AF0951D4A0BD5A3AB2B5474EFB1BF07`.
+A separate restore in the protected directory took 956 ms and reported paused
+access with every restored account revoked. The source remained untouched. A
+read-only hosted aggregate check confirmed release `12bd405`, paused access, two
+accounts and zero unrevoked accounts. No account identifiers/hashes were logged.
+
+Task `PrivateAI encrypted registry backup` is active daily at 09:00 Windows local
+time (Europe/Berlin at setup), with missed work started when available. A manually
+triggered run through Task Scheduler completed with result 0 and a fresh verified
+receipt at 10:09:47 UTC. This establishes execution in the scheduled user context,
+not long-term schedule reliability. The computer must be on and the user signed
+in, with network/SSH/Windows credential access working.
+
+`pwsh -NoProfile -File .\tests\windows-backup-retention.ps1` passed against disposable
+synthetic files: expired archives and partials removed; current archives and
+unrelated evidence retained. Rehearsal restore directories and synthetic evidence
+are not automatically deleted by archive retention. Protected restored databases
+remain sensitive; any cleanup of existing rehearsals requires an explicit decision.
+
+Failure receipts and nonzero task exit status exist, but proactive notification
+and detection while this computer is unavailable are not implemented. D05/O04
+remain open for that operational work and a complete service recovery drill.

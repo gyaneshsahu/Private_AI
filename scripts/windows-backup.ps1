@@ -199,7 +199,7 @@ try {
     if (-not $config.PSObject.Properties['sshIdentityFile'] -or -not (Test-Path -LiteralPath $config.sshIdentityFile -PathType Leaf)) { throw 'Configure the registered SSH identity path.' }
     $knownHosts = Join-Path $root 'known_hosts'
     if (-not (Test-Path -LiteralPath $knownHosts -PathType Leaf)) { throw 'Pin the verified Render host key before transfer.' }
-    foreach ($arg in @('-T','-i',$config.sshIdentityFile,'-o','IdentitiesOnly=yes','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o',('UserKnownHostsFile='+$knownHosts),'-o','ConnectTimeout=15',$config.sshTarget,'node --import tsx scripts/encrypted-registry.ts export ' + $config.recipient)) { $start.ArgumentList.Add($arg) }
+    foreach ($arg in @('-T','-i',$config.sshIdentityFile,'-o','IdentitiesOnly=yes','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o',('UserKnownHostsFile='+$knownHosts),'-o','ConnectTimeout=15',$config.sshTarget,'cd /app && node --import tsx scripts/encrypted-registry.ts export ' + $config.recipient)) { $start.ArgumentList.Add($arg) }
     $process = [Diagnostics.Process]::Start($start)
     $errorTask = $process.StandardError.ReadToEndAsync()
     $stream = [IO.File]::Open($partial,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write)

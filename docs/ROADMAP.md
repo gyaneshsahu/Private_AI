@@ -698,3 +698,11 @@ G1–G6 and U1 independently while Q1 needs supplier evidence.
   recording custody verification. PowerShell syntax and real age integration pass;
   the founder-operated round trip is pending. SSH agent is installed but stopped;
   local unlock still blocks hosted transfer. No recovery or safety gate promoted.
+
+- 8 October 2026: U1/D05 independent Bitwarden recovery and unlocked SSH verified.
+  Fixed the observed Render SSH working-directory defect; real encrypted hosted
+  transfer and separate paused/revoked restore passed (956 ms for database restore).
+  Daily 09:00 Windows backup activated; scheduled-context execution returned 0.
+  Seven-day archive retention regression passed. Source remains paused with all
+  accounts revoked. Proactive alerts, sustained RPO/full-service RTO and existing
+  safety/quality/provider gates remain open; no invitation approval inferred.
