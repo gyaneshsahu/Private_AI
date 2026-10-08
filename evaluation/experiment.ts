@@ -11,6 +11,7 @@ import trialTransfer from "./cases/trial-transfer.json";
 import reliabilityTransfer from "./cases/reliability-transfer.json";
 import constraintTransfer from "./cases/constraint-transfer.json";
 import readinessTransfer from "./cases/readiness-transfer.json";
+import generalTransfer from "./cases/general-transfer.json";
 import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
@@ -24,6 +25,7 @@ const robustnessCases = [
   ...reliabilityTransfer,
   ...constraintTransfer,
   ...readinessTransfer,
+  ...generalTransfer,
   ...safetyDevelopment.cases.map((c) => ({
     id: c.id,
     family: "personal",

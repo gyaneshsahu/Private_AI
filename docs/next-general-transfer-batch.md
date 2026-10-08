@@ -1,4 +1,4 @@
-# Proposed general transfer batch — approval pending
+# General transfer batch — authorized within existing USD3 cap
 
 Prepared8 October2026. Twelve fresh synthetic two-turn cases, one frozen Gemma
 thinking / constraints-v2 configuration, maximum24 requests. No baseline reruns,
@@ -28,10 +28,15 @@ record the exact composed prompts before permits. No external searches are inclu
 
 Conservative reserve at freshly recheckedUSD0.40/1.00 per million input/output tokens:
 24*((8000*4*0.40+4096)/1,000,000) = **USD0.405504**.
-Current retained cumulativeUSD2.89017920 + batch = **USD3.29568320**.
-Proposed cumulative cap **USD3.50** (notUSD4), subject to founder approval. This
-request follows retained uncertain historical reserves; it does not implyUSD2.89
-was charged. Available creditUSD10.76 does not grant authority. No new request yet.
-Recheck billing and reconcile defensibly settled historical charges before issuing
-permits; if the full batch then fitsUSD3, no increase is needed. Do not shrink it to
-fitUSD0.10982080. Founder alone changes key/account limits or payment settings.
+The earlierUSD3.50 request is withdrawn. Founder explicitly authorized this batch
+under existingUSD3, with no API-limit changes. Recent48 requests have terminal
+usageUSD0.03520920 and matching dashboard count increments; their old maximum
+reservations no longer represent pending work. Full details and result hashes:
+`.local/general-budget-audit-20261008.json`.
+
+ObservedUSD0.26 + new reserveUSD0.405504 =USD0.665504. Even an overlapping risk check
+that retains ALL olderUSD2.288624 plusUSD0.27 for the entire dashboard charged total
+and rounding, plus the new reserve, isUSD2.964128. This overcounted planning amount
+is not actual spend. Historical uncertainty remains recorded, not silently discarded.
+No change to questions, configuration, output allowance or sample size. No payment,
+limit change, privacy-gate change or new sensitive transfer is authorized.

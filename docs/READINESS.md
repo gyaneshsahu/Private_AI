@@ -1,5 +1,26 @@
 # PrivateAI readiness checklist
 
+## Budget correction and general batch authorized — 8 October
+
+The founder rejected the unnecessaryUSD3.50 request; it is withdrawn. Do not request
+or make an API-limit change for this batch. ExistingUSD3 cumulative authority applies.
+Run the fixed12 cases/24 requests, fullUSD0.405504 reserve, no sample reduction.
+Recent48 readiness requests have terminal token usage including incomplete case12;
+total token estimateUSD0.03520920. Dashboard requests advanced435 to483 and spend
+USD0.22 toUSD0.26. The priorUSD0.60155520 reservation is no longer pending work.
+Audit: `.local/general-budget-audit-20261008.json` hashes all24 result files.
+
+For an intentionally overcounted risk check, cover all observed dashboard spend
+withUSD0.27 (one cent rounding allowance), retain the entire olderUSD2.288624
+uncertainty reserve additionally, and addUSD0.405504 new worst case:USD2.964128,
+still underUSD3. This is NOT actual spend and intentionally overlaps old charges.
+Displayed spend plus new maximum isUSD0.665504. No exact settlement guarantee or
+older risk discarded; avoid presenting accumulated request maxima as spent money.
+All requests are sequential, single-use, synthetic, no automatic retry. Settings
+remain founder-operated only; key/account cap3, auto-reload off. Human-review and
+privacy gates remain unchanged. Old entries below are historical, not current requests.
+
+
 ## Latest continuation outcome — 8 October
 
 [Remaining comparison](readiness-continuation-results-20261008.md) completed all
