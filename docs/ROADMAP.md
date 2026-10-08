@@ -740,3 +740,7 @@ G1–G6 and U1 independently while Q1 needs supplier evidence.
   Render is live on `40f2e33`, paused with all hosted accounts revoked. Next: human
   priority review, supplier evidence, sustained backup coverage/hosted cutover and
   remaining live research/device validation. General-assistant scope unchanged.
+
+## Current coherent coverage work
+
+Advance C03/C04/C06/C09 together: fresh ground-truth reasoning, isolated JS/TS code checks and positional ten-turn document/chat recall, alongside the human-reviewed format/boundary failures. READINESS remains the single trial ledger. Independent human assessments are required before trial acceptance; the invited trial remains intermediate to general-purpose everyday usefulness with verifiable privacy. Supplier replies, actual Galaxy A52/TalkBack checks, hosted cutover/log evidence and separate retention activation remain dependency gates.

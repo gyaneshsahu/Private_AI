@@ -18,7 +18,7 @@ const resultSchema = z.object({
         responseFinished: z.boolean().optional(),
       }),
     )
-    .max(2),
+    .max(12),
   browserStreamLifecycle: z
     .object({
       requestSignalAborts: z.number().int().nonnegative(),
@@ -42,11 +42,11 @@ const resultSchema = z.object({
       failure: z.string().nullable(),
       evidence: z
         .array(z.object({ host: z.string(), releaseDigest: z.string() }))
-        .max(2),
-      timings: z.array(z.number().nonnegative().finite()).max(2),
+        .max(12),
+      timings: z.array(z.number().nonnegative().finite()).max(12),
       conversation: z.object({
         messages: z.array(z.object({ role: z.string(), status: z.string() })),
-        usage: z.array(usageSchema).max(2),
+        usage: z.array(usageSchema).max(12),
       }),
     })
     .optional(),
@@ -145,7 +145,9 @@ export function reviewResult(input: unknown, permitInput: unknown) {
       : completed
         ? expectedTurns === 1
           ? "COMPATIBILITY_RETURNED_REVIEW_REQUIRED"
-          : "TWO_TURNS_RETURNED_REVIEW_REQUIRED"
+          : expectedTurns === 2
+            ? "TWO_TURNS_RETURNED_REVIEW_REQUIRED"
+            : "MULTI_TURN_RETURNED_REVIEW_REQUIRED"
         : "INCOMPLETE_REVIEW_REQUIRED",
     relayClosure,
     relayAssessment,

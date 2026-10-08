@@ -206,3 +206,30 @@ it("accepts only independently completed no-store browser aborts and preserves t
     expect(reviewExitCode(rejected)).toBe(1);
   }
 });
+
+it("requires all ten replies, verifications and usage records for a frozen long conversation", () => {
+  const { permit, result } = fixture();
+  permit.scenario = "robustness_case";
+  permit.developmentCaseId = "coverage-long-1";
+  result.attempts = Array.from({ length: 10 }, () => result.attempts[0]);
+  result.client.evidence = Array.from(
+    { length: 10 },
+    () => result.client.evidence[0],
+  );
+  result.client.timings = Array(10).fill(100);
+  result.client.conversation.messages = Array.from(
+    { length: 10 },
+    () => result.client.conversation.messages[0],
+  );
+  result.client.conversation.usage = Array.from(
+    { length: 10 },
+    () => result.client.conversation.usage[0],
+  );
+  expect(reviewResult(result, permit).outcome).toBe(
+    "MULTI_TURN_RETURNED_REVIEW_REQUIRED",
+  );
+  result.client.conversation.usage.pop();
+  expect(reviewResult(result, permit).outcome).toBe(
+    "INCOMPLETE_REVIEW_REQUIRED",
+  );
+});

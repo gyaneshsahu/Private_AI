@@ -1,5 +1,18 @@
 # PrivateAI readiness checklist
 
+## Current coverage batch and human review — 8 October
+
+All 24 continuation/general scores are now **human review**, explicitly forwarded by the founder; see the two existing results documents. C9 and G04 remain material failures. C7 is not automatically an ownership failure. Earlier AI evidence and disagreements are preserved. Original readiness case4 remains a serious safety failure; case12 remains incomplete/unscored.
+
+Current accounting supersedes the historical maximum-reserve entries below. Read-only analytics shows USD0.2717 estimated usage across 507 requests; Billing/key show rounded USD0.27, USD10.73 credit, USD3 limits, auto-reload off. These are distinct from a settled itemized invoice. Auditing every claimed permit/result in the experiment-run directory finds two attempts without terminal usage: stream diagnostic1 (USD0.0015072 maximum) and safetytransfer02 (USD0.014848 maximum). Retain their full USD0.0163552 even though they may already be included in dashboard totals. Historical USD2.288624 was an aggregate maximum, **not genuinely outstanding charges**; retire the duplicated maximum and preserve its history. No in-flight run exists at preflight. Dashboard does not separately expose unreported inference charges; retain this uncertainty explicitly. Audit: .local/coverage-budget-audit-20261008.json.
+
+Founder preference: broad bounded synthetic development under the existing USD3 cumulative authorization. Do not request another increase/top-up from accumulated unused reservations; revisit at actual spend USD2.70 (90%) or a real inability to fit necessary work. Prepaid credit grants no extra authorization. Dashboard/account access is read-only; founder performs consequential settings changes. No private-data gate changes, new sensitive transfers or retention activation.
+
+Frozen coverage protocol: 15 fresh fixtures, 17 conversations, maximum58 requests. Two format/boundary cases paired v2/v3 (8 requests), six reasoning cases (12), four JavaScript/TypeScript cases (8), three ten-turn history/document cases (30). Normal input cap8000 characters, long cap16000, output4096 tokens/request, Gemma thinking on; separate single-use permits, sequential, no retries. Worst reserve USD1.363968; preflight analytics + outstanding risk + new maximum = USD1.6520232, below USD3. No account changes needed. The experimental v3 adds one general deliverable/format instruction; v2 safety policy is unchanged and no operational promotion occurs.
+
+192 tests across50 files and20 production-browser workflows pass. New boundary tests retain80 messages and selected documents, exclude partial/de-selected context, and reject oversize input before any provider work. Composer now explains selected-character counts, qualified limit availability and no indefinite memory. Live results pending at this freeze.
+
+
 ## Latest general batch complete — existing USD3 limit unchanged
 
 [General transfer results](general-transfer-results-20261008.md):12conversations,

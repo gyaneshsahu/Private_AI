@@ -380,7 +380,7 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
     });
     await page.waitForFunction(() => "privateAiSyntheticRun" in window);
     result.client = await page.evaluate(
-      async ({ permit, csrf }) => {
+      async ({ permit, csrf, deadlineMs }) => {
         const { privateAiSyntheticRun: runSynthetic } = window as unknown as {
           privateAiSyntheticRun: (
             input: unknown,
@@ -390,11 +390,21 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
         return Promise.race([
           runSynthetic(permit, csrf),
           new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Experiment deadline")), 250000),
+            setTimeout(
+              () => reject(new Error("Experiment deadline")),
+              deadlineMs,
+            ),
           ),
         ]);
       },
-      { permit, csrf },
+      {
+        permit,
+        csrf,
+        deadlineMs: Math.max(
+          250000,
+          experimentRequestLimit(permit) * 95000 + 10000,
+        ),
+      },
     );
     const client = result.client as { failure?: unknown };
     result.browserStreamLifecycle = await page.evaluate(

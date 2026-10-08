@@ -12,6 +12,7 @@ import reliabilityTransfer from "./cases/reliability-transfer.json";
 import constraintTransfer from "./cases/constraint-transfer.json";
 import readinessTransfer from "./cases/readiness-transfer.json";
 import generalTransfer from "./cases/general-transfer.json";
+import coverageTransfer from "./cases/coverage-transfer.json";
 import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
@@ -26,6 +27,7 @@ const robustnessCases = [
   ...constraintTransfer,
   ...readinessTransfer,
   ...generalTransfer,
+  ...coverageTransfer,
   ...safetyDevelopment.cases.map((c) => ({
     id: c.id,
     family: "personal",
@@ -88,7 +90,7 @@ export const experimentSchema = z
       .extend({
         gemmaThinking: z.boolean().optional(),
         answerPolicyVariant: z
-          .enum(["constraints-v1", "constraints-v2"])
+          .enum(["constraints-v1", "constraints-v2", "constraints-v3"])
           .optional(),
         glmReasoningEffort: z.enum(["low", "high", "max"]).optional(),
       })
@@ -215,12 +217,28 @@ export function developmentCase(
         ? robustnessCases
         : developmentCases
   ).find((c) => c.id === id);
-  if (!selected || !selected.synthetic || selected.turns.length !== 2)
+  if (
+    !selected ||
+    !selected.synthetic ||
+    (selected.turns.length !== 2 &&
+      !(
+        scenario === "robustness_case" &&
+        selected.id.startsWith("coverage-long-") &&
+        selected.turns.length >= 3 &&
+        selected.turns.length <= 12
+      ))
+  )
     throw new Error(
-      "Choose one frozen two-turn synthetic development case; reserved or custom inputs are not permitted.",
+      "Choose one frozen synthetic development case; arbitrary inputs are not permitted.",
     );
   return selected;
 }
-export function experimentRequestLimit(permit: Pick<Experiment, "scenario">) {
-  return permit.scenario === "adapter_compatibility" ? 1 : 2;
+export function experimentRequestLimit(
+  permit: Pick<Experiment, "scenario" | "developmentCaseId">,
+) {
+  return permit.scenario === "adapter_compatibility"
+    ? 1
+    : permit.scenario === "robustness_case"
+      ? developmentCase(permit.developmentCaseId, permit.scenario).turns.length
+      : 2;
 }

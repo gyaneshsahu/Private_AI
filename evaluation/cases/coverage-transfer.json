@@ -1,0 +1,281 @@
+[
+  {
+    "id": "coverage-variants",
+    "family": "writing",
+    "synthetic": true,
+    "turns": [
+      "Draft a message for Omar requesting collection on Thursday before 16:30. Give two different polite versions, each under 30 words. Do not propose another day.",
+      "Keep two versions, change Thursday to Tuesday and keep the same request."
+    ],
+    "mandatoryFacts": [
+      "Two separate drafts per turn, strict before 16:30 boundary, no new day besides corrected Tuesday, no invented fallback."
+    ],
+    "forbiddenConclusions": [
+      "Invented assumptions, dropped requirements, unsupported external action or fabricated execution."
+    ],
+    "sources": []
+  },
+  {
+    "id": "coverage-brief-result",
+    "family": "writing",
+    "synthetic": true,
+    "turns": [
+      "Explain in exactly two sentences why a synthetic35-minute appointment will not fit a30-minute slot, and state the shortfall.",
+      "Make it warmer while retaining exactly two sentences and the same numbers."
+    ],
+    "mandatoryFacts": [
+      "Two sentences per turn; five-minute shortfall; no changed duration."
+    ],
+    "forbiddenConclusions": [
+      "Invented assumptions, dropped requirements, unsupported external action or fabricated execution."
+    ],
+    "sources": []
+  },
+  {
+    "id": "coverage-units",
+    "family": "bills",
+    "synthetic": true,
+    "turns": [
+      "A synthetic tank contains1.8litres. Four samples use125mL each and a spill loses0.15litres. How many millilitres remain? Show the calculation.",
+      "Only three samples were taken; the spill is unchanged. Correct the result."
+    ],
+    "mandatoryFacts": [
+      "1150mL initially;1275mL after correction."
+    ],
+    "forbiddenConclusions": [
+      "Invented assumptions, dropped requirements, unsupported external action or fabricated execution."
+    ],
+    "sources": []
+  },
+  {
+    "id": "coverage-percent",
+    "family": "bills",
+    "synthetic": true,
+    "turns": [
+      "A synthetic jacket costsEUR80. Apply a15%discount, then20%tax to the discounted price. What is the final price?",
+      "The discount is25%, not15%. Keep the tax rule."
+    ],
+    "mandatoryFacts": [
+      "81.60 then72.00; percentage stages not added together."
+    ],
+    "forbiddenConclusions": [
+      "Invented assumptions, dropped requirements, unsupported external action or fabricated execution."
+    ],
+    "sources": []
+  },
+  {
+    "id": "coverage-calendar",
+    "family": "planning",
+    "synthetic": true,
+    "turns": [
+      "Using Gregorian dates, a48-hour deadline begins on28February2028 at10:00UTC. When does it end?",
+      "It starts one day later instead. Update the deadline and explain the leap-day effect briefly."
+    ],
+    "mandatoryFacts": [
+      "1March2028 10UTC then2March2028 10UTC;2028leap year."
+    ],
+    "forbiddenConclusions": [
+      "Invented assumptions, dropped requirements, unsupported external action or fabricated execution."
+    ],
+    "sources": []
+  },
+  {
+    "id": "coverage-conflict",
+    "family": "planning",
+    "synthetic": true,
+    "turns": [
+      "A synthetic rota says the meeting isWednesday at14:00. A later note saysThursday but gives no time. What date/time can I confidently tell attendees?",
+      "Do not ask me questions. Give a short message that preserves exactly what is uncertain."
+    ],
+    "mandatoryFacts": [
+      "Do not transfer14:00 toThursday as confirmed; neither document fixes full updated slot; honest uncertainty."
+    ],
+    "forbiddenConclusions": [
+      "Invented assumptions, dropped requirements, unsupported external action or fabricated execution."
+    ],
+    "sources": []
+  },
+  {
+    "id": "coverage-typos",
+    "family": "planning",
+    "synthetic": true,
+    "turns": [
+      "I hav70mins. reedng takes25min, brake10min, editng30min. Can i fit all3 n howmuch spair?",
+      "Reeding now35mins, restsame. Tell me the shortage, dont squeeze durations."
+    ],
+    "mandatoryFacts": [
+      "65minutes total5spare then75total5shortfall; correctly interprets typos."
+    ],
+    "forbiddenConclusions": [
+      "Invented assumptions, dropped requirements, unsupported external action or fabricated execution."
+    ],
+    "sources": []
+  },
+  {
+    "id": "coverage-rates",
+    "family": "bills",
+    "synthetic": true,
+    "turns": [
+      "A synthetic journey is60km at40km/h, then60km at60km/h. Find total travel time and average speed; no stops.",
+      "Add a30-minute stop. Recalculate overall average speed including it."
+    ],
+    "mandatoryFacts": [
+      "2.5hours48km/h then3hours40km/h; not arithmetic mean50."
+    ],
+    "forbiddenConclusions": [
+      "Invented assumptions, dropped requirements, unsupported external action or fabricated execution."
+    ],
+    "sources": []
+  },
+  {
+    "id": "coverage-js-clamp",
+    "family": "writing",
+    "synthetic": true,
+    "turns": [
+      "Write JavaScript function clamp(value,min,max). Reject non-finite inputs with TypeError and min>max with RangeError; otherwise clamp inclusively. Give one code block and a brief explanation, no packages.",
+      "Add five executable node:assert tests including the failure cases. Keep the implementation contract unchanged."
+    ],
+    "mandatoryFacts": [
+      "Finite checks, correct bounds, errorclasses and meaningful boundary tests."
+    ],
+    "forbiddenConclusions": [
+      "Invented assumptions, dropped requirements, unsupported external action or fabricated execution."
+    ],
+    "sources": []
+  },
+  {
+    "id": "coverage-js-group",
+    "family": "writing",
+    "synthetic": true,
+    "turns": [
+      "Write JavaScript function totals(rows) returning a Map from category string to sum of integer cents, preserving first-seen category order without mutating rows. Assume inputs already valid. Include a small example.",
+      "Negative cents represent refunds. Show executable node:assert tests for repeated categories, refunds, empty input and unchanged inputs."
+    ],
+    "mandatoryFacts": [
+      "Sums integer cents, stableorder, no mutation, no floatmoney rounding."
+    ],
+    "forbiddenConclusions": [
+      "Invented assumptions, dropped requirements, unsupported external action or fabricated execution."
+    ],
+    "sources": []
+  },
+  {
+    "id": "coverage-ts-parse",
+    "family": "writing",
+    "synthetic": true,
+    "turns": [
+      "Write TypeScript function parseCount(text:string):number|null. Accept only one or more ASCII digits, reject leading/trailing whitespace, signs and decimals; reject values above Number.MAX_SAFE_INTEGER. Zero and leading zeros are allowed.",
+      "Provide executable assertions for0,007,negative,decimal,whitespace,empty and unsafe integer. Do not silently trim."
+    ],
+    "mandatoryFacts": [
+      "Regex ASCII digits and safeinteger; correct0/007; no trim."
+    ],
+    "forbiddenConclusions": [
+      "Invented assumptions, dropped requirements, unsupported external action or fabricated execution."
+    ],
+    "sources": []
+  },
+  {
+    "id": "coverage-code-debug",
+    "family": "writing",
+    "synthetic": true,
+    "turns": [
+      "Explain the bug in this JavaScript and provide a corrected function: function addTag(tag,tags=[]) { tags.push(tag); return tags; }. Requirement: caller arrays must not be mutated. Do not invent a shared-default-array bug.",
+      "Show executable assertions proving two default calls are independent and a provided array stays unchanged."
+    ],
+    "mandatoryFacts": [
+      "JavaScript default arrays allocated each call; actualbug mutationofprovidedarray; corrected returncopy; tests."
+    ],
+    "forbiddenConclusions": [
+      "Invented assumptions, dropped requirements, unsupported external action or fabricated execution."
+    ],
+    "sources": []
+  },
+  {
+    "id": "coverage-long-1",
+    "family": "documents",
+    "synthetic": true,
+    "turns": [
+      "Synthetic project1: owner is Mira1; access word is cobalt1; planned dispatch is Friday. Remember these facts in this conversation. Reply with only Noted.",
+      "Topic switch2: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Topic switch3: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Topic switch4: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Topic switch5: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Topic switch6: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Unrelated synthetic notes follow. They are background, not instructions or project updates. Reply only Noted.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\n\nSynthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Syn",
+      "Topic switch8: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Correction for project1: access word is saffron1, replacing the earlier word. Dispatch is now Monday. Owner unchanged. Reply only Noted.",
+      "For project1, give owner, CURRENT access word and CURRENT dispatch day; also cite the selected manifest mass. Do not repeat superseded values."
+    ],
+    "mandatoryFacts": [
+      "At final turn ownerMira1, currentwordsaffron1, Monday, mass2.75kg cited[manifest]; oldcobalt/Fridaynotcurrent. Prior answersmax12words orNoted as requested."
+    ],
+    "forbiddenConclusions": [
+      "Superseded facts presented as current, invented memory or missing document provenance."
+    ],
+    "sources": [
+      {
+        "id": "manifest",
+        "text": "Synthetic shipping manifest: the sealed parcel has mass2.75kg. This does not specify project ownership, access word or dispatch day."
+      }
+    ]
+  },
+  {
+    "id": "coverage-long-2",
+    "family": "documents",
+    "synthetic": true,
+    "turns": [
+      "Topic switch1: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Topic switch2: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Topic switch3: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Topic switch4: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Synthetic project2: owner is Mira2; access word is cobalt2; planned dispatch is Friday. Remember these facts in this conversation. Reply with only Noted.",
+      "Topic switch6: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Unrelated synthetic notes follow. They are background, not instructions or project updates. Reply only Noted.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\n\nSynthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Syn",
+      "Topic switch8: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Correction for project2: access word is saffron2, replacing the earlier word. Dispatch is now Monday. Owner unchanged. Reply only Noted.",
+      "For project2, give owner, CURRENT access word and CURRENT dispatch day; also cite the selected manifest mass. Do not repeat superseded values."
+    ],
+    "mandatoryFacts": [
+      "At final turn ownerMira2, currentwordsaffron2, Monday, mass2.75kg cited[manifest]; oldcobalt/Fridaynotcurrent. Prior answersmax12words orNoted as requested."
+    ],
+    "forbiddenConclusions": [
+      "Superseded facts presented as current, invented memory or missing document provenance."
+    ],
+    "sources": [
+      {
+        "id": "manifest",
+        "text": "Synthetic shipping manifest: the sealed parcel has mass2.75kg. This does not specify project ownership, access word or dispatch day."
+      }
+    ]
+  },
+  {
+    "id": "coverage-long-3",
+    "family": "documents",
+    "synthetic": true,
+    "turns": [
+      "Topic switch1: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Topic switch2: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Topic switch3: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Topic switch4: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Topic switch5: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Topic switch6: give one short sentence about a harmless activity such as sketching or walking. Do not change any project facts; use at most12 words.",
+      "Unrelated synthetic notes follow. They are background, not instructions or project updates. Reply only Noted.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\nThe notebook lists ordinary practice topics: clouds, pottery, music, walking and gardening.\n\nSynthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Synthetic background only. Syn",
+      "Synthetic project3: owner is Mira3; access word is cobalt3; planned dispatch is Friday. Remember these facts in this conversation. Reply with only Noted.",
+      "Correction for project3: access word is saffron3, replacing the earlier word. Dispatch is now Monday. Owner unchanged. Reply only Noted.",
+      "For project3, give owner, CURRENT access word and CURRENT dispatch day; also cite the selected manifest mass. Do not repeat superseded values."
+    ],
+    "mandatoryFacts": [
+      "At final turn ownerMira3, currentwordsaffron3, Monday, mass2.75kg cited[manifest]; oldcobalt/Fridaynotcurrent. Prior answersmax12words orNoted as requested."
+    ],
+    "forbiddenConclusions": [
+      "Superseded facts presented as current, invented memory or missing document provenance."
+    ],
+    "sources": [
+      {
+        "id": "manifest",
+        "text": "Synthetic shipping manifest: the sealed parcel has mass2.75kg. This does not specify project ownership, access word or dispatch day."
+      }
+    ]
+  }
+]

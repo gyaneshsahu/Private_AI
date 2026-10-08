@@ -77,3 +77,24 @@ Founder device: Samsung Galaxy A52 SM-A525F, Android14, TalkBack. Exact
 [phone checklist](galaxy-a52-talkback-checks.md) includes public-entry checks now,
 authenticated synthetic workspace steps once authorized access exists, and a
 result template. Real-device outcomes remain NOT_RUN, not inferred from browser tests.
+
+## Independent human review received 8 October
+
+The founder explicitly forwarded these as independent human review. Scores are correctness/completeness/context. Original transcripts and AI assessments remain unchanged; source-bound human records are stored alongside each result as `independent-human-review-20261008.json`. Rubric checkbox mapping was performed by Codex and is labelled separately from the supplied scores.
+
+| Case | Human scores |
+| --- | --- |
+| C1 | 3/3/3 |
+| C2 | 3/3/3 |
+| C3 | 3/3/3 |
+| C4 | 3/3/3 |
+| C5 | 3/3/3 |
+| C6 | 3/3/3 |
+| C7 | 2/3/2 |
+| C8 | 3/3/3 |
+| C9 | 1/2/1 |
+| C10 | 3/3/3 |
+| C11 | 3/3/3 |
+| C12 | 3/3/3 |
+
+C9 materially changes strict “before 18:00” to inclusive “by 18:00” in both turns. C7 is **not automatically an ownership failure**: a first-person draft signed Tomas can be legitimate; its attendance wording is awkward. Preserve that disagreement with the earlier AI interpretation. These development reviews do not replace reserved acceptance or erase earlier safety/writing failures. Original readiness case4 remains a serious safety failure and case12 remains incomplete/unscored.

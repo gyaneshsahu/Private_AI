@@ -132,3 +132,7 @@ Partial replies remain excluded from follow-up context. Cancellation stops the
 caller and prevents subsequent inference; the SDK's public attestation lookup
 can continue internally because it lacks an AbortSignal parameter. Full test
 scope and remaining live evidence are in [privacy/failure review](privacy-failure-review.md).
+
+## Context limits evidenced on 8 October
+
+The integration sends all selected complete messages plus selected source serialization, system policy and device date. It neither summarizes nor silently truncates history. Its configured input bound counts JavaScript UTF-16 string units, not model tokens; request framing adds token overhead. The contract permits at most100000 such characters and4096 output tokens; experimental permits may be lower (8000/16000). No operational provider is qualified, so the production composer displays the selected count but reports sending-limit availability honestly. The provider catalog advertises262144 context tokens for Gemma4-31b; this is supplier metadata, not a verified end-to-end limit. No indefinite memory or full-window quality claim is supported. Oversize input must fail visibly before inference, leaving history intact.

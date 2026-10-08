@@ -12,6 +12,7 @@ import reliabilityCases from "../evaluation/cases/reliability-transfer.json";
 import constraintCases from "../evaluation/cases/constraint-transfer.json";
 import readinessCases from "../evaluation/cases/readiness-transfer.json";
 import generalCases from "../evaluation/cases/general-transfer.json";
+import coverageCases from "../evaluation/cases/coverage-transfer.json";
 import { invoiceText } from "../evaluation/experiment";
 const allCases = [
   ...developmentCases,
@@ -23,6 +24,7 @@ const allCases = [
   ...constraintCases,
   ...readinessCases,
   ...generalCases,
+  ...coverageCases,
 ];
 
 it("runs real browser extraction and follow-up state with an explicitly mocked model, and stops on unknown cost", async () => {
@@ -164,7 +166,8 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
               fixture.id.startsWith("reliability-transfer-") ||
               fixture.id.startsWith("constraint-") ||
               fixture.id.startsWith("readiness-") ||
-              fixture.id.startsWith("general-transfer-")
+              fixture.id.startsWith("general-transfer-") ||
+              fixture.id.startsWith("coverage-")
                 ? "robustness_case"
                 : "development_case",
             developmentCaseId: fixture.id,
@@ -192,16 +195,16 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
       };
     }, allCases);
     expect(result.compatibilityCalls).toBe(1);
-    expect(result.development).toHaveLength(78);
+    expect(result.development).toHaveLength(93);
     for (const [index, task] of result.development.entries()) {
       const fixture = allCases[index];
       expect(task.outcome.failure).toBeNull();
-      expect(task.outcome.visibleStream).toHaveLength(2);
+      expect(task.outcome.visibleStream).toHaveLength(fixture.turns.length);
       for (const stream of task.outcome.visibleStream)
         expect(
           stream.chunks.map((c: { text: string }) => c.text).join(""),
         ).toBe("MOCK response; not model-quality evidence.");
-      expect(task.calls).toHaveLength(2);
+      expect(task.calls).toHaveLength(fixture.turns.length);
       expect(task.calls[0].messages[0].text).toBe(fixture.turns[0]);
       expect(task.calls[1].messages[2].text).toBe(fixture.turns[1]);
       expect(

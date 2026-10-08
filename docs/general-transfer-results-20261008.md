@@ -71,3 +71,24 @@ Human review should prioritize G04 and G02, then check all conversations against
 mandatory outcomes. Keep v2 experimental pending adjudication; do not tune against
 this now-exposed batch and present a rerun as fresh acceptance. Supplier replies,
 phone results and hosted/retention decisions remain independent outstanding evidence.
+
+## Independent human review received 8 October
+
+The founder explicitly forwarded these as independent human review. Scores are correctness/completeness/context. Original transcripts and AI assessments remain unchanged; source-bound human records are stored alongside each result as `independent-human-review-20261008.json`. Rubric checkbox mapping was performed by Codex and is labelled separately from the supplied scores.
+
+| Case | Human scores |
+| --- | --- |
+| G1 | 3/3/3 |
+| G2 | 2/2/2 |
+| G3 | 3/3/3 |
+| G4 | 1/1/1 |
+| G5 | 3/2/3 |
+| G6 | 3/3/3 |
+| G7 | 3/3/3 |
+| G8 | 3/3/3 |
+| G9 | 3/3/3 |
+| G10 | 3/3/3 |
+| G11 | 3/2/2 |
+| G12 | 3/3/3 |
+
+G04 supplies one draft rather than two and invents Wednesday/Thursday fallback dates. G02 misses two sentences; G05 should explicitly state the five-minute shortfall; G11 is unnecessarily elaborate. These development reviews do not replace reserved acceptance or erase earlier safety/writing failures. Original readiness case4 remains a serious safety failure and case12 remains incomplete/unscored.

@@ -277,3 +277,21 @@ it("enforces the compatibility scenario's one-request limit at the gateway", asy
   expect(forward).toHaveBeenCalledTimes(1);
   expect(service.attempts).toHaveLength(1);
 });
+
+it("enforces frozen ten-request ceiling and counts attempts before the eleventh", async () => {
+  const forward = vi.fn(mockEncryptedResponse);
+  const { options, send, attempts } = await gateway(forward);
+  options.permit = {
+    ...options.permit,
+    scenario: "robustness_case",
+    developmentCaseId: "coverage-long-1",
+  };
+  for (let i = 0; i < 10; i++) {
+    const r = await send();
+    expect(r.status).toBe(200);
+    await r.arrayBuffer();
+  }
+  expect((await send()).status).toBe(429);
+  expect(attempts).toHaveLength(10);
+  expect(forward).toHaveBeenCalledTimes(10);
+});

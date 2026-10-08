@@ -155,7 +155,10 @@ export function inspectEvidence(
           c.mandatoryFacts.length ||
         !review.assertions.every((a) => c.mandatoryFacts.includes(a.fact)) ||
         JSON.stringify(review.transcript) !== JSON.stringify(transcript) ||
-        summary.outcome !== "TWO_TURNS_RETURNED_REVIEW_REQUIRED" ||
+        ![
+          "TWO_TURNS_RETURNED_REVIEW_REQUIRED",
+          "MULTI_TURN_RETURNED_REVIEW_REQUIRED",
+        ].includes(summary.outcome) ||
         summary.relayAssessment === "UNRESOLVED"
       ) {
         entry.reviewIssues++;

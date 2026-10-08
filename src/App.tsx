@@ -8,6 +8,7 @@ import {
 } from "../shared/contracts";
 import {
   composeContext,
+  measureContext,
   forkAt,
   newMessage,
   selectedSources,
@@ -30,6 +31,10 @@ export function App() {
   const [status, setStatus] = useState<AppStatus>();
   const [input, setInput] = useState("");
   const [notice, setNotice] = useState("");
+  const selectedContextSize = useMemo(
+    () => measureContext(conversation, input),
+    [conversation, input],
+  );
   const [busy, setBusy] = useState("");
   const [source, setSource] = useState<Source>();
   const [researchKind, setResearchKind] = useState<"search" | "page">("search");
@@ -899,6 +904,16 @@ export function App() {
                 </button>
               </div>
             </form>
+            <p className="composer-note" data-testid="context-size">
+              Selected input: {selectedContextSize.characters.toLocaleString()}{" "}
+              characters
+              {status?.inference.qualification
+                ? ` of ${status.inference.qualification.maxInputCharacters.toLocaleString()}`
+                : " · sending limit unavailable until chat is qualified"}
+              . Includes instructions, selected messages, documents and your
+              draft. This is not a token count. Oversized requests are blocked;
+              history is not silently shortened. There is no indefinite memory.
+            </p>
             <p className="composer-note">
               Only selected context is included. PrivateAI can make
               mistakes—check important details.

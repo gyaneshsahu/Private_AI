@@ -1,10 +1,11 @@
 import { emptyConversation } from "../shared/contracts";
-import { newMessage } from "../src/conversation";
+import { newMessage, measureContext } from "../src/conversation";
 import { extract } from "../src/documents";
 import { streamVerifiedConversation } from "../src/verified-chat";
 import { IncompleteReplyError } from "../src/reply-stream";
 import {
   invoiceText,
+  experimentRequestLimit,
   scenarioPrompts,
   validateExperiment,
   developmentCase,
@@ -13,9 +14,13 @@ import {
 export async function runSynthetic(input: unknown, csrf: string) {
   const permit = validateExperiment(input);
   const conversation = emptyConversation();
-  const signal = AbortSignal.timeout(240000);
+  const signal = AbortSignal.timeout(
+    Math.max(240000, experimentRequestLimit(permit) * 95000),
+  );
   const evidence: { host: string; releaseDigest: string }[] = [];
   const timings: number[] = [];
+  const contextMeasurements: Array<{ characters: number; messages: number }> =
+    [];
   const visibleStream: Array<{
     turn: number;
     chunks: Array<{ elapsedMs: number; text: string }>;
@@ -64,6 +69,9 @@ export async function runSynthetic(input: unknown, csrf: string) {
     const prompts = scenarioPrompts(permit.scenario, permit.developmentCaseId);
     for (const prompt of prompts) {
       conversation.messages.push(newMessage("user", prompt));
+      contextMeasurements.push(
+        measureContext(conversation, "", permit.policy.answerPolicyVariant),
+      );
       const answer = {
         ...newMessage("assistant", ""),
         status: "partial" as "partial" | "complete",
@@ -154,6 +162,7 @@ export async function runSynthetic(input: unknown, csrf: string) {
     visibleStream,
     evidence,
     timings,
+    contextMeasurements,
     diagnostic,
     failure,
     providerQualification: "NOT_PASSED",
