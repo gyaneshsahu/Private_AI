@@ -1,5 +1,4 @@
-import { Answer } from "./Answer";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   emptyConversation,
   type AppStatus,
@@ -7,13 +6,23 @@ import {
   type Disclosure,
   type Source,
 } from "../shared/contracts";
-import { forkAt, newMessage, selectedSources } from "./conversation";
+import {
+  composeContext,
+  forkAt,
+  newMessage,
+  selectedSources,
+} from "./conversation";
 import { extract } from "./documents";
 import { Vault } from "./vault";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
+import { abortable } from "./abortable";
+import { parseResearchResult } from "./research-result";
 
 type Tab = "Conversation" | "Context" | "Research" | "Saved";
+const Answer = lazy(() =>
+  import("./Answer").then((module) => ({ default: module.Answer })),
+);
 export function App() {
   const [tab, setTab] = useState<Tab>("Conversation");
   const [conversation, setConversation] =
@@ -29,6 +38,7 @@ export function App() {
   const [passphrase, setPassphrase] = useState("");
   const [unlocked, setUnlocked] = useState(false);
   const [saved, setSaved] = useState<Conversation[]>([]);
+  const [unreadableSnapshots, setUnreadableSnapshots] = useState(0);
   const [editId, setEditId] = useState<string>();
   const [editText, setEditText] = useState("");
   const [operandA, setOperandA] = useState("");
@@ -38,7 +48,36 @@ export function App() {
   const controller = useRef<AbortController | null>(null);
   const vault = useRef<Vault | null>(null);
   const epoch = useRef(0);
+  const accessNavigation = useRef(false);
   const outputEnd = useRef<HTMLDivElement>(null);
+  const unsaved = useMemo(() => {
+    const previous = saved.find((item) => item.id === conversation.id);
+    if (!previous)
+      return !!(
+        input.length ||
+        conversation.messages.length ||
+        conversation.attachments.length
+      );
+    return (
+      JSON.stringify({ ...conversation, draft: input }) !==
+      JSON.stringify({ ...previous, draft: previous.draft ?? "" })
+    );
+  }, [conversation, input, saved]);
+  useEffect(() => {
+    if (!unsaved) return;
+    const warn = (event: BeforeUnloadEvent) => {
+      if (accessNavigation.current) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [unsaved]);
+  const allowReplace = () =>
+    !unsaved ||
+    window.confirm(
+      "Discard unsaved workspace changes? Cancel to keep working or save an encrypted snapshot first.",
+    );
   useEffect(() => {
     if (!source) return;
     const previous = document.activeElement as HTMLElement;
@@ -74,7 +113,10 @@ export function App() {
         return r.json();
       })
       .then((data) => {
-        if (active) setStatus(data);
+        if (active) {
+          store.selectAccount(data.accountId);
+          setStatus(data);
+        }
       })
       .catch(() => {
         if (active)
@@ -91,6 +133,7 @@ export function App() {
       setSource(undefined);
       setUnlocked(false);
       setSaved([]);
+      setUnreadableSnapshots(0);
       setInput("");
       setQuery("");
       setProposal(undefined);
@@ -153,6 +196,68 @@ export function App() {
     );
   };
   const fail = (message: string) => setNotice(message);
+  async function copyAnswer(text: string) {
+    const current = epoch.current;
+    try {
+      await navigator.clipboard.writeText(text);
+      if (current === epoch.current)
+        setNotice("Answer copied to your clipboard.");
+    } catch {
+      if (current === epoch.current)
+        fail("Could not copy. Select the answer text and copy it manually.");
+    }
+  }
+  useEffect(() => {
+    if (!status?.accountId) return;
+    let active = true;
+    let pending = false;
+    const abort = new AbortController();
+    const checkAccess = async () => {
+      if (pending || !active) return;
+      pending = true;
+      try {
+        const response = await fetch("/api/status", {
+          cache: "no-store",
+          signal: abort.signal,
+        });
+        const next: AppStatus | undefined = response.ok
+          ? await response.json()
+          : undefined;
+        if (!active) return;
+        if (
+          response.status === 401 ||
+          (next &&
+            (next.accountId !== status.accountId ||
+              next.accessEpoch !== status.accessEpoch))
+        ) {
+          vault.current?.close(false);
+          vault.current?.onInvalidate?.();
+          accessNavigation.current = true;
+          window.location.assign(response.status === 401 ? "/auth" : "/");
+        } else if (next) {
+          setStatus(next);
+        }
+      } catch {
+        /* A network outage does not grant access or delete saved data. */
+      } finally {
+        pending = false;
+      }
+    };
+    const timer = setInterval(() => void checkAccess(), 30000);
+    const focus = () => void checkAccess();
+    window.addEventListener("focus", focus);
+    const visible = () => {
+      if (document.visibilityState === "visible") void checkAccess();
+    };
+    document.addEventListener("visibilitychange", visible);
+    return () => {
+      active = false;
+      abort.abort();
+      clearInterval(timer);
+      window.removeEventListener("focus", focus);
+      document.removeEventListener("visibilitychange", visible);
+    };
+  }, [status?.accountId, status?.accessEpoch]);
   async function api(path: string, data: unknown, signal?: AbortSignal) {
     if (!status) throw new Error("Service is unavailable.");
     const response = await fetch(path, {
@@ -165,37 +270,58 @@ export function App() {
       signal,
     });
     const result = await response.json();
+    if (response.status === 401 && status.accountId) {
+      vault.current?.lock();
+      vault.current?.onInvalidate?.();
+      accessNavigation.current = true;
+      window.location.assign("/auth");
+    }
     if (!response.ok) throw new Error(result.error ?? "Request failed.");
     return result;
   }
-  async function send(base = conversation, text = input) {
+  async function send(base = conversation, text = input, consumeDraft = true) {
     if (busy || !status?.inference.ready || !text.trim()) return;
     const next = {
       ...base,
       title: base.messages.length ? base.title : text.trim().slice(0, 60),
       messages: [...base.messages, newMessage("user", text.trim())],
     };
+    try {
+      composeContext(
+        next,
+        status.inference.qualification?.maxInputCharacters ?? 100000,
+      );
+    } catch {
+      fail(
+        "Selected context is too large. Reduce included messages or attachments, or shorten your question. Your draft and conversation are unchanged.",
+      );
+      return;
+    }
     const answer = {
       ...newMessage("assistant", ""),
       status: "partial" as const,
       sourceSnapshot: structuredClone(selectedSources(next)),
     };
     setConversation({ ...next, messages: [...next.messages, answer] });
-    setInput("");
+    if (consumeDraft) setInput("");
     setNotice("");
     setBusy("Preparing private context…");
     const abort = new AbortController();
     controller.current = abort;
     const current = epoch.current;
     try {
-      const { streamReply } = await import("./inference");
+      const { streamReply } = await abortable(
+        import("./inference"),
+        abort.signal,
+      );
+      abort.signal.throwIfAborted();
       const usage = await streamReply(
         next,
         status.inference.qualification,
         status.csrf,
         abort.signal,
         (chunk) => {
-          if (epoch.current === current)
+          if (epoch.current === current && !abort.signal.aborted)
             setConversation((c) => ({
               ...c,
               messages: c.messages.map((m) =>
@@ -204,9 +330,11 @@ export function App() {
             }));
         },
         (message) => {
-          if (epoch.current === current) setBusy(message);
+          if (epoch.current === current && !abort.signal.aborted)
+            setBusy(message);
         },
       );
+      abort.signal.throwIfAborted();
       if (epoch.current === current) {
         setConversation((c) => ({
           ...c,
@@ -239,11 +367,16 @@ export function App() {
             ? "Response stopped. Partial answers are excluded from future context."
             : error instanceof IncompleteReplyError
               ? `${error.message} ${error.usage ? "Reported usage was retained." : "This request’s cost remains unknown."}`
-              : "Protected response unavailable. No weaker fallback or automatic retry was used. Check provider verification and service access.",
+              : error instanceof Error && error.name === "TimeoutError"
+                ? "Response timed out. Partial answers are excluded from future context. This request’s cost remains unknown. No automatic retry was made."
+                : "Protected response unavailable. No weaker fallback or automatic retry was used. Check provider verification and service access.",
         );
       }
     } finally {
-      if (epoch.current === current) setBusy("");
+      if (epoch.current === current) {
+        controller.current = null;
+        setBusy("");
+      }
     }
   }
   async function importFiles(files: FileList | null) {
@@ -266,7 +399,13 @@ export function App() {
     setNotice("");
     try {
       for (const file of Array.from(files)) {
-        const attachment = await extract(file, abort.signal, setBusy);
+        abort.signal.throwIfAborted();
+        const attachment = await extract(file, abort.signal, (message) => {
+          if (current === epoch.current && !abort.signal.aborted)
+            setBusy(message);
+        });
+        abort.signal.throwIfAborted();
+        if (current !== epoch.current) return;
         if (current === epoch.current)
           setConversation((c) => ({
             ...c,
@@ -277,7 +416,10 @@ export function App() {
       if (current === epoch.current)
         fail(e instanceof Error ? e.message : "Extraction failed.");
     } finally {
-      if (current === epoch.current) setBusy("");
+      if (current === epoch.current) {
+        controller.current = null;
+        setBusy("");
+      }
     }
   }
   async function research() {
@@ -300,13 +442,22 @@ export function App() {
         approved,
         abort.signal,
       );
-      const result = (await api(
+      abort.signal.throwIfAborted();
+      if (current !== epoch.current) return;
+      const result = await api(
         "/api/research/execute",
         { id: prepared.id },
         abort.signal,
-      )) as { sources: Source[] };
+      );
+      abort.signal.throwIfAborted();
       if (current === epoch.current) {
-        if (result.sources.length)
+        const sources = parseResearchResult(
+          result,
+          conversation.attachments.flatMap((attachment) =>
+            attachment.sources.map((source) => source.id),
+          ),
+        );
+        if (sources.length)
           setConversation((c) => ({
             ...c,
             attachments: [
@@ -318,12 +469,13 @@ export function App() {
                     ? "Public search results"
                     : "Public page",
                 selected: true,
-                sources: result.sources,
+                kind: "research",
+                sources,
               },
             ],
           }));
         setNotice(
-          result.sources.length
+          sources.length
             ? "Public sources added to your selected context. Search excerpts are labelled; pages are fetched only with approval."
             : "The search returned no sources.",
         );
@@ -332,40 +484,57 @@ export function App() {
       if (current === epoch.current)
         fail(e instanceof Error ? e.message : "Research failed.");
     } finally {
-      if (current === epoch.current) setBusy("");
+      if (current === epoch.current) {
+        controller.current = null;
+        setBusy("");
+      }
     }
   }
   async function unlockVault() {
+    if (!status) {
+      fail("Wait for service access before opening saved history.");
+      return;
+    }
+    const current = epoch.current;
     const secret = passphrase;
     setPassphrase("");
     setBusy("Unlocking encrypted history…");
     try {
       await vault.current!.unlock(secret);
+      const snapshots = await vault.current!.readAvailable();
+      if (current !== epoch.current) return;
       setUnlocked(true);
-      setSaved(await vault.current!.list());
+      setSaved(snapshots.conversations);
+      setUnreadableSnapshots(snapshots.unreadable);
       setNotice(
         "Vault unlocked on this device. Saving is explicit; temporary chats are not saved automatically.",
       );
     } catch {
+      if (current !== epoch.current) return;
       fail(
         "Could not unlock the vault. Check the passphrase (at least 12 characters).",
       );
     } finally {
-      setBusy("");
+      if (current === epoch.current) setBusy("");
     }
   }
   async function save() {
+    const current = epoch.current;
     setBusy("Encrypting your conversation…");
     try {
-      await vault.current!.save(conversation);
-      setSaved(await vault.current!.list());
+      await vault.current!.save({ ...conversation, draft: input });
+      const snapshots = await vault.current!.readAvailable();
+      if (current !== epoch.current) return;
+      setSaved(snapshots.conversations);
+      setUnreadableSnapshots(snapshots.unreadable);
       setNotice(
         "Encrypted snapshot saved on this browser. Later changes require saving again.",
       );
     } catch {
+      if (current !== epoch.current) return;
       fail("Save failed. Unlock the vault and try again.");
     } finally {
-      setBusy("");
+      if (current === epoch.current) setBusy("");
     }
   }
   const sources = conversation.attachments.flatMap((a) => a.sources);
@@ -378,7 +547,9 @@ export function App() {
         <p className="eyebrow">YOUR PERSONAL SPACE</p>
         <button
           className="new-chat"
+          disabled={!!busy && !controller.current}
           onClick={() => {
+            if (!allowReplace()) return;
             reset();
             setTab("Conversation");
           }}
@@ -410,13 +581,39 @@ export function App() {
             Your workspace stays on this device. Sharing starts with your
             choice.
           </p>
+        </div>
+        <div className="workspace-help">
+          <button
+            className="text-button"
+            onClick={() =>
+              setSource({
+                id: "workspace-guide",
+                title: "Using PrivateAI",
+                text: "Start in Conversation. Write a message or use a starter to prepare an editable draft. Nothing sends until you choose Send. This evaluation is for synthetic examples; private chat remains unavailable until its privacy checks pass.\n\nAdd context when you need it. In Context, import a text PDF, TXT, PNG or JPEG. Files are read on your device. Limits: five files (up to three screenshots), 10 MB each, 20 PDF pages; printed English text. Review extracted numbers, tables and wording before using them. Scanned PDFs and handwriting are not supported. Select only the context you want included.\n\nSave deliberately. Temporary work disappears on reload. In Saved, create or unlock a vault, then choose Save encrypted snapshot. Save again after changes. Your passphrase cannot be recovered; history stays in this browser, without cloud sync. Locking clears unsaved work. Removing an attachment does not remove its earlier messages or saved snapshots.\n\nResearch is your choice. Review the exact query or public URL before approving it. The research service and recipient can see it; your chat is not added automatically.\n\nStay in control. Stop ends an active response; an incomplete reply is excluded from later context. Retry is a separate request. Copy answer places completed text on your device clipboard; locking the vault does not clear that clipboard. Edit an earlier message to start a new branch. To remove a saved conversation, delete its snapshot in Saved. A new conversation clears the current workspace but does not delete saved snapshots.",
+              })
+            }
+          >
+            Getting started
+          </button>
+          <button
+            className="text-button"
+            onClick={() =>
+              setSource({
+                id: "trial-safety",
+                title: "Trial scope and safety",
+                text: "This initial trial is for adults aged 18 and over. Explicit sexual generation is outside its scope; non-graphic sexual-health, consent and relationship advice are supported. The assistant should refuse help enabling serious harm and respond supportively to distress. These instructions are being evaluated, not a guarantee that every unsafe answer will be prevented. Check important advice; PrivateAI is not an emergency service and cannot contact help for you. If you are in immediate danger, contact local emergency services or someone you trust. No separate moderation service receives your messages. Private-data chat remains gated until provider privacy qualification passes.",
+              })
+            }
+          >
+            Trial scope and safety
+          </button>
           <button
             className="text-button"
             onClick={() =>
               setSource({
                 id: "privacy",
                 title: "Your privacy boundaries",
-                text: "This is a local evaluation, not a production privacy guarantee. Chat stays disabled until live confidential processing is qualified. Your device and browser can read local content. Saved history is encrypted when locked; there is no recovery or cloud sync. Temporary content is not intentionally written to application storage, but device memory, browser internals and backups are outside that guarantee. Approved queries and URLs are visible to our research service and the recipient. Anonymous access is not implemented. A malicious website update could capture content before encryption.",
+                text: "This is a restricted evaluation, not a production privacy guarantee. Chat stays disabled until live confidential processing is qualified. Your device and browser can read local content. Saved history is encrypted when locked; there is no recovery or cloud sync. Temporary content is not intentionally written to application storage, but device memory, browser internals and backups are outside that guarantee. Approved queries and URLs are visible to our research service and the recipient. Anonymous access is not implemented. A malicious website update could capture content before encryption.",
               })
             }
           >
@@ -424,7 +621,7 @@ export function App() {
           </button>
         </div>
         <div className="workspace-label">
-          LOCAL EVALUATION <span>0.1</span>
+          RESTRICTED EVALUATION <span>0.1</span>
         </div>
       </aside>
       <main>
@@ -439,6 +636,40 @@ export function App() {
           </span>
         </header>
         <div className="connection-banner">
+          {status?.accountId && (
+            <button
+              onClick={() => {
+                if (!allowReplace()) return;
+                vault.current?.lock();
+                vault.current?.onInvalidate?.();
+                accessNavigation.current = true;
+                window.location.assign("/auth/password");
+              }}
+            >
+              Change sign-in password
+            </button>
+          )}
+          {status?.accountId && (
+            <button
+              onClick={async () => {
+                if (!allowReplace()) return;
+                vault.current?.lock();
+                vault.current?.onInvalidate?.();
+                try {
+                  const response = await fetch("/auth/logout", {
+                    method: "POST",
+                  });
+                  if (!response.ok) throw new Error();
+                  accessNavigation.current = true;
+                  window.location.assign("/auth");
+                } catch {
+                  fail("Workspace locked. Sign out failed; try again.");
+                }
+              }}
+            >
+              Sign out
+            </button>
+          )}
           <span className="status-icon">◇</span>
           <div>
             <strong>
@@ -487,22 +718,35 @@ export function App() {
                 <div className="starter-grid">
                   {[
                     [
+                      "Write or revise",
+                      "Find clear words for what you want to say.",
+                      "Help me write a clear, friendly message. Here’s what I want to say: ",
+                    ],
+                    [
+                      "Plan something",
+                      "Turn a goal and constraints into next steps.",
+                      "Help me make a practical plan. My goal and constraints are: ",
+                    ],
+                    [
                       "Understand a document",
                       "Bring a bill, a letter or a few notes.",
                       "Context",
                     ],
-                    [
-                      "Research your options",
-                      "Choose exactly what gets shared.",
-                      "Research",
-                    ],
-                    [
-                      "Keep something for later",
-                      "Save an encrypted copy on this device.",
-                      "Saved",
-                    ],
                   ].map(([title, description, target]) => (
-                    <button key={title} onClick={() => setTab(target as Tab)}>
+                    <button
+                      key={title}
+                      onClick={() => {
+                        if (target === "Context") setTab("Context");
+                        else {
+                          if (input.trim()) {
+                            document.getElementById("message-input")?.focus();
+                            return;
+                          }
+                          setInput(target);
+                          document.getElementById("message-input")?.focus();
+                        }
+                      }}
+                    >
                       <span>{title} ↗</span>
                       <p>{description}</p>
                     </button>
@@ -525,11 +769,17 @@ export function App() {
                       </span>
                     )}
                   </div>
-                  <Answer
-                    text={message.text}
-                    sources={message.sourceSnapshot ?? sources}
-                    open={setSource}
-                  />
+                  <Suspense
+                    fallback={
+                      <div className="message-text">{message.text}</div>
+                    }
+                  >
+                    <Answer
+                      text={message.text}
+                      sources={message.sourceSnapshot ?? sources}
+                      open={setSource}
+                    />
+                  </Suspense>
                   <div className="message-actions">
                     <label>
                       <input
@@ -560,6 +810,16 @@ export function App() {
                         Edit into a new branch
                       </button>
                     )}
+                    {message.role === "assistant" && (
+                      <button
+                        disabled={
+                          message.status !== "complete" || !message.text
+                        }
+                        onClick={() => void copyAnswer(message.text)}
+                      >
+                        Copy answer
+                      </button>
+                    )}
                   </div>
                 </article>
               ))}
@@ -580,7 +840,7 @@ export function App() {
                     setConversation(forkAt(conversation, editId, editText));
                     setEditId(undefined);
                     setNotice(
-                      "New branch created. Add a follow-up message to continue.",
+                      "New branch created. Choose Answer this question to request a reply. Your draft is unchanged.",
                     );
                   }}
                 >
@@ -620,6 +880,13 @@ export function App() {
                   </span>
                 </button>
                 <button
+                  type="button"
+                  className="text-button"
+                  onClick={() => setTab("Research")}
+                >
+                  Research
+                </button>
+                <button
                   className="primary"
                   disabled={!!busy || !input.trim() || !status?.inference.ready}
                   type="submit"
@@ -648,11 +915,14 @@ export function App() {
                         messages: conversation.messages.slice(0, index),
                       },
                       last.text,
+                      false,
                     );
                   }
                 }}
               >
-                Retry last turn explicitly (may incur another charge)
+                {conversation.messages.at(-1)?.role === "user"
+                  ? "Answer this question (may incur a charge)"
+                  : "Retry last turn explicitly (may incur another charge)"}
               </button>
             )}
             <details className="panel">
@@ -792,6 +1062,22 @@ export function App() {
                       {s.title}
                       {s.page ? ` · page ${s.page}` : ""} · [{s.id}]
                     </summary>
+                    <button onClick={() => setSource({ ...s })}>
+                      Inspect source
+                    </button>
+                    {s.url && (
+                      <button
+                        disabled={!!busy}
+                        onClick={() => {
+                          setResearchKind("page");
+                          setQuery(s.url!);
+                          setProposal(undefined);
+                          setTab("Research");
+                        }}
+                      >
+                        Review page retrieval
+                      </button>
+                    )}
                     <label>
                       Review or correct extracted text
                       <textarea
@@ -945,6 +1231,13 @@ export function App() {
               Optional encrypted snapshots, stored only in this browser. No
               cloud sync and no password recovery.
             </p>
+            <p role="status">
+              {unsaved
+                ? "Unsaved workspace changes. Save explicitly to keep your draft and documents."
+                : "No unsaved workspace changes."}{" "}
+              Reloading clears temporary work. Locking clears the workspace even
+              when changes are unsaved.
+            </p>
             {!unlocked ? (
               <form
                 className="panel"
@@ -981,18 +1274,19 @@ export function App() {
                     disabled={
                       !!busy ||
                       (!conversation.messages.length &&
-                        !conversation.attachments.length)
+                        !conversation.attachments.length &&
+                        !input.length)
                     }
                     onClick={() => void save()}
                   >
                     Save encrypted snapshot
                   </button>
                   <button
-                    disabled={!!busy}
                     onClick={() => {
                       vault.current!.lock();
                       setUnlocked(false);
                       setSaved([]);
+                      setUnreadableSnapshots(0);
                       reset();
                       setPassphrase("");
                     }}
@@ -1000,7 +1294,18 @@ export function App() {
                     Lock and clear workspace
                   </button>
                 </div>
-                {!saved.length && (
+                {unreadableSnapshots > 0 && (
+                  <p role="alert">
+                    {unreadableSnapshots} saved{" "}
+                    {unreadableSnapshots === 1
+                      ? "snapshot could"
+                      : "snapshots could"}{" "}
+                    not be read. Unreadable records remain stored unchanged.
+                    Other snapshots are available. Do not clear this browser's
+                    storage if you want to preserve them.
+                  </p>
+                )}
+                {!saved.length && !unreadableSnapshots && (
                   <p className="empty-note">
                     No saved conversations yet. Saving is always your choice.
                   </p>
@@ -1008,18 +1313,27 @@ export function App() {
                 {saved.map((c) => (
                   <div className="panel row" key={c.id}>
                     <div>
-                      <strong>{c.title}</strong>
+                      <strong>
+                        {c.title === "New conversation"
+                          ? c.draft?.slice(0, 60) ||
+                            c.attachments[0]?.name ||
+                            c.title
+                          : c.title}
+                      </strong>
                       <p className="muted">
                         {new Date(c.createdAt).toLocaleDateString()} ·{" "}
                         {c.messages.length} messages · {c.attachments.length}{" "}
                         attachments
+                        {c.draft ? " · Unsent draft" : ""}
                       </p>
                     </div>
                     <button
                       disabled={!!busy}
                       onClick={() => {
+                        if (!allowReplace()) return;
                         reset();
                         setConversation(structuredClone(c));
+                        setInput(c.draft ?? "");
                         setTab("Conversation");
                         setNotice(
                           "Opened a saved snapshot. Save again to keep later changes.",
@@ -1031,15 +1345,24 @@ export function App() {
                     <button
                       disabled={!!busy}
                       onClick={async () => {
+                        const current = epoch.current;
+                        setBusy("Deleting encrypted snapshot…");
                         try {
                           await vault.current!.delete(c.id);
-                          setSaved(await vault.current!.list());
+                          const snapshots =
+                            await vault.current!.readAvailable();
+                          if (current !== epoch.current) return;
+                          setSaved(snapshots.conversations);
+                          setUnreadableSnapshots(snapshots.unreadable);
                           if (conversation.id === c.id) reset();
                           setNotice(
                             "Encrypted records and wrapped key deleted. Device backups and exported copies are outside this deletion.",
                           );
                         } catch {
-                          fail("Deletion failed. Try again after unlocking.");
+                          if (current === epoch.current)
+                            fail("Deletion failed. Try again after unlocking.");
+                        } finally {
+                          if (current === epoch.current) setBusy("");
                         }
                       }}
                     >
@@ -1067,7 +1390,6 @@ export function App() {
             <div className="row">
               <h2>{source.title}</h2>
               <button
-                autoFocus
                 onClick={() => setSource(undefined)}
                 aria-label="Close source"
               >

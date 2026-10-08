@@ -1,14 +1,14 @@
-# Provider recommendation for the first synthetic conversation
+# Provider recommendation — retained after the first synthetic conversation
 
 Review report · 4 October 2026 · No SDK change or spending authorized by this report
 
 ## Recommendation
 
-**Keep Tinfoil as the first candidate for a small, isolated local test; keep Privatemode as the next alternative. Do not adopt a provider for user data yet.** This is a recommendation about the next experiment, not a security ranking or final purchasing decision.
+**Keep Tinfoil as the first candidate for a small, isolated local test; keep Privatemode as the next alternative. Do not adopt a provider for user data yet.** The first synthetic conversation has completed. Tinfoil remains the candidate for a revised-adapter compatibility check, not an approved recipient of private user data.
 
-Tinfoil's maintained JavaScript SDK explicitly supports browser verification and encrypted request bodies through a gateway that holds the API credential. That matches PrivateAI's intended boundary: the browser and verified runtime see inference content, while the gateway relays ciphertext. We also have a real successful Node SDK router-attestation check. The existing adapter is reusable, although its manual composition of maintained libraries still needs live compatibility testing. Prior implementation effort alone is not a reason to qualify it.
+Tinfoil's maintained JavaScript SDK explicitly supports browser verification and encrypted request bodies through a gateway that holds the API credential. That matches PrivateAI's intended boundary: the browser and verified runtime see inference content, while the gateway relays ciphertext. Node and WSL browser router verification passed, and the earlier adapter completed two real turns. The revised parser requires its own small live compatibility check. Prior implementation effort alone is not a reason to qualify it.
 
-Do not integrate another SDK before reviewing this report. Stop work on the Codex Cloud browser trust-store change, as requested. Test on an ordinary local machine with its normal trusted HTTPS connection; do not disable TLS checks, attestation, or release checks to obtain a successful response. No local machine has been connected or tested in this session.
+Do not integrate another SDK before reviewing this report. Stop work on the Codex Cloud browser trust-store change, as requested. Test on an ordinary local machine with its normal trusted HTTPS connection; do not disable TLS checks, attestation, or release checks to obtain a successful response. The user has successfully tested the earlier path in Ubuntu-24.04 WSL.
 
 ## Comparison against our requirements
 
@@ -16,7 +16,7 @@ Evidence is uneven: Tinfoil has had more investigation. Unknowns below mean unve
 
 | Requirement | Tinfoil hosted inference | Privatemode hosted inference | Phala Cloud / dstack infrastructure option |
 | --- | --- | --- | --- |
-| Browser-to-protected-runtime confidentiality | Official SDK documents browser attestation and body encryption through a credential-adding proxy. Real Node verification passed; browser/live inference still unverified. | Official JS SDK documents browser support, deployment verification and encrypted requests/responses using a WASM client. Not installed or exercised here. | dstack provides attested confidential VMs, key management and TLS gateway/passthrough options. This does not by itself qualify a hosted model API or its downstream processing. |
+| Browser-to-protected-runtime confidentiality | Official SDK documents browser attestation and body encryption through a credential-adding proxy. Node/WSL browser verification and earlier-adapter live streaming passed; revised-adapter compatibility and full worker-chain assurance remain open. | Official JS SDK documents browser support, deployment verification and encrypted requests/responses using a WASM client. Not installed or exercised here. | dstack provides attested confidential VMs, key management and TLS gateway/passthrough options. This does not by itself qualify a hosted model API or its downstream processing. |
 | Fit with a thin PrivateAI gateway | Explicit proxy pattern keeps provider API key off the browser. Current custom adapter must still prove compatibility and preserve reviewed-release checks. | Browser credentials require explicit design: SDK supports API keys and rotating auth, but a secure gateway/short-lived credential path suitable for our app is not verified. A browser-shipped master API key is unacceptable. | Requires choosing/deploying a workload and securing gateway, runtime, logs and model dependencies. More responsibility than consuming a qualified inference service. |
 | Verification policy | Returned router bundle verified with installed SDK. Approved release, freshness/revocation, firmware policy and protected model-worker chain remain open. | Source exposes manifests, minimum TCB fields and an optional expected WASM hash. Initialization can refresh the manifest automatically; we must examine compatibility with our approved-release policy. No deployment verification run. | Source explains TDX quotes, KMS, guest images and TLS modes. Quick-start configuration is explicitly not production-secure; full deployment policy needs engineering and review. |
 | Retention and other recipients | Current API terms/privacy policy state no prompt/response retention after completion and no API-content training. Separate billing/security metadata remains. Tools, moderation applicability and cache lifecycle still need source/deployment corroboration. | Current retention terms, metadata recipients, caching and tool behavior not verified in this review; blocked documentation limits conclusions. Source availability is not a retention commitment. | Depends on workload, host service terms, logging configuration and any downstream APIs. A confidential VM forwarding plaintext to an ordinary model API would not meet our promise. |
@@ -32,23 +32,23 @@ Phala/dstack is included as a different architectural approach, not presented as
 
 For Tinfoil, the unresolved items are:
 
-1. A real browser-to-gateway-to-provider encrypted conversation. The previous browser failure was the Cloud proxy trust setup; it neither proves nor disproves local browser compatibility.
+1. Live compatibility of the revised adapter. The earlier WSL conversation worked; the unresolved Cloud proxy trust setup is no longer the chosen test environment.
 2. Independent review and binding of the approved router release to the actual protected CPU/GPU model-worker chain, model identity, caches, diagnostics and applicable moderation. A router attestation alone does not establish that whole chain.
 3. Evidence freshness, revocation/rollback protection and minimum accepted hardware/firmware policy. A fresh local timestamp is insufficient.
 4. Current per-model input/output, cached/reasoning/request charges, context limits, minimum purchase, and provider-enforced spending control. The pricing API returns an explicit provider-side access denial. Do not continue Cloud workaround attempts or invent a price.
-5. Live output quality, citation accuracy, responsiveness, actual charged usage and failure behavior. No inference benchmark has run for any candidate.
+5. Broader output quality, comparative performance, actual charged usage and live failure behavior. The one invoice conversation passed narrow review; no broader benchmark has run.
 
 Privatemode additionally needs browser credential architecture, manifest-update policy, retry control, packaged WASM integrity and current legal/retention evidence checked before replacing the adapter. Its documented anonymous auth option does not establish product anonymity and does not change our deferred scope.
 
 A small local synthetic test may explore technical compatibility while other review items remain open. It must stay isolated from ordinary app use and may not create a passing qualification report. Essential protection gaps still block using real private data or advertising verified confidentiality.
 
-## Small local test, after prerequisites
+## Historical first-test design — now completed
 
 Use the existing project on a connected local machine, loopback gateway and supported browser. Preserve the source and locked dependencies. Keep provider credentials in local process settings and out of browser code, chat and committed files. Do not purchase a consumer Chat subscription for API testing.
 
-Before any charge, obtain current official account-specific API pricing and minimum purchase, choose one concrete model with no automatic routing, verify the supplier spending/quota settings, and present a specific cap for approval. A $5 ceiling could be a proposal if current prices and the provider's minimum permit it; it is neither a quote nor authorization. Disable auto-recharge where offered. If no enforceable cap exists, report that limitation before asking for spending approval. Do not treat client token limits as a monetary guarantee.
+Before any charge, obtain current official account-specific API pricing and minimum purchase, choose one concrete model with no automatic routing, verify the supplier spending/quota settings, and present a specific cap for approval. The early budget proposal was superseded by the user's USD 2 approval for the completed test; it is not authorization for another run. Disable auto-recharge where offered. If no enforceable cap exists, report that limitation before asking for spending approval. Do not treat client token limits as a monetary guarantee.
 
-Run one two-turn conversation with locally extracted synthetic text:
+The completed test used one two-turn conversation with locally extracted synthetic text:
 
 > Synthetic invoice A: service €80.00, materials €20.00, discount €5.00, then 20% VAT on the discounted subtotal. Calculate subtotal, VAT and total and cite the invoice source.
 >
@@ -70,3 +70,5 @@ The result answers only whether this narrow interaction and its inspected path w
 - [dstack source](https://github.com/Dstack-TEE/dstack): README retrieved through the Phala-Network repository path; it identifies managed Phala Cloud and documents gateway, key-management and deployment responsibilities. No Phala live deployment, contract review or performance test was performed.
 
 The Cloud certificate change is paused by user instruction. No new SDK, trust-store change, provider credential, paid request or model-selection configuration was introduced for this report.
+
+Current next step: the [one-request compatibility check](live-compatibility.md), with added-scope confirmation under the existing total cap. Follow the [Git workflow](git-workflow.md); do not repeat the historical test or ZIP handoff.

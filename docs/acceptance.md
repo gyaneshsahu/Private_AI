@@ -1,8 +1,8 @@
 # PrivateAI: approved implementation and acceptance contract
 
-Status: implementation authorized; repository access confirmed; implementation in progress. No paid services authorized.
+Status: implementation authorized; repository access confirmed; implementation in progress. The latest 5 October user instruction sets a USD 2 cumulative account cap with auto-recharge disabled, superseding the older USD 10 ceiling in the [handoff](LOCAL_CODEX_HANDOFF.md). No new paid service is authorized. The [roadmap](ROADMAP.md) tracks order and the [readiness checklist](READINESS.md) maintains current implementation/verification status without weakening this acceptance contract.
 
-This supplements the architecture and stages approved in the conversation, now consolidated for review in the [PRD](PRD.md) and [architecture](ARCHITECTURE.md). It does not replace or weaken their privacy requirements. Local functionality and public-page retrieval have validation evidence; live confidential inference and model answer quality have not been demonstrated. See the [validation record](validation.md).
+This supplements the architecture and stages approved in the conversation, now consolidated for review in the [PRD](PRD.md) and [architecture](ARCHITECTURE.md). It does not replace or weaken their privacy requirements. Local functionality and public-page retrieval have validation evidence. One earlier-adapter live synthetic conversation passed narrow review; current-adapter narrow compatibility now has evidence, while full-chain confidentiality and broad answer quality remain unqualified. See the [validation record](validation.md).
 
 ## Scope and stage gates
 
@@ -36,7 +36,32 @@ Six families: writing/revision, explanation/planning, personal discussion, bills
 
 Create 24 development and 24 frozen held-out cases, four distinct cases per family in each set. Run held-out cases three times to expose variability. Report 24 distinct cases and 72 executions, never 72 independent tasks. Keep case-level and family-level results; do not hide weak families in an overall average.
 
-Gate for a bounded user evaluation: all canonical supported workflows work; every initial held-out execution meets the acceptable task-success definition (each dimension >=2, not 3); no unresolved material/serious errors or essential security failures. Minor findings remain visible but do not fail a run. This is a deliberately strict regression gate on a small supported set, not a perfection requirement or an estimated universal success rate. If it cannot be met, repair the system or explicitly narrow supported scope. Never silently remove failures. Once used for tuning, a held-out case becomes a regression case and requires a fresh replacement.
+Trial quality gate approved by the founder on 5 October 2026: at least 65/72 successful executions overall and 10/12 in every family, under the [approved severity and recurrence rules](trial-quality-gate-proposal.md). Keep the per-task rubric and planned coverage above. These are trial-entry floors, not evidence of competitive quality.
+
+A material defect in two distinct conversations blocks that capability pending repair or explicit scope review; a case failing two of three repeats requires review before trial. Do not change the approved floors after seeing held-out results. Report counts, denominators, dimensions, severity and repeat variability for each family. Strong aggregate performance cannot conceal a weak family.
+
+Critical privacy/security failures and serious task-critical errors remain blockers. Minor findings remain visible without automatically failing readiness; recurring material failures in a supported family require repair or an explicitly reviewed scope change. All canonical workflows in the agreed trial scope must work. No trial is approved merely because the old numerical gate is under review. Preserve every failed result. Once used for tuning, a held-out case becomes a regression case and requires a fresh replacement.
+
+Transport diagnostics are assessed by demonstrated impact, under the roadmap's one-batch time box: answer integrity, reliability, cancellation, cleanup and security. A browser error alone is not a permanent product-wide gate, but an unexplained event cannot be silently suppressed. Any change to the current transport gate requires recorded evidence and corresponding tests; full provider qualification remains mandatory.
+
+## Behavioral safety: mandatory before invitations
+
+The founder requires explicit safety evidence, separate from provider confidentiality
+and ordinary answer quality. Follow the [source audit and S1 plan](safety-readiness-audit.md).
+Cover supportive self-harm handling, calibrated health information, serious-harm
+refusal, sexual exploitation/consent boundaries and other abuse, with paired harmless
+requests to measure inappropriate refusals. Test the complete visible conversation,
+including streamed prefixes, follow-ups and untrusted source instructions.
+
+No unresolved critical safety/security failure may pass. Assess material defects
+and benign-task refusals by severity and family; freeze expected outcomes and
+coverage before execution. Human adjudication is required for consequential or
+disputed findings. Provider marketing, refusal rendering and green fixture tests
+cannot establish semantic safety. Do not claim universal detection from finite tests.
+Any moderation path reading private messages must satisfy the same privacy boundary;
+an external plaintext service is not implicitly authorized. Set audience and adult
+content boundaries before final policy/configuration freeze. This adds a safety
+gate without relaxing or replacing the existing quality floors.
 
 ## Comparators
 
@@ -77,6 +102,6 @@ Stage A stays BLOCKED until these checks support the selected live path. A green
 
 Implementation is authorized within the agreed scope. Routine reversible decisions, debugging and relevant testing proceed autonomously once repository access works. Preserve existing work; use the existing checkout appropriately and do not create a worktree unless requested.
 
-No new paid service or spending is authorized. Request a concrete service and capped amount before incurring charges. Secure credentials belong in environment settings, never chat or tracked files. Independent review and deployment are not implied by local development authorization.
+No new paid service is authorized. Routine synthetic debugging proceeds within the approved batch and the confirmed USD 2 cumulative account cap. Ask before deposits, subscriptions, a higher cap, material privacy changes or real-user-data use. Secure credentials belong in protected local storage/process settings, never chat or tracked files. Independent review and deployment are not implied by local development authorization.
 
 The 6-10 engineering-week range is an estimate, not a required duration. Advance by working outcomes; simplify unnecessary components while retaining essential privacy boundaries. A passing evaluation informs the next investment decision and does not certify production readiness or the future platform.

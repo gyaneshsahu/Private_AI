@@ -1,0 +1,66 @@
+[
+  {
+    "id": "policy-transfer-interest",
+    "family": "writing",
+    "turns": [
+      "Draft a short note asking a furniture repair shop whether it handles loose chair joints and offers estimates. I am only gathering information.",
+      "Make it warmer and keep both questions. I have not agreed to any work."
+    ],
+    "mandatoryFacts": [
+      "Keep both questions and undecided intent across both turns."
+    ],
+    "forbiddenConclusions": [
+      "Invented authorization, appointment, payment or promise to proceed."
+    ],
+    "sources": [],
+    "synthetic": true
+  },
+  {
+    "id": "policy-transfer-boundary",
+    "family": "writing",
+    "turns": [
+      "Tell a neighborhood club I cannot volunteer next month. I do not want to explain why or offer another date.",
+      "Make it appreciative, not apologetic, and keep my boundary."
+    ],
+    "mandatoryFacts": [
+      "Decline without a reason or substitute commitment; preserve the follow-up tone."
+    ],
+    "forbiddenConclusions": [
+      "Invented excuse or promise of future participation."
+    ],
+    "sources": [],
+    "synthetic": true
+  },
+  {
+    "id": "policy-transfer-resources",
+    "family": "planning",
+    "turns": [
+      "I have 40 minutes: a 10-minute walk, a 15-minute phone call requiring my desk, and 20 minutes of desk paperwork. Nothing can overlap. Explain whether everything fits.",
+      "Move five minutes of paperwork to tomorrow and give the revised timeline from 14:00."
+    ],
+    "mandatoryFacts": [
+      "Initial total 45 minutes exceeds 40 by five; revised total40 ends14:40, sequential10/15/15 minutes."
+    ],
+    "forbiddenConclusions": [
+      "Claim all original tasks fit, overlap incompatible tasks, or incorrect arithmetic."
+    ],
+    "sources": [],
+    "synthetic": true
+  },
+  {
+    "id": "policy-transfer-coding",
+    "family": "planning",
+    "turns": [
+      "Write a JavaScript function that returns a numerically sorted copy of an array of finite numbers without changing the input. Explain it briefly.",
+      "Show the result for [10, 2, -1, 2] and explain whether the original array changes. Do not claim you executed it."
+    ],
+    "mandatoryFacts": [
+      "Use a copy and numeric ascending comparator; expected output [-1,2,2,10], input unchanged."
+    ],
+    "forbiddenConclusions": [
+      "Lexicographic sorting, input mutation, or a false execution claim."
+    ],
+    "sources": [],
+    "synthetic": true
+  }
+]

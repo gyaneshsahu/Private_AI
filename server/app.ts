@@ -1,4 +1,7 @@
 import express from "express";
+import { deploymentAccess } from "./deployment";
+import { inviteAccess } from "./invite-access";
+import type { InviteRegistry } from "./invite-registry";
 import { randomBytes } from "node:crypto";
 import { once } from "node:events";
 import { z } from "zod";
@@ -17,14 +20,24 @@ export interface Config {
   apiKey?: string;
   searchKey?: string;
   dev?: boolean;
+  accessKey?: string;
+  invites?: InviteRegistry;
 }
 export function createApp(config: Config) {
   const app = express();
   app.disable("x-powered-by");
+  app.use(deploymentAccess(config.origin, config.accessKey, !!config.invites));
+  if (config.invites) app.use(inviteAccess(config.origin, config.invites));
   const approvals = new Approvals();
   const sessions = new Map<
     string,
-    { csrf: string; expires: number; count: number }
+    {
+      csrf: string;
+      expires: number;
+      count: number;
+      accountId?: string;
+      accessSession?: string;
+    }
   >();
   const parseQualification = (): Qualification | undefined => {
     try {
@@ -43,7 +56,7 @@ export function createApp(config: Config) {
       "X-Frame-Options": "DENY",
       "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     });
-    // This build is intentionally loopback-only. Public deployment needs real user authentication.
+    // Hosted access is restricted before session, API and static-file handling.
     if (
       req.headers.host !== new URL(config.origin).host ||
       (req.headers.origin && req.headers.origin !== config.origin) ||
@@ -70,6 +83,13 @@ export function createApp(config: Config) {
       .map((s) => s.trim())
       .find((s) => s.startsWith("privateai-session="))
       ?.slice(18);
+    if (
+      id &&
+      (sessions.get(id)?.accountId !== res.locals.accountId ||
+        sessions.get(id)?.accessSession !== res.locals.accessSession)
+    ) {
+      id = undefined;
+    }
     if (!id || !sessions.has(id)) {
       if (req.path !== "/status" || req.method !== "GET") {
         res
@@ -86,10 +106,12 @@ export function createApp(config: Config) {
         csrf: randomBytes(32).toString("hex"),
         expires: now + 3600000,
         count: 0,
+        accountId: res.locals.accountId,
+        accessSession: res.locals.accessSession,
       });
       res.setHeader(
         "Set-Cookie",
-        `privateai-session=${id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600`,
+        `privateai-session=${id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600${config.origin.startsWith("https:") ? "; Secure" : ""}`,
       );
     }
     const session = sessions.get(id)!;
@@ -113,6 +135,12 @@ export function createApp(config: Config) {
     const ready = !!q && !!config.apiKey;
     res.json({
       csrf: res.locals.csrf,
+      ...(res.locals.accountId
+        ? {
+            accountId: res.locals.accountId,
+            accessEpoch: res.locals.accessEpoch,
+          }
+        : {}),
       inference: {
         ready,
         reason: ready
@@ -157,7 +185,9 @@ export function createApp(config: Config) {
       }
       active++;
       const abort = new AbortController();
-      res.on("close", () => abort.abort());
+      res.on("close", () => {
+        if (!res.writableFinished) abort.abort();
+      });
       try {
         const upstream = await fetch(
           new URL("/v1/chat/completions", approvedOrigin),

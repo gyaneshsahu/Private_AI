@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import express from "express";
 import { createApp } from "./app";
+import { openInviteRegistry } from "./registry-storage";
 const port = Number(process.env.PORT ?? "4173");
 if (!Number.isInteger(port) || port < 1024 || port > 65535)
   throw new Error("Invalid PORT");
@@ -17,8 +18,15 @@ try {
   /* Missing or malformed evidence keeps live inference disabled. */
 }
 const dev = process.argv.includes("--dev");
+const origin = process.env.PRIVATEAI_ORIGIN ?? `http://127.0.0.1:${port}`;
+const hosted = origin.startsWith("https:");
+if (hosted && dev) throw new Error("Development middleware cannot be hosted.");
 const app = createApp({
-  origin: `http://127.0.0.1:${port}`,
+  origin,
+  accessKey: process.env.PRIVATEAI_ACCESS_KEY,
+  invites: process.env.PRIVATEAI_INVITES_FILE
+    ? openInviteRegistry(process.env.PRIVATEAI_INVITES_FILE, hosted)
+    : undefined,
   dev,
   qualification,
   apiKey: process.env.TINFOIL_API_KEY,
@@ -37,8 +45,16 @@ if (dev) {
     res.sendFile(resolve("dist/index.html"));
   });
 }
-app.listen(port, "127.0.0.1", () => {
+const server = app.listen(port, hosted ? "0.0.0.0" : "127.0.0.1", () => {
   console.log(
-    `PrivateAI listening on loopback port ${port}. No request content logging enabled.`,
+    `PrivateAI ${hosted ? "restricted hosted evaluation" : "loopback"} listening on port ${port}. No request content logging enabled.`,
   );
 });
+
+// A rolling replacement invalidates in-memory sessions and research approvals.
+for (const signal of ["SIGTERM", "SIGINT"] as const) {
+  process.once(signal, () => {
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(1), 10000).unref();
+  });
+}

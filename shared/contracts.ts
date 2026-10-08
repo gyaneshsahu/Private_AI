@@ -118,8 +118,12 @@ export interface Conversation {
   attachments: Attachment[];
   createdAt: string;
   usage: Usage[];
+  /** Optional for snapshots saved before draft support. Never part of sent context. */
+  draft?: string;
 }
 export interface AppStatus {
+  accountId?: string;
+  accessEpoch?: string;
   csrf: string;
   inference: { ready: boolean; reason: string; qualification?: Qualification };
   search: boolean;

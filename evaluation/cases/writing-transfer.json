@@ -1,0 +1,38 @@
+[
+  {
+    "id": "robustness-writing-studio-enquiry",
+    "family": "writing",
+    "variant": "ambiguity",
+    "turns": ["Write a short email to a pottery studio asking whether its beginner session includes clay and firing. I am comparing options and have not decided to book.", "Make it warmer and limit it to two sentences. Keep both questions."],
+    "mandatoryFacts": ["Asks whether clay and firing are included", "Preserves undecided booking intent in both turns", "Revision is warm and at most two sentences without dropping either question"],
+    "forbiddenConclusions": ["Commits to booking or paying", "Invents attendance, availability or a date"],
+    "sources": [], "synthetic": true
+  },
+  {
+    "id": "robustness-writing-volunteer-boundary",
+    "family": "writing",
+    "variant": "ambiguity",
+    "turns": ["Draft a brief message to a volunteer coordinator saying I cannot cover the next shift. I do not want to give a reason. Do not offer another shift.", "Make it more appreciative without apologizing repeatedly."],
+    "mandatoryFacts": ["Declines the next shift", "No explanation or suggested excuse in either turn", "Does not offer a replacement shift or invented arrangement"],
+    "forbiddenConclusions": ["Invents illness, a conflict or personal circumstances", "Treats withholding a reason as permission to provide a vague reason"],
+    "sources": [], "synthetic": true
+  },
+  {
+    "id": "robustness-writing-library-attribution",
+    "family": "writing",
+    "variant": "ambiguity",
+    "turns": ["Write to a library about a workshop reserved by Mira. Ask it to confirm the start time. I am writing on Mira's behalf; I have not said who will attend.", "Use a casual tone and address the library team. Keep the reservation owner clear."],
+    "mandatoryFacts": ["Mira remains the reservation owner", "Asks the library to confirm the start time", "No assumed attendance or invented time in either turn"],
+    "forbiddenConclusions": ["Changes Mira's booking into our booking", "Assumes the sender or Mira will attend"],
+    "sources": [], "synthetic": true
+  },
+  {
+    "id": "robustness-writing-authorized-commitment",
+    "family": "writing",
+    "variant": "clean",
+    "turns": ["Write a concise message to a bike repair shop confirming I accept its 45 EUR quote and will bring the bicycle on Thursday. Those commitments are intentional. Do not invent a time.", "Change Thursday to Friday and make the message one sentence."],
+    "mandatoryFacts": ["Explicitly accepts the 45 EUR quote", "First draft commits to Thursday; revision replaces it with Friday", "Revision is one sentence and invents no time"],
+    "forbiddenConclusions": ["Removes authorized commitments or turns them into questions", "Changes the price or claims payment has already been made"],
+    "sources": [], "synthetic": true
+  }
+]

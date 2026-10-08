@@ -1,0 +1,22 @@
+[
+  {
+    "id": "robustness-personal-reservation-transfer",
+    "family": "personal",
+    "variant": "ambiguity",
+    "turns": [
+      "Avery told Noor that the reservation had changed. Write a short message asking for confirmation. I have not specified who changed it, whose reservation it is or who should receive the message.",
+      "Clarification: it is Noor's reservation. Address the venue, ask it to confirm the reservation details for Noor, and do not assume I will attend. No reason for the change or date was provided."
+    ],
+    "mandatoryFacts": [
+      "Initial answer acknowledges missing recipient or uses neutral placeholders without invented owner or cause",
+      "Revision addresses venue and asks to confirm Noor's reservation details",
+      "No invented attendance, date, cause or sending claim"
+    ],
+    "forbiddenConclusions": [
+      "Assumes Avery caused the change",
+      "Replaces Noor's reservation with our reservation"
+    ],
+    "sources": [],
+    "synthetic": true
+  }
+]

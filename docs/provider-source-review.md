@@ -1,18 +1,18 @@
 # Provider source review — 4 October 2026
 
-Status: partial qualification evidence only. A live Node SDK router-attestation probe has passed; browser verification and live inference have not. No paid requests, credentials or qualification pass.
+Current status: Node and WSL browser router verification passed; an earlier adapter completed two live synthetic turns. Full provider qualification remains incomplete. The new [immutable-source chain review](provider-chain-review.md) and [qualification ledger](provider-qualification.md) supersede the historical access observations below. The revised adapter still needs its [minimal live check](live-compatibility.md).
 
-## Follow-up: accessible policies and live attestation
+## Historical access review — before the successful WSL test
 
 ### Subsequent access and browser checks
 
 After the next publication, runtime revision 13 reported all eight requested hosts enforced. Direct `https://inference.tinfoil.sh/.well-known/tinfoil-attestation` returned HTTP 200; this fetch alone is not cryptographic verification. The Trust Center subprocessor URL returned HTTP 200 with an application shell; the subprocessor inventory itself has not been validated.
 
-`https://api.tinfoil.sh/api/config/models` still returns HTTP 403. Its JSON error identifies Cloudflare error 1010, `browser_signature_banned`, `retryable: false`, and owner action required. This is no longer a missing environment allowlist entry. Do not continue unchanged retries or claim rates are available. Current API rates and spending-limit behavior require an accessible official rate sheet/dashboard or provider resolution; no paid-test budget is yet approved.
+`https://api.tinfoil.sh/api/config/models` still returns HTTP 403. Its JSON error identifies Cloudflare error 1010, `browser_signature_banned`, `retryable: false`, and owner action required. This is no longer a missing environment allowlist entry. Do not continue unchanged retries or claim rates are available. At that time, rates and account controls were unavailable and no paid budget had been approved. The later user-supplied rates, USD 2 approval and completed experiment are recorded in the current ledger.
 
 A Chromium check imported the installed browser SDK through local Vite. The unqualified application's CSP correctly blocked external verification requests. An isolated blank probe page allowed only the public ATC destination and local modules, without loading private content or an operational qualification report. The real browser request then failed with `net::ERR_CERT_AUTHORITY_INVALID` before attestation verification. No HTTPS-error bypass was enabled. The environment proxy CA is already valid under the system CA bundle but absent from Chromium's NSS trust database.
 
-Automatic approval review rejected importing that environment CA into Chromium's persistent trust store, citing that it broadens TLS trust beyond the specific task and requires explicit user authorization. No trust-store modification occurred. Browser qualification remains blocked on that trust-setting decision; Node verification success does not resolve it. No application security policy or verification requirement was weakened.
+Automatic approval review rejected importing that environment CA into Chromium's persistent trust store, citing that it broadens TLS trust beyond the specific task and requires explicit user authorization. No trust-store modification occurred. Cloud browser use remained blocked then. The user subsequently chose WSL, where browser verification succeeded; no further Cloud trust-setting decision is being requested. No application security policy or verification requirement was weakened.
 
 After environment publication, the five configured website/discovery hosts were reported enforced. The [pricing page](https://tinfoil.sh/pricing), [privacy policy](https://tinfoil.sh/privacy), [terms](https://tinfoil.sh/terms), [DPA](https://tinfoil.sh/terms/dpa) and [security/privacy FAQ](https://tinfoil.sh/security-and-privacy-faq) returned HTTP 200. The documentation site still returns HTTP 403.
 
@@ -47,9 +47,9 @@ Sources below were read at tag `v0.0.155`. A tag/source review is not proof that
 
 The findings are not evidence of an observed leak. They identify paths that a rigorous privacy claim must account for, including the distinction between API credentials and first-party chat tokens. Do not disable verification or choose unprotected inference to avoid this review.
 
-## Remaining blockers
+## Historical pre-test assessment
 
-### User-run WSL evidence and reported prices — latest update
+### User-run WSL evidence and reported prices — before inference
 
 The user supplied the local preflight result dated `2026-10-04T17:54:22.564Z`: `LIVE_BROWSER_PREFLIGHT`, `ROUTER_VERIFICATION_PASSED`, zero inference requests, HTTP 200 from ATC `/attestation`, and verified host `inference.tinfoil.sh` / repository `tinfoilsh/confidential-model-router`. The reported release digest is `ad95d02b2e27b3c1d5c327f2ee9616634f841e4b2ed5a48f404e4e9f595a4876`, matching the earlier Node observation. Their evidence file is `/home/dressfit/projects/Private_AI/.local/browser-preflight-1791136464818.json`. This is user-supplied execution evidence; the assistant has not independently read that local file. It resolves the initial local-browser compatibility obstacle, not downstream inference, freshness/revocation or full qualification.
 
@@ -57,7 +57,7 @@ The user also transcribed Tinfoil's USD API price table. For the proposed first 
 
 Illustrative two-turn cost at 10,000 total input tokens and 2,048 total output tokens: $0.0027288. This is not a token-count measurement or guaranteed charge; billable reasoning, failures, taxes, activation/deposit requirements and account controls must be checked. No hosted document upload, search or other per-request service is needed for the local text invoice experiment.
 
-Propose at most $1 total for activation/test spending, contingent on explicit user approval and a compatible supplier limit. No approval has yet been given. If activation requires a larger payment, deposit or authorization hold, pause before accepting it. If controls are only visible after activation, inspect and set them before inference; an alert or soft threshold is not a verified hard cap. Keep API credentials out of chat. The historical blockers below should be read with this update: browser preflight and user-reported rates have progressed, but Stage A remains blocked.
+Historical proposal (superseded): at this stage a USD 1 activation/test allowance was being considered. The user later approved USD 2 for one two-turn test, now completed. This paragraph grants no current spending authority. If activation requires a larger payment, deposit or authorization hold, pause before accepting it. If controls are only visible after activation, inspect and set them before inference; an alert or soft threshold is not a verified hard cap. Keep API credentials out of chat. The historical blockers below should be read with this update: browser preflight and user-reported rates have progressed, but Stage A remains blocked.
 
 - Documentation roots and `/llms.txt` still return HTTP 403; current prices, terms, retention commitments and spending controls are unverified.
 - Complete source/deployment review of credential classification, model admission, downstream CPU/GPU verification, caches, logging and release freshness/revocation is pending.

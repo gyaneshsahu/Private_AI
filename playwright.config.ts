@@ -14,7 +14,16 @@ export default defineConfig({
   },
   workers: 1,
   webServer: {
-    command: "PORT=4173 npm start",
+    command: "npm start",
+    env: {
+      PORT: "4173",
+      PRIVATEAI_ORIGIN: "http://127.0.0.1:4173",
+      PRIVATEAI_INVITES_FILE: "",
+      PRIVATEAI_ACCESS_KEY: "",
+      PRIVATEAI_QUALIFICATION_FILE: "",
+      TINFOIL_API_KEY: "",
+      BRAVE_SEARCH_API_KEY: "",
+    },
     url: "http://127.0.0.1:4173/api/status",
     reuseExistingServer: false,
   },

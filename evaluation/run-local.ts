@@ -1,21 +1,43 @@
-import { reviewResult } from "./review-result";
-import { networkRoute } from "./network-observation";
+import {
+  implementationIdentity,
+  configurationIdentity,
+} from "./implementation";
+import { reviewExitCode, reviewResult } from "./review-result";
+import { networkRoute, approvedLocalGet } from "./network-observation";
 import type { Request as BrowserRequest } from "@playwright/test";
-import { existsSync } from "node:fs";
+import {
+  browserLaunchOptions,
+  browserReady,
+} from "../scripts/browser-runtime.mjs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomBytes } from "node:crypto";
 import { chromium } from "@playwright/test";
 import { createServer } from "vite";
-import { validateExperiment, expectedInvoice } from "./experiment";
+import {
+  validateExperiment,
+  developmentCase,
+  expectedInvoice,
+  everydayAssertions,
+  experimentRequestLimit,
+} from "./experiment";
 import { experimentGateway } from "./experiment-gateway";
 import { claimExperiment } from "./run-claim";
+import {
+  validateReservedBinding,
+  claimReservedSlot,
+} from "./reserved-assessment";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
+const customPermit = args.find((arg) => arg.startsWith("--permit="));
+if (customPermit) args.splice(args.indexOf(customPermit), 1);
+const permitFile = customPermit?.slice("--permit=".length);
 if (
-  args.length !== 1 ||
+  (permitFile !== undefined && !/^[a-zA-Z0-9_-]+\.json$/.test(permitFile)) ||
+  (args.length !== 1 &&
+    !(args.length === 2 && args[1] === "--compatibility")) ||
   !["--check", "--run", "--diagnose"].includes(args[0])
 ) {
   console.error(
@@ -23,7 +45,11 @@ if (
   );
   process.exitCode = 1;
 } else {
-  await main(args[0] === "--run", args[0] === "--diagnose").catch(() => {
+  await main(
+    args[0] === "--run",
+    args[0] === "--diagnose",
+    args[1] === "--compatibility",
+  ).catch(() => {
     console.error(
       "Experiment could not start/finish. Check the permit, browser setup and any local result file. No automatic retry. Never delete a consumed approval to rerun.",
     );
@@ -31,20 +57,33 @@ if (
   });
 }
 
-async function main(run: boolean, diagnose: boolean) {
+async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
   let permit;
   try {
     permit = validateExperiment(
       JSON.parse(
-        await readFile(resolve(root, ".local/experiment.json"), "utf8"),
+        await readFile(
+          resolve(
+            root,
+            permitFile
+              ? `.local/${permitFile}`
+              : compatibility
+                ? ".local/compatibility.json"
+                : ".local/experiment.json",
+          ),
+          "utf8",
+        ),
       ),
     );
+    if (compatibility !== (permit.scenario === "adapter_compatibility"))
+      throw new Error("Wrong scenario");
   } catch {
     console.log(
       JSON.stringify({
         ready: false,
-        missing:
-          "A valid, reviewed experiment permit at .local/experiment.json",
+        missing: compatibility
+          ? "A separately confirmed compatibility permit at .local/compatibility.json"
+          : "A valid, reviewed experiment permit at .local/experiment.json",
         qualification: "NOT_PASSED",
         networkRequests: 0,
       }),
@@ -52,11 +91,12 @@ async function main(run: boolean, diagnose: boolean) {
     process.exitCode = 1;
     return;
   }
-  const executablePath =
-    process.env.CHROMIUM_PATH ||
-    (existsSync("/usr/bin/chromium")
-      ? "/usr/bin/chromium"
-      : chromium.executablePath());
+  const implementation = await implementationIdentity(root);
+  await validateReservedBinding(
+    root,
+    permit,
+    implementation.adapterAndLockfileSHA256,
+  );
   const proxy = [
     "HTTPS_PROXY",
     "HTTP_PROXY",
@@ -68,7 +108,7 @@ async function main(run: boolean, diagnose: boolean) {
   const apiKey = process.env.TINFOIL_API_KEY;
   const prerequisites = {
     node24: process.versions.node.startsWith("24."),
-    browser: existsSync(executablePath),
+    browser: await browserReady(),
     apiKeyPresent: !!apiKey,
     suitableLocalNetwork: !proxy,
   };
@@ -77,7 +117,7 @@ async function main(run: boolean, diagnose: boolean) {
       JSON.stringify(
         {
           prerequisites,
-          requestLimit: 2,
+          requestLimit: experimentRequestLimit(permit),
           approvalId: permit.approvalId,
           approvedCapUSD: permit.approvedCapUSD,
           note: "Permit fields record reviewed decisions; they do not independently prove spending limits or authorize a new charge.",
@@ -99,6 +139,7 @@ async function main(run: boolean, diagnose: boolean) {
   )
     throw new Error("Missing prerequisites");
   const runs = resolve(root, ".local/experiment-runs");
+  if (!diagnose) await claimReservedSlot(root, permit);
   const runDir = diagnose
     ? resolve(root, `.local/diagnostic-${Date.now()}`)
     : await claimExperiment(runs, permit.approvalId);
@@ -135,22 +176,54 @@ async function main(run: boolean, diagnose: boolean) {
   let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
   const result: Record<string, unknown> = {
     observedAt: new Date().toISOString(),
+    implementation,
+    modelConfiguration: permit.policy,
+    configurationSHA256: configurationIdentity(
+      implementation.adapterAndLockfileSHA256,
+      permit.policy,
+    ),
     status: "FAILED_OR_INTERRUPTED",
     kind: diagnose ? "NONBILLABLE_DIAGNOSTIC" : "SYNTHETIC_EXPERIMENT",
     qualification: "NOT_PASSED",
-    expectedInvoice,
+    scenario: permit.scenario,
+    ...(permit.reservedAssessment
+      ? { reservedAssessment: permit.reservedAssessment }
+      : {}),
+    ...(permit.scenario === "development_case" ||
+    permit.scenario === "robustness_case" ||
+    permit.scenario === "reserved_case"
+      ? {
+          caseSet: permit.scenario,
+          developmentCase: developmentCase(
+            permit.developmentCaseId,
+            permit.scenario,
+          ),
+        }
+      : permit.scenario === "adapter_compatibility"
+        ? { expectedReply: "4" }
+        : permit.scenario === "two_turn_invoice"
+          ? { expectedInvoice }
+          : {
+              expectedAssertions: everydayAssertions[permit.scenario],
+            }),
     attempts,
     charges:
       "Reconcile with provider billing; estimates do not include every possible fee.",
   };
   const network: Array<Record<string, unknown>> = [];
+  let phase = "CLIENT_RUNNING";
   result.network = network;
   try {
     vite = await createServer({
       root,
       configFile: false,
+      cacheDir: resolve(root, "node_modules/.vite-experiment"),
       appType: "custom",
       logLevel: "error",
+      optimizeDeps: {
+        include: ["tinfoil", "ehbp", "pdfjs-dist", "tesseract.js"],
+        noDiscovery: true,
+      },
       server: { middlewareMode: true, hmr: false },
       worker: { format: "es" },
     });
@@ -170,7 +243,7 @@ async function main(run: boolean, diagnose: boolean) {
     if (!address || typeof address === "string")
       throw new Error("No loopback listener");
     config.origin = `http://127.0.0.1:${address.port}`;
-    browser = await chromium.launch({ executablePath, headless: true });
+    browser = await chromium.launch(browserLaunchOptions());
     const context = await browser.newContext({
       ignoreHTTPSErrors: false,
       serviceWorkers: "block",
@@ -183,6 +256,7 @@ async function main(run: boolean, diagnose: boolean) {
       return {
         requestId: requestIds.get(request),
         elapsedMs: Math.round(performance.now() - networkStarted),
+        phase,
         route: networkRoute(request.url(), config.origin),
       };
     };
@@ -190,13 +264,11 @@ async function main(run: boolean, diagnose: boolean) {
       const request = route.request();
       const url = new URL(request.url());
       const local = url.origin === config.origin;
-      const approvedGet =
-        local &&
-        request.method() === "GET" &&
-        (url.pathname === "/" ||
-          ["/src/", "/shared/", "/evaluation/", "/node_modules/", "/@"].some(
-            (prefix) => url.pathname.startsWith(prefix),
-          ));
+      const approvedGet = approvedLocalGet(
+        request.url(),
+        request.method(),
+        config.origin,
+      );
       const relay =
         local &&
         url.pathname === "/api/inference/v1/chat/completions" &&
@@ -228,7 +300,45 @@ async function main(run: boolean, diagnose: boolean) {
       }
     });
     const page = await context.newPage();
+    // Count cancellation without inspecting request bodies, secrets or errors.
+    await page.addInitScript(() => {
+      const lifecycle = { requestSignalAborts: 0, readerCancels: 0 };
+      Object.assign(window, { privateAiStreamLifecycle: lifecycle });
+      const originalFetch = window.fetch;
+      window.fetch = function (input, init) {
+        const url = input instanceof Request ? input.url : String(input);
+        if (
+          new URL(url, location.href).pathname ===
+          "/api/inference/v1/chat/completions"
+        ) {
+          const signal =
+            init?.signal ??
+            (input instanceof Request ? input.signal : undefined);
+          signal?.addEventListener(
+            "abort",
+            () => lifecycle.requestSignalAborts++,
+            { once: true },
+          );
+        }
+        return originalFetch.call(this, input, init);
+      };
+      const originalCancel = ReadableStreamDefaultReader.prototype.cancel;
+      ReadableStreamDefaultReader.prototype.cancel = function (reason) {
+        lifecycle.readerCancels++;
+        return originalCancel.call(this, reason);
+      };
+    });
+    const relayTerminals: Promise<void>[] = [];
+    const finishRelay = new WeakMap<BrowserRequest, () => void>();
+    page.on("request", (request) => {
+      if (networkRoute(request.url(), config.origin) !== "INFERENCE_RELAY")
+        return;
+      relayTerminals.push(
+        new Promise<void>((resolve) => finishRelay.set(request, resolve)),
+      );
+    });
     page.on("requestfailed", (request) => {
+      finishRelay.get(request)?.();
       const url = new URL(request.url());
       const code = request.failure()?.errorText;
       network.push({
@@ -255,9 +365,11 @@ async function main(run: boolean, diagnose: boolean) {
           outcome: "HTTP_RESPONSE",
           destination: url.origin === config.origin ? "LOCAL" : "ATTESTATION",
           status: response.status(),
+          noStore: response.headers()["cache-control"] === "no-store",
         });
     });
     page.on("requestfinished", (request) => {
+      finishRelay.get(request)?.();
       if (networkRoute(request.url(), config.origin) === "INFERENCE_RELAY")
         network.push({ ...observation(request), outcome: "REQUEST_FINISHED" });
     });
@@ -285,26 +397,44 @@ async function main(run: boolean, diagnose: boolean) {
       { permit, csrf },
     );
     const client = result.client as { failure?: unknown };
+    result.browserStreamLifecycle = await page.evaluate(
+      () =>
+        (window as unknown as { privateAiStreamLifecycle: unknown })
+          .privateAiStreamLifecycle,
+    );
+    phase = "WAITING_FOR_RELAY_CLOSE";
     result.status = client.failure
       ? "FAILED_FOR_HUMAN_REVIEW"
       : "RETURNED_FOR_HUMAN_REVIEW";
-    const summary = reviewResult(result, permit);
-    result.summary = summary;
-    if (
-      diagnose &&
-      summary.outcome === "DIAGNOSTIC_REACHED_INFERENCE_BOUNDARY"
-    ) {
-      result.status = summary.outcome;
-    } else if (
-      client.failure ||
-      summary.outcome === "INCOMPLETE_REVIEW_REQUIRED"
-    )
-      process.exitCode = 1;
-    console.log(JSON.stringify(summary, null, 2));
+    await new Promise<void>((resolve) => {
+      const timer = setTimeout(resolve, 2000);
+      Promise.all(relayTerminals).then(() => {
+        clearTimeout(timer);
+        resolve();
+      });
+    });
   } finally {
+    phase = "BROWSER_TEARDOWN";
     await browser?.close();
     await vite?.close();
     if (server) await new Promise<void>((ok) => server!.close(() => ok()));
+    if (result.client) {
+      try {
+        const summary = reviewResult(result, permit);
+        result.summary = summary;
+        if (
+          diagnose &&
+          summary.outcome === "DIAGNOSTIC_REACHED_INFERENCE_BOUNDARY"
+        ) {
+          result.status = summary.outcome;
+        }
+        process.exitCode = reviewExitCode(summary);
+        console.log(JSON.stringify(summary, null, 2));
+      } catch {
+        result.status = "INVALID_EVIDENCE_REVIEW_REQUIRED";
+        process.exitCode = 1;
+      }
+    }
     await writeFile(
       resolve(runDir, "result.json"),
       JSON.stringify(result, null, 2),

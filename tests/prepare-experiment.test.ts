@@ -55,3 +55,28 @@ describe("experiment permit preparation; synthetic fixture only", () => {
       ).toThrow();
   });
 });
+
+import {
+  prepareCompatibility,
+  confirmation,
+} from "../evaluation/prepare-compatibility";
+import {
+  experimentRequestLimit,
+  validateExperiment,
+} from "../evaluation/experiment";
+it("requires explicit additional scope and constrains the compatibility request independently of the old two turns", () => {
+  expect(() => prepareCompatibility(proof(), "", now)).toThrow();
+  const p = prepareCompatibility(proof(), confirmation, now);
+  expect(experimentRequestLimit(p)).toBe(1);
+  expect(p.policy.maxOutputTokens).toBe(512);
+  expect(p.approvalId).not.toBe(prepareFromPreflight(proof(), now).approvalId);
+  expect(p.approvedCapUSD).toBe(2);
+  expect(p.approvalEvidence).toContain("No new USD 2 allowance");
+  expect(() => validateQualification(p)).toThrow();
+  expect(() =>
+    validateExperiment(
+      { ...p, policy: { ...p.policy, maxOutputTokens: 513 } },
+      now,
+    ),
+  ).toThrow();
+});

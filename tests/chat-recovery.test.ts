@@ -1,0 +1,410 @@
+import { it, expect } from "vitest";
+import { chromium, expect as ui } from "@playwright/test";
+type FixtureWindow = Window & {
+  fixtureCalls: Array<Array<{ role: string; content: string }>>;
+  fixturePending: boolean;
+  copiedAnswer?: string;
+};
+import { createServer } from "vite";
+import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
+
+it("real conversation UI stops partial output, retries explicitly, preserves source evidence and clears late work", async () => {
+  const vite = await createServer({
+    configFile: false,
+    logLevel: "silent",
+    cacheDir: "node_modules/.vite-chat-ui-test",
+    plugins: [
+      {
+        name: "TEST-only-chat-transport",
+        enforce: "pre",
+        load(id) {
+          if (!id.replaceAll("\\", "/").endsWith("/src/inference.ts")) return;
+          return `
+        import { composeContext } from '/src/conversation.ts';
+        import { IncompleteReplyError } from '/src/reply-stream.ts';
+        export async function streamReply(c, qualification, csrf, signal, chunk, status) {
+          window.fixtureCalls ??= [];
+          window.fixtureCalls.push(composeContext(c, 20000));
+          status('TEST synthetic response');
+          if (window.fixtureMode === 'timeout') throw new DOMException('PRIVATE_PROVIDER_DETAIL', 'TimeoutError');
+          if (window.fixtureMode === 'stall') {
+            window.fixturePending = true;
+            chunk('TEST_PARTIAL');
+            await new Promise(resolve => { if(signal.aborted) resolve(); else signal.addEventListener('abort', resolve, {once:true}); });
+            await new Promise(resolve => setTimeout(resolve, 30));
+            chunk('TEST_LATE_OUTPUT'); status('TEST_LATE_STATUS');
+            window.fixturePending = false;
+            throw new IncompleteReplyError('TEST interrupted response');
+          }
+          const source=c.attachments[0]?.sources[0];
+          chunk((window.fixtureAnswer ?? 'TEST complete answer') + (source ? ' ['+source.id+', page 1]'  : ''));
+          return {input:2,output:3,total:5,estimatedUSD:0};
+        }
+      `;
+        },
+      },
+    ],
+    server: { host: "127.0.0.1", port: 0, hmr: false },
+    worker: { format: "es" },
+  });
+  await vite.listen();
+  const address = vite.httpServer!.address();
+  if (!address || typeof address === "string") throw Error("No port");
+  const origin = `http://127.0.0.1:${address.port}`;
+  const browser = await chromium.launch(browserLaunchOptions());
+  const external: string[] = [];
+  try {
+    const page = await browser.newPage();
+    await page.route("**/*", (route) => {
+      const request = route.request(),
+        url = new URL(request.url());
+      if (url.origin !== origin || request.method() !== "GET") {
+        external.push(request.url());
+        return route.abort();
+      }
+      if (url.pathname === "/api/status")
+        return route.fulfill({
+          json: {
+            csrf: "TEST_ONLY",
+            inference: {
+              ready: true,
+              reason: "TEST TRANSPORT ONLY",
+              qualification: { maxInputCharacters: 4000 },
+            },
+            search: false,
+          },
+        });
+      return route.continue();
+    });
+    await page.goto(origin);
+    const tab = (name: string) =>
+      page
+        .getByRole("navigation", { name: "Workspace" })
+        .getByRole("button", { name, exact: false });
+    await tab("Context").click();
+    await page.getByLabel("Add documents or screenshots").setInputFiles({
+      name: "synthetic-source.txt",
+      mimeType: "text/plain",
+      buffer: Buffer.from("ORIGINAL SYNTHETIC SOURCE: 95 EUR"),
+    });
+    await ui(page.locator("details summary")).toBeVisible();
+    await tab("Conversation").click();
+    await page.evaluate(() => Object.assign(window, { fixtureMode: "stall" }));
+    await page
+      .getByLabel("Message PrivateAI")
+      .fill("TEST question with a source");
+    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await ui(page.getByText("TEST_PARTIAL", { exact: true })).toBeVisible();
+    await ui(
+      page
+        .locator("article.assistant")
+        .last()
+        .getByRole("button", { name: "Copy answer" }),
+    ).toBeDisabled();
+    await page.getByRole("button", { name: "Stop", exact: true }).click();
+    await ui(
+      page.getByText("Response stopped.", { exact: false }),
+    ).toBeVisible();
+    await ui(page.getByText("TEST_LATE_OUTPUT", { exact: false })).toHaveCount(
+      0,
+    );
+    await ui(page.getByText("TEST_LATE_STATUS", { exact: false })).toHaveCount(
+      0,
+    );
+    expect(
+      await page.evaluate(
+        () => (window as unknown as FixtureWindow).fixtureCalls.length,
+      ),
+    ).toBe(1);
+    const firstRequest = await page.evaluate(
+      () => (window as unknown as FixtureWindow).fixtureCalls[0],
+    );
+    expect(firstRequest[0].role).toBe("system");
+    expect(firstRequest[0].content).toContain("adults-only trial");
+    expect(firstRequest[0].content).toContain(
+      "safeguards reduce risk, never guarantee safety",
+    );
+    expect(firstRequest[0].content).toContain(
+      "Keep that urgent human connection in follow-ups",
+    );
+    expect(firstRequest[0].content).toContain(
+      "Do not generate explicit sexual content",
+    );
+    expect(firstRequest[0].content).toContain(
+      "Do not refuse harmless discussion",
+    );
+    await page.evaluate(() =>
+      Object.assign(window, { fixtureMode: "complete" }),
+    );
+    await page
+      .getByLabel("Message PrivateAI")
+      .fill("UNSENT FOLLOW-UP DURING RETRY");
+    await page
+      .getByRole("button", { name: "Retry last turn explicitly", exact: false })
+      .click();
+    await ui(page.locator("article.assistant")).toHaveCount(1);
+    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
+      "UNSENT FOLLOW-UP DURING RETRY",
+    );
+    await ui(
+      page.getByText("TEST complete answer", { exact: false }),
+    ).toBeVisible();
+    await page.evaluate(() => {
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: {
+          writeText: async (text: string) => {
+            (window as unknown as FixtureWindow).copiedAnswer = text;
+          },
+        },
+      });
+    });
+    expect(
+      await page.evaluate(
+        () => (window as unknown as FixtureWindow).copiedAnswer,
+      ),
+    ).toBeUndefined();
+    await page
+      .getByRole("button", { name: "Copy answer", exact: true })
+      .click();
+    await ui(
+      page.getByText("Answer copied to your clipboard.", { exact: false }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => (window as unknown as FixtureWindow).copiedAnswer,
+      ),
+    ).toMatch(/^TEST complete answer \[.+\]$/);
+    await page.evaluate(() =>
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: {
+          writeText: async () => {
+            throw new Error("TEST clipboard denied");
+          },
+        },
+      }),
+    );
+    await page
+      .getByRole("button", { name: "Copy answer", exact: true })
+      .click();
+    await ui(
+      page.getByText(
+        "Could not copy. Select the answer text and copy it manually.",
+        { exact: false },
+      ),
+    ).toBeVisible();
+    const calls = await page.evaluate(
+      () =>
+        (window as unknown as FixtureWindow).fixtureCalls as Array<
+          Array<{ role: string; content: string }>
+        >,
+    );
+    expect(calls).toHaveLength(2);
+    expect(JSON.stringify(calls[1])).not.toContain("TEST_PARTIAL");
+    expect(JSON.stringify(calls[1])).not.toContain(
+      "UNSENT FOLLOW-UP DURING RETRY",
+    );
+    expect(
+      calls[1].filter((m) => m.content === "TEST question with a source"),
+    ).toHaveLength(1);
+    await tab("Context").click();
+    await page.locator("details summary").click();
+    await page
+      .getByLabel("Text for synthetic-source.txt", { exact: true })
+      .fill("CORRECTED SYNTHETIC SOURCE: 90 EUR");
+    await tab("Conversation").click();
+    await page
+      .getByRole("button", { name: "synthetic-source.txt", exact: false })
+      .click();
+    await ui(page.getByRole("dialog")).toContainText(
+      "ORIGINAL SYNTHETIC SOURCE: 95 EUR",
+    );
+    await page
+      .getByRole("button", { name: "Close source", exact: true })
+      .click();
+    await page
+      .getByLabel("Message PrivateAI")
+      .fill("TEST follow-up correction");
+    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await ui(page.locator("article.assistant")).toHaveCount(2);
+    await ui(
+      page.getByRole("button", { name: "Stop", exact: true }),
+    ).toHaveCount(0);
+    const followup = await page.evaluate(
+      () =>
+        (window as unknown as FixtureWindow).fixtureCalls[2] as Array<{
+          role: string;
+          content: string;
+        }>,
+    );
+    expect(
+      followup.some(
+        (m) =>
+          m.role === "assistant" && m.content.includes("TEST complete answer"),
+      ),
+    ).toBe(true);
+    expect(JSON.stringify(followup)).toContain("CORRECTED SYNTHETIC SOURCE");
+    await page.getByLabel("Message PrivateAI").fill("UNSENT NEXT QUESTION");
+    await page
+      .getByRole("button", { name: "Edit into a new branch" })
+      .first()
+      .click();
+    await page
+      .getByLabel("Edited message")
+      .fill("TEST revised original question");
+    await page
+      .getByRole("button", { name: "Create branch", exact: true })
+      .click();
+    await ui(page.locator("article.assistant")).toHaveCount(0);
+    expect(
+      await page.evaluate(
+        () => (window as unknown as FixtureWindow).fixtureCalls.length,
+      ),
+    ).toBe(3);
+    await page
+      .getByRole("button", { name: "Answer this question", exact: false })
+      .click();
+    await ui(
+      page.getByRole("button", { name: "Stop", exact: true }),
+    ).toHaveCount(0);
+    const branch = await page.evaluate(
+      () =>
+        (window as unknown as FixtureWindow).fixtureCalls[3] as Array<{
+          role: string;
+          content: string;
+        }>,
+    );
+    expect(
+      branch.some((m) => m.content === "TEST revised original question"),
+    ).toBe(true);
+    expect(branch.some((m) => m.role === "assistant")).toBe(false);
+    expect(
+      branch.filter((m) => m.content === "TEST revised original question"),
+    ).toHaveLength(1);
+    expect(JSON.stringify(branch)).not.toContain("UNSENT NEXT QUESTION");
+    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
+      "UNSENT NEXT QUESTION",
+    );
+    expect(JSON.stringify(branch)).not.toContain("TEST follow-up correction");
+    await page.evaluate(() => Object.assign(window, { fixtureMode: "stall" }));
+    await page
+      .getByLabel("Message PrivateAI")
+      .fill("TEST clear during response");
+    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await ui(page.getByText("TEST_PARTIAL", { exact: true })).toBeVisible();
+    page.once("dialog", (dialog) => dialog.accept());
+    await page
+      .getByRole("button", { name: "New conversation", exact: false })
+      .click();
+    await ui(page.locator("article.message")).toHaveCount(0);
+    // Wait on the fixture's actual delayed callback, not a timing guess.
+    await page.waitForFunction(
+      () => !(window as unknown as FixtureWindow).fixturePending,
+    );
+    await ui(page.getByText("TEST_LATE_OUTPUT", { exact: false })).toHaveCount(
+      0,
+    );
+    await ui(page.getByText("TEST_LATE_STATUS", { exact: false })).toHaveCount(
+      0,
+    );
+    await tab("Saved").click();
+    await page
+      .getByLabel("Vault passphrase")
+      .fill("synthetic recovery test passphrase");
+    await page.getByRole("button", { name: "Create or unlock vault" }).click();
+    await ui(
+      page.getByRole("button", { name: "Lock and clear workspace" }),
+    ).toBeVisible();
+    await tab("Conversation").click();
+    await page
+      .getByLabel("Message PrivateAI")
+      .fill("TEST lock during response");
+    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await ui(page.getByText("TEST_PARTIAL", { exact: true })).toBeVisible();
+    await tab("Saved").click();
+    await page
+      .getByRole("button", { name: "Lock and clear workspace" })
+      .click();
+    await page.waitForFunction(
+      () => !(window as unknown as FixtureWindow).fixturePending,
+    );
+    await tab("Conversation").click();
+    await ui(page.locator("article.message")).toHaveCount(0);
+    await ui(page.getByText("TEST_LATE_STATUS", { exact: false })).toHaveCount(
+      0,
+    );
+    await ui(page.getByText("Local vault unlocked")).toHaveCount(0);
+    await page.evaluate(() =>
+      Object.assign(window, {
+        fixtureMode: "complete",
+        fixtureAnswer:
+          "# Formatted answer\n\n**Summary**\n\n| Item | EUR |\n| --- | --- |\n| Net | 95 |\n\n- VAT is 19\n\n\\[\n95+19=114\n\\]\n\n```text\n" +
+          "LONG_CODE_".repeat(40) +
+          "\n```\n\n![tracking](https://invalid.example/pixel) <script>window.injected=true</script>",
+      }),
+    );
+    await page.getByLabel("Message PrivateAI").fill("TEST render formatting");
+    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await ui(page.locator("article.assistant table")).toBeVisible();
+    await ui(page.locator("article.assistant .katex")).toBeVisible();
+    await ui(
+      page.locator(
+        "article.assistant img, article.assistant script, article.assistant a",
+      ),
+    ).toHaveCount(0);
+    for (const width of [1440, 360]) {
+      await page.setViewportSize({ width, height: 900 });
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    }
+    await page.screenshot({
+      path: ".local/answer-format-phone.png",
+      fullPage: true,
+    });
+    const callsBeforeLimit = await page.evaluate(
+      () => (window as unknown as FixtureWindow).fixtureCalls.length,
+    );
+    const messagesBeforeLimit = await page.locator("article.message").count();
+    const oversizedDraft = "SYNTHETIC_LONG_".repeat(400);
+    await page.getByLabel("Message PrivateAI").fill(oversizedDraft);
+    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await ui(
+      page.getByText("Selected context is too large.", { exact: false }),
+    ).toBeVisible();
+    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(oversizedDraft);
+    await ui(page.locator("article.message")).toHaveCount(messagesBeforeLimit);
+    expect(
+      await page.evaluate(
+        () => (window as unknown as FixtureWindow).fixtureCalls.length,
+      ),
+    ).toBe(callsBeforeLimit);
+    await page.evaluate(() =>
+      Object.assign(window, { fixtureMode: "timeout" }),
+    );
+    await page.getByLabel("Message PrivateAI").fill("TEST shortened question");
+    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await ui(
+      page.getByRole("button", { name: "Stop", exact: true }),
+    ).toHaveCount(0);
+    expect(
+      await page.evaluate(
+        () => (window as unknown as FixtureWindow).fixtureCalls.length,
+      ),
+    ).toBe(callsBeforeLimit + 1);
+    await ui(page.getByLabel("Message PrivateAI")).toHaveValue("");
+    await ui(
+      page.getByText("Response timed out.", { exact: false }),
+    ).toBeVisible();
+    await ui(
+      page.getByText("PRIVATE_PROVIDER_DETAIL", { exact: false }),
+    ).toHaveCount(0);
+    expect(external).toEqual([]);
+  } finally {
+    await browser.close();
+    await vite.close();
+  }
+}, 60000);

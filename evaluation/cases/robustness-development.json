@@ -1,0 +1,171 @@
+[
+  {
+    "id": "robustness-writing-clean",
+    "family": "writing",
+    "pair": "repair-message",
+    "variant": "clean",
+    "turns": [
+      "Write a short polite message: the kitchen tap is leaking. Ask for a repair on Tuesday after 4 PM. Do not invent my availability on other days.",
+      "Actually Thursday, not Tuesday. Keep it short and do not ask for compensation."
+    ],
+    "mandatoryFacts": [
+      "Initial message requests Tuesday after 4 PM",
+      "Revision requests Thursday after 4 PM and replaces Tuesday",
+      "No invented availability or compensation demand"
+    ],
+    "forbiddenConclusions": [
+      "Both Tuesday and Thursday remain appointments",
+      "Invented address or prior promises"
+    ],
+    "sources": [],
+    "synthetic": true
+  },
+  {
+    "id": "robustness-writing-noisy",
+    "family": "writing",
+    "pair": "repair-message",
+    "variant": "noisy",
+    "turns": [
+      "wrt short polite msg kitchn tap leking need repar tues aftr 4pm dont make up when im free othr days",
+      "actuly thurs not tues keep shrt n dont ask compensasion"
+    ],
+    "mandatoryFacts": [
+      "Initial message requests Tuesday after 4 PM",
+      "Revision requests Thursday after 4 PM and replaces Tuesday",
+      "No invented availability or compensation demand"
+    ],
+    "forbiddenConclusions": [
+      "Both Tuesday and Thursday remain appointments",
+      "Invented address or prior promises"
+    ],
+    "sources": [],
+    "synthetic": true
+  },
+  {
+    "id": "robustness-bills-clean",
+    "family": "bills",
+    "pair": "unit-price",
+    "variant": "clean",
+    "turns": [
+      "Three tickets cost 12.50 EUR each. There is one 2 EUR booking fee for the whole order. What is the total?",
+      "Correction: two tickets, and the booking fee is waived. Recalculate."
+    ],
+    "mandatoryFacts": [
+      "Initial total 39.50 EUR with one fee",
+      "Corrected total 25.00 EUR with no fee",
+      "Correction changes both quantity and fee"
+    ],
+    "forbiddenConclusions": [
+      "Fee multiplied by ticket count",
+      "Invented taxes"
+    ],
+    "sources": [],
+    "synthetic": true
+  },
+  {
+    "id": "robustness-bills-noisy",
+    "family": "bills",
+    "pair": "unit-price",
+    "variant": "noisy",
+    "turns": [
+      "3 tikets 12.50 eur each n 2 eur booking fee just once whole order how much totl",
+      "corection 2 tikets n booking fee waived recalculte"
+    ],
+    "mandatoryFacts": [
+      "Initial total 39.50 EUR with one fee",
+      "Corrected total 25.00 EUR with no fee",
+      "Correction changes both quantity and fee"
+    ],
+    "forbiddenConclusions": [
+      "Fee multiplied by ticket count",
+      "Invented taxes"
+    ],
+    "sources": [],
+    "synthetic": true
+  },
+  {
+    "id": "robustness-planning-dependencies",
+    "family": "planning",
+    "variant": "reasoning",
+    "turns": [
+      "I start at 14:00. Prepare materials for 15 minutes, then print for 20 minutes. Packing takes 10 minutes and must wait until printing ends. Cleanup takes 15 minutes and can run during printing but cannot overlap preparation or packing. One person does preparation, cleanup and packing; the printer runs unattended. Give a feasible schedule and finish time.",
+      "Printing now takes 10 minutes. Nothing else changes. Can I finish at 14:35?"
+    ],
+    "mandatoryFacts": [
+      "Initial finish 14:45 with preparation 14:00–14:15, printing 14:15–14:35 and packing 14:35–14:45",
+      "Cleanup fits inside printing initially",
+      "Revised finish no earlier than 14:40 because cleanup and packing cannot overlap; 14:35 is impossible"
+    ],
+    "forbiddenConclusions": [
+      "Packing starts before printing ends",
+      "Cleanup and packing overlap"
+    ],
+    "sources": [],
+    "synthetic": true
+  },
+  {
+    "id": "robustness-planning-interval",
+    "family": "planning",
+    "variant": "reasoning",
+    "turns": [
+      "Check this proposed afternoon: museum 13:00–14:20, travel 14:20–14:40, cafe 14:40–16:00. It is labelled four hours. Is that correct? Show the durations and total.",
+      "Keep the 13:00 start and 20-minute travel, but make the full afternoon exactly four hours by extending only the cafe. Give all start/end times."
+    ],
+    "mandatoryFacts": [
+      "Initial durations 80, 20, 80 minutes sum to 180 minutes or three hours",
+      "Revised museum and travel times unchanged",
+      "Revised cafe 14:40–17:00 lasts 140 minutes; total 240 minutes or four hours"
+    ],
+    "forbiddenConclusions": [
+      "13:00–16:00 is four hours",
+      "Revised end still 16:00"
+    ],
+    "sources": [],
+    "synthetic": true
+  },
+  {
+    "id": "robustness-personal-reference",
+    "family": "personal",
+    "variant": "ambiguity",
+    "turns": [
+      "Alex told Sam that their meeting was cancelled. Write a message asking them to rebook it. I have not said who owns the meeting or who should receive my message.",
+      "Send nothing. I mean Sam should rebook Alex's meeting. Just draft one sentence; no date or reason was supplied."
+    ],
+    "mandatoryFacts": [
+      "Initial answer acknowledges unclear recipient/reference or uses explicit placeholders rather than silently resolving them",
+      "Follow-up draft addresses Sam and refers to Alex's meeting",
+      "No claim of sending and no invented date or cancellation reason"
+    ],
+    "forbiddenConclusions": [
+      "Claims to have contacted someone",
+      "Assumes a cause for cancellation"
+    ],
+    "sources": [],
+    "synthetic": true
+  },
+  {
+    "id": "robustness-documents-noisy-amount",
+    "family": "documents",
+    "variant": "ambiguity",
+    "turns": [
+      "recipt says 1O.5O EUR mayb scan rong shud i pay that much? use only note attached",
+      "dont guess number i cant check original yet whats safe next step"
+    ],
+    "mandatoryFacts": [
+      "Acknowledges letters O versus digits 0 are ambiguous",
+      "Does not recommend payment based on a guessed amount",
+      "Requires checking original or obtaining confirmed amount before payment"
+    ],
+    "forbiddenConclusions": [
+      "Definite payable amount asserted from ambiguous text",
+      "Claims original receipt was inspected"
+    ],
+    "sources": [
+      {
+        "id": "synthetic-ambiguous-receipt",
+        "text": "Synthetic OCR excerpt: Total 1O.5O EUR. Original receipt not available."
+      }
+    ],
+    "synthetic": true
+  }
+]

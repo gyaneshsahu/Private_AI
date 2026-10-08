@@ -16,6 +16,7 @@ function fixture(): Experiment {
   return {
     purpose: "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
     approvalId: "test-fixture-only",
+    scenario: "two_turn_invoice",
     approvedAt: new Date(Date.now() - 1000).toISOString(),
     expiresAt: new Date(Date.now() + 60000).toISOString(),
     approvalEvidence: "TEST ONLY: no real spending approval",
@@ -78,6 +79,51 @@ const mockEncryptedResponse = async () =>
   });
 
 describe("synthetic experiment gates (no provider calls)", () => {
+  it("allows only frozen development case IDs and refuses reserved/custom prompts", () => {
+    const base = {
+      ...fixture(),
+      scenario: "development_case",
+      developmentCaseId: "development-planning-02",
+    };
+    expect(validateExperiment(base).developmentCaseId).toBe(
+      "development-planning-02",
+    );
+    for (const developmentCaseId of [
+      undefined,
+      "heldout-planning-02",
+      "../../private.txt",
+      "unknown",
+    ])
+      expect(() =>
+        validateExperiment({ ...base, developmentCaseId }),
+      ).toThrow();
+    expect(() =>
+      validateExperiment({ ...base, turns: ["custom prompt"] }),
+    ).toThrow();
+    expect(() =>
+      validateExperiment({ ...base, scenario: "two_turn_invoice" }),
+    ).toThrow();
+  });
+  it("keeps supplemental cases separate and rejects cross-set or reserved IDs", () => {
+    const base = {
+      ...fixture(),
+      scenario: "robustness_case",
+      developmentCaseId: "robustness-writing-noisy",
+    };
+    expect(validateExperiment(base).scenario).toBe("robustness_case");
+    for (const developmentCaseId of [
+      "development-writing-01",
+      "heldout-writing-01",
+      undefined,
+    ])
+      expect(() =>
+        validateExperiment({ ...base, developmentCaseId }),
+      ).toThrow();
+    expect(() =>
+      validateExperiment({ ...base, scenario: "development_case" }),
+    ).toThrow();
+    expect(() => validateExperiment({ ...base, turns: ["custom"] })).toThrow();
+  });
   it("consumes an approval atomically across concurrent starts and later restarts", async () => {
     const folder = await mkdtemp(join(tmpdir(), "privateai-claim-test-"));
     try {
@@ -101,6 +147,15 @@ describe("synthetic experiment gates (no provider calls)", () => {
       { approvalEvidence: "" },
       { policy: { ...fixture().policy, origin: "https://attacker.example" } },
       { policy: { ...fixture().policy, model: "auto" } },
+      { policy: { ...fixture().policy, gemmaThinking: true } },
+      { policy: { ...fixture().policy, glmReasoningEffort: "low" } },
+      {
+        policy: {
+          ...fixture().policy,
+          model: "glm-5-3",
+          glmReasoningEffort: "unbounded",
+        },
+      },
     ])
       expect(() => validateExperiment({ ...fixture(), ...change })).toThrow();
   });
@@ -163,6 +218,15 @@ describe("synthetic experiment gates (no provider calls)", () => {
     expect((await send()).status).toBe(429);
     expect(forward).toHaveBeenCalledTimes(2);
     expect(attempts).toHaveLength(2);
+    for (const attempt of attempts) {
+      expect(attempt.upstreamHeadersMs).toBeGreaterThanOrEqual(0);
+      expect(attempt.firstEncryptedByteMs).toBeGreaterThanOrEqual(
+        attempt.upstreamHeadersMs!,
+      );
+      expect(attempt.elapsedMs).toBeGreaterThanOrEqual(
+        attempt.firstEncryptedByteMs!,
+      );
+    }
   });
   it("stops after ambiguous failure without reflecting upstream plaintext", async () => {
     const forward = vi.fn(
@@ -175,6 +239,8 @@ describe("synthetic experiment gates (no provider calls)", () => {
     expect((await send()).status).toBe(429);
     expect(forward).toHaveBeenCalledTimes(1);
     expect(attempts[0].outcome).toBe("FAILED_COST_UNKNOWN");
+    expect(attempts[0].upstreamHeadersMs).toBeGreaterThanOrEqual(0);
+    expect(attempts[0].firstEncryptedByteMs).toBeNull();
   });
   it("rechecks expiry before each request", async () => {
     const forward = vi.fn(mockEncryptedResponse);
@@ -183,4 +249,19 @@ describe("synthetic experiment gates (no provider calls)", () => {
     expect((await send()).status).toBe(403);
     expect(forward).not.toHaveBeenCalled();
   });
+});
+
+it("enforces the compatibility scenario's one-request limit at the gateway", async () => {
+  const forward = vi.fn(mockEncryptedResponse);
+  const service = await gateway(forward);
+  service.options.permit.scenario = "adapter_compatibility";
+  service.options.permit.policy.model = "gpt-oss-120b";
+  service.options.permit.policy.maxInputCharacters = 2000;
+  const first = await service.send();
+  expect(first.status).toBe(200);
+  await first.arrayBuffer();
+  const second = await service.send();
+  expect(second.status).toBe(429);
+  expect(forward).toHaveBeenCalledTimes(1);
+  expect(service.attempts).toHaveLength(1);
 });

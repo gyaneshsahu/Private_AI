@@ -1,0 +1,11 @@
+.git
+.local
+.env
+.env.*
+node_modules
+dist
+public/vendor
+test-results
+playwright-report
+attachments
+*.log

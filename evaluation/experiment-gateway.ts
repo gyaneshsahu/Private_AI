@@ -1,6 +1,10 @@
 import express from "express";
 import { once } from "node:events";
-import { validateExperiment, type Experiment } from "./experiment";
+import {
+  validateExperiment,
+  experimentRequestLimit,
+  type Experiment,
+} from "./experiment";
 
 export type Forward = (
   body: Uint8Array,
@@ -20,6 +24,12 @@ export function experimentGateway(options: {
     bytes: number;
     protocolHeaderValid: boolean;
     syntheticPlaintextMarkerAbsent: boolean;
+    upstreamStatus: number | null;
+    failureCode: string | null;
+    responseFinished: boolean;
+    upstreamHeadersMs: number | null;
+    firstEncryptedByteMs: number | null;
+    elapsedMs: number | null;
   }> = [];
   let active = false;
   let stopped = false;
@@ -68,7 +78,11 @@ export function experimentGateway(options: {
         res.status(400).end();
         return;
       }
-      if (active || stopped || attempts.length >= 2) {
+      if (
+        active ||
+        stopped ||
+        attempts.length >= experimentRequestLimit(options.permit)
+      ) {
         res.status(429).end();
         return;
       }
@@ -77,18 +91,33 @@ export function experimentGateway(options: {
         bytes: req.body.length,
         protocolHeaderValid: true,
         syntheticPlaintextMarkerAbsent: true,
+        upstreamStatus: null as number | null,
+        failureCode: null as string | null,
+        responseFinished: false,
+        upstreamHeadersMs: null as number | null,
+        firstEncryptedByteMs: null as number | null,
+        elapsedMs: null as number | null,
       };
+      const started = performance.now();
       attempts.push(attempt); // Count before network I/O, even when it fails.
       active = true;
       const abort = new AbortController();
-      res.on("close", () => abort.abort());
+      const deadline = AbortSignal.timeout(90000);
+      res.once("finish", () => {
+        attempt.responseFinished = true;
+      });
+      res.on("close", () => {
+        if (!res.writableFinished) abort.abort();
+      });
       try {
         const response = await options.forward(
           new Uint8Array(req.body),
           key,
-          AbortSignal.any([abort.signal, AbortSignal.timeout(90000)]),
+          AbortSignal.any([abort.signal, deadline]),
         );
+        attempt.upstreamHeadersMs = Math.round(performance.now() - started);
         const nonce = response.headers.get("ehbp-response-nonce");
+        attempt.upstreamStatus = response.status;
         if (!response.ok || !nonce || !response.body) {
           await response.body?.cancel();
           throw new Error("Encrypted upstream response required");
@@ -104,6 +133,10 @@ export function experimentGateway(options: {
             abort.signal.throwIfAborted();
             const { done, value } = await reader.read();
             if (done) break;
+            if (value.length && attempt.firstEncryptedByteMs === null)
+              attempt.firstEncryptedByteMs = Math.round(
+                performance.now() - started,
+              );
             if (!res.write(value))
               await once(res, "drain", { signal: abort.signal });
           }
@@ -112,13 +145,35 @@ export function experimentGateway(options: {
         }
         attempt.outcome = "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED";
         res.end();
-      } catch {
+      } catch (error) {
+        const cause = error instanceof Error ? error.cause : undefined;
+        const code =
+          cause && typeof cause === "object" && "code" in cause
+            ? cause.code
+            : undefined;
+        attempt.failureCode =
+          typeof code === "string" &&
+          [
+            "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+            "CERT_HAS_EXPIRED",
+            "SELF_SIGNED_CERT_IN_CHAIN",
+            "ECONNRESET",
+            "ETIMEDOUT",
+            "ENOTFOUND",
+          ].includes(code)
+            ? code
+            : deadline.aborted
+              ? "UPSTREAM_DEADLINE"
+              : abort.signal.aborted
+                ? "CLIENT_DISCONNECTED"
+                : "UPSTREAM_OR_STREAM_FAILURE";
         attempt.outcome = "FAILED_COST_UNKNOWN";
         stopped = true;
         if (!res.headersSent)
           res.status(502).json({ error: "Experiment stopped. No retry." });
         else res.destroy();
       } finally {
+        attempt.elapsedMs = Math.round(performance.now() - started);
         active = false;
       }
     },

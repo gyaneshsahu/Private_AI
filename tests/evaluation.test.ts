@@ -20,6 +20,8 @@ describe("quality gate cannot pass missing or mocked evidence", () => {
     ],
     seriousErrors: [],
     reviewer: "test",
+    reviewerKind: "human",
+    findings: [],
     reviewNotes: "grader test only",
     evidenceKind: "mock",
   };
@@ -37,15 +39,14 @@ describe("quality gate cannot pass missing or mocked evidence", () => {
     ).toBe(false);
     expect(
       initialGate(
-        Object.fromEntries(
-          Array.from({ length: 24 }, (_, i) => [
-            `case-${i}`,
-            ["correct total"],
-          ]),
-        ),
+        Array.from({ length: 24 }, (_, i) => ({
+          id: `case-${i}`,
+          family: "bills" as const,
+          mandatoryFacts: ["correct total"],
+        })),
         [],
       ).passed,
     ).toBe(false);
-    expect(initialGate({}, []).passed).toBe(false);
+    expect(initialGate([], []).passed).toBe(false);
   });
 });

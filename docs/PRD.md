@@ -1,14 +1,19 @@
 # PrivateAI — product requirements
 
-**Review draft v0.1 · 4 October 2026**
+**Working requirements v0.2 · 4 October 2026**
 
 This consolidates the agreed direction for the first working evaluation. It does not certify existing code or authorize spending. Read with the [architecture](ARCHITECTURE.md), [detailed acceptance contract](acceptance.md), and [observed validation](validation.md). Requirements below are targets, not claims that tests have passed.
+
+Current implementation and verification status are maintained only in the
+[readiness checklist](READINESS.md). Requirements below remain targets until their
+completion evidence exists. Local, live synthetic and hosted access evidence are
+separate from model acceptance, full provider qualification and release approval.
 
 ## 1. Purpose and first release
 
 Help a person understand information, complete everyday tasks, and research decisions while controlling disclosure of private context. Start with one capable model and a real responsive web chat. Evaluate usefulness and confidentiality before investing in a broader platform.
 
-The first deliverable is a single-operator evaluation running through a local web gateway. The longer-term product is a web service; public hosting requires authentication, tenant isolation, abuse controls and deployment review that this local foundation does not yet provide.
+The initial deliverable was a single-operator evaluation through a local web gateway. Restricted hosted individual access is now implemented. The next milestone remains an invited-user trial; public-service launch needs broader security, quality and operational assurance, as tracked in the checklist.
 
 Supported evaluation language: English. Use synthetic or non-sensitive inputs until the protected processing path is qualified. No canned answers, fake integrations or static demonstrations count as working functionality. Labelled mocks belong only in tests.
 
@@ -46,7 +51,7 @@ The [acceptance contract](acceptance.md) defines grading and blocking gates. Pre
 | Area | Required test and evidence | Blocking failures |
 | --- | --- | --- |
 | Answers and follow-ups | Score complete conversations for correctness, completeness and context preservation, each 0–3. Pass requires every score ≥2, all mandatory assertions, and no serious error. Run six task families against named, recorded ChatGPT/Gemini configurations with randomized human review. | Serious errors, recurring material failures, unreliable mandatory workflows; unavailable comparators block comparative claims. |
-| Initial coverage | 24 development cases plus 24 reserved cases, four per family. Execute reserved cases three times; all 72 executions must meet acceptable task completion (each rubric score ≥2, not a perfect 3). Grade and report severity and dimensions separately for each family. Cases used to tune become regression tests and require fresh replacements. | Unresolved material/critical failures block; minor wording differences, harmless style preferences and optional omissions do not. Repetitions do not increase distinct coverage. |
+| Initial coverage | 24 development cases plus 24 reserved cases, four per family. Execute reserved cases three times (72 executions). Keep per-task scoring. Founder-approved trial floors are 65/72 overall and 10/12 per family, with the severity/recurrence rules in the acceptance contract. Cases used to tune become regression tests and require fresh replacements. | Critical privacy/security and serious task-critical failures block. Recurring material failures require repair or explicit scope review; isolated ordinary misses follow the pre-registered family/severity policy. Minor style differences do not block. Repetitions do not increase distinct coverage. |
 | Documents and numbers | Ground-truth varied layouts, tables, dates, units and decimal results. Inspect extraction, source selection, follow-up corrections and whether each citation actually supports its claim. Test corrupt, oversized, misleading and unreadable inputs. | Wrong task-critical values or attribution, fabricated citations, silent truncation, unsupported input treated as reliable. |
 | Confidential path | Live synthetic browser-to-provider sessions; inspect gateway traffic and real streaming, usage and cancellation. Test wrong keys/releases, tampering, stale evidence, outages and rotation; distinguish injected faults from real provider observations. Review supplier processing and retention evidence. | Unqualified live path, plaintext escape, invalid verification accepted, unprotected fallback or unexplained downstream processing. |
 | External disclosure | Inject instructions into documents, pages and model output. Test absent, expired, replayed and cross-session grants, redirects and private-network destinations. Inspect outbound requests. | Any unauthorized disclosure or network action. |
@@ -58,6 +63,17 @@ The [acceptance contract](acceptance.md) defines grading and blocking gates. Pre
 Latency targets are proposed usability budgets: feedback should feel immediate, while verification and longer research have explicit additional time. They are not measured capabilities or contractual guarantees. No arbitrary cost-per-task target is set before real prices and workload measurements exist.
 
 Quality grading distinguishes minor (acceptable), material (task repair required) and critical failures. Mandatory assertions concern outcomes and facts, not exact wording. Privacy leaks, verification bypasses and fabricated critical facts have zero tolerance. Averages cannot hide a weak task family; disputed grades require documented review against the frozen rubric.
+
+### Required conversational safety before invitations
+
+The assistant must handle sensitive situations appropriately: supportive self-harm
+responses, useful health information with uncertainty, refusal of serious-harm
+assistance, and distinctions between ordinary adult questions and exploitation.
+Evaluate other abuse categories and harmless false positives explicitly. Existing
+privacy/access controls do not establish these behaviors. The [S1 audit](safety-readiness-audit.md)
+defines missing evidence; the [acceptance contract](acceptance.md) makes it a trial
+gate. No moderation service may read private messages outside the approved privacy
+boundary. Audience and adult-content scope must be settled before release freeze.
 
 ## 5. Expansion gate
 
@@ -78,10 +94,17 @@ Technical readiness, security assurance and customer demand are separate decisio
 
 Local work on B/C may proceed while A is blocked, but does not imply A has passed. Existing local implementation is reusable work, not proof of completion. The previous 6–10 engineering-week estimate is provisional, not a minimum duration; progress follows evidence.
 
-Current authorization: **no paid services**. Local tools and synthetic fixtures need no new supplier charge. A possible $25 qualification cap and later $50–100 cumulative evaluation allowance are planning placeholders, not approved spending or verified quotations. Request a specific service, current unit prices and cap before any charge. Recurring hosting is unnecessary for the local evaluation.
+Current authorization, updated 5 October 2026: **USD 2 cumulative account cap**, including prior usage, with auto-recharge disabled and the key confirmed for that account. This supersedes the older USD 10 ceiling in the [local handoff](LOCAL_CODEX_HANDOFF.md); a possible future increase is not approval. Routine bounded synthetic debugging proceeds within the user's approved batch; preserve consumed permits and record attempts. Ask only for new payment, higher caps, material privacy decisions or real-user-data use. The existing upgraded Render service and 1 GB disk are approved; no additional deposits, subscriptions or hosting upgrades are authorized. Track delivery in the [roadmap](ROADMAP.md).
 
 ## 7. Deferred scope and review decisions
 
-Defer anonymous access, cloud sync, automatic long-term memory, family sharing, purchases/account actions, arbitrary code execution, voice/video, general vision, model routing and custom GPU infrastructure. Preserve anonymity as a future objective requiring separate identity, routing and entitlement design.
+The general-assistant goal remains central: writing/revision, explanation/planning,
+personal discussion, calculations, document questions and consent-bound research.
+The [roadmap](ROADMAP.md#general-assistant-delivery-track) gives each an explicit
+route to integrated workflows and family-level evaluation. Documents and drafts
+are initial entry points, not a narrowing of the product to document management.
+
+
+Defer anonymous access, cloud sync, automatic long-term memory, family sharing, purchases/account actions, arbitrary code execution, voice/video, general vision, model routing and custom GPU infrastructure. Preserve anonymity as a future objective requiring separate identity, routing and entitlement design. Reconsider deferred areas when recurring user needs or measured limitations justify them, with evidence of quality, privacy feasibility and operating cost; the roadmap records specific criteria. Reconsideration does not itself approve wider scope.
 
 Before continuing implementation, review this consolidated scope, privacy limitations and proposed evaluation thresholds. Necessary later inputs are supplier access through secure settings, approval of any concrete spending cap, and participation in human evaluation. Routine reversible engineering choices do not need repeated approval. Public deployment, weaker privacy promises or wider product scope require a material decision.

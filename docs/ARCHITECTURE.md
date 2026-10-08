@@ -1,8 +1,12 @@
 # PrivateAI — architecture and trust boundaries
 
-**Review draft v0.1 · 4 October 2026**
+**Working architecture v0.2 · implementation notes reconciled 7 October 2026**
 
-Companion to the [PRD](PRD.md). This records the current local foundation and intended qualified inference path. **Live confidential inference has not been demonstrated.** See [provider qualification](provider-qualification.md) for the mandatory gate and [validation](validation.md) for historical test evidence.
+Current verification status lives in the [readiness checklist](READINESS.md). This
+document specifies mechanisms and trust boundaries; dated evidence is not a
+substitute for release qualification.
+
+Companion to the [PRD](PRD.md). The browser-to-gateway inference path is implemented and wired into the web app. A synthetic two-turn exchange succeeded on the earlier adapter; current-adapter narrow live compatibility has evidence, while the full protected-processing claim remains unqualified. See the [qualification ledger](provider-qualification.md) and [validation](validation.md).
 
 ## 1. Components and flow
 
@@ -83,7 +87,7 @@ Supported claims must match evidence: local extraction and encrypted snapshots h
 | Single-use research grants | Bind consent to exact content and session; expiry/replay checks enforced server-side. The trusted client can request grants, so malicious same-origin code is outside this defense. |
 | Bounded public fetch | HTTPS only, no redirects/scripts, response limits and private-address checks. Direct mode validates and pins DNS; proxy mode uses an operator-reviewed exact-host list and relies on proxy destination controls. |
 | Local encrypted history | PBKDF2-SHA256, 600,000 iterations, randomized salts and AES-256-GCM; independent per-conversation data keys wrapped by the passphrase-derived key. Native support simplifies deployment; passphrase quality and device performance matter. No password recovery or sync. |
-| Small local gateway | Loopback binding, same-origin/CSRF checks, restrictive content policy and no content logging. This is not public-account authentication or tenant isolation. Do not expose through a public tunnel. |
+| Local and restricted hosted gateway | Loopback development plus HTTPS hosted deployment with PrivateAI-only invitations, SQLite registry, session/CSRF checks and restrictive content policy. Hosted access lifecycle is tested; full trial readiness and metadata retention remain separate. Do not expose an unauthenticated local server through a public tunnel. |
 
 Wrong keys/releases, invalid configuration, expired qualification and missing access must prevent private inference. Research failures return honest errors without broadening destinations. Parser failures remain visible and do not produce invented source content. Cancellation stops local work/requests as feasible but cannot promise reversal of already completed provider processing or charges.
 
@@ -97,7 +101,7 @@ Credentials belong in secure environment settings, not chat, browser bundles or 
 
 ## 6. Current evidence and unresolved assumptions
 
-The [validation record](validation.md) reports local automated tests for extraction, storage, consent and browser interactions, plus a real public-page retrieval. Those checks do not establish model quality, end-to-end confidential inference or production security. Reserved evaluation files exist, but no live model evaluation is recorded.
+The [validation record](validation.md) reports local automated tests for extraction, storage, consent and browser interactions, plus a real public-page retrieval. The [first live review](first-live-experiment-review.md) separately records one successful two-turn synthetic conversation. It is narrow functionality evidence, not broad quality, full-chain confidentiality or production assurance. The revised adapter has narrow live compatibility evidence; 72 reserved conversations ran, and human-confirmed writing failures prevent acceptance. See the [current ledger](READINESS.md), rather than earlier experiment plans, for remaining work.
 
 Blocking qualification questions:
 
@@ -107,7 +111,7 @@ Blocking qualification questions:
 - What do current supplier terms, code/configuration and operational evidence establish about retention and logs?
 - Which exact model, price, license, access method and externally enforced spending controls will be used?
 
-Additional limitations: public authentication is absent; actual phone/Safari/Firefox coverage, accessibility review, live latency/load measurements, named comparator runs and independent security review are pending. Extraction fidelity for complex tables and noisy images needs evaluation. The configured network host list alone does not prove provider reachability or qualification.
+Additional limitations: individual invited authentication is implemented, but this is not public-service readiness. Actual phone/Safari/Firefox coverage, accessibility review, live latency/load measurements, named comparator runs and independent security review are pending. Extraction fidelity for complex tables and noisy images needs evaluation. The configured network host list alone does not prove provider reachability or qualification.
 
 No essential unresolved protection assumption may be converted into a supported privacy promise merely to pass a demonstration. Use the [acceptance gates](acceptance.md) to decide progression.
 
@@ -115,7 +119,7 @@ No essential unresolved protection assumption may be converted into a supported 
 
 Retain conversation/source contracts, local extraction workers, consent enforcement, provider verification boundaries, encrypted storage and the evaluation harness. Improve them with evidence rather than replacing them with a throwaway demonstration.
 
-Public web deployment later adds authenticated accounts, tenant isolation, secure delivery/update processes, abuse controls and operational security. Cloud history, family access and anonymous access each need new threat-model decisions. Avoid designing those systems prematurely, and do not assume existing local session cookies solve them.
+Restricted hosted deployment now includes individual invitations and account-scoped access. Public release still requires broader assurance of isolation, secure delivery/update processes, abuse controls and operational security. Cloud history, family access and anonymous access each need new threat-model decisions. Avoid designing those systems prematurely, and do not assume existing local session cookies solve them.
 
 ### Response parsing and cancellation update — 4 October 2026
 

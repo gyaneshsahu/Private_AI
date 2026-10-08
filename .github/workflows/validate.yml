@@ -1,0 +1,45 @@
+name: Validate
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  offline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5, Node 24
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5, Node 24
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install distribution age for encrypted recovery verification
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends age
+          age --version
+          echo 'PRIVATEAI_TEST_AGE=/usr/bin/age' >> "$GITHUB_ENV"
+      - run: npx playwright install --with-deps chromium
+      - name: Use the installed Playwright browser
+        run: node --input-type=module -e 'import { chromium } from "@playwright/test"; console.log("CHROMIUM_PATH=" + chromium.executablePath())' >> "$GITHUB_ENV"
+      - run: npm run check
+      - run: npm run test:e2e
+      - run: npm run eval:check
+      - name: Build from committed files only
+        run: |
+          mkdir -p "$RUNNER_TEMP/privateai-build"
+          git archive HEAD | tar -x -C "$RUNNER_TEMP/privateai-build"
+          docker build -t privateai-evaluation "$RUNNER_TEMP/privateai-build"
+      - run: node scripts/container-smoke.mjs
+      - run: node scripts/container-persistence.mjs
+      - run: node scripts/container-invite-access.mjs
+      - run: node scripts/container-recovery.mjs
+      - name: Verify encrypted recovery in packaged Linux runtime
+        run: docker run --rm --network none --mount "type=bind,source=$PWD/tests,target=/app/tests,readonly" -e PRIVATEAI_TEST_AGE=/usr/bin/age privateai-evaluation node node_modules/vitest/vitest.mjs run tests/encrypted-registry.test.ts
+# No provider keys, inference calls, deployments or paid services in CI.
+# Configure a selected host to deploy this branch only after this job succeeds.
