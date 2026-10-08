@@ -1,5 +1,25 @@
 # PrivateAI local Codex handoff — 8 October 2026
 
+## Latest completed engineering batch and stopped live comparison
+
+See [8 October results](readiness-results-20261008.md) and
+[remaining operator evidence](readiness-operator-checklist.md). Frozen at `e1ff771`:
+186 tests/49 files and19 production-browser workflows passed; packaged synthetic
+recovery passed. Inactive retention implementation is approved; activation is not.
+Live comparison stopped after12 conversations/24 requests/23 completed replies:
+baseline impossible-shortening follow-up exhausted4096 output tokens with no text.
+No retry or completed-conversation score. V2 preserved the tested crisis/precaution
+constraints (AI-proposed findings); it remains experimental. Six paired questions
+remain unrun. Earlier failures and human/AI provenance are unchanged.
+
+USD3 cap unchanged; retain the complete batch reserve and cumulative bound
+**USD2.89017920**. Executed token estimateUSD0.02082280 is not a receipt.
+Post-batch dashboard:USD0.24 rounded spend,459 requests,USD10.76 credit,USD3 account
+limit, auto-reload off. TwoUSD5 manual purchases were visible; agent performed none.
+More credit does not grant a new cap. No push/deployment/account changes or sensitive
+transfer. All earlier checkpoints below are historical where superseded here.
+
+
 ## Readiness engineering checkpoint — 8 October 2026
 
 The founder approved seven-day expired/revoked-account retention and seven-day

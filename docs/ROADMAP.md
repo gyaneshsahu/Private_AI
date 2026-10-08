@@ -24,6 +24,11 @@ ready for real private-data trials today**. Useful local document and encrypted
 workspace workflows are available; full provider qualification and trial quality/operational gates remain blockers. This roadmap tracks outcomes and evidence,
 not dates inferred from engineering estimates.
 
+Latest8 October batch: local recovery/capacity/storage-pressure fixes and inactive
+retention are validated; fresh v2 comparison stopped on baseline output exhaustion.
+See [results](readiness-results-20261008.md). Dashboard credit is not spending
+authorization. Agent account access remains read-only; founder operates settings.
+
 ## How to use this plan
 
 8 October next batch preparation: S1/E1 has twelve fresh baseline/candidate cases
@@ -57,7 +62,7 @@ Sources of requirements: [PRD](PRD.md), [architecture](ARCHITECTURE.md),
 [Windows compatibility](windows-compatibility-failure.md),
 [provider chain review](provider-chain-review.md),
 [restricted deployment](development-deployment.md), [validation](validation.md).
-Current user authorization is **USD 2 cumulative account cap**, auto-recharge off;
+Current user authorization is **USD 3 cumulative development-test cap**, auto-recharge off;
 older USD 10 planning/authorization text does not increase that cap. Routine work
 within approval proceeds autonomously. The existing upgraded Render service and
 1 GB disk are approved; no additional subscription, deposit or hosting upgrade
