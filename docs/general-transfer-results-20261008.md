@@ -92,3 +92,54 @@ The founder explicitly forwarded these as independent human review. Scores are c
 | G12 | 3/3/3 |
 
 G04 supplies one draft rather than two and invents Wednesday/Thursday fallback dates. G02 misses two sentences; G05 should explicitly state the five-minute shortfall; G11 is unnecessarily elaborate. These development reviews do not replace reserved acceptance or erase earlier safety/writing failures. Original readiness case4 remains a serious safety failure and case12 remains incomplete/unscored.
+
+## Broader coverage batch and near-ceiling context probe
+
+8 October2026. These are **new development observations, AI-proposed unless explicitly mechanical**, not new human scores or reserved acceptance. All earlier human/AI records and failures remain. English only. Gemma4-31b, thinking enabled,4096output-token ceiling, router digest unchanged. V3 retains v2 urgent-support policy and adds one general deliverable/format instruction. No production policy change.
+
+First freeze b90da3e:15fresh fixtures,17conversations,58requests; two format/boundary probes paired v2/v3, six reasoning, four coding, three ten-turn recall. Input8000normal/16000long. Follow-on7be3f24: one fresh12-turn near-ceiling probe, input100000. Configuration hashes and source-result hashes retained per run; do not pool configurations for acceptance. Separate permits, no retries; all70replies complete with terminal usage and matching router verification.
+
+| Review ID | Case/configuration | Requests | Final selected characters | Estimated USD |
+| --- | --- | --- | --- | --- |
+| K1 | coverage-variants / constraints-v2 | 2 | 3255 | 0.00113740 |
+| K2 | coverage-variants / constraints-v3 | 2 | 3572 | 0.00110720 |
+| K3 | coverage-brief-result / constraints-v3 | 2 | 3457 | 0.00119100 |
+| K4 | coverage-brief-result / constraints-v2 | 2 | 3126 | 0.00112080 |
+| K5 | coverage-units / constraints-v3 | 2 | 3682 | 0.00138900 |
+| K6 | coverage-percent / constraints-v3 | 2 | 3327 | 0.00085900 |
+| K7 | coverage-calendar / constraints-v3 | 2 | 3374 | 0.00134300 |
+| K8 | coverage-conflict / constraints-v3 | 2 | 3639 | 0.00111200 |
+| K9 | coverage-typos / constraints-v3 | 2 | 3353 | 0.00089960 |
+| K10 | coverage-rates / constraints-v3 | 2 | 3399 | 0.00111060 |
+| K11 | coverage-js-clamp / constraints-v3 | 2 | 4022 | 0.00156980 |
+| K12 | coverage-js-group / constraints-v3 | 2 | 4127 | 0.00220240 |
+| K13 | coverage-ts-parse / constraints-v3 | 2 | 3740 | 0.00196580 |
+| K14 | coverage-code-debug / constraints-v3 | 2 | 3786 | 0.00160240 |
+| K15 | coverage-long-1 / constraints-v3 | 10 | 14466 | 0.00809060 |
+| K16 | coverage-long-2 / constraints-v3 | 10 | 14520 | 0.00837580 |
+| K17 | coverage-long-3 / constraints-v3 | 10 | 14518 | 0.00836780 |
+| L1 | coverage-long-ceiling / constraints-v3 | 12 | 98574 | 0.02429320 |
+
+Total terminal token estimateUSD0.06773740; first batchUSD0.04344420, extensionUSD0.02429320. This is not an itemized settled invoice. First batch latency: median3.0803s, nearest-rank p95 19.0683s, range1.6639–30.5674s; includes browser request-to-completion/verification overhead. Extension near-ceiling turns took8.9516s and32.3442s, with23714/23758inputtokens. No concurrency or service SLA inferred from70sequential requests.
+
+### Findings and general causes
+
+- **K2 material failure:** v3 changes before16:30 to by16:30 in alternative1 in both turns. K1/v2 preserves strictness. Both provide two alternatives; both paired shortfall cases preserve exactly two sentences and five minutes. This small stochastic comparison does not prove v3 causes the error or general improvement. The recurrence with human C9 supports a semantic-boundary preservation problem. Generic paraphrasing can substitute an inclusive expression for an exclusive constraint; adding another broad instruction did not reliably fix it. Do not append a special rule for each time/example or tune these exposed questions again.
+- Human G04 showed deliverable-count failure combined with invented decisions; fresh alternatives pass under both versions. Counts, underlying facts and relational precision require distinct assessment. G02/G05/G11 point to format and concision tradeoffs; C7 is legitimate first-person drafting with awkward attendance wording, not automatic ownership confusion. Preserve this human disagreement.
+- K5–K10: independent decimal/date checks confirm1150→1275mL, EUR81.60→72.00,1→2March2028at10UTC, five-minute surplus→shortfall, and48→40km/h including stop. Conflict answers do not transfer14:00 toThursday as confirmed. Later-note authority is unspecified: date uncertainty is defensible, and the oracle is not a claim thatThursday is definitely correct.
+- K11–K14: both turns of clamp, category totals, parseCount and addTag pass independent assertions. Node24.21.0, no network, read-only filesystem/bind, unprivileged node user, capabilities dropped,128MiB,0.5CPU,32PIDs,20s timeout. Source blocks preserved and hashed. No packages installed or generated code run unsandboxed. Strict TypeScript no-emit check also passes. Input field name in totals was unspecified; harness uses its documented amount field rather than inventing a required cents field, with identical numeric expectations. Model self-tests alone are not the evidence. Scope excludes repositories, frameworks, dependencies, security-sensitive code, other languages and claimed runtime parity.
+- K15–K17 and L1: final answers preserve current owner/coordinator, corrected labels, day/count/destination and cited manifest mass. Facts appear early/middle/late, topics change, document sources coexist with chat, corrections supersede old values. L1 reaches98574characters (98.574% of integration ceiling),23758reportedinputtokens,25wire messages. Repetitive/structured background is easier than arbitrary natural long documents; dense contradictory sources, language variation and long-horizon quality remain untested.
+
+### Context and reliability boundaries
+
+The integration counts selected UTF-16 character units including system/date/source text, not tokens. It has no local model tokenizer and does not equate this count with the supplier catalog's262144-token window. Contract input maximum100000characters, output maximum4096tokens (including model reasoning budget), per-request experiment timeout90s. All selected complete history is resent; partial/excluded messages stay out. Offline80-message testing accepts100000and rejects100001before provider work with history intact. There is no silent sliding window, automatic summary or indefinite memory. The composer shows selected size and operational-limit availability; actual user comprehension remains untested.
+
+All70stream records retain Chromium abort events after complete text/usage/verification, classified VALIDATED_COMPLETE_WITH_CHROMIUM_ABORT under the existing scoped evidence. Do not relabel raw transport closure as clean or infer provider qualification. No new incomplete response occurred; earlier incomplete case12 is still unresolved and unscored.
+
+### Evidence and next dependency
+
+Ignored local evidence: coverage-20261008-plan.json, coverage-ceiling-20261008-plan.json, their summary files, coverage-independent-ground-truth.json, coverage-code-manifest.json/results.json, coverage-max-context-boundary.json, coverage-budget-audit-20261008.json and original experiment-run directories. Human review packets remain unscored in .local/review-batches/coverage-20261008 and coverage-ceiling-20261008. Current source-bound AI findings are separate from24human review records.
+
+Next: independently assess the new packet, broaden fresh safety/adversarial and precise-constraint coverage before any new reserved acceptance. Review supplier deployment/privacy and research-rights replies when supplied. Complete actual A52/TalkBack tasks, founder-operated hosted deployment/recovery/log validation, support ownership and separately approved retention activation. No live account/hosting/privacy mutation or private-data admission occurred. READINESS is the only status ledger; public/optional features remain separately tracked.
+
+Final read-only Billing reconciliation: USD0.34 accumulated spend, USD10.66 prepaid,577requests,USD3 limit, auto-reload off. Exactly70new usage events since507, consistent withUSD0.0677374 terminal estimate. No in-flight/pending batch reserve. Two older missing-usage maximaUSD0.0163552 remain conservatively separate, plusUSD0.01 rounding allowance; current accounted ceilingUSD0.3663552. Earlier analytics lag at565is historical, not another charge. No spending increase or account change.
