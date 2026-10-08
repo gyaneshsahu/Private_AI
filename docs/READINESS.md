@@ -1,5 +1,21 @@
 # PrivateAI readiness checklist
 
+## Latest general batch complete — existing USD3 limit unchanged
+
+[General transfer results](general-transfer-results-20261008.md):12conversations,
+24requests,24complete replies, no retries. G04 invents fallback dates rather than
+two wording alternatives; G02 misses two-sentence format (AI-proposed, human review
+pending). Earlier human case4 remains serious safety failure; case12 incomplete.
+
+DashboardUSD0.27 charged,USD10.73 prepaid,507requests,USD3 cap, auto-reload off.
+Batch token estimateUSD0.01465440. TheUSD0.405504 reservation is closed, not spent
+or still pending. The unnecessaryUSD3.50 request is withdrawn; no limit change
+was requested again or performed. Older uncertaintyUSD2.288624 remains separately
+recorded; overlapping charged/rounding plus old-risk checkUSD2.568624 is NOT actual
+spend. Reconcile observed charges/terminal usage rather than accumulate old maxima.
+No policy promotion, private-data access, deployment or retention activation.
+
+
 ## Budget correction and general batch authorized — 8 October
 
 The founder rejected the unnecessaryUSD3.50 request; it is withdrawn. Do not request
@@ -235,7 +251,7 @@ gaps here and map them to existing roadmap IDs rather than creating another ledg
 | O03 Capacity, latency and resource failure — I2/U1 | T/P1 | 100-session exact admission/expiry and three-slot overload/failure recovery tested locally; constrained container passed | `server/app.ts`, `src/documents.ts`, [hosting evidence](trial-hosting-decision.md) | Bounded synthetic concurrency/memory/disk-full diagnostics; live latency under approved budget | Trial cohort fits observed capacity; overload fails predictably without lost state; planned ≥100 live-request reliability study remains separately budgeted |
 | O04 Minimal monitoring and incident action — L2/U1 | T/P0 | Pause/runbook plus hourly/sign-in backup monitor implemented; archive-bound health and scheduled execution verified at 11:28:19 UTC on 8 October | `scripts/invites.ts`, [trial runbook](invited-trial-runbook.md) | Host uptime/error/quota/disk signals and independent detection while Windows is unavailable; operator response drill | Operator detects meaningful failure and can pause/respond with no transcript, cookie, key or query logging |
 | O05 Abuse prevention and fair access — L1/U1/S1 | T/P0 | Invitations, login throttling, session/account request limits and revoke/pause implemented | `server/invite-access.ts`, `server/invite-registry.ts`, `tests/invite-operations.test.ts` | Assess global-throttle denial of service/fairness, auth load and saturation; distinguish quotas from semantic safety | Bounded synthetic abuse cannot break isolation or exhaust service unobserved; documented small-cohort limits and operator response |
-| O06 Costs and quotas — I2/L2/R1 | T/P0 | USD3 cap; retained cumulative maximumUSD2.89017920 after all48 readiness requests. DashboardUSD0.26 rounded spend,USD10.74 credit,483requests; account capUSD3, auto-reload off | [Reconciliation](readiness-continuation-results-20261008.md) | Exact historical billing unresolved; proposed fresh24-request reserveUSD0.405504 needsUSD3.50 cap unless settled evidence releases reserves; approval pending | Failed/uncertain charges counted; no automatic recharge/retry or unauthorized account changes |
+| O06 Costs and quotas — I2/L2/R1 | T/P0 | ExistingUSD3 cap unchanged; dashboardUSD0.27 charged,USD10.73credit,507requests. General24-request batch complete, token estimateUSD0.01465440; no pending batch reserve | [Corrected accounting](general-transfer-results-20261008.md) | Older uncertaintyUSD2.288624 recorded separately; no exact receipt inferred; withdrawnUSD3.50 request must not be repeated from accumulated historical maxima | Actual charges, pending reservations and uncertainty distinguished; no unauthorized account changes or automatic retry/recharge |
 | O07 Provider/model change control — Q1/E1/S1/L2 | T/P0 | Approved host/release/model contract and configuration hashes implemented | `shared/contracts.ts`, `src/verified-chat.ts`, `tests/configuration-identity.test.ts` | Operator upgrade/key rotation/expiry procedure and cross-gate revalidation | Unapproved change fails closed; changed model/policy reopens quality/safety; no silent fallback or blended acceptance |
 | O08 Human support and incident reporting — U1/L3 | T/P1 | Runbook exists; user-facing staffed support path not verified | [Trial runbook](invited-trial-runbook.md), `src/App.tsx` guide | Name contact/channel, response expectations, safe report template and recovery instructions | Invitee can report harm/failure without submitting private transcripts; operator has triage/pause/escalation process |
 | O09 Accurate trial disclosures and permission — G6/R1 | T/P0 | Restricted-evaluation wording and adult safety scope implemented locally; older hosted wording remains | `src/App.tsx`, [architecture](ARCHITECTURE.md) | Align deployed wording with real host/provider retention, safety/language limits, costs, local storage and audience | Reviewed disclosures match deployed reality; founder approves audience and private-data use only after gates pass |

@@ -1,5 +1,21 @@
 # PrivateAI local Codex handoff — 8 October 2026
 
+## Latest general batch complete — existing USD3 limit unchanged
+
+[General transfer results](general-transfer-results-20261008.md):12conversations,
+24requests,24complete replies, no retries. G04 invents fallback dates rather than
+two wording alternatives; G02 misses two-sentence format (AI-proposed, human review
+pending). Earlier human case4 remains serious safety failure; case12 incomplete.
+
+DashboardUSD0.27 charged,USD10.73 prepaid,507requests,USD3 cap, auto-reload off.
+Batch token estimateUSD0.01465440. TheUSD0.405504 reservation is closed, not spent
+or still pending. The unnecessaryUSD3.50 request is withdrawn; no limit change
+was requested again or performed. Older uncertaintyUSD2.288624 remains separately
+recorded; overlapping charged/rounding plus old-risk checkUSD2.568624 is NOT actual
+spend. Reconcile observed charges/terminal usage rather than accumulate old maxima.
+No policy promotion, private-data access, deployment or retention activation.
+
+
 ## Budget correction and general batch authorized — 8 October
 
 The founder rejected the unnecessaryUSD3.50 request; it is withdrawn. Do not request
