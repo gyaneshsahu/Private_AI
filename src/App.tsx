@@ -530,9 +530,13 @@ export function App() {
       setNotice(
         "Encrypted snapshot saved on this browser. Later changes require saving again.",
       );
-    } catch {
+    } catch (error) {
       if (current !== epoch.current) return;
-      fail("Save failed. Unlock the vault and try again.");
+      fail(
+        error instanceof DOMException && error.name === "QuotaExceededError"
+          ? "Browser storage is full. Your current work is still open but was not saved. Keep this tab open; free device storage without clearing this site's data, then save again."
+          : "Save failed. Your current work is still open. Keep this tab open and check that the vault is unlocked before trying again.",
+      );
     } finally {
       if (current === epoch.current) setBusy("");
     }

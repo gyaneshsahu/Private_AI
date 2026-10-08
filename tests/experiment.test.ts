@@ -39,6 +39,18 @@ function fixture(): Experiment {
   };
 }
 const servers: Server[] = [];
+it("rejects a first-turn allowance larger than the fixed context cap", () => {
+  expect(
+    validateExperiment({ ...fixture(), firstTurnInputCharacters: 3000 })
+      .firstTurnInputCharacters,
+  ).toBe(3000);
+  expect(() =>
+    validateExperiment({ ...fixture(), firstTurnInputCharacters: 8001 }),
+  ).toThrow("First-turn budget");
+  expect(() =>
+    validateExperiment({ ...fixture(), firstTurnInputCharacters: 0 }),
+  ).toThrow();
+});
 afterEach(async () => {
   vi.restoreAllMocks();
   for (const server of servers.splice(0))

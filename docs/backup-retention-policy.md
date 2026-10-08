@@ -1,5 +1,18 @@
 # Trial backup and metadata-retention policy
 
+## Approved inactive implementation — 8 October
+
+Founder approval covers implementation only. `server/inactive-retention.ts`
+provides explicit schema preparation, timestamped revocation, incident holds and
+paused-registry-only purging. No runtime, CLI or scheduler imports it. Unexpired
+legacy revoked rows with unknown revocation age are preserved. Synthetic tests
+cover exact seven-day boundaries, holds and repeated revocation. The read-only
+`scripts/retention-assessment.ts --preview` cannot apply deletion. Separate approval
+and integration review are required before live migration/activation/deletion.
+Existing backup settings remain unchanged. Seven days plus seven days describes
+intended logical retention, not verified physical erasure of WAL, storage or backups.
+
+
 8 October 2026. **Hosted encrypted transfer, separate restore and scheduled execution verified; proactive alerts and sustained recovery objectives remain open.**
 Owner: founder/operator. Applies to the existing single-instance Render service.
 The founder authorized encrypted registry transfer to `C:\PrivateAI-backups`,

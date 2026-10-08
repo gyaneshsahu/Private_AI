@@ -27,6 +27,7 @@ COPY --from=build --chown=node:node /app/shared ./shared
 COPY --from=build --chown=node:node /app/dist ./dist
 COPY --chown=node:node scripts/invites.ts ./scripts/invites.ts
 COPY --chown=node:node scripts/encrypted-registry.ts ./scripts/encrypted-registry.ts
+COPY --chown=node:node scripts/retention-assessment.ts ./scripts/retention-assessment.ts
 COPY --chown=node:node scripts/trial-access-check.ts scripts/trial-isolation-check.ts ./scripts/
 USER node
 EXPOSE 4173

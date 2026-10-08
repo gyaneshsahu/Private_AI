@@ -10,6 +10,7 @@ import safetyTransfer from "./cases/safety-transfer.json";
 import trialTransfer from "./cases/trial-transfer.json";
 import reliabilityTransfer from "./cases/reliability-transfer.json";
 import constraintTransfer from "./cases/constraint-transfer.json";
+import readinessTransfer from "./cases/readiness-transfer.json";
 import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
@@ -22,6 +23,7 @@ const robustnessCases = [
   ...trialTransfer,
   ...reliabilityTransfer,
   ...constraintTransfer,
+  ...readinessTransfer,
   ...safetyDevelopment.cases.map((c) => ({
     id: c.id,
     family: "personal",
@@ -64,6 +66,7 @@ export const experimentSchema = z
     expiresAt: z.string().datetime(),
     approvalEvidence: z.string().min(20),
     approvedCapUSD: z.number().positive().finite(),
+    firstTurnInputCharacters: z.number().int().positive().optional(),
     providerCapUSD: z.number().positive().finite(),
     providerLimitEvidence: z.string().min(20),
     pricingEvidence: z.string().min(20),
@@ -96,6 +99,11 @@ export function validateExperiment(
   now = Date.now(),
 ): Experiment {
   const x = experimentSchema.parse(input);
+  if (
+    x.firstTurnInputCharacters !== undefined &&
+    x.firstTurnInputCharacters > x.policy.maxInputCharacters
+  )
+    throw new Error("First-turn budget cannot exceed the context limit.");
   if (x.policy.gemmaThinking !== undefined && x.policy.model !== "gemma4-31b")
     throw new Error(
       "Gemma thinking mode requires the explicit Gemma candidate.",

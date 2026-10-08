@@ -13,6 +13,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
   if (!address || typeof address === "string") throw Error("port");
   const origin = `http://127.0.0.1:${address.port}`;
   const vite = await createViteServer({
+    cacheDir: "node_modules/.vite-invite-browser",
     server: { middlewareMode: true, hmr: false },
     appType: "spa",
     logLevel: "silent",
@@ -94,7 +95,13 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
       await form
         .getByLabel("Choose password", { exact: false })
         .fill("synthetic access password");
+      const accepted = page.waitForResponse(
+        (r) =>
+          new URL(r.url()).pathname === "/auth/register" &&
+          r.request().method() === "POST",
+      );
       await form.getByRole("button", { name: "Accept invitation" }).click();
+      expect((await accepted).status()).toBe(303);
       await ui(page.getByLabel("Message PrivateAI")).toBeVisible();
     };
     const saved = () =>

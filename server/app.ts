@@ -77,7 +77,7 @@ export function createApp(config: Config) {
   app.use("/api", (req, res, next) => {
     const now = Date.now();
     for (const [id, session] of sessions)
-      if (session.expires < now) sessions.delete(id);
+      if (session.expires <= now) sessions.delete(id);
     let id = req.headers.cookie
       ?.split(";")
       .map((s) => s.trim())
@@ -97,7 +97,14 @@ export function createApp(config: Config) {
           .json({ error: "Session expired. Reload the application." });
         return;
       }
-      if (sessions.size > 100) {
+      if (sessions.size >= 100) {
+        const nextExpiry = Math.min(
+          ...Array.from(sessions.values(), (s) => s.expires),
+        );
+        res.setHeader(
+          "Retry-After",
+          String(Math.max(1, Math.ceil((nextExpiry - now) / 1000))),
+        );
         res.status(429).json({ error: "Session limit reached." });
         return;
       }

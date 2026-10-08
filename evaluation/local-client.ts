@@ -77,7 +77,12 @@ export async function runSynthetic(input: unknown, csrf: string) {
       try {
         const usage = await streamVerifiedConversation(
           conversation,
-          permit.policy,
+          visible.turn === 1 && permit.firstTurnInputCharacters !== undefined
+            ? {
+                ...permit.policy,
+                maxInputCharacters: permit.firstTurnInputCharacters,
+              }
+            : permit.policy,
           csrf,
           signal,
           (chunk) => {

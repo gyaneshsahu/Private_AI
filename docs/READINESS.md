@@ -1,5 +1,30 @@
 # PrivateAI readiness checklist
 
+## Readiness engineering checkpoint — 8 October 2026
+
+The founder approved seven-day expired/revoked-account retention and seven-day
+backup expiry as inactive code/documentation only. No activation, live deletion,
+backup-setting change or new sensitive transfer is authorized. The module has no
+runtime/CLI/scheduler integration. Synthetic tests cover boundaries, incident holds
+and unknown legacy revocation age. Physical erasure remains unverified.
+
+186 tests/49 files and19 production-browser workflows pass: bounded session admission,
+relay overload recovery, encrypted storage-pressure recovery and keyboard/CSS zoom.
+Network-disabled packaged recovery took6.923 seconds; hosted cutover and actual
+phone/screen-reader evidence remain open. See [plan](readiness-batch-plan.md).
+
+The founder declined USD4 and authorized useful tests within existing USD3 limits.
+Retiring13 audited unclaimed permits releases onlyUSD0.386048 unused reserve;
+historical executed bound remainsUSD2.288624. The complete12-case/48-request batch
+reservesUSD0.60155520 using enforced exact first-turn input bounds, full8,000-character
+second turns and4,096 output tokens per turn. Planned cumulativeUSD2.89017920.
+Read-only dashboard:USD0.78 credit,USD0.22 rounded spend,435 requests, key/account
+limitsUSD3, auto-reload off. No top-up or account change needed for this reserve.
+Reserves are not charges. Earlier failed evaluations and AI-proposed assessments
+retain their provenance; the separately designated human review remains human.
+Live comparison is pending this checkpoint's freeze. Older checkpoints below are historical.
+
+
 **Authoritative current readiness ledger — 8 October 2026.** Baseline implementation audit: `3358b8f`, including the deployed `81675c4` application.
 Live comparison and archive-bound monitoring updated 8 October; local implementation
 `2af184c`, deployed runtime remains `40f2e33`. Owner: founder/operator;
@@ -117,7 +142,7 @@ gaps here and map them to existing roadmap IDs rather than creating another ledg
 | D01 Individual invitations and session lifecycle — U1 | T/P0 | Implemented; local and hosted HTTPS lifecycle verified | `server/invite-access.ts`, `server/invite-registry.ts`, [host evidence](trial-hosting-decision.md) | Release regression after auth changes; operator expiry/revocation guidance | One-use/expiring invitations, secure cookies, password-change/logout/revocation isolation remain verified for deployed release |
 | D02 Workspace/account isolation — W2/U1 | T/P0 | Local browser/vault tests; hosted HTTP identity checks passed | `tests/vault.test.ts`, `tests/invite-browser.test.ts`, `tests/workspace-races.test.ts` | Hosted browser-vault separation on actual devices, old tabs/background behavior | Two identities cannot expose or overwrite each other's snapshots/drafts; timing limits accurately disclosed |
 | D03 Save, lock and recover a workspace — W1/W2/U1 | T/P1 | Implemented; local encrypted save/lock/reload/corruption tests | `src/vault.ts`, `tests/vault.test.ts`, `tests/browser/vault-recovery.spec.ts` | Actual-device storage failure/quota/private-browsing behavior; task comprehension | Intact saved data survives failure; corrupt data not overwritten; unsaved-loss warnings understood; no promise of forgotten-passphrase recovery |
-| D04 Conversation and account deletion — U1/L2 | T/P0 | Snapshot deletion/tombstones tested; registry purge absent | `src/vault.ts`, `server/invite-registry.ts`, [retention proposal](backup-retention-policy.md) | Enforce approved account/hash retention, backup expiry and deletion disclosures | Verified deletion at each claimed layer and documented residual metadata/backups; revocation is not labelled deletion |
+| D04 Conversation and account deletion — U1/L2 | T/P0 | Snapshot deletion/tombstones tested; registry purge implemented inactive; synthetic tests pass | `src/vault.ts`, `server/invite-registry.ts`, [retention proposal](backup-retention-policy.md) | Enforce approved account/hash retention, backup expiry and deletion disclosures | Verified deletion at each claimed layer and documented residual metadata/backups; revocation is not labelled deletion |
 | D05 Off-disk encrypted backup and restore — U1/L2 | T/P0 | Hosted encrypted backup and independent key recovery verified; local archive-bound monitor now detects missing/changed ciphertext and snapshot age; fresh transfer verified 11:26 UTC | `server/encrypted-registry.ts`, `tests/backup-health.test.ts`, [backup policy](backup-retention-policy.md) | Sustained RPO evidence, hosted cutover and notification visibility; local monitor cannot alert while computer is off | Timed restore meets agreed RPO/RTO; no revived revoked accounts, stale credentials or reset quotas; no secrets copied without authorization |
 | D06 Lost credentials and user recovery/support — U1/L3 | T/P1 | Signed-in password change works; lost-password/vault recovery unsupported | `server/access-page.ts`, [trial runbook](invited-trial-runbook.md) | Document operator identity-verification/reissue route and consequences; test explanatory flow | User knows difference between account and vault recovery; no silent account substitution or false data-recovery promise |
 
@@ -133,7 +158,7 @@ gaps here and map them to existing roadmap IDs rather than creating another ledg
 | O03 Capacity, latency and resource failure — I2/U1 | T/P1 | Timeouts/body limits/three concurrent inference slots implemented; constrained container smoke passed | `server/app.ts`, `src/documents.ts`, [hosting evidence](trial-hosting-decision.md) | Bounded synthetic concurrency/memory/disk-full diagnostics; live latency under approved budget | Trial cohort fits observed capacity; overload fails predictably without lost state; planned ≥100 live-request reliability study remains separately budgeted |
 | O04 Minimal monitoring and incident action — L2/U1 | T/P0 | Pause/runbook plus hourly/sign-in backup monitor implemented; archive-bound health and scheduled execution verified at 11:28:19 UTC on 8 October | `scripts/invites.ts`, [trial runbook](invited-trial-runbook.md) | Host uptime/error/quota/disk signals and independent detection while Windows is unavailable; operator response drill | Operator detects meaningful failure and can pause/respond with no transcript, cookie, key or query logging |
 | O05 Abuse prevention and fair access — L1/U1/S1 | T/P0 | Invitations, login throttling, session/account request limits and revoke/pause implemented | `server/invite-access.ts`, `server/invite-registry.ts`, `tests/invite-operations.test.ts` | Assess global-throttle denial of service/fairness, auth load and saturation; distinguish quotas from semantic safety | Bounded synthetic abuse cannot break isolation or exhaust service unobserved; documented small-cohort limits and operator response |
-| O06 Costs and quotas — I2/L2/R1 | T/P0 | USD3 cumulative cap; full-reserve bound USD2.674672, USD0.325328 remaining. Fixed batch stopped after 22 requests; 13 conversations unrun. Dashboard USD0.78 prepaid, USD0.22 rounded spend, 435 requests; key/account limits USD3, auto-reload off | [Batch accounting](constraint-policy-results-20261008.md), prior reserves and consumed permits | Exact per-run billing remains unknown; retain reserves; transaction page cannot exclude delayed inference metering. No deposit approved; stop if credit insufficient. Hosted quota/failure-cost evidence remains open | Hard supplier limits verified; failed requests included; no automatic recharge/retry; user sees actionable limit errors, request counts not advertised as dollar caps |
+| O06 Costs and quotas — I2/L2/R1 | T/P0 | USD3 cumulative cap; historical bound USD2.288624 after retiring13 unclaimed permits; next batch reserved maximumUSD2.89017920. Fixed batch stopped after 22 requests; 13 conversations unrun. Dashboard USD0.78 prepaid, USD0.22 rounded spend, 435 requests; key/account limits USD3, auto-reload off | [Batch accounting](constraint-policy-results-20261008.md), prior reserves and consumed permits | Exact per-run billing remains unknown; retain reserves; transaction page cannot exclude delayed inference metering. No deposit approved; stop if credit insufficient. Hosted quota/failure-cost evidence remains open | Hard supplier limits verified; failed requests included; no automatic recharge/retry; user sees actionable limit errors, request counts not advertised as dollar caps |
 | O07 Provider/model change control — Q1/E1/S1/L2 | T/P0 | Approved host/release/model contract and configuration hashes implemented | `shared/contracts.ts`, `src/verified-chat.ts`, `tests/configuration-identity.test.ts` | Operator upgrade/key rotation/expiry procedure and cross-gate revalidation | Unapproved change fails closed; changed model/policy reopens quality/safety; no silent fallback or blended acceptance |
 | O08 Human support and incident reporting — U1/L3 | T/P1 | Runbook exists; user-facing staffed support path not verified | [Trial runbook](invited-trial-runbook.md), `src/App.tsx` guide | Name contact/channel, response expectations, safe report template and recovery instructions | Invitee can report harm/failure without submitting private transcripts; operator has triage/pause/escalation process |
 | O09 Accurate trial disclosures and permission — G6/R1 | T/P0 | Restricted-evaluation wording and adult safety scope implemented locally; older hosted wording remains | `src/App.tsx`, [architecture](ARCHITECTURE.md) | Align deployed wording with real host/provider retention, safety/language limits, costs, local storage and audience | Reviewed disclosures match deployed reality; founder approves audience and private-data use only after gates pass |

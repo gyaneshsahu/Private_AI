@@ -1,5 +1,30 @@
 # PrivateAI local Codex handoff — 8 October 2026
 
+## Readiness engineering checkpoint — 8 October 2026
+
+The founder approved seven-day expired/revoked-account retention and seven-day
+backup expiry as inactive code/documentation only. No activation, live deletion,
+backup-setting change or new sensitive transfer is authorized. The module has no
+runtime/CLI/scheduler integration. Synthetic tests cover boundaries, incident holds
+and unknown legacy revocation age. Physical erasure remains unverified.
+
+186 tests/49 files and19 production-browser workflows pass: bounded session admission,
+relay overload recovery, encrypted storage-pressure recovery and keyboard/CSS zoom.
+Network-disabled packaged recovery took6.923 seconds; hosted cutover and actual
+phone/screen-reader evidence remain open. See [plan](readiness-batch-plan.md).
+
+The founder declined USD4 and authorized useful tests within existing USD3 limits.
+Retiring13 audited unclaimed permits releases onlyUSD0.386048 unused reserve;
+historical executed bound remainsUSD2.288624. The complete12-case/48-request batch
+reservesUSD0.60155520 using enforced exact first-turn input bounds, full8,000-character
+second turns and4,096 output tokens per turn. Planned cumulativeUSD2.89017920.
+Read-only dashboard:USD0.78 credit,USD0.22 rounded spend,435 requests, key/account
+limitsUSD3, auto-reload off. No top-up or account change needed for this reserve.
+Reserves are not charges. Earlier failed evaluations and AI-proposed assessments
+retain their provenance; the separately designated human review remains human.
+Live comparison is pending this checkpoint's freeze. Older checkpoints below are historical.
+
+
 ## Account control and review provenance — effective immediately, 8 October
 
 Third-party dashboards (Tinfoil, Render and others) are **read-only for the agent**.

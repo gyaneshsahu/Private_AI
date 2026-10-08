@@ -138,3 +138,49 @@ it("production relay rechecks qualification after startup and never forwards exp
   ).json();
   expect(status.inference.ready).toBe(false);
 });
+
+it("bounds three simultaneous relays, rejects excess work and releases failed slots without leaking upstream details", async () => {
+  const release: Array<(response: Response) => void> = [];
+  upstream.mockImplementation(
+    () => new Promise<Response>((resolve) => release.push(resolve)),
+  );
+  const { root, headers } = await setup();
+  const send = () =>
+    fetch(root + "/api/inference/v1/chat/completions", {
+      method: "POST",
+      headers,
+      body: new Uint8Array(32).fill(9),
+    });
+  const pending: Array<Promise<Response>> = [];
+  const valid = () =>
+    new Response(new Uint8Array(32), {
+      headers: { "Ehbp-Response-Nonce": "b".repeat(64) },
+    });
+  try {
+    for (let i = 0; i < 3; i++) {
+      const request = send();
+      request.catch(() => {});
+      pending.push(request);
+      await vi.waitFor(() => expect(upstream).toHaveBeenCalledTimes(i + 1));
+    }
+    const busy = await send();
+    expect(busy.status).toBe(429);
+    expect(upstream).toHaveBeenCalledTimes(3);
+    release[0](new Response("SYNTHETIC_UPSTREAM_SECRET", { status: 503 }));
+    const failed = await pending[0];
+    expect(failed.status).toBe(502);
+    expect(await failed.text()).not.toContain("SYNTHETIC_UPSTREAM_SECRET");
+    const replacement = send();
+    await vi.waitFor(() => expect(upstream).toHaveBeenCalledTimes(4));
+    release[3](valid());
+    expect((await replacement).status).toBe(200);
+    release[1](valid());
+    release[2](valid());
+    expect(
+      (await Promise.all(pending.slice(1))).every((r) => r.status === 200),
+    ).toBe(true);
+  } finally {
+    for (const resolve of release) resolve(valid());
+    await Promise.allSettled(pending);
+  }
+});

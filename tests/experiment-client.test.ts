@@ -10,6 +10,7 @@ import attributionCases from "../evaluation/cases/attribution-transfer.json";
 import writingCases from "../evaluation/cases/writing-transfer.json";
 import reliabilityCases from "../evaluation/cases/reliability-transfer.json";
 import constraintCases from "../evaluation/cases/constraint-transfer.json";
+import readinessCases from "../evaluation/cases/readiness-transfer.json";
 import { invoiceText } from "../evaluation/experiment";
 const allCases = [
   ...developmentCases,
@@ -19,6 +20,7 @@ const allCases = [
   ...writingCases,
   ...reliabilityCases,
   ...constraintCases,
+  ...readinessCases,
 ];
 
 it("runs real browser extraction and follow-up state with an explicitly mocked model, and stops on unknown cost", async () => {
@@ -158,7 +160,8 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
             scenario:
               fixture.id.startsWith("robustness-") ||
               fixture.id.startsWith("reliability-transfer-") ||
-              fixture.id.startsWith("constraint-")
+              fixture.id.startsWith("constraint-") ||
+              fixture.id.startsWith("readiness-")
                 ? "robustness_case"
                 : "development_case",
             developmentCaseId: fixture.id,
@@ -186,7 +189,7 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
       };
     }, allCases);
     expect(result.compatibilityCalls).toBe(1);
-    expect(result.development).toHaveLength(54);
+    expect(result.development).toHaveLength(66);
     for (const [index, task] of result.development.entries()) {
       const fixture = allCases[index];
       expect(task.outcome.failure).toBeNull();
