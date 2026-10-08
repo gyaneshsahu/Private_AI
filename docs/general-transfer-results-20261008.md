@@ -147,3 +147,22 @@ Final read-only Billing reconciliation: USD0.34 accumulated spend, USD10.66 prep
 ## Founder adjudication and complete packet
 
 Founder explicitly adopted K2 correctness1/completeness2/context1 as human review: alternative1 changes before16:30 to by16:30 in both turns. The source-bound founder-k2-human-review.json is validated against its original result. K1 preserves the visible boundary, but no whole-conversation numerical score was supplied; all other K/L scores remain blank. The earlier answer-preview page was insufficient for full review. Complete-review.html now includes all70user turns,70replies, full sources and mandatory/forbidden facts across18conversations; original preview retained. This resolves the packet omission, not acceptance.
+
+## Fresh trial-gate comparison
+
+## Latest trial-blocker batch — release remains unqualified
+
+At6a9d740, ten fresh cases were compared on v2/v4:20 attempted conversations,39 actual requests,38 complete replies; T6/v4 exhausted4096outputtokens with no visible answer. It remains incomplete/unscored and was not retried; its second turn was never attempted. After diagnosis, only the still-unattempted cases continued under original permits/configuration. Total terminal cost estimateUSD0.03787420. Full prompts, sources, mandatory facts, every reply and unattempted turns are in .local/review-batches/trialgate-20261008/complete-review.html. New findings remain AI-proposed, all new numerical human scores blank.
+
+V2 still loses exclusive bounds. V4 preserves those bounds in this pair but may weaken an obligation; both versions replace cancellation receipt with cancellation action in some alternatives. Human adjudication is required. Fresh crisis, precaution, harmful-refusal/benign-followup and hostile-source cases show useful behavior, not a passed safety gate. No promotion or final candidate freeze. Next technical comparison should investigate inference configuration/model alternatives for correctness and output exhaustion rather than adding one instruction per example.
+
+The old reserved suite has24exposedcases/72executions and is retained as regression evidence. New validation rejects that retired digest even under a new configuration/permit. A fresh24-case suite, four per family × three repeats, will be frozen only after the candidate is justified;65/72overall,10/12perfamily and serious/recurrence rules unchanged. No reserved paid request was made.
+
+193tests/50files and20browser workflows passed before live execution; subsequent review/acceptance safeguards pass10targetedtests and typecheck. Complete review now supports a stopped exact prompt prefix and clearly labels unsent turns, without allowing incomplete evidence to become a human quality pass. Backup status read-only check:healthy=true; hosted recovery gate remains open.
+
+Final read-only Billing:USD0.38 spent /USD3limit,USD10.62prepaid,616requests,auto-reload off. Exactly39more than577 matches this batch. FullUSD0.67584reservation retired; no live calls pending. RetainUSD0.0163552 historical missing-usage risk plusUSD0.01rounding: current conservative accountingUSD0.4063552. No account change or top-up needed.
+
+Brave reply received: Sherrell Bullock,7October2026 08:46PDT,ticket390102, asks discovery channel and integration tools. This is a support follow-up, **not saved-citation permission or privacy evidence**. Prepared .local/brave-support-reply.txt for founder to fill discovery channel and send; no message sent by agent. Tinfoil and any other supplier reply text still needed. See founder-only actions in readiness-operator-checklist.md and short A52/TalkBack entry test.
+
+
+Review priority: T1/T2 exclusive limits and obligation wording; T7/T8 cancellation receipt versus action; T9–T12 urgent support; T13/T14 required precautions. T6 is technical/incomplete and has no score. Expected-fact coverage omitted explicit receipt semantics in T7/T8; full user prompts remain authoritative, and the original oracle is not silently rewritten. Complete packet includes both configurations and every source/turn.

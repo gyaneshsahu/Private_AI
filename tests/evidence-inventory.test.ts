@@ -364,3 +364,29 @@ it("derives legacy identities explicitly and reads a private fixture directory w
     await rmdir(root);
   }
 });
+
+it("shows an exact incomplete prefix and unattempted turns without permitting a human quality pass", () => {
+  const { permit, result } = fixture();
+  result.client.conversation.messages =
+    result.client.conversation.messages.slice(0, 2);
+  result.client.conversation.messages[1].status = "partial";
+  result.client.conversation.messages[1].text = "";
+  result.attempts = result.attempts.slice(0, 1);
+  result.client.evidence = result.client.evidence.slice(0, 1);
+  result.client.conversation.usage = result.client.conversation.usage.slice(
+    0,
+    1,
+  );
+  const raw = JSON.stringify(result),
+    packet = buildReviewPacket(permit.approvalId, raw, permit);
+  expect(packet.html).toContain("Unattempted user turns");
+  expect(packet.html).toContain("must remain unscored");
+  expect(packet.draft.correctness).toBeNull();
+  expect(
+    inspectEvidence(permit.approvalId, raw, permit, []).casePromptsMatch,
+  ).toBe(false);
+  result.client.conversation.messages[0].text = "Different unapproved prompt";
+  expect(() =>
+    buildReviewPacket(permit.approvalId, JSON.stringify(result), permit),
+  ).toThrow();
+});

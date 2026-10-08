@@ -92,7 +92,12 @@ export const experimentSchema = z
       .extend({
         gemmaThinking: z.boolean().optional(),
         answerPolicyVariant: z
-          .enum(["constraints-v1", "constraints-v2", "constraints-v3", "constraints-v4"])
+          .enum([
+            "constraints-v1",
+            "constraints-v2",
+            "constraints-v3",
+            "constraints-v4",
+          ])
           .optional(),
         glmReasoningEffort: z.enum(["low", "high", "max"]).optional(),
       })

@@ -1,0 +1,8 @@
+{
+  "retired": [
+    {
+      "sha256": "c261a714138290486d7c74e960f048640d33298d9158b9085ed82ff5e44930c5",
+      "reason": "24 cases/72 executions previously exposed; later safety/writing development used findings. Preserve original results as regression evidence, never relabel as fresh acceptance."
+    }
+  ]
+}

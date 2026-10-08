@@ -1,5 +1,7 @@
 # Approved ordinary-quality gate for the first invited trial
 
+**Current execution status,8October2026:** the original suite has24exposedcases/72executions and is now regression-only; its digest is rejected by reserved-run validation. The historical instruction below to keep that frozen suite does not permit relabelling exposed/tuned evidence as fresh acceptance. Freeze a replacement24-case suite only after a justified candidate; preserve four cases per family, three repeats,65/72overall,10/12each and all severity/recurrence rules. Current spending authorization isUSD3, superseding the historicalUSD2 text. No acceptance threshold changed.
+
 Status: **approved by the founder (“ok approve continue”)** · 5 October 2026.
 This resolves E1's numerical decision. It does not qualify the provider,
 authorize real private data or claim parity with ChatGPT/Gemini.

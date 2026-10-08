@@ -48,6 +48,7 @@ export async function implementationIdentity(root: string) {
     "evaluation/local-client.ts",
     "evaluation/experiment.ts",
     "evaluation/reserved-assessment.ts",
+    "evaluation/reserved-suite-history.json",
     "evaluation/cases/heldout.json",
     "evaluation/cases/development.json",
     "evaluation/cases/robustness-development.json",

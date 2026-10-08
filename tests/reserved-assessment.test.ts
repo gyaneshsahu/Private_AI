@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { describe, it, expect } from "vitest";
 import { mkdtemp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -73,7 +74,7 @@ describe("reserved evaluation isolation", () => {
       ).toThrow();
     await expect(
       validateReservedBinding(process.cwd(), permit, "b".repeat(64)),
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow("retired");
     await expect(
       validateReservedBinding(process.cwd(), permit, "c".repeat(64)),
     ).rejects.toThrow();
@@ -115,4 +116,34 @@ describe("reserved evaluation isolation", () => {
       await rm(root, { recursive: true, force: true });
     }
   });
+});
+
+it("permits correctly bound new synthetic suite bytes, never the retired digest", async () => {
+  const permit = await fixture(),
+    root = await mkdtemp(resolve(tmpdir(), "privateai-fresh-binding-"));
+  try {
+    const bytes = "[]",
+      digest = createHash("sha256").update(bytes).digest("hex");
+    await mkdir(resolve(root, "evaluation/cases"), { recursive: true });
+    await writeFile(resolve(root, "evaluation/cases/heldout.json"), bytes);
+    await writeFile(
+      resolve(root, "evaluation/frozen-manifest.json"),
+      JSON.stringify({ "heldout.json": digest }),
+    );
+    await expect(
+      validateReservedBinding(
+        root,
+        {
+          ...permit,
+          reservedAssessment: {
+            ...permit.reservedAssessment!,
+            fixtureSHA256: digest,
+          },
+        },
+        "b".repeat(64),
+      ),
+    ).resolves.toBeUndefined();
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });

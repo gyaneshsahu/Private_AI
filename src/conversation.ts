@@ -65,7 +65,9 @@ export function composeContext(
     {
       role: "system",
       content:
-        (variant === "constraints-v2" || variant === "constraints-v3" || variant === "constraints-v4"
+        (variant === "constraints-v2" ||
+        variant === "constraints-v3" ||
+        variant === "constraints-v4"
           ? policy.replace(originalUrgentPolicy, revisedUrgentPolicy) +
             revisionPolicy +
             (variant === "constraints-v3"

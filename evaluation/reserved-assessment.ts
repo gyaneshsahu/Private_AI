@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
+import suiteHistory from "./reserved-suite-history.json";
 import type { Experiment } from "./experiment";
 import { configurationIdentity } from "./implementation";
 
@@ -25,6 +26,10 @@ export async function validateReservedBinding(
   )
     throw new Error(
       "Reserved fixture/configuration differs from the reviewed freeze.",
+    );
+  if (suiteHistory.retired.some((suite) => suite.sha256 === digest))
+    throw new Error(
+      "This reserved suite is retired as regression evidence. Freeze fresh cases before acceptance.",
     );
 }
 

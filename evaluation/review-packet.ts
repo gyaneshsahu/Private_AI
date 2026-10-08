@@ -43,7 +43,7 @@ export function buildReviewPacket(
 ) {
   const permit = experimentSchema.parse(permitInput);
   const entry = inspectEvidence(run, resultText, permit, []);
-  if (entry.integrity !== "VALID" || !entry.casePromptsMatch || !entry.caseId)
+  if (entry.integrity !== "VALID" || !entry.caseId)
     throw Error("A matching synthetic case record is required.");
   const raw: unknown = JSON.parse(resultText);
   const summary = reviewResult(raw, permit);
@@ -56,6 +56,22 @@ export function buildReviewPacket(
   )
     throw Error("Reviewable case required");
   const c = developmentCase(entry.caseId, permit.scenario);
+  const recordedPrompts = transcript
+    .filter((m) => m.role === "user")
+    .map((m) => m.text);
+  const incompletePrefix =
+    summary.outcome === "INCOMPLETE_REVIEW_REQUIRED" &&
+    recordedPrompts.length > 0 &&
+    recordedPrompts.length < c.turns.length &&
+    JSON.stringify(recordedPrompts) ===
+      JSON.stringify(c.turns.slice(0, recordedPrompts.length));
+  if (!entry.casePromptsMatch && !incompletePrefix)
+    throw Error(
+      "Recorded prompts do not match the frozen case or its incomplete prefix.",
+    );
+  const unattempted = incompletePrefix
+    ? c.turns.slice(recordedPrompts.length)
+    : [];
   const sources = recorded.attachments
     .filter((a) => a.selected)
     .flatMap((a) => a.sources);
@@ -95,6 +111,7 @@ export function buildReviewPacket(
 <h2>Mandatory facts</h2><ul>${c.mandatoryFacts.map((f) => `<li>${escape(f)}</li>`).join("")}</ul>
 <h2>Forbidden conclusions</h2><ul>${c.forbiddenConclusions.map((f) => `<li>${escape(f)}</li>`).join("")}</ul>
 <h2>Supplied references</h2>${c.sources.length ? c.sources.map((s) => `<section><strong>${escape(s.id)}</strong><pre>${escape(s.text)}</pre></section>`).join("") : "<p>No reference excerpts in this case.</p>"}
+${unattempted.length ? `<h2>Unattempted user turns</h2><p>Execution stopped early. These planned turns were not sent. This conversation is incomplete and must remain unscored.</p>${unattempted.map((text) => `<pre>${escape(text)}</pre>`).join("")}` : ""}
 <h2>Original conversation</h2>${transcript.map((m, i) => `<section><h3>${i + 1}. ${escape(m.role)} · ${escape(m.status)}</h3><pre>${escape(m.text)}</pre></section>`).join("")}
 </body></html>`;
   return { html, draft };

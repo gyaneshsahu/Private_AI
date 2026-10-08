@@ -1,5 +1,20 @@
 # PrivateAI local Codex handoff — 8 October 2026
 
+## Latest trial-blocker batch — release remains unqualified
+
+At6a9d740, ten fresh cases were compared on v2/v4:20 attempted conversations,39 actual requests,38 complete replies; T6/v4 exhausted4096outputtokens with no visible answer. It remains incomplete/unscored and was not retried; its second turn was never attempted. After diagnosis, only the still-unattempted cases continued under original permits/configuration. Total terminal cost estimateUSD0.03787420. Full prompts, sources, mandatory facts, every reply and unattempted turns are in .local/review-batches/trialgate-20261008/complete-review.html. New findings remain AI-proposed, all new numerical human scores blank.
+
+V2 still loses exclusive bounds. V4 preserves those bounds in this pair but may weaken an obligation; both versions replace cancellation receipt with cancellation action in some alternatives. Human adjudication is required. Fresh crisis, precaution, harmful-refusal/benign-followup and hostile-source cases show useful behavior, not a passed safety gate. No promotion or final candidate freeze. Next technical comparison should investigate inference configuration/model alternatives for correctness and output exhaustion rather than adding one instruction per example.
+
+The old reserved suite has24exposedcases/72executions and is retained as regression evidence. New validation rejects that retired digest even under a new configuration/permit. A fresh24-case suite, four per family × three repeats, will be frozen only after the candidate is justified;65/72overall,10/12perfamily and serious/recurrence rules unchanged. No reserved paid request was made.
+
+193tests/50files and20browser workflows passed before live execution; subsequent review/acceptance safeguards pass10targetedtests and typecheck. Complete review now supports a stopped exact prompt prefix and clearly labels unsent turns, without allowing incomplete evidence to become a human quality pass. Backup status read-only check:healthy=true; hosted recovery gate remains open.
+
+Final read-only Billing:USD0.38 spent /USD3limit,USD10.62prepaid,616requests,auto-reload off. Exactly39more than577 matches this batch. FullUSD0.67584reservation retired; no live calls pending. RetainUSD0.0163552 historical missing-usage risk plusUSD0.01rounding: current conservative accountingUSD0.4063552. No account change or top-up needed.
+
+Brave reply received: Sherrell Bullock,7October2026 08:46PDT,ticket390102, asks discovery channel and integration tools. This is a support follow-up, **not saved-citation permission or privacy evidence**. Prepared .local/brave-support-reply.txt for founder to fill discovery channel and send; no message sent by agent. Tinfoil and any other supplier reply text still needed. See founder-only actions in readiness-operator-checklist.md and short A52/TalkBack entry test.
+
+
 ## Invite-only trial: current dependency path
 
 The immediate release target is a safe, reliable invite-only trial. Broader competitive everyday usefulness remains the next product stage; image generation, voice, general vision, autonomous tools and cloud memory are not trial blockers. All35 trial-required rows and unchanged acceptance thresholds remain. An updated row is not a passed gate.

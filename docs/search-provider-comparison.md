@@ -1,5 +1,9 @@
 # Search provider eligibility for saved citations
 
+## Received support follow-up: Brave390102
+
+Founder supplied Sherrell Bullock’s7October2026,08:46PDT reply asking how Brave was discovered and which tools/frameworks will connect. No storage rights, retention or eligible-plan answer was provided. The ticket-update boilerplate means replies join the same support conversation; it is not an account activation instruction. A ready-to-send draft is in .local/brave-support-reply.txt, with only the discovery-channel placeholder left for the founder. It accurately describes the direct React/TypeScript/Node integration and asks for written saved-citation permission, query handling and plan cost. Agent has not sent it. If Brave cannot meet requirements, compare the actual Exa/Tavily replies next; do not activate a substitute based on marketing or erase the research workflow from trial scope.
+
 8 October founder update: supplier reply received and will be shared after the
 current batch. Contents not yet available for review; qualification/rights remain
 open. Do not send another enquiry merely because earlier entries say pending.
