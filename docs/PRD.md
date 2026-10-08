@@ -1,5 +1,7 @@
 # PrivateAI — product requirements
 
+**Current priority:** complete the safe, reliable invite-only trial first, using every trial-required gate in READINESS. The broader general-purpose ChatGPT/Gemini usefulness target follows learning from the trial. Future voice/image generation/other modalities are not trial requirements. No quality or privacy threshold is lowered.
+
 **Working requirements v0.2 · 4 October 2026**
 
 This consolidates the agreed direction for the first working evaluation. It does not certify existing code or authorize spending. Read with the [architecture](ARCHITECTURE.md), [detailed acceptance contract](acceptance.md), and [observed validation](validation.md). Requirements below are targets, not claims that tests have passed.

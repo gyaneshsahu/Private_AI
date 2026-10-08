@@ -1,5 +1,7 @@
 # PrivateAI delivery roadmap
 
+**Current priority:** complete the safe, reliable invite-only trial first, using every trial-required gate in READINESS. The broader general-purpose ChatGPT/Gemini usefulness target follows learning from the trial. Future voice/image generation/other modalities are not trial requirements. No quality or privacy threshold is lowered.
+
 **Working draft — direction accepted; detailed gates under review.**
 
 Updated 8 October 2026 · Owner: project founder; implementation: Codex.

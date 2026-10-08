@@ -1,5 +1,22 @@
 # PrivateAI local Codex handoff — 8 October 2026
 
+## Invite-only trial: current dependency path
+
+The immediate release target is a safe, reliable invite-only trial. Broader competitive everyday usefulness remains the next product stage; image generation, voice, general vision, autonomous tools and cloud memory are not trial blockers. All35 trial-required rows and unchanged acceptance thresholds remain. An updated row is not a passed gate.
+
+| Order / workstream | Trial items covered | Required exit / dependency |
+| --- | --- | --- |
+| 1. Quality and safety, independent now | C01 C02 C03 C04 C05 C06 C07 C09 C13 S01 S02 S03 O01 | Fresh transfer evidence resolves recurring material/serious failures; complete human review; then one justified fixed configuration and fresh reserved acceptance:65/72 overall,10/12 per family, severity/recurrence rules unchanged. No repeated tuning of exposed cases. |
+| 1. Provider and research eligibility, parallel critical path | C12 S04 S05 O07 | Read exact supplier replies; bind router/worker/GPU, freshness/revocation and retention evidence to chosen deployment. Establish saved title/URL/excerpt rights, query handling and eligible plan. Then authorized live consent→retrieval→cited follow-up/negative checks. If incompatible, present evidence-backed alternative before integration/account changes. |
+| 2. Release operations, prepare independently | S06 S07 D01 D02 D03 D04 D05 D06 O02 O03 O04 O05 O06 | Freeze compatible release after quality/provider decisions; owner performs hosting changes. Verify hosted isolation, logs, restart/recovery/rollback, quotas/monitoring, support recovery and deletion claims. Retention code remains inactive pending separate owner decision; no live data transfer implied. |
+| 2. Actual device/accessibility, parallel | C10 U01 U02 | Founder performs short A52/TalkBack entry check now; full workspace tasks on exact authorized synthetic release later. Fix blockers and retest affected flows; browser fixtures do not replace phone evidence. |
+| 3. Trial ownership and release decision | O08 O09 | Owner names support channel and response expectations; disclosures reflect measured limits. Present deployed release, gate evidence/limitations and bounded rollout for review. No invitations/private-data admission before every required gate passes. |
+
+K2 is now explicitly human-reviewed1/2/1 material; K1 visible boundary preservation is not a numerical grade. K1/K3–K17/L1 remain blank. Complete packet: .local/review-batches/coverage-20261008/complete-review.html. Original preview, transcripts and AI findings preserved.
+
+Next frozen development comparison: ten fresh cases × v2/v4 × two turns =40maximum requests,8000inputcharacters/4096outputtokens, Gemma thinking on, separate permits and no retries. V4 is v2 plus one general fixed-constraint transformation instruction; no release promotion. WorstUSD0.675840; current0.34 +0.01rounding +0.0163552uncertainty +reserve =USD1.0421952, within existingUSD3. Read-only preflight577requests/USD10.66credit/auto-reload off.
+
+
 **Final billing reconciliation:** read-only Billing now shows **USD0.34 spent / USD3 limit**, **USD10.66 prepaid**, **577 recorded requests**, auto-reload off. The70-request increase matches both completed batches; their combined terminal estimate isUSD0.0677374. Reporting has caught up with the twelve-turn extension, so do not add it again. No active batch reservation. RetainUSD0.0163552 for the two old missing-usage attempts plusUSD0.01 rounding allowance: conservative current accountingUSD0.3663552, notUSD2.288624 or accumulated unused maxima. No cap/top-up request or account change. Evidence: .local/coverage-final-budget-20261008.json. Older checkpoints below retain the reporting chronology.
 
 ## Latest completed coverage — human review still required

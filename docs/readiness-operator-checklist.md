@@ -1,5 +1,15 @@
 # Remaining evidence before invited private-data trial
 
+## Founder-only actions, in blocking order
+
+1. **Share existing supplier replies now.** Paste Tinfoil and Brave/Exa/Tavily reply text with sender/date and referenced plan/terms; redact keys and personal account details. Need Tinfoil router→worker/GPU binding, verifier freshness/revocation, logging/cache retention/training/moderation; search permission to retain/reopen titles/URLs/short excerpts in encrypted local history, query retention/training and eligible plan. No new enquiry or subscription required to share replies.
+2. **Review complete conversations.** Start with K2 in .local/review-batches/coverage-20261008/complete-review.html to verify the repaired packet; your1/2/1 is already recorded. Other scores stay blank until you assess original prompts, all replies and expected facts. Fresh paired trial-gate packet follows this batch; judge material/serious findings first. Final held-out acceptance will use its own fixed review packet.
+3. **Do the five-minute Galaxy A52/TalkBack public-entry check** at the top of galaxy-a52-talkback-checks.md. Return versions, labels and PASS/FAIL/BLOCKED for the three tasks. Complete workspace/device checks later on the exact authorized synthetic release; old-host entry results cannot qualify newer code.
+4. **When the release and settings are concrete, perform owner-only hosting/retention actions.** Codex prepares exact deployment, recovery and retention changes with evidence; you perform account/settings changes and separately approve retention activation/new sensitive transfer. No action requested before the proposal is reviewable.
+5. **Name trial support contact/response expectations, then review final rollout.** The eventual proposal starts with at most two adult invitees, seven days, clear usage bounds and immediate pause/revoke criteria. Invitations and real private-data use require your final review after all gates pass.
+
+This is an operator action view of READINESS, not a competing completion checklist. No budget change is required; spending remains withinUSD3 and dashboards are read-only for the agent.
+
 8 October 2026. Local fixes and UI polish can proceed; trial gates below remain.
 No account mutation, private-data admission or retention activation is authorized here.
 

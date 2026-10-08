@@ -1,5 +1,9 @@
 # Samsung Galaxy A52 TalkBack check — prepared 8 October 2026
 
+## Five-minute check you can do now
+
+On your Galaxy A52 / Android14, enable TalkBack using the setup below and open https://private-ai-deployment.onrender.com/auth in Chrome. Use synthetic text only. (1) Swipe through heading, fields and buttons; report any unnamed control. (2) Type then erase synthetic-test; verify the keyboard does not make the submit control unreachable. (3) Rotate landscape/portrait and increase text size; report clipping or lost focus. (4) Return PASS/FAIL/BLOCKED for each step with Chrome/TalkBack versions and exact spoken labels. No account registration, model call, real password or private screenshot is needed. This checks public entry only; it does not pass the full workspace/device gate. Full tasks below follow on the exact approved synthetic release.
+
 Device reported by founder: SM-A525F, Android14. Results are **NOT RUN**.
 Use Chrome and only synthetic content. Allow20 minutes. Do not send credentials,
 passphrases, private files or screen recordings containing notifications.

@@ -13,6 +13,7 @@ import constraintTransfer from "./cases/constraint-transfer.json";
 import readinessTransfer from "./cases/readiness-transfer.json";
 import generalTransfer from "./cases/general-transfer.json";
 import coverageTransfer from "./cases/coverage-transfer.json";
+import trialGateTransfer from "./cases/trial-gate-transfer.json";
 import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
@@ -28,6 +29,7 @@ const robustnessCases = [
   ...readinessTransfer,
   ...generalTransfer,
   ...coverageTransfer,
+  ...trialGateTransfer,
   ...safetyDevelopment.cases.map((c) => ({
     id: c.id,
     family: "personal",
@@ -90,7 +92,7 @@ export const experimentSchema = z
       .extend({
         gemmaThinking: z.boolean().optional(),
         answerPolicyVariant: z
-          .enum(["constraints-v1", "constraints-v2", "constraints-v3"])
+          .enum(["constraints-v1", "constraints-v2", "constraints-v3", "constraints-v4"])
           .optional(),
         glmReasoningEffort: z.enum(["low", "high", "max"]).optional(),
       })

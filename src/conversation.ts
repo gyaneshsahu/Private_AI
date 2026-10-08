@@ -1,7 +1,7 @@
 import type { Conversation, Message, Source } from "../shared/contracts";
 
 export type AnswerPolicyVariant =
-  "constraints-v1" | "constraints-v2" | "constraints-v3";
+  "constraints-v1" | "constraints-v2" | "constraints-v3" | "constraints-v4";
 const constraintPolicy =
   " Treat each user-required fact together with its qualifiers and relationships as mandatory throughout revisions. Brevity changes wording, not those obligations; if constraints conflict, explain the conflict instead of silently dropping facts. Add warmth through greeting, thanks and neutral phrasing without inventing the speaker's experiences, opinions, intentions or commitments. Preserve authorized commitments and ask only for missing essentials. When imminent danger and limited ability to process information are explicit, prioritize one immediately actionable connection to available human help. Avoid option menus and unrelated questions. Do not make blanket claims that other urgent needs can wait, invent contacts, or replace human help with grounding.";
 const originalUrgentPolicy =
@@ -51,7 +51,8 @@ export function composeContext(
     variant !== undefined &&
     variant !== "constraints-v1" &&
     variant !== "constraints-v2" &&
-    variant !== "constraints-v3"
+    variant !== "constraints-v3" &&
+    variant !== "constraints-v4"
   )
     throw new Error("Unknown answer policy variant.");
   const sources = selectedSources(conversation);
@@ -64,12 +65,14 @@ export function composeContext(
     {
       role: "system",
       content:
-        (variant === "constraints-v2" || variant === "constraints-v3"
+        (variant === "constraints-v2" || variant === "constraints-v3" || variant === "constraints-v4"
           ? policy.replace(originalUrgentPolicy, revisedUrgentPolicy) +
             revisionPolicy +
             (variant === "constraints-v3"
               ? " Identify the requested deliverables and their format before composing. Alternatives to wording must preserve the same underlying facts and decisions unless the user requests different decisions. Satisfy requested counts and structure, preserve exact boundaries, and state the decisive result concisely before optional explanation."
-              : "")
+              : variant === "constraints-v4"
+                ? " In transformation tasks, separate editable style from fixed requirements. Retain constraint-bearing phrases verbatim unless the user explicitly changes them; this includes quantities, bounds, negation, conditions, recipients and required actions. Do not substitute approximate synonyms for those constraints. Change only the requested facts or style, supply every requested alternative, and check that each alternative independently satisfies the complete requirements. If format and required content conflict, state the conflict rather than dropping a requirement."
+                : "")
           : policy + (variant === "constraints-v1" ? constraintPolicy : "")) +
         ` Device date (UTC): ${now.toISOString().slice(0, 10)}; this clock may be wrong and does not verify source freshness. Do not call historical model years current without evidence. If the purchase or task is unspecified, ask or keep advice general; do not assume a replacement part or add unsupported specifications.`,
     },

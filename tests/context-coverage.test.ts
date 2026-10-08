@@ -93,3 +93,12 @@ it("v3 adds a general deliverable check while leaving default/v2 untouched", () 
   expect(v3).toContain("Identify the requested deliverables");
   expect(v3).toContain("If that contact proves unavailable");
 });
+
+it("v4 preserves v2 urgent policy and tests fixed constraints without changing previous variants", () => {
+ const c=emptyConversation(), date=new Date("2026-10-08T00:00:00Z");
+ const v4=composeContext(c,10000,date,"constraints-v4")[0].content;
+ expect(v4).toContain("Retain constraint-bearing phrases verbatim");
+ expect(v4).toContain("If that contact proves unavailable");
+ expect(composeContext(c,10000,date,"constraints-v2")[0].content).not.toContain("Retain constraint-bearing phrases verbatim");
+ expect(composeContext(c,10000,date,"constraints-v3")[0].content).toContain("Identify the requested deliverables");
+});
