@@ -213,3 +213,23 @@ The founder explicitly identifies these as HUMAN review. All37numeric scores are
 | T20 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
 
 These are development results across different configurations. Do not pool them into the held-out gate or erase the original serious safety case4, incomplete case12, or retired-suite writing failure. Priority confirmed material cases: K2,T1,T2,T7,T8,T19. The long-context score applies only to the bounded recorded probe; it does not establish indefinite memory.
+
+## Inference configuration comparison and GLM screening — 8 October 2026
+
+At e54c2dd, eight fresh two-turn cases ran on unchanged constraints-v4 with Gemma thinking on/off and GPT-OSS120B default reasoning: 24 conversations, 47 actual requests, 46 complete replies. F10/Gemma-on exhausted 4096 output tokens with no visible answer; its second turn was not attempted. After diagnosing that stop, only previously unattempted permits continued. No retry. Full packet: .local/review-batches/config-20261008/complete-review.html; source hashes and exact configuration in its manifest.
+
+| Configuration | Requests / complete replies | Token-based estimated USD | Observed turn range |
+| --- | --- | --- | --- |
+| Gemma thinking on | 15 / 14 | 0.01979320 | 2.44–37.34 s, including incomplete turn |
+| Gemma thinking off | 16 / 16 | 0.00519440 | 0.88–3.62 s |
+| GPT-OSS120B default | 16 / 16 | 0.00338400 | 0.95–3.29 s |
+
+All three show material constraint concerns: exclusive boundaries, weakened obligation or invented receipt paperwork. GPT-OSS also changes before15:40 to by15:40 after a source correction. F16 needs priority human safety adjudication. These observations are AI-proposed; all new numerical human scores remain blank. Faster/cheaper is not release quality.
+
+At5bda0df, a separate GLM5.3 low/v4 viability screen used four new cases, eight requests, eight complete replies, USD0.01498935 token estimate and 1.13–3.13s observed turns. It retains tested strict bounds and approval sequence, but invents a receptionist's welcome and a lockout/tagout label; delivery wording and emergency-number/action nuance need human assessment. The receipt stimulus explicitly says no additional paperwork and differs from the paired comparison, so this is not comparative superiority evidence. Full packet: .local/review-batches/glmscreen-20261008/complete-review.html. No candidate promoted or reserved suite consumed.
+
+All55attempts have matching reviewed-router verification and terminal usage. The54complete replies retain VALIDATED_COMPLETE_WITH_CHROMIUM_ABORT classification; full transport/provider qualification remains open. The incomplete turn has known usage, not a new missing-billing reserve. Historical serious safety and writing failures remain unchanged. Typecheck and the affected synthetic browser fixture test pass; sandbox browser access failed first, then the existing system Chrome passed outside the sandbox. No unrelated full-suite rerun or application-code change was needed.
+
+Final read-only Billing: USD0.42/3, USD10.58credit,671requests,auto-reload off. Increase616→671matches55calls; combined terminal estimateUSD0.04336095. Both unused reserves retired. No calls pending. RetainUSD0.0163552historical unknown plusUSD0.01rounding: USD0.4463552 conservative current accounting. No account change, top-up, private-data access or deployment. Local audit: .local/config-final-budget.json.
+
+Next: resolve new human safety/semantic findings before choosing the most credible configuration for wider fresh transfer coverage. A generic prompt patch or more repeats of exposed questions is not justified. Full provider/search evidence, actual A52/TalkBack results and owner-operated hosted validation remain independent blockers. The original35trial rows and acceptance thresholds remain unchanged.

@@ -31,6 +31,8 @@ retention are validated; fresh v2 comparison stopped on baseline output exhausti
 See [results](readiness-results-20261008.md). Dashboard credit is not spending
 authorization. Agent account access remains read-only; founder operates settings.
 
+Latest configuration batch:55requests/54complete replies across Gemma-on/off, GPT-OSS and a separate GLM screen. No release candidate qualified; fixed-constraint and unsupported-addition concerns persist. See READINESS for currentUSD0.42spend and the next human/supplier/device dependencies. Earlier dated plans below are historical, not current budget requests.
+
 ## How to use this plan
 
 8 October next batch preparation: S1/E1 has twelve fresh baseline/candidate cases

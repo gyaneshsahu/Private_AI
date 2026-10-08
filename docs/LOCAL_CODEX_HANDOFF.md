@@ -1,5 +1,13 @@
 # PrivateAI local Codex handoff — 8 October 2026
 
+## Current checkpoint — configuration batch complete
+
+**Trial NOT READY.** Completed28conversations /55requests /54complete replies across the fixed three-configuration comparison and separate four-case GLM screen. One Gemma-on output-limit failure remains incomplete/unscored, not retried. None is justified for promotion: recurring semantic changes remain; GLM retains strict bounds but adds unsupported details. All new findings are **AI-proposed**, human scores blank. [Full results, costs and limitations](general-transfer-results-20261008.md#inference-configuration-comparison-and-glm-screening--8-october-2026).
+
+Read-only Billing:USD0.42spent/3limit,USD10.58credit,671requests,auto-reload off. All55newrequests counted; no pending calls or unused reservations. Historical missing-usage risk0.0163552 plusrounding0.01 gives0.4463552conservative accounting. No increase needed. Founder-operated account/privacy/hosting settings remain unchanged.
+
+Next dependency: human adjudication of comparisonF16 and GLM nuances, then broader fresh coverage only for a justified candidate. Supplier evidence and actual A52/TalkBack checks continue in parallel; hosted release/retention actions require owner decisions. Existing37human grades and T6incomplete are recorded; do not ask for those grades again. Older dated budget/status passages below are historical checkpoints, superseded by this section and current requirement rows.
+
 ## Conditional stronger-model screening freeze
 
 The matched Gemma-on/off/GPTOSS comparison exposes material constraint failures across all three; changing thinking alone is not a repair. A separate four-case GLM5.3 low-reasoning/v4 viability probe uses new questions: exclusive entry limits, receipt versus dispatch without added paperwork, mandatory approval sequence and immediate urgent-help wording.8requests maximum,8000inputcharacters,4096outputtokens; reserveUSD0.649216 at fresh catalog1.8input/5.75output per million. Not a paired superiority claim, not a final release freeze. Existing failure evidence is preserved; no replay or per-example prompt edit. No operational/provider gate promotion.
@@ -45,7 +53,7 @@ The immediate release target is a safe, reliable invite-only trial. Broader comp
 | 2. Actual device/accessibility, parallel | C10 U01 U02 | Founder performs short A52/TalkBack entry check now; full workspace tasks on exact authorized synthetic release later. Fix blockers and retest affected flows; browser fixtures do not replace phone evidence. |
 | 3. Trial ownership and release decision | O08 O09 | Owner names support channel and response expectations; disclosures reflect measured limits. Present deployed release, gate evidence/limitations and bounded rollout for review. No invitations/private-data admission before every required gate passes. |
 
-K2 is now explicitly human-reviewed1/2/1 material; K1 visible boundary preservation is not a numerical grade. K1/K3–K17/L1 remain blank. Complete packet: .local/review-batches/coverage-20261008/complete-review.html. Original preview, transcripts and AI findings preserved.
+Historical pre-grading checkpoint (superseded by the37human grades recorded above): K2 was human-reviewed1/2/1 material; other K/L grades were then blank. Complete packet: .local/review-batches/coverage-20261008/complete-review.html. Original preview, transcripts and AI findings preserved.
 
 Next frozen development comparison: ten fresh cases × v2/v4 × two turns =40maximum requests,8000inputcharacters/4096outputtokens, Gemma thinking on, separate permits and no retries. V4 is v2 plus one general fixed-constraint transformation instruction; no release promotion. WorstUSD0.675840; current0.34 +0.01rounding +0.0163552uncertainty +reserve =USD1.0421952, within existingUSD3. Read-only preflight577requests/USD10.66credit/auto-reload off.
 

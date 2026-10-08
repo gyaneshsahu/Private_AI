@@ -5,6 +5,37 @@ Status: synthetic hosted access/restart/staged recovery validated; invited-user 
 
 ## Current experience
 
+### Proposed first cohort — inactive, for founder review after gates pass
+
+Start with at most two adult invitees for seven days. This is a rollout proposal,
+not authorization to issue invitations or admit private data. Before starting,
+bind the exact deployed commit, inference configuration and supplier evidence to
+the current READINESS rows; require completed human quality/safety acceptance,
+permitted research/citation evidence, hosted recovery/log checks and actual-device
+results. The founder names the support contact and response expectations.
+
+The operator issues separate expiring invitations and provides the supported-task,
+privacy, context and local-vault recovery limitations. Begin each participant with
+synthetic onboarding: sign in, compose a draft, inspect selected context, save and
+lock an encrypted snapshot, reopen it, then sign out. Confirm understanding before
+any subsequently authorized private-data workflow. Do not collect private prompts,
+answers, files or passphrases in feedback; collect task category, outcome, error
+label and an optional participant-created synthetic reproduction instead.
+
+Existing enforcement is 200 requests per hour per account and 2,000 globally per
+hour; these are ceilings, not a recommended trial workload or an approved spending
+plan. Once the model is selected, propose a separate concrete trial cost allowance
+and any suitable lower limits for the founder to approve and apply. The current
+$3 development-test authorization is not an invited-user spending authorization.
+
+Pause the trial for a serious safety output, privacy boundary violation, account
+isolation failure, unexplained data exposure or failed recovery. Preserve sanitized
+evidence, revoke affected access where authorized, investigate and repeat affected
+gates before the founder approves resumption. At seven days, let access expire and
+review usefulness, failures, support burden and costs before expanding. Credential
+row cleanup and backup expiry stay inactive until separately approved; invitation
+expiry does not imply deletion or physical erasure.
+
 Conversation is the main workspace. Getting started opens a dismissible guide
 without sending the draft, changing context or storing a consent receipt. It
 explains supported files, extraction review, explicit encrypted snapshots,
