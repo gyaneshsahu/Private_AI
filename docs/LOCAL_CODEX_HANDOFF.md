@@ -1,5 +1,11 @@
 # PrivateAI local Codex handoff — 8 October 2026
 
+## Coverage extension freeze
+
+First coverage batch completed17conversations/58requests/58complete replies, no retry, token estimateUSD0.04344420. Read-only analytics nowUSD0.3152 across565requests, consistent with the58 additional requests. All six reasoning conversations match numeric/date ground truth or preserve ambiguity; all eight generated JS/TS turns pass independent no-network container assertions. Strict TypeScript compile passes for parseCount. Three ten-turn conversations recall corrections and manifest mass, reaching14520characters/2771reportedinputtokens. These are mechanical/AI observations pending human review. Fresh v3 still changes before16:30 into by16:30; no promotion.
+
+One additional fresh twelve-turn fixture now targets about98500 selected characters under the actual100000-character integration ceiling, with early/middle/late facts, corrections, source evidence and varied background notes. Same v3/Gemma configuration except input100000; separate single-use permit,4096outputtokens, maximum12requests, worstUSD1.969152. Preflight0.3152 + unresolved0.0163552 + extension1.969152 = USD2.3007072, underUSD3. Earlier58-request reservation is closed, not carried forward. Exact100000/100001accept/reject and untouched history also passed offline with80messages; no full262144-token model-window claim.
+
 ## Current coverage batch and human review — 8 October
 
 All 24 continuation/general scores are now **human review**, explicitly forwarded by the founder; see the two existing results documents. C9 and G04 remain material failures. C7 is not automatically an ownership failure. Earlier AI evidence and disagreements are preserved. Original readiness case4 remains a serious safety failure; case12 remains incomplete/unscored.
