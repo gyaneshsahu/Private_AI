@@ -217,3 +217,38 @@ key output and confirmed passphrase protection without recording the passphrase.
 The Windows OpenSSH agent service is unavailable. Hosted transfer is still absent;
 do not remove key protection or enable scheduling to work around this blocker.
 User-operated local unlocking/agent setup is required before unattended transfer.
+
+### Founder setup and recovery handoff — 8 October
+
+The founder reports Bitwarden available on Windows and phone. This confirms setup,
+not storage of the original key or recovery. SSH agent service now exists but is
+stopped; this process cannot start it. The read-only SSH check still fails public-key
+authentication. Start the agent from an administrator terminal, then load the
+existing key using `ssh-add` in the founder's ordinary terminal; keep its passphrase
+local. No private key replacement or protection removal is needed.
+
+From the Windows checkout, privately display the existing backup identity:
+
+```powershell
+pwsh -NoProfile -STA -File .\scripts\windows-backup.ps1 -Action ShowRecoveryKey
+```
+
+The desktop dialog starts masked. Reveal only while privately transcribing into a
+Bitwarden secure note, then close it. Clipboard shortcuts are disabled to avoid
+clipboard history/cloud sync. No key is written to terminal output or a file. This
+is a local display, not a guarantee against screen capture or compromised endpoints.
+Retrieve the saved key from Bitwarden, preferably on the other device, for:
+
+```powershell
+pwsh -NoProfile -File .\scripts\windows-backup.ps1 -Action VerifyRecoveryCopy -Archive C:\PrivateAI-backups\synthetic-rehearsal-a8b6c828-ba5b-4ea2-b48f-cc6f579b3dc5.age
+```
+
+The masked prompt does not read the Windows-stored identity. It verifies the
+retrieved key's public recipient against configuration, authenticates the archive
+and creates a separate paused/revoked restore. Only then is recovery custody marked
+verified with an archive hash and timestamp. The existing rehearsal archive tests
+key recovery, not hosted backup freshness. A real hosted archive must still be
+transferred and restored before D05 passes. Never paste the identity into chat.
+
+Validation: PowerShell syntax and the real age encrypted-registry integration test
+passed. The user-operated dialog and independent-vault round trip remain pending.

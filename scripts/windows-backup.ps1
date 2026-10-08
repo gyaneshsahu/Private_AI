@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidateSet('Initialize','Configure','Backup','Verify','Restore','Status','Schedule')][string]$Action,
+    [Parameter(Mandatory)][ValidateSet('Initialize','Configure','Backup','Verify','Restore','Status','Schedule','ShowRecoveryKey','VerifyRecoveryCopy')][string]$Action,
     [string]$SshTarget,
     [string]$SshIdentityFile,
     [string]$Archive,
@@ -86,6 +86,61 @@ if ($Action -eq 'Initialize') {
 }
 Assert-Root
 $config = Get-Content -Raw -LiteralPath (Join-Path $root 'config.json') | ConvertFrom-Json
+if ($Action -eq 'ShowRecoveryKey') {
+    Add-Type -AssemblyName System.Windows.Forms
+    $form = [Windows.Forms.Form]::new()
+    $form.Text = 'PrivateAI independent recovery key'
+    $form.Width = 780; $form.Height = 220; $form.StartPosition = 'CenterScreen'
+    $label = [Windows.Forms.Label]::new()
+    $label.SetBounds(15,15,735,55)
+    $label.Text = 'Privately transcribe this key into your Bitwarden secure note, preferably on your phone. Do not screenshot or share it. Clipboard shortcuts are disabled. Close this window when done.'
+    $box = [Windows.Forms.TextBox]::new()
+    $box.SetBounds(15,80,735,30); $box.ReadOnly=$true; $box.UseSystemPasswordChar=$true; $box.ShortcutsEnabled=$false
+    $box.ContextMenuStrip = [Windows.Forms.ContextMenuStrip]::new()
+    $reveal = [Windows.Forms.CheckBox]::new()
+    $reveal.SetBounds(15,120,300,25); $reveal.Text='Reveal locally while I transcribe'
+    $reveal.Add_CheckedChanged({ $box.UseSystemPasswordChar = -not $reveal.Checked })
+    $form.Controls.AddRange(@($label,$box,$reveal))
+    try {
+        Invoke-WithPrivateAiSecret -Name $keyName -Action {
+            $box.Text = [Environment]::GetEnvironmentVariable($keyName,'Process')
+        }
+        $null = $form.ShowDialog()
+    } finally { $box.Text=''; $form.Dispose() }
+    Write-Output 'Local display closed. Independent custody remains unverified until VerifyRecoveryCopy succeeds.'
+    exit
+}
+if ($Action -eq 'VerifyRecoveryCopy') {
+    if (-not $Archive) { throw 'Choose an existing encrypted archive to authenticate and restore.' }
+    $recovered = Read-Host 'Retrieve the original key from Bitwarden and enter it here (masked)' -AsSecureString
+    $previousIdentity = [Environment]::GetEnvironmentVariable($keyName,'Process')
+    $previousAge = $env:PRIVATEAI_AGE_BINARY
+    $previousRestore = $env:PRIVATEAI_RESTORE_DIRECTORY
+    $pointer = [IntPtr]::Zero
+    try {
+        $pointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($recovered)
+        [Environment]::SetEnvironmentVariable($keyName,[Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer),'Process')
+        $env:PRIVATEAI_AGE_BINARY = $AgeBinary
+        $env:PRIVATEAI_RESTORE_DIRECTORY = $root
+        $derived = [Environment]::GetEnvironmentVariable($keyName,'Process') | & (Join-Path (Split-Path $AgeBinary) 'age-keygen.exe') -y 2>$null
+        if ($LASTEXITCODE -ne 0 -or $derived -cne $config.recipient) { throw 'Recovered key does not match the configured backup recipient.' }
+        $receipt = & node --import tsx (Join-Path $project 'scripts/encrypted-registry.ts') restore $Archive
+        if ($LASTEXITCODE -ne 0) { throw 'Recovery copy did not authenticate; custody remains unverified.' }
+        $parsed = $receipt | ConvertFrom-Json
+        if (-not $parsed.paused -or -not $parsed.restoredAccountsRevoked) { throw 'Recovery did not establish paused revoked access.' }
+        $config.recoveryCopyVerified = $true
+        $config | Add-Member -NotePropertyName recoveryVerifiedAt -NotePropertyValue ([DateTime]::UtcNow.ToString('o')) -Force
+        $config | Add-Member -NotePropertyName recoveryArchiveSHA256 -NotePropertyValue (Get-FileHash -LiteralPath $Archive -Algorithm SHA256).Hash -Force
+        $config | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $root 'config.json')
+        Write-Output 'Retrieved recovery key authenticated the archive and restored separate paused, revoked access. The live registry was not changed.'
+    } finally {
+        [Environment]::SetEnvironmentVariable($keyName,$previousIdentity,'Process')
+        $env:PRIVATEAI_AGE_BINARY=$previousAge; $env:PRIVATEAI_RESTORE_DIRECTORY=$previousRestore
+        if ($pointer -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer) }
+        $recovered.Dispose()
+    }
+    exit
+}
 if ($Action -eq 'Configure') {
     if ($SshTarget -notmatch '^srv-[a-z0-9]+@ssh\.[a-z0-9-]+\.render\.com$') { throw 'Use the exact target displayed by Render.' }
     $config.sshTarget = $SshTarget

@@ -691,3 +691,10 @@ G1–G6 and U1 independently while Q1 needs supplier evidence.
   attempts remain unresolved and untouched. Current local validation: 166 tests
   passed, one optional encryption integration test skipped, typecheck/build passed.
   These latest diagnostic changes are not yet deployed. All trial gates remain open.
+
+- 8 October 2026: U1/D05 founder reports Bitwarden installed on phone/Windows.
+  Added a masked local key-display and independent-key recovery workflow that
+  authenticates the configured recipient and restores paused/revoked access before
+  recording custody verification. PowerShell syntax and real age integration pass;
+  the founder-operated round trip is pending. SSH agent is installed but stopped;
+  local unlock still blocks hosted transfer. No recovery or safety gate promoted.
