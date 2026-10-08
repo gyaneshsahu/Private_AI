@@ -82,7 +82,9 @@ export const experimentSchema = z
       })
       .extend({
         gemmaThinking: z.boolean().optional(),
-        answerPolicyVariant: z.literal("constraints-v1").optional(),
+        answerPolicyVariant: z
+          .enum(["constraints-v1", "constraints-v2"])
+          .optional(),
         glmReasoningEffort: z.enum(["low", "high", "max"]).optional(),
       })
       .strict(),

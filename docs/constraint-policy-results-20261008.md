@@ -1,5 +1,9 @@
 # Constraint-policy batch — 8 October 2026
 
+Later review: the founder explicitly supplied new human scores for cases5/6/9/10
+and left case11 incomplete/unscored. See [review](constraint-human-review-20261008.md).
+The original AI assessments below retain their provenance; they are not relabelled.
+
 The fixed batch stopped at its first incomplete reply: **11 conversations,
 22 requests, 21 complete replies**, with no retry. Five pairs completed; the
 archive candidate ran first in pair six and failed its follow-up. The remaining

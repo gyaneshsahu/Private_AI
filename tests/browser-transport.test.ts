@@ -196,6 +196,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       "thinking_on",
       "thinking_off",
       "glm_low",
+      "policy_v2",
       "pre_cancel",
       "stalled_verification",
       "wrong_host",
@@ -219,6 +220,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         "thinking_on",
         "thinking_off",
         "glm_low",
+        "policy_v2",
       ].includes(mode);
       const finished = succeeds
         ? page.waitForEvent("requestfinished", {
@@ -275,6 +277,17 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       }
       if (!preSend) {
         const payload = JSON.parse(requests[before].plaintext);
+        if (mode === "policy_v2") {
+          expect(payload.messages[0].content).toContain(
+            "Do not prepend another task or offer a menu",
+          );
+          expect(payload.messages[0].content).not.toContain(
+            "give a short immediate safety step and connect",
+          );
+          expect(payload.messages[0].content).toContain(
+            "object, recipient, timing, condition and degree of certainty",
+          );
+        }
         expect(payload.chat_template_kwargs).toEqual(
           mode.startsWith("thinking_")
             ? { enable_thinking: mode === "thinking_on" }

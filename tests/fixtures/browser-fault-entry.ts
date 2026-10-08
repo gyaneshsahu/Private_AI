@@ -45,6 +45,9 @@ Object.assign(window, {
             ? { gemmaThinking: mode === "thinking_on" }
             : {}),
           ...(mode === "glm_low" ? { glmReasoningEffort: "low" as const } : {}),
+          ...(mode === "policy_v2"
+            ? { answerPolicyVariant: "constraints-v2" as const }
+            : {}),
           maxInputCharacters: 8000,
           maxOutputTokens: 100,
           pricing: { inputPerMillion: 1, outputPerMillion: 1, currency: "USD" },

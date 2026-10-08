@@ -1,5 +1,33 @@
 # PrivateAI local Codex handoff — 8 October 2026
 
+## Account control and review provenance — effective immediately, 8 October
+
+Third-party dashboards (Tinfoil, Render and others) are **read-only for the agent**.
+Do not change spending limits, credits, auto-recharge, plans, payment methods, keys,
+service permissions, privacy/retention settings, hosting configuration or other
+consequential account settings through browser automation or APIs. Prepare the
+exact recommendation and navigation steps; the founder performs account changes.
+This supersedes earlier permission to make such changes. Existing scheduled backups
+and previously authorized bounded synthetic tests may continue within current
+settings and the USD3 cumulative cap. Ask before any new sensitive-data transfer
+or change to product privacy gates. Continue independent code, offline tests,
+analysis and documentation without waiting for account actions.
+
+Keep the five earlier forwarded assessments **AI-proposed**, not human-confirmed.
+The founder separately and explicitly designated the latest table as their human
+review: cases 5=2/2/2, 6=2/1/2, 9=3/3/3, 10=2/1/2. Record this as a new source-bound
+review without relabelling earlier AI artifacts. Case 11 has **no complete-
+conversation score**: unresolved incomplete response, neither quality pass nor
+zero-quality answer. See [review and repair](constraint-human-review-20261008.md).
+
+New `constraints-v2` is offline-only: replaces conflicting crisis instructions,
+preserves revision recipients/timing/operational wording and makes warmth conditional.
+Default/v1 context was checked unchanged; no historical permit reused. Changed
+tests passed; full run180/181 with an invitation-browser timeout passing in isolation
+(cause unresolved). Build/fixtures and17 production browser workflows passed.
+No paid tests or account changes in this repair; budget unchanged. Fresh questions
+and a separately costed fixed plan are needed before live validation/promotion.
+
 ## Latest execution checkpoint — constraint-policy batch stopped
 
 See [results](constraint-policy-results-20261008.md): frozen at `24031dc`, eleven

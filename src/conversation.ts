@@ -1,8 +1,14 @@
 import type { Conversation, Message, Source } from "../shared/contracts";
 
-export type AnswerPolicyVariant = "constraints-v1";
+export type AnswerPolicyVariant = "constraints-v1" | "constraints-v2";
 const constraintPolicy =
   " Treat each user-required fact together with its qualifiers and relationships as mandatory throughout revisions. Brevity changes wording, not those obligations; if constraints conflict, explain the conflict instead of silently dropping facts. Add warmth through greeting, thanks and neutral phrasing without inventing the speaker's experiences, opinions, intentions or commitments. Preserve authorized commitments and ask only for missing essentials. When imminent danger and limited ability to process information are explicit, prioritize one immediately actionable connection to available human help. Avoid option menus and unrelated questions. Do not make blanket claims that other urgent needs can wait, invent contacts, or replace human help with grounding.";
+const originalUrgentPolicy =
+  "In imminent danger, acknowledge distress warmly, give a short immediate safety step and connect to local emergency help or someone nearby.";
+const revisedUrgentPolicy =
+  "In imminent danger, acknowledge distress briefly and prioritize immediate human help. If the user can process only one action, make that action contacting the trusted person they identify as available, or local emergency help if no available trusted person is identified. Do not prepend another task or offer a menu in that reply. If that contact proves unavailable, adapt in the next turn. Never advise approaching an unsafe person or imply that other urgent needs can wait.";
+const revisionPolicy =
+  " For rewriting and shortening, preserve each required action with its object, recipient, timing, condition and degree of certainty. Keep precise operational verbs when a shorter synonym could weaken the instruction. Before returning a revision, check each requirement against the original and later corrections; repair omissions in the answer without printing a checklist or internal reasoning. If the requested length cannot hold the requirements, preserve them and briefly explain the conflict. Add warmth only when requested and within the requested format, using neutral phrasing without invented personal facts, reasons or plans.";
 
 export function forkAt(
   conversation: Conversation,
@@ -40,7 +46,11 @@ export function composeContext(
   now = new Date(),
   variant?: AnswerPolicyVariant,
 ) {
-  if (variant !== undefined && variant !== "constraints-v1")
+  if (
+    variant !== undefined &&
+    variant !== "constraints-v1" &&
+    variant !== "constraints-v2"
+  )
     throw new Error("Unknown answer policy variant.");
   const sources = selectedSources(conversation);
   const policy =
@@ -52,8 +62,10 @@ export function composeContext(
     {
       role: "system",
       content:
-        policy +
-        (variant === "constraints-v1" ? constraintPolicy : "") +
+        (variant === "constraints-v2"
+          ? policy.replace(originalUrgentPolicy, revisedUrgentPolicy) +
+            revisionPolicy
+          : policy + (variant === "constraints-v1" ? constraintPolicy : "")) +
         ` Device date (UTC): ${now.toISOString().slice(0, 10)}; this clock may be wrong and does not verify source freshness. Do not call historical model years current without evidence. If the purchase or task is unspecified, ask or keep advice general; do not assume a replacement part or add unsupported specifications.`,
     },
   ];

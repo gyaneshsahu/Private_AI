@@ -14,6 +14,21 @@ Do not add a feature just because another product has it.
 
 ## Highest-impact omissions and execution order
 
+Latest founder adjudication: [constraint review](constraint-human-review-20261008.md)
+records new human grades for cases 5/6/9/10; case 11 remains technically incomplete
+and has no complete-conversation score. Earlier forwarded AI assessments retain
+their original provenance. Experimental v2 removes conflicting crisis instructions
+and strengthens revision obligations offline; no live validation or promotion.
+Third-party account settings are now founder-operated only; agent dashboard/API
+inspection is read-only. No new sensitive transfer or privacy-gate change without
+asking. Existing scheduled backups and approved bounded tests remain within scope.
+
+Offline repair validation: changed policy/real encrypted-browser checks passed;
+180/181 tests passed together, with one existing invitation-browser timeout that
+passed in isolation (cause unresolved, failure retained). Typecheck/build, fixture
+integrity and 17 production browser workflows passed. Default/v1 context unchanged.
+No paid execution or account mutation; v2 still requires fresh behavioral evidence.
+
 1. **S1 safety:** approved adult-trial policy is implemented. Following founder
    review, fresh transfer answers reject prevention guarantees and retain urgent
    follow-up support, but omit unloaded storage and remain verbose initially.
@@ -69,7 +84,7 @@ gaps here and map them to existing roadmap IDs rather than creating another ledg
 | Requirement / roadmap | Priority | Current status | Supporting evidence | Missing work | Completion criterion |
 | --- | --- | --- | --- | --- | --- |
 | C01 General-assistant scope and honest limits — G6/R1 | T/P1 | Goal documented; release claims not finalized | [PRD](PRD.md), [acceptance](acceptance.md) | Tie supported tasks/languages and limitations to the selected release; English is the evaluated language | Reviewed trial scope preserves all six families; no silent narrowing or parity claim |
-| C02 Writing without invented commitments/reasons — G1/E1 | T/P0 | Implemented chat; reserved writing failed, human-confirmed; fresh candidate comparison still exposes qualifier loss and invented context (AI-proposed) | [Writing diagnosis](writing-failure-diagnosis.md), [fresh paired comparison](reliability-comparison-20261008.md) | Adjudicate new priority cases 4/6; preserve earlier confirmed reviews; choose justified general intervention before fresh held-out writing | Fresh held-out writing meets unchanged 10/12 floor and severity/recurrence rules; old failure preserved |
+| C02 Writing without invented commitments/reasons — G1/E1 | T/P0 | Reserved writing failed; latest founder review confirms v1 qualifier loss (case10=2/1/2) and strong paired baseline (case9=3/3/3). v2 repair is offline only | [Founder review/repair](constraint-human-review-20261008.md), [writing diagnosis](writing-failure-diagnosis.md) | Fresh transfer evidence for repair and remaining drafting/source/correction coverage before held-out writing; preserve earlier reviews | Fresh held-out writing meets unchanged 10/12 floor and severity/recurrence rules; old failure preserved |
 | C03 Reasoning, planning, ambiguity and noisy language — G2/E1 | T/P0 | Narrow live development evidence, historical arithmetic/planning failures | [Development review](development-family-review.md), [planning](planning-intervals-review.md), `evaluation/cases` | Assess transfer across multi-step constraints, units/dates and misspellings on one release | Ground-truth tasks and follow-ups meet family thresholds; no unreviewed recurring material errors |
 | C04 Ordinary code explanation/debugging/generation scope — G2/G6/E1 | T/P1 | Two fresh Python/TypeScript cases completed on the frozen candidate; reviewed snippets typechecked/executed offline | `src/Answer.tsx`, `src/answer-format.ts`; existing six-family rubric | Broaden representative coding tasks beyond two simple examples; retain explicit unsupported execution/tool scope | Demonstrated correctness for declared languages/task bounds; identify untested code; do not imply execution or broad coding parity |
 | C05 Personal discussion and calibrated consequential advice — G3/S1 | T/P0 | Development observations; unsafe assumptions remain a known risk | [Trial review history](trial-readiness.md), `src/conversation.ts` | Health/legal/financial uncertainty, empathy and unsupported assumptions in fresh tasks | Human-reviewed appropriate advice/clarification with no serious unsafe conclusions; disclaimers cannot repair wrong guidance |
