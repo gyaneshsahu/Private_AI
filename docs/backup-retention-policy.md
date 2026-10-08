@@ -291,3 +291,26 @@ remain sensitive; any cleanup of existing rehearsals requires an explicit decisi
 Failure receipts and nonzero task exit status exist, but proactive notification
 and detection while this computer is unavailable are not implemented. D05/O04
 remain open for that operational work and a complete service recovery drill.
+
+### Local warning monitor and packaged service recovery — 8 October
+
+`scripts/backup-health.ts` checks missing/malformed receipts, failed attempts,
+24-hour staleness, future/inconsistent timestamps and independent key custody.
+Only fixed health codes are emitted. Four offline monitor tests pass. The Windows
+wrapper displays a generic local warning on unhealthy state; it does not send data
+to a notification service. Task `PrivateAI backup health monitor` runs hourly and
+at sign-in under the existing user. Installed-task healthy execution returned 0;
+a labelled five-second test notification call completed. Human visibility is not
+independently confirmed. Both warning and backup tasks require this computer and
+an interactive user session; no independent off-computer alert is claimed.
+
+`scripts/container-recovery.mjs` passed against the packaged runtime in 11.806
+seconds: encrypt a synthetic registry, remove its disposable original database,
+restore from ciphertext with access paused/all accounts revoked, start the actual
+service, reject old credentials, explicitly issue synthetic replacement access,
+verify inference stays gated, restart and reject pre-restart sessions. It runs
+without network at 512 MiB/0.5 CPU and cleans only its disposable container/volume.
+The same drill is now required by Linux CI and passed there for `40f2e33`.
+This is a local service-recovery rehearsal, not a hosted TLS/disk-loss cutover or
+a claim that replacement identities inherit reconciled quotas. Operator review
+of identity, quota and credential state still precedes real access resumption.

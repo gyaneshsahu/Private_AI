@@ -2,7 +2,7 @@
 
 **Working draft — direction accepted; detailed gates under review.**
 
-Updated 7 October 2026 · Owner: project founder; implementation: Codex.
+Updated 8 October 2026 · Owner: project founder; implementation: Codex.
 This is not yet an approved backbone for the entire product.
 
 The [maintained readiness checklist](READINESS.md) is the authoritative current
@@ -706,3 +706,16 @@ G1–G6 and U1 independently while Q1 needs supplier evidence.
   Seven-day archive retention regression passed. Source remains paused with all
   accounts revoked. Proactive alerts, sustained RPO/full-service RTO and existing
   safety/quality/provider gates remain open; no invitation approval inferred.
+
+- 8 October 2026: S1/E1/G2 advanced through 14 distinct development conversations
+  (28 replies), including fresh writing/reasoning/coding. Fixed a completed-request
+  deadline that could fire during a later turn; remaining unattempted cases ran on
+  frozen `40f2e33`, with separate evidence identities. No prompt retuning or old-case
+  acceptance reuse. Unsafe absolute prevention guarantees were absent in these
+  examples, but unloaded-storage omission, initial crisis verbosity and invented
+  drafting context remain human-review findings. Reserved acceptance stays blocked.
+  U1/D05/O04 advanced through active local backup warnings and an actual packaged
+  source-loss recovery drill. 172 tests, 17 browser workflows, build and CI pass;
+  Render is live on `40f2e33`, paused with all hosted accounts revoked. Next: human
+  priority review, supplier evidence, sustained backup coverage/hosted cutover and
+  remaining live research/device validation. General-assistant scope unchanged.

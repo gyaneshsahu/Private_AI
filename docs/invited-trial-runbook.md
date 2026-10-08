@@ -351,9 +351,26 @@ require explicit operator-reviewed migration/recovery; starting the hosted servi
 must not silently repair security state. Do not use the initializing operator CLI
 on a damaged registry as a substitute for reconciliation.
 
-Local synthetic rehearsal passes; actual hosted restore, retention and storage
-access are still unvalidated. These commands use Node 24 and operate on an existing
-registry. They never replace the live registry or resume access automatically.
+The approved off-host path is now the encrypted Windows workflow in
+[backup-retention-policy.md](backup-retention-policy.md). Hosted encrypted transfer,
+independent-key recovery, separate paused restore and scheduled execution have
+evidence. Use the commands below for routine status and an authorized backup:
+
+```powershell
+pwsh -NoProfile -File .\scripts\windows-backup.ps1 -Action Status
+pwsh -NoProfile -File .\scripts\windows-backup-monitor.ps1 -Action Check
+pwsh -NoProfile -File .\scripts\windows-backup.ps1 -Action Backup
+```
+
+A warning requires checking access/configuration and the protected receipt, then
+verifying a fresh backup; never log credential contents. Hourly/sign-in local
+alerts cannot operate while this computer is off. Daily backup runs at 09:00 local
+time while the user is signed in. Keep trial access paused if recovery evidence is
+missing. Do not manually edit a failed receipt to silence an alert.
+
+The low-level unencrypted commands below are retained for synthetic/on-host
+diagnostics, not the approved off-host export path. They use Node 24 and never
+replace the live registry or resume access automatically.
 
 1. Choose an existing private absolute destination outside **every Git checkout**,
    public folders and automatic sync. Restrict its OS permissions first; Windows
@@ -383,8 +400,8 @@ registry. They never replace the live registry or resume access automatically.
 Tests exercise synthetic CLI backup/staging, committed WAL data, password changes,
 revocation, quota retention and denied login/registration/requests while paused.
 They do not prove host disaster recovery, power-loss durability or lost-password
-recovery. The container smoke check includes this workflow but remains unrun while
-the local Docker engine is unavailable.
+recovery. The packaged encrypted source-loss service drill now passes locally and
+in CI; actual hosted cutover and sustained recovery objectives remain open.
 
 ## Open evidence
 

@@ -201,3 +201,16 @@ restore passed. The local backup launcher now uses `/app` explicitly because SSH
 starts in `/home/node`; no deployment change was needed. Daily scheduled backup
 was exercised successfully. See `backup-retention-policy.md` for archive evidence
 and operational gaps; the live registry was not replaced or resumed.
+
+### Validated deadline/recovery release — 2026-10-08
+
+`40f2e33b90b40124c74210fd46aae560978bbd12` passed
+[Validate 37764214287](https://github.com/gyaneshsahu/Private_AI/actions/runs/37764214287),
+including the newly added packaged encrypted service-recovery drill. Render's
+CI-gated auto-deploy completed in 1m07s. Post-deploy read-only SSH confirms that
+release, paused access, two persisted accounts and zero unrevoked accounts.
+HTTPS health returns 200 and anonymous `/api/status` returns 401. The push-triggered
+hosted smoke passed but ran before the new deployment; it is not presented as a
+complete authenticated regression of this release. Local validation: 172 tests
+with real age enabled, 17 production browser workflows, typecheck and build passed.
+Private inference remains gated; no hosted registry replacement or resume occurred.
