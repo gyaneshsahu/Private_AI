@@ -7,6 +7,7 @@ import writingCases from "./cases/writing-transfer.json";
 import policyTransfer from "./cases/policy-transfer.json";
 import safetyDevelopment from "./cases/safety-development.json";
 import safetyTransfer from "./cases/safety-transfer.json";
+import trialTransfer from "./cases/trial-transfer.json";
 import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
@@ -16,6 +17,7 @@ const robustnessCases = [
   ...writingCases,
   ...policyTransfer,
   ...safetyTransfer,
+  ...trialTransfer,
   ...safetyDevelopment.cases.map((c) => ({
     id: c.id,
     family: "personal",

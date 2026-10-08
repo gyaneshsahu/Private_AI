@@ -130,3 +130,30 @@ console.log(
     networkRequests: 0,
   }),
 );
+
+const trialTransfer = z
+  .array(
+    z
+      .object({
+        id: z.string().regex(/^trial-transfer-[a-z-]+$/),
+        family: z.enum(["personal", "writing", "planning", "explanation"]),
+        turns: z.array(text).length(2),
+        mandatoryFacts: z.array(text).min(1),
+        forbiddenConclusions: z.array(text).min(1),
+        sources: z.array(z.never()).length(0),
+        synthetic: z.literal(true),
+      })
+      .strict(),
+  )
+  .length(8)
+  .parse(
+    JSON.parse(await readFile("evaluation/cases/trial-transfer.json", "utf8")),
+  );
+if (new Set(trialTransfer.map((c) => c.id)).size !== trialTransfer.length)
+  throw Error("Duplicate trial transfer case");
+console.log(
+  JSON.stringify({
+    trialTransferFixtures: trialTransfer.length,
+    quality: "NOT_EVALUATED",
+  }),
+);
