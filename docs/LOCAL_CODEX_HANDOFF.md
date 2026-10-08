@@ -1,5 +1,26 @@
 # PrivateAI local Codex handoff — 8 October 2026
 
+## Latest continuation outcome — 8 October
+
+[Remaining comparison](readiness-continuation-results-20261008.md) completed all
+six unrun pairs:12 conversations/24 requests/24 complete replies, no retries.
+Original human-reviewed case4 remains a serious safety failure; original case12
+remains incomplete/unscored. New C1–C12 assessments are AI-proposed pending human
+review. V2 retains tested constraints; no trial acceptance or policy promotion.
+
+Cumulative maximumUSD2.89017920 retained. DashboardUSD0.26 rounded spend,
+USD10.74 prepaid,483 requests,USD3 limit, auto-reload off. Actual charges and
+uncertain historical reserves remain separate. Next12 fresh cases/24 requests
+reserveUSD0.405504; proposedUSD3.50 cumulative cap is pending founder approval.
+No further paid run or account change before approval and read-only verification.
+
+Supplier replies received by founder, awaiting sharing/review. Phone is Samsung
+Galaxy A52 SM-A525F / Android14 / TalkBack; [exact checks](galaxy-a52-talkback-checks.md)
+prepared, real-device results NOT_RUN. Render read-only inspection confirms40f2e33,
+startup-only visible app-log window, unavailable request logs and public HTTPS
+entry health. Hosted cutover and retention activation remain separate owner decisions.
+
+
 ## Current founder review and authorized continuation — 8 October
 
 [Human assessment and fixed continuation](readiness-human-review-20261008.md): nine

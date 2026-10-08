@@ -1,5 +1,9 @@
 # Search provider eligibility for saved citations
 
+8 October founder update: supplier reply received and will be shared after the
+current batch. Contents not yet available for review; qualification/rights remain
+open. Do not send another enquiry merely because earlier entries say pending.
+
 6 October 2026 · G6 · Published-source review, not live quality qualification.
 
 Decision: **none of the five reviewed public offers establishes all required

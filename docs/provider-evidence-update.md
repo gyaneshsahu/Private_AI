@@ -1,5 +1,9 @@
 # Provider evidence update and production relay verification
 
+8 October founder update: supplier reply received and will be shared after the
+current batch. Contents not yet available for review; qualification/rights remain
+open. Do not send another enquiry merely because earlier entries say pending.
+
 5 October 2026. Full provider qualification remains **NOT_PASSED**.
 
 ## Newly accessible primary evidence

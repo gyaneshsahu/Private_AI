@@ -1,5 +1,26 @@
 # PrivateAI readiness checklist
 
+## Latest continuation outcome — 8 October
+
+[Remaining comparison](readiness-continuation-results-20261008.md) completed all
+six unrun pairs:12 conversations/24 requests/24 complete replies, no retries.
+Original human-reviewed case4 remains a serious safety failure; original case12
+remains incomplete/unscored. New C1–C12 assessments are AI-proposed pending human
+review. V2 retains tested constraints; no trial acceptance or policy promotion.
+
+Cumulative maximumUSD2.89017920 retained. DashboardUSD0.26 rounded spend,
+USD10.74 prepaid,483 requests,USD3 limit, auto-reload off. Actual charges and
+uncertain historical reserves remain separate. Next12 fresh cases/24 requests
+reserveUSD0.405504; proposedUSD3.50 cumulative cap is pending founder approval.
+No further paid run or account change before approval and read-only verification.
+
+Supplier replies received by founder, awaiting sharing/review. Phone is Samsung
+Galaxy A52 SM-A525F / Android14 / TalkBack; [exact checks](galaxy-a52-talkback-checks.md)
+prepared, real-device results NOT_RUN. Render read-only inspection confirms40f2e33,
+startup-only visible app-log window, unavailable request logs and public HTTPS
+entry health. Hosted cutover and retention activation remain separate owner decisions.
+
+
 ## Current founder review and authorized continuation — 8 October
 
 [Human assessment and fixed continuation](readiness-human-review-20261008.md): nine
@@ -193,7 +214,7 @@ gaps here and map them to existing roadmap IDs rather than creating another ledg
 | O03 Capacity, latency and resource failure — I2/U1 | T/P1 | 100-session exact admission/expiry and three-slot overload/failure recovery tested locally; constrained container passed | `server/app.ts`, `src/documents.ts`, [hosting evidence](trial-hosting-decision.md) | Bounded synthetic concurrency/memory/disk-full diagnostics; live latency under approved budget | Trial cohort fits observed capacity; overload fails predictably without lost state; planned ≥100 live-request reliability study remains separately budgeted |
 | O04 Minimal monitoring and incident action — L2/U1 | T/P0 | Pause/runbook plus hourly/sign-in backup monitor implemented; archive-bound health and scheduled execution verified at 11:28:19 UTC on 8 October | `scripts/invites.ts`, [trial runbook](invited-trial-runbook.md) | Host uptime/error/quota/disk signals and independent detection while Windows is unavailable; operator response drill | Operator detects meaningful failure and can pause/respond with no transcript, cookie, key or query logging |
 | O05 Abuse prevention and fair access — L1/U1/S1 | T/P0 | Invitations, login throttling, session/account request limits and revoke/pause implemented | `server/invite-access.ts`, `server/invite-registry.ts`, `tests/invite-operations.test.ts` | Assess global-throttle denial of service/fairness, auth load and saturation; distinguish quotas from semantic safety | Bounded synthetic abuse cannot break isolation or exhaust service unobserved; documented small-cohort limits and operator response |
-| O06 Costs and quotas — I2/L2/R1 | T/P0 | USD3 cumulative cap; retained maximumUSD2.89017920. Latest fixed batch stopped after24 requests;12 conversations unrun. DashboardUSD10.76 credit,USD0.24 rounded spend,459 requests; account limitUSD3, auto-reload off | [Readiness accounting](readiness-results-20261008.md), retired permit audit and source-bound results | Exact per-run charged spend remains unknown; no reserve release from rounded totals. Future batch reconciles unused permits before cap request; added credit grants no higher cap. Hosted quota/failure-cost evidence open | Hard supplier limits; failures counted; no automatic recharge/retry; request quota not advertised as dollar cap |
+| O06 Costs and quotas — I2/L2/R1 | T/P0 | USD3 cap; retained cumulative maximumUSD2.89017920 after all48 readiness requests. DashboardUSD0.26 rounded spend,USD10.74 credit,483requests; account capUSD3, auto-reload off | [Reconciliation](readiness-continuation-results-20261008.md) | Exact historical billing unresolved; proposed fresh24-request reserveUSD0.405504 needsUSD3.50 cap unless settled evidence releases reserves; approval pending | Failed/uncertain charges counted; no automatic recharge/retry or unauthorized account changes |
 | O07 Provider/model change control — Q1/E1/S1/L2 | T/P0 | Approved host/release/model contract and configuration hashes implemented | `shared/contracts.ts`, `src/verified-chat.ts`, `tests/configuration-identity.test.ts` | Operator upgrade/key rotation/expiry procedure and cross-gate revalidation | Unapproved change fails closed; changed model/policy reopens quality/safety; no silent fallback or blended acceptance |
 | O08 Human support and incident reporting — U1/L3 | T/P1 | Runbook exists; user-facing staffed support path not verified | [Trial runbook](invited-trial-runbook.md), `src/App.tsx` guide | Name contact/channel, response expectations, safe report template and recovery instructions | Invitee can report harm/failure without submitting private transcripts; operator has triage/pause/escalation process |
 | O09 Accurate trial disclosures and permission — G6/R1 | T/P0 | Restricted-evaluation wording and adult safety scope implemented locally; older hosted wording remains | `src/App.tsx`, [architecture](ARCHITECTURE.md) | Align deployed wording with real host/provider retention, safety/language limits, costs, local storage and audience | Reviewed disclosures match deployed reality; founder approves audience and private-data use only after gates pass |
