@@ -128,6 +128,21 @@ gaps here and map them to existing roadmap IDs rather than creating another ledg
 
 ## Immediate coherent batches
 
+8 October budget preference: do not reduce necessary evaluation coverage to fit
+USD2. [Next proposed batch](next-reliability-batch.md) contains twelve fresh cases,
+two Gemma policy configurations, at most 48 requests and USD0.712704 reserve;
+prospective cumulative bound USD2.674672. **USD3 cumulative cap requested, not yet
+approved**. No new permits or paid calls. Prior bound remains USD1.961968. Continue
+offline recovery/operations while the decision is pending. Registry startup and
+recovery validation now reject malformed credential/counter rows without modifying
+the source; synthetic actual-process startup rejection and ten focused tests pass.
+Full offline validation: 177 tests in 45 files, 17 production browser workflows,
+typecheck/build and fixture checks pass. Logs are retained in
+`.local/constraint-preparation-check-20261008.log` and
+`.local/constraint-preparation-browser-20261008.log`. No hosted deployment or new
+inference was performed; the proposed 48 requests remain unrun and unpermitted.
+Full completion criteria, human adjudication and hosted verification remain open.
+
 8 October continuation: [fresh reliability comparison](reliability-comparison-20261008.md)
 completed three matched questions, six conversations/twelve replies, Gemma thinking
 versus GLM low, unchanged answer policy at `2af184c`. No general alternative advantage

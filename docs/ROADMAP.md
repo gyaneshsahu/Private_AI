@@ -26,6 +26,13 @@ not dates inferred from engineering estimates.
 
 ## How to use this plan
 
+8 October next batch preparation: S1/E1 has twelve fresh baseline/candidate cases
+prepared with a 48-request ceiling and conservative cost. Higher cumulative cap
+requested before execution; willingness is not approval. U1/L2 meanwhile adds
+read-only malformed-account-state rejection during startup/backup/recovery; a
+damaged synthetic registry is refused by the actual application without repair.
+See [batch plan](next-reliability-batch.md) and READINESS for current authorization.
+
 8 October continuation, S1/E1 and U1/L2: both original local handoff commits preserved.
 Three fresh paired questions completed on `2af184c` (six conversations/twelve replies).
 Neither candidate resolves all failure patterns; keep Gemma as development candidate,

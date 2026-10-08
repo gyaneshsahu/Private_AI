@@ -9,6 +9,16 @@ remains paused and private-data access gated.
 
 ## Current evidence and gaps
 
+8 October offline hardening: read-only validation now checks credential/hash
+structure, invitation lifecycle consistency and nonnegative safe integer quota,
+time and credential-version values. Damaged state is rejected before hosted startup
+or backup/recovery proceeds; no silent correction or allowance reset. Tests include
+an actual application child process refusing damaged synthetic credentials without
+opening its listener, logging the credential canary, or changing the database.
+This prepares safer failure/rollback handling, not a hosted cutover or schema
+migration qualification. Never fix a rejected live database by deleting rows or
+editing quota/revocation metadata without a separately reviewed recovery plan.
+
 The 8 October hosted rehearsal below supersedes earlier pending SSH/key-custody
 entries. The independent Bitwarden key copy is verified; the Windows task is active.
 Registry row deletion, proactive failure/staleness alerts and a full service

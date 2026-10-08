@@ -48,6 +48,27 @@ data remain gated. No duplicate supplier messages were sent.
 
 ## Start here
 
+### Working preference recorded 8 October
+
+First application of this preference: [next batch](next-reliability-batch.md)
+contains twelve fresh cases, baseline/candidate Gemma comparison, at most 48
+requests, reserve USD0.712704 and prospective cumulative USD2.674672. USD3 total
+cap requested; no approval received at this checkpoint, no permits or paid calls.
+Offline registry validation was hardened meanwhile and verified through actual
+application startup plus 177 tests/17 production browser workflows, typecheck/build
+and fixture checks. No live registry or deployment was changed. Current source and
+evidence commit identity are available through Git log; prior commits are preserved.
+
+Continue useful offline development and justified bounded live tests within the
+currently approved cumulative inference cap. As the cap approaches exhaustion,
+prepare the next meaningful evaluation batch with concrete cases, maximum request
+count and a conservative cost estimate, then ask the founder to approve a higher
+**cumulative** cap. Do not shrink needed evaluation coverage merely to fit USD2.
+Continue independent development while the budget decision is pending. The founder
+is willing to increase the cap for worthwhile testing; that willingness is **not
+approval of a new amount**, a deposit, auto-reload, or a new paid service. Retain
+earlier reserves, failed attempts, separate permits and synthetic-only restrictions.
+
 Use only `C:\Gyanesh\Startups\Private_AI`, branch `codex/provider-qualification`,
 origin `https://github.com/gyaneshsahu/Private_AI.git`. Leave WSL untouched.
 Preserve local changes, consumed permits and all failed/unresolved evidence. Inspect

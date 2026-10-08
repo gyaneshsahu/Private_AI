@@ -10,7 +10,74 @@ import {
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { DatabaseSync } from "node:sqlite";
+import { spawnSync } from "node:child_process";
 import { openInviteRegistry } from "../server/registry-storage";
+
+it("rejects damaged account credentials and counters without repairing or leaking the source", () => {
+  const directory = mkdtempSync(join(tmpdir(), "privateai-damaged-rows-"));
+  const file = join(directory, "registry.sqlite");
+  const corruptions = [
+    "UPDATE invites SET requests=-1",
+    "UPDATE invites SET window=-1",
+    "UPDATE invites SET expires=1.5",
+    "UPDATE invites SET revoked=2",
+    "UPDATE invites SET credential_version=-1",
+    "UPDATE invites SET salt='PRIVATE_CANARY',password='broken'",
+    "UPDATE invites SET invite='invalid hash'",
+    "UPDATE invites SET revoked=1",
+    "UPDATE invites SET credential_version=1",
+  ];
+  try {
+    for (const sql of corruptions) {
+      const registry = openInviteRegistry(file, false);
+      registry.issue(Date.now() + 600000);
+      registry.close();
+      const db = new DatabaseSync(file);
+      db.exec(sql);
+      db.close();
+      const before = readFileSync(file);
+      expect(() => openInviteRegistry(file, true)).toThrow(
+        "Hosted invitation storage",
+      );
+      expect(readFileSync(file)).toEqual(before);
+      unlinkSync(file);
+    }
+    const registry = openInviteRegistry(file, false);
+    registry.issue(Date.now() + 600000);
+    registry.close();
+    const db = new DatabaseSync(file);
+    db.exec("UPDATE invites SET salt='PRIVATE_CANARY',password='broken'");
+    db.close();
+    const before = readFileSync(file);
+    const env = {
+      ...process.env,
+      PORT: "4198",
+      PRIVATEAI_ORIGIN: "https://privateai.example",
+      PRIVATEAI_INVITES_FILE: file,
+      PRIVATEAI_QUALIFICATION_FILE: join(directory, "absent.json"),
+    };
+    for (const key of [
+      "TINFOIL_API_KEY",
+      "BRAVE_SEARCH_API_KEY",
+      "PRIVATEAI_ACCESS_KEY",
+    ])
+      delete env[key as keyof typeof env];
+    const run = spawnSync(
+      process.execPath,
+      ["--import", "tsx", "server/index.ts"],
+      { env, encoding: "utf8", timeout: 10000, windowsHide: true },
+    );
+    expect(run.error).toBeUndefined();
+    expect(run.status).not.toBe(0);
+    expect(run.stdout).not.toContain("listening on port");
+    expect(run.stderr).toContain("Hosted invitation storage");
+    expect(run.stderr).not.toContain("PRIVATE_CANARY");
+    expect(readFileSync(file)).toEqual(before);
+  } finally {
+    if (existsSync(file)) unlinkSync(file);
+    rmdirSync(directory);
+  }
+});
 
 it("rejects missing or malformed pause metadata and missing credential versions without repairing the source", () => {
   const directory = mkdtempSync(join(tmpdir(), "privateai-storage-state-"));
