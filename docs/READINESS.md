@@ -16,6 +16,8 @@ Do not add a feature just because another product has it.
 1. **S1 safety:** approved adult-trial policy is implemented. Following founder
    review, fresh transfer answers reject prevention guarantees and retain urgent
    follow-up support, but omit unloaded storage and remain verbose initially.
+   Four forwarded scores are recorded as AI-proposed per the founder's final
+   instruction (see the safety audit); human adjudication remains pending.
    Adjudicate the four-case `safety-priority-20261008` packet before acceptance;
    refusal compliance does not establish safe advice or complete coverage.
 2. **E1/G1–G4 model reliability:** reserved writing fails (at most 8/12, required
