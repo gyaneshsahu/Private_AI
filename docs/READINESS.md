@@ -124,6 +124,15 @@ gaps here and map them to existing roadmap IDs rather than creating another ledg
 
 ## Immediate coherent batches
 
+8 October continuation: [fresh reliability comparison](reliability-comparison-20261008.md)
+preregistered for three matched questions, Gemma thinking versus GLM low, unchanged
+answer policy. Execution pending; no new semantic pass. Budget checked: cumulative
+bound USD1.456624, dashboard USD0.81, prospective reserve USD0.505344. D05/O04 now
+have local archive-bound health checks for missing/changed ciphertext and snapshot
+age; legacy receipts require a fresh verified backup. Live revalidation is pending
+explicit transfer confirmation after automatic approval review rejected it. All
+private-data, safety, quality and provider gates remain open.
+
 - **A — safety and reliability foundations:** offline paired safety fixtures and
   expected outcomes; obtain audience decision; apply the confirmed fresh-writing review without
   repeating that packet. Define a small coding/reasoning development set without modifying

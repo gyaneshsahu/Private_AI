@@ -314,3 +314,24 @@ The same drill is now required by Linux CI and passed there for `40f2e33`.
 This is a local service-recovery rehearsal, not a hosted TLS/disk-loss cutover or
 a claim that replacement identities inherit reconciled quotas. Operator review
 of identity, quota and credential state still precedes real access resumption.
+
+### Archive-bound health checks — 8 October continuation
+
+The previous timestamp-only monitor could report healthy after its archive was
+deleted or corrupted. New backup receipts bind the authenticated ciphertext's
+strict filename, size, SHA-256 and snapshot-start time. Health checks verify the
+file still exists and matches, reject unsafe/partial paths and measure the 24-hour
+recovery-point age from snapshot start. Failed attempts retain the prior binding
+but still alert. Status and the scheduled monitor now use the same check. Receipts
+are written to a new temporary file before replacement; raw credentials are absent.
+
+Eight monitor tests include missing/same-size corrupted archives, invalid bindings,
+snapshot time, failure and custody. Actual age authentication/restore tests pass
+separately; the monitor checksum is not a new decryption or security certification.
+Legacy receipts intentionally report missing binding until a fresh backup succeeds.
+Live transfer revalidation is pending because automatic approval review requires
+fresh explicit authorization for the existing Render-to-Windows encrypted archive.
+Do not retrofit a successful receipt by hand or alter historical archives.
+Sustained RPO coverage, off-computer alerts, full hosted cutover and registry-row
+retention/deletion remain open. No live registry replacement or resume is authorized
+by this monitor change.

@@ -26,6 +26,13 @@ not dates inferred from engineering estimates.
 
 ## How to use this plan
 
+8 October continuation, S1/E1 and U1/L2: preserve the two local handoff commits;
+prepare a frozen three-question candidate comparison for recurring action-selection
+and fact-preservation failures, with separate permits under the unchanged USD2 cap.
+Fix a demonstrated backup-monitor gap by binding health to verified ciphertext.
+See [protocol](reliability-comparison-20261008.md) and [current ledger](READINESS.md).
+Historical aborts/timeouts and AI-proposed review provenance remain unchanged.
+
 Work through the ordered backlog below, one coherent outcome at a time. If an item
 is blocked, advance its next independent product item. Update its status, evidence,
 remaining limitations and this change log in the same commit as the implementation.

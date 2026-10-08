@@ -55,6 +55,7 @@ export async function implementationIdentity(root: string) {
     "evaluation/cases/policy-transfer.json",
     "evaluation/cases/safety-transfer.json",
     "evaluation/cases/trial-transfer.json",
+    "evaluation/cases/reliability-transfer.json",
     "evaluation/frozen-manifest.json",
     "evaluation/experiment-gateway.ts",
     "evaluation/run-local.ts",

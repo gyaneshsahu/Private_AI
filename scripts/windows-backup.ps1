@@ -179,17 +179,19 @@ if ($Action -eq 'Schedule') {
     exit
 }
 if ($Action -eq 'Status') {
-    $statusFile = Join-Path $root 'status.json'
-    if (-not (Test-Path -LiteralPath $statusFile)) { throw 'No verified backup receipt exists.' }
-    $receipt = Get-Content -Raw -LiteralPath $statusFile | ConvertFrom-Json
-    $stale = -not $receipt.lastSuccess -or ([DateTime]::UtcNow - [DateTime]::Parse($receipt.lastSuccess).ToUniversalTime()).TotalHours -gt 24
-    @{stale=$stale;lastSuccess=$receipt.lastSuccess;lastAttempt=$receipt.lastAttempt;outcome=$receipt.outcome;recoveryCopyVerified=$config.recoveryCopyVerified} | ConvertTo-Json
-    if ($stale -or $receipt.outcome -ne 'VERIFIED') { exit 1 }; exit
+    & node --import tsx (Join-Path $project 'scripts/backup-health.ts')
+    exit $LASTEXITCODE
 }
 $lastSuccess = $null
+$archiveBinding = $null
 $statusFile = Join-Path $root 'status.json'
-if (Test-Path -LiteralPath $statusFile) { $lastSuccess = (Get-Content -Raw -LiteralPath $statusFile | ConvertFrom-Json).lastSuccess }
+if (Test-Path -LiteralPath $statusFile) {
+    $previousReceipt = Get-Content -Raw -LiteralPath $statusFile | ConvertFrom-Json
+    $lastSuccess = $previousReceipt.lastSuccess
+    if ($previousReceipt.PSObject.Properties['archive']) { $archiveBinding = $previousReceipt.archive }
+}
 $outcome = 'FAILED'
+$snapshotStartedAt = [DateTime]::UtcNow.ToString('o')
 try {
     if ($config.sshTarget -notmatch '^srv-[a-z0-9]+@ssh\.[a-z0-9-]+\.render\.com$' -or $config.recipient -notmatch '^age1[0-9a-z]{58}$') { throw 'Invalid transfer configuration.' }
     $name = 'registry-' + [DateTime]::UtcNow.ToString("yyyyMMdd'T'HHmmss'Z'") + '-' + [Guid]::NewGuid().ToString('N') + '.age'
@@ -219,13 +221,17 @@ try {
     } finally { $stream.Dispose(); if (-not $process.HasExited) { $process.Kill($true) }; $process.Dispose() }
     $verification = Invoke-Registry 'verify' $partial
     if (-not ($verification | ConvertFrom-Json).verified) { throw 'Backup verification failed.' }
+    $verifiedBinding = @{name=$name;bytes=(Get-Item -LiteralPath $partial).Length;sha256=(Get-FileHash -LiteralPath $partial -Algorithm SHA256).Hash.ToLowerInvariant();snapshotStartedAt=$snapshotStartedAt}
     Move-Item -LiteralPath $partial -Destination (Join-Path $root $name)
+    $archiveBinding = $verifiedBinding
     $lastSuccess = [DateTime]::UtcNow.ToString('o'); $outcome='VERIFIED'
 } catch {
     Write-Warning 'PrivateAI backup failed. Inspect configuration/access; no sensitive diagnostic is logged.'
 } finally {
     try { Remove-ExpiredArchives } catch { $outcome='RETENTION_FAILED' }
-    @{lastAttempt=[DateTime]::UtcNow.ToString('o');lastSuccess=$lastSuccess;outcome=$outcome} | ConvertTo-Json | Set-Content -LiteralPath $statusFile
+    $temporaryReceipt = Join-Path $root ('status-' + [Guid]::NewGuid().ToString('N') + '.tmp')
+    @{lastAttempt=[DateTime]::UtcNow.ToString('o');lastSuccess=$lastSuccess;outcome=$outcome;archive=$archiveBinding} | ConvertTo-Json | Set-Content -LiteralPath $temporaryReceipt
+    Move-Item -LiteralPath $temporaryReceipt -Destination $statusFile -Force
 }
 if ($outcome -ne 'VERIFIED') { exit 1 }
 Write-Output 'Encrypted backup transferred and authenticated; seven-day local retention applied.'

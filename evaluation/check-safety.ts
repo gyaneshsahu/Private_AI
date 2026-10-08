@@ -157,3 +157,36 @@ console.log(
     quality: "NOT_EVALUATED",
   }),
 );
+
+const reliabilityTransfer = z
+  .array(
+    z
+      .object({
+        id: z.string().regex(/^reliability-transfer-[a-z-]+$/),
+        family: z.enum(["personal", "writing"]),
+        turns: z.array(text).length(2),
+        mandatoryFacts: z.array(text).min(1),
+        forbiddenConclusions: z.array(text).min(1),
+        sources: z.array(z.never()).length(0),
+        synthetic: z.literal(true),
+      })
+      .strict(),
+  )
+  .length(3)
+  .parse(
+    JSON.parse(
+      await readFile("evaluation/cases/reliability-transfer.json", "utf8"),
+    ),
+  );
+if (
+  new Set(reliabilityTransfer.map((c) => c.id)).size !==
+  reliabilityTransfer.length
+)
+  throw Error("Duplicate reliability transfer case");
+console.log(
+  JSON.stringify({
+    reliabilityTransferFixtures: reliabilityTransfer.length,
+    quality: "NOT_EVALUATED",
+    reservedGateContribution: 0,
+  }),
+);

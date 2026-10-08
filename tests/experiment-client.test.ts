@@ -8,6 +8,7 @@ import robustnessCases from "../evaluation/cases/robustness-development.json";
 import transferCases from "../evaluation/cases/repair-transfer.json";
 import attributionCases from "../evaluation/cases/attribution-transfer.json";
 import writingCases from "../evaluation/cases/writing-transfer.json";
+import reliabilityCases from "../evaluation/cases/reliability-transfer.json";
 import { invoiceText } from "../evaluation/experiment";
 const allCases = [
   ...developmentCases,
@@ -15,6 +16,7 @@ const allCases = [
   ...transferCases,
   ...attributionCases,
   ...writingCases,
+  ...reliabilityCases,
 ];
 
 it("runs real browser extraction and follow-up state with an explicitly mocked model, and stops on unknown cost", async () => {
@@ -151,9 +153,11 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
         const outcome = await runSynthetic(
           {
             ...permit,
-            scenario: fixture.id.startsWith("robustness-")
-              ? "robustness_case"
-              : "development_case",
+            scenario:
+              fixture.id.startsWith("robustness-") ||
+              fixture.id.startsWith("reliability-transfer-")
+                ? "robustness_case"
+                : "development_case",
             developmentCaseId: fixture.id,
           },
           "fixture",
@@ -179,7 +183,7 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
       };
     }, allCases);
     expect(result.compatibilityCalls).toBe(1);
-    expect(result.development).toHaveLength(39);
+    expect(result.development).toHaveLength(42);
     for (const [index, task] of result.development.entries()) {
       const fixture = allCases[index];
       expect(task.outcome.failure).toBeNull();
