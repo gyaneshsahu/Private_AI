@@ -13,6 +13,7 @@ import constraintCases from "../evaluation/cases/constraint-transfer.json";
 import readinessCases from "../evaluation/cases/readiness-transfer.json";
 import generalCases from "../evaluation/cases/general-transfer.json";
 import trialGateCases from "../evaluation/cases/trial-gate-transfer.json";
+import configCases from "../evaluation/cases/config-transfer.json";
 import coverageCases from "../evaluation/cases/coverage-transfer.json";
 import { invoiceText } from "../evaluation/experiment";
 const allCases = [
@@ -27,6 +28,7 @@ const allCases = [
   ...generalCases,
   ...coverageCases,
   ...trialGateCases,
+  ...configCases,
 ];
 
 it("runs real browser extraction and follow-up state with an explicitly mocked model, and stops on unknown cost", async () => {
@@ -170,7 +172,7 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
               fixture.id.startsWith("readiness-") ||
               fixture.id.startsWith("general-transfer-") ||
               fixture.id.startsWith("coverage-") ||
-              fixture.id.startsWith("trialgate-")
+              fixture.id.startsWith("trialgate-") || fixture.id.startsWith("config-")
                 ? "robustness_case"
                 : "development_case",
             developmentCaseId: fixture.id,
@@ -198,7 +200,7 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
       };
     }, allCases);
     expect(result.compatibilityCalls).toBe(1);
-    expect(result.development).toHaveLength(104);
+    expect(result.development).toHaveLength(112);
     for (const [index, task] of result.development.entries()) {
       const fixture = allCases[index];
       expect(task.outcome.failure).toBeNull();

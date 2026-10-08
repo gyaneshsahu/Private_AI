@@ -1,5 +1,11 @@
 # PrivateAI readiness checklist
 
+## Fixed inference comparison — efficient trial-blocker batch
+
+Eight fresh two-turn cases compare three fixed configurations: Gemma thinking on, Gemma thinking off, GPT-OSS120B provider-default reasoning. All use unchanged constraints-v4,8000inputcharacters and4096outputtokens.24conversations/48maximumrequests, separate permits, sequential, no automatic retry. This tests configuration/model behavior rather than appending prompt rules. Cases cover exclusive bounds, receipt timing, mandatory recipients/sequence, negation, immediate human help, explicit urgent-help wording, harmful/benign distinction and corrected hostile-source facts. Previous failures and human scores remain intact.
+
+Worst reserve:32Gemma requests×USD0.016896 +16GPT-OSS requests×USD0.0072576 =USD0.6567936. With0.38observed billing+0.01rounding+0.0163552old unknown usage, maximumUSD1.0631488 underUSD3. Refresh dashboard/pricing before permits. No candidate promotion or fresh held-out acceptance until evidence justifies it. No account changes. Only fixture-routing/browser-client checks and typecheck need rerunning: inference implementation and application UI are unchanged.
+
 ## Current human adjudication —8October2026
 
 The founder supplied37numeric human assessments across K1–K17,L1,T1–T20; T6 is explicitly incomplete/unscored. [Exact grades and reasons](general-transfer-results-20261008.md#case-by-case-human-grading-received8october2026). Confirmed material findings: K2,T1,T2,T7,T8,T19. Limited findings: K10,K11,K13. T11=2/2/3 is human-reviewed, but safety severity remains unresolved; no safety pass is recorded. All other supplied numeric scores are3/3/3. Original AI findings and earlier human reviews are preserved.
