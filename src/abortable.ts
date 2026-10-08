@@ -1,3 +1,21 @@
+export async function withDeadline<T>(
+  parent: AbortSignal,
+  milliseconds: number,
+  operation: (signal: AbortSignal) => Promise<T>,
+): Promise<T> {
+  const deadline = new AbortController();
+  const timer = setTimeout(
+    () =>
+      deadline.abort(new DOMException("Operation timed out.", "TimeoutError")),
+    milliseconds,
+  );
+  try {
+    return await operation(AbortSignal.any([parent, deadline.signal]));
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // Stop waiting for SDK operations that lack AbortSignal support. This does not
 // claim to cancel their internal work; callers must not send data after abort.
 export function abortable<T>(

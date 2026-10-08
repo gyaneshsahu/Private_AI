@@ -239,3 +239,16 @@ checks for fresh arithmetic/code can support findings but cannot establish broad
 coding quality. This development packet is not reserved acceptance; existing
 failed held-out writing evidence remains unchanged. A complete reliable packet
 and human safety adjudication precede any new held-out release assessment.
+
+8 October protocol amendment: cases 1–3 returned six complete answers, but case 3
+stopped the runner with an unresolved cancellation observation. Both server streams
+finished and client failure was null; the 90-second signal remained live after the
+first completed operation and could fire during the second. The implementation now
+clears its deadline on settle without raising the bound or changing answer policy.
+Offline fake-time regression verifies completed work does not later abort, active
+work still times out and errors clear timers. Actual browser transport and chat UI
+checks pass serially (an initial concurrent run timed out while the container drill
+was active). Preserve all original results and their configuration; continue only
+unattempted cases under a new recorded implementation identity within the original
+14-conversation reserve. This is a justified diagnostic repair, not regrading the
+old transport observation as passed or reusing it as fixed-release acceptance.

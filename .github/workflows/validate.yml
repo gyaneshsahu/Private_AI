@@ -38,6 +38,7 @@ jobs:
       - run: node scripts/container-smoke.mjs
       - run: node scripts/container-persistence.mjs
       - run: node scripts/container-invite-access.mjs
+      - run: node scripts/container-recovery.mjs
       - name: Verify encrypted recovery in packaged Linux runtime
         run: docker run --rm --network none --mount "type=bind,source=$PWD/tests,target=/app/tests,readonly" -e PRIVATEAI_TEST_AGE=/usr/bin/age privateai-evaluation node node_modules/vitest/vitest.mjs run tests/encrypted-registry.test.ts
 # No provider keys, inference calls, deployments or paid services in CI.
