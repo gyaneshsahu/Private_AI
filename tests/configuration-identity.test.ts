@@ -25,6 +25,7 @@ it("distinguishes model, limits, release, pricing and code without depending on 
   ).toBe(original);
   for (const changed of [
     { ...policy, model: "different-model" },
+    { ...policy, answerPolicyVariant: "constraints-v1" as const },
     { ...policy, gemmaThinking: true },
     { ...policy, gemmaThinking: false },
     { ...policy, glmReasoningEffort: "low" as const },

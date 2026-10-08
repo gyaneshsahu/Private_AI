@@ -4,7 +4,7 @@ import {
   type Usage,
   type Qualification,
 } from "../shared/contracts";
-import { composeContext } from "./conversation";
+import { composeContext, type AnswerPolicyVariant } from "./conversation";
 import { completionEvents } from "./completion-events";
 import { consumeReply } from "./reply-stream";
 
@@ -17,7 +17,11 @@ export type VerifiedChatPolicy = Pick<
   | "maxInputCharacters"
   | "maxOutputTokens"
   | "pricing"
-> & { gemmaThinking?: boolean; glmReasoningEffort?: "low" | "high" | "max" };
+> & {
+  gemmaThinking?: boolean;
+  glmReasoningEffort?: "low" | "high" | "max";
+  answerPolicyVariant?: AnswerPolicyVariant;
+};
 
 export function assertVerification(
   doc: {
@@ -57,7 +61,12 @@ export async function streamVerifiedConversation(
     throw new Error("Unsupported model-specific inference setting.");
   return withDeadline(signal, 90000, async (signal) => {
     signal.throwIfAborted();
-    const messages = composeContext(conversation, report.maxInputCharacters);
+    const messages = composeContext(
+      conversation,
+      report.maxInputCharacters,
+      new Date(),
+      report.answerPolicyVariant,
+    );
     onStatus("Loading inference libraries…");
     const [{ Verifier, fetchAttestationBundle }, { Identity, Transport }] =
       await abortable(Promise.all([import("tinfoil"), import("ehbp")]), signal);

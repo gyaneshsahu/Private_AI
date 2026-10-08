@@ -16,6 +16,10 @@ export async function runSynthetic(input: unknown, csrf: string) {
   const signal = AbortSignal.timeout(240000);
   const evidence: { host: string; releaseDigest: string }[] = [];
   const timings: number[] = [];
+  const visibleStream: Array<{
+    turn: number;
+    chunks: Array<{ elapsedMs: number; text: string }>;
+  }> = [];
   let failure: string | null = null;
   let stage =
     permit.scenario === "two_turn_invoice"
@@ -65,6 +69,11 @@ export async function runSynthetic(input: unknown, csrf: string) {
         status: "partial" as "partial" | "complete",
       };
       const start = performance.now();
+      const visible = {
+        turn: visibleStream.length + 1,
+        chunks: [] as Array<{ elapsedMs: number; text: string }>,
+      };
+      visibleStream.push(visible);
       try {
         const usage = await streamVerifiedConversation(
           conversation,
@@ -72,7 +81,18 @@ export async function runSynthetic(input: unknown, csrf: string) {
           csrf,
           signal,
           (chunk) => {
+            if (
+              answer.text.length + chunk.length > 131072 ||
+              visible.chunks.length >= 10000
+            )
+              throw new Error(
+                "Synthetic visible-stream evidence exceeds its bound.",
+              );
             answer.text += chunk;
+            visible.chunks.push({
+              elapsedMs: performance.now() - start,
+              text: chunk,
+            });
           },
           (status) => {
             stage = status;
@@ -123,6 +143,7 @@ export async function runSynthetic(input: unknown, csrf: string) {
   }
   return {
     conversation,
+    visibleStream,
     evidence,
     timings,
     diagnostic,

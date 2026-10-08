@@ -1,6 +1,7 @@
-# Proposed next reliability batch — 8 October 2026
+# Approved constraint-policy development batch — 8 October 2026
 
-Prepared, not authorized for execution under a higher cap. No new permits issued.
+Founder approved cumulative USD3 for these fixed cases/configurations, maximum
+48 requests, separate permits and no blind retries. Execution evidence follows.
 This is development evidence; [READINESS](READINESS.md) remains authoritative.
 
 ## Decision the batch should inform
@@ -11,7 +12,7 @@ not justify switching models. The candidate should address three demonstrated
 mechanisms together: lost qualifiers when shortening, invented personal facts when
 making language warmer, and excessive action choices during imminent danger.
 
-Candidate policy delta to review and freeze before execution:
+Candidate policy delta, implemented as explicit `constraints-v1` (default unchanged):
 
 - Treat each user-required fact together with its qualifiers and relationships as
   mandatory throughout revisions. Brevity changes wording, not those obligations;
@@ -70,15 +71,22 @@ includes the second turn's context separately. Actual use may be lower; no reser
 is released automatically. Retries or additional candidates need separate planning.
 
 Prior cumulative bound USD1.961968 + batch reserve USD0.712704 =
-**USD2.674672**. Proposed approval: raise the cumulative cap from **USD2 to USD3**,
+**USD2.674672**. Founder approved raising the cumulative cap from **USD2 to USD3**,
 including all prior use/reserves, leaving USD0.325328 after the full new reserve.
-The last observed prepaid USD0.79 would cover the batch's maximum, but refresh it
-before spending. This proposal authorizes no deposit, subscription or auto-reload.
+Refreshed dashboard: USD0.79 prepaid, USD0.21 rounded spend, 413 requests. Existing
+key and account period limits changed to USD3 and verified; auto-reload remains off.
+Transactions shows no transactions; pending inference charges are not separately
+exposed. The count matches the prior 401 plus twelve completed requests. Retain all
+historical reserves because rounded aggregate billing is not exact per-run evidence.
+Use USD0.78 as the credit planning floor (USD0.067296 above the new reserve), allowing
+for displayed rounding; stop if new visible charges exhaust this margin. Screenshots:
+`.local/tinfoil-key-cap3-20261008.png`, `.local/tinfoil-billing-cap3-20261008.png`.
+This approval authorizes no deposit, subscription or auto-reload.
 The period-based dashboard limit and the cumulative local cap remain distinct.
 
 No reduced sample will be substituted merely to fit the USD0.038032 remaining
-under current approval. Recovery, schema failure testing and operational preparation
-continue while the higher-cap decision and human adjudication are pending.
+under the previous approval. Recovery, schema failure testing and operational
+preparation continue while human adjudication is pending.
 
 Fixture validation passes: twelve unique IDs and 24 unique turns, no exact prompt
 reuse from the checked development, held-out or latest transfer sets. SHA-256

@@ -1,5 +1,24 @@
 # PrivateAI local Codex handoff — 8 October 2026
 
+## Latest budget approval — 8 October, constraint-policy batch
+
+Founder explicitly raised the **cumulative Tinfoil development-test cap to USD3**
+for the fixed twelve-case batch, maximum 48 requests, separate single-use permits
+and no blind retries. This supersedes older USD2 current-budget statements below.
+Dashboard key and account period limits were both changed to USD3 and verified;
+prepaid balance remains USD0.79, rounded spend USD0.21, 413 requests, auto-reload off.
+Transactions shows "No transactions yet"; this is not proof of no delayed metering.
+No deposit is authorized: stop and ask if credit is insufficient.
+
+Reconciliation retains USD1.456624 prior bound + USD0.505344 previous batch reserve
+= **USD1.961968**. The 413 dashboard requests match the preceding 401 plus twelve
+completed requests. Rounded aggregate spend cannot allocate exact per-run charges,
+so no reserve is released. New full reserve USD0.712704 would bring the bound to
+**USD2.674672**, leaving USD0.325328 under the cap and USD0.077296 nominal credit
+headroom. See [fixed batch](next-reliability-batch.md) and READINESS for execution.
+The candidate remains experimental; no human score, quality, safety or privacy
+gate is passed by this approval. Keep earlier failed evaluations and proposed scores.
+
 ## Latest continuation checkpoint — 8 October, after 11:30 UTC
 
 This checkpoint supersedes the earlier budget and next-batch snapshot below;

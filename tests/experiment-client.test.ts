@@ -9,6 +9,7 @@ import transferCases from "../evaluation/cases/repair-transfer.json";
 import attributionCases from "../evaluation/cases/attribution-transfer.json";
 import writingCases from "../evaluation/cases/writing-transfer.json";
 import reliabilityCases from "../evaluation/cases/reliability-transfer.json";
+import constraintCases from "../evaluation/cases/constraint-transfer.json";
 import { invoiceText } from "../evaluation/experiment";
 const allCases = [
   ...developmentCases,
@@ -17,6 +18,7 @@ const allCases = [
   ...attributionCases,
   ...writingCases,
   ...reliabilityCases,
+  ...constraintCases,
 ];
 
 it("runs real browser extraction and follow-up state with an explicitly mocked model, and stops on unknown cost", async () => {
@@ -155,7 +157,8 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
             ...permit,
             scenario:
               fixture.id.startsWith("robustness-") ||
-              fixture.id.startsWith("reliability-transfer-")
+              fixture.id.startsWith("reliability-transfer-") ||
+              fixture.id.startsWith("constraint-")
                 ? "robustness_case"
                 : "development_case",
             developmentCaseId: fixture.id,
@@ -183,10 +186,15 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
       };
     }, allCases);
     expect(result.compatibilityCalls).toBe(1);
-    expect(result.development).toHaveLength(42);
+    expect(result.development).toHaveLength(54);
     for (const [index, task] of result.development.entries()) {
       const fixture = allCases[index];
       expect(task.outcome.failure).toBeNull();
+      expect(task.outcome.visibleStream).toHaveLength(2);
+      for (const stream of task.outcome.visibleStream)
+        expect(
+          stream.chunks.map((c: { text: string }) => c.text).join(""),
+        ).toBe("MOCK response; not model-quality evidence.");
       expect(task.calls).toHaveLength(2);
       expect(task.calls[0].messages[0].text).toBe(fixture.turns[0]);
       expect(task.calls[1].messages[2].text).toBe(fixture.turns[1]);

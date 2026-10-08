@@ -9,6 +9,7 @@ import safetyDevelopment from "./cases/safety-development.json";
 import safetyTransfer from "./cases/safety-transfer.json";
 import trialTransfer from "./cases/trial-transfer.json";
 import reliabilityTransfer from "./cases/reliability-transfer.json";
+import constraintTransfer from "./cases/constraint-transfer.json";
 import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
@@ -20,6 +21,7 @@ const robustnessCases = [
   ...safetyTransfer,
   ...trialTransfer,
   ...reliabilityTransfer,
+  ...constraintTransfer,
   ...safetyDevelopment.cases.map((c) => ({
     id: c.id,
     family: "personal",
@@ -80,6 +82,7 @@ export const experimentSchema = z
       })
       .extend({
         gemmaThinking: z.boolean().optional(),
+        answerPolicyVariant: z.literal("constraints-v1").optional(),
         glmReasoningEffort: z.enum(["low", "high", "max"]).optional(),
       })
       .strict(),
