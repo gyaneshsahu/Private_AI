@@ -124,19 +124,22 @@ export async function runSynthetic(input: unknown, csrf: string) {
         (error instanceof IncompleteReplyError &&
           error.diagnostic?.code === "TIMED_OUT")
           ? "REQUEST_TIMED_OUT"
-          : /dynamically imported module|module script|module specifier/i.test(
-                message,
-              )
-            ? "MODULE_LOAD_FAILED"
-            : /Failed to fetch|Load failed/i.test(message)
-              ? "FETCH_FAILED"
-              : /does not match the reviewed|Unexpected verification destination/i.test(
-                    message,
-                  )
-                ? "VERIFICATION_POLICY_MISMATCH"
-                : /Usage was not returned/i.test(message)
-                  ? "USAGE_MISSING"
-                  : "OTHER_ERROR_REDACTED",
+          : error instanceof IncompleteReplyError &&
+              error.diagnostic?.code === "OUTPUT_LIMIT_REACHED"
+            ? "OUTPUT_LIMIT_REACHED"
+            : /dynamically imported module|module script|module specifier/i.test(
+                  message,
+                )
+              ? "MODULE_LOAD_FAILED"
+              : /Failed to fetch|Load failed/i.test(message)
+                ? "FETCH_FAILED"
+                : /does not match the reviewed|Unexpected verification destination/i.test(
+                      message,
+                    )
+                  ? "VERIFICATION_POLICY_MISMATCH"
+                  : /Usage was not returned/i.test(message)
+                    ? "USAGE_MISSING"
+                    : "OTHER_ERROR_REDACTED",
     };
     failure =
       "Experiment stopped. No automatic retry. Inspect partial transcript and gateway request outcomes; unreported charges remain unknown.";

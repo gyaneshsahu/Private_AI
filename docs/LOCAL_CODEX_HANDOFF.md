@@ -1,5 +1,26 @@
 # PrivateAI local Codex handoff — 8 October 2026
 
+## Latest execution checkpoint — constraint-policy batch stopped
+
+See [results](constraint-policy-results-20261008.md): frozen at `24031dc`, eleven
+conversations/22 requests/21 complete replies. Stopped on the archive candidate's
+empty `length` follow-up at 2,048 output tokens; no retry. Thirteen unused permits
+remain preserved, not a queued continuation. Cases/configurations never changed.
+Candidate still loses mandatory equipment qualifiers; do not promote it. Human
+review remains pending, including the older four AI-proposed scores.
+
+**USD3 cap; full-reserve cumulative bound USD2.674672; USD0.325328 remaining.**
+Post-batch dashboard: USD0.78 prepaid, USD0.22 rounded spend, 435 requests (413+22),
+USD3 period limit, auto-reload off. Token estimate USD0.01624060 is not a receipt;
+no reserve released, deposit made or new spending approval inferred.
+
+Post-batch output-limit diagnostics preserve usage/partial exclusion/no retry;
+180 tests/46 files and 17 production browser workflows, build and fixtures pass.
+Original results retain their original diagnostics. Priority review page:
+`.local/review-batches/constraint-20261008/priority-review.html` (cases 5,6,9,10,11).
+Read-only backup health remains healthy. No deployment/push; origin still `40f2e33`.
+Earlier checkpoints below are historical; READINESS is authoritative.
+
 ## Latest budget approval — 8 October, constraint-policy batch
 
 Founder explicitly raised the **cumulative Tinfoil development-test cap to USD3**

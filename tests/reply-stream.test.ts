@@ -55,6 +55,21 @@ it("distinguishes a deadline from user cancellation while retaining reported usa
 });
 
 describe("synthetic stream protocol checks, not live provider evidence", () => {
+  it.each(["", "Partial text"])(
+    "identifies output exhaustion with visible text %j without discarding usage",
+    async (text) => {
+      await expect(run([chunk(text, "length"), usage])).rejects.toMatchObject({
+        message:
+          "The response reached its output limit before completing. Partial answers are excluded from future context. No automatic retry was made.",
+        usage: { total: 15 },
+        diagnostic: {
+          code: "OUTPUT_LIMIT_REACHED",
+          finish: "length",
+          textCharacters: text.length,
+        },
+      });
+    },
+  );
   it("accepts explicit text completion and a later usage-only frame", async () => {
     await expect(
       run([chunk("Hello"), chunk("", "stop"), usage]),

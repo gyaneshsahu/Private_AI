@@ -99,6 +99,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       const frame = (content: string, finish: string | null) =>
         `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content }, finish_reason: finish }] })}\n\n`;
       let text = frame("TEST answer: 4", mode === "truncated" ? null : "stop");
+      if (mode === "output_limit") text = frame("", "length");
       if (mode === "thinking_on") {
         text =
           `data: ${JSON.stringify({ choices: [{ index: 0, delta: { reasoning_content: "SYNTHETIC_REASONING_CANARY" }, finish_reason: null }] })}\n\n` +
@@ -208,6 +209,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       "malformed",
       "named_error",
       "truncated",
+      "output_limit",
       "cancel",
     ]) {
       mode = scenario;
@@ -266,6 +268,11 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         ).toBe(false);
       }
       if (mode === "truncated") expect(result.usage.total).toBe(5);
+      if (mode === "output_limit") {
+        expect(result.answer.text).toBe("");
+        expect(result.usage.total).toBe(5);
+        expect(result.testError).toContain("reached its output limit");
+      }
       if (!preSend) {
         const payload = JSON.parse(requests[before].plaintext);
         expect(payload.chat_template_kwargs).toEqual(

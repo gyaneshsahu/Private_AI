@@ -4,6 +4,10 @@ Founder approved cumulative USD3 for these fixed cases/configurations, maximum
 48 requests, separate permits and no blind retries. Execution evidence follows.
 This is development evidence; [READINESS](READINESS.md) remains authoritative.
 
+Execution stopped after 22 requests/11 conversations at the first incomplete reply;
+13 conversations remain unrun. See [results](constraint-policy-results-20261008.md).
+The fixed plan below is preserved; no retry or configuration change was made.
+
 ## Decision the batch should inform
 
 Compare the unchanged Gemma-thinking baseline against one general policy candidate

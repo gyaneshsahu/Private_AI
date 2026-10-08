@@ -101,6 +101,8 @@ export async function consumeReply(
       }
     }
     signal.throwIfAborted();
+    if (finish === "length")
+      throw new StreamProtocolError("OUTPUT_LIMIT_REACHED");
     if (finish !== "stop" || !hasText || hasTools)
       throw new StreamProtocolError("INCOMPLETE_ANSWER");
     if (usage && !finalUsage)
@@ -108,8 +110,14 @@ export async function consumeReply(
     return usage;
   } catch (error) {
     const timedOut = signal.aborted && signal.reason?.name === "TimeoutError";
+    const reason = timedOut
+      ? "Response timed out."
+      : error instanceof StreamProtocolError &&
+          error.code === "OUTPUT_LIMIT_REACHED"
+        ? "The response reached its output limit before completing."
+        : "Response incomplete.";
     throw new IncompleteReplyError(
-      `${timedOut ? "Response timed out." : "Response incomplete."} Partial answers are excluded from future context. No automatic retry was made.`,
+      `${reason} Partial answers are excluded from future context. No automatic retry was made.`,
       usage,
       {
         code:
