@@ -1,5 +1,51 @@
 # PrivateAI local Codex handoff — 8 October 2026
 
+## Latest continuation checkpoint — 8 October, after 11:30 UTC
+
+This checkpoint supersedes the earlier budget and next-batch snapshot below;
+[READINESS](READINESS.md) remains authoritative. The two original local commits
+`8ffe46f` and `0d7680b` were preserved; remote readback still pointed to `40f2e33`.
+New local implementation commit: `2af184cf7d7319b4d5f39e9763181d27c87ca44c`.
+Obtain the later evidence commit and clean/ahead state with Git; nothing in this
+continuation was pushed or deployed. Existing hosted runtime remains `40f2e33`.
+
+Three fresh paired questions / six conversations / twelve replies completed through
+the application's browser inference path. Policy unchanged, Gemma thinking versus
+GLM low; neither resolves all patterns. Gemma loses mandatory qualifiers under
+compression; GLM is verbose in crisis and invents drafting context. Keep Gemma as
+development candidate, not qualified release. New findings and the older four
+scores remain **AI-proposed, not human-confirmed**; the old scores' hashes were
+verified against their manifest. All historical failures and consumed permits remain.
+See [comparison](reliability-comparison-20261008.md), including exact identities and
+the source-bound local full/priority review pages under
+`.local/review-batches/reliability-20261008/` (priority original cases 2, 4, 6).
+
+**USD2 cumulative cap unchanged. Conservative bound now USD1.961968**, retaining
+the entire new USD0.505344 reserve; only **USD0.038032 remains authorized**.
+Post-batch dashboard: USD0.79 prepaid, USD0.21 rounded period spend, 413 requests,
+USD2 period limit, auto-reload off. Token estimate USD0.01210360 is not a receipt.
+Do not infer more allowance from lower estimated charges or the dashboard balance.
+
+Backup health now checks bound filename/size/SHA-256 and snapshot-start age, fixing
+false healthy status after missing/corrupt archives. User explicitly approved the
+existing Render-to-`C:\PrivateAI-backups` transfer after automatic approval review
+blocked it. Fresh 16,584-byte archive authenticated at 11:26:03 UTC; Status and the
+scheduled monitor at 11:28:19 UTC pass. See the backup policy for filename/checksum.
+No live registry replacement or resume. Same schedule/custody limitations apply.
+
+Validation: 176 unit/integration checks, 17 production browser workflows,
+typecheck/build, fixture integrity and review-page 1280/360 layout passed. Initial
+sandbox temp/browser failures and age-binary configuration failures are preserved.
+New model runs had zero signal aborts/cancels; scoped Chromium completion status
+retained. The historical water abort and both initial-request timeouts stay unresolved.
+
+Next: human adjudication of priority findings before a new candidate/policy decision;
+continue independent retention, hosted cutover planning and actual-device operations.
+No more paid tests simply to clear failures; broader fresh assessment needs a budget
+decision or defensible billing reconciliation without silently releasing reserves.
+Provider/search replies, full safety coverage, quality acceptance and real private
+data remain gated. No duplicate supplier messages were sent.
+
 ## Start here
 
 Use only `C:\Gyanesh\Startups\Private_AI`, branch `codex/provider-qualification`,

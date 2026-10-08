@@ -26,12 +26,14 @@ not dates inferred from engineering estimates.
 
 ## How to use this plan
 
-8 October continuation, S1/E1 and U1/L2: preserve the two local handoff commits;
-prepare a frozen three-question candidate comparison for recurring action-selection
-and fact-preservation failures, with separate permits under the unchanged USD2 cap.
-Fix a demonstrated backup-monitor gap by binding health to verified ciphertext.
-See [protocol](reliability-comparison-20261008.md) and [current ledger](READINESS.md).
-Historical aborts/timeouts and AI-proposed review provenance remain unchanged.
+8 October continuation, S1/E1 and U1/L2: both original local handoff commits preserved.
+Three fresh paired questions completed on `2af184c` (six conversations/twelve replies).
+Neither candidate resolves all failure patterns; keep Gemma as development candidate,
+with new findings AI-proposed pending human adjudication. The archive-bound monitor
+now detects absent/changed ciphertext; fresh hosted backup and scheduled monitor
+verification passed after explicit transfer approval. Cumulative bound USD1.961968,
+dashboard USD0.79; no new allowance. See [evidence](reliability-comparison-20261008.md)
+and [current ledger](READINESS.md). Historical failures and scope remain unchanged.
 
 Work through the ordered backlog below, one coherent outcome at a time. If an item
 is blocked, advance its next independent product item. Update its status, evidence,

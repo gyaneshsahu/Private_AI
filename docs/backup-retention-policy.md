@@ -335,3 +335,17 @@ Do not retrofit a successful receipt by hand or alter historical archives.
 Sustained RPO coverage, off-computer alerts, full hosted cutover and registry-row
 retention/deletion remain open. No live registry replacement or resume is authorized
 by this monitor change.
+
+The explicit transfer approval was subsequently supplied in this chat. A fresh
+16,584-byte hosted archive authenticated successfully:
+`registry-20261008T112550Z-811c297e45d9478eae3d19f4afe75c20.age`, SHA-256
+`68c2254a804299edcfce49972f55805524f940f687b95acbecc7485ca2a81388`.
+Snapshot started 11:25:50 UTC; verification finished 11:26:03 UTC. Status and the
+monitor both report healthy. Task Scheduler monitor execution at 11:28:19 UTC
+finished with result 0; the first read caught the still-running state (267009),
+then the terminal result was checked. Backup remains daily at 09:00 Europe/Berlin;
+next scheduled run is 9 October 07:00 UTC. The source registry was not changed.
+Content-free receipt: `.local/recovery-monitor-verification-20261008.json`.
+This resolves the transfer-confirmation block, not sustained coverage, human
+notification visibility or full hosted cutover. No additional key access is needed
+for routine ciphertext health checks.

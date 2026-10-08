@@ -1,7 +1,8 @@
 # PrivateAI readiness checklist
 
 **Authoritative current readiness ledger — 8 October 2026.** Baseline implementation audit: `3358b8f`, including the deployed `81675c4` application.
-Live transfer evidence, hosted backup and local monitoring updated 8 October; runtime `40f2e33` deployed after CI. Owner: founder/operator;
+Live comparison and archive-bound monitoring updated 8 October; local implementation
+`2af184c`, deployed runtime remains `40f2e33`. Owner: founder/operator;
 maintainer: developer making each change. The PRD and acceptance contract define
 requirements; this ledger records status. The roadmap defines order. Other reviews
 are dated evidence, not competing release checklists.
@@ -22,7 +23,10 @@ Do not add a feature just because another product has it.
    refusal compliance does not establish safe advice or complete coverage.
 2. **E1/G1–G4 model reliability:** reserved writing fails (at most 8/12, required
    10/12). The eight fresh-writing scores are now founder-confirmed; keep Gemma as the
-   development candidate. Configuration is now frozen at `40f2e33`; fresh arithmetic,
+   development candidate. The unchanged-policy comparison at `2af184c` does not
+   demonstrate a generally better alternative: Gemma loses prevention qualifiers
+   under shortening; GLM overloads crisis advice and invents drafting context
+   (AI-proposed findings, human review pending). Earlier fresh arithmetic,
    ambiguity and two simple coding cases have evidence, while invented context
    recurs in a harmless enquiry. Resolve safety/quality review before fresh held-out
    assessment; do not repeatedly tune or reuse exposed cases.
@@ -65,12 +69,12 @@ gaps here and map them to existing roadmap IDs rather than creating another ledg
 | Requirement / roadmap | Priority | Current status | Supporting evidence | Missing work | Completion criterion |
 | --- | --- | --- | --- | --- | --- |
 | C01 General-assistant scope and honest limits — G6/R1 | T/P1 | Goal documented; release claims not finalized | [PRD](PRD.md), [acceptance](acceptance.md) | Tie supported tasks/languages and limitations to the selected release; English is the evaluated language | Reviewed trial scope preserves all six families; no silent narrowing or parity claim |
-| C02 Writing without invented commitments/reasons — G1/E1 | T/P0 | Implemented chat; live reserved assessment failed, human-confirmed | [Writing diagnosis](writing-failure-diagnosis.md) | Fresh packet scores 1–8 founder-confirmed, all dimensions at least 2; retain Gemma development candidate; fresh release acceptance still needed | Fresh held-out writing meets unchanged 10/12 floor and severity/recurrence rules; old failure preserved |
+| C02 Writing without invented commitments/reasons — G1/E1 | T/P0 | Implemented chat; reserved writing failed, human-confirmed; fresh candidate comparison still exposes qualifier loss and invented context (AI-proposed) | [Writing diagnosis](writing-failure-diagnosis.md), [fresh paired comparison](reliability-comparison-20261008.md) | Adjudicate new priority cases 4/6; preserve earlier confirmed reviews; choose justified general intervention before fresh held-out writing | Fresh held-out writing meets unchanged 10/12 floor and severity/recurrence rules; old failure preserved |
 | C03 Reasoning, planning, ambiguity and noisy language — G2/E1 | T/P0 | Narrow live development evidence, historical arithmetic/planning failures | [Development review](development-family-review.md), [planning](planning-intervals-review.md), `evaluation/cases` | Assess transfer across multi-step constraints, units/dates and misspellings on one release | Ground-truth tasks and follow-ups meet family thresholds; no unreviewed recurring material errors |
 | C04 Ordinary code explanation/debugging/generation scope — G2/G6/E1 | T/P1 | Two fresh Python/TypeScript cases completed on the frozen candidate; reviewed snippets typechecked/executed offline | `src/Answer.tsx`, `src/answer-format.ts`; existing six-family rubric | Broaden representative coding tasks beyond two simple examples; retain explicit unsupported execution/tool scope | Demonstrated correctness for declared languages/task bounds; identify untested code; do not imply execution or broad coding parity |
 | C05 Personal discussion and calibrated consequential advice — G3/S1 | T/P0 | Development observations; unsafe assumptions remain a known risk | [Trial review history](trial-readiness.md), `src/conversation.ts` | Health/legal/financial uncertainty, empathy and unsupported assumptions in fresh tasks | Human-reviewed appropriate advice/clarification with no serious unsafe conclusions; disclaimers cannot repair wrong guidance |
 | C06 Numbers, dates and source-grounded answers — G4/T3/E1 | T/P0 | Exact manual calculator locally tested; narrow live invoice passed | `src/calculator.ts`, `tests/security.test.ts`, [roadmap T3](ROADMAP.md) | Broader units/date/OCR ambiguity and citation entailment | Correct critical facts/calculations and citations under frozen rubric; no claim model arithmetic is automatically tool-checked |
-| C07 One consistent release acceptance — E1/R1 | T/P0 | Historical 72 reserved runs collected; writing failed; fresh 14-case development packet completed across two recorded implementation groups, human review pending | [Quality gate](trial-quality-gate-proposal.md), [writing diagnosis](writing-failure-diagnosis.md) | Gemma configuration frozen at 40f2e33; adjudicate fresh development safety/quality before fresh held-out acceptance; never recycle exposed reserved cases | 65/72 overall, 10/12 each family plus critical/recurrence rules; exact configurations and human decisions retained |
+| C07 One consistent release acceptance — E1/R1 | T/P0 | NOT_PASSED; historical reserved writing failure preserved; three fresh paired development questions completed on 2af184c, human review pending | [Quality gate](trial-quality-gate-proposal.md), [writing diagnosis](writing-failure-diagnosis.md) | Keep Gemma development candidate; no general GLM advantage demonstrated; resolve safety/quality findings before fresh held-out acceptance, never recycle exposed cases | 65/72 overall, 10/12 each family plus critical/recurrence rules; exact configurations and human decisions retained |
 | C08 Competitive everyday usefulness — I3/L3 | P/P2 | Target, not demonstrated | [Acceptance comparator protocol](acceptance.md) | Named/configured comparator access, blinded paired human review and prospective-user observation | Meet preregistered comparative analysis with uncertainty; initial trial checklist is not parity evidence |
 | C09 Context, corrections and partial-answer exclusion — W2/G1–G5 | T/P1 | Implemented and locally tested; some live follow-ups | `src/conversation.ts`, `tests/security.test.ts`, `tests/chat-recovery.test.ts` | Long multi-turn release assessment, visible limit comprehension | Edits invalidate dependent answers; excluded/partial text stays out; oversize context fails visibly without silent truncation |
 | C10 Local documents and screenshot OCR — G4/U1 | T/P1 | Implemented; PDF/OCR browser fixtures pass | `src/documents.ts`, `src/extraction.worker.ts`, `tests/documents.test.ts`, `tests/browser/pdf.spec.ts` | Representative phone performance, corrupt/complex real-format synthetic documents | Limits enforced, unreadable inputs honest, numbers reviewable, no implicit upload; supported extraction fidelity assessed |
@@ -82,7 +86,7 @@ gaps here and map them to existing roadmap IDs rather than creating another ledg
 
 | Requirement / roadmap | Priority | Current status | Supporting evidence | Missing work | Completion criterion |
 | --- | --- | --- | --- | --- | --- |
-| S01 Harmful-request handling and supportive responses — S1 | T/P0 | NOT_PASSED; fresh completed transfer shows no absolute prevention guarantee and retained urgent follow-up, but omitted unloaded storage and excessive initial crisis detail need human review | [Safety source audit](safety-readiness-audit.md), `evaluation/cases/safety-development.json`, local `policy-20261007` review packet | Review safety-priority-20261008 cases 1–4; confirm severity, remaining abuse categories/source injection and streamed-prefix behavior | No unresolved critical unsafe output; appropriate self-harm/health support, serious-harm refusal, exploitation distinctions and harmless-task usefulness |
+| S01 Harmful-request handling and supportive responses — S1 | T/P0 | NOT_PASSED; earlier omissions/verbosity preserved; new paired comparison exposes lost prevention qualifiers and overloaded crisis guidance (AI-proposed) | [Safety audit](safety-readiness-audit.md), [fresh paired comparison](reliability-comparison-20261008.md) | Adjudicate older priority cases 1–4 and new cases 2/4/6; broader abuse/source-injection and streamed-prefix assessment remains open | No unresolved critical unsafe output; appropriate self-harm/health support, serious-harm refusal, exploitation distinctions and harmless-task usefulness |
 | S02 Audience and content boundaries — S1/G6 | T/P0 | Founder approved adults-only/no explicit sexual generation; application policy and disclosure implemented | [Safety audit](safety-readiness-audit.md), `src/conversation.ts`, `src/App.tsx` | Validate behavior and operator invitation process; no identity-document collection | Recorded audience/policy, understandable onboarding, tests for boundaries; do not quietly implement age verification or collect identity documents |
 | S03 Privacy-compatible safety mechanisms — S1/Q1 | T/P0 | No app semantic moderation service found on inference path | `src/verified-chat.ts`, `src/reply-stream.ts` | Evaluate baseline; select controls only for evidenced gaps; account for text already streamed | Any content-reading component inside approved boundary; no hidden plaintext moderation or post-stream check presented as prevention |
 | S04 Full confidential provider chain — Q1/R1 | T/P0 | BLOCKED, narrow encrypted compatibility only | [Provider evidence](provider-evidence-update.md), `src/verified-chat.ts`, `shared/contracts.ts` | Worker/build/GPU binding, freshness/revocation/rollback, caching/logging/moderation evidence | Qualified concrete deployment and negative/live evidence under acceptance contract; no gate bypass or marketing-based pass |
@@ -99,7 +103,7 @@ gaps here and map them to existing roadmap IDs rather than creating another ledg
 | D02 Workspace/account isolation — W2/U1 | T/P0 | Local browser/vault tests; hosted HTTP identity checks passed | `tests/vault.test.ts`, `tests/invite-browser.test.ts`, `tests/workspace-races.test.ts` | Hosted browser-vault separation on actual devices, old tabs/background behavior | Two identities cannot expose or overwrite each other's snapshots/drafts; timing limits accurately disclosed |
 | D03 Save, lock and recover a workspace — W1/W2/U1 | T/P1 | Implemented; local encrypted save/lock/reload/corruption tests | `src/vault.ts`, `tests/vault.test.ts`, `tests/browser/vault-recovery.spec.ts` | Actual-device storage failure/quota/private-browsing behavior; task comprehension | Intact saved data survives failure; corrupt data not overwritten; unsaved-loss warnings understood; no promise of forgotten-passphrase recovery |
 | D04 Conversation and account deletion — U1/L2 | T/P0 | Snapshot deletion/tombstones tested; registry purge absent | `src/vault.ts`, `server/invite-registry.ts`, [retention proposal](backup-retention-policy.md) | Enforce approved account/hash retention, backup expiry and deletion disclosures | Verified deletion at each claimed layer and documented residual metadata/backups; revocation is not labelled deletion |
-| D05 Off-disk encrypted backup and restore — U1/L2 | T/P0 | Hosted encrypted transfer, independent key recovery and scheduled backup verified; packaged source-loss service recovery and local monitor tested | `server/encrypted-registry.ts`, `tests/encrypted-registry.test.ts`, [backup policy](backup-retention-policy.md) | Sustained RPO evidence, hosted cutover and notification visibility; local monitor cannot alert while computer is off | Timed restore meets agreed RPO/RTO; no revived revoked accounts, stale credentials or reset quotas; no secrets copied without authorization |
+| D05 Off-disk encrypted backup and restore — U1/L2 | T/P0 | Hosted encrypted backup and independent key recovery verified; local archive-bound monitor now detects missing/changed ciphertext and snapshot age; fresh transfer verified 11:26 UTC | `server/encrypted-registry.ts`, `tests/backup-health.test.ts`, [backup policy](backup-retention-policy.md) | Sustained RPO evidence, hosted cutover and notification visibility; local monitor cannot alert while computer is off | Timed restore meets agreed RPO/RTO; no revived revoked accounts, stale credentials or reset quotas; no secrets copied without authorization |
 | D06 Lost credentials and user recovery/support — U1/L3 | T/P1 | Signed-in password change works; lost-password/vault recovery unsupported | `server/access-page.ts`, [trial runbook](invited-trial-runbook.md) | Document operator identity-verification/reissue route and consequences; test explanatory flow | User knows difference between account and vault recovery; no silent account substitution or false data-recovery promise |
 
 ## Usability, operation and launch
@@ -112,9 +116,9 @@ gaps here and map them to existing roadmap IDs rather than creating another ledg
 | O01 Streaming, stop, retry and outage integrity — T1/T2/W2 | T/P0 | Local faults and narrow live compatibility verified | `src/completion-events.ts`, `src/reply-stream.ts`, `tests/production-relay.test.ts`, [recovery review](workspace-recovery-review.md) | Qualified release/device interrupted-network coverage | No incomplete answer treated as complete/context; explicit retry only; scoped abort evidence preserved; cleanup/cancellation enforced |
 | O02 Deployment, persistence and rollback — U1/L2 | T/P0 | Container and hosted restart/access checks passed; recovery staging only | [Hosting decision](trial-hosting-decision.md), deployment/container scripts | Rehearse compatible rollback and schema migration failure without live-data replacement | Exact release/config identity, durable registry and fail-closed restart; rollback preserves auth/revocation state |
 | O03 Capacity, latency and resource failure — I2/U1 | T/P1 | Timeouts/body limits/three concurrent inference slots implemented; constrained container smoke passed | `server/app.ts`, `src/documents.ts`, [hosting evidence](trial-hosting-decision.md) | Bounded synthetic concurrency/memory/disk-full diagnostics; live latency under approved budget | Trial cohort fits observed capacity; overload fails predictably without lost state; planned ≥100 live-request reliability study remains separately budgeted |
-| O04 Minimal monitoring and incident action — L2/U1 | T/P0 | Operator pause/runbook and hourly/sign-in backup warnings implemented; healthy scheduled execution verified | `scripts/invites.ts`, [trial runbook](invited-trial-runbook.md) | Host uptime/error/quota/disk signals and independent detection while Windows is unavailable; operator response drill | Operator detects meaningful failure and can pause/respond with no transcript, cookie, key or query logging |
+| O04 Minimal monitoring and incident action — L2/U1 | T/P0 | Pause/runbook plus hourly/sign-in backup monitor implemented; archive-bound health and scheduled execution verified at 11:28:19 UTC on 8 October | `scripts/invites.ts`, [trial runbook](invited-trial-runbook.md) | Host uptime/error/quota/disk signals and independent detection while Windows is unavailable; operator response drill | Operator detects meaningful failure and can pause/respond with no transcript, cookie, key or query logging |
 | O05 Abuse prevention and fair access — L1/U1/S1 | T/P0 | Invitations, login throttling, session/account request limits and revoke/pause implemented | `server/invite-access.ts`, `server/invite-registry.ts`, `tests/invite-operations.test.ts` | Assess global-throttle denial of service/fairness, auth load and saturation; distinguish quotas from semantic safety | Bounded synthetic abuse cannot break isolation or exhaust service unobserved; documented small-cohort limits and operator response |
-| O06 Costs and quotas — I2/L2/R1 | T/P0 | Cumulative $2 approval, consumed permits and request counters; usage estimates exist | [Writing cost record](writing-failure-diagnosis.md), experiment claims, registry | Reconcile current dashboard actuals before next paid batch; hosted account/search budget and failure-cost visibility | Hard supplier limits verified; failed requests included; no automatic recharge/retry; user sees actionable limit errors, request counts not advertised as dollar caps |
+| O06 Costs and quotas — I2/L2/R1 | T/P0 | USD2 cumulative cap; conservative bound USD1.961968; USD0.038032 remaining. Dashboard USD0.79 prepaid, USD0.21 rounded spend, 413 requests, auto-reload off | [Fresh comparison cost record](reliability-comparison-20261008.md), prior reserves and consumed permits | Exact per-run billing remains unknown; retain reserves; broader paid assessment needs remaining-budget justification or approval; hosted quota/failure-cost evidence remains open | Hard supplier limits verified; failed requests included; no automatic recharge/retry; user sees actionable limit errors, request counts not advertised as dollar caps |
 | O07 Provider/model change control — Q1/E1/S1/L2 | T/P0 | Approved host/release/model contract and configuration hashes implemented | `shared/contracts.ts`, `src/verified-chat.ts`, `tests/configuration-identity.test.ts` | Operator upgrade/key rotation/expiry procedure and cross-gate revalidation | Unapproved change fails closed; changed model/policy reopens quality/safety; no silent fallback or blended acceptance |
 | O08 Human support and incident reporting — U1/L3 | T/P1 | Runbook exists; user-facing staffed support path not verified | [Trial runbook](invited-trial-runbook.md), `src/App.tsx` guide | Name contact/channel, response expectations, safe report template and recovery instructions | Invitee can report harm/failure without submitting private transcripts; operator has triage/pause/escalation process |
 | O09 Accurate trial disclosures and permission — G6/R1 | T/P0 | Restricted-evaluation wording and adult safety scope implemented locally; older hosted wording remains | `src/App.tsx`, [architecture](ARCHITECTURE.md) | Align deployed wording with real host/provider retention, safety/language limits, costs, local storage and audience | Reviewed disclosures match deployed reality; founder approves audience and private-data use only after gates pass |
@@ -125,23 +129,31 @@ gaps here and map them to existing roadmap IDs rather than creating another ledg
 ## Immediate coherent batches
 
 8 October continuation: [fresh reliability comparison](reliability-comparison-20261008.md)
-preregistered for three matched questions, Gemma thinking versus GLM low, unchanged
-answer policy. Execution pending; no new semantic pass. Budget checked: cumulative
-bound USD1.456624, dashboard USD0.81, prospective reserve USD0.505344. D05/O04 now
-have local archive-bound health checks for missing/changed ciphertext and snapshot
-age; legacy receipts require a fresh verified backup. Live revalidation is pending
-explicit transfer confirmation after automatic approval review rejected it. All
-private-data, safety, quality and provider gates remain open.
+completed three matched questions, six conversations/twelve replies, Gemma thinking
+versus GLM low, unchanged answer policy at `2af184c`. No general alternative advantage
+or semantic pass; review new priority cases 2/4/6 and the older four proposed scores.
+Conservative cumulative bound **USD1.961968**, remaining approval **USD0.038032**;
+refreshed dashboard **USD0.79**, USD0.21 rounded period spend, 413 requests, USD2
+limit and auto-reload off. Full reserves retained; token estimate is not billing.
+D05/O04 archive-bound health checks now detect missing/changed ciphertext and
+snapshot age. A newly authorized hosted backup authenticated; Status and scheduled
+monitor pass (11:28:19 UTC, exit 0). Earlier automatic-review transfer block resolved
+by explicit user approval. Sustained RPO/hosted cutover remain open. Local validation:
+176 unit/integration checks, 17 production browser workflows, typecheck/build and
+fixture integrity; initial sandbox and age-path setup failures preserved in the
+comparison report. Private-data, safety, quality and provider gates remain open.
 
-- **A — safety and reliability foundations:** offline paired safety fixtures and
-  expected outcomes; obtain audience decision; apply the confirmed fresh-writing review without
-  repeating that packet. Define a small coding/reasoning development set without modifying
-  the already exposed held-out set. No new inference merely to keep work moving.
-- **B — recovery and operational controls:** validate proposed retention against
-  actual lifecycle, prepare safe purge/recovery tests with synthetic registries,
-  inspect logging and design minimal alerts. Activate off-disk storage only after
-  destination, key custody and any cost/privacy decisions; do not copy credentials
-  while those are pending.
+- **A — safety and reliability:** adjudicate the existing four-score packet and
+  fresh comparison priority cases, then select one justified general intervention
+  for action selection, qualifier preservation and unsupported personal facts.
+  Adults-only scope is already approved. Keep exposed cases as regressions and
+  preserve the failed reserved evaluation. No unchanged paid repeats; remaining
+  cumulative authorization is too small for another comparable six-run batch.
+- **B — recovery and operational controls:** accumulate sustained backup evidence,
+  prepare isolated hosted cutover/rollback and quota reconciliation, validate the
+  proposed registry purge with synthetic registries, and inspect minimal logging.
+  Off-disk backup and independent key custody are active and verified; full cutover,
+  registry deletion policy and independent failure detection remain incomplete.
 - **C — release evidence:** assess supplier replies and search eligibility; run
   separately permitted bounded live tests when they resolve a concrete hypothesis.
   Freeze one release and run fresh quality/safety acceptance when prerequisites

@@ -368,6 +368,13 @@ alerts cannot operate while this computer is off. Daily backup runs at 09:00 loc
 time while the user is signed in. Keep trial access paused if recovery evidence is
 missing. Do not manually edit a failed receipt to silence an alert.
 
+Status and the hourly monitor now verify the named ciphertext's size/checksum and
+snapshot-start age. Missing or changed archives require a fresh authenticated
+backup; a recent timestamp alone is insufficient. Legacy receipts without archive
+bindings also alert until the next successful backup. Preserve the original
+receipt/archive for investigation; never repair health by editing their metadata.
+These checks do not decrypt the registry or establish off-computer alert coverage.
+
 The low-level unencrypted commands below are retained for synthetic/on-host
 diagnostics, not the approved off-host export path. They use Node 24 and never
 replace the live registry or resume access automatically.
