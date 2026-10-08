@@ -200,7 +200,7 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
       };
     }, allCases);
     expect(result.compatibilityCalls).toBe(1);
-    expect(result.development).toHaveLength(112);
+    expect(result.development).toHaveLength(116);
     for (const [index, task] of result.development.entries()) {
       const fixture = allCases[index];
       expect(task.outcome.failure).toBeNull();

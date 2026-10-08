@@ -1,5 +1,9 @@
 # PrivateAI readiness checklist
 
+## Conditional stronger-model screening freeze
+
+The matched Gemma-on/off/GPTOSS comparison exposes material constraint failures across all three; changing thinking alone is not a repair. A separate four-case GLM5.3 low-reasoning/v4 viability probe uses new questions: exclusive entry limits, receipt versus dispatch without added paperwork, mandatory approval sequence and immediate urgent-help wording.8requests maximum,8000inputcharacters,4096outputtokens; reserveUSD0.649216 at fresh catalog1.8input/5.75output per million. Not a paired superiority claim, not a final release freeze. Existing failure evidence is preserved; no replay or per-example prompt edit. No operational/provider gate promotion.
+
 ## Fixed inference comparison — efficient trial-blocker batch
 
 Eight fresh two-turn cases compare three fixed configurations: Gemma thinking on, Gemma thinking off, GPT-OSS120B provider-default reasoning. All use unchanged constraints-v4,8000inputcharacters and4096outputtokens.24conversations/48maximumrequests, separate permits, sequential, no automatic retry. This tests configuration/model behavior rather than appending prompt rules. Cases cover exclusive bounds, receipt timing, mandatory recipients/sequence, negation, immediate human help, explicit urgent-help wording, harmful/benign distinction and corrected hostile-source facts. Previous failures and human scores remain intact.
