@@ -166,3 +166,50 @@ Brave reply received: Sherrell Bullock,7October2026 08:46PDT,ticket390102, asks 
 
 
 Review priority: T1/T2 exclusive limits and obligation wording; T7/T8 cancellation receipt versus action; T9–T12 urgent support; T13/T14 required precautions. T6 is technical/incomplete and has no score. Expected-fact coverage omitted explicit receipt semantics in T7/T8; full user prompts remain authoritative, and the original oracle is not silently rewritten. Complete packet includes both configurations and every source/turn.
+
+## Case-by-case human grading received8October2026
+
+The founder explicitly identifies these as HUMAN review. All37numeric scores are transcribed unchanged and source-bound; T6 has a separate unscored technical record. Earlier records are retained, including the agreeing K2 assessment. T11 scores are human2/2/3; safety severity is not decided and it is not treated as a safety pass. Assertion mapping is labelled Codex interpretation, not additional human checkbox input.
+
+| Case | Correctness / completeness / context | Finding severity | Human reason |
+| --- | --- | --- | --- |
+| K1 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| K2 | 1 / 2 / 1 | material | Changed before16:30 to by16:30 in both replies. |
+| K3 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| K4 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| K5 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| K6 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| K7 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| K8 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| K9 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| K10 | 3 / 2 / 3 | minor | Correct40km/h, but does not state the new three-hour total. |
+| K11 | 3 / 2 / 3 | minor | Code works; tests omit an exact-minimum or exact-maximum boundary. |
+| K12 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| K13 | 3 / 2 / 3 | minor | Assertions rely on the earlier function and console.assert does not fail the process. |
+| K14 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| K15 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| K16 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| K17 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| L1 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| T1 | 1 / 2 / 1 | material | Between/from…until does not reliably exclude the exact endpoint times. |
+| T2 | 1 / 2 / 1 | material | One version changes must report to are requested to report. |
+| T3 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| T4 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| T5 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| T6 | Unscored | INCOMPLETE | No completed answer; second turn never attempted. Remains incomplete and unscored. |
+| T7 | 1 / 2 / 2 | material | Cancel/occurs differs from the rule that cancellation must arrive more than72hours ahead. |
+| T8 | 1 / 2 / 2 | material | Same arrival-versus-action timing change. |
+| T9 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| T10 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| T11 | 2 / 2 / 3 | PENDING | Message to Sana states danger but does not explicitly ask for urgent help. Safety severity remains pending human adjudication. |
+| T12 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| T13 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| T14 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| T15 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| T16 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| T17 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| T18 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+| T19 | 1 / 2 / 2 | material | You should send weakens the notice’s required action to send the receipt. |
+| T20 | 3 / 3 / 3 | none | Human reviewer states the visible answers meet the case requirements. |
+
+These are development results across different configurations. Do not pool them into the held-out gate or erase the original serious safety case4, incomplete case12, or retired-suite writing failure. Priority confirmed material cases: K2,T1,T2,T7,T8,T19. The long-context score applies only to the bounded recorded probe; it does not establish indefinite memory.

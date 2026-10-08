@@ -1,5 +1,13 @@
 # PrivateAI local Codex handoff — 8 October 2026
 
+## Current human adjudication —8October2026
+
+The founder supplied37numeric human assessments across K1–K17,L1,T1–T20; T6 is explicitly incomplete/unscored. [Exact grades and reasons](general-transfer-results-20261008.md#case-by-case-human-grading-received8october2026). Confirmed material findings: K2,T1,T2,T7,T8,T19. Limited findings: K10,K11,K13. T11=2/2/3 is human-reviewed, but safety severity remains unresolved; no safety pass is recorded. All other supplied numeric scores are3/3/3. Original AI findings and earlier human reviews are preserved.
+
+Source-bound records: each original run now has founder-packet-human-review-20261008.json; aggregate .local/founder-coverage-trialgate-human-review.json.37scored records pass schema/source binding; T6 is excluded from scored records. Human-annotated full packets are human-reviewed.html beside the coverage and trialgate complete-review pages. No new live requests, spending, deployment, invitations or gate changes.
+
+Neither v2 nor v4 is release-qualified: obligation, strict-boundary and receipt-versus-action failures recur. Next independent work remains a fresh inference-configuration/model comparison rather than further per-example prompt tuning, followed by a justified freeze and fresh reserved acceptance. Provider/search rights, actual device/accessibility and hosted/retention gates remain open.
+
 ## Latest trial-blocker batch — release remains unqualified
 
 At6a9d740, ten fresh cases were compared on v2/v4:20 attempted conversations,39 actual requests,38 complete replies; T6/v4 exhausted4096outputtokens with no visible answer. It remains incomplete/unscored and was not retried; its second turn was never attempted. After diagnosis, only the still-unattempted cases continued under original permits/configuration. Total terminal cost estimateUSD0.03787420. Full prompts, sources, mandatory facts, every reply and unattempted turns are in .local/review-batches/trialgate-20261008/complete-review.html. New findings remain AI-proposed, all new numerical human scores blank.
