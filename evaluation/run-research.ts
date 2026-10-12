@@ -4,11 +4,16 @@ import { randomBytes } from "node:crypto";
 import { createServer } from "vite";
 import { chromium } from "@playwright/test";
 import { experimentGateway } from "./experiment-gateway";
-import { validateExperiment } from "./experiment";
+import { validateExperiment, developmentCase } from "./experiment";
 import { claimExperiment } from "./run-claim";
 import { searchWeb } from "../server/research";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
-import cases from "./cases/research-transfer.json";
+import publicCases from "./cases/research-transfer.json";
+import evidenceCases from "./cases/research-evidence-transfer.json";
+const authored = process.argv[3] === "--authored";
+const cases = authored
+  ? evidenceCases.cases.map((c) => ({ ...c, query: "" }))
+  : publicCases;
 
 // Requires newly prepared permits; consumed permits cannot be reused. Persist metadata only.
 const runRoot = resolve(process.argv[2] ?? "");
@@ -16,7 +21,7 @@ if (!process.argv[2] || !runRoot.startsWith(resolve(".local") + "\\"))
   throw Error("Local batch directory required");
 const key = process.env.TINFOIL_API_KEY,
   searchKey = process.env.BRAVE_SEARCH_API_KEY;
-if (!key || !searchKey) throw Error("Stored keys required");
+if (!key || (!authored && !searchKey)) throw Error("Stored keys required");
 const outcomes: unknown[] = [];
 const browser = await chromium.launch(browserLaunchOptions());
 try {
@@ -58,18 +63,15 @@ try {
     let vite: Awaited<ReturnType<typeof createServer>> | undefined;
     const context = await browser.newContext({ serviceWorkers: "block" });
     try {
-      record.searchAttempted = true;
+      record.searchAttempted = !authored;
       await writeFile(
         resolve(runRoot, "metadata.json"),
         JSON.stringify(outcomes, null, 2),
       );
       const start = Date.now();
-      const sources = await searchWeb(
-        fixture.query,
-        searchKey,
-        undefined,
-        "llm-context",
-      );
+      const sources = authored
+        ? developmentCase(fixture.id, "robustness_case").sources
+        : await searchWeb(fixture.query, searchKey!, undefined, "llm-context");
       record.searchMs = Date.now() - start;
       record.sourceCount = sources.length;
       if (!sources.length) {
@@ -158,6 +160,26 @@ try {
         ...meta,
         answerCharacters: answer.length,
       }));
+      if (authored) {
+        // Only our authored fixtures and their synthetic answers may be reopened.
+        await writeFile(
+          resolve(claimed, "result.json"),
+          JSON.stringify(
+            {
+              id: fixture.id,
+              fixture,
+              sources,
+              replies,
+              attempts: gateway.attempts,
+              humanScores: null,
+              qualification: "NOT_PASSED",
+            },
+            null,
+            2,
+          ),
+          { flag: "wx" },
+        );
+      }
       // Answers are inspected in the active run only; no source bodies or answer files are saved.
       console.log(
         JSON.stringify({
@@ -169,7 +191,13 @@ try {
       );
       if (replies.some((reply: any) => !reply.completed)) {
         record.failure = "INCOMPLETE_STOPPED";
-        break;
+        // A withheld answer is a case result, not a transport outage or a retry.
+        // Continue independent authored cases only after terminal usage is known.
+        if (
+          !authored ||
+          replies.some((reply: any) => !reply.completed && !reply.usage)
+        )
+          break;
       }
     } catch {
       record.failure = "RUN_FAILED_NO_RETRY";

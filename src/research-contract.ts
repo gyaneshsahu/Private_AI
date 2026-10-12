@@ -43,21 +43,54 @@ const limitationText = {
 const plainMarkdown = (text: string) =>
   text.replace(/[\\`*_{}\[\]()<>#+.!|~$-]/g, "\\$&");
 
+export type EvidenceFailureCode =
+  | "TOO_LARGE"
+  | "INVALID_JSON"
+  | "INVALID_SCHEMA"
+  | "INVALID_SOURCES"
+  | "INCONSISTENT_RESULT"
+  | "CLAIM_FORMAT"
+  | "PASSAGE_MISMATCH";
+class EvidenceContractError extends Error {
+  constructor(readonly code: EvidenceFailureCode) {
+    super("Research evidence contract rejected.");
+  }
+}
+export class ResearchEvidenceError extends IncompleteReplyError {
+  constructor(
+    readonly evidenceFailure: EvidenceFailureCode,
+    usage?: Usage,
+  ) {
+    super(
+      "Research answer withheld: its required evidence format could not be validated. No automatic retry was made.",
+      usage,
+    );
+  }
+}
+
 export function renderResearchContract(raw: string, sources: Source[]): string {
-  if (raw.length > 64000) throw Error("Evidence contract too large");
-  const result = schema.parse(JSON.parse(raw));
+  if (raw.length > 64000) throw new EvidenceContractError("TOO_LARGE");
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new EvidenceContractError("INVALID_JSON");
+  }
+  const validated = schema.safeParse(parsed);
+  if (!validated.success) throw new EvidenceContractError("INVALID_SCHEMA");
+  const result = validated.data;
   const byId = new Map(sources.map((source) => [source.id, source]));
   if (byId.size !== sources.length || !sources.length)
-    throw Error("Invalid evidence set");
+    throw new EvidenceContractError("INVALID_SOURCES");
   if (
     (!result.claims.length && result.limitation === "none") ||
     (result.claims.length && result.limitation === "ambiguous")
   )
-    throw Error("Inconsistent evidence result");
+    throw new EvidenceContractError("INCONSISTENT_RESULT");
   const claims = result.claims.map((claim) => {
     // References and quotations come from checked evidence, never free-form markup.
     if (/[\[\]【】“”"\r\n]|https?:\/\//i.test(claim.text))
-      throw Error("Claim must be plain text");
+      throw new EvidenceContractError("CLAIM_FORMAT");
     for (const evidence of claim.evidence) {
       const source = byId.get(evidence.sourceId);
       if (
@@ -66,7 +99,7 @@ export function renderResearchContract(raw: string, sources: Source[]): string {
         !evidence.quote.trim() ||
         !source.text.includes(evidence.quote)
       )
-        throw Error("Evidence passage does not match its source");
+        throw new EvidenceContractError("PASSAGE_MISMATCH");
     }
     const ids = [
       ...new Set(claim.evidence.map((evidence) => evidence.sourceId)),
@@ -95,11 +128,11 @@ export async function consumeResearchReply(
   });
   let answer: string;
   try {
-    if (oversized) throw Error("Oversized draft");
+    if (oversized) throw new EvidenceContractError("TOO_LARGE");
     answer = renderResearchContract(raw, sources);
-  } catch {
-    throw new IncompleteReplyError(
-      "Research answer withheld: its evidence references could not be validated. No automatic retry was made.",
+  } catch (error) {
+    throw new ResearchEvidenceError(
+      error instanceof EvidenceContractError ? error.code : "INVALID_SCHEMA",
       usage,
     );
   }

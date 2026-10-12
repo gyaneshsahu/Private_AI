@@ -111,3 +111,20 @@ This experiment is **off by default**. Quote matching cannot establish entailmen
 Next fixed transfer packet: `evaluation/cases/research-evidence-transfer.json`, eight authored-source cases / sixteen requests maximum. Scope: past scheduled versus confirmed events, corrections, contradictory reports, population/measurement mismatch, derived units/cost, ambiguous subjects, reactions and embedded instructions, strict receipt deadlines. Ground truth is fixed before model execution. Record every prompt/reply, withholding/incompletion separately, semantic support, relevance, citation accuracy, latency and actual token cost. Human grades stay blank pending review. No Ragas model judge is added: it would introduce another unqualified judgment/cost and cannot replace these independently specified answers.
 
 Proposed bounded configuration: 16 requests, at most12,000 input characters including contract and4,096 output tokens per request. At the last checked USD0.15/0.60 per million input/output tokens, conservative4tokens/character reserve is USD0.1545216. This is an estimate for preparation, not money spent or an active reservation. Refresh pricing, actual spend and genuine outstanding risk before issuing separate permits. No Brave requests are needed for authored-source cases. This batch has not run; normal private chat remains blocked.
+
+## Authored-evidence experiment results — 12 October
+
+The prepared batch above has now run, followed by a separate ordinary-prose control on the same unchanged cases. Same model, v4 policy,12,000-character context cap and4,096-token output cap; the contract toggle is the sole configuration difference. Separate consumed permits, no retries, no Brave calls. This fixed-order, single-sample comparison is development evidence, not held-out acceptance or a statistical ranking.
+
+| Arm | Requests / displayed replies | Median latency | Estimated model cost |
+| --- | --- | --- | --- |
+| Structured contract |16 /14 |2,691.5ms |USD0.00547725 |
+| Ordinary prose |16 /16 |2,208ms |USD0.00414825 |
+
+Both incorrectly infer numbers of cyclists from numbers of registered bicycles, despite the source's explicit distinction. Both overstate actual operation from a changed schedule. The structured arm provides valid clickable IDs for displayed claims but substitutes generic insufficiency for useful uncertainty/clarification and has two missing replies. Ordinary prose has malformed Unicode/spaced citation IDs, lengthy speculative additions and non-verbatim quotations. Calculations in the energy case and strict receipt boundaries in the deadline case are correct in both arms; those narrow successes do not erase the failures.
+
+Decision: **do not promote either arm on this evidence; keep the contract experimental**. Mechanical evidence matching is useful for reference integrity but not a factuality solution. Next compare supported reasoning/model configurations on a newly frozen general transfer set; do not write rules for these exposed examples. Full human assessment and reserved acceptance remain outstanding.
+
+Complete reopenable packet contains original user turns, authored sources, expected facts and every displayed reply. Human scores are blank; missing replies unscored. Raw rejected drafts/exact rejection subtypes were not retained, so their precise causes are unknown. Future-run code now reports content-free evidence failure codes separately from transport diagnostics. Updated audit detects malformed Unicode/spaced IDs; original audit metrics remain intact beside separately labelled auditV2. No rerun was made after these diagnostic changes.
+
+Tracked record: `evaluation/results/research-evidence-20261012.json`; generator: `evaluation/review-research-evidence.ts`; local review: `.local/review-batches/evidence-20261012/complete-review.html`. Billing nowUSD0.44/3,credit10.56,autoreload off;593→625requestcountermatches32. Combined terminal estimateUSD0.0096255is already reflected in reported spend; conservative boundUSD0.4663552retains old uncertainty/rounding. No active reservations or account changes.

@@ -5,6 +5,7 @@ import { streamVerifiedConversation } from "../src/verified-chat";
 import { validateExperiment, developmentCase } from "./experiment";
 import { auditResearchAnswer } from "../src/research-audit";
 import { IncompleteReplyError } from "../src/reply-stream";
+import { ResearchEvidenceError } from "../src/research-contract";
 
 // Evaluation-only entry point. No source, answer or secret is written to storage.
 Object.assign(window, {
@@ -14,7 +15,10 @@ Object.assign(window, {
     sources: Source[],
   ) => {
     const permit = validateExperiment(input);
-    if (!permit.developmentCaseId?.startsWith("research-"))
+    if (
+      !permit.developmentCaseId?.startsWith("research-") &&
+      !permit.developmentCaseId?.startsWith("evidence-")
+    )
       throw Error("Research permit required");
     const fixture = developmentCase(
       permit.developmentCaseId,
@@ -64,7 +68,20 @@ Object.assign(window, {
           completed: false,
           answer,
           stage,
-          usage: error instanceof IncompleteReplyError ? error.usage : undefined,
+          failureKind:
+            error instanceof ResearchEvidenceError
+              ? "EVIDENCE_WITHHELD"
+              : "INCOMPLETE",
+          evidenceFailure:
+            error instanceof ResearchEvidenceError
+              ? error.evidenceFailure
+              : undefined,
+          transportDiagnostic:
+            error instanceof IncompleteReplyError
+              ? error.diagnostic
+              : undefined,
+          usage:
+            error instanceof IncompleteReplyError ? error.usage : undefined,
           elapsedMs: Math.round(performance.now() - started),
         });
         break;

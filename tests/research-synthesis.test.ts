@@ -5,6 +5,17 @@ import { parseLlmContext } from "../server/research";
 import { parseResearchResult } from "../src/research-result";
 import { auditResearchAnswer } from "../src/research-audit";
 
+it("flags malformed spaced and Unicode-hyphen citation IDs without silently repairing their identity", () => {
+  const audit = auditResearchAnswer(
+    "Fact [ e‑01‑source ]. Another [**evidence‑06‑source**].",
+    [{ id: "evidence-06-source", title: "Synthetic", text: "Another fact" }],
+  );
+  expect(audit.citationReferences).toBe(2);
+  expect(audit.unknownSourceReferences).toBe(2);
+  expect(audit.semanticSupport).toBe("NOT_ASSESSED");
+  expect(auditResearchAnswer("[abcdef] [unknown]", [{ id: "abcdef", title: "Synthetic", text: "Fact" }])).toMatchObject({ citationReferences: 2, unknownSourceReferences: 1 });
+});
+
 it("flags invented locators, unknown sources and unmatched quotes without claiming semantic support", () => {
   const audit = auditResearchAnswer(
     "“Doors open at nine” 【source-01†L2-L3】. “Invented statement” [missing-01].",

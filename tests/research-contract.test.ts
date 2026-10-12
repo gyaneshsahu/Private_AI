@@ -123,6 +123,7 @@ it("buffers all chunks until validation and keeps terminal usage on rejection", 
     ),
   ).rejects.toMatchObject({
     name: "IncompleteReplyError",
+    evidenceFailure: "PASSAGE_MISMATCH",
     usage: { total: 40 },
   });
   expect(emitted).toEqual([]);
@@ -135,6 +136,29 @@ it("buffers all chunks until validation and keeps terminal usage on rejection", 
   );
   expect(usage?.total).toBe(40);
   expect(emitted).toHaveLength(1);
+});
+
+it.each([
+  ["not JSON", "INVALID_JSON"],
+  ['{"claims":[]}', "INVALID_SCHEMA"],
+  [JSON.stringify(draft('Uncaptured "quotation".')), "CLAIM_FORMAT"],
+])("retains a content-free rejection code for %s", async (raw, code) => {
+  try {
+    await consumeResearchReply(
+      stream(raw),
+      pricing,
+      new AbortController().signal,
+      sources,
+      () => {},
+    );
+    throw Error("Expected rejection");
+  } catch (error) {
+    expect(error).toMatchObject({
+      evidenceFailure: code,
+      usage: { total: 40 },
+    });
+    expect(JSON.stringify(error)).not.toContain(raw);
+  }
 });
 
 it("does not publish truncated or oversized drafts and retains usage", async () => {

@@ -16,6 +16,7 @@ import coverageTransfer from "./cases/coverage-transfer.json";
 import trialGateTransfer from "./cases/trial-gate-transfer.json";
 import configTransfer from "./cases/config-transfer.json";
 import researchTransfer from "./cases/research-transfer.json";
+import researchEvidenceTransfer from "./cases/research-evidence-transfer.json";
 import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
@@ -34,6 +35,23 @@ const robustnessCases = [
   ...trialGateTransfer,
   ...configTransfer,
   ...researchTransfer,
+  ...researchEvidenceTransfer.cases.map((c) => ({
+    id: c.id,
+    family: "research",
+    turns: c.turns,
+    mandatoryFacts: [c.expected],
+    forbiddenConclusions: [],
+    synthetic: true,
+    sources: [
+      {
+        id: `${c.id}-source`,
+        title: "Authored synthetic evidence",
+        text: c.source,
+        url: "https://example.com/synthetic-evidence",
+        evidenceKind: "page" as const,
+      },
+    ],
+  })),
   ...safetyDevelopment.cases.map((c) => ({
     id: c.id,
     family: "personal",
