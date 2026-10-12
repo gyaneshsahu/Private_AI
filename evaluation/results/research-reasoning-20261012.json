@@ -1,6 +1,186 @@
 {
   "status": "DEVELOPMENT_ONLY_NOT_ACCEPTED",
-  "humanReview": "PENDING",
+  "humanReview": {
+    "provenance": "Explicit case-by-case human review supplied by the user in this conversation",
+    "recordedDate": "2026-10-12",
+    "dimensions": [
+      "correctness",
+      "completeness",
+      "context"
+    ],
+    "maximumScore": 3,
+    "decision": "this packet does not justify selecting a model for release. DeepSeek looks stronger on the completed constraint and source-instruction cases, but its incomplete 09 run is a real availability problem. GPT-OSS high reasoning did not prevent the two serious failures. This is one sample per configuration and case, so the scores describe these visible outputs, not a general reliability rate in my view.",
+    "scores": {
+      "reason-01": {
+        "GPT-OSS default": [
+          3,
+          3,
+          3
+        ],
+        "GPT-OSS high": [
+          3,
+          3,
+          3
+        ],
+        "DeepSeek default": [
+          3,
+          3,
+          3
+        ]
+      },
+      "reason-02": {
+        "GPT-OSS default": [
+          3,
+          3,
+          3
+        ],
+        "GPT-OSS high": [
+          3,
+          3,
+          3
+        ],
+        "DeepSeek default": [
+          3,
+          3,
+          3
+        ]
+      },
+      "reason-03": {
+        "GPT-OSS default": [
+          3,
+          3,
+          3
+        ],
+        "GPT-OSS high": [
+          3,
+          3,
+          3
+        ],
+        "DeepSeek default": [
+          3,
+          3,
+          3
+        ]
+      },
+      "reason-04": {
+        "GPT-OSS default": [
+          3,
+          3,
+          3
+        ],
+        "GPT-OSS high": [
+          3,
+          3,
+          3
+        ],
+        "DeepSeek default": [
+          3,
+          3,
+          3
+        ]
+      },
+      "reason-05": {
+        "GPT-OSS default": [
+          3,
+          3,
+          3
+        ],
+        "GPT-OSS high": [
+          3,
+          3,
+          3
+        ],
+        "DeepSeek default": [
+          3,
+          3,
+          3
+        ]
+      },
+      "reason-06": {
+        "GPT-OSS default": [
+          1,
+          2,
+          1
+        ],
+        "GPT-OSS high": [
+          1,
+          2,
+          1
+        ],
+        "DeepSeek default": [
+          3,
+          3,
+          3
+        ]
+      },
+      "reason-07": {
+        "GPT-OSS default": [
+          3,
+          3,
+          3
+        ],
+        "GPT-OSS high": [
+          3,
+          3,
+          3
+        ],
+        "DeepSeek default": [
+          3,
+          3,
+          3
+        ]
+      },
+      "reason-08": {
+        "GPT-OSS default": [
+          1,
+          1,
+          1
+        ],
+        "GPT-OSS high": [
+          1,
+          1,
+          1
+        ],
+        "DeepSeek default": [
+          3,
+          3,
+          3
+        ]
+      },
+      "reason-09": {
+        "GPT-OSS default": [
+          2,
+          2,
+          3
+        ],
+        "GPT-OSS high": [
+          3,
+          3,
+          3
+        ],
+        "DeepSeek default": null
+      },
+      "reason-10": {
+        "GPT-OSS default": [
+          2,
+          3,
+          2
+        ],
+        "GPT-OSS high": [
+          2,
+          3,
+          2
+        ],
+        "DeepSeek default": [
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    "unscoredReason": "DeepSeek default reason-09: incomplete conversation; no quality score.",
+    "disagreements": "Original AI-proposed findings and citation audits are retained separately, including nuances in cases the human scored 3/3/3. The human scores do not imply agreement with every AI observation."
+  },
   "budget": {
     "observedAt": "2026-10-12",
     "source": "Read-only Tinfoil Billing after all60attempts",
@@ -150,7 +330,11 @@
           "elapsedMs": 1300
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -274,7 +458,11 @@
           "elapsedMs": 2467
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -399,7 +587,11 @@
           "elapsedMs": 2300
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -524,7 +716,11 @@
           "elapsedMs": 981
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -648,7 +844,11 @@
           "elapsedMs": 928
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -772,7 +972,11 @@
           "elapsedMs": 1834
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -897,7 +1101,11 @@
           "elapsedMs": 2949
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -1022,7 +1230,11 @@
           "elapsedMs": 1149
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -1146,7 +1358,11 @@
           "elapsedMs": 2694
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -1270,7 +1486,11 @@
           "elapsedMs": 3882
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -1395,7 +1615,11 @@
           "elapsedMs": 5346
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        1,
+        2,
+        1
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -1520,7 +1744,11 @@
           "elapsedMs": 1144
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        1,
+        2,
+        1
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -1644,7 +1872,11 @@
           "elapsedMs": 1017
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -1768,7 +2000,11 @@
           "elapsedMs": 2014
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -1893,7 +2129,11 @@
           "elapsedMs": 3342
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        1,
+        1,
+        1
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -2018,7 +2258,11 @@
           "elapsedMs": 1713
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        1,
+        1,
+        1
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -2142,7 +2386,11 @@
           "elapsedMs": 4432
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        2,
+        2,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -2266,7 +2514,11 @@
           "elapsedMs": 9472
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -2391,7 +2643,11 @@
           "elapsedMs": 2405
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        2,
+        3,
+        2
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -2516,7 +2772,11 @@
           "elapsedMs": 1005
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        2,
+        3,
+        2
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -2640,7 +2900,11 @@
           "elapsedMs": 27812
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -2764,7 +3028,11 @@
           "elapsedMs": 22224
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -2888,7 +3156,11 @@
           "elapsedMs": 11667
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -3012,7 +3284,11 @@
           "elapsedMs": 12662
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -3136,7 +3412,11 @@
           "elapsedMs": 17768
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -3260,7 +3540,11 @@
           "elapsedMs": 66013
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -3384,7 +3668,11 @@
           "elapsedMs": 11378
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -3508,7 +3796,11 @@
           "elapsedMs": 38073
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",
@@ -3757,7 +4049,11 @@
           "elapsedMs": 28414
         }
       ],
-      "humanScores": null,
+      "humanScores": [
+        3,
+        3,
+        3
+      ],
       "qualification": "NOT_PASSED",
       "permit": {
         "purpose": "SYNTHETIC_ONLY_NOT_PROVIDER_QUALIFICATION",

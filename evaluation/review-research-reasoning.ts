@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import fixtures from "./cases/research-reasoning-transfer.json";
+import humanReview from "./results/research-reasoning-20261012-human.json";
 import type { Source, Usage } from "../shared/contracts";
 import type { Experiment } from "./experiment";
 
@@ -23,7 +24,7 @@ type Run = {
   attempts: unknown[];
   permit: Experiment;
   arm: string;
-  humanScores: null;
+  humanScores: number[] | null;
 };
 const runs: Run[] = [];
 for (const [prefix, count] of [
@@ -56,16 +57,18 @@ for (const [prefix, count] of [
       throw Error(
         "Only frozen authored fixtures can be persisted in this report",
       );
+    const arm = prefix === "deepseek" ? "DeepSeek default"
+      : permit.policy.gptOssReasoningEffort === "high" ? "GPT-OSS high" : "GPT-OSS default";
+    const scores = humanReview.scores[result.id as keyof typeof humanReview.scores];
+    if (!scores) throw Error(`Missing human review for ${result.id}`);
+    const humanScores = scores[arm];
+    if (humanScores && result.replies.some((reply) => !reply.completed))
+      throw Error("Incomplete conversations must remain unscored");
     runs.push({
       ...result,
       permit,
-      arm:
-        prefix === "deepseek"
-          ? "DeepSeek default"
-          : permit.policy.gptOssReasoningEffort === "high"
-            ? "GPT-OSS high"
-            : "GPT-OSS default",
-      humanScores: null,
+      arm,
+      humanScores,
     });
   }
 }
@@ -148,7 +151,7 @@ for (const [id, finding] of Object.entries(deepSeekFindings))
   findings[id] += ` DeepSeek: ${finding}`;
 const report = {
   status: "DEVELOPMENT_ONLY_NOT_ACCEPTED",
-  humanReview: "PENDING",
+  humanReview,
   budget: {
     observedAt: "2026-10-12",
     source: "Read-only Tinfoil Billing after all60attempts",
@@ -190,14 +193,14 @@ const escape = (x: unknown) =>
   );
 const out = resolve(".local/review-batches/reasoning-20261012");
 await mkdir(out, { recursive: true });
-const html = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><title>PrivateAI reasoning comparison</title><style>body{font:17px/1.6 system-ui;max-width:1000px;margin:32px auto;padding:0 20px;color:#202c35;overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f2f5f8;padding:16px;font:inherit}section{border-top:2px solid #ccd6de;padding-top:16px;margin:28px 0}.notice{background:#fff0cf;padding:16px}summary{cursor:pointer;font-weight:bold}dt{font-weight:bold}dd{margin:0}</style><h1>Reasoning and model comparison</h1><p class="notice">AI-proposed findings. Human grades blank. Not release-qualified; serious failures preserved. Raw answer Markdown is shown verbatim.</p><pre>${escape(JSON.stringify(arms, null, 2))}</pre><ul>${report.limitations.map((x) => `<li>${escape(x)}</li>`).join("")}</ul>${fixtures.cases
+const html = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><title>PrivateAI reasoning comparison</title><style>body{font:17px/1.6 system-ui;max-width:1000px;margin:32px auto;padding:0 20px;color:#202c35;overflow-wrap:anywhere}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f2f5f8;padding:16px;font:inherit}section{border-top:2px solid #ccd6de;padding-top:16px;margin:28px 0}.notice{background:#fff0cf;padding:16px}summary{cursor:pointer;font-weight:bold}dt{font-weight:bold}dd{margin:0}</style><h1>Reasoning and model comparison</h1><p class="notice">Human review recorded: 29 scored conversations; DeepSeek case 09 incomplete and unscored. Not release-qualified. Original AI findings remain separate; raw answers are unchanged.</p><p class="notice">Human decision: ${escape(humanReview.decision)}</p><pre>${escape(JSON.stringify(arms, null, 2))}</pre><ul>${report.limitations.map((x) => `<li>${escape(x)}</li>`).join("")}</ul>${fixtures.cases
   .map(
     (f) =>
-      `<section id="${f.id}"><h2>${f.id}</h2><h3>Original authored source</h3><pre>${escape(f.source)}</pre><h3>Expected facts, frozen before execution</h3><p>${escape(f.expected)}</p><p class="notice">${escape(findings[f.id])}</p><p>Human correctness/completeness/context: — / — / —</p>${runs
+      `<section id="${f.id}"><h2>${f.id}</h2><h3>Original authored source</h3><pre>${escape(f.source)}</pre><h3>Expected facts, frozen before execution</h3><p>${escape(f.expected)}</p><p class="notice">Original AI-proposed findings (preserved separately): ${escape(findings[f.id])}</p>${runs
         .filter((r) => r.id === f.id)
         .map(
           (r) =>
-            `<details open><summary>${escape(r.arm)}</summary><dl>${f.turns
+            `<details open><summary>${escape(r.arm)}</summary><p>Human correctness / completeness / context: ${r.humanScores ? r.humanScores.join(" / ") : "Unscored — incomplete conversation"}</p><dl>${f.turns
               .map((question, i) => {
                 const reply = r.replies[i];
                 return `<dt>User${i + 1}</dt><dd><pre>${escape(question)}</pre></dd><dt>Assistant${i + 1}</dt><dd><pre>${escape(reply?.answer || "NO COMPLETE ANSWER — unscored")}</pre><p>${reply?.completed ? "Complete" : "Incomplete / not attempted"}; ${reply?.elapsedMs ?? "—"}ms</p></dd>`;
