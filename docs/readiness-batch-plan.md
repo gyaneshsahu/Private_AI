@@ -59,3 +59,13 @@ evidence, actual-phone and screen-reader workflows, hosted recovery/rollback and
 log inspection, sustained backup evidence, and separately approved retention
 activation remain. UI polish can proceed as independent work, but cannot close
 those release gates. See READINESS for authoritative individual outcomes.
+
+## 12 October — fresh DeepSeek transfer and latency comparison
+
+Frozen `evaluation/cases/research-reliability-transfer.json`: 12 authored cases covering strict thresholds/arrival, source injection/revisions, immediate support/urgent messages, corrected denominators, money, event/publication dates, absent evidence, two alternatives and weighted rates. Default versus explicit thinking-off, alternating order, unchanged v4 policy; 24 separate two-request permits, maximum48requests, no retries. No real private data or supplier source text. Human scores blank until review; this is development, not reserved acceptance.
+
+Current read-only billing: USD0.48/3, prepaid10.52, auto-reload off,685requests. Maximum48 × USD0.0430784 = USD2.0677632; historical uncertainty0.0163552, prior timeout reserve0.0430784 and rounding0.01 give cumulative boundUSD2.6171968. All requests remain covered even if billing is delayed. Unused reserves retire only after outcome reconciliation.
+
+Measure completed/incomplete attempts, first nonblank delivered text, total time, citations, correctness and cost. Visible text is a proxy requiring human usefulness review, not encrypted first-byte latency or UI paint. Keep90second deadline; report routine30second misses. New faults stop that conversation; no-usage failures stop the batch. Interim usage is not terminal billing evidence: retain a full-request reserve for any unresolved attempt. This48request sample cannot qualify PRD100request/concurrency/p95 requirements. Freeze/source hash and permit order in `.local/research-reliability-20261012/plan.json`.
+
+Execution complete:47attempts/46complete replies; default transfer-12 partial timeout and its follow-up unattempted. No retries. ActualUSD0.52/3, prepaid10.48, conservativeUSD0.632512 including both unresolved timeout reserves. Full results: `evaluation/results/research-reliability-20261012.json`. Neither configuration is release-selected; human review pending.

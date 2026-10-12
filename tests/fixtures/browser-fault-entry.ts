@@ -36,13 +36,17 @@ Object.assign(window, {
           origin: "https://inference.tinfoil.sh",
           repository: "tinfoilsh/confidential-model-router",
           releaseDigests: ["a".repeat(64)],
-          model: mode.startsWith("thinking_")
-            ? "gemma4-31b"
-            : mode === "glm_low"
-              ? "glm-5-3"
-              : mode === "oss_high"
-                ? "gpt-oss-120b"
-                : "TEST_ONLY",
+          model:
+            mode === "deepseek_off"
+              ? "deepseek-v4-1-flash"
+              : mode.startsWith("thinking_")
+                ? "gemma4-31b"
+                : mode === "glm_low"
+                  ? "glm-5-3"
+                  : mode === "oss_high"
+                    ? "gpt-oss-120b"
+                    : "TEST_ONLY",
+          ...(mode === "deepseek_off" ? { deepSeekThinking: false } : {}),
           ...(mode === "oss_high"
             ? { gptOssReasoningEffort: "high" as const }
             : {}),

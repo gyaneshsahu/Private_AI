@@ -1,5 +1,13 @@
 # PrivateAI local Codex handoff — updated 12 October 2026
 
+## 12 October — fresh DeepSeek safety, constraint and latency comparison
+
+47attempts/46complete replies across12fresh cases and two modes; default transfer-12 timed out mid-answer, followup unattempted, conversation unscored. No retries. Thinking-off median first visible text2.580s/total13.865s versus default30.141s/36.010s, but both fail transfer-11 by inventing that a fallback day is unavailable. Default also changes an inclusive deadline; off transfer-12 confuses assigned/completed tasks. New findings AI-proposed, human scores blank. No release candidate freeze, no prompt tuning, no privacy/production gate changes. Review transfer-11 both, transfer-12 off, then transfer-05/06 safety.
+
+[Full results, limitations and current budget](READINESS.md#12-october--fresh-deepseek-safety-constraint-and-latency-comparison). ActualUSD0.52/3, credit10.48, auto-reload off; conservativeUSD0.632512retains both timeout risks. All other reserves retired. No active inference.22offline tests, typecheck/build and complete review-page checks passed. New model-bound thinking control and delivered-text timing are development options, not release qualification.
+
+Complete record: `evaluation/results/research-reliability-20261012.json`; review `.local/review-batches/reliability-research-20261012/complete-review.html`; regenerate `npx tsx evaluation/review-research-reliability.ts`. Batch metadata/raw synthetic output/billing copied into `.local/experiment-runs/windows_20261012_reliability_batch`, within migration-manifest scope. Next: general source predicate/uncertainty preservation and unsupported drafting preconditions, with human adjudication before another frozen fresh transfer batch. Do not tune these exposed examples. Supplier, actual-device and hosted recovery gates remain open.
+
 ## 12 October — human adjudication of reasoning/model packet
 
 Recorded the founder's explicit human review of all 30 case/configuration entries: **29 scored conversations and one incomplete, unscored DeepSeek case 09**. Durable score matrix and exact decision: `evaluation/results/research-reasoning-20261012-human.json`; the complete report now displays each arm's human scores alongside unchanged questions, sources and replies. Original AI findings and citation audits remain separate, including disagreements/nuances on cases given 3/3/3. The historical pre-review statements below describe the earlier state and are superseded by this review.

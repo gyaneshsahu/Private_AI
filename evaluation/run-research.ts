@@ -11,21 +11,30 @@ import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import publicCases from "./cases/research-transfer.json";
 import evidenceCases from "./cases/research-evidence-transfer.json";
 import reasoningCases from "./cases/research-reasoning-transfer.json";
+import reliabilityCases from "./cases/research-reliability-transfer.json";
+const reliability = process.argv[3] === "--reliability";
 const reasoning = process.argv[3] === "--reasoning";
 const modelScreen = process.argv[3] === "--model-screen";
-const authored = process.argv[3] === "--authored" || reasoning || modelScreen;
-const cases = modelScreen
-  ? reasoningCases.cases.map((c) => ({ ...c, query: "" }))
-  : reasoning
-    ? reasoningCases.cases.flatMap((c) => [
-        { ...c, query: "" },
-        { ...c, query: "" },
-      ])
-    : authored
-      ? evidenceCases.cases.map((c) => ({ ...c, query: "" }))
-      : publicCases;
+const authored =
+  process.argv[3] === "--authored" || reasoning || modelScreen || reliability;
+const cases = reliability
+  ? reliabilityCases.cases.flatMap((c) => [
+      { ...c, query: "" },
+      { ...c, query: "" },
+    ])
+  : modelScreen
+    ? reasoningCases.cases.map((c) => ({ ...c, query: "" }))
+    : reasoning
+      ? reasoningCases.cases.flatMap((c) => [
+          { ...c, query: "" },
+          { ...c, query: "" },
+        ])
+      : authored
+        ? evidenceCases.cases.map((c) => ({ ...c, query: "" }))
+        : publicCases;
 
-// Requires newly prepared permits; consumed permits cannot be reused. Persist metadata only.
+// Requires newly prepared permits; consumed permits cannot be reused.
+// Public retrieval persists metadata only; authored fixtures may retain full evidence.
 const runRoot = resolve(process.argv[2] ?? "");
 if (!process.argv[2] || !runRoot.startsWith(resolve(".local") + "\\"))
   throw Error("Local batch directory required");
@@ -57,7 +66,10 @@ try {
     const record: Record<string, unknown> = {
       id: fixture.id,
       approvalId: permit.approvalId,
-      requestedReasoning: permit.policy.gptOssReasoningEffort ?? "default",
+      requestedReasoning:
+        permit.policy.deepSeekThinking === false
+          ? "thinking-off"
+          : (permit.policy.gptOssReasoningEffort ?? "default"),
       model: permit.policy.model,
       sourceCount: 0,
       searchAttempted: false,
@@ -193,7 +205,7 @@ try {
           { flag: "wx" },
         );
       }
-      // Answers are inspected in the active run only; no source bodies or answer files are saved.
+      // Public retrieval answers are inspected only in the active run.
       console.log(
         JSON.stringify({
           id: fixture.id,
@@ -205,7 +217,8 @@ try {
       if (replies.some((reply: any) => !reply.completed)) {
         record.failure = "INCOMPLETE_STOPPED";
         // A withheld answer is a case result, not a transport outage or a retry.
-        // Continue independent authored cases only after terminal usage is known.
+        // Observed usage can be interim: retain a full-request uncertainty reserve
+        // for incomplete attempts. No-usage failures stop this batch.
         if (
           !authored ||
           replies.some((reply: any) => !reply.completed && !reply.usage)

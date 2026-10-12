@@ -26,6 +26,7 @@ export type VerifiedChatPolicy = Pick<
   | "maxOutputTokens"
   | "pricing"
 > & {
+  deepSeekThinking?: boolean;
   gemmaThinking?: boolean;
   glmReasoningEffort?: "low" | "high" | "max";
   gptOssReasoningEffort?: "low" | "medium" | "high";
@@ -65,6 +66,11 @@ export async function streamVerifiedConversation(
   onVerified?: (evidence: { host: string; releaseDigest: string }) => void,
 ): Promise<Usage | undefined> {
   authorize();
+  if (
+    report.deepSeekThinking !== undefined &&
+    report.model !== "deepseek-v4-1-flash"
+  )
+    throw new Error("Unsupported model-specific inference setting.");
   if (report.gemmaThinking !== undefined && report.model !== "gemma4-31b")
     throw new Error("Unsupported model-specific inference setting.");
   if (report.glmReasoningEffort !== undefined && report.model !== "glm-5-3")
@@ -146,17 +152,21 @@ export async function streamVerifiedConversation(
             ? { reasoning_effort: report.gptOssReasoningEffort }
             : {}),
           messages,
-          ...(report.gemmaThinking !== undefined
-            ? {
-                chat_template_kwargs: { enable_thinking: report.gemmaThinking },
-              }
-            : report.glmReasoningEffort !== undefined
+          ...(report.deepSeekThinking !== undefined
+            ? { chat_template_kwargs: { thinking: report.deepSeekThinking } }
+            : report.gemmaThinking !== undefined
               ? {
                   chat_template_kwargs: {
-                    reasoning_effort: report.glmReasoningEffort,
+                    enable_thinking: report.gemmaThinking,
                   },
                 }
-              : {}),
+              : report.glmReasoningEffort !== undefined
+                ? {
+                    chat_template_kwargs: {
+                      reasoning_effort: report.glmReasoningEffort,
+                    },
+                  }
+                : {}),
           stream: true,
           stream_options: { include_usage: true },
           max_completion_tokens: report.maxOutputTokens,

@@ -197,6 +197,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       "thinking_off",
       "glm_low",
       "oss_high",
+      "deepseek_off",
       "policy_v2",
       "pre_cancel",
       "stalled_verification",
@@ -222,6 +223,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         "thinking_off",
         "glm_low",
         "oss_high",
+        "deepseek_off",
         "policy_v2",
       ].includes(mode);
       const finished = succeeds
@@ -294,11 +296,13 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
           );
         }
         expect(payload.chat_template_kwargs).toEqual(
-          mode.startsWith("thinking_")
-            ? { enable_thinking: mode === "thinking_on" }
-            : mode === "glm_low"
-              ? { reasoning_effort: "low" }
-              : undefined,
+          mode === "deepseek_off"
+            ? { thinking: false }
+            : mode.startsWith("thinking_")
+              ? { enable_thinking: mode === "thinking_on" }
+              : mode === "glm_low"
+                ? { reasoning_effort: "low" }
+                : undefined,
         );
         const secret = payload.user_cache_secret;
         expect(JSON.stringify(result).includes(secret)).toBe(false);
@@ -351,11 +355,13 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
           p.model ===
           (p.reasoning_effort
             ? "gpt-oss-120b"
-            : p.chat_template_kwargs?.reasoning_effort
-              ? "glm-5-3"
-              : p.chat_template_kwargs
-                ? "gemma4-31b"
-                : "TEST_ONLY")
+            : p.chat_template_kwargs?.thinking === false
+              ? "deepseek-v4-1-flash"
+              : p.chat_template_kwargs?.reasoning_effort
+                ? "glm-5-3"
+                : p.chat_template_kwargs
+                  ? "gemma4-31b"
+                  : "TEST_ONLY")
         );
       }),
     ).toBe(true);

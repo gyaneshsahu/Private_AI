@@ -1,3 +1,4 @@
+import { replyTiming } from "./reply-timing";
 import type { Source } from "../shared/contracts";
 import { emptyConversation } from "../shared/contracts";
 import { newMessage } from "../src/conversation";
@@ -18,7 +19,8 @@ Object.assign(window, {
     if (
       !permit.developmentCaseId?.startsWith("research-") &&
       !permit.developmentCaseId?.startsWith("evidence-") &&
-      !permit.developmentCaseId?.startsWith("reason-")
+      !permit.developmentCaseId?.startsWith("reason-") &&
+      !permit.developmentCaseId?.startsWith("transfer-")
     )
       throw Error("Research permit required");
     const fixture = developmentCase(
@@ -39,7 +41,7 @@ Object.assign(window, {
       conversation.messages.push(newMessage("user", prompt));
       let answer = "";
       let stage = "starting";
-      const started = performance.now();
+      const timing = replyTiming();
       try {
         const usage = await streamVerifiedConversation(
           conversation,
@@ -47,6 +49,7 @@ Object.assign(window, {
           csrf,
           AbortSignal.timeout(95000),
           (chunk) => {
+            timing.chunk(chunk);
             answer += chunk;
           },
           (value) => {
@@ -61,7 +64,7 @@ Object.assign(window, {
           completed: true,
           answer,
           usage,
-          elapsedMs: Math.round(performance.now() - started),
+          ...timing.snapshot(),
           evidenceAudit: auditResearchAnswer(answer, sources),
         });
       } catch (error) {
@@ -83,7 +86,7 @@ Object.assign(window, {
               : undefined,
           usage:
             error instanceof IncompleteReplyError ? error.usage : undefined,
-          elapsedMs: Math.round(performance.now() - started),
+          ...timing.snapshot(),
         });
         break;
       }

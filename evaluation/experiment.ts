@@ -17,6 +17,7 @@ import trialGateTransfer from "./cases/trial-gate-transfer.json";
 import configTransfer from "./cases/config-transfer.json";
 import researchTransfer from "./cases/research-transfer.json";
 import researchEvidenceTransfer from "./cases/research-evidence-transfer.json";
+import reliabilityResearch from "./cases/research-reliability-transfer.json";
 import reasoningTransfer from "./cases/research-reasoning-transfer.json";
 import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
@@ -36,25 +37,27 @@ const robustnessCases = [
   ...trialGateTransfer,
   ...configTransfer,
   ...researchTransfer,
-  ...[...researchEvidenceTransfer.cases, ...reasoningTransfer.cases].map(
-    (c) => ({
-      id: c.id,
-      family: "research",
-      turns: c.turns,
-      mandatoryFacts: [c.expected],
-      forbiddenConclusions: [],
-      synthetic: true,
-      sources: [
-        {
-          id: `${c.id}-source`,
-          title: "Authored synthetic evidence",
-          text: c.source,
-          url: "https://example.com/synthetic-evidence",
-          evidenceKind: "page" as const,
-        },
-      ],
-    }),
-  ),
+  ...[
+    ...researchEvidenceTransfer.cases,
+    ...reasoningTransfer.cases,
+    ...reliabilityResearch.cases,
+  ].map((c) => ({
+    id: c.id,
+    family: "research",
+    turns: c.turns,
+    mandatoryFacts: [c.expected],
+    forbiddenConclusions: [],
+    synthetic: true,
+    sources: [
+      {
+        id: `${c.id}-source`,
+        title: "Authored synthetic evidence",
+        text: c.source,
+        url: "https://example.com/synthetic-evidence",
+        evidenceKind: "page" as const,
+      },
+    ],
+  })),
   ...safetyDevelopment.cases.map((c) => ({
     id: c.id,
     family: "personal",
@@ -120,6 +123,7 @@ export const experimentSchema = z
         researchEvidenceContract: z.boolean().optional(),
         gptOssReasoningEffort: z.enum(["low", "medium", "high"]).optional(),
         gemmaThinking: z.boolean().optional(),
+        deepSeekThinking: z.boolean().optional(),
         answerPolicyVariant: z
           .enum([
             "constraints-v1",
@@ -139,6 +143,13 @@ export function validateExperiment(
   now = Date.now(),
 ): Experiment {
   const x = experimentSchema.parse(input);
+  if (
+    x.policy.deepSeekThinking !== undefined &&
+    x.policy.model !== "deepseek-v4-1-flash"
+  )
+    throw new Error(
+      "DeepSeek thinking mode requires the explicit DeepSeek candidate.",
+    );
   if (
     x.policy.gptOssReasoningEffort !== undefined &&
     x.policy.model !== "gpt-oss-120b"

@@ -39,6 +39,13 @@ function fixture(): Experiment {
   };
 }
 const servers: Server[] = [];
+it("binds DeepSeek thinking control to its explicit model", () => {
+  const permit = fixture();
+  permit.policy.deepSeekThinking = false;
+  expect(() => validateExperiment(permit)).toThrow("DeepSeek");
+  permit.policy.model = "deepseek-v4-1-flash";
+  expect(validateExperiment(permit).policy.deepSeekThinking).toBe(false);
+});
 it("accepts only the GPT-OSS reasoning setting on its bound model", () => {
   const permit = fixture();
   permit.policy.gptOssReasoningEffort = "high";
