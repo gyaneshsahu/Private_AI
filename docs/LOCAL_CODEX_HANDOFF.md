@@ -1,5 +1,13 @@
 # PrivateAI local Codex handoff — 8 October 2026
 
+## 12 October — live Brave retrieval verified
+
+Founder reports key saved and free plan allowance1,000searches/month. Credential presence verified without printing it. Actual local production-browser flow completed3public queries (NASA moons, Mozilla shortcuts, W3C accessibility), each HTTP200/5sources,666–1261ms, no-store responses. Query disclosure and sticky save blocking exercised. Provider titles/URLs/excerpts were kept in memory only, not written into the evidence artifact. Metadata-only evidence: .local/live-search-check-20261012.json. No Tinfoil inference or account changes. Reported plan allowance is founder-provided, not a dashboard billing audit.
+
+First harness attempt timed out awaiting execute after introducing a competing status/session initialization call; original empty-outcome artifact preserved separately. Corrected harness observes the application's own initial status and stops on preparation/execute failure. Three provider responses are confirmed; the first attempt did not capture sufficient network evidence to certify zero provider traffic, so allow up to one additional possible request in quota reconciliation. No blind provider retry.
+
+Search access is no longer missing. Live retrieval is tested; model synthesis, source-grounded follow-up and full privacy/safety acceptance remain open. Local search-only preview launcher: scripts/windows-search-preview.ps1 loads the key from Credential Manager, binds loopback, leaves inference unavailable and restores process environment on exit. Owner may run it to inspect the current search experience; hosted settings remain unchanged.
+
 ## 12 October — temporary web search for the test version
 
 Founder explicitly accepts web-search answers without saved sources for the test version. Search conversations now carry a sticky temporary marker: encrypted saving is rejected for the entire conversation, including answers and source snapshots, even after attachments are removed. New conversations can still be saved; existing saved evidence is preserved. Search query disclosure approval and inspectable in-session sources remain. This is application non-persistence, not a claim about browser memory, user copies or provider retention.
