@@ -1,5 +1,17 @@
 # Provider qualification — NOT_PASSED
 
+## Founder follow-up sent — 12 October 2026
+
+Status: **SENT_BY_FOUNDER / REPLY_PENDING**. Founder supplied this outgoing message to Sacha; it is not a supplier answer:
+
+> Hi Sacha, thanks for the detailed answers. Our application encrypts requests in the browser; our backend must not receive plaintext.
+> 1. Is a released JavaScript/browser verifier now available that enforces freshness and revocation and supports TDX? If not, what supported architecture provides these checks continuously while preserving browser-to-enclave encryption? Please share exact versions and an example.
+> 2. Can API prompt caching be disabled or given an enforced maximum retention time, rather than merely preventing cache hits?
+> 3. How long is per-request billing metadata retained, and which policy documents that retention?
+
+Await the reply; do not request another send. Existing worker/GPU binding and other unresolved evidence remain required. Private-data qualification stays NOT_PASSED.
+
+
 Historical implementation checkpoint, 5 October 2026 (current decision below): **the inference path is implemented and connected
 to the web app**. Production use is intentionally gated by a complete provider
 review. The isolated WSL experiment completed two real turns on the earlier

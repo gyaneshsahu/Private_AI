@@ -4,7 +4,25 @@
 
 On your Galaxy A52 / Android14, enable TalkBack using the setup below and open https://private-ai-deployment.onrender.com/auth in Chrome. Use synthetic text only. (1) Swipe through heading, fields and buttons; report any unnamed control. (2) Type then erase synthetic-test; verify the keyboard does not make the submit control unreachable. (3) Rotate landscape/portrait and increase text size; report clipping or lost focus. (4) Return PASS/FAIL/BLOCKED for each step with Chrome/TalkBack versions and exact spoken labels. No account registration, model call, real password or private screenshot is needed. This checks public entry only; it does not pass the full workspace/device gate. Full tasks below follow on the exact approved synthetic release.
 
-Device reported by founder: SM-A525F, Android14. Results are **NOT RUN**.
+Device reported by founder: SM-A525F, Android14.
+
+## Human result — 12 October 2026
+
+Founder: “I also tested the auth page on my Galaxy A52: it worked with TalkBack.”
+
+**THREE_PUBLIC_ENTRY_CHECKS_PASSED / HUMAN_REPORTED / PARTIAL_DEVICE_EVIDENCE** at `https://private-ai-deployment.onrender.com/auth`. This supersedes the earlier NOT RUN status for general auth-page TalkBack use only.
+
+| Check | Recorded result |
+| --- | --- |
+| General auth-page TalkBack use | Worked, explicitly reported by founder |
+| Clearly named controls | PASS, founder explicitly confirmed; exact spoken labels not transcribed |
+| Keyboard-open reachability | PASS, founder explicitly confirmed |
+| Rotation / larger text / focus | PASS, founder explicitly confirmed no clipping or lost focus |
+| Browser/TalkBack versions and deployed release | Not supplied |
+| Authenticated workspace and live-answer tasks | Not reported; remain open |
+
+Follow-up human answer: “All three passed.” Do not request these completed checks again. No full accessibility or release qualification follows from this partial result.
+
 Use Chrome and only synthetic content. Allow20 minutes. Do not send credentials,
 passphrases, private files or screen recordings containing notifications.
 

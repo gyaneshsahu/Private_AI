@@ -1,5 +1,12 @@
 # PrivateAI local Codex handoff — updated 12 October 2026
 
+## 12 October — founder supplier follow-up and actual-phone report
+
+The founder reports sending Sacha the Tinfoil follow-up today: released browser verification for freshness/revocation/TDX or a supported continuous browser-to-enclave architecture with exact versions/example; enforced prompt-cache disablement/maximum retention; and per-request billing-metadata retention with policy evidence. **SENT_BY_FOUNDER / REPLY_PENDING**. Do not ask the founder to send it again. This is an outgoing inquiry, not new supplier evidence or provider qualification.
+
+The founder also reports testing the hosted `/auth` page on the Galaxy A52: **“it worked with TalkBack”**. Record this as positive human actual-device evidence for general public-entry use. The previously reported device is SM-A525F / Android14. The founder subsequently confirmed **all three entry checks passed**: clearly named controls, controls reachable with the keyboard open, and rotation/larger text without clipping or lost focus. Chrome/TalkBack versions and exact deployed release were not supplied. This does not establish authenticated workspace, extraction, storage, research or streaming validation. U01/U02 advance to partial human device evidence; the full gates remain open. No new paid tests, settings changes or private-data access.
+
+
 ## 12 October — fresh DeepSeek safety, constraint and latency comparison
 
 47attempts/46complete replies across12fresh cases and two modes; default transfer-12 timed out mid-answer, followup unattempted, conversation unscored. No retries. Thinking-off median first visible text2.580s/total13.865s versus default30.141s/36.010s, but both fail transfer-11 by inventing that a fallback day is unavailable. Default also changes an inclusive deadline; off transfer-12 confuses assigned/completed tasks. New findings AI-proposed, human scores blank. No release candidate freeze, no prompt tuning, no privacy/production gate changes. Review transfer-11 both, transfer-12 off, then transfer-05/06 safety.
