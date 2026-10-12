@@ -31,7 +31,18 @@ const plan = JSON.parse(await readFile(resolve(root, "plan.json"), "utf8"));
 const hash = createHash("sha256")
   .update(await readFile("evaluation/cases/research-reliability-transfer.json"))
   .digest("hex");
-if (plan.fixtureSHA256 !== hash) throw Error("Frozen fixture changed");
+const lfHash = createHash("sha256")
+  .update(
+    (
+      await readFile(
+        "evaluation/cases/research-reliability-transfer.json",
+        "utf8",
+      )
+    ).replace(/\r\n/g, "\n"),
+  )
+  .digest("hex");
+if (plan.fixtureSHA256 !== hash && plan.fixtureLF_SHA256 !== lfHash)
+  throw Error("Frozen fixture changed");
 const runs: Array<
   Result & { permit: Experiment; arm: string; humanScores: null }
 > = [];

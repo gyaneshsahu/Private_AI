@@ -1916,7 +1916,9 @@
     "conservativeCumulativeUSD": 2.6171968,
     "order": "default/off on odd cases, off/default on even cases",
     "automaticRetries": 0,
-    "firstVisibleText": "Measured at nonblank onChunk callback, not proof of useful content or UI paint; fresh browser context per conversation, first turn cold/second turn warm-module but fresh attestation."
+    "firstVisibleText": "Measured at nonblank onChunk callback, not proof of useful content or UI paint; fresh browser context per conversation, first turn cold/second turn warm-module but fresh attestation.",
+    "fixtureLF_SHA256": "1f47678f735fac6af1c587303d7225ef8d66e1cd1a03c5022335158d77a6d00c",
+    "lineEndingNote": "LF digest added after execution only after verifying original frozen raw-byte digest; permits report regeneration after Git line-ending normalization without accepting content changes."
   },
   "arms": [
     {
