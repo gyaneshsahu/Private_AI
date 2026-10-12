@@ -19,6 +19,13 @@ test("search is explicitly approved and remains temporary after source removal",
   await page.getByRole("button", { name: "Approve and retrieve" }).click();
   await expect(page.getByRole("status").filter({ hasText: "Search results added" })).toBeVisible();
   expect(calls).toBe(1);
+  await page.getByRole("button", { name: "Prepare a question about these sources" }).click();
+  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(/Using the selected web sources/);
+  await page.getByLabel("Message PrivateAI").fill("SYNTHETIC preserve my own question");
+  await tab("Research").click();
+  await page.getByRole("button", { name: "Prepare a question about these sources" }).click();
+  await expect(page.getByLabel("Message PrivateAI")).toHaveValue("SYNTHETIC preserve my own question");
+  expect(calls).toBe(1);
   await tab("Context").click();
   await page.getByRole("button", { name: "Remove", exact: true }).click();
   await tab("Saved").click();

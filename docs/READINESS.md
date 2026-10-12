@@ -1,5 +1,9 @@
 # PrivateAI readiness checklist
 
+## 12 October — migration bookkeeping and search handoff
+
+Current state, decisions, blockers, secret boundaries and migration steps are consolidated at the top of LOCAL_CODEX_HANDOFF.md. scripts/evidence-manifest.mjs hashes tracked files and ignored experiment/review evidence; it is not a backup. The search-to-question action preserves drafts and never sends automatically. Production build/typecheck and affected browser test passed; no API usage. No quality/privacy/release gate promoted.
+
 ## 12 October — live Brave retrieval verified
 
 Founder reports key saved and free plan allowance1,000searches/month. Credential presence verified without printing it. Actual local production-browser flow completed3public queries (NASA moons, Mozilla shortcuts, W3C accessibility), each HTTP200/5sources,666–1261ms, no-store responses. Query disclosure and sticky save blocking exercised. Provider titles/URLs/excerpts were kept in memory only, not written into the evidence artifact. Metadata-only evidence: .local/live-search-check-20261012.json. No Tinfoil inference or account changes. Reported plan allowance is founder-provided, not a dashboard billing audit.

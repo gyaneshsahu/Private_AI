@@ -1144,6 +1144,15 @@ export function App() {
               the exact query or URL before sharing.
             </p>
             <p className="muted">Search conversations are temporary in this test version. You can inspect sources and ask follow-up questions during this session, but cannot save the conversation. Use public, non-sensitive queries only.</p>
+            {conversation.attachments.some(a => a.kind === "research" && a.selected) && (
+              <div className="panel">
+                <button onClick={() => {
+                  if (!input.trim()) setInput("Using the selected web sources, summarize what they establish, cite the sources, and explain anything they do not answer.");
+                  setTab("Conversation");
+                }}>Prepare a question about these sources</button>
+                <p className="muted">Opens your existing draft, or prepares an editable question. Nothing is sent automatically.{!status?.inference.ready && " AI answers are currently unavailable while provider verification is incomplete."}</p>
+              </div>
+            )}
             <div className="panel">
               <label>
                 Research method

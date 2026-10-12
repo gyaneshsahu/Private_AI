@@ -1,4 +1,26 @@
-# PrivateAI local Codex handoff — 8 October 2026
+# PrivateAI local Codex handoff — updated 12 October 2026
+
+## Current handoff map — 12 October 2026
+
+Use this section for current orientation; dated entries below preserve chronology and may contain superseded plans. READINESS is the requirement-status authority; PRD/acceptance define scope and thresholds; ROADMAP defines sequence; provider-qualification records supplier evidence. General-transfer-results-20261008.md preserves model comparisons and human adjudication. Never infer passed gates from implementation or a completed test run.
+
+**Built/tested:** confidential-chat adapter under separate synthetic permits; local extraction, encrypted vault and context controls; individual access and recovery tooling; live Brave retrieval (3confirmedqueries, up to1additional uncertain harness request). Search conversations cannot be saved; session sources stay inspectable. Search now has a prepare-question action which preserves an existing draft and never sends automatically. Build/typecheck and affected production-browser workflow passed12October; no new paid inference/search calls in this bookkeeping batch.
+
+**Blocked/open:** no release-qualified answer configuration; strict-boundary/unsupported-addition failures and original serious safety failure retained; fresh held-out acceptance not passed. Supplier confirms JavaScript freshness/revocation/TDX gaps; no private-data clearance. Live search-to-model synthesis/follow-up still untested. Actual A52/TalkBack evidence missing. Hosted cutover/log/recovery and separate retention activation remain open. Latest backup investigation9October found stale snapshot; do not treat it as currently healthy without rechecking.
+
+**Accounts:** TinfoilUSD3cumulativeauthorization; last dashboard evidence8OctoberUSD0.42spent, not a current balance. Keep0.0163552oldmissingusage risk and0.01rounding until reconciled. Brave founder reports1,000freequeries/month; no paid-search approval. Both keys in Windows Credential Manager, never repo/chat. Owner alone changes billing, keys, plans, hosting and consequential privacy settings. Synthetic-only permits and no blind retries remain.
+
+**Local operation:** scripts/windows-search-preview.ps1 starts loopback4173 with stored Brave key and inference disabled. Preview was started for founder; verify port/status before assuming it survives restart. Hosted service is separate and has not been updated by these local commits.
+
+### Migration without losing history
+
+1. Preserve the entire Git history, branches and uncommitted changes; do not rely on origin being current. At this checkpoint the branch was25commits ahead of the locally cached upstream before this batch; remote was not freshly fetched. Use an owner-chosen private Git backup or a git bundle of all refs, plus a separate copy of any dirty/untracked work. Do not reset/pull over work.
+2. Preserve .local/experiment-runs and .local/review-batches separately: these contain synthetic transcripts, exact permits/configurations, original failed/incomplete outputs, source-bound human grades and complete review pages, and are ignored by Git. Also retain referenced sanitized budget/summary JSON files in .local after reviewing them. Historical consumed permits must never be reused.
+3. Run node scripts/evidence-manifest.mjs before copying. Transfer .local/migration/evidence-manifest.json alongside the listed files, then run node scripts/evidence-manifest.mjs --verify on the destination BEFORE regenerating the manifest. A mismatch means missing/changed evidence, not automatically tampering. The manifest contains hashes/paths only; it does not copy or back up files. It covers tracked files plus the two evidence directories, not every .local file or external attachment. Regenerate only after intentional verified changes.
+4. Keep credentials, C:\PrivateAI-backups, account databases, recovery keys and browser vault data OUT of the code/evidence migration. Moving those requires separate approved handling. Credential Manager entries do not migrate with Git; install secrets privately on the new machine. Browser encrypted snapshots likewise are not in the checkout. Supplier emails/attachments should be transferred only as reviewed redacted evidence; their assessment is already in docs/provider-qualification.md.
+5. Install the pinned Node24/npm dependencies with npm ci; build/typecheck and appropriate tests. Update machine-specific paths and recreate local tasks only with owner approval. Do not blindly copy task registrations. Check actual spend, supplier evidence, backup state and live release identity before new live work. Do not regenerate exposed acceptance questions and call them held-out.
+
+Next development: bounded synthetic real-search→verified-model answer and source-grounded follow-up after current spend preflight, without persisting Brave results. Keep normal private-data chat closed. Meanwhile resolve supplier browser-verification route, human model assessment and real-device evidence. All new AI assessments remain AI-proposed unless founder explicitly grades them.
 
 ## 12 October — live Brave retrieval verified
 
