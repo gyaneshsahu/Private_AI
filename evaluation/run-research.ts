@@ -10,10 +10,20 @@ import { searchWeb } from "../server/research";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import publicCases from "./cases/research-transfer.json";
 import evidenceCases from "./cases/research-evidence-transfer.json";
-const authored = process.argv[3] === "--authored";
-const cases = authored
-  ? evidenceCases.cases.map((c) => ({ ...c, query: "" }))
-  : publicCases;
+import reasoningCases from "./cases/research-reasoning-transfer.json";
+const reasoning = process.argv[3] === "--reasoning";
+const modelScreen = process.argv[3] === "--model-screen";
+const authored = process.argv[3] === "--authored" || reasoning || modelScreen;
+const cases = modelScreen
+  ? reasoningCases.cases.map((c) => ({ ...c, query: "" }))
+  : reasoning
+    ? reasoningCases.cases.flatMap((c) => [
+        { ...c, query: "" },
+        { ...c, query: "" },
+      ])
+    : authored
+      ? evidenceCases.cases.map((c) => ({ ...c, query: "" }))
+      : publicCases;
 
 // Requires newly prepared permits; consumed permits cannot be reused. Persist metadata only.
 const runRoot = resolve(process.argv[2] ?? "");
@@ -46,6 +56,9 @@ try {
     );
     const record: Record<string, unknown> = {
       id: fixture.id,
+      approvalId: permit.approvalId,
+      requestedReasoning: permit.policy.gptOssReasoningEffort ?? "default",
+      model: permit.policy.model,
       sourceCount: 0,
       searchAttempted: false,
       turns: [],

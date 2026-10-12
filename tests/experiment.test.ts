@@ -39,6 +39,16 @@ function fixture(): Experiment {
   };
 }
 const servers: Server[] = [];
+it("accepts only the GPT-OSS reasoning setting on its bound model", () => {
+  const permit = fixture();
+  permit.policy.gptOssReasoningEffort = "high";
+  expect(() => validateExperiment(permit)).toThrow("GPT-OSS");
+  permit.policy.model = "gpt-oss-120b";
+  permit.policy.maxOutputTokens = 8192;
+  expect(validateExperiment(permit).policy.gptOssReasoningEffort).toBe("high");
+  permit.policy.maxOutputTokens = 8193;
+  expect(() => validateExperiment(permit)).toThrow();
+});
 it("rejects a first-turn allowance larger than the fixed context cap", () => {
   expect(
     validateExperiment({ ...fixture(), firstTurnInputCharacters: 3000 })

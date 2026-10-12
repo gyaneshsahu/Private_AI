@@ -196,6 +196,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       "thinking_on",
       "thinking_off",
       "glm_low",
+      "oss_high",
       "policy_v2",
       "pre_cancel",
       "stalled_verification",
@@ -220,6 +221,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         "thinking_on",
         "thinking_off",
         "glm_low",
+        "oss_high",
         "policy_v2",
       ].includes(mode);
       const finished = succeeds
@@ -277,6 +279,9 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       }
       if (!preSend) {
         const payload = JSON.parse(requests[before].plaintext);
+        expect(payload.reasoning_effort).toBe(
+          mode === "oss_high" ? "high" : undefined,
+        );
         if (mode === "policy_v2") {
           expect(payload.messages[0].content).toContain(
             "Do not prepend another task or offer a menu",
@@ -344,11 +349,13 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         const p = JSON.parse(r.plaintext);
         return (
           p.model ===
-          (p.chat_template_kwargs?.reasoning_effort
-            ? "glm-5-3"
-            : p.chat_template_kwargs
-              ? "gemma4-31b"
-              : "TEST_ONLY")
+          (p.reasoning_effort
+            ? "gpt-oss-120b"
+            : p.chat_template_kwargs?.reasoning_effort
+              ? "glm-5-3"
+              : p.chat_template_kwargs
+                ? "gemma4-31b"
+                : "TEST_ONLY")
         );
       }),
     ).toBe(true);

@@ -17,7 +17,8 @@ Object.assign(window, {
     const permit = validateExperiment(input);
     if (
       !permit.developmentCaseId?.startsWith("research-") &&
-      !permit.developmentCaseId?.startsWith("evidence-")
+      !permit.developmentCaseId?.startsWith("evidence-") &&
+      !permit.developmentCaseId?.startsWith("reason-")
     )
       throw Error("Research permit required");
     const fixture = developmentCase(

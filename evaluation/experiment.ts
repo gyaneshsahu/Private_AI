@@ -17,6 +17,7 @@ import trialGateTransfer from "./cases/trial-gate-transfer.json";
 import configTransfer from "./cases/config-transfer.json";
 import researchTransfer from "./cases/research-transfer.json";
 import researchEvidenceTransfer from "./cases/research-evidence-transfer.json";
+import reasoningTransfer from "./cases/research-reasoning-transfer.json";
 import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
@@ -35,23 +36,25 @@ const robustnessCases = [
   ...trialGateTransfer,
   ...configTransfer,
   ...researchTransfer,
-  ...researchEvidenceTransfer.cases.map((c) => ({
-    id: c.id,
-    family: "research",
-    turns: c.turns,
-    mandatoryFacts: [c.expected],
-    forbiddenConclusions: [],
-    synthetic: true,
-    sources: [
-      {
-        id: `${c.id}-source`,
-        title: "Authored synthetic evidence",
-        text: c.source,
-        url: "https://example.com/synthetic-evidence",
-        evidenceKind: "page" as const,
-      },
-    ],
-  })),
+  ...[...researchEvidenceTransfer.cases, ...reasoningTransfer.cases].map(
+    (c) => ({
+      id: c.id,
+      family: "research",
+      turns: c.turns,
+      mandatoryFacts: [c.expected],
+      forbiddenConclusions: [],
+      synthetic: true,
+      sources: [
+        {
+          id: `${c.id}-source`,
+          title: "Authored synthetic evidence",
+          text: c.source,
+          url: "https://example.com/synthetic-evidence",
+          evidenceKind: "page" as const,
+        },
+      ],
+    }),
+  ),
   ...safetyDevelopment.cases.map((c) => ({
     id: c.id,
     family: "personal",
@@ -112,7 +115,10 @@ export const experimentSchema = z
         pricing: true,
       })
       .extend({
+        // Development permits can reserve more reasoning output; production stays at4096.
+        maxOutputTokens: z.number().int().positive().max(8192),
         researchEvidenceContract: z.boolean().optional(),
+        gptOssReasoningEffort: z.enum(["low", "medium", "high"]).optional(),
         gemmaThinking: z.boolean().optional(),
         answerPolicyVariant: z
           .enum([
@@ -133,6 +139,13 @@ export function validateExperiment(
   now = Date.now(),
 ): Experiment {
   const x = experimentSchema.parse(input);
+  if (
+    x.policy.gptOssReasoningEffort !== undefined &&
+    x.policy.model !== "gpt-oss-120b"
+  )
+    throw new Error(
+      "GPT-OSS reasoning effort requires the explicit GPT-OSS candidate.",
+    );
   if (
     x.firstTurnInputCharacters !== undefined &&
     x.firstTurnInputCharacters > x.policy.maxInputCharacters

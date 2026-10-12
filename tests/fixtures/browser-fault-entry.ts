@@ -40,7 +40,12 @@ Object.assign(window, {
             ? "gemma4-31b"
             : mode === "glm_low"
               ? "glm-5-3"
-              : "TEST_ONLY",
+              : mode === "oss_high"
+                ? "gpt-oss-120b"
+                : "TEST_ONLY",
+          ...(mode === "oss_high"
+            ? { gptOssReasoningEffort: "high" as const }
+            : {}),
           ...(mode.startsWith("thinking_")
             ? { gemmaThinking: mode === "thinking_on" }
             : {}),

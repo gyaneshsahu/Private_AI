@@ -28,6 +28,7 @@ export type VerifiedChatPolicy = Pick<
 > & {
   gemmaThinking?: boolean;
   glmReasoningEffort?: "low" | "high" | "max";
+  gptOssReasoningEffort?: "low" | "medium" | "high";
   answerPolicyVariant?: AnswerPolicyVariant;
   researchEvidenceContract?: boolean;
 };
@@ -67,6 +68,11 @@ export async function streamVerifiedConversation(
   if (report.gemmaThinking !== undefined && report.model !== "gemma4-31b")
     throw new Error("Unsupported model-specific inference setting.");
   if (report.glmReasoningEffort !== undefined && report.model !== "glm-5-3")
+    throw new Error("Unsupported model-specific inference setting.");
+  if (
+    report.gptOssReasoningEffort !== undefined &&
+    report.model !== "gpt-oss-120b"
+  )
     throw new Error("Unsupported model-specific inference setting.");
   return withDeadline(signal, 90000, async (signal) => {
     signal.throwIfAborted();
@@ -136,6 +142,9 @@ export async function streamVerifiedConversation(
         },
         body: JSON.stringify({
           model: report.model,
+          ...(report.gptOssReasoningEffort !== undefined
+            ? { reasoning_effort: report.gptOssReasoningEffort }
+            : {}),
           messages,
           ...(report.gemmaThinking !== undefined
             ? {
