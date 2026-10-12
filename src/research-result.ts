@@ -1,6 +1,15 @@
 import { z } from "zod";
 import type { Source } from "../shared/contracts";
 
+export function researchSourceUrl(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password && !url.port
+      ? url.href : undefined;
+  } catch { return undefined; }
+}
+
 const resultSchema = z.object({
   sources: z.array(z.object({
     id: z.string().regex(/^[a-zA-Z0-9-]{6,36}$/),
@@ -11,6 +20,8 @@ const resultSchema = z.object({
       return url.protocol === "https:" && !url.username && !url.password && !url.port && !url.hash;
     }),
     retrievedAt: z.string().datetime(),
+    evidenceKind: z.enum(["search-excerpt", "page", "llm-context"]).optional(),
+    providerDate: z.string().min(1).max(100).optional(),
   }).strict()).max(5),
 }).strict();
 

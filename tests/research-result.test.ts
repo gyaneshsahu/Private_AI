@@ -28,3 +28,10 @@ it("rejects ambiguous citations within results and across existing attachments",
   expect(() => parseResearchResult({ sources: [source, source] }, [])).toThrow(/conflicting/);
   expect(() => parseResearchResult({ sources: [source] }, [source.id])).toThrow(/conflicting/);
 });
+
+import { researchSourceUrl } from "../src/research-result";
+it("only makes approved HTTPS source URLs navigable", () => {
+  expect(researchSourceUrl("https://example.com/report")).toBe("https://example.com/report");
+  for (const url of ["javascript:alert(1)", "data:text/html,x", "https://user:secret@example.com/", "https://example.com:8443/", "not a URL"])
+    expect(researchSourceUrl(url)).toBeUndefined();
+});

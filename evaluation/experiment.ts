@@ -15,6 +15,7 @@ import generalTransfer from "./cases/general-transfer.json";
 import coverageTransfer from "./cases/coverage-transfer.json";
 import trialGateTransfer from "./cases/trial-gate-transfer.json";
 import configTransfer from "./cases/config-transfer.json";
+import researchTransfer from "./cases/research-transfer.json";
 import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
@@ -32,6 +33,7 @@ const robustnessCases = [
   ...coverageTransfer,
   ...trialGateTransfer,
   ...configTransfer,
+  ...researchTransfer,
   ...safetyDevelopment.cases.map((c) => ({
     id: c.id,
     family: "personal",

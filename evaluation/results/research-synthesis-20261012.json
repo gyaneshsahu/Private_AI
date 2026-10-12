@@ -1,0 +1,446 @@
+{
+  "date": "2026-10-12",
+  "scope": "PUBLIC_RESEARCH_DEVELOPMENT_NOT_ACCEPTANCE",
+  "model": "gpt-oss-120b",
+  "policy": "constraints-v4 plus web evidence policy in src/conversation.ts",
+  "releaseDigest": "ec99fa87cbde94786fdc80000d7f4a790bbde5f8581e60741cccd6a882dc6227",
+  "originalStoppedRun": [
+    {
+      "id": "research-moons",
+      "sourceCount": 5,
+      "searchAttempted": true,
+      "turns": [
+        {
+          "completed": false,
+          "stage": "Verifying the protected destination\u00e2\u20ac\u00a6",
+          "elapsedMs": 921,
+          "answerCharacters": 0
+        }
+      ],
+      "qualification": "NOT_PASSED",
+      "providerContentPersisted": false,
+      "searchMs": 919,
+      "attempts": [],
+      "failure": "INCOMPLETE_STOPPED"
+    }
+  ],
+  "resumedRun": [
+    {
+      "id": "research-moons",
+      "sourceCount": 5,
+      "searchAttempted": true,
+      "turns": [
+        {
+          "completed": true,
+          "usage": {
+            "input": 3996,
+            "output": 117,
+            "total": 4113,
+            "estimatedUSD": 0.0006696
+          },
+          "elapsedMs": 2572,
+          "citationCount": 0,
+          "unknownCitations": 0,
+          "answerCharacters": 195
+        },
+        {
+          "completed": true,
+          "usage": {
+            "input": 4087,
+            "output": 136,
+            "total": 4223,
+            "estimatedUSD": 0.00069465
+          },
+          "elapsedMs": 1731,
+          "citationCount": 0,
+          "unknownCitations": 0,
+          "answerCharacters": 171
+        }
+      ],
+      "qualification": "NOT_PASSED",
+      "providerContentPersisted": false,
+      "searchMs": 862,
+      "attempts": [
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 17591,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 928,
+          "firstEncryptedByteMs": 1047,
+          "elapsedMs": 1737
+        },
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 17933,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 301,
+          "firstEncryptedByteMs": 424,
+          "elapsedMs": 1256
+        }
+      ]
+    },
+    {
+      "id": "research-recent",
+      "sourceCount": 5,
+      "searchAttempted": true,
+      "turns": [
+        {
+          "completed": true,
+          "usage": {
+            "input": 4294,
+            "output": 775,
+            "total": 5069,
+            "estimatedUSD": 0.0011091
+          },
+          "elapsedMs": 6300,
+          "citationCount": 0,
+          "unknownCitations": 0,
+          "answerCharacters": 1671
+        },
+        {
+          "completed": true,
+          "usage": {
+            "input": 4797,
+            "output": 712,
+            "total": 5509,
+            "estimatedUSD": 0.00114675
+          },
+          "elapsedMs": 5287,
+          "citationCount": 0,
+          "unknownCitations": 0,
+          "answerCharacters": 2338
+        }
+      ],
+      "qualification": "NOT_PASSED",
+      "providerContentPersisted": false,
+      "searchMs": 906,
+      "attempts": [
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 20192,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 340,
+          "firstEncryptedByteMs": 419,
+          "elapsedMs": 5479
+        },
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 22174,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 298,
+          "firstEncryptedByteMs": 437,
+          "elapsedMs": 4818
+        }
+      ]
+    },
+    {
+      "id": "research-ambiguous",
+      "sourceCount": 5,
+      "searchAttempted": true,
+      "turns": [
+        {
+          "completed": true,
+          "usage": {
+            "input": 3333,
+            "output": 376,
+            "total": 3709,
+            "estimatedUSD": 0.0007255499999999999
+          },
+          "elapsedMs": 3550,
+          "citationCount": 5,
+          "unknownCitations": 0,
+          "answerCharacters": 969
+        },
+        {
+          "completed": true,
+          "usage": {
+            "input": 3637,
+            "output": 504,
+            "total": 4141,
+            "estimatedUSD": 0.00084795
+          },
+          "elapsedMs": 3840,
+          "citationCount": 3,
+          "unknownCitations": 0,
+          "answerCharacters": 1713
+        }
+      ],
+      "qualification": "NOT_PASSED",
+      "providerContentPersisted": false,
+      "searchMs": 825,
+      "attempts": [
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 14758,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 289,
+          "firstEncryptedByteMs": 405,
+          "elapsedMs": 2703
+        },
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 15967,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 300,
+          "firstEncryptedByteMs": 417,
+          "elapsedMs": 3372
+        }
+      ]
+    },
+    {
+      "id": "research-date",
+      "sourceCount": 5,
+      "searchAttempted": true,
+      "turns": [
+        {
+          "completed": true,
+          "usage": {
+            "input": 3260,
+            "output": 182,
+            "total": 3442,
+            "estimatedUSD": 0.0005982
+          },
+          "elapsedMs": 2302,
+          "citationCount": 1,
+          "unknownCitations": 0,
+          "answerCharacters": 234
+        },
+        {
+          "completed": true,
+          "usage": {
+            "input": 3355,
+            "output": 279,
+            "total": 3634,
+            "estimatedUSD": 0.00067065
+          },
+          "elapsedMs": 2718,
+          "citationCount": 1,
+          "unknownCitations": 0,
+          "answerCharacters": 743
+        }
+      ],
+      "qualification": "NOT_PASSED",
+      "providerContentPersisted": false,
+      "searchMs": 915,
+      "attempts": [
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 12411,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 298,
+          "firstEncryptedByteMs": 412,
+          "elapsedMs": 1471
+        },
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 12789,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 283,
+          "firstEncryptedByteMs": 391,
+          "elapsedMs": 2098
+        }
+      ]
+    },
+    {
+      "id": "research-browser",
+      "sourceCount": 5,
+      "searchAttempted": true,
+      "turns": [
+        {
+          "completed": true,
+          "usage": {
+            "input": 3350,
+            "output": 419,
+            "total": 3769,
+            "estimatedUSD": 0.0007539
+          },
+          "elapsedMs": 3842,
+          "citationCount": 0,
+          "unknownCitations": 0,
+          "answerCharacters": 1636
+        },
+        {
+          "completed": true,
+          "usage": {
+            "input": 3712,
+            "output": 200,
+            "total": 3912,
+            "estimatedUSD": 0.0006768
+          },
+          "elapsedMs": 2131,
+          "citationCount": 0,
+          "unknownCitations": 0,
+          "answerCharacters": 423
+        }
+      ],
+      "qualification": "NOT_PASSED",
+      "providerContentPersisted": false,
+      "searchMs": 925,
+      "attempts": [
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 16227,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 274,
+          "firstEncryptedByteMs": 384,
+          "elapsedMs": 3028
+        },
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 18033,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 291,
+          "firstEncryptedByteMs": 417,
+          "elapsedMs": 1713
+        }
+      ]
+    },
+    {
+      "id": "research-latest",
+      "sourceCount": 5,
+      "searchAttempted": true,
+      "turns": [
+        {
+          "completed": true,
+          "usage": {
+            "input": 3221,
+            "output": 1300,
+            "total": 4521,
+            "estimatedUSD": 0.00126315
+          },
+          "elapsedMs": 9617,
+          "citationCount": 12,
+          "unknownCitations": 0,
+          "answerCharacters": 2212
+        },
+        {
+          "completed": true,
+          "usage": {
+            "input": 3976,
+            "output": 601,
+            "total": 4577,
+            "estimatedUSD": 0.000957
+          },
+          "elapsedMs": 4785,
+          "citationCount": 0,
+          "unknownCitations": 0,
+          "answerCharacters": 1313
+        }
+      ],
+      "qualification": "NOT_PASSED",
+      "providerContentPersisted": false,
+      "searchMs": 960,
+      "attempts": [
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 14746,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 297,
+          "firstEncryptedByteMs": 408,
+          "elapsedMs": 8786
+        },
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 17408,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 293,
+          "firstEncryptedByteMs": 418,
+          "elapsedMs": 4282
+        }
+      ]
+    }
+  ],
+  "budget": {
+    "dashboardSpendUSD": 0.43,
+    "prepaidUSD": 10.57,
+    "limitUSD": 3,
+    "autoReload": false,
+    "rolling7DayRequestsBefore": 581,
+    "rolling7DayRequestsAfter": 593,
+    "newInferenceRequests": 12,
+    "terminalEstimateUSD": 0.0101133,
+    "historicalUncertaintyUSD": 0.0163552,
+    "roundingUSD": 0.01,
+    "conservativeUSD": 0.4563552,
+    "activeReservationUSD": 0,
+    "braveRequests": 8,
+    "braveChargeVerified": false
+  },
+  "summary": {
+    "completed": 12,
+    "inferenceRequests": 12,
+    "searchRequestsThisTask": 8,
+    "searchMsRange": [
+      825,
+      960
+    ],
+    "answerMsRange": [
+      1731,
+      9617
+    ],
+    "medianAnswerMs": 3695.0,
+    "terminalEstimateUSD": 0.0101133,
+    "preRunReportedSpendUSD": 0.42,
+    "oldUncertaintyUSD": 0.0163552,
+    "roundingUSD": 0.01,
+    "conservativeBeforeDashboardRefreshUSD": 0.4564685,
+    "activeReservationUSD": 0,
+    "qualification": "NOT_PASSED",
+    "sourceBodiesPersisted": false,
+    "answerFilesPersisted": false
+  },
+  "limitations": [
+    "No provider result bodies or answer files retained; identical source entailment cannot be re-reviewed later.",
+    "Original citation counters recognized only simple formats; zero unknownCitations is not proof of accuracy.",
+    "Human scores blank. AI-proposed failures in docs/search-provider-comparison.md.",
+    "Mechanical quotation and expanded citation audits added after the live run; not retroactive results."
+  ]
+}

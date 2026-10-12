@@ -5,6 +5,7 @@ import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import type { Source } from "../shared/contracts";
 import { displayMath, sourceCitations } from "./answer-format";
+import { auditResearchAnswer } from "./research-audit";
 
 export function Answer({
   text,
@@ -15,8 +16,18 @@ export function Answer({
   sources: Source[];
   open: (source: Source) => void;
 }) {
+  const audit = sources.some(source => source.url)
+    ? auditResearchAnswer(text, sources) : undefined;
   return (
     <div className="message-text">
+      {audit && (audit.unknownSourceReferences > 0 || audit.unsupportedLineReferences > 0 || audit.quotesNotFoundVerbatim > 0) && (
+        <p className="muted">
+          Evidence needs review: {audit.unknownSourceReferences} unknown source references,
+          {" "}{audit.unsupportedLineReferences} unverified line references,
+          {" "}{audit.quotesNotFoundVerbatim} quoted passages not matched verbatim to selected sources.
+          These checks do not establish factual accuracy.
+        </p>
+      )}
       <Markdown
         remarkPlugins={[
           remarkGfm,
@@ -48,6 +59,9 @@ export function Answer({
                 {source.page ? ` · p${source.page}` : ""}
                 {citedPage && citedPage !== source.page
                   ? ` · cited p${citedPage}`
+                  : ""}
+                {typeof children === "string" && /†L\d/i.test(children)
+                  ? " · line reference unverified"
                   : ""}
               </button>
             ) : (

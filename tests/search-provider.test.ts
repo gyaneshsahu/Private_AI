@@ -41,3 +41,26 @@ it("preserves an explicit empty search result and bounds usable results to five"
   upstream.mockResolvedValueOnce(new Response(JSON.stringify({ web: { results: Array(6).fill(result) } })));
   expect(await searchWeb("synthetic", "TEST_ONLY")).toHaveLength(5);
 });
+
+it("uses bounded LLM context parameters with no location disclosure or fallback", async () => {
+  upstream.mockResolvedValue(new Response(JSON.stringify({ grounding: { generic: [{ title: "Synthetic", url: "https://example.com/report", snippets: ["Event on October 5; published October 6."] }] } })));
+  const sources = await searchWeb("synthetic event", "TEST_ONLY", undefined, "llm-context");
+  const [url, options] = upstream.mock.calls[0];
+  expect(url.pathname).toBe("/res/v1/llm/context");
+  expect(url.searchParams.get("maximum_number_of_tokens")).toBe("4096");
+  expect(url.searchParams.get("enable_local")).toBe("false");
+  expect(sources[0].evidenceKind).toBe("llm-context");
+  expect(parseResearchResult({ sources }, [])).toEqual(sources);
+  expect(options.headers).not.toHaveProperty("X-Loc-Lat");
+  upstream.mockReset();
+  upstream.mockResolvedValue(new Response("", {status: 403}));
+  await expect(searchWeb("synthetic event", "TEST_ONLY", undefined, "llm-context")).rejects.toThrow("No automatic retry");
+  expect(upstream).toHaveBeenCalledTimes(1);
+});
+
+it("keeps provider page dates separate from retrieval timestamps", async () => {
+  upstream.mockResolvedValue(new Response(JSON.stringify({ web: { results: [{...result, page_age: "2026-10-05T09:00:00"}] } })));
+  const sources = await searchWeb("synthetic date", "TEST_ONLY");
+  expect(sources[0].providerDate).toBe("2026-10-05T09:00:00");
+  expect(sources[0].retrievedAt).not.toBe(sources[0].providerDate);
+});

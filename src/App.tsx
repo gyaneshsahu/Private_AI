@@ -18,7 +18,7 @@ import { Vault } from "./vault";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { abortable } from "./abortable";
-import { parseResearchResult } from "./research-result";
+import { parseResearchResult, researchSourceUrl } from "./research-result";
 
 type Tab = "Conversation" | "Context" | "Research" | "Saved";
 const Answer = lazy(() =>
@@ -476,6 +476,7 @@ export function App() {
                     : "Public page",
                 selected: true,
                 kind: "research",
+                ...(approved.kind === "search" ? { researchQuery: approved.value } : {}),
                 sources,
               },
             ],
@@ -1147,7 +1148,10 @@ export function App() {
             {conversation.attachments.some(a => a.kind === "research" && a.selected) && (
               <div className="panel">
                 <button onClick={() => {
-                  if (!input.trim()) setInput("Using the selected web sources, summarize what they establish, cite the sources, and explain anything they do not answer.");
+                  if (!input.trim()) {
+                    const question = [...conversation.attachments].reverse().find(a => a.selected && a.researchQuery)?.researchQuery;
+                    setInput(`Using the selected web sources, answer: ${question ?? "What do these sources establish?"} Cite evidence beside each factual claim and explain missing or conflicting evidence.`);
+                  }
                   setTab("Conversation");
                 }}>Prepare a question about these sources</button>
                 <p className="muted">Opens your existing draft, or prepares an editable question. Nothing is sent automatically.{!status?.inference.ready && " AI answers are currently unavailable while provider verification is incomplete."}</p>
@@ -1432,9 +1436,11 @@ export function App() {
             </div>
             {source.url && (
               <p className="muted">
-                Source URL: {source.url} · {source.retrievedAt}
+                Source URL: <a href={researchSourceUrl(source.url)} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">{source.url}</a> · Retrieved: {source.retrievedAt}
               </p>
             )}
+            {source.providerDate && <p>Provider-reported page date: {source.providerDate} (not verified as publication or event date).</p>}
+            {source.evidenceKind && <p>Evidence: {source.evidenceKind}. Retrieved material may be incomplete.</p>}
             <pre>{source.text}</pre>
             <button onClick={() => setSource(undefined)}>Close</button>
           </section>

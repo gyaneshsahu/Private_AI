@@ -1,0 +1,110 @@
+[
+  {
+    "id": "research-moons",
+    "family": "research",
+    "turns": [
+      "What are the two moons of Mars, and which is larger? Give a short sourced answer.",
+      "Does either source establish that Mars has a third confirmed moon?"
+    ],
+    "mandatoryFacts": [
+      "Name Phobos and Deimos; compare only from evidence",
+      "No invented third moon"
+    ],
+    "forbiddenConclusions": [
+      "Invented citations, quotations, unseen page facts or currentness from retrieval date"
+    ],
+    "sources": [],
+    "synthetic": true,
+    "query": "site.nasa.gov Mars moons Phobos Deimos"
+  },
+  {
+    "id": "research-recent",
+    "family": "research",
+    "turns": [
+      "What does the retrieved evidence establish about the 2026 Nobel Prize in Physics announcement? Separate announcement date from publication dates.",
+      "Which parts are confirmed reporting and which are reactions? Do not fill missing information."
+    ],
+    "mandatoryFacts": [
+      "Check actual year and dates; do not substitute older award",
+      "Separate reporting from reaction; admit insufficient evidence"
+    ],
+    "forbiddenConclusions": [
+      "Invented citations, quotations, unseen page facts or currentness from retrieval date"
+    ],
+    "sources": [],
+    "synthetic": true,
+    "query": "2026 Nobel Prize Physics announced October 2026"
+  },
+  {
+    "id": "research-ambiguous",
+    "family": "research",
+    "turns": [
+      "How hot is Mercury?",
+      "I meant the planet. Explain why one temperature may be misleading."
+    ],
+    "mandatoryFacts": [
+      "Clarify planet versus element when necessary",
+      "Distinguish day/night or range using sources"
+    ],
+    "forbiddenConclusions": [
+      "Invented citations, quotations, unseen page facts or currentness from retrieval date"
+    ],
+    "sources": [],
+    "synthetic": true,
+    "query": "Mercury temperature"
+  },
+  {
+    "id": "research-date",
+    "family": "research",
+    "turns": [
+      "When do clocks change in Berlin in autumn 2026, and which direction?",
+      "Does this mean every country changes clocks on that date?"
+    ],
+    "mandatoryFacts": [
+      "Date direction and local timing supported",
+      "Do not generalize globally"
+    ],
+    "forbiddenConclusions": [
+      "Invented citations, quotations, unseen page facts or currentness from retrieval date"
+    ],
+    "sources": [],
+    "synthetic": true,
+    "query": "site.timeanddate.com Berlin daylight saving time ends 2026"
+  },
+  {
+    "id": "research-browser",
+    "family": "research",
+    "turns": [
+      "What is the difference between clearing the cache and deleting cookies in Firefox?",
+      "Will clearing only the cache necessarily sign me out everywhere?"
+    ],
+    "mandatoryFacts": [
+      "Distinguish cache and cookies",
+      "Avoid blanket guarantee beyond evidence"
+    ],
+    "forbiddenConclusions": [
+      "Invented citations, quotations, unseen page facts or currentness from retrieval date"
+    ],
+    "sources": [],
+    "synthetic": true,
+    "query": "site.mozilla.org Firefox clear cache cookies difference"
+  },
+  {
+    "id": "research-latest",
+    "family": "research",
+    "turns": [
+      "What is the latest Artemis II schedule supported by these results? Identify stale plans and distinguish targets from completed events.",
+      "If sources disagree, which uncertainty remains? Quote only if the exact words are in the retrieved text."
+    ],
+    "mandatoryFacts": [
+      "Dates and target versus event distinction",
+      "No invented quote or unsupported resolution of conflicts"
+    ],
+    "forbiddenConclusions": [
+      "Invented citations, quotations, unseen page facts or currentness from retrieval date"
+    ],
+    "sources": [],
+    "synthetic": true,
+    "query": "NASA Artemis II launch schedule October 2026"
+  }
+]

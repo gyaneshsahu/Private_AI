@@ -1,5 +1,11 @@
 # PrivateAI local Codex handoff — updated 12 October 2026
 
+## 12 October — public search answer synthesis batch
+
+Implemented source-kind/date provenance, original-query answer drafts, bounded Brave LLM Context adapter, safe source navigation and visible citation/quotation review aids. Six fixed public questions produced12complete encrypted replies; model failures include invented line locators, an impossible negative-Kelvin value, incorrect intensity ratio and treating April2026as future in October. AI-proposed findings only, human grades blank. [Full results and limitations](search-provider-comparison.md#temporary-answer-synthesis--12-october-2026). No trial pass; normal chat remains gated. Original old-router rejection is preserved with zero inference; fresh public-only permits used verified v0.0.157, without changing production qualification.
+
+Model usageUSD0.0101133; refreshed dashboardUSD0.43/3,credit10.57,autoreload off;12request increase matches. ConservativeUSD0.4563552including old uncertainty/rounding; reserve retired. Eight Brave requests total; key accepts LLM Context, founder-reported free allowance not independently billing-verified. No provider content or answer files persisted for reopening. Runtime synthesis tested through the real browser-encrypted adapter; normal app UI stays disabled pending privacy qualification. No account/hosting changes or manual action needed for this completed batch.
+
 ## 12 October — recovery recheck and current manual actions
 
 Read-only backup inspection returned BACKUP_STALE and SNAPSHOT_STALE; ciphertext/receipt inspection did not report corruption or unverified custody. This is not a fresh decryption or hosted restore, and backup readiness remains open. No new backup transfer, live-data deletion, schedule or retention change occurred. Seventeen synthetic tests across backup-health, registry-backup, trial-isolation-check, trial-access-check and chat-recovery passed. These local results do not qualify hosted logs, deployment recovery or real devices.

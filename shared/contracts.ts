@@ -88,6 +88,9 @@ export interface Source {
   page?: number;
   url?: string;
   retrievedAt?: string;
+  evidenceKind?: "search-excerpt" | "page" | "llm-context";
+  /** Provider-reported page date; not necessarily publication or event time. */
+  providerDate?: string;
 }
 export interface Attachment {
   id: string;
@@ -96,6 +99,7 @@ export interface Attachment {
   selected: boolean;
   warning?: string;
   kind?: "document" | "screenshot" | "research";
+  researchQuery?: string;
 }
 export interface Message {
   id: string;

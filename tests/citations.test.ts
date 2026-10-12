@@ -83,3 +83,15 @@ it("opens page-qualified citations without treating a model's page claim as veri
   expect(html).toContain("<code>Code [documents-04, page 1]</code>");
   expect(html).not.toContain("href=");
 });
+
+it("resolves known source IDs but labels unsupported model line locators", () => {
+  const html = renderToStaticMarkup(createElement(Answer, {
+    text: "Claim 【report-01†L2-L4】. Another 【report-01†source】. Unknown 【missing-01†L1-L2】.",
+    sources: [{ id: "report-01", title: "Synthetic report", text: "No numbered lines were supplied." }],
+    open: () => {},
+  }));
+  expect(html.match(/<button/g)).toHaveLength(2);
+  expect(html).toContain("line reference unverified");
+  expect(html).toContain("missing-01");
+  expect(html).not.toContain("href=");
+});

@@ -8,6 +8,8 @@ const source = z.object({
   page: z.number().int().positive().optional(),
   url: z.string().optional(),
   retrievedAt: z.string().optional(),
+  evidenceKind: z.enum(["search-excerpt", "page", "llm-context"]).optional(),
+  providerDate: z.string().max(100).optional(),
 });
 
 // Older snapshots have no draft, attachment kind or message source snapshot.
@@ -35,6 +37,7 @@ export const savedConversationSchema: z.ZodType<Conversation> = z.object({
       sources: z.array(source),
       warning: z.string().optional(),
       kind: z.enum(["document", "screenshot", "research"]).optional(),
+      researchQuery: z.string().max(400).optional(),
     }),
   ),
   usage: z.array(

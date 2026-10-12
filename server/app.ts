@@ -19,6 +19,7 @@ export interface Config {
   qualification?: unknown;
   apiKey?: string;
   searchKey?: string;
+  searchMode?: "web" | "llm-context";
   dev?: boolean;
   accessKey?: string;
   invites?: InviteRegistry;
@@ -284,7 +285,7 @@ export function createApp(config: Config) {
       }
       const sources =
         request.kind === "search"
-          ? await searchWeb(request.value, config.searchKey!, abort.signal)
+          ? await searchWeb(request.value, config.searchKey!, abort.signal, config.searchMode)
           : await fetchPage(request.value, abort.signal);
       res.json({ sources });
     } catch {

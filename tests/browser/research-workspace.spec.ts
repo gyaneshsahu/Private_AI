@@ -21,6 +21,7 @@ test("search is explicitly approved and remains temporary after source removal",
   expect(calls).toBe(1);
   await page.getByRole("button", { name: "Prepare a question about these sources" }).click();
   await expect(page.getByLabel("Message PrivateAI")).toHaveValue(/Using the selected web sources/);
+  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(/synthetic library hours/);
   await page.getByLabel("Message PrivateAI").fill("SYNTHETIC preserve my own question");
   await tab("Research").click();
   await page.getByRole("button", { name: "Prepare a question about these sources" }).click();
@@ -57,13 +58,13 @@ test("malformed research is rejected without changing the draft or retrying", as
   expect(executions).toBe(1);
 });
 
-test("approved research retains inspectable provenance through encrypted save and reopen", async ({ page }) => {
+test("approved research retains inspectable provenance through encrypted save and reopen", async ({ page, baseURL }) => {
   const disclosures: unknown[] = [];
   const external: string[] = [];
   let executions = 0;
   const url = "https://example.com/synthetic-opening-hours";
   page.on("request", (request) => {
-    if (!request.url().startsWith("http://127.0.0.1:4173/")) external.push(request.url());
+    if (new URL(request.url()).origin !== new URL(baseURL!).origin) external.push(request.url());
     if (request.url().endsWith("/api/research/prepare")) disclosures.push(request.postDataJSON());
   });
   // Real approval endpoint, synthetic retrieval response; no public page is fetched.
@@ -95,7 +96,8 @@ test("approved research retains inspectable provenance through encrypted save an
   await expect(page.getByRole("dialog")).toContainText(url);
   await expect(page.getByRole("dialog")).toContainText("2026-10-05T12:00:00.000Z");
   await expect(page.getByRole("dialog")).toContainText("Saturday: 10:00–14:00");
-  await expect(page.getByRole("dialog").locator("a")).toHaveCount(0);
+  await expect(page.getByRole("dialog").locator("a")).toHaveAttribute("href", url);
+  await expect(page.getByRole("dialog").locator("a")).toHaveAttribute("referrerpolicy", "no-referrer");
   await page.getByRole("button", { name: "Close source" }).click();
   await tab("Saved").click();
   await page.getByLabel("Vault passphrase").fill("synthetic research workspace password");

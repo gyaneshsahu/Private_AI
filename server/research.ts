@@ -188,6 +188,7 @@ export async function fetchPage(
         text,
         url: url.href,
         retrievedAt: new Date().toISOString(),
+        evidenceKind: "page",
       },
     ];
   } finally {
@@ -198,10 +199,20 @@ export async function searchWeb(
   query: string,
   key: string,
   signal?: AbortSignal,
+  mode: "web" | "llm-context" = "web",
 ): Promise<Source[]> {
-  const url = new URL("https://api.search.brave.com/res/v1/web/search");
+  const url = new URL(mode === "llm-context"
+    ? "https://api.search.brave.com/res/v1/llm/context"
+    : "https://api.search.brave.com/res/v1/web/search");
   url.searchParams.set("q", query);
   url.searchParams.set("count", "5");
+  if (mode === "llm-context") {
+    url.searchParams.set("maximum_number_of_urls", "5");
+    url.searchParams.set("maximum_number_of_tokens", "4096");
+    url.searchParams.set("maximum_number_of_tokens_per_url", "1024");
+    url.searchParams.set("enable_source_metadata", "true");
+    url.searchParams.set("enable_local", "false");
+  }
   const response = await fetch(url, {
     dispatcher: serviceDispatcher,
     headers: { "X-Subscription-Token": key, Accept: "application/json" },
@@ -218,14 +229,17 @@ export async function searchWeb(
     );
   }
   try {
+    const raw: unknown = JSON.parse(await boundedText(response));
+    if (mode === "llm-context") return parseLlmContext(raw);
     const data = z.object({
       error: z.never().optional(),
       web: z.object({ results: z.array(z.object({
         title: z.string().min(1).max(10000),
         url: z.string().url().max(2000),
         description: z.string().min(1).max(60000),
+        page_age: z.string().min(1).max(100).optional(),
       })).max(100) }),
-    }).parse(JSON.parse(await boundedText(response)));
+    }).parse(raw);
     return data.web.results.slice(0, 5).map((result) => {
       const title = load(result.title).text().trim();
       const excerpt = load(result.description).text().trim();
@@ -236,10 +250,35 @@ export async function searchWeb(
         title,
         url: pageUrl(result.url).href,
         text: `Search excerpt only (full page not fetched): ${excerpt}`,
+        evidenceKind: "search-excerpt",
+        ...(result.page_age ? { providerDate: result.page_age } : {}),
         retrievedAt: new Date().toISOString(),
       };
     });
   } catch {
     throw new Error("Search returned invalid source information. No automatic retry was made.");
   }
+}
+
+// Provider extraction is partial evidence; the browser never treats it as a full-page fetch.
+export function parseLlmContext(input: unknown): Source[] {
+  const data = z.object({
+    error: z.never().optional(),
+    grounding: z.object({ generic: z.array(z.object({
+      url: z.string().url().max(2000), title: z.string().min(1).max(2000),
+      snippets: z.array(z.string().min(1).max(60000)).min(1).max(256),
+    })).max(50) }),
+  }).parse(input);
+  const seen = new Set<string>();
+  return data.grounding.generic.slice(0, 5).map(result => {
+    const url = pageUrl(result.url).href;
+    if (seen.has(url)) throw new Error("Duplicate source URL");
+    seen.add(url);
+    const text = result.snippets.join("\n\n");
+    if (!text.trim() || text.length > 59000 || !result.title.trim())
+      throw new Error("Invalid extracted content");
+    return { id: randomBytes(6).toString("hex"), title: result.title, url,
+      text: `Provider-extracted page chunks only (full page not fetched): ${text}`,
+      evidenceKind: "llm-context" as const, retrievedAt: new Date().toISOString() };
+  });
 }

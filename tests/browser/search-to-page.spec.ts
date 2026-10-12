@@ -27,7 +27,7 @@ test("search excerpts lead to separately approved pages without sharing the draf
   await page.getByLabel("Exact search query").fill("synthetic library hours");
   await page.getByRole("button", { name: "Review disclosure" }).click();
   await page.getByRole("button", { name: "Approve and retrieve" }).click();
-  await expect(page.getByRole("status")).toContainText("Public sources added");
+  await expect(page.getByRole("status")).toContainText("Search results added");
   await tab("Context").click();
   await page.locator("details summary").click();
   await page.getByRole("button", { name: "Review page retrieval" }).click();
