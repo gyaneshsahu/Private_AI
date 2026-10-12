@@ -1,5 +1,9 @@
 # PrivateAI readiness checklist
 
+## 12 October — alternative-provider source feasibility
+
+Pinned public Privatemode source inspection found automatic manifest replacement before its update callback, an internal missing-secret retry, session-based lazy verification, and no strict OCSP parameter in the inspected JS/Wasm initializer. Ciphertext-only relaying appears structurally possible, but must cover attestation/secret exchange as well as inference; it is not yet demonstrated. [Source-linked findings and ready-to-send supplier questions](provider-qualification.md#privatemode-source-feasibility-follow-up--12-october-2026). No provider migration, paid calls, dependency installation or gate changes. Static analysis only; no new runtime test results claimed. S04 remains externally blocked; S05 retention qualification remains open. Next useful provider action is exact supported-release/relay evidence; independent quality, recovery and device work need not wait.
+
 ## 12 October — browser privacy decision and offline boundary tests
 
 Audited pinned Tinfoil/verifier1.2.2 and EHBP0.3.3 against actual request flow and supplier evidence; compared supported Privatemode browser/Wasm architecture. [Decision and exact supplier evidence needed](provider-qualification.md#browser-privacy-decision--12-october-2026): normal private chat NO-GO; bounded synthetic development remains permitted. Router attestation and per-request fetching do not establish fresh worker/GPU/TDX verification. Existing hardware TCB checks are present; missing browser revocation/freshness must not be confused with no hardware validation. Privatemode is an unqualified candidate, with strict browser OCSP, manifest/session policy and credential relay feasibility still unproven. S04/S05 evidence advanced; neither passes. No dependency, runtime gate, deployment or account changes; no paid API calls.
