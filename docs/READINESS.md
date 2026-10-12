@@ -1,5 +1,14 @@
 # PrivateAI readiness checklist
 
+## 12 October — browser privacy decision and offline boundary tests
+
+Audited pinned Tinfoil/verifier1.2.2 and EHBP0.3.3 against actual request flow and supplier evidence; compared supported Privatemode browser/Wasm architecture. [Decision and exact supplier evidence needed](provider-qualification.md#browser-privacy-decision--12-october-2026): normal private chat NO-GO; bounded synthetic development remains permitted. Router attestation and per-request fetching do not establish fresh worker/GPU/TDX verification. Existing hardware TCB checks are present; missing browser revocation/freshness must not be confused with no hardware validation. Privatemode is an unqualified candidate, with strict browser OCSP, manifest/session policy and credential relay feasibility still unproven. S04/S05 evidence advanced; neither passes. No dependency, runtime gate, deployment or account changes; no paid API calls.
+
+Validation: typecheck and34tests across4files passed, including actual local Chromium encrypted synthetic transport and production relay faults. Initial sandbox run failed on browser-path/temp-file/loopback permissions; preserved terminal results, then identical tests passed outside sandbox using installed dependencies. Three new offline verifier tests document unsupported-format rejection and SNP-only multiplatform comparison; they are capability-boundary tests, not live attestation certification. Existing failed evaluations, human grades and incomplete cases remain unchanged.
+
+Next: supplier released browser evidence or supported Privatemode relay/revocation proof before a synthetic integration spike; continue independent quality and device/recovery work. No privacy qualification or trial launch authorized by this batch.
+
+
 ## 12 October — migration bookkeeping and search handoff
 
 Current state, decisions, blockers, secret boundaries and migration steps are consolidated at the top of LOCAL_CODEX_HANDOFF.md. scripts/evidence-manifest.mjs hashes tracked files and ignored experiment/review evidence; it is not a backup. The search-to-question action preserves drafts and never sends automatically. Production build/typecheck and affected browser test passed; no API usage. No quality/privacy/release gate promoted.
