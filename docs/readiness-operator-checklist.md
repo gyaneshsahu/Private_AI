@@ -2,7 +2,7 @@
 
 ## Founder-only actions, in blocking order
 
-1. **Share existing supplier replies now.** Paste Tinfoil and Brave/Exa/Tavily reply text with sender/date and referenced plan/terms; redact keys and personal account details. Need Tinfoil router→worker/GPU binding, verifier freshness/revocation, logging/cache retention/training/moderation; search permission to retain/reopen titles/URLs/short excerpts in encrypted local history, query retention/training and eligible plan. No new enquiry or subscription required to share replies.
+1. **Send the prepared Tinfoil follow-up.** The October7 reply is already reviewed; do not resend it. Use the ready-to-send questions in [provider qualification](provider-qualification.md#ready-to-send-provider-questions-owner-sends-not-sent-by-codex) to request an exact released browser verification route and retention evidence. Share the response with credentials removed. Privatemode inquiry is an optional alternative feasibility step, not authorization to open a paid account. Share any new Brave reply concerning query handling/terms; saved-source permission is deferred because test search sessions cannot be saved.
 2. **Review only the new priority findings.** Your37K/L/T grades are recorded; T6 stays incomplete. New comparisonF16 needs safety severity, and the four GLM screening conversations need judgment on unsupported additions and urgent-help wording. Use .local/review-batches/config-20261008/complete-review.html#F16 and .local/review-batches/glmscreen-20261008/complete-review.html. New scores remain blank. Final held-out acceptance has not begun.
 3. **Do the five-minute Galaxy A52/TalkBack public-entry check** at the top of galaxy-a52-talkback-checks.md. Return versions, labels and PASS/FAIL/BLOCKED for the three tasks. Complete workspace/device checks later on the exact authorized synthetic release; old-host entry results cannot qualify newer code.
 4. **When the release and settings are concrete, perform owner-only hosting/retention actions.** Codex prepares exact deployment, recovery and retention changes with evidence; you perform account/settings changes and separately approve retention activation/new sensitive transfer. No action requested before the proposal is reviewable.
@@ -10,14 +10,14 @@
 
 This is an operator action view of READINESS, not a competing completion checklist. No budget change is required; spending remains withinUSD3 and dashboards are read-only for the agent.
 
-8 October 2026. Local fixes and UI polish can proceed; trial gates below remain.
+Updated 12 October 2026. Local fixes and UI polish can proceed; trial gates below remain.
 No account mutation, private-data admission or retention activation is authorized here.
 
 | Work | Exact next action | Evidence needed |
 | --- | --- | --- |
 | Safety and answer quality | Founder reviews both turns and visible prefixes in the fresh packet; resolve material failures before fresh held-out acceptance on one configuration | Source-bound human decisions; retain old failed and incomplete cases; no AI score relabelling |
-| Confidential processing | Assess pending supplier reply for the selected Gemma worker, router/build/GPU binding, freshness/revocation and logging/caching/moderation | Deployment-specific evidence and negative-path validation; generic encrypted chat success is insufficient |
-| Research | Resolve provider eligibility and saved title/URL/excerpt rights before service activation | Approved terms/account plus real consent-to-retrieval-to-cited-follow-up test |
+| Confidential processing | Obtain supported browser-release evidence addressing the reviewed supplier reply; compare exact worker/GPU delegation, freshness/revocation and retention | Deployment-specific evidence and negative-path validation; generic encrypted chat success is insufficient |
+| Research | Verify temporary-session query handling and live cited-answer/follow-up behavior; persistent citation rights remain deferred | Approved terms/account plus real consent-to-retrieval-to-cited-follow-up test |
 | Hosted operations | Founder chooses release and performs deployment/configuration; operator rehearses paused recovery and rollback under separately approved data-transfer scope | Release/config identity, HTTPS access isolation, retained auth/quota state, sanitized logs and timed recovery; local container results are not hosted evidence |
 | Retention | Review migration, revocation timestamp integration, holds, backup cleanup and storage remnants before separate activation approval | Seven-day row eligibility and seven-day backup expiry demonstrated at every claimed layer; no blanket physical-erasure claim |
 | Devices/accessibility | Run docs/ui-device-test-plan.md on an actual phone and with a screen reader using only synthetic content | OS/browser/release, task outcomes, keyboard/file-picker behavior, focus and announcements; CSS zoom is partial evidence |

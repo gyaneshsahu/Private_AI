@@ -1,5 +1,11 @@
 # PrivateAI local Codex handoff — updated 12 October 2026
 
+## 12 October — recovery recheck and current manual actions
+
+Read-only backup inspection returned BACKUP_STALE and SNAPSHOT_STALE; ciphertext/receipt inspection did not report corruption or unverified custody. This is not a fresh decryption or hosted restore, and backup readiness remains open. No new backup transfer, live-data deletion, schedule or retention change occurred. Seventeen synthetic tests across backup-health, registry-backup, trial-isolation-check, trial-access-check and chat-recovery passed. These local results do not qualify hosted logs, deployment recovery or real devices.
+
+Updated readiness-operator-checklist.md to stop requesting the already-reviewed Tinfoil email and to reflect temporary search sessions with saved citations deferred. Founder has been asked to send the prepared Tinfoil follow-up and return three Galaxy A52/TalkBack entry results; neither is recorded as done. Phone instructions now describe hosted release40f2e33 as last recorded, not freshly verified. Independent local work continues; no paid requests or account changes. Next operational evidence needs a concrete owner-approved release and hosted recovery/log rehearsal; stale backups remain a release blocker.
+
 ## 12 October — alternative-provider source feasibility
 
 Pinned public Privatemode source inspection found automatic manifest replacement before its update callback, an internal missing-secret retry, session-based lazy verification, and no strict OCSP parameter in the inspected JS/Wasm initializer. Ciphertext-only relaying appears structurally possible, but must cover attestation/secret exchange as well as inference; it is not yet demonstrated. [Source-linked findings and ready-to-send supplier questions](provider-qualification.md#privatemode-source-feasibility-follow-up--12-october-2026). No provider migration, paid calls, dependency installation or gate changes. Static analysis only; no new runtime test results claimed. S04 remains externally blocked; S05 retention qualification remains open. Next useful provider action is exact supported-release/relay evidence; independent quality, recovery and device work need not wait.

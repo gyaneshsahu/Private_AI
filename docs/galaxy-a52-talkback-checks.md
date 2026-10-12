@@ -36,7 +36,7 @@ Open https://private-ai-deployment.onrender.com/auth in Chrome. With TalkBack on
 5. Do not register an account or guess credentials. If access is paused or you lack
    a dedicated synthetic invitation, mark the workspace steps BLOCKED and stop here.
 
-Current hosted release is40f2e33, not the newer locally tested engineering release.
+Last recorded hosted release was40f2e33; current identity must be checked before attributing results. It is not the newer locally tested engineering release.
 Record which release was tested. Do not call old-host results proof of newer code.
 A founder-operated deployment/access decision and private delivery of synthetic
 credentials are prerequisites for authenticated testing; this sheet grants neither.
