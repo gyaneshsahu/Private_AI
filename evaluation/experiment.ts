@@ -94,6 +94,7 @@ export const experimentSchema = z
         pricing: true,
       })
       .extend({
+        researchEvidenceContract: z.boolean().optional(),
         gemmaThinking: z.boolean().optional(),
         answerPolicyVariant: z
           .enum([

@@ -22,10 +22,20 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
           return `
         import { composeContext } from '/src/conversation.ts';
         import { IncompleteReplyError } from '/src/reply-stream.ts';
+        import { consumeResearchReply } from '/src/research-contract.ts';
         export async function streamReply(c, qualification, csrf, signal, chunk, status) {
           window.fixtureCalls ??= [];
           window.fixtureCalls.push(composeContext(c, 20000));
           status('TEST synthetic response');
+          if (window.fixtureMode === 'invalid-research') {
+            const draft = JSON.stringify({claims:[{text:'UNSUPPORTED_RESEARCH_CANARY',evidence:[{sourceId:'notice-001',quote:'This passage was invented.'}]}],limitation:'none'});
+            async function* events() {
+              yield {choices:[{index:0,delta:{content:draft},finish_reason:'stop'}]};
+              yield {choices:[],usage:{prompt_tokens:30,completion_tokens:10,total_tokens:40}};
+            }
+            return consumeResearchReply(events(), {inputPerMillion:1,outputPerMillion:1,currency:'USD'}, signal,
+              [{id:'notice-001',title:'Synthetic notice',text:'Collection is scheduled for June 19.'}], chunk);
+          }
           if (window.fixtureMode === 'timeout') throw new DOMException('PRIVATE_PROVIDER_DETAIL', 'TimeoutError');
           if (window.fixtureMode === 'stall') {
             window.fixturePending = true;
@@ -402,6 +412,31 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     await ui(
       page.getByText("PRIVATE_PROVIDER_DETAIL", { exact: false }),
     ).toHaveCount(0);
+    expect(external).toEqual([]);
+    await page.evaluate(() =>
+      Object.assign(window, { fixtureMode: "invalid-research" }),
+    );
+    await page
+      .getByLabel("Message PrivateAI")
+      .fill("TEST invalid research evidence");
+    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await ui(
+      page.getByText("Research answer withheld:", { exact: false }),
+    ).toBeVisible();
+    await ui(
+      page.getByText("UNSUPPORTED_RESEARCH_CANARY", { exact: false }),
+    ).toHaveCount(0);
+    await ui(
+      page
+        .locator("article.assistant")
+        .last()
+        .getByRole("button", { name: "Copy answer" }),
+    ).toBeDisabled();
+    expect(
+      await page.evaluate(
+        () => (window as unknown as FixtureWindow).fixtureCalls.length,
+      ),
+    ).toBe(callsBeforeLimit + 2);
     expect(external).toEqual([]);
   } finally {
     await browser.close();

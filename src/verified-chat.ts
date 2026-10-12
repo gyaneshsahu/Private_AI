@@ -4,7 +4,15 @@ import {
   type Usage,
   type Qualification,
 } from "../shared/contracts";
-import { composeContext, type AnswerPolicyVariant } from "./conversation";
+import {
+  composeContext,
+  selectedSources,
+  type AnswerPolicyVariant,
+} from "./conversation";
+import {
+  consumeResearchReply,
+  researchContractInstruction,
+} from "./research-contract";
 import { completionEvents } from "./completion-events";
 import { consumeReply } from "./reply-stream";
 
@@ -21,6 +29,7 @@ export type VerifiedChatPolicy = Pick<
   gemmaThinking?: boolean;
   glmReasoningEffort?: "low" | "high" | "max";
   answerPolicyVariant?: AnswerPolicyVariant;
+  researchEvidenceContract?: boolean;
 };
 
 export function assertVerification(
@@ -67,6 +76,21 @@ export async function streamVerifiedConversation(
       new Date(),
       report.answerPolicyVariant,
     );
+    const evidenceSources = selectedSources(conversation);
+    if (report.researchEvidenceContract) {
+      if (!evidenceSources.some((source) => source.url))
+        throw new Error(
+          "The research evidence experiment requires retrieved sources.",
+        );
+      messages[0].content += ` ${researchContractInstruction}`;
+      if (
+        messages.reduce((n, message) => n + message.content.length, 0) >
+        report.maxInputCharacters
+      )
+        throw new Error(
+          "Selected context including the research contract is too large. Nothing was sent.",
+        );
+    }
     onStatus("Loading inference libraries…");
     const [{ Verifier, fetchAttestationBundle }, { Identity, Transport }] =
       await abortable(Promise.all([import("tinfoil"), import("ehbp")]), signal);
@@ -134,6 +158,14 @@ export async function streamVerifiedConversation(
         redirect: "error",
       },
     );
+    if (report.researchEvidenceContract)
+      return consumeResearchReply(
+        completionEvents(response, signal),
+        report.pricing,
+        signal,
+        evidenceSources,
+        onChunk,
+      );
     return consumeReply(
       completionEvents(response, signal),
       report.pricing,

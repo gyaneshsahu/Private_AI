@@ -4,6 +4,7 @@ import { newMessage } from "../src/conversation";
 import { streamVerifiedConversation } from "../src/verified-chat";
 import { validateExperiment, developmentCase } from "./experiment";
 import { auditResearchAnswer } from "../src/research-audit";
+import { IncompleteReplyError } from "../src/reply-stream";
 
 // Evaluation-only entry point. No source, answer or secret is written to storage.
 Object.assign(window, {
@@ -58,11 +59,12 @@ Object.assign(window, {
           elapsedMs: Math.round(performance.now() - started),
           evidenceAudit: auditResearchAnswer(answer, sources),
         });
-      } catch {
+      } catch (error) {
         outcomes.push({
           completed: false,
           answer,
           stage,
+          usage: error instanceof IncompleteReplyError ? error.usage : undefined,
           elapsedMs: Math.round(performance.now() - started),
         });
         break;

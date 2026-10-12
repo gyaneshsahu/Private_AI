@@ -1,5 +1,9 @@
 # PrivateAI readiness checklist
 
+## 12 October — evidence-contract follow-up
+
+C12 remains **QUALITY_FAILED**. An opt-in research evidence contract now withholds drafts with invalid source IDs, mismatched source passages, malformed structure or incomplete transport before display, preserving reported usage and making no retries. Fifty offline tests across six files passed, including actual application UI rejection; build/typecheck passed. This is tested mechanical provenance, not semantic accuracy or live model qualification. A negative control explicitly proves that genuine quotations can accompany unsupported claims. Default behavior is unchanged; no trial gate passes from this work. Eight fresh authored-source cases (16-request maximum) are prepared, not run. Previous material live failures and all human scores remain intact. No paid calls or account changes occurred.
+
 ## 12 October — public search answer synthesis batch
 
 Implemented source-kind/date provenance, original-query answer drafts, bounded Brave LLM Context adapter, safe source navigation and visible citation/quotation review aids. Six fixed public questions produced12complete encrypted replies; model failures include invented line locators, an impossible negative-Kelvin value, incorrect intensity ratio and treating April2026as future in October. AI-proposed findings only, human grades blank. [Full results and limitations](search-provider-comparison.md#temporary-answer-synthesis--12-october-2026). No trial pass; normal chat remains gated. Original old-router rejection is preserved with zero inference; fresh public-only permits used verified v0.0.157, without changing production qualification.

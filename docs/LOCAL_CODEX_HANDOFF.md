@@ -1,5 +1,13 @@
 # PrivateAI local Codex handoff — updated 12 October 2026
 
+## 12 October — experimental evidence contract, offline validation
+
+Added opt-in `researchEvidenceContract` to the encrypted browser adapter and experiment permits. It buffers a complete draft, requires strict claim/evidence JSON and exact passages in the specific cited sources, then constructs citations locally. Invalid drafts are withheld, terminal usage retained, and no retry is made. Production defaults and privacy qualification remain unchanged. This is provenance validation, NOT semantic verification: a deliberate test demonstrates that a false claim attached to a genuine passage can pass. Prior live failures remain open.
+
+Validation: 50 tests across six files passed, including actual Chromium application rejection/display behavior; typecheck and production build passed. Initial sandbox Vitest run failed on temporary-file access; the same tests passed outside the sandbox. No provider requests or spending in this batch. Latest spend remains the previously observed USD0.43, not a new dashboard reading.
+
+Fresh authored-source evaluation prepared in `evaluation/cases/research-evidence-transfer.json`: eight cases, two turns each, maximum16requests, no retries. These are PREPARED_NOT_RUN, not model passes or human grades. Next: connect this fixed packet to separate permits, refresh read-only billing/pricing and deployment evidence, then measure semantic support and refusal/withholding rate alongside latency/cost. Do not enable this experiment by default until actual model evaluation justifies it. Authored sources permit a complete reopenable review packet without saving supplier snippets.
+
 ## 12 October — public search answer synthesis batch
 
 Implemented source-kind/date provenance, original-query answer drafts, bounded Brave LLM Context adapter, safe source navigation and visible citation/quotation review aids. Six fixed public questions produced12complete encrypted replies; model failures include invented line locators, an impossible negative-Kelvin value, incorrect intensity ratio and treating April2026as future in October. AI-proposed findings only, human grades blank. [Full results and limitations](search-provider-comparison.md#temporary-answer-synthesis--12-october-2026). No trial pass; normal chat remains gated. Original old-router rejection is preserved with zero inference; fresh public-only permits used verified v0.0.157, without changing production qualification.
