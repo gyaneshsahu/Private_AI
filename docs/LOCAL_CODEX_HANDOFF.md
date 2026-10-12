@@ -1,5 +1,23 @@
 # PrivateAI local Codex handoff — updated 12 October 2026
 
+## Repository upkeep preference
+
+The founder requests that this file remain the maintained migration handoff and
+that the repository stay updated. After each validated development batch, update
+this handoff and READINESS with changes, evidence, unresolved failures and next
+steps; commit and push the development branch to origin. Report any push failure
+or remote divergence. Preserve local work; never force-push, reset, or pull over
+uncommitted changes. This authorizes repository synchronization, not merging to
+main, deployment, account changes or uploading credentials/private backup data.
+Ignored evaluation evidence still needs the separate migration procedure below;
+a successful Git push is not a backup of those files. Upkeep occurs during active
+work; no unattended schedule is implied.
+
+Publish ongoing work on `codex/development-handoff`. The older
+`codex/provider-qualification` branch is connected to Render CI-gated deployment;
+do not push new work there merely to synchronize Git. Moving this work into that
+deployment branch remains a separate owner decision.
+
 ## Current handoff map — 12 October 2026
 
 Use this section for current orientation; dated entries below preserve chronology and may contain superseded plans. READINESS is the requirement-status authority; PRD/acceptance define scope and thresholds; ROADMAP defines sequence; provider-qualification records supplier evidence. General-transfer-results-20261008.md preserves model comparisons and human adjudication. Never infer passed gates from implementation or a completed test run.
