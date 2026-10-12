@@ -5,6 +5,18 @@ import { Vault } from "../src/vault";
 import { emptyConversation } from "../shared/contracts";
 import { composeContext } from "../src/conversation";
 const stores: Vault[] = [];
+it("never persists temporary search answers even after their attachments are removed", async () => {
+  const v = store();
+  v.selectAccount(crypto.randomUUID());
+  await v.unlock("synthetic temporary search password");
+  const c = { ...emptyConversation(), temporarySearch: true };
+  c.messages.push({ id: "answer", role: "assistant", text: "SYNTHETIC excerpt copied into answer", status: "complete", included: true });
+  await expect(v.save(c)).rejects.toThrow("temporary");
+  expect((await v.readAvailable()).conversations.some(x => x.id === c.id)).toBe(false);
+  const fresh = emptyConversation();
+  await v.save(fresh);
+  expect((await v.readAvailable()).conversations.some(x => x.id === fresh.id)).toBe(true);
+});
 function store() {
   const v = new Vault();
   stores.push(v);

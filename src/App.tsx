@@ -465,6 +465,7 @@ export function App() {
         if (sources.length)
           setConversation((c) => ({
             ...c,
+            temporarySearch: c.temporarySearch || approved.kind === "search",
             attachments: [
               ...c.attachments,
               {
@@ -481,7 +482,9 @@ export function App() {
           }));
         setNotice(
           sources.length
-            ? "Public sources added to your selected context. Search excerpts are labelled; pages are fetched only with approval."
+            ? approved.kind === "search"
+              ? "Search results added to context. Return to Conversation to ask about them. This conversation is temporary and cannot be saved; results and replies disappear when you clear or reload the workspace."
+              : "Public sources added to your selected context. Search excerpts are labelled; pages are fetched only with approval."
             : "The search returned no sources.",
         );
       }
@@ -1140,6 +1143,7 @@ export function App() {
               Your conversation is never automatically added to a search. Review
               the exact query or URL before sharing.
             </p>
+            <p className="muted">Search conversations are temporary in this test version. You can inspect sources and ask follow-up questions during this session, but cannot save the conversation. Use public, non-sensitive queries only.</p>
             <div className="panel">
               <label>
                 Research method
@@ -1292,6 +1296,7 @@ export function App() {
                     className="primary"
                     disabled={
                       !!busy ||
+                      !!conversation.temporarySearch ||
                       (!conversation.messages.length &&
                         !conversation.attachments.length &&
                         !input.length)
@@ -1300,6 +1305,7 @@ export function App() {
                   >
                     Save encrypted snapshot
                   </button>
+                  {conversation.temporarySearch && <p role="status">This search conversation is temporary and cannot be saved, including its answers. Removing search attachments does not change this. Start a new conversation for work you want to save.</p>}
                   <button
                     onClick={() => {
                       vault.current!.lock();

@@ -134,6 +134,8 @@ export class Vault {
     return next;
   }
   save(conversation: Conversation) {
+    if (conversation.temporarySearch)
+      return Promise.reject(new Error("Search conversations are temporary in this test version and cannot be saved. Start a new conversation to save other work."));
     const key = this.key,
       generation = this.generation,
       databaseName = this.databaseName;

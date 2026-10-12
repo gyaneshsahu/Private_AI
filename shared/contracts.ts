@@ -112,6 +112,8 @@ export interface Usage {
   estimatedUSD: number;
 }
 export interface Conversation {
+  /** Sticky for the whole conversation: replies may reproduce temporary search results. */
+  temporarySearch?: boolean;
   id: string;
   title: string;
   messages: Message[];

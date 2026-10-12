@@ -16,6 +16,7 @@ export const savedConversationSchema: z.ZodType<Conversation> = z.object({
   title: z.string(),
   createdAt: z.string(),
   draft: z.string().optional(),
+  temporarySearch: z.boolean().optional(),
   messages: z.array(
     z.object({
       id: z.string(),

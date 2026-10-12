@@ -1,5 +1,33 @@
 import { expect, test } from "@playwright/test";
 
+test("search is explicitly approved and remains temporary after source removal", async ({ page }) => {
+  await page.route("**/api/status", async route => {
+    const response = await route.fetch();
+    await route.fulfill({ json: { ...await response.json(), search: true } });
+  });
+  let calls = 0;
+  await page.route("**/api/research/execute", async route => {
+    calls++;
+    await route.fulfill({ json: { sources: [{ id: "search-test", title: "Synthetic result", text: "Search excerpt only: closes at 17:00", url: "https://example.com/hours", retrievedAt: "2026-10-12T12:00:00.000Z" }] } });
+  });
+  const tab = (name: string) => page.getByRole("navigation", { name: "Workspace" }).getByRole("button", { name, exact: false });
+  await page.goto("/");
+  await tab("Research").click();
+  await page.getByLabel("Exact search query").fill("synthetic library hours");
+  await page.getByRole("button", { name: "Review disclosure" }).click();
+  expect(calls).toBe(0);
+  await page.getByRole("button", { name: "Approve and retrieve" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Search results added" })).toBeVisible();
+  expect(calls).toBe(1);
+  await tab("Context").click();
+  await page.getByRole("button", { name: "Remove", exact: true }).click();
+  await tab("Saved").click();
+  await page.getByLabel("Vault passphrase").fill("synthetic temporary search browser password");
+  await page.getByRole("button", { name: "Create or unlock vault" }).click();
+  await expect(page.getByRole("button", { name: "Save encrypted snapshot" })).toBeDisabled();
+  await expect(page.getByText("This search conversation is temporary and cannot be saved", { exact: false })).toBeVisible();
+});
+
 test("malformed research is rejected without changing the draft or retrying", async ({ page }) => {
   let executions = 0;
   await page.route("**/api/research/execute", async (route) => {

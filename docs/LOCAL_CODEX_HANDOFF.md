@@ -1,5 +1,13 @@
 # PrivateAI local Codex handoff — 8 October 2026
 
+## 12 October — temporary web search for the test version
+
+Founder explicitly accepts web-search answers without saved sources for the test version. Search conversations now carry a sticky temporary marker: encrypted saving is rejected for the entire conversation, including answers and source snapshots, even after attachments are removed. New conversations can still be saved; existing saved evidence is preserved. Search query disclosure approval and inspectable in-session sources remain. This is application non-persistence, not a claim about browser memory, user copies or provider retention.
+
+Validation: typecheck/production build,14targeted unit tests and3actual production-browser research workflows pass with labelled synthetic retrieval. No live search or paid inference was performed. Founder confirms no active Brave key yet. Owner must create/configure eligible access before live search; do not activate paid services or change accounts on their behalf. Brave published Search API supports answer grounding; separate storage rights are still required for stored results (https://brave.com/search/api/). This temporary implementation avoids waiting for saved-source support, but is not a legal/provider privacy certification.
+
+Tinfoil's supplied reply is recorded in provider-qualification.md: freshness/revocation/TDX browser gaps remain; worker evidence and cache behavior require corroboration. The ordinary chat UI remains qualification-gated. Synthetic experimental runs are separate from public/private-data trial release. Next live test must cover approved query→real retrieval→verified answer→follow-up with a bounded permit and fresh actual-spend check. No quality/safety gate passed by this change.
+
 ## Current checkpoint — configuration batch complete
 
 **Trial NOT READY.** Completed28conversations /55requests /54complete replies across the fixed three-configuration comparison and separate four-case GLM screen. One Gemma-on output-limit failure remains incomplete/unscored, not retried. None is justified for promotion: recurring semantic changes remain; GLM retains strict bounds but adds unsupported details. All new findings are **AI-proposed**, human scores blank. [Full results, costs and limitations](general-transfer-results-20261008.md#inference-configuration-comparison-and-glm-screening--8-october-2026).

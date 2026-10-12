@@ -1,5 +1,7 @@
 # PrivateAI delivery roadmap
 
+**12 October test-scope update:** Founder accepts temporary web-search answers without saving search sources. Search conversations and their answers cannot be saved in this test version; citations remain inspectable during the session. Persistent search history is deferred, while live retrieval, source fidelity, explicit disclosure and provider/privacy gates remain required. This does not authorize private-data access or certify answer quality.
+
 **Current priority:** complete the safe, reliable invite-only trial first, using every trial-required gate in READINESS. The broader general-purpose ChatGPT/Gemini usefulness target follows learning from the trial. Future voice/image generation/other modalities are not trial requirements. No quality or privacy threshold is lowered.
 
 **Working draft — direction accepted; detailed gates under review.**
