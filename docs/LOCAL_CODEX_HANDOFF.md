@@ -1,5 +1,15 @@
 # PrivateAI local Codex handoff — updated 15 October 2026
 
+## 15 October - opt-in constrained-output transport
+
+Implemented development-only assistedStructuredOutput permit flag, requiring assistedResearchContract. Canonical JSON Schema generated from the existing Zod output schema travels inside the existing encrypted request as response_format/json_schema. Older permits and production qualification remain unchanged. Local evidence/arithmetic validation remains mandatory; no retry or fallback.
+
+Schema adds10,108characters. Admission includes this overhead in maxInputCharacters before verification/transport. This is a conservative character bound, not measured provider usage; fresh permits must reserve for prompt plus schema. No old reservation reuse.
+
+Validation:22tests across five files passed, including actual-application synthetic calculator/correction flow and mocked encrypted-transport boundary; build passed. After adding the overhead guard, its3transport tests and typecheck passed. Guard test first exposed a missing location stub and failed textual insertion, both repaired. Provider rejection sends once; pre-aborted/oversized requests send zero. Mocked verification does not establish live provider compatibility or privacy. Existing verifier zlib browser-externalization build warning remains.
+
+Next: bounded synthetic schema-capability probe through the actual application, with fresh permit and read-only spend refresh, before broad fresh-case comparison. No paid requests/reservations/deployment/account changes this batch. Last spendUSD0.62of3, conservativeUSD0.8691904; not refreshed. Candidate remains experimental. Owner action not needed for implementation; historical human grades/failures preserved.
+
 ## 15 October — human review recorded; mechanical regression separation
 
 Owner explicitly reviewed assisted cases01–05: ten numerical reply grades and three unscored delivery failures recorded in `evaluation/results/research-assisted-20261015-human.json`. Both review generators now display these beside unchanged answers; original AI findings remain separate historical assessments. Case01 baseline both1/2/2; case02 candidate both2/1/2; case03 baseline both3/3/3; case04 both arms/bothturns3/3/3. Candidate01/03/05 missing replies remain unscored; unattempted turns have no inferred grade. No release promotion.

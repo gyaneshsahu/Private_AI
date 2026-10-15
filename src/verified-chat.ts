@@ -1,3 +1,4 @@
+import { assistedResponseFormat } from "./assisted-response-format";
 import {
   assistedResearchInstruction,
   renderAssistedResearch,
@@ -48,6 +49,7 @@ export type VerifiedChatPolicy = Pick<
   checkedResponseContract?: boolean;
   scopedResearchContract?: boolean;
   assistedResearchContract?: boolean;
+  assistedStructuredOutput?: boolean;
 };
 
 export function assertVerification(
@@ -83,6 +85,7 @@ export async function streamVerifiedConversation(
   onCheckedDiagnosticDraft?: (raw: string) => void,
   checkedHistory?: ReadonlyMap<string, string>,
 ): Promise<Usage | undefined> {
+  const responseFormat = assistedResponseFormat(report);
   authorize();
   if (
     [
@@ -156,6 +159,15 @@ export async function streamVerifiedConversation(
           "Selected context including the research contract is too large. Nothing was sent.",
         );
     }
+    if (
+      report.assistedStructuredOutput &&
+      messages.reduce((n, message) => n + message.content.length, 0) +
+        JSON.stringify(responseFormat).length >
+        report.maxInputCharacters
+    )
+      throw new Error(
+        "Selected context including the response schema is too large. Nothing was sent.",
+      );
     onStatus("Loading inference libraries…");
     const [{ Verifier, fetchAttestationBundle }, { Identity, Transport }] =
       await abortable(Promise.all([import("tinfoil"), import("ehbp")]), signal);
@@ -205,6 +217,7 @@ export async function streamVerifiedConversation(
             ? { reasoning_effort: report.gptOssReasoningEffort }
             : {}),
           messages,
+          ...responseFormat,
           ...(report.deepSeekThinking !== undefined
             ? { chat_template_kwargs: { thinking: report.deepSeekThinking } }
             : report.gemmaThinking !== undefined

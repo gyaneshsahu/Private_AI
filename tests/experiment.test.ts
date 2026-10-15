@@ -312,3 +312,12 @@ it("enforces frozen ten-request ceiling and counts attempts before the eleventh"
   expect(attempts).toHaveLength(10);
   expect(forward).toHaveBeenCalledTimes(10);
 });
+it("requires explicit assisted mode for constrained decoding permits", () => {
+  const permit = fixture();
+  permit.policy.assistedStructuredOutput = true;
+  expect(() => validateExperiment(permit)).toThrow(
+    "requires the assisted contract",
+  );
+  permit.policy.assistedResearchContract = true;
+  expect(validateExperiment(permit).policy.assistedStructuredOutput).toBe(true);
+});

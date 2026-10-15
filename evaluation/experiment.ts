@@ -134,6 +134,7 @@ export const experimentSchema = z
         researchEvidenceContract: z.boolean().optional(),
         scopedResearchContract: z.boolean().optional(),
         assistedResearchContract: z.boolean().optional(),
+        assistedStructuredOutput: z.boolean().optional(),
         checkedResponseContract: z.boolean().optional(),
         gptOssReasoningEffort: z.enum(["low", "medium", "high"]).optional(),
         gemmaThinking: z.boolean().optional(),
@@ -157,6 +158,10 @@ export function validateExperiment(
   now = Date.now(),
 ): Experiment {
   const x = experimentSchema.parse(input);
+  if (x.policy.assistedStructuredOutput && !x.policy.assistedResearchContract)
+    throw new Error(
+      "Structured assisted output requires the assisted contract.",
+    );
   if (
     [
       x.policy.checkedResponseContract,
