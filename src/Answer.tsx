@@ -16,18 +16,26 @@ export function Answer({
   sources: Source[];
   open: (source: Source) => void;
 }) {
-  const audit = sources.some(source => source.url)
-    ? auditResearchAnswer(text, sources) : undefined;
+  const audit = sources.some((source) => source.url)
+    ? auditResearchAnswer(text, sources)
+    : undefined;
   return (
     <div className="message-text">
-      {audit && (audit.unknownSourceReferences > 0 || audit.unsupportedLineReferences > 0 || audit.quotesNotFoundVerbatim > 0) && (
-        <p className="muted">
-          Evidence needs review: {audit.unknownSourceReferences} unknown source references,
-          {" "}{audit.unsupportedLineReferences} unverified line references,
-          {" "}{audit.quotesNotFoundVerbatim} quoted passages not matched verbatim to selected sources.
-          These checks do not establish factual accuracy.
-        </p>
-      )}
+      {audit &&
+        (audit.unknownSourceReferences > 0 ||
+          audit.unsupportedLineReferences > 0 ||
+          audit.quotesNotFoundVerbatim > 0 ||
+          audit.quotesNotFoundInCitedSources > 0) && (
+          <p className="muted">
+            Evidence needs review: {audit.unknownSourceReferences} unknown
+            source references, {audit.unsupportedLineReferences} unverified line
+            references, {audit.quotesNotFoundVerbatim} quoted passages not
+            matched verbatim to selected sources.
+            {audit.quotesNotFoundInCitedSources > 0 &&
+              ` ${audit.quotesNotFoundInCitedSources} quoted passages not found in their adjacent cited sources.`}
+            These checks do not establish factual accuracy.
+          </p>
+        )}
       <Markdown
         remarkPlugins={[
           remarkGfm,

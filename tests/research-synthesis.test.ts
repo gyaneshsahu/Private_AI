@@ -13,7 +13,11 @@ it("flags malformed spaced and Unicode-hyphen citation IDs without silently repa
   expect(audit.citationReferences).toBe(2);
   expect(audit.unknownSourceReferences).toBe(2);
   expect(audit.semanticSupport).toBe("NOT_ASSESSED");
-  expect(auditResearchAnswer("[abcdef] [unknown]", [{ id: "abcdef", title: "Synthetic", text: "Fact" }])).toMatchObject({ citationReferences: 2, unknownSourceReferences: 1 });
+  expect(
+    auditResearchAnswer("[abcdef] [unknown]", [
+      { id: "abcdef", title: "Synthetic", text: "Fact" },
+    ]),
+  ).toMatchObject({ citationReferences: 2, unknownSourceReferences: 1 });
 });
 
 it("flags invented locators, unknown sources and unmatched quotes without claiming semantic support", () => {
@@ -27,6 +31,8 @@ it("flags invented locators, unknown sources and unmatched quotes without claimi
     unsupportedLineReferences: 1,
     quotedPassages: 2,
     quotesNotFoundVerbatim: 1,
+    quotesWithAdjacentCitations: 2,
+    quotesNotFoundInCitedSources: 1,
     semanticSupport: "NOT_ASSESSED",
   });
 });

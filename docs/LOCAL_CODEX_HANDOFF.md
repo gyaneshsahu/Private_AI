@@ -1,5 +1,16 @@
 # PrivateAI local Codex handoff — updated 15 October 2026
 
+## 15 October — source-specific quotation attribution checks
+
+Fixed a mechanical audit gap: a quote found in one retrieved source no longer escapes review when its immediately adjacent citations point only to other sources. The application now displays an evidence-review warning for that mismatch; the citation still opens the source actually cited. Multiple adjacent citations are checked together, without silently changing source IDs. Existing audit fields and historical evaluation records are preserved; new fields record adjacent-citation coverage and mismatches.
+
+This is NOT semantic verification. A genuine quote can accompany a false conclusion; an explicit negative-control test preserves that distinction. Nonadjacent citations, draft wording, omitted facts, modality, strict boundaries and user corrections still require semantic/human assessment. C12/C13/S01 remain open. No model/prompt change, candidate freeze, acceptance pass, paid inference, supplier retrieval, account change or privacy-gate change in this batch.
+
+Validation: 36 tests across attribution, synthesis, citation rendering and evidence-contract suites passed; a separate Chromium test passed using the actual Answer component, synthetic sources and blocked external traffic. It verifies the visible warning and source-opening callback. Typecheck and production build passed. Initial Windows sandbox temporary-file failures were resolved by running the same tests outside the sandbox; the initial browser fixture timed out and was corrected to use Vite's transformed module page before the successful run. No actual-device evidence is claimed. Last recorded USD0.52 actual spend is still the 12 October reading, not newly refreshed.
+
+Next: source-fidelity evaluation must assess semantic claims and corrections separately from these mechanical checks. Preserve transfer-11/12 and safety findings, human grades blank on the latest packet. Tinfoil's unreleased browser freshness/TDX and unavailable enforced cache-retention controls remain independent blockers to normal private-data chat.
+
+
 ## 15 October — Tinfoil reply confirms outstanding provider blockers
 
 Founder supplied Sacha's response: released browser TDX/freshness support is not yet available (v3 migration hoped for in roughly two weeks, not a commitment); cache-disable/enforced-retention controls are not yet available and have no ETA. Revocation and exact supported versions/example remain unresolved. The billing-metadata statement needs category-level clarification against the linked policy. [Preserved reply, policy assessment and focused optional follow-up](provider-qualification.md#supplier-reply-received--15-october-2026).
