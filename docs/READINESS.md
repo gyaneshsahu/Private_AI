@@ -1,5 +1,13 @@
 # PrivateAI readiness checklist
 
+## 15 October - optional calculator protocol prototype (offline only)
+
+Added isolated `src/calculator-turn.ts`: consumes one already-authorized completion stream, accepts ordinary prose without whole-answer JSON, or assembles one bounded native calculate call. The tool permits only exact-source/user-grounded decimal operands and bounded arithmetic operations; no code execution, URL fetches, provider callbacks or additional inference rounds. Calculated value/unit/references are separate fields returned for direct application presentation, not sent back through the model. It is NOT wired into production, application inference or experiment permits yet.
+
+Nine new protocol tests cover split arguments, ordinary text, final usage, retained usage on invalid arguments, unknown/multiple/oversized/malformed calls, forged evidence, arbitrary operations, post-finish data, changed identities and cancellation before/during streaming. Deliberate negative-boundary test shows wrong equation selection can compute40instead of111 and accompanying prose can still claim999: do not call this mathematical task correctness or a complete fix. Thirteen tests across3files passed including256integer-oracle scenarios and existing transport tests; typecheck passed. No actual-application or live model evidence for this new prototype yet.
+
+Next integration must preserve separate computed-result presentation and make the unverified prose/method boundary explicit, add an opt-in frozen permit and count tool-schema overhead, then test actual application and fresh public/synthetic tasks. No automatic second inference request; a future multi-round design requires separate request-budget accounting. Earlier whole-answer JSON candidates and their failed evidence remain unchanged. No paid calls or new reservations in this batch. Last observed dashboard0.62of3; conservative bound0.8718400 includes previously recorded uncertainty and sub-cent batch pending precision. No provider/private-data gate, deployment or owner account change. No owner input needed for reversible implementation.
+
 ## 15 October - live constrained-output probe and architecture finding
 
 Fresh read-only Billing before/after:USD0.62of3, balance10.38, auto-reload off; last-seven-day requests231 to234. Public prices unchanged0.65/1.45perM, request0. Router SNPv2 digest8daaecd40cd29b45d508d7250feadf5e3eff555cb6fadd58131c996598007e97 verified; not full provider qualification.
