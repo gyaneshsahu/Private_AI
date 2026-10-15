@@ -50,22 +50,35 @@ export const assistedResearchSchema = z
                 "Wh",
                 "kWh",
               ]),
-              program: checkedResponseSchema,
+              program: checkedResponseSchema.extend({
+                inputs: checkedResponseSchema.shape.inputs.min(1),
+                steps: checkedResponseSchema.shape.steps.min(1),
+                results: checkedResponseSchema.shape.results.length(1),
+                passages: checkedResponseSchema.shape.passages.max(0),
+                limitation: z.literal("none"),
+              }),
             })
             .strict(),
           z
             .object({
               kind: z.literal("calculator"),
-              calculation: z.preprocess((value) => {
-                if (
-                  value &&
-                  typeof value === "object" &&
-                  !Array.isArray(value) &&
-                  !("kind" in value)
-                )
-                  return { ...value, kind: "calculation" };
-                return value;
-              }, scopedResearchSchema),
+              calculation: z.preprocess(
+                (value) => {
+                  if (
+                    value &&
+                    typeof value === "object" &&
+                    !Array.isArray(value) &&
+                    !("kind" in value)
+                  )
+                    return { ...value, kind: "calculation" };
+                  return value;
+                },
+                z.union([
+                  scopedResearchSchema.options[1],
+                  scopedResearchSchema.options[2],
+                  scopedResearchSchema.options[3],
+                ]),
+              ),
             })
             .strict(),
         ]),

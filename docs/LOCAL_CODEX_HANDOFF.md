@@ -1,5 +1,17 @@
 # PrivateAI local Codex handoff — updated 15 October 2026
 
+## 15 October - live constrained-output probe and architecture finding
+
+Fresh read-only Billing before/after:USD0.62of3, balance10.38, auto-reload off; last-seven-day requests231 to234. Public prices unchanged0.65/1.45perM, request0. Router SNPv2 digest8daaecd40cd29b45d508d7250feadf5e3eff555cb6fadd58131c996598007e97 verified; not full provider qualification.
+
+Frozen3previously unattempted cases06-08, two arms/two turns, maximum12requests, reserveUSD0.6952704; total conservative bound1.5644608. Stopped after3requests on candidate06turn1; no retries or continuation. Baseline delivered two replies; candidate returned an empty arithmetic block despite a writing task, and local validation withheld it. HTTP200/complete encrypted response and recorded usage establish API acceptance for this request, not universal schema enforcement. Human scores blank; missing candidate reply unscored; cases07-08 and candidate06turn2 unattempted. Full sources, turns, draft, timing and usage preserved in `evaluation/results/research-structured-20261015.json` and `.local/experiment-runs/windows_20261015_structured_batch`. Review page `.local/review-batches/structured-20261015/complete-review.html`.
+
+Actual application checks: source opening/keyboard/safe link passed; save blocked, browser conversation/storage/cache empty, reload cleared; no external network violations. Token estimateUSD0.0026496; dashboard request count reflects all3 while amount remains rounded0.62. Retire unused reserve entirely; active reservation0. Prior uncertainty0.2491904 remains. Conservatively retain this sub-cent usage pending precise reconciliation: bound0.8718400 (possible double counting explicitly retained, not a new charge).
+
+General schema/renderer mismatch repaired offline: arithmetic requires >=1input, >=1step, exactly1result, no passages and limitation none; calculator excludes evidence-only variant. These restrictions already existed in renderer semantics; now constrained generation sees them too. No prompt clauses added. Thirteen focused tests passed including256integer-oracle scenarios, plus4transport/application tests and typecheck. No live rerun of exposed case or quality claim for repair.
+
+Architecture decision: preserve platform encryption/consent/storage/recovery components. Reassess experimental answer orchestration: a mandatory whole-answer union still permits wrong task selection and blocks useful prose. Next prototype optional bounded calculator calls with direct result presentation and separately validated source references; native tool loops require explicit per-round request/cost permits and cancellation tests, no silent fallback. Compare fresh cases before adoption. Tightened JSON alone is not a release solution. No private gate, invitation, account or deployment change; owner decision not needed for reversible offline prototype.
+
 ## 15 October - opt-in constrained-output transport
 
 Implemented development-only assistedStructuredOutput permit flag, requiring assistedResearchContract. Canonical JSON Schema generated from the existing Zod output schema travels inside the existing encrypted request as response_format/json_schema. Older permits and production qualification remain unchanged. Local evidence/arithmetic validation remains mandatory; no retry or fallback.

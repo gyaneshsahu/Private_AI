@@ -1,0 +1,228 @@
+{
+  "plan": {
+    "status": "FROZEN_BEFORE_EXECUTION",
+    "frozenAt": "2026-10-15T17:52:32.420Z",
+    "maxRequests": 12,
+    "maxSearches": 0,
+    "automaticRetries": 0,
+    "reserveUSD": 0.6952704,
+    "actualBeforeUSD": 0.62,
+    "uncertaintyUSD": 0.2491904,
+    "cumulativeBoundUSD": 1.5644608,
+    "capUSD": 3,
+    "publicContentPersistence": false,
+    "baseline": "DeepSeek-v4.1-flash thinkingoff constraints-v4",
+    "candidate": "same + assistedResearchContract and native JSON schema constrained output; schema included in20000character allowance",
+    "order": "alternating arm first by case; identical authored sources",
+    "stop": "Any incomplete reply or app-check failure stops entire batch. No retry, no continuation.",
+    "fixtureSHA256": "14e42bd20b97db44fcbe75a35cdd4846f5df212836531e4d1ded5bde327ef706",
+    "implementationHashes": {
+      "src/assisted-response-format.ts": "48199b37a38d16e255f5e86507effdf2ec8fb1d2266e0fb01576a4174f07d09f",
+      "evaluation/temporary-review.ts": "67432cca09635765ab039ac94cc5c0203d9a91882359484e04f8b9304e85e991",
+      "src/assisted-research.ts": "93bfe81f77cb7039ad6fd32549d297232c21750752e8635562f0573c792ee6e6",
+      "src/scoped-research.ts": "5e4eb88cd28c06a650194ab3cb407748d3ba1bd6005b498498856b011a5fc6a4",
+      "src/checked-response.ts": "c1c345435f1b015fea8507d5ddf0f090b3b85c32b6cb5004de2652ca15c23fc0",
+      "src/research-contract.ts": "4b22c4ad208275e67668cc46bc402db6bdafd3abccd7ddec16563a37d6a02036",
+      "src/verified-chat.ts": "8edc2160bda93fb50040cb861f3d6acfe04aa63ca74fe2d826618cb3405ca5bc",
+      "src/App.tsx": "38a8e9612b0f3b3fbd90744b266ec5658605ff67c0005b940fc6f9e86806c4b5",
+      "evaluation/run-workspace.ts": "63b0dce40ae84ee2b954f7d1164f197d78cb90fd2caa967b76259039fd28e469",
+      "evaluation/workspace-inference.ts": "9af5d5ae707a58604c7edcacd67e57d9190a6b201c8959b3d87c48f8d5769141",
+      "evaluation/experiment.ts": "f07c10f3af086ad9ccf09304814039888b0b86eb26e06b73320dc33883b47983"
+    },
+    "humanScores": null
+  },
+  "run": {
+    "mode": "LIVE_PUBLIC_AND_AUTHORED",
+    "humanScores": null,
+    "results": [
+      {
+        "id": "assisted-06",
+        "arm": "baseline",
+        "public": false,
+        "replies": [
+          {
+            "completed": true,
+            "answer": "**Alternative 1**\n\nReminder: The coordinator must receive AND acknowledge each request strictly before 09:45 UTC on 20 November 2026. Sending alone is insufficient. No late-request procedure is described. [assisted-source-06]\n\n**Alternative 2**\n\nReminder: Each request must be received AND acknowledged by the coordinator strictly before 09:45 UTC on 20 November 2026. Sending alone does not satisfy this. The notice describes no late-request procedure. [assisted-source-06]",
+            "usage": {
+              "input": 905,
+              "output": 110,
+              "total": 1015,
+              "estimatedUSD": 0.00074775
+            },
+            "firstVisibleTextMs": 2288,
+            "elapsedMs": 3524,
+            "answerCharacters": 474,
+            "answerSHA256": "405df92619618252d6fc564104c8916a72c4e290f0dffa7cbfe7f066750383a3",
+            "evidenceAudit": {
+              "citationReferences": 2,
+              "unknownSourceReferences": 0,
+              "unsupportedLineReferences": 0,
+              "quotedPassages": 0,
+              "quotesNotFoundVerbatim": 0,
+              "quotesWithAdjacentCitations": 0,
+              "quotesNotFoundInCitedSources": 0,
+              "semanticSupport": "NOT_ASSESSED"
+            }
+          },
+          {
+            "completed": true,
+            "answer": "No. Compliance requires both receipt AND acknowledgment **strictly before 09:45 UTC** on 20 November 2026. An acknowledgment at exactly 09:45 is not strictly before 09:45, so the condition is not met. [assisted-source-06]\n\nThis answer does not rely on any late-request procedure; the notice describes none, and I make no claim about whether one exists elsewhere. [assisted-source-06]",
+            "usage": {
+              "input": 1053,
+              "output": 93,
+              "total": 1146,
+              "estimatedUSD": 0.0008193
+            },
+            "firstVisibleTextMs": 1370,
+            "elapsedMs": 2749,
+            "answerCharacters": 383,
+            "answerSHA256": "ab06bd4e33c29bf4f14744a78f37f5af5cdddc4663e81efbd693a1eef9e920ea",
+            "evidenceAudit": {
+              "citationReferences": 2,
+              "unknownSourceReferences": 0,
+              "unsupportedLineReferences": 0,
+              "quotedPassages": 0,
+              "quotesNotFoundVerbatim": 0,
+              "quotesWithAdjacentCitations": 0,
+              "quotesNotFoundInCitedSources": 0,
+              "semanticSupport": "NOT_ASSESSED"
+            }
+          }
+        ],
+        "humanScores": null,
+        "productionGateClosed": true,
+        "retrievalKind": "AUTHORED_FIXTURE",
+        "sourceCount": 1,
+        "sourceHash": "81f53a9cff60debd7469fe44fa9e46fd0fdcb4d1ecd87845338612765173bb11",
+        "evidenceCharacters": 183,
+        "providerDates": 0,
+        "sourceOpen": true,
+        "sourceLinkKeyboardReachable": true,
+        "sourceLinkSafe": true,
+        "answerCitationOpensSource": true,
+        "saveBlocked": true,
+        "storage": {
+          "conversationRecords": 0,
+          "localStorageKeys": 0,
+          "sessionStorageKeys": 0,
+          "cacheEntries": 0,
+          "serviceWorkers": 0
+        },
+        "clearedOnReload": true,
+        "pageErrors": [],
+        "networkViolation": 0,
+        "consoleMessageCount": 6,
+        "attempts": [
+          {
+            "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+            "bytes": 5283,
+            "protocolHeaderValid": true,
+            "syntheticPlaintextMarkerAbsent": true,
+            "upstreamStatus": 200,
+            "failureCode": null,
+            "responseFinished": true,
+            "upstreamHeadersMs": 851,
+            "firstEncryptedByteMs": 1322,
+            "elapsedMs": 2559
+          },
+          {
+            "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+            "bytes": 5966,
+            "protocolHeaderValid": true,
+            "syntheticPlaintextMarkerAbsent": true,
+            "upstreamStatus": 200,
+            "failureCode": null,
+            "responseFinished": true,
+            "upstreamHeadersMs": 479,
+            "firstEncryptedByteMs": 921,
+            "elapsedMs": 2300
+          }
+        ]
+      },
+      {
+        "id": "assisted-06",
+        "arm": "candidate",
+        "public": false,
+        "replies": [
+          {
+            "completed": false,
+            "diagnosticDraft": "{\"blocks\":[{\"kind\":\"arithmetic\",\"program\":{\"inputs\":[],\"limitation\":\"none\",\"passages\":[],\"results\":[],\"steps\":[]},\"unit\":\"count\"}]}",
+            "answer": "",
+            "failureKind": "CONTRACT_REJECTED",
+            "checkedFailure": "FORMAT",
+            "usage": {
+              "input": 1574,
+              "output": 41,
+              "total": 1615,
+              "estimatedUSD": 0.00108255
+            },
+            "failure": "IncompleteReplyError",
+            "firstVisibleTextMs": null,
+            "elapsedMs": 3837,
+            "answerCharacters": 0,
+            "answerSHA256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+            "evidenceAudit": {
+              "citationReferences": 0,
+              "unknownSourceReferences": 0,
+              "unsupportedLineReferences": 0,
+              "quotedPassages": 0,
+              "quotesNotFoundVerbatim": 0,
+              "quotesWithAdjacentCitations": 0,
+              "quotesNotFoundInCitedSources": 0,
+              "semanticSupport": "NOT_ASSESSED"
+            }
+          }
+        ],
+        "humanScores": null,
+        "productionGateClosed": true,
+        "retrievalKind": "AUTHORED_FIXTURE",
+        "sourceCount": 1,
+        "sourceHash": "81f53a9cff60debd7469fe44fa9e46fd0fdcb4d1ecd87845338612765173bb11",
+        "evidenceCharacters": 183,
+        "providerDates": 0,
+        "sourceOpen": true,
+        "sourceLinkKeyboardReachable": true,
+        "sourceLinkSafe": true,
+        "saveBlocked": true,
+        "storage": {
+          "conversationRecords": 0,
+          "localStorageKeys": 0,
+          "sessionStorageKeys": 0,
+          "cacheEntries": 0,
+          "serviceWorkers": 0
+        },
+        "clearedOnReload": true,
+        "pageErrors": [],
+        "networkViolation": 0,
+        "consoleMessageCount": 6,
+        "attempts": [
+          {
+            "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+            "bytes": 18409,
+            "protocolHeaderValid": true,
+            "syntheticPlaintextMarkerAbsent": true,
+            "upstreamStatus": 200,
+            "failureCode": null,
+            "responseFinished": true,
+            "upstreamHeadersMs": 1029,
+            "firstEncryptedByteMs": 2279,
+            "elapsedMs": 2999
+          }
+        ]
+      }
+    ],
+    "qualification": "NOT_PASSED",
+    "publicContentPersisted": false
+  },
+  "assessment": {
+    "status": "AI_PROPOSED_NOT_HUMAN_REVIEW",
+    "decision": "Do not promote. Constrained decoding produced structurally allowed but empty arithmetic for a writing task. Schema acceptance is not useful answer delivery.",
+    "attempted": 3,
+    "delivered": 2,
+    "estimatedUSD": 0.0026496000000000002,
+    "remainingCases": "07-08 unattempted; no retry; candidate06turn2 not attempted",
+    "privacy": "Temporary storage/source-opening checks passed on attempted paths; full provider gate remains closed",
+    "architecturalFinding": "Schema must encode renderer preconditions. Even corrected schema cannot prove correct task selection or entailment. Prefer separate optional calculation tools over mandatory mixed-format answers if fresh transfer remains poor."
+  },
+  "humanScores": null
+}

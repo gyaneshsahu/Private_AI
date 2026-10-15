@@ -21,17 +21,22 @@ if (diagnostic && !assisted)
 const generalArithmetic = process.argv.includes("--general-arithmetic");
 if (generalArithmetic && (!assisted || diagnostic))
   throw Error("Choose the separate assisted arithmetic batch");
-const fixtures = generalArithmetic
-  ? assistedFixtures.filter(
-      (f) =>
-        Number(f.id.slice(-2)) >=
-        (process.argv.includes("--normalized") ? 4 : 3),
-    )
-  : diagnostic
-    ? assistedFixtures.filter((f) => f.id === "assisted-02")
-    : assisted
-      ? assistedFixtures
-      : workspaceFixtures;
+const structured = process.argv.includes("--structured");
+if (structured && (!assisted || diagnostic || generalArithmetic))
+  throw Error("Choose separate structured assisted batch");
+const fixtures = structured
+  ? assistedFixtures.filter((f) => Number(f.id.slice(-2)) >= 6)
+  : generalArithmetic
+    ? assistedFixtures.filter(
+        (f) =>
+          Number(f.id.slice(-2)) >=
+          (process.argv.includes("--normalized") ? 4 : 3),
+      )
+    : diagnostic
+      ? assistedFixtures.filter((f) => f.id === "assisted-02")
+      : assisted
+        ? assistedFixtures
+        : workspaceFixtures;
 const fixturePath = assisted
   ? "evaluation/cases/research-assisted.json"
   : "evaluation/cases/research-workspace.json";

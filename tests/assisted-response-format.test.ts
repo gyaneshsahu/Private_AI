@@ -27,3 +27,29 @@ it("serializes the canonical schema with required evidence and no content or cre
   expect(serialized).not.toContain("apiKey");
   expect(JSON.parse(JSON.stringify(result))).toEqual(result);
 });
+it("excludes empty arithmetic and evidence-only calculator branches from constrained generation", () => {
+  const schema = assistedResponseFormat({
+    assistedStructuredOutput: true,
+    assistedResearchContract: true,
+  }).response_format!.json_schema.schema as any;
+  const variants =
+    schema.properties.blocks.items.oneOf ??
+    schema.properties.blocks.items.anyOf;
+  const arithmetic = variants.find(
+    (v: any) => v.properties.kind.const === "arithmetic",
+  ).properties.program;
+  expect(arithmetic.properties.inputs.minItems).toBe(1);
+  expect(arithmetic.properties.steps.minItems).toBe(1);
+  expect(arithmetic.properties.results.minItems).toBe(1);
+  expect(arithmetic.properties.results.maxItems).toBe(1);
+  expect(arithmetic.properties.passages.maxItems).toBe(0);
+  expect(arithmetic.properties.limitation.const).toBe("none");
+  const calculator = variants.find(
+    (v: any) => v.properties.kind.const === "calculator",
+  ).properties.calculation;
+  expect(
+    (calculator.anyOf ?? calculator.oneOf).every(
+      (v: any) => v.properties.kind.const === "calculation",
+    ),
+  ).toBe(true);
+});
