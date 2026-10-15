@@ -1,0 +1,17 @@
+{
+ "status":"AI_PROPOSED_NOT_HUMAN_REVIEW",
+ "humanScores":null,
+ "decision":"Do not promote the checked response experiment. Correct local arithmetic does not prove correct selection of operations, and prompt-only structured output is unreliable. Preserve every rejection and earlier human failure.",
+ "cases":[
+  {"id":"checked-01","turns":["Initial answer locally computes264.00 correctly with item-only discount, feeonce and10percenttax.","Followup withheld with FORMAT, terminalusage present, no raw draft retained in this first instrumented version. Do not infer exact cause. Conversation incomplete/unscored."]},
+  {"id":"checked-02","turns":["Material method-selection failure: model names79.2*5/100=3.96 as final_amount. Arithmetic is correct for tax alone but the requested final total is83.16. This demonstrates that the calculator is not a semantic plan validator.","Correctly computes85.536 and rounds to85.54, using user-supplied tax8. Does not repair first-turn failure."]},
+  {"id":"checked-03","turns":["Correct local calculation63/84*100=75.00.","INVALID_JSON withheld. Captured draft copied displayed Markdown and claimed Arithmetic calculated locally despite not providing a calculation plan. It was never displayed as a checked answer. Incomplete/unscored."]},
+  {"id":"checked-04","turns":["INVALID_SCHEMA withheld. Captured plan uses ordinary c1,c2,c3,s1,s2 identifiers rejected by an unnecessarily restrictive identifier regex. That implementation bug was fixed and tested offline, without rerunning this case or rewriting its result.","Not attempted."]},
+  {"id":"checked-05","turns":["INVALID_SCHEMA withheld: selected passages accurately preserve notice silence, but numeric inputs.value incorrectly contains prose. No source answer was displayed; do not count source-fidelity as passed.","Not attempted."]},
+  {"id":"checked-06","turns":["Not attempted.","Not attempted."]},
+  {"id":"checked-07","turns":["Not attempted.","Not attempted."]},
+  {"id":"checked-08","turns":["Not attempted.","Not attempted."]}
+ ],
+ "engineeringChanges":"Exact source/user quote validation; fixed arithmetic operators with Decimal64significantdigits and final-only half-up rounding; no free-form model final total; bounded dependencies and operands; buffering until transport completion and validation. Added Markdown-escape normalization to quote audit after false positives. Added synthetic-only diagnostic draft capture and separate in-memory validated JSON wire history. Neither wire-history live efficacy nor full semantic fidelity was established by later stopped runs.",
+ "next":"Separate computation and extractive schemas; establish provider-supported constrained JSON output before assuming it; validate plan semantics/units independently or use explicitly scoped typed calculators. Do not keep adding example-specific prompts. Unattempted source/units cases remain available; exposed cases are not acceptance tests."
+}

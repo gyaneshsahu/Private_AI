@@ -1,0 +1,716 @@
+{
+  "status": "DEVELOPMENT_NOT_ACCEPTANCE",
+  "plan": {
+    "status": "FROZEN_BEFORE_EXECUTION",
+    "frozenAt": "2026-10-15T14:56:39.113Z",
+    "maximumRequests": 16,
+    "reserveUSD": 0.7606272,
+    "conservativeCumulativeUSD": 1.4231392,
+    "actualBeforeUSD": 0.55,
+    "prepaidBeforeUSD": 10.45,
+    "capUSD": 3,
+    "automaticRetries": 0,
+    "stopOnAnyIncomplete": true,
+    "fixtureLF_SHA256": "dd221f576c7824c335d6c2fa04b3371233187772e2212af1887a5cc793e93216",
+    "implementationHashes": {
+      "src/checked-response.ts": "b3c92b7d60f30db875a7f2d74d539ac41b3202046a674cf1de089ef9bc9db7d9",
+      "src/verified-chat.ts": "9cd3b1f228ec8077a2dfb7e74e15899111c096aa3024d03ed0c81564b13117bd",
+      "src/conversation.ts": "f631144ffcdaaea8d7f84d3b966b54446a95df1f9a835b58b556135ad885ff61",
+      "evaluation/experiment.ts": "645771048c660e5e1a0e6af11233d50cfc2daa9a9dbe21ea819c17ddc86f1048",
+      "evaluation/run-research.ts": "20f50a95b63df3590276272a47e9f273d8052f06634d1ebd430f6ba51da91b10",
+      "evaluation/research-browser-entry.ts": "9284c0f710801c2e351c66de099868e26792be3f8b2672a1740f3e2e0c63c1e2",
+      "package-lock.json": "216a8d499e1eae736541ca61f0d53fe15512e95b5de84843eb214e8a374b5029"
+    },
+    "qualification": "NOT_PASSED"
+  },
+  "executionBatches": [
+    {
+      "name": "checked",
+      "plan": {
+        "status": "FROZEN_BEFORE_EXECUTION",
+        "frozenAt": "2026-10-15T14:56:39.113Z",
+        "maximumRequests": 16,
+        "reserveUSD": 0.7606272,
+        "conservativeCumulativeUSD": 1.4231392,
+        "actualBeforeUSD": 0.55,
+        "prepaidBeforeUSD": 10.45,
+        "capUSD": 3,
+        "automaticRetries": 0,
+        "stopOnAnyIncomplete": true,
+        "fixtureLF_SHA256": "dd221f576c7824c335d6c2fa04b3371233187772e2212af1887a5cc793e93216",
+        "implementationHashes": {
+          "src/checked-response.ts": "b3c92b7d60f30db875a7f2d74d539ac41b3202046a674cf1de089ef9bc9db7d9",
+          "src/verified-chat.ts": "9cd3b1f228ec8077a2dfb7e74e15899111c096aa3024d03ed0c81564b13117bd",
+          "src/conversation.ts": "f631144ffcdaaea8d7f84d3b966b54446a95df1f9a835b58b556135ad885ff61",
+          "evaluation/experiment.ts": "645771048c660e5e1a0e6af11233d50cfc2daa9a9dbe21ea819c17ddc86f1048",
+          "evaluation/run-research.ts": "20f50a95b63df3590276272a47e9f273d8052f06634d1ebd430f6ba51da91b10",
+          "evaluation/research-browser-entry.ts": "9284c0f710801c2e351c66de099868e26792be3f8b2672a1740f3e2e0c63c1e2",
+          "package-lock.json": "216a8d499e1eae736541ca61f0d53fe15512e95b5de84843eb214e8a374b5029"
+        },
+        "qualification": "NOT_PASSED"
+      }
+    },
+    {
+      "name": "checked-rest",
+      "plan": {
+        "status": "FROZEN_CONTINUATION_UNATTEMPTED_ONLY",
+        "frozenAt": "2026-10-15T15:01:19.644Z",
+        "maximumRequests": 14,
+        "reserveUSD": 0.6655488,
+        "conservativeCumulativeUSD": 1.3280608,
+        "actualBeforeUSD": 0.55,
+        "prepaidBeforeUSD": 10.45,
+        "capUSD": 3,
+        "automaticRetries": 0,
+        "stopOnAnyIncomplete": true,
+        "fixtureLF_SHA256": "dd221f576c7824c335d6c2fa04b3371233187772e2212af1887a5cc793e93216",
+        "implementationHashes": {
+          "src/checked-response.ts": "1f8773c7b60bb0f6bb8347ad9dea534b30a2838c4cff1f659bb655700b5d9560",
+          "src/verified-chat.ts": "f3bd7a4d87aaac8bcc6f6109de75d3aecebda16a87133fa667b674176241eef6",
+          "src/conversation.ts": "f631144ffcdaaea8d7f84d3b966b54446a95df1f9a835b58b556135ad885ff61",
+          "evaluation/experiment.ts": "645771048c660e5e1a0e6af11233d50cfc2daa9a9dbe21ea819c17ddc86f1048",
+          "evaluation/run-research.ts": "790349ed6ea2553c9532b3c74dd9858c1dd9987cb4e7ec1f0ff04d1e8b2efac1",
+          "evaluation/research-browser-entry.ts": "d58f8ea48573b03fc4ef65be3a853563f3699c71da3ce5a22791faf0f2424049",
+          "package-lock.json": "216a8d499e1eae736541ca61f0d53fe15512e95b5de84843eb214e8a374b5029"
+        },
+        "qualification": "NOT_PASSED",
+        "fromCase": 2,
+        "reason": "Original batch stopped after checked01turn2 FORMAT rejection. Do not rerun it. Continue only never-attempted checked02..08. Same cases/model/instructions; quote-audit display normalization and diagnosticcapture added. Stoponanyincomplete remains."
+      }
+    },
+    {
+      "name": "checked-wire",
+      "plan": {
+        "status": "FROZEN_WIRE_HISTORY_CONTINUATION",
+        "frozenAt": "2026-10-15T15:07:02.009Z",
+        "maximumRequests": 10,
+        "reserveUSD": 0.475392,
+        "conservativeCumulativeUSD": 1.147904,
+        "actualBeforeUSD": 0.56,
+        "prepaidBeforeUSD": 10.44,
+        "capUSD": 3,
+        "automaticRetries": 0,
+        "stopOnAnyIncomplete": true,
+        "fixtureLF_SHA256": "dd221f576c7824c335d6c2fa04b3371233187772e2212af1887a5cc793e93216",
+        "implementationHashes": {
+          "src/checked-response.ts": "1f8773c7b60bb0f6bb8347ad9dea534b30a2838c4cff1f659bb655700b5d9560",
+          "src/verified-chat.ts": "5525d2155042372b1f5be7a7eb9e99591c52d07970c9d12529b440f1e275906e",
+          "src/conversation.ts": "f631144ffcdaaea8d7f84d3b966b54446a95df1f9a835b58b556135ad885ff61",
+          "evaluation/experiment.ts": "645771048c660e5e1a0e6af11233d50cfc2daa9a9dbe21ea819c17ddc86f1048",
+          "evaluation/run-research.ts": "790349ed6ea2553c9532b3c74dd9858c1dd9987cb4e7ec1f0ff04d1e8b2efac1",
+          "evaluation/research-browser-entry.ts": "cbe38d571591b98ded7fb14a195cc7a2d25840986775a29a7f6bd5c6577b95ef",
+          "package-lock.json": "216a8d499e1eae736541ca61f0d53fe15512e95b5de84843eb214e8a374b5029"
+        },
+        "qualification": "NOT_PASSED",
+        "fromCase": 4,
+        "reason": "Only never-attempted checked04..08. Preserve checked01 and03 rejectedfollowups and checked02 firstturnwrongoperationplan. Wirehistory now uses only previously validated rawJSON; displayhistory remains unchanged. No reruns, stoponanyincomplete."
+      }
+    },
+    {
+      "name": "checked-sources",
+      "plan": {
+        "status": "FROZEN_UNATTEMPTED_SOURCE_CASES",
+        "frozenAt": "2026-10-15T15:09:18.933Z",
+        "maximumRequests": 8,
+        "reserveUSD": 0.3803136,
+        "conservativeCumulativeUSD": 1.0528256,
+        "actualBeforeUSD": 0.56,
+        "prepaidBeforeUSD": 10.44,
+        "capUSD": 3,
+        "automaticRetries": 0,
+        "stopOnAnyIncomplete": true,
+        "fixtureLF_SHA256": "dd221f576c7824c335d6c2fa04b3371233187772e2212af1887a5cc793e93216",
+        "implementationHashes": {
+          "src/checked-response.ts": "7f8debd5b3c3812a0591b5961f62990185b01b43b1cbd6036f0c41451c3ecf9f",
+          "src/verified-chat.ts": "5525d2155042372b1f5be7a7eb9e99591c52d07970c9d12529b440f1e275906e",
+          "src/conversation.ts": "f631144ffcdaaea8d7f84d3b966b54446a95df1f9a835b58b556135ad885ff61",
+          "evaluation/experiment.ts": "645771048c660e5e1a0e6af11233d50cfc2daa9a9dbe21ea819c17ddc86f1048",
+          "evaluation/run-research.ts": "790349ed6ea2553c9532b3c74dd9858c1dd9987cb4e7ec1f0ff04d1e8b2efac1",
+          "evaluation/research-browser-entry.ts": "cbe38d571591b98ded7fb14a195cc7a2d25840986775a29a7f6bd5c6577b95ef",
+          "package-lock.json": "216a8d499e1eae736541ca61f0d53fe15512e95b5de84843eb214e8a374b5029"
+        },
+        "qualification": "NOT_PASSED",
+        "fromCase": 5,
+        "reason": "Onlynever-attemptedchecked05..08. Preservefailedchecked04schemaresult; fixordinarynumberedIDs locallywithoutreplayingit. Samefixedsourcecases andmodel. Stoponanyincomplete; no retries."
+      }
+    }
+  ],
+  "billing": {
+    "recordedAt": "2026-10-15T15:13:23.140Z",
+    "actualBeforeUSD": 0.55,
+    "actualAfterUSD": 0.56,
+    "prepaidAfterUSD": 10.44,
+    "capUSD": 3,
+    "autoReload": false,
+    "attemptedRequests": 8,
+    "displayedComplete": 4,
+    "withheldUnscored": 4,
+    "unattemptedTurns": 8,
+    "observedTerminalEstimateUSD": 0.01094025,
+    "priorTimeoutReserveUSD": 0.0861568,
+    "historicalUncertaintyUSD": 0.0163552,
+    "roundingUSD": 0.01,
+    "newTimeoutReserveUSD": 0,
+    "activeReservationUSD": 0,
+    "conservativeCumulativeUSD": 0.672512,
+    "note": "All8streams completed withusage before contract acceptance/rejection. Unused reservations retired aftereachstop. No failedcase retried. Withhelddrafts are not zero-quality answers. Rollingrequestwidget281before/289after agrees8 ontheseobservations butnot generalcumulativecounter. Estimateincludedactualspend, notaddedagain. Noaccountchanges."
+  },
+  "humanScores": null,
+  "assessment": {
+    "status": "AI_PROPOSED_NOT_HUMAN_REVIEW",
+    "humanScores": null,
+    "decision": "Do not promote the checked response experiment. Correct local arithmetic does not prove correct selection of operations, and prompt-only structured output is unreliable. Preserve every rejection and earlier human failure.",
+    "cases": [
+      {
+        "id": "checked-01",
+        "turns": [
+          "Initial answer locally computes264.00 correctly with item-only discount, feeonce and10percenttax.",
+          "Followup withheld with FORMAT, terminalusage present, no raw draft retained in this first instrumented version. Do not infer exact cause. Conversation incomplete/unscored."
+        ]
+      },
+      {
+        "id": "checked-02",
+        "turns": [
+          "Material method-selection failure: model names79.2*5/100=3.96 as final_amount. Arithmetic is correct for tax alone but the requested final total is83.16. This demonstrates that the calculator is not a semantic plan validator.",
+          "Correctly computes85.536 and rounds to85.54, using user-supplied tax8. Does not repair first-turn failure."
+        ]
+      },
+      {
+        "id": "checked-03",
+        "turns": [
+          "Correct local calculation63/84*100=75.00.",
+          "INVALID_JSON withheld. Captured draft copied displayed Markdown and claimed Arithmetic calculated locally despite not providing a calculation plan. It was never displayed as a checked answer. Incomplete/unscored."
+        ]
+      },
+      {
+        "id": "checked-04",
+        "turns": [
+          "INVALID_SCHEMA withheld. Captured plan uses ordinary c1,c2,c3,s1,s2 identifiers rejected by an unnecessarily restrictive identifier regex. That implementation bug was fixed and tested offline, without rerunning this case or rewriting its result.",
+          "Not attempted."
+        ]
+      },
+      {
+        "id": "checked-05",
+        "turns": [
+          "INVALID_SCHEMA withheld: selected passages accurately preserve notice silence, but numeric inputs.value incorrectly contains prose. No source answer was displayed; do not count source-fidelity as passed.",
+          "Not attempted."
+        ]
+      },
+      {
+        "id": "checked-06",
+        "turns": [
+          "Not attempted.",
+          "Not attempted."
+        ]
+      },
+      {
+        "id": "checked-07",
+        "turns": [
+          "Not attempted.",
+          "Not attempted."
+        ]
+      },
+      {
+        "id": "checked-08",
+        "turns": [
+          "Not attempted.",
+          "Not attempted."
+        ]
+      }
+    ],
+    "engineeringChanges": "Exact source/user quote validation; fixed arithmetic operators with Decimal64significantdigits and final-only half-up rounding; no free-form model final total; bounded dependencies and operands; buffering until transport completion and validation. Added Markdown-escape normalization to quote audit after false positives. Added synthetic-only diagnostic draft capture and separate in-memory validated JSON wire history. Neither wire-history live efficacy nor full semantic fidelity was established by later stopped runs.",
+    "next": "Separate computation and extractive schemas; establish provider-supported constrained JSON output before assuming it; validate plan semantics/units independently or use explicitly scoped typed calculators. Do not keep adding example-specific prompts. Unattempted source/units cases remain available; exposed cases are not acceptance tests."
+  },
+  "attempted": 8,
+  "complete": 4,
+  "notAttempted": 8,
+  "observedEstimatedUSD": 0.010940249999999999,
+  "runs": [
+    {
+      "id": "checked-01",
+      "fixture": {
+        "id": "checked-01",
+        "title": "Discount then delivery then tax",
+        "source": "An order has 3 items at EUR 80 each. Discount the items by 5 percent, then add one EUR 12 delivery fee. Tax is 10 percent on the discounted items plus delivery.",
+        "turns": [
+          "Calculate the final total and show the calculation.",
+          "The delivery fee is corrected to EUR 17. Recalculate with that correction, keeping everything else unchanged."
+        ],
+        "expected": "Initial264.00; corrected269.50. Discount12 applied only to240 items; feeonce; tax24 then24.50. Correction must cite userturn2, notoriginalsource. Deterministic numeric output does not prove correct operation selection.",
+        "query": ""
+      },
+      "sources": [
+        {
+          "id": "checked-01-source",
+          "title": "Authored synthetic evidence",
+          "text": "An order has 3 items at EUR 80 each. Discount the items by 5 percent, then add one EUR 12 delivery fee. Tax is 10 percent on the discounted items plus delivery.",
+          "url": "https://example.com/synthetic-evidence",
+          "evidenceKind": "page"
+        }
+      ],
+      "replies": [
+        {
+          "completed": true,
+          "answer": "### Calculated results\n**subtotal: 240.00**\n\n**discount\\_amount: 12.00**\n\n**discounted\\_items: 228.00**\n\n**taxable\\_base: 240.00**\n\n**tax\\_amount: 24.00**\n\n**final\\_total: 264.00**\n\nArithmetic calculated locally; the choice of inputs, units and operations still needs review.\n\nInputs:\n- item\\_price = 80; “An order has 3 items at EUR 80 each\\.” [checked-01-source]\n- item\\_count = 3; “An order has 3 items at EUR 80 each\\.” [checked-01-source]\n- discount\\_percent = 5; “Discount the items by 5 percent, then add one EUR 12 delivery fee\\.” [checked-01-source]\n- delivery\\_fee = 12; “Discount the items by 5 percent, then add one EUR 12 delivery fee\\.” [checked-01-source]\n- tax\\_percent = 10; “Tax is 10 percent on the discounted items plus delivery\\.” [checked-01-source]\n\nCalculation:\n- subtotal: 80 × 3 = 240\n- discount\\_amount: 240 × 5 ÷ 100 = 12\n- discounted\\_items: 240 − 12 = 228\n- taxable\\_base: 228 + 12 = 240\n- tax\\_amount: 240 × 10 ÷ 100 = 24\n- final\\_total: 240 + 24 = 264\n\n### Selected evidence — exact wording\n> An order has 3 items at EUR 80 each\\.\n\n[checked-01-source]\n\n> Discount the items by 5 percent, then add one EUR 12 delivery fee\\.\n\n[checked-01-source]\n\n> Tax is 10 percent on the discounted items plus delivery\\.\n\n[checked-01-source]",
+          "usage": {
+            "input": 1190,
+            "output": 831,
+            "total": 2021,
+            "estimatedUSD": 0.00197845
+          },
+          "firstVisibleTextMs": 7968,
+          "elapsedMs": 7968,
+          "evidenceAudit": {
+            "citationReferences": 8,
+            "unknownSourceReferences": 0,
+            "unsupportedLineReferences": 0,
+            "quotedPassages": 5,
+            "quotesNotFoundVerbatim": 5,
+            "quotesWithAdjacentCitations": 5,
+            "quotesNotFoundInCitedSources": 5,
+            "semanticSupport": "NOT_ASSESSED"
+          }
+        },
+        {
+          "completed": false,
+          "answer": "",
+          "stage": "Receiving a protected response…",
+          "failureKind": "CHECKED_RESPONSE_WITHHELD",
+          "checkedFailure": "FORMAT",
+          "usage": {
+            "input": 1628,
+            "output": 390,
+            "total": 2018,
+            "estimatedUSD": 0.0016237
+          },
+          "firstVisibleTextMs": null,
+          "elapsedMs": 6066
+        }
+      ],
+      "attempts": [
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 6566,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 897,
+          "firstEncryptedByteMs": 1530,
+          "elapsedMs": 7059
+        },
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 8150,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 480,
+          "firstEncryptedByteMs": 861,
+          "elapsedMs": 5633
+        }
+      ],
+      "humanScores": null,
+      "qualification": "NOT_PASSED",
+      "auditAfterEscapeFix": [
+        {
+          "citationReferences": 8,
+          "unknownSourceReferences": 0,
+          "unsupportedLineReferences": 0,
+          "quotedPassages": 5,
+          "quotesNotFoundVerbatim": 0,
+          "quotesWithAdjacentCitations": 5,
+          "quotesNotFoundInCitedSources": 0,
+          "semanticSupport": "NOT_ASSESSED"
+        },
+        {
+          "citationReferences": 0,
+          "unknownSourceReferences": 0,
+          "unsupportedLineReferences": 0,
+          "quotedPassages": 0,
+          "quotesNotFoundVerbatim": 0,
+          "quotesWithAdjacentCitations": 0,
+          "quotesNotFoundInCitedSources": 0,
+          "semanticSupport": "NOT_ASSESSED"
+        }
+      ]
+    },
+    {
+      "id": "checked-02",
+      "fixture": {
+        "id": "checked-02",
+        "title": "Rounding at the end",
+        "source": "Buy 2 tickets at EUR 37.50 each. Add one service fee of EUR 4.20, then apply 5 percent tax to the combined amount. Round only the final amount to 2 decimal places, half up.",
+        "turns": [
+          "Calculate the final amount.",
+          "Tax is corrected to 8 percent. Keep the other inputs and rounding rule unchanged."
+        ],
+        "expected": "Initial83.16; corrected85.54 from85.536. No earlyrounding. Originalprice37.50 and4.20 mustretainexactnumericprovenance; tax8 fromuserturn2.",
+        "query": ""
+      },
+      "sources": [
+        {
+          "id": "checked-02-source",
+          "title": "Authored synthetic evidence",
+          "text": "Buy 2 tickets at EUR 37.50 each. Add one service fee of EUR 4.20, then apply 5 percent tax to the combined amount. Round only the final amount to 2 decimal places, half up.",
+          "url": "https://example.com/synthetic-evidence",
+          "evidenceKind": "page"
+        }
+      ],
+      "replies": [
+        {
+          "completed": true,
+          "answer": "### Calculated results\n**final\\_amount: 3.96**\n\nArithmetic calculated locally; the choice of inputs, units and operations still needs review.\n\nInputs:\n- ticket\\_price = 37.50; “Buy 2 tickets at EUR 37\\.50 each\\.” [checked-02-source]\n- ticket\\_count = 2; “Buy 2 tickets at EUR 37\\.50 each\\.” [checked-02-source]\n- service\\_fee = 4.20; “Add one service fee of EUR 4\\.20” [checked-02-source]\n- tax\\_rate = 5; “apply 5 percent tax to the combined amount” [checked-02-source]\n\nCalculation:\n- tickets\\_subtotal: 37.5 × 2 = 75\n- combined: 75 + 4.2 = 79.2\n- final\\_amount: 79.2 × 5 ÷ 100 = 3.96\n\n### Selected evidence — exact wording\n> Buy 2 tickets at EUR 37\\.50 each\\. Add one service fee of EUR 4\\.20, then apply 5 percent tax to the combined amount\\. Round only the final amount to 2 decimal places, half up\\.\n\n[checked-02-source]",
+          "diagnosticDraft": "{\"inputs\":[{\"id\":\"ticket_price\",\"value\":\"37.50\",\"evidence\":{\"kind\":\"source\",\"sourceId\":\"checked-02-source\",\"quote\":\"Buy 2 tickets at EUR 37.50 each.\"}},{\"id\":\"ticket_count\",\"value\":\"2\",\"evidence\":{\"kind\":\"source\",\"sourceId\":\"checked-02-source\",\"quote\":\"Buy 2 tickets at EUR 37.50 each.\"}},{\"id\":\"service_fee\",\"value\":\"4.20\",\"evidence\":{\"kind\":\"source\",\"sourceId\":\"checked-02-source\",\"quote\":\"Add one service fee of EUR 4.20\"}},{\"id\":\"tax_rate\",\"value\":\"5\",\"evidence\":{\"kind\":\"source\",\"sourceId\":\"checked-02-source\",\"quote\":\"apply 5 percent tax to the combined amount\"}}],\"steps\":[{\"id\":\"tickets_subtotal\",\"op\":\"multiply\",\"left\":\"ticket_price\",\"right\":\"ticket_count\"},{\"id\":\"combined\",\"op\":\"add\",\"left\":\"tickets_subtotal\",\"right\":\"service_fee\"},{\"id\":\"final_amount\",\"op\":\"percentOf\",\"left\":\"combined\",\"right\":\"tax_rate\"}],\"results\":[{\"id\":\"final_amount\",\"decimals\":2}],\"passages\":[{\"kind\":\"source\",\"sourceId\":\"checked-02-source\",\"quote\":\"Buy 2 tickets at EUR 37.50 each. Add one service fee of EUR 4.20, then apply 5 percent tax to the combined amount. Round only the final amount to 2 decimal places, half up.\"}],\"limitation\":\"none\"}",
+          "usage": {
+            "input": 1193,
+            "output": 322,
+            "total": 1515,
+            "estimatedUSD": 0.00124235
+          },
+          "firstVisibleTextMs": 6195,
+          "elapsedMs": 6195,
+          "evidenceAudit": {
+            "citationReferences": 5,
+            "unknownSourceReferences": 0,
+            "unsupportedLineReferences": 0,
+            "quotedPassages": 4,
+            "quotesNotFoundVerbatim": 0,
+            "quotesWithAdjacentCitations": 4,
+            "quotesNotFoundInCitedSources": 0,
+            "semanticSupport": "NOT_ASSESSED"
+          }
+        },
+        {
+          "completed": true,
+          "answer": "### Calculated results\n**final\\_amount: 85.54**\n\nArithmetic calculated locally; the choice of inputs, units and operations still needs review.\n\nInputs:\n- ticket\\_price = 37.50; “Buy 2 tickets at EUR 37\\.50 each\\.” [checked-02-source]\n- ticket\\_count = 2; “Buy 2 tickets at EUR 37\\.50 each\\.” [checked-02-source]\n- service\\_fee = 4.20; “Add one service fee of EUR 4\\.20” [checked-02-source]\n- tax\\_rate = 8; “Tax is corrected to 8 percent\\.” (your message 2)\n\nCalculation:\n- tickets\\_subtotal: 37.5 × 2 = 75\n- combined: 75 + 4.2 = 79.2\n- tax\\_amount: 79.2 × 8 ÷ 100 = 6.336\n- final\\_amount: 79.2 + 6.336 = 85.536\n\n### Selected evidence — exact wording\n> Buy 2 tickets at EUR 37\\.50 each\\. Add one service fee of EUR 4\\.20, then apply 5 percent tax to the combined amount\\. Round only the final amount to 2 decimal places, half up\\.\n\n[checked-02-source]\n\n> Tax is corrected to 8 percent\\. Keep the other inputs and rounding rule unchanged\\.\n\n(your message 2)",
+          "diagnosticDraft": "{\"inputs\":[{\"id\":\"ticket_price\",\"value\":\"37.50\",\"evidence\":{\"kind\":\"source\",\"sourceId\":\"checked-02-source\",\"quote\":\"Buy 2 tickets at EUR 37.50 each.\"}},{\"id\":\"ticket_count\",\"value\":\"2\",\"evidence\":{\"kind\":\"source\",\"sourceId\":\"checked-02-source\",\"quote\":\"Buy 2 tickets at EUR 37.50 each.\"}},{\"id\":\"service_fee\",\"value\":\"4.20\",\"evidence\":{\"kind\":\"source\",\"sourceId\":\"checked-02-source\",\"quote\":\"Add one service fee of EUR 4.20\"}},{\"id\":\"tax_rate\",\"value\":\"8\",\"evidence\":{\"kind\":\"user\",\"userTurn\":2,\"quote\":\"Tax is corrected to 8 percent.\"}}],\"steps\":[{\"id\":\"tickets_subtotal\",\"op\":\"multiply\",\"left\":\"ticket_price\",\"right\":\"ticket_count\"},{\"id\":\"combined\",\"op\":\"add\",\"left\":\"tickets_subtotal\",\"right\":\"service_fee\"},{\"id\":\"tax_amount\",\"op\":\"percentOf\",\"left\":\"combined\",\"right\":\"tax_rate\"},{\"id\":\"final_amount\",\"op\":\"add\",\"left\":\"combined\",\"right\":\"tax_amount\"}],\"results\":[{\"id\":\"final_amount\",\"decimals\":2}],\"passages\":[{\"kind\":\"source\",\"sourceId\":\"checked-02-source\",\"quote\":\"Buy 2 tickets at EUR 37.50 each. Add one service fee of EUR 4.20, then apply 5 percent tax to the combined amount. Round only the final amount to 2 decimal places, half up.\"},{\"kind\":\"user\",\"userTurn\":2,\"quote\":\"Tax is corrected to 8 percent. Keep the other inputs and rounding rule unchanged.\"}],\"limitation\":\"none\"}",
+          "usage": {
+            "input": 1494,
+            "output": 365,
+            "total": 1859,
+            "estimatedUSD": 0.00150035
+          },
+          "firstVisibleTextMs": 4250,
+          "elapsedMs": 4250,
+          "evidenceAudit": {
+            "citationReferences": 4,
+            "unknownSourceReferences": 0,
+            "unsupportedLineReferences": 0,
+            "quotedPassages": 4,
+            "quotesNotFoundVerbatim": 1,
+            "quotesWithAdjacentCitations": 3,
+            "quotesNotFoundInCitedSources": 0,
+            "semanticSupport": "NOT_ASSESSED"
+          }
+        }
+      ],
+      "attempts": [
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 6554,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 1025,
+          "firstEncryptedByteMs": 1538,
+          "elapsedMs": 5323
+        },
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 7643,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 973,
+          "firstEncryptedByteMs": 1424,
+          "elapsedMs": 3840
+        }
+      ],
+      "humanScores": null,
+      "qualification": "NOT_PASSED",
+      "auditAfterEscapeFix": [
+        {
+          "citationReferences": 5,
+          "unknownSourceReferences": 0,
+          "unsupportedLineReferences": 0,
+          "quotedPassages": 4,
+          "quotesNotFoundVerbatim": 0,
+          "quotesWithAdjacentCitations": 4,
+          "quotesNotFoundInCitedSources": 0,
+          "semanticSupport": "NOT_ASSESSED"
+        },
+        {
+          "citationReferences": 4,
+          "unknownSourceReferences": 0,
+          "unsupportedLineReferences": 0,
+          "quotedPassages": 4,
+          "quotesNotFoundVerbatim": 1,
+          "quotesWithAdjacentCitations": 3,
+          "quotesNotFoundInCitedSources": 0,
+          "semanticSupport": "NOT_ASSESSED"
+        }
+      ]
+    },
+    {
+      "id": "checked-03",
+      "fixture": {
+        "id": "checked-03",
+        "title": "Job completion percentage",
+        "source": "A team completed 63 of 84 assigned jobs. These are jobs, not people. To express a fraction as a percentage multiply it by 100.",
+        "turns": [
+          "Calculate the percentage of assigned jobs completed to 2 decimal places.",
+          "Completed jobs are corrected to 70, assignments remain 84. Recalculate to 2 decimal places."
+        ],
+        "expected": "75.00percent then83.33percent; completed/assigned not reverse; correctusercorrectionprovenance. Units andchosenmethodneedreview.",
+        "query": ""
+      },
+      "sources": [
+        {
+          "id": "checked-03-source",
+          "title": "Authored synthetic evidence",
+          "text": "A team completed 63 of 84 assigned jobs. These are jobs, not people. To express a fraction as a percentage multiply it by 100.",
+          "url": "https://example.com/synthetic-evidence",
+          "evidenceKind": "page"
+        }
+      ],
+      "replies": [
+        {
+          "completed": true,
+          "answer": "### Calculated results\n**percentage: 75.00**\n\nArithmetic calculated locally; the choice of inputs, units and operations still needs review.\n\nInputs:\n- completed\\_jobs = 63; “A team completed 63 of 84 assigned jobs\\.” [checked-03-source]\n- assigned\\_jobs = 84; “A team completed 63 of 84 assigned jobs\\.” [checked-03-source]\n- hundred = 100; “To express a fraction as a percentage multiply it by 100\\.” [checked-03-source]\n\nCalculation:\n- fraction: 63 ÷ 84 = 0.75\n- percentage: 0.75 × 100 = 75\n\n### Selected evidence — exact wording\n> A team completed 63 of 84 assigned jobs\\. These are jobs, not people\\. To express a fraction as a percentage multiply it by 100\\.\n\n[checked-03-source]",
+          "diagnosticDraft": "{\"inputs\":[{\"id\":\"completed_jobs\",\"value\":\"63\",\"evidence\":{\"kind\":\"source\",\"sourceId\":\"checked-03-source\",\"quote\":\"A team completed 63 of 84 assigned jobs.\"}},{\"id\":\"assigned_jobs\",\"value\":\"84\",\"evidence\":{\"kind\":\"source\",\"sourceId\":\"checked-03-source\",\"quote\":\"A team completed 63 of 84 assigned jobs.\"}},{\"id\":\"hundred\",\"value\":\"100\",\"evidence\":{\"kind\":\"source\",\"sourceId\":\"checked-03-source\",\"quote\":\"To express a fraction as a percentage multiply it by 100.\"}}],\"steps\":[{\"id\":\"fraction\",\"op\":\"divide\",\"left\":\"completed_jobs\",\"right\":\"assigned_jobs\"},{\"id\":\"percentage\",\"op\":\"multiply\",\"left\":\"fraction\",\"right\":\"hundred\"}],\"results\":[{\"id\":\"percentage\",\"decimals\":2}],\"passages\":[{\"kind\":\"source\",\"sourceId\":\"checked-03-source\",\"quote\":\"A team completed 63 of 84 assigned jobs. These are jobs, not people. To express a fraction as a percentage multiply it by 100.\"}],\"limitation\":\"none\"}",
+          "usage": {
+            "input": 1184,
+            "output": 239,
+            "total": 1423,
+            "estimatedUSD": 0.00111615
+          },
+          "firstVisibleTextMs": 3789,
+          "elapsedMs": 3789,
+          "evidenceAudit": {
+            "citationReferences": 4,
+            "unknownSourceReferences": 0,
+            "unsupportedLineReferences": 0,
+            "quotedPassages": 3,
+            "quotesNotFoundVerbatim": 0,
+            "quotesWithAdjacentCitations": 3,
+            "quotesNotFoundInCitedSources": 0,
+            "semanticSupport": "NOT_ASSESSED"
+          }
+        },
+        {
+          "completed": false,
+          "answer": "",
+          "diagnosticDraft": "### Calculated results\n**percentage: 83.33**\n\nArithmetic calculated locally; the choice of inputs, units and operations still needs review.\n\nInputs:\n- completed\\_jobs = 70; user correction in turn 2: “Completed jobs are corrected to 70”\n- assigned\\_jobs = 84; “A team completed 63 of 84 assigned jobs\\.” [checked-03-source]\n- hundred = 100; “To express a fraction as a percentage multiply it by 100\\.” [checked-03-source]\n\nCalculation:\n- fraction: 70 ÷ 84 = 0.833333…, rounded to 2 decimals for display as 0.83\n- percentage: 0.833333… × 100 = 83.3333…, rounded to 2 decimals as 83.33\n\n### Selected evidence — exact wording\n> A team completed 63 of 84 assigned jobs\\. These are jobs, not people\\. To express a fraction as a percentage multiply it by 100\\.\n\n[checked-03-source]",
+          "stage": "Receiving a protected response…",
+          "failureKind": "CHECKED_RESPONSE_WITHHELD",
+          "checkedFailure": "INVALID_JSON",
+          "usage": {
+            "input": 1414,
+            "output": 219,
+            "total": 1633,
+            "estimatedUSD": 0.0012366500000000002
+          },
+          "firstVisibleTextMs": null,
+          "elapsedMs": 4159
+        }
+      ],
+      "attempts": [
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 6553,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 480,
+          "firstEncryptedByteMs": 1103,
+          "elapsedMs": 2994
+        },
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 7494,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 498,
+          "firstEncryptedByteMs": 1164,
+          "elapsedMs": 3752
+        }
+      ],
+      "humanScores": null,
+      "qualification": "NOT_PASSED",
+      "auditAfterEscapeFix": [
+        {
+          "citationReferences": 4,
+          "unknownSourceReferences": 0,
+          "unsupportedLineReferences": 0,
+          "quotedPassages": 3,
+          "quotesNotFoundVerbatim": 0,
+          "quotesWithAdjacentCitations": 3,
+          "quotesNotFoundInCitedSources": 0,
+          "semanticSupport": "NOT_ASSESSED"
+        },
+        {
+          "citationReferences": 0,
+          "unknownSourceReferences": 0,
+          "unsupportedLineReferences": 0,
+          "quotedPassages": 0,
+          "quotesNotFoundVerbatim": 0,
+          "quotesWithAdjacentCitations": 0,
+          "quotesNotFoundInCitedSources": 0,
+          "semanticSupport": "NOT_ASSESSED"
+        }
+      ]
+    },
+    {
+      "id": "checked-04",
+      "fixture": {
+        "id": "checked-04",
+        "title": "Decimal addition and refund",
+        "source": "Three charges are EUR 0.10, EUR 0.20 and EUR 0.30. Add all three charges.",
+        "turns": [
+          "Calculate their total to 2 decimal places.",
+          "The middle amount is now a refund of EUR -0.20, not a charge. Recalculate the net total."
+        ],
+        "expected": "0.60 then0.20; preserve negative refund sign; no binaryfloatingpoint artifacts; correctedinputfromuserturn2.",
+        "query": ""
+      },
+      "sources": [
+        {
+          "id": "checked-04-source",
+          "title": "Authored synthetic evidence",
+          "text": "Three charges are EUR 0.10, EUR 0.20 and EUR 0.30. Add all three charges.",
+          "url": "https://example.com/synthetic-evidence",
+          "evidenceKind": "page"
+        }
+      ],
+      "replies": [
+        {
+          "completed": false,
+          "answer": "",
+          "diagnosticDraft": "{\"inputs\":[{\"id\":\"c1\",\"value\":\"0.10\",\"evidence\":{\"kind\":\"source\",\"sourceId\":\"checked-04-source\",\"quote\":\"Three charges are EUR 0.10, EUR 0.20 and EUR 0.30.\"}},{\"id\":\"c2\",\"value\":\"0.20\",\"evidence\":{\"kind\":\"source\",\"sourceId\":\"checked-04-source\",\"quote\":\"Three charges are EUR 0.10, EUR 0.20 and EUR 0.30.\"}},{\"id\":\"c3\",\"value\":\"0.30\",\"evidence\":{\"kind\":\"source\",\"sourceId\":\"checked-04-source\",\"quote\":\"Three charges are EUR 0.10, EUR 0.20 and EUR 0.30.\"}}],\"steps\":[{\"id\":\"s1\",\"op\":\"add\",\"left\":\"c1\",\"right\":\"c2\"},{\"id\":\"s2\",\"op\":\"add\",\"left\":\"s1\",\"right\":\"c3\"}],\"results\":[{\"id\":\"s2\",\"decimals\":2}],\"passages\":[{\"kind\":\"source\",\"sourceId\":\"checked-04-source\",\"quote\":\"Three charges are EUR 0.10, EUR 0.20 and EUR 0.30. Add all three charges.\"}],\"limitation\":\"none\"}",
+          "stage": "Receiving a protected response…",
+          "failureKind": "CHECKED_RESPONSE_WITHHELD",
+          "checkedFailure": "INVALID_SCHEMA",
+          "usage": {
+            "input": 1175,
+            "output": 263,
+            "total": 1438,
+            "estimatedUSD": 0.0011450999999999998
+          },
+          "firstVisibleTextMs": null,
+          "elapsedMs": 4123
+        }
+      ],
+      "attempts": [
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 6470,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 887,
+          "firstEncryptedByteMs": 1261,
+          "elapsedMs": 3167
+        }
+      ],
+      "humanScores": null,
+      "qualification": "NOT_PASSED",
+      "auditAfterEscapeFix": [
+        {
+          "citationReferences": 0,
+          "unknownSourceReferences": 0,
+          "unsupportedLineReferences": 0,
+          "quotedPassages": 0,
+          "quotesNotFoundVerbatim": 0,
+          "quotesWithAdjacentCitations": 0,
+          "quotesNotFoundInCitedSources": 0,
+          "semanticSupport": "NOT_ASSESSED"
+        }
+      ]
+    },
+    {
+      "id": "checked-05",
+      "fixture": {
+        "id": "checked-05",
+        "title": "Silence about refunds",
+        "source": "The membership notice describes monthly billing. The notice does not state whether refunds are offered. It asks billing questions to be sent to the membership office.",
+        "turns": [
+          "Does this establish that refunds are unavailable? Show the relevant source statement without turning silence into a prohibition.",
+          "I have a new official sentence: Refunds are available within 14 days of joining. Include that new evidence and distinguish it from the earlier notice."
+        ],
+        "expected": "Quoteoriginalabsence-of-information wordingwithoutinventingnounavailability. Laterquoteuserofficialsentencewithuserprovenance. No inventedeligibilityoutside14days orrefundprocedure.",
+        "query": ""
+      },
+      "sources": [
+        {
+          "id": "checked-05-source",
+          "title": "Authored synthetic evidence",
+          "text": "The membership notice describes monthly billing. The notice does not state whether refunds are offered. It asks billing questions to be sent to the membership office.",
+          "url": "https://example.com/synthetic-evidence",
+          "evidenceKind": "page"
+        }
+      ],
+      "replies": [
+        {
+          "completed": false,
+          "answer": "",
+          "diagnosticDraft": "{\n  \"inputs\": [\n    {\n      \"id\": \"membership_notice\",\n      \"value\": \"The membership notice describes monthly billing. The notice does not state whether refunds are offered. It asks billing questions to be sent to the membership office.\",\n      \"evidence\": {\n        \"kind\": \"source\",\n        \"sourceId\": \"checked-05-source\",\n        \"quote\": \"The membership notice describes monthly billing. The notice does not state whether refunds are offered. It asks billing questions to be sent to the membership office.\"\n      }\n    }\n  ],\n  \"steps\": [],\n  \"results\": [],\n  \"passages\": [\n    {\n      \"kind\": \"source\",\n      \"sourceId\": \"checked-05-source\",\n      \"quote\": \"The notice does not state whether refunds are offered.\"\n    },\n    {\n      \"kind\": \"source\",\n      \"sourceId\": \"checked-05-source\",\n      \"quote\": \"It asks billing questions to be sent to the membership office.\"\n    }\n  ],\n  \"limitation\": \"insufficient\"\n}",
+          "stage": "Receiving a protected response…",
+          "failureKind": "CHECKED_RESPONSE_WITHHELD",
+          "checkedFailure": "INVALID_SCHEMA",
+          "usage": {
+            "input": 1191,
+            "output": 223,
+            "total": 1414,
+            "estimatedUSD": 0.0010975
+          },
+          "firstVisibleTextMs": null,
+          "elapsedMs": 3177
+        }
+      ],
+      "attempts": [
+        {
+          "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+          "bytes": 6649,
+          "protocolHeaderValid": true,
+          "syntheticPlaintextMarkerAbsent": true,
+          "upstreamStatus": 200,
+          "failureCode": null,
+          "responseFinished": true,
+          "upstreamHeadersMs": 848,
+          "firstEncryptedByteMs": 1083,
+          "elapsedMs": 2322
+        }
+      ],
+      "humanScores": null,
+      "qualification": "NOT_PASSED",
+      "auditAfterEscapeFix": [
+        {
+          "citationReferences": 0,
+          "unknownSourceReferences": 0,
+          "unsupportedLineReferences": 0,
+          "quotedPassages": 0,
+          "quotesNotFoundVerbatim": 0,
+          "quotesWithAdjacentCitations": 0,
+          "quotesNotFoundInCitedSources": 0,
+          "semanticSupport": "NOT_ASSESSED"
+        }
+      ]
+    }
+  ],
+  "limits": "Deterministic arithmetic validates execution of the model-selected operations, not the appropriateness of those operations, units or chosen inputs. Extracted quotations preserve wording, not semantic completeness. No production promotion; rejected drafts remain unscored, not quality zero."
+}

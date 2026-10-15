@@ -99,6 +99,25 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       const frame = (content: string, finish: string | null) =>
         `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content }, finish_reason: finish }] })}\n\n`;
       let text = frame("TEST answer: 4", mode === "truncated" ? null : "stop");
+      if (mode.startsWith("checked_")) {
+        const checked = {
+          inputs: [
+            {
+              id: "a",
+              value: "2",
+              evidence: { kind: "user", userTurn: 1, quote: "calculate 2 + 2" },
+            },
+          ],
+          steps: [{ id: "total", op: "add", left: "a", right: "a" }],
+          results: [{ id: "total", decimals: 2 }],
+          passages: [],
+          limitation: "none",
+          ...(mode === "checked_invalid"
+            ? { answer: "An unchecked false total: 9" }
+            : {}),
+        };
+        text = frame(JSON.stringify(checked), "stop");
+      }
       if (mode === "output_limit") text = frame("", "length");
       if (mode === "thinking_on") {
         text =
@@ -193,6 +212,9 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
     await page.waitForFunction(() => "runFaultCase" in window);
     for (const scenario of [
       "valid",
+      "checked_valid",
+      "checked_history",
+      "checked_invalid",
       "thinking_on",
       "thinking_off",
       "glm_low",
@@ -219,6 +241,8 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       const before = requests.length;
       const succeeds = [
         "valid",
+        "checked_valid",
+        "checked_history",
         "thinking_on",
         "thinking_off",
         "glm_low",
@@ -274,6 +298,14 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         ).toBe(false);
       }
       if (mode === "truncated") expect(result.usage.total).toBe(5);
+      if (mode === "checked_valid") {
+        expect(result.answer.text).toContain("4.00");
+        expect(result.answer.text).not.toContain('"inputs"');
+      }
+      if (mode === "checked_invalid") {
+        expect(result.answer.text).toBe("");
+        expect(result.usage.total).toBe(5);
+      }
       if (mode === "output_limit") {
         expect(result.answer.text).toBe("");
         expect(result.usage.total).toBe(5);
@@ -281,6 +313,17 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       }
       if (!preSend) {
         const payload = JSON.parse(requests[before].plaintext);
+        if (mode === "checked_history") {
+          expect(
+            payload.messages.find(
+              (m: { role: string }) => m.role === "assistant",
+            ).content,
+          ).toContain('"inputs"');
+          expect(JSON.stringify(payload)).not.toContain(
+            "RENDERED_HISTORY_NOT_WIRE_FORMAT",
+          );
+          expect(payload.messages.at(-1).content).toContain("User turn 2");
+        }
         expect(payload.reasoning_effort).toBe(
           mode === "oss_high" ? "high" : undefined,
         );

@@ -9,9 +9,11 @@ export function auditResearchAnswer(answer: string, sources: Source[]) {
   ].filter((match) => match[1].length >= 6 || /[-‐‑‒–—−]/.test(match[1]));
   const known = new Set(sources.map((source) => source.id));
   const normalize = (text: string) => text.replace(/\s+/g, " ").trim();
+  const quoteText = (text: string) =>
+    normalize(text.replace(/\\([\\`*_{}\[\]()<>#+.!|~$-])/g, "$1"));
   const evidence = sources.map((source) => normalize(source.text));
   const quoteMatches = [...answer.matchAll(/[“"]([^”"\n]{8,})[”"]/g)];
-  const quotes = quoteMatches.map((match) => normalize(match[1]));
+  const quotes = quoteMatches.map((match) => quoteText(match[1]));
   // Only bind immediately following citations. Other placements need human review;
   // guessing sentence scope can attribute a proposed draft to unrelated evidence.
   const attributions = quoteMatches.map((quote) => {
@@ -23,7 +25,7 @@ export function auditResearchAnswer(answer: string, sources: Source[]) {
       cited.push(reference[1]);
       end = reference.index + reference[0].length;
     }
-    return { quote: normalize(quote[1]), cited };
+    return { quote: quoteText(quote[1]), cited };
   });
   return {
     citationReferences: references.length,

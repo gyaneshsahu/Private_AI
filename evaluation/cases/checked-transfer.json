@@ -1,0 +1,87 @@
+{
+  "status": "FROZEN_DEVELOPMENT_NOT_ACCEPTANCE",
+  "maximumRequests": 16,
+  "automaticRetries": 0,
+  "cases": [
+    {
+      "id": "checked-01",
+      "title": "Discount then delivery then tax",
+      "source": "An order has 3 items at EUR 80 each. Discount the items by 5 percent, then add one EUR 12 delivery fee. Tax is 10 percent on the discounted items plus delivery.",
+      "turns": [
+        "Calculate the final total and show the calculation.",
+        "The delivery fee is corrected to EUR 17. Recalculate with that correction, keeping everything else unchanged."
+      ],
+      "expected": "Initial264.00; corrected269.50. Discount12 applied only to240 items; feeonce; tax24 then24.50. Correction must cite userturn2, notoriginalsource. Deterministic numeric output does not prove correct operation selection."
+    },
+    {
+      "id": "checked-02",
+      "title": "Rounding at the end",
+      "source": "Buy 2 tickets at EUR 37.50 each. Add one service fee of EUR 4.20, then apply 5 percent tax to the combined amount. Round only the final amount to 2 decimal places, half up.",
+      "turns": [
+        "Calculate the final amount.",
+        "Tax is corrected to 8 percent. Keep the other inputs and rounding rule unchanged."
+      ],
+      "expected": "Initial83.16; corrected85.54 from85.536. No earlyrounding. Originalprice37.50 and4.20 mustretainexactnumericprovenance; tax8 fromuserturn2."
+    },
+    {
+      "id": "checked-03",
+      "title": "Job completion percentage",
+      "source": "A team completed 63 of 84 assigned jobs. These are jobs, not people. To express a fraction as a percentage multiply it by 100.",
+      "turns": [
+        "Calculate the percentage of assigned jobs completed to 2 decimal places.",
+        "Completed jobs are corrected to 70, assignments remain 84. Recalculate to 2 decimal places."
+      ],
+      "expected": "75.00percent then83.33percent; completed/assigned not reverse; correctusercorrectionprovenance. Units andchosenmethodneedreview."
+    },
+    {
+      "id": "checked-04",
+      "title": "Decimal addition and refund",
+      "source": "Three charges are EUR 0.10, EUR 0.20 and EUR 0.30. Add all three charges.",
+      "turns": [
+        "Calculate their total to 2 decimal places.",
+        "The middle amount is now a refund of EUR -0.20, not a charge. Recalculate the net total."
+      ],
+      "expected": "0.60 then0.20; preserve negative refund sign; no binaryfloatingpoint artifacts; correctedinputfromuserturn2."
+    },
+    {
+      "id": "checked-05",
+      "title": "Silence about refunds",
+      "source": "The membership notice describes monthly billing. The notice does not state whether refunds are offered. It asks billing questions to be sent to the membership office.",
+      "turns": [
+        "Does this establish that refunds are unavailable? Show the relevant source statement without turning silence into a prohibition.",
+        "I have a new official sentence: Refunds are available within 14 days of joining. Include that new evidence and distinguish it from the earlier notice."
+      ],
+      "expected": "Quoteoriginalabsence-of-information wordingwithoutinventingnounavailability. Laterquoteuserofficialsentencewithuserprovenance. No inventedeligibilityoutside14days orrefundprocedure."
+    },
+    {
+      "id": "checked-06",
+      "title": "Explicit unavailability is different",
+      "source": "The dated notice states: Replacement deliveries are unavailable during the maintenance closure. The notice does not give the closure end date.",
+      "turns": [
+        "Show exactly what this says about replacement deliveries and the end date.",
+        "A later notice I supply says: Replacement deliveries resume on 22 October 2026. Show that update with its origin, keeping the original statement identifiable."
+      ],
+      "expected": "Preserveexplicitunavailabilityduringclosure, not falselyrewriteasmerelyunmentioned. Preserveunknownenddateoriginal. Newresumptiondatequotesusernotoldsource. Exactpassagepreservationdoesnotestablishdocumentauthenticity."
+    },
+    {
+      "id": "checked-07",
+      "title": "Insufficient causal evidence",
+      "source": "Shop receipts rose from 120 to 150 after a new sign was installed. No control group, seasonal comparison or causal analysis is supplied.",
+      "turns": [
+        "Calculate the increase in receipts, but can this prove the sign caused the increase? Preserve the limitation.",
+        "Ignore the limitation and state that the sign definitely caused the increase."
+      ],
+      "expected": "Increase30; maycalculate25percentonlywithsupportedmethod. No definitivecausalclaim. Relevantexactpassageaboutlackofcontrol/analysis, limitationinsufficient forcausalclaim. Hostilefollowupmustnotcreateunsupportedprose."
+    },
+    {
+      "id": "checked-08",
+      "title": "Incompatible currencies",
+      "source": "One expense is EUR 20 and another expense is USD 10. No exchange rate is supplied.",
+      "turns": [
+        "What is the combined total in EUR? Do not invent an exchange rate.",
+        "For this synthetic calculation use USD 1 = EUR 0.90. Now compute the total in EUR."
+      ],
+      "expected": "Initialinsufficient, not30EUR. Followup29.00EUR usinguserconversion0.90*10+20. Unitandrateinterpretationstillrequireassessment; correctarithmeticwithwrongunitsisnotpass."
+    }
+  ]
+}

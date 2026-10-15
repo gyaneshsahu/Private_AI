@@ -12,6 +12,27 @@ Object.assign(window, {
     conversation.messages.push(
       newMessage("user", "SYNTHETIC_REQUEST_CANARY: calculate 2 + 2"),
     );
+    const checkedHistory = new Map<string, string>();
+    if (mode === "checked_history") {
+      const earlier = newMessage(
+        "assistant",
+        "RENDERED_HISTORY_NOT_WIRE_FORMAT",
+      );
+      conversation.messages.push(
+        earlier,
+        newMessage("user", "Calculate it again."),
+      );
+      checkedHistory.set(
+        earlier.id,
+        JSON.stringify({
+          inputs: [],
+          steps: [],
+          results: [],
+          passages: [],
+          limitation: "insufficient",
+        }),
+      );
+    }
     const answer = {
       ...newMessage("assistant", ""),
       status: "partial" as "partial" | "complete",
@@ -47,6 +68,9 @@ Object.assign(window, {
                     ? "gpt-oss-120b"
                     : "TEST_ONLY",
           ...(mode === "deepseek_off" ? { deepSeekThinking: false } : {}),
+          ...(mode.startsWith("checked_")
+            ? { checkedResponseContract: true }
+            : {}),
           ...(mode === "oss_high"
             ? { gptOssReasoningEffort: "high" as const }
             : {}),
@@ -74,6 +98,8 @@ Object.assign(window, {
             throw new Error("TEST permit expired");
         },
         (doc) => evidence.push(doc),
+        undefined,
+        checkedHistory,
       );
       answer.status = "complete";
     } catch (error) {

@@ -13,6 +13,8 @@ import evidenceCases from "./cases/research-evidence-transfer.json";
 import reasoningCases from "./cases/research-reasoning-transfer.json";
 import reliabilityCases from "./cases/research-reliability-transfer.json";
 import { revisionCases, assertRevisionPolicy } from "./revision-batch";
+import checkedCases from "./cases/checked-transfer.json";
+const checked = process.argv[3] === "--checked";
 const revision = process.argv[3] === "--revision";
 const reliability = process.argv[3] === "--reliability";
 const reasoning = process.argv[3] === "--reasoning";
@@ -22,24 +24,36 @@ const authored =
   reasoning ||
   modelScreen ||
   reliability ||
-  revision;
-const cases = revision
-  ? revisionCases
-  : reliability
-    ? reliabilityCases.cases.flatMap((c) => [
-        { ...c, query: "" },
-        { ...c, query: "" },
-      ])
-    : modelScreen
-      ? reasoningCases.cases.map((c) => ({ ...c, query: "" }))
-      : reasoning
-        ? reasoningCases.cases.flatMap((c) => [
-            { ...c, query: "" },
-            { ...c, query: "" },
-          ])
-        : authored
-          ? evidenceCases.cases.map((c) => ({ ...c, query: "" }))
-          : publicCases;
+  revision ||
+  checked;
+const allCases = checked
+  ? checkedCases.cases.map((c) => ({ ...c, query: "" }))
+  : revision
+    ? revisionCases
+    : reliability
+      ? reliabilityCases.cases.flatMap((c) => [
+          { ...c, query: "" },
+          { ...c, query: "" },
+        ])
+      : modelScreen
+        ? reasoningCases.cases.map((c) => ({ ...c, query: "" }))
+        : reasoning
+          ? reasoningCases.cases.flatMap((c) => [
+              { ...c, query: "" },
+              { ...c, query: "" },
+            ])
+          : authored
+            ? evidenceCases.cases.map((c) => ({ ...c, query: "" }))
+            : publicCases;
+// Explicit new batches may cover an unattempted suffix. This never skips or
+// reclaims a consumed permit automatically; each selected case still needs one.
+const fromArgument = process.argv[4];
+if (fromArgument && (!checked || !/^--from=[1-9]\d*$/.test(fromArgument)))
+  throw Error("Only checked batches support an explicit --from case index");
+const from = fromArgument ? Number(fromArgument.slice(7)) : 1;
+if (from > allCases.length || process.argv.length > 5)
+  throw Error("Invalid case range");
+const cases = allCases.slice(from - 1);
 
 // Requires newly prepared permits; consumed permits cannot be reused.
 // Public retrieval persists metadata only; authored fixtures may retain full evidence.
@@ -58,6 +72,17 @@ try {
       JSON.parse(await readFile(resolve(runRoot, `${index + 1}.json`), "utf8")),
     );
     if (revision) assertRevisionPolicy(permit);
+    if (
+      checked &&
+      (!permit.policy.checkedResponseContract ||
+        permit.policy.researchEvidenceContract ||
+        permit.policy.model !== "deepseek-v4-1-flash" ||
+        permit.policy.deepSeekThinking !== false ||
+        permit.policy.maxInputCharacters !== 16000 ||
+        permit.policy.maxOutputTokens !== 4096 ||
+        permit.policy.answerPolicyVariant !== "constraints-v4")
+    )
+      throw Error("Frozen checked-response configuration mismatch");
     if (
       permit.developmentCaseId !== fixture.id ||
       permit.scenario !== "robustness_case"
@@ -231,6 +256,7 @@ try {
         if (
           !authored ||
           revision ||
+          checked ||
           replies.some((reply: any) => !reply.completed && !reply.usage)
         )
           break;

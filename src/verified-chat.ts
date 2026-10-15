@@ -15,6 +15,10 @@ import {
 } from "./research-contract";
 import { completionEvents } from "./completion-events";
 import { consumeReply } from "./reply-stream";
+import {
+  checkedResponseInstruction,
+  consumeCheckedResponse,
+} from "./checked-response";
 
 export type VerifiedChatPolicy = Pick<
   Qualification,
@@ -32,6 +36,7 @@ export type VerifiedChatPolicy = Pick<
   gptOssReasoningEffort?: "low" | "medium" | "high";
   answerPolicyVariant?: AnswerPolicyVariant;
   researchEvidenceContract?: boolean;
+  checkedResponseContract?: boolean;
 };
 
 export function assertVerification(
@@ -64,8 +69,12 @@ export async function streamVerifiedConversation(
   onStatus: (text: string) => void,
   authorize: () => void,
   onVerified?: (evidence: { host: string; releaseDigest: string }) => void,
+  onCheckedDiagnosticDraft?: (raw: string) => void,
+  checkedHistory?: ReadonlyMap<string, string>,
 ): Promise<Usage | undefined> {
   authorize();
+  if (report.checkedResponseContract && report.researchEvidenceContract)
+    throw new Error("Choose one response contract. Nothing was sent.");
   if (
     report.deepSeekThinking !== undefined &&
     report.model !== "deepseek-v4-1-flash"
@@ -89,6 +98,28 @@ export async function streamVerifiedConversation(
       report.answerPolicyVariant,
     );
     const evidenceSources = selectedSources(conversation);
+    if (report.checkedResponseContract) {
+      messages[0].content += ` ${checkedResponseInstruction}`;
+      let userTurn = 0;
+      const included = conversation.messages.filter(
+        (m) => m.included && m.status === "complete",
+      );
+      const historyOffset = evidenceSources.length ? 2 : 1;
+      for (const [index, original] of included.entries()) {
+        const message = messages[historyOffset + index];
+        if (original.role === "assistant" && checkedHistory?.has(original.id))
+          message.content = checkedHistory.get(original.id)!;
+        if (message.role === "user")
+          message.content = `[User turn ${++userTurn}; quote the original text below, not this label]\n${message.content}`;
+      }
+      if (
+        messages.reduce((n, m) => n + m.content.length, 0) >
+        report.maxInputCharacters
+      )
+        throw new Error(
+          "Selected context including the checked response contract is too large. Nothing was sent.",
+        );
+    }
     if (report.researchEvidenceContract) {
       if (!evidenceSources.some((source) => source.url))
         throw new Error(
@@ -177,6 +208,16 @@ export async function streamVerifiedConversation(
         redirect: "error",
       },
     );
+    if (report.checkedResponseContract)
+      return consumeCheckedResponse(
+        completionEvents(response, signal),
+        report.pricing,
+        signal,
+        evidenceSources,
+        conversation,
+        onChunk,
+        onCheckedDiagnosticDraft,
+      );
     if (report.researchEvidenceContract)
       return consumeResearchReply(
         completionEvents(response, signal),

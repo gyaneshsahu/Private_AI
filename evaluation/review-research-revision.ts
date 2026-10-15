@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { revisionCases } from "./revision-batch";
 import type { Source, Usage } from "../shared/contracts";
+import humanReview from "./results/research-revision-20261015-human.json";
 
 type Reply = {
   completed: boolean;
@@ -99,6 +100,7 @@ const report = {
   billing,
   phases,
   assessment,
+  humanReview,
   humanScores: null,
   limitations:
     "One sequential sample per case. Turn3 is an explicit extra revision, not independent verification. Earlier defects remain. Useful-text latency and production efficacy are not established.",
@@ -118,7 +120,7 @@ const escape = (value: unknown) =>
   );
 const html = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PrivateAI complete revision review</title>
 <style>body{font:16px/1.55 system-ui;max-width:1000px;margin:auto;padding:20px;background:#f7f8fa;color:#18232d}section,article,aside{background:white;padding:20px;margin:16px 0;border:1px solid #ccd4dd;border-radius:10px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}h2{margin-top:0}.muted{color:#506174}.status{font-weight:bold}</style>
-<h1>Source fidelity and revision — complete packet</h1><p>${escape(report.limitations)}</p><p class="status">Human scores blank. No release qualification. Each original answer remains evidence even if repaired later.</p>
+<h1>Source fidelity and revision — complete packet</h1><p>${escape(report.limitations)}</p><p class="status">Nine individual replies in cases 4, 7 and 10 have human scores. Other reply and whole-conversation scores remain blank. No release qualification. Each original answer remains evidence even if repaired later.</p>
 <aside><h2>Engineering measurements</h2><pre>${escape(JSON.stringify(phases, null, 2))}</pre><p>First nonblank callback text, not proof of useful content or UI paint. Observed estimates are not additional charges on top of dashboard spend.</p></aside>
 ${revisionCases
   .map((c) => {
@@ -126,7 +128,10 @@ ${revisionCases
     return `<section><h2>${escape(c.id)} — ${escape(c.title)}</h2><h3>Original authored evidence</h3><pre>${escape(c.source)}</pre><h3>Expected facts</h3><pre>${escape(c.expected)}</pre>${c.turns
       .map((prompt, index) => {
         const reply = run?.replies[index];
-        return `<article><h3>Turn ${index + 1} — ${phases[index].phase}</h3><h4>User</h4><pre>${escape(prompt)}</pre><h4>Model — ${reply ? (reply.completed ? "complete" : "INCOMPLETE / UNSCORED") : "NOT ATTEMPTED"}</h4><pre>${escape(reply?.answer ?? "No answer.")}</pre><p class="muted">${reply ? `First text ${reply.firstVisibleTextMs ?? "none"} ms; total ${reply.elapsedMs} ms.` : ""}</p></article>`;
+        const review = humanReview.reviews.find(
+          (r) => r.id === c.id && r.turn === index + 1,
+        );
+        return `<article><h3>Turn ${index + 1} — ${phases[index].phase}</h3><h4>User</h4><pre>${escape(prompt)}</pre><h4>Model — ${reply ? (reply.completed ? "complete" : "INCOMPLETE / UNSCORED") : "NOT ATTEMPTED"}</h4><pre>${escape(reply?.answer ?? "No answer.")}</pre><p class="muted">${reply ? `First text ${reply.firstVisibleTextMs ?? "none"} ms; total ${reply.elapsedMs} ms.` : ""}</p><p>Human reply score: ${review ? escape(review.scores.join(" / ")) : "— / — / —"}</p>${review ? `<p>${escape(review.reason)}</p>` : ""}</article>`;
       })
       .join(
         "",

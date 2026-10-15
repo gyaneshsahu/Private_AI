@@ -30,6 +30,7 @@ export function assertRevisionPolicy(permit: Experiment) {
     policy.maxInputCharacters !== fixtures.maxInputCharacters ||
     policy.maxOutputTokens !== fixtures.maxOutputTokens ||
     policy.researchEvidenceContract !== undefined ||
+    policy.checkedResponseContract !== undefined ||
     policy.gptOssReasoningEffort !== undefined ||
     policy.glmReasoningEffort !== undefined ||
     policy.gemmaThinking !== undefined
