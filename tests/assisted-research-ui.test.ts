@@ -24,8 +24,12 @@ it("displays calculator-assisted prose and a corrected total through the actual 
           const input=value=>({value,evidence:{kind:'source',sourceId:source.id,quote:source.text}});
           const fee=corrected?{value:'9',evidence:{kind:'user',userTurn:2,quote:users[1].text}}:input('4');
           const raw=JSON.stringify({blocks:[
-            {kind:'paragraph',text:'The total includes delivery and tax on the entire subtotal.',evidence:[{sourceId:source.id,quote:source.text}]},
-            {kind:'calculator',calculation:{kind:'calculation',method:'order-total',unit:'EUR',inputs:{quantity:input('3'),price:input('27'),fee,tax:input('12')}}}
+            {kind:'paragraph',text:'The total includes delivery and the applicable tax.',evidence:[{sourceId:source.id,quote:source.text}]},
+            users.length>2 ? {kind:'arithmetic',unit:'EUR',program:{
+              inputs:[{id:'quantity',...input('3')},{id:'price',...input('27')},{id:'fee',...fee},{id:'tax',...input('12')}],
+              steps:[{id:'items',op:'multiply',left:'quantity',right:'price'},{id:'tax_amount',op:'percentOf',left:'items',right:'tax'},{id:'taxed_items',op:'add',left:'items',right:'tax_amount'},{id:'total',op:'add',left:'taxed_items',right:'fee'}],
+              results:[{id:'total',decimals:2}],passages:[],limitation:'none'
+            }} : {kind:'calculator',calculation:{kind:'calculation',method:'order-total',unit:'EUR',inputs:{quantity:input('3'),price:input('27'),fee,tax:input('12')}}}
           ]});
           async function* events(){yield {choices:[{index:0,delta:{content:raw},finish_reason:'stop'}]};}
           return consumeCheckedResponse(events(),{inputPerMillion:0,outputPerMillion:0,currency:'USD'},signal,[source],c,chunk,undefined,renderAssistedResearch);
@@ -70,20 +74,19 @@ it("displays calculator-assisted prose and a corrected total through the actual 
         .getByRole("navigation", { name: "Workspace" })
         .getByRole("button", { name, exact: false });
     await tab("Context").click();
-    await page
-      .getByLabel("Add documents or screenshots")
-      .setInputFiles({
-        name: "synthetic.txt",
-        mimeType: "text/plain",
-        buffer: Buffer.from(
-          "Buy 3 items at EUR 27 each. Delivery EUR 4. Tax 12 percent applies to items and delivery.",
-        ),
-      });
+    await page.getByLabel("Add documents or screenshots").setInputFiles({
+      name: "synthetic.txt",
+      mimeType: "text/plain",
+      buffer: Buffer.from(
+        "Buy 3 items at EUR 27 each. Delivery EUR 4. Tax 12 percent applies to items and delivery.",
+      ),
+    });
     await ui(page.locator("details summary")).toBeVisible();
     await tab("Conversation").click();
     for (const [question, total] of [
       ["Calculate the full invoice.", "95.20 EUR"],
       ["Correct delivery to EUR 9.", "100.80 EUR"],
+      ["Now tax applies only to items; delivery stays untaxed.", "99.72 EUR"],
     ]) {
       await page.getByLabel("Message PrivateAI").fill(question);
       await page.getByRole("button", { name: "Send ↑", exact: true }).click();

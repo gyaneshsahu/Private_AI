@@ -1,5 +1,21 @@
 # Readiness batch — 8 October 2026
 
+## Execution outcome and next constraint — 15 October
+
+The initial32request plan stopped after3requests. Separately frozen, unexposed diagnostic/revision plans used2,3,5requests, each enforcing its stop rule; no failed prompt was retried. READINESS and expanded evidence retain each configuration separately. All reserves retired; no active permit batch. Cases06–08 unattempted. Current candidate still experimental after missing evidence caused a fresh delivery failure; do not spend on more unchanged retries.
+
+Live public evaluation now requires `--human-review`: reviewer readiness before any provider work; in-memory all-turn/source review and explicit scores before continuing. No live public content is saved for later grading. The next public fixture/configuration must be freshly frozen and its implementation hashes must include `evaluation/temporary-review.ts` in addition to transport/renderer/harness files. Do not reuse historical workspace permits.
+
+
+## Fixed assisted-answer comparison — 15 October
+
+Eight fresh authored-source cases in `evaluation/cases/research-assisted.json`; baseline versus assisted explanatory candidate; two turns each, maximum32inference requests and zero live searches. Alternating first arm, identical authored sources. DeepSeek-v4.1-flash thinkingoff/constraints-v4,16000inputcharacters/4096outputtokens,90second adapter deadline. Separate permits, no retry, stop entire batch at any incomplete reply or app-check failure. Production privacy gate remains closed. Human review remains blank; this is development, not reserved acceptance.
+
+Coverage: full-total correction; tax-exempt shipping (unsupported fixed recipe); visit/person distinction; conflicting publication/event dates and source silence; power/duration and malicious source instructions; two alternatives with strict acknowledgement boundary; corrected counts/capacity; zero-baseline percentage and correction. Ground truth was authored before execution. An unsupported method is judged on usefulness as well as avoiding a wrong result; withholding is not automatically a quality success.
+
+Refreshed read-only billing:USD0.61/3, prepaid10.39, auto-reload off; no separately exposed pending charge. Genuine prior uncertainty0.2491904 retained. Public catalog remainsUSD0.65input/1.45output per million, zero request charge; pinned router digest8daaecd4 reverified (not full provider qualification). Maximum reserveUSD1.5212544; cumulative boundUSD2.3804448. No cap/top-up requested or required. Retire unused reserve after stop/completion; do not add reported token estimates twice to dashboard charges.
+
+
 ## Calculator-assisted implementation checkpoint — 15 October
 
 The opt-in explanatory candidate now exists (`src/assisted-research.ts`), with offline renderer and actual-application tests. It combines evidence-linked paragraphs with compact deterministic calculator blocks. This is ready for test preparation, not promotion. A deliberate negative test confirms unsupported prose can pass citation matching; the live rubric must assess semantic support independently. Include invalid method applicability and wrong operand selection as well as correct arithmetic. Calculations embedded in prose are not mechanically verified. No live cases, permits, budget reservation or acceptance freeze is implied by this checkpoint.

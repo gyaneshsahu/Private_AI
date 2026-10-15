@@ -53,6 +53,24 @@ it("can directly explain the limits of evidence without forcing a calculator or 
   ).toContain("No, a planned opening");
 });
 
+it("normalizes only redundant calculator tags and evidence-bound inline citations", () => {
+  const { kind: _kind, ...withoutTag } = calculation;
+  const answer = run([
+    { ...paragraph, text: "Delivery is included [fixture-price]." },
+    { kind: "calculator", calculation: withoutTag },
+  ]);
+  expect(answer).toContain("95.20 EUR");
+  expect(answer.match(/\[fixture-price\]/g)).toHaveLength(2);
+  expect(() =>
+    run([{ ...paragraph, text: "Delivery is included [unknown-source]." }]),
+  ).toThrow();
+  expect(() =>
+    run([
+      { kind: "calculator", calculation: { ...calculation, kind: "invented" } },
+    ]),
+  ).toThrow();
+});
+
 it("rejects fabricated evidence, incompatible units and model-supplied totals", () => {
   expect(() =>
     run([

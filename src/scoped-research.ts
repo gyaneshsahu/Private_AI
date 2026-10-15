@@ -63,7 +63,7 @@ export const scopedResearchSchema = z.union([
       kind: z.literal("calculation"),
       method: z.literal("percent-change"),
       inputs: z.object({ before: input, after: input }).strict(),
-      unit: units,
+      unit: units.or(z.literal("%")),
     })
     .strict(),
   z

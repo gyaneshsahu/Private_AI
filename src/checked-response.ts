@@ -28,7 +28,7 @@ const evidenceSchema = z.discriminatedUnion("kind", [
     })
     .strict(),
 ]);
-const schema = z
+export const checkedResponseSchema = z
   .object({
     inputs: z
       .array(
@@ -111,7 +111,7 @@ export function renderCheckedResponse(
   } catch {
     throw new ContractError("INVALID_JSON");
   }
-  const result = schema.safeParse(parsed);
+  const result = checkedResponseSchema.safeParse(parsed);
   if (!result.success) throw new ContractError("INVALID_SCHEMA");
   const data = result.data;
   if (new Set(sources.map((s) => s.id)).size !== sources.length)

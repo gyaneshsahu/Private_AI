@@ -17,7 +17,7 @@ export async function streamReply(
 ): Promise<Usage | undefined> {
   const state = (window as any).__workspaceEvaluation;
   const permit = validateExperiment(state.permit);
-  if (!permit.developmentCaseId?.startsWith("workspace-"))
+  if (!/^(workspace|assisted)-/.test(permit.developmentCaseId ?? ""))
     throw Error("Workspace permit required");
   const fixture = developmentCase(permit.developmentCaseId, "robustness_case");
   const prompt = c.messages.at(-1)?.text;
@@ -62,6 +62,14 @@ export async function streamReply(
   } catch (e) {
     state.results.push({
       completed: false,
+      // Only authored source fixtures can retain diagnostic content. Public runs
+      // remain metadata-only, including malformed or rejected replies.
+      diagnosticDraft:
+        "sources" in fixture &&
+        Array.isArray(fixture.sources) &&
+        fixture.sources.length
+          ? draft
+          : undefined,
       answer,
       ...classifyEvaluationFailure(e),
       failure: e instanceof Error ? e.name : "Error",

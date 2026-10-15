@@ -1,0 +1,398 @@
+{
+  "runs": [
+    {
+      "root": ".local/assisted-live-20261015",
+      "plan": {
+        "status": "FROZEN_BEFORE_EXECUTION",
+        "frozenAt": "2026-10-15T16:54:56.856Z",
+        "maxRequests": 32,
+        "maxSearches": 0,
+        "automaticRetries": 0,
+        "reserveUSD": 1.5212544,
+        "actualBeforeUSD": 0.61,
+        "uncertaintyUSD": 0.2491904,
+        "cumulativeBoundUSD": 2.3804448,
+        "capUSD": 3,
+        "publicContentPersistence": false,
+        "baseline": "DeepSeek-v4.1-flash thinkingoff constraints-v4",
+        "candidate": "same + assistedResearchContract",
+        "order": "alternating arm first by case; identical authored sources",
+        "stop": "Any incomplete reply or app-check failure stops entire batch. No retry, no continuation.",
+        "fixtureSHA256": "14e42bd20b97db44fcbe75a35cdd4846f5df212836531e4d1ded5bde327ef706",
+        "implementationHashes": {
+          "src/assisted-research.ts": "47c2cede60dee1e1d30cfa3c1e4f51f2469d0efe40eead7edf54fefbb41b8e29",
+          "src/scoped-research.ts": "d2d7105109984e91ed0f0fa9d2cc117eebb49c003e34ce333ef454fd239aa807",
+          "src/checked-response.ts": "5c186e9fd93bd5d412fa80adab7faf1cd899026e23ba1b69c71894cb87ad0251",
+          "src/research-contract.ts": "4b22c4ad208275e67668cc46bc402db6bdafd3abccd7ddec16563a37d6a02036",
+          "src/verified-chat.ts": "eb8742929ed4c983d871ec63ba3e383c6d5b23de0de5c14cc22e061d84e741f1",
+          "src/App.tsx": "38a8e9612b0f3b3fbd90744b266ec5658605ff67c0005b940fc6f9e86806c4b5",
+          "evaluation/run-workspace.ts": "b602a9b51b6bed797e4046757e2bc019a52af62430f8872837683042a3419445",
+          "evaluation/workspace-inference.ts": "268d82fd6da6740554574cdb32bb77ec1cca3a62a98fffcbce9a3965afd2d9e4",
+          "evaluation/experiment.ts": "0434c2a50dc8a74f7ff53a53fd946e594dcebaae8c938c425b25e5541b05398d"
+        },
+        "humanScores": null
+      },
+      "report": {
+        "mode": "LIVE_PUBLIC_AND_AUTHORED",
+        "humanScores": null,
+        "results": [
+          {
+            "id": "assisted-01",
+            "arm": "baseline",
+            "public": false,
+            "replies": [
+              {
+                "completed": true,
+                "answer": "**Total due: GBP 106.40**\n\nCalculation:\n- Tickets: 7 × GBP 13 = GBP 91.00\n- Booking fee: GBP 9.00\n- Subtotal: GBP 91.00 + GBP 9.00 = GBP 100.00\n- Tax at 8%: GBP 100.00 × 0.08 = GBP 8.00\n- **Total: GBP 100.00 + GBP 8.00 = GBP 106.40**\n\n**What the total includes:** 7 tickets at GBP 13 each, one booking fee of GBP 9, and 8% tax applied to both the tickets and the fee. No discounts apply. All listed prices exclude tax. [assisted-source-01]",
+                "usage": {
+                  "input": 909,
+                  "output": 161,
+                  "total": 1070,
+                  "estimatedUSD": 0.0008242999999999999
+                },
+                "firstVisibleTextMs": 2157,
+                "elapsedMs": 3561,
+                "answerCharacters": 439,
+                "answerSHA256": "0ee7e2e2c5b9633315aff955b920945bf77486ed0495785431d9c2adb59f82c3",
+                "evidenceAudit": {
+                  "citationReferences": 1,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              },
+              {
+                "completed": true,
+                "answer": "**Total due: GBP 102.60**\n\nCalculation:\n- Tickets: 7 × GBP 13 = GBP 91.00\n- Booking fee: GBP 5.00\n- Subtotal: GBP 91.00 + GBP 5.00 = GBP 96.00\n- Tax at 8%: GBP 96.00 × 0.08 = GBP 7.68\n- **Total: GBP 96.00 + GBP 7.68 = GBP 102.60**\n\n**What the total includes:** 7 tickets at GBP 13 each, one booking fee of GBP 5, and 8% tax applied to both the tickets and the fee. No discounts apply. All listed prices exclude tax. [assisted-source-01]",
+                "usage": {
+                  "input": 1092,
+                  "output": 161,
+                  "total": 1253,
+                  "estimatedUSD": 0.00094325
+                },
+                "firstVisibleTextMs": 1292,
+                "elapsedMs": 2223,
+                "answerCharacters": 436,
+                "answerSHA256": "f0c26e087d781cb994bf9e586e99d5623a0d872e5da3bb90af8258e801bc90e9",
+                "evidenceAudit": {
+                  "citationReferences": 1,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              }
+            ],
+            "humanScores": null,
+            "productionGateClosed": true,
+            "retrievalKind": "AUTHORED_FIXTURE",
+            "sourceCount": 1,
+            "sourceHash": "ceea67dbcda7608be6ef5c1a3ecb92cc995f2c9297bad2f9e4d3531a920d1515",
+            "evidenceCharacters": 142,
+            "providerDates": 0,
+            "sourceOpen": true,
+            "sourceLinkKeyboardReachable": true,
+            "sourceLinkSafe": true,
+            "answerCitationOpensSource": true,
+            "saveBlocked": true,
+            "storage": {
+              "conversationRecords": 0,
+              "localStorageKeys": 0,
+              "sessionStorageKeys": 0,
+              "cacheEntries": 0,
+              "serviceWorkers": 0
+            },
+            "clearedOnReload": true,
+            "pageErrors": [],
+            "networkViolation": 0,
+            "consoleMessageCount": 6,
+            "attempts": [
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 5249,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 847,
+                "firstEncryptedByteMs": 1205,
+                "elapsedMs": 2609
+              },
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 5849,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 480,
+                "firstEncryptedByteMs": 850,
+                "elapsedMs": 1781
+              }
+            ]
+          },
+          {
+            "id": "assisted-01",
+            "arm": "candidate",
+            "public": false,
+            "replies": [
+              {
+                "completed": false,
+                "answer": "",
+                "failureKind": "CONTRACT_REJECTED",
+                "checkedFailure": "INVALID_SCHEMA",
+                "usage": {
+                  "input": 1366,
+                  "output": 268,
+                  "total": 1634,
+                  "estimatedUSD": 0.0012765
+                },
+                "failure": "IncompleteReplyError",
+                "firstVisibleTextMs": null,
+                "elapsedMs": 3640,
+                "answerCharacters": 0,
+                "answerSHA256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+                "evidenceAudit": {
+                  "citationReferences": 0,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              }
+            ],
+            "humanScores": null,
+            "productionGateClosed": true,
+            "retrievalKind": "AUTHORED_FIXTURE",
+            "sourceCount": 1,
+            "sourceHash": "ceea67dbcda7608be6ef5c1a3ecb92cc995f2c9297bad2f9e4d3531a920d1515",
+            "evidenceCharacters": 142,
+            "providerDates": 0,
+            "sourceOpen": true,
+            "sourceLinkKeyboardReachable": true,
+            "sourceLinkSafe": true,
+            "saveBlocked": true,
+            "storage": {
+              "conversationRecords": 0,
+              "localStorageKeys": 0,
+              "sessionStorageKeys": 0,
+              "cacheEntries": 0,
+              "serviceWorkers": 0
+            },
+            "clearedOnReload": true,
+            "pageErrors": [],
+            "networkViolation": 0,
+            "consoleMessageCount": 6,
+            "attempts": [
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 7383,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 825,
+                "firstEncryptedByteMs": 1183,
+                "elapsedMs": 2834
+              }
+            ]
+          }
+        ],
+        "qualification": "NOT_PASSED",
+        "publicContentPersisted": false
+      }
+    },
+    {
+      "root": ".local/assisted-diagnostic-20261015",
+      "plan": {
+        "status": "FROZEN_BEFORE_EXECUTION",
+        "frozenAt": "2026-10-15T16:57:07.693Z",
+        "maxRequests": 2,
+        "maxSearches": 0,
+        "automaticRetries": 0,
+        "reserveUSD": 0.0950784,
+        "actualBeforeUSD": 0.61,
+        "uncertaintyUSD": 0.2491904,
+        "cumulativeBoundUSD": 0.95731285,
+        "capUSD": 3,
+        "publicContentPersistence": false,
+        "baseline": "DeepSeek-v4.1-flash thinkingoff constraints-v4",
+        "candidate": "same + assistedResearchContract",
+        "order": "alternating arm first by case; identical authored sources",
+        "stop": "Any incomplete reply or app-check failure stops entire batch. No retry, no continuation.",
+        "fixtureSHA256": "14e42bd20b97db44fcbe75a35cdd4846f5df212836531e4d1ded5bde327ef706",
+        "implementationHashes": {
+          "src/assisted-research.ts": "47c2cede60dee1e1d30cfa3c1e4f51f2469d0efe40eead7edf54fefbb41b8e29",
+          "src/scoped-research.ts": "d2d7105109984e91ed0f0fa9d2cc117eebb49c003e34ce333ef454fd239aa807",
+          "src/checked-response.ts": "5c186e9fd93bd5d412fa80adab7faf1cd899026e23ba1b69c71894cb87ad0251",
+          "src/research-contract.ts": "4b22c4ad208275e67668cc46bc402db6bdafd3abccd7ddec16563a37d6a02036",
+          "src/verified-chat.ts": "eb8742929ed4c983d871ec63ba3e383c6d5b23de0de5c14cc22e061d84e741f1",
+          "src/App.tsx": "38a8e9612b0f3b3fbd90744b266ec5658605ff67c0005b940fc6f9e86806c4b5",
+          "evaluation/run-workspace.ts": "d7c153e77248bc4d41556b5ab2ad58b5303cdb4159304e231aefc2f9686d35f2",
+          "evaluation/workspace-inference.ts": "9af5d5ae707a58604c7edcacd67e57d9190a6b201c8959b3d87c48f8d5769141",
+          "evaluation/experiment.ts": "0434c2a50dc8a74f7ff53a53fd946e594dcebaae8c938c425b25e5541b05398d"
+        },
+        "humanScores": null,
+        "scope": "New diagnostic probe: only previously unattempted assisted-02 candidate; at most2requests; stop first incomplete; no retry or continuation of stopped comparison. Preserve authored diagnostic draft on failure.",
+        "priorBatchEstimatedUSD": 0.00304405
+      },
+      "report": {
+        "mode": "LIVE_PUBLIC_AND_AUTHORED",
+        "humanScores": null,
+        "results": [
+          {
+            "id": "assisted-02",
+            "arm": "candidate",
+            "public": false,
+            "replies": [
+              {
+                "completed": true,
+                "answer": "The supplied invoice excerpt states: 6 items at EUR 19 each, delivery EUR 8, tax 10 percent applying only to items, with delivery tax\\-exempt and all listed prices excluding tax\\. So the taxable subtotal is the items only \\(6 × EUR 19\\), while the EUR 8 delivery charge is added without tax\\. [assisted-source-02]\n\nThe provided order\\-total method cannot be used here because it would require tax to apply to the entire subtotal including the delivery fee\\. That conflicts with the source, which says delivery is tax\\-exempt\\. The complete invoice total therefore cannot be calculated with the available calculator method without adding an unsupported assumption\\. [assisted-source-02]",
+                "usage": {
+                  "input": 1365,
+                  "output": 234,
+                  "total": 1599,
+                  "estimatedUSD": 0.0012265499999999999
+                },
+                "firstVisibleTextMs": 4290,
+                "elapsedMs": 4291,
+                "answerCharacters": 685,
+                "answerSHA256": "1743e1ea362d187a5e9198d1cf72c525974e358fc510a8d3601aac8633bfd38c",
+                "evidenceAudit": {
+                  "citationReferences": 2,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              },
+              {
+                "completed": true,
+                "answer": "The correction sets the delivery fee at EUR 12 and keeps it tax\\-exempt; the items remain 6 at EUR 19 each with 10 percent tax applying only to items\\. As before, the available order\\-total method cannot be used because it requires tax to apply to the entire subtotal including delivery, which conflicts with the tax\\-exempt delivery\\. The total still cannot be computed with the available method without an unsupported assumption\\. [assisted-source-02]\n\nUnknown: the calculator method required to tax only the item subtotal while adding an untaxed delivery fee is not available here\\. [assisted-source-02]",
+                "usage": {
+                  "input": 1637,
+                  "output": 245,
+                  "total": 1882,
+                  "estimatedUSD": 0.0014192999999999999
+                },
+                "firstVisibleTextMs": 2966,
+                "elapsedMs": 2966,
+                "answerCharacters": 606,
+                "answerSHA256": "b1b145dfae9e778c0cbfe01542dca8059ffc83500a80da6226366f19c0fe0321",
+                "evidenceAudit": {
+                  "citationReferences": 2,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              }
+            ],
+            "humanScores": null,
+            "productionGateClosed": true,
+            "retrievalKind": "AUTHORED_FIXTURE",
+            "sourceCount": 1,
+            "sourceHash": "cf1866329d6b0dac6ce2b9eb4304f3eec816b9b73273a5910450e66872eb8591",
+            "evidenceCharacters": 141,
+            "providerDates": 0,
+            "sourceOpen": true,
+            "sourceLinkKeyboardReachable": true,
+            "sourceLinkSafe": true,
+            "answerCitationOpensSource": true,
+            "saveBlocked": true,
+            "storage": {
+              "conversationRecords": 0,
+              "localStorageKeys": 0,
+              "sessionStorageKeys": 0,
+              "cacheEntries": 0,
+              "serviceWorkers": 0
+            },
+            "clearedOnReload": true,
+            "pageErrors": [],
+            "networkViolation": 0,
+            "consoleMessageCount": 6,
+            "attempts": [
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 7372,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 841,
+                "firstEncryptedByteMs": 1405,
+                "elapsedMs": 3434
+              },
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 8635,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 494,
+                "firstEncryptedByteMs": 756,
+                "elapsedMs": 2532
+              }
+            ]
+          }
+        ],
+        "qualification": "NOT_PASSED",
+        "publicContentPersisted": false
+      }
+    }
+  ],
+  "metrics": {
+    "attempted": 5,
+    "delivered": 4,
+    "reportedEstimatedUSD": 0.0056898999999999995,
+    "humanScores": null
+  },
+  "assessment": {
+    "status": "AI_PROPOSED_NOT_HUMAN_REVIEW",
+    "decision": "Keep candidate experimental; no release selection.",
+    "baseline": {
+      "attempted": 2,
+      "delivered": 2,
+      "incorrectFinalTotals": 2,
+      "correctTotals": [
+        "108.00 GBP",
+        "103.68 GBP"
+      ],
+      "observedWrongTotals": [
+        "106.40 GBP",
+        "102.60 GBP"
+      ]
+    },
+    "candidate": {
+      "attempted": 3,
+      "delivered": 2,
+      "incomplete": 1,
+      "usefulness": "Two delivered answers explain the tax-method mismatch but omit computable totals133.40EUR and137.40EUR. Material completeness concern; human judgment pending.",
+      "validAnswersUnnecessarilyBlocked": "UNKNOWN: initial rejected draft was not retained; cannot judge its validity.",
+      "incorrectAnswersWithheld": "NOT_ESTABLISHED"
+    },
+    "stopRule": "Initial batch stopped after3requests. Separate2request diagnostic used previously unattempted authoredcase02; no retry ofcase01. Cases03-08 unattempted."
+  }
+}

@@ -22,6 +22,7 @@ import reasoningTransfer from "./cases/research-reasoning-transfer.json";
 import revisionTransfer from "./cases/research-revision-transfer.json";
 import checkedTransfer from "./cases/checked-transfer.json";
 import workspaceCases from "./cases/research-workspace.json";
+import assistedCases from "./cases/research-assisted.json";
 import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
@@ -41,6 +42,7 @@ const robustnessCases = [
   ...configTransfer,
   ...researchTransfer,
   ...workspaceCases,
+  ...assistedCases,
   ...[
     ...researchEvidenceTransfer.cases,
     ...reasoningTransfer.cases,

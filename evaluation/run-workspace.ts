@@ -1,3 +1,4 @@
+import { startTemporaryReview } from "./temporary-review";
 import { shouldStopWorkspaceBatch } from "./reply-failure";
 import { readFile, writeFile, mkdir, access } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -11,7 +12,29 @@ import { validateExperiment } from "./experiment";
 import { claimExperiment } from "./run-claim";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { auditResearchAnswer } from "../src/research-audit";
-import fixtures from "./cases/research-workspace.json";
+import workspaceFixtures from "./cases/research-workspace.json";
+import assistedFixtures from "./cases/research-assisted.json";
+const assisted = process.argv.includes("--assisted");
+const diagnostic = process.argv.includes("--diagnostic");
+if (diagnostic && !assisted)
+  throw Error("Diagnostic mode requires assisted fixtures");
+const generalArithmetic = process.argv.includes("--general-arithmetic");
+if (generalArithmetic && (!assisted || diagnostic))
+  throw Error("Choose the separate assisted arithmetic batch");
+const fixtures = generalArithmetic
+  ? assistedFixtures.filter(
+      (f) =>
+        Number(f.id.slice(-2)) >=
+        (process.argv.includes("--normalized") ? 4 : 3),
+    )
+  : diagnostic
+    ? assistedFixtures.filter((f) => f.id === "assisted-02")
+    : assisted
+      ? assistedFixtures
+      : workspaceFixtures;
+const fixturePath = assisted
+  ? "evaluation/cases/research-assisted.json"
+  : "evaluation/cases/research-workspace.json";
 const root = resolve(process.argv[2] || "");
 if (!process.argv[2] || !root.startsWith(resolve(".local") + "\\"))
   throw Error("Local run directory required");
@@ -38,7 +61,7 @@ if (!dry) {
       );
   }
   const fixtureHash = createHash("sha256")
-    .update(await readFile("evaluation/cases/research-workspace.json"))
+    .update(await readFile(fixturePath))
     .digest("hex");
   if (fixtureHash !== plan.fixtureSHA256) throw Error("Frozen cases changed.");
 }
@@ -49,13 +72,43 @@ const report: any = {
   qualification: "NOT_PASSED",
   publicContentPersisted: false,
 };
-const browser = await chromium.launch(browserLaunchOptions());
+const publicReviewNeeded = !dry && fixtures.some((f) => !f.sources.length);
+if (publicReviewNeeded && !process.argv.includes("--human-review"))
+  throw Error(
+    "Live public answers require --human-review and an available reviewer before requests start.",
+  );
+const review = publicReviewNeeded ? await startTemporaryReview() : undefined;
+if (review) {
+  console.log(
+    JSON.stringify({
+      temporaryReviewURL: review.url,
+      action:
+        "Reviewer must open this page and choose ready before any request. No content is saved.",
+    }),
+  );
+  try {
+    await review.waitUntilReady();
+  } catch (error) {
+    await review.close();
+    throw error;
+  }
+}
+const browser = await chromium
+  .launch(browserLaunchOptions())
+  .catch(async (error) => {
+    await review?.close();
+    throw error;
+  });
 let stop = false;
 try {
-  for (const fixture of fixtures) {
+  for (const [caseIndex, fixture] of fixtures.entries()) {
     if (stop) break;
     let pairedSources: any[] | undefined;
-    for (const arm of ["baseline", "candidate"]) {
+    for (const arm of diagnostic
+      ? ["candidate"]
+      : assisted && caseIndex % 2
+        ? ["candidate", "baseline"]
+        : ["baseline", "candidate"]) {
       const permit = validateExperiment(
         JSON.parse(
           await readFile(resolve(root, `${fixture.id}-${arm}.json`), "utf8"),
@@ -63,7 +116,10 @@ try {
       );
       if (
         permit.developmentCaseId !== fixture.id ||
-        !!permit.policy.scopedResearchContract !== (arm === "candidate")
+        !!(assisted
+          ? permit.policy.assistedResearchContract
+          : permit.policy.scopedResearchContract) !==
+          (arm === "candidate")
       )
         throw Error("Fixed case/configuration mismatch");
       const claimed = dry
@@ -180,6 +236,7 @@ try {
       const context = await browser.newContext({ serviceWorkers: "block" });
       const page = await context.newPage();
       let sources: any[] = [];
+      const reviewTurns: Array<{ question: string; answer: string }> = [];
       let networkViolation = 0;
       let consoleMessages = 0;
       let phase = "start";
@@ -328,9 +385,27 @@ try {
               (n) => (window as any).__workspaceEvaluation.results[n],
               t,
             );
+            reviewTurns.push({
+              question: fixture.turns[t],
+              answer: result.answer,
+            });
+            const humanReview =
+              review && !fixture.sources.length
+                ? {
+                    status: "HUMAN_REVIEW",
+                    ...(await review.assess({
+                      caseId: fixture.id,
+                      arm,
+                      completed: result.completed,
+                      turns: reviewTurns,
+                      sources,
+                    })),
+                  }
+                : undefined;
             const audit = auditResearchAnswer(result.answer, sources);
             record.replies.push({
               ...result,
+              humanReview,
               answer: fixture.sources.length ? result.answer : undefined,
               answerCharacters: result.answer.length,
               answerSHA256: hash(result.answer),
@@ -458,4 +533,5 @@ try {
   }
 } finally {
   await browser.close();
+  await review?.close();
 }

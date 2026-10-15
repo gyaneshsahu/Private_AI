@@ -6,6 +6,18 @@ the conversation; privacy status is clear and detailed controls appear when need
 Use PrivateAI's own identity, readable answers and uncluttered desktop/mobile layouts.
 No new navigation or visual style is finalized by this plan.
 
+## Galaxy A52 / TalkBack: next short workspace check
+
+Auth-page controls, keyboard-open reachability and rotation/larger text already passed human review. Do not repeat those checks. On the next owner-authorized synthetic workspace release, record release SHA, Chrome version and TalkBack version, then spend about five minutes on these remaining tasks:
+
+1. With TalkBack, navigate Conversation, Context, Research and Saved; each selected tab and button must have a useful name and focus must remain visible.
+2. Type an unsent fictional question with the keyboard open; switch tabs and return. The draft must survive and Send must remain reachable. Do not send private data.
+3. Import `Synthetic invoice: net EUR 90, tax EUR 18, total EUR 108.` as a text file. Open/close its source dialog. TalkBack focus must stay inside the dialog and return to its triggering control on close.
+4. Prepare a public search query, review the disclosure, then cancel. Verify no search is sent and the query remains editable. On an explicitly enabled temporary-search release, inspect a source link and verify saving remains unavailable after removing the source. User-initiated Copy answer is allowed.
+5. In a separate non-research synthetic conversation, save with a test-only passphrase, lock, reload, try one wrong passphrase, then unlock. Never report the passphrase. Confirm the original text and source are recovered.
+
+Report PASS/FAIL/BLOCKED for each number, with one reproduction sentence for a failure. Current production inference remains gated; mark unavailable tasks BLOCKED. Actual answer streaming/Stop/citation announcements must be checked on the chosen permitted release later. No new invitation, hosting change, private-data permission or retention activation is implied by this plan.
+
 ## Prepared synthetic review
 
 Use a fresh browser profile and synthetic files only. Hosted access is currently
@@ -24,7 +36,7 @@ useful engineering evidence, not a substitute for a phone's keyboard/file picker
 | Document workspace | Import a locally created text file: “Synthetic invoice: net EUR 90, tax EUR 18, total EUR 108.” Inspect/edit extracted text and remove attachment | Use PDF/screenshot variants only when prepared from this same synthetic text; no personal files |
 | Save and recover | Save an encrypted snapshot, lock, reload, try a wrong passphrase, unlock, verify draft/source, then test the unsaved-change warning | User chooses a test-only passphrase; never record it. Registry recovery cannot recover this vault |
 | Read an answer | Inspect long text, table and citation in the existing local browser fixtures; keyboard focus and horizontal overflow remain usable | Fixtures must be labelled; they do not establish live answer quality or hosted inference |
-| Research consent | Prepare a synthetic public query, inspect exact proposed disclosure, cancel and verify draft survives | Until service rights/access are resolved, do not execute a live search or present fixture results as live |
+| Research consent | Prepare a synthetic public query, inspect exact proposed disclosure, cancel and verify draft survives | Live public retrieval is allowed only on the explicitly enabled temporary-search evaluation; never present fixtures as live or persist search-derived history |
 | Account boundary | Use two synthetic identities; sign out/in and verify the other's encrypted workspace is not exposed; check old tab after revocation | Operator-assisted task, not a request for users to share passwords |
 | Phone ergonomics | Compose with the keyboard open, attach synthetic file, inspect source/citation, close dialogs and rotate | No hidden Send button, trapped focus, clipped controls or unreadable answer text |
 
