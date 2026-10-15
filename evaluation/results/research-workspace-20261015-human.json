@@ -1,0 +1,147 @@
+{
+  "status": "HUMAN_REVIEW",
+  "receivedOn": "2026-10-15",
+  "scope": "Cases04\u201306, individual replies. Case04 both-turn assessment applied to each turn explicitly reviewed. Public cases01\u201303 remain unassessed; candidate06turn2 remains unscored.",
+  "dimensions": [
+    "correctness",
+    "completeness",
+    "context"
+  ],
+  "decision": "Keep the candidate experimental. In these cases the baseline gives more useful answers. Use calculators as tools within normal answers, not quotation-only replacement.",
+  "reviews": [
+    {
+      "id": "workspace-04",
+      "arm": "baseline",
+      "turn": 1,
+      "scores": [
+        3,
+        3,
+        3
+      ],
+      "reason": "Both correctly calculate EUR142.24 then EUR146.72, preserving the tax rule and corrected delivery fee. Candidate presentation is overly technical."
+    },
+    {
+      "id": "workspace-04",
+      "arm": "baseline",
+      "turn": 2,
+      "scores": [
+        3,
+        3,
+        3
+      ],
+      "reason": "Both correctly calculate EUR142.24 then EUR146.72, preserving the tax rule and corrected delivery fee. Candidate presentation is overly technical."
+    },
+    {
+      "id": "workspace-04",
+      "arm": "candidate",
+      "turn": 1,
+      "scores": [
+        3,
+        3,
+        3
+      ],
+      "reason": "Both correctly calculate EUR142.24 then EUR146.72, preserving the tax rule and corrected delivery fee. Candidate presentation is overly technical."
+    },
+    {
+      "id": "workspace-04",
+      "arm": "candidate",
+      "turn": 2,
+      "scores": [
+        3,
+        3,
+        3
+      ],
+      "reason": "Both correctly calculate EUR142.24 then EUR146.72, preserving the tax rule and corrected delivery fee. Candidate presentation is overly technical."
+    },
+    {
+      "id": "workspace-05",
+      "arm": "baseline",
+      "turn": 1,
+      "scores": [
+        3,
+        3,
+        3
+      ],
+      "reason": "Baseline distinguishes revised plans, actual reopening and unknown refund policy. Candidate leaves the comparison unanswered and unnecessarily uses insufficient-information wording. Material usefulness failure."
+    },
+    {
+      "id": "workspace-05",
+      "arm": "baseline",
+      "turn": 2,
+      "scores": [
+        3,
+        3,
+        3
+      ],
+      "reason": "Baseline distinguishes revised plans, actual reopening and unknown refund policy. Candidate leaves the comparison unanswered and unnecessarily uses insufficient-information wording. Material usefulness failure."
+    },
+    {
+      "id": "workspace-05",
+      "arm": "candidate",
+      "turn": 1,
+      "scores": [
+        2,
+        1,
+        2
+      ],
+      "reason": "Baseline distinguishes revised plans, actual reopening and unknown refund policy. Candidate leaves the comparison unanswered and unnecessarily uses insufficient-information wording. Material usefulness failure."
+    },
+    {
+      "id": "workspace-05",
+      "arm": "candidate",
+      "turn": 2,
+      "scores": [
+        2,
+        1,
+        2
+      ],
+      "reason": "Baseline distinguishes revised plans, actual reopening and unknown refund policy. Candidate leaves the comparison unanswered and unnecessarily uses insufficient-information wording. Material usefulness failure."
+    },
+    {
+      "id": "workspace-06",
+      "arm": "baseline",
+      "turn": 1,
+      "scores": [
+        3,
+        3,
+        3
+      ],
+      "reason": "Baseline explains missing duration, then calculates2.5kW*4h=10kWh. Candidate first fails to explain power versus energy or request duration; second answer is missing, a delivery failure."
+    },
+    {
+      "id": "workspace-06",
+      "arm": "baseline",
+      "turn": 2,
+      "scores": [
+        3,
+        3,
+        3
+      ],
+      "reason": "Baseline explains missing duration, then calculates2.5kW*4h=10kWh. Candidate first fails to explain power versus energy or request duration; second answer is missing, a delivery failure."
+    },
+    {
+      "id": "workspace-06",
+      "arm": "candidate",
+      "turn": 1,
+      "scores": [
+        2,
+        1,
+        2
+      ],
+      "reason": "Baseline explains missing duration, then calculates2.5kW*4h=10kWh. Candidate first fails to explain power versus energy or request duration; second answer is missing, a delivery failure."
+    },
+    {
+      "id": "workspace-06",
+      "arm": "candidate",
+      "turn": 2,
+      "scores": null,
+      "reason": "Baseline explains missing duration, then calculates2.5kW*4h=10kWh. Candidate first fails to explain power versus energy or request duration; second answer is missing, a delivery failure."
+    }
+  ],
+  "findings": [
+    "Review public answers during the live session; the retained packet cannot establish their factual quality.",
+    "Fix the stop condition before another comparison.",
+    "Clipboard restriction is provisional; contractual necessity needs evidence, and manual copying/screenshots remain possible."
+  ],
+  "releaseQualified": false
+}

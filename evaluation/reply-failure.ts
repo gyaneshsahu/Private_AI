@@ -20,3 +20,11 @@ export function classifyEvaluationFailure(error: unknown) {
     usage: error instanceof IncompleteReplyError ? error.usage : undefined,
   };
 }
+
+// Any incomplete reply ends this batch, even if usage was reported or the
+// rejection was local. A later batch needs a new explicit plan and permits.
+export function shouldStopWorkspaceBatch(reply: {
+  completed: boolean;
+}): boolean {
+  return !reply.completed;
+}

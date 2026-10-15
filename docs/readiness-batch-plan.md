@@ -1,5 +1,16 @@
 # Readiness batch — 8 October 2026
 
+## Next workspace batch — design prerequisites after human review (not frozen)
+
+Keep normal explanatory research answers. A calculator supplies explicitly scoped numerical results with operands, units, method and provenance; the answer must explain missing information and evidence limits in ordinary language. The current extractive candidate is not promoted. Do not add one prompt rule per exposed example. Before paid execution, demonstrate method applicability and failure handling offline, then freeze fresh cases/configurations and independent expected facts.
+
+Public factual review must happen **during the session**. Arrange an available reviewer before starting; keep the question, selected evidence, source inspection, all turns and corrections visible in memory. Assess relevance, publication/event dates, conflicting claims, missing facts, unit/method correctness, each material claim's support and usefulness. Citation matching or another model's agreement is not a factual verdict. Capture scores and non-content failure categories only; no public transcript/snippet/URL export, screenshot, HAR or trace for later reopening. If review cannot happen, stop before new paid requests; do not discard answers and count them as quality evidence. Explicitly label AI versus human assessments.
+
+Any incomplete reply stops the entire batch, even if it carries usage or is locally rejected. No automatic retry, skipped-arm continuation or reused permit. Preserve the failure, reconcile charges and prepare a separately bounded batch if justified. The runner now enforces this stricter rule. Do not run the old comparison as though its former transport-only stop wording were still the new plan.
+
+No active reservation or new cap request. Refresh actual spend and unresolved risks before freezing the eventual request count/cost. Last dashboard reading remainsUSD0.61/3; it is not newly refreshed by this documentation batch.
+
+
 ## 15 October — fixed source-fidelity revision experiment
 
 Current batch: `evaluation/cases/research-revision-transfer.json`, 12 fresh authored cases, three turns each: initial task, new user information/correction, then one identical general review-and-revision instruction. Model DeepSeek-v4.1-flash, thinking off, constraints-v4, 16,000 input characters, 4,096 output tokens, 90-second adapter deadline. Maximum36 requests through12 separate single-use permits; stop the batch on any incomplete reply, no retries. Exposed earlier questions are not rerun. This is development evidence, not held-out acceptance or a production two-pass policy. For synthetic crisis cases, evaluate the initial response independently; do not justify delaying real urgent help for an extra review request.

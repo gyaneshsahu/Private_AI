@@ -1,5 +1,8 @@
 import { it, expect } from "vitest";
-import { classifyEvaluationFailure } from "../evaluation/reply-failure";
+import {
+  classifyEvaluationFailure,
+  shouldStopWorkspaceBatch,
+} from "../evaluation/reply-failure";
 import { CheckedResponseError } from "../src/checked-response";
 import { IncompleteReplyError } from "../src/reply-stream";
 it("distinguishes contract rejection from transport failure despite their shared error name", () => {
@@ -15,4 +18,29 @@ it("distinguishes contract rejection from transport failure despite their shared
   );
   expect(transport.failureKind).toBe("TRANSPORT_OR_APPLICATION_FAILURE");
   expect(transport.usage).toEqual(usage);
+});
+
+it("stops before the next request after every incomplete outcome, including usage-bearing contract rejection", () => {
+  for (const failureKind of [
+    "CONTRACT_REJECTED",
+    "TRANSPORT_OR_APPLICATION_FAILURE",
+    undefined,
+  ]) {
+    for (const usage of [
+      undefined,
+      { input: 1, output: 1, total: 2, estimatedUSD: 0.001 },
+    ]) {
+      const queue = [
+        { completed: false, failureKind, usage },
+        { completed: true },
+      ];
+      let attempted = 0;
+      for (const reply of queue) {
+        attempted++;
+        if (shouldStopWorkspaceBatch(reply)) break;
+      }
+      expect(attempted).toBe(1);
+    }
+  }
+  expect(shouldStopWorkspaceBatch({ completed: true })).toBe(false);
 });

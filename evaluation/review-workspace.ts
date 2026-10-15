@@ -1,3 +1,4 @@
+import humanReview from "./results/research-workspace-20261015-human.json";
 import { readFile, writeFile, mkdir, copyFile } from "node:fs/promises";
 import fixtures from "./cases/research-workspace.json";
 const root = ".local/workspace-repaired-20261015";
@@ -86,7 +87,7 @@ const billing = {
     metrics.candidate.observedEstimatedUSD,
   note: "Actual spend is authoritative; estimates are not added again. New risk is a ceiling for two unresolved no-answer outcomes, not charged spend. All unused request reservations retired. Rolling7daycount273 is not a cumulative request audit. No separately itemized pending amount was shown.",
 };
-const report = { plan, metrics, billing, assessment, ...raw };
+const report = { plan, metrics, billing, assessment, ...raw, humanReview };
 await writeFile(
   "evaluation/results/research-workspace-20261015.json",
   JSON.stringify(report, null, 2),
@@ -99,7 +100,7 @@ const e = (v: unknown) =>
         c
       ]!,
   );
-let html = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Temporary research workspace review</title><style>body{font:16px/1.5 system-ui;max-width:1050px;margin:auto;padding:20px;background:#f6f7f9}section,article,aside{background:white;padding:18px;margin:14px 0;border:1px solid #ccd4dd;border-radius:10px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}</style><h1>Temporary research workspace review</h1><p>Human scores remain blank. Public research content was not saved. Review the authored order, notice and pump conversations below; missing answers remain unscored.</p><h2>Measured delivery, latency and cost</h2><pre>${e(JSON.stringify(metrics, null, 2))}</pre><aside><h2>AI-proposed assessment and limitations</h2><pre>${e(JSON.stringify(assessment, null, 2))}</pre></aside>`;
+let html = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Temporary research workspace review</title><style>body{font:16px/1.5 system-ui;max-width:1050px;margin:auto;padding:20px;background:#f6f7f9}section,article,aside{background:white;padding:18px;margin:14px 0;border:1px solid #ccd4dd;border-radius:10px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit}</style><h1>Temporary research workspace review</h1><p>Cases04–06 now have human assessments: eleven scored replies and one unscored delivery failure. Public cases01–03 remain unassessed. Public research content was not saved. Review the authored order, notice and pump conversations below; missing answers remain unscored.</p><h2>Measured delivery, latency and cost</h2><pre>${e(JSON.stringify(metrics, null, 2))}</pre><aside><h2>AI-proposed assessment and limitations</h2><pre>${e(JSON.stringify(assessment, null, 2))}</pre></aside>`;
 for (const f of fixtures) {
   html += `<section><h2>${e(f.id)}</h2><h3>Expected facts / evaluation bounds</h3><pre>${e(f.mandatoryFacts.join("\n"))}</pre>`;
   if (f.sources.length)
@@ -112,7 +113,10 @@ for (const f of fixtures) {
     html += `<h3>${arm}</h3>`;
     for (let i = 0; i < 2; i++) {
       const reply = r?.replies[i];
-      html += `<article><h4>Turn ${i + 1}</h4><pre>${e(f.turns[i])}</pre><h4>${!reply ? "NOT ATTEMPTED" : !reply.completed ? "INCOMPLETE / UNSCORED" : f.sources.length ? "Displayed answer" : "Delivered — public answer not retained"}</h4><pre>${e(reply?.answer ?? "")}</pre><p>Human correctness / completeness / context: — / — / —</p></article>`;
+      const review = humanReview.reviews.find(
+        (x) => x.id === f.id && x.arm === arm && x.turn === i + 1,
+      );
+      html += `<article><h4>Turn ${i + 1}</h4><pre>${e(f.turns[i])}</pre><h4>${!reply ? "NOT ATTEMPTED" : !reply.completed ? "INCOMPLETE / UNSCORED" : f.sources.length ? "Displayed answer" : "Delivered — public answer not retained"}</h4><pre>${e(reply?.answer ?? "")}</pre><p>Human correctness / completeness / context: ${review?.scores ? e(review.scores.join(" / ")) : review ? "UNSCORED — delivery failure" : "— / — / —"}</p>${review ? `<p>${e(review.reason)}</p>` : ""}</article>`;
     }
   }
   html += "</section>";

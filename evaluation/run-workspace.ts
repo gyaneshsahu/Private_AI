@@ -1,4 +1,5 @@
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { shouldStopWorkspaceBatch } from "./reply-failure";
+import { readFile, writeFile, mkdir, access } from "node:fs/promises";
 import { resolve } from "node:path";
 import { createHash, randomBytes } from "node:crypto";
 import { createServer } from "vite";
@@ -14,6 +15,12 @@ import fixtures from "./cases/research-workspace.json";
 const root = resolve(process.argv[2] || "");
 if (!process.argv[2] || !root.startsWith(resolve(".local") + "\\"))
   throw Error("Local run directory required");
+try {
+  await access(resolve(root, "results.json"));
+  throw new Error("Results already exist; use a separate run directory.");
+} catch (error) {
+  if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+}
 const dry = process.argv.includes("--offline");
 if (!dry && (!process.env.TINFOIL_API_KEY || !process.env.BRAVE_SEARCH_API_KEY))
   throw Error("Stored credentials required");
@@ -330,8 +337,7 @@ try {
               evidenceAudit: audit,
             });
             if (!result.completed) {
-              if (!result.usage || result.failureKind !== "CONTRACT_REJECTED")
-                stop = true;
+              stop = shouldStopWorkspaceBatch(result);
               break;
             }
           }
@@ -349,13 +355,19 @@ try {
             name: "Copy answer",
             exact: true,
           });
-          record.copyExportBlocked =
-            (await copies.count()) > 0 &&
-            (await copies.evaluateAll((buttons) =>
-              buttons.every((b) => (b as HTMLButtonElement).disabled),
-            ));
-          if (!record.copyExportBlocked)
-            throw Error("Temporary clipboard export remained enabled");
+          await page.evaluate(`Object.defineProperty(navigator, "clipboard", {
+            configurable: true,
+            value: { writeText: async (text) => { window.syntheticCopiedAnswer = text; } }
+          })`);
+          const complete = copies.filter({ visible: true }).first();
+          await complete.click();
+          record.explicitCopyWorks = await page.evaluate(
+            () =>
+              typeof (window as unknown as { syntheticCopiedAnswer?: string })
+                .syntheticCopiedAnswer === "string",
+          );
+          if (!record.explicitCopyWorks)
+            throw Error("Explicit synthetic answer copy failed");
         }
         phase = "storage";
         await tab("Context").click();
