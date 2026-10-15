@@ -20,7 +20,8 @@ Object.assign(window, {
       !permit.developmentCaseId?.startsWith("research-") &&
       !permit.developmentCaseId?.startsWith("evidence-") &&
       !permit.developmentCaseId?.startsWith("reason-") &&
-      !permit.developmentCaseId?.startsWith("transfer-")
+      !permit.developmentCaseId?.startsWith("transfer-") &&
+      !permit.developmentCaseId?.startsWith("revision-")
     )
       throw Error("Research permit required");
     const fixture = developmentCase(

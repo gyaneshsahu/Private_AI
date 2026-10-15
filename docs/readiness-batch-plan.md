@@ -1,5 +1,16 @@
 # Readiness batch — 8 October 2026
 
+## 15 October — fixed source-fidelity revision experiment
+
+Current batch: `evaluation/cases/research-revision-transfer.json`, 12 fresh authored cases, three turns each: initial task, new user information/correction, then one identical general review-and-revision instruction. Model DeepSeek-v4.1-flash, thinking off, constraints-v4, 16,000 input characters, 4,096 output tokens, 90-second adapter deadline. Maximum36 requests through12 separate single-use permits; stop the batch on any incomplete reply, no retries. Exposed earlier questions are not rerun. This is development evidence, not held-out acceptance or a production two-pass policy. For synthetic crisis cases, evaluate the initial response independently; do not justify delaying real urgent help for an extra review request.
+
+Coverage: inclusive/exclusive endpoints; absence of evidence; actor/predicate/cardinality; acknowledged versus delivered forms; versioned document recipients and source injection; event versus publication dates; independent arithmetic; incomparable counts; warm alternatives without invented commitments; imminent danger with unavailable contact; benign overwhelm; exact quotation support. Full questions, source and case-specific expected facts are fixed before execution. Preserve original and revised answers; assess improvements AND newly introduced errors. Human scores remain blank until reviewed. A revision cannot erase an initial serious/material failure.
+
+Read-only dashboard15October: key/account0.52/3, credit10.48, auto-reloadoff; no separate pending-charge amount exposed. Retain historical0.0163552, rounding0.01, prior timeout reserves0.0861568. Public catalog input0.65/output1.45 per million, request0. Existing conservative four-bytes-per-character planning bound gives maximum1.7114112 for36requests and cumulative2.3439232. This reservation is not actual spend; retire unused portions after accounting. No top-up/limit change required or performed.
+
+Runner: `evaluation/run-research.ts <new prepared .local directory> --revision`; exact configuration enforced by `evaluation/revision-batch.ts`, prompts bound to three-request permits. Prerequisites remain current billing/pricing and reviewed router attestation; old permits cannot be reused. Complete packet generator: `evaluation/review-research-revision.ts`. READINESS records execution/results; historical8October plan below is preserved.
+
+
 ## Fixed live comparison within the existing USD3 cap
 
 Twelve fresh synthetic two-turn cases in `evaluation/cases/readiness-transfer.json`,

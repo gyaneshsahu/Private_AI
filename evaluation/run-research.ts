@@ -12,26 +12,34 @@ import publicCases from "./cases/research-transfer.json";
 import evidenceCases from "./cases/research-evidence-transfer.json";
 import reasoningCases from "./cases/research-reasoning-transfer.json";
 import reliabilityCases from "./cases/research-reliability-transfer.json";
+import { revisionCases, assertRevisionPolicy } from "./revision-batch";
+const revision = process.argv[3] === "--revision";
 const reliability = process.argv[3] === "--reliability";
 const reasoning = process.argv[3] === "--reasoning";
 const modelScreen = process.argv[3] === "--model-screen";
 const authored =
-  process.argv[3] === "--authored" || reasoning || modelScreen || reliability;
-const cases = reliability
-  ? reliabilityCases.cases.flatMap((c) => [
-      { ...c, query: "" },
-      { ...c, query: "" },
-    ])
-  : modelScreen
-    ? reasoningCases.cases.map((c) => ({ ...c, query: "" }))
-    : reasoning
-      ? reasoningCases.cases.flatMap((c) => [
-          { ...c, query: "" },
-          { ...c, query: "" },
-        ])
-      : authored
-        ? evidenceCases.cases.map((c) => ({ ...c, query: "" }))
-        : publicCases;
+  process.argv[3] === "--authored" ||
+  reasoning ||
+  modelScreen ||
+  reliability ||
+  revision;
+const cases = revision
+  ? revisionCases
+  : reliability
+    ? reliabilityCases.cases.flatMap((c) => [
+        { ...c, query: "" },
+        { ...c, query: "" },
+      ])
+    : modelScreen
+      ? reasoningCases.cases.map((c) => ({ ...c, query: "" }))
+      : reasoning
+        ? reasoningCases.cases.flatMap((c) => [
+            { ...c, query: "" },
+            { ...c, query: "" },
+          ])
+        : authored
+          ? evidenceCases.cases.map((c) => ({ ...c, query: "" }))
+          : publicCases;
 
 // Requires newly prepared permits; consumed permits cannot be reused.
 // Public retrieval persists metadata only; authored fixtures may retain full evidence.
@@ -49,6 +57,7 @@ try {
     const permit = validateExperiment(
       JSON.parse(await readFile(resolve(runRoot, `${index + 1}.json`), "utf8")),
     );
+    if (revision) assertRevisionPolicy(permit);
     if (
       permit.developmentCaseId !== fixture.id ||
       permit.scenario !== "robustness_case"
@@ -221,6 +230,7 @@ try {
         // for incomplete attempts. No-usage failures stop this batch.
         if (
           !authored ||
+          revision ||
           replies.some((reply: any) => !reply.completed && !reply.usage)
         )
           break;

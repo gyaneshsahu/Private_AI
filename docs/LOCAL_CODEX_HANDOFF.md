@@ -1,5 +1,26 @@
 # PrivateAI local Codex handoff — updated 15 October 2026
 
+## 15 October — fresh source-fidelity revision experiment completed
+
+Twelve fresh authored cases, each initial task + user correction + identical general review/revision instruction: **36/36 complete replies**, no retries, no incomplete conversation, no real private data or Brave retrieval. DeepSeek-v4.1-flash thinkingoff/constraints-v4 remains an experimental configuration. Three-request single-use permits and exact model/config bounds are enforced. Source, original questions, every answer, expected facts and separate AI observations are in `evaluation/results/research-revision-20261015.json`; complete page `.local/review-batches/revision-research-20261015/complete-review.html`. Regenerate with `npx tsx evaluation/review-research-revision.ts`. New human scores remain blank.
+
+**Do not enable automatic self-review or freeze this model for release.** Revision-04 changes notice silence into “no late-submission procedure is available,” then repeats that unsupported conclusion in the review. Revision-07 lists135+27 but states171 instead of162; the user-corrected breakdown140+28 is stated as177 instead of168, and review repeats it. Independent Decimal ground truth was fixed before execution. Other findings include omitted actor in one alternative, unsupported overlap, source citations attached to user-only corrections, one-sentence formatting, and safety/usability nuance (revision-10/11). All observations are AI-proposed; human review is required. Earlier serious safety, writing, boundary and incomplete-run findings remain preserved. A successful later revision never repairs the historical first-turn grade.
+
+| Phase | Complete / attempted | Median first nonblank text | Median total | Attempts over30s |
+| --- | --- | --- | --- | --- |
+| Initial |12/12|1.722s|2.666s|0|
+| Correction |12/12|1.285s|2.262s|0|
+| Review |12/12|1.283s|2.087s|0|
+
+This is one sequential sample per case, not the required100request/concurrency/p95 study. The same model reviews itself; there is no independent judge or randomized third-turn control, so no causal/general repair-rate claim. The extra review step alone costs estimatedUSD0.01088225 and adds latency without fixing the two clear material failures. Total terminal-usage estimateUSD0.02882015. Read-only post-run Billing shows **USD0.55/3, prepaid10.45, auto-reloadoff**; all unused batch reserve retired. Keep historical0.0163552, rounding0.01 and prior two timeout reserves0.0861568: conservative cumulative **USD0.662512**, no active reservation. Do not add estimated costs again to dashboard spend. Last-seven-days request widget315→336 is rolling and is not a reconciled36request counter. No separate pending amount is exposed; old billing uncertainty remains explicit.
+
+Provider router changed to v0.0.158; exact verified digest and focused synthetic-only release review are recorded in provider qualification. TDX release metadata does not close the browser/privacy gates. No account setting, production policy, deployment or private-data gate changed.
+
+Validation:22offline tests across4files passed (including actual Chromium encrypted adapter); initial combined run had a local fixture-load failure, isolated rerun passed. A fixture test's missing source-title type was corrected before successful typecheck/build. Complete review page verified at360/1440pixels:12cases/36turns, blank human grades and no horizontal overflow. Raw outputs, permits, preparation script, billing, frozen plan and inert router evidence are archived under `.local/experiment-runs` for migration.
+
+Next: human priority revision-07 arithmetic, revision-04 unsupported absence, revision-10 safety. A local, deterministic arithmetic tool and genuinely independent source-support assessment are more credible next investigations than adding another self-review prompt; neither is implemented or qualified by this batch. C03/C04/C06/C12/C13/S01/O03 gain narrower evidence, not release passes. Provider privacy, hosted recovery and full authenticated-device validation remain open.
+
+
 ## 15 October — source-specific quotation attribution checks
 
 Fixed a mechanical audit gap: a quote found in one retrieved source no longer escapes review when its immediately adjacent citations point only to other sources. The application now displays an evidence-review warning for that mismatch; the citation still opens the source actually cited. Multiple adjacent citations are checked together, without silently changing source IDs. Existing audit fields and historical evaluation records are preserved; new fields record adjacent-citation coverage and mismatches.

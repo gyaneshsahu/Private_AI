@@ -19,6 +19,7 @@ import researchTransfer from "./cases/research-transfer.json";
 import researchEvidenceTransfer from "./cases/research-evidence-transfer.json";
 import reliabilityResearch from "./cases/research-reliability-transfer.json";
 import reasoningTransfer from "./cases/research-reasoning-transfer.json";
+import revisionTransfer from "./cases/research-revision-transfer.json";
 import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
@@ -41,6 +42,10 @@ const robustnessCases = [
     ...researchEvidenceTransfer.cases,
     ...reasoningTransfer.cases,
     ...reliabilityResearch.cases,
+    ...revisionTransfer.cases.map((c) => ({
+      ...c,
+      turns: [...c.turns, revisionTransfer.reviewPrompt],
+    })),
   ].map((c) => ({
     id: c.id,
     family: "research",
@@ -275,6 +280,11 @@ export function developmentCase(
     !selected ||
     !selected.synthetic ||
     (selected.turns.length !== 2 &&
+      !(
+        scenario === "robustness_case" &&
+        revisionTransfer.cases.some((c) => c.id === selected.id) &&
+        selected.turns.length === 3
+      ) &&
       !(
         scenario === "robustness_case" &&
         selected.id.startsWith("coverage-long-") &&
