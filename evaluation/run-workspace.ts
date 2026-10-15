@@ -1,0 +1,449 @@
+import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { resolve } from "node:path";
+import { createHash, randomBytes } from "node:crypto";
+import { createServer } from "vite";
+import express from "express";
+import { chromium } from "@playwright/test";
+import { createApp } from "../server/app";
+import { experimentGateway } from "./experiment-gateway";
+import { validateExperiment } from "./experiment";
+import { claimExperiment } from "./run-claim";
+import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
+import { auditResearchAnswer } from "../src/research-audit";
+import fixtures from "./cases/research-workspace.json";
+const root = resolve(process.argv[2] || "");
+if (!process.argv[2] || !root.startsWith(resolve(".local") + "\\"))
+  throw Error("Local run directory required");
+const dry = process.argv.includes("--offline");
+if (!dry && (!process.env.TINFOIL_API_KEY || !process.env.BRAVE_SEARCH_API_KEY))
+  throw Error("Stored credentials required");
+const hash = (x: unknown) =>
+  createHash("sha256").update(JSON.stringify(x)).digest("hex");
+if (!dry) {
+  const plan = JSON.parse(await readFile(resolve(root, "plan.json"), "utf8"));
+  for (const [file, expected] of Object.entries(plan.implementationHashes)) {
+    const actual = createHash("sha256")
+      .update(await readFile(String(file)))
+      .digest("hex");
+    if (actual !== expected)
+      throw Error(
+        "Frozen implementation changed; prepare a separate reviewed batch.",
+      );
+  }
+  const fixtureHash = createHash("sha256")
+    .update(await readFile("evaluation/cases/research-workspace.json"))
+    .digest("hex");
+  if (fixtureHash !== plan.fixtureSHA256) throw Error("Frozen cases changed.");
+}
+const report: any = {
+  mode: dry ? "OFFLINE_UI_ONLY" : "LIVE_PUBLIC_AND_AUTHORED",
+  humanScores: null,
+  results: [],
+  qualification: "NOT_PASSED",
+  publicContentPersisted: false,
+};
+const browser = await chromium.launch(browserLaunchOptions());
+let stop = false;
+try {
+  for (const fixture of fixtures) {
+    if (stop) break;
+    let pairedSources: any[] | undefined;
+    for (const arm of ["baseline", "candidate"]) {
+      const permit = validateExperiment(
+        JSON.parse(
+          await readFile(resolve(root, `${fixture.id}-${arm}.json`), "utf8"),
+        ),
+      );
+      if (
+        permit.developmentCaseId !== fixture.id ||
+        !!permit.policy.scopedResearchContract !== (arm === "candidate")
+      )
+        throw Error("Fixed case/configuration mismatch");
+      const claimed = dry
+        ? undefined
+        : await claimExperiment(".local/experiment-runs", permit.approvalId);
+      const record: any = {
+        id: fixture.id,
+        arm,
+        public: !fixture.sources.length,
+        replies: [],
+        humanScores: null,
+      };
+      report.results.push(record);
+      const config = {
+        origin: "http://127.0.0.1",
+        csrf: randomBytes(32).toString("hex"),
+        permit,
+        forward: (body: Uint8Array, k: string, signal: AbortSignal) =>
+          fetch("https://inference.tinfoil.sh/v1/chat/completions", {
+            method: "POST",
+            redirect: "error",
+            signal,
+            body: Buffer.from(body),
+            headers: {
+              Authorization: `Bearer ${process.env.TINFOIL_API_KEY}`,
+              "Content-Type": "application/json",
+              Accept: "text/event-stream",
+              "Ehbp-Encapsulated-Key": k,
+            },
+          }),
+      };
+      const gateway = experimentGateway(config);
+      const outer = express();
+      outer.use((_req, res, next) => {
+        res.set({
+          "Cache-Control": "no-store",
+          "Referrer-Policy": "no-referrer",
+          "Content-Security-Policy":
+            "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://atc.tinfoil.sh; worker-src 'self' blob:; object-src 'none'",
+        });
+        next();
+      });
+      outer.use((req, res, next) =>
+        req.path === "/api/inference/v1/chat/completions"
+          ? gateway.app(req, res, next)
+          : next(),
+      );
+      const server = outer.listen(0, "127.0.0.1");
+      await new Promise<void>((ok) => server.once("listening", ok));
+      const addr = server.address();
+      if (!addr || typeof addr === "string") throw Error("Listener");
+      config.origin = `http://127.0.0.1:${addr.port}`;
+      const vite = await createServer({
+        root: resolve("."),
+        configFile: false,
+        appType: "custom",
+        logLevel: "silent",
+        cacheDir: resolve("node_modules/.vite-workspace-eval"),
+        plugins: [
+          {
+            name: "isolated-evaluation-inference",
+            enforce: "pre",
+            resolveId(id, importer) {
+              if (
+                id === "./inference" &&
+                importer?.replaceAll("\\", "/").endsWith("/src/App.tsx")
+              )
+                return resolve(
+                  dry
+                    ? "evaluation/workspace-offline-inference.ts"
+                    : "evaluation/workspace-inference.ts",
+                );
+            },
+          },
+        ],
+        esbuild: { jsx: "automatic" },
+        optimizeDeps: {
+          include: [
+            "react",
+            "react-dom/client",
+            "react/jsx-runtime",
+            "react/jsx-dev-runtime",
+            "react-markdown",
+            "remark-gfm",
+            "remark-math",
+            "rehype-katex",
+            "unist-util-visit",
+            "tinfoil",
+            "ehbp",
+          ],
+          noDiscovery: true,
+        },
+        server: { middlewareMode: true, hmr: false },
+      });
+      const app = createApp({
+        origin: config.origin,
+        searchKey: dry ? "synthetic-key" : process.env.BRAVE_SEARCH_API_KEY,
+        searchMode: "llm-context",
+      });
+      outer.use((req, res, next) =>
+        req.path.startsWith("/api/") ? app(req, res, next) : next(),
+      );
+      outer.get("/", async (_req, res) =>
+        res
+          .type("html")
+          .send(
+            await vite.transformIndexHtml(
+              "/",
+              '<!doctype html><html><meta name="viewport" content="width=device-width,initial-scale=1"><title>PrivateAI isolated workspace evaluation</title><div id="root"></div><script type="module" src="/evaluation/workspace-entry.tsx"></script></html>',
+            ),
+          ),
+      );
+      outer.use(vite.middlewares);
+      const context = await browser.newContext({ serviceWorkers: "block" });
+      const page = await context.newPage();
+      let sources: any[] = [];
+      let networkViolation = 0;
+      let consoleMessages = 0;
+      let phase = "start";
+      const pageErrors: string[] = [];
+      page.on("console", (msg) => {
+        consoleMessages++;
+        if (dry) console.log(msg.text());
+      });
+      page.on("pageerror", (error) => {
+        pageErrors.push(error.name);
+        if (dry) console.log(error.message);
+      });
+      page.on("dialog", (d) => d.accept());
+      await page.addInitScript((p) => {
+        (window as any).__workspaceEvaluation = { permit: p, results: [] };
+      }, permit);
+      await context.route("**/*", async (route) => {
+        const req = route.request(),
+          url = new URL(req.url());
+        if (url.origin !== config.origin) {
+          if (
+            !dry &&
+            url.href === "https://atc.tinfoil.sh/attestation" &&
+            req.method() === "POST" &&
+            req.postData() ===
+              JSON.stringify({
+                enclaveUrl: permit.policy.origin,
+                repo: permit.policy.repository,
+              })
+          )
+            return route.continue();
+          networkViolation++;
+          return route.abort();
+        }
+        if (url.pathname === "/api/status") {
+          const response = await route.fetch();
+          const data = await response.json();
+          record.productionGateClosed = !data.inference.ready;
+          config.csrf = data.csrf;
+          return route.fulfill({
+            response,
+            json: {
+              ...data,
+              inference: { ready: true, qualification: permit.policy },
+            },
+          });
+        }
+        if (url.pathname === "/api/research/execute") {
+          const started = Date.now();
+          if (fixture.sources.length || pairedSources || dry) {
+            sources = fixture.sources.length
+              ? fixture.sources.map((s) => ({
+                  ...s,
+                  retrievedAt: "2026-10-15T00:00:00.000Z",
+                }))
+              : (pairedSources ?? [
+                  {
+                    id: "dry-source",
+                    title: "Synthetic source",
+                    text: "Synthetic public placeholder.",
+                    url: "https://example.com/synthetic",
+                    evidenceKind: "search-excerpt",
+                    retrievedAt: "2026-10-15T00:00:00.000Z",
+                  },
+                ]);
+            record.retrievalKind =
+              fixture.sources.length || dry
+                ? "AUTHORED_FIXTURE"
+                : "SAME_EVIDENCE_IN_MEMORY_REPLAY";
+            return route.fulfill({
+              json: { sources },
+              headers: { "cache-control": "no-store" },
+            });
+          }
+          const response = await route.fetch();
+          const data = await response.json();
+          sources = data.sources ?? [];
+          pairedSources = sources;
+          record.retrievalMs = Date.now() - started;
+          record.retrievalKind = "LIVE_BRAVE_LLM_CONTEXT";
+          record.noStore = response.headers()["cache-control"] === "no-store";
+          return route.fulfill({ response, json: data });
+        }
+        if (dry && url.pathname === "/api/inference/v1/chat/completions")
+          return route.abort();
+        return route.continue();
+      });
+      try {
+        await page.goto(config.origin);
+        const tab = (name: string) =>
+          page
+            .getByRole("navigation", { name: "Workspace" })
+            .getByRole("button", { name, exact: false });
+        await tab("Research").click();
+        await page.getByLabel("Exact search query").fill(fixture.query);
+        await page.getByRole("button", { name: "Review disclosure" }).click();
+        await page
+          .getByRole("button", { name: "Approve and retrieve" })
+          .click();
+        await page
+          .getByRole("status")
+          .filter({ hasText: "Search results added" })
+          .waitFor({ timeout: 30000 });
+        record.sourceCount = sources.length;
+        record.sourceHash = hash(sources);
+        record.evidenceCharacters = sources.reduce(
+          (n, s) => n + s.text.length,
+          0,
+        );
+        record.providerDates = sources.filter((s) => !!s.providerDate).length;
+        await tab("Context").click();
+        await page.locator("details summary").first().click();
+        await page
+          .getByRole("button", { name: "Inspect source" })
+          .first()
+          .click();
+        const dialog = page.getByRole("dialog");
+        record.sourceOpen =
+          (await dialog.locator("pre").textContent()) === sources[0].text;
+        await page.keyboard.press("Tab");
+        record.sourceLinkKeyboardReachable = await dialog
+          .locator("a")
+          .evaluate((a) => a === document.activeElement);
+        record.sourceLinkSafe =
+          (await dialog.locator("a").getAttribute("referrerpolicy")) ===
+          "no-referrer";
+        await page.keyboard.press("Escape");
+        phase = "conversation";
+        await tab("Conversation").click();
+        {
+          for (let t = 0; t < fixture.turns.length; t++) {
+            phase = `reply-${t + 1}`;
+            await page.getByLabel("Message PrivateAI").fill(fixture.turns[t]);
+            await page
+              .getByRole("button", { name: "Send ↑", exact: true })
+              .click();
+            await page.waitForFunction(
+              (n) => (window as any).__workspaceEvaluation.results.length > n,
+              t,
+              { timeout: 110000 },
+            );
+            await page
+              .locator(".progress")
+              .waitFor({ state: "hidden", timeout: 10000 });
+            const result = await page.evaluate(
+              (n) => (window as any).__workspaceEvaluation.results[n],
+              t,
+            );
+            const audit = auditResearchAnswer(result.answer, sources);
+            record.replies.push({
+              ...result,
+              answer: fixture.sources.length ? result.answer : undefined,
+              answerCharacters: result.answer.length,
+              answerSHA256: hash(result.answer),
+              evidenceAudit: audit,
+            });
+            if (!result.completed) {
+              if (!result.usage || result.failureKind !== "CONTRACT_REJECTED")
+                stop = true;
+              break;
+            }
+          }
+          const citation = page.locator("button.citation").first();
+          if (await citation.count()) {
+            await citation.click();
+            record.answerCitationOpensSource = await page
+              .getByRole("dialog")
+              .isVisible();
+            await page.keyboard.press("Escape");
+          }
+        }
+        if (dry) {
+          const copies = page.getByRole("button", {
+            name: "Copy answer",
+            exact: true,
+          });
+          record.copyExportBlocked =
+            (await copies.count()) > 0 &&
+            (await copies.evaluateAll((buttons) =>
+              buttons.every((b) => (b as HTMLButtonElement).disabled),
+            ));
+          if (!record.copyExportBlocked)
+            throw Error("Temporary clipboard export remained enabled");
+        }
+        phase = "storage";
+        await tab("Context").click();
+        const remove = page.getByRole("button", {
+          name: "Remove",
+          exact: true,
+        });
+        while (await remove.count()) await remove.first().click();
+        await tab("Saved").click();
+        await page
+          .getByLabel("Vault passphrase")
+          .fill("synthetic evaluation vault passphrase");
+        await page
+          .getByRole("button", { name: "Create or unlock vault" })
+          .click();
+        record.saveBlocked = await page
+          .getByRole("button", { name: "Save encrypted snapshot" })
+          .isDisabled();
+        record.storage = await page.evaluate(async () => {
+          const names = await indexedDB.databases();
+          let records = 0;
+          for (const { name } of names) {
+            if (!name) continue;
+            const db = await new Promise<IDBDatabase>((ok, fail) => {
+              const r = indexedDB.open(name);
+              r.onsuccess = () => ok(r.result);
+              r.onerror = () => fail();
+            });
+            if (db.objectStoreNames.contains("conversations"))
+              records += await new Promise<number>((ok) => {
+                const r = db
+                  .transaction("conversations")
+                  .objectStore("conversations")
+                  .count();
+                r.onsuccess = () => ok(r.result);
+              });
+            db.close();
+          }
+          return {
+            conversationRecords: records,
+            localStorageKeys: localStorage.length,
+            sessionStorageKeys: sessionStorage.length,
+            cacheEntries: (await caches.keys()).length,
+            serviceWorkers: (await navigator.serviceWorker.getRegistrations())
+              .length,
+          };
+        });
+        await page.reload();
+        await tab("Context").click();
+        record.clearedOnReload = await page
+          .getByText("Your context is empty.", { exact: false })
+          .isVisible();
+      } catch (error) {
+        record.failure = "UI_OR_TRANSPORT_CHECK_FAILED";
+        record.failurePhase = phase;
+        if (dry) console.log(String(error));
+        stop = true;
+      } finally {
+        record.pageErrors = pageErrors;
+        record.networkViolation = networkViolation;
+        record.consoleMessageCount = consoleMessages;
+        record.attempts = gateway.attempts;
+        await context.close();
+        await vite.close();
+        await new Promise<void>((ok) => server.close(() => ok()));
+        if (claimed)
+          await writeFile(
+            resolve(claimed, "metadata.json"),
+            JSON.stringify(record, null, 2),
+            { flag: "wx" },
+          );
+        await writeFile(
+          resolve(root, "results.json"),
+          JSON.stringify(report, null, 2),
+        );
+      }
+      console.log(
+        JSON.stringify({
+          id: fixture.id,
+          arm,
+          replies: record.replies.length,
+          failure: record.failure,
+          saveBlocked: record.saveBlocked,
+        }),
+      );
+      if (stop) break;
+    }
+  }
+} finally {
+  await browser.close();
+}

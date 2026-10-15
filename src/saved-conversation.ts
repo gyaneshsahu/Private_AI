@@ -49,3 +49,20 @@ export const savedConversationSchema: z.ZodType<Conversation> = z.object({
     }),
   ),
 });
+
+/** Defense in depth for older/imported state missing the sticky session flag. */
+export function containsTemporaryResearch(conversation: Conversation): boolean {
+  const temporarySource = (
+    s: Conversation["attachments"][number]["sources"][number],
+  ) => s.evidenceKind === "search-excerpt" || s.evidenceKind === "llm-context";
+  return (
+    !!conversation.temporarySearch ||
+    conversation.attachments.some(
+      (a) => a.researchQuery !== undefined || a.sources.some(temporarySource),
+    ) ||
+    (conversation.messages?.some((m) =>
+      m.sourceSnapshot?.some(temporarySource),
+    ) ??
+      false)
+  );
+}

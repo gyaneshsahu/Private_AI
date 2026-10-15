@@ -20,6 +20,11 @@ import {
   consumeCheckedResponse,
 } from "./checked-response";
 
+import {
+  compileScopedResearch,
+  scopedResearchInstruction,
+} from "./scoped-research";
+
 export type VerifiedChatPolicy = Pick<
   Qualification,
   | "origin"
@@ -37,6 +42,7 @@ export type VerifiedChatPolicy = Pick<
   answerPolicyVariant?: AnswerPolicyVariant;
   researchEvidenceContract?: boolean;
   checkedResponseContract?: boolean;
+  scopedResearchContract?: boolean;
 };
 
 export function assertVerification(
@@ -73,7 +79,13 @@ export async function streamVerifiedConversation(
   checkedHistory?: ReadonlyMap<string, string>,
 ): Promise<Usage | undefined> {
   authorize();
-  if (report.checkedResponseContract && report.researchEvidenceContract)
+  if (
+    [
+      report.checkedResponseContract,
+      report.researchEvidenceContract,
+      report.scopedResearchContract,
+    ].filter(Boolean).length > 1
+  )
     throw new Error("Choose one response contract. Nothing was sent.");
   if (
     report.deepSeekThinking !== undefined &&
@@ -98,8 +110,8 @@ export async function streamVerifiedConversation(
       report.answerPolicyVariant,
     );
     const evidenceSources = selectedSources(conversation);
-    if (report.checkedResponseContract) {
-      messages[0].content += ` ${checkedResponseInstruction}`;
+    if (report.checkedResponseContract || report.scopedResearchContract) {
+      messages[0].content += ` ${report.scopedResearchContract ? scopedResearchInstruction : checkedResponseInstruction}`;
       let userTurn = 0;
       const included = conversation.messages.filter(
         (m) => m.included && m.status === "complete",
@@ -208,7 +220,7 @@ export async function streamVerifiedConversation(
         redirect: "error",
       },
     );
-    if (report.checkedResponseContract)
+    if (report.checkedResponseContract || report.scopedResearchContract)
       return consumeCheckedResponse(
         completionEvents(response, signal),
         report.pricing,
@@ -217,6 +229,7 @@ export async function streamVerifiedConversation(
         conversation,
         onChunk,
         onCheckedDiagnosticDraft,
+        report.scopedResearchContract ? compileScopedResearch : undefined,
       );
     if (report.researchEvidenceContract)
       return consumeResearchReply(

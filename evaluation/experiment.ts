@@ -21,6 +21,7 @@ import reliabilityResearch from "./cases/research-reliability-transfer.json";
 import reasoningTransfer from "./cases/research-reasoning-transfer.json";
 import revisionTransfer from "./cases/research-revision-transfer.json";
 import checkedTransfer from "./cases/checked-transfer.json";
+import workspaceCases from "./cases/research-workspace.json";
 import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
@@ -39,6 +40,7 @@ const robustnessCases = [
   ...trialGateTransfer,
   ...configTransfer,
   ...researchTransfer,
+  ...workspaceCases,
   ...[
     ...researchEvidenceTransfer.cases,
     ...reasoningTransfer.cases,
@@ -128,6 +130,7 @@ export const experimentSchema = z
         // Development permits can reserve more reasoning output; production stays at4096.
         maxOutputTokens: z.number().int().positive().max(8192),
         researchEvidenceContract: z.boolean().optional(),
+        scopedResearchContract: z.boolean().optional(),
         checkedResponseContract: z.boolean().optional(),
         gptOssReasoningEffort: z.enum(["low", "medium", "high"]).optional(),
         gemmaThinking: z.boolean().optional(),
@@ -151,7 +154,13 @@ export function validateExperiment(
   now = Date.now(),
 ): Experiment {
   const x = experimentSchema.parse(input);
-  if (x.policy.checkedResponseContract && x.policy.researchEvidenceContract)
+  if (
+    [
+      x.policy.checkedResponseContract,
+      x.policy.researchEvidenceContract,
+      x.policy.scopedResearchContract,
+    ].filter(Boolean).length > 1
+  )
     throw new Error("Response contracts are mutually exclusive.");
   if (
     x.policy.deepSeekThinking !== undefined &&

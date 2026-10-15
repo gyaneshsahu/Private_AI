@@ -15,6 +15,7 @@ import {
 } from "./conversation";
 import { extract } from "./documents";
 import { Vault } from "./vault";
+import { containsTemporaryResearch } from "./saved-conversation";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { abortable } from "./abortable";
@@ -87,7 +88,9 @@ export function App() {
     if (!source) return;
     const previous = document.activeElement as HTMLElement;
     const dialog = document.querySelector<HTMLElement>(".source-dialog");
-    const buttons = dialog?.querySelectorAll<HTMLButtonElement>("button");
+    const buttons = dialog?.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]',
+    );
     buttons?.[0]?.focus();
     const trap = (event: KeyboardEvent) => {
       if (event.key === "Escape") setSource(undefined);
@@ -202,6 +205,12 @@ export function App() {
   };
   const fail = (message: string) => setNotice(message);
   async function copyAnswer(text: string) {
+    if (containsTemporaryResearch(conversation)) {
+      setNotice(
+        "Copy and export are unavailable for temporary search conversations.",
+      );
+      return;
+    }
     const current = epoch.current;
     try {
       await navigator.clipboard.writeText(text);
@@ -476,7 +485,9 @@ export function App() {
                     : "Public page",
                 selected: true,
                 kind: "research",
-                ...(approved.kind === "search" ? { researchQuery: approved.value } : {}),
+                ...(approved.kind === "search"
+                  ? { researchQuery: approved.value }
+                  : {}),
                 sources,
               },
             ],
@@ -602,7 +613,7 @@ export function App() {
               setSource({
                 id: "workspace-guide",
                 title: "Using PrivateAI",
-                text: "Start in Conversation. Write a message or use a starter to prepare an editable draft. Nothing sends until you choose Send. This evaluation is for synthetic examples; private chat remains unavailable until its privacy checks pass.\n\nAdd context when you need it. In Context, import a text PDF, TXT, PNG or JPEG. Files are read on your device. Limits: five files (up to three screenshots), 10 MB each, 20 PDF pages; printed English text. Review extracted numbers, tables and wording before using them. Scanned PDFs and handwriting are not supported. Select only the context you want included.\n\nSave deliberately. Temporary work disappears on reload. In Saved, create or unlock a vault, then choose Save encrypted snapshot. Save again after changes. Your passphrase cannot be recovered; history stays in this browser, without cloud sync. Locking clears unsaved work. Removing an attachment does not remove its earlier messages or saved snapshots.\n\nResearch is your choice. Review the exact query or public URL before approving it. The research service and recipient can see it; your chat is not added automatically.\n\nStay in control. Stop ends an active response; an incomplete reply is excluded from later context. Retry is a separate request. Copy answer places completed text on your device clipboard; locking the vault does not clear that clipboard. Edit an earlier message to start a new branch. To remove a saved conversation, delete its snapshot in Saved. A new conversation clears the current workspace but does not delete saved snapshots.",
+                text: "Start in Conversation. Write a message or use a starter to prepare an editable draft. Nothing sends until you choose Send. This evaluation is for synthetic examples; private chat remains unavailable until its privacy checks pass.\n\nAdd context when you need it. In Context, import a text PDF, TXT, PNG or JPEG. Files are read on your device. Limits: five files (up to three screenshots), 10 MB each, 20 PDF pages; printed English text. Review extracted numbers, tables and wording before using them. Scanned PDFs and handwriting are not supported. Select only the context you want included.\n\nSave deliberately. Temporary work disappears on reload. In Saved, create or unlock a vault, then choose Save encrypted snapshot. Save again after changes. Your passphrase cannot be recovered; history stays in this browser, without cloud sync. Locking clears unsaved work. Removing an attachment does not remove its earlier messages or saved snapshots.\n\nResearch is your choice. Review the exact query or public URL before approving it. The research service and recipient can see it; your chat is not added automatically.\n\nStay in control. Stop ends an active response; an incomplete reply is excluded from later context. Retry is a separate request. Outside temporary search conversations, Copy answer places completed text on your device clipboard; locking the vault does not clear that clipboard. Edit an earlier message to start a new branch. To remove a saved conversation, delete its snapshot in Saved. A new conversation clears the current workspace but does not delete saved snapshots.",
               })
             }
           >
@@ -826,7 +837,9 @@ export function App() {
                     {message.role === "assistant" && (
                       <button
                         disabled={
-                          message.status !== "complete" || !message.text
+                          containsTemporaryResearch(conversation) ||
+                          message.status !== "complete" ||
+                          !message.text
                         }
                         onClick={() => void copyAnswer(message.text)}
                       >
@@ -1144,17 +1157,39 @@ export function App() {
               Your conversation is never automatically added to a search. Review
               the exact query or URL before sharing.
             </p>
-            <p className="muted">Search conversations are temporary in this test version. You can inspect sources and ask follow-up questions during this session, but cannot save the conversation. Use public, non-sensitive queries only.</p>
-            {conversation.attachments.some(a => a.kind === "research" && a.selected) && (
+            <p className="muted">
+              Search conversations are temporary in this test version. You can
+              inspect sources and ask follow-up questions during this session,
+              but cannot save the conversation. Use public, non-sensitive
+              queries only.
+            </p>
+            {conversation.attachments.some(
+              (a) => a.kind === "research" && a.selected,
+            ) && (
               <div className="panel">
-                <button onClick={() => {
-                  if (!input.trim()) {
-                    const question = [...conversation.attachments].reverse().find(a => a.selected && a.researchQuery)?.researchQuery;
-                    setInput(`Using the selected web sources, answer: ${question ?? "What do these sources establish?"} Cite evidence beside each factual claim and explain missing or conflicting evidence.`);
-                  }
-                  setTab("Conversation");
-                }}>Prepare a question about these sources</button>
-                <p className="muted">Opens your existing draft, or prepares an editable question. Nothing is sent automatically.{!status?.inference.ready && " AI answers are currently unavailable while provider verification is incomplete."}</p>
+                <button
+                  onClick={() => {
+                    if (!input.trim()) {
+                      const question = [...conversation.attachments]
+                        .reverse()
+                        .find(
+                          (a) => a.selected && a.researchQuery,
+                        )?.researchQuery;
+                      setInput(
+                        `Using the selected web sources, answer: ${question ?? "What do these sources establish?"} Cite evidence beside each factual claim and explain missing or conflicting evidence.`,
+                      );
+                    }
+                    setTab("Conversation");
+                  }}
+                >
+                  Prepare a question about these sources
+                </button>
+                <p className="muted">
+                  Opens your existing draft, or prepares an editable question.
+                  Nothing is sent automatically.
+                  {!status?.inference.ready &&
+                    " AI answers are currently unavailable while provider verification is incomplete."}
+                </p>
               </div>
             )}
             <div className="panel">
@@ -1309,7 +1344,7 @@ export function App() {
                     className="primary"
                     disabled={
                       !!busy ||
-                      !!conversation.temporarySearch ||
+                      containsTemporaryResearch(conversation) ||
                       (!conversation.messages.length &&
                         !conversation.attachments.length &&
                         !input.length)
@@ -1318,7 +1353,14 @@ export function App() {
                   >
                     Save encrypted snapshot
                   </button>
-                  {conversation.temporarySearch && <p role="status">This search conversation is temporary and cannot be saved, including its answers. Removing search attachments does not change this. Start a new conversation for work you want to save.</p>}
+                  {containsTemporaryResearch(conversation) && (
+                    <p role="status">
+                      This search conversation is temporary and cannot be saved,
+                      including its answers. Copy and export are also
+                      unavailable. Removing search attachments does not change
+                      this. Start a new conversation for work you want to save.
+                    </p>
+                  )}
                   <button
                     onClick={() => {
                       vault.current!.lock();
@@ -1436,11 +1478,30 @@ export function App() {
             </div>
             {source.url && (
               <p className="muted">
-                Source URL: <a href={researchSourceUrl(source.url)} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">{source.url}</a> · Retrieved: {source.retrievedAt}
+                Source URL:{" "}
+                <a
+                  href={researchSourceUrl(source.url)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  referrerPolicy="no-referrer"
+                >
+                  {source.url}
+                </a>{" "}
+                · Retrieved: {source.retrievedAt}
               </p>
             )}
-            {source.providerDate && <p>Provider-reported page date: {source.providerDate} (not verified as publication or event date).</p>}
-            {source.evidenceKind && <p>Evidence: {source.evidenceKind}. Retrieved material may be incomplete.</p>}
+            {source.providerDate && (
+              <p>
+                Provider-reported page date: {source.providerDate} (not verified
+                as publication or event date).
+              </p>
+            )}
+            {source.evidenceKind && (
+              <p>
+                Evidence: {source.evidenceKind}. Retrieved material may be
+                incomplete.
+              </p>
+            )}
             <pre>{source.text}</pre>
             <button onClick={() => setSource(undefined)}>Close</button>
           </section>

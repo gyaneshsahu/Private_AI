@@ -239,13 +239,13 @@ try {
           { flag: "wx" },
         );
       }
-      // Public retrieval answers are inspected only in the active run.
+      // Never print public retrieval answers: terminal output may be retained as a log.
       console.log(
         JSON.stringify({
           id: fixture.id,
           sourceCount: sources.length,
           searchMs: record.searchMs,
-          replies,
+          replies: authored ? replies : record.turns,
         }),
       );
       if (replies.some((reply: any) => !reply.completed)) {

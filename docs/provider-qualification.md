@@ -178,3 +178,11 @@ Public [v0.0.158 release](https://github.com/tinfoilsh/confidential-model-router
 Reviewed release metadata and relevant public compare patches: quota/priority separation, reserved-pool queue policies, observation-only routing metrics, safeguards long-conversation capture and sidecar0.1.1, optional provider web-search controls. CVM image remains0.14.13. The GitHub compare reports diverged history; this focused review is not a complete security audit. Our synthetic experiment does not request provider web-search tools. Public compare/deployment files retained inert under `.local/provider-audit/router-20261015` and copied into the experiment batch archive.
 
 The release listing TDX measurements does NOT establish released browser TDX/freshness/revocation enforcement. The supplier's outstanding verification and enforced cache-retention blockers remain open; no private data or normal-chat release is approved.
+
+## Batched evidence questions — 15 October workspace comparison (not sent)
+
+Keep these with the existing unresolved questions; no separate founder email is requested for each finding.
+
+- For the exact DeepSeek deployment and released browser SDK, is constrained JSON-schema decoding enforced? Supply the supported `response_format` or equivalent request shape, schema subset, model/version, and streaming/truncation behavior. OpenAI compatibility and successful JSON samples are not evidence of enforcement. The current candidate uses local validation of prompt-requested JSON only.
+- Confirm whether prompt/cache retention applies to public research inputs and generated outputs, and the supported cache-disable or enforceable retention control. A per-request random cache secret isolates reuse; it does not prove deletion or disablement. Browser no-store and an empty local vault do not resolve provider storage.
+- Preserve the existing worker/GPU binding, browser freshness/revocation/TDX and category-level billing-retention questions. No qualification status changes arise from this batch.

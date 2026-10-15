@@ -220,6 +220,7 @@ export async function consumeCheckedResponse(
   conversation: Conversation,
   onChunk: (text: string) => void,
   onDiagnosticDraft?: (raw: string) => void,
+  renderer: typeof renderCheckedResponse = renderCheckedResponse,
 ) {
   let raw = "",
     oversized = false;
@@ -232,7 +233,13 @@ export async function consumeCheckedResponse(
   if (!oversized) onDiagnosticDraft?.(raw);
   try {
     if (oversized) throw new ContractError("FORMAT");
-    const answer = renderCheckedResponse(raw, sources, conversation);
+    let answer: string;
+    try {
+      answer = renderer(raw, sources, conversation);
+    } catch (error) {
+      if (error instanceof ContractError) throw error;
+      throw new ContractError("INVALID_SCHEMA");
+    }
     signal.throwIfAborted();
     onChunk(answer);
     return usage;

@@ -3,19 +3,29 @@ import { afterEach, describe, it, expect, vi } from "vitest";
 import { openDB } from "idb";
 import { Vault } from "../src/vault";
 import { emptyConversation } from "../shared/contracts";
-import { composeContext } from "../src/conversation";
+import { composeContext, forkAt } from "../src/conversation";
 const stores: Vault[] = [];
 it("never persists temporary search answers even after their attachments are removed", async () => {
   const v = store();
   v.selectAccount(crypto.randomUUID());
   await v.unlock("synthetic temporary search password");
   const c = { ...emptyConversation(), temporarySearch: true };
-  c.messages.push({ id: "answer", role: "assistant", text: "SYNTHETIC excerpt copied into answer", status: "complete", included: true });
+  c.messages.push({
+    id: "answer",
+    role: "assistant",
+    text: "SYNTHETIC excerpt copied into answer",
+    status: "complete",
+    included: true,
+  });
   await expect(v.save(c)).rejects.toThrow("temporary");
-  expect((await v.readAvailable()).conversations.some(x => x.id === c.id)).toBe(false);
+  expect(
+    (await v.readAvailable()).conversations.some((x) => x.id === c.id),
+  ).toBe(false);
   const fresh = emptyConversation();
   await v.save(fresh);
-  expect((await v.readAvailable()).conversations.some(x => x.id === fresh.id)).toBe(true);
+  expect(
+    (await v.readAvailable()).conversations.some((x) => x.id === fresh.id),
+  ).toBe(true);
 });
 function store() {
   const v = new Vault();
@@ -208,4 +218,47 @@ describe("real WebCrypto vault, synthetic inputs only", () => {
     await v.delete(c.id);
     database.close();
   });
+});
+
+it("blocks search provenance even without the sticky flag, including source snapshots and edits", async () => {
+  const v = store();
+  v.selectAccount(crypto.randomUUID());
+  await v.unlock("synthetic provenance backstop password");
+  const source = {
+    id: "search-1",
+    title: "Synthetic",
+    text: "SYNTHETIC temporary evidence",
+    evidenceKind: "llm-context" as const,
+  };
+  const c = emptyConversation();
+  c.messages.push({
+    id: "u",
+    role: "user",
+    text: "Synthetic question",
+    status: "complete",
+    included: true,
+  });
+  c.messages.push({
+    id: "a",
+    role: "assistant",
+    text: "Synthetic answer",
+    status: "complete",
+    included: true,
+    sourceSnapshot: [source],
+  });
+  await expect(v.save(c)).rejects.toThrow("temporary");
+  c.temporarySearch = true;
+  await expect(v.save(forkAt(c, "u", "Synthetic correction"))).rejects.toThrow(
+    "temporary",
+  );
+  c.temporarySearch = false;
+  c.messages = [];
+  c.attachments.push({
+    id: "r",
+    name: "Research",
+    selected: false,
+    sources: [source],
+  });
+  await expect(v.save(c)).rejects.toThrow("temporary");
+  expect((await v.readAvailable()).conversations).toEqual([]);
 });

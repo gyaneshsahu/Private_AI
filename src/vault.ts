@@ -1,6 +1,9 @@
 import { openDB } from "idb";
 import type { Conversation } from "../shared/contracts";
-import { savedConversationSchema } from "./saved-conversation";
+import {
+  containsTemporaryResearch,
+  savedConversationSchema,
+} from "./saved-conversation";
 const encoder = new TextEncoder();
 const db = (name: string) =>
   openDB(name, 1, {
@@ -134,8 +137,12 @@ export class Vault {
     return next;
   }
   save(conversation: Conversation) {
-    if (conversation.temporarySearch)
-      return Promise.reject(new Error("Search conversations are temporary in this test version and cannot be saved. Start a new conversation to save other work."));
+    if (containsTemporaryResearch(conversation))
+      return Promise.reject(
+        new Error(
+          "Search conversations are temporary in this test version and cannot be saved. Start a new conversation to save other work.",
+        ),
+      );
     const key = this.key,
       generation = this.generation,
       databaseName = this.databaseName;
@@ -229,6 +236,8 @@ export class Vault {
           savedConversationSchema.parse(decoded);
           // Validate without rewriting snapshots or dropping fields from older writers.
           const conversation = decoded as Conversation;
+          if (containsTemporaryResearch(conversation))
+            throw new Error("Temporary research snapshot cannot be reopened.");
           if (conversation.id !== id)
             throw new Error("Snapshot identity mismatch.");
           output.push(conversation);
