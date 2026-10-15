@@ -1,5 +1,28 @@
 # Provider qualification — NOT_PASSED
 
+## Supplier reply received — 15 October 2026
+
+Founder supplied a reply signed Sacha on15October; the original email timestamp/headers were not supplied. Record the receipt date here, not an inferred send date. Supplier answers:
+
+> Not yet. We’re still working on rolling out TDX support and freshness. V3 attestation is a big migration we’re working on right now and hope to complete in the next two weeks.
+>
+> Not yet. We’re also working on this but I don’t have an ETA for when it will be available yet :)
+>
+> Our privacy policy should document this. Most billing-related metadata is retained for 90 days.
+
+The first answer addresses the requested released browser verifier/continuous architecture; no version or supported example is provided. The two-week estimate is an aspiration relative to the email, not a release commitment or qualification date. Revocation is not separately resolved. The second confirms no cache-disable/enforced maximum-retention control yet, with no ETA. These remain substantive blockers, not merely missing paperwork.
+
+Checked [privacy policy](https://tinfoil.sh/privacy) on15October (effective12October2026), sections2and9: security/operational logs have a90-day limit; API usage metrics persist while the account is active before aggregation/anonymization; billing records may persist up to7years, with stated exceptions. Cache eviction is described as typically minutes/generally hours, not an enforced maximum. Thus the policy does not establish a blanket90-day per-request billing-retention limit. This is an unresolved category/scope ambiguity, not proof the supplier statement is false.
+
+**Decision: normal private-data chat remains NO-GO / NOT_QUALIFIED.** A later v3 release must be inspected and tested for browser verification, worker/GPU binding, freshness/revocation/TDX and negative paths; a version announcement or periodic CLI check is insufficient. Cache control has no promised delivery date, so v3 alone would not close retention qualification. Synthetic/public-only development continues under existing permits/cap; no production gate, account or retention change.
+
+### Focused clarification for founder to send if desired — not sent by agent
+
+Thanks, Sacha. Section9 distinguishes usage metrics retained while the account is active, security/operational logs up to90days, and billing records retained for accounting requirements. Which per-request fields fall into each category (request IDs, timestamps, model, token counts, account/key linkage and IP address), and when are they deleted or irreversibly anonymized? Does your90-day statement cover every identifiable per-request billing record, including backups and exceptions? Please point to the applicable policy clause or API-specific schedule. When v3 ships, please also share the released browser package/version and verification example, including revocation behavior.
+
+Continue independent quality and recovery work; retain Privatemode as an unqualified alternative requiring its own browser/retention evidence. Do not wait on an assumed two-week completion or migrate based only on this email.
+
+
 ## Founder follow-up sent — 12 October 2026
 
 Status: **SENT_BY_FOUNDER / REPLY_PENDING**. Founder supplied this outgoing message to Sacha; it is not a supplier answer:
@@ -9,7 +32,7 @@ Status: **SENT_BY_FOUNDER / REPLY_PENDING**. Founder supplied this outgoing mess
 > 2. Can API prompt caching be disabled or given an enforced maximum retention time, rather than merely preventing cache hits?
 > 3. How long is per-request billing metadata retained, and which policy documents that retention?
 
-Await the reply; do not request another send. Existing worker/GPU binding and other unresolved evidence remain required. Private-data qualification stays NOT_PASSED.
+Historical status superseded by the15October reply above; do not request another send. Existing worker/GPU binding and other unresolved evidence remain required. Private-data qualification stays NOT_PASSED.
 
 
 Historical implementation checkpoint, 5 October 2026 (current decision below): **the inference path is implemented and connected

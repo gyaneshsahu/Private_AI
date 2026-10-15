@@ -1,4 +1,11 @@
-# PrivateAI local Codex handoff — updated 12 October 2026
+# PrivateAI local Codex handoff — updated 15 October 2026
+
+## 15 October — Tinfoil reply confirms outstanding provider blockers
+
+Founder supplied Sacha's response: released browser TDX/freshness support is not yet available (v3 migration hoped for in roughly two weeks, not a commitment); cache-disable/enforced-retention controls are not yet available and have no ETA. Revocation and exact supported versions/example remain unresolved. The billing-metadata statement needs category-level clarification against the linked policy. [Preserved reply, policy assessment and focused optional follow-up](provider-qualification.md#supplier-reply-received--15-october-2026).
+
+S04 remains EXTERNALLY_BLOCKED / NOT_QUALIFIED; normal private-data chat remains NO-GO. Neither a future release announcement nor an elapsed estimate passes qualification; cache controls remain independently blocked. Continue synthetic/public-only quality and recovery work, with existing USD3 cap and no account/privacy-gate changes. No paid calls in this documentation batch; last recorded spendUSD0.52 is not a fresh dashboard reading. All prior human grades, failures and Galaxy auth-page passes remain unchanged.
+
 
 ## 12 October — founder supplier follow-up and actual-phone report
 
