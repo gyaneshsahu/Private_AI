@@ -367,7 +367,59 @@
     "attempted": 5,
     "delivered": 4,
     "reportedEstimatedUSD": 0.0056898999999999995,
-    "humanScores": null
+    "humanScores": [
+      {
+        "id": "assisted-01",
+        "arm": "baseline",
+        "turn": 1,
+        "scores": [
+          1,
+          2,
+          2
+        ],
+        "reason": "Wrong final totals: GBP108.00 then GBP103.68 required."
+      },
+      {
+        "id": "assisted-01",
+        "arm": "baseline",
+        "turn": 2,
+        "scores": [
+          1,
+          2,
+          2
+        ],
+        "reason": "Wrong final totals: GBP108.00 then GBP103.68 required."
+      },
+      {
+        "id": "assisted-02",
+        "arm": "candidate",
+        "turn": 1,
+        "scores": [
+          2,
+          1,
+          2
+        ],
+        "reason": "Information sufficient for EUR133.40 then EUR137.40; omitted totals are a material usefulness failure."
+      },
+      {
+        "id": "assisted-02",
+        "arm": "candidate",
+        "turn": 2,
+        "scores": [
+          2,
+          1,
+          2
+        ],
+        "reason": "Information sufficient for EUR133.40 then EUR137.40; omitted totals are a material usefulness failure."
+      },
+      {
+        "id": "assisted-01",
+        "arm": "candidate",
+        "turn": 1,
+        "scores": null,
+        "reason": "Unscored delivery failure. Internal draft is not a delivered safety or quality pass."
+      }
+    ]
   },
   "assessment": {
     "status": "AI_PROPOSED_NOT_HUMAN_REVIEW",

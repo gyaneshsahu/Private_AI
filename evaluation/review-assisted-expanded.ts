@@ -1,5 +1,6 @@
 import { readFile, writeFile, mkdir, copyFile } from "node:fs/promises";
 import fixtures from "./cases/research-assisted.json";
+import humanReview from "./results/research-assisted-20261015-human.json";
 const roots = [
   ".local/assisted-live-20261015",
   ".local/assisted-diagnostic-20261015",
@@ -38,7 +39,13 @@ const metrics = {
     (n: number, r: any) => n + (r.usage?.estimatedUSD ?? 0),
     0,
   ),
-  humanScores: null,
+  humanScores: humanReview.reviews.filter((review) =>
+    runs.some((run) =>
+      run.report.results.some(
+        (c: any) => c.id === review.id && c.arm === review.arm,
+      ),
+    ),
+  ),
 };
 const perRun = runs.map((run) => ({
   root: run.root,
@@ -86,14 +93,17 @@ const esc = (s: unknown) =>
         c
       ]!,
   );
-let html = `<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Assisted research — complete review</title><style>body{max-width:1000px;margin:24px auto;padding:16px;font:18px system-ui}pre{white-space:pre-wrap;overflow-wrap:anywhere}article{border:1px solid #888;padding:14px;margin:16px 0}summary{cursor:pointer}</style><h1>Assisted research: four separately frozen runs</h1><p>All content below is authored synthetic material. Human scores are blank. Missing answers are unscored delivery failures. This small stopped sample cannot establish a reliability rate.</p><details><summary>AI-proposed findings — not your grades</summary><pre>${esc(JSON.stringify(assessment, null, 2))}</pre></details>`;
+let html = `<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Assisted research — complete review</title><style>body{max-width:1000px;margin:24px auto;padding:16px;font:18px system-ui}pre{white-space:pre-wrap;overflow-wrap:anywhere}article{border:1px solid #888;padding:14px;margin:16px 0}summary{cursor:pointer}</style><h1>Assisted research: four separately frozen runs</h1><p>All content below is authored synthetic material. Explicit owner human scores are shown where supplied; original AI findings remain separately labelled. Missing answers are unscored delivery failures. This small stopped sample cannot establish a reliability rate.</p><details><summary>AI-proposed findings — not your grades</summary><pre>${esc(JSON.stringify(assessment, null, 2))}</pre></details>`;
 for (const run of runs)
   for (const c of run.report.results) {
     const f = fixtures.find((f) => f.id === c.id)!;
     html += `<section><h2>${esc(c.id)} · ${esc(c.arm)}</h2><p>Run: ${esc(run.root)}</p><h3>Original evidence</h3>${f.sources.map((s) => `<h4>${esc(s.title)}</h4><pre>${esc(s.text)}</pre>`).join("")}<h3>Expected facts, fixed before execution</h3><pre>${esc(f.mandatoryFacts.join("\n"))}</pre>`;
     for (let i = 0; i < f.turns.length; i++) {
       const r = c.replies[i];
-      html += `<article><h3>Turn ${i + 1}</h3><pre>${esc(f.turns[i])}</pre><h4>Model reply</h4><pre>${esc(r?.answer || (r ? "NO COMPLETED ANSWER" : "NOT ATTEMPTED — stop rule"))}</pre><p>Human correctness / completeness / context: ${r?.completed ? "___ / ___ / ___" : "UNSCORED"}</p>${r ? `<p>Elapsed ${r.elapsedMs}ms; first visible ${r.firstVisibleTextMs ?? "none"}ms; estimated USD${r.usage?.estimatedUSD ?? "unknown"}; ${esc(r.failureKind ?? "complete")}</p>` : ""}</article>`;
+      const grade = humanReview.reviews.find(
+        (g) => g.id === c.id && g.arm === c.arm && g.turn === i + 1,
+      );
+      html += `<article><h3>Turn ${i + 1}</h3><pre>${esc(f.turns[i])}</pre><h4>Model reply</h4><pre>${esc(r?.answer || (r ? "NO COMPLETED ANSWER" : "NOT ATTEMPTED — stop rule"))}</pre><p>Human correctness / completeness / context: ${grade?.scores ? esc(grade.scores.join(" / ")) : r?.completed ? "___ / ___ / ___" : "UNSCORED"}</p><p>${esc(grade?.reason ?? "")}</p>${r ? `<p>Elapsed ${r.elapsedMs}ms; first visible ${r.firstVisibleTextMs ?? "none"}ms; estimated USD${r.usage?.estimatedUSD ?? "unknown"}; ${esc(r.failureKind ?? "complete")}</p>` : ""}</article>`;
     }
     html += "</section>";
   }

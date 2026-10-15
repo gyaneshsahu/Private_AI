@@ -1,0 +1,82 @@
+{
+  "status": "AUTOMATED_MECHANICAL_CHECK_NOT_HUMAN_REVIEW",
+  "scope": "Known authored numerical regression cases only. Presence can match quotations or rejected alternatives; absence can miss unfamiliar formatting. No semantic or quality pass.",
+  "rows": [
+    {
+      "id": "assisted-01",
+      "arm": "baseline",
+      "turn": 1,
+      "status": "KNOWN_WRONG_VALUE_PRESENT",
+      "matchedExpected": false,
+      "matchedKnownWrong": [
+        "106.40"
+      ],
+      "qualityPass": false
+    },
+    {
+      "id": "assisted-01",
+      "arm": "baseline",
+      "turn": 2,
+      "status": "KNOWN_WRONG_VALUE_PRESENT",
+      "matchedExpected": false,
+      "matchedKnownWrong": [
+        "102.60"
+      ],
+      "qualityPass": false
+    },
+    {
+      "id": "assisted-01",
+      "arm": "candidate",
+      "turn": 1,
+      "status": "DELIVERY_FAILURE",
+      "matchedExpected": false,
+      "matchedKnownWrong": [],
+      "qualityPass": false
+    },
+    {
+      "id": "assisted-02",
+      "arm": "candidate",
+      "turn": 1,
+      "status": "EXPECTED_VALUE_NOT_FOUND",
+      "matchedExpected": false,
+      "matchedKnownWrong": [],
+      "qualityPass": false
+    },
+    {
+      "id": "assisted-02",
+      "arm": "candidate",
+      "turn": 2,
+      "status": "EXPECTED_VALUE_NOT_FOUND",
+      "matchedExpected": false,
+      "matchedKnownWrong": [],
+      "qualityPass": false
+    },
+    {
+      "id": "assisted-03",
+      "arm": "baseline",
+      "turn": 1,
+      "status": "EXPECTED_VALUE_PRESENT",
+      "matchedExpected": true,
+      "matchedKnownWrong": [],
+      "qualityPass": false
+    },
+    {
+      "id": "assisted-03",
+      "arm": "baseline",
+      "turn": 2,
+      "status": "EXPECTED_VALUE_PRESENT",
+      "matchedExpected": true,
+      "matchedKnownWrong": [],
+      "qualityPass": false
+    },
+    {
+      "id": "assisted-03",
+      "arm": "candidate",
+      "turn": 1,
+      "status": "DELIVERY_FAILURE",
+      "matchedExpected": false,
+      "matchedKnownWrong": [],
+      "qualityPass": false
+    }
+  ]
+}

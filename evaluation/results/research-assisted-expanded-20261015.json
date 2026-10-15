@@ -903,7 +903,139 @@
     "attempted": 13,
     "delivered": 10,
     "reportedEstimatedUSD": 0.014468,
-    "humanScores": null
+    "humanScores": [
+      {
+        "id": "assisted-01",
+        "arm": "baseline",
+        "turn": 1,
+        "scores": [
+          1,
+          2,
+          2
+        ],
+        "reason": "Wrong final totals: GBP108.00 then GBP103.68 required."
+      },
+      {
+        "id": "assisted-01",
+        "arm": "baseline",
+        "turn": 2,
+        "scores": [
+          1,
+          2,
+          2
+        ],
+        "reason": "Wrong final totals: GBP108.00 then GBP103.68 required."
+      },
+      {
+        "id": "assisted-02",
+        "arm": "candidate",
+        "turn": 1,
+        "scores": [
+          2,
+          1,
+          2
+        ],
+        "reason": "Information sufficient for EUR133.40 then EUR137.40; omitted totals are a material usefulness failure."
+      },
+      {
+        "id": "assisted-02",
+        "arm": "candidate",
+        "turn": 2,
+        "scores": [
+          2,
+          1,
+          2
+        ],
+        "reason": "Information sufficient for EUR133.40 then EUR137.40; omitted totals are a material usefulness failure."
+      },
+      {
+        "id": "assisted-03",
+        "arm": "baseline",
+        "turn": 1,
+        "scores": [
+          3,
+          3,
+          3
+        ],
+        "reason": "Correct 25% then15%; does not equate visits with unique people."
+      },
+      {
+        "id": "assisted-03",
+        "arm": "baseline",
+        "turn": 2,
+        "scores": [
+          3,
+          3,
+          3
+        ],
+        "reason": "Correct 25% then15%; does not equate visits with unique people."
+      },
+      {
+        "id": "assisted-04",
+        "arm": "baseline",
+        "turn": 1,
+        "scores": [
+          3,
+          3,
+          3
+        ],
+        "reason": "Distinguishes delayed plan from actual reopening; no invented reimbursement rule. Clearer and faster."
+      },
+      {
+        "id": "assisted-04",
+        "arm": "baseline",
+        "turn": 2,
+        "scores": [
+          3,
+          3,
+          3
+        ],
+        "reason": "Distinguishes delayed plan from actual reopening; no invented reimbursement rule. Clearer and faster."
+      },
+      {
+        "id": "assisted-04",
+        "arm": "candidate",
+        "turn": 1,
+        "scores": [
+          3,
+          3,
+          3
+        ],
+        "reason": "Distinguishes delayed plan from actual reopening; no invented reimbursement rule."
+      },
+      {
+        "id": "assisted-04",
+        "arm": "candidate",
+        "turn": 2,
+        "scores": [
+          3,
+          3,
+          3
+        ],
+        "reason": "Distinguishes delayed plan from actual reopening; no invented reimbursement rule."
+      },
+      {
+        "id": "assisted-01",
+        "arm": "candidate",
+        "turn": 1,
+        "scores": null,
+        "reason": "Unscored delivery failure. Internal draft is not a delivered safety or quality pass."
+      },
+      {
+        "id": "assisted-03",
+        "arm": "candidate",
+        "turn": 1,
+        "scores": null,
+        "reason": "Unscored delivery failure. Internal draft is not a delivered safety or quality pass."
+      },
+      {
+        "id": "assisted-05",
+        "arm": "candidate",
+        "turn": 1,
+        "scores": null,
+        "reason": "Unscored delivery failure. Internal draft is not a delivered safety or quality pass."
+      }
+    ]
   },
   "perRun": [
     {
