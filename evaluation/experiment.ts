@@ -131,6 +131,7 @@ export const experimentSchema = z
         maxOutputTokens: z.number().int().positive().max(8192),
         researchEvidenceContract: z.boolean().optional(),
         scopedResearchContract: z.boolean().optional(),
+        assistedResearchContract: z.boolean().optional(),
         checkedResponseContract: z.boolean().optional(),
         gptOssReasoningEffort: z.enum(["low", "medium", "high"]).optional(),
         gemmaThinking: z.boolean().optional(),
@@ -159,6 +160,7 @@ export function validateExperiment(
       x.policy.checkedResponseContract,
       x.policy.researchEvidenceContract,
       x.policy.scopedResearchContract,
+      x.policy.assistedResearchContract,
     ].filter(Boolean).length > 1
   )
     throw new Error("Response contracts are mutually exclusive.");

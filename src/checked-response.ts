@@ -102,6 +102,7 @@ export function renderCheckedResponse(
   raw: string,
   sources: Source[],
   conversation: Conversation,
+  presentation: "full" | "result" = "full",
 ): string {
   if (raw.length > 64000) throw new ContractError("FORMAT");
   let parsed: unknown;
@@ -192,6 +193,16 @@ export function renderCheckedResponse(
     seenResults.add(r.id);
     return `**${escape(r.id)}: ${values.get(r.id)!.toFixed(r.decimals)}**`;
   });
+  if (presentation === "result") {
+    if (
+      data.results.length !== 1 ||
+      data.passages.length ||
+      data.limitation !== "none"
+    )
+      throw new ContractError("FORMAT");
+    const result = data.results[0];
+    return values.get(result.id)!.toFixed(result.decimals);
+  }
   const passages = data.passages.map(
     (e) => `> ${escape(e.quote).replace(/\n/g, "\n> ")}\n\n${checkEvidence(e)}`,
   );

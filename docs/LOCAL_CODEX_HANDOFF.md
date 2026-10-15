@@ -1,5 +1,16 @@
 # PrivateAI local Codex handoff — updated 15 October 2026
 
+## 15 October — calculator-assisted explanatory candidate, offline only
+
+Implemented an opt-in `assistedResearchContract` for development permits, mutually exclusive with the older contracts. Answers can interleave ordinary source-linked explanatory paragraphs with locally calculated results. It reuses the bounded order-total, positive-baseline percentage-change and compatible-unit conversion recipes; it does not accept a model-defined final result. Full response validation precedes display. Existing extractive configuration and its human failures remain intact; production qualification does not enable the new candidate.
+
+Validation:47 focused tests across four files plus one actual-application Chromium test passed; typecheck/build passed. The application test imports a synthetic document, shows an explanation and EUR95.20, applies a user correction to show EUR100.80, and opens the supporting source with no external requests. Tests reject fabricated passages, incompatible conversion units and injected result fields, and withhold the entire response on a later invalid calculator block. These are offline engineering checks, not model-quality scores or a live baseline comparison.
+
+Remaining limitations are explicit: paragraph entailment, input selection, method applicability and any arithmetic the model writes outside calculator blocks are not verified. A deliberate unsupported-conclusion test demonstrates that provenance matching alone still accepts a false inference. No source-fidelity pass is claimed. Power-to-energy multiplication is not a supported method yet; the model must explain missing/unsupported information rather than force a conversion. Do not claim this bounded calculator fixes general maths. New human scores remain blank.
+
+Next: prepare fresh applicability/contradiction/correction cases and an in-session public review flow, then compare normal baseline answers against this candidate through the application. Update the harness configuration checks before using this new flag; old frozen workspace permits remain for the old configuration and must not be reused. Measure usefulness, incorrect delivery, withholding, latency and cost. No paid calls or new reservation this batch; last observed dashboard remainsUSD0.61/3 (not refreshed). Provider qualification, hosted recovery and authenticated phone workflow gates remain open. No deployment, account changes or retention activation.
+
+
 ## 15 October — founder review of workspace cases04–06
 
 Recorded the founder's explicit **HUMAN_REVIEW** in `evaluation/results/research-workspace-20261015-human.json` and beside the unchanged packet replies. Baseline:3/3/3 on all six reviewed replies. Candidate:case04 both3/3/3; case05 both2/1/2; case06turn1 2/1/2; case06turn2 unscored delivery failure. Eleven numerical reply grades; no whole-packet score or public-case grade inferred. Human finding: candidate calculation works in this case but overly technical presentation and restrictive quotation-only output reduce usefulness. Keep candidate experimental; baseline usefulness here does not erase earlier failures or qualify it for release.

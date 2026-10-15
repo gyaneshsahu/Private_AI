@@ -1,3 +1,7 @@
+import {
+  assistedResearchInstruction,
+  renderAssistedResearch,
+} from "./assisted-research";
 import { abortable, withDeadline } from "./abortable";
 import {
   type Conversation,
@@ -43,6 +47,7 @@ export type VerifiedChatPolicy = Pick<
   researchEvidenceContract?: boolean;
   checkedResponseContract?: boolean;
   scopedResearchContract?: boolean;
+  assistedResearchContract?: boolean;
 };
 
 export function assertVerification(
@@ -84,6 +89,7 @@ export async function streamVerifiedConversation(
       report.checkedResponseContract,
       report.researchEvidenceContract,
       report.scopedResearchContract,
+      report.assistedResearchContract,
     ].filter(Boolean).length > 1
   )
     throw new Error("Choose one response contract. Nothing was sent.");
@@ -110,8 +116,12 @@ export async function streamVerifiedConversation(
       report.answerPolicyVariant,
     );
     const evidenceSources = selectedSources(conversation);
-    if (report.checkedResponseContract || report.scopedResearchContract) {
-      messages[0].content += ` ${report.scopedResearchContract ? scopedResearchInstruction : checkedResponseInstruction}`;
+    if (
+      report.checkedResponseContract ||
+      report.scopedResearchContract ||
+      report.assistedResearchContract
+    ) {
+      messages[0].content += ` ${report.assistedResearchContract ? assistedResearchInstruction : report.scopedResearchContract ? scopedResearchInstruction : checkedResponseInstruction}`;
       let userTurn = 0;
       const included = conversation.messages.filter(
         (m) => m.included && m.status === "complete",
@@ -220,7 +230,11 @@ export async function streamVerifiedConversation(
         redirect: "error",
       },
     );
-    if (report.checkedResponseContract || report.scopedResearchContract)
+    if (
+      report.checkedResponseContract ||
+      report.scopedResearchContract ||
+      report.assistedResearchContract
+    )
       return consumeCheckedResponse(
         completionEvents(response, signal),
         report.pricing,
@@ -229,7 +243,11 @@ export async function streamVerifiedConversation(
         conversation,
         onChunk,
         onCheckedDiagnosticDraft,
-        report.scopedResearchContract ? compileScopedResearch : undefined,
+        report.assistedResearchContract
+          ? renderAssistedResearch
+          : report.scopedResearchContract
+            ? compileScopedResearch
+            : undefined,
       );
     if (report.researchEvidenceContract)
       return consumeResearchReply(

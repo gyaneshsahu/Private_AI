@@ -1,5 +1,9 @@
 # Readiness batch — 8 October 2026
 
+## Calculator-assisted implementation checkpoint — 15 October
+
+The opt-in explanatory candidate now exists (`src/assisted-research.ts`), with offline renderer and actual-application tests. It combines evidence-linked paragraphs with compact deterministic calculator blocks. This is ready for test preparation, not promotion. A deliberate negative test confirms unsupported prose can pass citation matching; the live rubric must assess semantic support independently. Include invalid method applicability and wrong operand selection as well as correct arithmetic. Calculations embedded in prose are not mechanically verified. No live cases, permits, budget reservation or acceptance freeze is implied by this checkpoint.
+
 ## Next workspace batch — design prerequisites after human review (not frozen)
 
 Keep normal explanatory research answers. A calculator supplies explicitly scoped numerical results with operands, units, method and provenance; the answer must explain missing information and evidence limits in ordinary language. The current extractive candidate is not promoted. Do not add one prompt rule per exposed example. Before paid execution, demonstrate method applicability and failure handling offline, then freeze fresh cases/configurations and independent expected facts.
