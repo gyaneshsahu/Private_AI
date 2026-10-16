@@ -115,3 +115,7 @@ Execution complete:47attempts/46complete replies; default transfer-12 partial ti
 ## 15 October structured probe - stopped
 
 Plan/results: `.local/structured-live-20261015`, preserved in `evaluation/results/research-structured-20261015.json`. Maximum12requests/reserve0.6952704; actual3attempts/2delivered, estimated0.0026496. Stop triggered by empty arithmetic candidate06turn1; no retry. Cases07-08 remain unattempted. All unused reserve retired. Subsequent schema alignment is offline only and changes implementation hashes; never resume this frozen batch. Next design investigation is optional calculation tools, not another example-specific prompt patch.
+
+## 16 October optional-tool runs stopped
+
+Initial maximum16requests/reserve0.9270272 stopped after2baseline calls at harness mismatch. Remaining-case plan maximum12requests/reserve0.6952704 stopped after4calls at candidate02follow-up local validation rejection. No retries; cases03-04 unattempted. Records: `evaluation/results/research-tools-20261016.json`. All unused reserve retired; new code hashes require a new plan. Actual total estimate0.0077299 included in refreshed dashboard0.63. Human grades blank.

@@ -47,6 +47,18 @@ export const calculatorTool = {
     parameters: z.toJSONSchema(calculatorArguments),
   },
 };
+export class CalculatorValidationError extends IncompleteReplyError {
+  constructor(
+    readonly calculatorFailure:
+      "INVALID_JSON" | "INVALID_SCHEMA" | "EVIDENCE_OR_ARITHMETIC",
+    usage: Usage,
+  ) {
+    super(
+      "Calculation could not be validated. No automatic retry was made.",
+      usage,
+    );
+  }
+}
 export type CalculatorTurn = {
   text: string;
   calculation?: { value: string; unit: string; references: string[] };
@@ -148,7 +160,16 @@ export async function consumeCalculatorTurn(
     );
   if (!sawTool) return { text, usage };
   try {
-    const args = calculatorArguments.parse(JSON.parse(argumentsText));
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(argumentsText);
+    } catch {
+      throw new CalculatorValidationError("INVALID_JSON", usage);
+    }
+    const validated = calculatorArguments.safeParse(parsed);
+    if (!validated.success)
+      throw new CalculatorValidationError("INVALID_SCHEMA", usage);
+    const args = validated.data;
     const value = renderCheckedResponse(
       JSON.stringify(args.program),
       sources,
@@ -165,11 +186,9 @@ export async function consumeCalculatorTurn(
       ),
     ];
     return { text, calculation: { value, unit: args.unit, references }, usage };
-  } catch {
-    throw new IncompleteReplyError(
-      "Calculation could not be validated. No automatic retry was made.",
-      usage,
-    );
+  } catch (error) {
+    if (error instanceof CalculatorValidationError) throw error;
+    throw new CalculatorValidationError("EVIDENCE_OR_ARITHMETIC", usage);
   }
 }
 

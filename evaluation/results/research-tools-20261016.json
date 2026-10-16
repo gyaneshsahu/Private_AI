@@ -1,0 +1,424 @@
+{
+  "runs": [
+    {
+      "root": ".local/tools-live-20261016",
+      "plan": {
+        "status": "FROZEN_BEFORE_EXECUTION",
+        "frozenAt": "2026-10-16T10:55:19.260Z",
+        "maxRequests": 16,
+        "maxSearches": 0,
+        "automaticRetries": 0,
+        "reserveUSD": 0.9270271999999999,
+        "actualBeforeUSD": 0.62,
+        "uncertaintyUSD": 0.25184,
+        "cumulativeBoundUSD": 1.7988671999999999,
+        "capUSD": 3,
+        "publicContentPersistence": false,
+        "baseline": "DeepSeek-v4.1-flash thinkingoff constraints-v4",
+        "candidate": "same + optionalCalculator one request auto tool choice; tool schema included in20000character allowance",
+        "order": "alternating arm first by case; identical authored sources",
+        "stop": "Any incomplete reply or app-check failure stops entire batch. No retry, no continuation.",
+        "fixtureSHA256": "3aa970a12ad0b39fd74043eb8e1542eda3d392e101b226fa97c9f97f7c11d807",
+        "implementationHashes": {
+          "src/calculator-turn.ts": "94cbd0fd42530827ab57ed084be351a15283599c8c4020f4c846dac3d711db8c",
+          "src/assisted-response-format.ts": "48199b37a38d16e255f5e86507effdf2ec8fb1d2266e0fb01576a4174f07d09f",
+          "evaluation/temporary-review.ts": "67432cca09635765ab039ac94cc5c0203d9a91882359484e04f8b9304e85e991",
+          "src/assisted-research.ts": "7c8bf0ea5f9b1dbbaafb513e30fc15f98837cd481227c8534cd43992a0e0b3bf",
+          "src/scoped-research.ts": "5e4eb88cd28c06a650194ab3cb407748d3ba1bd6005b498498856b011a5fc6a4",
+          "src/checked-response.ts": "c1c345435f1b015fea8507d5ddf0f090b3b85c32b6cb5004de2652ca15c23fc0",
+          "src/research-contract.ts": "4b22c4ad208275e67668cc46bc402db6bdafd3abccd7ddec16563a37d6a02036",
+          "src/verified-chat.ts": "db21662c92412177b371c99bde9ab22d00473c8faf9263953a7e9995bf4482e7",
+          "src/App.tsx": "38a8e9612b0f3b3fbd90744b266ec5658605ff67c0005b940fc6f9e86806c4b5",
+          "evaluation/run-workspace.ts": "c972eec35103772f79e5dcf8155c68cf0b1a4c2aa3ea14e2044df20c5e12bc6b",
+          "evaluation/workspace-inference.ts": "9af5d5ae707a58604c7edcacd67e57d9190a6b201c8959b3d87c48f8d5769141",
+          "evaluation/experiment.ts": "c40f84e118fda332f142cbbcb19af9c6b1ee35c5bfd203fe4d1f91cda533898f"
+        },
+        "humanScores": null
+      },
+      "report": {
+        "mode": "LIVE_PUBLIC_AND_AUTHORED",
+        "humanScores": null,
+        "results": [
+          {
+            "id": "assisted-tool-01",
+            "arm": "baseline",
+            "public": false,
+            "replies": [
+              {
+                "completed": true,
+                "answer": "**Option A**\n\nThe gallery planned to reopen on 10 December, but a later notice (11 December) says an inspection is still underway and no reopening date is confirmed. These notices do not address ticket refunds, so they establish nothing about refunds. [tool-source-01]\n\n**Option B**\n\nReopening was planned for 10 December; that date is not confirmed, as of the 11 December notice the inspection continues with no confirmed reopening date. Refunds are not discussed in either notice, so nothing about refunds is established. [tool-source-01]\n\nNote on dates: the source gives publication dates of 6 and 11 December without a stated year, and the retrieval time does not confirm publication or freshness. [tool-source-01]",
+                "usage": {
+                  "input": 930,
+                  "output": 156,
+                  "total": 1086,
+                  "estimatedUSD": 0.0008307000000000001
+                },
+                "firstVisibleTextMs": 2240,
+                "elapsedMs": 3524,
+                "answerCharacters": 718,
+                "answerSHA256": "7c8585bcba6ae8082801c361325e28643c32e5b229b708ab52f9bc31dd625a88",
+                "evidenceAudit": {
+                  "citationReferences": 3,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              },
+              {
+                "completed": true,
+                "answer": "No — the 11 December notice says the inspection is still underway with no reopening date confirmed, so it does not establish that the gallery reopened. [tool-source-01]",
+                "usage": {
+                  "input": 1103,
+                  "output": 36,
+                  "total": 1139,
+                  "estimatedUSD": 0.0007691500000000001
+                },
+                "firstVisibleTextMs": 2201,
+                "elapsedMs": 2374,
+                "answerCharacters": 168,
+                "answerSHA256": "1f142e3c1c796b4d20333ff3cb4efd7ad612c382eb1bee9a6fd727a715ae7550",
+                "evidenceAudit": {
+                  "citationReferences": 1,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              }
+            ],
+            "humanScores": null,
+            "productionGateClosed": true,
+            "retrievalKind": "AUTHORED_FIXTURE",
+            "sourceCount": 1,
+            "sourceHash": "037bb0458fee3bc97bb1fa8e66747f34318eabbcb68298f6da8070b7a630075d",
+            "evidenceCharacters": 201,
+            "providerDates": 0,
+            "sourceOpen": true,
+            "sourceLinkKeyboardReachable": true,
+            "sourceLinkSafe": true,
+            "answerCitationOpensSource": true,
+            "saveBlocked": true,
+            "storage": {
+              "conversationRecords": 0,
+              "localStorageKeys": 0,
+              "sessionStorageKeys": 0,
+              "cacheEntries": 0,
+              "serviceWorkers": 0
+            },
+            "clearedOnReload": true,
+            "pageErrors": [],
+            "networkViolation": 0,
+            "consoleMessageCount": 6,
+            "attempts": [
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 5408,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 849,
+                "firstEncryptedByteMs": 1225,
+                "elapsedMs": 2514
+              },
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 6276,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 1021,
+                "firstEncryptedByteMs": 1734,
+                "elapsedMs": 1905
+              }
+            ]
+          }
+        ],
+        "qualification": "NOT_PASSED",
+        "publicContentPersisted": false
+      }
+    },
+    {
+      "root": ".local/tools-remaining-live-20261016",
+      "plan": {
+        "status": "FROZEN_BEFORE_EXECUTION",
+        "frozenAt": "2026-10-16T10:56:19.620Z",
+        "maxRequests": 12,
+        "maxSearches": 0,
+        "automaticRetries": 0,
+        "reserveUSD": 0.6952704,
+        "actualBeforeUSD": 0.62,
+        "uncertaintyUSD": 0.25343985,
+        "cumulativeBoundUSD": 1.56871025,
+        "capUSD": 3,
+        "publicContentPersistence": false,
+        "baseline": "DeepSeek-v4.1-flash thinkingoff constraints-v4",
+        "candidate": "same + optionalCalculator one request auto tool choice; tool schema included in20000character allowance",
+        "order": "alternating arm first by case; identical authored sources",
+        "stop": "Any incomplete reply or app-check failure stops entire batch. No retry, no continuation.",
+        "fixtureSHA256": "3aa970a12ad0b39fd74043eb8e1542eda3d392e101b226fa97c9f97f7c11d807",
+        "implementationHashes": {
+          "evaluation/workspace-arm.ts": "a14fc2b0a8752a29cbc57f5ae634f427e97cd63ed9451c3cf439765ff0c90c96",
+          "src/calculator-turn.ts": "94cbd0fd42530827ab57ed084be351a15283599c8c4020f4c846dac3d711db8c",
+          "src/assisted-response-format.ts": "48199b37a38d16e255f5e86507effdf2ec8fb1d2266e0fb01576a4174f07d09f",
+          "evaluation/temporary-review.ts": "67432cca09635765ab039ac94cc5c0203d9a91882359484e04f8b9304e85e991",
+          "src/assisted-research.ts": "7c8bf0ea5f9b1dbbaafb513e30fc15f98837cd481227c8534cd43992a0e0b3bf",
+          "src/scoped-research.ts": "5e4eb88cd28c06a650194ab3cb407748d3ba1bd6005b498498856b011a5fc6a4",
+          "src/checked-response.ts": "c1c345435f1b015fea8507d5ddf0f090b3b85c32b6cb5004de2652ca15c23fc0",
+          "src/research-contract.ts": "4b22c4ad208275e67668cc46bc402db6bdafd3abccd7ddec16563a37d6a02036",
+          "src/verified-chat.ts": "db21662c92412177b371c99bde9ab22d00473c8faf9263953a7e9995bf4482e7",
+          "src/App.tsx": "38a8e9612b0f3b3fbd90744b266ec5658605ff67c0005b940fc6f9e86806c4b5",
+          "evaluation/run-workspace.ts": "231132702a7b66426377a903322ab718f5c29aeadf80f0916228bcf51cd02185",
+          "evaluation/workspace-inference.ts": "9af5d5ae707a58604c7edcacd67e57d9190a6b201c8959b3d87c48f8d5769141",
+          "evaluation/experiment.ts": "c40f84e118fda332f142cbbcb19af9c6b1ee35c5bfd203fe4d1f91cda533898f"
+        },
+        "humanScores": null
+      },
+      "report": {
+        "mode": "LIVE_PUBLIC_AND_AUTHORED",
+        "humanScores": null,
+        "results": [
+          {
+            "id": "assisted-tool-02",
+            "arm": "baseline",
+            "public": false,
+            "replies": [
+              {
+                "completed": true,
+                "answer": "**Invoice total: EUR 139.00**\n\nBreakdown:\n\n| Item | Calculation | Amount |\n|---|---|---|\n| Kits | 5 × EUR 23 | EUR 115.00 |\n| Tax on kits | 16% × EUR 115.00 | EUR 18.40 |\n| Delivery | tax-exempt | EUR 6.00 |\n| **Total** | 115.00 + 18.40 + 6.00 | **EUR 139.00** |\n\n**Tax treatment:** Tax is applied at 16 percent to the kits only, because all listed prices exclude tax and the invoice specifies tax applies to kits alone. Delivery costs EUR 6 and is explicitly tax-exempt, so no tax is added to delivery [tool-source-02].\n\nNote: this relies solely on the supplied excerpt; the excerpt does not state a currency other than EUR or any rounding rule, so the total assumes exact arithmetic with no rounding.",
+                "usage": {
+                  "input": 910,
+                  "output": 195,
+                  "total": 1105,
+                  "estimatedUSD": 0.00087425
+                },
+                "firstVisibleTextMs": 2054,
+                "elapsedMs": 4378,
+                "answerCharacters": 702,
+                "answerSHA256": "0debaae79b9882b2c2be9023e0156b2893b0b1eef791c44e3fb960c547281d4f",
+                "evidenceAudit": {
+                  "citationReferences": 1,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              },
+              {
+                "completed": true,
+                "answer": "**Revised invoice total: EUR 144.00** — an increase of **EUR 5.00**.\n\nBreakdown:\n\n| Item | Calculation | Amount |\n|---|---|---|\n| Kits | 5 × EUR 23 | EUR 115.00 |\n| Tax on kits | 16% × EUR 115.00 | EUR 18.40 |\n| Delivery | EUR 11, untaxed | EUR 11.00 |\n| **Total** | 115.00 + 18.40 + 11.00 | **EUR 144.00** |\n\nThe delivery change is the only revision, so the increase equals the EUR 5.00 difference in delivery (EUR 11 − EUR 6). Delivery remains tax-exempt, so no tax is added to it [tool-source-02].",
+                "usage": {
+                  "input": 1129,
+                  "output": 168,
+                  "total": 1297,
+                  "estimatedUSD": 0.0009774500000000002
+                },
+                "firstVisibleTextMs": 1300,
+                "elapsedMs": 2897,
+                "answerCharacters": 500,
+                "answerSHA256": "1128af8e3c2a3cac334eee240427cb3abb4c08a87e8352bd1f518673198fe7c8",
+                "evidenceAudit": {
+                  "citationReferences": 1,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              }
+            ],
+            "humanScores": null,
+            "productionGateClosed": true,
+            "retrievalKind": "AUTHORED_FIXTURE",
+            "sourceCount": 1,
+            "sourceHash": "1d42726bede1c918a859e0953ebec211dbc625a594f416b7eea3674cda596e14",
+            "evidenceCharacters": 127,
+            "providerDates": 0,
+            "sourceOpen": true,
+            "sourceLinkKeyboardReachable": true,
+            "sourceLinkSafe": true,
+            "answerCitationOpensSource": true,
+            "saveBlocked": true,
+            "storage": {
+              "conversationRecords": 0,
+              "localStorageKeys": 0,
+              "sessionStorageKeys": 0,
+              "cacheEntries": 0,
+              "serviceWorkers": 0
+            },
+            "clearedOnReload": true,
+            "pageErrors": [],
+            "networkViolation": 0,
+            "consoleMessageCount": 6,
+            "attempts": [
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 5249,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 838,
+                "firstEncryptedByteMs": 1194,
+                "elapsedMs": 3518
+              },
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 6117,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 469,
+                "firstEncryptedByteMs": 869,
+                "elapsedMs": 2466
+              }
+            ]
+          },
+          {
+            "id": "assisted-tool-02",
+            "arm": "candidate",
+            "public": false,
+            "replies": [
+              {
+                "completed": true,
+                "answer": "I'll compute this from the supplied invoice excerpt.\n\n\n\n**Calculated result: 139.40 EUR** [tool-source-02]\n\nArithmetic calculated locally; the selected inputs, method and explanation are not independently verified.",
+                "usage": {
+                  "input": 2217,
+                  "output": 404,
+                  "total": 2621,
+                  "estimatedUSD": 0.0020268499999999997
+                },
+                "firstVisibleTextMs": 5006,
+                "elapsedMs": 5006,
+                "answerCharacters": 214,
+                "answerSHA256": "4c2db781cf0c72dc438d5c314d63153fbea0d7096a3357fb1092214254669658",
+                "evidenceAudit": {
+                  "citationReferences": 1,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              },
+              {
+                "completed": false,
+                "answer": "",
+                "failureKind": "TRANSPORT_OR_APPLICATION_FAILURE",
+                "usage": {
+                  "input": 2286,
+                  "output": 528,
+                  "total": 2814,
+                  "estimatedUSD": 0.0022515
+                },
+                "failure": "IncompleteReplyError",
+                "firstVisibleTextMs": null,
+                "elapsedMs": 4595,
+                "answerCharacters": 0,
+                "answerSHA256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+                "evidenceAudit": {
+                  "citationReferences": 0,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              }
+            ],
+            "humanScores": null,
+            "productionGateClosed": true,
+            "retrievalKind": "AUTHORED_FIXTURE",
+            "sourceCount": 1,
+            "sourceHash": "1d42726bede1c918a859e0953ebec211dbc625a594f416b7eea3674cda596e14",
+            "evidenceCharacters": 127,
+            "providerDates": 0,
+            "sourceOpen": true,
+            "sourceLinkKeyboardReachable": true,
+            "sourceLinkSafe": true,
+            "answerCitationOpensSource": true,
+            "saveBlocked": true,
+            "storage": {
+              "conversationRecords": 0,
+              "localStorageKeys": 0,
+              "sessionStorageKeys": 0,
+              "cacheEntries": 0,
+              "serviceWorkers": 0
+            },
+            "clearedOnReload": true,
+            "pageErrors": [],
+            "networkViolation": 0,
+            "consoleMessageCount": 6,
+            "attempts": [
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 8605,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 840,
+                "firstEncryptedByteMs": 1193,
+                "elapsedMs": 4179
+              },
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 8976,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 474,
+                "firstEncryptedByteMs": 849,
+                "elapsedMs": 4165
+              }
+            ]
+          }
+        ],
+        "qualification": "NOT_PASSED",
+        "publicContentPersisted": false
+      }
+    }
+  ],
+  "metrics": {
+    "attempted": 6,
+    "delivered": 5,
+    "estimatedUSD": 0.0077299,
+    "humanScores": null
+  },
+  "assessment": {
+    "status": "AI_PROPOSED_NOT_HUMAN_REVIEW",
+    "decision": "Experimental, not ready. Narrow first-turn calculation benefit; follow-up delivery failed. No reliability-rate claim from this sample.",
+    "findings": [
+      "01 baseline writing preserves reopening uncertainty but wrongly says no stated year: source explicitly gives2026. No candidate attempted due harness bug.",
+      "02 baseline wrong139.00/144.00 instead of139.40/144.40 despite correct components.",
+      "02 candidate first turn locally computes139.40; explanation does not state tax treatment. Second turn withheld by local argument/evidence/arithmetic validation; exact cause unavailable because raw arguments not retained. No zero-quality score for missing answer.",
+      "03-04 unattempted; cannot claim unit/missing-information or corrected-count coverage."
+    ],
+    "stop": "First run stopped after2 baseline replies at harness mismatch. Separate remaining-case run stopped after4requests at candidate02turn2. No retries. All unused reserve retired."
+  }
+}

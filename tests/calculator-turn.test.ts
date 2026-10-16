@@ -157,3 +157,17 @@ it("aborting between argument chunks prevents calculator execution", async () =>
     ),
   ).rejects.toThrow();
 });
+it("classifies local calculator failures without logging arguments", async () => {
+  await expect(run(tool("{broken"))).rejects.toMatchObject({
+    calculatorFailure: "INVALID_JSON",
+    usage: { total: 30 },
+  });
+  await expect(run(tool("{}"))).rejects.toMatchObject({
+    calculatorFailure: "INVALID_SCHEMA",
+    usage: { total: 30 },
+  });
+  await expect(run(tool(args.replace('"37"', '"99"')))).rejects.toMatchObject({
+    calculatorFailure: "EVIDENCE_OR_ARITHMETIC",
+    usage: { total: 30 },
+  });
+});

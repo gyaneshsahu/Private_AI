@@ -1,3 +1,4 @@
+import { CalculatorValidationError } from "../src/calculator-turn";
 import { it, expect } from "vitest";
 import {
   classifyEvaluationFailure,
@@ -43,4 +44,18 @@ it("stops before the next request after every incomplete outcome, including usag
     }
   }
   expect(shouldStopWorkspaceBatch({ completed: true })).toBe(false);
+});
+
+it("records calculator rejection as a local contract failure without prompt content", () => {
+  const result = classifyEvaluationFailure(
+    new CalculatorValidationError("INVALID_SCHEMA", {
+      input: 1,
+      output: 2,
+      total: 3,
+      estimatedUSD: 0,
+    }),
+  );
+  expect(result.failureKind).toBe("CONTRACT_REJECTED");
+  expect(result.calculatorFailure).toBe("INVALID_SCHEMA");
+  expect(result.transportDiagnostic).toBeUndefined();
 });

@@ -1,3 +1,4 @@
+import { assertWorkspaceArm } from "./workspace-arm";
 import { startTemporaryReview } from "./temporary-review";
 import { shouldStopWorkspaceBatch } from "./reply-failure";
 import { readFile, writeFile, mkdir, access } from "node:fs/promises";
@@ -14,6 +15,8 @@ import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { auditResearchAnswer } from "../src/research-audit";
 import workspaceFixtures from "./cases/research-workspace.json";
 import assistedFixtures from "./cases/research-assisted.json";
+import toolFixtures from "./cases/research-tools.json";
+const optionalTools = process.argv.includes("--optional-tools");
 const assisted = process.argv.includes("--assisted");
 const diagnostic = process.argv.includes("--diagnostic");
 if (diagnostic && !assisted)
@@ -24,22 +27,35 @@ if (generalArithmetic && (!assisted || diagnostic))
 const structured = process.argv.includes("--structured");
 if (structured && (!assisted || diagnostic || generalArithmetic))
   throw Error("Choose separate structured assisted batch");
-const fixtures = structured
-  ? assistedFixtures.filter((f) => Number(f.id.slice(-2)) >= 6)
-  : generalArithmetic
-    ? assistedFixtures.filter(
-        (f) =>
-          Number(f.id.slice(-2)) >=
-          (process.argv.includes("--normalized") ? 4 : 3),
-      )
-    : diagnostic
-      ? assistedFixtures.filter((f) => f.id === "assisted-02")
-      : assisted
-        ? assistedFixtures
-        : workspaceFixtures;
-const fixturePath = assisted
-  ? "evaluation/cases/research-assisted.json"
-  : "evaluation/cases/research-workspace.json";
+if (
+  optionalTools &&
+  (!assisted || diagnostic || generalArithmetic || structured)
+)
+  throw Error("Choose separate optional-tools batch");
+const fixtures = optionalTools
+  ? toolFixtures.filter(
+      (f) =>
+        !process.argv.includes("--remaining-tools") ||
+        f.id !== "assisted-tool-01",
+    )
+  : structured
+    ? assistedFixtures.filter((f) => Number(f.id.slice(-2)) >= 6)
+    : generalArithmetic
+      ? assistedFixtures.filter(
+          (f) =>
+            Number(f.id.slice(-2)) >=
+            (process.argv.includes("--normalized") ? 4 : 3),
+        )
+      : diagnostic
+        ? assistedFixtures.filter((f) => f.id === "assisted-02")
+        : assisted
+          ? assistedFixtures
+          : workspaceFixtures;
+const fixturePath = optionalTools
+  ? "evaluation/cases/research-tools.json"
+  : assisted
+    ? "evaluation/cases/research-assisted.json"
+    : "evaluation/cases/research-workspace.json";
 const root = resolve(process.argv[2] || "");
 if (!process.argv[2] || !root.startsWith(resolve(".local") + "\\"))
   throw Error("Local run directory required");
@@ -70,6 +86,21 @@ if (!dry) {
     .digest("hex");
   if (fixtureHash !== plan.fixtureSHA256) throw Error("Frozen cases changed.");
 }
+// Validate every selected permit before opening a browser or spending on any arm.
+for (const fixture of fixtures)
+  for (const arm of diagnostic ? ["candidate"] : ["baseline", "candidate"]) {
+    const permit = validateExperiment(
+      JSON.parse(
+        await readFile(resolve(root, `${fixture.id}-${arm}.json`), "utf8"),
+      ),
+    );
+    assertWorkspaceArm(
+      permit,
+      fixture.id,
+      arm,
+      optionalTools ? "optional" : assisted ? "assisted" : "scoped",
+    );
+  }
 const report: any = {
   mode: dry ? "OFFLINE_UI_ONLY" : "LIVE_PUBLIC_AND_AUTHORED",
   humanScores: null,
@@ -119,14 +150,12 @@ try {
           await readFile(resolve(root, `${fixture.id}-${arm}.json`), "utf8"),
         ),
       );
-      if (
-        permit.developmentCaseId !== fixture.id ||
-        !!(assisted
-          ? permit.policy.assistedResearchContract
-          : permit.policy.scopedResearchContract) !==
-          (arm === "candidate")
-      )
-        throw Error("Fixed case/configuration mismatch");
+      assertWorkspaceArm(
+        permit,
+        fixture.id,
+        arm,
+        optionalTools ? "optional" : assisted ? "assisted" : "scoped",
+      );
       const claimed = dry
         ? undefined
         : await claimExperiment(".local/experiment-runs", permit.approvalId);
