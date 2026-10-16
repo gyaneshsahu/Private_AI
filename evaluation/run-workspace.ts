@@ -17,6 +17,9 @@ import workspaceFixtures from "./cases/research-workspace.json";
 import assistedFixtures from "./cases/research-assisted.json";
 import toolFixtures from "./cases/research-tools.json";
 const optionalTools = process.argv.includes("--optional-tools");
+const toolDiagnostic = process.argv.includes("--tool-diagnostic");
+if (toolDiagnostic && !optionalTools)
+  throw Error("Tool diagnostic requires optional tools");
 const assisted = process.argv.includes("--assisted");
 const diagnostic = process.argv.includes("--diagnostic");
 if (diagnostic && !assisted)
@@ -33,10 +36,17 @@ if (
 )
   throw Error("Choose separate optional-tools batch");
 const fixtures = optionalTools
-  ? toolFixtures.filter(
-      (f) =>
-        !process.argv.includes("--remaining-tools") ||
-        f.id !== "assisted-tool-01",
+  ? toolFixtures.filter((f) =>
+      toolDiagnostic
+        ? f.id ===
+          (process.argv.includes("--invoice-diagnostic")
+            ? "assisted-tool-08"
+            : "assisted-tool-07")
+        : process.argv.includes("--multi-results")
+          ? Number(f.id.slice(-2)) >= 5 && Number(f.id.slice(-2)) <= 7
+          : Number(f.id.slice(-2)) <= 4 &&
+            (!process.argv.includes("--remaining-tools") ||
+              f.id !== "assisted-tool-01"),
     )
   : structured
     ? assistedFixtures.filter((f) => Number(f.id.slice(-2)) >= 6)
@@ -88,7 +98,9 @@ if (!dry) {
 }
 // Validate every selected permit before opening a browser or spending on any arm.
 for (const fixture of fixtures)
-  for (const arm of diagnostic ? ["candidate"] : ["baseline", "candidate"]) {
+  for (const arm of diagnostic || toolDiagnostic
+    ? ["candidate"]
+    : ["baseline", "candidate"]) {
     const permit = validateExperiment(
       JSON.parse(
         await readFile(resolve(root, `${fixture.id}-${arm}.json`), "utf8"),
@@ -140,7 +152,7 @@ try {
   for (const [caseIndex, fixture] of fixtures.entries()) {
     if (stop) break;
     let pairedSources: any[] | undefined;
-    for (const arm of diagnostic
+    for (const arm of diagnostic || toolDiagnostic
       ? ["candidate"]
       : assisted && caseIndex % 2
         ? ["candidate", "baseline"]

@@ -152,3 +152,7 @@ Recommended next reversible prototype: ordinary source-linked explanations with 
 ### 16 October integration status
 
 Optional calculator now has an explicit development permit and verified-adapter path. Tool schema overhead is part of admission; one inference request returns either ordinary prose or one locally executed calculation. The application directly appends computed result and references; no second model rewrite of that result is performed. Surrounding prose remains model-written and can still contradict the result; no semantic pass inferred. Buffered delivery and usefulness need fresh live evidence. Production qualification and private-data gates remain unchanged.
+
+### Bounded multi-result support and lexical evidence
+
+Optional calculator supports up to4named results with per-result units in one request. Validate every result before display; no model rewrite of computed values. Deterministic English integer-word normalization0-99 allows a digit operand to match an exact source quote spelling the number. Larger magnitudes, word fractions, signed/decimal word phrases remain unsupported and are rejected as whole phrases. This establishes lexical correspondence only; source entailment, unit selection and formulas remain unverified. Captured synthetic invoice replay fixes one validator failure; original live failure remains preserved.

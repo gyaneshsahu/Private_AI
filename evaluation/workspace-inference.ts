@@ -51,7 +51,7 @@ export async function streamReply(
       },
       history,
     );
-    lastRaw = draft;
+    lastRaw = permit.policy.optionalCalculator ? undefined : draft;
     state.results.push({
       completed: true,
       answer,

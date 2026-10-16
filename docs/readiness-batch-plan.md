@@ -119,3 +119,7 @@ Plan/results: `.local/structured-live-20261015`, preserved in `evaluation/result
 ## 16 October optional-tool runs stopped
 
 Initial maximum16requests/reserve0.9270272 stopped after2baseline calls at harness mismatch. Remaining-case plan maximum12requests/reserve0.6952704 stopped after4calls at candidate02follow-up local validation rejection. No retries; cases03-04 unattempted. Records: `evaluation/results/research-tools-20261016.json`. All unused reserve retired; new code hashes require a new plan. Actual total estimate0.0077299 included in refreshed dashboard0.63. Human grades blank.
+
+## 16 October multi-result comparison and two diagnostics completed/stopped
+
+Frozen multi plan max12 used6 then stopped at06candidateT2 INVALID_SCHEMA. Separate unattempted07diagnostic max2 used2complete. Separate unattempted08diagnostic max2 used1then stopped at evidence rejection. Total9requests/7delivered, estimate0.0162654, included in dashboard0.65of3. All unused reserves retired; current bound0.8991904. No old permits reusable. Subsequent number-word repair is offline-only; future live tests require new cases/plans/hashes. Full evidence `evaluation/results/research-tools-multi-20261016.json`.

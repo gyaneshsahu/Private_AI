@@ -12,27 +12,35 @@ import {
 } from "./checked-response";
 import { consumeReply, IncompleteReplyError } from "./reply-stream";
 
+const calculatorUnit = z.enum([
+  "EUR",
+  "GBP",
+  "USD",
+  "count",
+  "%",
+  "m",
+  "km",
+  "s",
+  "h",
+  "W",
+  "kW",
+  "Wh",
+  "kWh",
+]);
 export const calculatorArguments = z
   .object({
-    unit: z.enum([
-      "EUR",
-      "GBP",
-      "USD",
-      "count",
-      "%",
-      "m",
-      "km",
-      "s",
-      "h",
-      "W",
-      "kW",
-      "Wh",
-      "kWh",
-    ]),
+    unit: calculatorUnit,
     program: checkedResponseSchema.extend({
       inputs: checkedResponseSchema.shape.inputs.min(1),
       steps: checkedResponseSchema.shape.steps.min(1),
-      results: checkedResponseSchema.shape.results.length(1),
+      results: z
+        .array(
+          checkedResponseSchema.shape.results.element.extend({
+            unit: calculatorUnit.optional(),
+          }),
+        )
+        .min(1)
+        .max(4),
       passages: checkedResponseSchema.shape.passages.max(0),
       limitation: z.literal("none"),
     }),
@@ -43,7 +51,7 @@ export const calculatorTool = {
   function: {
     name: "calculate",
     description:
-      "Compute a requested derived quantity from exact source or user operands. Use ordinary text for explanations and questions. No arbitrary code. The application displays the result directly; operation and unit selection still need to match the question.",
+      "Compute up to four named derived results in one call. Each result references a step id and may specify its own unit; otherwise the top-level unit applies. Compute a requested derived quantity from exact source or user operands. Use ordinary text for explanations and questions. No arbitrary code. The application displays the result directly; operation and unit selection still need to match the question.",
     parameters: z.toJSONSchema(calculatorArguments),
   },
 };
@@ -52,6 +60,7 @@ export class CalculatorValidationError extends IncompleteReplyError {
     readonly calculatorFailure:
       "INVALID_JSON" | "INVALID_SCHEMA" | "EVIDENCE_OR_ARITHMETIC",
     usage: Usage,
+    readonly schemaIssues?: { code: string; path: (string | number)[] }[],
   ) {
     super(
       "Calculation could not be validated. No automatic retry was made.",
@@ -62,6 +71,12 @@ export class CalculatorValidationError extends IncompleteReplyError {
 export type CalculatorTurn = {
   text: string;
   calculation?: { value: string; unit: string; references: string[] };
+  calculations?: {
+    id: string;
+    value: string;
+    unit: string;
+    references: string[];
+  }[];
   usage: Usage;
 };
 
@@ -73,6 +88,7 @@ export async function consumeCalculatorTurn(
   signal: AbortSignal,
   sources: Source[],
   conversation: Conversation,
+  onDiagnosticArguments?: (raw: string) => void,
 ): Promise<CalculatorTurn> {
   let text = "";
   let argumentsText = "";
@@ -159,6 +175,7 @@ export async function consumeCalculatorTurn(
       "Calculator prototype requires final usage; no retry was made.",
     );
   if (!sawTool) return { text, usage };
+  onDiagnosticArguments?.(argumentsText);
   try {
     let parsed: unknown;
     try {
@@ -167,15 +184,55 @@ export async function consumeCalculatorTurn(
       throw new CalculatorValidationError("INVALID_JSON", usage);
     }
     const validated = calculatorArguments.safeParse(parsed);
-    if (!validated.success)
-      throw new CalculatorValidationError("INVALID_SCHEMA", usage);
+    if (!validated.success) {
+      const knownFields = new Set([
+        "unit",
+        "program",
+        "inputs",
+        "steps",
+        "results",
+        "passages",
+        "limitation",
+        "id",
+        "value",
+        "evidence",
+        "kind",
+        "sourceId",
+        "quote",
+        "userTurn",
+        "op",
+        "left",
+        "right",
+        "decimals",
+      ]);
+      const issues = validated.error.issues.slice(0, 8).map((issue) => ({
+        code: issue.code,
+        path: issue.path.map((part) =>
+          typeof part === "number"
+            ? part
+            : knownFields.has(String(part))
+              ? String(part)
+              : "unknown_field",
+        ),
+      }));
+      throw new CalculatorValidationError("INVALID_SCHEMA", usage, issues);
+    }
     const args = validated.data;
-    const value = renderCheckedResponse(
-      JSON.stringify(args.program),
-      sources,
-      conversation,
-      "result",
-    );
+    if (
+      new Set(args.program.results.map((r) => r.id)).size !==
+      args.program.results.length
+    )
+      throw new CalculatorValidationError("INVALID_SCHEMA", usage);
+    const values = args.program.results.map(({ id, decimals, unit }) => ({
+      id,
+      unit: unit ?? args.unit,
+      value: renderCheckedResponse(
+        JSON.stringify({ ...args.program, results: [{ id, decimals }] }),
+        sources,
+        conversation,
+        "result",
+      ),
+    }));
     const references = [
       ...new Set(
         args.program.inputs.map((input) =>
@@ -185,7 +242,21 @@ export async function consumeCalculatorTurn(
         ),
       ),
     ];
-    return { text, calculation: { value, unit: args.unit, references }, usage };
+    if (values.length === 1)
+      return {
+        text,
+        calculation: {
+          value: values[0].value,
+          unit: values[0].unit,
+          references,
+        },
+        usage,
+      };
+    return {
+      text,
+      calculations: values.map((value) => ({ ...value, references })),
+      usage,
+    };
   } catch (error) {
     if (error instanceof CalculatorValidationError) throw error;
     throw new CalculatorValidationError("EVIDENCE_OR_ARITHMETIC", usage);
@@ -193,18 +264,23 @@ export async function consumeCalculatorTurn(
 }
 
 export function renderCalculatorTurn(turn: CalculatorTurn): string {
-  if (!turn.calculation) return turn.text;
-  const { value, unit, references } = turn.calculation;
-  const citations = references
-    .map((reference) =>
-      reference.startsWith("user:")
-        ? `(your message ${reference.slice(5)})`
-        : `[${reference}]`,
-    )
-    .join(" ");
+  const results =
+    turn.calculations ??
+    (turn.calculation ? [{ ...turn.calculation, id: "result" }] : []);
+  if (!results.length) return turn.text;
   return [
     turn.text,
-    `**Calculated result: ${value} ${unit}** ${citations}`,
+    ...results.map(({ id, value, unit, references }) => {
+      const citations = references
+        .map((reference) =>
+          reference.startsWith("user:")
+            ? `(your message ${reference.slice(5)})`
+            : `[${reference}]`,
+        )
+        .join(" ");
+      const label = id.replaceAll("_", " ");
+      return `**Calculated ${label}: ${value} ${unit}** ${citations}`;
+    }),
     "Arithmetic calculated locally; the selected inputs, method and explanation are not independently verified.",
   ]
     .filter(Boolean)

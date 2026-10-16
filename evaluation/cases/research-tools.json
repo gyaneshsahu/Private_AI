@@ -103,5 +103,107 @@
         "evidenceKind": "search-excerpt"
       }
     ]
+  },
+  {
+    "id": "assisted-tool-05",
+    "family": "research",
+    "synthetic": true,
+    "query": "synthetic Office notice",
+    "turns": [
+      "Write two short alternative messages for clients, preserving what is confirmed and what is unknown.",
+      "Does the later notice prove the move happened? Answer directly in one sentence."
+    ],
+    "mandatoryFacts": [
+      "Two alternatives; planned move delayed; actual move not established; no agreed new date; compensation unknown.",
+      "No, later notice confirms delay not move."
+    ],
+    "forbiddenConclusions": [
+      "Invent missing facts",
+      "Silently drop a requested result"
+    ],
+    "sources": [
+      {
+        "id": "tool-source-05",
+        "title": "Authored synthetic evidence: Office notice",
+        "text": "On 12 January 2027 the studio announced a planned move for 18 January. On 19 January it said inspections delayed the move and no replacement date was agreed. Both notices are silent on compensation.",
+        "url": "https://example.com/assisted-tool-05",
+        "evidenceKind": "search-excerpt"
+      }
+    ]
+  },
+  {
+    "id": "assisted-tool-06",
+    "family": "research",
+    "synthetic": true,
+    "query": "synthetic Conference order",
+    "turns": [
+      "Calculate the complete amount payable and explain the treatment of the handling fee.",
+      "The handling fee is now GBP 12, still untaxed. Give both the new total and the change from the previous total."
+    ],
+    "mandatoryFacts": [
+      "124+18.60+7=149.60 GBP; handling untaxed.",
+      "154.60 GBP; increase5GBP."
+    ],
+    "forbiddenConclusions": [
+      "Invent missing facts",
+      "Silently drop a requested result"
+    ],
+    "sources": [
+      {
+        "id": "tool-source-06",
+        "title": "Authored synthetic evidence: Conference order",
+        "text": "An order contains 4 passes at GBP 31 each. Tax 15 percent applies to passes only. An untaxed handling fee of GBP 7 is added. Prices exclude tax.",
+        "url": "https://example.com/assisted-tool-06",
+        "evidenceKind": "search-excerpt"
+      }
+    ]
+  },
+  {
+    "id": "assisted-tool-07",
+    "family": "research",
+    "synthetic": true,
+    "query": "synthetic Lighting measurement",
+    "turns": [
+      "Calculate both energy in kWh and cost in EUR.",
+      "The measured duration is corrected to 3.5 hours; all other values unchanged. Update energy and cost."
+    ],
+    "mandatoryFacts": ["7.2kWh;2.16EUR.", "8.4kWh;2.52EUR."],
+    "forbiddenConclusions": [
+      "Invent missing facts",
+      "Silently drop a requested result"
+    ],
+    "sources": [
+      {
+        "id": "tool-source-07",
+        "title": "Authored synthetic evidence: Lighting measurement",
+        "text": "A lamp bank uses 2.4 kW at constant power for 3 hours. Electricity costs EUR 0.30 per kWh. These are measured values; no fixed fees or tax apply.",
+        "url": "https://example.com/assisted-tool-07",
+        "evidenceKind": "search-excerpt"
+      }
+    ]
+  },
+  {
+    "id": "assisted-tool-08",
+    "family": "research",
+    "synthetic": true,
+    "query": "synthetic catering bill",
+    "turns": [
+      "What is the complete bill, including tax? Explain what is taxed.",
+      "The service fee changes to EUR 9. Give the revised bill and its difference from the previous bill."
+    ],
+    "mandatoryFacts": [
+      "8*14=112; (112+5)*1.10=128.70EUR.",
+      "(112+9)*1.10=133.10EUR; increase4.40EUR."
+    ],
+    "forbiddenConclusions": ["Old fee after correction", "Taxing only meals"],
+    "sources": [
+      {
+        "id": "tool-source-08",
+        "title": "Authored synthetic catering bill",
+        "text": "Eight meal boxes cost EUR 14 each. Service fee is EUR 5. Tax 10 percent applies to the meals and service fee together. All prices exclude tax.",
+        "url": "https://example.com/assisted-tool-08",
+        "evidenceKind": "search-excerpt"
+      }
+    ]
   }
 ]

@@ -11,6 +11,10 @@ export function classifyEvaluationFailure(error: unknown) {
     failureKind: contract
       ? "CONTRACT_REJECTED"
       : "TRANSPORT_OR_APPLICATION_FAILURE",
+    calculatorSchemaIssues:
+      error instanceof CalculatorValidationError
+        ? error.schemaIssues
+        : undefined,
     calculatorFailure:
       error instanceof CalculatorValidationError
         ? error.calculatorFailure

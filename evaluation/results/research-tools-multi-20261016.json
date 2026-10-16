@@ -1,0 +1,646 @@
+{
+  "runs": [
+    {
+      "root": ".local/tools-multi-live-20261016",
+      "plan": {
+        "status": "FROZEN_BEFORE_EXECUTION",
+        "frozenAt": "2026-10-16T11:04:40.312Z",
+        "maxRequests": 12,
+        "maxSearches": 0,
+        "automaticRetries": 0,
+        "reserveUSD": 0.6952704,
+        "actualBeforeUSD": 0.63,
+        "uncertaintyUSD": 0.2491904,
+        "cumulativeBoundUSD": 1.5744608,
+        "capUSD": 3,
+        "publicContentPersistence": false,
+        "baseline": "DeepSeek-v4.1-flash thinkingoff constraints-v4",
+        "candidate": "same + optionalCalculator one request auto tool choice, up to4named results; tool schema included in20000character allowance",
+        "order": "alternating arm first by case; identical authored sources",
+        "stop": "Any incomplete reply or app-check failure stops entire batch. No retry, no continuation.",
+        "fixtureSHA256": "bcbb72fda13f0d6fa382f24f63de73fa1a2576d12d804f75981cde3eccdeb246",
+        "implementationHashes": {
+          "evaluation/workspace-arm.ts": "a14fc2b0a8752a29cbc57f5ae634f427e97cd63ed9451c3cf439765ff0c90c96",
+          "src/calculator-turn.ts": "50e713b31c2bed765e27adc7a6a5cab4c1edd86be207932409e8f81a11563688",
+          "src/assisted-response-format.ts": "48199b37a38d16e255f5e86507effdf2ec8fb1d2266e0fb01576a4174f07d09f",
+          "evaluation/temporary-review.ts": "67432cca09635765ab039ac94cc5c0203d9a91882359484e04f8b9304e85e991",
+          "src/assisted-research.ts": "7c8bf0ea5f9b1dbbaafb513e30fc15f98837cd481227c8534cd43992a0e0b3bf",
+          "src/scoped-research.ts": "5e4eb88cd28c06a650194ab3cb407748d3ba1bd6005b498498856b011a5fc6a4",
+          "src/checked-response.ts": "c1c345435f1b015fea8507d5ddf0f090b3b85c32b6cb5004de2652ca15c23fc0",
+          "src/research-contract.ts": "4b22c4ad208275e67668cc46bc402db6bdafd3abccd7ddec16563a37d6a02036",
+          "src/verified-chat.ts": "db21662c92412177b371c99bde9ab22d00473c8faf9263953a7e9995bf4482e7",
+          "src/App.tsx": "38a8e9612b0f3b3fbd90744b266ec5658605ff67c0005b940fc6f9e86806c4b5",
+          "evaluation/run-workspace.ts": "1d52b6fb245e608669e659d7cd28dc804e5d0d50e75936ae99ecbab596081fce",
+          "evaluation/workspace-inference.ts": "9af5d5ae707a58604c7edcacd67e57d9190a6b201c8959b3d87c48f8d5769141",
+          "evaluation/experiment.ts": "c40f84e118fda332f142cbbcb19af9c6b1ee35c5bfd203fe4d1f91cda533898f"
+        },
+        "humanScores": null
+      },
+      "report": {
+        "mode": "LIVE_PUBLIC_AND_AUTHORED",
+        "humanScores": null,
+        "results": [
+          {
+            "id": "assisted-tool-05",
+            "arm": "baseline",
+            "public": false,
+            "replies": [
+              {
+                "completed": true,
+                "answer": "**Option 1**\n\nWe’re writing about the planned studio move. On 12 January 2027 the studio announced a move planned for 18 January, and on 19 January it said inspections had delayed the move, with no replacement date agreed. The date is therefore unconfirmed, and the notices did not address compensation. We’ll share any confirmed new date when it’s available.\n\n**Option 2**\n\nA quick update on the studio move: a move was announced for 18 January, but the studio said on 19 January that inspections delayed it, and no replacement date has been agreed. We don’t yet have a confirmed date, and compensation was not mentioned in the notices. We’ll be in touch as soon as the position is confirmed.\n\nBoth versions keep the confirmed facts (announcement, planned date, delay, no agreed replacement date) and the unknowns (new date, compensation) distinct [tool-source-05].",
+                "usage": {
+                  "input": 921,
+                  "output": 195,
+                  "total": 1116,
+                  "estimatedUSD": 0.0008814
+                },
+                "firstVisibleTextMs": 2134,
+                "elapsedMs": 4240,
+                "answerCharacters": 866,
+                "answerSHA256": "530fe342f04dff53eefce71e9ba4a3447ece9c9559de53c921888b327c574e1d",
+                "evidenceAudit": {
+                  "citationReferences": 1,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              },
+              {
+                "completed": true,
+                "answer": "No — the 19 January notice says inspections delayed the move and that no replacement date was agreed, so it does not establish that the move happened [tool-source-05].",
+                "usage": {
+                  "input": 1134,
+                  "output": 36,
+                  "total": 1170,
+                  "estimatedUSD": 0.0007893
+                },
+                "firstVisibleTextMs": 1315,
+                "elapsedMs": 1582,
+                "answerCharacters": 167,
+                "answerSHA256": "d177e836c8d36d0759c619a0b4dc08ff70ce2d87abe252d69ba681985416a53c",
+                "evidenceAudit": {
+                  "citationReferences": 1,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              }
+            ],
+            "humanScores": null,
+            "productionGateClosed": true,
+            "retrievalKind": "AUTHORED_FIXTURE",
+            "sourceCount": 1,
+            "sourceHash": "7d5ff9bfd6655168df2eaf81417186edb825cd29a60c7713e5116574cd151f3c",
+            "evidenceCharacters": 198,
+            "providerDates": 0,
+            "sourceOpen": true,
+            "sourceLinkKeyboardReachable": true,
+            "sourceLinkSafe": true,
+            "answerCitationOpensSource": true,
+            "saveBlocked": true,
+            "storage": {
+              "conversationRecords": 0,
+              "localStorageKeys": 0,
+              "sessionStorageKeys": 0,
+              "cacheEntries": 0,
+              "serviceWorkers": 0
+            },
+            "clearedOnReload": true,
+            "pageErrors": [],
+            "networkViolation": 0,
+            "consoleMessageCount": 6,
+            "attempts": [
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 5346,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 885,
+                "firstEncryptedByteMs": 1245,
+                "elapsedMs": 3352
+              },
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 6372,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 492,
+                "firstEncryptedByteMs": 877,
+                "elapsedMs": 1143
+              }
+            ]
+          },
+          {
+            "id": "assisted-tool-05",
+            "arm": "candidate",
+            "public": false,
+            "replies": [
+              {
+                "completed": true,
+                "answer": "Here are two short alternatives. Both preserve the confirmed facts (a move was planned, then delayed by inspections, no new date agreed) and the unknowns (no replacement date; compensation status unstated, not confirmed as either offered or refused).\n\n**Option 1 — neutral notice**\n\n> Update on our studio move\n>\n> On 12 January 2027 we announced a planned move for 18 January. On 19 January we said inspections had delayed the move, and no replacement date has been agreed. We have no new date to share yet.\n>\n> Our existing notices do not address compensation; we are not confirming or ruling out anything on that point at this stage. We will write again when we have a confirmed date.\n\n**Option 2 — shorter, client-first**\n\n> Studio move: delayed\n>\n> The move planned for 18 January did not go ahead — inspections caused the delay, as we advised on 19 January. No new date has been agreed yet, so we can't give you one.\n>\n> Nothing has been said about compensation in our notices, so please treat that as undecided rather than settled either way. We'll follow up once a date is fixed.\n\nNotes on what these messages deliberately do **not** say:\n- They don't name a new moving date or imply one is imminent.\n- They don't state that compensation is or isn't available — the source is silent on it, so that remains unknown, not negative.\n- They don't explain what the inspections found or when they'll conclude; that isn't in the material.\n\nSource: [tool-source-05] (search excerpt; retrieved 2026-10-15, which is not the publication date). The excerpt is partial, so dates and wording should be checked against the full notices before sending. If you tell me who the clients are and whether compensation has since been decided, I can tighten these further.",
+                "usage": {
+                  "input": 2311,
+                  "output": 389,
+                  "total": 2700,
+                  "estimatedUSD": 0.0020662
+                },
+                "firstVisibleTextMs": 6864,
+                "elapsedMs": 6864,
+                "answerCharacters": 1756,
+                "answerSHA256": "11a05b7a68f5165dcf0925157103edcf5e49361cacf4c893a332cff3c7b16574",
+                "evidenceAudit": {
+                  "citationReferences": 1,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              },
+              {
+                "completed": true,
+                "answer": "No — the 19 January notice says inspections delayed the move and no replacement date was agreed, so it shows the planned 18 January move did not go ahead as scheduled, not that any move occurred. [tool-source-05]",
+                "usage": {
+                  "input": 2718,
+                  "output": 48,
+                  "total": 2766,
+                  "estimatedUSD": 0.0018363
+                },
+                "firstVisibleTextMs": 1764,
+                "elapsedMs": 1764,
+                "answerCharacters": 212,
+                "answerSHA256": "33078a938481e0e6d529d48b54c5ffdb7a9fabd38482f19e5151efbcba671dbf",
+                "evidenceAudit": {
+                  "citationReferences": 1,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              }
+            ],
+            "humanScores": null,
+            "productionGateClosed": true,
+            "retrievalKind": "AUTHORED_FIXTURE",
+            "sourceCount": 1,
+            "sourceHash": "7d5ff9bfd6655168df2eaf81417186edb825cd29a60c7713e5116574cd151f3c",
+            "evidenceCharacters": 198,
+            "providerDates": 0,
+            "sourceOpen": true,
+            "sourceLinkKeyboardReachable": true,
+            "sourceLinkSafe": true,
+            "answerCitationOpensSource": true,
+            "saveBlocked": true,
+            "storage": {
+              "conversationRecords": 0,
+              "localStorageKeys": 0,
+              "sessionStorageKeys": 0,
+              "cacheEntries": 0,
+              "serviceWorkers": 0
+            },
+            "clearedOnReload": true,
+            "pageErrors": [],
+            "networkViolation": 0,
+            "consoleMessageCount": 6,
+            "attempts": [
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 8958,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 827,
+                "firstEncryptedByteMs": 1190,
+                "elapsedMs": 6067
+              },
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 10887,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 474,
+                "firstEncryptedByteMs": 857,
+                "elapsedMs": 1335
+              }
+            ]
+          },
+          {
+            "id": "assisted-tool-06",
+            "arm": "candidate",
+            "public": false,
+            "replies": [
+              {
+                "completed": true,
+                "answer": "I'll compute the total from the supplied figures.\n\n\n\n**Calculated passes subtotal: 124.00 GBP** [tool-source-06]\n\n**Calculated tax amount: 18.60 GBP** [tool-source-06]\n\n**Calculated total payable: 149.60 GBP** [tool-source-06]\n\nArithmetic calculated locally; the selected inputs, method and explanation are not independently verified.",
+                "usage": {
+                  "input": 2304,
+                  "output": 472,
+                  "total": 2776,
+                  "estimatedUSD": 0.002182
+                },
+                "firstVisibleTextMs": 5276,
+                "elapsedMs": 5276,
+                "answerCharacters": 334,
+                "answerSHA256": "c10740f7f79497fc3788317e0a6d1f1296083e1681a1b6f56beb0626b3a373c5",
+                "evidenceAudit": {
+                  "citationReferences": 3,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              },
+              {
+                "completed": false,
+                "answer": "",
+                "failureKind": "CONTRACT_REJECTED",
+                "calculatorFailure": "INVALID_SCHEMA",
+                "usage": {
+                  "input": 2417,
+                  "output": 545,
+                  "total": 2962,
+                  "estimatedUSD": 0.0023613
+                },
+                "failure": "IncompleteReplyError",
+                "firstVisibleTextMs": null,
+                "elapsedMs": 6232,
+                "answerCharacters": 0,
+                "answerSHA256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+                "evidenceAudit": {
+                  "citationReferences": 0,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              }
+            ],
+            "humanScores": null,
+            "productionGateClosed": true,
+            "retrievalKind": "AUTHORED_FIXTURE",
+            "sourceCount": 1,
+            "sourceHash": "df3f7785aeadcc3ea56975f29aaf286cf2245bdbfb86555cd6b791ba1d74264a",
+            "evidenceCharacters": 144,
+            "providerDates": 0,
+            "sourceOpen": true,
+            "sourceLinkKeyboardReachable": true,
+            "sourceLinkSafe": true,
+            "answerCitationOpensSource": true,
+            "saveBlocked": true,
+            "storage": {
+              "conversationRecords": 0,
+              "localStorageKeys": 0,
+              "sessionStorageKeys": 0,
+              "cacheEntries": 0,
+              "serviceWorkers": 0
+            },
+            "clearedOnReload": true,
+            "pageErrors": [],
+            "networkViolation": 0,
+            "consoleMessageCount": 6,
+            "attempts": [
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 8892,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 823,
+                "firstEncryptedByteMs": 1207,
+                "elapsedMs": 4429
+              },
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 9409,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 508,
+                "firstEncryptedByteMs": 876,
+                "elapsedMs": 5804
+              }
+            ]
+          }
+        ],
+        "qualification": "NOT_PASSED",
+        "publicContentPersisted": false
+      }
+    },
+    {
+      "root": ".local/tool-diagnostic-live-20261016",
+      "plan": {
+        "status": "FROZEN_BEFORE_EXECUTION",
+        "frozenAt": "2026-10-16T11:06:18.250Z",
+        "maxRequests": 2,
+        "maxSearches": 0,
+        "automaticRetries": 0,
+        "reserveUSD": 0.11587839999999999,
+        "actualBeforeUSD": 0.63,
+        "uncertaintyUSD": 0.2593069,
+        "cumulativeBoundUSD": 1.0051853,
+        "capUSD": 3,
+        "publicContentPersistence": false,
+        "baseline": "DeepSeek-v4.1-flash thinkingoff constraints-v4",
+        "candidate": "same + optionalCalculator one request auto tool choice, up to4named results; tool schema included in20000character allowance",
+        "order": "alternating arm first by case; identical authored sources",
+        "stop": "Any incomplete reply or app-check failure stops entire batch. No retry, no continuation.",
+        "fixtureSHA256": "bcbb72fda13f0d6fa382f24f63de73fa1a2576d12d804f75981cde3eccdeb246",
+        "implementationHashes": {
+          "evaluation/workspace-arm.ts": "a14fc2b0a8752a29cbc57f5ae634f427e97cd63ed9451c3cf439765ff0c90c96",
+          "src/calculator-turn.ts": "9771f2225cf5e53e9c80ae5a886f3b5b8d44260a423c33414c943ef300e0758f",
+          "src/assisted-response-format.ts": "48199b37a38d16e255f5e86507effdf2ec8fb1d2266e0fb01576a4174f07d09f",
+          "evaluation/temporary-review.ts": "67432cca09635765ab039ac94cc5c0203d9a91882359484e04f8b9304e85e991",
+          "src/assisted-research.ts": "7c8bf0ea5f9b1dbbaafb513e30fc15f98837cd481227c8534cd43992a0e0b3bf",
+          "src/scoped-research.ts": "5e4eb88cd28c06a650194ab3cb407748d3ba1bd6005b498498856b011a5fc6a4",
+          "src/checked-response.ts": "c1c345435f1b015fea8507d5ddf0f090b3b85c32b6cb5004de2652ca15c23fc0",
+          "src/research-contract.ts": "4b22c4ad208275e67668cc46bc402db6bdafd3abccd7ddec16563a37d6a02036",
+          "src/verified-chat.ts": "f291c603112c6483ed7fbc9169a2590734a13bed102fc0e4fe36ef2747488947",
+          "src/App.tsx": "38a8e9612b0f3b3fbd90744b266ec5658605ff67c0005b940fc6f9e86806c4b5",
+          "evaluation/run-workspace.ts": "d72279fde914da36be1b6371af644bc0749d6b4c20128f6737547265c334c9ac",
+          "evaluation/workspace-inference.ts": "29faf8619531af8f0da7a175c4c12011c08d71e82a19fe346a09498afd42e752",
+          "evaluation/experiment.ts": "c40f84e118fda332f142cbbcb19af9c6b1ee35c5bfd203fe4d1f91cda533898f"
+        },
+        "humanScores": null
+      },
+      "report": {
+        "mode": "LIVE_PUBLIC_AND_AUTHORED",
+        "humanScores": null,
+        "results": [
+          {
+            "id": "assisted-tool-07",
+            "arm": "candidate",
+            "public": false,
+            "replies": [
+              {
+                "completed": true,
+                "answer": "**Calculated energy: 7.20 kWh** [tool-source-07]\n\n**Calculated cost: 2.16 EUR** [tool-source-07]\n\nArithmetic calculated locally; the selected inputs, method and explanation are not independently verified.",
+                "usage": {
+                  "input": 2301,
+                  "output": 326,
+                  "total": 2627,
+                  "estimatedUSD": 0.0019683500000000002
+                },
+                "firstVisibleTextMs": 4248,
+                "elapsedMs": 4248,
+                "answerCharacters": 204,
+                "answerSHA256": "32fa426c82951b5df1efd332e36217a2d10d05e86e9dd3ca014a073c27877ef4",
+                "evidenceAudit": {
+                  "citationReferences": 2,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              },
+              {
+                "completed": true,
+                "answer": "**Calculated energy: 8.40 kWh** [tool-source-07] (your message 2)\n\n**Calculated cost: 2.52 EUR** [tool-source-07] (your message 2)\n\nArithmetic calculated locally; the selected inputs, method and explanation are not independently verified.",
+                "usage": {
+                  "input": 2378,
+                  "output": 321,
+                  "total": 2699,
+                  "estimatedUSD": 0.00201115
+                },
+                "firstVisibleTextMs": 3974,
+                "elapsedMs": 3974,
+                "answerCharacters": 238,
+                "answerSHA256": "31d5c49e10019cf6101d06bb3872742cdcb01fae83abeef80058f12cc78f47f0",
+                "evidenceAudit": {
+                  "citationReferences": 2,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              }
+            ],
+            "humanScores": null,
+            "productionGateClosed": true,
+            "retrievalKind": "AUTHORED_FIXTURE",
+            "sourceCount": 1,
+            "sourceHash": "95b21a700518eb869f1d62a7bff89aba34e71f92da7be42f3537b2ff95dda301",
+            "evidenceCharacters": 145,
+            "providerDates": 0,
+            "sourceOpen": true,
+            "sourceLinkKeyboardReachable": true,
+            "sourceLinkSafe": true,
+            "answerCitationOpensSource": true,
+            "saveBlocked": true,
+            "storage": {
+              "conversationRecords": 0,
+              "localStorageKeys": 0,
+              "sessionStorageKeys": 0,
+              "cacheEntries": 0,
+              "serviceWorkers": 0
+            },
+            "clearedOnReload": true,
+            "pageErrors": [],
+            "networkViolation": 0,
+            "consoleMessageCount": 6,
+            "attempts": [
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 8858,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 842,
+                "firstEncryptedByteMs": 1208,
+                "elapsedMs": 3178
+              },
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 9229,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 479,
+                "firstEncryptedByteMs": 854,
+                "elapsedMs": 3538
+              }
+            ]
+          }
+        ],
+        "qualification": "NOT_PASSED",
+        "publicContentPersisted": false
+      }
+    },
+    {
+      "root": ".local/tool-invoice-live-20261016",
+      "plan": {
+        "status": "FROZEN_BEFORE_EXECUTION",
+        "frozenAt": "2026-10-16T11:07:17.398Z",
+        "maxRequests": 2,
+        "maxSearches": 0,
+        "automaticRetries": 0,
+        "reserveUSD": 0.11587839999999999,
+        "actualBeforeUSD": 0.63,
+        "uncertaintyUSD": 0.2632864,
+        "cumulativeBoundUSD": 1.0091648,
+        "capUSD": 3,
+        "publicContentPersistence": false,
+        "baseline": "DeepSeek-v4.1-flash thinkingoff constraints-v4",
+        "candidate": "same + optionalCalculator one request auto tool choice, up to4named results; tool schema included in20000character allowance",
+        "order": "alternating arm first by case; identical authored sources",
+        "stop": "Any incomplete reply or app-check failure stops entire batch. No retry, no continuation.",
+        "fixtureSHA256": "9ab0f0f261e3ae0729162f5969426e768b9106fab3b0f11cd97c785445b4267b",
+        "implementationHashes": {
+          "evaluation/workspace-arm.ts": "a14fc2b0a8752a29cbc57f5ae634f427e97cd63ed9451c3cf439765ff0c90c96",
+          "src/calculator-turn.ts": "9771f2225cf5e53e9c80ae5a886f3b5b8d44260a423c33414c943ef300e0758f",
+          "src/assisted-response-format.ts": "48199b37a38d16e255f5e86507effdf2ec8fb1d2266e0fb01576a4174f07d09f",
+          "evaluation/temporary-review.ts": "67432cca09635765ab039ac94cc5c0203d9a91882359484e04f8b9304e85e991",
+          "src/assisted-research.ts": "7c8bf0ea5f9b1dbbaafb513e30fc15f98837cd481227c8534cd43992a0e0b3bf",
+          "src/scoped-research.ts": "5e4eb88cd28c06a650194ab3cb407748d3ba1bd6005b498498856b011a5fc6a4",
+          "src/checked-response.ts": "c1c345435f1b015fea8507d5ddf0f090b3b85c32b6cb5004de2652ca15c23fc0",
+          "src/research-contract.ts": "4b22c4ad208275e67668cc46bc402db6bdafd3abccd7ddec16563a37d6a02036",
+          "src/verified-chat.ts": "f291c603112c6483ed7fbc9169a2590734a13bed102fc0e4fe36ef2747488947",
+          "src/App.tsx": "38a8e9612b0f3b3fbd90744b266ec5658605ff67c0005b940fc6f9e86806c4b5",
+          "evaluation/run-workspace.ts": "05a98a906b9c802a6942fdfe3430ee354b7811d0ba48b48e594ca1fda34cd2f9",
+          "evaluation/workspace-inference.ts": "29faf8619531af8f0da7a175c4c12011c08d71e82a19fe346a09498afd42e752",
+          "evaluation/experiment.ts": "c40f84e118fda332f142cbbcb19af9c6b1ee35c5bfd203fe4d1f91cda533898f"
+        },
+        "humanScores": null
+      },
+      "report": {
+        "mode": "LIVE_PUBLIC_AND_AUTHORED",
+        "humanScores": null,
+        "results": [
+          {
+            "id": "assisted-tool-08",
+            "arm": "candidate",
+            "public": false,
+            "replies": [
+              {
+                "completed": false,
+                "diagnosticDraft": "{\"unit\": \"EUR\", \"program\": {\"inputs\": [{\"id\": \"boxes\", \"value\": \"8\", \"evidence\": {\"kind\": \"source\", \"sourceId\": \"tool-source-08\", \"quote\": \"Eight meal boxes cost EUR 14 each.\"}}, {\"id\": \"box_price\", \"value\": \"14\", \"evidence\": {\"kind\": \"source\", \"sourceId\": \"tool-source-08\", \"quote\": \"Eight meal boxes cost EUR 14 each.\"}}, {\"id\": \"service_fee\", \"value\": \"5\", \"evidence\": {\"kind\": \"source\", \"sourceId\": \"tool-source-08\", \"quote\": \"Service fee is EUR 5.\"}}, {\"id\": \"tax_rate\", \"value\": \"10\", \"evidence\": {\"kind\": \"source\", \"sourceId\": \"tool-source-08\", \"quote\": \"Tax 10 percent applies to the meals and service fee together.\"}}], \"steps\": [{\"id\": \"meals\", \"op\": \"multiply\", \"left\": \"boxes\", \"right\": \"box_price\"}, {\"id\": \"taxable_base\", \"op\": \"add\", \"left\": \"meals\", \"right\": \"service_fee\"}, {\"id\": \"tax_amount\", \"op\": \"percentOf\", \"left\": \"taxable_base\", \"right\": \"tax_rate\"}, {\"id\": \"total\", \"op\": \"add\", \"left\": \"taxable_base\", \"right\": \"tax_amount\"}], \"results\": [{\"id\": \"meals\", \"decimals\": 2, \"unit\": \"EUR\"}, {\"id\": \"taxable_base\", \"decimals\": 2, \"unit\": \"EUR\"}, {\"id\": \"tax_amount\", \"decimals\": 2, \"unit\": \"EUR\"}, {\"id\": \"total\", \"decimals\": 2, \"unit\": \"EUR\"}], \"passages\": [], \"limitation\": \"none\"}}",
+                "answer": "",
+                "failureKind": "CONTRACT_REJECTED",
+                "calculatorFailure": "EVIDENCE_OR_ARITHMETIC",
+                "usage": {
+                  "input": 2298,
+                  "output": 466,
+                  "total": 2764,
+                  "estimatedUSD": 0.0021694
+                },
+                "failure": "IncompleteReplyError",
+                "firstVisibleTextMs": null,
+                "elapsedMs": 5098,
+                "answerCharacters": 0,
+                "answerSHA256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+                "evidenceAudit": {
+                  "citationReferences": 0,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              }
+            ],
+            "humanScores": null,
+            "productionGateClosed": true,
+            "retrievalKind": "AUTHORED_FIXTURE",
+            "sourceCount": 1,
+            "sourceHash": "729b8f4f1f98028df338602536587f28690a1531dcd261686b476a20ab3e8b21",
+            "evidenceCharacters": 142,
+            "providerDates": 0,
+            "sourceOpen": true,
+            "sourceLinkKeyboardReachable": true,
+            "sourceLinkSafe": true,
+            "saveBlocked": true,
+            "storage": {
+              "conversationRecords": 0,
+              "localStorageKeys": 0,
+              "sessionStorageKeys": 0,
+              "cacheEntries": 0,
+              "serviceWorkers": 0
+            },
+            "clearedOnReload": true,
+            "pageErrors": [],
+            "networkViolation": 0,
+            "consoleMessageCount": 6,
+            "attempts": [
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 8857,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 861,
+                "firstEncryptedByteMs": 1232,
+                "elapsedMs": 4210
+              }
+            ]
+          }
+        ],
+        "qualification": "NOT_PASSED",
+        "publicContentPersisted": false
+      }
+    }
+  ],
+  "metrics": {
+    "attempted": 9,
+    "delivered": 7,
+    "estimatedUSD": 0.0162654,
+    "humanScores": null
+  },
+  "assessment": {
+    "status": "AI_PROPOSED_NOT_HUMAN_REVIEW",
+    "decision": "Keep experimental. Multi-result energy/cost works in two turns; writing and delivery remain blockers.",
+    "findings": [
+      "05 both arms add unrequested promises to follow up. Candidate calls compensation undecided when source only says notices are silent, and is too verbose for short alternatives.",
+      "06 candidate computes124subtotal,18.60tax,149.60total; omits explicit untaxed-fee explanation. Follow-up INVALID_SCHEMA, no answer; exact violation not captured. Baseline unattempted after stop.",
+      "07 separate fresh diagnostic:7.20kWh/2.16EUR then8.40kWh/2.52EUR correct independently; no baseline. Human scores blank.",
+      "08 separate fresh diagnostic: rejected digit8 sourced from wordEight. Captured synthetic argument proves lexical validator limitation. Offline normalization replay computes128.70EUR; original live failure remains unscored. Follow-up unattempted."
+    ],
+    "stop": "Main6requests stopped on06candidateT2; separate07diagnostic2complete; separate08diagnostic1failed then stopped. No retries or continuing stopped plans."
+  }
+}

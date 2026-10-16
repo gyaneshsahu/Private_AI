@@ -171,3 +171,64 @@ it("classifies local calculator failures without logging arguments", async () =>
     usage: { total: 30 },
   });
 });
+it("returns bounded multiple named results without model rewriting", async () => {
+  const p = {
+    ...program,
+    steps: [
+      ...program.steps,
+      { id: "difference", op: "subtract", left: "total", right: "price" },
+    ],
+    results: [
+      { id: "total", decimals: 2 },
+      { id: "difference", decimals: 2 },
+    ],
+  };
+  const result = await run(tool(JSON.stringify({ unit: "GBP", program: p })));
+  expect(result.calculations?.map((r) => [r.id, r.value, r.unit])).toEqual([
+    ["total", "111.00", "GBP"],
+    ["difference", "74.00", "GBP"],
+  ]);
+});
+it("preserves per-result units and rejects invalid later results atomically", async () => {
+  const p = {
+    ...program,
+    results: [
+      { id: "total", decimals: 2, unit: "kWh" },
+      { id: "missing", decimals: 2, unit: "EUR" },
+    ],
+  };
+  await expect(
+    run(tool(JSON.stringify({ unit: "GBP", program: p }))),
+  ).rejects.toMatchObject({ calculatorFailure: "EVIDENCE_OR_ARITHMETIC" });
+  p.results[1].id = "total";
+  await expect(
+    run(tool(JSON.stringify({ unit: "GBP", program: p }))),
+  ).rejects.toMatchObject({ calculatorFailure: "INVALID_SCHEMA" });
+});
+it("limits result count without extra inference calls", async () => {
+  const p = {
+    ...program,
+    results: Array.from({ length: 5 }, () => ({ id: "total", decimals: 2 })),
+  };
+  await expect(
+    run(tool(JSON.stringify({ unit: "GBP", program: p }))),
+  ).rejects.toMatchObject({ calculatorFailure: "INVALID_SCHEMA" });
+});
+it("reports schema issue paths without source text, supplied values or error prose", async () => {
+  try {
+    await run(
+      tool(
+        JSON.stringify({
+          unit: "SECRET_INPUT",
+          program: { ...program, SECRET_FIELD: "PRIVATE_TEXT" },
+        }),
+      ),
+    );
+    throw Error("Expected reject");
+  } catch (error) {
+    expect(error).toHaveProperty("calculatorFailure", "INVALID_SCHEMA");
+    const issues = JSON.stringify((error as any).schemaIssues);
+    expect(issues).toContain("unit");
+    expect(issues).not.toMatch(/SECRET|PRIVATE/);
+  }
+});

@@ -1,3 +1,4 @@
+import { evidenceNumberTokens } from "./number-evidence";
 import Decimal from "decimal.js";
 import { z } from "zod";
 import type { ChatCompletionChunk } from "openai/resources/chat/completions";
@@ -134,11 +135,8 @@ export function renderCheckedResponse(
   const renderedInputs: string[] = [];
   for (const input of data.inputs) {
     const reference = checkEvidence(input.evidence);
-    // Exact numeric tokens only: do not silently reinterpret grouping, scientific
-    // notation, ranges or localized decimal separators as other quantities.
-    const tokens = (
-      input.evidence.quote.match(/[-+]?\d[\d.,eE+-]*/g) ?? []
-    ).map((token) => token.replace(/[.,]+$/, ""));
+    // Exact numeric tokens or bounded English integer words; no inference of missing values.
+    const tokens = evidenceNumberTokens(input.evidence.quote);
     if (!tokens.includes(input.value)) throw new ContractError("OPERAND");
     if (values.has(input.id)) throw new ContractError("DEPENDENCY");
     values.set(input.id, new Arithmetic(input.value));

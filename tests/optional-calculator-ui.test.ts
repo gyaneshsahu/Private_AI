@@ -25,7 +25,7 @@ it("displays optional native calculator results and a corrected total through th
           const program={
             inputs:[{id:'quantity',...input('3')},{id:'price',...input('27')},{id:'fee',...fee},{id:'rate',...input('12')}],
             steps:[{id:'items',op:'multiply',left:'quantity',right:'price'},{id:'subtotal',op:'add',left:'items',right:'fee'},{id:'tax',op:'percentOf',left:users.length>2?'items':'subtotal',right:'rate'},{id:'total',op:'add',left:'subtotal',right:'tax'}],
-            results:[{id:'total',decimals:2}],passages:[],limitation:'none'
+            results:users.length>2?[{id:'items',decimals:2},{id:'total',decimals:2}]:[{id:'total',decimals:2}],passages:[],limitation:'none'
           };
           async function* events(){
             yield {choices:[{index:0,delta:{content:'The total includes delivery and the applicable tax.'},finish_reason:null}]};

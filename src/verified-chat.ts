@@ -277,6 +277,7 @@ export async function streamVerifiedConversation(
         signal,
         evidenceSources,
         conversation,
+        onCheckedDiagnosticDraft,
       );
       signal.throwIfAborted();
       onChunk(renderCalculatorTurn(turn));
