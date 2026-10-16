@@ -8,6 +8,8 @@ import type {
 } from "../shared/contracts";
 import {
   checkedResponseSchema,
+  checkedFailureCode,
+  type CheckedFailure,
   renderCheckedResponse,
 } from "./checked-response";
 import { consumeReply, IncompleteReplyError } from "./reply-stream";
@@ -57,6 +59,7 @@ export class CalculatorValidationError extends IncompleteReplyError {
       "INVALID_JSON" | "INVALID_SCHEMA" | "EVIDENCE_OR_ARITHMETIC",
     usage: Usage,
     readonly schemaIssues?: { code: string; path: (string | number)[] }[],
+    readonly validationDetail?: CheckedFailure,
   ) {
     super(
       "Calculation could not be validated. No automatic retry was made.",
@@ -262,7 +265,12 @@ export async function consumeCalculatorTurn(
     };
   } catch (error) {
     if (error instanceof CalculatorValidationError) throw error;
-    throw new CalculatorValidationError("EVIDENCE_OR_ARITHMETIC", usage);
+    throw new CalculatorValidationError(
+      "EVIDENCE_OR_ARITHMETIC",
+      usage,
+      undefined,
+      checkedFailureCode(error),
+    );
   }
 }
 

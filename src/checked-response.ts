@@ -90,6 +90,9 @@ class ContractError extends Error {
     super("Checked response rejected");
   }
 }
+export function checkedFailureCode(error: unknown): CheckedFailure | undefined {
+  return error instanceof ContractError ? error.code : undefined;
+}
 export class CheckedResponseError extends IncompleteReplyError {
   constructor(
     readonly checkedFailure: CheckedFailure,

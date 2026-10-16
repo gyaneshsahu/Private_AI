@@ -269,3 +269,40 @@ it("reports schema issue paths without source text, supplied values or error pro
     expect(issues).not.toMatch(/SECRET|PRIVATE/);
   }
 });
+
+it("preserves content-free reasons for operand, source and result dependency failures", async () => {
+  for (const [p, detail] of [
+    [
+      { ...program, results: [{ id: "undefined_result", decimals: 2 }] },
+      "DEPENDENCY",
+    ],
+    [
+      {
+        ...program,
+        inputs: program.inputs.map((v, i) => (i ? v : { ...v, value: "99" })),
+      },
+      "OPERAND",
+    ],
+    [
+      {
+        ...program,
+        inputs: program.inputs.map((v, i) =>
+          i
+            ? v
+            : {
+                ...v,
+                evidence: { ...v.evidence, quote: "PRIVATE_NOT_IN_SOURCE" },
+              },
+        ),
+      },
+      "EVIDENCE",
+    ],
+  ] as const) {
+    await expect(
+      run(tool(JSON.stringify({ unit: "GBP", ...p }))),
+    ).rejects.toMatchObject({
+      calculatorFailure: "EVIDENCE_OR_ARITHMETIC",
+      validationDetail: detail,
+    });
+  }
+});

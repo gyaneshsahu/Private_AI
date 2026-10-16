@@ -59,3 +59,16 @@ it("records calculator rejection as a local contract failure without prompt cont
   expect(result.calculatorFailure).toBe("INVALID_SCHEMA");
   expect(result.transportDiagnostic).toBeUndefined();
 });
+
+it("retains an enum diagnostic without exposing source content", () => {
+  const result = classifyEvaluationFailure(
+    new CalculatorValidationError(
+      "EVIDENCE_OR_ARITHMETIC",
+      { input: 1, output: 1, total: 2, estimatedUSD: 0 },
+      undefined,
+      "DEPENDENCY",
+    ),
+  );
+  expect(result.calculatorValidationDetail).toBe("DEPENDENCY");
+  expect(result.failureKind).toBe("CONTRACT_REJECTED");
+});

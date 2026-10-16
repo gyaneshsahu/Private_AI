@@ -1,5 +1,22 @@
 # PrivateAI readiness checklist
 
+## 16 October — untouched percentage comparison and precise failure diagnostics
+
+Separate frozen 24-request plan on untouched cases27–29 used unchanged matched configurations: DeepSeek-v4.1-flash low reasoning and GPT-OSS120B high, normal versus optional calculator/replay. Actual application stopped at the first incomplete after **6 attempts / 5 delivered**, with no retries. GPT-OSS calculator and cases28/29 remain unattempted. Frozen implementation and original results are archived separately from subsequent offline diagnostic changes.
+
+Engineering observations, **not human scores**: both normal paths correctly deliver 60 visits/20%, then 72/25%, and explain that unique people are unknown. GPT-OSS lowercases the first word of a source quotation (limited verbatim defect); DeepSeek's combined citation for source and user-corrected values needs attribution review. Calculator first reply has correct arithmetic but omits the people explanation. Its follow-up has correct inputs and formula but requests undefined result IDs abs_inc/pct_inc instead of diff/pct. Provider stream completed; application correctly rejected the invalid dependency. Missing answer remains unscored.
+
+DeepSeek normal:2/2 delivered, mean6.198s, USD0.00202735. GPT-OSS normal:2/2 delivered, mean4.837s, USD0.00107955. DeepSeek calculator:1/2 delivered, zero complete task answers, mean9.477s including rejection, USD0.00485145. Total estimated USD0.00795835. Normal answers remain the simpler development reference; this small sample selects no release model. Stop further paid screening of the unchanged direct-render calculator. The next calculator design must address general tool-result orchestration and explanation delivery, not individual examples.
+
+Offline-only improvement preserves trusted validator reason codes in content-free evaluation diagnostics. Exact captured events reproduce DEPENDENCY; no changed acceptance rules, repaired live answer or new paid call. Validation:38 focused tests across3files,10 recovery/retention tests across3files, typecheck and production build passed. Existing verifier zlib warning unchanged.
+
+Latest read-only billing: actual **USD0.74**, prepaid10.26,301requests (295 before). Token estimate already included; historical genuine uncertainty0.2491904 retained, conservativebound0.9891904, active reservations0. Unused reserve retired. Owner authorization5; last observed key5/account3; auto-reload off. No separate pending amount displayed; no account changes needed or made.
+
+Recovery check now reports **BACKUP_STALE / SNAPSHOT_STALE**, superseding earlier healthy status; last verified receipt15October12:44UTC. Synthetic recovery tests do not establish current hosted recovery. No sensitive transfer, deletion or retention activation. Provider privacy, human acceptance, historical safety findings and authenticated actual-device checks remain open. No invitations or private-data access.
+
+Evidence: evaluation/results/research-matched-remaining-20261016.json. Complete original sources, turns, expected facts, delivered answers and raw model events: .local/review-batches/matched-remaining-20261016/complete-review.html. Regenerate with node --import tsx evaluation/review-matched-remaining.ts; exact offline diagnosis: evaluation/diagnose-matched-remaining.ts. All new human scores blank.
+
+
 ## 16 October — matched model/integration diagnosis stopped correctly
 
 Founder explicitly authorized a cumulative **USD 5** cap and the fixed matched comparison. Read-only dashboard: key limit 5, account limit still 3, auto-reload off. No account changes needed or made. Before: actual 0.72, credit 10.28, 289 requests. Frozen 32-request reserve 1.1583488 and conservative bound 2.1275392 fit the unchanged account limit.

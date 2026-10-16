@@ -19,6 +19,10 @@ export function classifyEvaluationFailure(error: unknown) {
       error instanceof CalculatorValidationError
         ? error.calculatorFailure
         : undefined,
+    calculatorValidationDetail:
+      error instanceof CalculatorValidationError
+        ? error.validationDetail
+        : undefined,
     checkedFailure:
       error instanceof CheckedResponseError ? error.checkedFailure : undefined,
     evidenceFailure:
