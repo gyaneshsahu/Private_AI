@@ -18,6 +18,9 @@ import assistedFixtures from "./cases/research-assisted.json";
 import toolFixtures from "./cases/research-tools.json";
 const optionalTools = process.argv.includes("--optional-tools");
 const toolDiagnostic = process.argv.includes("--tool-diagnostic");
+const candidateOnly = process.argv.includes("--candidate-only");
+if (candidateOnly && !optionalTools)
+  throw Error("Candidate-only mode requires optional-tools fixtures");
 const comparisonCases = process.argv
   .find((arg) => arg.startsWith("--comparison-cases="))
   ?.slice("--comparison-cases=".length)
@@ -121,7 +124,7 @@ if (!dry) {
 }
 // Validate every selected permit before opening a browser or spending on any arm.
 for (const fixture of fixtures)
-  for (const arm of diagnostic || toolDiagnostic
+  for (const arm of diagnostic || toolDiagnostic || candidateOnly
     ? ["candidate"]
     : ["baseline", "candidate"]) {
     const permit = validateExperiment(
@@ -134,6 +137,7 @@ for (const fixture of fixtures)
       fixture.id,
       arm,
       optionalTools ? "optional" : assisted ? "assisted" : "scoped",
+      process.argv.includes("--calculation-replay"),
     );
   }
 const report: any = {
@@ -175,7 +179,7 @@ try {
   for (const [caseIndex, fixture] of fixtures.entries()) {
     if (stop) break;
     let pairedSources: any[] | undefined;
-    for (const arm of diagnostic || toolDiagnostic
+    for (const arm of diagnostic || toolDiagnostic || candidateOnly
       ? ["candidate"]
       : assisted && caseIndex % 2
         ? ["candidate", "baseline"]
@@ -190,6 +194,7 @@ try {
         fixture.id,
         arm,
         optionalTools ? "optional" : assisted ? "assisted" : "scoped",
+        process.argv.includes("--calculation-replay"),
       );
       const claimed = dry
         ? undefined

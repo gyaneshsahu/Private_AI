@@ -4,6 +4,7 @@ import { newMessage } from "../src/conversation";
 import { createCalculationRecords } from "../src/calculation-records";
 import { expandCalculationReplay } from "../src/calculation-replay";
 import { renderCheckedResponse } from "../src/checked-response";
+import { createCalculationSession } from "../src/calculation-session";
 
 function fixture() {
   const conversation = emptyConversation();
@@ -38,6 +39,37 @@ function fixture() {
   });
   return { conversation, raw, assistantId: conversation.messages[1].id };
 }
+it("binds pending programs only to the exact completed delivered reply", () => {
+  const { conversation, raw } = fixture();
+  const session = createCalculationSession();
+  const before = {
+    ...conversation,
+    messages: conversation.messages.slice(0, 1),
+  };
+  session.stage(raw, conversation.messages[1].text, before);
+  const partial = structuredClone(conversation);
+  partial.messages[1].status = "partial";
+  expect(session.references(partial)).toEqual([]);
+  expect(session.references(conversation)).toHaveLength(1);
+  expect(session.references(conversation)).toHaveLength(1);
+  const next = structuredClone(conversation);
+  next.messages.push(newMessage("user", "Correct the price."));
+  expect(session.references(next)).toHaveLength(1);
+  session.clear();
+  expect(session.references(next)).toEqual([]);
+  session.stage(raw, "Different delivered text", before);
+  expect(session.references(conversation)).toEqual([]);
+});
+it("clears staged and committed content on session replacement", () => {
+  const { conversation, raw } = fixture();
+  const session = createCalculationSession();
+  session.stage(raw, conversation.messages[1].text, {
+    ...conversation,
+    messages: conversation.messages.slice(0, 1),
+  });
+  expect(session.references(emptyConversation())).toEqual([]);
+  expect(session.references(conversation)).toEqual([]);
+});
 it("replays unrounded operations instead of using displayed rounded values", () => {
   const { conversation, raw, assistantId } = fixture();
   const original = JSON.parse(raw);

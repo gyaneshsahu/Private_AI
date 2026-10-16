@@ -16,8 +16,8 @@ export const replayArguments = calculatorArguments.extend({
         })
         .strict(),
     )
-    .min(1)
-    .max(8),
+    .max(8)
+    .optional(),
 });
 
 // Offline compiler only. Reuses validated operations, never displayed decimals
@@ -30,7 +30,11 @@ export function expandCalculationReplay(
   if (raw.length > 32000) throw Error("Replay exceeds bounds");
   const args = replayArguments.parse(JSON.parse(raw));
   const occupied = new Set<string>();
-  for (const item of [...args.inputs, ...args.derivedInputs, ...args.steps]) {
+  for (const item of [
+    ...args.inputs,
+    ...(args.derivedInputs ?? []),
+    ...args.steps,
+  ]) {
     if (occupied.has(item.id)) throw Error("Duplicate replay identifier");
     occupied.add(item.id);
   }
@@ -46,7 +50,7 @@ export function expandCalculationReplay(
     occupied.add(id);
     return id;
   };
-  for (const derived of args.derivedInputs) {
+  for (const derived of args.derivedInputs ?? []) {
     const record = records.resolve(derived.recordId, conversation);
     if (
       !record ||

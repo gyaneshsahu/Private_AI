@@ -138,10 +138,12 @@ export const experimentSchema = z
         assistedResearchContract: z.boolean().optional(),
         assistedStructuredOutput: z.boolean().optional(),
         optionalCalculator: z.boolean().optional(),
+        calculatorReplay: z.boolean().optional(),
         checkedResponseContract: z.boolean().optional(),
         gptOssReasoningEffort: z.enum(["low", "medium", "high"]).optional(),
         gemmaThinking: z.boolean().optional(),
         deepSeekThinking: z.boolean().optional(),
+        deepSeekReasoningEffort: z.literal("low").optional(),
         answerPolicyVariant: z
           .enum([
             "constraints-v1",
@@ -161,6 +163,16 @@ export function validateExperiment(
   now = Date.now(),
 ): Experiment {
   const x = experimentSchema.parse(input);
+  if (
+    x.policy.deepSeekReasoningEffort &&
+    (x.policy.model !== "deepseek-v4-1-flash" ||
+      x.policy.deepSeekThinking !== true)
+  )
+    throw new Error(
+      "DeepSeek reasoning effort requires explicit thinking mode.",
+    );
+  if (x.policy.calculatorReplay && !x.policy.optionalCalculator)
+    throw new Error("Calculation replay requires the optional calculator.");
   if (x.policy.assistedStructuredOutput && !x.policy.assistedResearchContract)
     throw new Error(
       "Structured assisted output requires the assisted contract.",

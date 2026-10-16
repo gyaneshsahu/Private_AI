@@ -85,6 +85,8 @@ export async function consumeCalculatorTurn(
   sources: Source[],
   conversation: Conversation,
   onDiagnosticArguments?: (raw: string) => void,
+  prepareArguments?: (raw: string) => string,
+  onValidatedArguments?: (raw: string) => void,
 ): Promise<CalculatorTurn> {
   let text = "";
   let argumentsText = "";
@@ -173,6 +175,7 @@ export async function consumeCalculatorTurn(
   if (!sawTool) return { text, usage };
   onDiagnosticArguments?.(argumentsText);
   try {
+    if (prepareArguments) argumentsText = prepareArguments(argumentsText);
     let parsed: unknown;
     try {
       parsed = JSON.parse(argumentsText);
@@ -241,6 +244,7 @@ export async function consumeCalculatorTurn(
         ),
       ),
     ];
+    onValidatedArguments?.(JSON.stringify(args));
     if (values.length === 1)
       return {
         text,

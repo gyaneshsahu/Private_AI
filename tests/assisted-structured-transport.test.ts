@@ -1,6 +1,7 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { emptyConversation } from "../shared/contracts";
 import { newMessage } from "../src/conversation";
+import { createCalculationSession } from "../src/calculation-session";
 import {
   streamVerifiedConversation,
   type VerifiedChatPolicy,
@@ -149,4 +150,112 @@ it("sends optional tools through one encrypted request and accepts an ordinary a
   expect(chunks).toEqual([
     "The source does not establish an actual reopening.",
   ]);
+});
+it("requires a replay session and admits its schema before the encrypted request", async () => {
+  vi.stubGlobal("location", { host: "localhost", origin: "http://localhost" });
+  const c = emptyConversation();
+  c.messages.push(newMessage("user", "Synthetic replay"));
+  const replayPolicy = {
+    ...policy,
+    assistedResearchContract: false,
+    assistedStructuredOutput: false,
+    optionalCalculator: true,
+    calculatorReplay: true,
+  };
+  await expect(
+    streamVerifiedConversation(
+      c,
+      replayPolicy,
+      "synthetic",
+      new AbortController().signal,
+      () => {},
+      () => {},
+      () => {},
+    ),
+  ).rejects.toThrow("isolated session");
+  expect(request).not.toHaveBeenCalled();
+  request.mockResolvedValue(
+    new Response("synthetic provider rejection", { status: 400 }),
+  );
+  await expect(
+    streamVerifiedConversation(
+      c,
+      replayPolicy,
+      "synthetic",
+      new AbortController().signal,
+      () => {},
+      () => {},
+      () => {},
+      undefined,
+      undefined,
+      undefined,
+      createCalculationSession(),
+    ),
+  ).rejects.toThrow();
+  expect(request).toHaveBeenCalledTimes(1);
+  const body = JSON.parse(request.mock.calls[0][1].body);
+  expect(
+    body.tools[0].function.parameters.properties.derivedInputs,
+  ).toBeDefined();
+  expect(body.messages[0].content).toContain(
+    "historical calculation references",
+  );
+  request.mockClear();
+  await expect(
+    streamVerifiedConversation(
+      c,
+      { ...replayPolicy, maxInputCharacters: 4000 },
+      "synthetic",
+      new AbortController().signal,
+      () => {},
+      () => {},
+      () => {},
+      undefined,
+      undefined,
+      undefined,
+      createCalculationSession(),
+    ),
+  ).rejects.toThrow("including calculator tools");
+  expect(request).not.toHaveBeenCalled();
+});
+it("binds low reasoning to explicit DeepSeek thinking without changing other models", async () => {
+  vi.stubGlobal("location", { host: "localhost", origin: "http://localhost" });
+  const c = emptyConversation();
+  c.messages.push(newMessage("user", "Synthetic reasoning configuration"));
+  const settings: VerifiedChatPolicy = {
+    ...policy,
+    model: "deepseek-v4-1-flash",
+    deepSeekThinking: true,
+    deepSeekReasoningEffort: "low",
+  };
+  request.mockResolvedValue(
+    new Response("synthetic rejection", { status: 400 }),
+  );
+  await expect(
+    streamVerifiedConversation(
+      c,
+      settings,
+      "synthetic",
+      new AbortController().signal,
+      () => {},
+      () => {},
+      () => {},
+    ),
+  ).rejects.toThrow();
+  expect(
+    JSON.parse(request.mock.calls[0][1].body).chat_template_kwargs,
+  ).toEqual({ thinking: true, reasoning_effort: "low" });
+  request.mockClear();
+  await expect(
+    streamVerifiedConversation(
+      c,
+      { ...settings, deepSeekThinking: false },
+      "synthetic",
+      new AbortController().signal,
+      () => {},
+      () => {},
+      () => {},
+    ),
+  ).rejects.toThrow("explicit thinking");
+  expect(request).not.toHaveBeenCalled();
 });

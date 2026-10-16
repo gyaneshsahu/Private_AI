@@ -19,6 +19,7 @@ import { containsTemporaryResearch } from "./saved-conversation";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { abortable } from "./abortable";
+import { createCalculationSession } from "./calculation-session";
 import { parseResearchResult, researchSourceUrl } from "./research-result";
 
 type Tab = "Conversation" | "Context" | "Research" | "Saved";
@@ -29,6 +30,11 @@ export function App() {
   const [tab, setTab] = useState<Tab>("Conversation");
   const [conversation, setConversation] =
     useState<Conversation>(emptyConversation);
+  const [calculationSession] = useState(createCalculationSession);
+  useEffect(() => {
+    calculationSession.synchronize(conversation);
+  }, [calculationSession, conversation]);
+  useEffect(() => () => calculationSession.clear(), [calculationSession]);
   const [status, setStatus] = useState<AppStatus>();
   const [input, setInput] = useState("");
   const [notice, setNotice] = useState("");
@@ -220,6 +226,9 @@ export function App() {
     let active = true;
     let pending = false;
     const abort = new AbortController();
+    abort.signal.addEventListener("abort", () => calculationSession.clear(), {
+      once: true,
+    });
     const checkAccess = async () => {
       if (pending || !active) return;
       pending = true;
@@ -315,6 +324,9 @@ export function App() {
     setNotice("");
     setBusy("Preparing private context…");
     const abort = new AbortController();
+    abort.signal.addEventListener("abort", () => calculationSession.clear(), {
+      once: true,
+    });
     controller.current = abort;
     const current = epoch.current;
     try {
@@ -341,6 +353,7 @@ export function App() {
           if (epoch.current === current && !abort.signal.aborted)
             setBusy(message);
         },
+        calculationSession,
       );
       abort.signal.throwIfAborted();
       if (epoch.current === current) {
@@ -359,6 +372,7 @@ export function App() {
           );
       }
     } catch (error) {
+      calculationSession.clear();
       if (epoch.current === current) {
         setConversation((c) => ({
           ...c,

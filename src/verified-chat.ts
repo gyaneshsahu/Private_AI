@@ -3,6 +3,9 @@ import {
   consumeCalculatorTurn,
   renderCalculatorTurn,
 } from "./calculator-turn";
+import { z } from "zod";
+import { replayArguments } from "./calculation-replay";
+import type { CalculationSession } from "./calculation-session";
 import { assistedResponseFormat } from "./assisted-response-format";
 import {
   assistedResearchInstruction,
@@ -46,6 +49,7 @@ export type VerifiedChatPolicy = Pick<
   | "pricing"
 > & {
   deepSeekThinking?: boolean;
+  deepSeekReasoningEffort?: "low";
   gemmaThinking?: boolean;
   glmReasoningEffort?: "low" | "high" | "max";
   gptOssReasoningEffort?: "low" | "medium" | "high";
@@ -56,6 +60,7 @@ export type VerifiedChatPolicy = Pick<
   assistedResearchContract?: boolean;
   assistedStructuredOutput?: boolean;
   optionalCalculator?: boolean;
+  calculatorReplay?: boolean;
 };
 
 export function assertVerification(
@@ -90,16 +95,42 @@ export async function streamVerifiedConversation(
   onVerified?: (evidence: { host: string; releaseDigest: string }) => void,
   onCheckedDiagnosticDraft?: (raw: string) => void,
   checkedHistory?: ReadonlyMap<string, string>,
+  calculationSession?: CalculationSession,
 ): Promise<Usage | undefined> {
   const responseFormat = assistedResponseFormat(report);
   const toolOptions = report.optionalCalculator
     ? {
-        tools: [calculatorTool],
+        tools: [
+          report.calculatorReplay
+            ? {
+                ...calculatorTool,
+                function: {
+                  ...calculatorTool.function,
+                  parameters: z.toJSONSchema(replayArguments),
+                  description:
+                    calculatorTool.function.description +
+                    " For a prior calculation use derivedInputs with an advertised recordId and resultId, not a source quotation or copied rounded value. Historical records describe prior operands, not current corrected facts.",
+                },
+              }
+            : calculatorTool,
+        ],
         tool_choice: "auto",
         parallel_tool_calls: false,
       }
     : {};
   authorize();
+  if (
+    report.deepSeekReasoningEffort &&
+    (report.model !== "deepseek-v4-1-flash" || report.deepSeekThinking !== true)
+  )
+    throw Error("DeepSeek reasoning effort requires explicit thinking mode.");
+  if (
+    report.calculatorReplay &&
+    (!report.optionalCalculator || !calculationSession)
+  )
+    throw Error(
+      "Calculation replay requires its isolated session and optional calculator.",
+    );
   if (
     [
       report.optionalCalculator,
@@ -134,6 +165,10 @@ export async function streamVerifiedConversation(
     );
     const evidenceSources = selectedSources(conversation);
     if (report.optionalCalculator) {
+      if (report.calculatorReplay)
+        messages[0].content +=
+          " Browser-owned historical calculation references (execution only, not factual verification): " +
+          JSON.stringify(calculationSession!.references(conversation));
       messages[0].content +=
         " Use ordinary source-linked prose for explanations. For derived numerical answers, optionally call calculate once with exact evidence-grounded operands. The browser displays its result directly; do not write a separate calculated total in prose. No tool is required for writing or missing-information questions. Calculator execution does not verify method applicability. User evidence uses one-based indices of included user turns.";
       if (
@@ -246,7 +281,14 @@ export async function streamVerifiedConversation(
           ...responseFormat,
           ...toolOptions,
           ...(report.deepSeekThinking !== undefined
-            ? { chat_template_kwargs: { thinking: report.deepSeekThinking } }
+            ? {
+                chat_template_kwargs: {
+                  thinking: report.deepSeekThinking,
+                  ...(report.deepSeekReasoningEffort
+                    ? { reasoning_effort: report.deepSeekReasoningEffort }
+                    : {}),
+                },
+              }
             : report.gemmaThinking !== undefined
               ? {
                   chat_template_kwargs: {
@@ -271,6 +313,7 @@ export async function streamVerifiedConversation(
       },
     );
     if (report.optionalCalculator) {
+      let validatedProgram: string | undefined;
       const turn = await consumeCalculatorTurn(
         completionEvents(response, signal),
         report.pricing,
@@ -278,9 +321,18 @@ export async function streamVerifiedConversation(
         evidenceSources,
         conversation,
         onCheckedDiagnosticDraft,
+        report.calculatorReplay
+          ? (raw) => calculationSession!.expand(raw, conversation)
+          : undefined,
+        (raw) => {
+          validatedProgram = raw;
+        },
       );
       signal.throwIfAborted();
-      onChunk(renderCalculatorTurn(turn));
+      const answer = renderCalculatorTurn(turn);
+      if (report.calculatorReplay && validatedProgram)
+        calculationSession!.stage(validatedProgram, answer, conversation);
+      onChunk(answer);
       return turn.usage;
     }
     if (

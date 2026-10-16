@@ -10,7 +10,7 @@ import type {
 } from "../shared/contracts";
 import { consumeReply, IncompleteReplyError } from "./reply-stream";
 
-export const checkedResponseInstruction = `Experimental checked response: return ONLY JSON with keys inputs, steps, results, passages, limitation. Do not supply prose, computed values or a final total: the browser computes and renders them. inputs is an array (max24) of {id, value, evidence}; id is a lowercase identifier, value is a decimal string copied exactly from the evidence. evidence is either {kind:"source",sourceId,quote} or {kind:"user",userTurn,quote}; quote must be an exact contiguous passage, and userTurn is the one-based index of included USER messages. Prefer the latest user correction over older source values. steps is an array (max32) of {id,op,left,right}; left/right reference earlier input/step IDs, op is add, subtract, multiply, divide or percentOf (left*right/100). results is an array of {id,decimals} referring to calculated steps; decimals is0..8 and rounds only the final display, half up. passages is an array (max12) of evidence objects: these render as exact quotations, so retain qualifiers and the source's scope (including what it does not mention) rather than inferring real-world absence. limitation is "none" or "insufficient". Use insufficient if this bounded format cannot answer. Never use earlier assistant answers as evidence. No arbitrary code, tool calls, extra keys or free-form final answer.`;
+export const checkedResponseInstruction = `Experimental checked response: return ONLY JSON with keys inputs, steps, results, passages, limitation. Do not supply prose, computed values or a final total: the browser computes and renders them. inputs is an array (max24) of {id, value, evidence}; id is a lowercase identifier, value is a decimal string copied exactly from the evidence. evidence is either {kind:"source",sourceId,quote} or {kind:"user",userTurn,quote}; quote must be an exact contiguous passage, and userTurn is the one-based index of included USER messages. Prefer the latest user correction over older source values. steps is an array (max32) of {id,op,left,right}; left/right reference earlier input/step IDs, op is add, subtract, multiply, divide, percentOf (left*right/100) or ratioPercent (left/right*100). results is an array of {id,decimals} referring to calculated steps; decimals is0..8 and rounds only the final display, half up. passages is an array (max12) of evidence objects: these render as exact quotations, so retain qualifiers and the source's scope (including what it does not mention) rather than inferring real-world absence. limitation is "none" or "insufficient". Use insufficient if this bounded format cannot answer. Never use earlier assistant answers as evidence. No arbitrary code, tool calls, extra keys or free-form final answer.`;
 
 const id = z.string().regex(/^[a-z][a-z0-9_]{0,31}$/);
 const evidenceSchema = z.discriminatedUnion("kind", [
@@ -47,7 +47,18 @@ export const checkedResponseSchema = z
         z
           .object({
             id,
-            op: z.enum(["add", "subtract", "multiply", "divide", "percentOf"]),
+            op: z
+              .enum([
+                "add",
+                "subtract",
+                "multiply",
+                "divide",
+                "percentOf",
+                "ratioPercent",
+              ])
+              .describe(
+                "add: left+right; subtract: left-right; multiply: left*right; divide: left/right; percentOf: left*right/100; ratioPercent: left/right*100. For percentage change, subtract old from new, then ratioPercent that difference over old. Division and ratioPercent reject zero right operand.",
+              ),
             left: id,
             right: id,
           })
@@ -151,7 +162,7 @@ export function renderCheckedResponse(
       right = values.get(step.right);
     if (!left || !right || values.has(step.id))
       throw new ContractError("DEPENDENCY");
-    if (step.op === "divide" && right.isZero())
+    if ((step.op === "divide" || step.op === "ratioPercent") && right.isZero())
       throw new ContractError("ARITHMETIC");
     const computed =
       step.op === "add"
@@ -162,7 +173,9 @@ export function renderCheckedResponse(
             ? left.times(right)
             : step.op === "divide"
               ? left.div(right)
-              : left.times(right).div(100);
+              : step.op === "ratioPercent"
+                ? left.div(right).times(100)
+                : left.times(right).div(100);
     if (
       !computed.isFinite() ||
       computed.abs().gt("1e24") ||
@@ -177,9 +190,10 @@ export function renderCheckedResponse(
       multiply: "×",
       divide: "÷",
       percentOf: "×",
+      ratioPercent: "÷",
     }[step.op];
     renderedSteps.push(
-      `- ${escape(step.id)}: ${left.toString()} ${operation} ${right.toString()}${step.op === "percentOf" ? " ÷ 100" : ""} = ${computed.toString()}`,
+      `- ${escape(step.id)}: ${left.toString()} ${operation} ${right.toString()}${step.op === "percentOf" ? " ÷ 100" : step.op === "ratioPercent" ? " × 100" : ""} = ${computed.toString()}`,
     );
   }
   if ((data.inputs.length || data.steps.length) && !data.results.length)

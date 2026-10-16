@@ -16,7 +16,7 @@ it("displays optional native calculator results and a corrected total through th
           if (!id.replaceAll("\\", "/").endsWith("/src/inference.ts")) return;
           return `
         import { consumeCalculatorTurn, renderCalculatorTurn } from '/src/calculator-turn.ts';
-        export async function streamReply(c,q,csrf,signal,chunk,status) {
+        export async function streamReply(c,q,csrf,signal,chunk,status,session) {
           const source=c.attachments[0].sources[0];
           const users=c.messages.filter(m=>m.role==='user');
           const corrected=users.length>1;
@@ -27,13 +27,24 @@ it("displays optional native calculator results and a corrected total through th
             steps:[{id:'items',op:'multiply',left:'quantity',right:'price'},{id:'subtotal',op:'add',left:'items',right:'fee'},{id:'tax',op:'percentOf',left:users.length>2?'items':'subtotal',right:'rate'},{id:'total',op:'add',left:'subtotal',right:'tax'}],
             results:users.length>2?[{id:'items',decimals:2},{id:'total',decimals:2}]:[{id:'total',decimals:2}],passages:[],limitation:'none'
           };
+          const refs=session.references(c);
+          if(users.length===2){
+            if(refs.length!==1)throw Error('Missing historical calculation');
+            program.derivedInputs=[{id:'previous',recordId:refs[0].recordId,resultId:'total'}];
+            program.steps.push({id:'increase',op:'subtract',left:'total',right:'previous'});
+            program.results=[{id:'total',decimals:2},{id:'increase',decimals:2}];
+          }
+          if(users.length===1 && refs.length)throw Error('Prior session leaked');
           async function* events(){
             yield {choices:[{index:0,delta:{content:'The total includes delivery and the applicable tax.'},finish_reason:null}]};
-            yield {choices:[{index:0,delta:{tool_calls:[{index:0,id:'synthetic-call',type:'function',function:{name:'calculate',arguments:JSON.stringify({unit:'EUR',inputs:program.inputs,steps:program.steps,results:program.results})}}]},finish_reason:'tool_calls'}]};
+            yield {choices:[{index:0,delta:{tool_calls:[{index:0,id:'synthetic-call',type:'function',function:{name:'calculate',arguments:JSON.stringify({unit:'EUR',inputs:program.inputs,steps:program.steps,results:program.results,derivedInputs:program.derivedInputs})}}]},finish_reason:'tool_calls'}]};
             yield {choices:[],usage:{prompt_tokens:10,completion_tokens:10,total_tokens:20}};
           }
-          const result=await consumeCalculatorTurn(events(),{inputPerMillion:0,outputPerMillion:0,currency:'USD'},signal,[source],c);
-          chunk(renderCalculatorTurn(result));return result.usage;
+          let validated;
+          const result=await consumeCalculatorTurn(events(),{inputPerMillion:0,outputPerMillion:0,currency:'USD'},signal,[source],c,undefined,raw=>session.expand(raw,c),raw=>{validated=raw});
+          const answer=renderCalculatorTurn(result);
+          if(validated)session.stage(validated,answer,c);
+          chunk(answer);return result.usage;
         }`;
         },
       },
@@ -95,9 +106,43 @@ it("displays optional native calculator results and a corrected total through th
       await ui(page.locator("article.assistant").last()).toContainText(
         "The total includes delivery",
       );
+      if (question === "Correct delivery to EUR 9.")
+        await ui(page.locator("article.assistant").last()).toContainText(
+          "5.60 EUR",
+        );
     }
     await page.locator("button.citation").first().click();
     await ui(page.getByRole("dialog")).toContainText("Buy 3 items");
+    await page
+      .getByRole("button", { name: "Close source", exact: true })
+      .click();
+    page.on("dialog", (dialog) => dialog.accept());
+    await page
+      .getByRole("button", { name: "New conversation", exact: false })
+      .click();
+    await tab("Context").click();
+    await page.getByLabel("Add documents or screenshots").setInputFiles({
+      name: "fresh-synthetic.txt",
+      mimeType: "text/plain",
+      buffer: Buffer.from(
+        "Buy 3 items at EUR 27 each. Delivery EUR 4. Tax 12 percent applies to items and delivery.",
+      ),
+    });
+    await ui(page.locator("details summary")).toBeVisible();
+    await tab("Conversation").click();
+    await page
+      .getByLabel("Message PrivateAI")
+      .fill("Calculate the fresh invoice.");
+    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await ui(page.locator("article.assistant").last()).toContainText(
+      "95.20 EUR",
+    );
+    expect(
+      await page.evaluate(() => ({
+        local: localStorage.length,
+        session: sessionStorage.length,
+      })),
+    ).toEqual({ local: 0, session: 0 });
     expect(external).toEqual([]);
   } finally {
     await browser.close();

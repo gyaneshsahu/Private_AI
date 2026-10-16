@@ -4,6 +4,7 @@ import {
   type Usage,
 } from "../shared/contracts";
 import { streamVerifiedConversation } from "./verified-chat";
+import type { CalculationSession } from "./calculation-session";
 export { assertVerification } from "./verified-chat";
 
 // The product path always requires complete qualification. Isolated synthetic
@@ -15,6 +16,7 @@ export async function streamReply(
   signal: AbortSignal,
   onChunk: (text: string) => void,
   onStatus: (text: string) => void,
+  _calculationSession?: CalculationSession,
 ): Promise<Usage | undefined> {
   const report = validateQualification(qualification);
   return streamVerifiedConversation(

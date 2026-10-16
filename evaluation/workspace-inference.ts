@@ -4,6 +4,7 @@ import { validateExperiment, developmentCase } from "./experiment";
 import { streamVerifiedConversation } from "../src/verified-chat";
 import { classifyEvaluationFailure } from "./reply-failure";
 import { replyTiming } from "./reply-timing";
+import type { CalculationSession } from "../src/calculation-session";
 const history = new Map<string, string>();
 let lastRaw: string | undefined;
 let turn = 0;
@@ -14,6 +15,7 @@ export async function streamReply(
   signal: AbortSignal,
   onChunk: (s: string) => void,
   onStatus: (s: string) => void,
+  calculationSession?: CalculationSession,
 ): Promise<Usage | undefined> {
   const state = (window as any).__workspaceEvaluation;
   const permit = validateExperiment(state.permit);
@@ -29,6 +31,10 @@ export async function streamReply(
   const timing = replyTiming();
   let answer = "";
   let draft: string | undefined;
+  let derivedReferenceCount = 0;
+  const availableCalculationRecords = permit.policy.calculatorReplay
+    ? (calculationSession?.references(c).length ?? 0)
+    : 0;
   turn++;
   try {
     const usage = await streamVerifiedConversation(
@@ -48,20 +54,39 @@ export async function streamReply(
       undefined,
       (raw) => {
         draft = raw;
+        if (permit.policy.calculatorReplay) {
+          try {
+            const parsed = JSON.parse(raw);
+            derivedReferenceCount = Array.isArray(parsed.derivedInputs)
+              ? parsed.derivedInputs.length
+              : 0;
+          } catch {
+            derivedReferenceCount = 0;
+          }
+        }
       },
       history,
+      calculationSession,
     );
     lastRaw = permit.policy.optionalCalculator ? undefined : draft;
     state.results.push({
       completed: true,
+      diagnosticDraft:
+        permit.policy.optionalCalculator && fixture.sources.length
+          ? draft
+          : undefined,
       answer,
       usage,
+      derivedReferenceCount,
+      availableCalculationRecords,
       ...timing.snapshot(),
     });
     return usage;
   } catch (e) {
     state.results.push({
       completed: false,
+      derivedReferenceCount,
+      availableCalculationRecords,
       // Only authored source fixtures can retain diagnostic content. Public runs
       // remain metadata-only, including malformed or rejected replies.
       diagnosticDraft:
