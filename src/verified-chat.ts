@@ -96,6 +96,7 @@ export async function streamVerifiedConversation(
   onCheckedDiagnosticDraft?: (raw: string) => void,
   checkedHistory?: ReadonlyMap<string, string>,
   calculationSession?: CalculationSession,
+  onModelEvent?: (event: unknown) => void,
 ): Promise<Usage | undefined> {
   const responseFormat = assistedResponseFormat(report);
   const toolOptions = report.optionalCalculator
@@ -312,10 +313,16 @@ export async function streamVerifiedConversation(
         redirect: "error",
       },
     );
+    async function* observedEvents() {
+      for await (const event of completionEvents(response, signal)) {
+        onModelEvent?.(event);
+        yield event;
+      }
+    }
     if (report.optionalCalculator) {
       let validatedProgram: string | undefined;
       const turn = await consumeCalculatorTurn(
-        completionEvents(response, signal),
+        observedEvents(),
         report.pricing,
         signal,
         evidenceSources,
@@ -341,7 +348,7 @@ export async function streamVerifiedConversation(
       report.assistedResearchContract
     )
       return consumeCheckedResponse(
-        completionEvents(response, signal),
+        observedEvents(),
         report.pricing,
         signal,
         evidenceSources,
@@ -356,17 +363,12 @@ export async function streamVerifiedConversation(
       );
     if (report.researchEvidenceContract)
       return consumeResearchReply(
-        completionEvents(response, signal),
+        observedEvents(),
         report.pricing,
         signal,
         evidenceSources,
         onChunk,
       );
-    return consumeReply(
-      completionEvents(response, signal),
-      report.pricing,
-      signal,
-      onChunk,
-    );
+    return consumeReply(observedEvents(), report.pricing, signal, onChunk);
   });
 }

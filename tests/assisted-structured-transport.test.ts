@@ -127,6 +127,7 @@ it("sends optional tools through one encrypted request and accepts an ordinary a
   const c = emptyConversation();
   c.messages.push(newMessage("user", "Explain this source."));
   const chunks: string[] = [];
+  const captured: unknown[] = [];
   await streamVerifiedConversation(
     c,
     {
@@ -140,7 +141,13 @@ it("sends optional tools through one encrypted request and accepts an ordinary a
     (s) => chunks.push(s),
     () => {},
     () => {},
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    (event) => captured.push(event),
   );
+  expect(captured).toEqual(events);
   expect(request).toHaveBeenCalledTimes(1);
   const body = JSON.parse(request.mock.calls[0][1].body);
   expect(body.tools[0].function.name).toBe("calculate");

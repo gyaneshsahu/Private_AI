@@ -30,6 +30,7 @@ export async function streamReply(
   lastRaw = undefined;
   const timing = replyTiming();
   let answer = "";
+  const modelEvents: unknown[] = [];
   let draft: string | undefined;
   let derivedReferenceCount = 0;
   const availableCalculationRecords = permit.policy.calculatorReplay
@@ -67,10 +68,12 @@ export async function streamReply(
       },
       history,
       calculationSession,
+      fixture.sources.length ? (event) => modelEvents.push(event) : undefined,
     );
     lastRaw = permit.policy.optionalCalculator ? undefined : draft;
     state.results.push({
       completed: true,
+      modelEvents: fixture.sources.length ? modelEvents : undefined,
       diagnosticDraft:
         permit.policy.optionalCalculator && fixture.sources.length
           ? draft
@@ -85,6 +88,7 @@ export async function streamReply(
   } catch (e) {
     state.results.push({
       completed: false,
+      modelEvents: fixture.sources.length ? modelEvents : undefined,
       derivedReferenceCount,
       availableCalculationRecords,
       // Only authored source fixtures can retain diagnostic content. Public runs

@@ -16,6 +16,26 @@ import { auditResearchAnswer } from "../src/research-audit";
 import workspaceFixtures from "./cases/research-workspace.json";
 import assistedFixtures from "./cases/research-assisted.json";
 import toolFixtures from "./cases/research-tools.json";
+const matched = process.argv.includes("--matched");
+const cells = [
+  "deepseek-normal",
+  "gptoss-normal",
+  "deepseek-calculator",
+  "gptoss-calculator",
+];
+const cellArm = (cell: string) =>
+  cell.endsWith("-calculator")
+    ? "candidate"
+    : cell.endsWith("-normal")
+      ? "baseline"
+      : cell;
+if (
+  matched &&
+  (!process.argv.includes("--optional-tools") ||
+    !process.argv.includes("--calculation-replay") ||
+    process.argv.includes("--candidate-only"))
+)
+  throw Error("Matched mode requires normal/calculator pairs and replay");
 const optionalTools = process.argv.includes("--optional-tools");
 const toolDiagnostic = process.argv.includes("--tool-diagnostic");
 const candidateOnly = process.argv.includes("--candidate-only");
@@ -124,14 +144,29 @@ if (!dry) {
 }
 // Validate every selected permit before opening a browser or spending on any arm.
 for (const fixture of fixtures)
-  for (const arm of diagnostic || toolDiagnostic || candidateOnly
-    ? ["candidate"]
-    : ["baseline", "candidate"]) {
+  for (const cell of matched
+    ? cells
+    : diagnostic || toolDiagnostic || candidateOnly
+      ? ["candidate"]
+      : ["baseline", "candidate"]) {
+    const arm = cellArm(cell);
     const permit = validateExperiment(
       JSON.parse(
-        await readFile(resolve(root, `${fixture.id}-${arm}.json`), "utf8"),
+        await readFile(resolve(root, `${fixture.id}-${cell}.json`), "utf8"),
       ),
     );
+    if (
+      matched &&
+      (permit.policy.model !==
+        (cell.startsWith("deepseek")
+          ? "deepseek-v4-1-flash"
+          : "gpt-oss-120b") ||
+        (cell.startsWith("deepseek")
+          ? permit.policy.deepSeekThinking !== true ||
+            permit.policy.deepSeekReasoningEffort !== "low"
+          : permit.policy.gptOssReasoningEffort !== "high"))
+    )
+      throw Error("Matched model configuration differs");
     assertWorkspaceArm(
       permit,
       fixture.id,
@@ -179,14 +214,17 @@ try {
   for (const [caseIndex, fixture] of fixtures.entries()) {
     if (stop) break;
     let pairedSources: any[] | undefined;
-    for (const arm of diagnostic || toolDiagnostic || candidateOnly
-      ? ["candidate"]
-      : assisted && caseIndex % 2
-        ? ["candidate", "baseline"]
-        : ["baseline", "candidate"]) {
+    for (const cell of matched
+      ? [...cells.slice(caseIndex), ...cells.slice(0, caseIndex)]
+      : diagnostic || toolDiagnostic || candidateOnly
+        ? ["candidate"]
+        : assisted && caseIndex % 2
+          ? ["candidate", "baseline"]
+          : ["baseline", "candidate"]) {
+      const arm = cellArm(cell);
       const permit = validateExperiment(
         JSON.parse(
-          await readFile(resolve(root, `${fixture.id}-${arm}.json`), "utf8"),
+          await readFile(resolve(root, `${fixture.id}-${cell}.json`), "utf8"),
         ),
       );
       assertWorkspaceArm(
@@ -201,6 +239,8 @@ try {
         : await claimExperiment(".local/experiment-runs", permit.approvalId);
       const record: any = {
         id: fixture.id,
+        cell,
+        configuration: permit.policy,
         arm,
         public: !fixture.sources.length,
         replies: [],
@@ -479,6 +519,12 @@ try {
             const audit = auditResearchAnswer(result.answer, sources);
             record.replies.push({
               ...result,
+              deliveredDOMText: fixture.sources.length
+                ? await page
+                    .locator("article.message.assistant")
+                    .last()
+                    .innerText()
+                : undefined,
               humanReview,
               answer: fixture.sources.length ? result.answer : undefined,
               answerCharacters: result.answer.length,

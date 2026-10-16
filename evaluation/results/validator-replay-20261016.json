@@ -1,0 +1,694 @@
+{
+  "status": "OFFLINE_ONLY_NOT_LIVE_REPAIR",
+  "paidRequests": 0,
+  "notes": [
+    "Original bytes replayed without normalization. Historical entry files matched frozen SHA256 where available; missing exact files explicitly block old replay. Current validator is not required to accept superseded wire formats.",
+    "Terminal tool events synthesized because full original SSE was not retained; this tests validation, not transport.",
+    "Previously calculated assistant values not promoted to source evidence."
+  ],
+  "rows": [
+    {
+      "file": "research-assisted-expanded-20261015",
+      "run": ".local/arithmetic-live-20261015",
+      "case": "assisted-03",
+      "turn": 1,
+      "rawSHA256": "b9fbe5ef2a42006b63c182359020bb6f898d4f5364718a325b606173c998cad2",
+      "originalFailure": "INVALID_SCHEMA",
+      "originalCompleted": false,
+      "historicalDependencyHashes": {
+        "src/assisted-research.ts": {
+          "sha256": "fefb20389362c186f7dd1c04c6416ae9074f7d4fb2a586ce55397515778a27f8",
+          "frozen": true
+        },
+        "src/checked-response.ts": {
+          "sha256": "c1c345435f1b015fea8507d5ddf0f090b3b85c32b6cb5004de2652ca15c23fc0",
+          "frozen": true
+        },
+        "shared/contracts.ts": {
+          "sha256": "c2c292f7ae86e082272fca64ebac5739d9583c88b915543f05f2d3568bf580ab",
+          "frozen": false
+        },
+        "src/reply-stream.ts": {
+          "sha256": "2d3e6ba415b6e42a1d146ac4d398c969fd4a2271594b43fc7f9436d8f202cad8",
+          "frozen": false
+        },
+        "src/stream-failure.ts": {
+          "sha256": "7b7d199c6b152b618a21e7a735750003ce1ba1bc52623cbc4fbe57c59eef0a00",
+          "frozen": false
+        },
+        "src/research-contract.ts": {
+          "sha256": "4b22c4ad208275e67668cc46bc402db6bdafd3abccd7ddec16563a37d6a02036",
+          "frozen": true
+        },
+        "src/scoped-research.ts": {
+          "sha256": "d2d7105109984e91ed0f0fa9d2cc117eebb49c003e34ce333ef454fd239aa807",
+          "frozen": true
+        }
+      },
+      "oldMissing": [],
+      "liveOutcomeUnchanged": true,
+      "old": {
+        "status": "REJECTED",
+        "kind": "ZodError",
+        "issues": [
+          {
+            "code": "invalid_union",
+            "path": [
+              "blocks",
+              1,
+              "calculation"
+            ]
+          }
+        ]
+      },
+      "current": {
+        "status": "ACCEPTED",
+        "answer": "The source reports only total counted visits, so it supports a percentage change in visits but does not establish any change in unique people\\. It states that repeat visits by the same person are included and that unique people were not counted \\. Because the source does not describe unique\\-person counts, the unique\\-person change is unknown rather than proven to be the same or different\\. [assisted-source-03]\n\n**25.000000 %** [assisted-source-03]"
+      }
+    },
+    {
+      "file": "research-assisted-expanded-20261015",
+      "run": ".local/normalized-live-20261015",
+      "case": "assisted-05",
+      "turn": 1,
+      "rawSHA256": "260de2f7238a517b189c9772e55966cf4767d1886783665092d522c90f5a04ba",
+      "originalFailure": "INVALID_SCHEMA",
+      "originalCompleted": false,
+      "historicalDependencyHashes": {
+        "src/assisted-research.ts": {
+          "sha256": "74f80ff02641c058e2fb3a6e29a622b8ff0f600d3b206c9e7a2a88ad6c2b995c",
+          "frozen": true
+        },
+        "src/checked-response.ts": {
+          "sha256": "c1c345435f1b015fea8507d5ddf0f090b3b85c32b6cb5004de2652ca15c23fc0",
+          "frozen": true
+        },
+        "shared/contracts.ts": {
+          "sha256": "c2c292f7ae86e082272fca64ebac5739d9583c88b915543f05f2d3568bf580ab",
+          "frozen": false
+        },
+        "src/reply-stream.ts": {
+          "sha256": "2d3e6ba415b6e42a1d146ac4d398c969fd4a2271594b43fc7f9436d8f202cad8",
+          "frozen": false
+        },
+        "src/stream-failure.ts": {
+          "sha256": "7b7d199c6b152b618a21e7a735750003ce1ba1bc52623cbc4fbe57c59eef0a00",
+          "frozen": false
+        },
+        "src/research-contract.ts": {
+          "sha256": "4b22c4ad208275e67668cc46bc402db6bdafd3abccd7ddec16563a37d6a02036",
+          "frozen": true
+        },
+        "src/scoped-research.ts": {
+          "sha256": "5e4eb88cd28c06a650194ab3cb407748d3ba1bd6005b498498856b011a5fc6a4",
+          "frozen": true
+        }
+      },
+      "oldMissing": [],
+      "liveOutcomeUnchanged": true,
+      "old": {
+        "status": "REJECTED",
+        "kind": "ZodError",
+        "issues": [
+          {
+            "code": "invalid_type",
+            "path": [
+              "blocks",
+              0,
+              "evidence"
+            ]
+          }
+        ]
+      },
+      "current": {
+        "status": "REJECTED",
+        "kind": "ZodError",
+        "issues": [
+          {
+            "code": "invalid_type",
+            "path": [
+              "blocks",
+              0,
+              "evidence"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "research-structured-20261015",
+      "run": ".local/structured-live-20261015",
+      "case": "assisted-06",
+      "turn": 1,
+      "rawSHA256": "1ecf7fddb75419a10f9f8b627d92235a76744bca0b1e84c33d3d6949857b5fa8",
+      "originalFailure": "FORMAT",
+      "originalCompleted": false,
+      "historicalDependencyHashes": {
+        "src/assisted-research.ts": {
+          "sha256": "93bfe81f77cb7039ad6fd32549d297232c21750752e8635562f0573c792ee6e6",
+          "frozen": true
+        },
+        "src/checked-response.ts": {
+          "sha256": "c1c345435f1b015fea8507d5ddf0f090b3b85c32b6cb5004de2652ca15c23fc0",
+          "frozen": true
+        },
+        "shared/contracts.ts": {
+          "sha256": "c2c292f7ae86e082272fca64ebac5739d9583c88b915543f05f2d3568bf580ab",
+          "frozen": false
+        },
+        "src/reply-stream.ts": {
+          "sha256": "2d3e6ba415b6e42a1d146ac4d398c969fd4a2271594b43fc7f9436d8f202cad8",
+          "frozen": false
+        },
+        "src/stream-failure.ts": {
+          "sha256": "7b7d199c6b152b618a21e7a735750003ce1ba1bc52623cbc4fbe57c59eef0a00",
+          "frozen": false
+        },
+        "src/research-contract.ts": {
+          "sha256": "4b22c4ad208275e67668cc46bc402db6bdafd3abccd7ddec16563a37d6a02036",
+          "frozen": true
+        },
+        "src/scoped-research.ts": {
+          "sha256": "5e4eb88cd28c06a650194ab3cb407748d3ba1bd6005b498498856b011a5fc6a4",
+          "frozen": true
+        }
+      },
+      "oldMissing": [],
+      "liveOutcomeUnchanged": true,
+      "old": {
+        "status": "REJECTED",
+        "kind": "Error"
+      },
+      "current": {
+        "status": "REJECTED",
+        "kind": "ZodError",
+        "issues": [
+          {
+            "code": "too_small",
+            "path": [
+              "blocks",
+              0,
+              "program",
+              "inputs"
+            ]
+          },
+          {
+            "code": "too_small",
+            "path": [
+              "blocks",
+              0,
+              "program",
+              "steps"
+            ]
+          },
+          {
+            "code": "too_small",
+            "path": [
+              "blocks",
+              0,
+              "program",
+              "results"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "research-tools-multi-20261016",
+      "run": ".local/tool-invoice-live-20261016",
+      "case": "assisted-tool-08",
+      "turn": 1,
+      "rawSHA256": "255f52d0cb5ec471d8dd27e0b8ed807ada610f38f3b6c93dd3393911d1603d3b",
+      "originalFailure": "EVIDENCE_OR_ARITHMETIC",
+      "originalCompleted": false,
+      "historicalDependencyHashes": {
+        "src/calculator-turn.ts": {
+          "sha256": "9771f2225cf5e53e9c80ae5a886f3b5b8d44260a423c33414c943ef300e0758f",
+          "frozen": true
+        },
+        "shared/contracts.ts": {
+          "sha256": "c2c292f7ae86e082272fca64ebac5739d9583c88b915543f05f2d3568bf580ab",
+          "frozen": false
+        },
+        "src/checked-response.ts": {
+          "sha256": "c1c345435f1b015fea8507d5ddf0f090b3b85c32b6cb5004de2652ca15c23fc0",
+          "frozen": true
+        },
+        "src/reply-stream.ts": {
+          "sha256": "2d3e6ba415b6e42a1d146ac4d398c969fd4a2271594b43fc7f9436d8f202cad8",
+          "frozen": false
+        },
+        "src/stream-failure.ts": {
+          "sha256": "7b7d199c6b152b618a21e7a735750003ce1ba1bc52623cbc4fbe57c59eef0a00",
+          "frozen": false
+        }
+      },
+      "oldMissing": [],
+      "liveOutcomeUnchanged": true,
+      "old": {
+        "status": "REJECTED",
+        "kind": "EVIDENCE_OR_ARITHMETIC"
+      },
+      "current": {
+        "status": "REJECTED",
+        "kind": "INVALID_SCHEMA",
+        "issues": [
+          {
+            "code": "invalid_type",
+            "path": [
+              "inputs"
+            ]
+          },
+          {
+            "code": "invalid_type",
+            "path": [
+              "steps"
+            ]
+          },
+          {
+            "code": "invalid_type",
+            "path": [
+              "results"
+            ]
+          },
+          {
+            "code": "unrecognized_keys",
+            "path": []
+          }
+        ]
+      },
+      "currentWireMigration": {
+        "status": "ACCEPTED",
+        "answer": "**Calculated meals: 112.00 EUR** [tool-source-08]\n\n**Calculated taxable base: 117.00 EUR** [tool-source-08]\n\n**Calculated tax amount: 11.70 EUR** [tool-source-08]\n\n**Calculated total: 128.70 EUR** [tool-source-08]\n\nArithmetic calculated locally; the selected inputs, method and explanation are not independently verified.",
+        "note": "Only removes obsolete program wrapper and empty renderer bookkeeping; operands and operations unchanged. Not a live success."
+      }
+    },
+    {
+      "file": "research-tools-lexical-20261016",
+      "run": ".local/tool-lexical-v2-live-20261016",
+      "case": "assisted-tool-09",
+      "turn": 2,
+      "rawSHA256": "12c090b8656912506ebc5d2cdf287a1092547678f323836eb579024aba385749",
+      "originalFailure": "INVALID_SCHEMA",
+      "originalCompleted": false,
+      "historicalDependencyHashes": {
+        "src/calculator-turn.ts": {
+          "sha256": "9906420acc629c4ef06b8e4715f4ad5240b5c561a58b0edf5af139ee77728351",
+          "frozen": true
+        },
+        "shared/contracts.ts": {
+          "sha256": "c2c292f7ae86e082272fca64ebac5739d9583c88b915543f05f2d3568bf580ab",
+          "frozen": false
+        },
+        "src/checked-response.ts": {
+          "sha256": "5535efc75dcbf387dfd3929f80cd2d967e3547a84f8633fc3416daedbd9b3db5",
+          "frozen": true
+        },
+        "src/number-evidence.ts": {
+          "sha256": "0ccde5cce0368b46d379142401f7497d476343dc39a5bb49cd9205b11879d58f",
+          "frozen": true
+        },
+        "src/reply-stream.ts": {
+          "sha256": "2d3e6ba415b6e42a1d146ac4d398c969fd4a2271594b43fc7f9436d8f202cad8",
+          "frozen": false
+        },
+        "src/stream-failure.ts": {
+          "sha256": "7b7d199c6b152b618a21e7a735750003ce1ba1bc52623cbc4fbe57c59eef0a00",
+          "frozen": false
+        }
+      },
+      "oldMissing": [],
+      "liveOutcomeUnchanged": true,
+      "old": {
+        "status": "REJECTED",
+        "kind": "INVALID_SCHEMA",
+        "issues": [
+          {
+            "code": "too_big",
+            "path": [
+              "program",
+              "results"
+            ]
+          },
+          {
+            "code": "invalid_type",
+            "path": [
+              "program",
+              "passages"
+            ]
+          },
+          {
+            "code": "invalid_value",
+            "path": [
+              "program",
+              "limitation"
+            ]
+          },
+          {
+            "code": "unrecognized_keys",
+            "path": []
+          }
+        ]
+      },
+      "current": {
+        "status": "REJECTED",
+        "kind": "INVALID_SCHEMA",
+        "issues": [
+          {
+            "code": "invalid_type",
+            "path": [
+              "inputs"
+            ]
+          },
+          {
+            "code": "invalid_type",
+            "path": [
+              "steps"
+            ]
+          },
+          {
+            "code": "invalid_type",
+            "path": [
+              "results"
+            ]
+          },
+          {
+            "code": "unrecognized_keys",
+            "path": []
+          }
+        ]
+      }
+    },
+    {
+      "file": "research-tools-flat-20261016",
+      "run": ".local/tools-flat-live-20261016",
+      "case": "assisted-tool-10",
+      "turn": 2,
+      "rawSHA256": "4e39bd1cd1534676c49963a5d54ddb2ae1189bda742862c8b2cf8f16396f6c38",
+      "originalFailure": "EVIDENCE_OR_ARITHMETIC",
+      "originalCompleted": false,
+      "historicalDependencyHashes": {
+        "src/calculator-turn.ts": {
+          "sha256": "1015b3b971db0b9d4df06f52bd4cf7f0a084dd85acd41a6fd1f6e095348d716d",
+          "frozen": true
+        },
+        "shared/contracts.ts": {
+          "sha256": "c2c292f7ae86e082272fca64ebac5739d9583c88b915543f05f2d3568bf580ab",
+          "frozen": false
+        },
+        "src/checked-response.ts": {
+          "sha256": "5535efc75dcbf387dfd3929f80cd2d967e3547a84f8633fc3416daedbd9b3db5",
+          "frozen": true
+        },
+        "src/number-evidence.ts": {
+          "sha256": "0ccde5cce0368b46d379142401f7497d476343dc39a5bb49cd9205b11879d58f",
+          "frozen": true
+        },
+        "src/reply-stream.ts": {
+          "sha256": "2d3e6ba415b6e42a1d146ac4d398c969fd4a2271594b43fc7f9436d8f202cad8",
+          "frozen": false
+        },
+        "src/stream-failure.ts": {
+          "sha256": "7b7d199c6b152b618a21e7a735750003ce1ba1bc52623cbc4fbe57c59eef0a00",
+          "frozen": false
+        }
+      },
+      "oldMissing": [],
+      "liveOutcomeUnchanged": true,
+      "old": {
+        "status": "REJECTED",
+        "kind": "EVIDENCE_OR_ARITHMETIC"
+      },
+      "current": {
+        "status": "REJECTED",
+        "kind": "EVIDENCE_OR_ARITHMETIC"
+      }
+    },
+    {
+      "file": "research-tools-session-20261016",
+      "run": ".local/tools-replay-live-20261016",
+      "case": "assisted-tool-14",
+      "turn": 2,
+      "rawSHA256": "dcedf2af1109ee131d6e6ea37f2ff64623b80be86b77d5a2dd1c99759faf18a6",
+      "originalFailure": "EVIDENCE_OR_ARITHMETIC",
+      "originalCompleted": false,
+      "historicalDependencyHashes": {
+        "src/calculator-turn.ts": {
+          "sha256": "bcae29f5baed9ff7d713c518d536ad712ee2973f10f82af7d359214d300f57d6",
+          "frozen": true
+        },
+        "shared/contracts.ts": {
+          "sha256": "c2c292f7ae86e082272fca64ebac5739d9583c88b915543f05f2d3568bf580ab",
+          "frozen": false
+        },
+        "src/checked-response.ts": {
+          "sha256": "5535efc75dcbf387dfd3929f80cd2d967e3547a84f8633fc3416daedbd9b3db5",
+          "frozen": true
+        },
+        "src/number-evidence.ts": {
+          "sha256": "0ccde5cce0368b46d379142401f7497d476343dc39a5bb49cd9205b11879d58f",
+          "frozen": true
+        },
+        "src/reply-stream.ts": {
+          "sha256": "2d3e6ba415b6e42a1d146ac4d398c969fd4a2271594b43fc7f9436d8f202cad8",
+          "frozen": false
+        },
+        "src/stream-failure.ts": {
+          "sha256": "7b7d199c6b152b618a21e7a735750003ce1ba1bc52623cbc4fbe57c59eef0a00",
+          "frozen": false
+        }
+      },
+      "oldMissing": [],
+      "liveOutcomeUnchanged": true,
+      "old": {
+        "status": "REJECTED",
+        "kind": "EVIDENCE_OR_ARITHMETIC"
+      },
+      "current": {
+        "status": "REJECTED",
+        "kind": "EVIDENCE_OR_ARITHMETIC"
+      }
+    },
+    {
+      "file": "research-tools-session-20261016",
+      "run": ".local/tools-low-transfer-live-20261016",
+      "case": "assisted-tool-22",
+      "turn": 2,
+      "rawSHA256": "bf877cf10534a0adaa4f30e827e873e3db6c65df7d927b4f47d5e20d58fe4589",
+      "originalFailure": "EVIDENCE_OR_ARITHMETIC",
+      "originalCompleted": false,
+      "historicalDependencyHashes": {
+        "src/calculator-turn.ts": {
+          "sha256": "bcae29f5baed9ff7d713c518d536ad712ee2973f10f82af7d359214d300f57d6",
+          "frozen": true
+        },
+        "shared/contracts.ts": {
+          "sha256": "c2c292f7ae86e082272fca64ebac5739d9583c88b915543f05f2d3568bf580ab",
+          "frozen": false
+        },
+        "src/checked-response.ts": {
+          "sha256": "5535efc75dcbf387dfd3929f80cd2d967e3547a84f8633fc3416daedbd9b3db5",
+          "frozen": true
+        },
+        "src/number-evidence.ts": {
+          "sha256": "0ccde5cce0368b46d379142401f7497d476343dc39a5bb49cd9205b11879d58f",
+          "frozen": true
+        },
+        "src/reply-stream.ts": {
+          "sha256": "2d3e6ba415b6e42a1d146ac4d398c969fd4a2271594b43fc7f9436d8f202cad8",
+          "frozen": false
+        },
+        "src/stream-failure.ts": {
+          "sha256": "7b7d199c6b152b618a21e7a735750003ce1ba1bc52623cbc4fbe57c59eef0a00",
+          "frozen": false
+        }
+      },
+      "oldMissing": [],
+      "liveOutcomeUnchanged": true,
+      "old": {
+        "status": "REJECTED",
+        "kind": "EVIDENCE_OR_ARITHMETIC"
+      },
+      "current": {
+        "status": "REJECTED",
+        "kind": "EVIDENCE_OR_ARITHMETIC"
+      }
+    },
+    {
+      "file": "research-tools-session-20261016",
+      "run": ".local/tools-ratio-live-20261016",
+      "case": "assisted-tool-24",
+      "turn": 1,
+      "rawSHA256": "4ff8f3095c44eca3fdc4e2cd107f854b93575296de915b48586dc048d56c9338",
+      "originalCompleted": true,
+      "historicalDependencyHashes": {
+        "src/calculator-turn.ts": {
+          "sha256": "bcae29f5baed9ff7d713c518d536ad712ee2973f10f82af7d359214d300f57d6",
+          "frozen": true
+        },
+        "shared/contracts.ts": {
+          "sha256": "c2c292f7ae86e082272fca64ebac5739d9583c88b915543f05f2d3568bf580ab",
+          "frozen": false
+        },
+        "src/checked-response.ts": {
+          "sha256": "0e100210302a1be4ef14c790c829f34acea15a26bd921d85ed44bc3c0815b797",
+          "frozen": true
+        },
+        "src/number-evidence.ts": {
+          "sha256": "0ccde5cce0368b46d379142401f7497d476343dc39a5bb49cd9205b11879d58f",
+          "frozen": true
+        },
+        "src/reply-stream.ts": {
+          "sha256": "2d3e6ba415b6e42a1d146ac4d398c969fd4a2271594b43fc7f9436d8f202cad8",
+          "frozen": false
+        },
+        "src/stream-failure.ts": {
+          "sha256": "7b7d199c6b152b618a21e7a735750003ce1ba1bc52623cbc4fbe57c59eef0a00",
+          "frozen": false
+        }
+      },
+      "oldMissing": [],
+      "liveOutcomeUnchanged": true,
+      "old": {
+        "status": "ACCEPTED",
+        "answer": "**Calculated occupied pct: 45 %** [tool-source-24]\n\n**Calculated remaining: 22 count** [tool-source-24]\n\nArithmetic calculated locally; the selected inputs, method and explanation are not independently verified."
+      },
+      "current": {
+        "status": "ACCEPTED",
+        "answer": "**Calculated occupied pct: 45 %** [tool-source-24]\n\n**Calculated remaining: 22 count** [tool-source-24]\n\nArithmetic calculated locally; the selected inputs, method and explanation are not independently verified."
+      }
+    },
+    {
+      "file": "research-tools-session-20261016",
+      "run": ".local/tools-ratio-live-20261016",
+      "case": "assisted-tool-24",
+      "turn": 2,
+      "rawSHA256": "0a5e728ead0e2956e2143f1376785366a24f20c099f992b5e3e510116d33782c",
+      "originalCompleted": true,
+      "historicalDependencyHashes": {
+        "src/calculator-turn.ts": {
+          "sha256": "bcae29f5baed9ff7d713c518d536ad712ee2973f10f82af7d359214d300f57d6",
+          "frozen": true
+        },
+        "shared/contracts.ts": {
+          "sha256": "c2c292f7ae86e082272fca64ebac5739d9583c88b915543f05f2d3568bf580ab",
+          "frozen": false
+        },
+        "src/checked-response.ts": {
+          "sha256": "0e100210302a1be4ef14c790c829f34acea15a26bd921d85ed44bc3c0815b797",
+          "frozen": true
+        },
+        "src/number-evidence.ts": {
+          "sha256": "0ccde5cce0368b46d379142401f7497d476343dc39a5bb49cd9205b11879d58f",
+          "frozen": true
+        },
+        "src/reply-stream.ts": {
+          "sha256": "2d3e6ba415b6e42a1d146ac4d398c969fd4a2271594b43fc7f9436d8f202cad8",
+          "frozen": false
+        },
+        "src/stream-failure.ts": {
+          "sha256": "7b7d199c6b152b618a21e7a735750003ce1ba1bc52623cbc4fbe57c59eef0a00",
+          "frozen": false
+        }
+      },
+      "oldMissing": [],
+      "liveOutcomeUnchanged": true,
+      "old": {
+        "status": "ACCEPTED",
+        "answer": "**Calculated pct: 57.5 %** [tool-source-24] (your message 2)\n\n**Calculated remaining: 17 count** [tool-source-24] (your message 2)\n\nArithmetic calculated locally; the selected inputs, method and explanation are not independently verified."
+      },
+      "current": {
+        "status": "ACCEPTED",
+        "answer": "**Calculated pct: 57.5 %** [tool-source-24] (your message 2)\n\n**Calculated remaining: 17 count** [tool-source-24] (your message 2)\n\nArithmetic calculated locally; the selected inputs, method and explanation are not independently verified."
+      }
+    },
+    {
+      "file": "research-tools-session-20261016",
+      "run": ".local/tools-ratio-live-20261016",
+      "case": "assisted-tool-25",
+      "turn": 1,
+      "rawSHA256": "66d061f64e8622c143fe64c569141aeb35de4210f0f03a15d16d5e26ae3f248e",
+      "originalCompleted": true,
+      "historicalDependencyHashes": {
+        "src/calculator-turn.ts": {
+          "sha256": "bcae29f5baed9ff7d713c518d536ad712ee2973f10f82af7d359214d300f57d6",
+          "frozen": true
+        },
+        "shared/contracts.ts": {
+          "sha256": "c2c292f7ae86e082272fca64ebac5739d9583c88b915543f05f2d3568bf580ab",
+          "frozen": false
+        },
+        "src/checked-response.ts": {
+          "sha256": "0e100210302a1be4ef14c790c829f34acea15a26bd921d85ed44bc3c0815b797",
+          "frozen": true
+        },
+        "src/number-evidence.ts": {
+          "sha256": "0ccde5cce0368b46d379142401f7497d476343dc39a5bb49cd9205b11879d58f",
+          "frozen": true
+        },
+        "src/reply-stream.ts": {
+          "sha256": "2d3e6ba415b6e42a1d146ac4d398c969fd4a2271594b43fc7f9436d8f202cad8",
+          "frozen": false
+        },
+        "src/stream-failure.ts": {
+          "sha256": "7b7d199c6b152b618a21e7a735750003ce1ba1bc52623cbc4fbe57c59eef0a00",
+          "frozen": false
+        }
+      },
+      "oldMissing": [],
+      "liveOutcomeUnchanged": true,
+      "old": {
+        "status": "ACCEPTED",
+        "answer": "**Calculated diff: 30 USD** [tool-source-25]\n\n**Calculated pct: 24.00 %** [tool-source-25]\n\nArithmetic calculated locally; the selected inputs, method and explanation are not independently verified."
+      },
+      "current": {
+        "status": "ACCEPTED",
+        "answer": "**Calculated diff: 30 USD** [tool-source-25]\n\n**Calculated pct: 24.00 %** [tool-source-25]\n\nArithmetic calculated locally; the selected inputs, method and explanation are not independently verified."
+      }
+    },
+    {
+      "file": "research-tools-session-20261016",
+      "run": ".local/tools-ratio-live-20261016",
+      "case": "assisted-tool-25",
+      "turn": 2,
+      "rawSHA256": "e8e20034a9eeb730677563b8333d5bdb6b66e3a7300632195f3a179005558492",
+      "originalCompleted": true,
+      "historicalDependencyHashes": {
+        "src/calculator-turn.ts": {
+          "sha256": "bcae29f5baed9ff7d713c518d536ad712ee2973f10f82af7d359214d300f57d6",
+          "frozen": true
+        },
+        "shared/contracts.ts": {
+          "sha256": "c2c292f7ae86e082272fca64ebac5739d9583c88b915543f05f2d3568bf580ab",
+          "frozen": false
+        },
+        "src/checked-response.ts": {
+          "sha256": "0e100210302a1be4ef14c790c829f34acea15a26bd921d85ed44bc3c0815b797",
+          "frozen": true
+        },
+        "src/number-evidence.ts": {
+          "sha256": "0ccde5cce0368b46d379142401f7497d476343dc39a5bb49cd9205b11879d58f",
+          "frozen": true
+        },
+        "src/reply-stream.ts": {
+          "sha256": "2d3e6ba415b6e42a1d146ac4d398c969fd4a2271594b43fc7f9436d8f202cad8",
+          "frozen": false
+        },
+        "src/stream-failure.ts": {
+          "sha256": "7b7d199c6b152b618a21e7a735750003ce1ba1bc52623cbc4fbe57c59eef0a00",
+          "frozen": false
+        }
+      },
+      "oldMissing": [],
+      "liveOutcomeUnchanged": true,
+      "old": {
+        "status": "ACCEPTED",
+        "answer": "**Calculated diff: 31 USD** [tool-source-25] (your message 2)\n\n**Calculated pct: 25.00 %** [tool-source-25] (your message 2)\n\nArithmetic calculated locally; the selected inputs, method and explanation are not independently verified."
+      },
+      "current": {
+        "status": "ACCEPTED",
+        "answer": "**Calculated diff: 31 USD** [tool-source-25] (your message 2)\n\n**Calculated pct: 25.00 %** [tool-source-25] (your message 2)\n\nArithmetic calculated locally; the selected inputs, method and explanation are not independently verified."
+      }
+    }
+  ]
+}
