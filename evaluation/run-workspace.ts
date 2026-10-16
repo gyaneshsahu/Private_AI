@@ -18,6 +18,19 @@ import assistedFixtures from "./cases/research-assisted.json";
 import toolFixtures from "./cases/research-tools.json";
 const optionalTools = process.argv.includes("--optional-tools");
 const toolDiagnostic = process.argv.includes("--tool-diagnostic");
+const comparisonCases = process.argv
+  .find((arg) => arg.startsWith("--comparison-cases="))
+  ?.slice("--comparison-cases=".length)
+  .split(",");
+if (
+  comparisonCases &&
+  (!optionalTools ||
+    toolDiagnostic ||
+    !comparisonCases.length ||
+    new Set(comparisonCases).size !== comparisonCases.length ||
+    comparisonCases.some((id) => !toolFixtures.some((f) => f.id === id)))
+)
+  throw Error("Invalid comparison fixture selection");
 const diagnosticCase = process.argv
   .find((arg) => arg.startsWith("--diagnostic-case="))
   ?.slice("--diagnostic-case=".length);
@@ -45,16 +58,18 @@ if (
   throw Error("Choose separate optional-tools batch");
 const fixtures = optionalTools
   ? toolFixtures.filter((f) =>
-      toolDiagnostic
-        ? f.id ===
-          (process.argv.includes("--invoice-diagnostic")
-            ? "assisted-tool-08"
-            : (diagnosticCase ?? "assisted-tool-07"))
-        : process.argv.includes("--multi-results")
-          ? Number(f.id.slice(-2)) >= 5 && Number(f.id.slice(-2)) <= 7
-          : Number(f.id.slice(-2)) <= 4 &&
-            (!process.argv.includes("--remaining-tools") ||
-              f.id !== "assisted-tool-01"),
+      comparisonCases
+        ? comparisonCases.includes(f.id)
+        : toolDiagnostic
+          ? f.id ===
+            (process.argv.includes("--invoice-diagnostic")
+              ? "assisted-tool-08"
+              : (diagnosticCase ?? "assisted-tool-07"))
+          : process.argv.includes("--multi-results")
+            ? Number(f.id.slice(-2)) >= 5 && Number(f.id.slice(-2)) <= 7
+            : Number(f.id.slice(-2)) <= 4 &&
+              (!process.argv.includes("--remaining-tools") ||
+                f.id !== "assisted-tool-01"),
     )
   : structured
     ? assistedFixtures.filter((f) => Number(f.id.slice(-2)) >= 6)

@@ -1,0 +1,280 @@
+{
+  "runs": [
+    {
+      "root": ".local/tools-flat-live-20261016",
+      "plan": {
+        "status": "FROZEN_BEFORE_EXECUTION",
+        "frozenAt": "2026-10-16T11:21:45.532Z",
+        "maxRequests": 12,
+        "maxSearches": 0,
+        "automaticRetries": 0,
+        "reserveUSD": 0.6952704,
+        "actualBeforeUSD": 0.65,
+        "uncertaintyUSD": 0.2491904,
+        "cumulativeBoundUSD": 1.59897585,
+        "capUSD": 3,
+        "publicContentPersistence": false,
+        "baseline": "DeepSeek-v4.1-flash thinkingoff constraints-v4",
+        "candidate": "same + optionalCalculator one request auto tool choice, flat schema, up to12named results; tool schema included in20000character allowance",
+        "order": "alternating arm first by case; identical authored sources",
+        "stop": "Any incomplete reply or app-check failure stops entire batch. No retry, no continuation.",
+        "fixtureSHA256": "10feeacf61531c2a20b8e5aad9a88e6c09c558f2d2535c66b2b971b0bbeb4fbd",
+        "implementationHashes": {
+          "src/number-evidence.ts": "0ccde5cce0368b46d379142401f7497d476343dc39a5bb49cd9205b11879d58f",
+          "evaluation/workspace-arm.ts": "a14fc2b0a8752a29cbc57f5ae634f427e97cd63ed9451c3cf439765ff0c90c96",
+          "src/calculator-turn.ts": "1015b3b971db0b9d4df06f52bd4cf7f0a084dd85acd41a6fd1f6e095348d716d",
+          "src/assisted-response-format.ts": "48199b37a38d16e255f5e86507effdf2ec8fb1d2266e0fb01576a4174f07d09f",
+          "evaluation/temporary-review.ts": "67432cca09635765ab039ac94cc5c0203d9a91882359484e04f8b9304e85e991",
+          "src/assisted-research.ts": "7c8bf0ea5f9b1dbbaafb513e30fc15f98837cd481227c8534cd43992a0e0b3bf",
+          "src/scoped-research.ts": "5e4eb88cd28c06a650194ab3cb407748d3ba1bd6005b498498856b011a5fc6a4",
+          "src/checked-response.ts": "5535efc75dcbf387dfd3929f80cd2d967e3547a84f8633fc3416daedbd9b3db5",
+          "src/research-contract.ts": "4b22c4ad208275e67668cc46bc402db6bdafd3abccd7ddec16563a37d6a02036",
+          "src/verified-chat.ts": "f291c603112c6483ed7fbc9169a2590734a13bed102fc0e4fe36ef2747488947",
+          "src/App.tsx": "38a8e9612b0f3b3fbd90744b266ec5658605ff67c0005b940fc6f9e86806c4b5",
+          "evaluation/run-workspace.ts": "25b28482f162a27ee9c3056b51ac73ae3e7e34c526c4062f47a50f2f118f43cd",
+          "evaluation/workspace-inference.ts": "29faf8619531af8f0da7a175c4c12011c08d71e82a19fe346a09498afd42e752",
+          "evaluation/experiment.ts": "c40f84e118fda332f142cbbcb19af9c6b1ee35c5bfd203fe4d1f91cda533898f"
+        },
+        "humanScores": null
+      },
+      "report": {
+        "mode": "LIVE_PUBLIC_AND_AUTHORED",
+        "humanScores": null,
+        "results": [
+          {
+            "id": "assisted-tool-10",
+            "arm": "baseline",
+            "public": false,
+            "replies": [
+              {
+                "completed": true,
+                "answer": "**Final bill**\n\n| Item | Calculation | Amount |\n|---|---|---|\n| Stands | 6 × €23 | €138.00 |\n| Tax on stands | 20% × €138 | €27.60 |\n| Transport (untaxed) | — | €11.00 |\n| **Total** | | **€176.60** |\n\n**Tax treatment:** Tax at 20% applies only to the stands (€138.00), giving €27.60; transport (€11.00) is untaxed. Both listed prices exclude tax, so tax is added only to the stands. [tool-source-10]",
+                "usage": {
+                  "input": 905,
+                  "output": 134,
+                  "total": 1039,
+                  "estimatedUSD": 0.0007825499999999999
+                },
+                "firstVisibleTextMs": 2159,
+                "elapsedMs": 4189,
+                "answerCharacters": 399,
+                "answerSHA256": "e154f079805f278573b2ce47c0e343ae08630b4a40a9e4326b5b42fbcc5d5d4c",
+                "evidenceAudit": {
+                  "citationReferences": 1,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              },
+              {
+                "completed": true,
+                "answer": "**Revised bill**\n\n| Item | Calculation | Amount |\n|---|---|---|\n| Stands | 6 × €23 | €138.00 |\n| Tax on stands | 20% × €138 | €27.60 |\n| Transport (untaxed) | — | €16.00 |\n| **Total** | | **€181.60** |\n\n**Increase from the original:** €181.60 − €176.60 = **€5.00** (transport rose from €11.00 to €16.00; stands and tax are unchanged, and transport remains untaxed). [tool-source-10]",
+                "usage": {
+                  "input": 1061,
+                  "output": 130,
+                  "total": 1191,
+                  "estimatedUSD": 0.00087815
+                },
+                "firstVisibleTextMs": 1297,
+                "elapsedMs": 2288,
+                "answerCharacters": 382,
+                "answerSHA256": "eb71f49c51016b77a98382ab29bb8bc41da9cb29a0b0e40947c1a38df3401f7c",
+                "evidenceAudit": {
+                  "citationReferences": 1,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              }
+            ],
+            "humanScores": null,
+            "productionGateClosed": true,
+            "retrievalKind": "AUTHORED_FIXTURE",
+            "sourceCount": 1,
+            "sourceHash": "afd6975deb66a90f61d0a54fe81d9c17391a0bcff720be7db983507a6723d835",
+            "evidenceCharacters": 141,
+            "providerDates": 0,
+            "sourceOpen": true,
+            "sourceLinkKeyboardReachable": true,
+            "sourceLinkSafe": true,
+            "answerCitationOpensSource": true,
+            "saveBlocked": true,
+            "storage": {
+              "conversationRecords": 0,
+              "localStorageKeys": 0,
+              "sessionStorageKeys": 0,
+              "cacheEntries": 0,
+              "serviceWorkers": 0
+            },
+            "clearedOnReload": true,
+            "pageErrors": [],
+            "networkViolation": 0,
+            "consoleMessageCount": 6,
+            "attempts": [
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 5233,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 883,
+                "firstEncryptedByteMs": 1246,
+                "elapsedMs": 3277
+              },
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 5817,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 477,
+                "firstEncryptedByteMs": 849,
+                "elapsedMs": 1834
+              }
+            ]
+          },
+          {
+            "id": "assisted-tool-10",
+            "arm": "candidate",
+            "public": false,
+            "replies": [
+              {
+                "completed": true,
+                "answer": "I'll compute the total from the supplied figures.\n\n\n\n**Calculated stands subtotal: 138.00 EUR** [tool-source-10]\n\n**Calculated tax amount: 27.60 EUR** [tool-source-10]\n\n**Calculated total: 165.60 EUR** [tool-source-10]\n\n**Calculated final bill: 176.60 EUR** [tool-source-10]\n\nArithmetic calculated locally; the selected inputs, method and explanation are not independently verified.",
+                "usage": {
+                  "input": 2056,
+                  "output": 476,
+                  "total": 2532,
+                  "estimatedUSD": 0.0020266
+                },
+                "firstVisibleTextMs": 5052,
+                "elapsedMs": 5052,
+                "answerCharacters": 382,
+                "answerSHA256": "df078b6cff396a990817a4ad5552c67b6a599ac344964e96af7f5592ff282bca",
+                "evidenceAudit": {
+                  "citationReferences": 4,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              },
+              {
+                "completed": false,
+                "diagnosticDraft": "{\"unit\": \"EUR\", \"inputs\": [{\"id\": \"price_per_stand\", \"value\": \"23\", \"evidence\": {\"kind\": \"source\", \"sourceId\": \"tool-source-10\", \"quote\": \"Six stands cost EUR 23 each.\"}}, {\"id\": \"stand_count\", \"value\": \"6\", \"evidence\": {\"kind\": \"source\", \"sourceId\": \"tool-source-10\", \"quote\": \"Six stands cost EUR 23 each.\"}}, {\"id\": \"tax_rate_pct\", \"value\": \"20\", \"evidence\": {\"kind\": \"source\", \"sourceId\": \"tool-source-10\", \"quote\": \"Tax 20 percent applies only to the stands; transport is untaxed.\"}}, {\"id\": \"new_transport\", \"value\": \"16\", \"evidence\": {\"kind\": \"user\", \"userTurn\": 2, \"quote\": \"Transport is corrected to EUR 16.\"}}, {\"id\": \"old_transport\", \"value\": \"11\", \"evidence\": {\"kind\": \"source\", \"sourceId\": \"tool-source-10\", \"quote\": \"Transport costs EUR 11.\"}}, {\"id\": \"old_total\", \"value\": \"176.60\", \"evidence\": {\"kind\": \"source\", \"sourceId\": \"tool-source-10\", \"quote\": \"Six stands cost EUR 23 each. Transport costs EUR 11. Tax 20 percent applies only to the stands; transport is untaxed. All prices exclude tax.\"}}], \"steps\": [{\"id\": \"stands_subtotal\", \"op\": \"multiply\", \"left\": \"price_per_stand\", \"right\": \"stand_count\"}, {\"id\": \"tax_amount\", \"op\": \"percentOf\", \"left\": \"stands_subtotal\", \"right\": \"tax_rate_pct\"}, {\"id\": \"taxed_stands_total\", \"op\": \"add\", \"left\": \"stands_subtotal\", \"right\": \"tax_amount\"}, {\"id\": \"revised_bill\", \"op\": \"add\", \"left\": \"taxed_stands_total\", \"right\": \"new_transport\"}, {\"id\": \"increase\", \"op\": \"subtract\", \"left\": \"revised_bill\", \"right\": \"old_total\"}], \"results\": [{\"id\": \"stands_subtotal\", \"decimals\": 2}, {\"id\": \"tax_amount\", \"decimals\": 2}, {\"id\": \"revised_bill\", \"decimals\": 2}, {\"id\": \"increase\", \"decimals\": 2}]}",
+                "answer": "",
+                "failureKind": "CONTRACT_REJECTED",
+                "calculatorFailure": "EVIDENCE_OR_ARITHMETIC",
+                "usage": {
+                  "input": 2178,
+                  "output": 618,
+                  "total": 2796,
+                  "estimatedUSD": 0.0023118
+                },
+                "failure": "IncompleteReplyError",
+                "firstVisibleTextMs": null,
+                "elapsedMs": 5518,
+                "answerCharacters": 0,
+                "answerSHA256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+                "evidenceAudit": {
+                  "citationReferences": 0,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              }
+            ],
+            "humanScores": null,
+            "productionGateClosed": true,
+            "retrievalKind": "AUTHORED_FIXTURE",
+            "sourceCount": 1,
+            "sourceHash": "afd6975deb66a90f61d0a54fe81d9c17391a0bcff720be7db983507a6723d835",
+            "evidenceCharacters": 141,
+            "providerDates": 0,
+            "sourceOpen": true,
+            "sourceLinkKeyboardReachable": true,
+            "sourceLinkSafe": true,
+            "answerCitationOpensSource": true,
+            "saveBlocked": true,
+            "storage": {
+              "conversationRecords": 0,
+              "localStorageKeys": 0,
+              "sessionStorageKeys": 0,
+              "cacheEntries": 0,
+              "serviceWorkers": 0
+            },
+            "clearedOnReload": true,
+            "pageErrors": [],
+            "networkViolation": 0,
+            "consoleMessageCount": 6,
+            "attempts": [
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 8235,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 827,
+                "firstEncryptedByteMs": 1224,
+                "elapsedMs": 4230
+              },
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 8783,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 522,
+                "firstEncryptedByteMs": 927,
+                "elapsedMs": 5091
+              }
+            ]
+          }
+        ],
+        "qualification": "NOT_PASSED",
+        "publicContentPersisted": false
+      }
+    }
+  ],
+  "metrics": {
+    "attempted": 4,
+    "delivered": 3,
+    "estimatedUSD": 0.0059991,
+    "humanScores": null
+  },
+  "assessment": {
+    "status": "AI_PROPOSED_NOT_HUMAN_REVIEW",
+    "decision": "Keep experimental. The flat API is accepted, but the candidate still loses a valid follow-up.",
+    "findings": [
+      "10 baseline both turns correctly calculates176.60EUR then181.60EUR and increase5EUR, with correct untaxed transport explanation.",
+      "10 candidate turn1 computes176.60EUR, but confusingly labels165.60 as total before final bill, and omits the requested explanation of tax treatment.",
+      "10 candidate turn2 supplies old_total176.60 with a source quotation that contains no such number. The schema is valid but operand provenance fails. No answer reaches user; do not count internal correct arithmetic as a quality pass.",
+      "The same underlying derived-value provenance failure survived the schema simplification. More per-example prompt rules are not justified. Evaluate an explicit ephemeral calculation-record design before more paid correction screens.",
+      "11 and12 were not attempted because stop rule applied. No live coverage claimed for them."
+    ],
+    "stop": "Four requests, three delivered; stop on first incomplete, no retries. Human grades blank."
+  }
+}
