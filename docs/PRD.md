@@ -15,7 +15,7 @@ separate from model acceptance, full provider qualification and release approval
 
 ## 1. Purpose and first release
 
-Help a person understand information, complete everyday tasks, and research decisions while controlling disclosure of private context. Start with one capable model and a real responsive web chat. Evaluate usefulness and confidentiality before investing in a broader platform.
+Help a person understand information, complete everyday tasks, and research decisions while controlling disclosure of private context. Start with a small evidence-qualified model/configuration set and a real responsive web chat; one qualified path is sufficient if it meets trial requirements. An explicit Thorough option may expose a separately evaluated configuration, without promising correctness. Evaluate usefulness and confidentiality before investing in a broader platform.
 
 The initial deliverable was a single-operator evaluation through a local web gateway. Restricted hosted individual access is now implemented. The next milestone remains an invited-user trial; public-service launch needs broader security, quality and operational assurance, as tracked in the checklist.
 
@@ -109,7 +109,7 @@ route to integrated workflows and family-level evaluation. Documents and drafts
 are initial entry points, not a narrowing of the product to document management.
 
 
-Defer anonymous access, cloud sync, automatic long-term memory, family sharing, purchases/account actions, arbitrary code execution, voice/video, general vision, model routing and custom GPU infrastructure. Preserve anonymity as a future objective requiring separate identity, routing and entitlement design. Reconsider deferred areas when recurring user needs or measured limitations justify them, with evidence of quality, privacy feasibility and operating cost; the roadmap records specific criteria. Reconsideration does not itself approve wider scope.
+Defer anonymous access, cloud sync, automatic long-term memory, family sharing, purchases/account actions, arbitrary code execution, voice/video, general vision, broad automatic model routing and custom GPU infrastructure. A small tested set and explicit Thorough option are permitted trial directions, conditional on the same quality/privacy gates; they do not require additional models before the trial. Preserve anonymity as a future objective requiring separate identity, routing and entitlement design. Reconsider deferred areas when recurring user needs or measured limitations justify them, with evidence of quality, privacy feasibility and operating cost; the roadmap records specific criteria. Reconsideration does not itself approve wider scope.
 
 Before continuing implementation, review this consolidated scope, privacy limitations and proposed evaluation thresholds. Necessary later inputs are supplier access through secure settings, approval of any concrete spending cap, and participation in human evaluation. Routine reversible engineering choices do not need repeated approval. Public deployment, weaker privacy promises or wider product scope require a material decision.
 

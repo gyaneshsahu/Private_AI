@@ -1,5 +1,16 @@
 # PrivateAI local Codex handoff — updated 16 October 2026
 
+## Model selection and routing direction — 16 October 2026
+
+Founder direction: earn routes through matched end-to-end evidence rather than enable every catalog model. The invited trial may use a small tested set with an explicit **Thorough** option, only after each offered configuration meets its applicable quality, delivery, latency, cost and full provider/deployment privacy gates. Thorough means a separately evaluated configuration; it does not promise correctness or independently verified answers. Neither a multi-model set nor automatic routing is a prerequisite to opening the trial if one qualified path satisfies the trial requirements.
+
+Compare everyday chat/writing on complete conversations; compare stronger configurations for reasoning/coding when existing evidence identifies a need. Catalog positioning (including proposed Gemma, GPT-OSS, DeepSeek, GLM and Kimi candidates) is a hypothesis, not comparative evidence or authorization to enable those models. Verify exact availability, supported parameters and current pricing before freezing a study. The October16 stopped comparison supports normal answers as a development reference only; it cannot select a release model or establish a winning route.
+
+Exact arithmetic should use a tested calculator, but input selection, formula, units, provenance and delivered explanation must also be evaluated. Do not route around an integration failure by merely adding models. The current direct-result calculator remains experimental. Broader automatic routing should follow measured task-family gains, with configuration/version-bound evidence, explicit context admission and no silent retries or fallback to an unqualified deployment.
+
+Private user data remains blocked until the complete provider path and the specific model deployment qualify. Images, speech, transcription and other future modalities stay outside this trial; preserve them only as later product options. No new paid call, deployment, account setting or privacy-gate change is authorized merely by this direction.
+
+
 ## 16 October — matched model/integration diagnosis stopped correctly
 
 Founder explicitly authorized a cumulative **USD 5** cap and the fixed matched comparison. Read-only dashboard: key limit 5, account limit still 3, auto-reload off. No account changes needed or made. Before: actual 0.72, credit 10.28, 289 requests. Frozen 32-request reserve 1.1583488 and conservative bound 2.1275392 fit the unchanged account limit.
