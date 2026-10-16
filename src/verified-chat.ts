@@ -1,3 +1,8 @@
+import {
+  calculatorTool,
+  consumeCalculatorTurn,
+  renderCalculatorTurn,
+} from "./calculator-turn";
 import { assistedResponseFormat } from "./assisted-response-format";
 import {
   assistedResearchInstruction,
@@ -50,6 +55,7 @@ export type VerifiedChatPolicy = Pick<
   scopedResearchContract?: boolean;
   assistedResearchContract?: boolean;
   assistedStructuredOutput?: boolean;
+  optionalCalculator?: boolean;
 };
 
 export function assertVerification(
@@ -86,9 +92,17 @@ export async function streamVerifiedConversation(
   checkedHistory?: ReadonlyMap<string, string>,
 ): Promise<Usage | undefined> {
   const responseFormat = assistedResponseFormat(report);
+  const toolOptions = report.optionalCalculator
+    ? {
+        tools: [calculatorTool],
+        tool_choice: "auto",
+        parallel_tool_calls: false,
+      }
+    : {};
   authorize();
   if (
     [
+      report.optionalCalculator,
       report.checkedResponseContract,
       report.researchEvidenceContract,
       report.scopedResearchContract,
@@ -119,6 +133,18 @@ export async function streamVerifiedConversation(
       report.answerPolicyVariant,
     );
     const evidenceSources = selectedSources(conversation);
+    if (report.optionalCalculator) {
+      messages[0].content +=
+        " Use ordinary source-linked prose for explanations. For derived numerical answers, optionally call calculate once with exact evidence-grounded operands. The browser displays its result directly; do not write a separate calculated total in prose. No tool is required for writing or missing-information questions. Calculator execution does not verify method applicability. User evidence uses one-based indices of included user turns.";
+      if (
+        messages.reduce((n, m) => n + m.content.length, 0) +
+          JSON.stringify(toolOptions).length >
+        report.maxInputCharacters
+      )
+        throw new Error(
+          "Selected context including calculator tools is too large. Nothing was sent.",
+        );
+    }
     if (
       report.checkedResponseContract ||
       report.scopedResearchContract ||
@@ -218,6 +244,7 @@ export async function streamVerifiedConversation(
             : {}),
           messages,
           ...responseFormat,
+          ...toolOptions,
           ...(report.deepSeekThinking !== undefined
             ? { chat_template_kwargs: { thinking: report.deepSeekThinking } }
             : report.gemmaThinking !== undefined
@@ -243,6 +270,18 @@ export async function streamVerifiedConversation(
         redirect: "error",
       },
     );
+    if (report.optionalCalculator) {
+      const turn = await consumeCalculatorTurn(
+        completionEvents(response, signal),
+        report.pricing,
+        signal,
+        evidenceSources,
+        conversation,
+      );
+      signal.throwIfAborted();
+      onChunk(renderCalculatorTurn(turn));
+      return turn.usage;
+    }
     if (
       report.checkedResponseContract ||
       report.scopedResearchContract ||

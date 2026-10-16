@@ -321,3 +321,10 @@ it("requires explicit assisted mode for constrained decoding permits", () => {
   permit.policy.assistedResearchContract = true;
   expect(validateExperiment(permit).policy.assistedStructuredOutput).toBe(true);
 });
+it("isolates optional calculator permits from whole-answer contracts", () => {
+  const permit = fixture();
+  permit.policy.optionalCalculator = true;
+  expect(validateExperiment(permit).policy.optionalCalculator).toBe(true);
+  permit.policy.assistedResearchContract = true;
+  expect(() => validateExperiment(permit)).toThrow("mutually exclusive");
+});

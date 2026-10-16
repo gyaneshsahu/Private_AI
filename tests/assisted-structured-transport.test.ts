@@ -97,3 +97,56 @@ it("counts schema overhead before sending a paid request", async () => {
   ).rejects.toThrow("including the response schema");
   expect(request).not.toHaveBeenCalled();
 });
+it("sends optional tools through one encrypted request and accepts an ordinary answer", async () => {
+  vi.stubGlobal("location", { host: "localhost", origin: "http://localhost" });
+  const events = [
+    {
+      choices: [
+        {
+          index: 0,
+          delta: {
+            content: "The source does not establish an actual reopening.",
+          },
+          finish_reason: "stop",
+        },
+      ],
+    },
+    {
+      choices: [],
+      usage: { prompt_tokens: 10, completion_tokens: 10, total_tokens: 20 },
+    },
+  ];
+  request.mockResolvedValue(
+    new Response(
+      events.map((e) => "data: " + JSON.stringify(e) + "\n\n").join("") +
+        "data: [DONE]\n\n",
+      { headers: { "Content-Type": "text/event-stream" } },
+    ),
+  );
+  const c = emptyConversation();
+  c.messages.push(newMessage("user", "Explain this source."));
+  const chunks: string[] = [];
+  await streamVerifiedConversation(
+    c,
+    {
+      ...policy,
+      assistedResearchContract: false,
+      assistedStructuredOutput: false,
+      optionalCalculator: true,
+    },
+    "synthetic",
+    new AbortController().signal,
+    (s) => chunks.push(s),
+    () => {},
+    () => {},
+  );
+  expect(request).toHaveBeenCalledTimes(1);
+  const body = JSON.parse(request.mock.calls[0][1].body);
+  expect(body.tools[0].function.name).toBe("calculate");
+  expect(body.tool_choice).toBe("auto");
+  expect(body.parallel_tool_calls).toBe(false);
+  expect(body.response_format).toBeUndefined();
+  expect(chunks).toEqual([
+    "The source does not establish an actual reopening.",
+  ]);
+});

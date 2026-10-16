@@ -172,3 +172,22 @@ export async function consumeCalculatorTurn(
     );
   }
 }
+
+export function renderCalculatorTurn(turn: CalculatorTurn): string {
+  if (!turn.calculation) return turn.text;
+  const { value, unit, references } = turn.calculation;
+  const citations = references
+    .map((reference) =>
+      reference.startsWith("user:")
+        ? `(your message ${reference.slice(5)})`
+        : `[${reference}]`,
+    )
+    .join(" ");
+  return [
+    turn.text,
+    `**Calculated result: ${value} ${unit}** ${citations}`,
+    "Arithmetic calculated locally; the selected inputs, method and explanation are not independently verified.",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+}

@@ -148,3 +148,7 @@ Recommended next reversible prototype: ordinary source-linked explanations with 
 ### Optional calculator prototype status (15 October)
 
 `src/calculator-turn.ts` isolates one native calculation call from ordinary answer text without additional inference. It returns separate computed data for direct UI presentation; no general code interpreter or tool network access exists. This is offline protocol groundwork, not integrated product behavior. Tests explicitly retain counterexamples for incorrect formula selection and contradictory prose: tool execution is not a semantic correctness gate. Do not activate until opt-in permit/schema budget, UI presentation, fresh live compatibility and quality evidence exist.
+
+### 16 October integration status
+
+Optional calculator now has an explicit development permit and verified-adapter path. Tool schema overhead is part of admission; one inference request returns either ordinary prose or one locally executed calculation. The application directly appends computed result and references; no second model rewrite of that result is performed. Surrounding prose remains model-written and can still contradict the result; no semantic pass inferred. Buffered delivery and usefulness need fresh live evidence. Production qualification and private-data gates remain unchanged.

@@ -135,6 +135,7 @@ export const experimentSchema = z
         scopedResearchContract: z.boolean().optional(),
         assistedResearchContract: z.boolean().optional(),
         assistedStructuredOutput: z.boolean().optional(),
+        optionalCalculator: z.boolean().optional(),
         checkedResponseContract: z.boolean().optional(),
         gptOssReasoningEffort: z.enum(["low", "medium", "high"]).optional(),
         gemmaThinking: z.boolean().optional(),
@@ -164,6 +165,7 @@ export function validateExperiment(
     );
   if (
     [
+      x.policy.optionalCalculator,
       x.policy.checkedResponseContract,
       x.policy.researchEvidenceContract,
       x.policy.scopedResearchContract,

@@ -1,5 +1,15 @@
 # PrivateAI readiness checklist
 
+## 16 October - optional calculator integrated behind development permits
+
+Added optionalCalculator to the verified browser adapter and isolated experiment permit schema, mutually exclusive with whole-answer response contracts. The tool schema and short general instruction count toward input admission. Requests use tool_choice auto and parallel_tool_calls false; one bounded stream only, no tool-result inference round or retries. Complete ordinary answers no longer require JSON. Valid calculator outputs are rendered directly with evidence links and an explicit arithmetic-versus-method limitation. Production qualification cannot enable this flag.
+
+Actual-application synthetic Chromium test displays EUR95.20, applies corrected fee for100.80, then tax-exempt delivery for99.72 and opens supporting sources. Thirty tests across4files passed; an additional encrypted-boundary test confirms optional tool request settings, no response_format and ordinary prose delivery in one request (transport suite4passed). Build/typecheck passed; existing verifier zlib externalization warning unchanged. Browser model events and transport/attestation are mocked: this is integration evidence, NOT live provider/native-tool compatibility, model quality or privacy qualification.
+
+Prose/formula/unit/operand selection still require independent evaluation. Tests preserve deliberate wrong-equation and contradictory-prose counterexamples. No claim that arithmetic tests establish assistant quality. Current implementation buffers the whole reply until stream/tool validation finishes; latency/usefulness tradeoff must be measured live. Existing baseline and failed candidates remain intact.
+
+Next fixed fresh comparison will cover ordinary writing, tax treatment with corrections, power/energy units with missing duration, and conflicting dated counts. Separate permits/baseline and candidate, at most16requests, no retries, stop first incomplete, original sources and all replies retained only for authored synthetic cases. Before freezing/executing: refresh dashboard spend/pricing/verification, register new cases and implementation hashes, include tools in input budget. No live requests or reservation this batch; last observed0.62of3 and conservative0.8718400 remain historical. No owner input needed for continued implementation. Release gates unchanged.
+
 ## 15 October - optional calculator protocol prototype (offline only)
 
 Added isolated `src/calculator-turn.ts`: consumes one already-authorized completion stream, accepts ordinary prose without whole-answer JSON, or assembles one bounded native calculate call. The tool permits only exact-source/user-grounded decimal operands and bounded arithmetic operations; no code execution, URL fetches, provider callbacks or additional inference rounds. Calculated value/unit/references are separate fields returned for direct application presentation, not sent back through the model. It is NOT wired into production, application inference or experiment permits yet.
