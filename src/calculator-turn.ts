@@ -30,20 +30,16 @@ const calculatorUnit = z.enum([
 export const calculatorArguments = z
   .object({
     unit: calculatorUnit,
-    program: checkedResponseSchema.extend({
-      inputs: checkedResponseSchema.shape.inputs.min(1),
-      steps: checkedResponseSchema.shape.steps.min(1),
-      results: z
-        .array(
-          checkedResponseSchema.shape.results.element.extend({
-            unit: calculatorUnit.optional(),
-          }),
-        )
-        .min(1)
-        .max(4),
-      passages: checkedResponseSchema.shape.passages.max(0),
-      limitation: z.literal("none"),
-    }),
+    inputs: checkedResponseSchema.shape.inputs.min(1),
+    steps: checkedResponseSchema.shape.steps.min(1),
+    results: z
+      .array(
+        checkedResponseSchema.shape.results.element.extend({
+          unit: calculatorUnit.optional(),
+        }),
+      )
+      .min(1)
+      .max(12),
   })
   .strict();
 export const calculatorTool = {
@@ -51,7 +47,7 @@ export const calculatorTool = {
   function: {
     name: "calculate",
     description:
-      "Compute up to four named derived results in one call. Each result references a step id and may specify its own unit; otherwise the top-level unit applies. Compute a requested derived quantity from exact source or user operands. Use ordinary text for explanations and questions. No arbitrary code. The application displays the result directly; operation and unit selection still need to match the question.",
+      "Compute up to twelve named derived results in one call. Each result references a step id and may specify its own unit; otherwise the top-level unit applies. Compute a requested derived quantity from exact source or user operands. Use ordinary text for explanations and questions. Input evidence refers only to exact supplied-source or user-message quotations; an earlier assistant answer is not a user message. No arbitrary code. The application displays the result directly; operation and unit selection still need to match the question.",
     parameters: z.toJSONSchema(calculatorArguments),
   },
 };
@@ -218,16 +214,19 @@ export async function consumeCalculatorTurn(
       throw new CalculatorValidationError("INVALID_SCHEMA", usage, issues);
     }
     const args = validated.data;
-    if (
-      new Set(args.program.results.map((r) => r.id)).size !==
-      args.program.results.length
-    )
+    if (new Set(args.results.map((r) => r.id)).size !== args.results.length)
       throw new CalculatorValidationError("INVALID_SCHEMA", usage);
-    const values = args.program.results.map(({ id, decimals, unit }) => ({
+    const values = args.results.map(({ id, decimals, unit }) => ({
       id,
       unit: unit ?? args.unit,
       value: renderCheckedResponse(
-        JSON.stringify({ ...args.program, results: [{ id, decimals }] }),
+        JSON.stringify({
+          inputs: args.inputs,
+          steps: args.steps,
+          results: [{ id, decimals }],
+          passages: [],
+          limitation: "none",
+        }),
         sources,
         conversation,
         "result",
@@ -235,7 +234,7 @@ export async function consumeCalculatorTurn(
     }));
     const references = [
       ...new Set(
-        args.program.inputs.map((input) =>
+        args.inputs.map((input) =>
           input.evidence.kind === "source"
             ? input.evidence.sourceId
             : `user:${input.evidence.userTurn}`,

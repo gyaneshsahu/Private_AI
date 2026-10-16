@@ -2,6 +2,7 @@ import { expect, it } from "vitest";
 import type { ChatCompletionChunk } from "openai/resources/chat/completions";
 import { consumeCalculatorTurn } from "../src/calculator-turn";
 import { emptyConversation } from "../shared/contracts";
+import { newMessage } from "../src/conversation";
 const source = {
   id: "synthetic-source",
   title: "Invoice",
@@ -22,10 +23,8 @@ const program = {
   ],
   steps: [{ id: "total", op: "multiply", left: "price", right: "quantity" }],
   results: [{ id: "total", decimals: 2 }],
-  passages: [],
-  limitation: "none",
 };
-const args = JSON.stringify({ unit: "GBP", program });
+const args = JSON.stringify({ unit: "GBP", ...program });
 const frame = (delta: unknown, finish_reason: unknown = null) => ({
   choices: [{ index: 0, delta, finish_reason }],
 });
@@ -52,7 +51,11 @@ function tool(raw = args) {
     usage,
   ];
 }
-async function run(events: unknown[], signal = new AbortController().signal) {
+async function run(
+  events: unknown[],
+  signal = new AbortController().signal,
+  conversation = emptyConversation(),
+) {
   async function* stream() {
     for (const e of events) yield e as ChatCompletionChunk;
   }
@@ -61,9 +64,42 @@ async function run(events: unknown[], signal = new AbortController().signal) {
     { inputPerMillion: 1, outputPerMillion: 1, currency: "USD" },
     signal,
     [source],
-    emptyConversation(),
+    conversation,
   );
 }
+it("rejects assistant output misrepresented as user evidence", async () => {
+  const conversation = emptyConversation();
+  conversation.messages.push(
+    newMessage("user", "Calculate the invoice."),
+    newMessage("assistant", "Previous quantity 3."),
+  );
+  const forged = structuredClone(program);
+  const inputs = [
+    forged.inputs[0],
+    {
+      id: "quantity",
+      value: "3",
+      evidence: { kind: "user", userTurn: 1, quote: "Previous quantity 3." },
+    },
+  ];
+  await expect(
+    run(
+      tool(JSON.stringify({ unit: "GBP", ...forged, inputs })),
+      undefined,
+      conversation,
+    ),
+  ).rejects.toMatchObject({ calculatorFailure: "EVIDENCE_OR_ARITHMETIC" });
+});
+it("rejects the obsolete nested shape and renderer bookkeeping", async () => {
+  for (const value of [
+    { unit: "GBP", program },
+    { unit: "GBP", ...program, passages: [], limitation: "none" },
+  ]) {
+    await expect(run(tool(JSON.stringify(value)))).rejects.toMatchObject({
+      calculatorFailure: "INVALID_SCHEMA",
+    });
+  }
+});
 it("delivers ordinary prose without imposing a calculation format", async () => {
   const result = await run([
     frame(
@@ -183,7 +219,7 @@ it("returns bounded multiple named results without model rewriting", async () =>
       { id: "difference", decimals: 2 },
     ],
   };
-  const result = await run(tool(JSON.stringify({ unit: "GBP", program: p })));
+  const result = await run(tool(JSON.stringify({ unit: "GBP", ...p })));
   expect(result.calculations?.map((r) => [r.id, r.value, r.unit])).toEqual([
     ["total", "111.00", "GBP"],
     ["difference", "74.00", "GBP"],
@@ -198,20 +234,20 @@ it("preserves per-result units and rejects invalid later results atomically", as
     ],
   };
   await expect(
-    run(tool(JSON.stringify({ unit: "GBP", program: p }))),
+    run(tool(JSON.stringify({ unit: "GBP", ...p }))),
   ).rejects.toMatchObject({ calculatorFailure: "EVIDENCE_OR_ARITHMETIC" });
   p.results[1].id = "total";
   await expect(
-    run(tool(JSON.stringify({ unit: "GBP", program: p }))),
+    run(tool(JSON.stringify({ unit: "GBP", ...p }))),
   ).rejects.toMatchObject({ calculatorFailure: "INVALID_SCHEMA" });
 });
 it("limits result count without extra inference calls", async () => {
   const p = {
     ...program,
-    results: Array.from({ length: 5 }, () => ({ id: "total", decimals: 2 })),
+    results: Array.from({ length: 13 }, () => ({ id: "total", decimals: 2 })),
   };
   await expect(
-    run(tool(JSON.stringify({ unit: "GBP", program: p }))),
+    run(tool(JSON.stringify({ unit: "GBP", ...p }))),
   ).rejects.toMatchObject({ calculatorFailure: "INVALID_SCHEMA" });
 });
 it("reports schema issue paths without source text, supplied values or error prose", async () => {
@@ -220,7 +256,8 @@ it("reports schema issue paths without source text, supplied values or error pro
       tool(
         JSON.stringify({
           unit: "SECRET_INPUT",
-          program: { ...program, SECRET_FIELD: "PRIVATE_TEXT" },
+          ...program,
+          SECRET_FIELD: "PRIVATE_TEXT",
         }),
       ),
     );

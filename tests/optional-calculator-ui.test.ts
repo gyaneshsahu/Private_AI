@@ -29,7 +29,7 @@ it("displays optional native calculator results and a corrected total through th
           };
           async function* events(){
             yield {choices:[{index:0,delta:{content:'The total includes delivery and the applicable tax.'},finish_reason:null}]};
-            yield {choices:[{index:0,delta:{tool_calls:[{index:0,id:'synthetic-call',type:'function',function:{name:'calculate',arguments:JSON.stringify({unit:'EUR',program})}}]},finish_reason:'tool_calls'}]};
+            yield {choices:[{index:0,delta:{tool_calls:[{index:0,id:'synthetic-call',type:'function',function:{name:'calculate',arguments:JSON.stringify({unit:'EUR',inputs:program.inputs,steps:program.steps,results:program.results})}}]},finish_reason:'tool_calls'}]};
             yield {choices:[],usage:{prompt_tokens:10,completion_tokens:10,total_tokens:20}};
           }
           const result=await consumeCalculatorTurn(events(),{inputPerMillion:0,outputPerMillion:0,currency:'USD'},signal,[source],c);

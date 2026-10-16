@@ -205,5 +205,29 @@
         "evidenceKind": "search-excerpt"
       }
     ]
+  },
+  {
+    "id": "assisted-tool-09",
+    "family": "research",
+    "synthetic": true,
+    "query": "synthetic ticket calculation",
+    "turns": [
+      "Calculate the complete amount due. Explain which amounts are taxed.",
+      "The booking fee has been corrected to GBP 8. Give the revised total and the increase, preserving the tax rule."
+    ],
+    "mandatoryFacts": [
+      "9*17=153; (153+3)*1.20=187.20GBP.",
+      "(153+8)*1.20=193.20GBP;increase6GBP."
+    ],
+    "forbiddenConclusions": ["Tax exemption invented", "Old fee retained"],
+    "sources": [
+      {
+        "id": "tool-source-09",
+        "title": "Authored synthetic tickets",
+        "text": "Nine tickets cost GBP 17 each. Booking fee is GBP 3. Tax 20 percent applies to tickets and booking fee together. Prices exclude tax.",
+        "url": "https://example.com/assisted-tool-09",
+        "evidenceKind": "search-excerpt"
+      }
+    ]
   }
 ]

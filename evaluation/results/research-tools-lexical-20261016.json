@@ -1,0 +1,202 @@
+{
+  "runs": [
+    {
+      "root": ".local/tool-lexical-v2-live-20261016",
+      "plan": {
+        "status": "FROZEN_BEFORE_EXECUTION",
+        "frozenAt": "2026-10-16T11:13:37.059Z",
+        "maxRequests": 2,
+        "maxSearches": 0,
+        "automaticRetries": 0,
+        "reserveUSD": 0.11587839999999999,
+        "actualBeforeUSD": 0.65,
+        "uncertaintyUSD": 0.2491904,
+        "cumulativeBoundUSD": 1.0150687999999999,
+        "capUSD": 3,
+        "publicContentPersistence": false,
+        "baseline": "DeepSeek-v4.1-flash thinkingoff constraints-v4",
+        "candidate": "same + optionalCalculator one request auto tool choice, up to4named results; tool schema included in20000character allowance",
+        "order": "alternating arm first by case; identical authored sources",
+        "stop": "Any incomplete reply or app-check failure stops entire batch. No retry, no continuation.",
+        "fixtureSHA256": "87f13950a80fe54bf0d24b724afc6e0f374028c6e4e0ff9f3bba070f623f2317",
+        "implementationHashes": {
+          "src/number-evidence.ts": "0ccde5cce0368b46d379142401f7497d476343dc39a5bb49cd9205b11879d58f",
+          "evaluation/workspace-arm.ts": "a14fc2b0a8752a29cbc57f5ae634f427e97cd63ed9451c3cf439765ff0c90c96",
+          "src/calculator-turn.ts": "9906420acc629c4ef06b8e4715f4ad5240b5c561a58b0edf5af139ee77728351",
+          "src/assisted-response-format.ts": "48199b37a38d16e255f5e86507effdf2ec8fb1d2266e0fb01576a4174f07d09f",
+          "evaluation/temporary-review.ts": "67432cca09635765ab039ac94cc5c0203d9a91882359484e04f8b9304e85e991",
+          "src/assisted-research.ts": "7c8bf0ea5f9b1dbbaafb513e30fc15f98837cd481227c8534cd43992a0e0b3bf",
+          "src/scoped-research.ts": "5e4eb88cd28c06a650194ab3cb407748d3ba1bd6005b498498856b011a5fc6a4",
+          "src/checked-response.ts": "5535efc75dcbf387dfd3929f80cd2d967e3547a84f8633fc3416daedbd9b3db5",
+          "src/research-contract.ts": "4b22c4ad208275e67668cc46bc402db6bdafd3abccd7ddec16563a37d6a02036",
+          "src/verified-chat.ts": "f291c603112c6483ed7fbc9169a2590734a13bed102fc0e4fe36ef2747488947",
+          "src/App.tsx": "38a8e9612b0f3b3fbd90744b266ec5658605ff67c0005b940fc6f9e86806c4b5",
+          "evaluation/run-workspace.ts": "ae92bb94b68f3f7392d57d051930ede1c050cf6fcf0d6ba4fb5cf5c17afaf1fc",
+          "evaluation/workspace-inference.ts": "29faf8619531af8f0da7a175c4c12011c08d71e82a19fe346a09498afd42e752",
+          "evaluation/experiment.ts": "c40f84e118fda332f142cbbcb19af9c6b1ee35c5bfd203fe4d1f91cda533898f"
+        },
+        "humanScores": null
+      },
+      "report": {
+        "mode": "LIVE_PUBLIC_AND_AUTHORED",
+        "humanScores": null,
+        "results": [
+          {
+            "id": "assisted-tool-09",
+            "arm": "candidate",
+            "public": false,
+            "replies": [
+              {
+                "completed": true,
+                "answer": "I'll compute this from the supplied figures.\n\n\n\n**Calculated tickets subtotal: 153.00 GBP** [tool-source-09]\n\n**Calculated taxable base: 156.00 GBP** [tool-source-09]\n\n**Calculated tax amount: 31.20 GBP** [tool-source-09]\n\n**Calculated total due: 187.20 GBP** [tool-source-09]\n\nArithmetic calculated locally; the selected inputs, method and explanation are not independently verified.",
+                "usage": {
+                  "input": 2292,
+                  "output": 455,
+                  "total": 2747,
+                  "estimatedUSD": 0.00214955
+                },
+                "firstVisibleTextMs": 4693,
+                "elapsedMs": 4693,
+                "answerCharacters": 384,
+                "answerSHA256": "a6a78fe406f86005d68f3d76b9fe29c635cdbc742070e14fc20476278d923063",
+                "evidenceAudit": {
+                  "citationReferences": 4,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              },
+              {
+                "completed": false,
+                "diagnosticDraft": "{\"unit\": \"GBP\", \"program\": {\"inputs\": [{\"id\": \"tickets\", \"value\": \"9\", \"evidence\": {\"kind\": \"source\", \"sourceId\": \"tool-source-09\", \"quote\": \"Nine tickets cost GBP 17 each.\"}}, {\"id\": \"price\", \"value\": \"17\", \"evidence\": {\"kind\": \"source\", \"sourceId\": \"tool-source-09\", \"quote\": \"Nine tickets cost GBP 17 each.\"}}, {\"id\": \"fee\", \"value\": \"8\", \"evidence\": {\"kind\": \"user\", \"userTurn\": 2, \"quote\": \"The booking fee has been corrected to GBP 8.\"}}, {\"id\": \"taxrate\", \"value\": \"20\", \"evidence\": {\"kind\": \"source\", \"sourceId\": \"tool-source-09\", \"quote\": \"Tax 20 percent applies to tickets and booking fee together.\"}}, {\"id\": \"oldtotal\", \"value\": \"187.2\", \"evidence\": {\"kind\": \"user\", \"userTurn\": 1, \"quote\": \"Calculated total due: 187.20 GBP\"}}], \"steps\": [{\"id\": \"subtotal\", \"op\": \"multiply\", \"left\": \"tickets\", \"right\": \"price\"}, {\"id\": \"base\", \"op\": \"add\", \"left\": \"subtotal\", \"right\": \"fee\"}, {\"id\": \"tax\", \"op\": \"percentOf\", \"left\": \"base\", \"right\": \"taxrate\"}, {\"id\": \"total\", \"op\": \"add\", \"left\": \"base\", \"right\": \"tax\"}, {\"id\": \"increase\", \"op\": \"subtract\", \"left\": \"total\", \"right\": \"oldtotal\"}], \"results\": [{\"id\": \"subtotal\", \"decimals\": 2}, {\"id\": \"base\", \"decimals\": 2}, {\"id\": \"tax\", \"decimals\": 2}, {\"id\": \"total\", \"decimals\": 2}, {\"id\": \"increase\", \"decimals\": 2}]}, \"passages\": [], \"limitation\": \"none\"}",
+                "answer": "",
+                "failureKind": "CONTRACT_REJECTED",
+                "calculatorSchemaIssues": [
+                  {
+                    "code": "too_big",
+                    "path": [
+                      "program",
+                      "results"
+                    ]
+                  },
+                  {
+                    "code": "invalid_type",
+                    "path": [
+                      "program",
+                      "passages"
+                    ]
+                  },
+                  {
+                    "code": "invalid_value",
+                    "path": [
+                      "program",
+                      "limitation"
+                    ]
+                  },
+                  {
+                    "code": "unrecognized_keys",
+                    "path": []
+                  }
+                ],
+                "calculatorFailure": "INVALID_SCHEMA",
+                "usage": {
+                  "input": 2419,
+                  "output": 547,
+                  "total": 2966,
+                  "estimatedUSD": 0.0023655
+                },
+                "failure": "IncompleteReplyError",
+                "firstVisibleTextMs": null,
+                "elapsedMs": 5193,
+                "answerCharacters": 0,
+                "answerSHA256": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+                "evidenceAudit": {
+                  "citationReferences": 0,
+                  "unknownSourceReferences": 0,
+                  "unsupportedLineReferences": 0,
+                  "quotedPassages": 0,
+                  "quotesNotFoundVerbatim": 0,
+                  "quotesWithAdjacentCitations": 0,
+                  "quotesNotFoundInCitedSources": 0,
+                  "semanticSupport": "NOT_ASSESSED"
+                }
+              }
+            ],
+            "humanScores": null,
+            "productionGateClosed": true,
+            "retrievalKind": "AUTHORED_FIXTURE",
+            "sourceCount": 1,
+            "sourceHash": "c192d08a434da39407fa857426cac891f8ca8f39507524550e85abbe74c7ddba",
+            "evidenceCharacters": 132,
+            "providerDates": 0,
+            "sourceOpen": true,
+            "sourceLinkKeyboardReachable": true,
+            "sourceLinkSafe": true,
+            "answerCitationOpensSource": true,
+            "saveBlocked": true,
+            "storage": {
+              "conversationRecords": 0,
+              "localStorageKeys": 0,
+              "sessionStorageKeys": 0,
+              "cacheEntries": 0,
+              "serviceWorkers": 0
+            },
+            "clearedOnReload": true,
+            "pageErrors": [],
+            "networkViolation": 0,
+            "consoleMessageCount": 6,
+            "attempts": [
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 8844,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 888,
+                "firstEncryptedByteMs": 1256,
+                "elapsedMs": 3744
+              },
+              {
+                "outcome": "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED",
+                "bytes": 9413,
+                "protocolHeaderValid": true,
+                "syntheticPlaintextMarkerAbsent": true,
+                "upstreamStatus": 200,
+                "failureCode": null,
+                "responseFinished": true,
+                "upstreamHeadersMs": 487,
+                "firstEncryptedByteMs": 852,
+                "elapsedMs": 4756
+              }
+            ]
+          }
+        ],
+        "qualification": "NOT_PASSED",
+        "publicContentPersisted": false
+      }
+    }
+  ],
+  "metrics": {
+    "attempted": 2,
+    "delivered": 1,
+    "estimatedUSD": 0.00451505,
+    "humanScores": null
+  },
+  "assessment": {
+    "status": "AI_PROPOSED_NOT_HUMAN_REVIEW",
+    "decision": "Experimental; one delivered answer and one missing follow-up.",
+    "findings": [
+      "09 first turn correctly calculates GBP187.20 from nine tickets at17, fee3 and20percent tax. It does not explain the method beyond displaying components.",
+      "09 follow-up produces five results against the former maximum4 and misplaces renderer bookkeeping fields. No answer delivered; unscored.",
+      "The captured follow-up also incorrectly labels prior assistant total187.20 as user-turn1 evidence. Flattening the schema does not repair this provenance error; the strict evidence check remains required.",
+      "Offline changes remove redundant nesting/bookkeeping and align max12results with the existing arithmetic engine. They have not yet been evaluated on fresh live cases."
+    ],
+    "stop": "Two requests; stopped on first incomplete reply. No retry. Original preflight-only plan made zero requests."
+  }
+}

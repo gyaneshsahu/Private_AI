@@ -18,6 +18,14 @@ import assistedFixtures from "./cases/research-assisted.json";
 import toolFixtures from "./cases/research-tools.json";
 const optionalTools = process.argv.includes("--optional-tools");
 const toolDiagnostic = process.argv.includes("--tool-diagnostic");
+const diagnosticCase = process.argv
+  .find((arg) => arg.startsWith("--diagnostic-case="))
+  ?.slice("--diagnostic-case=".length);
+if (
+  diagnosticCase &&
+  (!toolDiagnostic || !toolFixtures.some((f) => f.id === diagnosticCase))
+)
+  throw Error("Unknown diagnostic fixture");
 if (toolDiagnostic && !optionalTools)
   throw Error("Tool diagnostic requires optional tools");
 const assisted = process.argv.includes("--assisted");
@@ -41,7 +49,7 @@ const fixtures = optionalTools
         ? f.id ===
           (process.argv.includes("--invoice-diagnostic")
             ? "assisted-tool-08"
-            : "assisted-tool-07")
+            : (diagnosticCase ?? "assisted-tool-07"))
         : process.argv.includes("--multi-results")
           ? Number(f.id.slice(-2)) >= 5 && Number(f.id.slice(-2)) <= 7
           : Number(f.id.slice(-2)) <= 4 &&

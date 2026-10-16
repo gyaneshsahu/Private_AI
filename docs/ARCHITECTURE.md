@@ -156,3 +156,5 @@ Optional calculator now has an explicit development permit and verified-adapter 
 ### Bounded multi-result support and lexical evidence
 
 Optional calculator supports up to4named results with per-result units in one request. Validate every result before display; no model rewrite of computed values. Deterministic English integer-word normalization0-99 allows a digit operand to match an exact source quote spelling the number. Larger magnitudes, word fractions, signed/decimal word phrases remain unsupported and are rejected as whole phrases. This establishes lexical correspondence only; source entailment, unit selection and formulas remain unverified. Captured synthetic invoice replay fixes one validator failure; original live failure remains preserved.
+
+Calculator development contract update (16 October): flat unit/inputs/steps/results; renderer-only passages/limitation supplied locally. Up to12results, optional per-result units, one inference request. Prior assistant prose is never user evidence. Local validation does not establish correct formula or unit selection; experimental only.

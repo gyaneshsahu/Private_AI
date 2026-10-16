@@ -1,5 +1,17 @@
 # PrivateAI local Codex handoff — updated 16 October 2026
 
+## 16 October — simplified calculator contract; provenance remains strict
+
+Fresh authored case09 made two requests: first reply correctly delivered GBP187.20; corrected-fee follow-up delivered no answer. Cost estimate USD0.00451505; latencies4693/5193ms. Human scores remain blank and missing reply unscored. Full sources, turns, replies and original diagnostic are in `evaluation/results/research-tools-lexical-20261016.json`; review generator `evaluation/review-tools-lexical.ts` creates `.local/review-batches/tools-lexical-20261016/complete-review.html`. Stopped on first incomplete; no retries. Earlier preflight-only plan made zero requests.
+
+Diagnostic establishes three independent issues: five requested results exceeded the former four-result contract; renderer-only fields were misplaced; prior assistant total was falsely cited as user evidence. Offline repair flattens native arguments to unit/inputs/steps/results, removes renderer bookkeeping from model responsibility and aligns maximum12results with the existing arithmetic engine. No new inference round. Source/user provenance remains strict; regression rejects assistant content mislabelled as user evidence. Do not normalize that error away. These generic interface changes are not yet live-quality evidence; candidate remains experimental.
+
+Validation: typecheck and25tests across5files passed, including actual-application synthetic Chromium correction/multiple-result flow, encrypted transport configuration, lexical and permit checks. Initial sandbox failures were missing Chromium/temp module cache; same suite passed in normal installed runtime. No provider privacy or quality acceptance claim.
+
+Budget: latest observed dashboard USD0.65actual of3, balance10.35, auto-reload off,249requests preceded these2requests. Until refreshed, carry their0.00451505 estimate separately plus genuine older uncertainty0.2491904: conservative bound0.90370545. Unused diagnostic reservation retired; active0. Do not treat unused reserves as spend. No account, deployment or privacy-gate changes.
+
+Next: freeze fresh correction/multiple-result transfer cases for the simplified API, comparing delivered usefulness and semantic correctness, not just schema compliance. Prior writing/safety failures, provider evidence, hosted recovery and authenticated-device gates remain open. No owner action needed for independent implementation.
+
 ## 16 October - bounded multi-result calculator and fresh transfer evidence
 
 Implemented up to4named calculation results in one native call, with optional per-result units and atomic validation; no additional inference round. Existing single-result shape remains supported. Actual-app synthetic test now renders multiple results after a correction. Added deterministic English number-word normalization for integers0-99 (hyphenated/spaced tens included). Unsupported signed/decimal/magnitude/fraction phrases are rejected whole, not partially interpreted; exact quoted-source matching is unchanged. This repairs a general lexical gap, not a question-specific prompt rule.
