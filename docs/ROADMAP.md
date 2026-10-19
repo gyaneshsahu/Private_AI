@@ -1,5 +1,9 @@
 # PrivateAI delivery roadmap
 
+## Durable validation and supplier handoff — 20 October
+
+Owner reports both final supplier messages sent; await replies rather than request another send. Private-data/search-rights/provider gates remain open. Added a separate disposable-PostgreSQL CI job and `test:durable` command that rejects missing prerequisites, failed or skipped coverage. Final local run:118tests/16files pass with zero skips, including real database and built-browser account/usage/synthetic-billing flows. Local check and CI now build first. Remote CI, hosted identity/sender/usage activation, separate restore/ingress evidence and human quality/device acceptance remain distinct. See READINESS for two preserved stale-test failures and final evidence.
+
 ## Cross-workflow regression repair — 20 October
 
 Fixed document dependency omissions in synthetic evaluation bootstrap; consolidated dependency lists and repaired obsolete citation assertions. Eleven affected tests and all 48 built-package browser workflows pass. The last full run had 488 passes, one subsequently scoped-fixed invitation-navigation failure and 140 skips; a final aggregate green is not claimed. Earlier whole-suite timing failures remain recorded in READINESS with the exact readiness/test-concurrency changes. No model selection, paid inference, provider qualification or hosted activation. Prioritize the existing external architecture/activation decisions and held-out human acceptance rather than treating regression count as product completion.

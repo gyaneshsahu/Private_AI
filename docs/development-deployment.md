@@ -1,5 +1,11 @@
 # Restricted development deployment
 
+## Durable integration release check — 20 October
+
+`npm run build` followed by `npm run test:durable` exercises 16 selected PostgreSQL account, usage, security-notice, production-workspace and synthetic billing suites. Set `PRIVATEAI_SYNTHETIC_PG` only to the loopback database named `privateai_synthetic`; the runner rejects absent/remote/other-database configuration, checks connectivity without printing the connection string, and requires built assets. It fails if any selected test file is absent or any test is failed/skipped. JSON diagnostics are synthetic-only under `.local/diagnostics`, not release evidence by themselves. No automatic retry or live provider key is used.
+
+The Validate workflow now builds before browser-integrated tests and has a separate disposable PostgreSQL 17 service job running this command. It uses the existing synthetic fixture credentials, not production secrets. This makes durable coverage visible in CI; branch-protection configuration is not changed and remote CI success must be observed separately. Docker dump/restore, authenticated ingress, real email/OAuth/passkeys, hosted recovery and provider qualification remain separate checks. Never use a production database with this runner.
+
 ## Hosting decision packet — 19 October, bounded assessment complete
 
 **Recommendation:** keep the existing restricted Render service unchanged. Adopt the direct-public Caddy→mTLS app design for the next **synthetic staging** deployment, with a German x86 VM as the proposed destination. Do not migrate production accounts or purchase a host yet. The package is reviewable and runnable locally; it is not a turnkey hosted stack. Resolve provider qualification and useful-answer evidence alongside the remaining host integration, rather than extending isolated infrastructure tests indefinitely.

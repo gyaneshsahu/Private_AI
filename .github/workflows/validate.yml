@@ -27,7 +27,9 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Use the installed Playwright browser
         run: node --input-type=module -e 'import { chromium } from "@playwright/test"; console.log("CHROMIUM_PATH=" + chromium.executablePath())' >> "$GITHUB_ENV"
-      - run: npm run check
+      # Browser integration tests read dist; build before testing a clean checkout.
+      - run: npm run build
+      - run: npm test
       - run: npm run test:e2e
       - run: npm run eval:check
       - name: Build from committed files only
@@ -41,5 +43,38 @@ jobs:
       - run: node scripts/container-recovery.mjs
       - name: Verify encrypted recovery in packaged Linux runtime
         run: docker run --rm --network none --mount "type=bind,source=$PWD/tests,target=/app/tests,readonly" -e PRIVATEAI_TEST_AGE=/usr/bin/age privateai-evaluation node node_modules/vitest/vitest.mjs run tests/encrypted-registry.test.ts
-# No provider keys, inference calls, deployments or paid services in CI.
-# Configure a selected host to deploy this branch only after this job succeeds.
+  # No provider keys, inference calls, deployments or paid services in CI.
+  # Configure a selected host to deploy this branch only after this job succeeds.
+
+  durable:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_USER: privateai_synthetic
+          POSTGRES_PASSWORD: local-synthetic-only
+          POSTGRES_DB: privateai_synthetic
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U privateai_synthetic -d privateai_synthetic"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PRIVATEAI_SYNTHETIC_PG: postgresql://privateai_synthetic:local-synthetic-only@127.0.0.1:5432/privateai_synthetic
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Use the installed Playwright browser
+        run: node --input-type=module -e 'import { chromium } from "@playwright/test"; console.log("CHROMIUM_PATH=" + chromium.executablePath())' >> "$GITHUB_ENV"
+      - run: npm run build
+      - run: npm run test:durable
+# This job uses only a disposable service database and synthetic identity/payment
+# fixtures. Hosted ingress, Docker restore, real email and provider acceptance
+# remain separate checks; test:durable rejects missing or skipped selected tests.

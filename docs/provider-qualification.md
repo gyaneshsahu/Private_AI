@@ -1,5 +1,6 @@
 # Provider qualification — NOT_PASSED
 
+**20 October latest owner update:** Both final supplier emails have been sent by the founder. Status **OWNER_REPORTED_SENT / AWAITING_REPLIES**. This supersedes draft/NOT_SENT language in earlier entries and the draft artifact header; exact sent content/addresses are not independently verified. Preserve the owner-edited drafts. Do not resend or infer permission, provider qualification or live activation.
 
 **20October owner confirmation / consolidated outreach:** The19October Tinfoil draft was NOT sent. One focused draft per provider, answered/open evidence ledger and verified recipient guidance are now in [provider-outreach-20261020.md](provider-outreach-20261020.md). These supersede earlier unsent drafts, including the local Brave reply template. Status DRAFT_FOR_OWNER_REVIEW / NOT_SENT; no supplier contacted. Founder operates individually in Germany, may incorporate later, and intends to send from a CometRow mailbox (exact address not assumed). Existing provider/privacy/storage/commercial gates remain closed.
 

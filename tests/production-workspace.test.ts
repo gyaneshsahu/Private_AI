@@ -398,9 +398,20 @@ it.skipIf(!enabled)(
       await browserExpect(page.getByRole("status")).toContainText(
         "Code delivery could not be confirmed",
       );
+      await browserExpect(page.getByLabel("Verification code")).toBeVisible();
+      await browserExpect(page.getByLabel("Verification code")).toHaveValue("");
+      await browserExpect(page.getByRole("status")).toContainText(
+        "If a delayed code arrives, enter it below",
+      );
+      await browserExpect(
+        page.getByRole("button", { name: "Verify code", exact: true }),
+      ).toBeEnabled();
+      await page
+        .getByRole("button", { name: "Use another email", exact: true })
+        .click();
       await browserExpect(page.getByLabel("Verification code")).toHaveCount(0);
       await browserExpect(
-        page.getByRole("button", { name: "Continue with email" }),
+        page.getByRole("button", { name: "Continue with email", exact: true }),
       ).toBeEnabled();
       await page.addStyleTag({
         content: "html { font-size: 200% !important; }",
