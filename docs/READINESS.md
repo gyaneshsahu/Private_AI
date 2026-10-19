@@ -1,5 +1,11 @@
 # PrivateAI readiness checklist
 
+## M6 hosting assessment — 19 October, decision preparation only
+
+Source-backed hosting comparison and ordered runtime/certificate/recovery/monitoring work are now in `development-deployment.md`. Current Render TLS-to-HTTP upstream does not satisfy the candidate's authenticated TLS boundary without a separately reviewed adapter. Direct-public Caddy on a German VM matches the local proof but introduces OS/database/certificate operations responsibility; no host purchase or migration before a complete runtime package. Verified source gap: Dockerfile still starts the older `server/index.ts`; the new production composition is unmounted. Local browser proof is not a deployable release image.
+
+No new runtime tests or gate passes claimed: this batch is research/documentation and source inspection only. No paid API, live changes or human-score changes. Overall stays approximately70–75% implemented (+/-10points), NOT_READY. Next: explicit inactive candidate entrypoint and reproducible local deployment/recovery package; host decision, real sender and external activation follow a reviewable package. Provider/privacy, opaque cost enforcement, quality/safety and commercial gates remain independent.
+
 ## Current M6 batch — content-free operations counters, 19 October
 
 `operation-metrics.ts` now gives the inactive production composition a fixed-size, process-local operations snapshot: admission state, in-flight/peak requests, finished versus aborted responses, admission rejections, readiness outcomes, HTTP status groups and five duration buckets. No request paths/query strings, body, headers, identifiers, raw errors, dynamic labels, logs, persistence or exporter. `/metrics` is NOT added. Completed means HTTP transport finished, not an accurate/complete model answer; these counts are not usage billing. Snapshots are independent copies and counters settle once on finish/close. Counters reset on reconstruction and are not a cross-replica monitoring system.

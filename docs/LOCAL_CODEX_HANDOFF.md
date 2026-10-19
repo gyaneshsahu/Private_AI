@@ -1,5 +1,11 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Resume next — production runtime package, 19 October
+
+Hosting assessment is at the top of `development-deployment.md`: keep existing Render unchanged; complete portable direct-public Caddy→mTLS Node→PostgreSQL package locally before asking owner to purchase/migrate. Current candidate is still unmounted and Dockerfile starts older `server/index.ts`. Do not confuse passing proxy/browser fixtures with a deployable production image. Next coherent implementation: separate explicit inactive candidate entrypoint, strict configuration and startup/drain, then reproducible package/recovery/operations validation. Missing real email sender, provider qualification and other release gates stay closed; no synthetic sender in live operation.
+
+Official hosting prices/transport/certificate evidence checked; proposed German VM has meaningful OS/database/backup/monitoring burden and availability/total-cost gaps. No hosting purchase, new budget, DNS/account/retention activation authorized. No paid requests or code/tests in this documentation batch. Approximate progress unchanged70–75% (+/-10points), NOT_READY. No new owner action necessary before concrete runtime preparation. Existing support address remains proposed/unverified. Preserve all earlier quality failures and human scores.
+
 ## Current M6 batch — content-free operations counters, 19 October
 
 `operation-metrics.ts` now gives the inactive production composition a fixed-size, process-local operations snapshot: admission state, in-flight/peak requests, finished versus aborted responses, admission rejections, readiness outcomes, HTTP status groups and five duration buckets. No request paths/query strings, body, headers, identifiers, raw errors, dynamic labels, logs, persistence or exporter. `/metrics` is NOT added. Completed means HTTP transport finished, not an accurate/complete model answer; these counts are not usage billing. Snapshots are independent copies and counters settle once on finish/close. Counters reset on reconstruction and are not a cross-replica monitoring system.
