@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { z } from "zod";
+import { accountRequest } from "./account-request";
 
 const accessSchema = z.object({
   sessions: z.array(
@@ -38,13 +39,25 @@ export default function AccountAccess({
   const [access, setAccess] = useState<z.infer<typeof accessSchema>>();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [needsRefresh, setNeedsRefresh] = useState(false);
   useEffect(() => {
     const abort = new AbortController();
-    fetch("/api/account/access", { cache: "no-store", signal: abort.signal })
-      .then(async (response) => {
+    setLoading(true);
+    setAccess(undefined);
+    accountRequest(
+      "/api/account/access",
+      { signal: abort.signal },
+      async (response) => {
         if (!response.ok) throw Error("unavailable");
-        const result = accessSchema.parse(await response.json());
-        if (!abort.signal.aborted) setAccess(result);
+        return accessSchema.parse(await response.json());
+      },
+    )
+      .then((result) => {
+        if (!abort.signal.aborted) {
+          setAccess(result);
+          setNeedsRefresh(false);
+        }
       })
       .catch(() => {
         if (!abort.signal.aborted) {
@@ -53,18 +66,29 @@ export default function AccountAccess({
             "Account access is unavailable. Refresh before changing access.",
           );
         }
+      })
+      .finally(() => {
+        if (!abort.signal.aborted) setLoading(false);
       });
     return () => abort.abort();
   }, [revision]);
   async function update(path: "revoke" | "remove", body: object) {
+    if (busy || loading || needsRefresh) return;
     setBusy(true);
     setMessage("");
     try {
-      const response = await fetch(`/api/account/access/${path}`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(body),
-      });
+      const response = await accountRequest(
+        `/api/account/access/${path}`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body),
+        },
+        async (response) => {
+          await response.body?.cancel();
+          return response;
+        },
+      );
       if (response.status === 403 && path === "remove") {
         setMessage(
           "Verify your email again before removing a method. Each verification permits one removal for five minutes.",
@@ -72,6 +96,7 @@ export default function AccountAccess({
         return;
       }
       if (response.status === 409) {
+        setNeedsRefresh(true);
         setMessage(
           "Another sign-in method change is in progress. Wait for it to finish, then refresh before retrying.",
         );
@@ -85,6 +110,7 @@ export default function AccountAccess({
       );
       await changed();
     } catch {
+      setNeedsRefresh(true);
       setMessage(
         "The result could not be confirmed. Refresh account access before retrying; no automatic retry was made.",
       );
@@ -100,10 +126,19 @@ export default function AccountAccess({
         device fingerprints or location. Activity times are approximate.
       </p>
       <button
-        disabled={busy}
-        onClick={() =>
-          void changed().catch(() => setMessage("Refresh failed."))
-        }
+        disabled={busy || loading}
+        onClick={() => {
+          setBusy(true);
+          setMessage("");
+          void changed()
+            .catch(() => {
+              setNeedsRefresh(true);
+              setMessage(
+                "Refresh failed. Account changes remain unavailable until status can be checked.",
+              );
+            })
+            .finally(() => setBusy(false));
+        }}
       >
         Refresh account access
       </button>
@@ -117,7 +152,7 @@ export default function AccountAccess({
                 {new Date(session.createdAt).toLocaleString()} ·{" "}
                 {session.id.slice(0, 8)}
                 <button
-                  disabled={busy}
+                  disabled={busy || loading || needsRefresh}
                   onClick={() => {
                     if (
                       window.confirm(
@@ -142,7 +177,10 @@ export default function AccountAccess({
             and signs out other sessions. Removing a provider here does not
             revoke its permissions on the provider's website.
           </p>
-          <button disabled={busy} onClick={verifyEmail}>
+          <button
+            disabled={busy || loading || needsRefresh}
+            onClick={verifyEmail}
+          >
             Verify email for removal
           </button>
           <ul>
@@ -161,7 +199,7 @@ export default function AccountAccess({
               <li key={method.id}>
                 {method.label}
                 <button
-                  disabled={busy}
+                  disabled={busy || loading || needsRefresh}
                   aria-label={`Remove ${method.label}`}
                   onClick={() => {
                     if (
@@ -182,7 +220,13 @@ export default function AccountAccess({
           </ul>
         </>
       )}
-      <p aria-live="polite">{busy ? "Updating account access…" : message}</p>
+      <p aria-live="polite">
+        {busy
+          ? "Updating account access…"
+          : loading
+            ? "Checking account access…"
+            : message}
+      </p>
     </section>
   );
 }

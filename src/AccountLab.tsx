@@ -6,6 +6,7 @@ import "./account-preview.css";
 import AccountAccess from "./AccountAccess";
 import AccountDeletion from "./AccountDeletion";
 import { SupportPanel } from "./SupportPanel";
+import { accountRequest } from "./account-request";
 
 const sessionSchema = z
   .object({ user: z.object({ id: z.string(), email: z.string() }) })
@@ -72,27 +73,34 @@ export default function AccountLab({
   >([]);
   const codeInput = useRef<HTMLInputElement>(null);
   async function refresh() {
-    const response = await fetch("/api/auth/get-session", {
-      cache: "no-store",
-    });
-    if (!response.ok) throw Error("unavailable");
-    const current = sessionSchema.parse(await response.json());
+    const current = await accountRequest(
+      "/api/auth/get-session",
+      {},
+      async (response) => {
+        if (!response.ok) throw Error("unavailable");
+        return sessionSchema.parse(await response.json());
+      },
+    );
     setSession(current);
     if (current) {
-      const accounts = await fetch("/api/account/access", {
-        cache: "no-store",
-      });
-      if (!accounts.ok) throw Error("account list unavailable");
-      setLinked(
-        accountsSchema
-          .parse(await accounts.json())
-          .providers.map((account) => account.providerId),
+      const accounts = await accountRequest(
+        "/api/account/access",
+        {},
+        async (response) => {
+          if (!response.ok) throw Error("account list unavailable");
+          return accountsSchema.parse(await response.json());
+        },
       );
-      const response = await fetch("/api/account/security-notices", {
-        cache: "no-store",
-      });
-      if (!response.ok) throw Error("security notices unavailable");
-      setNotices(noticesSchema.parse(await response.json()).notices);
+      setLinked(accounts.providers.map((account) => account.providerId));
+      const notices = await accountRequest(
+        "/api/account/security-notices",
+        {},
+        async (response) => {
+          if (!response.ok) throw Error("security notices unavailable");
+          return noticesSchema.parse(await response.json()).notices;
+        },
+      );
+      setNotices(notices);
       setAccessRevision((value) => value + 1);
     } else {
       setLinked([]);
@@ -109,10 +117,11 @@ export default function AccountLab({
       url.searchParams.delete("error_description");
       window.history.replaceState(null, "", url);
     }
-    fetch("/api/account/options", { cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok) throw Error("unavailable");
-        const options = optionsSchema.parse(await response.json());
+    accountRequest("/api/account/options", {}, async (response) => {
+      if (!response.ok) throw Error("unavailable");
+      return optionsSchema.parse(await response.json());
+    })
+      .then(async (options) => {
         if (options.synthetic !== synthetic)
           throw Error("Account mode mismatch");
         setProviders(options.socialProviders);

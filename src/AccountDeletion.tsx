@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { accountRequest } from "./account-request";
 
 export default function AccountDeletion({
   closed,
@@ -12,6 +13,7 @@ export default function AccountDeletion({
   const [confirmation, setConfirmation] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [uncertain, setUncertain] = useState(false);
   return (
     <section aria-label={title}>
       <h2>{title}</h2>
@@ -30,16 +32,23 @@ export default function AccountDeletion({
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          if (confirmation !== phrase) return;
+          if (busy || uncertain || confirmation !== phrase) return;
           setBusy(true);
           setMessage("");
           void (async () => {
             try {
-              const response = await fetch("/api/account/close", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ confirmation }),
-              });
+              const response = await accountRequest(
+                "/api/account/close",
+                {
+                  method: "POST",
+                  headers: { "content-type": "application/json" },
+                  body: JSON.stringify({ confirmation }),
+                },
+                async (response) => {
+                  await response.body?.cancel();
+                  return response;
+                },
+              );
               if (response.status === 403) {
                 setMessage(
                   "Sign out and sign in with a new email code before closing the account.",
@@ -47,6 +56,7 @@ export default function AccountDeletion({
                 return;
               }
               if (response.status === 409) {
+                setUncertain(true);
                 setMessage(
                   "Another account change is in progress. Refresh before retrying.",
                 );
@@ -55,6 +65,7 @@ export default function AccountDeletion({
               if (!response.ok) throw Error("unconfirmed");
               await closed();
             } catch {
+              setUncertain(true);
               setMessage(
                 "Closure could not be confirmed. Check account access before retrying. No automatic retry was made.",
               );
@@ -72,12 +83,20 @@ export default function AccountDeletion({
           value={confirmation}
           onChange={(event) => setConfirmation(event.target.value)}
           autoComplete="off"
-          disabled={busy}
+          disabled={busy || uncertain}
         />
-        <button type="submit" disabled={busy || confirmation !== phrase}>
+        <button
+          type="submit"
+          disabled={busy || uncertain || confirmation !== phrase}
+        >
           {synthetic ? "Close test account" : "Close account"}
         </button>
       </form>
+      {uncertain && (
+        <button onClick={() => window.location.reload()}>
+          Reload account status
+        </button>
+      )}
       <p aria-live="polite">{busy ? "Closing account…" : message}</p>
     </section>
   );
