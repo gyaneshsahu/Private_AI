@@ -14,7 +14,7 @@ const source = z.object({
 });
 
 // Older snapshots have no draft, attachment kind or message source snapshot.
-export const savedConversationSchema: z.ZodType<Conversation> = z.object({
+const conversationBody = z.object({
   id: z.string().min(1),
   title: z.string(),
   createdAt: z.string(),
@@ -28,6 +28,9 @@ export const savedConversationSchema: z.ZodType<Conversation> = z.object({
       status: z.enum(["complete", "partial", "error"]),
       included: z.boolean(),
       sourceSnapshot: z.array(source).optional(),
+      failure: z
+        .enum(["stopped", "timeout", "incomplete", "unavailable", "empty"])
+        .optional(),
     }),
   ),
   attachments: z.array(
@@ -51,19 +54,52 @@ export const savedConversationSchema: z.ZodType<Conversation> = z.object({
   ),
 });
 
+export const savedConversationSchema: z.ZodType<Conversation> =
+  conversationBody.extend({
+    branches: z
+      .object({
+        activeId: z.string().min(1),
+        activeLabel: z.string().min(1).max(80),
+        archived: z
+          .array(
+            conversationBody
+              .pick({
+                messages: true,
+                attachments: true,
+                temporarySearch: true,
+              })
+              .extend({
+                id: z.string().min(1),
+                label: z.string().min(1).max(80),
+                draft: z.string(),
+              })
+              .strict(),
+          )
+          .max(19),
+      })
+      .strict()
+      .refine((branches) => {
+        const ids = [
+          branches.activeId,
+          ...branches.archived.map((branch) => branch.id),
+        ];
+        return new Set(ids).size === ids.length;
+      }, "Duplicate conversation branch identity.")
+      .optional(),
+  });
+
 /** Defense in depth for older/imported state missing the sticky session flag. */
 export function containsTemporaryResearch(conversation: Conversation): boolean {
   const temporarySource = (
     s: Conversation["attachments"][number]["sources"][number],
   ) => s.evidenceKind === "search-excerpt" || s.evidenceKind === "llm-context";
-  return (
-    !!conversation.temporarySearch ||
-    conversation.attachments.some(
-      (a) => a.researchQuery !== undefined || a.sources.some(temporarySource),
-    ) ||
-    (conversation.messages?.some((m) =>
-      m.sourceSnapshot?.some(temporarySource),
-    ) ??
-      false)
+  return [conversation, ...(conversation.branches?.archived ?? [])].some(
+    (branch) =>
+      !!branch.temporarySearch ||
+      branch.attachments.some(
+        (a) => a.researchQuery !== undefined || a.sources.some(temporarySource),
+      ) ||
+      (branch.messages?.some((m) => m.sourceSnapshot?.some(temporarySource)) ??
+        false),
   );
 }

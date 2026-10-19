@@ -746,6 +746,17 @@ footer {
 .message-text code {
   font-size: 0.9em;
 }
+.code-block {
+  min-width: 0;
+  margin-block: 1rem;
+}
+.code-block-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
 .message-text blockquote {
   border-left: 3px solid #b8c5a7;
   padding-left: 14px;

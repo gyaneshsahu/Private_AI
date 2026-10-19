@@ -31,8 +31,8 @@ export function ConversationLibrary({
           />
         </label>
         <p className="muted">
-          Search titles, messages, drafts and file names in this unlocked
-          browser. Nothing is sent to a server.
+          Search titles, messages, drafts and file names, including other
+          branches, in this unlocked browser. Nothing is sent to a server.
         </p>
         <label>
           Sort conversations
@@ -66,6 +66,9 @@ export function ConversationLibrary({
               {conversation.messages.length} messages ·{" "}
               {conversation.attachments.length} attachments
               {conversation.draft ? " · Unsent draft" : ""}
+              {conversation.branches
+                ? ` · ${conversation.branches.archived.length + 1} branches`
+                : ""}
             </p>
           </div>
           <button disabled={busy} onClick={() => onOpen(conversation)}>

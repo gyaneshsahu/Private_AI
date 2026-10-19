@@ -23,6 +23,11 @@ export function findConversations(
         conversation.draft ?? "",
         ...conversation.messages.map((message) => message.text),
         ...conversation.attachments.map((attachment) => attachment.name),
+        ...(conversation.branches?.archived ?? []).flatMap((branch) => [
+          branch.draft,
+          ...branch.messages.map((message) => message.text),
+          ...branch.attachments.map((attachment) => attachment.name),
+        ]),
       ]
         .join("\n")
         .toLocaleLowerCase();

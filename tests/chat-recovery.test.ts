@@ -220,6 +220,21 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     expect(
       calls[1].filter((m) => m.content === "TEST question with a source"),
     ).toHaveLength(1);
+    await page.getByText("Conversation branches ·", { exact: false }).click();
+    await page
+      .getByRole("button", { name: "Open Original branch", exact: true })
+      .click();
+    await ui(page.getByText("TEST_PARTIAL", { exact: true })).toBeVisible();
+    await ui(page.getByText("Stopped by you.", { exact: false })).toBeVisible();
+    await page
+      .getByRole("button", { name: "Open Retry 1 branch", exact: true })
+      .click();
+    await ui(page.getByText("TEST_PARTIAL", { exact: true })).toHaveCount(0);
+    expect(
+      await page.evaluate(
+        () => (window as unknown as FixtureWindow).fixtureCalls.length,
+      ),
+    ).toBe(2);
     await tab("Context").click();
     await page.locator("details summary").click();
     await page
@@ -300,6 +315,23 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       "UNSENT NEXT QUESTION",
     );
     expect(JSON.stringify(branch)).not.toContain("TEST follow-up correction");
+    await page.getByText("Conversation branches ·", { exact: false }).click();
+    await page
+      .getByRole("button", { name: "Open Retry 1 branch", exact: true })
+      .click();
+    await ui(page.locator("article.assistant")).toHaveCount(2);
+    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
+      "UNSENT NEXT QUESTION",
+    );
+    await page
+      .getByRole("button", { name: "Open Edit 2 branch", exact: true })
+      .click();
+    await ui(page.locator("article.assistant")).toHaveCount(1);
+    expect(
+      await page.evaluate(
+        () => (window as unknown as FixtureWindow).fixtureCalls.length,
+      ),
+    ).toBe(4);
     await page.evaluate(() => Object.assign(window, { fixtureMode: "stall" }));
     await page
       .getByLabel("Message PrivateAI")
@@ -361,6 +393,31 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     await page.getByRole("button", { name: "Send ↑", exact: true }).click();
     await ui(page.locator("article.assistant table")).toBeVisible();
     await ui(page.locator("article.assistant .katex")).toBeVisible();
+    await page.getByRole("button", { name: "Copy code", exact: true }).click();
+    await ui(
+      page.getByText("Copy unavailable. Select the code", { exact: false }),
+    ).toBeVisible();
+    await page.evaluate(() =>
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: {
+          writeText: async (text: string) => {
+            (window as unknown as FixtureWindow).copiedAnswer = text;
+          },
+        },
+      }),
+    );
+    await page.getByRole("button", { name: "Copy code", exact: true }).click();
+    await ui(
+      page.getByText("Code copied. Review before running it.", { exact: true }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => (window as unknown as FixtureWindow).copiedAnswer,
+      ),
+    ).toBe("LONG_CODE_".repeat(40) + "\n");
+    await page.getByLabel("text code block", { exact: true }).focus();
+    await ui(page.getByLabel("text code block", { exact: true })).toBeFocused();
     await ui(
       page.locator(
         "article.assistant img, article.assistant script, article.assistant a",
@@ -410,7 +467,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     ).toBe(callsBeforeLimit + 1);
     await ui(page.getByLabel("Message PrivateAI")).toHaveValue("");
     await ui(
-      page.getByText("Response timed out.", { exact: false }),
+      page.getByRole("status").filter({ hasText: "Response timed out." }),
     ).toBeVisible();
     await ui(
       page.getByText("PRIVATE_PROVIDER_DETAIL", { exact: false }),

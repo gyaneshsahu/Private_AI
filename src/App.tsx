@@ -9,7 +9,6 @@ import {
 import {
   composeContext,
   measureContext,
-  forkAt,
   newMessage,
   selectedSources,
 } from "./conversation";
@@ -20,6 +19,8 @@ import { VaultBackup } from "./VaultBackup";
 import { BACKUP_MAX_BYTES } from "./vault-backup";
 import { containsTemporaryResearch } from "./saved-conversation";
 import { ConversationLibrary } from "./ConversationLibrary";
+import { ConversationBranches } from "./ConversationBranches";
+import { branchConversation, switchBranch } from "./conversation-branches";
 import { ContextReview } from "./ContextReview";
 import { correctSource, sourceHistoryStatus } from "./source-history";
 import { AccountUsage } from "./AccountUsage";
@@ -407,7 +408,11 @@ export function App() {
           ...c,
           messages: c.messages.map((m) =>
             m.id === answer.id
-              ? { ...m, status: m.text ? "complete" : "error" }
+              ? {
+                  ...m,
+                  status: m.text ? "complete" : "error",
+                  ...(!m.text ? { failure: "empty" as const } : {}),
+                }
               : m,
           ),
           usage: usage ? [...c.usage, usage] : c.usage,
@@ -423,7 +428,19 @@ export function App() {
         setConversation((c) => ({
           ...c,
           messages: c.messages.map((m) =>
-            m.id === answer.id ? { ...m, status: "partial" } : m,
+            m.id === answer.id
+              ? {
+                  ...m,
+                  status: "partial",
+                  failure: abort.signal.aborted
+                    ? "stopped"
+                    : error instanceof IncompleteReplyError
+                      ? "incomplete"
+                      : error instanceof Error && error.name === "TimeoutError"
+                        ? "timeout"
+                        : "unavailable",
+                }
+              : m,
           ),
           usage:
             error instanceof IncompleteReplyError && error.usage
@@ -918,6 +935,27 @@ export function App() {
                 </div>
               </div>
             )}
+            <ConversationBranches
+              conversation={conversation}
+              busy={!!busy}
+              open={(id) => {
+                if (busy) return;
+                try {
+                  const next = switchBranch(conversation, input, id);
+                  calculationSession.clear();
+                  setConversation(next);
+                  setInput(next.draft ?? "");
+                  setEditId(undefined);
+                  setEditText("");
+                  setSource(undefined);
+                  setNotice(
+                    "Branch opened locally. No request was sent. Save again to keep these changes.",
+                  );
+                } catch (error) {
+                  fail((error as Error).message);
+                }
+              }}
+            />
             <div className="messages">
               {conversation.messages.map((message) => (
                 <article key={message.id} className={`message ${message.role}`}>
@@ -933,6 +971,21 @@ export function App() {
                       </span>
                     )}
                   </div>
+                  {message.failure && (
+                    <p className="muted">
+                      {
+                        {
+                          stopped: "Stopped by you",
+                          timeout: "Response timed out",
+                          incomplete: "Response ended incomplete",
+                          unavailable: "Protected response unavailable",
+                          empty: "No answer received",
+                        }[message.failure]
+                      }
+                      . This attempt is not a completed answer and is excluded
+                      from future context.
+                    </p>
+                  )}
                   <Suspense
                     fallback={
                       <div className="message-text">{message.text}</div>
@@ -940,6 +993,7 @@ export function App() {
                   >
                     <Answer
                       text={message.text}
+                      complete={message.status === "complete"}
                       sources={message.sourceSnapshot ?? []}
                       open={setSource}
                     />
@@ -1020,11 +1074,24 @@ export function App() {
                 <button
                   disabled={!!busy || !editText.trim()}
                   onClick={() => {
-                    setConversation(forkAt(conversation, editId, editText));
-                    setEditId(undefined);
-                    setNotice(
-                      "New branch created. Choose Answer this question to request a reply. Your draft is unchanged.",
-                    );
+                    try {
+                      setConversation(
+                        branchConversation(
+                          conversation,
+                          input,
+                          editId,
+                          editText,
+                        ),
+                      );
+                      calculationSession.clear();
+                      setEditId(undefined);
+                      setEditText("");
+                      setNotice(
+                        "New branch created; the original is available in Conversation branches. Choose Answer this question to request a reply. Your draft is unchanged.",
+                      );
+                    } catch (error) {
+                      fail((error as Error).message);
+                    }
                   }}
                 >
                   Create branch
@@ -1176,14 +1243,18 @@ export function App() {
                     .find((m) => m.role === "user");
                   if (last) {
                     const index = conversation.messages.indexOf(last);
-                    void send(
-                      {
-                        ...conversation,
-                        messages: conversation.messages.slice(0, index),
-                      },
-                      last.text,
-                      false,
-                    );
+                    try {
+                      const base =
+                        index === conversation.messages.length - 1
+                          ? {
+                              ...conversation,
+                              messages: conversation.messages.slice(0, index),
+                            }
+                          : branchConversation(conversation, input, last.id);
+                      void send(base, last.text, false);
+                    } catch (error) {
+                      fail((error as Error).message);
+                    }
                   }
                 }}
               >
@@ -1244,7 +1315,9 @@ export function App() {
                 {conversation.usage
                   .reduce((n, u) => n + u.estimatedUSD, 0)
                   .toFixed(4)}
-                . Excludes unknown or failed requests and search charges.
+                . Includes reported usage across all branches. Excludes
+                unreported usage and search charges; incomplete requests may
+                still cost money.
               </p>
             )}
           </section>

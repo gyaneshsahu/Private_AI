@@ -6,15 +6,19 @@ import "katex/dist/katex.min.css";
 import type { Source } from "../shared/contracts";
 import { displayMath, sourceCitations } from "./answer-format";
 import { auditResearchAnswer } from "./research-audit";
+import { isValidElement, type ReactNode } from "react";
+import { CodeBlock } from "./CodeBlock";
 
 export function Answer({
   text,
   sources,
   open,
+  complete = false,
 }: {
   text: string;
   sources: Source[];
   open: (source: Source) => void;
+  complete?: boolean;
 }) {
   const audit = sources.some((source) => source.url)
     ? auditResearchAnswer(text, sources)
@@ -49,6 +53,24 @@ export function Answer({
           ],
         ]}
         components={{
+          pre: ({ children }) => {
+            const code = isValidElement<{
+              children?: ReactNode;
+              className?: string;
+            }>(children)
+              ? children.props
+              : undefined;
+            const text =
+              typeof code?.children === "string" ? code.children : "";
+            const language =
+              /^language-([\w+#.-]{1,32})$/.exec(code?.className ?? "")?.[1] ??
+              "";
+            return (
+              <CodeBlock text={text} language={language} complete={complete}>
+                {children}
+              </CodeBlock>
+            );
+          },
           a: ({ href, children }) => {
             const citedPage =
               typeof children === "string"

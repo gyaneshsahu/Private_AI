@@ -4,6 +4,23 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Answer } from "../src/Answer";
 
+it("keeps fenced code literal and copy unavailable until completion", () => {
+  const text =
+    "```js\nwindow.CANARY = '<script>run()</script>';\n```\n\nInline `code`";
+  const render = (complete: boolean) =>
+    renderToStaticMarkup(
+      createElement(Answer, { text, complete, sources: [], open: () => {} }),
+    );
+  const partial = render(false);
+  expect(partial).toContain('disabled=""');
+  expect(partial).toContain('tabindex="0"');
+  expect(partial).toContain('aria-label="js code block"');
+  expect(partial).toContain("&lt;script&gt;");
+  expect(partial).not.toContain("<script>");
+  expect(render(true)).not.toContain('disabled=""');
+  expect(render(true).match(/Copy code/g)).toHaveLength(1);
+});
+
 it("ignores inherited trust settings even when another component has polluted Object.prototype", () => {
   // Isolate the intentionally polluted global prototype from the test runner.
   const result = execFileSync(

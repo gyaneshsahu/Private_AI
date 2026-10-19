@@ -1,5 +1,13 @@
 # PrivateAI — architecture and trust boundaries
 
+### Flat conversation branches — 19October
+
+`conversation-branches.ts` retains inactive message/reference/draft snapshots under the existing conversation identity. The active snapshot remains in the existing top-level fields so inference/context composition never traverses archived history. Usage stays at conversation level and is not duplicated when history forks. Branch switching clears ephemeral calculator session state; all new material still passes the existing send/qualification/size gates. Optional sanitized message failure enums are local evidence, never model context. `ConversationBranches.tsx` controls explicit local switching and keyboard focus; retries remain separately charged requests, never automatic.
+
+At most19archived versions plus one active version; no recursive tree, implicit truncation or silent eviction. Saved/imported schemas validate flat bounds and unique local branch identities. Each archive captures independent source corrections/selection and source snapshots; current title/usage remain conversation-wide. `containsTemporaryResearch` checks active and archived versions, preserving the sticky session restriction and existing direct-URL distinction. The vault encrypts all versions in the same existing envelope; portable restore changes the outer conversation ID while internal version/message/source references remain scoped to that conversation. Old snapshots without branches still load. Backup size limits remain unchanged; larger histories can fail explicitly. No autosave, server synchronization or change to cryptographic algorithms.
+
+`CodeBlock.tsx` renders escaped Markdown code and copies only literal text on an explicit user gesture after completion. Focusable overflow regions support keyboard scrolling; no execution/highlighting network service or automatic clipboard write. Clipboard contents remain under device/user control, like Copy answer.
+
 ### Portable encrypted saved history — 19 October
 
 `vault-backup.ts` defines a bounded version1 portable envelope, using existing `vault-crypto.ts` primitives: PBKDF2-SHA256600,000iterations, AES-256-GCM with a fresh12-byte IV and authenticated-data string `privateai-encrypted-backup:v1`. KDF/algorithm/version are exact supported literals, not attacker-selected work factors. Envelope exposes salt/IV/cipher parameters and size, no conversation/account metadata. The original vault passphrase is required; no server receives it.10MiB plaintext/100conversation and16MiB file limits are enforced. Files are downloaded only by an explicit user action after unlock; browser download success/custody is not assumed from initiating a download.

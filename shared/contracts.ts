@@ -110,6 +110,15 @@ export interface Message {
   status: "complete" | "partial" | "error";
   included: boolean;
   sourceSnapshot?: Source[];
+  failure?: "stopped" | "timeout" | "incomplete" | "unavailable" | "empty";
+}
+export interface ConversationBranch {
+  id: string;
+  label: string;
+  messages: Message[];
+  attachments: Attachment[];
+  draft: string;
+  temporarySearch?: boolean;
 }
 export interface Usage {
   input: number;
@@ -128,6 +137,12 @@ export interface Conversation {
   usage: Usage[];
   /** Optional for snapshots saved before draft support. Never part of sent context. */
   draft?: string;
+  /** Inactive versions are local history, never implicitly model context. */
+  branches?: {
+    activeId: string;
+    activeLabel: string;
+    archived: ConversationBranch[];
+  };
 }
 export interface AppStatus {
   billingRehearsal?: boolean;
