@@ -1,5 +1,13 @@
 # PrivateAI — architecture and trust boundaries
 
+### Account closure and deletion boundary — inactive, 19 October
+
+The synthetic account router can request closure only for its authenticated account with typed confirmation and recent unconsumed email proof. Under the same enrollment lock used by method removal, a transaction creates a closure receipt, deletes sessions/proofs/research grants and invalidates the exact enabled sign-in-OTP identifier. Authentication completion checks closure before issuing access; new email requests for a closed row fail. Receipt insertion failure rolls back revocation. There is no account reopening or automatic deletion route.
+
+The receipt contains an opaque user ID and lifecycle times, without email or conversation text, and deliberately survives credential purge. Usage rows are independent and remain unchanged. They are pseudonymous retained records, not anonymous or erased data. A later signup after credential purge gets a new identity; never infer that this recovers the old local vault or satisfies anti-abuse/paid-allowance policy. Real subscription handling and retained financial/security categories require an explicit production policy before activation.
+
+`purgeSyntheticClosedAccounts` is a test-only function requiring the named local test database, a disposable schema and quarantined access. Due rows are logically purged after seven days unless held; auth/contact children cascade. It does not delete local browser snapshots, supplier records, exports, backups or WAL. No runtime, CLI or scheduler imports it. An offline restore still requires reconciliation against newer closure/deletion records outside an older snapshot; quarantine alone cannot reconstruct those facts. Metadata/backup retention approval and hosted proof remain open. New pending notices for already closed accounts are blocked before submission, while a dispatch admitted before closure may already be in flight.
+
 ### Account access management — inactive, 19 October
 
 The synthetic account UI lists active sessions by sign-in time and opaque row ID, and removes individual sessions without sending their bearer tokens to the browser. No device names, locations or fingerprints are inferred; IP/user-agent retention remains disabled. The maintained token-based list/revoke endpoints are blocked in favor of the account-scoped ID routes. Revocation cannot erase content already copied or retract an admitted upstream request.

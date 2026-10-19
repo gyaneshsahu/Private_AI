@@ -4,6 +4,7 @@ import { passkeyClient } from "@better-auth/passkey/client";
 import { z } from "zod";
 import "./account-preview.css";
 import AccountAccess from "./AccountAccess";
+import AccountDeletion from "./AccountDeletion";
 
 const sessionSchema = z
   .object({ user: z.object({ id: z.string(), email: z.string() }) })
@@ -283,6 +284,16 @@ export default function AccountLab() {
             >
               Sign out
             </button>
+            <AccountDeletion
+              closed={async () => {
+                await refresh();
+                setCode("");
+                setSent(false);
+                setNotice(
+                  "Test account closed; all sessions were signed out. Credential purge is not scheduled. Local saved history and retained usage records were not erased.",
+                );
+              }}
+            />
             <AccountAccess
               revision={accessRevision}
               changed={refresh}

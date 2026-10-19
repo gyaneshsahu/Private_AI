@@ -1,5 +1,11 @@
 # Trial backup and metadata-retention policy
 
+## Consumer-account implementation extension — 19 October, inactive
+
+The production-roadmap account lab now records explicit closure and denies access immediately. Migration0009 proposes credential purge eligibility after seven days and supports incident holds. `server/inactive-consumer-retention.ts` is test-only: it accepts only the named synthetic database/disposable schema while access is quarantined. It removes due auth/contact rows without erasing or resetting usage records. No job, live purge, live backup lifecycle or existing registry change is activated.
+
+The earlier seven-day credentials plus seven-day backup proposal does **not** settle retention of consumer usage, financial records, closure receipts, sender metadata, logs or provider-held content. These categories need a reviewed schedule and disclosures before activation; no14-day all-data-erasure promise. Local encrypted history/exports/other devices require their own user actions. A commercial deletion workflow must also reconcile subscriptions and post-snapshot closure truth. This document retains historical restricted-service evidence below; READINESS holds current status.
+
 ## Approved inactive implementation — 8 October
 
 Founder approval covers implementation only. `server/inactive-retention.ts`

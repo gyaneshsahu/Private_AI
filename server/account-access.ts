@@ -4,7 +4,7 @@ import { z } from "zod";
 
 // Database time captured before authentication, never accepted from the client.
 export const accountRequestStart = new AsyncLocalStorage<string>();
-const enrollmentKey = (userId: string) =>
+export const enrollmentKey = (userId: string) =>
   `privateai-credential-enrollment:${userId}`;
 
 /** Keep enrollment and removal ordered without holding a user-row lock across provider work. */
@@ -47,7 +47,7 @@ export const removalSchema = z
   })
   .strict();
 
-async function lockAccount(client: PoolClient, userId: string) {
+export async function lockAccount(client: PoolClient, userId: string) {
   const gate = await client.query(
     "SELECT mode FROM account_recovery_control WHERE singleton=true FOR SHARE",
   );
@@ -71,7 +71,11 @@ export async function recordSessionAccess(
       `SELECT 1 FROM account_credential_change WHERE "userId"=$1 AND "changedAt">=$2::timestamptz`,
       [session.userId, startedAt ?? null],
     );
-    rejected = !startedAt || !!changes.rowCount;
+    const closure = await client.query(
+      'SELECT 1 FROM account_closure WHERE "userId"=$1',
+      [session.userId],
+    );
+    rejected = !startedAt || !!changes.rowCount || !!closure.rowCount;
     if (rejected) {
       await client.query('DELETE FROM session WHERE id=$1 AND "userId"=$2', [
         session.id,

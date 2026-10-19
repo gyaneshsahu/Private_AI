@@ -31,6 +31,7 @@ export async function dispatchOneSecurityNotice(
     recipientEmail: string | null;
     createdAt: Date;
     kind: string;
+    closed: boolean;
   };
   try {
     await client.query("BEGIN");
@@ -42,7 +43,8 @@ export async function dispatchOneSecurityNotice(
       return "paused";
     }
     const claimed =
-      await client.query(`SELECT id,kind,"recipientEmail","createdAt"
+      await client.query(`SELECT id,kind,"recipientEmail","createdAt",
+      EXISTS(SELECT 1 FROM account_closure c WHERE c."userId"=account_security_event."userId") AS closed
       FROM account_security_event WHERE "deliveryState"='pending'
       ORDER BY "createdAt",id FOR UPDATE SKIP LOCKED LIMIT 1`);
     if (!claimed.rowCount) {
@@ -50,7 +52,7 @@ export async function dispatchOneSecurityNotice(
       return "idle";
     }
     event = claimed.rows[0];
-    if (!email.safeParse(event.recipientEmail).success) {
+    if (event.closed || !email.safeParse(event.recipientEmail).success) {
       await client.query(
         `UPDATE account_security_event SET "deliveryState"='blocked',"settledAt"=clock_timestamp() WHERE id=$1`,
         [event.id],

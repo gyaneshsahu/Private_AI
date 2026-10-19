@@ -25,7 +25,8 @@ export function accountPrivilegePlan(input: {
     `GRANT SELECT,INSERT ON ${table("usage_requests")} TO ${runtime}`,
     `GRANT UPDATE (state,updated_at) ON ${table("usage_requests")} TO ${runtime}`,
     `GRANT SELECT,INSERT ON ${table("account_security_event")} TO ${runtime}`,
-    `GRANT SELECT ON ${table("account_recovery_control")},${table("account_security_event")} TO ${notice}`,
+    `GRANT SELECT,INSERT ON ${table("account_closure")} TO ${runtime}`,
+    `GRANT SELECT ON ${table("account_recovery_control")},${table("account_security_event")},${table("account_closure")} TO ${notice}`,
     `GRANT UPDATE ("deliveryState","dispatchToken","dispatchedAt","settledAt") ON ${table("account_security_event")} TO ${notice}`,
   ];
 }

@@ -15,6 +15,7 @@ import type { Pool } from "pg";
 import { createHmac } from "node:crypto";
 import { finishSignInRecovery } from "./account-recovery";
 import { accountRecoveryOpen } from "./account-restore";
+import { requestAccountClosure } from "./account-closure";
 import { z } from "zod";
 import {
   accountRequestStart,
@@ -152,6 +153,16 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
     rateLimit: { enabled: true, storage: "database", window: 60, max: 60 },
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
+        if (typeof ctx.body?.email === "string") {
+          const closed = await config.database.query(
+            `SELECT 1 FROM "user" u JOIN account_closure c ON c."userId"=u.id WHERE lower(u.email)=lower($1)`,
+            [ctx.body.email.trim()],
+          );
+          if (closed.rowCount)
+            throw new APIError("FORBIDDEN", {
+              message: "Sign-in is unavailable for this account.",
+            });
+        }
         if (
           [
             "/passkey/delete-passkey",
@@ -530,6 +541,51 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
     },
   );
   const handler = toNodeHandler(auth);
+  router.post(
+    "/api/account/close",
+    express.json({ limit: "2kb" }),
+    async (req, res) => {
+      if (
+        !z
+          .object({ confirmation: z.literal("DELETE TEST ACCOUNT") })
+          .strict()
+          .safeParse(req.body).success
+      ) {
+        res
+          .status(400)
+          .json({ error: "Exact deletion confirmation required." });
+        return;
+      }
+      try {
+        const current = await auth.api.getSession({
+          headers: fromNodeHeaders(req.headers),
+        });
+        if (!current) {
+          res
+            .status(401)
+            .json({
+              error: "Sign in with an email code before closing this account.",
+            });
+          return;
+        }
+        const outcome = await requestAccountClosure(
+          config.database,
+          current.user.id,
+          current.session.id,
+        );
+        res
+          .status(outcome === "closed" ? 200 : outcome === "busy" ? 409 : 403)
+          .json({ outcome });
+      } catch {
+        res
+          .status(503)
+          .json({
+            error:
+              "Closure could not be confirmed. Check account access before retrying.",
+          });
+      }
+    },
+  );
   let enrollments = 0;
   router.all("/api/auth/*splat", async (req, res) => {
     // These routes can add a method after verifying a challenge or provider callback.
@@ -571,20 +627,16 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
         },
       );
       if (!ran)
-        res
-          .status(409)
-          .json({
-            error:
-              "Another sign-in method change is in progress. Refresh before retrying.",
-          });
+        res.status(409).json({
+          error:
+            "Another sign-in method change is in progress. Refresh before retrying.",
+        });
     } catch {
       if (!res.headersSent)
-        res
-          .status(503)
-          .json({
-            error:
-              "Sign-in method setup could not be confirmed. Refresh account access.",
-          });
+        res.status(503).json({
+          error:
+            "Sign-in method setup could not be confirmed. Refresh account access.",
+        });
     } finally {
       enrollments--;
     }

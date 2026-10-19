@@ -7,6 +7,7 @@ import { chromium, expect as browserExpect } from "@playwright/test";
 import { usageDatabase } from "./fixtures/usage-postgres";
 import { applyAccountMigrations } from "../server/account-migrations";
 import { createSyntheticAccountAuth } from "../server/account-auth";
+import { purgeSyntheticClosedAccounts } from "../server/inactive-consumer-retention";
 import {
   accountRequestStart,
   recordSessionAccess,
@@ -101,6 +102,275 @@ async function key(userId: string) {
   );
   return { kind: "passkey", id };
 }
+
+it.skipIf(!enabled)(
+  "closes only the authenticated account with email proof and rejects pending codes and in-flight sign-ins",
+  async () => {
+    const a = await signIn("closure@example.test"),
+      old = await signIn("closure@example.test"),
+      b = await signIn("closure-other@example.test");
+    const confirmation = { confirmation: "DELETE TEST ACCOUNT" };
+    expect(
+      (
+        await call("account/close", a.cookie, {
+          ...confirmation,
+          userId: b.userId,
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (await call("account/close", a.cookie, confirmation, "https://evil.test"))
+        .status,
+    ).toBe(403);
+    await db.pool.query(
+      'UPDATE account_email_proof SET "consumedAt"=clock_timestamp() WHERE "sessionId"=$1',
+      [a.sessionId],
+    );
+    expect((await call("account/close", a.cookie, confirmation)).status).toBe(
+      403,
+    );
+    // Advance the synthetic send-limit window after three setup sign-ins.
+    await db.pool.query('UPDATE "rateLimit" SET "lastRequest"=0');
+    expect(
+      (
+        await call("auth/email-otp/send-verification-otp", "", {
+          email: "closure@example.test",
+          type: "sign-in",
+        })
+      ).status,
+    ).toBe(200);
+    const unusedCode = codes.get("closure@example.test");
+    const started = (
+      await db.pool.query("SELECT clock_timestamp()::text started")
+    ).rows[0].started;
+    expect((await call("account/close", old.cookie, confirmation)).status).toBe(
+      200,
+    );
+    expect((await call("account/access", a.cookie)).status).toBe(401);
+    expect((await call("account/access", old.cookie)).status).toBe(401);
+    expect((await call("account/access", b.cookie)).status).toBe(200);
+    expect(
+      (
+        await call("auth/sign-in/email-otp", "", {
+          email: "closure@example.test",
+          otp: unusedCode,
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await call("auth/email-otp/send-verification-otp", "", {
+          email: "closure@example.test",
+          type: "sign-in",
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await db.pool.query(
+          "SELECT id FROM verification WHERE identifier='sign-in-otp-closure@example.test'",
+        )
+      ).rowCount,
+    ).toBe(0);
+    const lateId = randomUUID();
+    await db.pool.query(
+      `INSERT INTO session(id,"userId",token,"expiresAt","updatedAt") VALUES($1::uuid,$2,$1::text,clock_timestamp()+interval '1 hour',clock_timestamp())`,
+      [lateId, a.userId],
+    );
+    await expect(
+      accountRequestStart.run(started, () =>
+        recordSessionAccess(db.pool, { id: lateId, userId: a.userId }, false),
+      ),
+    ).rejects.toThrow();
+    expect(
+      (
+        await db.pool.query('SELECT id FROM session WHERE "userId"=$1', [
+          a.userId,
+        ])
+      ).rowCount,
+    ).toBe(0);
+    expect(
+      (
+        await db.pool.query(
+          'SELECT "purgeAfter">="requestedAt"+interval \'7 days\' AS bounded FROM account_closure WHERE "userId"=$1',
+          [a.userId],
+        )
+      ).rows[0].bounded,
+    ).toBe(true);
+  },
+);
+
+it.skipIf(!enabled)(
+  "requires quarantined synthetic scope for purge, respects due dates and holds, and retains usage reconciliation",
+  async () => {
+    const a = await signIn("purge@example.test"),
+      held = await signIn("held@example.test"),
+      recent = await signIn("recent-close@example.test");
+    await key(a.userId);
+    await db.pool.query("INSERT INTO usage_accounts(account_id) VALUES($1)", [
+      a.userId,
+    ]);
+    for (const user of [a, held, recent])
+      expect(
+        (
+          await call("account/close", user.cookie, {
+            confirmation: "DELETE TEST ACCOUNT",
+          })
+        ).status,
+      ).toBe(200);
+    await expect(purgeSyntheticClosedAccounts(db.pool)).rejects.toThrow(
+      "quarantined",
+    );
+    await db.pool.query(
+      `UPDATE account_closure SET "requestedAt"=clock_timestamp()-interval '8 days',"purgeAfter"=clock_timestamp()-interval '1 day' WHERE "userId"=ANY($1::uuid[])`,
+      [[a.userId, held.userId]],
+    );
+    await db.pool.query(
+      'UPDATE account_closure SET "holdUntil"=clock_timestamp()+interval \'1 day\' WHERE "userId"=$1',
+      [held.userId],
+    );
+    await db.pool.query(
+      "UPDATE account_recovery_control SET mode='quarantined'",
+    );
+    try {
+      expect(await purgeSyntheticClosedAccounts(db.pool)).toEqual({
+        removed: 1,
+        usageRetained: true,
+        backupErasureVerified: false,
+        physicalErasureVerified: false,
+      });
+      expect(
+        (await db.pool.query('SELECT id FROM "user" WHERE id=$1', [a.userId]))
+          .rowCount,
+      ).toBe(0);
+      expect(
+        (
+          await db.pool.query('SELECT id FROM passkey WHERE "userId"=$1', [
+            a.userId,
+          ])
+        ).rowCount,
+      ).toBe(0);
+      expect(
+        (
+          await db.pool.query(
+            "SELECT account_id FROM usage_accounts WHERE account_id=$1",
+            [a.userId],
+          )
+        ).rowCount,
+      ).toBe(1);
+      expect(
+        (
+          await db.pool.query(
+            'SELECT id FROM "user" WHERE id=ANY($1::uuid[])',
+            [[held.userId, recent.userId]],
+          )
+        ).rowCount,
+      ).toBe(2);
+      expect((await purgeSyntheticClosedAccounts(db.pool)).removed).toBe(0);
+    } finally {
+      await db.pool.query("UPDATE account_recovery_control SET mode='normal'");
+    }
+  },
+);
+
+it.skipIf(!enabled)(
+  "rolls closure back on failure and blocks unsubmitted notices after closure",
+  async () => {
+    const a = await signIn("closure-rollback@example.test");
+    await db.pool
+      .query(`CREATE FUNCTION fail_closure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'synthetic failure'; END $$;
+    CREATE TRIGGER fail_closure BEFORE INSERT ON account_closure FOR EACH ROW EXECUTE FUNCTION fail_closure()`);
+    try {
+      expect(
+        (
+          await call("account/close", a.cookie, {
+            confirmation: "DELETE TEST ACCOUNT",
+          })
+        ).status,
+      ).toBe(503);
+      expect((await call("account/access", a.cookie)).status).toBe(200);
+    } finally {
+      await db.pool.query(
+        "DROP TRIGGER fail_closure ON account_closure; DROP FUNCTION fail_closure()",
+      );
+    }
+    await db.pool.query(
+      `INSERT INTO account_security_event ("userId","sessionId",kind,"recipientEmail") VALUES($1,$2,'sign_in_recovery','closure-rollback@example.test')`,
+      [a.userId, a.sessionId],
+    );
+    expect(
+      (
+        await call("account/close", a.cookie, {
+          confirmation: "DELETE TEST ACCOUNT",
+        })
+      ).status,
+    ).toBe(200);
+    let sent = false;
+    expect(
+      await dispatchOneSecurityNotice(
+        db.pool,
+        syntheticNoticeTransport(async () => {
+          sent = true;
+        }),
+      ),
+    ).toBe("blocked");
+    expect(sent).toBe(false);
+  },
+);
+
+it.skipIf(!enabled)(
+  "closes a synthetic account through the actual application with explicit limits and confirmation",
+  async () => {
+    const browser = await chromium.launch();
+    try {
+      const context = await browser.newContext({
+        viewport: { width: 390, height: 844 },
+      });
+      context.setDefaultTimeout(5000);
+      const page = await context.newPage();
+      await page.goto(`${origin}/?account-lab=1`);
+      await page.getByLabel("Test email address").fill("close-ui@example.test");
+      await page
+        .getByRole("button", { name: "Send test code", exact: true })
+        .click();
+      await browserExpect(page.getByLabel("Verification code")).toBeVisible();
+      await page
+        .getByLabel("Verification code")
+        .fill(codes.get("close-ui@example.test")!);
+      await page
+        .getByRole("button", { name: "Verify test code", exact: true })
+        .click();
+      const region = page.getByRole("region", {
+        name: "Delete test account",
+        exact: true,
+      });
+      await browserExpect(region).toContainText(
+        "no automatic purge or backup deletion is active",
+      );
+      await browserExpect(
+        region.getByRole("button", { name: "Close test account" }),
+      ).toBeDisabled();
+      await region
+        .getByLabel("Type DELETE TEST ACCOUNT to confirm")
+        .fill("DELETE TEST ACCOUNT");
+      await region.getByRole("button", { name: "Close test account" }).click();
+      await browserExpect(
+        page.getByRole("heading", { name: "Sign in to the account lab" }),
+      ).toBeVisible();
+      await browserExpect(page.getByRole("status")).toContainText(
+        "Credential purge is not scheduled",
+      );
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth > innerWidth,
+        ),
+      ).toBe(false);
+    } finally {
+      await browser.close();
+    }
+  },
+  20000,
+);
 
 it.skipIf(!enabled)(
   "lists only owned non-secret metadata and revokes by owned ID with origin and live-session checks",
