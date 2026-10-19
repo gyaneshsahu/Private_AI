@@ -40,7 +40,7 @@
     "express-session": "1.19.0",
     "idb": "8.0.3",
     "ipaddr.js": "2.5.0",
-    "katex": "0.16.47",
+    "katex": "0.18.2",
     "memorystore": "1.6.8",
     "openai": "6.46.0",
     "pdfjs-dist": "6.4.299",
@@ -57,6 +57,9 @@
     "undici": "8.11.2",
     "unist-util-visit": "5.1.0",
     "zod": "4.6.5"
+  },
+  "overrides": {
+    "katex": "$katex"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",

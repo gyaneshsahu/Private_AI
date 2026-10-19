@@ -157,7 +157,9 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       "UNSENT FOLLOW-UP DURING RETRY",
     );
     await ui(
-      page.getByText("TEST complete answer", { exact: false }),
+      page
+        .locator("article.assistant")
+        .getByText("TEST complete answer", { exact: false }),
     ).toBeVisible();
     await page.evaluate(() => {
       Object.defineProperty(navigator, "clipboard", {
@@ -225,6 +227,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       .fill("CORRECTED SYNTHETIC SOURCE: 90 EUR");
     await tab("Conversation").click();
     await page
+      .locator("article.assistant")
       .getByRole("button", { name: "synthetic-source.txt", exact: false })
       .click();
     await ui(page.getByRole("dialog")).toContainText(

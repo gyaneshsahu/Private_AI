@@ -1,5 +1,13 @@
 # PrivateAI readiness checklist
 
+### M6 renderer dependency remediation — 19 October
+
+The earlier four low npm findings were one KaTeX advisory propagated through the Markdown dependency chain. Pinned the minimum patched KaTeX0.18.2 and applied a narrow npm override to both consumers; kept rehype-katex7.0.1/remark-math6.0.0 rather than accepting npm's downgrade suggestions. Their renderToString usage was inspected because their declared KaTeX range still targets0.16. The0.18 CSS-prefix compatibility change was checked against our selectors and matching bundled stylesheet.
+
+**20 tests across6files passed**: inherited prototype trust in an isolated process, normal fractions/matrices/units, recursive-macro bound, blocked active links/images, citations and actual chat stop/retry/correction/lock/source-review flows. Build/typecheck passed. Production `npm audit --omit=dev` now reports **zero findings**, which is not an independent security audit or proof of no vulnerabilities. Visual phone inspection also fixed wrapped navigation unnecessarily occupying full rows; enlarged-text context check still passes. Two initial chat-test selectors matched newly added context previews/review buttons; scoped them to the actual answer, with no behavior relaxation.
+
+Upstream describes a conditional trust bypass when another component has already introduced prototype pollution; no exploit or initiating pollution in PrivateAI was demonstrated. [KaTeX advisory](https://github.com/KaTeX/KaTeX/security/advisories/GHSA-238p-pmpm-9mq7), [0.18 compatibility note](https://github.com/KaTeX/KaTeX/releases/tag/v0.18.0). Track removing the override when adapters declare a compatible patched range. Provider verifier zlib warning and broader independent security review remain open. No paid calls.
+
 ### M4 documents directly in chat — 19 October
 
 Chat now opens the local file picker directly from an accessible Attach file button, retains the draft, lists attached filenames and inclusion state, and links to extraction review/correction. It reuses the existing bounded worker/extraction path; it neither uploads automatically nor enables inference. Context still supports import and detailed review. Five-file/three-screenshot/10MB/20-page limits remain; PNG/JPEG support means printed-text OCR, not general image understanding.

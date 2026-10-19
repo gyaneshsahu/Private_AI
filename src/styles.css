@@ -628,6 +628,8 @@ footer {
     grid-column: 1/-1;
   }
   .nav-item {
+    width: auto;
+    flex: 1 1 auto;
     margin: 0;
     padding: 7px 8px;
     font-size: 0.73rem;
