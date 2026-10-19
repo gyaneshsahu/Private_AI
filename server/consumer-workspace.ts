@@ -9,6 +9,7 @@ import { consumerControl } from "./consumer-control";
 import { createApp } from "./app";
 import { PostgresUsageLedger } from "./usage-postgres";
 import { productionAccountTarget } from "../shared/account-design";
+import { productionOperations } from "./production-operations";
 import {
   createSyntheticBillingWorkflow,
   type SyntheticBillingConfig,
@@ -68,6 +69,8 @@ export function createProductionConsumerCandidate(
   const usage = new PostgresUsageLedger(config.database);
   const app = express();
   app.disable("x-powered-by");
+  const operations = productionOperations(config.database);
+  app.use(operations.middleware);
   // This boundary also scopes getSession calls from workspace APIs to the current request.
   app.use(account.router);
   const workspace = createApp({
@@ -77,5 +80,12 @@ export function createProductionConsumerCandidate(
   });
   app.use(workspace);
   app.get("/auth", (_req, res) => res.redirect(303, "/account"));
-  return { app, auth: account.auth, control, usage };
+  return {
+    app,
+    auth: account.auth,
+    control,
+    usage,
+    operations,
+    ready: operations.ready,
+  };
 }

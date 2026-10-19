@@ -17,6 +17,7 @@ import { finishSignInRecovery } from "../server/account-recovery";
 import { dispatchOneSecurityNotice } from "../server/security-notices";
 import { createSyntheticConsumerWorkspace } from "../server/consumer-workspace";
 import { PostgresUsageLedger } from "../server/usage-postgres";
+import { inspectProductionDatabase } from "../server/production-operations";
 
 const enabled =
   !!process.env.PRIVATEAI_SYNTHETIC_PG &&
@@ -210,6 +211,7 @@ it.skipIf(!enabled)(
       noticesHeld: 1,
     });
     expect(await accountRecoveryOpen(target.pool)).toBe(false);
+    expect(await inspectProductionDatabase(target.pool)).toBe(false);
     expect(
       (await target.pool.query("SELECT * FROM research_consent")).rowCount,
     ).toBe(0);

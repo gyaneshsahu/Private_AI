@@ -140,9 +140,11 @@ export default function AccountLab({
       await run();
     } catch (error) {
       setNotice(
-        error instanceof Error && error.message === "delivery-unconfirmed"
-          ? "Code delivery could not be confirmed. Wait before requesting another code; a delayed code may still arrive. No automatic retry was made."
-          : "This action could not complete. Check the code or use another sign-in method. No automatic retry was made.",
+        error instanceof Error && error.message === "service-not-admitted"
+          ? "Account service is temporarily unavailable. This action was not started. Try again later; no automatic retry was made."
+          : error instanceof Error && error.message === "delivery-unconfirmed"
+            ? "Code delivery could not be confirmed. Wait before requesting another code; a delayed code may still arrive. No automatic retry was made."
+            : "This action could not complete. Check the code or use another sign-in method. No automatic retry was made.",
       );
     } finally {
       setBusy(false);
@@ -154,12 +156,22 @@ export default function AccountLab({
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
     });
-    if (!response.ok)
+    if (!response.ok) {
+      if (response.status === 503) {
+        const result: unknown = await response.json().catch(() => null);
+        if (
+          z
+            .object({ code: z.literal("SERVICE_NOT_ADMITTED") })
+            .safeParse(result).success
+        )
+          throw Error("service-not-admitted");
+      }
       throw Error(
         path === "email-otp/send-verification-otp" && response.status === 503
           ? "delivery-unconfirmed"
           : "not completed",
       );
+    }
   }
   async function social(provider: Provider, link = false) {
     const callbackURL = `${window.location.origin}${synthetic ? "/?account-lab=1" : "/account"}`;

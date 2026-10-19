@@ -75,7 +75,7 @@ async function plan(
 
 /** Read-only inspection. Missing history does not imply an existing schema is safe to adopt. */
 export async function planAccountMigrations(
-  database: Pool,
+  database: Pick<PoolClient, "query">,
 ): Promise<MigrationPlan> {
   return plan(database, await sources());
 }

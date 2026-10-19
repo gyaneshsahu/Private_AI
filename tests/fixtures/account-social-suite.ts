@@ -282,7 +282,7 @@ export function accountSocialSuite(production = false) {
         throw Error("External network is disabled in synthetic OAuth tests.");
       },
     );
-    activeRouter = production
+    const candidate = production
       ? createProductionConsumerCandidate({
           secret: randomBytes(48).toString("base64url"),
           database: pool,
@@ -290,7 +290,7 @@ export function accountSocialSuite(production = false) {
           deliverCode: async () => {
             throw Error("No email delivery in OAuth fixtures");
           },
-        }).app
+        })
       : createSyntheticAccountAuth({
           origin,
           secret: randomBytes(48).toString("base64url"),
@@ -299,7 +299,11 @@ export function accountSocialSuite(production = false) {
           deliverCode: async () => {
             throw Error("No email delivery in OAuth fixtures");
           },
-        }).router;
+        });
+    if ("ready" in candidate) {
+      expect(await candidate.ready).toBe(true);
+      activeRouter = candidate.app;
+    } else activeRouter = candidate.router;
     app.use((req, res, next) => activeRouter(req, res, next));
     app.use(express.static(resolve("dist"), { index: false }));
     app.get(["/", "/account"], (_req, res) =>

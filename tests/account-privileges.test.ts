@@ -12,6 +12,7 @@ import {
 } from "../server/security-notices";
 import { PostgresUsageLedger } from "../server/usage-postgres";
 import { createSyntheticConsumerWorkspace } from "../server/consumer-workspace";
+import { inspectProductionDatabase } from "../server/production-operations";
 
 it("rejects ambiguous identities and unsafe SQL identifiers", () => {
   expect(() =>
@@ -68,6 +69,8 @@ it.skipIf(!process.env.PRIVATEAI_SYNTHETIC_PG)(
         noticeRole: notice.role,
       }))
         await db.pool.query(sql);
+      expect(await inspectProductionDatabase(runtime.pool)).toBe(true);
+      expect(await inspectProductionDatabase(notice.pool)).toBe(false);
       await new Promise<void>((resolve) =>
         server.listen(0, "127.0.0.1", resolve),
       );

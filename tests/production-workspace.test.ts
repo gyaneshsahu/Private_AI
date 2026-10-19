@@ -53,6 +53,7 @@ beforeAll(async () => {
   await applyAccountMigrations(db.pool);
   tls = await localTLS();
   active = makeWorkspace();
+  expect(await active.ready).toBe(true);
   const handler = express().use((req, res) => active.app(req, res));
   secure = createServer({ key: tls.key, cert: tls.cert }, handler);
   plain = express().use(handler).listen(0, "127.0.0.1");
@@ -255,6 +256,7 @@ it.skipIf(!enabled)(
         ]),
       );
       active = makeWorkspace();
+      expect(await active.ready).toBe(true);
       await page
         .getByRole("link", { name: "Open workspace", exact: true })
         .click();
@@ -421,6 +423,75 @@ it.skipIf(!enabled)(
       await context.close();
     } finally {
       await browser.close();
+    }
+  },
+  20_000,
+);
+
+it.skipIf(!enabled)(
+  "shows a pre-admission outage honestly and permits explicit sign-in after service reconstruction",
+  async () => {
+    const browser = await chromium.launch({
+      headless: true,
+      args: [
+        "--no-proxy-server",
+        `--host-resolver-rules=MAP app.cometrow.com 127.0.0.1:${securePort}, MAP * ~NOTFOUND`,
+      ],
+    });
+    try {
+      const context = await browser.newContext({ ignoreHTTPSErrors: true });
+      await routeLocally(context);
+      const page = await context.newPage();
+      await page.goto(origin + "/account");
+      await page
+        .getByLabel("Email address", { exact: true })
+        .fill("outage@example.test");
+      await browserExpect(
+        page.getByRole("button", { name: "Continue with email", exact: true }),
+      ).toBeEnabled();
+      active.operations.beginDrain();
+      expect((await request("/readyz")).status).toBe(503);
+      expect((await request("/healthz")).status).toBe(200);
+      await page
+        .getByRole("button", { name: "Continue with email", exact: true })
+        .click();
+      await browserExpect(page.getByRole("status")).toContainText(
+        "This action was not started",
+      );
+      expect(codes.has("outage@example.test")).toBe(false);
+      await browserExpect(page.getByLabel("Verification code")).toHaveCount(0);
+      expect(
+        transmissions.filter((value) =>
+          value.path.endsWith("send-verification-otp"),
+        ),
+      ).toHaveLength(1);
+      active = makeWorkspace();
+      expect(await active.ready).toBe(true);
+      expect((await request("/readyz")).status).toBe(200);
+      await page
+        .getByRole("button", { name: "Continue with email", exact: true })
+        .click();
+      await browserExpect(page.getByLabel("Verification code")).toBeFocused();
+      await page
+        .getByLabel("Verification code")
+        .fill(codes.get("outage@example.test")!);
+      await page
+        .getByRole("button", { name: "Verify code", exact: true })
+        .click();
+      await browserExpect(
+        page.getByRole("heading", { name: "Your account", exact: true }),
+      ).toBeVisible();
+      expect(
+        transmissions.filter((value) =>
+          value.path.endsWith("send-verification-otp"),
+        ),
+      ).toHaveLength(2);
+      expect(blocked).toEqual([]);
+      await context.close();
+    } finally {
+      await browser.close();
+      active = makeWorkspace();
+      expect(await active.ready).toBe(true);
     }
   },
   20_000,
