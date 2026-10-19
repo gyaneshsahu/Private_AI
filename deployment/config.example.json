@@ -1,0 +1,14 @@
+{
+  "mode": "restricted-deployment",
+  "email": "disabled",
+  "host": "0.0.0.0",
+  "port": 8443,
+  "assets": "/app/dist",
+  "secretFile": "/run/privateai/auth-secret",
+  "databaseUrlFile": "/run/privateai/database-url",
+  "databaseCaFile": "/run/privateai/database-ca.pem",
+  "tlsKeyFile": "/run/privateai/server.key",
+  "tlsCertFile": "/run/privateai/server.pem",
+  "clientCaFile": "/run/privateai/client-ca.pem",
+  "peerCertificateSha256": ["REPLACE_WITH_REVIEWED_GATEWAY_CERTIFICATE_SHA256"]
+}

@@ -1,0 +1,25 @@
+# Inactive restricted app only. Supply reviewed gateway/database networking separately.
+services:
+  app:
+    image: ${PRIVATEAI_DEPLOYMENT_IMAGE:?Set the locally verified image digest or ID}
+    entrypoint: ["node", "--import", "tsx", "server/deployment-entry.ts"]
+    command: ["/run/privateai/config.json"]
+    user: "1000:1000"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=64m"]
+    volumes:
+      - type: bind
+        source: ${PRIVATEAI_DEPLOYMENT_CONFIG_DIR:?Set the reviewed private configuration directory}
+        target: /run/privateai
+        read_only: true
+        bind:
+          create_host_path: false
+    ports: ["127.0.0.1:8443:8443"]
+    stop_grace_period: 20s
+    restart: "no"
+    mem_limit: 1g
+    pids_limit: 128
+    logging:
+      driver: "none"

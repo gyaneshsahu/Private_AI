@@ -19,7 +19,8 @@ if (
 const tls = await ingressTLS();
 const container = `privateai-ingress-${randomUUID()}`;
 const browser = process.argv.includes("--browser");
-const workspace = browser || process.argv.includes("--workspace");
+const packaged = process.argv.includes("--package");
+const workspace = packaged || browser || process.argv.includes("--workspace");
 const database = `${container}-db`;
 const host =
   process.platform === "win32"
@@ -103,8 +104,12 @@ try {
       "--tmpfs=/app/.local:rw,noexec,nosuid,uid=1000,gid=1000,mode=700,size=16m",
       "--tmpfs=/app/node_modules/.vite:rw,noexec,nosuid,uid=1000,gid=1000,mode=700,size=16m",
       "--tmpfs=/app/node_modules/.vite-temp:rw,noexec,nosuid,uid=1000,gid=1000,mode=700,size=16m",
-      "--mount",
-      `type=bind,source=${resolve("server/authenticated-ingress.ts")},target=/app/server/authenticated-ingress.ts,readonly`,
+      ...(packaged
+        ? []
+        : [
+            "--mount",
+            `type=bind,source=${resolve("server/authenticated-ingress.ts")},target=/app/server/authenticated-ingress.ts,readonly`,
+          ]),
       "--mount",
       `type=bind,source=${resolve("tests/authenticated-ingress.test.ts")},target=/app/tests/authenticated-ingress.test.ts,readonly`,
       "--mount",
@@ -123,28 +128,36 @@ try {
         : []),
       ...(workspace
         ? [
-            "--mount",
-            `type=bind,source=${resolve("server")},target=/app/server,readonly`,
-            "--mount",
-            `type=bind,source=${resolve("shared")},target=/app/shared,readonly`,
+            ...(packaged
+              ? []
+              : [
+                  "--mount",
+                  `type=bind,source=${resolve("server")},target=/app/server,readonly`,
+                  "--mount",
+                  `type=bind,source=${resolve("shared")},target=/app/shared,readonly`,
+                  "--mount",
+                  `type=bind,source=${resolve("dist")},target=/app/dist,readonly`,
+                ]),
             "--mount",
             `type=bind,source=${resolve("tests")},target=/app/tests,readonly`,
-            "--mount",
-            `type=bind,source=${resolve("dist")},target=/app/dist,readonly`,
             "--env=PRIVATEAI_SYNTHETIC_PG=postgresql://privateai_synthetic:local-synthetic-only@127.0.0.1:5432/privateai_synthetic",
           ]
         : []),
       "--entrypoint=node",
-      browser
-        ? "privateai-ingress-browser-test:local"
-        : workspace
-          ? "privateai-account-ingress-test:local"
-          : "privateai-evaluation:latest",
+      packaged
+        ? "privateai-deployment-candidate:local"
+        : browser
+          ? "privateai-ingress-browser-test:local"
+          : workspace
+            ? "privateai-account-ingress-test:local"
+            : "privateai-evaluation:latest",
       "node_modules/vitest/vitest.mjs",
       "run",
-      workspace
-        ? "tests/ingress-workspace.test.ts"
-        : "tests/authenticated-ingress.test.ts",
+      packaged
+        ? "tests/deployment-package.test.ts"
+        : workspace
+          ? "tests/ingress-workspace.test.ts"
+          : "tests/authenticated-ingress.test.ts",
       "--maxWorkers=1",
     ],
     { env, stdio: "inherit", windowsHide: true, timeout: 90000 },

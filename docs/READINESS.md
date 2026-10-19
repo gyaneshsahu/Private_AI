@@ -1,5 +1,11 @@
 # PrivateAI readiness checklist
 
+## M6 packaged process — 19 October
+
+Implemented explicit `deployment-entry.ts`, strict secret-file configuration and dedicated `deployment-candidate` Docker target with pinned Node build base; inactive app-only Compose config. Email is disabled/fails503, inference/search/billing stay disabled, no migrations or live activation. Process owns its PostgreSQL pool, handles idle connection errors without raw logs, drains onSIGTERM/SIGINT and has a15s shutdown backstop. Existing default runtime unchanged.
+
+Evidence: built image's real process passed one sequential isolated integration scenario covering missing secrets, forbidden email activation, unavailable database, absent schema/no-auto-migration, account HTML, failed email, database lock/readiness failure and recovery, signal shutdown/closed port and process restart. No application source/dist mounts; synthetic fixtures only. Build/typecheck and Compose syntax check pass. No failed assertion, paid call, live setting or human-score change. Image IDs/reproduction/limits in development-deployment.md. Full container/host failure, off-host restore, sender/publicTLS, resource-load and operations evidence remain open. Approximately75% implemented (+/-10points), NOT_READY; this is a restricted package, not an approved hosting rollout.
+
 ## M6 runtime batch — 19 October
 
 `server/production-runtime.ts` now owns the inactive candidate's HTTPS listener, mandatory client-certificate verification, TLS/key/asset preflight, static account/workspace serving, database-gated admission and idempotent bounded shutdown. Explicit caller-owned database and email adapter; no environment activation, automatic migration, signal-handler installation or pool ownership. Loopback binding defaults; all-interface binding requires explicit selection. No inference/search credentials or billing activation added.

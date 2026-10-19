@@ -1,5 +1,13 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Latest deployment package — 19 October
+
+Explicit `server/deployment-entry.ts` now starts the runtime from strict absolute-path JSON/secret files; only email-disabled mode accepted, sender fails503, no inference/search/billing/migration activation. Dedicated Docker target `deployment-candidate`, pinned build base, existing default runtime untouched. `deployment/compose.yaml` is inactive app-only preparation, syntax-checked not launched. Exact commands/image IDs/remaining host steps at top of development-deployment.md.
+
+Final `npm run test:ingress -- --package` passes one sequential lifecycle scenario using image-contained app code, no server/shared/dist source mounts: missing-secret/invalid-mode/DB-refused/empty-schema failures, admitted account HTML, failed email, DB lock/readiness recovery, SIGTERM/INT and restart, secret-canary log exclusion. Typecheck/build/Compose check pass; no failed assertions or paid/live changes. Test runner cleans disposable containers/certificates. Package includes build tooling; no minimized release-image claim.
+
+Next: full gateway/database network packaging, least-privilege migration/secret/certificate handling, container-level restart/resource testing and off-host recovery/monitoring, followed by concrete owner hosting/email review. Keep email fail-closed until real adapter approved. No owner action needed merely to continue engineering. Approximate75% implemented (+/-10points), NOT_READY; preserve supplier/private-data/public, human acceptance and commercial gates.
+
 ## Latest M6 implementation — reusable TLS runtime, 19 October
 
 `production-runtime.ts` prepares the candidate and mandatory mTLS listener, validates TLS/key/assets, gates listening on read-only database readiness and exposes bounded/idempotent stop. No default process entrypoint, environment activation, sender vendor, database migration or pool ownership. Actual proxy/browser suite now uses this module and performs real socket restarts; final12/12pass, build/typecheck pass, no failed assertions or paid/live changes. See READINESS for tested negatives. Existing Docker command remains restricted old runtime; do not claim deployable public image yet.

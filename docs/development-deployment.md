@@ -1,5 +1,33 @@
 # Restricted development deployment
 
+## Runnable restricted deployment package — 19 October
+
+The new explicit process is `node --import tsx server/deployment-entry.ts /absolute/path/config.json`. It accepts only the strict configuration in `deployment/config.example.json`; the example's invalid peer-pin placeholder deliberately prevents accidental startup. No secret values are read from environment fallbacks. Authentication secret, database URL and TLS material come from bounded files; credentials/errors are not printed. Database URLs cannot carry query options that override reviewed TLS policy. Remote databases require an explicit CA with certificate verification; only loopback permits no database TLS. The configuration directory must be private to the operator, readable by container UID1000, mounted read-only, and never committed with real values.
+
+Email mode is **disabled only**: the injected sender always fails and the existing delivery boundary returns503. No code is delivered or falsely acknowledged. `email: enabled`, extra configuration fields, missing/short secrets, invalid TLS/assets and unavailable/unprepared database fail startup. No inference/search credentials, billing activation or migration capability is added. Existing enrolled accounts may be usable with valid credentials; this is not an invitation to use live account data. Only disposable synthetic databases have been used.
+
+Reproduce from the repository with Docker running and the existing synthetic Caddy/TLS fixture prerequisites:
+
+```powershell
+docker build --target deployment-candidate -t privateai-deployment-candidate:local .
+npm run test:ingress -- --package
+```
+
+The dedicated Docker target uses the lockfile and pinned Node base digest `a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5`. It runs as node/UID1000, with explicit entrypoint and default `/run/privateai/config.json`. Default Docker build still selects the unchanged older restricted runtime; select the candidate target explicitly. Candidate currently retains build tooling/development packages and is not a minimized public-release image. Base pinning requires deliberate security updates; it does not guarantee byte-identical attestations or continued absence of vulnerabilities.
+
+Tested image config ID: `sha256:921a7de37ad6426520007ad3d2b4d6e780af48289483466fcfc35534e9cad6f3`; image manifest `sha256:0975cfbf01e5fd5da6e3d76ab0f51b0783f00681435495087b2e270072b426e7`. The runner mounts tests/fixtures only, not application server/shared/dist code, and uses the image's real entrypoint as a child process. Its ephemeral PostgreSQL namespace has no outbound network or published ports. Final single sequential integration scenario passes missing-secret, invalid-email-mode, connection-refused database, absent-schema/no-auto-migration, admitted startup/static account page, refused email, database lock failure/readiness recovery, SIGTERM shutdown/closed port and SIGINT after process restart. Logs exclude the synthetic secret/email/database-password canaries. This tests process lifecycle inside a container; not Docker orchestration restart, crash recovery after host loss, real email, public TLS or hosted recovery. No failed assertions in this batch.
+
+`deployment/compose.yaml` provides an **inactive app-only** container configuration: require explicit verified image ID/digest and configuration-directory variables; read-only filesystem, dropped capabilities, no-new-privileges, bounded tmpfs/memory/PIDs,20s stop grace, loopback-only port8443, no automatic restart and no retained Docker logs. It has no database/gateway provisioning. Compose syntax was validated with `config --quiet`; **compose up was not run**. Gateway/client-certificate access is mandatory even on loopback. Network egress/firewall/CA custody and external monitoring must be reviewed before any hosted use. Logging disabled here is not an operations-monitoring solution.
+
+### Exact next steps before any hosting change
+
+1. Engineering: complete gateway/database network package, least-privilege database role and migration procedure, secret/certificate ownership/rotation, full container stop/restart and resource-limit tests. Choose reviewed email adapter; leave disabled until credentials, disclosure and interoperability are approved. Add an explicit preflight for the chosen host rather than assuming Compose establishes a trustworthy network.
+2. Engineering: rehearse off-host encrypted database restore, quarantine/release, rollback/schema compatibility, independent failure/backup/certificate alerts and realistic load. Measure recovery objectives; do not claim them from the lock-recovery scenario above.
+3. Owner review: final host/region/price, database and backup custody, monitoring/email provider and associated retention. Owner performs provisioning/settings/DNS only after this review. No purchase, transfer or settings change requested yet.
+4. Engineering then owner: run bounded synthetic hosted acceptance; provide exact DNS/public TLS and Google/Apple callbacks from the approved origin. No existing-account migration before separate reviewed rollout. Provider privacy/opaque monetary limits, safety/quality/human/device acceptance and commercial policy remain independent gates; no real private data or public launch until those pass.
+
+Older unmounted-runtime notes below are historical: the explicit restricted process now exists; normal email and hosted activation still do not.
+
 ## Runtime implementation update — 19 October
 
 `prepareProductionRuntime` in `server/production-runtime.ts` now prepares the candidate with a mandatory authenticated gateway, actual HTTPS listener and browser assets. Caller supplies an absolute built-assets directory, TLS server key/leaf and client CA, approved gateway pins, database, authentication secret and reviewed code sender. TLS/key/asset validation precedes admission; `listen(port, host)` waits for read-only schema/recovery readiness and defaults to loopback. `stop(deadlineMs)` drains once; caller owns pool closure and process signals. No environment loader or implicit credential selection. Port0 is supported for ephemeral local verification.
