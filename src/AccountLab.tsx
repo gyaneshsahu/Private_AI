@@ -7,6 +7,7 @@ import AccountAccess from "./AccountAccess";
 import AccountDeletion from "./AccountDeletion";
 import { SupportPanel } from "./SupportPanel";
 import { accountRequest } from "./account-request";
+import { createPasskeyTransport } from "./passkey-transport";
 
 const sessionSchema = z
   .object({ user: z.object({ id: z.string(), email: z.string() }) })
@@ -46,9 +47,11 @@ const noticeLabels = {
   blocked: "Submission blocked; review required",
   sent: "Historical sent marker; inbox delivery not verified",
 };
+const passkeyTransport = createPasskeyTransport(window.location.origin);
 const client = createAuthClient({
   baseURL: window.location.origin,
   plugins: [passkeyClient()],
+  fetchOptions: { customFetchImpl: passkeyTransport.fetch, retry: 0 },
 });
 
 /** Shared screen; the production candidate backend remains unmounted. */
@@ -168,11 +171,28 @@ export default function AccountLab({
           ? "Account service is temporarily unavailable. This action was not started. Try again later; no automatic retry was made."
           : error instanceof Error && error.message === "delivery-unconfirmed"
             ? "Code delivery could not be confirmed. If a delayed code arrives, enter it below. Wait before requesting another code; no automatic retry was made."
-            : "This action could not complete. Check the code or use another sign-in method. No automatic retry was made.",
+            : error instanceof Error &&
+                error.message === "passkey-options-unavailable"
+              ? "Passkey preparation is unavailable. No verification was submitted. Try again later or use email."
+              : error instanceof Error &&
+                  error.message === "passkey-not-completed"
+                ? "Passkey verification did not complete. You can try again or use email. No automatic retry was made."
+                : "This action could not complete. Check the code or use another sign-in method. No automatic retry was made.",
       );
     } finally {
       setBusy(false);
     }
+  }
+  async function passkey(
+    run: () => Promise<{ data: unknown; error: unknown }>,
+  ) {
+    passkeyTransport.reset();
+    const result = await run().catch(() => ({ data: null, error: true }));
+    if (passkeyTransport.failure() === "verification")
+      throw Error("outcome-unconfirmed");
+    if (passkeyTransport.failure() === "options")
+      throw Error("passkey-options-unavailable");
+    if (result.error || !result.data) throw Error("passkey-not-completed");
   }
   async function post(path: string, body: object) {
     let result: { status: number; ok: boolean; notAdmitted: boolean };
@@ -348,12 +368,13 @@ export default function AccountLab({
               disabled={busy || uncertain}
               onClick={() =>
                 action(async () => {
-                  const result = await client.passkey.addPasskey({
-                    name: synthetic
-                      ? "PrivateAI synthetic passkey"
-                      : "PrivateAI passkey",
-                  });
-                  if (result.error) throw Error("registration failed");
+                  await passkey(() =>
+                    client.passkey.addPasskey({
+                      name: synthetic
+                        ? "PrivateAI synthetic passkey"
+                        : "PrivateAI passkey",
+                    }),
+                  );
                   setNotice(
                     synthetic ? "Test passkey added." : "Passkey added.",
                   );
@@ -518,8 +539,7 @@ export default function AccountLab({
               type="button"
               onClick={() =>
                 action(async () => {
-                  const result = await client.signIn.passkey();
-                  if (result.error) throw Error("passkey failed");
+                  await passkey(() => client.signIn.passkey());
                   await refresh();
                 })
               }

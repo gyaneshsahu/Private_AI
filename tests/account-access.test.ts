@@ -907,3 +907,151 @@ it.skipIf(!enabled)(
   },
   25000,
 );
+
+it.skipIf(!enabled)(
+  "distinguishes committed passkey changes with lost responses from a cancelled authenticator",
+  async () => {
+    const browser = await chromium.launch();
+    try {
+      const context = await browser.newContext();
+      const page = await context.newPage();
+      const cdp = await context.newCDPSession(page);
+      await cdp.send("WebAuthn.enable");
+      await cdp.send("WebAuthn.addVirtualAuthenticator", {
+        options: {
+          protocol: "ctap2",
+          transport: "internal",
+          hasResidentKey: true,
+          hasUserVerification: true,
+          isUserVerified: true,
+          automaticPresenceSimulation: true,
+        },
+      });
+      await page.clock.install();
+      const email = "passkey-loss@example.test";
+      await page.goto(`${origin}/?account-lab=1`);
+      await page.getByLabel("Test email address").fill(email);
+      await page
+        .getByRole("button", { name: "Send test code", exact: true })
+        .click();
+      await browserExpect(page.getByLabel("Verification code")).toBeVisible();
+      await page.getByLabel("Verification code").fill(codes.get(email)!);
+      await page
+        .getByRole("button", { name: "Verify test code", exact: true })
+        .click();
+      await browserExpect(
+        page.getByRole("heading", { name: "Your test account" }),
+      ).toBeVisible();
+      let registrationPosts = 0,
+        registrationCommitted = false;
+      await page.route(
+        "**/api/auth/passkey/verify-registration",
+        async (route) => {
+          registrationPosts++;
+          const response = await route.fetch();
+          registrationCommitted = response.ok();
+          await route.abort("failed");
+        },
+      );
+      await page
+        .getByRole("button", { name: "Add test passkey", exact: true })
+        .click();
+      await browserExpect(page.getByRole("status")).toContainText(
+        "result is unconfirmed",
+      );
+      await browserExpect(
+        page.getByRole("button", { name: "Add test passkey", exact: true }),
+      ).toBeDisabled();
+      expect(registrationCommitted).toBe(true);
+      expect(registrationPosts).toBe(1);
+      await page
+        .getByRole("button", { name: "Check sign-in status", exact: true })
+        .click();
+      await browserExpect(
+        page.getByRole("button", {
+          name: "Remove PrivateAI synthetic passkey",
+        }),
+      ).toBeVisible();
+      await page.getByRole("button", { name: "Sign out", exact: true }).click();
+      await page.evaluate(() => {
+        Object.defineProperty(navigator.credentials, "get", {
+          configurable: true,
+          value: () =>
+            new Promise((_, reject) => {
+              Reflect.set(window, "syntheticAuthenticatorWaiting", true);
+              setTimeout(
+                () =>
+                  reject(
+                    new DOMException(
+                      "Synthetic cancellation",
+                      "NotAllowedError",
+                    ),
+                  ),
+                15_000,
+              );
+            }),
+        });
+      });
+      let authenticationPosts = 0,
+        authenticationCommitted = false;
+      await page.route(
+        "**/api/auth/passkey/verify-authentication",
+        async (route) => {
+          authenticationPosts++;
+          const response = await route.fetch();
+          authenticationCommitted = response.ok();
+          await route.abort("failed");
+        },
+      );
+      await page
+        .getByRole("button", {
+          name: "Sign in with a test passkey",
+          exact: true,
+        })
+        .click();
+      await browserExpect
+        .poll(() =>
+          page.evaluate(() =>
+            Reflect.get(window, "syntheticAuthenticatorWaiting"),
+          ),
+        )
+        .toBe(true);
+      await page.clock.runFor(10_050);
+      await browserExpect(page.getByRole("status")).toContainText("Working");
+      expect(authenticationPosts).toBe(0);
+      await page.clock.runFor(5_000);
+      await browserExpect(page.getByRole("status")).toContainText(
+        "Passkey verification did not complete",
+      );
+      await browserExpect(
+        page.getByRole("button", { name: "Check sign-in status", exact: true }),
+      ).toHaveCount(0);
+      expect(authenticationPosts).toBe(0);
+      await page.evaluate(() =>
+        Reflect.deleteProperty(navigator.credentials, "get"),
+      );
+      await page
+        .getByRole("button", {
+          name: "Sign in with a test passkey",
+          exact: true,
+        })
+        .click();
+      await browserExpect(page.getByRole("status")).toContainText(
+        "result is unconfirmed",
+      );
+      expect(authenticationCommitted).toBe(true);
+      expect(authenticationPosts).toBe(1);
+      await page
+        .getByRole("button", { name: "Check sign-in status", exact: true })
+        .click();
+      await browserExpect(page.getByRole("status")).toContainText(
+        "Sign-in status checked",
+      );
+      expect(authenticationPosts).toBe(1);
+      expect(registrationPosts).toBe(1);
+    } finally {
+      await browser.close();
+    }
+  },
+  25000,
+);
