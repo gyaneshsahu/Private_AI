@@ -8,6 +8,7 @@ const names = [
   "0003-account-security-events.sql",
   "0004-usage-ledger.sql",
   "0005-consumer-control.sql",
+  "0006-security-notice-dispatch.sql",
 ] as const;
 interface Migration {
   name: string;

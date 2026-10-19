@@ -1,5 +1,11 @@
 # PrivateAI — architecture and trust boundaries
 
+### Recovery security notices — inactive, 19 October
+
+Recovery creates a recipient-email snapshot under the locked account row. A separate explicit dispatcher claims an event using a database row lock, records a dispatch token/timestamp and commits before invoking its transport. A stable event idempotency key accompanies submission. Database acknowledgement of acceptance does not prove inbox delivery. Exceptions and deadlines cannot establish non-delivery, so uncertain/abandoned dispatches require reconciliation and never automatically retry; even an accepted transport followed by a database outage remains non-retryable. There is no network sender or worker startup in production.
+
+The snapshot ensures a later email change cannot redirect an existing notice. Pre-migration intents have no evidenced recipient snapshot and are blocked. Account deletion cascades undispatched notices; an already admitted external submission cannot be recalled. The account API returns only its own last10 event IDs/times/states, not recipient addresses or provider diagnostic payloads. Retention and database access for the additional email snapshot remain activation prerequisites. The .test-only sink exercises transport behavior without sending mail. Supplier selection, verified sender/domain, deliverability, bounce reporting and exact reconciliation remain open. Finite provider idempotency windows ([example](https://resend.com/blog/engineering-idempotency-keys)) are an additional safeguard, not an exactly-once delivery guarantee.
+
 ### Account/workspace composition — inactive, 19 October
 
 `createSyntheticConsumerWorkspace` is a reusable localhost-only test composition of the maintained auth router, PostgreSQL allowance and consumer control adapter with the current workspace. It accepts no inference key/qualification and is not imported by production index. The auth lab advertises workspace navigation only when composed this way. Workspace status identifies consumer mode; the existing logout header uses maintained sign-out and hides the legacy password action. The Account panel links to sign-in methods with the existing unsaved-work guard. Local anonymous consumer access goes through /auth to the lab; real signup/provider/email deployment remains unconfigured.

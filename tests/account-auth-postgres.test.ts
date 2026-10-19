@@ -10,6 +10,10 @@ import { chromium, expect as browserExpect } from "@playwright/test";
 import { resolve } from "node:path";
 import { finishSignInRecovery } from "../server/account-recovery";
 import { applyAccountMigrations } from "../server/account-migrations";
+import {
+  dispatchOneSecurityNotice,
+  syntheticNoticeTransport,
+} from "../server/security-notices";
 
 const connectionString = process.env.PRIVATEAI_SYNTHETIC_PG;
 const enabled = !!connectionString;
@@ -292,6 +296,23 @@ it.skipIf(!enabled)(
       await browserExpect(page.getByRole("status")).toContainText(
         "vault encryption are unchanged",
       );
+      await browserExpect(
+        page.getByRole("region", { name: "Security notices" }),
+      ).toContainText("Queued; not submitted");
+      const pending = await pool.query(
+        "SELECT count(*)::int n FROM account_security_event WHERE \"deliveryState\"='pending'",
+      );
+      const delivered: string[] = [];
+      const sink = syntheticNoticeTransport(async (notice) => {
+        delivered.push(notice.to);
+      });
+      for (let i = 0; i < pending.rows[0].n; i++)
+        await dispatchOneSecurityNotice(pool, sink);
+      expect(delivered).toContain("ui@example.test");
+      await page.reload();
+      await browserExpect(
+        page.getByRole("region", { name: "Security notices" }),
+      ).toContainText("Submission accepted; inbox delivery not verified");
       await page.getByRole("button", { name: "Sign out", exact: true }).click();
       await browserExpect(
         page.getByRole("heading", { name: "Sign in to the account lab" }),

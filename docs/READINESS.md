@@ -1,5 +1,15 @@
 # PrivateAI readiness checklist
 
+### M2/M5 security-notice dispatch — inactive, 19 October
+
+Recovery now snapshots the verified recipient email in the same transaction as session revocation/notice creation. Migration 0006 leaves historical pending intents without recipient proof **blocked** rather than guessing today's address. The snapshot duplicates account contact metadata and needs an approved production retention/access policy; no live records or retention were changed.
+
+An explicit, unmounted dispatcher claims one event transactionally with SKIP LOCKED and commits a dispatch marker before calling an injected transport. Concurrent workers cannot submit that event twice. Accepted submission is distinct from inbox delivery. Rejection, timeout, interrupted settlement or abandoned claims remain uncertain and never re-enter the pending queue automatically. There is no retry scheduler or operator resend endpoint. The only implemented transport is a no-network .test-recipient sink; no email supplier is configured or activated.
+
+The actual Account lab displays current-account notice states: queued, submission started/accepted, uncertain or blocked. Recovery copy no longer suggests a real email was sent. **33 tests across five files pass**, including twelve concurrent workers, original-recipient preservation after an email change, deadline/late completion, settlement failure, crash classification, missing recipient, account deletion and actual browser queued→accepted status. Migration, auth/social and consumer workspace regressions pass; build/typecheck pass. Provider acceptance here is a synthetic result, not email deliverability or release qualification.
+
+Design evidence: [Resend documents finite-lived idempotency keys](https://resend.com/blog/engineering-idempotency-keys). Such provider deduplication is useful but cannot replace durable application state or justify replaying an old backup after the provider's deduplication window. No email vendor selected by this implementation. Still needed: approved supplier/domain, sender verification, retention/disclosure, bounce/delivery handling, reconciliation and compromised-credential recovery.
+
 ### M2 account-to-workspace workflow — 19 October
 
 The inactive `createSyntheticConsumerWorkspace` now composes maintained auth, PostgreSQL request allowance, consumer session/consent control and the actual application. Synthetic email sign-in opens the workspace; Account links back to sign-in methods. Sign-out uses the maintained auth endpoint, preserves a draft when the user cancels the discard warning, and clears/broadcast-locks local content when confirmed. Existing legacy password actions are hidden for consumer sessions. Unauthenticated localhost consumer workspace access returns to the lab sign-in; revoked access clears content on focus/visibility/page-show/periodic checks. No production factory mount, inference key, real provider activation or account conversion is supplied.

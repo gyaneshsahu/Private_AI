@@ -15,6 +15,30 @@ const optionsSchema = z.object({
   workspaceEnabled: z.boolean().optional(),
 });
 const accountsSchema = z.array(z.object({ providerId: z.string() }));
+const noticesSchema = z.object({
+  notices: z.array(
+    z.object({
+      id: z.string().uuid(),
+      createdAt: z.string().datetime(),
+      deliveryState: z.enum([
+        "pending",
+        "dispatching",
+        "accepted",
+        "uncertain",
+        "blocked",
+        "sent",
+      ]),
+    }),
+  ),
+});
+const noticeLabels = {
+  pending: "Queued; not submitted",
+  dispatching: "Submission started; result not confirmed",
+  accepted: "Submission accepted; inbox delivery not verified",
+  uncertain: "Submission uncertain; review required before any resend",
+  blocked: "Submission blocked; review required",
+  sent: "Historical sent marker; inbox delivery not verified",
+};
 const client = createAuthClient({
   baseURL: window.location.origin,
   plugins: [passkeyClient()],
@@ -31,6 +55,9 @@ export default function AccountLab() {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [linked, setLinked] = useState<string[]>([]);
   const [workspaceEnabled, setWorkspaceEnabled] = useState(false);
+  const [notices, setNotices] = useState<
+    z.infer<typeof noticesSchema>["notices"]
+  >([]);
   const codeInput = useRef<HTMLInputElement>(null);
   async function refresh() {
     const response = await fetch("/api/auth/get-session", {
@@ -49,7 +76,15 @@ export default function AccountLab() {
           .parse(await accounts.json())
           .map((account) => account.providerId),
       );
-    } else setLinked([]);
+      const response = await fetch("/api/account/security-notices", {
+        cache: "no-store",
+      });
+      if (!response.ok) throw Error("security notices unavailable");
+      setNotices(noticesSchema.parse(await response.json()).notices);
+    } else {
+      setLinked([]);
+      setNotices([]);
+    }
   }
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -171,8 +206,9 @@ export default function AccountLab() {
                     return;
                   }
                   setNotice(
-                    "Sign-in recovery complete. Other sessions were signed out and a security notice was queued. Linked credentials and vault encryption are unchanged.",
+                    "Sign-in recovery complete. Other sessions were signed out. Check the security-notice status below; this lab sends no real email. Linked credentials and vault encryption are unchanged.",
                   );
+                  await refresh();
                 })
               }
             >
@@ -183,6 +219,22 @@ export default function AccountLab() {
               sessions. This does not remove a lost passkey or linked provider;
               compromised credentials need separate review.
             </p>
+            {notices.length > 0 && (
+              <section aria-label="Security notices">
+                <h2>Security notices</h2>
+                <ul>
+                  {notices.map((item) => (
+                    <li key={item.id}>
+                      Sign-in recovery ·{" "}
+                      <time dateTime={item.createdAt}>
+                        {new Date(item.createdAt).toLocaleString()}
+                      </time>
+                      : {noticeLabels[item.deliveryState]}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
             <button
               disabled={busy}
               onClick={() =>

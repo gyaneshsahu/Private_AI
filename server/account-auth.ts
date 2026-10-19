@@ -335,6 +335,25 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
       });
     }
   });
+  router.get("/api/account/security-notices", async (req, res) => {
+    try {
+      const current = await auth.api.getSession({
+        headers: fromNodeHeaders(req.headers),
+      });
+      if (!current) {
+        res.status(401).json({ error: "Sign in to view notices." });
+        return;
+      }
+      const notices = await config.database.query(
+        `SELECT id,"createdAt","deliveryState"
+        FROM account_security_event WHERE "userId"=$1 ORDER BY "createdAt" DESC,id LIMIT 10`,
+        [current.user.id],
+      );
+      res.json({ notices: notices.rows });
+    } catch {
+      res.status(503).json({ error: "Security-notice status is unavailable." });
+    }
+  });
   router.all("/api/auth/*splat", toNodeHandler(auth));
   return { auth, router };
 }

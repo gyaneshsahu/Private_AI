@@ -18,8 +18,8 @@ export async function finishSignInRecovery(
     const current = await client.query(
       `SELECT s.id FROM session s JOIN "user" u ON u.id=s."userId"
        WHERE s.id=$1 AND s."userId"=$2 AND u."emailVerified"=true
-       AND s."expiresAt">NOW() AND s."createdAt">NOW()-interval '5 minutes'
-       AND s."createdAt"<=NOW() FOR UPDATE OF s`,
+       AND s."expiresAt">clock_timestamp() AND s."createdAt">clock_timestamp()-interval '5 minutes'
+       AND s."createdAt"<=clock_timestamp() FOR UPDATE OF s`,
       [sessionId, accountId],
     );
     if (!current.rowCount) {
@@ -27,8 +27,9 @@ export async function finishSignInRecovery(
       return "reauthenticate";
     }
     const event = await client.query(
-      `INSERT INTO account_security_event ("userId","sessionId",kind)
-       VALUES($1,$2,'sign_in_recovery') ON CONFLICT ("sessionId",kind) DO NOTHING RETURNING id`,
+      `INSERT INTO account_security_event ("userId","sessionId",kind,"recipientEmail")
+       SELECT id,$2,'sign_in_recovery',email FROM "user" WHERE id=$1
+       ON CONFLICT ("sessionId",kind) DO NOTHING RETURNING id`,
       [accountId, sessionId],
     );
     if (event.rowCount)
