@@ -1,5 +1,11 @@
 # PrivateAI readiness checklist
 
+### M4 documents directly in chat — 19 October
+
+Chat now opens the local file picker directly from an accessible Attach file button, retains the draft, lists attached filenames and inclusion state, and links to extraction review/correction. It reuses the existing bounded worker/extraction path; it neither uploads automatically nor enables inference. Context still supports import and detailed review. Five-file/three-screenshot/10MB/20-page limits remain; PNG/JPEG support means printed-text OCR, not general image understanding.
+
+**12 actual-browser workflows passed**, including2new chat-attachment journeys: keyboard file picker, multiple local files, correction, selection, no outgoing POST/external disclosure, encrypted save, unsupported-file recovery, file-limit disablement and390px doubled-text layout; build/typecheck pass. This does not replace real Galaxy A52/TalkBack upload/workspace checks or model/document quality acceptance. No paid calls.
+
 ### M5 payment-event foundation — inactive, 19 October
 
 Pinned maintained Stripe SDK23.0.0 for raw-body signature verification only; no API client, account registration, webhook registration, checkout, real payment or production mount. `createSyntheticBillingReceiver` accepts only direct-account **test-mode snapshot events** at the pinned2026-09-30.endive API version. It rejects bad/stale/future signatures, connected-account contexts, live mode, unsupported versions, malformed/oversized bodies and identity conflicts. Migration0010 persists only event/type/object IDs, event/API timestamps/version, test-mode flag and pending processing status—not raw payment bodies, email, addresses, amounts or arbitrary metadata. Receipts remain pseudonymous operational records needing a reviewed retention policy.

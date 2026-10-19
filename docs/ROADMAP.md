@@ -1,5 +1,7 @@
 # PrivateAI delivery roadmap
 
+**Current user-facing milestone — M4, 19 October:** chat now supports direct local attachment, filename/inclusion review and corrections while preserving the draft;12browser workflows and build pass. Earlier M1 context/history, M2 inactive account lifecycle and M5 payment receipt evidence remain below and in READINESS. Domain payment pending; continue security/dependency and workflow work without activating services.
+
 **M5 event receipt foundation — 19 October:** signed test-mode payment notifications now have durable minimal receipts, replica/restart deduplication, recovery quarantine and restricted-role tests (43tests/9files plus6bounded-wait follow-up tests). This does not implement paid entitlement reconciliation, checkout/portal or live billing. The provider remains inactive. Continue M4 chat/document usability while domain purchase is pending; next M5 slice must reconcile current provider state and customer ownership before any access grant.
 
 **M4 source-integrity slice complete locally — 19 October:** corrected-source provenance and historical-citation handling pass54targeted tests and8browser workflows. This makes document/research corrections inspectable; it does not qualify model accuracy or image understanding. Next M5 payment-event foundations remain inactive; no prices, checkout or paid access are activated.

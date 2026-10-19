@@ -48,6 +48,7 @@ export function App() {
   );
   const [busy, setBusy] = useState("");
   const [source, setSource] = useState<Source>();
+  const chatFileInput = useRef<HTMLInputElement>(null);
   const [researchKind, setResearchKind] = useState<"search" | "page">("search");
   const [query, setQuery] = useState("");
   const [proposal, setProposal] = useState<Disclosure>();
@@ -960,12 +961,33 @@ export function App() {
                 rows={3}
               />
               <div className="composer-footer">
+                <input
+                  ref={chatFileInput}
+                  type="file"
+                  hidden
+                  aria-label="Attach files to this conversation"
+                  multiple
+                  accept=".txt,.pdf,.png,.jpg,.jpeg"
+                  disabled={!!busy}
+                  onChange={(event) => {
+                    void importFiles(event.target.files);
+                    event.target.value = "";
+                  }}
+                />
+                <button
+                  type="button"
+                  className="text-button"
+                  disabled={!!busy || conversation.attachments.length >= 5}
+                  onClick={() => chatFileInput.current?.click()}
+                >
+                  Attach file
+                </button>
                 <button
                   type="button"
                   className="text-button"
                   onClick={() => setTab("Context")}
                 >
-                  ＋ Add context{" "}
+                  Review context{" "}
                   <span>
                     {conversation.attachments.filter((a) => a.selected).length}{" "}
                     selected
@@ -987,6 +1009,34 @@ export function App() {
                 </button>
               </div>
             </form>
+            {conversation.attachments.length > 0 && (
+              <ul
+                className="composer-attachments"
+                aria-label="Conversation attachments"
+              >
+                {conversation.attachments.map((attachment) => (
+                  <li key={attachment.id}>
+                    <span>{attachment.name}</span>
+                    <small>
+                      {attachment.selected ? "Included" : "Excluded"}
+                    </small>
+                    <button
+                      type="button"
+                      onClick={() => setTab("Context")}
+                      aria-label={`Review ${attachment.name}`}
+                    >
+                      Review
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="composer-note">
+              Attachments are read on this device. Review extracted text before
+              sending. Text PDF, TXT, PNG and JPEG only; five files, including
+              up to three screenshots, 10 MB each and 20 PDF pages. Images use
+              text extraction, not general image understanding.
+            </p>
             <p className="composer-note" data-testid="context-size">
               Selected input: {selectedContextSize.characters.toLocaleString()}{" "}
               characters

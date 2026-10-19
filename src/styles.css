@@ -298,6 +298,7 @@ h2 em {
   box-shadow: 0 0 0 2px #95a98c;
 }
 .composer-footer {
+  flex-wrap: wrap;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -808,4 +809,26 @@ footer {
   background: #f6f3e9;
   font-size: 0.85rem;
   overflow-wrap: anywhere;
+}
+
+.composer-attachments {
+  list-style: none;
+  margin: 10px 0;
+  padding: 0;
+}
+.composer-attachments li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #dce2d9;
+}
+.composer-attachments li > span {
+  flex: 1 1 150px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.composer-attachments small {
+  color: #536249;
 }
