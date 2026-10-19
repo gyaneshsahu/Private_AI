@@ -1,5 +1,11 @@
 # PrivateAI — architecture and trust boundaries
 
+### Authenticated ingress alternative — 19October
+
+The standalone `authenticated-ingress.ts` prototype authenticates the proxy's TLS certificate and pins its exact SHA256 identity before accepting its overwritten client address/HTTPS claim. It is not mounted. Real Caddy2.11.7 → Node mutual TLS was tested with ephemeral synthetic CA/leaf keys in a network-disabled container. Ordinary forwarded headers alone never authorize access; unverified sockets and retired pins fail closed. Certificate validity is checked for each request, including reused connections. Verified metadata is held in a request-scoped WeakMap for a future explicit account integration, not as a client-writable property. [Exact proof, sources and next requirements](development-deployment.md#authenticated-proxy-alternative--local-proof-19-october-2026).
+
+This is a supported alternative to investigate while Render's precise trusted-edge contract is missing. It is not a decision to migrate, a production configuration, or a change to private-chat/provider gates. Browser outer TLS terminates at the gateway, so account/research data is visible there; encrypted inference remains a distinct browser-to-enclave requirement. Gateway observability, listener isolation, certificate lifecycle, full account/streaming/recovery workflows and hosting operations are open. Owner approval remains necessary before hosting/DNS/provider activation or new account/privacy settings.
+
 ### Flat conversation branches — 19October
 
 `conversation-branches.ts` retains inactive message/reference/draft snapshots under the existing conversation identity. The active snapshot remains in the existing top-level fields so inference/context composition never traverses archived history. Usage stays at conversation level and is not duplicated when history forks. Branch switching clears ephemeral calculator session state; all new material still passes the existing send/qualification/size gates. Optional sanitized message failure enums are local evidence, never model context. `ConversationBranches.tsx` controls explicit local switching and keyboard focus; retries remain separately charged requests, never automatic.
