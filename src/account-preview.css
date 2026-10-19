@@ -1,0 +1,143 @@
+.account-preview {
+  min-height: 100dvh;
+  padding: 28px 20px 40px;
+  background: #f7f8f5;
+  color: #243a32;
+}
+.account-preview-brand {
+  display: block;
+  width: fit-content;
+  margin: 0 auto 24px;
+  color: inherit;
+  font-size: 25px;
+  font-weight: 650;
+  text-decoration: none;
+  letter-spacing: -0.8px;
+}
+.account-preview-brand span {
+  font-weight: 350;
+}
+.account-preview-banner {
+  max-width: 580px;
+  margin: 0 auto 22px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #536359;
+}
+.account-preview-card {
+  max-width: 460px;
+  margin: auto;
+  padding: 32px;
+  background: #fff;
+  border: 1px solid #e0e5dc;
+  border-radius: 22px;
+  box-shadow: 0 14px 50px #233b2c08;
+}
+.account-preview-mark {
+  display: flex;
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 20px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: #e8eee3;
+  font-size: 24px;
+}
+.account-preview-card h1 {
+  font-size: 1.65rem;
+  line-height: 1.25;
+  letter-spacing: -0.6px;
+  text-align: center;
+  margin: 0;
+}
+.account-preview-card h1:focus {
+  outline: none;
+}
+.account-preview-intro {
+  text-align: center;
+  color: #5b695f;
+  margin: 12px 0 26px;
+}
+.account-preview-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.account-preview-actions button {
+  min-height: 48px;
+  font-weight: 550;
+}
+.account-preview-actions p {
+  margin: 0;
+}
+.account-preview-actions .account-preview-primary {
+  background: #294d3b;
+  color: #fff;
+  border-color: #294d3b;
+}
+.account-preview-actions .account-preview-primary:hover {
+  background: #1f3c2d;
+}
+.account-preview-passkey {
+  border-color: transparent;
+  font-size: 0.9rem;
+}
+.account-preview-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #68766a;
+  font-size: 0.8rem;
+}
+.account-preview-divider::before,
+.account-preview-divider::after {
+  content: "";
+  height: 1px;
+  background: #e3e7df;
+  flex: 1;
+}
+.account-preview-small {
+  color: #5b695f;
+  font-size: 0.85rem;
+}
+.account-preview-notice {
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+.account-preview-notice:empty {
+  display: none;
+}
+.account-preview-privacy {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e3e7df;
+  font-size: 0.85rem;
+}
+.account-preview-privacy summary {
+  cursor: pointer;
+  font-weight: 550;
+}
+.account-preview-privacy p {
+  color: #4e6054;
+}
+.account-preview-footer {
+  text-align: center;
+  margin: 22px auto 0;
+  max-width: 460px;
+  font-size: 0.8rem;
+  color: #617064;
+}
+@media (max-width: 480px) {
+  .account-preview {
+    padding: 20px 14px 28px;
+  }
+  .account-preview-card {
+    padding: 26px 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .account-preview button {
+    transition: none;
+  }
+}

@@ -4,6 +4,8 @@
 
 **Current work:** M1 encrypted conversation library slice validated; M2 durable request-admission foundation and Account view now locally tested. Continue consumer auth/durable sessions and PostgreSQL migration design; do not call the request counter monetary metering. Provider qualification advances independently. Latest evidence and limitations are in READINESS. The founder's revised development policy permits independent arms after isolated failures under a fresh frozen plan; no paid/billing setting change.
 
+M2 identity choice is now resolved: Google, Apple, email and passkeys, **inactive until implementation review**. The local account design preview and domain/link policy have synthetic tests. Next integrate maintained auth with durable sessions/OTP challenges and PostgreSQL, then test callback replay, linking, recovery and WebAuthn with synthetic identities. Provider credentials, domain configuration, email delivery and migration require owner action/review before activation; no current login replacement.
+
 **Founder direction supersedes the trial-first scope below.** Build one public-launchable general-purpose assistant. Limited-user release is a release check on the same product and production architecture, not a separate prototype or stopping point. Historical experiment results and thresholds remain evidence; they do not constrain the newly authorized engineering scope. READINESS remains the only status ledger. No private data, public access, billing/account changes or live retention activation is authorized by this scope change.
 
 ### Bounded senior-engineering assessment

@@ -1,5 +1,7 @@
 # PrivateAI — product requirements
 
+**19 October account design decision:** launch sign-in should offer Google, Apple and email, with passkeys for convenient subsequent sign-in. Build this inactive for review; provider activation and existing-account migration remain separately gated. Disclose account identifiers/email and provider involvement; no silent email-based account merging or promise that sign-in recovery restores a lost vault passphrase. Proposed email experience uses one-time codes. The first local preview is a design walkthrough, not working authentication.
+
 **12 October test-scope update:** Founder accepts temporary web-search answers without saving search sources. Search conversations and their answers cannot be saved in this test version; citations remain inspectable during the session. Persistent search history is deferred, while live retrieval, source fidelity, explicit disclosure and provider/privacy gates remain required. This does not authorize private-data access or certify answer quality.
 
 **Current product direction — 19 October 2026:** build one public-launchable general-purpose assistant now. Invited users perform a limited release check on the same production architecture. Trial completion is not a development stopping point or a separate product. This supersedes the earlier trial-first investment sequence and modality exclusions; historical quality evidence and thresholds remain intact. See the active [production roadmap](ROADMAP.md#active-production-roadmap--19-october-2026).
