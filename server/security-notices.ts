@@ -12,7 +12,8 @@ export interface SecurityNoticeTransport {
   /** Accepted means the provider accepted submission, not inbox delivery. */
   submit(notice: SecurityNotice, signal: AbortSignal): Promise<"accepted">;
 }
-export type DispatchResult = "idle" | "blocked" | "accepted" | "uncertain";
+export type DispatchResult =
+  "idle" | "blocked" | "accepted" | "uncertain" | "paused";
 const email = z.string().email().max(254);
 
 /** Explicitly invoked only; no scheduler, provider credentials or network implementation. */
@@ -28,6 +29,13 @@ export async function dispatchOneSecurityNotice(
   let event: { id: string; recipientEmail: string | null; createdAt: Date };
   try {
     await client.query("BEGIN");
+    const gate = await client.query(
+      "SELECT mode FROM account_recovery_control WHERE singleton=true FOR SHARE",
+    );
+    if (gate.rows[0]?.mode !== "normal") {
+      await client.query("COMMIT");
+      return "paused";
+    }
     const claimed = await client.query(`SELECT id,"recipientEmail","createdAt"
       FROM account_security_event WHERE "deliveryState"='pending'
       ORDER BY "createdAt",id FOR UPDATE SKIP LOCKED LIMIT 1`);

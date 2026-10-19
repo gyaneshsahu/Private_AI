@@ -14,6 +14,7 @@ import express from "express";
 import type { Pool } from "pg";
 import { createHmac } from "node:crypto";
 import { finishSignInRecovery } from "./account-recovery";
+import { accountRecoveryOpen } from "./account-restore";
 
 export interface SyntheticAccountConfig {
   origin: string;
@@ -257,7 +258,7 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
     ],
   });
   const router = express.Router();
-  router.use((req, res, next) => {
+  router.use(async (req, res, next) => {
     if (
       !req.path.startsWith("/api/auth/") &&
       !req.path.startsWith("/api/account/")
@@ -293,6 +294,21 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
     // Only the socket determines the rate-limit address, never a client header.
     req.headers["x-privateai-client-ip"] =
       req.socket.remoteAddress ?? "127.0.0.1";
+    try {
+      if (!(await accountRecoveryOpen(config.database))) {
+        res
+          .status(503)
+          .json({
+            error: "Account access is paused for recovery verification.",
+          });
+        return;
+      }
+    } catch {
+      res
+        .status(503)
+        .json({ error: "Account access verification is unavailable." });
+      return;
+    }
     next();
   });
   router.get("/api/account/options", (_req, res) => {

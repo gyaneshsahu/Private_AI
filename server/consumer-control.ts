@@ -5,6 +5,7 @@ import { fromNodeHeaders } from "better-auth/node";
 import type { createSyntheticAccountAuth } from "./account-auth";
 import { disclosureSchema, type Disclosure } from "../shared/contracts";
 import { pageUrl, type ResearchApprovals } from "./research";
+import { accountRecoveryOpen } from "./account-restore";
 
 const liveSession = `SELECT s.id FROM "session" s JOIN "user" u ON u.id=s."userId"
   WHERE s.id=$1 AND s."expiresAt">clock_timestamp() AND u."emailVerified"=true`;
@@ -23,6 +24,14 @@ export function consumerControl(config: {
       .digest("hex");
   const session: RequestHandler = async (req, res, next) => {
     try {
+      if (!(await accountRecoveryOpen(config.database))) {
+        res
+          .status(503)
+          .json({
+            error: "Account access is paused for recovery verification.",
+          });
+        return;
+      }
       const current = await config.auth.api.getSession({
         headers: fromNodeHeaders(req.headers),
       });

@@ -430,6 +430,7 @@ it.skipIf(!enabled)(
       const context = await browser.newContext({
         viewport: { width: 390, height: 844 },
       });
+      context.setDefaultTimeout(5000);
       const external: string[] = [];
       await context.route("**/*", (route) => {
         if (new URL(route.request().url()).origin === h.origin)
@@ -447,9 +448,27 @@ it.skipIf(!enabled)(
           page.getByLabel("Test email address"),
         ).toBeVisible();
         await page.getByLabel("Test email address").fill(email);
+        await browserExpect(page.getByLabel("Test email address")).toHaveValue(
+          email,
+        );
+        expect(
+          await page
+            .locator("form")
+            .evaluate((form) => (form as HTMLFormElement).checkValidity()),
+        ).toBe(true);
+        const sentCode = page.waitForResponse(
+          (r) => r.url().endsWith("/api/auth/email-otp/send-verification-otp"),
+          { timeout: 5000 },
+        );
         await page
           .getByRole("button", { name: "Send test code", exact: true })
           .click();
+        const codeResponse = await sentCode.catch(async () => {
+          throw Error(
+            `Synthetic sign-in did not submit for ${email}: ${await page.locator("body").innerText()}`,
+          );
+        });
+        expect(codeResponse.status()).toBe(200);
         await browserExpect(page.getByLabel("Verification code")).toBeVisible();
         await page.getByLabel("Verification code").fill(h.messages.at(-1)!.otp);
         await page

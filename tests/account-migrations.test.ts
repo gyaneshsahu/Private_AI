@@ -14,7 +14,7 @@ it.skipIf(!enabled)(
     try {
       const plan = await planAccountMigrations(db.pool);
       expect(plan.applied).toEqual([]);
-      expect(plan.pending).toHaveLength(6);
+      expect(plan.pending).toHaveLength(7);
       expect(
         (
           await db.pool.query(
@@ -29,7 +29,7 @@ it.skipIf(!enabled)(
       expect(
         results.every(
           (result) =>
-            result.applied.length === 6 && result.pending.length === 0,
+            result.applied.length === 7 && result.pending.length === 0,
         ),
       ).toBe(true);
       await db.pool.query(
@@ -46,7 +46,7 @@ it.skipIf(!enabled)(
             "SELECT count(*)::int n FROM privateai_schema_migrations",
           )
         ).rows[0].n,
-      ).toBe(6);
+      ).toBe(7);
     } finally {
       await db.dispose();
     }
@@ -87,7 +87,7 @@ it.skipIf(!enabled)(
             "SELECT count(*)::int n FROM privateai_schema_migrations",
           )
         ).rows[0].n,
-      ).toBe(5);
+      ).toBe(6);
     } finally {
       await db.dispose();
     }

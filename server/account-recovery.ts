@@ -12,6 +12,13 @@ export async function finishSignInRecovery(
   const client = await database.connect();
   try {
     await client.query("BEGIN");
+    const gate = await client.query(
+      "SELECT mode FROM account_recovery_control WHERE singleton=true FOR SHARE",
+    );
+    if (gate.rows[0]?.mode !== "normal") {
+      await client.query("ROLLBACK");
+      return "reauthenticate";
+    }
     await client.query('SELECT id FROM "user" WHERE id=$1 FOR UPDATE', [
       accountId,
     ]);
