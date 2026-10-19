@@ -30,7 +30,8 @@ it("renders readable tables, lists, code and local display math", () => {
   expect(html).toContain("<table>");
   expect(html).toContain("<strong>Total</strong>");
   expect(html).toContain("<li>VAT is 19</li>");
-  expect(html).toContain("<pre>");
+  expect(html).toContain('aria-label="js code block"');
+  expect(html).toContain('<code class="language-js">const total = 114;');
   expect(html).toContain("katex");
   expect(html).not.toContain("katex-error");
 });
@@ -59,7 +60,8 @@ it("preserves currency, unknown sources and fenced math/code literally", () => {
   );
   expect(html).toContain("Budget $5 then $10");
   expect(html).toContain("[deadbeef]");
-  expect(html).not.toContain("<button");
+  expect(html).not.toContain('class="citation"');
+  expect(html).toContain("[7283fc55]");
 });
 
 it("opens page-qualified citations without treating a model's page claim as verified source metadata", () => {
@@ -85,11 +87,19 @@ it("opens page-qualified citations without treating a model's page claim as veri
 });
 
 it("resolves known source IDs but labels unsupported model line locators", () => {
-  const html = renderToStaticMarkup(createElement(Answer, {
-    text: "Claim 【report-01†L2-L4】. Another 【report-01†source】. Unknown 【missing-01†L1-L2】.",
-    sources: [{ id: "report-01", title: "Synthetic report", text: "No numbered lines were supplied." }],
-    open: () => {},
-  }));
+  const html = renderToStaticMarkup(
+    createElement(Answer, {
+      text: "Claim 【report-01†L2-L4】. Another 【report-01†source】. Unknown 【missing-01†L1-L2】.",
+      sources: [
+        {
+          id: "report-01",
+          title: "Synthetic report",
+          text: "No numbered lines were supplied.",
+        },
+      ],
+      open: () => {},
+    }),
+  );
   expect(html.match(/<button/g)).toHaveLength(2);
   expect(html).toContain("line reference unverified");
   expect(html).toContain("missing-01");

@@ -1,3 +1,4 @@
+import { workspaceBrowserDependencies } from "./browser-dependencies";
 import { assertWorkspaceArm } from "./workspace-arm";
 import { assertWorkspaceBudget } from "./workspace-budget";
 import { startTemporaryReview } from "./temporary-review";
@@ -476,19 +477,7 @@ try {
         ],
         esbuild: { jsx: "automatic" },
         optimizeDeps: {
-          include: [
-            "react",
-            "react-dom/client",
-            "react/jsx-runtime",
-            "react/jsx-dev-runtime",
-            "react-markdown",
-            "remark-gfm",
-            "remark-math",
-            "rehype-katex",
-            "unist-util-visit",
-            "tinfoil",
-            "ehbp",
-          ],
+          include: workspaceBrowserDependencies,
           noDiscovery: true,
         },
         server: { middlewareMode: true, hmr: false },

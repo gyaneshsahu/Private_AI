@@ -1,3 +1,4 @@
+import { workspaceBrowserDependencies } from "../evaluation/browser-dependencies";
 import { it, expect } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
@@ -6,6 +7,7 @@ import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 it("displays calculator-assisted prose and a corrected total through the actual application", async () => {
   const vite = await createServer({
     configFile: false,
+    optimizeDeps: { include: workspaceBrowserDependencies, noDiscovery: true },
     logLevel: "silent",
     cacheDir: "node_modules/.vite-assisted-ui-test",
     plugins: [
@@ -47,6 +49,7 @@ it("displays calculator-assisted prose and a corrected total through the actual 
   const browser = await chromium.launch(browserLaunchOptions());
   try {
     const page = await browser.newPage();
+    page.setDefaultTimeout(5000);
     const external: string[] = [];
     await page.route("**/*", (route) => {
       const url = new URL(route.request().url());
@@ -69,6 +72,9 @@ it("displays calculator-assisted prose and a corrected total through the actual 
       return route.continue();
     });
     await page.goto(origin);
+    // These are workflow assertions; await the real lazy renderer module first.
+    // Cold packaged loading is exercised separately by Playwright.
+    await page.evaluate("import('/src/Answer.tsx')");
     const tab = (name: string) =>
       page
         .getByRole("navigation", { name: "Workspace" })

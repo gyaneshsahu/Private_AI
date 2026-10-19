@@ -221,9 +221,18 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     await siblingLogin
       .getByLabel("Password")
       .fill("synthetic changed password");
-    await siblingLogin
-      .getByRole("button", { name: "Sign in", exact: true })
-      .click();
+    const siblingSignedIn = sibling.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === "/auth/login" &&
+        response.request().method() === "POST",
+    );
+    await Promise.all([
+      sibling.waitForURL(origin + "/", { waitUntil: "load" }),
+      siblingLogin
+        .getByRole("button", { name: "Sign in", exact: true })
+        .click(),
+    ]);
+    expect((await siblingSignedIn).status()).toBe(303);
     await ui(sibling.getByLabel("Message PrivateAI")).toBeVisible();
     const newEpoch = await sibling.evaluate(
       async () => (await (await fetch("/api/status")).json()).accessEpoch,

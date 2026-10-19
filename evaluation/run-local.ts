@@ -1,3 +1,4 @@
+import { documentBrowserDependencies } from "./browser-dependencies";
 import {
   implementationIdentity,
   configurationIdentity,
@@ -221,7 +222,7 @@ async function main(run: boolean, diagnose: boolean, compatibility: boolean) {
       appType: "custom",
       logLevel: "error",
       optimizeDeps: {
-        include: ["tinfoil", "ehbp", "pdfjs-dist", "tesseract.js"],
+        include: ["tinfoil", "ehbp", ...documentBrowserDependencies],
         noDiscovery: true,
       },
       server: { middlewareMode: true, hmr: false },

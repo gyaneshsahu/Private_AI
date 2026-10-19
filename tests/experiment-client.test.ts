@@ -1,3 +1,4 @@
+import { documentBrowserDependencies } from "../evaluation/browser-dependencies";
 import { it, expect } from "vitest";
 import { chromium } from "@playwright/test";
 import { createServer } from "vite";
@@ -40,7 +41,7 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
     optimizeDeps: {
       force: true,
       noDiscovery: true,
-      include: ["pdfjs-dist", "tesseract.js", "zod"],
+      include: documentBrowserDependencies,
     },
     plugins: [
       {
@@ -172,7 +173,8 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
               fixture.id.startsWith("readiness-") ||
               fixture.id.startsWith("general-transfer-") ||
               fixture.id.startsWith("coverage-") ||
-              fixture.id.startsWith("trialgate-") || fixture.id.startsWith("config-")
+              fixture.id.startsWith("trialgate-") ||
+              fixture.id.startsWith("config-")
                 ? "robustness_case"
                 : "development_case",
             developmentCaseId: fixture.id,

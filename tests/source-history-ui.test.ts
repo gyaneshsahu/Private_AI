@@ -1,3 +1,4 @@
+import { workspaceBrowserDependencies } from "../evaluation/browser-dependencies";
 import { it, expect } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
@@ -6,6 +7,7 @@ import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 it("keeps citations tied to captured evidence through correction, removal and encrypted reopen", async () => {
   const vite = await createServer({
     configFile: false,
+    optimizeDeps: { include: workspaceBrowserDependencies, noDiscovery: true },
     logLevel: "silent",
     cacheDir: "node_modules/.vite-source-history",
     server: { host: "127.0.0.1", port: 0, hmr: false },
@@ -42,6 +44,9 @@ it("keeps citations tied to captured evidence through correction, removal and en
       return route.continue();
     });
     await page.goto(origin);
+    // These are workflow assertions; await the real lazy renderer module first.
+    // Cold packaged loading is exercised separately by Playwright.
+    await page.evaluate("import('/src/Answer.tsx')");
     await page.evaluate(`(async () => {
       const { Vault } = await import('/src/vault.ts');
       const { emptyConversation } = await import('/shared/contracts.ts');
@@ -54,6 +59,7 @@ it("keeps citations tied to captured evidence through correction, removal and en
       await vault.save(c); vault.close();
     })()`);
     await page.reload();
+    await page.evaluate("import('/src/Answer.tsx')");
     const tab = (name: string) =>
       page
         .getByRole("navigation", { name: "Workspace" })
