@@ -1,5 +1,6 @@
 # PrivateAI — product requirements
 
+**20 October local vault security workflow:** users can change a known vault passphrase while preserving saved conversations and documents. The workflow verifies the current secret, confirms the new secret and warns about unsaved work in other tabs. It updates all records atomically and locks the workspace. Older backups still require their original passphrase; lost-passphrase recovery is not offered. This is implemented and locally tested, not real-device/security release qualification or approval to admit private data.
 
 **20October fidelity amendment:** DOCX equations and alternate representations are unsupported and explicitly rejected to avoid silent content loss/duplication. Independent python-docx-generated packages and actual browser workflows now supplement authored fixtures; this does not establish Microsoft Word export compatibility or real-device performance. Fixed desktop sidebar overflow now keeps privacy/help controls reachable on short windows and enlarged text.
 

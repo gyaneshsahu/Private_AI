@@ -16,6 +16,7 @@ import { DOCUMENT_ACCEPT } from "./document-formats";
 import { importDocuments, type ImportOutcome } from "./document-import";
 import { Vault, VaultConflictError } from "./vault";
 import { VaultBackup } from "./VaultBackup";
+import { VaultSecurity } from "./VaultSecurity";
 import { BACKUP_MAX_BYTES } from "./vault-backup";
 import { containsTemporaryResearch } from "./saved-conversation";
 import { ConversationLibrary } from "./ConversationLibrary";
@@ -699,6 +700,29 @@ export function App() {
       if (current === epoch.current) setBusy("");
     }
   }
+  async function changeVaultPassphrase(
+    currentSecret: string,
+    nextSecret: string,
+  ) {
+    if (!allowReplace()) return;
+    const current = epoch.current;
+    setBusy("Updating encrypted vault protection…");
+    try {
+      await vault.current!.changePassphrase(currentSecret, nextSecret);
+      if (current !== epoch.current) return;
+      vault.current!.onInvalidate?.();
+      setNotice(
+        "Vault passphrase changed. Unlock with the new passphrase. Saved history was preserved; older downloaded backups still need their original passphrase.",
+      );
+    } catch {
+      if (current === epoch.current)
+        fail(
+          "Passphrase change could not complete. No partial update was applied. Check the current passphrase, unreadable records or changes in another tab. Keep your browser data and existing backups.",
+        );
+    } finally {
+      if (current === epoch.current) setBusy("");
+    }
+  }
   async function restoreVaultBackup(file: File, secret: string) {
     const current = epoch.current;
     setBusy("Verifying and restoring encrypted backup…");
@@ -1234,10 +1258,11 @@ export function App() {
             )}
             <p className="composer-note">
               Attachments are read on this device. Review extracted text before
-              sending. DOCX body text, text PDF, UTF-8 text, Markdown, data, source code, PNG
-              and JPEG; five files, including up to three screenshots, 10 MB
-              each, 60,000 extracted characters per file and 20 PDF pages.
-              Images use text extraction, not general image understanding.
+              sending. DOCX body text, text PDF, UTF-8 text, Markdown, data,
+              source code, PNG and JPEG; five files, including up to three
+              screenshots, 10 MB each, 60,000 extracted characters per file and
+              20 PDF pages. Images use text extraction, not general image
+              understanding.
             </p>
             <p className="composer-note" data-testid="context-size">
               Selected input: {selectedContextSize.characters.toLocaleString()}{" "}
@@ -1391,11 +1416,12 @@ export function App() {
                 }}
               />
               <small>
-                DOCX body · Text PDF · Text / Markdown / Code · CSV / JSON · PNG / JPEG
+                DOCX body · Text PDF · Text / Markdown / Code · CSV / JSON · PNG
+                / JPEG
                 <br />
                 Up to 10 MB, 60,000 extracted characters and 20 PDF pages per
-                file. Screenshot OCR supports printed English text. Legacy Word and
-                spreadsheet workbooks: export as PDF or UTF-8 text first.
+                file. Screenshot OCR supports printed English text. Legacy Word
+                and spreadsheet workbooks: export as PDF or UTF-8 text first.
               </small>
             </label>
             {conversation.attachments.length === 0 && (
@@ -1749,7 +1775,9 @@ export function App() {
                   </button>
                   {saveConflict && (
                     <button
-                      disabled={!!busy || containsTemporaryResearch(conversation)}
+                      disabled={
+                        !!busy || containsTemporaryResearch(conversation)
+                      }
                       onClick={() => void save(true)}
                     >
                       Save as new conversation
@@ -1827,6 +1855,11 @@ export function App() {
                       if (current === epoch.current) setBusy("");
                     }
                   }}
+                />
+                <VaultSecurity
+                  busy={!!busy}
+                  blocked={unreadableSnapshots > 0}
+                  onChange={changeVaultPassphrase}
                 />
                 <VaultBackup
                   busy={!!busy}

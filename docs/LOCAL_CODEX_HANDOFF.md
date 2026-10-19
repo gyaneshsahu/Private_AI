@@ -1,5 +1,15 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## M1/M5 encrypted vault passphrase and recovery workflow — 20 October
+
+Saved history now offers an explicit passphrase change: verify the current secret, choose and confirm a different passphrase of at least 12 characters, and acknowledge saved work in every tab and the old-backup limitation. All saved records are validated before one atomic transaction rewraps their data keys and replaces vault metadata. Conversation ciphertext remains unchanged. Unreadable records, competing writes, locking or storage failures prevent a partial update. Stale tabs that miss the lock notification cannot read, save, delete or restore against the changed vault identity. Successful change locks the current workspace and broadcasts a lock; notifications cannot revoke plaintext already accessible in another process.
+
+Evidence: 38 tests across four vault/library suites and 10 actual built-app Playwright workflows pass; production build/typecheck pass. Coverage includes concurrent additions/updates/deletions, simultaneous rotations, injected mid-transaction quota failure, missed broadcasts, wrong secrets, unsaved-work cancellation, two-tab locking, preserved documents/drafts, 390px/200% text, and restoring an older backup with its original secret. Tests use synthetic local data and no paid calls. Existing verifier zlib build warning remains.
+
+Older downloaded backups still require their original passphrase and cannot be revoked by this operation. This does not recover forgotten secrets, add cloud sync or qualify private-data use. Real-device recovery and independent security review remain open. Owner supplier-draft edits are excluded from this batch. No supplier messages, live account/hosting settings, retention activation or release approval. Approximately 75% implemented (+/-10), NOT_READY; local implementation progress is not release qualification.
+
+Next substantive dependencies: reviewed provider verification/retention and opaque usage enforcement, hosted identity/email rollout, and held-out human quality/safety and full-device acceptance. Supplier drafts remain pending owner review; do not extend vault fixtures without a concrete uncovered risk.
+
 ## M2 passkey transport recovery — 20 October
 
 The maintained Better Auth/passkey SDK now uses its supported customFetchImpl hook with explicit retry0. A small adapter bounds each same-origin /api/auth network response to10seconds and128KiB, including body consumption/JSON validity. It rejects redirects and other origins, cancels response resources, sanitizes failed transport/server responses, and retains only a content-free options-versus-verification failure flag. No credentials/assertions/error bodies are logged by this adapter. Browser authenticator interaction occurs between requests and has no adapter timer. No SDK cryptography or credential validation was replaced.

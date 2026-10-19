@@ -1,5 +1,9 @@
 # PrivateAI delivery roadmap
 
+## M1/M5 local vault recovery milestone — 20 October
+
+Completed atomic passphrase change, explicit old-backup guidance, stale-tab protection and a complete two-tab change/restore journey. 38 scoped tests, 10 built-app browser workflows and build/typecheck pass. D03 remains LOCAL_TESTED / DEVICE_OPEN; O17 remains a separate cloud-sync/key-recovery decision. This advances the production recovery workflow without activating hosting or weakening provider gates. Next work follows provider/opaque-usage and hosted identity/email decisions plus human quality/device acceptance; do not substitute more local resilience tests for these dependencies.
+
 ## Document interoperability and reachable privacy controls - 20 October
 
 Independent synthetic Office packages generated with python-docx1.2.0 now exercise real ZIP/XML output beyond the hand-authored fixture writer. Committed generator, packages and SHA256/provenance: tests/fixtures/office/. Tested strict deadline, split formatting runs, precautions, table quantities/prices, absent tax/delivery inputs, list-item text and disclosed header/footer omissions. This is not Microsoft Word/LibreOffice exporter certification. Actual built-app390px/200%text import, failed-revision recovery and source review pass without outbound disclosures; encrypted save/reopen remains covered. Equations and alternate representations now reject explicitly rather than silently omitting or doubling their content.

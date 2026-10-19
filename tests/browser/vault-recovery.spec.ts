@@ -50,6 +50,12 @@ test("an unreadable snapshot stays stored while an intact draft can open, update
   await expect(page.getByRole("alert")).toContainText(
     "1 saved snapshot could not be read",
   );
+  await expect(
+    page.getByLabel("Current vault passphrase", { exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByText("Passphrase changes are unavailable", { exact: false }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Open", exact: true }).click();
   await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
     "SYNTHETIC INTACT DRAFT",

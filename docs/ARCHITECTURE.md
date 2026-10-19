@@ -1,5 +1,10 @@
 # PrivateAI — architecture and trust boundaries
 
+### Atomic local vault passphrase change — 20 October
+
+`Vault.changePassphrase` verifies the current passphrase against the existing vault check, derives a new key using the existing PBKDF2 parameters and a fresh salt, decrypts/validates each saved conversation, and prepares new AES-GCM wraps for the existing per-conversation data keys. A single IndexedDB transaction compares vault identity, record count and wrapped-key versions before updating every wrap and vault metadata. Failed validation, concurrent changes or transaction errors preserve the prior committed state. Encrypted conversation bodies are retained unchanged; no migration or server escrow is introduced.
+
+Save, read, restore and delete independently verify the unlocked salt against stored metadata, preventing stale clients from writing under an obsolete key even if BroadcastChannel notification is missed. Successful change locks locally and broadcasts invalidation. This is cooperative application concurrency control, not protection against malicious same-origin scripts or revocation of plaintext already read. Downloaded backups retain their old wraps and original passphrase; the user must make a fresh backup and manage old copies. No forgotten-passphrase recovery or cloud synchronization is implied. Synthetic transaction/browser coverage is recorded in READINESS; independent security and actual-device qualification remain open.
 
 **20October fidelity amendment:** DOCX equations and alternate representations are unsupported and explicitly rejected to avoid silent content loss/duplication. Independent python-docx-generated packages and actual browser workflows now supplement authored fixtures; this does not establish Microsoft Word export compatibility or real-device performance. Fixed desktop sidebar overflow now keeps privacy/help controls reachable on short windows and enlarged text.
 
