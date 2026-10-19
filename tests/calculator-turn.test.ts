@@ -114,6 +114,7 @@ it("delivers ordinary prose without imposing a calculation format", async () => 
 it("assembles split arguments and returns a separate locally computed result", async () => {
   const result = await run(tool());
   expect(result.calculation).toEqual({
+    id: "total",
     value: "111.00",
     unit: "GBP",
     references: [source.id],

@@ -188,3 +188,7 @@ Keep these with the existing unresolved questions; no separate founder email is 
 - Preserve the existing worker/GPU binding, browser freshness/revocation/TDX and category-level billing-retention questions. No qualification status changes arise from this batch.
 
 16 October read-only public package recheck: `https://registry.npmjs.org/tinfoil/latest` reports1.2.2, depending on `@tinfoilsh/verifier`1.2.2; `https://registry.npmjs.org/@tinfoilsh%2fverifier/latest` also reports1.2.2. No install or pin change. Same versions do not provide new evidence clearing the existing browser freshness/revocation/TDX, worker/GPU or caching-retention blockers. Supplier statements remain unresolved, not presumed satisfied by elapsed time.
+
+## Batched evidence question — 19 October 2026
+
+No new email requested. For the existing DeepSeek deployment, establish the exact supported thinking-mode tool-result protocol: whether reasoning_content must be returned for the active tool call and prior assistant turns, which JavaScript streaming field supplies it, and whether a tool_choice:none continuation with the same model/settings is supported. Upstream [DeepSeek documentation](https://api-docs.deepseek.com/guides/thinking_mode/) requires reasoning replay; this is not confirmed for Tinfoil. Until reproduced with synthetic data and reviewed context/history handling, the new continuation rejects DeepSeek thinking mode before sending. This does not alter provider privacy qualification or attribute old local validation failures to a new hypothesis.

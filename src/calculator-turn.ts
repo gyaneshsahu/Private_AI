@@ -70,7 +70,12 @@ export class CalculatorValidationError extends IncompleteReplyError {
 export type CalculatorTurn = {
   toolCall?: { id: string; arguments: string };
   text: string;
-  calculation?: { value: string; unit: string; references: string[] };
+  calculation?: {
+    id?: string;
+    value: string;
+    unit: string;
+    references: string[];
+  };
   calculations?: {
     id: string;
     value: string;
@@ -255,6 +260,7 @@ export async function consumeCalculatorTurn(
         text,
         toolCall: { id: callId!, arguments: originalArguments },
         calculation: {
+          id: values[0].id,
           value: values[0].value,
           unit: values[0].unit,
           references,
@@ -281,7 +287,9 @@ export async function consumeCalculatorTurn(
 export function renderCalculatorTurn(turn: CalculatorTurn): string {
   const results =
     turn.calculations ??
-    (turn.calculation ? [{ ...turn.calculation, id: "result" }] : []);
+    (turn.calculation
+      ? [{ ...turn.calculation, id: turn.calculation.id ?? "result" }]
+      : []);
   if (!results.length) return turn.text;
   return [
     turn.text,

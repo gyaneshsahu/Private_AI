@@ -20,7 +20,9 @@ export function prepareCalculationContinuation(
   const call = turn.toolCall;
   const results =
     turn.calculations ??
-    (turn.calculation ? [{ ...turn.calculation, id: "result" }] : []);
+    (turn.calculation
+      ? [{ ...turn.calculation, id: turn.calculation.id ?? "result" }]
+      : []);
   if (
     !results.length ||
     !call?.id ||
