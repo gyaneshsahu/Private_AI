@@ -106,10 +106,18 @@ export function createApp(config: Config) {
       ["/?billing=return", "/?billing=cancel"].includes(req.originalUrl) &&
       req.headers["sec-fetch-mode"] === "navigate" &&
       req.headers["sec-fetch-dest"] === "document";
+    const accountReturn =
+      config.consumer?.mode === "production-candidate" &&
+      req.method === "GET" &&
+      req.path === "/account" &&
+      req.headers["sec-fetch-mode"] === "navigate" &&
+      req.headers["sec-fetch-dest"] === "document";
     if (
       req.headers.host !== new URL(config.origin).host ||
       (req.headers.origin && req.headers.origin !== config.origin) ||
-      (req.headers["sec-fetch-site"] === "cross-site" && !billingReturn)
+      (req.headers["sec-fetch-site"] === "cross-site" &&
+        !billingReturn &&
+        !accountReturn)
     ) {
       res.status(403).json({ error: "Cross-origin access denied." });
       return;

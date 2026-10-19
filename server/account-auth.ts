@@ -16,6 +16,10 @@ import { createHmac } from "node:crypto";
 import { TLSSocket } from "node:tls";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { submitSignInCode, type SignInCodeSender } from "./account-email";
+import {
+  productionSocialProviders,
+  type ProductionSocialCredentials,
+} from "./account-social";
 import { finishSignInRecovery } from "./account-recovery";
 import { accountRecoveryOpen } from "./account-restore";
 import { requestAccountClosure } from "./account-closure";
@@ -67,6 +71,8 @@ export interface ProductionAccountCandidateConfig {
   /** Supplied by a separately reviewed email adapter; tests use a no-network sink. */
   deliverCode: SignInCodeSender;
   workspaceEnabled?: boolean;
+  /** Inactive wiring only: no environment activation or fallback credentials. */
+  social?: ProductionSocialCredentials;
 }
 
 /** Unmounted preparation. Direct TLS only; no environment flag or proxy trust shortcut. */
@@ -84,12 +90,29 @@ export function createProductionAccountCandidate(
     origin: productionAccountTarget.origin,
     synthetic: false,
     workspaceEnabled: config.workspaceEnabled === true,
+    productionSocial: config.social,
   });
 }
 
 function createAccountAuth(
-  config: SyntheticAccountConfig & { synthetic: boolean },
+  config: SyntheticAccountConfig & {
+    synthetic: boolean;
+    productionSocial?: ProductionSocialCredentials;
+  },
 ) {
+  const social =
+    !config.synthetic && config.productionSocial
+      ? productionSocialProviders(config.productionSocial)
+      : undefined;
+  const enabledSocial: readonly ("google" | "apple")[] =
+    social?.providers ?? (config.socialFixtures ? ["google", "apple"] : []);
+  const allowedPaths = new Set(productionAuthPaths);
+  if (enabledSocial.length) {
+    allowedPaths.add("/sign-in/social");
+    allowedPaths.add("/link-social");
+    for (const provider of enabledSocial)
+      allowedPaths.add(`/callback/${provider}`);
+  }
   const deliveryAttempt = new AsyncLocalStorage<{ failed: boolean }>();
   const origin = new URL(config.origin);
   const acceptsEmail = (value: string) =>
@@ -210,7 +233,14 @@ function createAccountAuth(
           throw new APIError("FORBIDDEN", {
             message: "Use the account HTTP boundary.",
           });
-        if (!config.synthetic && !productionAuthPaths.has(ctx.path))
+        if (
+          !config.synthetic &&
+          !allowedPaths.has(ctx.path) &&
+          !(
+            ctx.path === "/callback/:id" &&
+            enabledSocial.some((provider) => provider === ctx.params?.id)
+          )
+        )
           throw new APIError("FORBIDDEN", {
             message: "Account operation is not enabled.",
           });
@@ -265,6 +295,20 @@ function createAccountAuth(
             });
         }
         if (
+          !config.synthetic &&
+          ["/sign-in/social", "/link-social"].includes(ctx.path)
+        ) {
+          if (
+            !enabledSocial.includes(ctx.body?.provider) ||
+            ["scopes", "additionalParams", "additionalData", "loginHint"].some(
+              (field) => ctx.body?.[field] !== undefined,
+            )
+          )
+            throw new APIError("BAD_REQUEST", {
+              message: "Use the configured identity-only sign-in flow.",
+            });
+        }
+        if (
           ["/sign-in/social", "/link-social"].includes(ctx.path) &&
           ctx.body?.idToken
         )
@@ -304,6 +348,7 @@ function createAccountAuth(
       }),
     },
     plugins: [
+      ...(social ? [social.plugin] : []),
       ...(config.socialFixtures
         ? [
             genericOAuth({
@@ -412,11 +457,14 @@ function createAccountAuth(
       "X-Content-Type-Options": "nosniff",
     });
     const callback =
-      config.socialFixtures &&
+      enabledSocial.length > 0 &&
       ((req.method === "GET" &&
-        Object.values(accountCallbackPaths).some((path) => path === req.path) &&
+        enabledSocial.some(
+          (provider) => accountCallbackPaths[provider] === req.path,
+        ) &&
         !req.headers.origin) ||
         (req.method === "POST" &&
+          enabledSocial.includes("apple") &&
           req.path === accountCallbackPaths.apple &&
           req.headers.origin === "https://appleid.apple.com"));
     if (
@@ -436,7 +484,7 @@ function createAccountAuth(
     if (
       !config.synthetic &&
       req.path.startsWith(`${accountAuthBasePath}/`) &&
-      !productionAuthPaths.has(req.path.slice(accountAuthBasePath.length))
+      !allowedPaths.has(req.path.slice(accountAuthBasePath.length))
     ) {
       res.status(403).json({ error: "Account operation is not enabled." });
       return;
@@ -476,12 +524,23 @@ function createAccountAuth(
         .json({ error: "Account access verification is unavailable." });
     }
   });
-  router.get("/api/account/options", (_req, res) => {
-    res.json({
-      synthetic: config.synthetic,
-      workspaceEnabled: config.workspaceEnabled === true,
-      socialProviders: config.socialFixtures ? ["google", "apple"] : [],
-    });
+  router.get("/api/account/options", async (_req, res) => {
+    try {
+      const registered = (await auth.$context).socialProviders.map(
+        (provider) => provider.id,
+      );
+      res.json({
+        synthetic: config.synthetic,
+        workspaceEnabled: config.workspaceEnabled === true,
+        socialProviders: enabledSocial.filter((provider) =>
+          registered.includes(provider),
+        ),
+      });
+    } catch {
+      res
+        .status(503)
+        .json({ error: "Sign-in options are unavailable. Try again later." });
+    }
   });
   router.post("/api/account/recovery/complete", async (req, res) => {
     try {

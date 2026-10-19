@@ -149,6 +149,38 @@ async function routeLocally(context: BrowserContext) {
 }
 
 it.skipIf(!enabled)(
+  "allows only top-level account return navigation while preserving cross-site API and method rejection",
+  async () => {
+    const navigation = {
+      "sec-fetch-site": "cross-site",
+      "sec-fetch-mode": "navigate",
+      "sec-fetch-dest": "document",
+    };
+    expect((await request("/account", navigation)).status).toBe(200);
+    expect(
+      (await request("/account?error=access_denied", navigation)).status,
+    ).toBe(200);
+    for (const path of ["/api/status", "/", "/api/auth/get-session"])
+      expect((await request(path, navigation)).status).toBe(403);
+    expect(
+      (await request("/account", { ...navigation, "sec-fetch-dest": "iframe" }))
+        .status,
+    ).toBe(403);
+    expect(
+      (
+        await request("/account", {
+          ...navigation,
+          origin: "https://evil.test",
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (await request("/account", navigation, Buffer.from("{}"))).status,
+    ).toBe(403);
+  },
+);
+
+it.skipIf(!enabled)(
   "rejects upstream credentials, wrong hosts and HTTP while requiring a signed-in account for workspace APIs",
   async () => {
     for (const extra of [
