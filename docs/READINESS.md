@@ -1,5 +1,16 @@
 # PrivateAI readiness checklist
 
+## 19 October — researched bounded calculator continuation (offline prototype)
+
+Decision: replace the experimental direct-result dead end with a bounded standard tool-result continuation, subject to actual-application comparison. Tinfoil's official tool-calling guide explicitly shows returning the assistant tool call plus a role:tool result and asking for a final response: https://docs.tinfoil.sh/guides/tool-calling (inspected19October). This supports protocol feasibility, not model reliability or provider privacy qualification. No new model or framework is needed to investigate this gap.
+
+Implemented src/calculation-continuation.ts as offline groundwork. The validated first turn retains its original call ID and arguments (before replay expansion). The continuation builder copies history into ephemeral messages, binds the tool result to the original call, checks serialized-message size, and requests tool_choice:none. The consumer accepts one supplied stream, buffers prose until completion, rejects extra tools/incomplete output/cancellation, and aggregates known usage from both rounds. Calculated values remain separate from generated explanation; prose is not certified numerically or factually correct. No automatic requests, retries, repair loops or production flag are added.
+
+Validation:23 tests across calculator-turn and calculation-continuation passed; typecheck and production build passed. Initial sandbox module-cache ENOENT required the normal Windows test runtime; an initial test-call refactor error was corrected before passing. Existing verifier zlib warning unchanged. Zero paid calls, no new dashboard reading: last observed16October actual0.74, prepaid10.26, historical uncertainty0.2491904, active reserve0. Do not describe these old readings as current.
+
+Not yet integrated into the encrypted adapter or tested through the actual application. Next: separately authorize/count both requests; budget complete messages, tools and second-round output; retain same model/deployment verification and deadline; keep calculations/prose separate in delivery; test cancellation, permit denial, persistence exclusion and missing usage through the app. Then freeze fresh matched cases and verify current actual spend before paid calls. Invalid input provenance and undefined result IDs remain rejected; this continuation does not repair those model errors. No historical failure erased, human scores added, trial gate passed, privacy change or deployment.
+
+
 ## 16 October — untouched percentage comparison and precise failure diagnostics
 
 Separate frozen 24-request plan on untouched cases27–29 used unchanged matched configurations: DeepSeek-v4.1-flash low reasoning and GPT-OSS120B high, normal versus optional calculator/replay. Actual application stopped at the first incomplete after **6 attempts / 5 delivered**, with no retries. GPT-OSS calculator and cases28/29 remain unattempted. Frozen implementation and original results are archived separately from subsequent offline diagnostic changes.

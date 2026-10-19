@@ -68,6 +68,7 @@ export class CalculatorValidationError extends IncompleteReplyError {
   }
 }
 export type CalculatorTurn = {
+  toolCall?: { id: string; arguments: string };
   text: string;
   calculation?: { value: string; unit: string; references: string[] };
   calculations?: {
@@ -176,6 +177,7 @@ export async function consumeCalculatorTurn(
       "Calculator prototype requires final usage; no retry was made.",
     );
   if (!sawTool) return { text, usage };
+  const originalArguments = argumentsText;
   onDiagnosticArguments?.(argumentsText);
   try {
     if (prepareArguments) argumentsText = prepareArguments(argumentsText);
@@ -251,6 +253,7 @@ export async function consumeCalculatorTurn(
     if (values.length === 1)
       return {
         text,
+        toolCall: { id: callId!, arguments: originalArguments },
         calculation: {
           value: values[0].value,
           unit: values[0].unit,
@@ -260,6 +263,7 @@ export async function consumeCalculatorTurn(
       };
     return {
       text,
+      toolCall: { id: callId!, arguments: originalArguments },
       calculations: values.map((value) => ({ ...value, references })),
       usage,
     };
