@@ -84,3 +84,29 @@ it("rejects invalid ZIP, expanded XML and macro/embedded packages", async () => 
     extractDocx(await docxFixture("a".repeat(4 * 1024 * 1024))),
   ).rejects.toThrow("4 MB");
 });
+
+it("rejects conflicting main-part declarations and excessive metadata nesting", async () => {
+  const valid =
+    '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>';
+  const types = (body: string) =>
+    `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">${body}</Types>`;
+  for (const [xml, message] of [
+    [
+      types(
+        valid +
+          '<Override PartName="/word/document.xml" ContentType="application/other"/>',
+      ),
+      "Ambiguous DOCX",
+    ],
+    [types("<x>".repeat(130) + "</x>".repeat(130)), "nesting limit"],
+    ["<Other>" + valid + "</Other>", "root"],
+  ]) {
+    await expect(
+      extractDocx(
+        await docxFixture("<w:p><w:r><w:t>safe</w:t></w:r></w:p>", {
+          "[Content_Types].xml": xml,
+        }),
+      ),
+    ).rejects.toThrow(message);
+  }
+});

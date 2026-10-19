@@ -1,5 +1,8 @@
 # Search provider eligibility for saved citations
 
+
+**20October owner confirmation / consolidated outreach:** The19October Tinfoil draft was NOT sent. One focused draft per provider, answered/open evidence ledger and verified recipient guidance are now in [provider-outreach-20261020.md](provider-outreach-20261020.md). These supersede earlier unsent drafts, including the local Brave reply template. Status DRAFT_FOR_OWNER_REVIEW / NOT_SENT; no supplier contacted. Founder operates individually in Germany, may incorporate later, and intends to send from a CometRow mailbox (exact address not assumed). Existing provider/privacy/storage/commercial gates remain closed.
+
 ## Received support follow-up: Brave390102
 
 Founder supplied Sherrell Bullock’s7October2026,08:46PDT reply asking how Brave was discovered and which tools/frameworks will connect. No storage rights, retention or eligible-plan answer was provided. The ticket-update boilerplate means replies join the same support conversation; it is not an account activation instruction. A ready-to-send draft is in .local/brave-support-reply.txt, with only the discovery-channel placeholder left for the founder. It accurately describes the direct React/TypeScript/Node integration and asks for written saved-citation permission, query handling and plan cost. Agent has not sent it. If Brave cannot meet requirements, compare the actual Exa/Tavily replies next; do not activate a substitute based on marketing or erase the research workflow from trial scope.

@@ -1,5 +1,11 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+
+**Independent development20October:** DOCX content-type parsing now rejects duplicate/conflicting main-document declarations, invalid roots and metadata nesting beyond128levels.20scoped tests/3files and typecheck pass; synthetic archives only, no new provider calls or qualification. Supplier drafts remain unsent pending owner review.
+
+
+**20October owner confirmation / consolidated outreach:** The19October Tinfoil draft was NOT sent. One focused draft per provider, answered/open evidence ledger and verified recipient guidance are now in [provider-outreach-20261020.md](provider-outreach-20261020.md). These supersede earlier unsent drafts, including the local Brave reply template. Status DRAFT_FOR_OWNER_REVIEW / NOT_SENT; no supplier contacted. Founder operates individually in Germany, may incorporate later, and intends to send from a CometRow mailbox (exact address not assumed). Existing provider/privacy/storage/commercial gates remain closed.
+
 ## M4 local Word-body workflow - 20 October
 
 Implemented DOCX body-text import through the existing worker, editable sources and encrypted history. No uploads, external relationship reads, HTML rendering, document code execution or provider calls. Supported paragraphs/split runs/tabs/line breaks and basic table cells; no page-number claim. Warning explicitly excludes headers/footers, notes/comments, images, formatting and automatic list numbers. Revisions, fields, text boxes, embedded objects/files and macros reject rather than guessing rendered meaning. Legacy DOC/DOCM and spreadsheets remain unsupported. Existing private-chat/provider gates unchanged; model-selection batch stays closed.

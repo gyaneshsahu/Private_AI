@@ -1,6 +1,9 @@
 # Provider qualification — NOT_PASSED
 
 
+**20October owner confirmation / consolidated outreach:** The19October Tinfoil draft was NOT sent. One focused draft per provider, answered/open evidence ledger and verified recipient guidance are now in [provider-outreach-20261020.md](provider-outreach-20261020.md). These supersede earlier unsent drafts, including the local Brave reply template. Status DRAFT_FOR_OWNER_REVIEW / NOT_SENT; no supplier contacted. Founder operates individually in Germany, may incorporate later, and intends to send from a CometRow mailbox (exact address not assumed). Existing provider/privacy/storage/commercial gates remain closed.
+
+
 **20October registry check:** public npm registry latest @tinfoilsh/verifier is1.2.2, gitHead `eac102f50ad3c1bfc3fd3cefe8a615671d86fa52`, integrity `sha512-f81hoLbLZ54pYt3GIG3L7iD29rOVK+9F30K5z8w1ypWKHjr3dMkt0emFwJV1OiTzp7EXwmh61qDN88Mqx6lHuw==`. This matches our installed version; no newer release was installed or shown to resolve the blocker. [Registry metadata](https://registry.npmjs.org/@tinfoilsh%2fverifier/latest) was read through TLS-verified PowerShell after web retrieval failed. [Public source](https://raw.githubusercontent.com/tinfoilsh/tinfoil-js/main/packages/verifier/src/attestation.ts) still displays SEV-SNP-v2-only parsing, but cached main-branch text is not a pinned release attestation. Preserve existing tested limitations and consolidated supplier questions. Owner asked whether that consolidated message was sent; no supplier message sent by the agent.
 
 ## Evidence refresh and human review - 20 October

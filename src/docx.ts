@@ -140,12 +140,23 @@ export async function extractDocx(bytes: Uint8Array): Promise<string> {
     const types = parts.get("[Content_Types].xml"),
       document = parts.get("word/document.xml");
     if (!types || !document) throw Error("Invalid DOCX package.");
-    let valid = false;
+    let valid = false,
+      typeDepth = 0,
+      mainDeclarations = 0;
     const parser = new SaxesParser({ xmlns: true });
     parser.on("doctype", () => {
       throw Error("Unsupported DOCX declaration.");
     });
     parser.on("opentag", (tag) => {
+      if (++typeDepth > 128)
+        throw Error("DOCX content types exceed the nesting limit.");
+      if (
+        typeDepth === 1 &&
+        (tag.local !== "Types" ||
+          tag.uri !==
+            "http://schemas.openxmlformats.org/package/2006/content-types")
+      )
+        throw Error("Invalid DOCX content-types root.");
       if (
         tag.uri ===
           "http://schemas.openxmlformats.org/package/2006/content-types" &&
@@ -154,6 +165,8 @@ export async function extractDocx(bytes: Uint8Array): Promise<string> {
         const values = Object.values(tag.attributes);
         const part = values.find((a) => a.name === "PartName")?.value;
         const type = values.find((a) => a.name === "ContentType")?.value;
+        if (part === "/word/document.xml" && ++mainDeclarations > 1)
+          throw Error("Ambiguous DOCX main document declarations.");
         if (
           part === "/word/document.xml" &&
           type ===
@@ -163,6 +176,9 @@ export async function extractDocx(bytes: Uint8Array): Promise<string> {
         if (type?.toLowerCase().includes("macroenabled"))
           throw Error("DOCX macros are not supported.");
       }
+    });
+    parser.on("closetag", () => {
+      typeDepth--;
     });
     parser.write(await readPart(types)).close();
     if (!valid) throw Error("Unsupported DOCX content type.");
