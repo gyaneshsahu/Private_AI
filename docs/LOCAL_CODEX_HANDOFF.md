@@ -1,5 +1,13 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Resume M3 after hosting decision — 19 October
+
+Owner explicitly time-boxed infrastructure work: finish a reviewable hosting package/decision, keep provider privacy and answer quality active. Completed consolidated packet at top of development-deployment.md with recommendation, actual package limits, costs, ownership and staged approvals. Keep restricted Render unchanged; German direct-Caddy VM is proposed synthetic staging direction only. No purchase/DNS/activation requested or authorized.
+
+`--package` now also exercises the real default-entrypoint container: database pause/unpause readiness503/200, SIGKILL137, explicit restart200, graceful Docker stop0. Final process scenario and16existing certificate/ingress tests pass; no application-source mounts for package. Prior restore/quarantine evidence retained, not falsely promoted to off-host recovery. Independent monitoring/publicACME and real operations remain unqualified. No new paid calls/failures/human grades; approximately75% implemented, NOT_READY.
+
+**Next milestone M3:** inspect current unresolved model/quality evidence and select the smallest useful fresh complete-answer study; reconcile actual spend before paid calls. Provider evidence log already has one consolidated question set and same-day alternative-source audit: use it, don't repeat identical research without a new gap. Privacy and opaque usage must remain separate release blockers. Do not return to endless infrastructure fixture expansion; reopen for concrete host integration, failure or required release evidence.
+
 ## Latest deployment package — 19 October
 
 Explicit `server/deployment-entry.ts` now starts the runtime from strict absolute-path JSON/secret files; only email-disabled mode accepted, sender fails503, no inference/search/billing/migration activation. Dedicated Docker target `deployment-candidate`, pinned build base, existing default runtime untouched. `deployment/compose.yaml` is inactive app-only preparation, syntax-checked not launched. Exact commands/image IDs/remaining host steps at top of development-deployment.md.

@@ -1,5 +1,13 @@
 # PrivateAI readiness checklist
 
+## M6 hosting decision packet completed — 19 October
+
+The top of development-deployment.md is the consolidated hosting recommendation, package/evidence matrix, component costs, operating tradeoffs and exact owner/engineering decision boundaries. Recommend retaining restricted Render now; proposed next synthetic staging direction is direct Caddy/mTLS on a German VM, not an approved purchase/migration or turnkey full stack. No independent alerting/off-host recovery/public-ACME claim.
+
+Bounded additional evidence: packaged process scenario passed; actual default-entrypoint candidate container detected paused-database readiness503 and recovered200, exited137 on forced kill, restarted to200 and stopped cleanly0 under read-only/capability/resource restrictions. Existing16ingress/certificate-rotation cases pass. Prior local dump/restore quarantine evidence retained without relabelling it hosted recovery. No failures or paid calls this batch; no human scores/live settings changed. Container/certificate fixtures cleaned. Approximately75% implemented (+/-10points), NOT_READY.
+
+Infrastructure investigation now has a stopping point. Next active milestone is M3 provider privacy/opaque monetary enforcement and fresh complete-answer quality/delivery evidence. Supplier evidence, real sender/host integration, external monitoring/recovery/device/commercial and human acceptance remain open. Reopen infra testing for an actual integration or failure, not additional isolated assertions without a release purpose.
+
 ## M6 packaged process — 19 October
 
 Implemented explicit `deployment-entry.ts`, strict secret-file configuration and dedicated `deployment-candidate` Docker target with pinned Node build base; inactive app-only Compose config. Email is disabled/fails503, inference/search/billing stay disabled, no migrations or live activation. Process owns its PostgreSQL pool, handles idle connection errors without raw logs, drains onSIGTERM/SIGINT and has a15s shutdown backstop. Existing default runtime unchanged.

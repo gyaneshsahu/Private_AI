@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
-import { createHash, randomUUID } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { createHash, randomUUID, X509Certificate } from "node:crypto";
+import { readFile, writeFile, unlink } from "node:fs/promises";
 import { ingressTLS } from "../tests/fixtures/ingress-tls";
 
 if (process.env.PRIVATEAI_SYNTHETIC_INGRESS_TLS_DIR)
@@ -27,6 +27,7 @@ const host =
     ? "--host=npipe:////./pipe/dockerDesktopLinuxEngine"
     : "--host=unix:///var/run/docker.sock";
 const env = { ...process.env };
+const packageFiles: string[] = [];
 for (const key of [
   "DOCKER_HOST",
   "DOCKER_CONTEXT",
@@ -162,6 +163,105 @@ try {
     ],
     { env, stdio: "inherit", windowsHide: true, timeout: 90000 },
   );
+  if (packaged) {
+    const docker = (args: string[], timeout = 15000) =>
+      execFileSync("docker", [host, ...args], {
+        env,
+        encoding: "utf8",
+        windowsHide: true,
+        timeout,
+        stdio: ["ignore", "pipe", "pipe"],
+      }).trim();
+    const writeFixture = async (name: string, value: string) => {
+      const file = resolve(tls.directory, name);
+      packageFiles.push(file);
+      await writeFile(file, value);
+    };
+    await writeFixture(
+      "auth-secret",
+      "SYNTHETIC_CONTAINER_ONLY_SECRET_123456789",
+    );
+    await writeFixture(
+      "database-url",
+      "postgresql://privateai_synthetic:local-synthetic-only@127.0.0.1:5432/privateai_synthetic",
+    );
+    await writeFixture(
+      "config.json",
+      JSON.stringify({
+        mode: "restricted-deployment",
+        email: "disabled",
+        host: "127.0.0.1",
+        port: 8443,
+        assets: "/app/dist",
+        secretFile: "/fixtures/auth-secret",
+        databaseUrlFile: "/fixtures/database-url",
+        tlsKeyFile: "/fixtures/localhost.key",
+        tlsCertFile: "/fixtures/localhost.pem",
+        clientCaFile: "/fixtures/ca.pem",
+        peerCertificateSha256: [
+          new X509Certificate(tls.proxy.cert).fingerprint256
+            .replaceAll(":", "")
+            .toLowerCase(),
+        ],
+      }),
+    );
+    docker([
+      "run",
+      "-d",
+      `--name=${container}`,
+      "--pull=never",
+      `--network=container:${database}`,
+      "--label=privateai.purpose=synthetic-ingress",
+      "--read-only",
+      "--user=1000:1000",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--memory=1g",
+      "--pids-limit=128",
+      "--log-driver=none",
+      "--tmpfs=/tmp:rw,noexec,nosuid,size=64m",
+      "--mount",
+      `type=bind,source=${tls.directory},target=/fixtures,readonly`,
+      "privateai-deployment-candidate:local",
+      "/fixtures/config.json",
+    ]);
+    const probe = `const fs=require('node:fs');const https=require('node:https');const r=https.get({hostname:'127.0.0.1',port:8443,servername:'localhost',path:'/readyz',ca:fs.readFileSync('/fixtures/ca.pem'),key:fs.readFileSync('/fixtures/proxy.key'),cert:fs.readFileSync('/fixtures/proxy.pem'),headers:{host:'app.cometrow.com','x-privateai-edge-client-ip':'203.0.113.8','x-privateai-edge-proto':'https'}},s=>{s.resume();s.on('end',()=>process.stdout.write(String(s.statusCode)))});r.setTimeout(7000,()=>r.destroy());r.on('error',()=>process.exit(2));`;
+    const status = () =>
+      docker(["exec", container, "node", "-e", probe], 10000);
+    const ready = async () => {
+      for (let i = 0; i < 30; i++) {
+        try {
+          if (status() === "200") return;
+        } catch {}
+        await new Promise((done) => setTimeout(done, 100));
+      }
+      throw Error("Packaged container did not recover readiness.");
+    };
+    await ready();
+    docker(["pause", database]);
+    try {
+      if (status() !== "503") throw Error("Database outage was not detected.");
+    } finally {
+      docker(["unpause", database]);
+    }
+    await ready();
+    docker(["kill", "--signal=KILL", container]);
+    if (
+      docker(["inspect", "--format", "{{.State.ExitCode}}", container]) !==
+      "137"
+    )
+      throw Error("Abrupt container failure was not recorded.");
+    docker(["start", container]);
+    await ready();
+    docker(["stop", "--time=20", container], 25000);
+    if (
+      docker(["inspect", "--format", "{{.State.ExitCode}}", container]) !== "0"
+    )
+      throw Error("Graceful container stop failed.");
+    console.log(
+      "Packaged container: readiness outage/recovery, SIGKILL/137, restart and graceful stop/0 passed.",
+    );
+  }
 } finally {
   try {
     for (const target of workspace ? [container, database] : [container]) {
@@ -206,6 +306,7 @@ try {
         });
     }
   } finally {
+    for (const file of packageFiles) await unlink(file);
     await tls.dispose();
   }
 }

@@ -1,5 +1,37 @@
 # Restricted development deployment
 
+## Hosting decision packet — 19 October, bounded assessment complete
+
+**Recommendation:** keep the existing restricted Render service unchanged. Adopt the direct-public Caddy→mTLS app design for the next **synthetic staging** deployment, with a German x86 VM as the proposed destination. Do not migrate production accounts or purchase a host yet. The package is reviewable and runnable locally; it is not a turnkey hosted stack. Resolve provider qualification and useful-answer evidence alongside the remaining host integration, rather than extending isolated infrastructure tests indefinitely.
+
+### Package and demonstrated behavior
+
+- Explicit process/image: `server/deployment-entry.ts`, Docker target `deployment-candidate`; inactive settings in `deployment/config.example.json` and `deployment/compose.yaml`. Reproduction and verified image IDs below. Only the candidate target changes the entrypoint; old Render/default image behavior stays unchanged.
+- Final `npm run test:ingress -- --package`: image-contained process scenario passes, then the **actual candidate container with its default entrypoint** passes readiness200→503 while PostgreSQL is paused→200 after unpause; SIGKILL yields137; explicit restart returns readiness200; Docker stop exits0. Read-only filesystem,1GiB memory,128PIDs, dropped capabilities, no-new-privileges and no retained Docker logs. No live credentials, external network or published ports. This tests bounded failures, not sustained load or resource-exhaustion resistance.
+- `npm run test:ingress`:16/16existing gateway tests pass, including two-pin certificate overlap and rejection after retiring a pin. These are synthetic certificate/transport tests, not public ACME renewal or provider-attestation revocation evidence.
+- Existing `account-restore.test.ts` evidence remains applicable: actual local dump/restore reproduces stale account/usage state; quarantine blocks resurrected access, notice delivery and normal readiness. Corrupt restore fails. The earlier361ms tiny-fixture observation is NOT a hosted recovery promise. No new off-host backup transfer, retention activation or recovery-key custody test occurred here.
+- Readiness detects the tested database outage and recovery; existing content-free counters distinguish HTTP completion/interruption. **Independent monitoring/notification is not implemented or qualified.** A check running inside the dead host cannot detect host loss. Do not represent Docker restart or health status as an alerting service.
+
+### Proposed host and tradeoff
+
+Proposed staging tier: Hetzner CX33 in Germany, subject to availability and final checkout. Existing source-backed price evidence below gives compute+IPv4 approximately€10.70/month including19%VAT, or approximately€12.72 with optional VM backup. These are component estimates, not a spending request or an all-in production budget. Add off-host encrypted application backups, independent monitoring, email, inference, traffic overage and operating time. No substitution of tier/region or purchase is authorized. A single VM has a single failure domain and requires OS/database/security maintenance; cheap compute alone is not a reason to choose it.
+
+Render retains the advantage of managed platform operation. Its standard HTTP upstream needs a separately supported and reviewed trusted-edge adapter for this candidate; no such contract has been established. A German VM fits the proven transport path more directly, but moves operating responsibility to us. **Choose the VM direction only if we can staff maintenance and recovery.** Neither host fixes confidential-inference or model-quality failures.
+
+### Remaining steps and decision boundaries
+
+| Before | Required evidence / action | Owner |
+| --- | --- | --- |
+| Any hosting purchase | Final available tier/region and complete monthly quote, operator/backup responsibility, provider terms and data custody; reviewed architecture choice | Engineering prepares; owner decides and provisions |
+| First synthetic hosted run | Gateway+database networking/firewall, runtime vs migration credentials, host secret/key custody, public TLS staging/renewal and internal-pin rotation procedure; explicit image digest | Engineering prepares exact settings; owner applies consequential settings |
+| Real accounts/private data | Reviewed sender and real identity-provider interoperability; measured off-host restore and reconciliation; external missing-probe/certificate/backup alerts and response drill; full-device check | Engineering validates; owner supplies access and device checks |
+| Private model traffic | Browser→approved current worker/GPU verification, freshness/revocation/TDX and enforceable cache lifetime; opaque-request cost enforcement and authenticated settlement | Supplier evidence plus engineering negative tests; owner approves material architecture changes |
+| Limited/public release | Fresh complete-conversation quality/safety acceptance, resolution of material delivery/constraint/math/source failures, commercial/legal/support setup, final release review | Engineering evidence plus explicit human assessment/owner decision |
+
+DNS preparation for the VM path: an `A` record with name `app`, value the **owner-provisioned public IPv4**, DNS-only/direct to Caddy. Do not invent that value, switch the existing record, add a CDN or publish an untestedAAAA record. Callback values already documented below stay tied to `https://app.cometrow.com`. No DNS change requested now. Rollback must retain the previous image/config and check schema compatibility; database restore is a separately quarantined recovery operation, not an automatic effect of DNS rollback.
+
+**Next milestone switches focus:** keep this packet as the single hosting decision record; move to M3 provider/opaque-usage resolution and a bounded, fresh complete-answer comparison selected from the unresolved quality evidence. Check actual spend before paid work; preserve failed/incomplete results and leave human grades blank. Only reopen infrastructure tests for a concrete host integration, new failure or release requirement—not to inflate the implementation percentage. Approximately75% implemented, NOT_READY.
+
 ## Runnable restricted deployment package — 19 October
 
 The new explicit process is `node --import tsx server/deployment-entry.ts /absolute/path/config.json`. It accepts only the strict configuration in `deployment/config.example.json`; the example's invalid peer-pin placeholder deliberately prevents accidental startup. No secret values are read from environment fallbacks. Authentication secret, database URL and TLS material come from bounded files; credentials/errors are not printed. Database URLs cannot carry query options that override reviewed TLS policy. Remote databases require an explicit CA with certificate verification; only loopback permits no database TLS. The configuration directory must be private to the operator, readable by container UID1000, mounted read-only, and never committed with real values.
