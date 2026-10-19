@@ -1,5 +1,16 @@
 # PrivateAI readiness checklist
 
+### M2 metadata minimization and migration safety — 19 October
+
+**Active target remains one public-launchable general-purpose product; no account/provider activation or release approval in this batch.** The inactive auth core now discards social access/refresh/ID tokens, scopes and token-expiry fields at database create/update, since identity-only sign-in needs no ongoing provider API grant. Only verified email and stable provider subject are mapped from the profile; automatic names/avatars are omitted. Session IP/user-agent fields are null on create/update. Rate limiting still uses its separate database keys; this is not anonymous or metadata-free authentication. Email, identity IDs, passkey public credentials, session bearer tokens and timestamps remain stored and need production storage/retention controls. Existing live records were not changed or deleted.
+
+New explicit migration planner/runner reads committed SQL, records normalized SHA-256 checksums, serializes concurrent migrators with a database lock and applies the complete pending batch in one transaction. It rejects unknown, changed or incomplete history without repair. Read-only planning creates no tables. It never runs from production startup. Existing-account conversion, runtime/migration role separation, hosted backups/restore and rollout approval remain separate requirements.
+
+**Combined final regression: 48 tests across 11 files pass**, including actual React email/passkey/recovery and social-cookie workflows, OIDC rejection, account model/invite isolation, migration concurrent-run/drift/DDL rollback, SQLite/PostgreSQL quota enforcement and application relay/deployment gates. Final build/typecheck and 4 account browser regressions pass. Both auth suites now apply the checked migration runner before starting fresh auth instances. A new metadata assertion initially selected the wrong fixture account after the browser workflow; it now explicitly binds the intended email/subject and verifies null stored fields.
+
+Synthetic review screenshots are reproducible with `npm run build` then the PostgreSQL auth/social tests: `.local/account-review/sign-in.png` and `connected-account.png`. They show the actual built lab at phone width, not activated Google/Apple services. Owner production-domain selection is requested before any real provider callback registration/passkey enrollment. No credentials, DNS/account change, billing change or private data requested.
+
+
 ### M2 shared request accounting — implemented, inactive, 19 October
 
 Added PostgreSQL request-count accounting behind the same UsageLedger boundary, with migration 0004. Account-row locking serializes grants and admission across pools; periods cannot overlap through the service, request IDs are globally unique and a composite foreign key binds requests to the correct account/period. Database time controls admission. Reserved, dispatched and uncertain attempts remain counted across restart; no automatic refunds, implicit renewal or client-supplied grants. SQL stores IDs/counting states/timestamps only, not content or claimed token costs.

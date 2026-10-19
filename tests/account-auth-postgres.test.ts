@@ -9,6 +9,7 @@ import { writeFile, mkdir, readFile } from "node:fs/promises";
 import { chromium, expect as browserExpect } from "@playwright/test";
 import { resolve } from "node:path";
 import { finishSignInRecovery } from "../server/account-recovery";
+import { applyAccountMigrations } from "../server/account-migrations";
 
 const connectionString = process.env.PRIVATEAI_SYNTHETIC_PG;
 const enabled = !!connectionString;
@@ -61,16 +62,7 @@ beforeAll(async () => {
   expect(committedSchema.replaceAll("\r\n", "\n").trim()).toBe(
     migrationSQL.replaceAll("\r\n", "\n").trim(),
   );
-  await pool.query(committedSchema);
-  await pool.query(
-    await readFile("server/migrations/0002-account-uniqueness.sql", "utf8"),
-  );
-  await pool.query(
-    await readFile(
-      "server/migrations/0003-account-security-events.sql",
-      "utf8",
-    ),
-  );
+  await applyAccountMigrations(pool);
   // Runtime starts after migrations; do not reuse pre-migration schema caches.
   await pool.end();
   pool = new Pool({

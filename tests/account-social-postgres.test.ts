@@ -7,12 +7,13 @@ import {
   randomUUID,
   sign,
 } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { mkdir } from "node:fs/promises";
 import type { Server } from "node:http";
 import express from "express";
 import { resolve } from "node:path";
 import { chromium, expect as browserExpect } from "@playwright/test";
 import { createSyntheticAccountAuth } from "../server/account-auth";
+import { applyAccountMigrations } from "../server/account-migrations";
 import { createServer } from "node:https";
 import { Agent, fetch as localFetch } from "undici";
 import { localTLS } from "./fixtures/local-tls";
@@ -77,12 +78,7 @@ beforeAll(async () => {
   admin = new Pool({ connectionString });
   await admin.query(`CREATE SCHEMA "${schema}"`);
   pool = new Pool({ connectionString, options: `-c search_path=${schema}` });
-  for (const file of [
-    "0001-consumer-auth.sql",
-    "0002-account-uniqueness.sql",
-    "0003-account-security-events.sql",
-  ])
-    await pool.query(await readFile(`server/migrations/${file}`, "utf8"));
+  await applyAccountMigrations(pool);
   const app = express();
   tls = await localTLS();
   // Exact ephemeral localhost origin only; all external fetches are intercepted below.
@@ -287,6 +283,14 @@ it.skipIf(!connectionString)(
     page.on("pageerror", (error) => errors.push(error.message));
     try {
       await page.goto(`${origin}/?account-lab=1`);
+      await browserExpect(
+        page.getByRole("button", { name: "Continue with Apple" }),
+      ).toBeVisible();
+      await mkdir(".local/account-review", { recursive: true });
+      await page.screenshot({
+        path: ".local/account-review/sign-in.png",
+        fullPage: true,
+      });
       await page.getByRole("button", { name: "Continue with Google" }).click();
       await browserExpect(
         page.getByRole("heading", { name: "Your test account" }),
@@ -300,6 +304,10 @@ it.skipIf(!connectionString)(
       await browserExpect(
         page.getByRole("button", { name: "Connected to Apple" }),
       ).toBeDisabled();
+      await page.screenshot({
+        path: ".local/account-review/connected-account.png",
+        fullPage: true,
+      });
       await page.getByRole("button", { name: "Sign out", exact: true }).click();
       await page.getByRole("button", { name: "Continue with Apple" }).click();
       await browserExpect(
@@ -478,10 +486,33 @@ it.skipIf(!connectionString)(
       (await (await call("get-session", undefined, cookie)).json()).user.email,
     ).toBe("google@example.test");
     const account = (
-      await pool.query("SELECT * FROM account WHERE \"providerId\"='google'")
+      await pool.query(
+        'SELECT a.* FROM account a JOIN "user" u ON u.id=a."userId" WHERE a."providerId"=\'google\' AND u.email=\'google@example.test\'',
+      )
     ).rows[0];
     expect(account.accessToken).not.toBe("synthetic-access");
     expect(account.refreshToken).not.toBe("synthetic-refresh");
+    expect(account).toMatchObject({
+      accessToken: null,
+      refreshToken: null,
+      idToken: null,
+      scope: null,
+    });
+    expect(
+      (
+        await pool.query('SELECT name,image FROM "user" WHERE email=$1', [
+          "google@example.test",
+        ])
+      ).rows[0],
+    ).toEqual({ name: "", image: null });
+    expect(
+      (
+        await pool.query(
+          'SELECT "ipAddress","userAgent" FROM session WHERE "userId"=$1',
+          [account.userId],
+        )
+      ).rows,
+    ).toEqual([{ ipAddress: null, userAgent: null }]);
     const count = exchanges;
     rejected(await callback(url, flow.cookie));
     expect(exchanges).toBe(count);
@@ -613,6 +644,17 @@ it.skipIf(!connectionString)(
         )
       ).rows[0].n,
     ).toBe(2);
+    expect(
+      (
+        await pool.query(
+          'SELECT "accessToken","refreshToken","idToken" FROM account WHERE "userId"=$1',
+          [session.user.id],
+        )
+      ).rows,
+    ).toEqual([
+      { accessToken: null, refreshToken: null, idToken: null },
+      { accessToken: null, refreshToken: null, idToken: null },
+    ]);
     const pending = await begin("apple", sessionCookie, true);
     const pendingURL = prepare(pending, email);
     await call("sign-out", {}, sessionCookie);

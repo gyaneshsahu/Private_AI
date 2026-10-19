@@ -2,7 +2,7 @@ import { Pool } from "pg";
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
-export async function usageDatabase() {
+export async function usageDatabase(options: { empty?: boolean } = {}) {
   const connectionString = process.env.PRIVATEAI_SYNTHETIC_PG;
   if (!connectionString)
     throw Error("Explicit synthetic PostgreSQL connection required.");
@@ -37,9 +37,10 @@ export async function usageDatabase() {
   try {
     await admin.query(`CREATE SCHEMA "${schema}"`);
     const pool = connect();
-    await pool.query(
-      await readFile("server/migrations/0004-usage-ledger.sql", "utf8"),
-    );
+    if (!options.empty)
+      await pool.query(
+        await readFile("server/migrations/0004-usage-ledger.sql", "utf8"),
+      );
     return { pool, connect, close, dispose };
   } catch (error) {
     await dispose();

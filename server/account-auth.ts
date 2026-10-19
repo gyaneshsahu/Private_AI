@@ -48,6 +48,39 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
     logger: { disabled: true },
     emailAndPassword: { enabled: false },
     socialProviders: {},
+    databaseHooks: {
+      user: {
+        create: {
+          before: async (data) => ({
+            data: { ...data, name: "", image: null },
+          }),
+        },
+      },
+      session: {
+        create: {
+          before: async (data) => ({
+            data: { ...data, ipAddress: null, userAgent: null },
+          }),
+        },
+        update: {
+          before: async (data) => ({
+            data: { ...data, ipAddress: null, userAgent: null },
+          }),
+        },
+      },
+      account: {
+        create: {
+          before: async (data) => ({
+            data: { ...data, ...discardedProviderTokens },
+          }),
+        },
+        update: {
+          before: async (data) => ({
+            data: { ...data, ...discardedProviderTokens },
+          }),
+        },
+      },
+    },
     user: {
       validateUserInfo: async ({ user, source }, ctx) => {
         if (
@@ -178,7 +211,12 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
                     if (!tokens.idToken) return null;
                     const profile = await profileReader.getUserInfo(tokens);
                     return profile
-                      ? { ...profile.data, ...profile.user }
+                      ? {
+                          sub: profile.data.sub,
+                          email: profile.user.email,
+                          emailVerified: profile.user.emailVerified,
+                          name: "",
+                        }
                       : null;
                   },
                 };
@@ -302,3 +340,13 @@ function isFresh(createdAt: Date): boolean {
   const age = Date.now() - createdAt.getTime();
   return age >= 0 && age < 300_000;
 }
+
+// Identity-only sign-in needs no durable grant to call provider APIs or refresh tokens.
+const discardedProviderTokens = {
+  accessToken: null,
+  refreshToken: null,
+  idToken: null,
+  accessTokenExpiresAt: null,
+  refreshTokenExpiresAt: null,
+  scope: null,
+};

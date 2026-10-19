@@ -1,5 +1,14 @@
 # PrivateAI — architecture and trust boundaries
 
+### Identity data and schema lifecycle — inactive implementation, 19 October
+
+Auth database hooks discard unused OAuth grants/tokens and automatic profile names/images; session creation/update omits IP/user-agent persistence. The identity-only product does not need provider API refresh grants or provider logout, so the latter remains disabled. Verified contact email, stable subject, local sessions and passkey public credentials still exist. Rate-limit keys may include connection identifiers. No anonymous-account or zero-metadata claim is justified; production access controls, encrypted storage, retention and disclosure review remain needed. No deletion of live records is implied by these hooks.
+
+`server/account-migrations.ts` explicitly plans/applies the committed SQL manifest. Read-only planning performs no DDL. Apply takes a transaction-scoped advisory lock per database/schema, validates the applied checksum prefix and runs all pending DDL/history writes atomically. A changed/gapped/unknown history aborts. A later failure rolls back earlier pending migrations and preserves pre-existing data. Never auto-adopt old tables, rewrite checksums to pass, or run migrations from ordinary request handling. Auth runtime instances start after migration with fresh pools. Hosted migration roles, backup/restore and approved account conversion remain deployment work.
+
+For implementation review, synthetic screenshots can be regenerated at `.local/account-review/sign-in.png` and `connected-account.png` by the documented auth/social suites. The next owner-controlled prerequisite is the final production domain: OAuth callbacks and passkey RP identity must be set deliberately before real registration. No real provider credentials or migration is enabled by these screenshots.
+
+
 ### Durable request-count implementation — 19 October
 
 UsageLedger now accepts asynchronous adapters. PostgresUsageLedger uses a shared account lock for grant/admission, database time, immutable non-overlapping service-provisioned periods, global request-ID uniqueness and relational account/period binding. Migration 0004 has no chat or token fields. Atomic reserve/dispatch precedes encrypted forwarding; terminal settlement is idempotent. Uncertain or interrupted work is never refunded automatically. SQLite remains the reference local adapter.
