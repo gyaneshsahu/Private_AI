@@ -21,7 +21,8 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
           if (!id.replaceAll("\\", "/").endsWith("/src/inference.ts")) return;
           return `
         import { composeContext } from '/src/conversation.ts';
-        import { IncompleteReplyError } from '/src/reply-stream.ts';
+        import { IncompleteReplyError, consumeReply } from '/src/reply-stream.ts';
+        import { completionEvents } from '/src/completion-events.ts';
         import { consumeResearchReply } from '/src/research-contract.ts';
         export async function streamReply(c, qualification, csrf, signal, chunk, status) {
           window.fixtureCalls ??= [];
@@ -35,6 +36,10 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
             }
             return consumeResearchReply(events(), {inputPerMillion:1,outputPerMillion:1,currency:'USD'}, signal,
               [{id:'notice-001',title:'Synthetic notice',text:'Collection is scheduled for June 19.'}], chunk);
+          }
+          if (window.fixtureMode === 'http-unavailable' || window.fixtureMode === 'http-limited') {
+            const response = new Response('PRIVATE_PROVIDER_BODY', {status:window.fixtureMode==='http-limited'?429:503});
+            return consumeReply(completionEvents(response, signal), {currency:'USD',inputPerMillion:1,outputPerMillion:1}, signal, chunk);
           }
           if (window.fixtureMode === 'timeout') throw new DOMException('PRIVATE_PROVIDER_DETAIL', 'TimeoutError');
           if (window.fixtureMode === 'stall') {
@@ -497,6 +502,46 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
         () => (window as unknown as FixtureWindow).fixtureCalls.length,
       ),
     ).toBe(callsBeforeLimit + 2);
+    for (const mode of ["http-unavailable", "http-limited"]) {
+      const before = await page.evaluate(
+        () => (window as unknown as FixtureWindow).fixtureCalls.length,
+      );
+      await page.evaluate(
+        (mode) => Object.assign(window, { fixtureMode: mode }),
+        mode,
+      );
+      await page
+        .getByLabel("Message PrivateAI")
+        .fill("TEST unavailable service");
+      await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+      await ui(
+        page
+          .getByRole("status")
+          .filter({
+            hasText:
+              mode === "http-limited"
+                ? "limiting requests"
+                : "service is unavailable",
+          }),
+      ).toBeVisible();
+      await ui(
+        page.getByRole("status").filter({ hasText: "cost remains unknown" }),
+      ).toBeVisible();
+      await ui(
+        page.getByText("PRIVATE_PROVIDER_BODY", { exact: false }),
+      ).toHaveCount(0);
+      await ui(
+        page
+          .locator("article.assistant")
+          .last()
+          .getByRole("button", { name: "Copy answer" }),
+      ).toBeDisabled();
+      expect(
+        await page.evaluate(
+          () => (window as unknown as FixtureWindow).fixtureCalls.length,
+        ),
+      ).toBe(before + 1);
+    }
     expect(external).toEqual([]);
   } finally {
     await browser.close();

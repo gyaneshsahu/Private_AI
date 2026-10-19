@@ -12,7 +12,13 @@ export async function* completionEvents(
 ): AsyncGenerator<ChatCompletionChunk> {
   if (!response.ok || !response.body) {
     await response.body?.cancel();
-    throw new StreamProtocolError("HTTP_RESPONSE_INVALID");
+    throw new StreamProtocolError(
+      response.status === 429
+        ? "HTTP_RATE_LIMITED"
+        : [502, 503, 504].includes(response.status)
+          ? "HTTP_SERVICE_UNAVAILABLE"
+          : "HTTP_RESPONSE_INVALID",
+    );
   }
   const reader = response.body.getReader();
   const decoder = new TextDecoder("utf-8", { fatal: true });

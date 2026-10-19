@@ -25,6 +25,45 @@ const run = (body: string) =>
     () => {},
   );
 
+it.each([
+  [429, "HTTP_RATE_LIMITED", "limiting requests"],
+  [502, "HTTP_SERVICE_UNAVAILABLE", "service is unavailable"],
+  [503, "HTTP_SERVICE_UNAVAILABLE", "service is unavailable"],
+  [504, "HTTP_SERVICE_UNAVAILABLE", "service is unavailable"],
+  [401, "HTTP_RESPONSE_INVALID", "Response incomplete"],
+])(
+  "classifies HTTP %s without reading provider error content or claiming known cost",
+  async (status, code, message) => {
+    let cancelled = false;
+    const body = new ReadableStream({
+      start(c) {
+        c.enqueue(new TextEncoder().encode("PRIVATE_ERROR_BODY"));
+      },
+      cancel() {
+        cancelled = true;
+      },
+    });
+    const chunks: string[] = [];
+    await expect(
+      consumeReply(
+        completionEvents(
+          new Response(body, { status: Number(status) }),
+          signal(),
+        ),
+        pricing,
+        signal(),
+        (t) => chunks.push(t),
+      ),
+    ).rejects.toMatchObject({
+      message: expect.stringContaining(String(message)),
+      diagnostic: { code, events: 0, textCharacters: 0 },
+      usage: undefined,
+    });
+    expect(chunks).toEqual([]);
+    expect(cancelled).toBe(true);
+  },
+);
+
 it("parses split UTF-8 bytes, CRLF, comments and usage; requires explicit completion", async () => {
   const data = new TextEncoder().encode(
     `: keepalive\n\n${frame(event)}${frame(usage)}data: [DONE]\n\n`.replaceAll(

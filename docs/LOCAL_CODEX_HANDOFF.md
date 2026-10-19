@@ -1,5 +1,13 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Independent response-recovery improvement — 20 October
+
+After the fixed model study completed (no changes during paid execution), implemented content-free distinction for HTTP429 versus502/503/504. The chat now explains request limiting or service unavailability with no answer received; unknown cost remains explicit, failed output stays excluded, Copy stays disabled, and no automatic retry/weaker fallback is introduced. Raw provider bodies are cancelled and never displayed or logged. Other invalid responses retain generic handling; these statuses do not prove the cause, final charge or recovery time. Evaluation stop rules remain global for these transport failures.
+
+35tests/4files pass (stream protocol/reply/evaluation stop policy plus actual conversation UI using synthetic429/503). Tests check body cancellation, zero received text, unknown usage, no raw error disclosure, disabled copy and one explicit send only. Typecheck/production build pass; existing verifier-zlib externalization warning remains. This follows model-study commit ae75720 and does not retroactively alter its outputs. No paid calls, live activation or new privacy/quality qualification in recovery work.
+
+Next: focused human review of selection07 safety across all three arms, plus repeatability/held-out candidate evidence and provider/opaque usage work. Keep DeepSeek low as provisional synthetic development recommendation only; no live default change, Thorough or routing. ~75% implementation, NOT_READY. Supplier/hosting/commercial/manual acceptance dependencies remain visible, not passed by these tests.
+
 ## M3 broad model screen — 20 October, complete but not acceptance
 
 Fresh fixed seven-family study: everyday chat, writing, reasoning, coding, document synthesis, research synthesis and urgent safety; two turns each, DeepSeek thinking/low, Gemma thinking off, GLM low.42/42replies delivered,21complete conversations, no failed/incomplete requests or retries in this run. Ordinary cases now use actual chat UI without dummy sources; document/research cases attach identical authored evidence. No claim of live retrieval, file extraction, image or long-context coverage. Full prompts/sources/outputs/expected facts/raw model events/frozen permits/code artifacts and human grades null: `evaluation/results/model-selection-20261020.json`; review page `.local/review-batches/model-selection-20261020/complete-review.html`.

@@ -437,7 +437,12 @@ export function App() {
                   failure: abort.signal.aborted
                     ? "stopped"
                     : error instanceof IncompleteReplyError
-                      ? "incomplete"
+                      ? [
+                          "HTTP_RATE_LIMITED",
+                          "HTTP_SERVICE_UNAVAILABLE",
+                        ].includes(error.diagnostic?.code ?? "")
+                        ? "unavailable"
+                        : "incomplete"
                       : error instanceof Error && error.name === "TimeoutError"
                         ? "timeout"
                         : "unavailable",

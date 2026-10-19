@@ -115,7 +115,13 @@ export async function consumeReply(
       : error instanceof StreamProtocolError &&
           error.code === "OUTPUT_LIMIT_REACHED"
         ? "The response reached its output limit before completing."
-        : "Response incomplete.";
+        : error instanceof StreamProtocolError &&
+            error.code === "HTTP_RATE_LIMITED"
+          ? "The protected service is limiting requests. No answer was received."
+          : error instanceof StreamProtocolError &&
+              error.code === "HTTP_SERVICE_UNAVAILABLE"
+            ? "The protected service is unavailable. No answer was received."
+            : "Response incomplete.";
     throw new IncompleteReplyError(
       `${reason} Partial answers are excluded from future context. No automatic retry was made.`,
       usage,
