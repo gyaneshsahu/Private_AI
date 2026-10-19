@@ -1,6 +1,9 @@
 # PrivateAI — product requirements
 
 
+**20October fidelity amendment:** DOCX equations and alternate representations are unsupported and explicitly rejected to avoid silent content loss/duplication. Independent python-docx-generated packages and actual browser workflows now supplement authored fixtures; this does not establish Microsoft Word export compatibility or real-device performance. Fixed desktop sidebar overflow now keeps privacy/help controls reachable on short windows and enlarged text.
+
+
 **20October document scope:** DOCX body-text extraction is implemented locally with editable source review and encrypted save/reopen. This is not layout/page fidelity: headers, footers, notes, comments, images, formatting and automatic list numbers are omitted with a visible warning. Documents with tracked revisions, fields, text boxes, macros or embedded content are rejected; export a reviewed text PDF instead. Existing10MB/file and60000text-character bounds apply, plus512archive entries,20MB declared expansion and4MB per read XML part. No implicit upload, provider qualification or real-device acceptance follows from implementation. Legacy DOC/DOCM and spreadsheet workbooks remain unsupported.
 
 **Owner-confirmed operating plan, 19 October:** operate from Germany as an individual at present; a registered company may be considered later if the business earns revenue. Email is the selected support channel. Exact support address, mailbox readiness, response expectations and legal/payment onboarding details remain unconfirmed. This records product planning, not verification of business registration, tax status or permission to sell. No company formation, mailbox/DNS change, billing activation or public launch is authorized by this statement.

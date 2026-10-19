@@ -84,6 +84,11 @@ input[type="checkbox"] {
   padding: 30px 23px;
   position: fixed;
   height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+.sidebar > * {
+  flex-shrink: 0;
 }
 .brand {
   display: flex;

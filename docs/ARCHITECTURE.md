@@ -1,6 +1,9 @@
 # PrivateAI — architecture and trust boundaries
 
 
+**20October fidelity amendment:** DOCX equations and alternate representations are unsupported and explicitly rejected to avoid silent content loss/duplication. Independent python-docx-generated packages and actual browser workflows now supplement authored fixtures; this does not establish Microsoft Word export compatibility or real-device performance. Fixed desktop sidebar overflow now keeps privacy/help controls reachable on short windows and enlarged text.
+
+
 ### Bounded browser-local DOCX body extraction - 20 October
 
 `docx.ts` uses pinned @zip.js/zip.js2.24.0 for strict ZIP/CRC parsing with no nested web workers, and saxes6.0.0 for namespace-aware plain-text parsing. The existing dedicated extraction worker owns cancellation/deadline termination. No HTML converter, relationship resolver or remote file reader is used. Only `[Content_Types].xml` and `word/document.xml` are read; paths are never written to disk. Declared aggregate and actual output limits are distinct. DTDs, unsupported Word revisions/fields/embedded content and macro entries reject. Text-source IDs remain per-import; DOCX has no invented page numbers. Source correction, selection and explicit encrypted saves use existing paths.

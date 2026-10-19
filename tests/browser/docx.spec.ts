@@ -73,3 +73,49 @@ test("DOCX stays local, exposes omissions, permits correction and preserves encr
   );
   expect(external).toEqual([]);
 });
+
+test("independent Word package works at phone width and an unsupported file does not poison later imports", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const disclosures: string[] = [];
+  page.on("request", (r) => {
+    if (
+      r.method() !== "GET" ||
+      new URL(r.url()).origin !== "http://127.0.0.1:4173"
+    )
+      disclosures.push(r.url());
+  });
+  await page.goto("/");
+  await page
+    .getByLabel("Attach files to this conversation")
+    .setInputFiles([
+      "tests/fixtures/office/revision-python-docx.docx",
+      "tests/fixtures/office/handover-python-docx.docx",
+    ]);
+  const results = page.getByRole("region", { name: "File import results" });
+  await expect(results).toContainText("revision-python-docx.docx — failed");
+  await expect(results).toContainText("handover-python-docx.docx — added");
+  await page
+    .getByRole("button", {
+      name: "Review handover-python-docx.docx",
+      exact: true,
+    })
+    .click();
+  await expect(page.getByText(/Word body text only/)).toBeVisible();
+  await page.locator("details summary").first().click();
+  const text = await page
+    .getByLabel("Text for handover-python-docx.docx", { exact: true })
+    .inputValue();
+  expect(text).toContain("strictly before 09:45 UTC");
+  expect(text).toContain("EUR 14.20");
+  expect(text).toContain("to the supervisor");
+  expect(text).not.toContain("SYNTHETIC_HEADER");
+  await page.addStyleTag({ content: "html {font-size: 200%}" });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  ).toBe(true);
+  expect(disclosures).toEqual([]);
+});

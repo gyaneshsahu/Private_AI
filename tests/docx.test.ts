@@ -1,6 +1,47 @@
 import { expect, it } from "vitest";
+import { readFile } from "node:fs/promises";
 import { docxBodyText, extractDocx } from "../src/docx";
 import { documentXml, docxFixture, wordNamespace } from "./fixtures/docx";
+
+it("reads an independently generated Office package and rejects its unresolved revision", async () => {
+  const text = await extractDocx(
+    await readFile("tests/fixtures/office/handover-python-docx.docx"),
+  );
+  for (const fact of [
+    "strictly before 09:45 UTC",
+    "Arrival at 09:45 does not qualify",
+    "during use",
+    "disconnect power before maintenance",
+    "to the supervisor",
+    "EUR 14.20",
+    "EUR 5.75",
+    "Tax rate and delivery cost are not supplied",
+    "Check the serial number",
+    "Record the handover time",
+  ])
+    expect(text).toContain(fact);
+  expect(text).not.toContain("SYNTHETIC_HEADER");
+  expect(text).not.toContain("SYNTHETIC_FOOTER");
+  await expect(
+    extractDocx(
+      await readFile("tests/fixtures/office/revision-python-docx.docx"),
+    ),
+  ).rejects.toThrow("revisions");
+});
+
+it.each([
+  '<m:oMath xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"><m:r><m:t>2+2=4</m:t></m:r></m:oMath>',
+  '<mc:AlternateContent xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"><mc:Choice Requires="w"><w:p><w:r><w:t>original</w:t></w:r></w:p></mc:Choice><mc:Fallback><w:p><w:r><w:t>different fallback</w:t></w:r></w:p></mc:Fallback></mc:AlternateContent>',
+])(
+  "rejects unsupported representation instead of silently dropping or doubling text",
+  (body) => {
+    expect(() =>
+      docxBodyText(
+        documentXml("<w:p><w:r><w:t>Ordinary text</w:t></w:r></w:p>" + body),
+      ),
+    ).toThrow("alternate representations");
+  },
+);
 
 it("extracts body paragraphs, split runs, units, tabs and table cells without HTML rendering", async () => {
   const body =

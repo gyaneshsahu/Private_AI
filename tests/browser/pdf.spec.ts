@@ -79,3 +79,16 @@ test("new session clears calculator and dialog keyboard focus stays inside", asy
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).not.toBeVisible();
 });
+
+test("short desktop with enlarged text can reach sidebar privacy controls", async ({ page }) => {
+  await page.setViewportSize({ width: 1100, height: 450 });
+  await page.goto("/");
+  await page.addStyleTag({ content: "html {font-size:200%}" });
+  const privacy = page.getByRole("button", { name: "Privacy boundaries", exact: false });
+  await privacy.click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(privacy).toBeFocused();
+  await expect(privacy).toBeInViewport();
+  expect(await page.locator(".sidebar").evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+});

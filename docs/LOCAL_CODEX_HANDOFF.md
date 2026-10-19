@@ -1,5 +1,14 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Document interoperability and reachable privacy controls - 20 October
+
+Independent synthetic Office packages generated with python-docx1.2.0 now exercise real ZIP/XML output beyond the hand-authored fixture writer. Committed generator, packages and SHA256/provenance: tests/fixtures/office/. Tested strict deadline, split formatting runs, precautions, table quantities/prices, absent tax/delivery inputs, list-item text and disclosed header/footer omissions. This is not Microsoft Word/LibreOffice exporter certification. Actual built-app390px/200%text import, failed-revision recovery and source review pass without outbound disclosures; encrypted save/reopen remains covered. Equations and alternate representations now reject explicitly rather than silently omitting or doubling their content.
+
+Regression found a real fixed-sidebar overflow defect: Privacy boundaries could remain below a short desktop viewport and could not be clicked. Sidebar now scrolls without shrinking its children. Original calculator-clear/dialog-focus test and a new1100x450/200%text privacy-dialog/focus-return check pass. No forced clicks or skipped failure. Final23unit/regression tests/3files plus7built-app browser workflows/3files and production build/typecheck pass. Preserve the initial browser timeout as the finding that prompted this fix. Existing verifier-zlib build warning remains.
+
+Scope remains local engineering: no model calls, human answer scores, real-device accessibility pass, deployment or supplier messages. Supplier drafts are still owner-review/NOT_SENT. Approximately75% implemented (+/-10), NOT_READY. Next substantive dependency remains reviewed provider/usage architecture and hosted identity/email rollout; actual-device and independent security/quality acceptance remain open. Do not extend document fixtures indefinitely or claim these tests close external gates.
+
+
 
 **Independent development20October:** DOCX content-type parsing now rejects duplicate/conflicting main-document declarations, invalid roots and metadata nesting beyond128levels.20scoped tests/3files and typecheck pass; synthetic archives only, no new provider calls or qualification. Supplier drafts remain unsent pending owner review.
 

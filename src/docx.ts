@@ -40,6 +40,17 @@ export function docxBodyText(xml: string): string {
   parser.on("opentag", (tag) => {
     if (++depth > 128) throw Error("DOCX XML exceeds the nesting limit.");
     const word = wordNamespaces.has(tag.uri);
+    if (
+      tag.uri ===
+        "http://schemas.openxmlformats.org/officeDocument/2006/math" ||
+      tag.uri === "http://purl.oclc.org/ooxml/officeDocument/math" ||
+      (tag.uri ===
+        "http://schemas.openxmlformats.org/markup-compatibility/2006" &&
+        tag.local === "AlternateContent")
+    )
+      throw Error(
+        "DOCX equations and alternate representations are not supported. Export a reviewed text PDF first.",
+      );
     if (depth === 1) {
       if (!word || tag.local !== "document")
         throw Error("Invalid DOCX document root.");
