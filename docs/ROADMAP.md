@@ -1,6 +1,6 @@
 # PrivateAI delivery roadmap
 
-M2 latest advance: inactive auth metadata minimization and explicit checksummed migration planning/application now pass the combined 48-test regression (11 files). Social/email/passkey/recovery and durable quotas are locally exercised, not production-approved. Owner domain choice is pending for real OAuth/passkey setup. Independent next work is consumer-session/consent binding and workspace integration, then notification/provider setup and deployed recovery with owner-controlled activation.
+M2 latest advance: inactive auth metadata minimization and explicit checksummed migration planning/application now pass the combined 48-test regression (11 files). Social/email/passkey/recovery and durable quotas are locally exercised, not production-approved. Owner selected cometrow.com; purchase confirmation and the proposed app.cometrow.com origin/RP review remain pending for real OAuth/passkey setup. Independent next work is consumer-session/consent binding and workspace integration, then notification/provider setup and deployed recovery with owner-controlled activation.
 
 
 M2 shared usage batch completed locally: PostgreSQL request accounting, concurrent admission and asynchronous application integration pass 21 tests across 6 files plus 2 browser usage regressions. No live mount/migration. Continue inactive auth metadata minimization and implementation review; production session/consent binding, trusted billing usage and owner-managed service setup remain next dependencies.

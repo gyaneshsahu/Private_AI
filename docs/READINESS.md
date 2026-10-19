@@ -1,5 +1,9 @@
 # PrivateAI readiness checklist
 
+### Intended domain recorded — 19 October
+
+Owner selected `cometrow.com`, with purchase still pending. ARCHITECTURE records the proposed `app.cometrow.com` assistant/authentication origin, callback URLs and host-scoped passkey RP ID. Ownership, DNS, HTTPS, real provider callbacks and real-device authentication are **not verified**; no launch gate advances from naming a domain. No code, hosted settings, provider activation, paid call or migration changed. Existing 48-test engineering evidence remains scoped to the synthetic local implementation. Next independent M2 work remains durable consumer-session/consent binding and account/workspace integration.
+
 ### M2 metadata minimization and migration safety — 19 October
 
 **Active target remains one public-launchable general-purpose product; no account/provider activation or release approval in this batch.** The inactive auth core now discards social access/refresh/ID tokens, scopes and token-expiry fields at database create/update, since identity-only sign-in needs no ongoing provider API grant. Only verified email and stable provider subject are mapped from the profile; automatic names/avatars are omitted. Session IP/user-agent fields are null on create/update. Rate limiting still uses its separate database keys; this is not anonymous or metadata-free authentication. Email, identity IDs, passkey public credentials, session bearer tokens and timestamps remain stored and need production storage/retention controls. Existing live records were not changed or deleted.
