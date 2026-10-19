@@ -3,7 +3,7 @@ import { deploymentAccess } from "./deployment";
 import { inviteAccess } from "./invite-access";
 import type { InviteRegistry } from "./invite-registry";
 import { randomBytes, randomUUID } from "node:crypto";
-import type { UsageLedger } from "./usage-ledger";
+import type { UsageLedger } from "./usage-contract";
 import { once } from "node:events";
 import { z } from "zod";
 import { validateQualification, type Qualification } from "../shared/contracts";
@@ -140,17 +140,17 @@ export function createApp(config: Config) {
     }
     next();
   });
-  app.get("/api/status", (_req, res) => {
+  app.get("/api/status", async (_req, res) => {
     const q = parseQualification();
     const ready = !!q && !!config.apiKey;
     res.json({
       csrf: res.locals.csrf,
       ...(res.locals.accountId
         ? {
-            requestAllowance: (() => {
+            requestAllowance: await (async () => {
               try {
                 return (
-                  config.usage?.summary(res.locals.accountId) ?? {
+                  (await config.usage?.summary(res.locals.accountId)) ?? {
                     state: "unavailable",
                   }
                 );
@@ -210,34 +210,38 @@ export function createApp(config: Config) {
       }
       const accountId: string | undefined = res.locals.accountId;
       const requestId = randomUUID();
-      if (config.usage) {
-        try {
-          if (!accountId || !config.usage.reserve(accountId, requestId)) {
-            res
-              .status(429)
-              .json({
-                error:
-                  "No request allowance is available. No request was forwarded.",
-              });
-            return;
-          }
-          config.usage.dispatch(accountId, requestId);
-        } catch {
-          res
-            .status(503)
-            .json({
-              error: "Usage controls unavailable. No request was forwarded.",
-            });
-          return;
-        }
-      }
+      // Claim the local slot before awaiting shared admission.
       active++;
+      let dispatched = false;
       let transportComplete = false;
       const abort = new AbortController();
       res.on("close", () => {
         if (!res.writableFinished) abort.abort();
       });
       try {
+        if (config.usage) {
+          try {
+            if (
+              !accountId ||
+              !(await config.usage.reserve(accountId, requestId))
+            ) {
+              res.status(429).json({
+                error:
+                  "No request allowance is available. No request was forwarded.",
+              });
+              return;
+            }
+            if (abort.signal.aborted) return;
+            await config.usage.dispatch(accountId, requestId);
+            dispatched = true;
+          } catch {
+            res.status(503).json({
+              error: "Usage controls unavailable. No request was forwarded.",
+            });
+            return;
+          }
+        }
+        if (abort.signal.aborted) return;
         const upstream = await fetch(
           new URL("/v1/chat/completions", approvedOrigin),
           {
@@ -289,9 +293,9 @@ export function createApp(config: Config) {
         else res.destroy();
       } finally {
         active--;
-        if (config.usage && accountId) {
+        if (config.usage && accountId && dispatched) {
           try {
-            config.usage.finish(
+            await config.usage.finish(
               accountId,
               requestId,
               transportComplete ? "transport_complete" : "uncertain",

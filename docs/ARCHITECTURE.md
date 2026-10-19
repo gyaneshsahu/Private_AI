@@ -1,5 +1,12 @@
 # PrivateAI — architecture and trust boundaries
 
+### Durable request-count implementation — 19 October
+
+UsageLedger now accepts asynchronous adapters. PostgresUsageLedger uses a shared account lock for grant/admission, database time, immutable non-overlapping service-provisioned periods, global request-ID uniqueness and relational account/period binding. Migration 0004 has no chat or token fields. Atomic reserve/dispatch precedes encrypted forwarding; terminal settlement is idempotent. Uncertain or interrupted work is never refunded automatically. SQLite remains the reference local adapter.
+
+The app can await either adapter, but production index.ts instantiates neither. Consumer-auth bridging, consent grants, production database roles/TLS/recovery and paid-entitlement wiring remain pending. A request count does not enforce model/output-token costs across an opaque encrypted relay; provider-authenticated usage or an approved attested enforcement architecture remains necessary before subscriptions. Runtime grants must come only from trusted entitlement/operator code, not a public request body. Local admission concurrency is per process; shared global capacity still needs a production policy.
+
+
 ### Account workflow harness update — 19 October
 
 AccountLab now uses real inactive auth endpoints for social sign-in/linking and reads available synthetic methods from /api/account/options. Hosted server never mounts these endpoints. A signed-provider browser test covers the built UI, provider navigation, Apple form POST, cookies, linked-method display, reload and cancellation. API origin enforcement does not intercept static-page return navigation.

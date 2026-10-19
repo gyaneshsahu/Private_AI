@@ -1,5 +1,8 @@
 # PrivateAI delivery roadmap
 
+M2 shared usage batch completed locally: PostgreSQL request accounting, concurrent admission and asynchronous application integration pass 21 tests across 6 files plus 2 browser usage regressions. No live mount/migration. Continue inactive auth metadata minimization and implementation review; production session/consent binding, trusted billing usage and owner-managed service setup remain next dependencies.
+
+
 M2 workflow advance: the actual built account UI completes synthetic Google/Apple sign-in and explicit linking with signed local fixtures, alongside email/passkeys/recovery. Cancellation and browser cookie boundaries are exercised at phone width. Next durable-usage/metadata work can proceed without live provider setup; activation, device and privacy/security gates remain open.
 
 

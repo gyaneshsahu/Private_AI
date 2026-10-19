@@ -1,29 +1,12 @@
 import { DatabaseSync } from "node:sqlite";
 import { z } from "zod";
 import type { RequestAllowance } from "../shared/contracts";
-
-const id = z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/);
-const timestamp = z.number().int().nonnegative().max(8_640_000_000_000_000);
-const allowance = z
-  .object({
-    accountId: id,
-    periodId: id,
-    startsAt: timestamp,
-    endsAt: timestamp,
-    requestLimit: z.number().int().positive().max(1_000_000),
-  })
-  .strict();
-
-export interface UsageLedger {
-  summary(accountId: string): RequestAllowance;
-  reserve(accountId: string, requestId: string): boolean;
-  dispatch(accountId: string, requestId: string): void;
-  finish(
-    accountId: string,
-    requestId: string,
-    outcome: "transport_complete" | "uncertain",
-  ): void;
-}
+import {
+  usageId as id,
+  usageAllowanceSchema as allowance,
+  type UsageLedger,
+} from "./usage-contract";
+export type { UsageLedger } from "./usage-contract";
 
 /** Durable request counts, not token billing or proof of completed answers. */
 export class SqliteUsageLedger implements UsageLedger {
