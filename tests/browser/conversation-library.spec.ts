@@ -121,3 +121,49 @@ test("named encrypted history is searchable locally and survives lock/reopen wit
   ).toBe(true);
   expect(outgoing).toEqual([]);
 });
+
+test("two tabs preserve competing drafts as separate encrypted conversations", async ({ page, context }) => {
+  const other = await context.newPage();
+  const nav = async (p: typeof page, name: string) => {
+    await p.getByRole("navigation", { name: "Workspace" }).getByRole("button", { name, exact: true }).click();
+  };
+  const unlock = async (p: typeof page) => {
+    await nav(p, "Saved");
+    await p.getByLabel("Vault passphrase").fill("synthetic two tab conflict password");
+    await p.getByRole("button", { name: "Create or unlock vault" }).click();
+    await expect(p.getByRole("button", { name: "Save encrypted snapshot" })).toBeVisible();
+  };
+  const save = async (p: typeof page) => {
+    await p.getByRole("button", { name: "Save encrypted snapshot" }).click();
+    await expect(p.getByText("Encrypted snapshot saved on this browser.", { exact: false })).toBeVisible();
+  };
+  await page.goto("/");
+  await page.getByLabel("Message PrivateAI").fill("Synthetic original draft");
+  await unlock(page);
+  await page.getByLabel("Conversation title", { exact: true }).fill("Shared synthetic notes");
+  await save(page);
+  await other.goto("/");
+  await unlock(other);
+  await other.getByRole("button", { name: "Open", exact: true }).click();
+  await other.getByLabel("Message PrivateAI").fill("Second tab valuable revision");
+  await nav(page, "Conversation");
+  await page.getByLabel("Message PrivateAI").fill("First tab newer revision");
+  await nav(page, "Saved");
+  await save(page);
+  await nav(other, "Saved");
+  await other.getByRole("button", { name: "Save encrypted snapshot" }).click();
+  await expect(other.getByText("This saved conversation changed in another tab.", { exact: false })).toBeVisible();
+  await other.getByRole("button", { name: "Save as new conversation" }).click();
+  await expect(other.getByRole("article")).toHaveCount(2);
+  await expect(other.getByRole("button", { name: "Save as new conversation" })).toHaveCount(0);
+  await save(other); // The copy has its own baseline; subsequent saves do not duplicate it.
+  await other.getByRole("button", { name: "Lock and clear workspace" }).click();
+  await other.reload();
+  await unlock(other);
+  for (const [title, draft] of [["Shared synthetic notes", "First tab newer revision"], ["Shared synthetic notes (copy)", "Second tab valuable revision"]]) {
+    await other.getByRole("article", { name: title, exact: true }).getByRole("button", { name: "Open", exact: true }).click();
+    await expect(other.getByLabel("Message PrivateAI")).toHaveValue(draft);
+    await nav(other, "Saved");
+  }
+  await expect(other.getByRole("article")).toHaveCount(2);
+});

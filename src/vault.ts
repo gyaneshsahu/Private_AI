@@ -21,7 +21,23 @@ const db = (name: string) =>
 function random(length: number): Uint8Array<ArrayBuffer> {
   return crypto.getRandomValues(new Uint8Array(length));
 }
+export class VaultConflictError extends Error {
+  constructor() {
+    super(
+      "This saved conversation changed in another tab. Save your work as a new conversation to keep both versions.",
+    );
+  }
+}
+function recordVersion(record: { wrapped: Cipher }): string {
+  // Each save wraps a fresh data key. Existing encrypted records need no migration.
+  return JSON.stringify([
+    Array.from(record.wrapped.iv),
+    Array.from(new Uint8Array(record.wrapped.data)),
+  ]);
+}
 export class Vault {
+  private observed = new Map<string, string>();
+  private versions = new WeakMap<Conversation, string>();
   private databaseName = "privateai-vault";
   selectAccount(id?: string) {
     if (this.unlocked)
@@ -57,6 +73,8 @@ export class Vault {
     return !!this.key;
   }
   lock(broadcast = true) {
+    this.observed.clear();
+    this.versions = new WeakMap();
     this.key = undefined;
     this.salt = undefined;
     this.generation++;
@@ -104,7 +122,7 @@ export class Vault {
     this.queue = next.catch(() => {});
     return next;
   }
-  save(conversation: Conversation) {
+  save(conversation: Conversation, basedOn?: Conversation | null) {
     if (containsTemporaryResearch(conversation))
       return Promise.reject(
         new Error(
@@ -118,6 +136,14 @@ export class Vault {
       return Promise.reject(new Error("Unlock your vault before saving."));
     const snapshot = structuredClone(conversation);
     return this.enqueue(async () => {
+      const expected =
+        basedOn === undefined
+          ? this.observed.get(snapshot.id)
+          : basedOn === null
+            ? undefined
+            : this.versions.get(basedOn);
+      if (basedOn && (basedOn.id !== snapshot.id || expected === undefined))
+        throw new VaultConflictError();
       const dataKey = await crypto.subtle.generateKey(
         { name: "AES-GCM", length: 256 },
         true,
@@ -149,6 +175,11 @@ export class Vault {
             "This conversation was deleted. Create a new conversation instead.",
           );
         }
+        const existing = await tx.objectStore("conversations").get(snapshot.id);
+        if ((existing ? recordVersion(existing) : undefined) !== expected) {
+          await tx.done;
+          throw new VaultConflictError();
+        }
         if (generation !== this.generation || !this.key) {
           tx.abort();
           await tx.done.catch(() => {});
@@ -158,6 +189,12 @@ export class Vault {
           .objectStore("conversations")
           .put({ wrapped, data }, snapshot.id);
         await tx.done;
+        const version = recordVersion({ wrapped });
+        if (generation === this.generation) {
+          this.observed.set(snapshot.id, version);
+          this.versions.set(snapshot, version);
+        }
+        return snapshot;
       } finally {
         database.close();
       }
@@ -219,6 +256,11 @@ export class Vault {
           if (conversation.id !== id)
             throw new Error("Snapshot identity mismatch.");
           output.push(conversation);
+          const version = recordVersion(record);
+          if (generation === this.generation) {
+            this.observed.set(conversation.id, version);
+            this.versions.set(conversation, version);
+          }
         } catch {
           unreadable++;
         }

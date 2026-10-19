@@ -14,7 +14,7 @@ import {
 } from "./conversation";
 import { DOCUMENT_ACCEPT } from "./document-formats";
 import { importDocuments, type ImportOutcome } from "./document-import";
-import { Vault } from "./vault";
+import { Vault, VaultConflictError } from "./vault";
 import { VaultBackup } from "./VaultBackup";
 import { BACKUP_MAX_BYTES } from "./vault-backup";
 import { containsTemporaryResearch } from "./saved-conversation";
@@ -52,6 +52,8 @@ export function App() {
   const [status, setStatus] = useState<AppStatus>();
   const [input, setInput] = useState("");
   const [notice, setNotice] = useState("");
+  const savedBase = useRef<Conversation | null>(null);
+  const [saveConflict, setSaveConflict] = useState(false);
   const [imports, setImports] = useState<ImportOutcome[]>([]);
   const selectedContextSize = useMemo(
     () => measureContext(conversation, input),
@@ -164,6 +166,8 @@ export function App() {
     const store = new Vault();
     vault.current = store;
     store.onInvalidate = () => {
+      savedBase.current = null;
+      setSaveConflict(false);
       controller.current?.abort();
       controller.current = null;
       epoch.current++;
@@ -216,6 +220,8 @@ export function App() {
     outputEnd.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [conversation.messages.length]);
   const reset = () => {
+    savedBase.current = null;
+    setSaveConflict(false);
     controller.current?.abort();
     controller.current = null;
     epoch.current++;
@@ -618,11 +624,28 @@ export function App() {
       if (current === epoch.current) setBusy("");
     }
   }
-  async function save() {
+  async function save(asCopy = false) {
     const current = epoch.current;
     setBusy("Encrypting your conversation…");
     try {
-      await vault.current!.save({ ...conversation, draft: input });
+      const snapshot = await vault.current!.save(
+        {
+          ...conversation,
+          ...(asCopy
+            ? {
+                id: crypto.randomUUID(),
+                createdAt: new Date().toISOString(),
+                title: `${conversation.title} (copy)`,
+              }
+            : {}),
+          draft: input,
+        },
+        asCopy ? null : savedBase.current,
+      );
+      if (current !== epoch.current) return;
+      savedBase.current = snapshot;
+      setSaveConflict(false);
+      if (asCopy) setConversation(snapshot);
       const snapshots = await vault.current!.readAvailable();
       if (current !== epoch.current) return;
       setSaved(snapshots.conversations);
@@ -632,6 +655,11 @@ export function App() {
       );
     } catch (error) {
       if (current !== epoch.current) return;
+      if (error instanceof VaultConflictError) {
+        setSaveConflict(true);
+        fail(error.message);
+        return;
+      }
       fail(
         error instanceof DOMException && error.name === "QuotaExceededError"
           ? "Browser storage is full. Your current work is still open but was not saved. Keep this tab open; free device storage without clearing this site's data, then save again."
@@ -1719,6 +1747,14 @@ export function App() {
                   >
                     Save encrypted snapshot
                   </button>
+                  {saveConflict && (
+                    <button
+                      disabled={!!busy || containsTemporaryResearch(conversation)}
+                      onClick={() => void save(true)}
+                    >
+                      Save as new conversation
+                    </button>
+                  )}
                   {containsTemporaryResearch(conversation) && (
                     <p role="status">
                       This search conversation is temporary and cannot be saved,
@@ -1763,6 +1799,7 @@ export function App() {
                   onOpen={(c) => {
                     if (!allowReplace()) return;
                     reset();
+                    savedBase.current = c;
                     setConversation(structuredClone(c));
                     setInput(c.draft ?? "");
                     setTab("Conversation");

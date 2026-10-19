@@ -5,6 +5,38 @@ import { Vault } from "../src/vault";
 import { emptyConversation } from "../shared/contracts";
 import { composeContext, forkAt } from "../src/conversation";
 const stores: Vault[] = [];
+it("atomically refuses a stale cross-tab overwrite, including after a library refresh", async () => {
+  const account = crypto.randomUUID(), first = store(), second = store();
+  first.selectAccount(account);
+  second.selectAccount(account);
+  await first.unlock("synthetic concurrent history password");
+  await second.unlock("synthetic concurrent history password");
+  const original = await first.save({ ...emptyConversation(), draft: "Original" });
+  const stale = (await second.list())[0];
+  await first.save({ ...original, draft: "First tab preserved" }, original);
+  await second.readAvailable(); // Refreshing a library or exporting must not authorize a stale workspace.
+  await expect(second.save({ ...stale, draft: "Stale overwrite" }, stale)).rejects.toThrow("changed in another tab");
+  expect((await first.list())[0].draft).toBe("First tab preserved");
+  const copy = await second.save({ ...stale, id: crypto.randomUUID(), draft: "Second tab copy" }, null);
+  await second.save({ ...copy, draft: "Copy updated" }, copy);
+  expect((await first.list()).map((c) => c.draft).sort()).toEqual(["Copy updated", "First tab preserved"]);
+});
+it("allows only one competing update and refuses an unobserved existing identity", async () => {
+  const account = crypto.randomUUID(), first = store(), second = store();
+  first.selectAccount(account);
+  second.selectAccount(account);
+  await first.unlock("synthetic competing history password");
+  await second.unlock("synthetic competing history password");
+  const original = await first.save(emptyConversation());
+  await expect(second.save({ ...original, draft: "Blind overwrite" }, null)).rejects.toThrow("changed in another tab");
+  const other = (await second.list())[0];
+  const results = await Promise.allSettled([
+    first.save({ ...original, draft: "A" }, original),
+    second.save({ ...other, draft: "B" }, other),
+  ]);
+  expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+  expect(results.filter((r) => r.status === "rejected")).toHaveLength(1);
+});
 it("never persists temporary search answers even after their attachments are removed", async () => {
   const v = store();
   v.selectAccount(crypto.randomUUID());
