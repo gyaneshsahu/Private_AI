@@ -1,5 +1,7 @@
 # Readiness batch — 8 October 2026
 
+**20October M3 remaining coverage completed:**16/16replies; no retries/new delivery failures. Both models supply failing floating-point tests; unchanged functions pass independent checks. GPT-OSS retains excluded old fact. Human scores blank. Full evidence: evaluation/results/everyday-remaining-20261019.json. Next normal-chat harness without dummy citations and fresh general coding/correction evidence; provider/opaque-usage gates remain. Actual0.76, conservative1.0494736; unused reserve released. ~75% implemented, NOT_READY. Earlier preparation status superseded.
+
 ## Execution checkpoint — 19 October, STOPPED (not acceptance)
 
 The prepared study below ran through the actual application:7requests,6delivered, then GPT-OSS case02 turn1 upstream503. No retry; remaining dependent turn and cases03–06 not attempted. Separate permits and frozen hashes retained in evaluation/results/everyday-20261019.json together with three zero-forwarding harness failures. No further paid calls under this stopped run. Human scores blank, one matched conversation only. Future continuation needs a separate fixed plan/permits and review of transport evidence; do not claim24requests completed.

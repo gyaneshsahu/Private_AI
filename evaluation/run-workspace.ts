@@ -19,6 +19,9 @@ import assistedFixtures from "./cases/research-assisted.json";
 import toolFixtures from "./cases/research-tools.json";
 import everydayFixtures from "./cases/everyday-transfer-20261019.json";
 const everyday = process.argv.includes("--everyday");
+const everydayRemaining = process.argv.includes("--everyday-remaining");
+if (everydayRemaining && !everyday)
+  throw Error("Remaining everyday coverage requires everyday mode");
 if (
   everyday &&
   process.argv.some((a) =>
@@ -105,19 +108,21 @@ if (
 )
   throw Error("Choose separate optional-tools batch");
 const fixtures = everyday
-  ? everydayFixtures.map((f) => ({
-      ...f,
-      query: `authored ${f.id}`,
-      sources: [
-        {
-          id: "synthetic-context",
-          title: "Authored task context",
-          text: "This is an authored synthetic task. All task facts are supplied in the user messages.",
-          url: "https://example.com/synthetic-context",
-          evidenceKind: "search-excerpt",
-        },
-      ],
-    }))
+  ? everydayFixtures
+      .filter((f) => !everydayRemaining || Number(f.id.slice(-2)) >= 3)
+      .map((f) => ({
+        ...f,
+        query: `authored ${f.id}`,
+        sources: [
+          {
+            id: "synthetic-context",
+            title: "Authored task context",
+            text: "This is an authored synthetic task. All task facts are supplied in the user messages.",
+            url: "https://example.com/synthetic-context",
+            evidenceKind: "search-excerpt",
+          },
+        ],
+      }))
   : optionalTools
     ? toolFixtures.filter((f) =>
         comparisonCases
@@ -174,6 +179,11 @@ const hash = (x: unknown) =>
   createHash("sha256").update(JSON.stringify(x)).digest("hex");
 if (!dry && !bootstrapOnly) {
   const plan = JSON.parse(await readFile(resolve(root, "plan.json"), "utf8"));
+  if (
+    everyday &&
+    JSON.stringify(plan.caseIds) !== JSON.stringify(fixtures.map((f) => f.id))
+  )
+    throw Error("Selected everyday cases differ from the frozen plan");
   if (independentArms !== (plan.stopPolicy === "independent-arms"))
     throw Error(
       "Independent-arm execution must match the frozen plan stop policy.",

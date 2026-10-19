@@ -1,5 +1,19 @@
 # PrivateAI readiness checklist
 
+## M3 remaining everyday coverage — completed 20 October (run ID19October)
+
+Separate cases03–06 completed16/16requests/replies, no retries/new incomplete results. Prior503 and case02 baseline remain preserved, not rerun. Same fixed questions/configurations; frozen16request ceiling/reserve0.5791744. Full prompts, answers, expected facts, metrics, isolated code artifacts/results and blank human grades: `evaluation/results/everyday-remaining-20261019.json`. Review: `.local/review-batches/everyday-remaining-20261019/complete-review.html`.
+
+Engineering findings: both models supply tests that fail exact floating-point equality (0.20000000000000004 versus0.2), all4scripts exit1 before overflow tests. Separate independent tests of unchanged functions pass4/4 including tolerant fractions, invalid/sparse inputs and turn2 overflow guards. Preserve both findings. Network-disabled/read-only/unprivileged/resource-limited containers mounted only generated checks; image/scripts/results retained. Initial independent extraction helper failed on TypeScript export mismatch before generated execution; corrected extraction succeeded. GPT-OSS correction reply retains forbidden old18 seats; DeepSeek removes old values. Both preserve workshop precautions and distinguish planned reopening/unknown refunds. Synthetic marker citations are not actual source support: no live research qualification.
+
+Matched per-reply latency: GPT-OSS22.862–73.977s; DeepSeek1.572–5.880s.16delivered replies in one sample do not establish reliability or release acceptance. Normal-chat UI remains untested by this temporary-research harness. Earlier serious safety/source-silence/delivery failures remain; human scores blank.
+
+Product change: audit warning explicitly limits quotation matching to selected sources, excluding user text/proposed drafts. Existing warnings/gates remain. Normal-arm validation also rejects checked-response/research-evidence contracts; selected cases must match frozen plan.20scopedtests/4files, typecheck/build pass; existing verifier-zlib browser externalization warning remains. Router-only preflight passes, full provider qualification NOT_PASSED.
+
+Late-batch read-only Billing: actual0.76/account3/credit10.24/auto-reloadoff; key5 last observed. Batch token estimate0.01569095, not added wholesale to actual. Retain0.2781056 prior uncertainty +0.01rounding +0.001368 final-conversation display-timing allowance: bound1.0494736. Unused0.5791744 reserve released; no active reservation; pending itemization unavailable. No account/hosting/privacy change.
+
+Next: normal-chat application harness without dummy citations, fresh general coding/test correctness and correction cases. DeepSeek is a stronger development candidate in this small sample, not a release-approved default. Keep provider/opaque usage and human safety/quality acceptance active; no calculator example tuning or infrastructure expansion without concrete need. Approximately75% implemented (+/-10), NOT_READY. No manual help needed for independent engineering; focused review packet is available. Older preparation entries below are superseded.
+
 ## M3 everyday comparison — stopped on upstream 503, 19 October
 
 Supersedes the preparation status below. Frozen six-case, two-arm ordinary-answer study was admitted through the actual temporary research workspace, with authored synthetic context, no live retrieval or calculator. Maximum 24 requests; 7 attempted, 6 delivered, 3 complete conversations. GPT-OSS high case02 turn1 returned upstream503 with no encrypted response/model text; dependent turn and all later cases were not attempted under the global transport-stop rule. No retry. This is not a validator rejection, arithmetic error or quality score for the missing answer.

@@ -10,6 +10,8 @@ export function assertWorkspaceArm(
       calculatorContinuation?: boolean;
       assistedResearchContract?: boolean;
       scopedResearchContract?: boolean;
+      checkedResponseContract?: boolean;
+      researchEvidenceContract?: boolean;
     };
   },
   caseId: string,
@@ -25,7 +27,9 @@ export function assertWorkspaceArm(
       permit.policy.calculatorReplay ||
       permit.policy.calculatorContinuation ||
       permit.policy.assistedResearchContract ||
-      permit.policy.scopedResearchContract
+      permit.policy.scopedResearchContract ||
+      permit.policy.checkedResponseContract ||
+      permit.policy.researchEvidenceContract
     )
       throw Error(
         "Normal comparison cannot enable experimental tools or contracts",

@@ -36,8 +36,10 @@ export function Answer({
             references, {audit.quotesNotFoundVerbatim} quoted passages not
             matched verbatim to selected sources.
             {audit.quotesNotFoundInCitedSources > 0 &&
-              ` ${audit.quotesNotFoundInCitedSources} quoted passages not found in their adjacent cited sources.`}
-            These checks do not establish factual accuracy.
+              ` ${audit.quotesNotFoundInCitedSources} quoted passages not found in their adjacent cited sources.`}{" "}
+            This check compares quotations only with selected sources, not your
+            messages or proposed drafts. A mismatch alone does not establish an
+            invented quotation. These checks do not establish factual accuracy.
           </p>
         )}
       <Markdown

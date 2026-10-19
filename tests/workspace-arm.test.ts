@@ -24,6 +24,8 @@ it("keeps both ordinary comparison arms free of experimental contracts", () => {
       "calculatorContinuation",
       "assistedResearchContract",
       "scopedResearchContract",
+      "checkedResponseContract",
+      "researchEvidenceContract",
     ])
       expect(() =>
         assertWorkspaceArm(
