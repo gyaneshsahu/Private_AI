@@ -1,4 +1,5 @@
 import { assertWorkspaceArm } from "./workspace-arm";
+import { assertWorkspaceBudget } from "./workspace-budget";
 import { startTemporaryReview } from "./temporary-review";
 import { shouldStopWorkspaceBatch } from "./reply-failure";
 import { readFile, writeFile, mkdir, access } from "node:fs/promises";
@@ -17,6 +18,7 @@ import workspaceFixtures from "./cases/research-workspace.json";
 import assistedFixtures from "./cases/research-assisted.json";
 import toolFixtures from "./cases/research-tools.json";
 const matched = process.argv.includes("--matched");
+const independentArms = process.argv.includes("--independent-arms");
 const cells = [
   "deepseek-normal",
   "gptoss-normal",
@@ -133,6 +135,10 @@ const hash = (x: unknown) =>
   createHash("sha256").update(JSON.stringify(x)).digest("hex");
 if (!dry) {
   const plan = JSON.parse(await readFile(resolve(root, "plan.json"), "utf8"));
+  if (independentArms !== (plan.stopPolicy === "independent-arms"))
+    throw Error(
+      "Independent-arm execution must match the frozen plan stop policy.",
+    );
   for (const [file, expected] of Object.entries(plan.implementationHashes)) {
     const actual = createHash("sha256")
       .update(await readFile(String(file)))
@@ -149,6 +155,7 @@ if (!dry) {
 }
 let plannedRequests = 0;
 let plannedReserve = 0;
+let permitCeiling = Infinity;
 const approvalIds = new Set<string>();
 // Validate every selected permit before opening a browser or spending on any arm.
 for (const fixture of fixtures)
@@ -162,6 +169,11 @@ for (const fixture of fixtures)
       JSON.parse(
         await readFile(resolve(root, `${fixture.id}-${cell}.json`), "utf8"),
       ),
+    );
+    permitCeiling = Math.min(
+      permitCeiling,
+      permit.approvedCapUSD,
+      permit.providerCapUSD,
     );
     for (const id of [
       permit.approvalId,
@@ -200,40 +212,16 @@ for (const fixture of fixtures)
       continuation,
     );
   }
-if (continuation && !dry) {
+if ((continuation || independentArms) && !dry) {
   const plan = JSON.parse(await readFile(resolve(root, "plan.json"), "utf8"));
-  if (
-    !Number.isFinite(plan.maxRequests) ||
-    plan.maxRequests < plannedRequests ||
-    !Number.isFinite(plan.reserveUSD) ||
-    plan.reserveUSD + 1e-8 < plannedReserve
-  )
-    throw Error(
-      "Continuation batch must reserve both rounds for every permitted turn",
-    );
-  const budgetFields = [
-    plan.actualBeforeUSD,
-    plan.uncertaintyUSD,
-    plan.reserveUSD,
-    plan.capUSD,
-    plan.providerAccountLimitUSD,
-    plan.prepaidBeforeUSD,
-  ];
-  if (
-    budgetFields.some((value) => !Number.isFinite(value) || value < 0) ||
-    plan.actualBeforeUSD + plan.uncertaintyUSD + plan.reserveUSD >
-      Math.min(plan.capUSD, plan.providerAccountLimitUSD) ||
-    plan.uncertaintyUSD + plan.reserveUSD > plan.prepaidBeforeUSD
-  )
-    throw Error(
-      "Continuation reserve exceeds the recorded authorization, account control or available credit",
-    );
+  assertWorkspaceBudget(plan, plannedRequests, plannedReserve, permitCeiling);
 }
 const report: any = {
   mode: dry ? "OFFLINE_UI_ONLY" : "LIVE_PUBLIC_AND_AUTHORED",
   humanScores: null,
   results: [],
   qualification: "NOT_PASSED",
+  stopPolicy: independentArms ? "independent-arms" : "global",
   publicContentPersisted: false,
 };
 const publicReviewNeeded = !dry && fixtures.some((f) => !f.sources.length);
@@ -592,7 +580,18 @@ try {
               evidenceAudit: audit,
             });
             if (!result.completed) {
-              stop = shouldStopWorkspaceBatch(result);
+              stop = shouldStopWorkspaceBatch(
+                result,
+                independentArms ? "independent-arms" : "global",
+                gateway.attempts.length > 0 &&
+                  gateway.attempts.every(
+                    (a) =>
+                      a.upstreamStatus === 200 &&
+                      a.protocolHeaderValid &&
+                      a.syntheticPlaintextMarkerAbsent,
+                  ),
+              );
+              record.conversationStopped = true;
               break;
             }
           }
@@ -681,6 +680,17 @@ try {
         if (dry) console.log(String(error));
         stop = true;
       } finally {
+        if (
+          networkViolation ||
+          pageErrors.length ||
+          (record.storage &&
+            Object.values(record.storage).some((value) => value !== 0)) ||
+          record.saveBlocked === false ||
+          record.clearedOnReload === false
+        ) {
+          stop = true;
+          record.batchStoppedForIntegrity = true;
+        }
         record.pageErrors = pageErrors;
         record.networkViolation = networkViolation;
         record.consoleMessageCount = consoleMessages;

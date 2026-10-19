@@ -6,6 +6,34 @@ import {
 } from "../evaluation/reply-failure";
 import { CheckedResponseError } from "../src/checked-response";
 import { IncompleteReplyError } from "../src/reply-stream";
+it("continues only independent arms after known isolated failures with a healthy encrypted upstream", () => {
+  for (const reply of [
+    { completed: false, failureKind: "CONTRACT_REJECTED" },
+    { completed: false, transportDiagnostic: { code: "TIMED_OUT" } },
+    { completed: false, transportDiagnostic: { code: "OUTPUT_LIMIT_REACHED" } },
+  ]) {
+    expect(shouldStopWorkspaceBatch(reply, "independent-arms", true)).toBe(
+      false,
+    );
+    expect(shouldStopWorkspaceBatch(reply, "independent-arms", false)).toBe(
+      true,
+    );
+    expect(shouldStopWorkspaceBatch(reply)).toBe(true);
+  }
+  for (const code of [
+    "TRANSPORT_OR_DECRYPTION",
+    "HTTP_RESPONSE_INVALID",
+    "INVALID_USAGE",
+    "MISSING_DONE",
+  ])
+    expect(
+      shouldStopWorkspaceBatch(
+        { completed: false, transportDiagnostic: { code } },
+        "independent-arms",
+        true,
+      ),
+    ).toBe(true);
+});
 it("distinguishes contract rejection from transport failure despite their shared error name", () => {
   const usage = { input: 12, output: 3, total: 15, estimatedUSD: 0.001 };
   const contract = classifyEvaluationFailure(

@@ -35,10 +35,23 @@ export function classifyEvaluationFailure(error: unknown) {
   };
 }
 
-// Any incomplete reply ends this batch, even if usage was reported or the
-// rejection was local. A later batch needs a new explicit plan and permits.
-export function shouldStopWorkspaceBatch(reply: {
-  completed: boolean;
-}): boolean {
-  return !reply.completed;
+// Historical plans retain the global stop. New plans may isolate known failures
+// to one conversation, but never continue unknown transport/security failures.
+export function shouldStopWorkspaceBatch(
+  reply: {
+    completed: boolean;
+    failureKind?: string;
+    transportDiagnostic?: { code: string };
+  },
+  policy: "global" | "independent-arms" = "global",
+  upstreamHealthy = false,
+): boolean {
+  if (reply.completed) return false;
+  if (policy !== "independent-arms" || !upstreamHealthy) return true;
+  return !(
+    reply.failureKind === "CONTRACT_REJECTED" ||
+    ["OUTPUT_LIMIT_REACHED", "TIMED_OUT", "INCOMPLETE_ANSWER"].includes(
+      reply.transportDiagnostic?.code ?? "",
+    )
+  );
 }

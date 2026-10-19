@@ -2,7 +2,8 @@ import express from "express";
 import { deploymentAccess } from "./deployment";
 import { inviteAccess } from "./invite-access";
 import type { InviteRegistry } from "./invite-registry";
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
+import type { UsageLedger } from "./usage-ledger";
 import { once } from "node:events";
 import { z } from "zod";
 import { validateQualification, type Qualification } from "../shared/contracts";
@@ -23,6 +24,7 @@ export interface Config {
   dev?: boolean;
   accessKey?: string;
   invites?: InviteRegistry;
+  usage?: UsageLedger;
 }
 export function createApp(config: Config) {
   const app = express();
@@ -145,6 +147,21 @@ export function createApp(config: Config) {
       csrf: res.locals.csrf,
       ...(res.locals.accountId
         ? {
+            requestAllowance: (() => {
+              try {
+                return (
+                  config.usage?.summary(res.locals.accountId) ?? {
+                    state: "unavailable",
+                  }
+                );
+              } catch {
+                return { state: "unavailable" };
+              }
+            })(),
+          }
+        : {}),
+      ...(res.locals.accountId
+        ? {
             accountId: res.locals.accountId,
             accessEpoch: res.locals.accessEpoch,
           }
@@ -191,7 +208,31 @@ export function createApp(config: Config) {
         res.status(429).json({ error: "Three requests are already running." });
         return;
       }
+      const accountId: string | undefined = res.locals.accountId;
+      const requestId = randomUUID();
+      if (config.usage) {
+        try {
+          if (!accountId || !config.usage.reserve(accountId, requestId)) {
+            res
+              .status(429)
+              .json({
+                error:
+                  "No request allowance is available. No request was forwarded.",
+              });
+            return;
+          }
+          config.usage.dispatch(accountId, requestId);
+        } catch {
+          res
+            .status(503)
+            .json({
+              error: "Usage controls unavailable. No request was forwarded.",
+            });
+          return;
+        }
+      }
       active++;
+      let transportComplete = false;
       const abort = new AbortController();
       res.on("close", () => {
         if (!res.writableFinished) abort.abort();
@@ -238,6 +279,7 @@ export function createApp(config: Config) {
           if (!res.write(chunk))
             await once(res, "drain", { signal: abort.signal });
         }
+        transportComplete = !abort.signal.aborted;
         res.end();
       } catch {
         if (!res.headersSent)
@@ -247,6 +289,17 @@ export function createApp(config: Config) {
         else res.destroy();
       } finally {
         active--;
+        if (config.usage && accountId) {
+          try {
+            config.usage.finish(
+              accountId,
+              requestId,
+              transportComplete ? "transport_complete" : "uncertain",
+            );
+          } catch {
+            /* Reservation remains counted if durable settlement is unavailable. */
+          }
+        }
       }
     },
   );
@@ -285,7 +338,12 @@ export function createApp(config: Config) {
       }
       const sources =
         request.kind === "search"
-          ? await searchWeb(request.value, config.searchKey!, abort.signal, config.searchMode)
+          ? await searchWeb(
+              request.value,
+              config.searchKey!,
+              abort.signal,
+              config.searchMode,
+            )
           : await fetchPage(request.value, abort.signal);
       res.json({ sources });
     } catch {

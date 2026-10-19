@@ -1,0 +1,61 @@
+{
+  "status": "SOURCE_REVIEW_NOT_PROVIDER_QUALIFICATION",
+  "observedOn": "2026-10-19",
+  "package": "privatemode-ai",
+  "version": "1.59.0",
+  "publicTag": "v1.59.0",
+  "sourceCommit": "17ad265a79a39f30596ae2f12ec64ccbd9127275",
+  "npmIntegrity": "sha512-euzVo9AxlC2OZKgnl1HpuhkZM/JcGcWZ7Azh4o4EBQ0A+sSqT1mdoqYRxi3XbAX9p+8Cxr/irBA677BeSJLFHw==",
+  "sourceMatchesPublishedBinary": null,
+  "binaryMatchStatus": "NOT_TESTED",
+  "sdkExecuted": false,
+  "paidRequests": 0,
+  "files": [
+    {
+      "file": "internal_oss_attest_attest.go",
+      "sha256": "e9b52184726bc16ebba09c0b15fa07dde1ae08edac838723a1133f7f5b9aa36c"
+    },
+    {
+      "file": "internal_oss_ocsp_ocsp.go",
+      "sha256": "8aa64db8d43112664b8151d44b8c5d549ae5285129f91ecbf395cf3a622da537"
+    },
+    {
+      "file": "internal_oss_privatemode_chatcompletions.go",
+      "sha256": "52476d789eb8cc6ebe0015c2e9e8d81e36bf86da355b3979f01b80b481f7fdde"
+    },
+    {
+      "file": "internal_oss_privatemode_privatemode.go",
+      "sha256": "717b00c256e7c56f857decd951a5b11339064aa06ad3a1f2e8e70169836921ca"
+    },
+    {
+      "file": "sdk_js_package.json",
+      "sha256": "6038533c2ae2515e1b01ccd86b78f494b6f6bc52ef0135519c1a5dc51f78cac1"
+    },
+    {
+      "file": "sdk_js_src_manifest.ts",
+      "sha256": "2715af622c10f7de9ce2911da0c9e9eaf93ebaeeb9b9da52a633aee97dfc0958"
+    },
+    {
+      "file": "sdk_js_src_openai.ts",
+      "sha256": "dd53bcc1864fa67bdbc88cd67f740d2ce8f240a04c25fea7ee15e1b8b94cec2c"
+    },
+    {
+      "file": "sdk_js_src_privatemode-ai.ts",
+      "sha256": "c0ce023c07e8ebf3a91bfca0603490d8d4cf1319611fd31184d4ec1a8ca64023"
+    },
+    {
+      "file": "sdk_wasm_main.go",
+      "sha256": "8679fa2190cff0a6e56bd5d8f624a61ce7a969047e8eb0abf1545c893624b463"
+    }
+  ],
+  "findings": [
+    "Public tag resolves to reviewed commit; source package version is a build placeholder0.0.1; npm repository points to continuum while documented public mirror is privatemode-public. Reproducible-build comparison not performed.",
+    "initializeWithManifestRetry fetches a replacement manifest on mismatch; supplied manifestBytes alone does not establish fail-closed pinning.",
+    "retryWithSecretRefresh retries once for no-secret-ID errors; OpenAI-layer retries also need explicit control. No retry behavior has been accepted for production.",
+    "GetAttestedMeshCA generates a32-byte nonce, validates Coordinator attestation and checks exact manifest equality. This does not establish continuous worker/GPU freshness.",
+    "Reviewed JS options and Wasm initialize do not expose strict OCSP/grace configuration; SDK equivalence to configurable proxy remains unresolved.",
+    "Go client generates a client-lifetime prompt-cache salt and injects it; no enforced worker cache expiry established.",
+    "apiBaseURL changes inference and attestation endpoint host; attestation constructs HTTPS host-root path, so a path-only local relay cannot simply be assumed compatible. Credential-safe relay remains untested."
+  ],
+  "humanScores": null
+}

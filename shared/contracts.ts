@@ -128,6 +128,7 @@ export interface Conversation {
   draft?: string;
 }
 export interface AppStatus {
+  requestAllowance?: RequestAllowance;
   accountId?: string;
   accessEpoch?: string;
   csrf: string;
@@ -135,6 +136,17 @@ export interface AppStatus {
   search: boolean;
   publicPageHosts?: string[] | null;
 }
+export type RequestAllowance =
+  | { state: "unavailable" }
+  | {
+      state: "active" | "exhausted";
+      limit: number;
+      used: number;
+      remaining: number;
+      pending: number;
+      uncertain: number;
+      resetsAt: string;
+    };
 export const emptyConversation = (): Conversation => ({
   id: crypto.randomUUID(),
   title: "New conversation",

@@ -1,10 +1,10 @@
 # PrivateAI
 
-A local web evaluation of private personal assistance. **The web chat inference path is implemented.** A two-turn synthetic WSL conversation succeeded on the earlier adapter; the revised streaming adapter is locally tested and awaits its small live compatibility check. Full provider qualification and production readiness remain incomplete.
+A general-purpose AI assistant under production development. **The current goal is one public-launchable product**, with limited-user testing on the same architecture before public opening. Chat, encrypted history, documents/images, research, reasoning/coding, accounts, usage, subscriptions and operations are active scope. Provider qualification and release readiness remain incomplete; private-data access and public launch are closed.
 
-Review the [product requirements](docs/PRD.md) and [architecture and trust boundaries](docs/ARCHITECTURE.md) before continuing development. Both are consolidated review drafts; the [acceptance contract](docs/acceptance.md) defines the evidence gates.
+Start with the **[active production roadmap](docs/ROADMAP.md#active-production-roadmap--19-october-2026)**, [current readiness ledger](docs/READINESS.md) and [local handoff](docs/LOCAL_CODEX_HANDOFF.md). The [PRD](docs/PRD.md), [architecture](docs/ARCHITECTURE.md) and [acceptance contract](docs/acceptance.md) define scope and evidence gates. Historical trial-first plans are retained as history, not current instructions.
 
-Use the [Git-based WSL workflow](docs/git-workflow.md) for source updates and the [local experiment guide](docs/local-experiment.md) to review existing evidence. The original two-turn test is complete. The [one-request compatibility check](docs/live-compatibility.md) is prepared but needs confirmation of added scope within the existing USD 2 total cap. No command creates provider qualification.
+Development uses the existing Windows checkout. Current Tinfoil authorization is USD5 cumulative, subject to actual account/key limits and reconciled uncertainty; do not change billing settings. Fresh studies require a frozen request ceiling, cost estimate and stop policy. Known isolated incomplete replies stop their dependent conversation; explicitly planned independent arms may continue. Global integrity/security/authorization failures stop the study. Historical plans and consumed permits must not be replayed or relabelled.
 
 ## Run
 

@@ -1,5 +1,15 @@
 # Evaluation evidence
 
+## Active development policy — 19 October 2026
+
+The public-product roadmap is active. Founder reaffirms cumulative TinfoilUSD5, subject to actual account/key controls and available credit. No arbitrary smaller testing cap; choose meaningful fixed studies with a request ceiling, worst-case reserve, independent ground truth where possible, exact configurations and failure accounting. Check actual usage before paid execution. Unused reservations are not spent money. The agent never changes billing, recharge, limits or plans.
+
+For **new** workspace studies, frozen plan stopPolicy:independent-arms plus --independent-arms allows unaffected arms to continue after a known isolated incomplete reply. The failed conversation always ends, receives no retry and retains raw/result/usage evidence; subsequent turns are unattempted. Only local contract rejection or recognized output-limit/timeout/incomplete-answer codes with valid encrypted upstream200 responses qualify for isolation. Unknown transport/decryption/protocol failures, failed authorization/billing, unexpected network/page failures and storage/save/reload integrity failures stop globally. Every arm has its own permits and browser state. No failure becomes a completed quality score.
+
+Preflight checks all permitted inference rounds against request/reserve bounds and the minimum of founder plan cap, permit cap, actual key/account limits and available credit after genuine uncertainty. Human scores remain blank until review. Historical frozen studies retain their original global-stop rule and consumed claims; do not resume or relabel them under this amendment. Release thresholds/held-out separation are unchanged.
+
+## Historical reserved execution and evidence
+
 ## Reserved execution safeguards (6 October)
 
 Execution update: 72 reserved conversations / 144 replies completed on one frozen

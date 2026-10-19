@@ -17,13 +17,14 @@ import { extract } from "./documents";
 import { Vault } from "./vault";
 import { containsTemporaryResearch } from "./saved-conversation";
 import { ConversationLibrary } from "./ConversationLibrary";
+import { AccountUsage } from "./AccountUsage";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { abortable } from "./abortable";
 import { createCalculationSession } from "./calculation-session";
 import { parseResearchResult, researchSourceUrl } from "./research-result";
 
-type Tab = "Conversation" | "Context" | "Research" | "Saved";
+type Tab = "Conversation" | "Context" | "Research" | "Saved" | "Account";
 const Answer = lazy(() =>
   import("./Answer").then((module) => ({ default: module.Answer })),
 );
@@ -595,22 +596,22 @@ export function App() {
           ＋ New conversation
         </button>
         <nav aria-label="Workspace">
-          {(["Conversation", "Context", "Research", "Saved"] as Tab[]).map(
-            (name, i) => (
-              <button
-                className={tab === name ? "nav-item selected" : "nav-item"}
-                key={name}
-                onClick={() => setTab(name)}
-                aria-current={tab === name ? "page" : undefined}
-              >
-                <span aria-hidden="true">{["◌", "▤", "⌕", "▣"][i]}</span>
-                {name}
-                {name === "Context" && (
-                  <small>{conversation.attachments.length}</small>
-                )}
-              </button>
-            ),
-          )}
+          {(
+            ["Conversation", "Context", "Research", "Saved", "Account"] as Tab[]
+          ).map((name, i) => (
+            <button
+              className={tab === name ? "nav-item selected" : "nav-item"}
+              key={name}
+              onClick={() => setTab(name)}
+              aria-current={tab === name ? "page" : undefined}
+            >
+              <span aria-hidden="true">{["◌", "▤", "⌕", "▣", "○"][i]}</span>
+              {name}
+              {name === "Context" && (
+                <small>{conversation.attachments.length}</small>
+              )}
+            </button>
+          ))}
         </nav>
         <div className="sidebar-note">
           <span className="small-dot" />
@@ -1302,6 +1303,9 @@ export function App() {
               </div>
             )}
           </section>
+        )}
+        {tab === "Account" && (
+          <AccountUsage allowance={status?.requestAllowance} />
         )}
         {tab === "Saved" && (
           <section className="content-view">

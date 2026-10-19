@@ -1,0 +1,72 @@
+import { test, expect } from "@playwright/test";
+
+test("account view preserves drafts and never invents a paid allowance", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByLabel("Message PrivateAI").fill("SYNTHETIC unsent question");
+  await page
+    .getByRole("navigation", { name: "Workspace" })
+    .getByRole("button", { name: "Account", exact: false })
+    .click();
+  await expect(
+    page.getByText("No request allowance is available to display.", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Your vault passphrase cannot currently be recovered", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  await page
+    .getByRole("navigation", { name: "Workspace" })
+    .getByRole("button", { name: "Conversation", exact: false })
+    .click();
+  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+    "SYNTHETIC unsent question",
+  );
+});
+
+test("synthetic account status renders request counts without claiming token billing", async ({
+  page,
+}) => {
+  await page.route("**/api/status", async (route) => {
+    const response = await route.fetch();
+    const body = await response.json();
+    await route.fulfill({
+      response,
+      json: {
+        ...body,
+        requestAllowance: {
+          state: "exhausted",
+          limit: 2,
+          used: 2,
+          remaining: 0,
+          pending: 1,
+          uncertain: 1,
+          resetsAt: "2026-11-01T00:00:00Z",
+        },
+      },
+    });
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page
+    .getByRole("navigation", { name: "Workspace" })
+    .getByRole("button", { name: "Account", exact: false })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "0 requests remaining" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("not token charges or completed-answer counts", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+});
