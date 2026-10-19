@@ -9,11 +9,16 @@ import { consumerControl } from "./consumer-control";
 import { createApp } from "./app";
 import { PostgresUsageLedger } from "./usage-postgres";
 import { productionAccountTarget } from "../shared/account-design";
+import {
+  createSyntheticBillingWorkflow,
+  type SyntheticBillingConfig,
+} from "./billing-workflow";
 
 /** Test harness composition only. No production mount or inference key support. */
 export function createSyntheticConsumerWorkspace(
   config: SyntheticAccountConfig & {
     searchKey?: string;
+    billing?: SyntheticBillingConfig;
   },
 ) {
   const lab = createSyntheticAccountAuth({ ...config, workspaceEnabled: true });
@@ -23,6 +28,13 @@ export function createSyntheticConsumerWorkspace(
     auth: lab.auth,
   });
   const usage = new PostgresUsageLedger(config.database);
+  const billing = config.billing
+    ? createSyntheticBillingWorkflow({
+        ...config.billing,
+        database: config.database,
+        origin: config.origin,
+      })
+    : undefined;
   const app = express();
   app.use(lab.router);
   app.get("/auth", (_req, res) => {
@@ -32,7 +44,7 @@ export function createSyntheticConsumerWorkspace(
   app.use(
     createApp({
       origin: config.origin,
-      consumer: control,
+      consumer: { ...control, billingRouter: billing?.router },
       usage,
       searchKey: config.searchKey,
     }),

@@ -130,6 +130,7 @@ export interface Conversation {
   draft?: string;
 }
 export interface AppStatus {
+  billingRehearsal?: boolean;
   consumerWorkspace?: boolean;
   requestAllowance?: RequestAllowance;
   accountId?: string;

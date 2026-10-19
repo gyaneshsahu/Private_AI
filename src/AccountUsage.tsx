@@ -1,19 +1,29 @@
 import type { RequestAllowance } from "../shared/contracts";
+import { AccountBilling } from "./AccountBilling";
 
 export function AccountUsage({
   allowance,
   consumer,
   busy,
   onManage,
+  billing,
 }: {
   allowance?: RequestAllowance;
   consumer?: boolean;
   busy?: boolean;
   onManage?: () => void;
+  billing?: { csrf: string; onNavigate: (url: string) => void };
 }) {
   return (
     <section className="content-view" aria-label="Account and usage">
       <h2>Account and usage</h2>
+      {billing && (
+        <AccountBilling
+          csrf={billing.csrf}
+          busy={!!busy}
+          onNavigate={billing.onNavigate}
+        />
+      )}
       {consumer && (
         <div className="panel">
           <p>

@@ -40,6 +40,7 @@ export interface Config {
     session: RequestHandler;
     approvals: ResearchApprovals;
     mode?: "production-candidate";
+    billingRouter?: RequestHandler;
   };
 }
 export function createApp(config: Config) {
@@ -54,7 +55,8 @@ export function createApp(config: Config) {
           !!config.apiKey ||
           !!config.searchKey ||
           config.qualification !== undefined ||
-          !!config.dev
+          !!config.dev ||
+          !!config.consumer.billingRouter
         : new URL(config.origin).hostname !== "localhost"))
   )
     throw Error(
@@ -98,10 +100,16 @@ export function createApp(config: Config) {
       "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     });
     // Hosted access is restricted before session, API and static-file handling.
+    const billingReturn =
+      !!config.consumer?.billingRouter &&
+      req.method === "GET" &&
+      ["/?billing=return", "/?billing=cancel"].includes(req.originalUrl) &&
+      req.headers["sec-fetch-mode"] === "navigate" &&
+      req.headers["sec-fetch-dest"] === "document";
     if (
       req.headers.host !== new URL(config.origin).host ||
       (req.headers.origin && req.headers.origin !== config.origin) ||
-      req.headers["sec-fetch-site"] === "cross-site"
+      (req.headers["sec-fetch-site"] === "cross-site" && !billingReturn)
     ) {
       res.status(403).json({ error: "Cross-origin access denied." });
       return;
@@ -188,6 +196,7 @@ export function createApp(config: Config) {
     res.json({
       csrf: res.locals.csrf,
       ...(config.consumer ? { consumerWorkspace: true } : {}),
+      ...(config.consumer?.billingRouter ? { billingRehearsal: true } : {}),
       ...(res.locals.accountId
         ? {
             requestAllowance: await (async () => {
@@ -351,6 +360,7 @@ export function createApp(config: Config) {
     },
   );
   app.use("/api", express.json({ limit: "8kb" }));
+  if (config.consumer?.billingRouter) app.use(config.consumer.billingRouter);
   app.post("/api/research/prepare", async (req, res) => {
     try {
       res.json(await approvals.issue(res.locals.session, req.body));

@@ -31,7 +31,11 @@ const Answer = lazy(() =>
   import("./Answer").then((module) => ({ default: module.Answer })),
 );
 export function App() {
-  const [tab, setTab] = useState<Tab>("Conversation");
+  const [tab, setTab] = useState<Tab>(() =>
+    new URLSearchParams(location.search).has("billing")
+      ? "Account"
+      : "Conversation",
+  );
   const [conversation, setConversation] =
     useState<Conversation>(emptyConversation);
   const [calculationSession] = useState(createCalculationSession);
@@ -1433,6 +1437,18 @@ export function App() {
           <AccountUsage
             allowance={status?.requestAllowance}
             consumer={status?.consumerWorkspace}
+            billing={
+              status?.billingRehearsal
+                ? {
+                    csrf: status.csrf,
+                    onNavigate: (url) => {
+                      if (!allowReplace()) return;
+                      accessNavigation.current = true;
+                      window.location.assign(url);
+                    },
+                  }
+                : undefined
+            }
             busy={!!busy}
             onManage={() => {
               if (!allowReplace()) return;
