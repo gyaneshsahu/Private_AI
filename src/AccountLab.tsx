@@ -3,6 +3,7 @@ import { createAuthClient } from "better-auth/client";
 import { passkeyClient } from "@better-auth/passkey/client";
 import { z } from "zod";
 import "./account-preview.css";
+import AccountAccess from "./AccountAccess";
 
 const sessionSchema = z
   .object({ user: z.object({ id: z.string(), email: z.string() }) })
@@ -19,6 +20,7 @@ const noticesSchema = z.object({
   notices: z.array(
     z.object({
       id: z.string().uuid(),
+      kind: z.enum(["sign_in_recovery", "credential_removed"]),
       createdAt: z.string().datetime(),
       deliveryState: z.enum([
         "pending",
@@ -55,6 +57,7 @@ export default function AccountLab() {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [linked, setLinked] = useState<string[]>([]);
   const [workspaceEnabled, setWorkspaceEnabled] = useState(false);
+  const [accessRevision, setAccessRevision] = useState(0);
   const [notices, setNotices] = useState<
     z.infer<typeof noticesSchema>["notices"]
   >([]);
@@ -81,6 +84,7 @@ export default function AccountLab() {
       });
       if (!response.ok) throw Error("security notices unavailable");
       setNotices(noticesSchema.parse(await response.json()).notices);
+      setAccessRevision((value) => value + 1);
     } else {
       setLinked([]);
       setNotices([]);
@@ -216,8 +220,8 @@ export default function AccountLab() {
             </button>
             <p className="account-preview-small">
               After signing in again with email, finish recovery to close other
-              sessions. This does not remove a lost passkey or linked provider;
-              compromised credentials need separate review.
+              sessions. Use Account access below to remove a lost passkey or
+              linked provider after verifying email.
             </p>
             {notices.length > 0 && (
               <section aria-label="Security notices">
@@ -225,7 +229,10 @@ export default function AccountLab() {
                 <ul>
                   {notices.map((item) => (
                     <li key={item.id}>
-                      Sign-in recovery ·{" "}
+                      {item.kind === "credential_removed"
+                        ? "Sign-in method removed"
+                        : "Sign-in recovery"}{" "}
+                      ·{" "}
                       <time dateTime={item.createdAt}>
                         {new Date(item.createdAt).toLocaleString()}
                       </time>
@@ -244,6 +251,7 @@ export default function AccountLab() {
                   });
                   if (result.error) throw Error("registration failed");
                   setNotice("Test passkey added.");
+                  await refresh();
                 })
               }
             >
@@ -255,6 +263,7 @@ export default function AccountLab() {
                 action(async () => {
                   await post("revoke-other-sessions", {});
                   setNotice("Other test sessions revoked.");
+                  await refresh();
                 })
               }
             >
@@ -274,6 +283,22 @@ export default function AccountLab() {
             >
               Sign out
             </button>
+            <AccountAccess
+              revision={accessRevision}
+              changed={refresh}
+              verifyEmail={() =>
+                void action(async () => {
+                  await post("sign-out", {});
+                  setEmail(session.user.email);
+                  setSession(null);
+                  setSent(false);
+                  setCode("");
+                  setNotice(
+                    "Sign in with an email code, then remove the affected method under Account access.",
+                  );
+                })
+              }
+            />
           </div>
         ) : (
           <form

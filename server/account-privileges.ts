@@ -17,7 +17,7 @@ export function accountPrivilegePlan(input: {
   const table = (name: string) => `${schema}."${name}"`;
   return [
     `GRANT USAGE ON SCHEMA ${schema} TO ${runtime},${notice}`,
-    `GRANT SELECT,INSERT,UPDATE,DELETE ON ${["user", "session", "account", "verification", "passkey", "rateLimit", "research_consent", "consumer_request_count"].map(table).join(",")} TO ${runtime}`,
+    `GRANT SELECT,INSERT,UPDATE,DELETE ON ${["user", "session", "account", "verification", "passkey", "rateLimit", "research_consent", "consumer_request_count", "account_email_proof", "account_credential_change"].map(table).join(",")} TO ${runtime}`,
     `GRANT SELECT ON ${["privateai_schema_migrations", "account_recovery_control", "usage_accounts", "usage_allowances"].map(table).join(",")} TO ${runtime}`,
     // PostgreSQL row locking requires UPDATE privilege; control mode stays read-only.
     `GRANT UPDATE ("updatedAt") ON ${table("account_recovery_control")} TO ${runtime},${notice}`,

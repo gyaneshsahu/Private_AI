@@ -26,7 +26,12 @@ export async function dispatchOneSecurityNotice(
     throw Error("Invalid dispatch deadline.");
   const client = await database.connect();
   const token = randomUUID();
-  let event: { id: string; recipientEmail: string | null; createdAt: Date };
+  let event: {
+    id: string;
+    recipientEmail: string | null;
+    createdAt: Date;
+    kind: string;
+  };
   try {
     await client.query("BEGIN");
     const gate = await client.query(
@@ -36,7 +41,8 @@ export async function dispatchOneSecurityNotice(
       await client.query("COMMIT");
       return "paused";
     }
-    const claimed = await client.query(`SELECT id,"recipientEmail","createdAt"
+    const claimed =
+      await client.query(`SELECT id,kind,"recipientEmail","createdAt"
       FROM account_security_event WHERE "deliveryState"='pending'
       ORDER BY "createdAt",id FOR UPDATE SKIP LOCKED LIMIT 1`);
     if (!claimed.rowCount) {
@@ -67,8 +73,11 @@ export async function dispatchOneSecurityNotice(
 
   const notice: SecurityNotice = {
     to: event.recipientEmail!,
-    subject: "PrivateAI sign-in recovery completed",
-    text: `Sign-in recovery was completed for your PrivateAI account at ${event.createdAt.toISOString()}. Other sessions were signed out. Linked sign-in methods and your encrypted vault were not reset. If you did not request this, use your usual PrivateAI address to review your account access.`,
+    subject:
+      event.kind === "credential_removed"
+        ? "PrivateAI sign-in method removed"
+        : "PrivateAI sign-in recovery completed",
+    text: `${event.kind === "credential_removed" ? "A sign-in method was removed from" : "Sign-in recovery was completed for"} your PrivateAI account at ${event.createdAt.toISOString()}. Other sessions were signed out. ${event.kind === "credential_removed" ? "Email sign-in remains available. Your encrypted vault was not reset." : "Linked sign-in methods and your encrypted vault were not reset."} If you did not request this, use your usual PrivateAI address to review your account access.`,
     idempotencyKey: `privateai-security-${event.id}`,
   };
   const abort = new AbortController();
