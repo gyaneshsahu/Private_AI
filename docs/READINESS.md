@@ -1,5 +1,16 @@
 # PrivateAI readiness checklist
 
+### M2 social account workflow — actual application, 19 October
+
+Validation: **25 targeted tests across 5 files and 4 existing browser regressions pass**; build/typecheck pass. No paid inference, live activation or account migration.
+
+The built React account lab now offers available synthetic Google/Apple buttons, displays connected methods, supports explicit linking and handles cancellation without leaking provider error text into the page or retaining it in the URL. Its server advertises fixture availability; absent configuration does not show working social options. Email, passkeys and sign-in recovery remain integrated. The footer explains identity/email disclosure and separates account recovery from vault recovery. This remains localhost-only and unmounted on the hosted product.
+
+A real Chromium journey at 390px uses the built application, PostgreSQL and signed local provider fixtures: Google sign-in → Apple linking → sign-out → Apple sign-in → reload → cancellation. It checks the connected methods, no local/session storage, no overflow or JavaScript errors, and no real external requests. Apple form POST carries its browser-generated Origin and follows the callback redirect with real browser cookies. No real Apple/Google consent or device passkey enrollment is claimed.
+
+Retained failures/fixes: the first browser return was blocked because auth middleware also covered static navigation; scope is now limited to account/auth APIs. HTTPS-to-HTTP Apple form submission sent null Origin and was correctly rejected; the browser fixture now uses local HTTPS, without accepting null Origin. Local Avast Web/Mail Shield substitutes a self-signed certificate, so strict ephemeral-certificate trust failed. The isolated synthetic browser and exact-localhost test client accept that test certificate; all remote provider requests remain intercepted. No machine trust, antivirus, production TLS or privacy-verification settings changed. This is cookie/workflow evidence, **not TLS qualification**. OpenSSL creates and removes ephemeral test keys under ignored .local; no certificates enter the repository. Undici client version mismatch during fixture setup was also corrected.
+
+
 ### M2 recovery and provider-verification batch — local synthetic evidence, 19 October
 
 **Implemented / locally tested; inactive on the product.** Fresh sign-in can finish session recovery: one PostgreSQL transaction revokes other sessions and queues one security-notice intent. Repetition does not revoke sessions created after completion. An injected commit failure preserves all previous sessions and queues nothing. The React lab exposes this action and explains that linked credentials and the encrypted vault are unchanged. No notice is actually delivered yet; this is not complete compromised-account recovery.

@@ -7,6 +7,13 @@ import "./account-preview.css";
 const sessionSchema = z
   .object({ user: z.object({ id: z.string(), email: z.string() }) })
   .nullable();
+const providerSchema = z.enum(["google", "apple"]);
+type Provider = z.infer<typeof providerSchema>;
+const optionsSchema = z.object({
+  synthetic: z.literal(true),
+  socialProviders: z.array(providerSchema),
+});
+const accountsSchema = z.array(z.object({ providerId: z.string() }));
 const client = createAuthClient({
   baseURL: window.location.origin,
   plugins: [passkeyClient()],
@@ -20,15 +27,46 @@ export default function AccountLab() {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
+  const [providers, setProviders] = useState<Provider[]>([]);
+  const [linked, setLinked] = useState<string[]>([]);
   const codeInput = useRef<HTMLInputElement>(null);
   async function refresh() {
     const response = await fetch("/api/auth/get-session", {
       cache: "no-store",
     });
     if (!response.ok) throw Error("unavailable");
-    setSession(sessionSchema.parse(await response.json()));
+    const current = sessionSchema.parse(await response.json());
+    setSession(current);
+    if (current) {
+      const accounts = await fetch("/api/auth/list-accounts", {
+        cache: "no-store",
+      });
+      if (!accounts.ok) throw Error("account list unavailable");
+      setLinked(
+        accountsSchema
+          .parse(await accounts.json())
+          .map((account) => account.providerId),
+      );
+    } else setLinked([]);
   }
   useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("error")) {
+      setNotice(
+        "Provider sign-in or linking did not complete. Your existing sign-in methods are unchanged.",
+      );
+      url.searchParams.delete("error");
+      url.searchParams.delete("error_description");
+      window.history.replaceState(null, "", url);
+    }
+    fetch("/api/account/options", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) throw Error("unavailable");
+        setProviders(
+          optionsSchema.parse(await response.json()).socialProviders,
+        );
+      })
+      .catch(() => setProviders([]));
     refresh().catch(() =>
       setNotice("The synthetic account service is not running here."),
     );
@@ -57,6 +95,35 @@ export default function AccountLab() {
     });
     if (!response.ok) throw Error("not completed");
   }
+  async function social(provider: Provider, link = false) {
+    const callbackURL = `${window.location.origin}/?account-lab=1`;
+    const response = await fetch(
+      `/api/auth/${link ? "link-social" : "sign-in/social"}`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          provider,
+          callbackURL,
+          errorCallbackURL: callbackURL,
+          disableRedirect: true,
+        }),
+      },
+    );
+    if (!response.ok) throw Error("provider unavailable");
+    const result = z
+      .object({ url: z.string().url() })
+      .parse(await response.json());
+    const target = new URL(result.url);
+    if (
+      target.origin !==
+      (provider === "google"
+        ? "https://accounts.google.com"
+        : "https://appleid.apple.com")
+    )
+      throw Error("unrecognized provider redirect");
+    window.location.assign(target.href);
+  }
   return (
     <main className="account-preview">
       <a className="account-preview-brand" href="/">
@@ -76,6 +143,16 @@ export default function AccountLab() {
             <p>
               Signed in as <strong>{session.user.email}</strong>
             </p>
+            {providers.map((provider) => (
+              <button
+                key={provider}
+                disabled={busy || linked.includes(provider)}
+                onClick={() => action(() => social(provider, true))}
+              >
+                {linked.includes(provider) ? "Connected to" : "Connect"}{" "}
+                {provider === "google" ? "Google" : "Apple"}
+              </button>
+            ))}
             <button
               disabled={busy}
               onClick={() =>
@@ -170,6 +247,16 @@ export default function AccountLab() {
               });
             }}
           >
+            {providers.map((provider) => (
+              <button
+                key={provider}
+                type="button"
+                disabled={busy}
+                onClick={() => action(() => social(provider))}
+              >
+                Continue with {provider === "google" ? "Google" : "Apple"}
+              </button>
+            ))}
             <label htmlFor="lab-email">Test email address</label>
             <input
               id="lab-email"
@@ -235,9 +322,12 @@ export default function AccountLab() {
           {busy ? "Working…" : notice}
         </p>
         <p className="account-preview-small">
-          Google and Apple are not connected. Recovering sign-in cannot recover
-          a lost vault passphrase. This lab grants no access to existing
-          accounts or private-data chat.
+          Social buttons, when available, use synthetic provider fixtures only.
+          The planned live flow shares your verified email and provider identity
+          with PrivateAI; the provider learns that you signed in here. No chat
+          content is part of sign-in. Recovering sign-in cannot recover a lost
+          vault passphrase. This lab grants no access to existing accounts or
+          private-data chat.
         </p>
       </section>
     </main>

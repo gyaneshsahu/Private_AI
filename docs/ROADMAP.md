@@ -1,5 +1,8 @@
 # PrivateAI delivery roadmap
 
+M2 workflow advance: the actual built account UI completes synthetic Google/Apple sign-in and explicit linking with signed local fixtures, alongside email/passkeys/recovery. Cancellation and browser cookie boundaries are exercised at phone width. Next durable-usage/metadata work can proceed without live provider setup; activation, device and privacy/security gates remain open.
+
+
 19 October M2 advance: atomic session recovery/notice intent and maintained OIDC verification are implemented **inactive** and pass 24 local tests across 5 files. See READINESS for rejected-token/link/replay/rollback evidence and preserved initial failures. Next is the actual social account workflow, PostgreSQL usage and metadata minimization. Actual provider setup, email/notice delivery, compromised-credential recovery and production qualification remain open; no launch gate closes from these tests alone.
 
 

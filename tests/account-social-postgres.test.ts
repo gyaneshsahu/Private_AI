@@ -10,11 +10,15 @@ import {
 import { readFile } from "node:fs/promises";
 import type { Server } from "node:http";
 import express from "express";
+import { resolve } from "node:path";
+import { chromium, expect as browserExpect } from "@playwright/test";
 import { createSyntheticAccountAuth } from "../server/account-auth";
+import { createServer } from "node:https";
+import { Agent, fetch as localFetch } from "undici";
+import { localTLS } from "./fixtures/local-tls";
 
 const connectionString = process.env.PRIVATEAI_SYNTHETIC_PG;
 const schema = `social_test_${randomUUID().replaceAll("-", "")}`;
-const nativeFetch = globalThis.fetch;
 const keys = generateKeyPairSync("rsa", { modulusLength: 2048 });
 const jwk = {
   ...keys.publicKey.export({ format: "jwk" }),
@@ -32,6 +36,7 @@ type TokenFixture = {
 };
 const codes = new Map<string, TokenFixture>();
 let admin: Pool, pool: Pool, server: Server, origin: string;
+let tls: Awaited<ReturnType<typeof localTLS>>, localAgent: Agent;
 let exchanges = 0;
 let discoveryHasKeys = true;
 const blocked: string[] = [];
@@ -79,16 +84,45 @@ beforeAll(async () => {
   ])
     await pool.query(await readFile(`server/migrations/${file}`, "utf8"));
   const app = express();
-  server = app.listen(0, "127.0.0.1");
+  tls = await localTLS();
+  // Exact ephemeral localhost origin only; all external fetches are intercepted below.
+  // This fixture tests OAuth/cookies, not TLS or the machine interception policy.
+  localAgent = new Agent({ connect: { rejectUnauthorized: false } });
+  server = createServer({ key: tls.key, cert: tls.cert }, app).listen(
+    0,
+    "127.0.0.1",
+  );
   await new Promise<void>((resolve) => server.once("listening", resolve));
   const address = server.address();
   if (!address || typeof address === "string") throw Error("No test listener");
-  origin = `http://localhost:${address.port}`;
+  origin = `https://localhost:${address.port}`;
   vi.stubGlobal(
     "fetch",
     async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = new URL(input instanceof Request ? input.url : String(input));
-      if (url.origin === origin) return nativeFetch(input, init);
+      if (url.origin === origin) {
+        const response = await localFetch(url, {
+          method: init?.method,
+          body: init?.body as string | undefined,
+          headers: init?.headers as Record<string, string>,
+          redirect: init?.redirect,
+          dispatcher: localAgent,
+        });
+        const headers = new Headers();
+        for (const [name, value] of response.headers)
+          if (name !== "set-cookie") headers.append(name, value);
+        for (const cookie of response.headers.getSetCookie())
+          headers.append("set-cookie", cookie);
+        return new Response(
+          [204, 205, 304].includes(response.status)
+            ? null
+            : await response.arrayBuffer(),
+          {
+            status: response.status,
+            headers,
+          },
+        );
+      }
       if (
         [
           "https://accounts.google.com/.well-known/openid-configuration",
@@ -187,7 +221,126 @@ beforeAll(async () => {
       },
     }).router,
   );
+  app.use(express.static(resolve("dist"), { index: false }));
+  app.get("/", (_req, res) => res.sendFile(resolve("dist/index.html")));
 }, 20000);
+
+it.skipIf(!connectionString)(
+  "completes Google sign-in, Apple linking and Apple sign-in through the built React UI",
+  async () => {
+    const browser = await chromium.launch();
+    const context = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      // Isolated context only; routes below block every real external request.
+      ignoreHTTPSErrors: true,
+    });
+    const unexpected: string[] = [];
+    const errors: string[] = [];
+    let cancelProvider = false;
+    await context.route("**/*", async (route) => {
+      const request = route.request();
+      const url = new URL(request.url());
+      if (url.origin === origin) return route.continue();
+      const provider =
+        url.origin === "https://accounts.google.com"
+          ? "google"
+          : url.origin === "https://appleid.apple.com"
+            ? "apple"
+            : null;
+      if (!provider || !request.isNavigationRequest()) {
+        unexpected.push(url.origin);
+        return route.abort();
+      }
+      const flow: Flow = { provider, url, cookie: "" };
+      const destination = prepare(flow, "browser-social@example.test");
+      if (cancelProvider) {
+        destination.searchParams.delete("code");
+        destination.searchParams.set("error", "access_denied");
+      }
+      const fields = [...destination.searchParams]
+        .map(
+          ([name, value]) =>
+            `<input type="hidden" name="${name}" value="${value}">`,
+        )
+        .join("");
+      await route.fulfill({
+        contentType: "text/html",
+        body: `<form method="${provider === "apple" ? "post" : "get"}" action="${destination.origin}${destination.pathname}">${fields}</form><script>document.forms[0].submit()</script>`,
+      });
+    });
+    const page = await context.newPage();
+    const callbackResults: unknown[] = [];
+    page.on("response", (response) => {
+      if (new URL(response.url()).pathname.startsWith("/api/auth/callback/")) {
+        const location = response.headers()["location"];
+        callbackResults.push({
+          method: response.request().method(),
+          origin: response.request().headers()["origin"],
+          site: response.request().headers()["sec-fetch-site"],
+          status: response.status(),
+          error: location
+            ? new URL(location, origin).searchParams.get("error")
+            : null,
+        });
+      }
+    });
+    page.on("pageerror", (error) => errors.push(error.message));
+    try {
+      await page.goto(`${origin}/?account-lab=1`);
+      await page.getByRole("button", { name: "Continue with Google" }).click();
+      await browserExpect(
+        page.getByRole("heading", { name: "Your test account" }),
+      ).toBeVisible();
+      await browserExpect(
+        page.getByRole("button", { name: "Connected to Google" }),
+      ).toBeDisabled();
+      await page
+        .getByRole("button", { name: "Connect Apple", exact: true })
+        .click();
+      await browserExpect(
+        page.getByRole("button", { name: "Connected to Apple" }),
+      ).toBeDisabled();
+      await page.getByRole("button", { name: "Sign out", exact: true }).click();
+      await page.getByRole("button", { name: "Continue with Apple" }).click();
+      await browserExpect(
+        page.getByRole("heading", { name: "Your test account" }),
+      ).toBeVisible();
+      await browserExpect(
+        page.getByText("browser-social@example.test", { exact: true }),
+      ).toBeVisible();
+      await page.reload();
+      await browserExpect(
+        page.getByRole("button", { name: "Connected to Apple" }),
+      ).toBeDisabled();
+      expect(
+        await page.evaluate(() => ({
+          local: localStorage.length,
+          session: sessionStorage.length,
+          overflow: document.documentElement.scrollWidth > window.innerWidth,
+        })),
+      ).toEqual({ local: 0, session: 0, overflow: false });
+      await page.getByRole("button", { name: "Sign out", exact: true }).click();
+      cancelProvider = true;
+      await page.getByRole("button", { name: "Continue with Google" }).click();
+      await browserExpect(page.getByRole("status")).toContainText(
+        "did not complete",
+      );
+      expect(new URL(page.url()).searchParams.has("error")).toBe(false);
+      expect(unexpected).toEqual([]);
+      expect(errors).toEqual([]);
+    } catch (error) {
+      console.error({
+        callbackResults,
+        pageText: await page.locator("body").innerText(),
+        errors,
+      });
+      throw error;
+    } finally {
+      await browser.close();
+    }
+  },
+  30000,
+);
 
 beforeEach(async () => {
   if (pool) await pool.query('DELETE FROM "rateLimit"');
@@ -228,8 +381,10 @@ it.skipIf(!connectionString)(
 );
 afterAll(async () => {
   vi.unstubAllGlobals();
+  if (localAgent) await localAgent.close();
   if (server)
     await new Promise<void>((resolve) => server.close(() => resolve()));
+  if (tls) await tls.dispose();
   if (pool) await pool.end();
   if (admin) {
     await admin.query(`DROP SCHEMA "${schema}" CASCADE`);

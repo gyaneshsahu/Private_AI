@@ -7,7 +7,7 @@ import "./styles.css";
 const AccountLab = lazy(() => import("./AccountLab"));
 const pageUrl = new URL(window.location.href);
 const lab =
-  pageUrl.protocol === "http:" &&
+  ["http:", "https:"].includes(pageUrl.protocol) &&
   pageUrl.hostname === "localhost" &&
   pageUrl.searchParams.get("account-lab") === "1";
 createRoot(document.getElementById("root")!).render(

@@ -28,7 +28,7 @@ export interface SyntheticAccountConfig {
 export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
   const origin = new URL(config.origin);
   if (
-    origin.protocol !== "http:" ||
+    !["http:", "https:"].includes(origin.protocol) ||
     origin.hostname !== "localhost" ||
     origin.origin !== config.origin ||
     config.secret.length < 32
@@ -218,6 +218,13 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
   });
   const router = express.Router();
   router.use((req, res, next) => {
+    if (
+      !req.path.startsWith("/api/auth/") &&
+      !req.path.startsWith("/api/account/")
+    ) {
+      next();
+      return;
+    }
     res.set({
       "Cache-Control": "no-store",
       "Referrer-Policy": "no-referrer",
@@ -247,6 +254,12 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
     req.headers["x-privateai-client-ip"] =
       req.socket.remoteAddress ?? "127.0.0.1";
     next();
+  });
+  router.get("/api/account/options", (_req, res) => {
+    res.json({
+      synthetic: true,
+      socialProviders: config.socialFixtures ? ["google", "apple"] : [],
+    });
   });
   router.post("/api/account/recovery/complete", async (req, res) => {
     try {

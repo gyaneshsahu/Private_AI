@@ -1,5 +1,12 @@
 # PrivateAI — architecture and trust boundaries
 
+### Account workflow harness update — 19 October
+
+AccountLab now uses real inactive auth endpoints for social sign-in/linking and reads available synthetic methods from /api/account/options. Hosted server never mounts these endpoints. A signed-provider browser test covers the built UI, provider navigation, Apple form POST, cookies, linked-method display, reload and cancellation. API origin enforcement does not intercept static-page return navigation.
+
+Local social browser tests use ephemeral HTTPS via tests/fixtures/local-tls.ts, OpenSSL and an isolated browser context. The local Windows antivirus substitutes its own self-signed TLS certificate; the fixture explicitly accepts local test TLS, with all non-local requests intercepted. This does not test transport trust or change any product verification path. Keys are deleted with individual file removal after the suite. Hosted TLS, real provider callbacks, Apple PKCE/relay interoperability and actual-device authentication remain separately required.
+
+
 ### Latest inactive identity implementation — 19 October
 
 Recovery: migration 0003 adds a minimal security-notice outbox intent. `finishSignInRecovery` locks the account/current session, requires a fresh verified sign-in, deletes other sessions and inserts one idempotent event in the same transaction. The queued notice has no delivery worker yet. This operation neither deletes credentials nor resets vault encryption. Real compromised-account recovery needs credential removal and notification delivery before release.
