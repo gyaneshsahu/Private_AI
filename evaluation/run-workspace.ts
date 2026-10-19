@@ -17,6 +17,24 @@ import { auditResearchAnswer } from "../src/research-audit";
 import workspaceFixtures from "./cases/research-workspace.json";
 import assistedFixtures from "./cases/research-assisted.json";
 import toolFixtures from "./cases/research-tools.json";
+import everydayFixtures from "./cases/everyday-transfer-20261019.json";
+const everyday = process.argv.includes("--everyday");
+if (
+  everyday &&
+  process.argv.some((a) =>
+    [
+      "--matched",
+      "--assisted",
+      "--optional-tools",
+      "--candidate-only",
+      "--structured",
+      "--diagnostic",
+      "--calculation-continuation",
+      "--calculation-replay",
+    ].includes(a),
+  )
+)
+  throw Error("Everyday comparison uses ordinary answers only");
 const matched = process.argv.includes("--matched");
 const independentArms = process.argv.includes("--independent-arms");
 const cells = [
@@ -86,39 +104,55 @@ if (
   (!assisted || diagnostic || generalArithmetic || structured)
 )
   throw Error("Choose separate optional-tools batch");
-const fixtures = optionalTools
-  ? toolFixtures.filter((f) =>
-      comparisonCases
-        ? comparisonCases.includes(f.id)
-        : toolDiagnostic
-          ? f.id ===
-            (process.argv.includes("--invoice-diagnostic")
-              ? "assisted-tool-08"
-              : (diagnosticCase ?? "assisted-tool-07"))
-          : process.argv.includes("--multi-results")
-            ? Number(f.id.slice(-2)) >= 5 && Number(f.id.slice(-2)) <= 7
-            : Number(f.id.slice(-2)) <= 4 &&
-              (!process.argv.includes("--remaining-tools") ||
-                f.id !== "assisted-tool-01"),
-    )
-  : structured
-    ? assistedFixtures.filter((f) => Number(f.id.slice(-2)) >= 6)
-    : generalArithmetic
-      ? assistedFixtures.filter(
-          (f) =>
-            Number(f.id.slice(-2)) >=
-            (process.argv.includes("--normalized") ? 4 : 3),
-        )
-      : diagnostic
-        ? assistedFixtures.filter((f) => f.id === "assisted-02")
-        : assisted
-          ? assistedFixtures
-          : workspaceFixtures;
-const fixturePath = optionalTools
-  ? "evaluation/cases/research-tools.json"
-  : assisted
-    ? "evaluation/cases/research-assisted.json"
-    : "evaluation/cases/research-workspace.json";
+const fixtures = everyday
+  ? everydayFixtures.map((f) => ({
+      ...f,
+      query: `authored ${f.id}`,
+      sources: [
+        {
+          id: "synthetic-context",
+          title: "Authored task context",
+          text: "This is an authored synthetic task. All task facts are supplied in the user messages.",
+          url: "https://example.com/synthetic-context",
+          evidenceKind: "search-excerpt",
+        },
+      ],
+    }))
+  : optionalTools
+    ? toolFixtures.filter((f) =>
+        comparisonCases
+          ? comparisonCases.includes(f.id)
+          : toolDiagnostic
+            ? f.id ===
+              (process.argv.includes("--invoice-diagnostic")
+                ? "assisted-tool-08"
+                : (diagnosticCase ?? "assisted-tool-07"))
+            : process.argv.includes("--multi-results")
+              ? Number(f.id.slice(-2)) >= 5 && Number(f.id.slice(-2)) <= 7
+              : Number(f.id.slice(-2)) <= 4 &&
+                (!process.argv.includes("--remaining-tools") ||
+                  f.id !== "assisted-tool-01"),
+      )
+    : structured
+      ? assistedFixtures.filter((f) => Number(f.id.slice(-2)) >= 6)
+      : generalArithmetic
+        ? assistedFixtures.filter(
+            (f) =>
+              Number(f.id.slice(-2)) >=
+              (process.argv.includes("--normalized") ? 4 : 3),
+          )
+        : diagnostic
+          ? assistedFixtures.filter((f) => f.id === "assisted-02")
+          : assisted
+            ? assistedFixtures
+            : workspaceFixtures;
+const fixturePath = everyday
+  ? "evaluation/cases/everyday-transfer-20261019.json"
+  : optionalTools
+    ? "evaluation/cases/research-tools.json"
+    : assisted
+      ? "evaluation/cases/research-assisted.json"
+      : "evaluation/cases/research-workspace.json";
 const root = resolve(process.argv[2] || "");
 if (!process.argv[2] || !root.startsWith(resolve(".local") + "\\"))
   throw Error("Local run directory required");
@@ -129,11 +163,16 @@ try {
   if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
 }
 const dry = process.argv.includes("--offline");
-if (!dry && (!process.env.TINFOIL_API_KEY || !process.env.BRAVE_SEARCH_API_KEY))
+const bootstrapOnly = process.argv.includes("--bootstrap-only");
+if (
+  !dry &&
+  !bootstrapOnly &&
+  (!process.env.TINFOIL_API_KEY || !process.env.BRAVE_SEARCH_API_KEY)
+)
   throw Error("Stored credentials required");
 const hash = (x: unknown) =>
   createHash("sha256").update(JSON.stringify(x)).digest("hex");
-if (!dry) {
+if (!dry && !bootstrapOnly) {
   const plan = JSON.parse(await readFile(resolve(root, "plan.json"), "utf8"));
   if (independentArms !== (plan.stopPolicy === "independent-arms"))
     throw Error(
@@ -183,6 +222,19 @@ for (const fixture of fixtures)
       approvalIds.add(id);
     }
     plannedRequests += experimentInferenceLimit(permit);
+    if (
+      everyday &&
+      (permit.policy.model !==
+        (cell === "baseline" ? "gpt-oss-120b" : "deepseek-v4-1-flash") ||
+        (cell === "baseline"
+          ? permit.policy.gptOssReasoningEffort !== "high"
+          : permit.policy.deepSeekThinking !== true ||
+            permit.policy.deepSeekReasoningEffort !== "low") ||
+        permit.policy.answerPolicyVariant !== "constraints-v4" ||
+        permit.policy.maxInputCharacters !== 20000 ||
+        permit.policy.maxOutputTokens !== 4096)
+    )
+      throw Error("Everyday model configuration differs from fixed comparison");
     plannedReserve +=
       (experimentInferenceLimit(permit) *
         (permit.policy.maxInputCharacters *
@@ -207,12 +259,18 @@ for (const fixture of fixtures)
       permit,
       fixture.id,
       arm,
-      optionalTools ? "optional" : assisted ? "assisted" : "scoped",
+      everyday
+        ? "normal"
+        : optionalTools
+          ? "optional"
+          : assisted
+            ? "assisted"
+            : "scoped",
       process.argv.includes("--calculation-replay"),
       continuation,
     );
   }
-if ((continuation || independentArms) && !dry) {
+if ((continuation || independentArms) && !dry && !bootstrapOnly) {
   const plan = JSON.parse(await readFile(resolve(root, "plan.json"), "utf8"));
   assertWorkspaceBudget(plan, plannedRequests, plannedReserve, permitCeiling);
 }
@@ -260,7 +318,7 @@ try {
       ? [...cells.slice(caseIndex), ...cells.slice(0, caseIndex)]
       : diagnostic || toolDiagnostic || candidateOnly
         ? ["candidate"]
-        : assisted && caseIndex % 2
+        : (assisted || everyday) && caseIndex % 2
           ? ["candidate", "baseline"]
           : ["baseline", "candidate"]) {
       const arm = cellArm(cell);
@@ -273,13 +331,20 @@ try {
         permit,
         fixture.id,
         arm,
-        optionalTools ? "optional" : assisted ? "assisted" : "scoped",
+        everyday
+          ? "normal"
+          : optionalTools
+            ? "optional"
+            : assisted
+              ? "assisted"
+              : "scoped",
         process.argv.includes("--calculation-replay"),
         continuation,
       );
-      const claimed = dry
-        ? undefined
-        : await claimExperiment(".local/experiment-runs", permit.approvalId);
+      const claimed =
+        dry || bootstrapOnly
+          ? undefined
+          : await claimExperiment(".local/experiment-runs", permit.approvalId);
       if (!dry && permit.continuationApproval)
         await claimExperiment(
           ".local/experiment-runs",
@@ -300,18 +365,20 @@ try {
         csrf: randomBytes(32).toString("hex"),
         permit,
         forward: (body: Uint8Array, k: string, signal: AbortSignal) =>
-          fetch("https://inference.tinfoil.sh/v1/chat/completions", {
-            method: "POST",
-            redirect: "error",
-            signal,
-            body: Buffer.from(body),
-            headers: {
-              Authorization: `Bearer ${process.env.TINFOIL_API_KEY}`,
-              "Content-Type": "application/json",
-              Accept: "text/event-stream",
-              "Ehbp-Encapsulated-Key": k,
-            },
-          }),
+          bootstrapOnly
+            ? Promise.reject(Error("Bootstrap cannot forward inference"))
+            : fetch("https://inference.tinfoil.sh/v1/chat/completions", {
+                method: "POST",
+                redirect: "error",
+                signal,
+                body: Buffer.from(body),
+                headers: {
+                  Authorization: `Bearer ${process.env.TINFOIL_API_KEY}`,
+                  "Content-Type": "application/json",
+                  Accept: "text/event-stream",
+                  "Ehbp-Encapsulated-Key": k,
+                },
+              }),
       };
       const gateway = experimentGateway(config);
       const outer = express();
@@ -378,7 +445,10 @@ try {
       });
       const app = createApp({
         origin: config.origin,
-        searchKey: dry ? "synthetic-key" : process.env.BRAVE_SEARCH_API_KEY,
+        searchKey:
+          dry || bootstrapOnly
+            ? "synthetic-key"
+            : process.env.BRAVE_SEARCH_API_KEY,
         searchMode: "llm-context",
       });
       outer.use((req, res, next) =>
@@ -405,7 +475,7 @@ try {
       const pageErrors: string[] = [];
       page.on("console", (msg) => {
         consoleMessages++;
-        if (dry) console.log(msg.text());
+        if (dry || bootstrapOnly) console.log(msg.text());
       });
       page.on("pageerror", (error) => {
         pageErrors.push(error.name);
@@ -487,7 +557,7 @@ try {
         return route.continue();
       });
       try {
-        await page.goto(config.origin);
+        await page.goto(config.origin, { waitUntil: "domcontentloaded" });
         const tab = (name: string) =>
           page
             .getByRole("navigation", { name: "Workspace" })
@@ -526,6 +596,11 @@ try {
           (await dialog.locator("a").getAttribute("referrerpolicy")) ===
           "no-referrer";
         await page.keyboard.press("Escape");
+        if (bootstrapOnly) {
+          record.bootstrapReady = true;
+          stop = true;
+          break;
+        }
         phase = "conversation";
         await tab("Conversation").click();
         {
@@ -677,6 +752,17 @@ try {
       } catch (error) {
         record.failure = "UI_OR_TRANSPORT_CHECK_FAILED";
         record.failurePhase = phase;
+        record.failureType = error instanceof Error ? error.name : "Unknown";
+        // Synthetic fixture diagnostics only; never persist live public page content.
+        if (everyday && error instanceof Error) {
+          record.failureSummary = error.message
+            .split("\n")[0]
+            .replace(/https?:\/\/\S+/g, "[URL]");
+          record.visibleStatus = await page
+            .locator('[role="status"], [role="alert"]')
+            .allTextContents()
+            .catch(() => []);
+        }
         if (dry) console.log(String(error));
         stop = true;
       } finally {

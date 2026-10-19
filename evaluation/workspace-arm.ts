@@ -1,3 +1,6 @@
+export function isWorkspaceCase(id: string) {
+  return /^(workspace|assisted|everyday)-/.test(id);
+}
 export function assertWorkspaceArm(
   permit: {
     developmentCaseId?: string;
@@ -11,10 +14,24 @@ export function assertWorkspaceArm(
   },
   caseId: string,
   arm: string,
-  mode: "optional" | "assisted" | "scoped",
+  mode: "optional" | "assisted" | "scoped" | "normal",
   replay = false,
   continuation = false,
 ) {
+  if (mode === "normal") {
+    if (
+      permit.developmentCaseId !== caseId ||
+      permit.policy.optionalCalculator ||
+      permit.policy.calculatorReplay ||
+      permit.policy.calculatorContinuation ||
+      permit.policy.assistedResearchContract ||
+      permit.policy.scopedResearchContract
+    )
+      throw Error(
+        "Normal comparison cannot enable experimental tools or contracts",
+      );
+    return;
+  }
   const enabled =
     mode === "optional"
       ? permit.policy.optionalCalculator

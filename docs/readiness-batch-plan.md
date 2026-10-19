@@ -1,5 +1,11 @@
 # Readiness batch — 8 October 2026
 
+## Execution checkpoint — 19 October, STOPPED (not acceptance)
+
+The prepared study below ran through the actual application:7requests,6delivered, then GPT-OSS case02 turn1 upstream503. No retry; remaining dependent turn and cases03–06 not attempted. Separate permits and frozen hashes retained in evaluation/results/everyday-20261019.json together with three zero-forwarding harness failures. No further paid calls under this stopped run. Human scores blank, one matched conversation only. Future continuation needs a separate fixed plan/permits and review of transport evidence; do not claim24requests completed.
+
+Actual Billing0.75/3, credit10.25, auto-reloadoff; key5 last observed pre-run. Completed estimate0.00473895 not double-counted against refreshed actual. Retain0.263648 historical uncertainty +0.0144576 failed503 maximum +0.01rounding =1.0381056 bound. Original0.8687616 reservation retired; no active reservation. No account increase needed. See READINESS for engineering findings and unchanged release gates.
+
 ## Current public-product study preparation — 19 October, NOT RUN
 
 Supersedes older next-batch proposals below, not their recorded outcomes. Compare ordinary GPTOSS120B high reasoning versus DeepSeek-v4-1-flash thinking/low, both constraints-v4, on `evaluation/cases/everyday-transfer-20261019.json`:6cases×2models×2turns =24maximum requests, no search or calculator/continuation calls. Each conversation has separate permit/state, identical prompts and available evidence; alternate arm order by case. Input cap20,000characters/output4096tokens, existing90s deadline, no automatic retries. Known isolated incomplete stops dependent conversation; safe independent arms continue under the existing reviewed policy. Unknown transport/auth/billing or persistence failures stop globally.

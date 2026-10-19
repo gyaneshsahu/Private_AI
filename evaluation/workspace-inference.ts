@@ -4,6 +4,7 @@ import { validateExperiment, developmentCase } from "./experiment";
 import { streamVerifiedConversation } from "../src/verified-chat";
 import { classifyEvaluationFailure } from "./reply-failure";
 import { replyTiming } from "./reply-timing";
+import { isWorkspaceCase } from "./workspace-arm";
 import type { CalculationSession } from "../src/calculation-session";
 const history = new Map<string, string>();
 let lastRaw: string | undefined;
@@ -19,7 +20,7 @@ export async function streamReply(
 ): Promise<Usage | undefined> {
   const state = (window as any).__workspaceEvaluation;
   const permit = validateExperiment(state.permit);
-  if (!/^(workspace|assisted)-/.test(permit.developmentCaseId ?? ""))
+  if (!isWorkspaceCase(permit.developmentCaseId ?? ""))
     throw Error("Workspace permit required");
   const fixture = developmentCase(permit.developmentCaseId, "robustness_case");
   const prompt = c.messages.at(-1)?.text;

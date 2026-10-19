@@ -1,5 +1,13 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Resume after stopped everyday comparison — 19 October
+
+Current evidence is `evaluation/results/everyday-20261019.json`; full review page `.local/review-batches/everyday-20261019/complete-review.html`. Final live root `.local/everyday-20261019-r4`:7 inference attempts,6 delivered replies; upstream503 at GPT-OSS case02 turn1 stopped globally, no retries. Only case01 matched; DeepSeek also completed case02. Cases03–06 and GPT-OSS case02 turn2 unattempted. Human grades blank. GPT-OSS first reminder invents absence of exceptions, then repairs it; DeepSeek preserves silence and computes case02 correctly. No release model chosen.
+
+Harness now admits everyday fixtures, enforces ordinary-answer arms and supports a no-forwarding bootstrap. Three pre-forwarding failures preserved in committed evidence: allowlist omission, unresolved start failure, page-load timeout. DOM-ready navigation retains explicit UI readiness checks. Offline24mock replies and11scopedtests pass. Do not rerun consumed permits or retry503 unchanged. Next freeze a separate continuation only after assessing transport evidence; keep unattempted questions unchanged. Investigate user-quote versus retrieved-source audit distinction offline. Do not tune prompts for case01 or claim coding/safety coverage not executed.
+
+Refreshed Billing actual0.75/account3/credit10.25/auto-reloadoff; key5 last observed before run. Known completed token estimate0.00473895 is not additional to refreshed billed actual. Historical uncertainty0.263648 + new503 maximum0.0144576 +0.01rounding yields conservative1.0381056; unused study reserve released. Owner5 authorization unchanged, no account action needed. No separately quantified pending value. Privacy/private-data/public access and all release gates remain unchanged; ~75% implemented, NOT_READY. Older preparation sections below are historical and superseded.
+
 ## Next execute M3 general-assistant comparison — 19 October
 
 Fresh authored cases are `evaluation/cases/everyday-transfer-20261019.json` (6two-turn, humanScores null; SHA2564ade2b600ac559d8674055a92d186243e1c55b9cf6e41d62d51e1c4968079fa4). Intended arms ordinary DeepSeek-v4-1-flash thinking/low and GPTOSS120B high, constraints-v4,20kinputcharacters/4096outputtokens,24requests maximum, no calculator. Not wired into runner/permits or run yet. Next implement exact fixture admission and freeze separate permits after refreshing model prices/release verification; preserve independent-arm stopping rules. Do not treat this draft as already authorized permit material or claim paid evidence.

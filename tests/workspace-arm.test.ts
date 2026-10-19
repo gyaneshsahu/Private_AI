@@ -1,5 +1,40 @@
 import { expect, it } from "vitest";
-import { assertWorkspaceArm } from "../evaluation/workspace-arm";
+import {
+  assertWorkspaceArm,
+  isWorkspaceCase,
+} from "../evaluation/workspace-arm";
+it("admits the registered everyday workspace family without admitting arbitrary IDs", () => {
+  expect(isWorkspaceCase("everyday-01")).toBe(true);
+  expect(isWorkspaceCase("reserved-01")).toBe(false);
+  expect(isWorkspaceCase("unknown-01")).toBe(false);
+});
+it("keeps both ordinary comparison arms free of experimental contracts", () => {
+  for (const arm of ["baseline", "candidate"]) {
+    expect(() =>
+      assertWorkspaceArm(
+        { developmentCaseId: "x", policy: {} },
+        "x",
+        arm,
+        "normal",
+      ),
+    ).not.toThrow();
+    for (const field of [
+      "optionalCalculator",
+      "calculatorReplay",
+      "calculatorContinuation",
+      "assistedResearchContract",
+      "scopedResearchContract",
+    ])
+      expect(() =>
+        assertWorkspaceArm(
+          { developmentCaseId: "x", policy: { [field]: true } },
+          "x",
+          arm,
+          "normal",
+        ),
+      ).toThrow();
+  }
+});
 it("validates optional candidate and baseline before execution", () => {
   expect(() =>
     assertWorkspaceArm(

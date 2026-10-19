@@ -24,6 +24,7 @@ import checkedTransfer from "./cases/checked-transfer.json";
 import workspaceCases from "./cases/research-workspace.json";
 import assistedCases from "./cases/research-assisted.json";
 import toolCases from "./cases/research-tools.json";
+import everydayCases from "./cases/everyday-transfer-20261019.json";
 import heldoutCases from "./cases/heldout.json";
 import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
@@ -45,6 +46,20 @@ const robustnessCases = [
   ...workspaceCases,
   ...assistedCases,
   ...toolCases,
+  ...everydayCases.map((f) => ({
+    ...f,
+    mandatoryFacts: f.expected,
+    forbiddenConclusions: [],
+    sources: [
+      {
+        id: "synthetic-context",
+        title: "Authored task context",
+        text: "This is an authored synthetic task. All task facts are supplied in the user messages.",
+        url: "https://example.com/synthetic-context",
+        evidenceKind: "search-excerpt",
+      },
+    ],
+  })),
   ...[
     ...researchEvidenceTransfer.cases,
     ...reasoningTransfer.cases,
