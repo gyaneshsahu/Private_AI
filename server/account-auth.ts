@@ -13,6 +13,9 @@ import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
 import express from "express";
 import type { Pool } from "pg";
 import { createHmac } from "node:crypto";
+import { TLSSocket } from "node:tls";
+import { AsyncLocalStorage } from "node:async_hooks";
+import { submitSignInCode, type SignInCodeSender } from "./account-email";
 import { finishSignInRecovery } from "./account-recovery";
 import { accountRecoveryOpen } from "./account-restore";
 import { requestAccountClosure } from "./account-closure";
@@ -20,6 +23,7 @@ import { z } from "zod";
 import {
   accountAuthBasePath,
   accountCallbackPaths,
+  productionAccountTarget,
 } from "../shared/account-design";
 import {
   accountRequestStart,
@@ -54,8 +58,47 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
       "Synthetic authentication requires a loopback origin and test secret.",
     );
 
+  return createAccountAuth({ ...config, synthetic: true });
+}
+
+export interface ProductionAccountCandidateConfig {
+  secret: string;
+  database: Pool;
+  /** Supplied by a separately reviewed email adapter; tests use a no-network sink. */
+  deliverCode: SignInCodeSender;
+}
+
+/** Unmounted preparation. Direct TLS only; no environment flag or proxy trust shortcut. */
+export function createProductionAccountCandidate(
+  config: ProductionAccountCandidateConfig,
+) {
+  if (config.secret.length < 32)
+    throw Error(
+      "A separately provisioned production authentication secret is required.",
+    );
+  return createAccountAuth({
+    secret: config.secret,
+    database: config.database,
+    deliverCode: (message) => submitSignInCode(message, config.deliverCode),
+    origin: productionAccountTarget.origin,
+    synthetic: false,
+  });
+}
+
+function createAccountAuth(
+  config: SyntheticAccountConfig & { synthetic: boolean },
+) {
+  const deliveryAttempt = new AsyncLocalStorage<{ failed: boolean }>();
+  const origin = new URL(config.origin);
+  const acceptsEmail = (value: string) =>
+    z.email().max(254).safeParse(value).success &&
+    (!config.synthetic || /^[^\s@]+@[^\s@]+\.test$/i.test(value));
+  const appName = config.synthetic
+    ? "PrivateAI synthetic account lab"
+    : "PrivateAI";
+
   const auth = betterAuth({
-    appName: "PrivateAI synthetic account lab",
+    appName,
     baseURL: config.origin,
     basePath: accountAuthBasePath,
     secret: config.secret,
@@ -110,11 +153,12 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
         if (
           typeof user.email !== "string" ||
           user.emailVerified !== true ||
-          !/^[^\s@]+@[^\s@]+\.test$/i.test(user.email)
+          !acceptsEmail(user.email)
         )
           return {
-            error: "synthetic_identity_required",
-            errorDescription: "Verified synthetic identity required.",
+            error: "verified_identity_required",
+            errorDescription:
+              "A verified permitted email identity is required.",
           };
         if (source.action === "link-account") {
           const state = await getOAuthState();
@@ -150,13 +194,30 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
     },
     advanced: {
       database: { generateId: "uuid" },
-      cookiePrefix: "privateai-account-lab",
+      cookiePrefix: config.synthetic
+        ? "privateai-account-lab"
+        : "privateai-account",
+      useSecureCookies: origin.protocol === "https:",
       defaultCookieAttributes: { httpOnly: true, sameSite: "lax" },
       ipAddress: { ipAddressHeaders: ["x-privateai-client-ip"] },
     },
     rateLimit: { enabled: true, storage: "database", window: 60, max: 60 },
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
+        if (!config.synthetic && !deliveryAttempt.getStore())
+          throw new APIError("FORBIDDEN", {
+            message: "Use the account HTTP boundary.",
+          });
+        if (!config.synthetic && !productionAuthPaths.has(ctx.path))
+          throw new APIError("FORBIDDEN", {
+            message: "Account operation is not enabled.",
+          });
+        if (
+          !config.synthetic &&
+          ctx.path === "/email-otp/send-verification-otp" &&
+          ctx.body?.type !== "sign-in"
+        )
+          throw new APIError("BAD_REQUEST", { message: "Sign-in codes only." });
         if (typeof ctx.body?.email === "string") {
           const closed = await config.database.query(
             `SELECT 1 FROM "user" u JOIN account_closure c ON c."userId"=u.id WHERE lower(u.email)=lower($1)`,
@@ -218,10 +279,25 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
         }
         if (
           typeof ctx.body?.email === "string" &&
-          !/^[^\s@]+@[^\s@]+\.test$/i.test(ctx.body.email)
+          !acceptsEmail(ctx.body.email)
         )
           throw new APIError("BAD_REQUEST", {
-            message: "Use a synthetic .test address.",
+            message: config.synthetic
+              ? "Use a synthetic .test address."
+              : "A valid email address is required.",
+          });
+      }),
+      after: createAuthMiddleware(async (ctx) => {
+        // Better Auth 1.7.11 catches sender exceptions and otherwise returns success.
+        // Surface our bounded submission result through its supported response hook.
+        if (
+          !config.synthetic &&
+          ctx.path === "/email-otp/send-verification-otp" &&
+          deliveryAttempt.getStore()?.failed
+        )
+          throw new APIError("SERVICE_UNAVAILABLE", {
+            message:
+              "Code delivery could not be confirmed. Wait before requesting a new code.",
           });
       }),
     },
@@ -283,14 +359,20 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
         resendStrategy: "rotate",
         rateLimit: { window: 60, max: 3 },
         async sendVerificationOTP({ email, otp, type }) {
-          if (type !== "sign-in" || !/^[^\s@]+@[^\s@]+\.test$/i.test(email))
-            throw Error("Synthetic sign-in delivery only.");
-          await config.deliverCode({ email, otp });
+          if (type !== "sign-in" || !acceptsEmail(email))
+            throw Error("Permitted sign-in delivery only.");
+          try {
+            await config.deliverCode({ email, otp });
+          } catch (error) {
+            const attempt = deliveryAttempt.getStore();
+            if (attempt) attempt.failed = true;
+            throw error;
+          }
         },
       }),
       passkey({
         rpID: origin.hostname,
-        rpName: "PrivateAI synthetic account lab",
+        rpName: appName,
         origin: config.origin,
         authenticatorSelection: {
           residentKey: "required",
@@ -339,14 +421,32 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
           req.path === accountCallbackPaths.apple &&
           req.headers.origin === "https://appleid.apple.com"));
     if (
+      (!config.synthetic &&
+        !(req.socket instanceof TLSSocket && req.socket.encrypted)) ||
       req.headers.host !== origin.host ||
       (!callback &&
         ((req.method !== "GET" && req.headers.origin !== config.origin) ||
           (req.headers.origin && req.headers.origin !== config.origin) ||
           req.headers["sec-fetch-site"] === "cross-site"))
     ) {
-      res.status(403).json({ error: "Same-origin synthetic access required." });
+      res
+        .status(403)
+        .json({ error: "Secure same-origin account access required." });
       return;
+    }
+    if (
+      !config.synthetic &&
+      req.path.startsWith(`${accountAuthBasePath}/`) &&
+      !productionAuthPaths.has(req.path.slice(accountAuthBasePath.length))
+    ) {
+      res.status(403).json({ error: "Account operation is not enabled." });
+      return;
+    }
+    if (!config.synthetic) {
+      // Direct TLS is the only prepared transport; forwarded origin claims are untrusted.
+      delete req.headers["x-forwarded-host"];
+      delete req.headers["x-forwarded-proto"];
+      delete req.headers.forwarded;
     }
     // Only the socket determines the rate-limit address, never a client header.
     req.headers["x-privateai-client-ip"] =
@@ -368,7 +468,9 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
       const start = await config.database.query(
         "SELECT clock_timestamp()::text AS started",
       );
-      accountRequestStart.run(start.rows[0].started, next);
+      deliveryAttempt.run({ failed: false }, () =>
+        accountRequestStart.run(start.rows[0].started, next),
+      );
     } catch {
       res
         .status(503)
@@ -377,7 +479,7 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
   });
   router.get("/api/account/options", (_req, res) => {
     res.json({
-      synthetic: true,
+      synthetic: config.synthetic,
       workspaceEnabled: config.workspaceEnabled === true,
       socialProviders: config.socialFixtures ? ["google", "apple"] : [],
     });
@@ -549,7 +651,11 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
     async (req, res) => {
       if (
         !z
-          .object({ confirmation: z.literal("DELETE TEST ACCOUNT") })
+          .object({
+            confirmation: z.literal(
+              config.synthetic ? "DELETE TEST ACCOUNT" : "DELETE ACCOUNT",
+            ),
+          })
           .strict()
           .safeParse(req.body).success
       ) {
@@ -654,3 +760,16 @@ const discardedProviderTokens = {
   refreshTokenExpiresAt: null,
   scope: null,
 };
+
+// Only implemented consumer journeys are exposed by the production candidate.
+// Other library endpoints (profile/email/password changes, direct removals) stay closed.
+const productionAuthPaths = new Set([
+  "/get-session",
+  "/sign-out",
+  "/email-otp/send-verification-otp",
+  "/sign-in/email-otp",
+  "/passkey/generate-register-options",
+  "/passkey/verify-registration",
+  "/passkey/generate-authenticate-options",
+  "/passkey/verify-authentication",
+]);
