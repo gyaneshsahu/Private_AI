@@ -17,6 +17,7 @@ import { extract } from "./documents";
 import { Vault } from "./vault";
 import { containsTemporaryResearch } from "./saved-conversation";
 import { ConversationLibrary } from "./ConversationLibrary";
+import { ContextReview } from "./ContextReview";
 import { AccountUsage } from "./AccountUsage";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
@@ -854,7 +855,9 @@ export function App() {
                     <label>
                       <input
                         type="checkbox"
-                        checked={message.included}
+                        checked={
+                          message.included && message.status === "complete"
+                        }
                         disabled={!!busy || message.status !== "complete"}
                         onChange={(e) =>
                           setConversation((c) => ({
@@ -979,6 +982,30 @@ export function App() {
               Only selected context is included. PrivateAI can make
               mistakes—check important details.
             </p>
+            <ContextReview
+              conversation={conversation}
+              size={selectedContextSize}
+              limit={status?.inference.qualification?.maxInputCharacters}
+              busy={!!busy}
+              includeMessage={(id, included) =>
+                setConversation((current) => ({
+                  ...current,
+                  messages: current.messages.map((message) =>
+                    message.id === id ? { ...message, included } : message,
+                  ),
+                }))
+              }
+              includeAttachment={(id, selected) =>
+                setConversation((current) => ({
+                  ...current,
+                  attachments: current.attachments.map((attachment) =>
+                    attachment.id === id
+                      ? { ...attachment, selected }
+                      : attachment,
+                  ),
+                }))
+              }
+            />
             {conversation.messages.length > 0 && (
               <button
                 className="text-button"

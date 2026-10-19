@@ -10,6 +10,70 @@ import {
   experimentRequestLimit,
   developmentCase,
 } from "../evaluation/experiment";
+it("accounts for exact composed context across drafts, exclusions, source formatting and policy variants", () => {
+  for (const variant of [undefined, "constraints-v4"] as const) {
+    const conversation = emptyConversation();
+    conversation.messages = [
+      newMessage("user", "Earlier fact"),
+      newMessage("assistant", "Complete reply"),
+      { ...newMessage("assistant", "Partial reply"), status: "partial" },
+      { ...newMessage("user", "Excluded"), included: false },
+    ];
+    conversation.attachments = [
+      {
+        id: "included",
+        name: "notes",
+        selected: true,
+        sources: [
+          {
+            id: "s1",
+            title: "Dates",
+            text: 'Update: 3 June.\nQuotation: "six".',
+            url: "https://example.test/notes",
+          },
+        ],
+      },
+      {
+        id: "excluded",
+        name: "old notes",
+        selected: false,
+        sources: [{ id: "s2", title: "Old", text: "OMIT" }],
+      },
+    ];
+    const draft = "  What changed?  ";
+    const measured = measureContext(conversation, draft, variant);
+    const payload = composeContext(
+      {
+        ...conversation,
+        messages: [...conversation.messages, newMessage("user", draft.trim())],
+      },
+      100000,
+      new Date(),
+      variant,
+    );
+    expect(measured.characters).toBe(
+      payload.reduce((sum, message) => sum + message.content.length, 0),
+    );
+    expect(
+      Object.values(measured.breakdown).reduce((sum, value) => sum + value, 0),
+    ).toBe(measured.characters);
+    expect(measured.breakdown.conversation).toBe(
+      "Earlier factComplete reply".length,
+    );
+    expect(measured.breakdown.references).toBe(payload[1].content.length);
+    expect(measured.breakdown.draft).toBe(draft.trim().length);
+    expect(measured).toMatchObject({
+      includedMessages: 2,
+      excludedMessages: 2,
+      sourceCount: 1,
+    });
+    conversation.attachments[0].selected = false;
+    expect(measureContext(conversation, "   ", variant)).toMatchObject({
+      breakdown: { references: 0, draft: 0 },
+      sourceCount: 0,
+    });
+  }
+});
 it("retains selected earlier/middle/recent facts and documents across80 messages, with exact limit rejection", () => {
   const c = emptyConversation();
   for (let i = 0; i < 80; i++)

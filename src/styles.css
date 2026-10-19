@@ -618,6 +618,7 @@ footer {
   }
   .sidebar nav {
     display: flex;
+    flex-wrap: wrap;
     grid-column: 1/-1;
     margin: 0;
     gap: 4px;
@@ -770,4 +771,32 @@ footer {
   overflow-x: auto;
   overflow-y: hidden;
   padding: 6px 0;
+}
+.context-review {
+  margin: 14px 0;
+  padding: 14px;
+  border: 1px solid #dce2d9;
+  border-radius: 9px;
+  overflow-wrap: anywhere;
+}
+.context-review summary {
+  cursor: pointer;
+}
+.context-review table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.context-review th,
+.context-review td {
+  text-align: left;
+  padding: 6px;
+  border-bottom: 1px solid #dce2d9;
+}
+.context-review fieldset {
+  min-width: 0;
+  margin: 14px 0;
+  border: 1px solid #dce2d9;
+}
+.context-review label {
+  padding: 7px 0;
 }

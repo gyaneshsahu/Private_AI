@@ -1,5 +1,9 @@
 # PrivateAI — architecture and trust boundaries
 
+### Explicit conversation context — 19 October
+
+`measureContext` derives the displayed breakdown from the same composed messages used for sending, including the source envelope and selected policy. `ContextReview` changes only the existing message-inclusion and attachment-selection flags. Incomplete answers remain excluded regardless of their stored inclusion flag. The configured character guard stays authoritative; unknown qualification does not acquire a default limit or permit sending. The UI exposes no token/recall guarantee and performs no model summarization. Encrypted snapshots retain the user's explicit selections; temporary-research persistence restrictions remain unchanged.
+
 ### Account closure and deletion boundary — inactive, 19 October
 
 The synthetic account router can request closure only for its authenticated account with typed confirmation and recent unconsumed email proof. Under the same enrollment lock used by method removal, a transaction creates a closure receipt, deletes sessions/proofs/research grants and invalidates the exact enabled sign-in-OTP identifier. Authentication completion checks closure before issuing access; new email requests for a closed row fail. Receipt insertion failure rolls back revocation. There is no account reopening or automatic deletion route.
