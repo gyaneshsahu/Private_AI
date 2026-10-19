@@ -98,7 +98,8 @@ const continuationPolicy = {
   calculatorContinuation: true,
 };
 function invoke(
-  permit: ((signal: AbortSignal) => Promise<void>) | undefined,
+  permit:
+    ((signal: AbortSignal) => Promise<{ approvalId: string }>) | undefined,
   signal = new AbortController().signal,
   p = continuationPolicy,
 ) {
@@ -133,7 +134,7 @@ it("delivers one completed explanation and original calculated values with two-c
   request
     .mockResolvedValueOnce(response(true))
     .mockResolvedValueOnce(response(false));
-  const permit = vi.fn(async () => {});
+  const permit = vi.fn(async () => ({ approvalId: "synthetic-continuation" }));
   const run = invoke(permit);
   expect(await run.result).toMatchObject({ input: 20, output: 20, total: 40 });
   expect(permit).toHaveBeenCalledTimes(1);
@@ -156,7 +157,7 @@ it("delivers one completed explanation and original calculated values with two-c
 });
 it("does not spend a second request for an ordinary first answer", async () => {
   request.mockResolvedValueOnce(response(false));
-  const permit = vi.fn(async () => {});
+  const permit = vi.fn(async () => ({ approvalId: "synthetic-continuation" }));
   const run = invoke(permit);
   expect(await run.result).toMatchObject({ total: 20 });
   expect(permit).not.toHaveBeenCalled();
@@ -176,6 +177,7 @@ it("aborting during second authorization prevents the second request", async () 
   const controller = new AbortController();
   const run = invoke(async () => {
     controller.abort();
+    return { approvalId: "synthetic-continuation" };
   }, controller.signal);
   await expect(run.result).rejects.toMatchObject({ usage: { total: 20 } });
   expect(request).toHaveBeenCalledTimes(1);
@@ -185,10 +187,14 @@ it("incomplete explanation preserves combined known usage and cannot publish or 
   request
     .mockResolvedValueOnce(response(true))
     .mockResolvedValueOnce(response(false, "length"));
-  const run = invoke(async () => {}, undefined, {
-    ...continuationPolicy,
-    calculatorReplay: true,
-  });
+  const run = invoke(
+    async () => ({ approvalId: "synthetic-continuation" }),
+    undefined,
+    {
+      ...continuationPolicy,
+      calculatorReplay: true,
+    },
+  );
   await expect(run.result).rejects.toMatchObject({ usage: { total: 40 } });
   expect(run.chunks).toEqual([]);
   expect(run.session.references(run.c)).toEqual([]);
@@ -198,7 +204,7 @@ it("further tool calls are rejected without requesting a third response", async 
   request
     .mockResolvedValueOnce(response(true))
     .mockResolvedValueOnce(response(true));
-  const run = invoke(async () => {});
+  const run = invoke(async () => ({ approvalId: "synthetic-continuation" }));
   await expect(run.result).rejects.toThrow("incomplete");
   expect(request).toHaveBeenCalledTimes(2);
   expect(run.chunks).toEqual([]);
@@ -209,7 +215,7 @@ it("changed deployment blocks the continuation before consuming its permit", asy
     verification.digest = "b";
     return response(true);
   });
-  const permit = vi.fn(async () => {});
+  const permit = vi.fn(async () => ({ approvalId: "synthetic-continuation" }));
   const run = invoke(permit);
   await expect(run.result).rejects.toMatchObject({ usage: { total: 20 } });
   expect(permit).not.toHaveBeenCalled();
@@ -218,7 +224,7 @@ it("changed deployment blocks the continuation before consuming its permit", asy
 });
 it("complete continuation context is admitted before permit consumption", async () => {
   request.mockResolvedValueOnce(response(true, "stop", "x".repeat(25000)));
-  const permit = vi.fn(async () => {});
+  const permit = vi.fn(async () => ({ approvalId: "synthetic-continuation" }));
   const run = invoke(permit);
   await expect(run.result).rejects.toThrow("context budget");
   expect(permit).not.toHaveBeenCalled();
@@ -227,11 +233,15 @@ it("complete continuation context is admitted before permit consumption", async 
 });
 
 it("blocks unverified DeepSeek thinking-history continuation before sending", async () => {
-  const run = invoke(async () => {}, undefined, {
-    ...continuationPolicy,
-    model: "deepseek-v4-1-flash",
-    deepSeekThinking: true,
-  });
+  const run = invoke(
+    async () => ({ approvalId: "synthetic-continuation" }),
+    undefined,
+    {
+      ...continuationPolicy,
+      model: "deepseek-v4-1-flash",
+      deepSeekThinking: true,
+    },
+  );
   await expect(run.result).rejects.toThrow("reasoning-history protocol");
   expect(request).not.toHaveBeenCalled();
 });

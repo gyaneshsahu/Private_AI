@@ -102,8 +102,10 @@ export async function streamVerifiedConversation(
   onCheckedDiagnosticDraft?: (raw: string) => void,
   checkedHistory?: ReadonlyMap<string, string>,
   calculationSession?: CalculationSession,
-  onModelEvent?: (event: unknown) => void,
-  authorizeContinuation?: (signal: AbortSignal) => Promise<void>,
+  onModelEvent?: (event: unknown, round?: 1 | 2) => void,
+  authorizeContinuation?: (
+    signal: AbortSignal,
+  ) => Promise<{ approvalId: string }>,
 ): Promise<Usage | undefined> {
   if (
     report.calculatorContinuation &&
@@ -361,9 +363,9 @@ export async function streamVerifiedConversation(
         redirect: "error",
       },
     );
-    async function* observedEvents(input = response) {
+    async function* observedEvents(input = response, round: 1 | 2 = 1) {
       for await (const event of completionEvents(input, signal)) {
-        onModelEvent?.(event);
+        onModelEvent?.(event, round);
         yield event;
       }
     }
@@ -423,7 +425,12 @@ export async function streamVerifiedConversation(
           );
           signal.throwIfAborted();
           authorize();
-          await abortable(authorizeContinuation!(signal), signal);
+          const continuationApproval = await abortable(
+            authorizeContinuation!(signal),
+            signal,
+          );
+          if (!/^[a-zA-Z0-9_-]{8,80}$/.test(continuationApproval.approvalId))
+            throw Error("Invalid continuation approval");
           signal.throwIfAborted();
           onStatus("Explaining the calculated result…");
           const nextTransport = new Transport(nextIdentity, location.host);
@@ -436,6 +443,8 @@ export async function streamVerifiedConversation(
                 Accept: "text/event-stream",
                 "X-PrivateAI-CSRF": csrf,
                 "X-Tinfoil-Enclave-Url": report.origin,
+                "X-PrivateAI-Continuation-Approval":
+                  continuationApproval.approvalId,
               },
               body: JSON.stringify({
                 ...requestBody,
@@ -448,7 +457,7 @@ export async function streamVerifiedConversation(
             },
           );
           explained = await consumeCalculationExplanation(
-            observedEvents(nextResponse),
+            observedEvents(nextResponse, 2),
             report.pricing,
             signal,
             turn,

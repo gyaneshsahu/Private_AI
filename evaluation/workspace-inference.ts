@@ -31,6 +31,7 @@ export async function streamReply(
   const timing = replyTiming();
   let answer = "";
   const modelEvents: unknown[] = [];
+  const modelRounds: Record<number, unknown[]> = { 1: [], 2: [] };
   let draft: string | undefined;
   let derivedReferenceCount = 0;
   const availableCalculationRecords = permit.policy.calculatorReplay
@@ -68,12 +69,28 @@ export async function streamReply(
       },
       history,
       calculationSession,
-      fixture.sources.length ? (event) => modelEvents.push(event) : undefined,
+      fixture.sources.length
+        ? (event, round = 1) => {
+            modelEvents.push(event);
+            modelRounds[round].push(event);
+          }
+        : undefined,
+      permit.continuationApproval
+        ? async (continuationSignal) => {
+            continuationSignal.throwIfAborted();
+            const current = validateExperiment(permit);
+            return { approvalId: current.continuationApproval!.approvalId };
+          }
+        : undefined,
     );
     lastRaw = permit.policy.optionalCalculator ? undefined : draft;
     state.results.push({
       completed: true,
       modelEvents: fixture.sources.length ? modelEvents : undefined,
+      modelRounds:
+        fixture.sources.length && permit.policy.calculatorContinuation
+          ? modelRounds
+          : undefined,
       diagnosticDraft:
         permit.policy.optionalCalculator && fixture.sources.length
           ? draft
@@ -89,6 +106,10 @@ export async function streamReply(
     state.results.push({
       completed: false,
       modelEvents: fixture.sources.length ? modelEvents : undefined,
+      modelRounds:
+        fixture.sources.length && permit.policy.calculatorContinuation
+          ? modelRounds
+          : undefined,
       derivedReferenceCount,
       availableCalculationRecords,
       // Only authored source fixtures can retain diagnostic content. Public runs

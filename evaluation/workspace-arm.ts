@@ -4,6 +4,7 @@ export function assertWorkspaceArm(
     policy: {
       optionalCalculator?: boolean;
       calculatorReplay?: boolean;
+      calculatorContinuation?: boolean;
       assistedResearchContract?: boolean;
       scopedResearchContract?: boolean;
     };
@@ -12,6 +13,7 @@ export function assertWorkspaceArm(
   arm: string,
   mode: "optional" | "assisted" | "scoped",
   replay = false,
+  continuation = false,
 ) {
   const enabled =
     mode === "optional"
@@ -22,7 +24,9 @@ export function assertWorkspaceArm(
   if (
     permit.developmentCaseId !== caseId ||
     !!enabled !== (arm === "candidate") ||
-    !!permit.policy.calculatorReplay !== (replay && arm === "candidate")
+    !!permit.policy.calculatorReplay !== (replay && arm === "candidate") ||
+    !!permit.policy.calculatorContinuation !==
+      (continuation && arm === "candidate")
   )
     throw Error("Fixed case/configuration mismatch");
 }

@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Server } from "node:http";
-import { validateExperiment, type Experiment } from "../evaluation/experiment";
+import {
+  experimentInferenceLimit,
+  experimentRequestLimit,
+  validateExperiment,
+  type Experiment,
+} from "../evaluation/experiment";
 import {
   experimentGateway,
   type Forward,
@@ -73,11 +78,11 @@ afterEach(async () => {
   for (const server of servers.splice(0))
     await new Promise<void>((ok) => server.close(() => ok()));
 });
-async function gateway(forward: Forward) {
+async function gateway(forward: Forward, permit = fixture()) {
   const options = {
     origin: "http://127.0.0.1",
     csrf: "synthetic-test-csrf",
-    permit: fixture(),
+    permit,
     forward,
   };
   const { app, attempts } = experimentGateway(options);
@@ -327,4 +332,82 @@ it("isolates optional calculator permits from whole-answer contracts", () => {
   expect(validateExperiment(permit).policy.optionalCalculator).toBe(true);
   permit.policy.assistedResearchContract = true;
   expect(() => validateExperiment(permit)).toThrow("mutually exclusive");
+});
+
+function continuationFixture(): Experiment {
+  const permit = fixture();
+  permit.scenario = "robustness_case";
+  permit.developmentCaseId = "assisted-tool-28";
+  permit.policy.optionalCalculator = true;
+  permit.policy.calculatorContinuation = true;
+  permit.continuationApproval = {
+    approvalId: "separate-continuation",
+    expiresAt: permit.expiresAt,
+    approvalEvidence: "TEST ONLY: reserve one additional request per turn",
+  };
+  return permit;
+}
+it("continuation needs a distinct unexpired approval and doubles inference allowance only", () => {
+  const permit = continuationFixture();
+  expect(experimentRequestLimit(permit)).toBe(2);
+  expect(experimentInferenceLimit(validateExperiment(permit))).toBe(4);
+  for (const invalid of [
+    { ...permit, continuationApproval: undefined },
+    {
+      ...permit,
+      continuationApproval: {
+        ...permit.continuationApproval!,
+        approvalId: permit.approvalId,
+      },
+    },
+    {
+      ...permit,
+      continuationApproval: {
+        ...permit.continuationApproval!,
+        expiresAt: new Date(0).toISOString(),
+      },
+    },
+  ])
+    expect(() => validateExperiment(invalid)).toThrow("continuation approval");
+  expect(experimentInferenceLimit(fixture())).toBe(2);
+});
+it("gateway requires the second approval, valid ordering and independent per-round caps", async () => {
+  const permit = continuationFixture();
+  const forward = vi.fn(mockEncryptedResponse);
+  const g = await gateway(forward, permit);
+  const continuation = {
+    "X-PrivateAI-Continuation-Approval":
+      permit.continuationApproval!.approvalId,
+  };
+  expect((await g.send(continuation)).status).toBe(409);
+  expect(
+    (await g.send({ "X-PrivateAI-Continuation-Approval": "wrong-approval" }))
+      .status,
+  ).toBe(403);
+  for (const headers of [{}, continuation, {}, continuation]) {
+    const response = await g.send(headers);
+    expect(response.status).toBe(200);
+    await response.arrayBuffer();
+  }
+  expect((await g.send()).status).toBe(429);
+  expect((await g.send(continuation)).status).toBe(409);
+  expect(forward).toHaveBeenCalledTimes(4);
+  expect(g.attempts.map((a) => a.continuation)).toEqual([
+    false,
+    true,
+    false,
+    true,
+  ]);
+});
+it("existing permits cannot authorize a continuation header", async () => {
+  const forward = vi.fn(mockEncryptedResponse);
+  const g = await gateway(forward);
+  expect(
+    (
+      await g.send({
+        "X-PrivateAI-Continuation-Approval": "separate-continuation",
+      })
+    ).status,
+  ).toBe(403);
+  expect(forward).not.toHaveBeenCalled();
 });

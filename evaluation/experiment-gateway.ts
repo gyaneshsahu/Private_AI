@@ -20,6 +20,7 @@ export function experimentGateway(options: {
   const app = express();
   app.disable("x-powered-by");
   const attempts: Array<{
+    continuation: boolean;
     outcome: string;
     bytes: number;
     protocolHeaderValid: boolean;
@@ -67,6 +68,27 @@ export function experimentGateway(options: {
         res.status(403).end();
         return;
       }
+      const continuationHeader =
+        req.headers["x-privateai-continuation-approval"];
+      const continuation = continuationHeader !== undefined;
+      if (
+        continuation &&
+        (!options.permit.continuationApproval ||
+          continuationHeader !== options.permit.continuationApproval.approvalId)
+      ) {
+        res.status(403).end();
+        return;
+      }
+      if (
+        continuation &&
+        (!attempts.length ||
+          attempts.at(-1)!.continuation ||
+          attempts.at(-1)!.outcome !==
+            "ENCRYPTED_RESPONSE_RELAYED_NOT_YET_GRADED")
+      ) {
+        res.status(409).end();
+        return;
+      }
       const key = String(req.headers["ehbp-encapsulated-key"] ?? "");
       if (
         !/^[a-f0-9]{64}$/i.test(key) ||
@@ -81,12 +103,14 @@ export function experimentGateway(options: {
       if (
         active ||
         stopped ||
-        attempts.length >= experimentRequestLimit(options.permit)
+        attempts.filter((attempt) => attempt.continuation === continuation)
+          .length >= experimentRequestLimit(options.permit)
       ) {
         res.status(429).end();
         return;
       }
       const attempt = {
+        continuation,
         outcome: "STARTED_COST_UNKNOWN",
         bytes: req.body.length,
         protocolHeaderValid: true,

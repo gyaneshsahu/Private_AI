@@ -108,6 +108,14 @@ export const experimentSchema = z
       })
       .strict()
       .optional(),
+    continuationApproval: z
+      .object({
+        approvalId: z.string().regex(/^[a-zA-Z0-9_-]{8,80}$/),
+        expiresAt: z.string().datetime(),
+        approvalEvidence: z.string().min(20),
+      })
+      .strict()
+      .optional(),
     approvalId: z.string().regex(/^[a-zA-Z0-9_-]{8,80}$/),
     approvedAt: z.string().datetime(),
     expiresAt: z.string().datetime(),
@@ -139,6 +147,7 @@ export const experimentSchema = z
         assistedStructuredOutput: z.boolean().optional(),
         optionalCalculator: z.boolean().optional(),
         calculatorReplay: z.boolean().optional(),
+        calculatorContinuation: z.boolean().optional(),
         checkedResponseContract: z.boolean().optional(),
         gptOssReasoningEffort: z.enum(["low", "medium", "high"]).optional(),
         gemmaThinking: z.boolean().optional(),
@@ -163,6 +172,26 @@ export function validateExperiment(
   now = Date.now(),
 ): Experiment {
   const x = experimentSchema.parse(input);
+  if (
+    !!x.policy.calculatorContinuation !== !!x.continuationApproval ||
+    (x.continuationApproval &&
+      (!x.policy.optionalCalculator ||
+        x.scenario !== "robustness_case" ||
+        x.continuationApproval.approvalId === x.approvalId ||
+        Date.parse(x.continuationApproval.expiresAt) <= now ||
+        Date.parse(x.continuationApproval.expiresAt) > Date.parse(x.expiresAt)))
+  )
+    throw Error(
+      "A distinct, current continuation approval is required for a development calculator case.",
+    );
+  if (
+    x.policy.calculatorContinuation &&
+    x.policy.model === "deepseek-v4-1-flash" &&
+    x.policy.deepSeekThinking !== false
+  )
+    throw Error(
+      "Thinking-mode continuation reasoning history is not qualified.",
+    );
   if (
     x.policy.deepSeekReasoningEffort &&
     (x.policy.model !== "deepseek-v4-1-flash" ||
@@ -344,4 +373,11 @@ export function experimentRequestLimit(
     : permit.scenario === "robustness_case"
       ? developmentCase(permit.developmentCaseId, permit.scenario).turns.length
       : 2;
+}
+
+export function experimentInferenceLimit(permit: Experiment) {
+  return (
+    experimentRequestLimit(permit) *
+    (permit.policy.calculatorContinuation ? 2 : 1)
+  );
 }

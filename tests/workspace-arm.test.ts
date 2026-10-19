@@ -35,3 +35,19 @@ it("validates optional candidate and baseline before execution", () => {
     ),
   ).toThrow();
 });
+
+it("requires explicit continuation mode rather than changing an existing arm", () => {
+  const permit = {
+    developmentCaseId: "x",
+    policy: { optionalCalculator: true, calculatorContinuation: true },
+  };
+  expect(() =>
+    assertWorkspaceArm(permit, "x", "candidate", "optional"),
+  ).toThrow();
+  expect(() =>
+    assertWorkspaceArm(permit, "x", "candidate", "optional", false, true),
+  ).not.toThrow();
+  expect(() =>
+    assertWorkspaceArm(permit, "x", "baseline", "optional", false, true),
+  ).toThrow();
+});

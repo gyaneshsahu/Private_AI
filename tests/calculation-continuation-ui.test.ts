@@ -30,7 +30,7 @@ it("delivers bounded continuation in the actual temporary research workspace wit
  }};`;
           if (id.replaceAll("\\", "/").endsWith("/src/inference.ts"))
             return `import {streamVerifiedConversation} from '/src/verified-chat.ts';
- export async function streamReply(c,q,csrf,signal,chunk,status,session){return streamVerifiedConversation(c,{origin:'https://inference.tinfoil.sh',repository:'tinfoilsh/confidential-model-router',releaseDigests:['a'.repeat(64)],model:'synthetic',maxInputCharacters:20000,maxOutputTokens:100,pricing:{currency:'USD',inputPerMillion:0,outputPerMillion:0},optionalCalculator:true,calculatorContinuation:true},csrf,signal,chunk,status,()=>{},undefined,undefined,undefined,session,undefined,async()=>{window.offlinePermits=(window.offlinePermits||0)+1;});}`;
+ export async function streamReply(c,q,csrf,signal,chunk,status,session){return streamVerifiedConversation(c,{origin:'https://inference.tinfoil.sh',repository:'tinfoilsh/confidential-model-router',releaseDigests:['a'.repeat(64)],model:'synthetic',maxInputCharacters:20000,maxOutputTokens:100,pricing:{currency:'USD',inputPerMillion:0,outputPerMillion:0},optionalCalculator:true,calculatorContinuation:true},csrf,signal,chunk,status,()=>{},undefined,undefined,undefined,session,undefined,async()=>{window.offlinePermits=(window.offlinePermits||0)+1;return {approvalId:"synthetic-continuation"};});}`;
         },
       },
     ],

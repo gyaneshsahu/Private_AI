@@ -9,7 +9,7 @@ import express from "express";
 import { chromium } from "@playwright/test";
 import { createApp } from "../server/app";
 import { experimentGateway } from "./experiment-gateway";
-import { validateExperiment } from "./experiment";
+import { experimentInferenceLimit, validateExperiment } from "./experiment";
 import { claimExperiment } from "./run-claim";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { auditResearchAnswer } from "../src/research-audit";
@@ -36,6 +36,11 @@ if (
     process.argv.includes("--candidate-only"))
 )
   throw Error("Matched mode requires normal/calculator pairs and replay");
+const continuation = process.argv.includes("--calculation-continuation");
+if (continuation && (!process.argv.includes("--optional-tools") || matched))
+  throw Error(
+    "Continuation requires a separate optional-tools comparison, not the historical matched protocol",
+  );
 const optionalTools = process.argv.includes("--optional-tools");
 const toolDiagnostic = process.argv.includes("--tool-diagnostic");
 const candidateOnly = process.argv.includes("--candidate-only");
@@ -142,6 +147,9 @@ if (!dry) {
     .digest("hex");
   if (fixtureHash !== plan.fixtureSHA256) throw Error("Frozen cases changed.");
 }
+let plannedRequests = 0;
+let plannedReserve = 0;
+const approvalIds = new Set<string>();
 // Validate every selected permit before opening a browser or spending on any arm.
 for (const fixture of fixtures)
   for (const cell of matched
@@ -155,6 +163,22 @@ for (const fixture of fixtures)
         await readFile(resolve(root, `${fixture.id}-${cell}.json`), "utf8"),
       ),
     );
+    for (const id of [
+      permit.approvalId,
+      permit.continuationApproval?.approvalId,
+    ].filter((id): id is string => !!id)) {
+      if (approvalIds.has(id)) throw Error("Duplicate batch approval ID");
+      approvalIds.add(id);
+    }
+    plannedRequests += experimentInferenceLimit(permit);
+    plannedReserve +=
+      (experimentInferenceLimit(permit) *
+        (permit.policy.maxInputCharacters *
+          4 *
+          permit.policy.pricing.inputPerMillion +
+          permit.policy.maxOutputTokens *
+            permit.policy.pricing.outputPerMillion)) /
+      1e6;
     if (
       matched &&
       (permit.policy.model !==
@@ -173,8 +197,38 @@ for (const fixture of fixtures)
       arm,
       optionalTools ? "optional" : assisted ? "assisted" : "scoped",
       process.argv.includes("--calculation-replay"),
+      continuation,
     );
   }
+if (continuation && !dry) {
+  const plan = JSON.parse(await readFile(resolve(root, "plan.json"), "utf8"));
+  if (
+    !Number.isFinite(plan.maxRequests) ||
+    plan.maxRequests < plannedRequests ||
+    !Number.isFinite(plan.reserveUSD) ||
+    plan.reserveUSD + 1e-8 < plannedReserve
+  )
+    throw Error(
+      "Continuation batch must reserve both rounds for every permitted turn",
+    );
+  const budgetFields = [
+    plan.actualBeforeUSD,
+    plan.uncertaintyUSD,
+    plan.reserveUSD,
+    plan.capUSD,
+    plan.providerAccountLimitUSD,
+    plan.prepaidBeforeUSD,
+  ];
+  if (
+    budgetFields.some((value) => !Number.isFinite(value) || value < 0) ||
+    plan.actualBeforeUSD + plan.uncertaintyUSD + plan.reserveUSD >
+      Math.min(plan.capUSD, plan.providerAccountLimitUSD) ||
+    plan.uncertaintyUSD + plan.reserveUSD > plan.prepaidBeforeUSD
+  )
+    throw Error(
+      "Continuation reserve exceeds the recorded authorization, account control or available credit",
+    );
+}
 const report: any = {
   mode: dry ? "OFFLINE_UI_ONLY" : "LIVE_PUBLIC_AND_AUTHORED",
   humanScores: null,
@@ -233,10 +287,16 @@ try {
         arm,
         optionalTools ? "optional" : assisted ? "assisted" : "scoped",
         process.argv.includes("--calculation-replay"),
+        continuation,
       );
       const claimed = dry
         ? undefined
         : await claimExperiment(".local/experiment-runs", permit.approvalId);
+      if (!dry && permit.continuationApproval)
+        await claimExperiment(
+          ".local/experiment-runs",
+          permit.continuationApproval.approvalId,
+        );
       const record: any = {
         id: fixture.id,
         cell,
