@@ -1,5 +1,11 @@
 # PrivateAI — architecture and trust boundaries
 
+### Authenticated account composition — 19 October
+
+`ProductionAccountCandidateConfig.ingress` optionally supplies approved peer certificate SHA256 pins. The account factory constructs the authenticated boundary itself; callers cannot supply a client-address callback. The workspace mounts that boundary before operations/readiness and every route. The standalone account router validates the same boundary if this exact request has not already been verified. Only the request-scoped WeakMap value becomes Better Auth's rate-limit address; absent identity rejects rather than substituting a proxy socket. `trust proxy` remains unused. Omitting the option retains direct TLS behavior; no entrypoint activates either production composition.
+
+Six isolated Caddy/PostgreSQL API tests now cover this composition and existing direct-TLS/browser regressions remain passing. Built HTML serving is not browser interoperability evidence; the separate synthetic streaming fixture proves transport only. Real model traffic remains disabled. Runtime certificate custody/rotation, public TLS, full proxy browser/social/passkey checks, monitoring, hosted recovery and production network isolation remain required. This supersedes the older standalone-only description below without changing inference privacy or billing gates.
+
 ### Authenticated ingress alternative — 19October
 
 The standalone `authenticated-ingress.ts` prototype authenticates the proxy's TLS certificate and pins its exact SHA256 identity before accepting its overwritten client address/HTTPS claim. It is not mounted. Real Caddy2.11.7 → Node mutual TLS was tested with ephemeral synthetic CA/leaf keys in a network-disabled container. Ordinary forwarded headers alone never authorize access; unverified sockets and retired pins fail closed. Certificate validity is checked for each request, including reused connections. Verified metadata is held in a request-scoped WeakMap for a future explicit account integration, not as a client-writable property. [Exact proof, sources and next requirements](development-deployment.md#authenticated-proxy-alternative--local-proof-19-october-2026).

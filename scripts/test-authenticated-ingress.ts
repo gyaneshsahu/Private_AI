@@ -18,6 +18,8 @@ if (
   );
 const tls = await ingressTLS();
 const container = `privateai-ingress-${randomUUID()}`;
+const workspace = process.argv.includes("--workspace");
+const database = `${container}-db`;
 const host =
   process.platform === "win32"
     ? "--host=npipe:////./pipe/dockerDesktopLinuxEngine"
@@ -32,6 +34,56 @@ for (const key of [
 ])
   delete env[key];
 try {
+  if (workspace) {
+    execFileSync(
+      "docker",
+      [
+        host,
+        "run",
+        "--detach",
+        `--name=${database}`,
+        "--pull=never",
+        "--network=none",
+        "--label=privateai.purpose=synthetic-ingress",
+        "--tmpfs=/var/lib/postgresql/data:rw,nosuid,size=256m",
+        "--env=POSTGRES_USER=privateai_synthetic",
+        "--env=POSTGRES_PASSWORD=local-synthetic-only",
+        "--env=POSTGRES_DB=privateai_synthetic",
+        "postgres:17-bookworm",
+      ],
+      {
+        env,
+        stdio: ["ignore", "ignore", "inherit"],
+        windowsHide: true,
+        timeout: 15000,
+      },
+    );
+    let ready = false;
+    for (let index = 0; index < 40; index++) {
+      try {
+        execFileSync(
+          "docker",
+          [
+            host,
+            "exec",
+            database,
+            "pg_isready",
+            "-U",
+            "privateai_synthetic",
+            "-d",
+            "privateai_synthetic",
+          ],
+          { env, stdio: "ignore", windowsHide: true, timeout: 3000 },
+        );
+        ready = true;
+        break;
+      } catch {
+        await new Promise((done) => setTimeout(done, 250));
+      }
+    }
+    if (!ready)
+      throw Error("Isolated synthetic database did not become ready.");
+  }
   execFileSync(
     "docker",
     [
@@ -40,7 +92,8 @@ try {
       "--rm",
       `--name=${container}`,
       "--pull=never",
-      "--network=none",
+      workspace ? `--network=container:${database}` : "--network=none",
+      "--user=1000:1000",
       "--read-only",
       "--cap-drop=ALL",
       "--security-opt=no-new-privileges",
@@ -64,56 +117,73 @@ try {
       "--env=PRIVATEAI_SYNTHETIC_INGRESS_TLS_DIR=/fixtures",
       "--env=PRIVATEAI_SYNTHETIC_CADDY=/usr/local/bin/caddy",
       "--env=XDG_DATA_HOME=/tmp/test-data",
+      ...(workspace
+        ? [
+            "--mount",
+            `type=bind,source=${resolve("server")},target=/app/server,readonly`,
+            "--mount",
+            `type=bind,source=${resolve("shared")},target=/app/shared,readonly`,
+            "--mount",
+            `type=bind,source=${resolve("tests")},target=/app/tests,readonly`,
+            "--env=PRIVATEAI_SYNTHETIC_PG=postgresql://privateai_synthetic:local-synthetic-only@127.0.0.1:5432/privateai_synthetic",
+          ]
+        : []),
       "--entrypoint=node",
-      "privateai-evaluation:latest",
+      workspace
+        ? "privateai-account-ingress-test:local"
+        : "privateai-evaluation:latest",
       "node_modules/vitest/vitest.mjs",
       "run",
-      "tests/authenticated-ingress.test.ts",
+      workspace
+        ? "tests/ingress-workspace.test.ts"
+        : "tests/authenticated-ingress.test.ts",
       "--maxWorkers=1",
     ],
-    { env, stdio: "inherit", windowsHide: true, timeout: 60000 },
+    { env, stdio: "inherit", windowsHide: true, timeout: 90000 },
   );
 } finally {
   try {
-    let label = "";
-    try {
-      label = execFileSync(
-        "docker",
-        [
-          host,
-          "inspect",
-          "--format",
-          '{{index .Config.Labels "privateai.purpose"}}',
-          container,
-        ],
-        {
+    for (const target of workspace ? [container, database] : [container]) {
+      let label = "";
+      try {
+        label = execFileSync(
+          "docker",
+          [
+            host,
+            "inspect",
+            "--format",
+            '{{index .Config.Labels "privateai.purpose"}}',
+            target,
+          ],
+          {
+            env,
+            encoding: "utf8",
+            stdio: ["ignore", "pipe", "ignore"],
+            windowsHide: true,
+            timeout: 5000,
+          },
+        ).trim();
+      } catch {
+        const remaining = execFileSync(
+          "docker",
+          [host, "ps", "-aq", "--filter", `name=^${target}$`],
+          { env, encoding: "utf8", windowsHide: true, timeout: 5000 },
+        ).trim();
+        if (remaining)
+          throw Error(
+            "Could not verify the synthetic container identity for cleanup.",
+          );
+      }
+      if (label && label !== "synthetic-ingress")
+        throw Error("Unexpected synthetic container label; cleanup refused.");
+      if (label === "synthetic-ingress")
+        execFileSync("docker", [host, "rm", "--force", target], {
           env,
-          encoding: "utf8",
-          stdio: ["ignore", "pipe", "ignore"],
+          stdio: "ignore",
           windowsHide: true,
-          timeout: 5000,
-        },
-      ).trim();
-    } catch {
-      const remaining = execFileSync(
-        "docker",
-        [host, "ps", "-aq", "--filter", `name=^${container}$`],
-        { env, encoding: "utf8", windowsHide: true, timeout: 5000 },
-      ).trim();
-      if (remaining)
-        throw Error(
-          "Could not verify the synthetic container identity for cleanup.",
-        );
+          timeout: 10000,
+        });
     }
-    if (label && label !== "synthetic-ingress")
-      throw Error("Unexpected synthetic container label; cleanup refused.");
-    if (label === "synthetic-ingress")
-      execFileSync("docker", [host, "rm", "--force", container], {
-        env,
-        stdio: "ignore",
-        windowsHide: true,
-        timeout: 10000,
-      });
   } finally {
     await tls.dispose();
   }

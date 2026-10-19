@@ -1,5 +1,25 @@
 # Restricted development deployment
 
+## Authenticated account composition — 19 October 2026
+
+The proxy alternative is now wired **only into the inactive production candidate**, via explicit `ingress.peerCertificateSha256`. The server entrypoint/live Render service is unchanged. It authenticates every route before admission and uses the verified address for account rate limiting. Direct TLS remains the default. Health checks in this mode must traverse the authenticated gateway; no unauthenticated readiness exception was added.
+
+Reproduce locally after preparing the pinned Caddy binary described below:
+
+```powershell
+docker build --target build --tag privateai-account-ingress-test:local .
+npm run test:ingress -- --workspace
+npm run test:ingress
+```
+
+The workspace runner requires cached `postgres:17-bookworm` and the separate build image with current locked dependencies. It starts a uniquely labelled PostgreSQL container with network=none, no published ports and a256MiB ephemeral data tmpfs. The unprivileged/read-only application test container shares only that isolated network namespace, allowing loopback PostgreSQL/Caddy/Node with no outbound network. Source/test mounts are read-only; certificate keys are synthetic and disposable. Both containers are removed by exact generated names after label verification. Existing databases are not used by this runner. Docker must be available; image building downloads locked packages with TLS verification enabled. Test image/binary are development artifacts only.
+
+Observed6/6API/transport tests: built account HTML; email verification/sign-in via a no-network `.test` sink; Secure/HttpOnly cookies; spoofed edge fields overwritten; distinct approved peer address used in rate-limit keys; unapproved direct peers denied on static/health/API routes; durable session after composition reconstruction; workspace status and blocked inference; cross-site sign-out denied; synthetic stream delivery/cancellation; quarantine/readiness/drain. Additional16original ingress and21deployment/direct-TLS/account/browser regressions pass. No provider calls, real email, DNS/hosting change or account migration.
+
+The stream endpoint exists only in the test file and has no model/authentication acceptance claim. Proxy-backed browser interaction, real social/passkey flows, public certificate lifecycle, hosted database/backup recovery, content-free production observability and load are still open. Logging is discarded in the fixture; absence of canaries from these captured logs does not qualify other logging systems. No production host/region/cost has been selected or authorized.
+
+Retained failures: original test image lacked Better Auth; separate Dockerfile build image fixed that. Initial runner referenced absent `postgres:17`; corrected to the existing17-bookworm tag. Initial stream probe returned503 because a non-API fixture called the API-context-dependent session control; corrected the test-only probe, not production authorization. Expanded final6/6 and original16/16pass. Earlier standalone-only statements below describe the preceding batch and are superseded for inactive composition only.
+
 ## Authenticated proxy alternative — local proof, 19 October 2026
 
 **Decision: continue this fallback locally; do not migrate or activate it yet.** The existing Render account ingress remains unqualified: its documented TLS termination/private-network behavior alone does not establish which peer/header values the application may trust. A supported alternative is a direct-public Caddy gateway with verified mutual TLS to the Node application. Caddy documents client-certificate authentication, upstream CA/server-name verification and explicit header replacement. This avoids trusting a client-supplied forwarding header or a whole private subnet. Sources: [Render transport](https://render.com/docs/web-services), [private ingress](https://render.com/docs/private-network), [Caddy reverse proxy](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy), [Node TLS authorization](https://nodejs.org/docs/latest-v24.x/api/tls.html).

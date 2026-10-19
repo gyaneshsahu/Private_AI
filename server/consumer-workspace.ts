@@ -69,6 +69,8 @@ export function createProductionConsumerCandidate(
   const usage = new PostgresUsageLedger(config.database);
   const app = express();
   app.disable("x-powered-by");
+  // Protect every route, including readiness, before database access or admission.
+  if (account.ingress) app.use(account.ingress.middleware);
   const operations = productionOperations(config.database);
   app.use(operations.middleware);
   // This boundary also scopes getSession calls from workspace APIs to the current request.

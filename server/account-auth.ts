@@ -11,6 +11,10 @@ import { google, apple } from "better-auth/social-providers";
 import { passkey } from "@better-auth/passkey";
 import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
 import express from "express";
+import {
+  createMutualTlsIngress,
+  type AuthenticatedIngress,
+} from "./authenticated-ingress";
 import type { Pool } from "pg";
 import { createHmac } from "node:crypto";
 import { TLSSocket } from "node:tls";
@@ -73,9 +77,11 @@ export interface ProductionAccountCandidateConfig {
   workspaceEnabled?: boolean;
   /** Inactive wiring only: no environment activation or fallback credentials. */
   social?: ProductionSocialCredentials;
+  /** Inactive authenticated proxy alternative; never enables Express trust proxy. */
+  ingress?: { peerCertificateSha256: readonly string[] };
 }
 
-/** Unmounted preparation. Direct TLS only; no environment flag or proxy trust shortcut. */
+/** Unmounted preparation. TLS or explicit authenticated ingress; no environment activation. */
 export function createProductionAccountCandidate(
   config: ProductionAccountCandidateConfig,
 ) {
@@ -91,6 +97,12 @@ export function createProductionAccountCandidate(
     synthetic: false,
     workspaceEnabled: config.workspaceEnabled === true,
     productionSocial: config.social,
+    ingress: config.ingress
+      ? createMutualTlsIngress({
+          origin: productionAccountTarget.origin,
+          peerCertificateSha256: config.ingress.peerCertificateSha256,
+        })
+      : undefined,
   });
 }
 
@@ -98,6 +110,7 @@ function createAccountAuth(
   config: SyntheticAccountConfig & {
     synthetic: boolean;
     productionSocial?: ProductionSocialCredentials;
+    ingress?: AuthenticatedIngress;
   },
 ) {
   const social =
@@ -446,6 +459,14 @@ function createAccountAuth(
     ],
   });
   const router = express.Router();
+  if (config.ingress) {
+    const ingress = config.ingress;
+    router.use((req, res, next) => {
+      // The workspace may already have authenticated this exact request before admission.
+      if (ingress.clientAddress(req) !== undefined) next();
+      else ingress.middleware(req, res, next);
+    });
+  }
   router.use(async (req, res, next) => {
     if (!req.path.startsWith("/api/")) {
       next();
@@ -490,14 +511,20 @@ function createAccountAuth(
       return;
     }
     if (!config.synthetic) {
-      // Direct TLS is the only prepared transport; forwarded origin claims are untrusted.
+      // Forwarded origin claims remain untrusted in both prepared TLS modes.
       delete req.headers["x-forwarded-host"];
       delete req.headers["x-forwarded-proto"];
       delete req.headers.forwarded;
     }
-    // Only the socket determines the rate-limit address, never a client header.
-    req.headers["x-privateai-client-ip"] =
-      req.socket.remoteAddress ?? "127.0.0.1";
+    // The authenticated boundary owns proxy addresses; client headers never select them.
+    const clientAddress = config.ingress
+      ? config.ingress.clientAddress(req)
+      : req.socket.remoteAddress;
+    if (!clientAddress) {
+      res.status(403).json({ error: "Verified client address required." });
+      return;
+    }
+    req.headers["x-privateai-client-ip"] = clientAddress;
     try {
       if (!(await accountRecoveryOpen(config.database))) {
         res.status(503).json({
@@ -801,7 +828,7 @@ function createAccountAuth(
       enrollments--;
     }
   });
-  return { auth, router };
+  return { auth, router, ingress: config.ingress };
 }
 
 function isFresh(createdAt: Date): boolean {
