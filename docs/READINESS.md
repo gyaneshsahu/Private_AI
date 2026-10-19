@@ -1,5 +1,9 @@
 # PrivateAI readiness checklist
 
+## Dependency ownership clarification — 19 October
+
+Remaining blockers are real. Provider verification/retention and enforceable opaque usage require supplier implementation/evidence plus our validation; hosting/recovery/monitoring and integrations remain engineering work until tested; service credentials/settings, business/support choices, actual-device/human review and activation require owner involvement. Requested only operating country/business status/support contact and newer supplier replies now. One consolidated Tinfoil follow-up is prepared in provider-qualification.md; no email was sent by Codex. No immediate DNS/payment/provider activation requested. Detailed now/later responsibilities are in LOCAL_CODEX_HANDOFF.md. Documentation alone changes no requirement status or percentage; NOT_READY remains.
+
 ## Latest M2/M6 — complete proxy browser journey and safe user reporting, 19 October
 
 The built app now passes the **actual browser→Caddy→mTLS→production-candidate** journey at390px: email verification, virtual passkey enrollment/sign-in, corrected document and draft, encrypted save/lock/reopen across app reconstruction, account return/sign-out, and pre-admission outage with preserved email and explicit retry. Account and workspace requests are not fulfilled by test mocks. No public TLS or real authenticator/provider/phone claim: the browser trusts only the disposable certificate SPKI and uses a virtual authenticator in an outbound-disabled container.

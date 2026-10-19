@@ -1,5 +1,27 @@
 # Provider qualification — NOT_PASSED
 
+## Consolidated owner follow-up — prepared 19 October, NOT SENT
+
+Owner asked which release blockers require manual help. This is one consolidated follow-up for the existing Tinfoil conversation, not a request for repeated emails per finding. Forward any newer reply first; omit questions already answered by that evidence. No account setting or provider switch is requested. Tinfoil testing remains capped at the existing USD5 authorization and actual account/key controls; older USD3 text below is historical.
+
+**Suggested message to Sacha:**
+
+Hi Sacha,
+
+Thanks again. We are preparing the production architecture for PrivateAI at app.cometrow.com. Prompts and responses must remain encrypted between the browser and the approved inference deployment; our application backend must not receive plaintext. Your last reply said released browser freshness/TDX support and cache-disable/enforced maximum retention were not yet available. We are keeping private-data access disabled.
+
+Could you share any released update, exact SDK/version and supported example that now covers deployment/worker/GPU binding, freshness, revocation/rollback and TDX in the browser? If nothing has shipped, please confirm that rather than treating the earlier estimate as a release date.
+
+For the exact API deployment, is there now a supported way to disable prompt caching or enforce its maximum lifetime? We understand cache isolation alone does not establish deletion. We have retained your answer that most billing-related metadata is kept for90days; no need to repeat that answer unless it has changed.
+
+One additional production requirement: our relay cannot inspect encrypted model selection or token limits, and we cannot trust browser-reported usage to grant paid allowances. What supported provider-side controls can enforce allowed models, maximum output and a per-request/account cost ceiling despite a malicious client? What authenticated request-level usage/settlement information can our backend obtain without prompts/responses, including interrupted streams, cancellation and duplicate requests? Please distinguish hard enforcement from dashboard estimates or browser-supplied fields, and share exact API documentation or an example.
+
+If a different supported architecture is necessary, please describe its trust boundary and whether our backend still never receives plaintext.
+
+Thanks.
+
+**Engineering responsibility:** inspect any linked implementation, test negative cases and verify deployed behavior. A supplier statement alone does not pass qualification. Do not activate a provider or send sensitive data upon receiving a reply. A negative answer triggers a concrete researched architecture/provider decision, not silent weakening of requirements.
+
 ## Pinned alternative SDK source review — 19 October 2026
 
 Inspected public tag v1.59.0 at commit17ad265a79a39f30596ae2f12ec64ccbd9127275, corresponding to npm's current privatemode-ai1.59.0 metadata. npm points to the continuum repository while documentation points to the public mirror; the source package.json uses a0.0.1 build placeholder. This review did not reproduce the published binary or execute/install the SDK. Source hashes and scope are preserved in [audit metadata](../evaluation/results/provider-sdk-source-20261019.json).
