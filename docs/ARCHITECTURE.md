@@ -1,5 +1,9 @@
 # PrivateAI — architecture and trust boundaries
 
+### Source corrections and historical citations — 19 October
+
+`Source.userEdited` marks locally corrected text and survives encrypted snapshots and request serialization. It is provenance, not a correctness certification. Existing per-answer source snapshots are immutable when current attachments change. A derived UI comparison detects changed/removed text or source metadata and invites review; no automatic removal of conversation context occurs. Legacy answers without snapshots expose that limitation and never borrow current attachments to manufacture historical citation evidence. Original binary files are not retained by this change; temporary-search persistence rules remain sticky.
+
 ### Explicit conversation context — 19 October
 
 `measureContext` derives the displayed breakdown from the same composed messages used for sending, including the source envelope and selected policy. `ContextReview` changes only the existing message-inclusion and attachment-selection flags. Incomplete answers remain excluded regardless of their stored inclusion flag. The configured character guard stays authoritative; unknown qualification does not acquire a default limit or permit sending. The UI exposes no token/recall guarantee and performs no model summarization. Encrypted snapshots retain the user's explicit selections; temporary-research persistence restrictions remain unchanged.

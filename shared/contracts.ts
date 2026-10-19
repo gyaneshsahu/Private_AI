@@ -91,6 +91,8 @@ export interface Source {
   evidenceKind?: "search-excerpt" | "page" | "llm-context";
   /** Provider-reported page date; not necessarily publication or event time. */
   providerDate?: string;
+  /** Local user correction; not an unmodified extraction or provider quotation. */
+  userEdited?: boolean;
 }
 export interface Attachment {
   id: string;

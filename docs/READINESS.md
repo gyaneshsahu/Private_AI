@@ -1,5 +1,11 @@
 # PrivateAI readiness checklist
 
+### M4 corrected-source provenance — 19 October
+
+Local corrections now carry a user-edited marker in the reviewed source, selected request material and encrypted snapshot. Earlier answers retain their original source snapshots. The UI flags changed/removed reference material without claiming the answer necessarily relied on it or silently excluding it; the user can review and deselect the answer. Legacy answers with no snapshot no longer substitute current attachments as historical citation evidence. Corrections do not clear temporary-research restrictions.
+
+**54 tests across7files and8 existing browser workflows passed**, plus build/typecheck. A real390px workspace test corrects a source, opens the earlier citation, excludes the answer, saves/locks/reopens and removes the attachment; the original evidence remains inspectable and no external/non-GET disclosure occurs. Initial fixture citation `s1` did not meet the existing6-character citation syntax; corrected the fixture to `source-1`, with no parser relaxation. This is evidence-integrity/UI progress, not factual-quality acceptance or general image understanding. No paid calls or changed human grades.
+
 ### M1 conversation context review — 19 October
 
 The workspace now shows exactly which complete messages and document/source passages are selected for the next request, with editable inclusion and a serialized character breakdown for instructions, messages, sources and draft. It shows remaining space only when a configuration supplies a limit; it does not pretend characters are tokens, promise indefinite memory, silently truncate, or retract previously sent context. Partial answers are visibly unchecked and cannot be selected. Selections survive explicit encrypted save/lock/reopen without removing the history or unsent draft.

@@ -10,6 +10,7 @@ const source = z.object({
   retrievedAt: z.string().optional(),
   evidenceKind: z.enum(["search-excerpt", "page", "llm-context"]).optional(),
   providerDate: z.string().max(100).optional(),
+  userEdited: z.boolean().optional(),
 });
 
 // Older snapshots have no draft, attachment kind or message source snapshot.

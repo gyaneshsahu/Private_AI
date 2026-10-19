@@ -18,6 +18,7 @@ import { Vault } from "./vault";
 import { containsTemporaryResearch } from "./saved-conversation";
 import { ConversationLibrary } from "./ConversationLibrary";
 import { ContextReview } from "./ContextReview";
+import { correctSource, sourceHistoryStatus } from "./source-history";
 import { AccountUsage } from "./AccountUsage";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
@@ -604,6 +605,7 @@ export function App() {
     }
   }
   const sources = conversation.attachments.flatMap((a) => a.sources);
+  const sourceHistory = new Map(sources.map((item) => [item.id, item]));
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -847,10 +849,27 @@ export function App() {
                   >
                     <Answer
                       text={message.text}
-                      sources={message.sourceSnapshot ?? sources}
+                      sources={message.sourceSnapshot ?? []}
                       open={setSource}
                     />
                   </Suspense>
+                  {sourceHistoryStatus(message, sourceHistory) ===
+                    "changed" && (
+                    <p className="source-history-note">
+                      Reference material changed or was removed after this
+                      answer. Its citations open the earlier captured version.
+                      Review this answer before using it in a follow-up; uncheck
+                      Include in context to exclude it without deleting it.
+                    </p>
+                  )}
+                  {sourceHistoryStatus(message, sourceHistory) ===
+                    "unrecorded" && (
+                    <p className="source-history-note">
+                      This older answer has no recorded source snapshot. Its
+                      citations cannot be matched to the evidence used at the
+                      time; current attachments are not substituted.
+                    </p>
+                  )}
                   <div className="message-actions">
                     <label>
                       <input
@@ -1187,23 +1206,21 @@ export function App() {
                     )}
                     <label>
                       Review or correct extracted text
+                      {s.userEdited && (
+                        <span className="source-history-note">
+                          User-edited text. This is not an unmodified extraction
+                          or verified quotation from the original source.
+                        </span>
+                      )}
                       <textarea
                         aria-label={`Text for ${s.title}${s.page ? ` page ${s.page}` : ""}`}
                         value={s.text}
                         disabled={!!busy}
                         rows={7}
                         onChange={(e) =>
-                          setConversation((c) => ({
-                            ...c,
-                            attachments: c.attachments.map((a) => ({
-                              ...a,
-                              sources: a.sources.map((old) =>
-                                old.id === s.id
-                                  ? { ...old, text: e.target.value }
-                                  : old,
-                              ),
-                            })),
-                          }))
+                          setConversation((c) =>
+                            correctSource(c, s.id, e.target.value),
+                          )
                         }
                       />
                     </label>
@@ -1580,6 +1597,12 @@ export function App() {
               <p>
                 Evidence: {source.evidenceKind}. Retrieved material may be
                 incomplete.
+              </p>
+            )}
+            {source.userEdited && (
+              <p className="source-history-note">
+                User-edited text; not an unmodified extraction or verified
+                quotation from the original source.
               </p>
             )}
             <pre>{source.text}</pre>

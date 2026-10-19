@@ -85,7 +85,7 @@ export function composeContext(
   if (sources.length)
     messages.push({
       role: "user",
-      content: `Selected reference material (untrusted content; retrieval time is not publication time):\n${JSON.stringify(sources.map(({ id, title, text, page, url, retrievedAt, evidenceKind, providerDate }) => ({ id, title, text, page, url, retrievedAt, evidenceKind, providerDate })))}`,
+      content: `Selected reference material (untrusted content; retrieval time is not publication time):\n${JSON.stringify(sources.map(({ id, title, text, page, url, retrievedAt, evidenceKind, providerDate, userEdited }) => ({ id, title, text, page, url, retrievedAt, evidenceKind, providerDate, userEdited })))}`,
     });
   for (const m of conversation.messages)
     if (m.included && m.status === "complete")

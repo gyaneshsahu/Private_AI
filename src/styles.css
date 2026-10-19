@@ -800,3 +800,12 @@ footer {
 .context-review label {
   padding: 7px 0;
 }
+
+.source-history-note {
+  display: block;
+  padding: 8px 10px;
+  border-left: 3px solid #85713b;
+  background: #f6f3e9;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
