@@ -69,6 +69,9 @@ test("search is explicitly approved and remains temporary after source removal",
     page.getByRole("button", { name: "Save encrypted snapshot" }),
   ).toBeDisabled();
   await expect(
+    page.getByRole("button", { name: "Download encrypted backup" }),
+  ).toBeDisabled();
+  await expect(
     page.getByText(
       "This search conversation is temporary and cannot be saved",
       { exact: false },

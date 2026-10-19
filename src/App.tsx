@@ -16,6 +16,8 @@ import {
 import { DOCUMENT_ACCEPT } from "./document-formats";
 import { importDocuments, type ImportOutcome } from "./document-import";
 import { Vault } from "./vault";
+import { VaultBackup } from "./VaultBackup";
+import { BACKUP_MAX_BYTES } from "./vault-backup";
 import { containsTemporaryResearch } from "./saved-conversation";
 import { ConversationLibrary } from "./ConversationLibrary";
 import { ContextReview } from "./ContextReview";
@@ -615,6 +617,62 @@ export function App() {
       if (current === epoch.current) setBusy("");
     }
   }
+  async function exportVaultBackup() {
+    const current = epoch.current;
+    setBusy("Encrypting saved backup…");
+    let url: string | undefined;
+    try {
+      const text = await vault.current!.exportBackup();
+      if (current !== epoch.current) return;
+      url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "privateai-encrypted.privateai-backup";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setNotice(
+        "Encrypted backup download requested. Check your downloads before relying on it. It needs this vault’s original passphrase; later changes are not included.",
+      );
+    } catch {
+      if (current === epoch.current)
+        fail(
+          "Backup could not be created. Keep this browser’s data. Unlock the vault, check for unreadable snapshots and the 100-conversation / 10 MiB limits, then try again.",
+        );
+    } finally {
+      if (url) {
+        const expired = url;
+        setTimeout(() => URL.revokeObjectURL(expired), 1000);
+      }
+      if (current === epoch.current) setBusy("");
+    }
+  }
+  async function restoreVaultBackup(file: File, secret: string) {
+    const current = epoch.current;
+    setBusy("Verifying and restoring encrypted backup…");
+    try {
+      if (!file.size || file.size > BACKUP_MAX_BYTES)
+        throw Error("Invalid file size");
+      const text = await file.text();
+      if (current !== epoch.current) return;
+      const count = await vault.current!.restoreBackup(text, secret);
+      if (current !== epoch.current) return;
+      const snapshots = await vault.current!.readAvailable();
+      if (current !== epoch.current) return;
+      setSaved(snapshots.conversations);
+      setUnreadableSnapshots(snapshots.unreadable);
+      setNotice(
+        `Restored ${count} saved ${count === 1 ? "conversation" : "conversations"} as new copies. Your open workspace was not changed. The copies use this vault’s passphrase.`,
+      );
+    } catch {
+      if (current === epoch.current)
+        fail(
+          "Restore could not complete. Check the original backup passphrase, file integrity and available browser storage. Temporary research and unsupported backups are rejected. Existing snapshots were not overwritten; inspect Saved before trying again.",
+        );
+    } finally {
+      if (current === epoch.current) setBusy("");
+    }
+  }
   const sources = conversation.attachments.flatMap((a) => a.sources);
   const sourceHistory = new Map(sources.map((item) => [item.id, item]));
   return (
@@ -668,7 +726,7 @@ export function App() {
               setSource({
                 id: "workspace-guide",
                 title: "Using PrivateAI",
-                text: "Start in Conversation. Write a message or use a starter to prepare an editable draft. Nothing sends until you choose Send. This evaluation is for synthetic examples; private chat remains unavailable until its privacy checks pass.\n\nAdd context when you need it. In Context, import a text PDF, UTF-8 text, Markdown, data or source-code file, PNG or JPEG. Code is read as text, never executed; spreadsheets must be exported as CSV or PDF. Files are read on your device. Limits: five files (up to three screenshots), 10 MB each, 20 PDF pages; printed English text. Review extracted numbers, tables and wording before using them. Scanned PDFs and handwriting are not supported. Select only the context you want included.\n\nSave deliberately. Temporary work disappears on reload. In Saved, create or unlock a vault, then choose Save encrypted snapshot. Save again after changes. Your passphrase cannot be recovered; history stays in this browser, without cloud sync. Locking clears unsaved work. Removing an attachment does not remove its earlier messages or saved snapshots.\n\nResearch is your choice. Review the exact query or public URL before approving it. The research service and recipient can see it; your chat is not added automatically.\n\nStay in control. Stop ends an active response; an incomplete reply is excluded from later context. Retry is a separate request. Copy answer places completed text on your device clipboard; locking the vault does not clear that clipboard. Edit an earlier message to start a new branch. To remove a saved conversation, delete its snapshot in Saved. A new conversation clears the current workspace but does not delete saved snapshots.",
+                text: "Start in Conversation. Write a message or use a starter to prepare an editable draft. Nothing sends until you choose Send. This evaluation is for synthetic examples; private chat remains unavailable until its privacy checks pass.\n\nAdd context when you need it. In Context, import a text PDF, UTF-8 text, Markdown, data or source-code file, PNG or JPEG. Code is read as text, never executed; spreadsheets must be exported as CSV or PDF. Files are read on your device. Limits: five files (up to three screenshots), 10 MB each, 20 PDF pages; printed English text. Review extracted numbers, tables and wording before using them. Scanned PDFs and handwriting are not supported. Select only the context you want included.\n\nSave deliberately. Temporary work disappears on reload. In Saved, create or unlock a vault, then choose Save encrypted snapshot. Save again after changes. Your passphrase cannot be recovered. History stays in this browser unless you explicitly download an encrypted backup in Saved; there is no cloud sync. Restore needs the backup and its original passphrase and adds copies to an unlocked vault. Backups include saved snapshots only, never current unsaved work or temporary research. Deleting browser history does not delete downloaded copies. Locking clears unsaved work. Removing an attachment does not remove its earlier messages or saved snapshots.\n\nResearch is your choice. Review the exact query or public URL before approving it. The research service and recipient can see it; your chat is not added automatically.\n\nStay in control. Stop ends an active response; an incomplete reply is excluded from later context. Retry is a separate request. Copy answer places completed text on your device clipboard; locking the vault does not clear that clipboard. Edit an earlier message to start a new branch. To remove a saved conversation, delete its snapshot in Saved. A new conversation clears the current workspace but does not delete saved snapshots.",
               })
             }
           >
@@ -780,7 +838,9 @@ export function App() {
           <div role="status" className="progress">
             <span className="spinner" />
             {busy}
-            <button onClick={() => controller.current?.abort()}>Stop</button>
+            {controller.current && (
+              <button onClick={() => controller.current?.abort()}>Stop</button>
+            )}
           </div>
         )}
         {!!imports.length && (
@@ -1495,7 +1555,8 @@ export function App() {
             </h2>
             <p className="intro">
               Optional encrypted snapshots, stored only in this browser. No
-              cloud sync and no password recovery.
+              cloud sync and no password recovery. You can download an encrypted
+              backup.
             </p>
             <label>
               Conversation title
@@ -1543,8 +1604,9 @@ export function App() {
                 </label>
                 <p className="muted">
                   Use at least 12 characters. Your first unlock creates the
-                  vault. Losing this passphrase or clearing browser storage
-                  loses saved history.
+                  vault. Losing the passphrase loses access. Clearing browser
+                  storage loses history unless you have an encrypted backup and
+                  its original passphrase.
                 </p>
                 <button className="primary" disabled={!!busy}>
                   Create or unlock vault
@@ -1638,6 +1700,12 @@ export function App() {
                       if (current === epoch.current) setBusy("");
                     }
                   }}
+                />
+                <VaultBackup
+                  busy={!!busy}
+                  canExport={saved.length > 0 && unreadableSnapshots === 0}
+                  onExport={exportVaultBackup}
+                  onRestore={restoreVaultBackup}
                 />
               </>
             )}
