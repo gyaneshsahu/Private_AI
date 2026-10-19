@@ -2,7 +2,7 @@
 
 ## Dependency ownership clarification — 19 October
 
-Remaining blockers are real. Provider verification/retention and enforceable opaque usage require supplier implementation/evidence plus our validation; hosting/recovery/monitoring and integrations remain engineering work until tested; service credentials/settings, business/support choices, actual-device/human review and activation require owner involvement. Requested only operating country/business status/support contact and newer supplier replies now. One consolidated Tinfoil follow-up is prepared in provider-qualification.md; no email was sent by Codex. No immediate DNS/payment/provider activation requested. Detailed now/later responsibilities are in LOCAL_CODEX_HANDOFF.md. Documentation alone changes no requirement status or percentage; NOT_READY remains.
+Remaining blockers are real. Provider verification/retention and enforceable opaque usage require supplier implementation/evidence plus our validation; hosting/recovery/monitoring and integrations remain engineering work until tested; service credentials/settings, business/support choices, actual-device/human review and activation require owner involvement. Owner confirmed Germany, individual operator at present, and email support; exact address/mailbox verification and commercial onboarding remain open. Newer supplier replies remain requested. One consolidated Tinfoil follow-up is prepared in provider-qualification.md; no email was sent by Codex. No immediate DNS/payment/provider activation requested. Detailed now/later responsibilities are in LOCAL_CODEX_HANDOFF.md. Documentation alone changes no requirement status or percentage; NOT_READY remains.
 
 ## Latest M2/M6 — complete proxy browser journey and safe user reporting, 19 October
 

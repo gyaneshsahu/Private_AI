@@ -1,10 +1,12 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+**Owner-confirmed operating plan, 19 October:** operate from Germany as an individual at present; a registered company may be considered later if the business earns revenue. Email is the selected support channel. Exact support address, mailbox readiness, response expectations and legal/payment onboarding details remain unconfirmed. This records product planning, not verification of business registration, tax status or permission to sell. No company formation, mailbox/DNS change, billing activation or public launch is authorized by this statement.
+
 ## Owner versus engineering dependencies — clarified 19 October
 
 Owner asks to complete everything possible from engineering before broader real-life tests. Clarification: “70–75% implemented” is a rough engineering estimate, not release readiness; external integrations and human acceptance cannot honestly be marked complete by local code alone. Keep synthetic integration tests ongoing now. Controlled human/public-question evaluation can occur with explicitly reviewed scope; real private data and public access remain gated. Do not postpone necessary service integration until a fictitious100% code milestone.
 
-**Useful owner input now:** (1) forward any newer Tinfoil/Brave reply; if no new evidence, the single consolidated Tinfoil follow-up in provider-qualification.md is ready for the owner to send, including enforceable opaque-request usage; (2) state operating country, individual/company status and intended support contact (not decided is acceptable). Asked through the current chat; no reply assumed. No credentials, deposits, account limits, DNS, hosting or privacy changes requested.
+**Useful owner input now:** (1) forward any newer Tinfoil/Brave reply; if no new evidence, the single consolidated Tinfoil follow-up in provider-qualification.md is ready for the owner to send, including enforceable opaque-request usage; (2) Germany/individual/email support are now owner-confirmed; only the exact support address is requested. Mailbox availability is not assumed. No credentials, deposits, account limits, DNS, hosting or privacy changes requested.
 
 **Owner actions later, after concrete preparation:** review the hosting/privacy architecture choice and perform exact approved DNS/service configuration; configure real Google/Apple/email/payment providers using a secure credential path; decide commercial prices/terms after enforceable cost evidence; complete the fixed Galaxy A52/TalkBack workflow and fresh human quality/safety packet; separately approve retention activation and final restricted/public rollout. Earlier auth-page device pass and human scores remain valid only for their original scope.
 

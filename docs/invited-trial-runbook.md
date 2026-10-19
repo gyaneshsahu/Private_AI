@@ -2,6 +2,8 @@
 
 ## Product support preparation — 19 October 2026
 
+**Owner-confirmed operating plan, 19 October:** operate from Germany as an individual at present; a registered company may be considered later if the business earns revenue. Email is the selected support channel. Exact support address, mailbox readiness, response expectations and legal/payment onboarding details remain unconfirmed. This records product planning, not verification of business registration, tax status or permission to sell. No company formation, mailbox/DNS change, billing activation or public launch is authorized by this statement.
+
 The same production architecture is being built for public launch; this runbook now describes the limited-user check before opening access, not a separate prototype. Release remains NOT_READY.
 
 Workspace Help and pre-sign-in Help provide recovery guidance and a reviewed fixed-category note. Nothing is submitted automatically. During authorized evaluation the user can share that note with the access coordinator. Do not request raw transcripts, search snippets, documents, passwords, verification codes, tokens or card data. Reproduce with a synthetic example; record issue category, affected release/configuration, severity, the user's consented description and outcome separately from private content.
