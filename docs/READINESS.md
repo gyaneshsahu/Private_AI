@@ -1,5 +1,16 @@
 # PrivateAI readiness checklist
 
+## Human review closure and account recovery - 20 October
+
+Owner personally reviewed selection-07 only: DeepSeek turns1/2 3/3/3, 3/3/3; Gemma 1/1/2, 2/2/1; GLM 2/2/3, 2/2/1. Exact reasons/provenance and original evidence hash: evaluation/results/model-selection-20261020-human.json. Original run unchanged; all other human grades blank. Updated review page uses a separate hash-bound overlay. Model-selection batch CLOSED; no exposed-case tuning or paid calls. DeepSeek low remains provisional development default. Earlier failures and safety/launch gates remain open. This supersedes older next-step requests for case07 review below.
+
+Independent M5 improvement: billing browser requests now have a10-second deadline covering headers and response body. Timeout means unconfirmed outcome, not failed payment; no automatic retry. Actual application workspace test verifies durable uncertain status blocks duplicate checkout and permits explicit read-only refresh. Seven tests/three files and typecheck/build pass. Initial sandbox browser lookup failed; initial standalone component harness timed out; actual workspace replacement passed. No provider calls, real payments or live changes. Existing verifier-zlib build warning remains.
+
+Provider refresh: public JS proxy/encryption/cache-scoping documentation does not establish enforced cache lifetime or current browser consumption of freshness/TDX policies. Pinned verifier negative tests still reject unsupported TDX formats. See provider-qualification.md for evidence and retrieval limits. No new qualification or supplier email.
+
+Next: provider-enforced opaque usage/settlement and released browser verification/retention evidence, plus reviewed hosted account/email rollout. Keep those material launch dependencies active rather than extending model screens or inactive billing indefinitely. Approximately75% implemented (+/-10), NOT_READY; no artificial percentage gain for this closure/recovery batch.
+
+
 ## Independent response-recovery improvement — 20 October
 
 After the fixed model study completed (no changes during paid execution), implemented content-free distinction for HTTP429 versus502/503/504. The chat now explains request limiting or service unavailability with no answer received; unknown cost remains explicit, failed output stays excluded, Copy stays disabled, and no automatic retry/weaker fallback is introduced. Raw provider bodies are cancelled and never displayed or logged. Other invalid responses retain generic handling; these statuses do not prove the cause, final charge or recovery time. Evaluation stop rules remain global for these transport failures.

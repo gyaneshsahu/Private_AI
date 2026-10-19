@@ -14,17 +14,23 @@ const metrics=plan.cells.map(cell=>{
 let engineering={status:"PENDING_ENGINEERING_REVIEW"};
 try{engineering=JSON.parse(await readFile(`${root}/engineering.json`,"utf8"));}catch(e){if(e.code!=="ENOENT")throw e;}
 const evidence={status:"DEVELOPMENT_NOT_ACCEPTANCE",plan,fixtures,metrics,report,engineering,humanScores:null,limits:["One fresh two-turn case per family, one sample per configuration; not a reliability estimate or release acceptance.","Five ordinary-chat cases without source attachments; two authored source-synthesis cases, no live research or document extraction qualification.","Provider privacy, enforced opaque usage, independent safety review and reserved acceptance remain separate gates."]};
-await writeFile("evaluation/results/model-selection-20261020.json",JSON.stringify(evidence),{flag:"wx"});
+const evidencePath="evaluation/results/model-selection-20261020.json";
+if(!process.argv.includes("--render-only"))await writeFile(evidencePath,JSON.stringify(evidence),{flag:"wx"});
+else if(await readFile(evidencePath,"utf8")!==JSON.stringify(evidence))throw Error("Local inputs differ from immutable run evidence");
+let human=null;
+try{human=JSON.parse(await readFile("evaluation/results/model-selection-20261020-human.json","utf8"));}catch(e){if(e.code!=="ENOENT")throw e;}
+if(human && human.evidenceSHA256!==createHash("sha256").update(await readFile(evidencePath)).digest("hex"))throw Error("Human review evidence mismatch");
 const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const pre=x=>`<pre>${esc(typeof x==="string"?x:JSON.stringify(x,null,2))}</pre>`;
-let html='<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fresh model selection</title><style>body{font:17px/1.5 system-ui;max-width:1100px;margin:auto;padding:24px}pre{white-space:pre-wrap;overflow-wrap:anywhere}article{border:1px solid #999;padding:16px;margin:16px 0}</style><h1>Fresh model selection</h1><p>DeepSeek low · Gemma thinking off · GLM low. Human scores blank.</p>'+pre(metrics)+pre(evidence.limits)+'<h2>Engineering findings</h2>'+pre(engineering);
+let html='<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fresh model selection</title><style>body{font:17px/1.5 system-ui;max-width:1100px;margin:auto;padding:24px}pre{white-space:pre-wrap;overflow-wrap:anywhere}article{border:1px solid #999;padding:16px;margin:16px 0}</style><h1>Fresh model selection</h1><p>DeepSeek low · Gemma thinking off · GLM low. Human review applies to case 07 only; other scores remain blank. Earlier failures and release gates remain open.</p>'+pre(human)+pre(metrics)+pre(evidence.limits)+'<h2>Engineering findings</h2>'+pre(engineering);
 for(const f of fixtures){
  html+=`<h2>${esc(f.id)} — ${esc(f.family)}</h2><h3>Expected facts</h3>${pre(f.expected)}<h3>Actual authored sources</h3>${pre(f.sources.length?f.sources:"None: ordinary chat")}`;
  for(const cell of plan.cells){
   const run=report.results.find(r=>r.id===f.id&&r.cell===cell);html+=`<h3>${esc(cell)}</h3>`;
   for(const [i,q] of f.turns.entries()){
+   const grade=human?.reviews.find(r=>r.id===f.id&&r.cell===cell&&r.turn===i+1);
    const t=run?.replies[i];const raw=(t?.modelEvents??[]).flatMap(e=>(e.choices??[]).map(c=>c.delta?.content??"")).join("");
-   html+=`<article><h4>User turn ${i+1}</h4>${pre(q)}<h4>Delivered answer</h4>${pre(t?.completed?t.answer:t?"INCOMPLETE — unscored":"NOT ATTEMPTED")}<p>Human correctness/completeness/context: ${t?.completed?"___ / ___ / ___":"UNSCORED"}</p>${pre({elapsedMs:t?.elapsedMs,usage:t?.usage,failure:t?.failureKind})}<details><summary>Raw model text</summary>${pre(raw)}</details></article>`;
+   html+=`<article><h4>User turn ${i+1}</h4>${pre(q)}<h4>Delivered answer</h4>${pre(t?.completed?t.answer:t?"INCOMPLETE — unscored":"NOT ATTEMPTED")}<p>Human correctness/completeness/context: ${t?.completed?(grade?grade.scores.join(" / "):"___ / ___ / ___"):"UNSCORED"}</p>${grade?.reason?pre(grade.reason):""}${pre({elapsedMs:t?.elapsedMs,usage:t?.usage,failure:t?.failureKind})}<details><summary>Raw model text</summary>${pre(raw)}</details></article>`;
   }
  }
 }

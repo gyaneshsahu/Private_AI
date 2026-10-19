@@ -1,5 +1,14 @@
 # Provider qualification — NOT_PASSED
 
+## Evidence refresh and human review - 20 October
+
+Model-selection batch closed by owner. Case07 human scores are in evaluation/results/model-selection-20261020-human.json; other cases remain ungraded. DeepSeek low stays provisional development default. This supersedes the older statement below that all safety grades are blank; no privacy or safety gate passes.
+
+Read-only sources: [JavaScript SDK README](https://github.com/tinfoilsh/tinfoil-js) describes encrypted browser traffic through a credential-adding proxy and runtime-lifetime cache secrets. This supports the intended boundary but does not establish enforced cache deletion. [Freshness witness](https://github.com/tinfoilsh/freshness-witness) and search-indexed [platform endorsements](https://github.com/tinfoilsh/platform-endorsements) are investigation leads, not proof that our pinned browser client enforces their policies. Direct platform-endorsements retrieval returned404; two initial documentation/repository URLs were inaccessible. Search snippets are not released-browser evidence.
+
+Installed tinfoil and @tinfoilsh/verifier remain1.2.2. Offline negative tests reject unsupported TDX/multiplatform attestation formats and distinguish SNP matching from TDX verification. No dependency upgrade, inference, account action or gate change. Required next evidence remains exact released browser enforcement of worker/GPU binding, freshness/revocation, retention controls and authenticated opaque usage enforcement. Consolidated19October supplier questions remain the single queue; no duplicate email requested.
+
+
 **20October result:**42fresh replies completed across DeepSeek low/Gemma off/GLM low. Provisional synthetic-development recommendation DeepSeek low; experimental support prevents release-default qualification. No Thorough/automatic routing earned. Gemma has arithmetic/omission defects; Gemma/GLM violate urgent one-action request. See READINESS and model-selection-20261020 evidence for full limits/cost; human safety grades blank. All deployment privacy gates remain closed.
 
 ## Model/deployment shortlist — 20 October 2026

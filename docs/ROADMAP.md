@@ -1,5 +1,16 @@
 # PrivateAI delivery roadmap
 
+## Human review closure and account recovery - 20 October
+
+Owner personally reviewed selection-07 only: DeepSeek turns1/2 3/3/3, 3/3/3; Gemma 1/1/2, 2/2/1; GLM 2/2/3, 2/2/1. Exact reasons/provenance and original evidence hash: evaluation/results/model-selection-20261020-human.json. Original run unchanged; all other human grades blank. Updated review page uses a separate hash-bound overlay. Model-selection batch CLOSED; no exposed-case tuning or paid calls. DeepSeek low remains provisional development default. Earlier failures and safety/launch gates remain open. This supersedes older next-step requests for case07 review below.
+
+Independent M5 improvement: billing browser requests now have a10-second deadline covering headers and response body. Timeout means unconfirmed outcome, not failed payment; no automatic retry. Actual application workspace test verifies durable uncertain status blocks duplicate checkout and permits explicit read-only refresh. Seven tests/three files and typecheck/build pass. Initial sandbox browser lookup failed; initial standalone component harness timed out; actual workspace replacement passed. No provider calls, real payments or live changes. Existing verifier-zlib build warning remains.
+
+Provider refresh: public JS proxy/encryption/cache-scoping documentation does not establish enforced cache lifetime or current browser consumption of freshness/TDX policies. Pinned verifier negative tests still reject unsupported TDX formats. See provider-qualification.md for evidence and retrieval limits. No new qualification or supplier email.
+
+Next: provider-enforced opaque usage/settlement and released browser verification/retention evidence, plus reviewed hosted account/email rollout. Keep those material launch dependencies active rather than extending model screens or inactive billing indefinitely. Approximately75% implemented (+/-10), NOT_READY; no artificial percentage gain for this closure/recovery batch.
+
+
 **20October independent recovery batch complete:** actual chat differentiates rate limits/service unavailability from truncated answers, keeps cost unknown and retries explicit;35scopedtests including browser journey and build pass. No raw body disclosure or provider/launch gate change. Next human safety adjudication, held-out/repeatability and provider/opaque usage evidence.
 
 **20October broad screen complete:**7fresh two-turn families ×3models,42/42delivered. DeepSeek low provisional development candidate; experimental support and full privacy still block launch. Gemma arithmetic/document/safety defects; GLM one-action safety usability defect. No Thorough/automatic routing or live model change. Full evidence in evaluation/results/model-selection-20261020.json, human scores blank. Actual0.82, conservative1.1081056, no active reservation/increase. Next response recovery, provider/opaque-usage qualification and human safety review; broader held-out/repeatability remains open. ~75% implemented, NOT_READY.

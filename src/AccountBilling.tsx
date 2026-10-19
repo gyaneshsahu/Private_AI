@@ -1,3 +1,4 @@
+import { billingRequest } from "./billing-request";
 import { useEffect, useState } from "react";
 import {
   billingOverviewSchema,
@@ -18,13 +19,15 @@ export function AccountBilling({
   const [notice, setNotice] = useState("");
   const [working, setWorking] = useState(false);
   async function refresh(signal?: AbortSignal) {
-    const response = await fetch("/api/billing/overview", {
-      cache: "no-store",
-      signal,
-    });
-    if (!response.ok)
-      throw Error("Billing status unavailable. Refresh before continuing.");
-    const next = billingOverviewSchema.parse(await response.json());
+    const next = await billingRequest(
+      "/api/billing/overview",
+      { signal },
+      async (response) => {
+        if (!response.ok)
+          throw Error("Billing status unavailable. Refresh before continuing.");
+        return billingOverviewSchema.parse(await response.json());
+      },
+    );
     if (!signal?.aborted) setOverview(next);
   }
   useEffect(() => {
@@ -39,29 +42,34 @@ export function AccountBilling({
     setWorking(true);
     setNotice("");
     try {
-      const response = await fetch(`/api/billing/${kind}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-PrivateAI-CSRF": csrf,
+      await billingRequest(
+        `/api/billing/${kind}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-PrivateAI-CSRF": csrf,
+          },
+          body: JSON.stringify(planId ? { planId } : {}),
+          cache: "no-store",
         },
-        body: JSON.stringify(planId ? { planId } : {}),
-        cache: "no-store",
-      });
-      const result = await response.json();
-      if (!response.ok)
-        throw Error(
-          typeof result.error === "string"
-            ? result.error
-            : "Billing could not be confirmed.",
-        );
-      if (result.url) onNavigate(hostedBillingUrl(result.url, kind));
-      else
-        setNotice(
-          typeof result.message === "string"
-            ? result.message
-            : "Refresh status to check the result.",
-        );
+        async (response) => {
+          const result = await response.json();
+          if (!response.ok)
+            throw Error(
+              typeof result.error === "string"
+                ? result.error
+                : "Billing could not be confirmed.",
+            );
+          if (result.url) onNavigate(hostedBillingUrl(result.url, kind));
+          else
+            setNotice(
+              typeof result.message === "string"
+                ? result.message
+                : "Refresh status to check the result.",
+            );
+        },
+      );
     } catch (error) {
       setNotice(
         error instanceof Error
