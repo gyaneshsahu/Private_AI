@@ -2,7 +2,11 @@
 
 **12 October test-scope update:** Founder accepts temporary web-search answers without saving search sources. Search conversations and their answers cannot be saved in this test version; citations remain inspectable during the session. Persistent search history is deferred, while live retrieval, source fidelity, explicit disclosure and provider/privacy gates remain required. This does not authorize private-data access or certify answer quality.
 
-**Current priority:** complete the safe, reliable invite-only trial first, using every trial-required gate in READINESS. The broader general-purpose ChatGPT/Gemini usefulness target follows learning from the trial. Future voice/image generation/other modalities are not trial requirements. No quality or privacy threshold is lowered.
+**Current product direction — 19 October 2026:** build one public-launchable general-purpose assistant now. Invited users perform a limited release check on the same production architecture. Trial completion is not a development stopping point or a separate product. This supersedes the earlier trial-first investment sequence and modality exclusions; historical quality evidence and thresholds remain intact. See the active [production roadmap](ROADMAP.md#active-production-roadmap--19-october-2026).
+
+Launch planning includes chat, usable conversation history/context, documents and images, research/citations, reasoning/coding, safety, mobile accessibility, consumer accounts, subscriptions/usage limits, recovery, support and operations. Assess voice and image generation/editing explicitly; proposed initial-launch deferrals require evidence and founder scope review, not silent removal. Public competitiveness and verifiable privacy remain targets to prove. English and adults-only remain the current evaluated audience pending explicit audience review.
+
+Required commercial/account journeys: signup, sign-in/out and revocation, account recovery distinct from decryption recovery, account deletion, plan/allowance display, checkout, renewal/cancellation/payment failure and support. A payment success redirect alone cannot grant access. Entitlements and usage admission must survive restart and concurrent requests without trusting browser claims. No paid-service/account changes or private-data admission are authorized by development scope.
 
 **Working requirements v0.2 · 4 October 2026**
 
@@ -17,7 +21,7 @@ separate from model acceptance, full provider qualification and release approval
 
 Help a person understand information, complete everyday tasks, and research decisions while controlling disclosure of private context. Start with a small evidence-qualified model/configuration set and a real responsive web chat; one qualified path is sufficient if it meets trial requirements. An explicit Thorough option may expose a separately evaluated configuration, without promising correctness. Evaluate usefulness and confidentiality before investing in a broader platform.
 
-The initial deliverable was a single-operator evaluation through a local web gateway. Restricted hosted individual access is now implemented. The next milestone remains an invited-user trial; public-service launch needs broader security, quality and operational assurance, as tracked in the checklist.
+The initial single-operator gateway and restricted hosted access are reusable foundations. Production development now proceeds through the roadmap milestones; limited-user testing precedes public opening on that same architecture. Public security, commercial, quality and operational obligations are active requirements in the checklist.
 
 Supported evaluation language: English. Use synthetic or non-sensitive inputs until the protected processing path is qualified. No canned answers, fake integrations or static demonstrations count as working functionality. Labelled mocks belong only in tests.
 
@@ -81,13 +85,15 @@ boundary. Audience and adult-content scope must be settled before release freeze
 
 ## 5. Expansion gate
 
-The 24 reserved cases are an early defect check. Before broad competitiveness claims or fuller-platform investment, evaluate at least 120 fresh distinct conversations (20 per family), varied documents and prospective user-authored tasks. Observe 8–12 prospective users over multiple sessions; this is exploratory evidence, not proof of market demand.
+The 24 reserved cases are an early defect check, not a complete public-release assurance package. Fuller-platform implementation is now authorized alongside evaluation. Before broad competitiveness claims, evaluate at least 120 fresh distinct conversations (20 per family), varied documents and prospective user-authored tasks. Observe 8–12 prospective users over multiple sessions; this is exploratory evidence, not proof of market demand.
 
 For review: pre-register a five-percentage-point task-success noninferiority margin against each named comparator, representing at most one extra failure per 20 tasks. Require a one-sided 95% lower confidence bound no worse than −5 points for an aggregate noninferiority claim. The sample may need enlargement; aggregate results do not establish every family's performance. Do not relax the margin after seeing results.
 
 Technical readiness, security assurance and customer demand are separate decisions. Strong scores do not certify security; secure processing does not establish usefulness; neither proves willingness to pay. Unresolved essential security failures block expansion regardless of quality scores.
 
 ## 6. Delivery and spending
+
+Active delivery follows production milestones M1–M7 in ROADMAP. The A–D table below describes the original implementation/evidence sequence; it no longer postpones production platform work until after trial investment approval.
 
 | Stage | Working outcome and dependencies | Exit evidence |
 | --- | --- | --- |
@@ -98,7 +104,7 @@ Technical readiness, security assurance and customer demand are separate decisio
 
 Local work on B/C may proceed while A is blocked, but does not imply A has passed. Existing local implementation is reusable work, not proof of completion. The previous 6–10 engineering-week estimate is provisional, not a minimum duration; progress follows evidence.
 
-Current authorization, updated 5 October 2026: **USD 2 cumulative account cap**, including prior usage, with auto-recharge disabled and the key confirmed for that account. This supersedes the older USD 10 ceiling in the [local handoff](LOCAL_CODEX_HANDOFF.md); a possible future increase is not approval. Routine bounded synthetic debugging proceeds within the user's approved batch; preserve consumed permits and record attempts. Ask only for new payment, higher caps, material privacy decisions or real-user-data use. The existing upgraded Render service and 1 GB disk are approved; no additional deposits, subscriptions or hosting upgrades are authorized. Track delivery in the [roadmap](ROADMAP.md).
+Current development authorization: **USD5 cumulative Tinfoil**, subject also to actual provider controls (last observed key5/account3); auto-recharge off. The handoff and READINESS contain reconciled usage/uncertainty. Routine bounded synthetic work proceeds autonomously; preserve consumed permits and attempts. The founder handles billing, limits, credentials and material privacy/account settings. No new subscription, deposit or hosting upgrade is authorized by the production target.
 
 ## 7. Deferred scope and review decisions
 
@@ -109,9 +115,9 @@ route to integrated workflows and family-level evaluation. Documents and drafts
 are initial entry points, not a narrowing of the product to document management.
 
 
-Defer anonymous access, cloud sync, automatic long-term memory, family sharing, purchases/account actions, arbitrary code execution, voice/video, general vision, broad automatic model routing and custom GPU infrastructure. A small tested set and explicit Thorough option are permitted trial directions, conditional on the same quality/privacy gates; they do not require additional models before the trial. Preserve anonymity as a future objective requiring separate identity, routing and entitlement design. Reconsider deferred areas when recurring user needs or measured limitations justify them, with evidence of quality, privacy feasibility and operating cost; the roadmap records specific criteria. Reconsideration does not itself approve wider scope.
+Anonymous access, autonomous purchases/account actions, family sharing, arbitrary remote code execution, indefinite memory and custom GPU infrastructure remain outside the first launch proposal. General vision, voice and image creation/editing are now assessed launch scope, with explicit decisions/dependencies in ROADMAP. Cloud ciphertext sync and recovery need a material privacy decision before activation; existing local encrypted history remains functional meanwhile. A small qualified model set and an explicit Thorough option are preferred over broad automatic routing until matched evidence earns each route.
 
-Before continuing implementation, review this consolidated scope, privacy limitations and proposed evaluation thresholds. Necessary later inputs are supplier access through secure settings, approval of any concrete spending cap, and participation in human evaluation. Routine reversible engineering choices do not need repeated approval. Public deployment, weaker privacy promises or wider product scope require a material decision.
+Production implementation is authorized by the19October direction. Necessary later inputs are supplier access through secure settings, concrete new spending, material privacy choices and human evaluation. Routine reversible engineering batches do not need repeated approval. Public access, weaker privacy promises and paid-service/account changes remain founder decisions.
 
 ## Context limits evidenced on 8 October
 

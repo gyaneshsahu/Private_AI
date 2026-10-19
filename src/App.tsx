@@ -16,6 +16,7 @@ import {
 import { extract } from "./documents";
 import { Vault } from "./vault";
 import { containsTemporaryResearch } from "./saved-conversation";
+import { ConversationLibrary } from "./ConversationLibrary";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { abortable } from "./abortable";
@@ -67,6 +68,7 @@ export function App() {
     if (!previous)
       return !!(
         input.length ||
+        conversation.title !== "New conversation" ||
         conversation.messages.length ||
         conversation.attachments.length
       );
@@ -300,7 +302,11 @@ export function App() {
     if (busy || !status?.inference.ready || !text.trim()) return;
     const next = {
       ...base,
-      title: base.messages.length ? base.title : text.trim().slice(0, 60),
+      title:
+        base.title.trim() &&
+        (base.messages.length || base.title !== "New conversation")
+          ? base.title
+          : text.trim().slice(0, 60),
       messages: [...base.messages, newMessage("user", text.trim())],
     };
     try {
@@ -1308,6 +1314,24 @@ export function App() {
               Optional encrypted snapshots, stored only in this browser. No
               cloud sync and no password recovery.
             </p>
+            <label>
+              Conversation title
+              <input
+                value={conversation.title}
+                maxLength={120}
+                disabled={!!busy}
+                onChange={(event) =>
+                  setConversation((current) => ({
+                    ...current,
+                    title: event.target.value,
+                  }))
+                }
+              />
+            </label>
+            <p className="muted">
+              Name the current conversation, then save explicitly. Titles are
+              encrypted with the saved conversation.
+            </p>
             <p role="status">
               {unsaved
                 ? "Unsaved workspace changes. Save explicitly to keep your draft and documents."
@@ -1350,6 +1374,7 @@ export function App() {
                     className="primary"
                     disabled={
                       !!busy ||
+                      !conversation.title.trim() ||
                       containsTemporaryResearch(conversation) ||
                       (!conversation.messages.length &&
                         !conversation.attachments.length &&
@@ -1362,9 +1387,10 @@ export function App() {
                   {containsTemporaryResearch(conversation) && (
                     <p role="status">
                       This search conversation is temporary and cannot be saved,
-                      including its answers. Copy and export are also
-                      unavailable. Removing search attachments does not change
-                      this. Start a new conversation for work you want to save.
+                      including its answers. You can copy a completed answer;
+                      automatic exports remain unavailable. Removing search
+                      attachments does not change this. Start a new conversation
+                      for work you want to save.
                     </p>
                   )}
                   <button
@@ -1396,66 +1422,40 @@ export function App() {
                     No saved conversations yet. Saving is always your choice.
                   </p>
                 )}
-                {saved.map((c) => (
-                  <div className="panel row" key={c.id}>
-                    <div>
-                      <strong>
-                        {c.title === "New conversation"
-                          ? c.draft?.slice(0, 60) ||
-                            c.attachments[0]?.name ||
-                            c.title
-                          : c.title}
-                      </strong>
-                      <p className="muted">
-                        {new Date(c.createdAt).toLocaleDateString()} ·{" "}
-                        {c.messages.length} messages · {c.attachments.length}{" "}
-                        attachments
-                        {c.draft ? " · Unsent draft" : ""}
-                      </p>
-                    </div>
-                    <button
-                      disabled={!!busy}
-                      onClick={() => {
-                        if (!allowReplace()) return;
-                        reset();
-                        setConversation(structuredClone(c));
-                        setInput(c.draft ?? "");
-                        setTab("Conversation");
-                        setNotice(
-                          "Opened a saved snapshot. Save again to keep later changes.",
-                        );
-                      }}
-                    >
-                      Open
-                    </button>
-                    <button
-                      disabled={!!busy}
-                      onClick={async () => {
-                        const current = epoch.current;
-                        setBusy("Deleting encrypted snapshot…");
-                        try {
-                          await vault.current!.delete(c.id);
-                          const snapshots =
-                            await vault.current!.readAvailable();
-                          if (current !== epoch.current) return;
-                          setSaved(snapshots.conversations);
-                          setUnreadableSnapshots(snapshots.unreadable);
-                          if (conversation.id === c.id) reset();
-                          setNotice(
-                            "Encrypted records and wrapped key deleted. Device backups and exported copies are outside this deletion.",
-                          );
-                        } catch {
-                          if (current === epoch.current)
-                            fail("Deletion failed. Try again after unlocking.");
-                        } finally {
-                          if (current === epoch.current) setBusy("");
-                        }
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                ))}
+                <ConversationLibrary
+                  conversations={saved}
+                  busy={!!busy}
+                  onOpen={(c) => {
+                    if (!allowReplace()) return;
+                    reset();
+                    setConversation(structuredClone(c));
+                    setInput(c.draft ?? "");
+                    setTab("Conversation");
+                    setNotice(
+                      "Opened a saved snapshot. Save again to keep later changes.",
+                    );
+                  }}
+                  onDelete={async (c) => {
+                    const current = epoch.current;
+                    setBusy("Deleting encrypted snapshot…");
+                    try {
+                      await vault.current!.delete(c.id);
+                      const snapshots = await vault.current!.readAvailable();
+                      if (current !== epoch.current) return;
+                      setSaved(snapshots.conversations);
+                      setUnreadableSnapshots(snapshots.unreadable);
+                      if (conversation.id === c.id) reset();
+                      setNotice(
+                        "Encrypted records and wrapped key deleted. Device backups and exported copies are outside this deletion.",
+                      );
+                    } catch {
+                      if (current === epoch.current)
+                        fail("Deletion failed. Try again after unlocking.");
+                    } finally {
+                      if (current === epoch.current) setBusy("");
+                    }
+                  }}
+                />
               </>
             )}
           </section>
