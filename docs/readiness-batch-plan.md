@@ -1,5 +1,7 @@
 # Readiness batch — 8 October 2026
 
+**20October broad screen complete:**7fresh two-turn families ×3models,42/42delivered. DeepSeek low provisional development candidate; experimental support and full privacy still block launch. Gemma arithmetic/document/safety defects; GLM one-action safety usability defect. No Thorough/automatic routing or live model change. Full evidence in evaluation/results/model-selection-20261020.json, human scores blank. Actual0.82, conservative1.1081056, no active reservation/increase. Next response recovery, provider/opaque-usage qualification and human safety review; broader held-out/repeatability remains open. ~75% implemented, NOT_READY.
+
 **20October M3 remaining coverage completed:**16/16replies; no retries/new delivery failures. Both models supply failing floating-point tests; unchanged functions pass independent checks. GPT-OSS retains excluded old fact. Human scores blank. Full evidence: evaluation/results/everyday-remaining-20261019.json. Next normal-chat harness without dummy citations and fresh general coding/correction evidence; provider/opaque-usage gates remain. Actual0.76, conservative1.0494736; unused reserve released. ~75% implemented, NOT_READY. Earlier preparation status superseded.
 
 ## Execution checkpoint — 19 October, STOPPED (not acceptance)

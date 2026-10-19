@@ -23,6 +23,8 @@ export async function streamReply(
   if (!isWorkspaceCase(permit.developmentCaseId ?? ""))
     throw Error("Workspace permit required");
   const fixture = developmentCase(permit.developmentCaseId, "robustness_case");
+  const retainSynthetic =
+    fixture.sources.length > 0 || fixture.id.startsWith("selection-");
   const prompt = c.messages.at(-1)?.text;
   if (turn >= fixture.turns.length || prompt !== fixture.turns[turn])
     throw Error("Fixed evaluation turn required");
@@ -70,7 +72,7 @@ export async function streamReply(
       },
       history,
       calculationSession,
-      fixture.sources.length
+      retainSynthetic
         ? (event, round = 1) => {
             modelEvents.push(event);
             modelRounds[round].push(event);
@@ -87,9 +89,9 @@ export async function streamReply(
     lastRaw = permit.policy.optionalCalculator ? undefined : draft;
     state.results.push({
       completed: true,
-      modelEvents: fixture.sources.length ? modelEvents : undefined,
+      modelEvents: retainSynthetic ? modelEvents : undefined,
       modelRounds:
-        fixture.sources.length && permit.policy.calculatorContinuation
+        retainSynthetic && permit.policy.calculatorContinuation
           ? modelRounds
           : undefined,
       diagnosticDraft:
@@ -106,9 +108,9 @@ export async function streamReply(
   } catch (e) {
     state.results.push({
       completed: false,
-      modelEvents: fixture.sources.length ? modelEvents : undefined,
+      modelEvents: retainSynthetic ? modelEvents : undefined,
       modelRounds:
-        fixture.sources.length && permit.policy.calculatorContinuation
+        retainSynthetic && permit.policy.calculatorContinuation
           ? modelRounds
           : undefined,
       derivedReferenceCount,
@@ -118,7 +120,7 @@ export async function streamReply(
       diagnosticDraft:
         "sources" in fixture &&
         Array.isArray(fixture.sources) &&
-        fixture.sources.length
+        retainSynthetic
           ? draft
           : undefined,
       answer,

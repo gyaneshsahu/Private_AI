@@ -1,5 +1,25 @@
 # PrivateAI readiness checklist
 
+## M3 broad model screen — 20 October, complete but not acceptance
+
+Fresh fixed seven-family study: everyday chat, writing, reasoning, coding, document synthesis, research synthesis and urgent safety; two turns each, DeepSeek thinking/low, Gemma thinking off, GLM low.42/42replies delivered,21complete conversations, no failed/incomplete requests or retries in this run. Ordinary cases now use actual chat UI without dummy sources; document/research cases attach identical authored evidence. No claim of live retrieval, file extraction, image or long-context coverage. Full prompts/sources/outputs/expected facts/raw model events/frozen permits/code artifacts and human grades null: `evaluation/results/model-selection-20261020.json`; review page `.local/review-batches/model-selection-20261020/complete-review.html`.
+
+| Configuration | Delivered | Median reply | Total7task reported cost |
+| --- | --- | --- | --- |
+| DeepSeek V4.1 Flash low |14/14|3.105s|USD0.01450775|
+| Gemma4 31B thinking off |14/14|1.7275s|USD0.0061782|
+| GLM5.3 low |14/14|2.1285s|USD0.0320022|
+
+Engineering findings, not human scores: Gemma makes material time-subtraction and follow-up difference errors, omits seating question/Nia in initial document summary, and gives two safety alternatives when asked for one. GLM gives multiple activity options and expands the urgent follow-up into several emergency options plus a location question. DeepSeek keeps one urgent action/adapts unavailable contact and preserves document/research distinctions; its writing adds an unrequested remote-attendance refusal, and its correct first scheduling total has an awkward ticket-before-walk explanation. All6original code scripts and6independent core tests pass; extra sparse-array checks fail2Gemma outputs and pass4DeepSeek/GLM outputs. Full isolated execution artifacts and limits retained. Human safety review required, especially case07all arms; no scores inferred from engineering review. Earlier arithmetic, safety, boundary, writing and503 failures preserved.
+
+Recommendation: DeepSeek low/constraints-v4 is the provisional synthetic-development default candidate. Its provider experimental/minimal-notice support status blocks a dependable launch-default claim; full provider privacy still NOT_PASSED for every candidate. Do not switch live production settings. No Thorough or automatic routing: this screen demonstrates no sufficient specialist advantage while preserving safety/usability. Keep GLM low as a comparison alternative; Gemma off is not the general default after these defects. GPTOSS and Kimi were not tested on these fresh cases; prior evidence/marketing cannot establish matched rankings. Current catalog and Privatemode alternative documented in provider-qualification.md; no alternative service activated.
+
+Validation:13scoped comparison tests pass; offline21conversations/42mock replies pass. Live source opening/referrer protection/temporary-save blocking, empty persistent storage, cleared reload and closed production gate checks pass;0network violations. Router-only preflight passes, not freshness/revocation/retention qualification. Preflight shared Vite dev port warning occurred during offline run; both completed, no inference in preflight. No prompt changes or example-specific repairs.
+
+Budget after completion: read-only Billing actualrounded0.82/account3/credit10.18/auto-reloadoff; key5 last observed; owner5 unchanged. Analytics0.8167/1042usageevents is separately estimated, not settled request-level evidence. Batch reported cost0.05268815 not double-counted. Retain0.2781056 historical/503 uncertainty +0.01rounding: conservative1.1081056. Release1.7470208 unused worst-case reservation and obsolete0.001368 timing allowance; no active reserve or requested increase. No separately quantified pending value.
+
+Next independent launch work: clearer unavailable/rate-limited response recovery, then provider/opaque-usage qualification and focused human safety review. Do not create another model-routing layer or tune this exposed set. Additional repeatability/held-out safety, real research/file workflows and long-context evidence remain necessary before candidate freeze/release. Approximately75% implemented (+/-10points), NOT_READY; no artificial percentage increase for a model screen.
+
 ## M3 remaining everyday coverage — completed 20 October (run ID19October)
 
 Separate cases03–06 completed16/16requests/replies, no retries/new incomplete results. Prior503 and case02 baseline remain preserved, not rerun. Same fixed questions/configurations; frozen16request ceiling/reserve0.5791744. Full prompts, answers, expected facts, metrics, isolated code artifacts/results and blank human grades: `evaluation/results/everyday-remaining-20261019.json`. Review: `.local/review-batches/everyday-remaining-20261019/complete-review.html`.

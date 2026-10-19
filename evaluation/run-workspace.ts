@@ -18,6 +18,28 @@ import workspaceFixtures from "./cases/research-workspace.json";
 import assistedFixtures from "./cases/research-assisted.json";
 import toolFixtures from "./cases/research-tools.json";
 import everydayFixtures from "./cases/everyday-transfer-20261019.json";
+import { selectionModels, assertSelectionPolicy } from "./selection-policy";
+import selectionFixtures from "./cases/model-selection-20261020.json";
+const selection = process.argv.includes("--selection-study");
+const selectionCells = Object.keys(selectionModels);
+if (
+  selection &&
+  process.argv.some((a) =>
+    [
+      "--everyday",
+      "--everyday-remaining",
+      "--matched",
+      "--assisted",
+      "--optional-tools",
+      "--candidate-only",
+      "--structured",
+      "--diagnostic",
+      "--calculation-continuation",
+      "--calculation-replay",
+    ].includes(a),
+  )
+)
+  throw Error("Selection study must use its own fixed normal configurations");
 const everyday = process.argv.includes("--everyday");
 const everydayRemaining = process.argv.includes("--everyday-remaining");
 if (everydayRemaining && !everyday)
@@ -107,57 +129,61 @@ if (
   (!assisted || diagnostic || generalArithmetic || structured)
 )
   throw Error("Choose separate optional-tools batch");
-const fixtures = everyday
-  ? everydayFixtures
-      .filter((f) => !everydayRemaining || Number(f.id.slice(-2)) >= 3)
-      .map((f) => ({
-        ...f,
-        query: `authored ${f.id}`,
-        sources: [
-          {
-            id: "synthetic-context",
-            title: "Authored task context",
-            text: "This is an authored synthetic task. All task facts are supplied in the user messages.",
-            url: "https://example.com/synthetic-context",
-            evidenceKind: "search-excerpt",
-          },
-        ],
-      }))
-  : optionalTools
-    ? toolFixtures.filter((f) =>
-        comparisonCases
-          ? comparisonCases.includes(f.id)
-          : toolDiagnostic
-            ? f.id ===
-              (process.argv.includes("--invoice-diagnostic")
-                ? "assisted-tool-08"
-                : (diagnosticCase ?? "assisted-tool-07"))
-            : process.argv.includes("--multi-results")
-              ? Number(f.id.slice(-2)) >= 5 && Number(f.id.slice(-2)) <= 7
-              : Number(f.id.slice(-2)) <= 4 &&
-                (!process.argv.includes("--remaining-tools") ||
-                  f.id !== "assisted-tool-01"),
-      )
-    : structured
-      ? assistedFixtures.filter((f) => Number(f.id.slice(-2)) >= 6)
-      : generalArithmetic
-        ? assistedFixtures.filter(
-            (f) =>
-              Number(f.id.slice(-2)) >=
-              (process.argv.includes("--normalized") ? 4 : 3),
-          )
-        : diagnostic
-          ? assistedFixtures.filter((f) => f.id === "assisted-02")
-          : assisted
-            ? assistedFixtures
-            : workspaceFixtures;
-const fixturePath = everyday
-  ? "evaluation/cases/everyday-transfer-20261019.json"
-  : optionalTools
-    ? "evaluation/cases/research-tools.json"
-    : assisted
-      ? "evaluation/cases/research-assisted.json"
-      : "evaluation/cases/research-workspace.json";
+const fixtures = selection
+  ? selectionFixtures
+  : everyday
+    ? everydayFixtures
+        .filter((f) => !everydayRemaining || Number(f.id.slice(-2)) >= 3)
+        .map((f) => ({
+          ...f,
+          query: `authored ${f.id}`,
+          sources: [
+            {
+              id: "synthetic-context",
+              title: "Authored task context",
+              text: "This is an authored synthetic task. All task facts are supplied in the user messages.",
+              url: "https://example.com/synthetic-context",
+              evidenceKind: "search-excerpt",
+            },
+          ],
+        }))
+    : optionalTools
+      ? toolFixtures.filter((f) =>
+          comparisonCases
+            ? comparisonCases.includes(f.id)
+            : toolDiagnostic
+              ? f.id ===
+                (process.argv.includes("--invoice-diagnostic")
+                  ? "assisted-tool-08"
+                  : (diagnosticCase ?? "assisted-tool-07"))
+              : process.argv.includes("--multi-results")
+                ? Number(f.id.slice(-2)) >= 5 && Number(f.id.slice(-2)) <= 7
+                : Number(f.id.slice(-2)) <= 4 &&
+                  (!process.argv.includes("--remaining-tools") ||
+                    f.id !== "assisted-tool-01"),
+        )
+      : structured
+        ? assistedFixtures.filter((f) => Number(f.id.slice(-2)) >= 6)
+        : generalArithmetic
+          ? assistedFixtures.filter(
+              (f) =>
+                Number(f.id.slice(-2)) >=
+                (process.argv.includes("--normalized") ? 4 : 3),
+            )
+          : diagnostic
+            ? assistedFixtures.filter((f) => f.id === "assisted-02")
+            : assisted
+              ? assistedFixtures
+              : workspaceFixtures;
+const fixturePath = selection
+  ? "evaluation/cases/model-selection-20261020.json"
+  : everyday
+    ? "evaluation/cases/everyday-transfer-20261019.json"
+    : optionalTools
+      ? "evaluation/cases/research-tools.json"
+      : assisted
+        ? "evaluation/cases/research-assisted.json"
+        : "evaluation/cases/research-workspace.json";
 const root = resolve(process.argv[2] || "");
 if (!process.argv[2] || !root.startsWith(resolve(".local") + "\\"))
   throw Error("Local run directory required");
@@ -184,6 +210,11 @@ if (!dry && !bootstrapOnly) {
     JSON.stringify(plan.caseIds) !== JSON.stringify(fixtures.map((f) => f.id))
   )
     throw Error("Selected everyday cases differ from the frozen plan");
+  if (
+    selection &&
+    JSON.stringify(plan.caseIds) !== JSON.stringify(fixtures.map((f) => f.id))
+  )
+    throw Error("Selection cases differ from frozen plan");
   if (independentArms !== (plan.stopPolicy === "independent-arms"))
     throw Error(
       "Independent-arm execution must match the frozen plan stop policy.",
@@ -208,11 +239,13 @@ let permitCeiling = Infinity;
 const approvalIds = new Set<string>();
 // Validate every selected permit before opening a browser or spending on any arm.
 for (const fixture of fixtures)
-  for (const cell of matched
-    ? cells
-    : diagnostic || toolDiagnostic || candidateOnly
-      ? ["candidate"]
-      : ["baseline", "candidate"]) {
+  for (const cell of selection
+    ? selectionCells
+    : matched
+      ? cells
+      : diagnostic || toolDiagnostic || candidateOnly
+        ? ["candidate"]
+        : ["baseline", "candidate"]) {
     const arm = cellArm(cell);
     const permit = validateExperiment(
       JSON.parse(
@@ -231,6 +264,7 @@ for (const fixture of fixtures)
       if (approvalIds.has(id)) throw Error("Duplicate batch approval ID");
       approvalIds.add(id);
     }
+    if (selection) assertSelectionPolicy(permit.policy, cell);
     plannedRequests += experimentInferenceLimit(permit);
     if (
       everyday &&
@@ -269,7 +303,7 @@ for (const fixture of fixtures)
       permit,
       fixture.id,
       arm,
-      everyday
+      everyday || selection
         ? "normal"
         : optionalTools
           ? "optional"
@@ -292,7 +326,8 @@ const report: any = {
   stopPolicy: independentArms ? "independent-arms" : "global",
   publicContentPersisted: false,
 };
-const publicReviewNeeded = !dry && fixtures.some((f) => !f.sources.length);
+const publicReviewNeeded =
+  !selection && !dry && fixtures.some((f) => !f.sources.length);
 if (publicReviewNeeded && !process.argv.includes("--human-review"))
   throw Error(
     "Live public answers require --human-review and an available reviewer before requests start.",
@@ -324,13 +359,18 @@ try {
   for (const [caseIndex, fixture] of fixtures.entries()) {
     if (stop) break;
     let pairedSources: any[] | undefined;
-    for (const cell of matched
-      ? [...cells.slice(caseIndex), ...cells.slice(0, caseIndex)]
-      : diagnostic || toolDiagnostic || candidateOnly
-        ? ["candidate"]
-        : (assisted || everyday) && caseIndex % 2
-          ? ["candidate", "baseline"]
-          : ["baseline", "candidate"]) {
+    for (const cell of selection
+      ? [
+          ...selectionCells.slice(caseIndex % 3),
+          ...selectionCells.slice(0, caseIndex % 3),
+        ]
+      : matched
+        ? [...cells.slice(caseIndex), ...cells.slice(0, caseIndex)]
+        : diagnostic || toolDiagnostic || candidateOnly
+          ? ["candidate"]
+          : (assisted || everyday) && caseIndex % 2
+            ? ["candidate", "baseline"]
+            : ["baseline", "candidate"]) {
       const arm = cellArm(cell);
       const permit = validateExperiment(
         JSON.parse(
@@ -341,7 +381,7 @@ try {
         permit,
         fixture.id,
         arm,
-        everyday
+        everyday || selection
           ? "normal"
           : optionalTools
             ? "optional"
@@ -572,40 +612,42 @@ try {
           page
             .getByRole("navigation", { name: "Workspace" })
             .getByRole("button", { name, exact: false });
-        await tab("Research").click();
-        await page.getByLabel("Exact search query").fill(fixture.query);
-        await page.getByRole("button", { name: "Review disclosure" }).click();
-        await page
-          .getByRole("button", { name: "Approve and retrieve" })
-          .click();
-        await page
-          .getByRole("status")
-          .filter({ hasText: "Search results added" })
-          .waitFor({ timeout: 30000 });
-        record.sourceCount = sources.length;
-        record.sourceHash = hash(sources);
-        record.evidenceCharacters = sources.reduce(
-          (n, s) => n + s.text.length,
-          0,
-        );
-        record.providerDates = sources.filter((s) => !!s.providerDate).length;
-        await tab("Context").click();
-        await page.locator("details summary").first().click();
-        await page
-          .getByRole("button", { name: "Inspect source" })
-          .first()
-          .click();
-        const dialog = page.getByRole("dialog");
-        record.sourceOpen =
-          (await dialog.locator("pre").textContent()) === sources[0].text;
-        await page.keyboard.press("Tab");
-        record.sourceLinkKeyboardReachable = await dialog
-          .locator("a")
-          .evaluate((a) => a === document.activeElement);
-        record.sourceLinkSafe =
-          (await dialog.locator("a").getAttribute("referrerpolicy")) ===
-          "no-referrer";
-        await page.keyboard.press("Escape");
+        if (!selection || fixture.sources.length) {
+          await tab("Research").click();
+          await page.getByLabel("Exact search query").fill(fixture.query);
+          await page.getByRole("button", { name: "Review disclosure" }).click();
+          await page
+            .getByRole("button", { name: "Approve and retrieve" })
+            .click();
+          await page
+            .getByRole("status")
+            .filter({ hasText: "Search results added" })
+            .waitFor({ timeout: 30000 });
+          record.sourceCount = sources.length;
+          record.sourceHash = hash(sources);
+          record.evidenceCharacters = sources.reduce(
+            (n, s) => n + s.text.length,
+            0,
+          );
+          record.providerDates = sources.filter((s) => !!s.providerDate).length;
+          await tab("Context").click();
+          await page.locator("details summary").first().click();
+          await page
+            .getByRole("button", { name: "Inspect source" })
+            .first()
+            .click();
+          const dialog = page.getByRole("dialog");
+          record.sourceOpen =
+            (await dialog.locator("pre").textContent()) === sources[0].text;
+          await page.keyboard.press("Tab");
+          record.sourceLinkKeyboardReachable = await dialog
+            .locator("a")
+            .evaluate((a) => a === document.activeElement);
+          record.sourceLinkSafe =
+            (await dialog.locator("a").getAttribute("referrerpolicy")) ===
+            "no-referrer";
+          await page.keyboard.press("Escape");
+        }
         if (bootstrapOnly) {
           record.bootstrapReady = true;
           stop = true;
@@ -637,7 +679,7 @@ try {
               answer: result.answer,
             });
             const humanReview =
-              review && !fixture.sources.length
+              review && !selection && !fixture.sources.length
                 ? {
                     status: "HUMAN_REVIEW",
                     ...(await review.assess({
@@ -652,14 +694,16 @@ try {
             const audit = auditResearchAnswer(result.answer, sources);
             record.replies.push({
               ...result,
-              deliveredDOMText: fixture.sources.length
-                ? await page
-                    .locator("article.message.assistant")
-                    .last()
-                    .innerText()
-                : undefined,
+              deliveredDOMText:
+                selection || fixture.sources.length
+                  ? await page
+                      .locator("article.message.assistant")
+                      .last()
+                      .innerText()
+                  : undefined,
               humanReview,
-              answer: fixture.sources.length ? result.answer : undefined,
+              answer:
+                selection || fixture.sources.length ? result.answer : undefined,
               answerCharacters: result.answer.length,
               answerSHA256: hash(result.answer),
               evidenceAudit: audit,
@@ -715,16 +759,18 @@ try {
           exact: true,
         });
         while (await remove.count()) await remove.first().click();
-        await tab("Saved").click();
-        await page
-          .getByLabel("Vault passphrase")
-          .fill("synthetic evaluation vault passphrase");
-        await page
-          .getByRole("button", { name: "Create or unlock vault" })
-          .click();
-        record.saveBlocked = await page
-          .getByRole("button", { name: "Save encrypted snapshot" })
-          .isDisabled();
+        if (!selection || fixture.sources.length) {
+          await tab("Saved").click();
+          await page
+            .getByLabel("Vault passphrase")
+            .fill("synthetic evaluation vault passphrase");
+          await page
+            .getByRole("button", { name: "Create or unlock vault" })
+            .click();
+          record.saveBlocked = await page
+            .getByRole("button", { name: "Save encrypted snapshot" })
+            .isDisabled();
+        }
         record.storage = await page.evaluate(async () => {
           const names = await indexedDB.databases();
           let records = 0;
@@ -764,7 +810,7 @@ try {
         record.failurePhase = phase;
         record.failureType = error instanceof Error ? error.name : "Unknown";
         // Synthetic fixture diagnostics only; never persist live public page content.
-        if (everyday && error instanceof Error) {
+        if ((everyday || selection) && error instanceof Error) {
           record.failureSummary = error.message
             .split("\n")[0]
             .replace(/https?:\/\/\S+/g, "[URL]");

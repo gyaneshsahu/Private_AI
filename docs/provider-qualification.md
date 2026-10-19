@@ -1,5 +1,24 @@
 # Provider qualification — NOT_PASSED
 
+**20October result:**42fresh replies completed across DeepSeek low/Gemma off/GLM low. Provisional synthetic-development recommendation DeepSeek low; experimental support prevents release-default qualification. No Thorough/automatic routing earned. Gemma has arithmetic/omission defects; Gemma/GLM violate urgent one-action request. See READINESS and model-selection-20261020 evidence for full limits/cost; human safety grades blank. All deployment privacy gates remain closed.
+
+## Model/deployment shortlist — 20 October 2026
+
+**No currently inspected deployment is release-qualified for private data.** The following are eligible only for existing synthetic development under the pinned encrypted browser path. Model capabilities are supplier claims, not verified quality; listed context limits are not PrivateAI integration limits. Current public catalog snapshot: evaluation/results/model-catalog-20261020.json ([Tinfoil catalog/API](https://inference.tinfoil.sh/v1/models)); [reasoning controls](https://docs.tinfoil.sh/guides/reasoning); [status](https://status.tinfoil.sh/). A status page/catalog listing does not prove request availability or an SLA.
+
+| Candidate | Advertised scope/context | USD input/output per million | Support/decision |
+| --- | --- | --- | --- |
+| DeepSeek V4.1 Flash thinking/low | Text/images/tools,1M |0.65/1.45| Explicitly experimental; may be deprecated with minimal notice. Fast recent local sample, but no dependable release-default commitment. Test as default candidate. |
+| Gemma4 31B thinking off | Text/images/tools,262144 |0.40/1.00| No experimental flag in current catalog; this is not an SLA. Cheaper default challenger; current matched quality/latency unknown. |
+| GLM5.3 low | Text/tools,1M |1.80/5.75| Coding/long-task positioning; no experimental flag. Test potential default/Thorough specialist, not assumed superior. Catalog explicitly says no image input. |
+| GPT-OSS120B high | Text/tools,131072 |0.15/0.60| Existing reference:22.9–74s recent matched replies, instruction/source-silence failures and prior503. No fresh arm in this study; prior cases are not matched comparison results for new questions. |
+| KimiK3 | Text/images/tools,262144 |4.00/20.00| Plausible multimodal/hard-task specialist; much higher output tariff, no evidence of advantage yet. Defer this stage, not permanently reject. |
+| Llama3.3 70B | Text/tools,131072 |1.75/2.75| Older dialogue-oriented option; cost exceeds Gemma/DeepSeek without local comparative advantage. Not shortlisted for this first screen. |
+
+Alternative deployment: Privatemode lists GLM5.3, GLM5.3Flash and GPT-OSS120B. Flash supports image input; others text. Prices EUR1.55/5.74 for GLM,0.20/0.65 Flash/GPTOSS plus applicableVAT. [Models](https://docs.privatemode.ai/models/overview/), [prices](https://docs.privatemode.ai/pricing/). Browser SDK feasibility and unresolved strict pinning/revocation/cache/opaque-usage gaps are documented below. No account/credential activation or paid alternative-provider tests authorized by Tinfoil budget. Catalog/model marketing does not override those gaps.
+
+Fresh screen: seven authored two-turn conversations across everyday chat, writing, reasoning, coding, document synthesis, research synthesis and urgent safety. DeepSeek low/Gemma off/GLM low, rotating order,42maximum requests, no tools/calculator/retries/automatic routing. Five cases use actual ordinary-chat UI with no fake source; two use fixed authored source attachments through the research UI. No document extraction, live retrieval, image, extended-memory or broad safety qualification claim. Context8000characters is sufficient for deliberately compact cases; explicit rejection rather than truncation; output4096tokens, existing95sdeadline. Reserve1.7470208; actual0.76+genuineuncertainty/rounding/timing0.2894736 gives2.7964944 under actualaccount3/key5/owner5. Meaningful scope retained without account change. Freeze before live calls; preserve all failures and human grades blank. Raw output, delivered answer, task cost and latency evaluated together. Default/specialist recommendation must follow results; no automatic routing implementation.
+
 ## Structured-output compatibility finding — 19 October
 
 Read the official [structured outputs](https://docs.tinfoil.sh/guides/structured-outputs) and [tool calling](https://docs.tinfoil.sh/guides/tool-calling) guides. The former documents constrained JSON through response_format/json_schema and choice/regex controls; the latter demonstrates ordinary tools and a result-follow-up round. It does not establish strict function-argument enforcement for our exact model/schema/streaming combination. JSON-response constraints are not evidence that auto-selected tools have the same enforcement. No runtime flag or provider gate changed. Even enforced syntax cannot verify input provenance, method, units or answer truth.

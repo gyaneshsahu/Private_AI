@@ -1,5 +1,5 @@
 export function isWorkspaceCase(id: string) {
-  return /^(workspace|assisted|everyday)-/.test(id);
+  return /^(workspace|assisted|everyday|selection)-/.test(id);
 }
 export function assertWorkspaceArm(
   permit: {
