@@ -33,6 +33,7 @@
   "dependencies": {
     "@better-auth/passkey": "1.7.11",
     "@tesseract.js-data/eng": "1.0.0",
+    "@zip.js/zip.js": "2.24.0",
     "better-auth": "1.7.11",
     "cheerio": "1.2.0",
     "decimal.js": "10.6.0",
@@ -52,6 +53,7 @@
     "rehype-katex": "7.0.1",
     "remark-gfm": "4.0.1",
     "remark-math": "6.0.0",
+    "saxes": "6.0.0",
     "stripe": "23.0.0",
     "tesseract.js": "7.0.0",
     "tinfoil": "1.2.2",

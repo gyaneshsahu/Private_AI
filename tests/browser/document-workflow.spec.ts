@@ -150,7 +150,7 @@ test("rejects oversized and disguised binary files and accepts a later valid fil
   await expect(results).toContainText("exceeds 60,000");
   await expect(results).toContainText("not plain text");
   await expect(results).toContainText(
-    "Word and spreadsheet workbooks are not supported",
+    "unsupported.docx — failed",
   );
   await expect(
     page

@@ -1,5 +1,12 @@
 # PrivateAI — architecture and trust boundaries
 
+
+### Bounded browser-local DOCX body extraction - 20 October
+
+`docx.ts` uses pinned @zip.js/zip.js2.24.0 for strict ZIP/CRC parsing with no nested web workers, and saxes6.0.0 for namespace-aware plain-text parsing. The existing dedicated extraction worker owns cancellation/deadline termination. No HTML converter, relationship resolver or remote file reader is used. Only `[Content_Types].xml` and `word/document.xml` are read; paths are never written to disk. Declared aggregate and actual output limits are distinct. DTDs, unsupported Word revisions/fields/embedded content and macro entries reject. Text-source IDs remain per-import; DOCX has no invented page numbers. Source correction, selection and explicit encrypted saves use existing paths.
+
+Tradeoff: deliberately limited body extraction avoids rendering untrusted Word HTML or pretending to preserve computed fields, layout and numbered-list labels. Omitted headers/notes/images are explicitly warned. Review library updates and expand supported fidelity only with representative fixtures; this is not complete Office support. [ZIP reader checks](https://gildas-lormeau.github.io/zip.js/api/interfaces/ZipReaderOptions.html), [saxes parser](https://github.com/lddubeau/saxes). Tests cover authored packages, not all Word exporters or an independent parser audit.
+
 ### Content-free operational snapshot — 19 October
 
 `productionOperations.snapshot()` exposes a copied schemaVersion1 process-local aggregate to its trusted composition caller only. `operation-metrics.ts` has fixed fields and duration buckets (<100ms,100–<1000,1000–<5000,5000–<30000,>=30000); it retains no per-request samples. Accepted request terminal callbacks settle once; `writableFinished` distinguishes HTTP finish from socket interruption. Readiness probes and admission rejection count separately from admitted work; liveness is not counted. Cumulative counters saturate at Number.MAX_SAFE_INTEGER; gauges track currently admitted work. No exporter, metrics HTTP route, file/log sink or remote service is installed.

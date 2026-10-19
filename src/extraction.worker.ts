@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
 import { getDocument, PDFWorker } from "pdfjs-dist";
 import { createWorker } from "tesseract.js";
+import { extractDocx, DOCX_WARNING } from "./docx";
 import {
   checkTextSize,
   decodeTextDocument,
@@ -11,7 +12,13 @@ self.onmessage = async (event: MessageEvent<File>) => {
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
     const magic = new TextDecoder().decode(bytes.slice(0, 5));
-    if (magic === "%PDF-") {
+    if (/\.docx$/i.test(file.name)) {
+      self.postMessage({ progress: "Reading Word body text locally…" });
+      self.postMessage({
+        pages: [{ text: await extractDocx(bytes) }],
+        warning: DOCX_WARNING,
+      });
+    } else if (magic === "%PDF-") {
       const port = new Worker(
         new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url),
         { type: "module" },
@@ -98,13 +105,13 @@ self.onmessage = async (event: MessageEvent<File>) => {
       });
     } else
       throw new Error(
-        "Supported formats: text PDF, UTF-8 text/Markdown/data/source-code files, PNG and JPEG screenshots. Word and spreadsheet workbooks are not supported; export them as PDF or UTF-8 text.",
+        "Supported formats: DOCX body text, text PDF, UTF-8 text/Markdown/data/source-code files, PNG and JPEG screenshots. Legacy Word, macro-enabled Word and spreadsheet workbooks are not supported; export them as PDF or UTF-8 text.",
       );
   } catch (error) {
     self.postMessage({
       error:
         error instanceof Error &&
-        /limit|exceeds|not plain|not UTF-8|Supported formats/.test(
+        /limit|exceeds|not plain|not UTF-8|Supported formats|DOCX/.test(
           error.message,
         )
           ? error.message

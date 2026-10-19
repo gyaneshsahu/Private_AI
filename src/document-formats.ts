@@ -31,7 +31,14 @@ export const TEXT_EXTENSIONS = [
   "sh",
   "ps1",
 ] as const;
-export const DOCUMENT_ACCEPT = ["pdf", "png", "jpg", "jpeg", ...TEXT_EXTENSIONS]
+export const DOCUMENT_ACCEPT = [
+  "pdf",
+  "docx",
+  "png",
+  "jpg",
+  "jpeg",
+  ...TEXT_EXTENSIONS,
+]
   .map((extension) => `.${extension}`)
   .join(",");
 

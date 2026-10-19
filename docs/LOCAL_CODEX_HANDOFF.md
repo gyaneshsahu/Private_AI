@@ -1,5 +1,18 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## M4 local Word-body workflow - 20 October
+
+Implemented DOCX body-text import through the existing worker, editable sources and encrypted history. No uploads, external relationship reads, HTML rendering, document code execution or provider calls. Supported paragraphs/split runs/tabs/line breaks and basic table cells; no page-number claim. Warning explicitly excludes headers/footers, notes/comments, images, formatting and automatic list numbers. Revisions, fields, text boxes, embedded objects/files and macros reject rather than guessing rendered meaning. Legacy DOC/DOCM and spreadsheets remain unsupported. Existing private-chat/provider gates unchanged; model-selection batch stays closed.
+
+Pinned maintained ZIP/XML dependencies: @zip.js/zip.js2.24.0 and saxes6.0.0, installed with scripts disabled. Bounds:10MB input,512archive entries,20MB declared aggregate expansion,4MB per extracted XML part including streamed output,128body-XML nesting,60000text characters, existing90s terminating worker/cancel. Strict ZIP parsing/CRC checks enabled; only content-types and main body are decompressed. This is bounded parser engineering, not an independent security audit or full Office fidelity certification.
+
+Validation:19unit/regression tests in3files and3actual built-app browser workflows pass; typecheck/build pass. Browser covers malformed-file recovery, missing-content warning, correction, encrypted save/lock/reload/reopen and zero outbound disclosures. Authored OOXML fixtures only; representative Word/LibreOffice exports and actual Galaxy performance remain missing. No human quality scores or new release passes. Initial npm certificate failure resolved with system trust (TLS verification retained); sandbox temp-file failures rerun successfully outside sandbox. Initial browser failures were outdated universal-DOCX-rejection text and an exact Context-button selector that missed its count suffix; corrected, not hidden. Existing verifier-zlib build warning remains.
+
+Provider evidence refresh: registry latest verifier is1.2.2, gitHead eac102f50ad3c1bfc3fd3cefe8a615671d86fa52, matching our pinned version. No released-upgrade remedy established. Consolidated supplier follow-up status requested from owner; browser verification/retention and enforceable opaque usage remain architecture blockers. No paid inference, settings changes or launches. Approximately75% implemented (+/-10), NOT_READY; this workflow does not justify a10-point completion jump.
+
+Next: representative document/device acceptance and the production provider decision, then reviewed hosted identity/email integration. Keep safe independent implementation separate from supplier/owner activation decisions.
+
+
 ## Human review closure and account recovery - 20 October
 
 Owner personally reviewed selection-07 only: DeepSeek turns1/2 3/3/3, 3/3/3; Gemma 1/1/2, 2/2/1; GLM 2/2/3, 2/2/1. Exact reasons/provenance and original evidence hash: evaluation/results/model-selection-20261020-human.json. Original run unchanged; all other human grades blank. Updated review page uses a separate hash-bound overlay. Model-selection batch CLOSED; no exposed-case tuning or paid calls. DeepSeek low remains provisional development default. Earlier failures and safety/launch gates remain open. This supersedes older next-step requests for case07 review below.
