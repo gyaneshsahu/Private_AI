@@ -1,5 +1,6 @@
 import type { Attachment, Source } from "../shared/contracts";
 import { z } from "zod";
+import { MAX_DOCUMENT_CHARACTERS } from "./document-formats";
 
 const workerResult = z.union([
   z.object({ progress: z.string().min(1).max(200) }).strict(),
@@ -10,7 +11,7 @@ const workerResult = z.union([
         .array(
           z
             .object({
-              text: z.string(),
+              text: z.string().max(MAX_DOCUMENT_CHARACTERS),
               page: z.number().int().positive().optional(),
             })
             .strict(),

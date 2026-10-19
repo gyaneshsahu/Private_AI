@@ -834,3 +834,16 @@ footer {
 .composer-attachments small {
   color: #536249;
 }
+.import-results {
+  padding: 12px 16px;
+  margin: 12px 0;
+  border: 1px solid #dce2d9;
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+.import-results li {
+  margin: 8px 0;
+}
+.import-results p {
+  margin: 4px 0;
+}

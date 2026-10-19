@@ -1,6 +1,11 @@
 /// <reference lib="webworker" />
 import { getDocument, PDFWorker } from "pdfjs-dist";
 import { createWorker } from "tesseract.js";
+import {
+  checkTextSize,
+  decodeTextDocument,
+  isTextDocument,
+} from "./document-formats";
 self.onmessage = async (event: MessageEvent<File>) => {
   const file = event.data;
   try {
@@ -26,6 +31,7 @@ self.onmessage = async (event: MessageEvent<File>) => {
         if (pdf.numPages > 20)
           throw new Error("PDF exceeds the 20-page limit.");
         const pages = [];
+        let extractedLength = 0;
         for (let number = 1; number <= pdf.numPages; number++) {
           self.postMessage({
             progress: `Reading page ${number} of ${pdf.numPages} locally…`,
@@ -40,6 +46,8 @@ self.onmessage = async (event: MessageEvent<File>) => {
               .join("")
               .trim(),
           });
+          checkTextSize(pages[pages.length - 1].text, extractedLength);
+          extractedLength += pages[pages.length - 1].text.length;
         }
         self.postMessage({
           pages,
@@ -73,6 +81,7 @@ self.onmessage = async (event: MessageEvent<File>) => {
       });
       try {
         const { data } = await worker.recognize(file);
+        checkTextSize(data.text);
         self.postMessage({
           pages: [{ page: 1, text: data.text }],
           warning: `OCR is imperfect (reported confidence ${Math.round(data.confidence)}%). Check names, amounts and dates before using this text.`,
@@ -80,19 +89,24 @@ self.onmessage = async (event: MessageEvent<File>) => {
       } finally {
         await worker.terminate();
       }
-    } else if (file.type === "text/plain" || /\.txt$/i.test(file.name)) {
-      const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-      if (text.includes("\0")) throw new Error("This file is not plain text.");
-      self.postMessage({ pages: [{ text }] });
+    } else if (isTextDocument(file.name)) {
+      const text = decodeTextDocument(bytes);
+      self.postMessage({
+        pages: [{ text }],
+        warning:
+          "Imported as text only. Code is not executed; data is not recalculated. Review structure and units before use.",
+      });
     } else
       throw new Error(
-        "Supported formats: text PDFs, UTF-8 .txt, PNG and JPEG screenshots.",
+        "Supported formats: text PDF, UTF-8 text/Markdown/data/source-code files, PNG and JPEG screenshots. Word and spreadsheet workbooks are not supported; export them as PDF or UTF-8 text.",
       );
   } catch (error) {
     self.postMessage({
       error:
         error instanceof Error &&
-        /limit|exceeds|not plain|Supported formats/.test(error.message)
+        /limit|exceeds|not plain|not UTF-8|Supported formats/.test(
+          error.message,
+        )
           ? error.message
           : "Extraction failed. The file may be encrypted, malformed, unsupported or unreadable.",
     });

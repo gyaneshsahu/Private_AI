@@ -13,7 +13,8 @@ import {
   newMessage,
   selectedSources,
 } from "./conversation";
-import { extract } from "./documents";
+import { DOCUMENT_ACCEPT } from "./document-formats";
+import { importDocuments, type ImportOutcome } from "./document-import";
 import { Vault } from "./vault";
 import { containsTemporaryResearch } from "./saved-conversation";
 import { ConversationLibrary } from "./ConversationLibrary";
@@ -46,6 +47,7 @@ export function App() {
   const [status, setStatus] = useState<AppStatus>();
   const [input, setInput] = useState("");
   const [notice, setNotice] = useState("");
+  const [imports, setImports] = useState<ImportOutcome[]>([]);
   const selectedContextSize = useMemo(
     () => measureContext(conversation, input),
     [conversation, input],
@@ -161,6 +163,7 @@ export function App() {
       controller.current = null;
       epoch.current++;
       setBusy("");
+      setImports([]);
       setConversation(emptyConversation());
       setSource(undefined);
       setUnlocked(false);
@@ -212,6 +215,7 @@ export function App() {
     controller.current = null;
     epoch.current++;
     setBusy("");
+    setImports([]);
     setConversation(emptyConversation());
     setSource(undefined);
     setInput("");
@@ -460,20 +464,22 @@ export function App() {
     setBusy("Reading on your device…");
     setNotice("");
     try {
-      for (const file of Array.from(files)) {
-        abort.signal.throwIfAborted();
-        const attachment = await extract(file, abort.signal, (message) => {
+      await importDocuments(Array.from(files), abort.signal, {
+        update: (outcomes) => {
+          if (current === epoch.current) setImports(outcomes);
+        },
+        progress: (message) => {
           if (current === epoch.current && !abort.signal.aborted)
             setBusy(message);
-        });
-        abort.signal.throwIfAborted();
-        if (current !== epoch.current) return;
-        if (current === epoch.current)
+        },
+        added: (attachment) => {
+          if (current !== epoch.current || abort.signal.aborted) return;
           setConversation((c) => ({
             ...c,
             attachments: [...c.attachments, attachment],
           }));
-      }
+        },
+      });
     } catch (e) {
       if (current === epoch.current)
         fail(e instanceof Error ? e.message : "Extraction failed.");
@@ -662,7 +668,7 @@ export function App() {
               setSource({
                 id: "workspace-guide",
                 title: "Using PrivateAI",
-                text: "Start in Conversation. Write a message or use a starter to prepare an editable draft. Nothing sends until you choose Send. This evaluation is for synthetic examples; private chat remains unavailable until its privacy checks pass.\n\nAdd context when you need it. In Context, import a text PDF, TXT, PNG or JPEG. Files are read on your device. Limits: five files (up to three screenshots), 10 MB each, 20 PDF pages; printed English text. Review extracted numbers, tables and wording before using them. Scanned PDFs and handwriting are not supported. Select only the context you want included.\n\nSave deliberately. Temporary work disappears on reload. In Saved, create or unlock a vault, then choose Save encrypted snapshot. Save again after changes. Your passphrase cannot be recovered; history stays in this browser, without cloud sync. Locking clears unsaved work. Removing an attachment does not remove its earlier messages or saved snapshots.\n\nResearch is your choice. Review the exact query or public URL before approving it. The research service and recipient can see it; your chat is not added automatically.\n\nStay in control. Stop ends an active response; an incomplete reply is excluded from later context. Retry is a separate request. Copy answer places completed text on your device clipboard; locking the vault does not clear that clipboard. Edit an earlier message to start a new branch. To remove a saved conversation, delete its snapshot in Saved. A new conversation clears the current workspace but does not delete saved snapshots.",
+                text: "Start in Conversation. Write a message or use a starter to prepare an editable draft. Nothing sends until you choose Send. This evaluation is for synthetic examples; private chat remains unavailable until its privacy checks pass.\n\nAdd context when you need it. In Context, import a text PDF, UTF-8 text, Markdown, data or source-code file, PNG or JPEG. Code is read as text, never executed; spreadsheets must be exported as CSV or PDF. Files are read on your device. Limits: five files (up to three screenshots), 10 MB each, 20 PDF pages; printed English text. Review extracted numbers, tables and wording before using them. Scanned PDFs and handwriting are not supported. Select only the context you want included.\n\nSave deliberately. Temporary work disappears on reload. In Saved, create or unlock a vault, then choose Save encrypted snapshot. Save again after changes. Your passphrase cannot be recovered; history stays in this browser, without cloud sync. Locking clears unsaved work. Removing an attachment does not remove its earlier messages or saved snapshots.\n\nResearch is your choice. Review the exact query or public URL before approving it. The research service and recipient can see it; your chat is not added automatically.\n\nStay in control. Stop ends an active response; an incomplete reply is excluded from later context. Retry is a separate request. Copy answer places completed text on your device clipboard; locking the vault does not clear that clipboard. Edit an earlier message to start a new branch. To remove a saved conversation, delete its snapshot in Saved. A new conversation clears the current workspace but does not delete saved snapshots.",
               })
             }
           >
@@ -776,6 +782,26 @@ export function App() {
             {busy}
             <button onClick={() => controller.current?.abort()}>Stop</button>
           </div>
+        )}
+        {!!imports.length && (
+          <section className="import-results" aria-label="File import results">
+            <strong>File import results</strong>
+            <ul role="status" aria-live="polite" aria-relevant="text additions">
+              {imports.map((item, index) => (
+                <li key={index}>
+                  <span>
+                    {item.name} — {item.status}
+                  </span>
+                  {item.detail && <p>{item.detail}</p>}
+                </li>
+              ))}
+            </ul>
+            {!busy && (
+              <button onClick={() => setImports([])}>
+                Dismiss import results
+              </button>
+            )}
+          </section>
         )}
         {tab === "Conversation" && (
           <section className="chat-view">
@@ -971,7 +997,7 @@ export function App() {
                   hidden
                   aria-label="Attach files to this conversation"
                   multiple
-                  accept=".txt,.pdf,.png,.jpg,.jpeg"
+                  accept={DOCUMENT_ACCEPT}
                   disabled={!!busy}
                   onChange={(event) => {
                     void importFiles(event.target.files);
@@ -1037,9 +1063,10 @@ export function App() {
             )}
             <p className="composer-note">
               Attachments are read on this device. Review extracted text before
-              sending. Text PDF, TXT, PNG and JPEG only; five files, including
-              up to three screenshots, 10 MB each and 20 PDF pages. Images use
-              text extraction, not general image understanding.
+              sending. Text PDF, UTF-8 text, Markdown, data, source code, PNG
+              and JPEG; five files, including up to three screenshots, 10 MB
+              each, 60,000 extracted characters per file and 20 PDF pages.
+              Images use text extraction, not general image understanding.
             </p>
             <p className="composer-note" data-testid="context-size">
               Selected input: {selectedContextSize.characters.toLocaleString()}{" "}
@@ -1179,7 +1206,7 @@ export function App() {
                 aria-label="Add documents or screenshots"
                 type="file"
                 multiple
-                accept=".txt,.pdf,.png,.jpg,.jpeg"
+                accept={DOCUMENT_ACCEPT}
                 disabled={!!busy}
                 onChange={(e) => {
                   void importFiles(e.target.files);
@@ -1187,9 +1214,11 @@ export function App() {
                 }}
               />
               <small>
-                Text PDF · TXT · PNG · JPEG
+                Text PDF · Text / Markdown / Code · CSV / JSON · PNG / JPEG
                 <br />
-                Up to 10 MB and 20 PDF pages. Printed English text.
+                Up to 10 MB, 60,000 extracted characters and 20 PDF pages per
+                file. Screenshot OCR supports printed English text. Word and
+                spreadsheet workbooks: export as PDF or UTF-8 text first.
               </small>
             </label>
             {conversation.attachments.length === 0 && (

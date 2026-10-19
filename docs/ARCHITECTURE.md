@@ -1,5 +1,11 @@
 # PrivateAI — architecture and trust boundaries
 
+### Local document import boundary — 19 October
+
+`document-formats.ts` defines an explicit UTF-8 filename allowlist for text, Markdown, data and source code, shared by file pickers and extraction. Formats are read as literal text; code is never executed, CSV formulas never evaluated and source URLs never fetched. PDF magic detection and existing screenshot OCR remain separate paths. Worker lifetime is bounded to90seconds and terminated on cancellation/error. File/page/pixel limits remain; PDF accumulation and worker replies enforce60,000characters with a second receiver-side check. A failed file does not cancel independent files, while Stop cancels the active/queued selection. `document-import.ts` keeps per-file outcomes in memory only; epoch guards prevent late writes into a replacement workspace. Outcomes clear on lock/replacement. Only successful extracted attachments enter the existing explicit encrypted-snapshot path; original binaries are not persisted.
+
+This does not create a code runtime, spreadsheet engine, general vision provider, new upload endpoint or private-data authorization. DOCX is deferred pending bounded archive validation and fidelity evidence; evaluated Mammoth/zip.js dependencies were removed. Current supported formats and export guidance are shown in the application. See READINESS for the dependency decision and bounded browser evidence.
+
 ### Prepared checkout and account ownership — inactive, 19 October
 
 `billing-workflow.ts` is injected only into the localhost synthetic consumer workspace, behind its session/origin/CSRF boundary. The public-origin candidate refuses this injection; there is no production environment switch or entrypoint mount. `AccountBilling` is advertised only by that backend capability. It renders explicitly synthetic prices, checkout/management departure and honest return/status messages. Navigation respects unsaved-work confirmation; checkout creation does not serialize chat, documents or vault data. Provider URLs are HTTPS/exact-host/path validated in both service and browser, returned no-store and never persisted. Hosted checkout collects payment details; PrivateAI does not implement card fields.
