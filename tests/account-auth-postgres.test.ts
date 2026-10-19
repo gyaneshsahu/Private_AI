@@ -8,6 +8,7 @@ import type { Server } from "node:http";
 import { writeFile, mkdir, readFile } from "node:fs/promises";
 import { chromium, expect as browserExpect } from "@playwright/test";
 import { resolve } from "node:path";
+import { finishSignInRecovery } from "../server/account-recovery";
 
 const connectionString = process.env.PRIVATEAI_SYNTHETIC_PG;
 const enabled = !!connectionString;
@@ -63,6 +64,12 @@ beforeAll(async () => {
   await pool.query(committedSchema);
   await pool.query(
     await readFile("server/migrations/0002-account-uniqueness.sql", "utf8"),
+  );
+  await pool.query(
+    await readFile(
+      "server/migrations/0003-account-security-events.sql",
+      "utf8",
+    ),
   );
   // Runtime starts after migrations; do not reuse pre-migration schema caches.
   await pool.end();
@@ -121,6 +128,113 @@ const cookieFrom = (response: Response) =>
     .join("; ");
 
 it.skipIf(!enabled)(
+  "finishes recovery atomically and replay does not revoke a later sign-in",
+  async () => {
+    const email = "recovery@example.test";
+    async function signIn() {
+      expect(
+        (
+          await call("email-otp/send-verification-otp", {
+            email,
+            type: "sign-in",
+          })
+        ).status,
+      ).toBe(200);
+      const response = await call("sign-in/email-otp", {
+        email,
+        otp: messages.at(-1)!.otp,
+      });
+      expect(response.status).toBe(200);
+      return cookieFrom(response);
+    }
+    const old = await signIn(),
+      current = await signIn();
+    const currentSession = await (
+      await call("get-session", undefined, current)
+    ).json();
+    const complete = () =>
+      fetch(`${origin}/api/account/recovery/complete`, {
+        method: "POST",
+        headers: { origin, cookie: current },
+      });
+    const results = await Promise.all([complete(), complete()]);
+    expect(results.every((result) => result.status === 200)).toBe(true);
+    expect(await (await call("get-session", undefined, old)).json()).toBeNull();
+    const queued = await pool.query(
+      'SELECT * FROM account_security_event WHERE "userId"=$1',
+      [currentSession.user.id],
+    );
+    expect(queued.rows).toHaveLength(1);
+    expect(queued.rows[0].deliveryState).toBe("pending");
+    const later = await signIn();
+    expect((await (await complete()).json()).outcome).toBe("already-completed");
+    expect(
+      (await (await call("get-session", undefined, later)).json()).user.id,
+    ).toBe(currentSession.user.id);
+    await pool.query(
+      "UPDATE session SET \"createdAt\"=NOW()-interval '6 minutes' WHERE id=$1",
+      [currentSession.session.id],
+    );
+    expect((await complete()).status).toBe(403);
+    expect(
+      await finishSignInRecovery(pool, randomUUID(), currentSession.session.id),
+    ).toBe("reauthenticate");
+    expect(
+      (
+        await fetch(`${origin}/api/account/recovery/complete`, {
+          method: "POST",
+          headers: { origin },
+        })
+      ).status,
+    ).toBe(401);
+  },
+);
+
+it.skipIf(!enabled)(
+  "rolls back recovery revocation and notification when the transaction fails",
+  async () => {
+    const account = (
+      await pool.query(
+        'INSERT INTO "user" (name,email,"emailVerified") VALUES ($1,$2,true) RETURNING id',
+        ["Recovery rollback", "rollback@example.test"],
+      )
+    ).rows[0].id;
+    const sessions = (
+      await pool.query(
+        'INSERT INTO session ("expiresAt",token,"createdAt","updatedAt","userId") VALUES (NOW()+interval \'1 hour\',$1,NOW(),NOW(),$3),(NOW()+interval \'1 hour\',$2,NOW(),NOW(),$3) RETURNING id',
+        [randomUUID(), randomUUID(), account],
+      )
+    ).rows;
+    await pool.query(`CREATE FUNCTION fail_recovery_commit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'synthetic commit failure'; END $$;
+    CREATE CONSTRAINT TRIGGER fail_recovery_commit AFTER INSERT ON account_security_event DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION fail_recovery_commit()`);
+    try {
+      await expect(
+        finishSignInRecovery(pool, account, sessions[0].id),
+      ).rejects.toThrow("synthetic commit failure");
+      expect(
+        (
+          await pool.query('SELECT id FROM session WHERE "userId"=$1', [
+            account,
+          ])
+        ).rowCount,
+      ).toBe(2);
+      expect(
+        (
+          await pool.query(
+            'SELECT id FROM account_security_event WHERE "userId"=$1',
+            [account],
+          )
+        ).rowCount,
+      ).toBe(0);
+    } finally {
+      await pool.query(
+        "DROP TRIGGER fail_recovery_commit ON account_security_event; DROP FUNCTION fail_recovery_commit()",
+      );
+    }
+  },
+);
+
+it.skipIf(!enabled)(
   "completes the React email and passkey workflow without private chat or external calls",
   async () => {
     const browser = await chromium.launch();
@@ -151,9 +265,9 @@ it.skipIf(!enabled)(
         .getByRole("button", { name: "Send test code", exact: true })
         .click();
       await browserExpect(page.getByLabel("Verification code")).toBeFocused();
-    const otp = messages.filter(
-        (message) => message.email === "ui@example.test",
-    ).at(-1)!.otp;
+      const otp = messages
+        .filter((message) => message.email === "ui@example.test")
+        .at(-1)!.otp;
       await page.getByLabel("Verification code").fill(otp);
       await page
         .getByRole("button", { name: "Verify test code", exact: true })
@@ -176,6 +290,15 @@ it.skipIf(!enabled)(
         .click();
       await browserExpect(page.getByRole("status")).toHaveText(
         "Other test sessions revoked.",
+      );
+      await page
+        .getByRole("button", { name: "Finish sign-in recovery" })
+        .click();
+      await browserExpect(page.getByRole("status")).toContainText(
+        "Sign-in recovery complete",
+      );
+      await browserExpect(page.getByRole("status")).toContainText(
+        "vault encryption are unchanged",
       );
       await page.getByRole("button", { name: "Sign out", exact: true }).click();
       await browserExpect(

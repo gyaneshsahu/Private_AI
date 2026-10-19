@@ -1,5 +1,18 @@
 # PrivateAI readiness checklist
 
+### M2 recovery and provider-verification batch — local synthetic evidence, 19 October
+
+**Implemented / locally tested; inactive on the product.** Fresh sign-in can finish session recovery: one PostgreSQL transaction revokes other sessions and queues one security-notice intent. Repetition does not revoke sessions created after completion. An injected commit failure preserves all previous sessions and queues nothing. The React lab exposes this action and explains that linked credentials and the encrypted vault are unchanged. No notice is actually delivered yet; this is not complete compromised-account recovery.
+
+The synthetic Google/Apple fixtures now use the pinned library's maintained Generic OIDC plugin with required discovery verification, PKCE and nonce binding. Tests intercept every provider response locally and sign synthetic identity tokens with an ephemeral RSA key; no real provider credentials or consent screen. Invalid signature/issuer/audience/expiry/nonce, missing tokens/verification metadata, unverified or non-synthetic identities, callback replay, missing state cookie and unsafe redirects are rejected. Implicit email-based merging stays disabled. Explicit linking checks the same recent session before redirect and again at callback; revoked/stale sessions are rejected. Only the lab's exact callback routes have narrowly scoped cross-site handling. Normal application middleware is unchanged.
+
+**Evidence: 24 tests across 5 files pass:** account-auth-postgres (11), account-social-postgres (7), account-model, invite-access and account-usage-http. Built React email/passkey/recovery workflow is included; typecheck/build pass. Both PostgreSQL suites use random disposable schemas in the local synthetic database. No paid inference or new dependency. Existing verifier zlib warning remains.
+
+Retained findings: initial built-in social callback experiment had no nonce and its provider profile reader decoded the back-channel ID token without the explicit verification required here. Replaced that experiment with maintained Generic OIDC, not custom token cryptography. The redirect test also exposed an external callback accepted at initiation; the application now requires its own exact origin for all three return/error/new-user URLs. Fixture rate limits correctly stopped rapid case groups; reset only test-schema rate-limit rows between independent negative cases. Cookie fixtures initially mishandled deleted/duplicate state cookies; corrected to browser-like replacement. These are engineering findings, not claims of a general library vulnerability or live provider qualification.
+
+**Still open:** actual Google/Apple registration and consent, Apple HTTPS/cookie/Hide My Email behavior, final domain/RP ID, real email/security-notice delivery, provider token/session metadata minimization, link/revocation races under production concurrency, full recovery/removal of compromised credentials, actual-device auth, migration/rollback and security review. New code remains unmounted. Previous safety, quality, provider privacy and release failures are unchanged.
+
+
 ## Current target — public-launchable product, 19 October 2026
 
 ### M2 durable authentication integration — synthetic only, 19 October

@@ -80,6 +80,33 @@ export default function AccountLab() {
               disabled={busy}
               onClick={() =>
                 action(async () => {
+                  const response = await fetch(
+                    "/api/account/recovery/complete",
+                    { method: "POST" },
+                  );
+                  if (!response.ok) {
+                    setNotice(
+                      "Recovery was not confirmed. Sign in again and retry this step; do not assume other sessions were revoked.",
+                    );
+                    return;
+                  }
+                  setNotice(
+                    "Sign-in recovery complete. Other sessions were signed out and a security notice was queued. Linked credentials and vault encryption are unchanged.",
+                  );
+                })
+              }
+            >
+              Finish sign-in recovery
+            </button>
+            <p className="account-preview-small">
+              After signing in again with email, finish recovery to close other
+              sessions. This does not remove a lost passkey or linked provider;
+              compromised credentials need separate review.
+            </p>
+            <button
+              disabled={busy}
+              onClick={() =>
+                action(async () => {
                   const result = await client.passkey.addPasskey({
                     name: "PrivateAI synthetic passkey",
                   });

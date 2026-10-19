@@ -1,5 +1,8 @@
 # PrivateAI delivery roadmap
 
+19 October M2 advance: atomic session recovery/notice intent and maintained OIDC verification are implemented **inactive** and pass 24 local tests across 5 files. See READINESS for rejected-token/link/replay/rollback evidence and preserved initial failures. Next is the actual social account workflow, PostgreSQL usage and metadata minimization. Actual provider setup, email/notice delivery, compromised-credential recovery and production qualification remain open; no launch gate closes from these tests alone.
+
+
 ## Active production roadmap — 19 October 2026
 
 **Current work:** M1 encrypted conversation library slice validated; M2 durable request-admission foundation and Account view now locally tested. Continue consumer auth/durable sessions and PostgreSQL migration design; do not call the request counter monetary metering. Provider qualification advances independently. Latest evidence and limitations are in READINESS. The founder's revised development policy permits independent arms after isolated failures under a fresh frozen plan; no paid/billing setting change.

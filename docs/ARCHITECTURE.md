@@ -1,5 +1,16 @@
 # PrivateAI — architecture and trust boundaries
 
+### Latest inactive identity implementation — 19 October
+
+Recovery: migration 0003 adds a minimal security-notice outbox intent. `finishSignInRecovery` locks the account/current session, requires a fresh verified sign-in, deletes other sessions and inserts one idempotent event in the same transaction. The queued notice has no delivery worker yet. This operation neither deletes credentials nor resets vault encryption. Real compromised-account recovery needs credential removal and notification delivery before release.
+
+Social verification: the synthetic fixture option uses [Generic OIDC](https://better-auth.com/docs/plugins/generic-oauth) in pinned Better Auth 1.7.11, with `requireIdTokenVerification: true`, PKCE and default nonce binding. Discovery provides issuer/JWKS/algorithms; the maintained verifier checks tokens before the built-in profile-only mapping runs, and a missing ID token cannot fall back to userinfo. Google/Apple discovery endpoints and supported code flow were inspected read-only on 19 October ([Google](https://accounts.google.com/.well-known/openid-configuration), [Apple](https://appleid.apple.com/.well-known/openid-configuration)). Production still needs provider-specific interoperability tests; synthetic success is not evidence Apple accepts our final client/PKCE configuration.
+
+Reason for this choice: pinned built-in social redirect code did not generate the expected nonce or explicitly verify the returned ID token in its profile reader. This is a scoped observation of a trusted back-channel path, not a claim that arbitrary clients could forge a login. The Generic OIDC plugin supplies the required explicit verification without custom cryptography. Required-discovery tests prevent a silent downgrade. Direct client-token sign-in/link paths are disabled. All supplied return URLs are exact-origin checked. Explicit link state carries a server-only session ID; both initiation and callback require that live recent session. Implicit matching by email is disabled; database uniqueness prevents identity reassignment. Race testing/independent security review remain required.
+
+Reproduction adds `tests/account-social-postgres.test.ts` to the existing local PostgreSQL command. All remote provider fetches in that suite are intercepted; unexpected external destinations fail the test. There are no real provider keys. The synthetic core is not imported by the production server. Google/Apple configuration in this test harness must never be presented as production activation.
+
+
 ## Production direction — 19 October 2026
 
 One product, with a limited-user release check before public opening. Preserve the existing React/TypeScript/Node stack; evolve a modular monolith. The components below are the proposed production target, not claims of implementation. READINESS distinguishes those states. No privacy gate, live deployment, billing or retention setting changes with this document.
