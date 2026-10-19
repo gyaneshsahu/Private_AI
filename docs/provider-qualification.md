@@ -1,5 +1,11 @@
 # Provider qualification — NOT_PASSED
 
+## Structured-output compatibility finding — 19 October
+
+Read the official [structured outputs](https://docs.tinfoil.sh/guides/structured-outputs) and [tool calling](https://docs.tinfoil.sh/guides/tool-calling) guides. The former documents constrained JSON through response_format/json_schema and choice/regex controls; the latter demonstrates ordinary tools and a result-follow-up round. It does not establish strict function-argument enforcement for our exact model/schema/streaming combination. JSON-response constraints are not evidence that auto-selected tools have the same enforcement. No runtime flag or provider gate changed. Even enforced syntax cannot verify input provenance, method, units or answer truth.
+
+Append to the existing consolidated supplier questions if needed, not a new email: which exact models/versions support constrained function arguments with tools+streaming, what schema subset is supported, and are unsupported constraints rejected rather than ignored? No request sent. Ordinary-answer comparison can proceed independently; keep calculator continuation experimental rather than repeating the unchanged high-reasoning timeout or increasing the deadline without evidence.
+
 ## Consolidated owner follow-up — prepared 19 October, NOT SENT
 
 Owner asked which release blockers require manual help. This is one consolidated follow-up for the existing Tinfoil conversation, not a request for repeated emails per finding. Forward any newer reply first; omit questions already answered by that evidence. No account setting or provider switch is requested. Tinfoil testing remains capped at the existing USD5 authorization and actual account/key controls; older USD3 text below is historical.

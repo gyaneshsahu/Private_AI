@@ -1,5 +1,13 @@
 # PrivateAI readiness checklist
 
+## M3 resumed — evidence audit and fresh general-assistant cases, 19 October
+
+Read-only dashboard: key spendUSD0.74/keylimit5; Billing usedUSD0.74/accountlimit3, available10.26, auto-reloadoff. Analytics separately shows estimatedUSD0.7436 and978recorded events over30days; do not equate that event count with the older307request reading or with billed charge reconciliation. No separately quantified pending balance shown. Historical genuine uncertainty0.263648 retained; no active test reservation or new paid request. Budget is sufficient; no account change requested.
+
+Audited the continuation study: only one completed matched conversation; candidate timeout occurred during first-round tool argument generation, no explanation request. Unequal pooled latency samples do not establish comparative performance. Official Tinfoil docs support constrained JSON responses but do not establish strict function-argument enforcement for our exact configuration. Calculator stays experimental; no claim that syntax constraints ensure factual accuracy.
+
+Prepared `evaluation/cases/everyday-transfer-20261019.json`:6fresh two-turn conversations, writing/units+fees/coding/corrections/source interpretation/workshop safety, explicit expected facts, humanScores null. Shape/unique-ID checks and independently calculated unit/fee ground truth pass. Planned comparison: ordinary DeepSeek low versus GPTOSS high,24requests maximum, separate conversation permits, no retries, dependent conversation stops on incomplete; safe independent arms may continue. Existing historical tariffs give provisional reserveUSD0.8687616, boundUSD1.8824096 including0.01rounding+uncertainty; prices/deployment must be refreshed and permits/harness integration frozen before execution. NOT_RUN; not acceptance. No application behavior changed, no quality/privacy gate passes or new percentage gain. Approximately75% implemented, NOT_READY.
+
 ## M6 hosting decision packet completed — 19 October
 
 The top of development-deployment.md is the consolidated hosting recommendation, package/evidence matrix, component costs, operating tradeoffs and exact owner/engineering decision boundaries. Recommend retaining restricted Render now; proposed next synthetic staging direction is direct Caddy/mTLS on a German VM, not an approved purchase/migration or turnkey full stack. No independent alerting/off-host recovery/public-ACME claim.

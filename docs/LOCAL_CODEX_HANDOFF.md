@@ -1,5 +1,13 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Next execute M3 general-assistant comparison — 19 October
+
+Fresh authored cases are `evaluation/cases/everyday-transfer-20261019.json` (6two-turn, humanScores null; SHA2564ade2b600ac559d8674055a92d186243e1c55b9cf6e41d62d51e1c4968079fa4). Intended arms ordinary DeepSeek-v4-1-flash thinking/low and GPTOSS120B high, constraints-v4,20kinputcharacters/4096outputtokens,24requests maximum, no calculator. Not wired into runner/permits or run yet. Next implement exact fixture admission and freeze separate permits after refreshing model prices/release verification; preserve independent-arm stopping rules. Do not treat this draft as already authorized permit material or claim paid evidence.
+
+Fresh read-only dashboard this turn: actual rounded0.74,key5/account3,credit10.26,auto-reloadoff; analytics0.7436/978events is separately labelled estimated30day data. No quantified pending figure; uncertainty0.263648 remains. Provisional historical-tariff reserve0.8687616 gives bound1.8824096 incl0.01rounding; comfortably under current3accountcontrol and5authorization, no increase needed. No paid calls/active reservations this batch.
+
+Latest continuation evidence audited: candidate failed during primary tool generation, not explanation; unchanged retry isn't justified. Official docs establish JSON-response constraints, not strict tool enforcement for this combination. Supplier question batched in provider-qualification.md, not sent. Keep calculator experimental and return to broad useful-answer evidence. Fixture integrity and independent units/fees calculation checked; human scores stay blank. Approximately75% implemented; no new release pass. Continue without new human input until a focused review or actual access decision is needed.
+
 ## Resume M3 after hosting decision — 19 October
 
 Owner explicitly time-boxed infrastructure work: finish a reviewable hosting package/decision, keep provider privacy and answer quality active. Completed consolidated packet at top of development-deployment.md with recommendation, actual package limits, costs, ownership and staged approvals. Keep restricted Render unchanged; German direct-Caddy VM is proposed synthetic staging direction only. No purchase/DNS/activation requested or authorized.

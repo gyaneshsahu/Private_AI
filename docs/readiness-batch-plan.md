@@ -1,5 +1,13 @@
 # Readiness batch — 8 October 2026
 
+## Current public-product study preparation — 19 October, NOT RUN
+
+Supersedes older next-batch proposals below, not their recorded outcomes. Compare ordinary GPTOSS120B high reasoning versus DeepSeek-v4-1-flash thinking/low, both constraints-v4, on `evaluation/cases/everyday-transfer-20261019.json`:6cases×2models×2turns =24maximum requests, no search or calculator/continuation calls. Each conversation has separate permit/state, identical prompts and available evidence; alternate arm order by case. Input cap20,000characters/output4096tokens, existing90s deadline, no automatic retries. Known isolated incomplete stops dependent conversation; safe independent arms continue under the existing reviewed policy. Unknown transport/auth/billing or persistence failures stop globally.
+
+Measure per-case model completion versus delivered answer, mandatory-fact correctness, usefulness/withholding, latency and reported/uncertain cost. Report matched coverage; do not pool unequal cases to assert a winner. Execute coding checks in an isolated no-network environment before claiming they work. Authored research notices are synthetic and may be retained; this is not a live-search citation-quality study. Full prompts/replies/expected facts go into the human packet; all human grades remain blank. No release promotion from one sample per model/case.
+
+Preparation only: fixture shape and independent units/fee arithmetic checked. Needs runner admission, current catalog prices and deployment preflight, exact implementation freeze and fresh permits before execution. Historical rates give provisional reserveUSD0.8687616; rounded actual0.74+rounding0.01+uncertainty0.263648+reserve =1.8824096, below current account3/key5 and owner5. No reservation consumed or paid call made. Provider qualification and reserved acceptance remain separate. Calculator compatibility investigation is time-boxed outside this broad comparison; no new example-specific prompt rules.
+
 ## Execution outcome and next constraint — 15 October
 
 The initial32request plan stopped after3requests. Separately frozen, unexposed diagnostic/revision plans used2,3,5requests, each enforcing its stop rule; no failed prompt was retried. READINESS and expanded evidence retain each configuration separately. All reserves retired; no active permit batch. Cases06–08 unattempted. Current candidate still experimental after missing evidence caused a fresh delivery failure; do not spend on more unchanged retries.
