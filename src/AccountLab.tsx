@@ -62,6 +62,7 @@ export default function AccountLab({
   const [code, setCode] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [uncertain, setUncertain] = useState(false);
   const [ready, setReady] = useState(false);
   const [notice, setNotice] = useState("");
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -73,40 +74,45 @@ export default function AccountLab({
   >([]);
   const codeInput = useRef<HTMLInputElement>(null);
   async function refresh() {
-    const current = await accountRequest(
-      "/api/auth/get-session",
-      {},
-      async (response) => {
-        if (!response.ok) throw Error("unavailable");
-        return sessionSchema.parse(await response.json());
-      },
-    );
-    setSession(current);
-    if (current) {
-      const accounts = await accountRequest(
-        "/api/account/access",
+    try {
+      const current = await accountRequest(
+        "/api/auth/get-session",
         {},
         async (response) => {
-          if (!response.ok) throw Error("account list unavailable");
-          return accountsSchema.parse(await response.json());
+          if (!response.ok) throw Error("unavailable");
+          return sessionSchema.parse(await response.json());
         },
       );
-      setLinked(accounts.providers.map((account) => account.providerId));
-      const notices = await accountRequest(
-        "/api/account/security-notices",
-        {},
-        async (response) => {
-          if (!response.ok) throw Error("security notices unavailable");
-          return noticesSchema.parse(await response.json()).notices;
-        },
-      );
-      setNotices(notices);
-      setAccessRevision((value) => value + 1);
-    } else {
-      setLinked([]);
-      setNotices([]);
+      setSession(current);
+      if (current) {
+        const accounts = await accountRequest(
+          "/api/account/access",
+          {},
+          async (response) => {
+            if (!response.ok) throw Error("account list unavailable");
+            return accountsSchema.parse(await response.json());
+          },
+        );
+        setLinked(accounts.providers.map((account) => account.providerId));
+        const notices = await accountRequest(
+          "/api/account/security-notices",
+          {},
+          async (response) => {
+            if (!response.ok) throw Error("security notices unavailable");
+            return noticesSchema.parse(await response.json()).notices;
+          },
+        );
+        setNotices(notices);
+        setAccessRevision((value) => value + 1);
+      } else {
+        setLinked([]);
+        setNotices([]);
+      }
+    } catch {
+      throw Error("outcome-unconfirmed");
     }
   }
+
   useEffect(() => {
     const url = new URL(window.location.href);
     if (url.searchParams.has("error")) {
@@ -143,17 +149,25 @@ export default function AccountLab({
     if (sent) codeInput.current?.focus();
   }, [sent]);
   async function action(run: () => Promise<void>) {
-    if (!ready) return;
+    if (!ready || busy || uncertain) return;
     setBusy(true);
     setNotice("");
     try {
       await run();
     } catch (error) {
+      if (error instanceof Error && error.message === "outcome-unconfirmed") {
+        setUncertain(true);
+        setCode("");
+        setNotice(
+          "The sign-in or account-change result is unconfirmed. Check sign-in status before trying another action. No automatic retry was made.",
+        );
+        return;
+      }
       setNotice(
         error instanceof Error && error.message === "service-not-admitted"
           ? "Account service is temporarily unavailable. This action was not started. Try again later; no automatic retry was made."
           : error instanceof Error && error.message === "delivery-unconfirmed"
-            ? "Code delivery could not be confirmed. Wait before requesting another code; a delayed code may still arrive. No automatic retry was made."
+            ? "Code delivery could not be confirmed. If a delayed code arrives, enter it below. Wait before requesting another code; no automatic retry was made."
             : "This action could not complete. Check the code or use another sign-in method. No automatic retry was made.",
       );
     } finally {
@@ -161,31 +175,49 @@ export default function AccountLab({
     }
   }
   async function post(path: string, body: object) {
-    const response = await fetch(`/api/auth/${path}`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-      if (response.status === 503) {
-        const result: unknown = await response.json().catch(() => null);
-        if (
-          z
-            .object({ code: z.literal("SERVICE_NOT_ADMITTED") })
-            .safeParse(result).success
-        )
-          throw Error("service-not-admitted");
+    let result: { status: number; ok: boolean; notAdmitted: boolean };
+    try {
+      result = await accountRequest(
+        `/api/auth/${path}`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body),
+        },
+        async (response) => {
+          const data: unknown =
+            response.status === 503 ? await response.json() : null;
+          if (response.status !== 503) await response.body?.cancel();
+          return {
+            status: response.status,
+            ok: response.ok,
+            notAdmitted: z
+              .object({ code: z.literal("SERVICE_NOT_ADMITTED") })
+              .safeParse(data).success,
+          };
+        },
+      );
+    } catch {
+      if (path === "email-otp/send-verification-otp") {
+        setSent(true);
+        throw Error("delivery-unconfirmed");
+      }
+      throw Error("outcome-unconfirmed");
+    }
+    if (result.notAdmitted) throw Error("service-not-admitted");
+    if (!result.ok) {
+      if (path === "email-otp/send-verification-otp" && result.status >= 500) {
+        setSent(true);
+        throw Error("delivery-unconfirmed");
       }
       throw Error(
-        path === "email-otp/send-verification-otp" && response.status === 503
-          ? "delivery-unconfirmed"
-          : "not completed",
+        result.status >= 500 ? "outcome-unconfirmed" : "not completed",
       );
     }
   }
   async function social(provider: Provider, link = false) {
     const callbackURL = `${window.location.origin}${synthetic ? "/?account-lab=1" : "/account"}`;
-    const response = await fetch(
+    const result = await accountRequest(
       `/api/auth/${link ? "link-social" : "sign-in/social"}`,
       {
         method: "POST",
@@ -197,11 +229,13 @@ export default function AccountLab({
           disableRedirect: true,
         }),
       },
-    );
-    if (!response.ok) throw Error("provider unavailable");
-    const result = z
-      .object({ url: z.string().url() })
-      .parse(await response.json());
+      async (response) => {
+        if (!response.ok) throw Error("provider unavailable");
+        return z.object({ url: z.string().url() }).parse(await response.json());
+      },
+    ).catch(() => {
+      throw Error("outcome-unconfirmed");
+    });
     const target = new URL(result.url);
     if (
       target.origin !==
@@ -248,7 +282,7 @@ export default function AccountLab({
             {providers.map((provider) => (
               <button
                 key={provider}
-                disabled={busy || linked.includes(provider)}
+                disabled={busy || uncertain || linked.includes(provider)}
                 onClick={() => action(() => social(provider, true))}
               >
                 {linked.includes(provider) ? "Connected to" : "Connect"}{" "}
@@ -256,14 +290,22 @@ export default function AccountLab({
               </button>
             ))}
             <button
-              disabled={busy}
+              disabled={busy || uncertain}
               onClick={() =>
                 action(async () => {
-                  const response = await fetch(
+                  const response = await accountRequest(
                     "/api/account/recovery/complete",
                     { method: "POST" },
-                  );
+                    async (response) => {
+                      await response.body?.cancel();
+                      return response;
+                    },
+                  ).catch(() => {
+                    throw Error("outcome-unconfirmed");
+                  });
                   if (!response.ok) {
+                    if (response.status >= 500)
+                      throw Error("outcome-unconfirmed");
                     setNotice(
                       "Recovery was not confirmed. Sign in again and retry this step; do not assume other sessions were revoked.",
                     );
@@ -303,7 +345,7 @@ export default function AccountLab({
               </section>
             )}
             <button
-              disabled={busy}
+              disabled={busy || uncertain}
               onClick={() =>
                 action(async () => {
                   const result = await client.passkey.addPasskey({
@@ -323,7 +365,7 @@ export default function AccountLab({
             </button>
             {synthetic && (
               <button
-                disabled={busy}
+                disabled={busy || uncertain}
                 onClick={() =>
                   action(async () => {
                     await post("revoke-other-sessions", {});
@@ -336,7 +378,7 @@ export default function AccountLab({
               </button>
             )}
             <button
-              disabled={busy}
+              disabled={busy || uncertain}
               onClick={() =>
                 action(async () => {
                   await post("sign-out", {});
@@ -410,7 +452,7 @@ export default function AccountLab({
               <button
                 key={provider}
                 type="button"
-                disabled={busy}
+                disabled={busy || uncertain}
                 onClick={() => action(() => social(provider))}
               >
                 Continue with {provider === "google" ? "Google" : "Apple"}
@@ -427,7 +469,7 @@ export default function AccountLab({
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               autoComplete={synthetic ? "off" : "email"}
-              disabled={!ready || busy}
+              disabled={!ready || busy || uncertain}
             />
             {sent && (
               <>
@@ -447,7 +489,7 @@ export default function AccountLab({
             )}
             <button
               className="account-preview-primary"
-              disabled={busy || !ready}
+              disabled={busy || uncertain || !ready}
               type="submit"
             >
               {sent
@@ -460,7 +502,7 @@ export default function AccountLab({
             </button>
             {sent && (
               <button
-                disabled={busy}
+                disabled={busy || uncertain}
                 type="button"
                 onClick={() => {
                   setCode("");
@@ -472,7 +514,7 @@ export default function AccountLab({
               </button>
             )}
             <button
-              disabled={busy || !ready}
+              disabled={busy || uncertain || !ready}
               type="button"
               onClick={() =>
                 action(async () => {
@@ -487,6 +529,29 @@ export default function AccountLab({
                 : "Sign in with a passkey"}
             </button>
           </form>
+        )}
+        {uncertain && (
+          <button
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              try {
+                await refresh();
+                setUncertain(false);
+                setNotice(
+                  "Sign-in status checked. Review the account shown before continuing; this check does not prove whether an email was delivered or a provider change completed.",
+                );
+              } catch {
+                setNotice(
+                  "Sign-in status is still unavailable. Keep this page open and check again later; no action was replayed.",
+                );
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            Check sign-in status
+          </button>
         )}
         <p role="status" className="account-preview-notice">
           {busy ? "Working…" : notice}

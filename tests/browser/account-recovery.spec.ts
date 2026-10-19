@@ -128,10 +128,38 @@ test("uncertain account closure cannot resubmit and reload checks the closed ses
   await expect(
     page.getByRole("button", { name: "Close account", exact: true }),
   ).toBeDisabled();
-  await page.getByRole("button", { name: "Reload account status" }).click();
+  await Promise.all([
+    page.waitForEvent("load"),
+    page.getByRole("button", { name: "Reload account status" }).click(),
+  ]);
   await expect(page.getByLabel("Email address", { exact: true })).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Close account", exact: true }),
   ).toHaveCount(0);
+  expect(attempts()).toBe(1);
+});
+
+test("uncertain recovery completion is reconciled without repeating its POST", async ({
+  page,
+}) => {
+  const attempts = await prepare(page, "/api/account/recovery/complete");
+  await page
+    .getByRole("button", { name: "Finish sign-in recovery", exact: true })
+    .click();
+  await expect.poll(attempts).toBe(1);
+  await page.clock.runFor(10_050);
+  await expect(page.getByRole("status")).toContainText("result is unconfirmed");
+  await expect(
+    page.getByRole("button", { name: "Finish sign-in recovery", exact: true }),
+  ).toBeDisabled();
+  await page
+    .getByRole("button", { name: "Check sign-in status", exact: true })
+    .click();
+  await expect(page.getByRole("status")).toContainText(
+    "Sign-in status checked",
+  );
+  await expect(
+    page.getByRole("button", { name: "Finish sign-in recovery", exact: true }),
+  ).toBeEnabled();
   expect(attempts()).toBe(1);
 });
