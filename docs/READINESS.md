@@ -1,5 +1,13 @@
 # PrivateAI readiness checklist
 
+### Production identity confirmed; configuration preparation only — 19 October
+
+Founder confirms purchasing `cometrow.com` and approves `https://app.cometrow.com` as app/sign-in origin. Domain selection is resolved by human instruction; DNS control/records, service binding, TLS and real consumer/provider authentication remain unverified. Shared account configuration now records the intended origin/RP identity and canonical callback paths; synthetic auth remains localhost-only and production index does not mount it.
+
+`development-deployment.md` contains the exact prepared app CNAME (conditional on retaining the recorded Render service), Google redirect/origin, Apple domain/return URL, WebAuthn origin/RP, owner-only rollout sequence and rollback limits. Apple primary-App-ID/Services-ID availability and email vendor-generated DNS are unresolved; no invented IDs/verification tokens. The current exact-host access guard and origin-scoped browser vault mean a domain switch is not a transparent data/account migration. No DNS, service setting, OAuth activation, migration, private-data permission or spending changed.
+
+**10 tests across 3 files, typecheck and production build passed.** Coverage includes rejecting the approved production origin at the synthetic authentication boundary and preserving inactive/no-migration policy. The existing provider-verifier `zlib` browser compatibility warning remains unresolved; a successful build does not qualify provider privacy or real OAuth interoperability. No paid calls.
+
 ### M6 renderer dependency remediation — 19 October
 
 The earlier four low npm findings were one KaTeX advisory propagated through the Markdown dependency chain. Pinned the minimum patched KaTeX0.18.2 and applied a narrow npm override to both consumers; kept rehype-katex7.0.1/remark-math6.0.0 rather than accepting npm's downgrade suggestions. Their renderToString usage was inspected because their declared KaTeX range still targets0.16. The0.18 CSS-prefix compatibility change was checked against our selectors and matching bundled stylesheet.

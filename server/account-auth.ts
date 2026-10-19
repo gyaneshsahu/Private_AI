@@ -18,6 +18,10 @@ import { accountRecoveryOpen } from "./account-restore";
 import { requestAccountClosure } from "./account-closure";
 import { z } from "zod";
 import {
+  accountAuthBasePath,
+  accountCallbackPaths,
+} from "../shared/account-design";
+import {
   accountRequestStart,
   recordSessionAccess,
   removalSchema,
@@ -53,7 +57,7 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
   const auth = betterAuth({
     appName: "PrivateAI synthetic account lab",
     baseURL: config.origin,
-    basePath: "/api/auth",
+    basePath: accountAuthBasePath,
     secret: config.secret,
     database: config.database,
     trustedOrigins: [config.origin],
@@ -329,12 +333,10 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
     const callback =
       config.socialFixtures &&
       ((req.method === "GET" &&
-        ["/api/auth/callback/google", "/api/auth/callback/apple"].includes(
-          req.path,
-        ) &&
+        Object.values(accountCallbackPaths).some((path) => path === req.path) &&
         !req.headers.origin) ||
         (req.method === "POST" &&
-          req.path === "/api/auth/callback/apple" &&
+          req.path === accountCallbackPaths.apple &&
           req.headers.origin === "https://appleid.apple.com"));
     if (
       req.headers.host !== origin.host ||
@@ -561,11 +563,9 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
           headers: fromNodeHeaders(req.headers),
         });
         if (!current) {
-          res
-            .status(401)
-            .json({
-              error: "Sign in with an email code before closing this account.",
-            });
+          res.status(401).json({
+            error: "Sign in with an email code before closing this account.",
+          });
           return;
         }
         const outcome = await requestAccountClosure(
@@ -577,12 +577,10 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
           .status(outcome === "closed" ? 200 : outcome === "busy" ? 409 : 403)
           .json({ outcome });
       } catch {
-        res
-          .status(503)
-          .json({
-            error:
-              "Closure could not be confirmed. Check account access before retrying.",
-          });
+        res.status(503).json({
+          error:
+            "Closure could not be confirmed. Check account access before retrying.",
+        });
       }
     },
   );
@@ -591,9 +589,7 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
     // These routes can add a method after verifying a challenge or provider callback.
     const enrolling =
       req.path === "/api/auth/passkey/verify-registration" ||
-      ["/api/auth/callback/google", "/api/auth/callback/apple"].includes(
-        req.path,
-      );
+      Object.values(accountCallbackPaths).some((path) => path === req.path);
     if (!enrolling) {
       await handler(req, res);
       return;

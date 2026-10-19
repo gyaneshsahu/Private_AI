@@ -70,9 +70,9 @@ No query/URL/source text enters this schema. Metadata remains sensitive: protect
 
 ### Intended production domain — owner decision, 19 October
 
-Owner selected `cometrow.com` and intends to purchase it. Ownership, DNS and HTTPS are unverified. The following topology is proposed for review, not a live configuration or a product rename:
+Owner confirms purchasing `cometrow.com` and approves `https://app.cometrow.com` for app/sign-in on19October. This establishes the intended identity, not verified DNS control, HTTPS or deployed consumer authentication. The following app identity is approved for preparation; public-site hosting remains a proposal. No live change or product rename is authorized.
 
-| Purpose | Proposed value |
+| Purpose | Prepared value |
 | --- | --- |
 | Public product site | `https://cometrow.com` |
 | Assistant and authentication origin | `https://app.cometrow.com` |
@@ -83,7 +83,7 @@ Owner selected `cometrow.com` and intends to purchase it. Ownership, DNS and HTT
 
 Using the application host as the RP ID scopes passkeys to that host instead of choosing parent-domain sharing. [WebAuthn](https://www.w3.org/TR/webauthn-3/) binds credentials to an RP ID; freeze this identity before real enrollment, since a later move to a different RP ID requires a credential-transition strategy. Do not register production credentials against localhost or the temporary hosting domain. Local synthetic RP configuration remains unchanged.
 
-Before real setup: owner confirms purchase/control and reviews this topology; verify HTTPS and the hosting target; prepare exact DNS/provider-console values for the owner to apply; then test actual callbacks, origin/cookie boundaries and real-device passkeys with an approved account setup. Provider registration/activation, email delivery, account migration and production privacy gates remain separate decisions. No DNS target is assumed and no settings change follows automatically from the domain choice. Independent consumer-session/consent and workspace work can continue meanwhile.
+Before real setup: recheck the chosen hosting service, review the staged rollout in `development-deployment.md`, then give the owner the exact DNS/provider-console values to apply. Verify DNS/TLS and access restrictions before actual callbacks, origin/cookie boundaries and real-device passkeys. Provider activation, email delivery, account migration and production privacy gates remain separate decisions. `shared/account-design.ts` records the approved identity and shares callback paths with the synthetic adapter; the adapter still refuses any non-localhost origin and only dummy social fixtures exist. Setting an origin alone cannot turn it into production authentication.
 
 ### Identity data and schema lifecycle — inactive implementation, 19 October
 
@@ -91,7 +91,7 @@ Auth database hooks discard unused OAuth grants/tokens and automatic profile nam
 
 `server/account-migrations.ts` explicitly plans/applies the committed SQL manifest. Read-only planning performs no DDL. Apply takes a transaction-scoped advisory lock per database/schema, validates the applied checksum prefix and runs all pending DDL/history writes atomically. A changed/gapped/unknown history aborts. A later failure rolls back earlier pending migrations and preserves pre-existing data. Never auto-adopt old tables, rewrite checksums to pass, or run migrations from ordinary request handling. Auth runtime instances start after migration with fresh pools. Hosted migration roles, backup/restore and approved account conversion remain deployment work.
 
-For implementation review, synthetic screenshots can be regenerated at `.local/account-review/sign-in.png` and `connected-account.png` by the documented auth/social suites. The owner selected cometrow.com; purchase confirmation and final origin/RP review remain prerequisites before real registration. No real provider credentials or migration is enabled by these screenshots.
+For implementation review, synthetic screenshots can be regenerated at `.local/account-review/sign-in.png` and `connected-account.png` by the documented auth/social suites. Purchase and app-origin intent are now owner-confirmed; real DNS/TLS, credential/provider setup and reviewed activation remain prerequisites. No real provider credentials or migration is enabled by these screenshots.
 
 
 ### Durable request-count implementation — 19 October

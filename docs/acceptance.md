@@ -2,6 +2,8 @@
 
 ## Production target amendment — 19 October 2026
 
+Owner confirms purchase of `cometrow.com` and approves `https://app.cometrow.com` as the intended app/sign-in identity. This authorizes configuration preparation only. Verify DNS/TLS separately; DNS changes, Google/Apple activation and account migration require a reviewed rollout, and privacy/quality/public-launch gates remain unchanged.
+
 Account design decision: Google, Apple, email and passkeys are the intended public sign-in methods. Owner approves inactive implementation and clear privacy disclosure only. No provider activation or existing-account migration before review. Require explicit authenticated linking (no silent email-based merge), secure email verification/recovery, passkey origin/challenge verification, and separate vault recovery claims. Local UI/policy tests do not satisfy live authentication acceptance.
 
 Founder authorizes continuous implementation of the public-launchable general-purpose product now. Restricted users validate the same production architecture before public opening; this is not a separate prototype or a stopping gate for development. Previous wording that defers fuller-platform implementation until trial learning is superseded. Existing quality floors, serious-failure rules, human review, provider privacy and private-data gates are unchanged.

@@ -7,6 +7,20 @@ export const accountDesign = Object.freeze({
   emailMethod: "one-time-code" as const,
 });
 
+export const accountAuthBasePath = "/api/auth";
+export const accountCallbackPaths = Object.freeze({
+  google: `${accountAuthBasePath}/callback/google`,
+  apple: `${accountAuthBasePath}/callback/apple`,
+});
+
+/** Owner-approved identity for rollout planning; no runtime/provider activation. */
+export const productionAccountTarget = Object.freeze({
+  origin: "https://app.cometrow.com",
+  relyingPartyId: "app.cometrow.com",
+  domainPurchase: "owner-confirmed" as const,
+  activation: "not-approved" as const,
+});
+
 /** The review screen has no authentication transport and is loopback-only. */
 export function isAccountPreview(url: URL): boolean {
   return (

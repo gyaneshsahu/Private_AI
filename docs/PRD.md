@@ -1,6 +1,6 @@
 # PrivateAI — product requirements
 
-**19 October intended domain:** owner selected `cometrow.com`, pending purchase. Architecture proposes `app.cometrow.com` for the assistant and authentication, subject to final origin review before real credential enrollment. This does not rename PrivateAI, activate identity providers or authorize account/hosting changes.
+**19 October confirmed domain:** owner reports purchasing `cometrow.com` and approves `https://app.cometrow.com` for the assistant and sign-in. DNS control, hosting association and TLS are not yet verified. Preparation is authorized; DNS changes, Google/Apple activation and account migration require a reviewed rollout. This does not rename PrivateAI or approve private-data/public access.
 
 **19 October account design decision:** launch sign-in should offer Google, Apple and email, with passkeys for convenient subsequent sign-in. Build this inactive for review; provider activation and existing-account migration remain separately gated. Disclose account identifiers/email and provider involvement; no silent email-based account merging or promise that sign-in recovery restores a lost vault passphrase. Proposed email experience uses one-time codes. The first local preview is a design walkthrough, not working authentication.
 

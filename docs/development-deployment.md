@@ -1,5 +1,52 @@
 # Restricted development deployment
 
+## Production domain preparation — 19 October 2026
+
+**PREPARED / NOT APPLIED.** Founder confirms purchase of `cometrow.com` and approves `https://app.cometrow.com` for PrivateAI's app and sign-in. No DNS, hosting, OAuth, email, billing or account-migration change is authorized by this preparation. The historical deployment instructions below are not a current production rollout command.
+
+### Exact owner-entered settings after rollout review
+
+The existing recorded service hostname is `private-ai-deployment.onrender.com`. Reconfirm that hostname and the selected service in Render immediately before rollout; a different production service needs its own Render target. The CNAME below is exact **if that existing service is retained**, not evidence that its production deployment is ready.
+
+| Console / field | Prepared value |
+| --- | --- |
+| Render → selected service → Settings → Custom Domains | `app.cometrow.com` |
+| DNS zone | `cometrow.com` |
+| DNS type | `CNAME` |
+| DNS name / host | `app` (full name `app.cometrow.com`) |
+| DNS target / value | `private-ai-deployment.onrender.com` — hostname only, no `https://` or path |
+| Suggested DNS TTL | `300` seconds, or provider default if unavailable |
+| Google OAuth client type | Web application |
+| Google authorized redirect URI | `https://app.cometrow.com/api/auth/callback/google` |
+| Google authorized JavaScript origin, if needed | `https://app.cometrow.com` |
+| Google consent/branding authorized domain | `cometrow.com` — ownership verification and final privacy/support links still required |
+| Apple Services ID → Sign in with Apple → Website domain | `app.cometrow.com` |
+| Apple return URL | `https://app.cometrow.com/api/auth/callback/apple` |
+| Application origin / auth base URL | `https://app.cometrow.com` |
+| WebAuthn RP ID | `app.cometrow.com` |
+| Allowed WebAuthn origin | Exactly `https://app.cometrow.com` |
+
+Render documents a CNAME to the service hostname for subdomains, followed by domain verification/TLS issuance. Before the owner applies it, inspect existing records **at `app`** for conflicts, and any applicable CAA restrictions; preserve unrelated apex, mail and other subdomain records. Do not add wildcard/apex records for this app. Any provider-specific verification token must come from the actual console, never an invented value. [Render subdomain DNS](https://render.com/docs/configure-other-dns), [domain/TLS setup](https://render.com/docs/custom-domains).
+
+Google callback spelling, scheme and path must match registration exactly; do not register localhost or the temporary Render hostname as production callbacks. Use identity-only permissions and a reviewed production credential adapter, not the fixture's dummy credentials. Google client ID/secret are console-generated, with the secret stored only in deployment secret storage. [Google web-server OAuth](https://developers.google.com/identity/protocols/oauth2/web-server).
+
+Apple web setup additionally needs a Services ID associated with a primary App ID enabled for Sign in with Apple. Membership/App ID availability is not established. Client ID is the actual Services ID, not automatically the domain. Team ID, Key ID and signing private key/client-secret rotation require reviewed secure configuration; do not paste secrets into chat. Apple's form-post return, browser cookie behavior and private email relay need real interoperability tests before activation. [Apple web configuration](https://developer.apple.com/help/account/capabilities/configure-sign-in-with-apple-for-the-web/).
+
+Email sender/service is not selected or activated. SPF/DKIM/return-path values must come from that chosen supplier; no MX or email DNS change is prepared yet. Root-domain marketing, support/privacy pages and their hosting are separate work; the app CNAME does not publish them.
+
+### Reviewed rollout sequence and rollback boundary
+
+1. Finish/review the production account adapter, database/secret/role configuration, sender, retention policy and migration/recovery plan. The current `createSyntheticAccountAuth` refuses production origins and has dummy social fixtures only. Do not remove that protection or set unrelated Better Auth environment variables as a shortcut.
+2. Select an exact deployable commit and hosting target; verify backup/recovery evidence. Prepare an access-restricted rollout with private inference still gated. Review the changes with the owner before any console action.
+3. Owner adds the approved custom domain and DNS record. Check authoritative DNS, TLS certificate/SAN and HTTPS redirect read-only. A valid CNAME does not establish account or chat readiness.
+4. Coordinate the reviewed host-origin switch. Existing `PRIVATEAI_ORIGIN` is an exact-host development access boundary: changing it can reject the old Render hostname, while adding DNS alone can leave the new host rejected. Do not loosen this to wildcard origins or remove access controls. Healthz alone does not verify the authenticated app. Production consumer auth is not enabled by that variable.
+5. Owner registers/configures the reviewed Google/Apple clients and sender; separately review activation. Validate callback rejection, state/nonce/signature, same-email non-merging, passkey origin/UV, email recovery, revocation and phone behavior using an approved test account. No old-account migration or public opening is included.
+6. On failure, keep the new account path disabled, stop new enrollment and have the owner restore the reviewed previous release/origin/DNS settings as applicable. Database rollback must preserve post-snapshot revocations/closures/usage and stay quarantined until reconciled; never restore blindly.
+
+**Origin-change data limitation:** browser vault storage and cookies are origin-scoped. A new domain does not transfer saved encrypted conversations from the Render origin or recover vault keys. Do not redirect/retire the old origin until its access/history transition is explicitly resolved. Passkeys enrolled under another RP ID likewise do not silently migrate. No production user enrollment is approved yet.
+
+## Historical restricted-deployment record
+
 Status, 7 October 2026: the founder-approved individual-access release is deployed
 at https://private-ai-deployment.onrender.com on the existing upgraded Render
 service. Application commit `b7e5ea7` passed CI and actual hosted access, isolation,
