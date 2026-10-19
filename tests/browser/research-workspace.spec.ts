@@ -145,6 +145,7 @@ test("approved research retains inspectable provenance through encrypted save an
     executions++;
     expect(route.request().postDataJSON()).toEqual({
       id: expect.stringMatching(/^[a-f0-9]{48}$/),
+      request: { kind: "page", value: url },
     });
     await route.fulfill({
       json: {

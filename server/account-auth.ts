@@ -22,6 +22,8 @@ export interface SyntheticAccountConfig {
   deliverCode: (message: { email: string; otp: string }) => Promise<void>;
   /** Dummy provider IDs only; test harness must intercept all external fetches. */
   socialFixtures?: boolean;
+  /** Advertise navigation only when composed with the synthetic workspace. */
+  workspaceEnabled?: boolean;
 }
 
 /** Unmounted integration for synthetic tests only. No environment activation. */
@@ -296,6 +298,7 @@ export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
   router.get("/api/account/options", (_req, res) => {
     res.json({
       synthetic: true,
+      workspaceEnabled: config.workspaceEnabled === true,
       socialProviders: config.socialFixtures ? ["google", "apple"] : [],
     });
   });

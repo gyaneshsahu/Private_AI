@@ -173,6 +173,7 @@ export function createApp(config: Config) {
     const ready = !!q && !!config.apiKey;
     res.json({
       csrf: res.locals.csrf,
+      ...(config.consumer ? { consumerWorkspace: true } : {}),
       ...(res.locals.accountId
         ? {
             requestAllowance: await (async () => {

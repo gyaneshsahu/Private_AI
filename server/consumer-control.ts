@@ -27,7 +27,9 @@ export function consumerControl(config: {
         headers: fromNodeHeaders(req.headers),
       });
       if (!current || !current.user.emailVerified) {
-        res.status(401).json({ error: "Sign in to continue." });
+        res
+          .status(401)
+          .json({ error: "Sign in to continue.", consumerWorkspace: true });
         return;
       }
       const id = current.session.id;
@@ -55,12 +57,10 @@ export function consumerControl(config: {
             )
           : await config.database.query(liveSession, [id]);
       if (!valid.rowCount) {
-        res
-          .status(req.method === "POST" ? 429 : 401)
-          .json({
-            error:
-              "Session unavailable or request limit reached. Sign in again if expired.",
-          });
+        res.status(req.method === "POST" ? 429 : 401).json({
+          error:
+            "Session unavailable or request limit reached. Sign in again if expired.",
+        });
         return;
       }
       res.locals.session = id;
@@ -69,12 +69,9 @@ export function consumerControl(config: {
       res.locals.accessEpoch = fingerprint("privateai-consumer-epoch-v1", id);
       next();
     } catch {
-      res
-        .status(503)
-        .json({
-          error:
-            "Account verification is unavailable. No request was forwarded.",
-        });
+      res.status(503).json({
+        error: "Account verification is unavailable. No request was forwarded.",
+      });
     }
   };
   const commitment = (session: string, id: string, request: Disclosure) =>

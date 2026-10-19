@@ -125,12 +125,20 @@ export function App() {
   useEffect(() => {
     let active = true;
     fetch("/api/status", { cache: "no-store" })
-      .then((r) => {
+      .then(async (r) => {
+        if (r.status === 401 && window.location.hostname === "localhost") {
+          const denied = await r.json();
+          if (active && denied.consumerWorkspace === true) {
+            accessNavigation.current = true;
+            window.location.assign("/auth");
+            return undefined;
+          }
+        }
         if (!r.ok) throw new Error();
         return r.json();
       })
       .then((data) => {
-        if (active) {
+        if (active && data) {
           store.selectAccount(data.accountId);
           setStatus(data);
         }
@@ -266,6 +274,7 @@ export function App() {
     const timer = setInterval(() => void checkAccess(), 30000);
     const focus = () => void checkAccess();
     window.addEventListener("focus", focus);
+    window.addEventListener("pageshow", focus);
     const visible = () => {
       if (document.visibilityState === "visible") void checkAccess();
     };
@@ -275,6 +284,7 @@ export function App() {
       abort.abort();
       clearInterval(timer);
       window.removeEventListener("focus", focus);
+      window.removeEventListener("pageshow", focus);
       document.removeEventListener("visibilitychange", visible);
     };
   }, [status?.accountId, status?.accessEpoch]);
@@ -298,6 +308,22 @@ export function App() {
     }
     if (!response.ok) throw new Error(result.error ?? "Request failed.");
     return result;
+  }
+  async function signOutConsumer() {
+    if (!status?.consumerWorkspace || busy || !allowReplace()) return;
+    setBusy("Signing out…");
+    try {
+      await api("/api/auth/sign-out", {});
+      vault.current?.lock();
+      vault.current?.onInvalidate?.();
+      accessNavigation.current = true;
+      window.location.assign("/auth");
+    } catch {
+      setBusy("");
+      fail(
+        "Sign-out could not be confirmed. Your workspace is still here; try again when the service is available.",
+      );
+    }
   }
   async function send(base = conversation, text = input, consumeDraft = true) {
     if (busy || !status?.inference.ready || !text.trim()) return;
@@ -675,7 +701,7 @@ export function App() {
           </span>
         </header>
         <div className="connection-banner">
-          {status?.accountId && (
+          {status?.accountId && !status.consumerWorkspace && (
             <button
               onClick={() => {
                 if (!allowReplace()) return;
@@ -690,7 +716,12 @@ export function App() {
           )}
           {status?.accountId && (
             <button
+              disabled={!!busy}
               onClick={async () => {
+                if (status.consumerWorkspace) {
+                  await signOutConsumer();
+                  return;
+                }
                 if (!allowReplace()) return;
                 vault.current?.lock();
                 vault.current?.onInvalidate?.();
@@ -1305,7 +1336,19 @@ export function App() {
           </section>
         )}
         {tab === "Account" && (
-          <AccountUsage allowance={status?.requestAllowance} />
+          <AccountUsage
+            allowance={status?.requestAllowance}
+            consumer={
+              status?.consumerWorkspace &&
+              window.location.hostname === "localhost"
+            }
+            busy={!!busy}
+            onManage={() => {
+              if (!allowReplace()) return;
+              accessNavigation.current = true;
+              window.location.assign("/?account-lab=1");
+            }}
+          />
         )}
         {tab === "Saved" && (
           <section className="content-view">

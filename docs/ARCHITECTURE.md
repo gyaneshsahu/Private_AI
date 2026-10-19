@@ -1,5 +1,11 @@
 # PrivateAI — architecture and trust boundaries
 
+### Account/workspace composition — inactive, 19 October
+
+`createSyntheticConsumerWorkspace` is a reusable localhost-only test composition of the maintained auth router, PostgreSQL allowance and consumer control adapter with the current workspace. It accepts no inference key/qualification and is not imported by production index. The auth lab advertises workspace navigation only when composed this way. Workspace status identifies consumer mode; the existing logout header uses maintained sign-out and hides the legacy password action. The Account panel links to sign-in methods with the existing unsaved-work guard. Local anonymous consumer access goes through /auth to the lab; real signup/provider/email deployment remains unconfigured.
+
+Account IDs select separate encrypted browser vault namespaces. Confirmed sign-out broadcasts a vault lock and clears transient content; cancellation preserves unsaved work. Server revocation is observed on focus, visibility, page-show and the existing 30-second poll; it is not an instantaneous remote erase or a promise to remove browser/OS memory. Tests cover two accounts using the same test passphrase, restart, reopening original history, another open tab and server-side revocation. An operation admitted before revocation may already be in flight. Final activation still needs real-device and hosted auth/transport/recovery/security qualification.
+
 ### Consumer session and research consent — inactive implementation, 19 October
 
 `consumerControl` resolves the maintained auth cookie and independently checks a live verified PostgreSQL session on every workspace API request. Purpose-separated HMACs derive stable per-session CSRF and browser access epochs without another cookie/session map. Mutation admission increments a shared counter atomically. The consumer mode is explicitly localhost-only and incompatible with legacy invite middleware; no production entry point mounts it. HTTP localhost is accepted for synthetic development alongside 127.0.0.1; hosted HTTPS/access controls are unchanged.

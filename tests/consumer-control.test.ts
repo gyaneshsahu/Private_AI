@@ -3,18 +3,15 @@ import { createServer } from "node:http";
 import { randomBytes } from "node:crypto";
 import express from "express";
 import { resolve } from "node:path";
-import { chromium, expect as browserExpect } from "@playwright/test";
+import { chromium, expect as browserExpect, type Page } from "@playwright/test";
 import { usageDatabase } from "./fixtures/usage-postgres";
 import { applyAccountMigrations } from "../server/account-migrations";
-import { createSyntheticAccountAuth } from "../server/account-auth";
-import { consumerControl } from "../server/consumer-control";
-import { PostgresUsageLedger } from "../server/usage-postgres";
 const search = vi.hoisted(() => vi.fn());
 vi.mock("../server/research", async (original) => ({
   ...(await original<typeof import("../server/research")>()),
   searchWeb: search,
 }));
-import { createApp } from "../server/app";
+import { createSyntheticConsumerWorkspace } from "../server/consumer-workspace";
 
 const enabled = !!process.env.PRIVATEAI_SYNTHETIC_PG;
 const cleanups: (() => Promise<void>)[] = [];
@@ -40,26 +37,16 @@ async function setup() {
   if (!address || typeof address === "string") throw Error("port");
   const origin = `http://localhost:${address.port}`;
   const replica = (database: typeof firstPool) => {
-    const lab = createSyntheticAccountAuth({
+    const workspace = createSyntheticConsumerWorkspace({
       origin,
       secret,
       database,
       deliverCode: async (m) => {
         messages.push(m);
       },
+      searchKey: "SYNTHETIC_ONLY",
     });
-    const control = consumerControl({ database, secret, auth: lab.auth });
-    const usage = new PostgresUsageLedger(database);
-    const app = express();
-    app.use(lab.router);
-    app.use(
-      createApp({
-        origin,
-        consumer: control,
-        usage,
-        searchKey: "SYNTHETIC_ONLY",
-      }),
-    );
+    const { app, control, usage } = workspace;
     app.use(express.static(resolve("dist")));
     return { app, control, usage };
   };
@@ -387,7 +374,7 @@ it.skipIf(!enabled)(
         page.getByRole("button", { name: "Sign out", exact: true }),
       ).toBeVisible();
       h.switchReplica();
-      await page.goto(h.origin);
+      await page.getByRole("link", { name: "Open test workspace" }).click();
       await page
         .getByLabel("Message PrivateAI")
         .fill("SYNTHETIC PRIVATE DRAFT MUST NOT LEAVE BROWSER");
@@ -432,4 +419,138 @@ it.skipIf(!enabled)(
     }
   },
   40000,
+);
+
+it.skipIf(!enabled)(
+  "keeps account vaults separate and clears other tabs on sign-out without silently discarding a draft",
+  async () => {
+    const h = await setup();
+    const browser = await chromium.launch({ headless: true });
+    try {
+      const context = await browser.newContext({
+        viewport: { width: 390, height: 844 },
+      });
+      const external: string[] = [];
+      await context.route("**/*", (route) => {
+        if (new URL(route.request().url()).origin === h.origin)
+          return route.continue();
+        external.push(route.request().url());
+        return route.abort();
+      });
+      const page = await context.newPage();
+      const tab = (p: Page, name: string) =>
+        p
+          .getByRole("navigation", { name: "Workspace" })
+          .getByRole("button", { name, exact: false });
+      const login = async (email: string) => {
+        await browserExpect(
+          page.getByLabel("Test email address"),
+        ).toBeVisible();
+        await page.getByLabel("Test email address").fill(email);
+        await page
+          .getByRole("button", { name: "Send test code", exact: true })
+          .click();
+        await browserExpect(page.getByLabel("Verification code")).toBeVisible();
+        await page.getByLabel("Verification code").fill(h.messages.at(-1)!.otp);
+        await page
+          .getByRole("button", { name: "Verify test code", exact: true })
+          .click();
+        await page.getByRole("link", { name: "Open test workspace" }).click();
+        await browserExpect(page.getByLabel("Message PrivateAI")).toBeVisible();
+      };
+      const unlock = async () => {
+        await tab(page, "Saved").click();
+        await page
+          .getByLabel("Vault passphrase")
+          .fill("SYNTHETIC common test vault passphrase");
+        await page
+          .getByRole("button", { name: "Create or unlock vault" })
+          .click();
+        await browserExpect(
+          page.getByText("Local vault unlocked", { exact: true }),
+        ).toBeVisible();
+      };
+      await page.goto(h.origin);
+      await login("owner-a@example.test");
+      await page
+        .getByLabel("Message PrivateAI")
+        .fill("SYNTHETIC ACCOUNT A DRAFT");
+      await unlock();
+      await page
+        .getByLabel("Conversation title")
+        .fill("ACCOUNT A PRIVATE TITLE");
+      await page
+        .getByRole("button", { name: "Save encrypted snapshot" })
+        .click();
+      await browserExpect(
+        page.getByText("No unsaved workspace changes.", { exact: false }),
+      ).toBeVisible();
+      const other = await context.newPage();
+      await other.goto(h.origin);
+      await other.getByLabel("Message PrivateAI").fill("UNSAVED OTHER TAB");
+      await tab(page, "Conversation").click();
+      await page
+        .getByLabel("Message PrivateAI")
+        .fill("UNSAVED ACCOUNT A CHANGE");
+      await tab(page, "Account").click();
+      page.once("dialog", (dialog) => dialog.dismiss());
+      await page.getByRole("button", { name: "Sign out", exact: true }).click();
+      await browserExpect(
+        page.getByRole("button", { name: "Sign out", exact: true }),
+      ).toBeVisible();
+      await tab(page, "Conversation").click();
+      await browserExpect(page.getByLabel("Message PrivateAI")).toHaveValue(
+        "UNSAVED ACCOUNT A CHANGE",
+      );
+      await tab(page, "Account").click();
+      page.once("dialog", (dialog) => dialog.accept());
+      await page.getByRole("button", { name: "Sign out", exact: true }).click();
+      await browserExpect(page.getByLabel("Test email address")).toBeVisible();
+      await browserExpect(other.getByLabel("Message PrivateAI")).toHaveValue(
+        "",
+      );
+      await other.evaluate(() => window.dispatchEvent(new Event("focus")));
+      await browserExpect(other.getByLabel("Test email address")).toBeVisible();
+      await login("owner-b@example.test");
+      await unlock();
+      await browserExpect(
+        page.getByText("ACCOUNT A PRIVATE TITLE", { exact: true }),
+      ).toHaveCount(0);
+      await browserExpect(
+        page.getByRole("button", { name: "Open", exact: true }),
+      ).toHaveCount(0);
+      await tab(page, "Account").click();
+      await page.getByRole("button", { name: "Sign out", exact: true }).click();
+      await login("owner-a@example.test");
+      await unlock();
+      await browserExpect(
+        page.getByText("ACCOUNT A PRIVATE TITLE", { exact: true }),
+      ).toBeVisible();
+      await page.getByRole("button", { name: "Open", exact: true }).click();
+      await browserExpect(page.getByLabel("Message PrivateAI")).toHaveValue(
+        "SYNTHETIC ACCOUNT A DRAFT",
+      );
+      expect(external).toEqual([]);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      // A server-side revocation must also clear the active workspace on access recheck.
+      await h.db.pool.query(
+        'DELETE FROM "session" WHERE "userId"=(SELECT id FROM "user" WHERE email=$1)',
+        ["owner-a@example.test"],
+      );
+      h.restart();
+      await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+      await browserExpect(page.getByLabel("Test email address")).toBeVisible();
+      expect(await page.locator("body").textContent()).not.toContain(
+        "SYNTHETIC ACCOUNT A DRAFT",
+      );
+      await context.close();
+    } finally {
+      await browser.close();
+    }
+  },
+  45000,
 );

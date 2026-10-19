@@ -128,6 +128,7 @@ export interface Conversation {
   draft?: string;
 }
 export interface AppStatus {
+  consumerWorkspace?: boolean;
   requestAllowance?: RequestAllowance;
   accountId?: string;
   accessEpoch?: string;

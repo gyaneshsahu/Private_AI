@@ -1,9 +1,30 @@
 import type { RequestAllowance } from "../shared/contracts";
 
-export function AccountUsage({ allowance }: { allowance?: RequestAllowance }) {
+export function AccountUsage({
+  allowance,
+  consumer,
+  busy,
+  onManage,
+}: {
+  allowance?: RequestAllowance;
+  consumer?: boolean;
+  busy?: boolean;
+  onManage?: () => void;
+}) {
   return (
     <section className="content-view" aria-label="Account and usage">
       <h2>Account and usage</h2>
+      {consumer && (
+        <div className="panel">
+          <p>
+            Synthetic account workspace. Live identity providers and
+            subscriptions are not enabled.
+          </p>
+          <button disabled={busy} onClick={onManage}>
+            Manage sign-in methods
+          </button>
+        </div>
+      )}
       {!allowance || allowance.state === "unavailable" ? (
         <p role="status">
           No request allowance is available to display. Paid subscriptions are

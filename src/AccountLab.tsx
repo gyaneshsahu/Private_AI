@@ -12,6 +12,7 @@ type Provider = z.infer<typeof providerSchema>;
 const optionsSchema = z.object({
   synthetic: z.literal(true),
   socialProviders: z.array(providerSchema),
+  workspaceEnabled: z.boolean().optional(),
 });
 const accountsSchema = z.array(z.object({ providerId: z.string() }));
 const client = createAuthClient({
@@ -29,6 +30,7 @@ export default function AccountLab() {
   const [notice, setNotice] = useState("");
   const [providers, setProviders] = useState<Provider[]>([]);
   const [linked, setLinked] = useState<string[]>([]);
+  const [workspaceEnabled, setWorkspaceEnabled] = useState(false);
   const codeInput = useRef<HTMLInputElement>(null);
   async function refresh() {
     const response = await fetch("/api/auth/get-session", {
@@ -62,9 +64,9 @@ export default function AccountLab() {
     fetch("/api/account/options", { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) throw Error("unavailable");
-        setProviders(
-          optionsSchema.parse(await response.json()).socialProviders,
-        );
+        const options = optionsSchema.parse(await response.json());
+        setProviders(options.socialProviders);
+        setWorkspaceEnabled(options.workspaceEnabled === true);
       })
       .catch(() => setProviders([]));
     refresh().catch(() =>
@@ -143,6 +145,7 @@ export default function AccountLab() {
             <p>
               Signed in as <strong>{session.user.email}</strong>
             </p>
+            {workspaceEnabled && <a href="/">Open test workspace</a>}
             {providers.map((provider) => (
               <button
                 key={provider}
