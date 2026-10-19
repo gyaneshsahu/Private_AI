@@ -1,5 +1,11 @@
 # PrivateAI — architecture and trust boundaries
 
+### Inactive payment-event receipt boundary — 19 October
+
+`server/billing-events.ts` uses pinned stripe23.0.0's verifier over raw bytes, with300second signature age and60second future-clock bounds. Snapshot API version2026-09-30.endive/direct-account/test mode is the only implemented contract; thin/Connect/live integration is absent. The receiver is not mounted by production or the account lab. It commits a minimal PostgreSQL receipt before acknowledgment, deduplicates event IDs, checks immutable identity on repeats and never grants entitlements. Body parsing must remain inside this route before generic JSON middleware. A separate reviewed receiver role cannot mutate receipts or read authentication/allowance tables. Recovery quarantine blocks reception; transaction lock/statement waits are bounded. No Stripe API client or secret API key exists in this boundary.
+
+Next reconcile receipts against authenticated current provider objects with account/customer ownership and plan/paid-period checks. Never infer subscription order from second-resolution event timestamps or grant access from a checkout return URL. Repeated resource notifications must have idempotent entitlement effects even when event IDs differ. Use the provider state to resolve obsolete events and record failures without storing arbitrary payment payloads. Real checkout, portal, refunds/disputes, tax/jurisdiction, receipt retention and service activation remain unimplemented or owner-dependent. Maintained source: [stripe-node](https://github.com/stripe/stripe-node); [webhook behavior](https://docs.stripe.com/webhooks).
+
 ### Source corrections and historical citations — 19 October
 
 `Source.userEdited` marks locally corrected text and survives encrypted snapshots and request serialization. It is provenance, not a correctness certification. Existing per-answer source snapshots are immutable when current attachments change. A derived UI comparison detects changed/removed text or source metadata and invites review; no automatic removal of conversation context occurs. Legacy answers without snapshots expose that limitation and never borrow current attachments to manufacture historical citation evidence. Original binary files are not retained by this change; temporary-search persistence rules remain sticky.

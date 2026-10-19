@@ -12,6 +12,7 @@ const names = [
   "0007-account-restore-quarantine.sql",
   "0008-account-access-management.sql",
   "0009-account-closure.sql",
+  "0010-billing-event-inbox.sql",
 ] as const;
 interface Migration {
   name: string;
