@@ -18,7 +18,8 @@ if (
   );
 const tls = await ingressTLS();
 const container = `privateai-ingress-${randomUUID()}`;
-const workspace = process.argv.includes("--workspace");
+const browser = process.argv.includes("--browser");
+const workspace = browser || process.argv.includes("--workspace");
 const database = `${container}-db`;
 const host =
   process.platform === "win32"
@@ -117,6 +118,9 @@ try {
       "--env=PRIVATEAI_SYNTHETIC_INGRESS_TLS_DIR=/fixtures",
       "--env=PRIVATEAI_SYNTHETIC_CADDY=/usr/local/bin/caddy",
       "--env=XDG_DATA_HOME=/tmp/test-data",
+      ...(browser
+        ? ["--env=PRIVATEAI_SYNTHETIC_INGRESS_BROWSER=1", "--shm-size=256m"]
+        : []),
       ...(workspace
         ? [
             "--mount",
@@ -125,13 +129,17 @@ try {
             `type=bind,source=${resolve("shared")},target=/app/shared,readonly`,
             "--mount",
             `type=bind,source=${resolve("tests")},target=/app/tests,readonly`,
+            "--mount",
+            `type=bind,source=${resolve("dist")},target=/app/dist,readonly`,
             "--env=PRIVATEAI_SYNTHETIC_PG=postgresql://privateai_synthetic:local-synthetic-only@127.0.0.1:5432/privateai_synthetic",
           ]
         : []),
       "--entrypoint=node",
-      workspace
-        ? "privateai-account-ingress-test:local"
-        : "privateai-evaluation:latest",
+      browser
+        ? "privateai-ingress-browser-test:local"
+        : workspace
+          ? "privateai-account-ingress-test:local"
+          : "privateai-evaluation:latest",
       "node_modules/vitest/vitest.mjs",
       "run",
       workspace

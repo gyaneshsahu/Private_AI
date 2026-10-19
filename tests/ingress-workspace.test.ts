@@ -1,6 +1,7 @@
 import { beforeAll, afterAll, describe, expect, it } from "vitest";
 import { createServer, request } from "node:https";
-import { X509Certificate, randomBytes } from "node:crypto";
+import { X509Certificate, randomBytes, createHash } from "node:crypto";
+import { chromium, expect as browserExpect } from "@playwright/test";
 import { spawn, execFileSync } from "node:child_process";
 import { writeFile, unlink } from "node:fs/promises";
 import express from "express";
@@ -159,7 +160,7 @@ describe.runIf(
         output discard
       }
     }
-    https://localhost:9444 {
+    https://localhost:9444, https://app.cometrow.com:9444 {
       bind 127.0.0.1
       tls /fixtures/localhost.pem /fixtures/localhost.key
       reverse_proxy https://127.0.0.1:${port} {
@@ -340,6 +341,226 @@ describe.runIf(
       await new Promise((done) => setTimeout(done, 10));
     expect(streamClosed).toBe(true);
   });
+  it.runIf(process.env.PRIVATEAI_SYNTHETIC_INGRESS_BROWSER === "1")(
+    "runs the built mobile account, passkey and encrypted document workspace through Caddy",
+    async () => {
+      const spki = createHash("sha256")
+        .update(
+          new X509Certificate(tls.server.cert).publicKey.export({
+            type: "spki",
+            format: "der",
+          }),
+        )
+        .digest("base64");
+      const browser = await chromium.launch({
+        headless: true,
+        args: [
+          "--no-proxy-server",
+          "--host-resolver-rules=MAP app.cometrow.com 127.0.0.1:9444, MAP * ~NOTFOUND",
+          // Trust only this disposable leaf public key, not every certificate or an OS root.
+          `--ignore-certificate-errors-spki-list=${spki}`,
+        ],
+      });
+      try {
+        const context = await browser.newContext({
+          viewport: { width: 390, height: 844 },
+        });
+        const page = await context.newPage();
+        const outbound: string[] = [],
+          bodies: string[] = [];
+        await context.route("**/*", async (route) => {
+          const req = route.request();
+          if (new URL(req.url()).origin !== origin) {
+            outbound.push(req.url());
+            await route.abort();
+            return;
+          }
+          if (req.postData()) bodies.push(req.postData()!);
+          await route.continue();
+        });
+        const cdp = await context.newCDPSession(page);
+        await cdp.send("WebAuthn.enable");
+        await cdp.send("WebAuthn.addVirtualAuthenticator", {
+          options: {
+            protocol: "ctap2",
+            transport: "internal",
+            hasResidentKey: true,
+            hasUserVerification: true,
+            isUserVerified: true,
+            automaticPresenceSimulation: true,
+          },
+        });
+        await page.goto(origin + "/");
+        await browserExpect(
+          page.getByRole("heading", { name: "Sign in to PrivateAI" }),
+        ).toBeVisible();
+        await page
+          .getByText("Help with sign-in or reporting a problem", {
+            exact: true,
+          })
+          .click();
+        await browserExpect(
+          page.getByLabel("Problem area", { exact: true }),
+        ).toHaveValue("account");
+        await page
+          .getByText("Help with sign-in or reporting a problem", {
+            exact: true,
+          })
+          .click();
+        await page
+          .getByLabel("Email address", { exact: true })
+          .fill("browser@example.test");
+        await page
+          .getByRole("button", { name: "Continue with email", exact: true })
+          .click();
+        await browserExpect(page.getByLabel("Verification code")).toBeFocused();
+        await page
+          .getByLabel("Verification code")
+          .fill(codes.get("browser@example.test")!);
+        await page
+          .getByRole("button", { name: "Verify code", exact: true })
+          .click();
+        await browserExpect(
+          page.getByRole("heading", { name: "Your account", exact: true }),
+        ).toBeVisible();
+        await page
+          .getByRole("button", { name: "Add passkey", exact: true })
+          .click();
+        await browserExpect(
+          page.getByRole("status").filter({ hasText: "Passkey added." }),
+        ).toBeVisible();
+        await page
+          .getByRole("button", { name: "Sign out", exact: true })
+          .click();
+        await page
+          .getByRole("button", { name: "Sign in with a passkey", exact: true })
+          .click();
+        await browserExpect(
+          page.getByRole("heading", { name: "Your account", exact: true }),
+        ).toBeVisible();
+        await page
+          .getByRole("link", { name: "Open workspace", exact: true })
+          .click();
+        const tab = (name: string) =>
+          page
+            .getByRole("navigation", { name: "Workspace" })
+            .getByRole("button", { name, exact: false });
+        await page
+          .getByLabel("Message PrivateAI")
+          .fill("INGRESS_LOCAL_DRAFT_CANARY");
+        await browserExpect(
+          page.getByRole("button", { name: "Send ↑", exact: true }),
+        ).toBeDisabled();
+        await tab("Context").click();
+        await page.getByLabel("Add documents or screenshots").setInputFiles({
+          name: "synthetic-note.txt",
+          mimeType: "text/plain",
+          buffer: Buffer.from("INGRESS_LOCAL_DOCUMENT_CANARY"),
+        });
+        await page.locator("details summary").first().click();
+        await page
+          .getByLabel("Text for synthetic-note.txt", { exact: true })
+          .fill("INGRESS_CORRECTED_DOCUMENT_CANARY");
+        await tab("Saved").click();
+        await page
+          .getByLabel("Vault passphrase")
+          .fill("INGRESS_LOCAL_PASSPHRASE_CANARY");
+        await page
+          .getByRole("button", { name: "Create or unlock vault", exact: true })
+          .click();
+        await page
+          .getByRole("button", { name: "Save encrypted snapshot", exact: true })
+          .click();
+        await browserExpect(
+          page.getByText("No unsaved workspace changes.", { exact: false }),
+        ).toBeVisible();
+        await page
+          .getByRole("button", {
+            name: "Lock and clear workspace",
+            exact: true,
+          })
+          .click();
+        active = make();
+        expect(await active.ready).toBe(true);
+        await page.reload();
+        await tab("Saved").click();
+        await page
+          .getByLabel("Vault passphrase")
+          .fill("INGRESS_LOCAL_PASSPHRASE_CANARY");
+        await page
+          .getByRole("button", { name: "Create or unlock vault", exact: true })
+          .click();
+        await page.getByRole("button", { name: "Open", exact: true }).click();
+        await browserExpect(page.getByLabel("Message PrivateAI")).toHaveValue(
+          "INGRESS_LOCAL_DRAFT_CANARY",
+        );
+        await tab("Context").click();
+        await page.locator("details summary").first().click();
+        await browserExpect(
+          page.getByLabel("Text for synthetic-note.txt", { exact: true }),
+        ).toHaveValue("INGRESS_CORRECTED_DOCUMENT_CANARY");
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        ).toBe(true);
+        await tab("Account").click();
+        await page.getByRole("button", { name: /Manage sign-in/ }).click();
+        await browserExpect(
+          page.getByRole("heading", { name: "Your account", exact: true }),
+        ).toBeVisible();
+        await page
+          .getByRole("button", { name: "Sign out", exact: true })
+          .click();
+        await page.goto(origin + "/");
+        await browserExpect(
+          page.getByRole("heading", { name: "Sign in to PrivateAI" }),
+        ).toBeVisible();
+        expect(outbound).toEqual([]);
+        for (const marker of [
+          "INGRESS_LOCAL_DRAFT_CANARY",
+          "INGRESS_LOCAL_DOCUMENT_CANARY",
+          "INGRESS_CORRECTED_DOCUMENT_CANARY",
+          "INGRESS_LOCAL_PASSPHRASE_CANARY",
+        ])
+          expect(bodies.join("\n") + logs).not.toContain(marker);
+        expect(await context.cookies()).not.toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              name: "__Secure-privateai-account.session_token",
+            }),
+          ]),
+        );
+        active.operations.beginDrain();
+        await page
+          .getByLabel("Email address", { exact: true })
+          .fill("outage@example.test");
+        await page
+          .getByRole("button", { name: "Continue with email", exact: true })
+          .click();
+        await browserExpect(
+          page
+            .getByRole("status")
+            .filter({ hasText: "This action was not started" }),
+        ).toBeVisible();
+        expect(codes.has("outage@example.test")).toBe(false);
+        await browserExpect(
+          page.getByLabel("Email address", { exact: true }),
+        ).toHaveValue("outage@example.test");
+        active = make();
+        expect(await active.ready).toBe(true);
+        await page
+          .getByRole("button", { name: "Continue with email", exact: true })
+          .click();
+        await browserExpect(page.getByLabel("Verification code")).toBeFocused();
+        expect(codes.has("outage@example.test")).toBe(true);
+        await context.close();
+      } finally {
+        await browser.close();
+      }
+    },
+    45000,
+  );
   it("blocks quarantined accounts, then drains admission and keeps credentials out of captured proxy logs", async () => {
     await db.pool.query(
       "UPDATE account_recovery_control SET mode='quarantined'",

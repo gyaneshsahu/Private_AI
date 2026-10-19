@@ -1,5 +1,11 @@
 # PrivateAI — architecture and trust boundaries
 
+### Proxy-backed browser and support boundaries — 19 October
+
+`test:ingress -- --browser` adds the repository-pinned Playwright browser to the isolated Caddy/PostgreSQL rehearsal. Chromium resolves only the approved app name to the local proxy and trusts only the disposable leaf SPKI. Application requests traverse real Caddy; no route fulfillment or broad TLS-error suppression. Read-only current build/source mounts and no outbound network preserve the synthetic scope. The virtual passkey and local certificate are engineering evidence, not real provider/device/public TLS qualification.
+
+`support-report.ts` constructs notes from two explicit enum allowlists; it never serializes a status/error/conversation object. `SupportPanel.tsx` is available in workspace Help and the pre-auth account page. Guidance and selections remain memory-only; copy is an explicit user action with a visible note and denied-copy fallback. No report endpoint, telemetry, contact address or delivery promise is configured. The public launch still requires a staffed/verified channel, privacy-reviewed intake and response/pause process. Do not add raw exceptions, automatic URLs/account/device fields or temporary search content to reports.
+
 ### Authenticated account composition — 19 October
 
 `ProductionAccountCandidateConfig.ingress` optionally supplies approved peer certificate SHA256 pins. The account factory constructs the authenticated boundary itself; callers cannot supply a client-address callback. The workspace mounts that boundary before operations/readiness and every route. The standalone account router validates the same boundary if this exact request has not already been verified. Only the request-scoped WeakMap value becomes Better Auth's rate-limit address; absent identity rejects rather than substituting a proxy socket. `trust proxy` remains unused. Omitting the option retains direct TLS behavior; no entrypoint activates either production composition.

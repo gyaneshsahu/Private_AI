@@ -1,5 +1,19 @@
 # Restricted development deployment
 
+## Browser-through-proxy rehearsal — 19 October 2026
+
+Build the browser-only test image from the account image described below, then run:
+
+```powershell
+docker build -f tests/fixtures/ingress-browser.Dockerfile -t privateai-ingress-browser-test:local .
+npm run build
+npm run test:ingress -- --browser
+```
+
+The Dockerfile installs Chromium using the lockfile's Playwright1.63.0 tooling, only inside a local test image. The runner still uses an isolated network namespace, unprivileged/read-only application container, bounded tmpfs and no host-published ports. It mounts the current `dist` read-only so browser tests exercise current built assets. Chromium's resolver maps app.cometrow.com to the local Caddy listener; only the ephemeral server certificate SPKI is trusted. No global `ignoreHTTPSErrors`, OS trust installation or production certificate claim. Real app requests reach Caddy→mTLS→Node→disposable PostgreSQL.
+
+7/7 integration cases pass, including the combined built-browser email/passkey/document/vault/restart/account-return/sign-out/outage journey. No automatic retry after drain; email input is preserved and explicit retry succeeds after reconstruction. Synthetic document/draft/passphrase canaries are absent from observed request bodies and captured Caddy logs. This does not audit browser internals/all production logs. Virtual passkey, local email sink and no real Google/Apple interaction remain limitations. Production certificate renewal, network/custody/logging/hosted recovery/load and actual-phone evidence remain open. The new Help UI initially exposed an ambiguous label; explicit IDs fixed it and final expanded proxy/browser runs pass.
+
 ## Authenticated account composition — 19 October 2026
 
 The proxy alternative is now wired **only into the inactive production candidate**, via explicit `ingress.peerCertificateSha256`. The server entrypoint/live Render service is unchanged. It authenticates every route before admission and uses the verified address for account rate limiting. Direct TLS remains the default. Health checks in this mode must traverse the authenticated gateway; no unauthenticated readiness exception was added.

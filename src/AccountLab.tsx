@@ -5,6 +5,7 @@ import { z } from "zod";
 import "./account-preview.css";
 import AccountAccess from "./AccountAccess";
 import AccountDeletion from "./AccountDeletion";
+import { SupportPanel } from "./SupportPanel";
 
 const sessionSchema = z
   .object({ user: z.object({ id: z.string(), email: z.string() }) })
@@ -493,6 +494,10 @@ export default function AccountLab({
           Recovering sign-in cannot recover a lost vault passphrase.
           Private-data chat remains unavailable.
         </p>
+        <details>
+          <summary>Help with sign-in or reporting a problem</summary>
+          <SupportPanel initialArea="account" />
+        </details>
       </section>
     </main>
   );

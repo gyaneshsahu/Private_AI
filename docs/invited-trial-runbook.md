@@ -1,5 +1,15 @@
 # Invited-trial preparation
 
+## Product support preparation — 19 October 2026
+
+The same production architecture is being built for public launch; this runbook now describes the limited-user check before opening access, not a separate prototype. Release remains NOT_READY.
+
+Workspace Help and pre-sign-in Help provide recovery guidance and a reviewed fixed-category note. Nothing is submitted automatically. During authorized evaluation the user can share that note with the access coordinator. Do not request raw transcripts, search snippets, documents, passwords, verification codes, tokens or card data. Reproduce with a synthetic example; record issue category, affected release/configuration, severity, the user's consented description and outcome separately from private content.
+
+For a safety/privacy concern, triage whether the affected capability must be paused using the existing release/admission controls and preserve content-free operational evidence. Never declare an issue resolved merely because a retry works. An incomplete reply remains a delivery failure. For uncertain payments, inspect authenticated provider/current-state evidence before any reviewed retry; browser redirects are not financial proof. For local data loss, do not instruct clearing storage; distinguish unsaved drafts, saved snapshots, encrypted backups and unavailable passphrases.
+
+**Owner setup required before release:** publish and verify a staffed contact, responsible operator/backup, response expectations, intake retention/access rules and a pause/escalation drill. No inbox, ticket service, response SLA or privacy setting was activated by this implementation. Public support claims must stay unavailable until those facts are verified.
+
 Status: synthetic hosted access/restart/staged recovery validated; invited-user release **NOT READY**.
 7 October 2026. This runbook records prerequisites, not permission to invite users.
 

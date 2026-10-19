@@ -24,13 +24,15 @@ import { branchConversation, switchBranch } from "./conversation-branches";
 import { ContextReview } from "./ContextReview";
 import { correctSource, sourceHistoryStatus } from "./source-history";
 import { AccountUsage } from "./AccountUsage";
+import { SupportPanel } from "./SupportPanel";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { abortable } from "./abortable";
 import { createCalculationSession } from "./calculation-session";
 import { parseResearchResult, researchSourceUrl } from "./research-result";
 
-type Tab = "Conversation" | "Context" | "Research" | "Saved" | "Account";
+type Tab =
+  "Conversation" | "Context" | "Research" | "Saved" | "Account" | "Help";
 const Answer = lazy(() =>
   import("./Answer").then((module) => ({ default: module.Answer })),
 );
@@ -712,7 +714,14 @@ export function App() {
         </button>
         <nav aria-label="Workspace">
           {(
-            ["Conversation", "Context", "Research", "Saved", "Account"] as Tab[]
+            [
+              "Conversation",
+              "Context",
+              "Research",
+              "Saved",
+              "Account",
+              "Help",
+            ] as Tab[]
           ).map((name, i) => (
             <button
               className={tab === name ? "nav-item selected" : "nav-item"}
@@ -720,7 +729,9 @@ export function App() {
               onClick={() => setTab(name)}
               aria-current={tab === name ? "page" : undefined}
             >
-              <span aria-hidden="true">{["◌", "▤", "⌕", "▣", "○"][i]}</span>
+              <span aria-hidden="true">
+                {["◌", "▤", "⌕", "▣", "○", "?"][i]}
+              </span>
               {name}
               {name === "Context" && (
                 <small>{conversation.attachments.length}</small>
@@ -767,7 +778,7 @@ export function App() {
               setSource({
                 id: "privacy",
                 title: "Your privacy boundaries",
-                text: "This is a restricted evaluation, not a production privacy guarantee. Chat stays disabled until live confidential processing is qualified. Your device and browser can read local content. Saved history is encrypted when locked; there is no recovery or cloud sync. Temporary content is not intentionally written to application storage, but device memory, browser internals and backups are outside that guarantee. Approved queries and URLs are visible to our research service and the recipient. Anonymous access is not implemented. A malicious website update could capture content before encryption.",
+                text: "This is a restricted evaluation, not a production privacy guarantee. Chat stays disabled until live confidential processing is qualified. Your device and browser can read local content. Saved history is encrypted when locked. There is no passphrase recovery or cloud sync; an explicitly downloaded encrypted backup can restore saved snapshots using its original passphrase. Temporary content is not intentionally written to application storage, but device memory, browser internals and backups are outside that guarantee. Approved queries and URLs are visible to our research service and the recipient. Anonymous access is not implemented. A malicious website update could capture content before encryption.",
               })
             }
           >
@@ -1595,6 +1606,7 @@ export function App() {
             )}
           </section>
         )}
+        {tab === "Help" && <SupportPanel />}
         {tab === "Account" && (
           <AccountUsage
             allowance={status?.requestAllowance}
