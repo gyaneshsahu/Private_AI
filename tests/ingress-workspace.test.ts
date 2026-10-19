@@ -4,12 +4,11 @@ import { X509Certificate, randomBytes, createHash } from "node:crypto";
 import { chromium, expect as browserExpect } from "@playwright/test";
 import { spawn, execFileSync } from "node:child_process";
 import { writeFile, unlink } from "node:fs/promises";
-import express from "express";
 import { resolve } from "node:path";
 import { ingressTLS } from "./fixtures/ingress-tls";
 import { usageDatabase } from "./fixtures/usage-postgres";
 import { applyAccountMigrations } from "../server/account-migrations";
-import { createProductionConsumerCandidate } from "../server/consumer-workspace";
+import { prepareProductionRuntime } from "../server/production-runtime";
 
 describe.runIf(
   !!process.env.PRIVATEAI_SYNTHETIC_INGRESS_TLS_DIR &&
@@ -17,7 +16,7 @@ describe.runIf(
 )("production candidate through authenticated Caddy", () => {
   let tls: Awaited<ReturnType<typeof ingressTLS>>;
   let db: Awaited<ReturnType<typeof usageDatabase>>;
-  let active: ReturnType<typeof createProductionConsumerCandidate>;
+  let active: Awaited<ReturnType<typeof prepareProductionRuntime>>;
   let server: ReturnType<typeof createServer>;
   let proxy: ReturnType<typeof spawn>;
   let exited: Promise<void>;
@@ -29,8 +28,12 @@ describe.runIf(
   const config = ".local/workspace-caddy.conf";
   let cookie = "";
   let streamClosed = false;
-  function make() {
-    const candidate = createProductionConsumerCandidate({
+  async function make(
+    overrides: Partial<Parameters<typeof prepareProductionRuntime>[0]> = {},
+  ) {
+    const candidate = await prepareProductionRuntime({
+      assets: resolve("dist"),
+      tls: { ...tls.server, ca: tls.ca },
       database: db.pool,
       secret,
       ingress: {
@@ -45,11 +48,8 @@ describe.runIf(
           throw Error("Synthetic email only");
         codes.set(email, otp);
       },
+      ...overrides,
     });
-    candidate.app.use(express.static(resolve("dist"), { index: false }));
-    candidate.app.get(["/", "/account"], (_req, res) =>
-      res.sendFile(resolve("dist/index.html")),
-    );
     // Transport probe only, never a model response or a production route.
     candidate.app.get("/synthetic-stream", (_req, res) => {
       res.setHeader("Content-Type", "text/event-stream");
@@ -63,6 +63,61 @@ describe.runIf(
     });
     return candidate;
   }
+  async function restart() {
+    await active.stop();
+    active = await make();
+    server = active.server;
+    await active.listen(port);
+  }
+  it("rejects missing assets, mismatched TLS keys and missing delivery before listening", async () => {
+    await expect(
+      make({ assets: resolve(".local/nonexistent-runtime-assets") }),
+    ).rejects.toThrow("TLS or browser assets");
+    await expect(
+      make({ tls: { ...tls.server, key: tls.other.key, ca: tls.ca } }),
+    ).rejects.toThrow("TLS or browser assets");
+    await expect(make({ deliverCode: undefined })).rejects.toThrow(
+      "runtime configuration",
+    );
+  });
+  it("does not listen or migrate an unprepared database", async () => {
+    const empty = await usageDatabase({ empty: true });
+    try {
+      const runtime = await make({ database: empty.pool });
+      await expect(runtime.listen(0)).rejects.toThrow(
+        "startup was not admitted",
+      );
+      expect(runtime.server.listening).toBe(false);
+      await runtime.stop();
+    } finally {
+      await empty.dispose();
+    }
+  });
+  it("stops idempotently and cannot restart a stopped runtime", async () => {
+    const runtime = await make();
+    await runtime.listen(0);
+    const stopping = runtime.stop();
+    expect(runtime.stop()).toBe(stopping);
+    expect(await stopping).toEqual({ drained: true });
+    expect(runtime.server.listening).toBe(false);
+    await expect(runtime.listen(0)).rejects.toThrow("listen request");
+  });
+  it("cancels startup before admission and rejects unsafe listen parameters", async () => {
+    const runtime = await make();
+    await expect(runtime.listen(-1)).rejects.toThrow("listen request");
+    const starting = runtime.listen(0);
+    const rejected = expect(starting).rejects.toThrow("startup was not admitted");
+    await runtime.stop();
+    await rejected;
+    expect(runtime.server.listening).toBe(false);
+  });
+  it("fails closed on a busy port without replacing the active listener", async () => {
+    const runtime = await make();
+    await expect(runtime.listen(port)).rejects.toThrow("listener unavailable");
+    expect(runtime.server.listening).toBe(false);
+    expect((await call("/readyz")).status).toBe(200);
+    await runtime.stop();
+  });
   function call(
     path: string,
     options: {
@@ -135,20 +190,10 @@ describe.runIf(
     tls = await ingressTLS();
     db = await usageDatabase({ empty: true });
     await applyAccountMigrations(db.pool);
-    active = make();
+    active = await make();
     expect(await active.ready).toBe(true);
-    server = createServer(
-      {
-        ...tls.server,
-        ca: tls.ca,
-        requestCert: true,
-        rejectUnauthorized: true,
-      },
-      (req, res) => active.app(req, res),
-    );
-    server.listen(0, "127.0.0.1");
-    await new Promise<void>((done) => server.once("listening", done));
-    port = (server.address() as { port: number }).port;
+    server = active.server;
+    port = await active.listen(0);
     const executable = process.env.PRIVATEAI_SYNTHETIC_CADDY!;
     await writeFile(
       config,
@@ -300,7 +345,7 @@ describe.runIf(
     expect(JSON.stringify(limits.rows)).not.toContain("198.51.100.");
   });
   it("preserves durable sign-in across composition restart without admitting inference or cross-site writes", async () => {
-    active = make();
+    await restart();
     expect(await active.ready).toBe(true);
     const status = await call("/api/status");
     expect(status.status).toBe(200);
@@ -486,7 +531,7 @@ describe.runIf(
             exact: true,
           })
           .click();
-        active = make();
+        await restart();
         expect(await active.ready).toBe(true);
         await page.reload();
         await tab("Saved").click();
@@ -553,7 +598,7 @@ describe.runIf(
         await browserExpect(
           page.getByLabel("Email address", { exact: true }),
         ).toHaveValue("outage@example.test");
-        active = make();
+        await restart();
         expect(await active.ready).toBe(true);
         await page
           .getByRole("button", { name: "Continue with email", exact: true })

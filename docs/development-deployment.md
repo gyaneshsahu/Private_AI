@@ -1,5 +1,11 @@
 # Restricted development deployment
 
+## Runtime implementation update — 19 October
+
+`prepareProductionRuntime` in `server/production-runtime.ts` now prepares the candidate with a mandatory authenticated gateway, actual HTTPS listener and browser assets. Caller supplies an absolute built-assets directory, TLS server key/leaf and client CA, approved gateway pins, database, authentication secret and reviewed code sender. TLS/key/asset validation precedes admission; `listen(port, host)` waits for read-only schema/recovery readiness and defaults to loopback. `stop(deadlineMs)` drains once; caller owns pool closure and process signals. No environment loader or implicit credential selection. Port0 is supported for ephemeral local verification.
+
+The existing `npm run test:ingress -- --browser` harness exercises this shared runtime:12tests pass, including actual listener restarts across session/vault recovery and startup/shutdown failures. Tests still use only disposable certificates, synthetic accounts and a no-network test sender. This replaces test-only TLS/static wiring, not the live Docker command. The assessment below remains applicable: a reviewed real sender/configuration/entrypoint and hosted operating evidence are required before migration. No new public or private-data access is enabled.
+
 ## Production hosting decision — 19 October 2026, proposed / not activated
 
 **Recommendation:** retain the existing restricted Render service while completing a portable, direct-public Caddy → authenticated mTLS Node → PostgreSQL deployment package. Rehearse that package locally first. A German VM is a credible staging destination, not an approved purchase or a demonstrated production capacity choice. Do not weaken account transport checks simply to fit the current host. This gateway protects account transport; it does not resolve browser-to-enclave verification or provider retention.

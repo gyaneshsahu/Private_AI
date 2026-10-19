@@ -1,5 +1,11 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Latest M6 implementation — reusable TLS runtime, 19 October
+
+`production-runtime.ts` prepares the candidate and mandatory mTLS listener, validates TLS/key/assets, gates listening on read-only database readiness and exposes bounded/idempotent stop. No default process entrypoint, environment activation, sender vendor, database migration or pool ownership. Actual proxy/browser suite now uses this module and performs real socket restarts; final12/12pass, build/typecheck pass, no failed assertions or paid/live changes. See READINESS for tested negatives. Existing Docker command remains restricted old runtime; do not claim deployable public image yet.
+
+Next coherent batch: explicit reviewed secret-file/config and process/pool lifecycle with fail-closed sender integration, reproducible deployment package and recovery/monitoring. Do not silently implement a live sink or arbitrary external sender to bypass the missing reviewed email adapter. Keep provider/private-data/public gates closed. Progress remains roughly70–75% implemented; this is real operational progress within M6, not an invented10-point gain. No new manual access needed for this local batch.
+
 ## Resume next — production runtime package, 19 October
 
 Hosting assessment is at the top of `development-deployment.md`: keep existing Render unchanged; complete portable direct-public Caddy→mTLS Node→PostgreSQL package locally before asking owner to purchase/migrate. Current candidate is still unmounted and Dockerfile starts older `server/index.ts`. Do not confuse passing proxy/browser fixtures with a deployable production image. Next coherent implementation: separate explicit inactive candidate entrypoint, strict configuration and startup/drain, then reproducible package/recovery/operations validation. Missing real email sender, provider qualification and other release gates stay closed; no synthetic sender in live operation.

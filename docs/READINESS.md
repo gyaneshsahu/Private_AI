@@ -1,5 +1,13 @@
 # PrivateAI readiness checklist
 
+## M6 runtime batch — 19 October
+
+`server/production-runtime.ts` now owns the inactive candidate's HTTPS listener, mandatory client-certificate verification, TLS/key/asset preflight, static account/workspace serving, database-gated admission and idempotent bounded shutdown. Explicit caller-owned database and email adapter; no environment activation, automatic migration, signal-handler installation or pool ownership. Loopback binding defaults; all-interface binding requires explicit selection. No inference/search credentials or billing activation added.
+
+Actual Caddy/browser fixture now uses this runtime and closes/reopens the real listener on reconstruction rather than swapping an Express object behind a persistent listener. Final12/12tests pass: complete mobile-width email/virtual-passkey/document/vault/restart workflow, existing ingress/stream/drain checks plus missing assets, mismatched key, missing sender, empty schema, repeated shutdown, cancelled startup, invalid port and port collision. Initial10/10passed before adding two lifecycle cases; no failed assertions this batch. Build/typecheck pass; known verifier zlib warning persists. No paid requests, live settings or human-grade changes.
+
+This is a tested runtime factory, not yet a production CLI/image cutover. Explicit secret-file/config loading, real reviewed sender, process/pool lifecycle, pinned deployment package and hosted certificate/recovery/monitoring remain. The existing Docker default is intentionally unchanged. Overall roughly70–75% implemented (+/-10points), NOT_READY; deployment gap narrowed but not closed.
+
 ## M6 hosting assessment — 19 October, decision preparation only
 
 Source-backed hosting comparison and ordered runtime/certificate/recovery/monitoring work are now in `development-deployment.md`. Current Render TLS-to-HTTP upstream does not satisfy the candidate's authenticated TLS boundary without a separately reviewed adapter. Direct-public Caddy on a German VM matches the local proof but introduces OS/database/certificate operations responsibility; no host purchase or migration before a complete runtime package. Verified source gap: Dockerfile still starts the older `server/index.ts`; the new production composition is unmounted. Local browser proof is not a deployable release image.
