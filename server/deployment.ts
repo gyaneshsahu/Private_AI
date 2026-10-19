@@ -9,7 +9,9 @@ export function deploymentAccess(
   const url = new URL(origin);
   if (url.origin !== origin || url.username || url.password)
     throw new Error("Configure an exact application origin without a path.");
-  const local = url.protocol === "http:" && url.hostname === "127.0.0.1";
+  const local =
+    url.protocol === "http:" &&
+    ["127.0.0.1", "localhost"].includes(url.hostname);
   if (
     !local &&
     (url.protocol !== "https:" ||

@@ -7,6 +7,7 @@ const names = [
   "0002-account-uniqueness.sql",
   "0003-account-security-events.sql",
   "0004-usage-ledger.sql",
+  "0005-consumer-control.sql",
 ] as const;
 interface Migration {
   name: string;

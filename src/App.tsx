@@ -475,7 +475,7 @@ export function App() {
       if (current !== epoch.current) return;
       const result = await api(
         "/api/research/execute",
-        { id: prepared.id },
+        { id: prepared.id, request: approved },
         abort.signal,
       );
       abort.signal.throwIfAborted();

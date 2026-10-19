@@ -1,5 +1,13 @@
 # PrivateAI — architecture and trust boundaries
 
+### Consumer session and research consent — inactive implementation, 19 October
+
+`consumerControl` resolves the maintained auth cookie and independently checks a live verified PostgreSQL session on every workspace API request. Purpose-separated HMACs derive stable per-session CSRF and browser access epochs without another cookie/session map. Mutation admission increments a shared counter atomically. The consumer mode is explicitly localhost-only and incompatible with legacy invite middleware; no production entry point mounts it. HTTP localhost is accepted for synthetic development alongside 127.0.0.1; hosted HTTPS/access controls are unchanged.
+
+Consent preparation validates the disclosure, locks the session, bounds pending grants and stores only a random ID, session FK, HMAC commitment and expiry. Execution requires the same canonical disclosure from browser memory, locks/revalidates the session and atomically consumes the matching grant before retrieval. A database failure cannot authorize forwarding. A request admitted before subsequent revocation may already be in flight; revocation cannot retract information already sent. Cancel/consume races have one outcome; no retry/refund follows a transport failure. Key rotation safely invalidates existing commitments/CSRF and needs an operational rollout policy.
+
+No query/URL/source text enters this schema. Metadata remains sensitive: protect the shared HMAC secret separately from database access, because a compromised key can enable dictionary guesses. Expired commitment rows are removed on later preparation or session deletion; scheduled metadata cleanup/approved retention remain deployment work. The development session counter is not an account-wide abuse policy or dollar limit. Research supplier permission, prompt/privacy gates, global capacity and hosted logging/recovery qualification remain required.
+
 ### Intended production domain — owner decision, 19 October
 
 Owner selected `cometrow.com` and intends to purchase it. Ownership, DNS and HTTPS are unverified. The following topology is proposed for review, not a live configuration or a product rename:

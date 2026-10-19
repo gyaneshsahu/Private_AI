@@ -40,7 +40,25 @@ export function pageUrl(value: string) {
     );
   return url;
 }
-export class Approvals {
+export interface ResearchApprovals {
+  issue(
+    session: string,
+    input: unknown,
+  ):
+    | {
+        id: string;
+        request: Disclosure;
+        recipient: string;
+      }
+    | Promise<{ id: string; request: Disclosure; recipient: string }>;
+  consume(
+    session: string,
+    id: string,
+    input?: unknown,
+  ): Disclosure | Promise<Disclosure>;
+  revoke(session: string, id: string): void | Promise<void>;
+}
+export class Approvals implements ResearchApprovals {
   private records = new Map<
     string,
     { session: string; request: Disclosure; expires: number }
@@ -66,12 +84,20 @@ export class Approvals {
           : new URL(request.value).hostname,
     };
   }
-  consume(session: string, id: string) {
+  consume(session: string, id: string, input?: unknown) {
     const record = this.records.get(id);
     if (!record || record.session !== session || record.expires <= this.now())
       throw new Error(
         "Approval is missing or expired. Review the disclosure again.",
       );
+    if (input !== undefined) {
+      const request = disclosureSchema.parse(input);
+      if (
+        request.kind !== record.request.kind ||
+        request.value !== record.request.value
+      )
+        throw new Error("Disclosure changed. Review it again.");
+    }
     this.records.delete(id);
     return record.request;
   }
@@ -201,9 +227,11 @@ export async function searchWeb(
   signal?: AbortSignal,
   mode: "web" | "llm-context" = "web",
 ): Promise<Source[]> {
-  const url = new URL(mode === "llm-context"
-    ? "https://api.search.brave.com/res/v1/llm/context"
-    : "https://api.search.brave.com/res/v1/web/search");
+  const url = new URL(
+    mode === "llm-context"
+      ? "https://api.search.brave.com/res/v1/llm/context"
+      : "https://api.search.brave.com/res/v1/web/search",
+  );
   url.searchParams.set("q", query);
   url.searchParams.set("count", "5");
   if (mode === "llm-context") {
@@ -231,15 +259,23 @@ export async function searchWeb(
   try {
     const raw: unknown = JSON.parse(await boundedText(response));
     if (mode === "llm-context") return parseLlmContext(raw);
-    const data = z.object({
-      error: z.never().optional(),
-      web: z.object({ results: z.array(z.object({
-        title: z.string().min(1).max(10000),
-        url: z.string().url().max(2000),
-        description: z.string().min(1).max(60000),
-        page_age: z.string().min(1).max(100).optional(),
-      })).max(100) }),
-    }).parse(raw);
+    const data = z
+      .object({
+        error: z.never().optional(),
+        web: z.object({
+          results: z
+            .array(
+              z.object({
+                title: z.string().min(1).max(10000),
+                url: z.string().url().max(2000),
+                description: z.string().min(1).max(60000),
+                page_age: z.string().min(1).max(100).optional(),
+              }),
+            )
+            .max(100),
+        }),
+      })
+      .parse(raw);
     return data.web.results.slice(0, 5).map((result) => {
       const title = load(result.title).text().trim();
       const excerpt = load(result.description).text().trim();
@@ -256,29 +292,45 @@ export async function searchWeb(
       };
     });
   } catch {
-    throw new Error("Search returned invalid source information. No automatic retry was made.");
+    throw new Error(
+      "Search returned invalid source information. No automatic retry was made.",
+    );
   }
 }
 
 // Provider extraction is partial evidence; the browser never treats it as a full-page fetch.
 export function parseLlmContext(input: unknown): Source[] {
-  const data = z.object({
-    error: z.never().optional(),
-    grounding: z.object({ generic: z.array(z.object({
-      url: z.string().url().max(2000), title: z.string().min(1).max(2000),
-      snippets: z.array(z.string().min(1).max(60000)).min(1).max(256),
-    })).max(50) }),
-  }).parse(input);
+  const data = z
+    .object({
+      error: z.never().optional(),
+      grounding: z.object({
+        generic: z
+          .array(
+            z.object({
+              url: z.string().url().max(2000),
+              title: z.string().min(1).max(2000),
+              snippets: z.array(z.string().min(1).max(60000)).min(1).max(256),
+            }),
+          )
+          .max(50),
+      }),
+    })
+    .parse(input);
   const seen = new Set<string>();
-  return data.grounding.generic.slice(0, 5).map(result => {
+  return data.grounding.generic.slice(0, 5).map((result) => {
     const url = pageUrl(result.url).href;
     if (seen.has(url)) throw new Error("Duplicate source URL");
     seen.add(url);
     const text = result.snippets.join("\n\n");
     if (!text.trim() || text.length > 59000 || !result.title.trim())
       throw new Error("Invalid extracted content");
-    return { id: randomBytes(6).toString("hex"), title: result.title, url,
+    return {
+      id: randomBytes(6).toString("hex"),
+      title: result.title,
+      url,
       text: `Provider-extracted page chunks only (full page not fetched): ${text}`,
-      evidenceKind: "llm-context" as const, retrievedAt: new Date().toISOString() };
+      evidenceKind: "llm-context" as const,
+      retrievedAt: new Date().toISOString(),
+    };
   });
 }

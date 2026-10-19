@@ -1,5 +1,7 @@
 # PrivateAI delivery roadmap
 
+M2 latest: durable consumer-session/CSRF and shared single-use research consent now work through the actual local application, with a commitment-only database schema and PostgreSQL expiry/replay/revocation tests. Hosted activation is absent. Next finish account/workspace navigation and browser revocation, then notification delivery and role-separated hosted recovery preparation. Production quotas, paid metering, privacy/provider qualification and release review remain open; see READINESS for exact test scope and retained failures.
+
 M2 latest advance: inactive auth metadata minimization and explicit checksummed migration planning/application now pass the combined 48-test regression (11 files). Social/email/passkey/recovery and durable quotas are locally exercised, not production-approved. Owner selected cometrow.com; purchase confirmation and the proposed app.cometrow.com origin/RP review remain pending for real OAuth/passkey setup. Independent next work is consumer-session/consent binding and workspace integration, then notification/provider setup and deployed recovery with owner-controlled activation.
 
 

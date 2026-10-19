@@ -1,4 +1,4 @@
-import express from "express";
+import express, { type RequestHandler } from "express";
 import { deploymentAccess } from "./deployment";
 import { inviteAccess } from "./invite-access";
 import type { InviteRegistry } from "./invite-registry";
@@ -6,8 +6,17 @@ import { randomBytes, randomUUID } from "node:crypto";
 import type { UsageLedger } from "./usage-contract";
 import { once } from "node:events";
 import { z } from "zod";
-import { validateQualification, type Qualification } from "../shared/contracts";
-import { Approvals, fetchPage, searchWeb } from "./research";
+import {
+  disclosureSchema,
+  validateQualification,
+  type Qualification,
+} from "../shared/contracts";
+import {
+  Approvals,
+  fetchPage,
+  searchWeb,
+  type ResearchApprovals,
+} from "./research";
 import { fetch } from "undici";
 import {
   serviceDispatcher,
@@ -25,13 +34,28 @@ export interface Config {
   accessKey?: string;
   invites?: InviteRegistry;
   usage?: UsageLedger;
+  /** Inactive consumer integration: injected only by synthetic test harnesses. */
+  consumer?: { session: RequestHandler; approvals: ResearchApprovals };
 }
 export function createApp(config: Config) {
   const app = express();
   app.disable("x-powered-by");
-  app.use(deploymentAccess(config.origin, config.accessKey, !!config.invites));
+  if (
+    config.consumer &&
+    (config.invites || new URL(config.origin).hostname !== "localhost")
+  )
+    throw Error(
+      "Consumer integration is limited to the isolated localhost lab.",
+    );
+  app.use(
+    deploymentAccess(
+      config.origin,
+      config.accessKey,
+      !!config.invites || !!config.consumer,
+    ),
+  );
   if (config.invites) app.use(inviteAccess(config.origin, config.invites));
-  const approvals = new Approvals();
+  const approvals = config.consumer?.approvals ?? new Approvals();
   const sessions = new Map<
     string,
     {
@@ -77,69 +101,73 @@ export function createApp(config: Config) {
     );
     next();
   });
-  app.use("/api", (req, res, next) => {
-    const now = Date.now();
-    for (const [id, session] of sessions)
-      if (session.expires <= now) sessions.delete(id);
-    let id = req.headers.cookie
-      ?.split(";")
-      .map((s) => s.trim())
-      .find((s) => s.startsWith("privateai-session="))
-      ?.slice(18);
-    if (
-      id &&
-      (sessions.get(id)?.accountId !== res.locals.accountId ||
-        sessions.get(id)?.accessSession !== res.locals.accessSession)
-    ) {
-      id = undefined;
-    }
-    if (!id || !sessions.has(id)) {
-      if (req.path !== "/status" || req.method !== "GET") {
-        res
-          .status(401)
-          .json({ error: "Session expired. Reload the application." });
-        return;
-      }
-      if (sessions.size >= 100) {
-        const nextExpiry = Math.min(
-          ...Array.from(sessions.values(), (s) => s.expires),
-        );
-        res.setHeader(
-          "Retry-After",
-          String(Math.max(1, Math.ceil((nextExpiry - now) / 1000))),
-        );
-        res.status(429).json({ error: "Session limit reached." });
-        return;
-      }
-      id = randomBytes(32).toString("hex");
-      sessions.set(id, {
-        csrf: randomBytes(32).toString("hex"),
-        expires: now + 3600000,
-        count: 0,
-        accountId: res.locals.accountId,
-        accessSession: res.locals.accessSession,
-      });
-      res.setHeader(
-        "Set-Cookie",
-        `privateai-session=${id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600${config.origin.startsWith("https:") ? "; Secure" : ""}`,
-      );
-    }
-    const session = sessions.get(id)!;
-    res.locals.session = id;
-    res.locals.csrf = session.csrf;
-    if (
-      req.method !== "GET" &&
-      req.headers["x-privateai-csrf"] !== session.csrf
-    ) {
-      res.status(403).json({ error: "Request authorization failed." });
-      return;
-    }
-    if (req.method === "POST" && ++session.count > 200) {
-      res.status(429).json({ error: "Evaluation request limit reached." });
-      return;
-    }
-    next();
-  });
+  app.use(
+    "/api",
+    config.consumer?.session ??
+      ((req, res, next) => {
+        const now = Date.now();
+        for (const [id, session] of sessions)
+          if (session.expires <= now) sessions.delete(id);
+        let id = req.headers.cookie
+          ?.split(";")
+          .map((s) => s.trim())
+          .find((s) => s.startsWith("privateai-session="))
+          ?.slice(18);
+        if (
+          id &&
+          (sessions.get(id)?.accountId !== res.locals.accountId ||
+            sessions.get(id)?.accessSession !== res.locals.accessSession)
+        ) {
+          id = undefined;
+        }
+        if (!id || !sessions.has(id)) {
+          if (req.path !== "/status" || req.method !== "GET") {
+            res
+              .status(401)
+              .json({ error: "Session expired. Reload the application." });
+            return;
+          }
+          if (sessions.size >= 100) {
+            const nextExpiry = Math.min(
+              ...Array.from(sessions.values(), (s) => s.expires),
+            );
+            res.setHeader(
+              "Retry-After",
+              String(Math.max(1, Math.ceil((nextExpiry - now) / 1000))),
+            );
+            res.status(429).json({ error: "Session limit reached." });
+            return;
+          }
+          id = randomBytes(32).toString("hex");
+          sessions.set(id, {
+            csrf: randomBytes(32).toString("hex"),
+            expires: now + 3600000,
+            count: 0,
+            accountId: res.locals.accountId,
+            accessSession: res.locals.accessSession,
+          });
+          res.setHeader(
+            "Set-Cookie",
+            `privateai-session=${id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600${config.origin.startsWith("https:") ? "; Secure" : ""}`,
+          );
+        }
+        const session = sessions.get(id)!;
+        res.locals.session = id;
+        res.locals.csrf = session.csrf;
+        if (
+          req.method !== "GET" &&
+          req.headers["x-privateai-csrf"] !== session.csrf
+        ) {
+          res.status(403).json({ error: "Request authorization failed." });
+          return;
+        }
+        if (req.method === "POST" && ++session.count > 200) {
+          res.status(429).json({ error: "Evaluation request limit reached." });
+          return;
+        }
+        next();
+      }),
+  );
   app.get("/api/status", async (_req, res) => {
     const q = parseQualification();
     const ready = !!q && !!config.apiKey;
@@ -308,32 +336,39 @@ export function createApp(config: Config) {
     },
   );
   app.use("/api", express.json({ limit: "8kb" }));
-  app.post("/api/research/prepare", (req, res) => {
+  app.post("/api/research/prepare", async (req, res) => {
     try {
-      res.json(approvals.issue(res.locals.session, req.body));
+      res.json(await approvals.issue(res.locals.session, req.body));
     } catch {
       res.status(400).json({
         error: "Invalid disclosure. Use a short query or public HTTPS URL.",
       });
     }
   });
-  app.post("/api/research/cancel", (req, res) => {
+  app.post("/api/research/cancel", async (req, res) => {
     const { id } = z
       .object({ id: z.string().length(48) })
       .strict()
       .parse(req.body);
-    approvals.revoke(res.locals.session, id);
+    await approvals.revoke(res.locals.session, id);
     res.json({ cancelled: true });
   });
   app.post("/api/research/execute", async (req, res) => {
     const abort = new AbortController();
     res.on("close", () => abort.abort());
     try {
-      const { id } = z
-        .object({ id: z.string().length(48) })
+      const { id, request: disclosure } = z
+        .object({
+          id: z.string().length(48),
+          request: disclosureSchema.optional(),
+        })
         .strict()
         .parse(req.body);
-      const request = approvals.consume(res.locals.session, id);
+      const request = await approvals.consume(
+        res.locals.session,
+        id,
+        disclosure,
+      );
       if (request.kind === "search" && !config.searchKey) {
         res.status(503).json({
           error: "Search service is not configured. No query was sent.",

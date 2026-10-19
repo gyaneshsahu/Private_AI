@@ -389,7 +389,9 @@ it.skipIf(!connectionString)(
 );
 afterAll(async () => {
   vi.unstubAllGlobals();
-  if (localAgent) await localAgent.close();
+  // Header-only negative checks can leave bodies unread. Tests have completed;
+  // discard their isolated sockets instead of waiting for those bodies forever.
+  if (localAgent) await localAgent.destroy();
   if (server)
     await new Promise<void>((resolve) => server.close(() => resolve()));
   if (tls) await tls.dispose();
