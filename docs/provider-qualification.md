@@ -1,5 +1,13 @@
 # Provider qualification — NOT_PASSED
 
+## 19 October — synthetic release check and batched protocol question
+
+Read-only pinned SDK verification reports router v0.0.159, SEV-SNPv2, digest `1ffc1cde7acd5134367cb9f430024203ed4455a51ee4473f7b3e75bd556d0a6b`. Scoped public routing/admission changes and exact tag configs were reviewed before the separate synthetic permits. The compare API reported diverged history, so exact configs were checked: CVM0.14.13 and safeguards0.1.1 unchanged, router image changed. This is not a full audit, continuous freshness/revocation evidence or production qualification.
+
+The [structured-output guide](https://docs.tinfoil.sh/guides/structured-outputs), inspected19October, describes JSON-schema constrained generation. The [tool-calling guide](https://docs.tinfoil.sh/guides/tool-calling) documents tool-result continuation. Neither establishes that GPT-OSS automatic tool arguments on our exact deployment are schema-constrained. Latest synthetic run timed out with unfinished arguments containing invalid evidence enum values; no explanation request was reached.
+
+Add to the existing supplier evidence queue, without sending another email now: which deployed GPT-OSS configurations support enforced JSON Schema for native tool arguments versus response_format; supported schema subset/limits; whether constraints apply during automatic tool selection; and a released browser-compatible example. Constrained syntax would not prove correct operands, method or factual support. Freshness/revocation/TDX, worker binding and retention blockers below remain open.
+
 ## Supplier reply received — 15 October 2026
 
 Founder supplied a reply signed Sacha on15October; the original email timestamp/headers were not supplied. Record the receipt date here, not an inferred send date. Supplier answers:
