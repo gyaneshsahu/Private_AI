@@ -129,7 +129,7 @@ export function App() {
     let active = true;
     fetch("/api/status", { cache: "no-store" })
       .then(async (r) => {
-        if (r.status === 401 && window.location.hostname === "localhost") {
+        if (r.status === 401) {
           const denied = await r.json();
           if (active && denied.consumerWorkspace === true) {
             accessNavigation.current = true;
@@ -1432,15 +1432,12 @@ export function App() {
         {tab === "Account" && (
           <AccountUsage
             allowance={status?.requestAllowance}
-            consumer={
-              status?.consumerWorkspace &&
-              window.location.hostname === "localhost"
-            }
+            consumer={status?.consumerWorkspace}
             busy={!!busy}
             onManage={() => {
               if (!allowReplace()) return;
               accessNavigation.current = true;
-              window.location.assign("/?account-lab=1");
+              window.location.assign("/auth");
             }}
           />
         )}

@@ -12,9 +12,9 @@ const lab =
   pageUrl.searchParams.get("account-lab") === "1";
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    {lab ? (
-      <Suspense fallback={<p>Loading account lab…</p>}>
-        <AccountLab />
+    {lab || pageUrl.pathname === "/account" ? (
+      <Suspense fallback={<p>Loading account…</p>}>
+        <AccountLab synthetic={lab} />
       </Suspense>
     ) : isAccountPreview(new URL(window.location.href)) ? (
       <AccountPreview />

@@ -2,18 +2,22 @@ import { useState } from "react";
 
 export default function AccountDeletion({
   closed,
+  synthetic = true,
 }: {
   closed: () => Promise<void>;
+  synthetic?: boolean;
 }) {
+  const phrase = synthetic ? "DELETE TEST ACCOUNT" : "DELETE ACCOUNT";
+  const title = synthetic ? "Delete test account" : "Close account";
   const [confirmation, setConfirmation] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   return (
-    <section aria-label="Delete test account">
-      <h2>Delete test account</h2>
+    <section aria-label={title}>
+      <h2>{title}</h2>
       <p>
         This closes account access and signs out every session. Verify your
-        email again first. This action cannot be undone in the lab.
+        email again first. Account reopening is not available.
       </p>
       <p className="account-preview-small">
         Credential deletion is prepared for a seven-day retention period, but no
@@ -21,12 +25,12 @@ export default function AccountDeletion({
         reconciliation. Saved conversations in this browser, other devices,
         exports and provider records are not erased here. Delete local snapshots
         in Saved before closing the account. No real subscription is connected
-        to this lab.
+        here yet.
       </p>
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          if (confirmation !== "DELETE TEST ACCOUNT") return;
+          if (confirmation !== phrase) return;
           setBusy(true);
           setMessage("");
           void (async () => {
@@ -61,7 +65,7 @@ export default function AccountDeletion({
         }}
       >
         <label htmlFor="close-account-confirmation">
-          Type DELETE TEST ACCOUNT to confirm
+          Type {phrase} to confirm
         </label>
         <input
           id="close-account-confirmation"
@@ -70,11 +74,8 @@ export default function AccountDeletion({
           autoComplete="off"
           disabled={busy}
         />
-        <button
-          type="submit"
-          disabled={busy || confirmation !== "DELETE TEST ACCOUNT"}
-        >
-          Close test account
+        <button type="submit" disabled={busy || confirmation !== phrase}>
+          {synthetic ? "Close test account" : "Close account"}
         </button>
       </form>
       <p aria-live="polite">{busy ? "Closing account…" : message}</p>

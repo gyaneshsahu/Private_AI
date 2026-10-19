@@ -17,8 +17,8 @@ export function AccountUsage({
       {consumer && (
         <div className="panel">
           <p>
-            Synthetic account workspace. Live identity providers and
-            subscriptions are not enabled.
+            Manage your sign-in methods and account access. Paid subscriptions
+            are not enabled.
           </p>
           <button disabled={busy} onClick={onManage}>
             Manage sign-in methods

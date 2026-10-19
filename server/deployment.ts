@@ -1,10 +1,12 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import type { RequestHandler } from "express";
+import { TLSSocket } from "node:tls";
 
 export function deploymentAccess(
   origin: string,
   accessKey?: string,
   individualAccess = false,
+  transport: "forwarded" | "direct-tls" = "forwarded",
 ): RequestHandler {
   const url = new URL(origin);
   if (url.origin !== origin || url.username || url.password)
@@ -37,7 +39,9 @@ export function deploymentAccess(
     }
     if (
       req.headers.host !== url.host ||
-      req.headers["x-forwarded-proto"] !== "https"
+      (transport === "direct-tls"
+        ? !(req.socket instanceof TLSSocket && req.socket.encrypted)
+        : req.headers["x-forwarded-proto"] !== "https")
     ) {
       res.status(403).json({ error: "HTTPS application origin required." });
       return;

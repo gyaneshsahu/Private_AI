@@ -12,11 +12,13 @@ const sessionSchema = z
 const providerSchema = z.enum(["google", "apple"]);
 type Provider = z.infer<typeof providerSchema>;
 const optionsSchema = z.object({
-  synthetic: z.literal(true),
+  synthetic: z.boolean(),
   socialProviders: z.array(providerSchema),
   workspaceEnabled: z.boolean().optional(),
 });
-const accountsSchema = z.array(z.object({ providerId: z.string() }));
+const accountsSchema = z.object({
+  providers: z.array(z.object({ providerId: z.string() })),
+});
 const noticesSchema = z.object({
   notices: z.array(
     z.object({
@@ -47,13 +49,18 @@ const client = createAuthClient({
   plugins: [passkeyClient()],
 });
 
-/** Synthetic-only UI; no production route mounts its authentication backend. */
-export default function AccountLab() {
+/** Shared screen; the production candidate backend remains unmounted. */
+export default function AccountLab({
+  synthetic = true,
+}: {
+  synthetic?: boolean;
+}) {
   const [session, setSession] = useState<z.infer<typeof sessionSchema>>(null);
-  const [email, setEmail] = useState("alice@example.test");
+  const [email, setEmail] = useState(synthetic ? "alice@example.test" : "");
   const [code, setCode] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [ready, setReady] = useState(false);
   const [notice, setNotice] = useState("");
   const [providers, setProviders] = useState<Provider[]>([]);
   const [linked, setLinked] = useState<string[]>([]);
@@ -71,14 +78,14 @@ export default function AccountLab() {
     const current = sessionSchema.parse(await response.json());
     setSession(current);
     if (current) {
-      const accounts = await fetch("/api/auth/list-accounts", {
+      const accounts = await fetch("/api/account/access", {
         cache: "no-store",
       });
       if (!accounts.ok) throw Error("account list unavailable");
       setLinked(
         accountsSchema
           .parse(await accounts.json())
-          .map((account) => account.providerId),
+          .providers.map((account) => account.providerId),
       );
       const response = await fetch("/api/account/security-notices", {
         cache: "no-store",
@@ -105,25 +112,37 @@ export default function AccountLab() {
       .then(async (response) => {
         if (!response.ok) throw Error("unavailable");
         const options = optionsSchema.parse(await response.json());
+        if (options.synthetic !== synthetic)
+          throw Error("Account mode mismatch");
         setProviders(options.socialProviders);
         setWorkspaceEnabled(options.workspaceEnabled === true);
+        await refresh();
+        setReady(true);
       })
-      .catch(() => setProviders([]));
-    refresh().catch(() =>
-      setNotice("The synthetic account service is not running here."),
-    );
-  }, []);
+      .catch(() => {
+        setReady(false);
+        setProviders([]);
+        setNotice(
+          synthetic
+            ? "The synthetic account service is not running here."
+            : "Account sign-in is not available here yet. No information has been submitted.",
+        );
+      });
+  }, [synthetic]);
   useEffect(() => {
     if (sent) codeInput.current?.focus();
   }, [sent]);
   async function action(run: () => Promise<void>) {
+    if (!ready) return;
     setBusy(true);
     setNotice("");
     try {
       await run();
-    } catch {
+    } catch (error) {
       setNotice(
-        "This action could not complete. Check the code or use another sign-in method. No automatic retry was made.",
+        error instanceof Error && error.message === "delivery-unconfirmed"
+          ? "Code delivery could not be confirmed. Wait before requesting another code; a delayed code may still arrive. No automatic retry was made."
+          : "This action could not complete. Check the code or use another sign-in method. No automatic retry was made.",
       );
     } finally {
       setBusy(false);
@@ -135,10 +154,15 @@ export default function AccountLab() {
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
     });
-    if (!response.ok) throw Error("not completed");
+    if (!response.ok)
+      throw Error(
+        path === "email-otp/send-verification-otp" && response.status === 503
+          ? "delivery-unconfirmed"
+          : "not completed",
+      );
   }
   async function social(provider: Provider, link = false) {
-    const callbackURL = `${window.location.origin}/?account-lab=1`;
+    const callbackURL = `${window.location.origin}${synthetic ? "/?account-lab=1" : "/account"}`;
     const response = await fetch(
       `/api/auth/${link ? "link-social" : "sign-in/social"}`,
       {
@@ -172,11 +196,20 @@ export default function AccountLab() {
         Private<span>AI</span>
       </a>
       <aside className="account-preview-banner">
-        Synthetic account lab · .test addresses only. No real email, provider
-        login or private chat.
+        {synthetic
+          ? "Synthetic account lab · .test addresses only. No real email, provider login or private chat."
+          : "Early access preparation · Private chat is not available."}
       </aside>
       <section className="account-preview-card">
-        <h1>{session ? "Your test account" : "Sign in to the account lab"}</h1>
+        <h1>
+          {session
+            ? synthetic
+              ? "Your test account"
+              : "Your account"
+            : synthetic
+              ? "Sign in to the account lab"
+              : "Sign in to PrivateAI"}
+        </h1>
         <p className="account-preview-intro">
           Sign-in access is separate from your encrypted vault.
         </p>
@@ -185,7 +218,11 @@ export default function AccountLab() {
             <p>
               Signed in as <strong>{session.user.email}</strong>
             </p>
-            {workspaceEnabled && <a href="/">Open test workspace</a>}
+            {workspaceEnabled && (
+              <a href="/">
+                {synthetic ? "Open test workspace" : "Open workspace"}
+              </a>
+            )}
             {providers.map((provider) => (
               <button
                 key={provider}
@@ -211,7 +248,7 @@ export default function AccountLab() {
                     return;
                   }
                   setNotice(
-                    "Sign-in recovery complete. Other sessions were signed out. Check the security-notice status below; this lab sends no real email. Linked credentials and vault encryption are unchanged.",
+                    `Sign-in recovery complete. Other sessions were signed out. Check the security-notice status below${synthetic ? "; this lab sends no real email" : ""}. Linked credentials and vault encryption are unchanged.`,
                   );
                   await refresh();
                 })
@@ -248,28 +285,34 @@ export default function AccountLab() {
               onClick={() =>
                 action(async () => {
                   const result = await client.passkey.addPasskey({
-                    name: "PrivateAI synthetic passkey",
+                    name: synthetic
+                      ? "PrivateAI synthetic passkey"
+                      : "PrivateAI passkey",
                   });
                   if (result.error) throw Error("registration failed");
-                  setNotice("Test passkey added.");
+                  setNotice(
+                    synthetic ? "Test passkey added." : "Passkey added.",
+                  );
                   await refresh();
                 })
               }
             >
-              Add test passkey
+              {synthetic ? "Add test passkey" : "Add passkey"}
             </button>
-            <button
-              disabled={busy}
-              onClick={() =>
-                action(async () => {
-                  await post("revoke-other-sessions", {});
-                  setNotice("Other test sessions revoked.");
-                  await refresh();
-                })
-              }
-            >
-              Sign out other test sessions
-            </button>
+            {synthetic && (
+              <button
+                disabled={busy}
+                onClick={() =>
+                  action(async () => {
+                    await post("revoke-other-sessions", {});
+                    setNotice("Other test sessions revoked.");
+                    await refresh();
+                  })
+                }
+              >
+                Sign out other test sessions
+              </button>
+            )}
             <button
               disabled={busy}
               onClick={() =>
@@ -285,12 +328,13 @@ export default function AccountLab() {
               Sign out
             </button>
             <AccountDeletion
+              synthetic={synthetic}
               closed={async () => {
                 await refresh();
                 setCode("");
                 setSent(false);
                 setNotice(
-                  "Test account closed; all sessions were signed out. Credential purge is not scheduled. Local saved history and retained usage records were not erased.",
+                  `${synthetic ? "Test account" : "Account"} closed; all sessions were signed out. Credential purge is not scheduled. Local saved history and retained usage records were not erased.`,
                 );
               }}
             />
@@ -318,7 +362,7 @@ export default function AccountLab() {
               event.preventDefault();
               void action(async () => {
                 if (!sent) {
-                  if (!/^[^\s@]+@[^\s@]+\.test$/i.test(email)) {
+                  if (synthetic && !/^[^\s@]+@[^\s@]+\.test$/i.test(email)) {
                     setNotice("Use a synthetic .test email address.");
                     return;
                   }
@@ -328,7 +372,9 @@ export default function AccountLab() {
                   });
                   setSent(true);
                   setNotice(
-                    "A test code is available in the test harness. No email was sent.",
+                    synthetic
+                      ? "A test code is available in the test harness. No email was sent."
+                      : "Code request accepted. Check your email; delivery may take a moment.",
                   );
                 } else {
                   await post("sign-in/email-otp", { email, otp: code });
@@ -348,7 +394,9 @@ export default function AccountLab() {
                 Continue with {provider === "google" ? "Google" : "Apple"}
               </button>
             ))}
-            <label htmlFor="lab-email">Test email address</label>
+            <label htmlFor="lab-email">
+              {synthetic ? "Test email address" : "Email address"}
+            </label>
             <input
               id="lab-email"
               type="email"
@@ -356,7 +404,8 @@ export default function AccountLab() {
               readOnly={sent}
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              autoComplete="off"
+              autoComplete={synthetic ? "off" : "email"}
+              disabled={!ready || busy}
             />
             {sent && (
               <>
@@ -376,10 +425,16 @@ export default function AccountLab() {
             )}
             <button
               className="account-preview-primary"
-              disabled={busy}
+              disabled={busy || !ready}
               type="submit"
             >
-              {sent ? "Verify test code" : "Send test code"}
+              {sent
+                ? synthetic
+                  ? "Verify test code"
+                  : "Verify code"
+                : synthetic
+                  ? "Send test code"
+                  : "Continue with email"}
             </button>
             {sent && (
               <button
@@ -395,7 +450,7 @@ export default function AccountLab() {
               </button>
             )}
             <button
-              disabled={busy}
+              disabled={busy || !ready}
               type="button"
               onClick={() =>
                 action(async () => {
@@ -405,7 +460,9 @@ export default function AccountLab() {
                 })
               }
             >
-              Sign in with a test passkey
+              {synthetic
+                ? "Sign in with a test passkey"
+                : "Sign in with a passkey"}
             </button>
           </form>
         )}
@@ -413,12 +470,16 @@ export default function AccountLab() {
           {busy ? "Working…" : notice}
         </p>
         <p className="account-preview-small">
-          Social buttons, when available, use synthetic provider fixtures only.
-          The planned live flow shares your verified email and provider identity
-          with PrivateAI; the provider learns that you signed in here. No chat
-          content is part of sign-in. Recovering sign-in cannot recover a lost
-          vault passphrase. This lab grants no access to existing accounts or
-          private-data chat.
+          {synthetic
+            ? "Social buttons, when available, use synthetic provider fixtures only. "
+            : ""}
+          PrivateAI stores your email address, provider identifiers, passkey
+          public credentials and session records. Email sign-in requires an
+          email-delivery provider. Social sign-in, when enabled, shares your
+          verified email and provider identity with PrivateAI; the provider
+          learns that you signed in here. No chat content is part of sign-in.
+          Recovering sign-in cannot recover a lost vault passphrase.
+          Private-data chat remains unavailable.
         </p>
       </section>
     </main>

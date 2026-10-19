@@ -2,7 +2,7 @@
 
 ## Production domain preparation — 19 October 2026
 
-**Account implementation update:** an unmounted email/passkey production-origin candidate now shares the tested account protections. It requires direct TLS and an explicitly supplied sender; there is no provider/sender environment activation. It is not ready to mount behind Render's TLS-terminating proxy. Reviewed edge trust, production UI/workspace composition, Google/Apple credential adapters, sender setup and hosted verification remain prerequisites. See ARCHITECTURE for the bounded delivery contract and precise test limitations.
+**Account implementation update:** the unmounted email/passkey production-origin candidate now composes account controls with the workspace and prepared `/account` screen. It requires direct TLS and an explicitly supplied sender; no environment flag activates it. It is not ready to mount behind Render's TLS-terminating proxy. Reviewed edge trust/client-address policy, Google/Apple credential adapters, sender setup, hosted verification and rollout review remain prerequisites. The existing production entrypoint is unchanged. See ARCHITECTURE for delivery semantics and local test limitations.
 
 **PREPARED / NOT APPLIED.** Founder confirms purchase of `cometrow.com` and approves `https://app.cometrow.com` for PrivateAI's app and sign-in. No DNS, hosting, OAuth, email, billing or account-migration change is authorized by this preparation. The historical deployment instructions below are not a current production rollout command.
 

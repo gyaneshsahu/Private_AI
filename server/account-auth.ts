@@ -66,6 +66,7 @@ export interface ProductionAccountCandidateConfig {
   database: Pool;
   /** Supplied by a separately reviewed email adapter; tests use a no-network sink. */
   deliverCode: SignInCodeSender;
+  workspaceEnabled?: boolean;
 }
 
 /** Unmounted preparation. Direct TLS only; no environment flag or proxy trust shortcut. */
@@ -82,6 +83,7 @@ export function createProductionAccountCandidate(
     deliverCode: (message) => submitSignInCode(message, config.deliverCode),
     origin: productionAccountTarget.origin,
     synthetic: false,
+    workspaceEnabled: config.workspaceEnabled === true,
   });
 }
 
@@ -400,10 +402,7 @@ function createAccountAuth(
   });
   const router = express.Router();
   router.use(async (req, res, next) => {
-    if (
-      !req.path.startsWith("/api/auth/") &&
-      !req.path.startsWith("/api/account/")
-    ) {
+    if (!req.path.startsWith("/api/")) {
       next();
       return;
     }

@@ -2,10 +2,13 @@ import express from "express";
 import {
   createSyntheticAccountAuth,
   type SyntheticAccountConfig,
+  createProductionAccountCandidate,
+  type ProductionAccountCandidateConfig,
 } from "./account-auth";
 import { consumerControl } from "./consumer-control";
 import { createApp } from "./app";
 import { PostgresUsageLedger } from "./usage-postgres";
+import { productionAccountTarget } from "../shared/account-design";
 
 /** Test harness composition only. No production mount or inference key support. */
 export function createSyntheticConsumerWorkspace(
@@ -35,4 +38,32 @@ export function createSyntheticConsumerWorkspace(
     }),
   );
   return { app, auth: lab.auth, control, usage };
+}
+
+/** Inactive composition; no inference/search credentials, provider activation or migration. */
+export function createProductionConsumerCandidate(
+  config: ProductionAccountCandidateConfig,
+) {
+  const account = createProductionAccountCandidate({
+    ...config,
+    workspaceEnabled: true,
+  });
+  const control = consumerControl({
+    database: config.database,
+    secret: config.secret,
+    auth: account.auth,
+  });
+  const usage = new PostgresUsageLedger(config.database);
+  const app = express();
+  app.disable("x-powered-by");
+  // This boundary also scopes getSession calls from workspace APIs to the current request.
+  app.use(account.router);
+  const workspace = createApp({
+    origin: productionAccountTarget.origin,
+    consumer: { ...control, mode: "production-candidate" },
+    usage,
+  });
+  app.use(workspace);
+  app.get("/auth", (_req, res) => res.redirect(303, "/account"));
+  return { app, auth: account.auth, control, usage };
 }

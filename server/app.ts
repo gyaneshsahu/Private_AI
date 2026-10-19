@@ -4,6 +4,7 @@ import { inviteAccess } from "./invite-access";
 import type { InviteRegistry } from "./invite-registry";
 import { randomBytes, randomUUID } from "node:crypto";
 import type { UsageLedger } from "./usage-contract";
+import { productionAccountTarget } from "../shared/account-design";
 import { once } from "node:events";
 import { z } from "zod";
 import {
@@ -34,24 +35,37 @@ export interface Config {
   accessKey?: string;
   invites?: InviteRegistry;
   usage?: UsageLedger;
-  /** Inactive consumer integration: injected only by synthetic test harnesses. */
-  consumer?: { session: RequestHandler; approvals: ResearchApprovals };
+  /** Unmounted consumer composition. Candidate mode never accepts upstream credentials. */
+  consumer?: {
+    session: RequestHandler;
+    approvals: ResearchApprovals;
+    mode?: "production-candidate";
+  };
 }
 export function createApp(config: Config) {
   const app = express();
   app.disable("x-powered-by");
+  const productionCandidate = config.consumer?.mode === "production-candidate";
   if (
     config.consumer &&
-    (config.invites || new URL(config.origin).hostname !== "localhost")
+    (config.invites ||
+      (productionCandidate
+        ? config.origin !== productionAccountTarget.origin ||
+          !!config.apiKey ||
+          !!config.searchKey ||
+          config.qualification !== undefined ||
+          !!config.dev
+        : new URL(config.origin).hostname !== "localhost"))
   )
     throw Error(
-      "Consumer integration is limited to the isolated localhost lab.",
+      "Consumer integration requires the isolated lab or the unqualified production candidate without upstream credentials.",
     );
   app.use(
     deploymentAccess(
       config.origin,
       config.accessKey,
       !!config.invites || !!config.consumer,
+      productionCandidate ? "direct-tls" : "forwarded",
     ),
   );
   if (config.invites) app.use(inviteAccess(config.origin, config.invites));
