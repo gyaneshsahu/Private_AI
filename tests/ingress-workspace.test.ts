@@ -328,6 +328,7 @@ describe.runIf(
     ).toBe(403);
   });
   it("delivers streamed chunks and propagates cancellation without synthesizing an inference pass", async () => {
+    const before = active.operations.snapshot();
     streamClosed = false;
     const streamed = await call("/synthetic-stream");
     expect(streamed.status).toBe(200);
@@ -340,6 +341,11 @@ describe.runIf(
     for (let i = 0; !streamClosed && i < 20; i++)
       await new Promise((done) => setTimeout(done, 10));
     expect(streamClosed).toBe(true);
+    expect(active.operations.snapshot()).toMatchObject({
+      completed: before.completed + 1,
+      aborted: before.aborted + 1,
+      inFlight: 0,
+    });
   });
   it.runIf(process.env.PRIVATEAI_SYNTHETIC_INGRESS_BROWSER === "1")(
     "runs the built mobile account, passkey and encrypted document workspace through Caddy",

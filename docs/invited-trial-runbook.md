@@ -1,5 +1,13 @@
 # Invited-trial preparation
 
+## Operations snapshot preparation — 19 October
+
+The inactive composition now exposes `operations.snapshot()` to trusted server code only. It contains process-local aggregate request/response/readiness/latency counters, no content or account identifiers. No HTTP export/collection/alert service is active. `completed` is transport finish, not useful AI answers;5xxcounts include expected unavailable-feature responses. Do not infer quality, charges or readiness from these totals alone.
+
+Before deployment, select and review an authenticated collection path, bounded retention, per-instance/restart handling and missing-signal detection; test independent alerts while the development computer is off. Add proxy/TLS/certificate/disk/backup signals not covered by application counters. Bind alert thresholds to measured release traffic and rehearse operator response. Do not enable default request/access/error logging that captures paths, queries, cookies, credentials or content as a shortcut.
+
+Proposed email contact is `support@cometrow.com`; it is not created, verified or published. Owner confirmation and mailbox delivery/response checks remain necessary before using it as a real support link.
+
 ## Product support preparation — 19 October 2026
 
 **Owner-confirmed operating plan, 19 October:** operate from Germany as an individual at present; a registered company may be considered later if the business earns revenue. Email is the selected support channel. Exact support address, mailbox readiness, response expectations and legal/payment onboarding details remain unconfirmed. This records product planning, not verification of business registration, tax status or permission to sell. No company formation, mailbox/DNS change, billing activation or public launch is authorized by this statement.

@@ -3,6 +3,7 @@ import type { Server } from "node:http";
 import type { Pool, PoolClient } from "pg";
 import { planAccountMigrations } from "./account-migrations";
 import { accountRecoveryOpen } from "./account-restore";
+import { operationMetrics } from "./operation-metrics";
 
 /** No migrations, retries or recovery-state changes. Late acquisitions are released. */
 export function inspectProductionDatabase(
@@ -54,6 +55,7 @@ export function inspectProductionDatabase(
 
 /** Admission/readiness for the inactive candidate, not provider or release qualification. */
 export function productionOperations(database: Pool) {
+  const metrics = operationMetrics();
   let started = false;
   let draining = false;
   let pending: Promise<boolean> | undefined;
@@ -78,6 +80,7 @@ export function productionOperations(database: Pool) {
     }
     if (req.method === "GET" && req.originalUrl === "/readyz") {
       const healthy = started && !draining && (await inspect()) && !draining;
+      metrics.probe(healthy);
       res
         .status(healthy ? 200 : 503)
         .type("text/plain")
@@ -85,6 +88,7 @@ export function productionOperations(database: Pool) {
       return;
     }
     if (!started || draining) {
+      metrics.rejectAdmission();
       res.setHeader("Retry-After", "5");
       res.status(503).json({
         code: "SERVICE_NOT_ADMITTED",
@@ -93,6 +97,7 @@ export function productionOperations(database: Pool) {
       return;
     }
     active++;
+    const record = metrics.admit();
     let done = false;
     const complete = () => {
       if (done) return;
@@ -100,6 +105,7 @@ export function productionOperations(database: Pool) {
       res.off("finish", complete);
       res.off("close", complete);
       active--;
+      record(res.statusCode, res.writableFinished);
       if (active === 0) for (const notify of [...empty]) notify();
     };
     res.once("finish", complete);
@@ -149,5 +155,15 @@ export function productionOperations(database: Pool) {
     });
     return stopping;
   };
-  return { ready, middleware, beginDrain, waitForDrain, shutdown };
+  const snapshot = () => ({
+    schemaVersion: 1 as const,
+    scope: "process" as const,
+    admission: draining
+      ? ("draining" as const)
+      : started
+        ? ("open" as const)
+        : ("unavailable" as const),
+    ...metrics.snapshot(),
+  });
+  return { ready, middleware, beginDrain, waitForDrain, shutdown, snapshot };
 }

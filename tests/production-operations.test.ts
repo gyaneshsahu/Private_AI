@@ -140,6 +140,10 @@ it.skipIf(!enabled)(
       ).rows[0].checksum,
     ).toBe("altered");
     expect((await f.call("/healthz")).status).toBe(200);
+    expect(f.operations.snapshot()).toMatchObject({
+      readiness: { ready: 1, unavailable: 1 },
+      accepted: 0,
+    });
   },
 );
 
@@ -281,6 +285,17 @@ it.skipIf(!enabled)(
     expect((await response).body).toBe("completed existing response");
     expect(await done).toBe(true);
     expect(await f.operations.shutdown(f.server)).toEqual({ drained: true });
+    expect(f.operations.snapshot()).toMatchObject({
+      schemaVersion: 1,
+      scope: "process",
+      admission: "draining",
+      accepted: 1,
+      completed: 1,
+      aborted: 0,
+      inFlight: 0,
+      rejectedAdmission: 1,
+      readiness: { ready: 0, unavailable: 1 },
+    });
   },
 );
 
@@ -299,5 +314,37 @@ it.skipIf(!enabled)(
     expect(f.operations.shutdown(f.server, 20)).toBe(stopping);
     expect(await stopping).toEqual({ drained: false });
     expect(await response).toBe("interrupted");
+    await vi.waitFor(() =>
+      expect(f.operations.snapshot()).toMatchObject({
+        accepted: 1,
+        completed: 0,
+        aborted: 1,
+        inFlight: 0,
+        responses: { success: 0 },
+      }),
+    );
+  },
+);
+
+it.skipIf(!enabled)(
+  "omits request paths and query canaries and returns snapshots without exposing an HTTP metrics route",
+  async () => {
+    const f = await fixture();
+    expect(await f.operations.ready).toBe(true);
+    expect((await f.call("/work?token=PRIVATE_METRICS_CANARY")).status).toBe(
+      200,
+    );
+    expect((await f.call("/metrics?PRIVATE_METRICS_CANARY")).status).toBe(404);
+    await vi.waitFor(() => expect(f.operations.snapshot().completed).toBe(2));
+    const snapshot = f.operations.snapshot();
+    expect(snapshot).toMatchObject({
+      admission: "open",
+      responses: { success: 1, clientError: 1 },
+    });
+    expect(JSON.stringify(snapshot)).not.toMatch(
+      /PRIVATE_METRICS_CANARY|token|\/work|\/metrics/,
+    );
+    snapshot.responses.success = 999;
+    expect(f.operations.snapshot().responses.success).toBe(1);
   },
 );

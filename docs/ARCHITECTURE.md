@@ -1,5 +1,11 @@
 # PrivateAI — architecture and trust boundaries
 
+### Content-free operational snapshot — 19 October
+
+`productionOperations.snapshot()` exposes a copied schemaVersion1 process-local aggregate to its trusted composition caller only. `operation-metrics.ts` has fixed fields and duration buckets (<100ms,100–<1000,1000–<5000,5000–<30000,>=30000); it retains no per-request samples. Accepted request terminal callbacks settle once; `writableFinished` distinguishes HTTP finish from socket interruption. Readiness probes and admission rejection count separately from admitted work; liveness is not counted. Cumulative counters saturate at Number.MAX_SAFE_INTEGER; gauges track currently admitted work. No exporter, metrics HTTP route, file/log sink or remote service is installed.
+
+Counts include all admitted HTTP work, including static assets and expected503responses from unavailable features. They are not completed-model-answer, cost or account-allowance metrics. The admission field describes startup/drain admission, not current database or provider qualification. Buckets include both completed/aborted admitted requests; they are non-cumulative counts and do not establish exact percentiles. Snapshots reset on process reconstruction; an eventual authorized collector must distinguish restarts/replicas and missing data. TLS/proxy rejections before this middleware, independent uptime, disk/certificate life, hosted backup state and incident alerts remain separate required evidence. Review collector access/retention and content-free exception handling before activation.
+
 ### Proxy-backed browser and support boundaries — 19 October
 
 `test:ingress -- --browser` adds the repository-pinned Playwright browser to the isolated Caddy/PostgreSQL rehearsal. Chromium resolves only the approved app name to the local proxy and trusts only the disposable leaf SPKI. Application requests traverse real Caddy; no route fulfillment or broad TLS-error suppression. Read-only current build/source mounts and no outbound network preserve the synthetic scope. The virtual passkey and local certificate are engineering evidence, not real provider/device/public TLS qualification.
