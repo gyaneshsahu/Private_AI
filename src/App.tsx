@@ -218,8 +218,16 @@ export function App() {
     };
   }, []);
   useEffect(() => {
-    outputEnd.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    outputEnd.current?.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
+      block: "end",
+    });
   }, [conversation.messages.length]);
+  useEffect(() => {
+    if (editId) document.getElementById("edited-message")?.focus();
+  }, [editId]);
   const reset = () => {
     savedBase.current = null;
     setSaveConflict(false);
@@ -1025,8 +1033,12 @@ export function App() {
               }}
             />
             <div className="messages">
-              {conversation.messages.map((message) => (
-                <article key={message.id} className={`message ${message.role}`}>
+              {conversation.messages.map((message, index) => (
+                <article
+                  key={message.id}
+                  className={`message ${message.role}`}
+                  aria-label={`${message.role === "user" ? "Your message" : "PrivateAI reply"} ${index + 1}`}
+                >
                   <div className="message-heading">
                     <strong>
                       {message.role === "user" ? "You" : "PrivateAI"}
@@ -1107,6 +1119,7 @@ export function App() {
                     {message.role === "user" && (
                       <button
                         disabled={!!busy}
+                        id={`edit-message-${message.id}`}
                         onClick={() => {
                           setEditId(message.id);
                           setEditText(message.text);
@@ -1135,6 +1148,7 @@ export function App() {
                 <label>
                   Edited message
                   <textarea
+                    id="edited-message"
                     value={editText}
                     onChange={(e) => setEditText(e.target.value)}
                   />
@@ -1154,6 +1168,7 @@ export function App() {
                       calculationSession.clear();
                       setEditId(undefined);
                       setEditText("");
+                      document.getElementById("message-input")?.focus();
                       setNotice(
                         "New branch created; the original is available in Conversation branches. Choose Answer this question to request a reply. Your draft is unchanged.",
                       );
@@ -1164,7 +1179,15 @@ export function App() {
                 >
                   Create branch
                 </button>
-                <button onClick={() => setEditId(undefined)}>Cancel</button>
+                <button
+                  onClick={() => {
+                    document.getElementById(`edit-message-${editId}`)?.focus();
+                    setEditId(undefined);
+                    setEditText("");
+                  }}
+                >
+                  Cancel
+                </button>
               </div>
             )}
             <form

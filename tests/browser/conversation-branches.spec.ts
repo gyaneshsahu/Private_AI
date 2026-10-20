@@ -85,6 +85,21 @@ test("built workspace restores, edits, switches and saves branches without any i
     page.getByRole("button", { name: "Copy answer", exact: true }),
   ).toBeDisabled();
   await page.getByRole("button", { name: "Edit into a new branch" }).click();
+  await expect(page.getByLabel("Edited message")).toBeFocused();
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Edit into a new branch" }),
+  ).toBeFocused();
+  await expect(
+    page.getByRole("article", { name: "Your message 1", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("article", { name: "PrivateAI reply 2", exact: true }),
+  ).toContainText("Response timed out");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.getByRole("button", { name: "Edit into a new branch" }).click();
+  await expect(page.getByLabel("Edited message")).toBeFocused();
   await page.getByLabel("Edited message").fill("SYNTHETIC SECOND EDIT");
   await page
     .getByRole("button", { name: "Create branch", exact: true })
@@ -92,6 +107,7 @@ test("built workspace restores, edits, switches and saves branches without any i
   await expect(
     page.getByText("SYNTHETIC SECOND EDIT", { exact: true }),
   ).toBeVisible();
+  await expect(page.getByLabel("Message PrivateAI")).toBeFocused();
   await tab("Saved").click();
   await page
     .getByRole("button", { name: "Save encrypted snapshot", exact: true })

@@ -1,5 +1,18 @@
 # PrivateAI readiness checklist
 
+## Active supplier-independent batch — 20 October
+
+Infrastructure refinements and hosting purchases are paused by owner instruction. Return to deployment only for a specific hosted test. Supplier replies trigger one architecture decision; no new reply has been supplied.
+
+Chat accessibility repair: each message is now a named article; editing moves focus into the editor, Cancel restores the originating control, and successful branch creation returns to the composer. Automatic message scrolling respects reduced-motion preference. Provider/privacy gates unchanged. Validation: production build/typecheck passed; eight built-browser tests across conversation branches, draft workspace and attachments passed (10.2s), with no provider credentials or inference requests. Mobile-width keyboard focus assertions passed; actual TalkBack remains pending.
+
+Fresh source-fidelity/safety cases are prepared in `evaluation/cases/fidelity-transfer-20261020.json`: six two-turn evidence cases and two two-turn safety cases. They cover source silence versus explicit prohibition, limited inspection evidence, corrections, malicious source instructions, required actions/strict receipt timing, immediate danger and residual workshop risk. **NOT RUN against a model; no quality improvement claimed.** Human scores remain blank. Prior material findings remain open.
+
+Next bounded comparison: unchanged DeepSeek-low/constraints-v4 versus one general evidence-calibration candidate (not a rule per example), identical sources/questions, maximum32 requests (8cases x2turns x2arms), maximum4096 output tokens/request and8000 input characters/request, no retries. Freeze exact candidate/configuration and calculate current-price reserve after fresh actual-spend inspection before issuing separate permits. An incomplete stops that dependent conversation; independent arms may continue. Capture model output separately from delivered answers; assess supported useful answers, unsupported assertions, unnecessary refusals, completeness, latency and total cost. Passing citation/format checks cannot grade factual accuracy. Do not rerun exposed cases to tune. This prepared study is not acceptance and does not authorize private data.
+
+Galaxy A52/TalkBack workspace steps are in `docs/ui-device-test-plan.md`; actual device execution awaits a reachable candidate. Prior auth-only human passes are not extended to the workspace.
+
+
 ## Infrastructure execution and hosted boundary — 20 October
 
 All **31 previously CI-unexecuted checks now passed locally**, zero failed/skipped: authenticated ingress16, browser workspace12, database restore2, packaged process1. The rebuilt candidate also passed database readiness outage/recovery, SIGKILL/restart and graceful shutdown. Evidence: `evaluation/results/infrastructure-20261020.json`. This is local synthetic evidence, **not hosted verification**. Initial sandbox Docker access was denied before execution; the authorized run succeeded. Synthetic resources were cleaned/stopped. No paid inference or service changes.

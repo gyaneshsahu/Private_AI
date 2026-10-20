@@ -1,5 +1,17 @@
 # Conversation-first UI and device review
 
+## Next Galaxy A52 / TalkBack session (prepared; not yet run)
+
+Use the updated candidate only when an operator provides a reachable reviewed test build. The current hosted auth page is not evidence for these workspace changes. Use synthetic text only. Earlier auth-page checks remain passed; this full workspace session remains BLOCKED pending access.
+
+1. With TalkBack and keyboard open, type a synthetic draft, attach a small synthetic text file, review/correct it and return to Conversation. Confirm the draft survives and controls remain reachable.
+2. On an operator-prepared synthetic conversation, navigate the named message articles. Open “Edit into a new branch”: focus must enter Edited message. Cancel: focus must return to the initiating Edit button. Create a branch: focus must return to Message PrivateAI; original conversation remains available.
+3. Rotate and enable larger text/reduced motion. Repeat editing, inspect a long answer/table and open/close a source. Report clipping, focus loss or disruptive scrolling. Incomplete fixture answers must remain labelled incomplete, with Copy disabled.
+4. Save an encrypted synthetic snapshot, lock, unlock and reopen. Confirm draft/document changes; sign out. Never use a real password as the test vault passphrase.
+
+Report PASS/FAIL/BLOCKED per step, Android/Chrome/TalkBack versions and concise reproduction. Desktop mobile emulation does not substitute for this session. Inference and real safety quality remain separate tests; Send stays gated.
+
+
 7 October 2026. Visual redesign awaits the founder's brief/reference images.
 Working direction: chat is the main experience; documents and research attach to
 the conversation; privacy status is clear and detailed controls appear when needed.
