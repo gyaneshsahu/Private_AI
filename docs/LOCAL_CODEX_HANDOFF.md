@@ -1,5 +1,11 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Deployment stopped: secret files contain paths — 20 October
+
+Owner started exact candidate `4eb86b108bb1651ee5be65928a126f605bc26bf6`. Render deploy `dep-dbbqd63ncjis738qjcrg` built successfully, then failed pre-deploy with exit 1 before candidate startup. Read-only inspection from the existing service shell confirmed all ten mounted secret files contain their corresponding local file reference; render-config.json and google-social.json do not parse as JSON. Diagnostics printed only filenames, lengths and booleans, never credentials. This is a secret-content configuration failure, not evidence of a database authentication failure. No agent settings changes, credential uploads, migration retry or DNS changes were performed.
+
+Manual correction required: retain the ten Render filenames but replace each CONTENTS field with the full text inside the corresponding protected local file, not its path. Preserve certificate/key BEGIN/END lines and newlines. Save only; validate mounted content read-only before retrying the same CI-passed candidate. Do not upload the offline CA private key or preparation artifacts. Private-data/public gates stay closed. Earlier CI and deployment failures remain recorded; the 36 infrastructure checks unexecuted in the passing CI remain explicitly outstanding.
+
 ## Owner saved candidate settings — 20 October
 
 Read-only Render Settings inspection confirms branch codex/development-handoff, Dockerfile.render, build context `.`, empty Docker Command, `/healthz`, and exact one-time pre-deploy command `node --import tsx server/deployment-database-entry.ts initialize-empty /etc/secrets/render-config.json`. Owner reports Auto-Deploy Off (disabled selector did not expose its value in the accessibility tree). Last successful live commit remains 40f2e33b90b40124c74210fd46aae560978bbd12. No agent service settings changed and no deployment started. Next owner action: Manual Deploy → Deploy a specific commit → `4eb86b108bb1651ee5be65928a126f605bc26bf6`, whose Validate run39464528366 passed. Do not select latest HEAD; later commits are documentation. Inspect pre-deploy/runtime result before any retry; remove one-time initializer after successful schema creation. No DNS or private-data/public gate changes.
