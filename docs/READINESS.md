@@ -1,5 +1,11 @@
 # PrivateAI readiness checklist
 
+## Email capability candidate CI passed — 20 October
+
+Validate run https://github.com/gyaneshsahu/Private_AI/actions/runs/39473918073 completed SUCCESS for exact commit `9c9be8e12440367bc3755385f4190626e5d921b4`: offline and durable jobs passed. Offline unit stage: 499 passed / 148 skipped; browser: 53 passed; durable: 122 passed, zero skipped across 16 files. Container smoke and packaged encrypted recovery also passed. The durable job covers 112 of the unit-stage skips; the same 36 infrastructure checks remain unexecuted in this CI, not waived or counted as passes.
+
+This candidate is ready for the owner to manually deploy the exact SHA to the existing restricted service, with Pre-Deploy Command empty and auto-deploy off. No migration, credential, DNS, billing or provider activation change is needed. Agent has not deployed it. After deployment verify email-disabled UI, Google sign-in/cancellation/logout and workspace entry again. Roll back application code to previous successful `4eb86b108bb1651ee5be65928a126f605bc26bf6` with Pre-Deploy Command still empty if required; no database rollback. Private-data and public-launch gates remain closed.
+
 ## Hosted logout and email capability correction — 20 October
 
 Read-only Render settings confirm Pre-Deploy Command is now empty, custom domain verified and certificate issued. Live candidate remains 4eb86b1. Actual owner session signed out through the hosted account UI; reload remains signed out. This did not remove credentials or modify the vault. Google cancellation and second real identity denial are still pending; no real-account isolation pass is claimed.
