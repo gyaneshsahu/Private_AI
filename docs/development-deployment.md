@@ -1,5 +1,44 @@
 # Restricted development deployment
 
+## Connected journey and hosting/email proposal — 20 October
+
+Decision status: **proposal for owner review, no purchase or activation**. Keep existing Render unchanged while preparing one synthetic staging deployment on a German Hetzner CX33 using the reviewed Caddy → mTLS Node → PostgreSQL package. This fits the currently tested transport architecture; a Render migration still needs a supported trusted-edge adapter. A single VM is not highly available and requires a named operator for patching, alerts and recovery. Do not buy infrastructure merely to bypass provider or quality blockers.
+
+### Existing spend, verified read-only
+
+Render dashboard on 20 October: Hobby workspace, one `private-ai-deployment` service, selected 0.5c-512mb **$7/month**, **1 GB** persistent disk at `/var/data`. Recurring base is **$7.25/month** using the documented $0.25/GB disk tariff, before applicable tax/overages. Billing shows **$3.06 month-to-date** and **$5.87 projected October total**, not a new recurring plan price. Displayed component rounding ($2.96 compute, $0.11 disk) differs by one cent from the aggregate. Credit $0, no past invoices displayed. These are dashboard figures, not a paid invoice. Service still points to `codex/provider-qualification`, last successful deployed commit `40f2e33b90b40124c74210fd46aae560978bbd12`; development CI success does not deploy the candidate. [Render disks](https://render.com/docs/disks).
+
+### Proposed bill of materials
+
+Sizing assumption: one low-traffic staging/initial-launch instance, one operator mailbox, at most 5,000 transactional messages/month and ten external monitors. No capacity or delivery SLA has been established. Prices checked 20 October; USD and EUR are deliberately not merged using an invented exchange rate.
+
+| Component | Monthly price | Scope / condition |
+| --- | --- | --- |
+| Hetzner CX33 Germany | €8.49 net | App, gateway and PostgreSQL on one VM; shared failure domain |
+| Primary IPv4 | €0.50 net | Public gateway; no public PostgreSQL port |
+| BX11 1 TB Storage Box, separate host | €3.20 net | Application-encrypted database backups; separate credentials/key custody; same supplier is not supplier-diverse disaster recovery |
+| Brevo Starter, 5,000 sends | from $9 before applicable tax | Proposed transactional API only; sender, retention, DPA and deliverability review required |
+| UptimeRobot Solo, 10 monitors, monthly billing | $10 before applicable tax | 60-second external probes, SSL and cron checks; content-free status only, no prompt/account payload |
+| Zoho Mail Lite, one 5 GB support mailbox | $1/month equivalent before tax, **$12 paid annually** | Concrete fallback if existing CometRow mailbox is unsuitable; review EU account region, terms and support-data retention before purchase; avoid duplicate subscription |
+| PostgreSQL, Caddy, application runtime | $0 additional licence | Operational labour remains additional |
+| DNS and public TLS | $0 incremental assumption | Existing registrar DNS plus ACME; verify registrar does not charge extra |
+
+Sources: [Hetzner current compute prices](https://docs.hetzner.com/general/infrastructure-and-availability/price-adjustment/), [IPv4](https://docs.hetzner.com/cloud/servers/primary-ips/overview/), [BX11 price](https://www.hetzner.com/storage/storage-box/bx11/), [Brevo plans](https://help.brevo.com/hc/en-us/articles/208589409-About-Brevo-s-pricing-plans), [monitoring](https://uptimerobot.com/pricing/), [mailbox](https://www.zoho.com/mail/zohomail-pricing.html?src=ft). BX11's product detail explicitly shows €3.20 excluding VAT; do not use the overview's animated intermediate price.
+
+**Fixed proposed hosting/email/monitoring subtotal: €12.19 net + $20/month before USD-service taxes.** With 19% German VAT on the EUR components this is **€14.51 + $20/month**, subject to checkout taxes and currency conversion. While retaining existing Render, overlap is **€14.51 + $27.25/month**, plus applicable USD taxes. Optional VM backups add €1.698 net (20% of compute), approximately €2.02 gross/month; they do not replace application-aware off-host backups. No optional add-on is included silently.
+
+**Complete operating-cost formula:** the above subtotal + actual domain renewal/12 + inference token charges + search usage + payment-processing fees + overages + applicable taxes/FX fees + operator time. Include Apple Developer membership if Apple sign-in ships: **$99/year, $8.25/month equivalent**, with local checkout/tax confirmation ([Apple enrollment](https://developer.apple.com/programs/enroll/)). Domain renewal and existing CometRow mailbox invoices are not available, and inference/search volume and commercial terms are unresolved; therefore a truthful final all-in monthly number is **not yet quotable**. They are not zero. Illustrative fixed subtotal including Apple and Render overlap is €14.51 + $35.50/month, before those remaining items. This is a cost model, not permission to spend or a guarantee of launch capacity.
+
+### Email decision and exact activation prerequisites
+
+Prefer **Brevo for evaluation**, because its documented database hosting is EU-based ([location](https://help.brevo.com/hc/en-us/articles/360001005510-Data-storage-location)). Free permits 300 sends/day; paid Starter avoids that daily limit. Neither quota is a delivery guarantee. Review the exact transactional-log and email-preview retention settings before approval: event data below its threshold can otherwise remain without a time limit; custom transactional retention is a separate control ([retention](https://help.brevo.com/hc/en-us/articles/19317424653586-FAQs-About-the-data-retention-policy-for-email-events)). Disable tracking where supported and do not create marketing contacts from sign-in. Only recipient address, code/security-notice content and necessary delivery metadata go to this service; never conversations/documents. Retention settings require owner action, not agent changes.
+
+Resend remains a simpler developer-oriented alternative at $20/month for 50,000 messages, but EU sending does **not** mean EU storage: its documented storage is in the US. That is a material privacy tradeoff, not an invisible fallback ([pricing](https://resend.com/pricing/), [storage disclosure](https://resend.com/security/gdpr)). No provider adapter is activated by this proposal. Existing packaged email remains fail-closed.
+
+Before changing hosting: owner reviews host/region and operational responsibility; engineering pins the complete gateway/database/app package and rehearses recovery; owner provisions only the approved services and supplies reviewed credentials through secret files. Before sending real email: review sender `signin@auth.cometrow.com` and Reply-To `support@cometrow.com`, verified mailbox, provider-generated DKIM/domain-verification records, SPF compatibility and DMARC policy. **Do not invent provider-generated DNS values or overwrite existing MX/SPF.** Supply exact values once the selected provider generates them. Owner performs DNS/settings changes; engineering tests delivery, delayed/failed mail, bounce handling and receipt reconciliation with synthetic accounts before real users.
+
+The connected built-app test now exercises desktop1280px and mobile390px recovery → local document correction/draft → encrypted save/lock/reopen after runtime reconstruction → durable exhausted allowance → sign-out/re-sign-in with vault still locked. Eight production-workspace tests pass. Allowance attempts are explicit ledger fixtures; the genuine provider gate remains false and rejects a direct request503. **No completed model conversation is claimed.** A fully live journey still requires approved provider transport and a real reviewed sender; mobile emulation does not replace Galaxy A52/TalkBack testing. Keep Tinfoil qualification and held-out human answer-quality acceptance as independent release gates.
+
 ## Durable integration release check — 20 October
 
 `npm run build` followed by `npm run test:durable` exercises 16 selected PostgreSQL account, usage, security-notice, production-workspace and synthetic billing suites. Set `PRIVATEAI_SYNTHETIC_PG` only to the loopback database named `privateai_synthetic`; the runner rejects absent/remote/other-database configuration, checks connectivity without printing the connection string, and requires built assets. It fails if any selected test file is absent or any test is failed/skipped. JSON diagnostics are synthetic-only under `.local/diagnostics`, not release evidence by themselves. No automatic retry or live provider key is used.

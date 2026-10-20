@@ -29,6 +29,223 @@ const codes = new Map<string, string>();
 const transmissions: { path: string; body: string }[] = [];
 const blocked: string[] = [];
 
+for (const viewport of [
+  { width: 1280, height: 900 },
+  { width: 390, height: 844 },
+])
+  it.skipIf(!enabled)(
+    `connects recovery, documents, encrypted history, durable allowance and sign-out at ${viewport.width}px without opening inference`,
+    async () => {
+      const browser = await chromium.launch({
+        headless: true,
+        args: [
+          "--no-proxy-server",
+          `--host-resolver-rules=MAP app.cometrow.com 127.0.0.1:${securePort}, MAP * ~NOTFOUND`,
+        ],
+      });
+      try {
+        const context = await browser.newContext({
+          viewport,
+          ignoreHTTPSErrors: true,
+        });
+        await routeLocally(context);
+        const page = await context.newPage();
+        const email = `journey-${viewport.width}@example.test`;
+        const signIn = async () => {
+          await page.goto(origin + "/account");
+          await page.getByLabel("Email address", { exact: true }).fill(email);
+          await page
+            .getByRole("button", { name: "Continue with email", exact: true })
+            .click();
+          await browserExpect(
+            page.getByLabel("Verification code"),
+          ).toBeVisible();
+          await page.getByLabel("Verification code").fill(codes.get(email)!);
+          await page
+            .getByRole("button", { name: "Verify code", exact: true })
+            .click();
+          await browserExpect(
+            page.getByRole("heading", { name: "Your account", exact: true }),
+          ).toBeVisible();
+        };
+        const nav = (name: string) =>
+          page
+            .getByRole("navigation", { name: "Workspace" })
+            .getByRole("button", { name, exact: false });
+        const unlock = async () => {
+          await nav("Saved").click();
+          await page
+            .getByLabel("Vault passphrase")
+            .fill("JOURNEY_SYNTHETIC_SECRET_ONLY");
+          await page
+            .getByRole("button", { name: "Create or unlock vault" })
+            .click();
+        };
+        await signIn();
+        await page
+          .getByRole("button", { name: "Finish sign-in recovery" })
+          .click();
+        await browserExpect(page.getByRole("status")).toContainText(
+          "Other sessions were signed out",
+        );
+        const user = await db.pool.query(
+          'SELECT id FROM "user" WHERE email=$1',
+          [email],
+        );
+        const accountId = user.rows[0].id as string;
+        await active.usage.createAllowance({
+          accountId,
+          periodId: `journey-${viewport.width}`,
+          startsAt: Date.now() - 1000,
+          endsAt: Date.now() + 3600000,
+          requestLimit: 2,
+        });
+        await page
+          .getByRole("link", { name: "Open workspace", exact: true })
+          .click();
+        await page
+          .getByLabel("Message PrivateAI")
+          .fill("JOURNEY_LOCAL_DRAFT: explain the corrected note");
+        await page
+          .getByLabel("Attach files to this conversation")
+          .setInputFiles({
+            name: "journey.txt",
+            mimeType: "text/plain",
+            buffer: Buffer.from("JOURNEY_LOCAL_DOCUMENT before 12:15"),
+          });
+        await page
+          .getByRole("button", { name: "Review journey.txt", exact: true })
+          .click();
+        await page.locator("details summary").first().click();
+        await page
+          .getByLabel("Text for journey.txt", { exact: true })
+          .fill("JOURNEY_LOCAL_CORRECTION strictly before 12:20");
+        await unlock();
+        await page
+          .getByLabel("Conversation title", { exact: true })
+          .fill("JOURNEY_PRIVATE_TITLE");
+        await page
+          .getByRole("button", { name: "Save encrypted snapshot" })
+          .click();
+        await browserExpect(
+          page.getByRole("article", { name: "JOURNEY_PRIVATE_TITLE" }),
+        ).toBeVisible();
+        const stored = await page.evaluate(async () => {
+          const result: unknown[] = [];
+          for (const info of await indexedDB.databases()) {
+            const database = await new Promise<IDBDatabase>((done, reject) => {
+              const req = indexedDB.open(info.name!);
+              req.onsuccess = () => done(req.result);
+              req.onerror = () => reject(req.error);
+            });
+            for (const store of Array.from(database.objectStoreNames))
+              result.push(
+                await new Promise((done, reject) => {
+                  const req = database
+                    .transaction(store)
+                    .objectStore(store)
+                    .getAll();
+                  req.onsuccess = () => done(req.result);
+                  req.onerror = () => reject(req.error);
+                }),
+              );
+            database.close();
+          }
+          return JSON.stringify(result, (_key, value) =>
+            value instanceof ArrayBuffer
+              ? new TextDecoder().decode(value)
+              : value,
+          );
+        });
+        expect(stored).not.toContain("JOURNEY_");
+        await page
+          .getByRole("button", { name: "Lock and clear workspace" })
+          .click();
+        // These are explicit fixture attempts, not model completions or charges.
+        for (const kind of ["complete", "interrupted"]) {
+          const id = `fixture-${viewport.width}-${kind}`;
+          expect(await active.usage.reserve(accountId, id)).toBe(true);
+          await active.usage.dispatch(accountId, id);
+          await active.usage.finish(
+            accountId,
+            id,
+            kind === "complete" ? "transport_complete" : "uncertain",
+          );
+        }
+        expect(
+          await active.usage.reserve(accountId, "fixture-over-limit"),
+        ).toBe(false);
+        active = makeWorkspace();
+        expect(await active.ready).toBe(true);
+        await page.reload();
+        await unlock();
+        await page
+          .getByRole("article", { name: "JOURNEY_PRIVATE_TITLE" })
+          .getByRole("button", { name: "Open", exact: true })
+          .click();
+        await browserExpect(page.getByLabel("Message PrivateAI")).toHaveValue(
+          "JOURNEY_LOCAL_DRAFT: explain the corrected note",
+        );
+        await browserExpect(
+          page.getByRole("button", { name: "Send ↑", exact: true }),
+        ).toBeDisabled();
+        await nav("Context").click();
+        await page.locator("details summary").first().click();
+        await browserExpect(
+          page.getByLabel("Text for journey.txt", { exact: true }),
+        ).toHaveValue("JOURNEY_LOCAL_CORRECTION strictly before 12:20");
+        await nav("Account").click();
+        await browserExpect(
+          page.getByRole("heading", { name: "0 requests remaining" }),
+        ).toBeVisible();
+        await browserExpect(
+          page.getByText("Request allowance exhausted.", { exact: false }),
+        ).toBeVisible();
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        ).toBe(true);
+        const guarded = await page.evaluate(async () => {
+          const status = await (await fetch("/api/status")).json();
+          const response = await fetch("/api/inference/v1/chat/completions", {
+            method: "POST",
+            headers: { "x-privateai-csrf": status.csrf },
+            body: "SYNTHETIC_GATE_PROBE",
+          });
+          return { ready: status.inference.ready, code: response.status };
+        });
+        expect(guarded).toEqual({ ready: false, code: 503 });
+        await page
+          .getByRole("button", { name: "Sign out", exact: true })
+          .click();
+        await browserExpect(
+          page.getByRole("heading", { name: "Sign in to PrivateAI" }),
+        ).toBeVisible();
+        expect(
+          await page.evaluate(async () => (await fetch("/api/status")).status),
+        ).toBe(401);
+        await signIn();
+        await page
+          .getByRole("link", { name: "Open workspace", exact: true })
+          .click();
+        await browserExpect(page.getByLabel("Message PrivateAI")).toBeEmpty();
+        await unlock();
+        await browserExpect(
+          page.getByRole("article", { name: "JOURNEY_PRIVATE_TITLE" }),
+        ).toBeVisible();
+        expect(blocked).toEqual([]);
+        expect(
+          transmissions.map((entry) => entry.body).join("\n"),
+        ).not.toContain("JOURNEY_");
+        await context.close();
+      } finally {
+        await browser.close();
+      }
+    },
+    45000,
+  );
+
 function makeWorkspace() {
   const candidate = createProductionConsumerCandidate({
     database: db.pool,

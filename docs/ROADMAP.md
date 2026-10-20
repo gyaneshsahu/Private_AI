@@ -1,5 +1,11 @@
 # PrivateAI delivery roadmap
 
+## Connected production journey and concrete deployment proposal — 20 October
+
+CI f9fbcae is confirmed green;31 fixture-dependent tests remain outside that run (details in READINESS). Desktop/mobile built-candidate recovery→document/draft→encrypted save/reopen→durable allowance→sign-out is now exercised together. No provider gate was bypassed, so completed model conversation delivery is still an explicit missing leg. No product defect surfaced; test setup failures are retained. Hosting/email bill of materials and existing Render overlap are in development-deployment.md. Current hosted service remains on40f2e33, not this branch.
+
+Next dependency path: review supplier replies and the hosting/email decision; finish the selected inactive sender/host integration; run the same complete synthetic journey with reviewed hosted identity and approved inference; then real-device and human answer-quality acceptance. Do not open more isolated account-recovery work without a defect from this journey. Provider privacy and answer-quality release decisions remain independent; no hosting/DNS/purchase/retention activation is authorized by this plan.
+
 ## Durable validation and supplier handoff — 20 October
 
 Owner reports both final supplier messages sent; await replies rather than request another send. Private-data/search-rights/provider gates remain open. Added a separate disposable-PostgreSQL CI job and `test:durable` command that rejects missing prerequisites, failed or skipped coverage. Final local run:118tests/16files pass with zero skips, including real database and built-browser account/usage/synthetic-billing flows. Local check and CI now build first. Remote CI, hosted identity/sender/usage activation, separate restore/ingress evidence and human quality/device acceptance remain distinct. See READINESS for two preserved stale-test failures and final evidence.
