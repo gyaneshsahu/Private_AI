@@ -1,5 +1,12 @@
 # Restricted development deployment
 
+## Exact deployment candidate CI passed — 20 October
+
+**Deploy only `4eb86b108bb1651ee5be65928a126f605bc26bf6`**, not latest HEAD. Validate run https://github.com/gyaneshsahu/Private_AI/actions/runs/39464528366 completed SUCCESS, both offline and durable jobs passed. Counts: offline unit stage 499 passed/148 skipped; browser 51 passed; durable 122 passed, zero skipped. Container smoke, persistence, invite isolation, recovery and packaged encrypted-registry check passed. The database job covers 112 of the unit-stage skipped tests (and repeats ten already-runnable checks). **36 infrastructure tests remain unexecuted in this CI run:** authenticated-ingress16, ingress-workspace12, render-bridge5, account-restore2, deployment-package1. These are not silently counted as CI passes. The prior local packaged batch passed 22 of these (16+5+1); other historical evidence does not become fresh CI coverage. Original 31 infrastructure count increases to36 with the five Render bridge cases.
+
+The candidate is eligible for the approved restricted hosted Google milestone, NOT general release. No live deployment/DNS/service change performed. Post-validation evidence documentation may move branch HEAD; retain the exact tested SHA above. Use final cutover settings/rollback in development-deployment.md. First initialization changes only the new reviewed PostgreSQL schema, leaves legacy accounts untouched, and must be removed from pre-deploy after success. Real Google, secret-content preflight, hosted health and private-provider qualification remain distinct checks.
+
+
 ## Final cutover settings — use ONLY after exact candidate CI passes
 
 Owner performs these settings, not the agent. Auto-deploy stays Off. Select **Save only** wherever offered; if a setting requires immediate deployment, stop before saving and coordinate order. The ten runtime secret filenames were verified saved; their contents are still verified only by the forthcoming packaged preflight. Do not reveal them in logs/chat.
