@@ -1,5 +1,10 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## External database URL saved and validated — 20 October
+
+Redacted local validation confirms database-url.txt is no longer a placeholder, has valid PostgreSQL credentials/URL structure, names privateai_accounts and the expected dpg-dbbpa98ae00c73acf98g-a.frankfurt-postgres.render.com external host, with no query or fragment. Contents were not printed, transmitted or used to connect. The owner's supplied screenshot confirms both intended database inbound CIDRs. No live secret mount/configuration changed. Exact owner Google email was requested for the allowlist; do not infer it from dashboard identity. Prepare remaining private configuration only after that answer. Live TLS/connectivity/schema checks still pending and must execute from the permitted hosting network, not by reopening access to all IPs.
+
+
 ## Database rule verification and secret preparation — 20 October
 
 After owner reported saved, refreshed dashboard shows only one editable database CIDR row: 74.220.51.0/24. 74.220.59.0/24 is not present in the rendered table. Summary badge says two ranges but conflicts with the concrete row listing; do not treat badge as verification of both required ranges. Workspace/environment broad rules remain unchanged. Owner must add the second database source and save; agent did not modify settings.
