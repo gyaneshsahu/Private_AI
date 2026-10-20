@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { test, expect } from "@playwright/test";
 function pdf() {
   const stream = "BT /F1 16 Tf 50 700 Td (Amount due: 120.50 EUR) Tj ET";
@@ -26,11 +27,8 @@ function pdf() {
 test("real PDF extraction preserves a source page and amount; malformed inputs fail explicitly", async ({
   page,
 }) => {
-  await page.goto("/");
-  await page
-    .getByRole("button", { name: "Context", exact: false })
-    .first()
-    .click();
+  await page.goto("/?developmentTools");
+  await workspaceControl(page, "Context").click();
   await page
     .getByLabel("Add documents or screenshots")
     .setInputFiles({
@@ -38,8 +36,8 @@ test("real PDF extraction preserves a source page and amount; malformed inputs f
       mimeType: "application/pdf",
       buffer: pdf(),
     });
-  await expect(page.locator("details summary")).toContainText("page 1");
-  await page.locator("details summary").click();
+  await expect(page.locator(".content-view details summary")).toContainText("page 1");
+  await page.locator(".content-view details summary").click();
   await expect(
     page.getByLabel("Text for synthetic-bill.pdf page 1"),
   ).toContainText("120.50 EUR");
@@ -58,37 +56,37 @@ test("real PDF extraction preserves a source page and amount; malformed inputs f
 test("new session clears calculator and dialog keyboard focus stays inside", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/?developmentTools");
   await page.getByText("Exact decimal calculator", { exact: true }).click();
   await page.getByLabel("First number").fill("921");
   await page.getByLabel("Second number").fill("100");
   await page.getByRole("button", { name: "Calculate", exact: true }).click();
-  await page
-    .getByRole("button", { name: "New conversation", exact: false })
-    .click();
+  await workspaceControl(page, "New conversation").click();
   await expect(page.getByLabel("First number")).toHaveValue("");
   await expect(page.locator("output")).toHaveText("");
+  await workspaceControl(page, "Settings").click();
   await page
     .getByRole("button", { name: "Privacy boundaries", exact: false })
     .click();
-  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Your privacy boundaries" })).toBeVisible();
   await page.keyboard.press("Shift+Tab");
   await expect(
     page.getByRole("button", { name: "Close", exact: true }),
   ).toBeFocused();
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Your privacy boundaries" })).not.toBeVisible();
 });
 
 test("short desktop with enlarged text can reach sidebar privacy controls", async ({ page }) => {
   await page.setViewportSize({ width: 1100, height: 450 });
-  await page.goto("/");
+  await page.goto("/?developmentTools");
   await page.addStyleTag({ content: "html {font-size:200%}" });
+  await workspaceControl(page, "Settings").click();
   const privacy = page.getByRole("button", { name: "Privacy boundaries", exact: false });
   await privacy.click();
-  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Your privacy boundaries" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(privacy).toBeFocused();
   await expect(privacy).toBeInViewport();
-  expect(await page.locator(".sidebar").evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+  await expect(page.getByRole("dialog", { name: "Settings", exact: true })).toBeVisible();
 });

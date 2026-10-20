@@ -1,3 +1,4 @@
+import { workspaceControl } from "../evaluation/workspace-navigation";
 import { afterAll, beforeAll, beforeEach, expect, it } from "vitest";
 import { randomBytes } from "node:crypto";
 import { createServer, request as httpsRequest } from "node:https";
@@ -69,9 +70,7 @@ for (const viewport of [
           ).toBeVisible();
         };
         const nav = (name: string) =>
-          page
-            .getByRole("navigation", { name: "Workspace" })
-            .getByRole("button", { name, exact: false });
+          workspaceControl(page, name);
         const unlock = async () => {
           await nav("Saved").click();
           await page
@@ -116,7 +115,7 @@ for (const viewport of [
         await page
           .getByRole("button", { name: "Review journey.txt", exact: true })
           .click();
-        await page.locator("details summary").first().click();
+        await page.locator(".content-view details summary").first().click();
         await page
           .getByLabel("Text for journey.txt", { exact: true })
           .fill("JOURNEY_LOCAL_CORRECTION strictly before 12:20");
@@ -190,7 +189,7 @@ for (const viewport of [
           page.getByRole("button", { name: "Send ↑", exact: true }),
         ).toBeDisabled();
         await nav("Context").click();
-        await page.locator("details summary").first().click();
+        await page.locator(".content-view details summary").first().click();
         await browserExpect(
           page.getByLabel("Text for journey.txt", { exact: true }),
         ).toHaveValue("JOURNEY_LOCAL_CORRECTION strictly before 12:20");
@@ -216,6 +215,7 @@ for (const viewport of [
           return { ready: status.inference.ready, code: response.status };
         });
         expect(guarded).toEqual({ ready: false, code: 503 });
+        await workspaceControl(page, "Account").click();
         await page
           .getByRole("button", { name: "Sign out", exact: true })
           .click();
@@ -504,9 +504,7 @@ it.skipIf(!enabled)(
           value.body.includes("SYNTHETIC DRAFT MUST STAY LOCAL"),
         ),
       ).toBe(false);
-      await page
-        .getByRole("navigation", { name: "Workspace" })
-        .getByRole("button", { name: "Account", exact: false })
+      await workspaceControl(page, "Account")
         .click();
       page.on("dialog", (dialog) => dialog.accept());
       await page.getByRole("button", { name: /Manage sign-in/ }).click();

@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { test, expect } from "@playwright/test";
 import { docxFixture } from "../fixtures/docx";
 
@@ -41,14 +42,12 @@ test("DOCX stays local, exposes omissions, permits correction and preserves encr
     .getByRole("button", { name: "Review notes.docx", exact: true })
     .click();
   await expect(page.getByText(/Word body text only/)).toBeVisible();
-  await page.locator("details summary").first().click();
+  await page.locator(".content-view details summary").first().click();
   const source = page.getByLabel("Text for notes.docx", { exact: true });
   await expect(source).toHaveValue("SYNTHETIC €12.25 strictly before 16:30");
   await source.fill("Corrected synthetic €13.25 strictly before 16:30");
   const tab = (name: string) =>
-    page
-      .getByRole("navigation", { name: "Workspace" })
-      .getByRole("button", { name, exact: false });
+    workspaceControl(page, name);
   await tab("Saved").click();
   await page
     .getByLabel("Vault passphrase")
@@ -67,7 +66,7 @@ test("DOCX stays local, exposes omissions, permits correction and preserves encr
   await page.getByRole("button", { name: "Create or unlock vault" }).click();
   await page.getByRole("button", { name: "Open", exact: true }).click();
   await tab("Context").click();
-  await page.locator("details summary").first().click();
+  await page.locator(".content-view details summary").first().click();
   await expect(source).toHaveValue(
     "Corrected synthetic €13.25 strictly before 16:30",
   );
@@ -103,7 +102,7 @@ test("independent Word package works at phone width and an unsupported file does
     })
     .click();
   await expect(page.getByText(/Word body text only/)).toBeVisible();
-  await page.locator("details summary").first().click();
+  await page.locator(".content-view details summary").first().click();
   const text = await page
     .getByLabel("Text for handover-python-docx.docx", { exact: true })
     .inputValue();

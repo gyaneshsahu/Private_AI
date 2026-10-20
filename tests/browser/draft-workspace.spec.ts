@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { test, expect } from "@playwright/test";
 import { Buffer } from "node:buffer";
 
@@ -17,9 +18,7 @@ test("reload warns for unsaved drafts and stops warning after an encrypted save"
   await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
     "SYNTHETIC RELOAD DRAFT",
   );
-  await page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name: "Saved", exact: false })
+  await workspaceControl(page, "Saved")
     .click();
   await page.getByLabel("Vault passphrase").fill("synthetic reload passphrase");
   await page.getByRole("button", { name: "Create or unlock vault" }).click();
@@ -49,9 +48,7 @@ test("draft and corrected document survive explicit encrypted save; switching pr
       disclosures.push(request.url());
   });
   const tab = (name: string) =>
-    page
-      .getByRole("navigation", { name: "Workspace" })
-      .getByRole("button", { name, exact: false });
+    workspaceControl(page, name);
   await page.goto("/");
   await page
     .getByLabel("Message PrivateAI")
@@ -60,7 +57,7 @@ test("draft and corrected document survive explicit encrypted save; switching pr
     page.getByRole("button", { name: "Send ↑", exact: true }),
   ).toBeDisabled();
   page.once("dialog", (dialog) => dialog.dismiss());
-  await page.getByRole("button", { name: "New conversation" }).click();
+  await workspaceControl(page, "New conversation").click();
   await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
     "DRAFT CANARY 732: compare this bill",
   );
@@ -70,7 +67,7 @@ test("draft and corrected document survive explicit encrypted save; switching pr
     mimeType: "text/plain",
     buffer: Buffer.from("SYNTHETIC amount 80 EUR"),
   });
-  await page.locator("details summary").first().click();
+  await page.locator(".content-view details summary").first().click();
   await page
     .getByLabel("Text for draft-bill.txt", { exact: true })
     .fill("SYNTHETIC corrected amount 95 EUR");
@@ -112,7 +109,7 @@ test("draft and corrected document survive explicit encrypted save; switching pr
     }
   });
   expect(durable).not.toMatch(/DRAFT CANARY|corrected amount|draft-bill/);
-  expect(await page.evaluate(() => localStorage.length)).toBe(0);
+  expect(await page.evaluate(() => Object.keys(localStorage).filter(key => key !== "privateai.appearance"))).toEqual([]);
   await page.getByRole("button", { name: "Lock and clear workspace" }).click();
   await page.reload();
   await tab("Saved").click();
@@ -125,7 +122,7 @@ test("draft and corrected document survive explicit encrypted save; switching pr
     "DRAFT CANARY 732: compare this bill",
   );
   await tab("Context").click();
-  await page.locator("details summary").first().click();
+  await page.locator(".content-view details summary").first().click();
   await expect(
     page.getByLabel("Text for draft-bill.txt", { exact: true }),
   ).toHaveValue("SYNTHETIC corrected amount 95 EUR");
@@ -159,9 +156,7 @@ test("a draft without attachments can be saved and reopened", async ({
 }) => {
   await page.goto("/");
   await page.getByLabel("Message PrivateAI").fill("Draft only");
-  const saved = page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name: "Saved" });
+  const saved = workspaceControl(page, "Saved");
   await saved.click();
   await page
     .getByLabel("Vault passphrase")
@@ -174,7 +169,7 @@ test("a draft without attachments can be saved and reopened", async ({
   await expect(
     page.getByText("No unsaved workspace changes.", { exact: false }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "New conversation" }).click();
+  await workspaceControl(page, "New conversation").click();
   await expect(page.getByLabel("Message PrivateAI")).toBeEmpty();
   await saved.click();
   await page.getByRole("button", { name: "Open", exact: true }).click();
@@ -202,6 +197,7 @@ test("everyday starters prepare editable drafts and keep research an explicit ac
   await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
     "My existing unsent draft",
   );
+  await page.getByLabel("Attachments and tools", { exact: true }).click();
   await page
     .locator(".composer")
     .getByRole("button", { name: "Research", exact: true })
@@ -227,6 +223,7 @@ test("workspace guide preserves a draft and supports keyboard dismissal without 
   await page.getByLabel("Message PrivateAI").fill("SYNTHETIC guide draft");
   for (const width of [1440, 360]) {
     await page.setViewportSize({ width, height: 900 });
+    await workspaceControl(page, "Settings").click();
     await page
       .getByRole("button", { name: "Getting started", exact: true })
       .click();
@@ -245,6 +242,7 @@ test("workspace guide preserves a draft and supports keyboard dismissal without 
     await expect(
       page.getByRole("button", { name: "Getting started", exact: true }),
     ).toBeFocused();
+    await page.getByRole("button", { name: "Close settings" }).click();
   }
   expect(disclosures).toEqual([]);
 });

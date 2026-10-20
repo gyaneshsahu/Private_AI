@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { expect, test } from "@playwright/test";
 
 test("named encrypted history is searchable locally and survives lock/reopen without leaking the query", async ({
@@ -13,9 +14,7 @@ test("named encrypted history is searchable locally and survives lock/reopen wit
       outgoing.push(request.url());
   });
   const tab = (name: string) =>
-    page
-      .getByRole("navigation", { name: "Workspace" })
-      .getByRole("button", { name, exact: false });
+    workspaceControl(page, name);
   await page.goto("/");
   await page
     .getByLabel("Message PrivateAI")
@@ -33,9 +32,7 @@ test("named encrypted history is searchable locally and survives lock/reopen wit
     page.getByRole("article", { name: "SYNTHETIC Weekend plans" }),
   ).toBeVisible();
   await tab("Conversation").click();
-  await page
-    .getByRole("button", { name: "New conversation" })
-    .click();
+  await workspaceControl(page, "New conversation").click();
   await tab("Conversation").click();
   await page
     .getByLabel("Message PrivateAI")
@@ -112,7 +109,7 @@ test("named encrypted history is searchable locally and survives lock/reopen wit
     "SYNTHETIC walking itinerary",
   );
   expect(
-    await page.evaluate(() => localStorage.length + sessionStorage.length),
+    await page.evaluate(() => Object.keys(localStorage).filter(key => key !== "privateai.appearance").length + sessionStorage.length),
   ).toBe(0);
   expect(
     await page.evaluate(
@@ -125,7 +122,7 @@ test("named encrypted history is searchable locally and survives lock/reopen wit
 test("two tabs preserve competing drafts as separate encrypted conversations", async ({ page, context }) => {
   const other = await context.newPage();
   const nav = async (p: typeof page, name: string) => {
-    await p.getByRole("navigation", { name: "Workspace" }).getByRole("button", { name, exact: true }).click();
+    await workspaceControl(p, name).click();
   };
   const unlock = async (p: typeof page) => {
     await nav(p, "Saved");

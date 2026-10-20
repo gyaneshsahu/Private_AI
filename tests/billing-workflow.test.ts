@@ -1,3 +1,4 @@
+import { workspaceControl } from "../evaluation/workspace-navigation";
 import { afterEach, expect, it, vi } from "vitest";
 import { randomBytes, randomUUID } from "node:crypto";
 import { createServer } from "node:http";
@@ -519,9 +520,7 @@ it.skipIf(!enabled)(
     await page
       .getByLabel("Message PrivateAI")
       .fill("SYNTHETIC-PRIVATE-DRAFT-NOT-FOR-BILLING");
-    await page
-      .getByRole("navigation", { name: "Workspace" })
-      .getByRole("button", { name: "Account", exact: true })
+    await workspaceControl(page, "Account")
       .click();
     await browserExpect(
       page.getByRole("heading", { name: "Subscription rehearsal" }),

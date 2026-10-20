@@ -1,3 +1,4 @@
+import { workspaceControl } from "../evaluation/workspace-navigation";
 import { it } from "vitest";
 import { chromium, expect } from "@playwright/test";
 import { createServer } from "vite";
@@ -58,9 +59,7 @@ it("billing UI recovers from a lost checkout response without another POST", asy
       return route.continue();
     });
     await page.goto(origin);
-    await page
-      .getByRole("navigation", { name: "Workspace" })
-      .getByRole("button", { name: "Account", exact: true })
+    await workspaceControl(page, "Account")
       .click();
     await page.getByRole("button", { name: "Open test checkout" }).click();
     await expect(

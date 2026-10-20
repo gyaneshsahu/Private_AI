@@ -1,3 +1,4 @@
+import { workspaceControl } from "../evaluation/workspace-navigation";
 import { it, expect } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
@@ -58,9 +59,7 @@ it("reviews and changes bounded context in the actual workspace, preserves encry
     })()`);
     await page.reload();
     const tab = (name: string) =>
-      page
-        .getByRole("navigation", { name: "Workspace" })
-        .getByRole("button", { name, exact: false });
+      workspaceControl(page, name);
     await tab("Saved").click();
     await page
       .getByLabel("Vault passphrase")
@@ -72,8 +71,7 @@ it("reviews and changes bounded context in the actual workspace, preserves encry
       .click();
     await tab("Conversation").click();
     const summary = page.locator(".context-review summary");
-    await summary.focus();
-    await page.keyboard.press("Enter");
+    await page.getByRole("button", { name: /messages included/ }).click();
     const review = page.locator(".context-review");
     await ui(review).toContainText("Over the sending limit by");
     const partial = review.getByRole("checkbox", { name: /INCOMPLETE CANARY/ });
@@ -88,6 +86,7 @@ it("reviews and changes bounded context in the actual workspace, preserves encry
     await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
       "Preserve this unsent question",
     );
+    await page.keyboard.press("Escape");
     await tab("Saved").click();
     await page.getByRole("button", { name: "Save encrypted snapshot" }).click();
     await ui(
@@ -105,7 +104,7 @@ it("reviews and changes bounded context in the actual workspace, preserves encry
       .getByRole("button", { name: "Open", exact: true })
       .click();
     await tab("Conversation").click();
-    await page.locator(".context-review summary").click();
+    await page.getByRole("button", { name: /messages included/ }).click();
     await ui(
       review.getByRole("checkbox", { name: /Earlier date/ }),
     ).not.toBeChecked();

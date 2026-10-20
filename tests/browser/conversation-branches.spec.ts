@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { expect, test } from "@playwright/test";
 import { emptyConversation } from "../../shared/contracts";
 import { newMessage } from "../../src/conversation";
@@ -40,9 +41,7 @@ test("built workspace restores, edits, switches and saves branches without any i
       outgoing.push(r.url());
   });
   const tab = (name: string) =>
-    page
-      .getByRole("navigation", { name: "Workspace" })
-      .getByRole("button", { name, exact: false });
+    workspaceControl(page, name);
   await page.goto("/");
   await tab("Saved").click();
   await page.getByLabel("Vault passphrase").fill(secret);

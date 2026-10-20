@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { test, expect } from "@playwright/test";
 
 test("help preserves local drafts and offers only an explicit, content-free clipboard note", async ({
@@ -20,9 +21,7 @@ test("help preserves local drafts and offers only an explicit, content-free clip
   await page
     .getByLabel("Message PrivateAI")
     .fill("SUPPORT_PRIVATE_DRAFT_CANARY");
-  await page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name: "Help", exact: false })
+  await workspaceControl(page, "Help")
     .click();
   await page
     .getByLabel("Problem area", { exact: true })
@@ -48,11 +47,9 @@ test("help preserves local drafts and offers only an explicit, content-free clip
     await page.evaluate(() => (window as unknown as { copied: string }).copied),
   ).toBe(await note.inputValue());
   expect(sent).toEqual([]);
-  expect(await page.evaluate(() => localStorage.length)).toBe(0);
+  expect(await page.evaluate(() => Object.keys(localStorage).filter(key => key !== "privateai.appearance"))).toEqual([]);
   expect(await page.evaluate(() => indexedDB.databases())).toEqual([]);
-  await page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name: "Conversation", exact: false })
+  await workspaceControl(page, "Conversation")
     .click();
   await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
     "SUPPORT_PRIVATE_DRAFT_CANARY",
@@ -73,9 +70,7 @@ test("help handles denied copying and remains usable with keyboard and enlarged 
     }),
   );
   await page.goto("/");
-  await page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name: "Help", exact: false })
+  await workspaceControl(page, "Help")
     .click();
   await page.addStyleTag({ content: "html { font-size: 200%; }" });
   const area = page.getByLabel("Problem area", { exact: true });

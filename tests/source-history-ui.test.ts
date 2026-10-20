@@ -1,3 +1,4 @@
+import { workspaceControl } from "../evaluation/workspace-navigation";
 import { workspaceBrowserDependencies } from "../evaluation/browser-dependencies";
 import { it, expect } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
@@ -61,9 +62,7 @@ it("keeps citations tied to captured evidence through correction, removal and en
     await page.reload();
     await page.evaluate("import('/src/Answer.tsx')");
     const tab = (name: string) =>
-      page
-        .getByRole("navigation", { name: "Workspace" })
-        .getByRole("button", { name, exact: false });
+      workspaceControl(page, name);
     const unlock = async () => {
       await tab("Saved").click();
       await page
@@ -76,7 +75,7 @@ it("keeps citations tied to captured evidence through correction, removal and en
     };
     await unlock();
     await tab("Context").click();
-    await page.locator("details summary").click();
+    await page.locator(".content-view details summary").click();
     await page
       .getByLabel("Text for Synthetic notice page 1", { exact: true })
       .fill("Collection before 15:00");
@@ -97,10 +96,9 @@ it("keeps citations tied to captured evidence through correction, removal and en
       .getByRole("dialog")
       .getByRole("button", { name: "Close", exact: true })
       .click();
-    await answers
-      .nth(0)
-      .getByRole("checkbox", { name: "Include in context" })
-      .uncheck();
+    await page.getByRole("button", { name: /messages included/ }).click();
+    await page.locator(".context-review").getByRole("checkbox", { name: /Earlier captured answer/ }).uncheck();
+    await page.keyboard.press("Escape");
     await tab("Saved").click();
     await page.getByRole("button", { name: "Save encrypted snapshot" }).click();
     await ui(
@@ -111,7 +109,7 @@ it("keeps citations tied to captured evidence through correction, removal and en
       .click();
     await unlock();
     await tab("Context").click();
-    await page.locator("details summary").click();
+    await page.locator(".content-view details summary").click();
     await ui(
       page.getByLabel("Text for Synthetic notice page 1", { exact: true }),
     ).toHaveValue("Collection before 15:00");
@@ -120,9 +118,9 @@ it("keeps citations tied to captured evidence through correction, removal and en
     ).toBeVisible();
     await page.getByRole("button", { name: "Remove", exact: true }).click();
     await tab("Conversation").click();
-    await ui(
-      answers.nth(0).getByRole("checkbox", { name: "Include in context" }),
-    ).not.toBeChecked();
+    await page.getByRole("button", { name: /messages included/ }).click();
+    await ui(page.locator(".context-review").getByRole("checkbox", { name: /Earlier captured answer/ })).not.toBeChecked();
+    await page.keyboard.press("Escape");
     await answers.nth(0).locator("button.citation").click();
     await ui(page.getByRole("dialog")).toContainText("Collection before 14:00");
     expect(disclosures).toEqual([]);

@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { expect, test } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import { emptyConversation } from "../../shared/contracts";
@@ -59,10 +60,7 @@ test("representative themes, long history, source and responsive keyboard contro
     )
       outgoing.push(r.url());
   });
-  const tab = (name: string) =>
-    page
-      .getByRole("navigation", { name: "Workspace" })
-      .getByRole("button", { name, exact: false });
+  const tab = (name: string) => workspaceControl(page, name);
   await page.goto("/");
   await tab("Saved").click();
   await page.getByLabel("Vault passphrase").fill(secret);
@@ -100,19 +98,36 @@ test("representative themes, long history, source and responsive keyboard contro
       .getByRole("article", { name: "PrivateAI reply 4", exact: true })
       .getByRole("button", { name: "Copy answer" }),
   ).toBeDisabled();
-  await mkdir(".local/ui-review-20261020", { recursive: true });
+  const settings = async (theme: string) => {
+    await page.getByLabel("Conversation actions", { exact: true }).click();
+    await page
+      .locator(".conversation-menu")
+      .getByRole("button", { name: "Settings", exact: true })
+      .click();
+    await page.getByLabel("Appearance", { exact: true }).selectOption(theme);
+    await page.getByRole("button", { name: "Close settings" }).click();
+  };
+  await mkdir(".local/ui-structure-20261020", { recursive: true });
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1000 });
     for (const theme of ["light", "dark"]) {
-      await page.getByLabel("Appearance", { exact: true }).selectOption(theme);
+      await settings(theme);
       await expect(page.locator(".app-shell")).toHaveAttribute(
         "data-theme",
         theme,
       );
-      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.locator("main").evaluate((el) => el.scrollTo(0, 0));
       await page.screenshot({
-        path: `.local/ui-review-20261020/${theme}-${width}.png`,
-        fullPage: true,
+        path: `.local/ui-structure-20261020/${theme}-${width}.png`,
+        fullPage: false,
+        animations: "disabled",
+      });
+      await page
+        .locator("main")
+        .evaluate((el) => el.scrollTo(0, el.scrollHeight));
+      await expect(page.getByLabel("Message PrivateAI")).toBeInViewport();
+      await page.screenshot({
+        path: `.local/ui-structure-20261020/${theme}-${width}-error.png`,
         animations: "disabled",
       });
       expect(
@@ -127,10 +142,10 @@ test("representative themes, long history, source and responsive keyboard contro
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.setViewportSize({ width: 390, height: 420 });
-  await page.getByLabel("Message PrivateAI").scrollIntoViewIfNeeded();
+  await page.locator("main").evaluate((el) => el.scrollTo(0, 300));
   await expect(page.getByLabel("Message PrivateAI")).toBeInViewport();
   await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "light" });
-  await page.getByLabel("Appearance", { exact: true }).selectOption("system");
+  await settings("system");
   await expect(page.locator(".app-shell")).toHaveAttribute(
     "data-theme",
     "light",
@@ -152,11 +167,12 @@ test("representative themes, long history, source and responsive keyboard contro
     .click();
   await expect(page.getByLabel("Edited message")).toBeFocused();
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
-  await tab("Saved").click();
+  await page.evaluate(() => (document.documentElement.style.fontSize = ""));
+  await page.getByRole("button", { name: "Open navigation" }).click();
   await page
-    .getByRole("article", { name: long.title, exact: true })
-    .getByRole("button", { name: "Open", exact: true })
-    .click();
+    .getByRole("searchbox", { name: "Search chats" })
+    .fill("long conversation");
+  await page.getByRole("button", { name: long.title, exact: true }).click();
   await expect(page.locator(".messages article")).toHaveCount(30);
   await page
     .getByRole("button", { name: "Jump to latest", exact: false })
@@ -164,5 +180,143 @@ test("representative themes, long history, source and responsive keyboard contro
   await expect(
     page.getByRole("article", { name: "PrivateAI reply 30", exact: true }),
   ).toBeInViewport();
+  await expect(page.getByLabel("Message PrivateAI")).toBeInViewport();
+  await page.locator("main").evaluate((el) => el.scrollTo(0, 0));
+  await expect(page.getByLabel("Message PrivateAI")).toBeInViewport();
+  await page.setViewportSize({ width: 390, height: 844 });
+  // Reopen the representative chat from the actual searchable sidebar.
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  await page
+    .getByRole("searchbox", { name: "Search chats" })
+    .fill("export format");
+  await page.screenshot({
+    path: ".local/ui-structure-20261020/mobile-drawer.png",
+    animations: "disabled",
+  });
+  await page
+    .getByRole("button", { name: conversation.title, exact: true })
+    .click();
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole("button", { name: "Collapse navigation" }).click();
+  await expect(
+    page.getByRole("button", { name: "Open navigation" }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: ".local/ui-structure-20261020/desktop-collapsed.png",
+    animations: "disabled",
+  });
+  await page.getByLabel("Attachments and tools", { exact: true }).click();
+  await page.screenshot({
+    path: ".local/ui-structure-20261020/tools.png",
+    animations: "disabled",
+  });
+  await page.keyboard.press("Escape");
+  await expect(
+    page.getByLabel("Attachments and tools", { exact: true }),
+  ).toBeFocused();
+  await page
+    .getByLabel("Attach files to this conversation", { exact: true })
+    .setInputFiles({
+      name: "synthetic.txt",
+      mimeType: "text/plain",
+      buffer: Buffer.from(
+        "Synthetic public project note. JSON stores structured fields.",
+      ),
+    });
+  await expect(
+    page.getByRole("list", { name: "Conversation attachments" }),
+  ).toContainText("synthetic.txt");
+  await page.getByRole("button", { name: source.title, exact: true }).click();
+  await page.screenshot({
+    path: ".local/ui-structure-20261020/sources.png",
+    animations: "disabled",
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({
+    path: ".local/ui-structure-20261020/mobile-sources.png",
+    animations: "disabled",
+  });
+  await page.keyboard.press("Escape");
+  await page.getByLabel("Attachments and tools", { exact: true }).click();
+  await page.screenshot({
+    path: ".local/ui-structure-20261020/mobile-tools.png",
+    animations: "disabled",
+  });
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: /messages included/ }).click();
+  await expect(
+    page.getByRole("dialog", { name: "Included context", exact: true }),
+  ).toContainText("synthetic.txt");
+  await page.keyboard.press("Escape");
+  await workspaceControl(page, "Account").click();
+  await expect(
+    page.getByRole("heading", { name: "Account", exact: true }),
+  ).toBeVisible();
+  await settings("dark");
+  await workspaceControl(page, "Settings").click();
+  await page.screenshot({
+    path: ".local/ui-structure-20261020/mobile-settings.png",
+    animations: "disabled",
+  });
+  await page.getByRole("button", { name: "Close settings" }).click();
+  page.on("dialog", (d) => d.accept());
+  await page.reload();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator(".app-shell")).toHaveAttribute(
+    "data-theme",
+    "dark",
+  );
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  await expect(
+    page.getByRole("searchbox", { name: "Search chats" }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByText("Unlock your local vault", { exact: false }),
+  ).toBeVisible();
   expect(outgoing).toEqual([]);
+});
+
+test("drawer focus, desktop expansion and denied preference storage remain usable", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "localStorage", {
+      get() {
+        throw new DOMException("Denied", "SecurityError");
+      },
+    });
+  });
+  await page.setViewportSize({ width: 390, height: 600 });
+  await page.goto("/");
+  const trigger = page.getByRole("button", { name: "Open navigation" });
+  await trigger.click();
+  const drawer = page.getByRole("dialog", { name: "Navigation", exact: true });
+  await expect(drawer).toBeVisible();
+  await page.getByRole("link", { name: "PrivateAI home" }).focus();
+  await page.keyboard.press("Shift+Tab");
+  expect(
+    await drawer.evaluate((el) => el.contains(document.activeElement)),
+  ).toBe(true);
+  await page.keyboard.press("Tab");
+  expect(
+    await drawer.evaluate((el) => el.contains(document.activeElement)),
+  ).toBe(true);
+  await page.keyboard.press("Escape");
+  await expect(trigger).toBeFocused();
+  await workspaceControl(page, "Settings").click();
+  await page.getByLabel("Appearance", { exact: true }).selectOption("dark");
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".app-shell")).toHaveAttribute(
+    "data-theme",
+    "dark",
+  );
+  await expect(trigger).toBeFocused();
+  await page.setViewportSize({ width: 1440, height: 800 });
+  await page.getByRole("button", { name: "Collapse navigation" }).click();
+  await trigger.click();
+  await page.getByRole("button", { name: "Keep sidebar open" }).click();
+  await expect(drawer).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Collapse navigation" }),
+  ).toBeVisible();
 });

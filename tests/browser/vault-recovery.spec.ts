@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { test, expect } from "@playwright/test";
 
 test("an unreadable snapshot stays stored while an intact draft can open, update and delete", async ({
@@ -5,9 +6,7 @@ test("an unreadable snapshot stays stored while an intact draft can open, update
 }) => {
   await page.goto("/");
   const tab = (name: string) =>
-    page
-      .getByRole("navigation", { name: "Workspace" })
-      .getByRole("button", { name, exact: false });
+    workspaceControl(page, name);
   await page.getByLabel("Message PrivateAI").fill("SYNTHETIC INTACT DRAFT");
   await tab("Saved").click();
   await page
@@ -64,7 +63,7 @@ test("an unreadable snapshot stays stored while an intact draft can open, update
   await tab("Saved").click();
   await page.getByRole("button", { name: "Save encrypted snapshot" }).click();
   await expect(
-    page.getByText("SYNTHETIC UPDATED DRAFT", { exact: true }),
+    page.getByRole("article", { name: "SYNTHETIC UPDATED DRAFT", exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Delete", exact: true }).click();
   await expect(

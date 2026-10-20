@@ -1,6 +1,33 @@
 # Conversation-first UI and device review
 
-## Representative visual chat — 20 October, awaiting design approval
+## Structural revision — 20 October, owner rejected first design
+
+Owner assessment is a design rejection, not approval to propagate. Retain readable answers and neutral/charcoal themes; revise navigation, history, composer and information hierarchy. Muted violet replaces terracotta. Brand monogram remains a placeholder pending identity approval. Representative journey is local/synthetic; unavailable private inference remains explicit.
+
+### Functional UI map (checked against current repository)
+
+| Area | Existing working implementation | Representative placement / remaining status |
+| --- | --- | --- |
+| History | ConversationLibrary, findConversations; encrypted Vault snapshots, search across titles/messages/drafts/files/branches | Search + saved conversations directly in sidebar; locked-state explanation. No title/search index persisted outside vault. Save remains explicit; no cloud sync. |
+| Rename/delete | Saved screen title editing and explicit encrypted save; snapshot deletion | Conversation actions opens existing manager. Pin/archive are **needs implementation**, not synonymous with branch archives; no fake pinned group. |
+| Navigation | Existing App tabs and account/support routes | Collapsible desktop sidebar; native modal mobile drawer with Escape/focus containment; account/help at bottom. Context/files/research from conversation tools. |
+| Conversation | Markdown/code/tables/citations, edit creates preserved branch, manual retry, stop, partial excluded | Compact Edit/Copy; included-context dialog replaces repeated checkboxes. Sources-change explanations expandable. |
+| Composer | Draft, file input, import results, selected context measurement | Sticky expandable composer with tools, selected context count and send/stop. Errors preserve draft; retries remain explicit and gated. |
+| Documents/sources | Local import/extraction/correction/selection; captured-source dialog | Tools opens existing files page; citations open original source dialog. Source changes remain visible and are not silently substituted. |
+| Settings/privacy | Vault/passphrase/backup controls, privacy explanations | Appearance in Settings, stored locally as non-sensitive preference; System responds to OS. Context/limits available on demand; privacy gate summary always visible. |
+| Accounts/usage/help | AccountUsage, SupportPanel and dedicated auth/account routes | Existing controls reachable; production providers and commercial activation remain gated. Dedicated routes await design approval before restyle. |
+| Research | Explicit query/URL approval, temporary search answers, source review | Existing Research page from tools. No automatic retrieval, saving, cache/export changes or new supplier rights assumed. |
+
+### Scope decisions proposed for launch review
+
+Projects: deferred from this representative UI; not implemented. Proposed organization-only collections must never imply automatic model context. Custom instructions: not a launch commitment until storage, scope and injection tests are specified. Scheduling and cross-conversation memory: proposed deferral; no background execution, plaintext access or indefinite memory claim. Voice/general vision/image creation/editing: keep existing ROADMAP M4 assessment and dependencies; no fake buttons. Deep research/autonomous browsing: proposed deferral; current explicit retrieval remains. Public sharing: separate owner privacy/product decision, preview/revocation required before implementation. Marketplace/profiles/streaks/pets/account switching/site builders/design integrations: not in launch proposal absent a concrete need. These are recorded proposals, not new owner-approved removals from the product goal. Provisional DeepSeek-low is a development default; no Auto routing claim.
+
+### Review and device evidence
+
+Capture desktop light/dark with sidebar open/collapsed; mobile drawer open/closed; tools, sources and incomplete reply. Exercise search/reopen → attach synthetic document → inspect original sources → edit/cancel/branch → explicit retry unavailable while gated → account/settings → theme reload. Verify composer remains in viewport during actual transcript scroll and reduced-height simulation. Real Galaxy A52 keyboard/TalkBack remains unverified; previous auth-only pass is not inherited. Broader styling rollout remains blocked on owner visual approval. Completed capture/QA evidence and limitations are recorded in READINESS under “Representative chat structure revised”; gallery `.local/ui-structure-20261020/index.html`.
+
+
+## Superseded first visual candidate — 20 October, not approved
 
 Implemented reference-led chat appearance in src/chat-design.css and App: warm neutrals, charcoal dark theme, terracotta controls, restrained CSS clay monogram, light/dark/system session theme, conversation title/count and Jump to latest. Existing brand identity retained; no ChatGPT logo or fake voice feature. No external font/CDN/analytics or theme persistence. Shared tokens are scoped to the workspace; dedicated account/sign-in routes have not been restyled. Full product propagation awaits owner design approval.
 

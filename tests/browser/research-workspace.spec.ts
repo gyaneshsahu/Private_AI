@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { expect, test } from "@playwright/test";
 
 test("search is explicitly approved and remains temporary after source removal", async ({
@@ -25,9 +26,7 @@ test("search is explicitly approved and remains temporary after source removal",
     });
   });
   const tab = (name: string) =>
-    page
-      .getByRole("navigation", { name: "Workspace" })
-      .getByRole("button", { name, exact: false });
+    workspaceControl(page, name);
   await page.goto("/");
   await tab("Research").click();
   await page.getByLabel("Exact search query").fill("synthetic library hours");
@@ -78,7 +77,7 @@ test("search is explicitly approved and remains temporary after source removal",
     ),
   ).toBeVisible();
   const storage = await page.evaluate(async () => ({
-    local: localStorage.length,
+    local: Object.keys(localStorage).filter(key => key !== "privateai.appearance").length,
     session: sessionStorage.length,
     caches: (await caches.keys()).length,
     workers: (await navigator.serviceWorker.getRegistrations()).length,
@@ -103,9 +102,7 @@ test("malformed research is rejected without changing the draft or retrying", as
     });
   });
   const tab = (name: string) =>
-    page
-      .getByRole("navigation", { name: "Workspace" })
-      .getByRole("button", { name, exact: false });
+    workspaceControl(page, name);
   await page.goto("/");
   await page.getByLabel("Message PrivateAI").fill("SYNTHETIC preserved draft");
   await tab("Research").click();
@@ -165,9 +162,7 @@ test("approved research retains inspectable provenance through encrypted save an
     });
   });
   const tab = (name: string) =>
-    page
-      .getByRole("navigation", { name: "Workspace" })
-      .getByRole("button", { name, exact: false });
+    workspaceControl(page, name);
   await page.goto("/");
   await page
     .getByLabel("Message PrivateAI")
@@ -183,7 +178,7 @@ test("approved research retains inspectable provenance through encrypted save an
   expect(disclosures).toEqual([{ kind: "page", value: url }]);
   expect(executions).toBe(1);
   await tab("Context").click();
-  await page.locator("details summary").click();
+  await page.locator(".content-view details summary").click();
   await page.getByRole("button", { name: "Inspect source" }).click();
   await expect(page.getByRole("dialog")).toContainText(url);
   await expect(page.getByRole("dialog")).toContainText(
@@ -228,7 +223,7 @@ test("approved research retains inspectable provenance through encrypted save an
   await page.getByRole("button", { name: "Create or unlock vault" }).click();
   await page.getByRole("button", { name: "Open", exact: true }).click();
   await tab("Context").click();
-  await page.locator("details summary").click();
+  await page.locator(".content-view details summary").click();
   await page.getByRole("button", { name: "Inspect source" }).click();
   await expect(page.getByRole("dialog")).toContainText(url);
   await expect(page.getByRole("dialog")).toContainText("Saturday: 10:00–14:00");

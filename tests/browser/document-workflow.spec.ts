@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { test, expect } from "@playwright/test";
 
 test("mixed code/data imports recover from a bad file without disclosure or execution", async ({
@@ -52,7 +53,7 @@ test("mixed code/data imports recover from a bad file without disclosure or exec
   await page
     .getByRole("button", { name: "Review README.md", exact: true })
     .click();
-  await page.locator("details summary").first().click();
+  await page.locator(".content-view details summary").first().click();
   await expect(
     page.getByLabel("Text for README.md", { exact: true }),
   ).toHaveValue(content);
@@ -72,9 +73,7 @@ test("mixed code/data imports recover from a bad file without disclosure or exec
     path: ".local/document-evidence/mobile-import.png",
     fullPage: true,
   });
-  await page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name: "Saved" })
+  await workspaceControl(page, "Saved")
     .click();
   await page
     .getByLabel("Vault passphrase")
@@ -86,16 +85,12 @@ test("mixed code/data imports recover from a bad file without disclosure or exec
   ).toBeVisible();
   await page.getByRole("button", { name: "Open", exact: true }).click();
   await expect(results).toHaveCount(0);
-  await page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name: "Saved" })
+  await workspaceControl(page, "Saved")
     .click();
   await page.getByRole("button", { name: "Lock and clear workspace" }).click();
   await expect(results).toHaveCount(0);
   await page.reload();
-  await page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name: "Saved" })
+  await workspaceControl(page, "Saved")
     .click();
   await page
     .getByLabel("Vault passphrase")
@@ -108,7 +103,7 @@ test("mixed code/data imports recover from a bad file without disclosure or exec
   await page
     .getByRole("button", { name: "Review README.md", exact: true })
     .click();
-  await page.locator("details summary").first().click();
+  await page.locator(".content-view details summary").first().click();
   await expect(
     page.getByLabel("Text for README.md", { exact: true }),
   ).toHaveValue(content + "\nCorrection: price is in EUR.");
@@ -158,6 +153,6 @@ test("rejects oversized and disguised binary files and accepts a later valid fil
       .getByRole("listitem"),
   ).toHaveCount(1);
   page.once("dialog", (dialog) => dialog.accept());
-  await page.getByRole("button", { name: "New conversation" }).click();
+  await workspaceControl(page, "New conversation").click();
   await expect(results).toHaveCount(0);
 });

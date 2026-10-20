@@ -1,10 +1,9 @@
+import { workspaceControl } from "./workspace-navigation";
 import { test, expect, type Page } from "@playwright/test";
 const oldSecret = "synthetic original browser passphrase";
 const nextSecret = "synthetic replacement browser passphrase";
 const tab = (page: Page, name: string) =>
-  page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name, exact: true });
+  workspaceControl(page, name);
 async function unlock(page: Page, secret: string) {
   await tab(page, "Saved").click();
   await page.getByLabel("Vault passphrase", { exact: true }).fill(secret);

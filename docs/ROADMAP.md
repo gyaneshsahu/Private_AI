@@ -1,5 +1,10 @@
 # PrivateAI delivery roadmap
 
+## Current UI milestone — 20 October
+
+First visual candidate was not approved. Structural revision implements searchable history, collapsible sidebar/mobile drawer, reachable composer, on-demand context/privacy/tools and persistent violet-accented themes. Functional map, existing capabilities and explicitly unfinished/deferred proposals are in ui-device-test-plan.md; evidence in READINESS. Review `.local/ui-structure-20261020/index.html` before broad visual propagation. Pin/archive and final identity remain unfinished. This is progress on the same public-product architecture; privacy, complete-answer quality/safety and hosted qualification remain separate release gates. Supplier replies remain pending; no infrastructure expansion or paid activation in this batch.
+
+
 ## Fidelity study completed; visual reference pending — 20 October
 
 Owner requested the prepared eight cases, then a focused light/dark UI batch. Ran unchanged DeepSeek-low/constraints-v4 only: **16/16delivered replies,8/8complete conversations**, median1961ms, reported token costUSD0.0125191. No paid retry, prompt change or candidate promotion. The previously proposed two-arm comparison was not executed. Full questions, expected facts, raw model events and delivered answers: `evaluation/results/fidelity-transfer-20261020.json`; review page `.local/review-batches/fidelity-transfer-20261020/complete-review.html`. All human scores blank.

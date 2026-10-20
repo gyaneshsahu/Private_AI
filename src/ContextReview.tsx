@@ -2,6 +2,7 @@ import type { Conversation } from "../shared/contracts";
 import type { measureContext } from "./conversation";
 
 export function ContextReview({
+  expanded = false,
   conversation,
   size,
   limit,
@@ -9,6 +10,7 @@ export function ContextReview({
   includeMessage,
   includeAttachment,
 }: {
+  expanded?: boolean;
   conversation: Conversation;
   size: ReturnType<typeof measureContext>;
   limit?: number;
@@ -18,7 +20,7 @@ export function ContextReview({
 }) {
   const remaining = limit === undefined ? undefined : limit - size.characters;
   return (
-    <details className="context-review">
+    <details className="context-review" open={expanded || undefined}>
       <summary>
         Review included context · {size.includedMessages} messages ·{" "}
         {size.sourceCount} source passages

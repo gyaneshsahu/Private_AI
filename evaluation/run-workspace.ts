@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { workspaceBrowserDependencies } from "./browser-dependencies";
 import { assertWorkspaceArm } from "./workspace-arm";
 import { assertWorkspaceBudget } from "./workspace-budget";
@@ -620,9 +621,7 @@ try {
       try {
         await page.goto(config.origin, { waitUntil: "domcontentloaded" });
         const tab = (name: string) =>
-          page
-            .getByRole("navigation", { name: "Workspace" })
-            .getByRole("button", { name, exact: false });
+          workspaceControl(page, name);
         if (!selection || fixture.sources.length) {
           await tab("Research").click();
           await page.getByLabel("Exact search query").fill(fixture.query);
@@ -642,7 +641,7 @@ try {
           );
           record.providerDates = sources.filter((s) => !!s.providerDate).length;
           await tab("Context").click();
-          await page.locator("details summary").first().click();
+          await page.locator(".content-view details summary").first().click();
           await page
             .getByRole("button", { name: "Inspect source" })
             .first()

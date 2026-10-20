@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { test, expect } from "@playwright/test";
 
 test("account view preserves drafts and never invents a paid allowance", async ({
@@ -5,9 +6,7 @@ test("account view preserves drafts and never invents a paid allowance", async (
 }) => {
   await page.goto("/");
   await page.getByLabel("Message PrivateAI").fill("SYNTHETIC unsent question");
-  await page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name: "Account", exact: false })
+  await workspaceControl(page, "Account")
     .click();
   await expect(
     page.getByText("No request allowance is available to display.", {
@@ -19,9 +18,7 @@ test("account view preserves drafts and never invents a paid allowance", async (
       exact: false,
     }),
   ).toBeVisible();
-  await page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name: "Conversation", exact: false })
+  await workspaceControl(page, "Conversation")
     .click();
   await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
     "SYNTHETIC unsent question",
@@ -52,9 +49,7 @@ test("synthetic account status renders request counts without claiming token bil
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name: "Account", exact: false })
+  await workspaceControl(page, "Account")
     .click();
   await expect(
     page.getByRole("heading", { name: "0 requests remaining" }),

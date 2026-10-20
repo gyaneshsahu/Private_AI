@@ -1,3 +1,4 @@
+import { workspaceControl } from "../evaluation/workspace-navigation";
 import { workspaceBrowserDependencies } from "../evaluation/browser-dependencies";
 import { it, expect } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
@@ -76,9 +77,7 @@ it("displays calculator-assisted prose and a corrected total through the actual 
     // Cold packaged loading is exercised separately by Playwright.
     await page.evaluate("import('/src/Answer.tsx')");
     const tab = (name: string) =>
-      page
-        .getByRole("navigation", { name: "Workspace" })
-        .getByRole("button", { name, exact: false });
+      workspaceControl(page, name);
     await tab("Context").click();
     await page.getByLabel("Add documents or screenshots").setInputFiles({
       name: "synthetic.txt",
@@ -87,7 +86,7 @@ it("displays calculator-assisted prose and a corrected total through the actual 
         "Buy 3 items at EUR 27 each. Delivery EUR 4. Tax 12 percent applies to items and delivery.",
       ),
     });
-    await ui(page.locator("details summary")).toBeVisible();
+    await ui(page.locator(".content-view details summary")).toBeVisible();
     await tab("Conversation").click();
     for (const [question, total] of [
       ["Calculate the full invoice.", "95.20 EUR"],

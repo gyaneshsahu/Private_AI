@@ -1,3 +1,4 @@
+import { workspaceControl } from "../evaluation/workspace-navigation";
 import { beforeAll, afterAll, describe, expect, it } from "vitest";
 import { createServer, request } from "node:https";
 import { X509Certificate, randomBytes, createHash } from "node:crypto";
@@ -480,6 +481,7 @@ describe.runIf(
         await browserExpect(
           page.getByRole("status").filter({ hasText: "Passkey added." }),
         ).toBeVisible();
+        await workspaceControl(page, "Account").click();
         await page
           .getByRole("button", { name: "Sign out", exact: true })
           .click();
@@ -493,9 +495,7 @@ describe.runIf(
           .getByRole("link", { name: "Open workspace", exact: true })
           .click();
         const tab = (name: string) =>
-          page
-            .getByRole("navigation", { name: "Workspace" })
-            .getByRole("button", { name, exact: false });
+          workspaceControl(page, name);
         await page
           .getByLabel("Message PrivateAI")
           .fill("INGRESS_LOCAL_DRAFT_CANARY");
@@ -508,7 +508,7 @@ describe.runIf(
           mimeType: "text/plain",
           buffer: Buffer.from("INGRESS_LOCAL_DOCUMENT_CANARY"),
         });
-        await page.locator("details summary").first().click();
+        await page.locator(".content-view details summary").first().click();
         await page
           .getByLabel("Text for synthetic-note.txt", { exact: true })
           .fill("INGRESS_CORRECTED_DOCUMENT_CANARY");
@@ -546,7 +546,7 @@ describe.runIf(
           "INGRESS_LOCAL_DRAFT_CANARY",
         );
         await tab("Context").click();
-        await page.locator("details summary").first().click();
+        await page.locator(".content-view details summary").first().click();
         await browserExpect(
           page.getByLabel("Text for synthetic-note.txt", { exact: true }),
         ).toHaveValue("INGRESS_CORRECTED_DOCUMENT_CANARY");
@@ -560,6 +560,7 @@ describe.runIf(
         await browserExpect(
           page.getByRole("heading", { name: "Your account", exact: true }),
         ).toBeVisible();
+        await workspaceControl(page, "Account").click();
         await page
           .getByRole("button", { name: "Sign out", exact: true })
           .click();

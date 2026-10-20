@@ -1,3 +1,4 @@
+import { workspaceControl } from "../evaluation/workspace-navigation";
 import { afterEach, expect, it, vi } from "vitest";
 import { createServer } from "node:http";
 import { randomBytes } from "node:crypto";
@@ -378,9 +379,7 @@ it.skipIf(!enabled)(
       await page
         .getByLabel("Message PrivateAI")
         .fill("SYNTHETIC PRIVATE DRAFT MUST NOT LEAVE BROWSER");
-      await page
-        .getByRole("navigation", { name: "Workspace" })
-        .getByRole("button", { name: "Research" })
+      await workspaceControl(page, "Research")
         .click();
       await page.getByLabel("Exact search query").fill(query.value);
       await page.getByRole("button", { name: "Review disclosure" }).click();
@@ -401,9 +400,7 @@ it.skipIf(!enabled)(
       expect(
         (await h.db.pool.query("SELECT * FROM research_consent")).rows,
       ).toHaveLength(0);
-      await page
-        .getByRole("navigation", { name: "Workspace" })
-        .getByRole("button", { name: "Conversation", exact: false })
+      await workspaceControl(page, "Conversation")
         .click();
       await browserExpect(page.getByLabel("Message PrivateAI")).toHaveValue(
         "SYNTHETIC PRIVATE DRAFT MUST NOT LEAVE BROWSER",
@@ -440,9 +437,7 @@ it.skipIf(!enabled)(
       });
       const page = await context.newPage();
       const tab = (p: Page, name: string) =>
-        p
-          .getByRole("navigation", { name: "Workspace" })
-          .getByRole("button", { name, exact: false });
+        workspaceControl(p, name);
       const login = async (email: string) => {
         await browserExpect(
           page.getByLabel("Test email address"),

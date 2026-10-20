@@ -1,3 +1,4 @@
+import { workspaceControl } from "../evaluation/workspace-navigation";
 import { it, expect } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
@@ -73,9 +74,7 @@ it("clearing pending imports and locking pending encrypted saves cannot restore 
     });
     await page.goto(origin);
     const tab = (name: string) =>
-      page
-        .getByRole("navigation", { name: "Workspace" })
-        .getByRole("button", { name });
+      workspaceControl(page, name);
     await tab("Context").click();
     await page.getByLabel("Add documents or screenshots").setInputFiles(
       ["first.txt", "second.txt"].map((name) => ({
@@ -97,7 +96,7 @@ it("clearing pending imports and locking pending encrypted saves cannot restore 
       () => (window as unknown as Fixture).extractionDone,
     );
     await tab("Context").click();
-    await ui(page.locator("details summary")).toHaveCount(0);
+    await ui(page.locator(".content-view details summary")).toHaveCount(0);
     await ui(page.getByText("TEST_STALE_PROGRESS")).toHaveCount(0);
     expect(
       await page.evaluate(() => (window as unknown as Fixture).extractionCalls),
@@ -155,7 +154,7 @@ it("clearing pending imports and locking pending encrypted saves cannot restore 
         () => (window as unknown as Fixture).researchReleased,
       );
       await tab("Context").click();
-      await ui(page.locator("details summary")).toHaveCount(0);
+      await ui(page.locator(".content-view details summary")).toHaveCount(0);
       await ui(
         page.getByText("Public sources added", { exact: false }),
       ).toHaveCount(0);

@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { expect, test } from "@playwright/test";
 
 test("search excerpts lead to separately approved pages without sharing the draft", async ({ page }) => {
@@ -20,7 +21,7 @@ test("search excerpts lead to separately approved pages without sharing the draf
       url, retrievedAt: "2026-10-05T12:00:00.000Z",
     }] } });
   });
-  const tab = (name: string) => page.getByRole("navigation", { name: "Workspace" }).getByRole("button", { name, exact: false });
+  const tab = (name: string) => workspaceControl(page, name);
   await page.goto("/");
   await page.getByLabel("Message PrivateAI").fill("SYNTHETIC private draft");
   await tab("Research").click();
@@ -29,7 +30,7 @@ test("search excerpts lead to separately approved pages without sharing the draf
   await page.getByRole("button", { name: "Approve and retrieve" }).click();
   await expect(page.getByRole("status")).toContainText("Search results added");
   await tab("Context").click();
-  await page.locator("details summary").click();
+  await page.locator(".content-view details summary").click();
   await page.getByRole("button", { name: "Review page retrieval" }).click();
   await expect(page.getByLabel("Exact HTTPS URL")).toHaveValue(url);
   await expect(page.getByRole("region", { name: "Confirm external disclosure" })).toHaveCount(0);
@@ -43,8 +44,8 @@ test("search excerpts lead to separately approved pages without sharing the draf
   await page.getByRole("button", { name: "Approve and retrieve" }).click();
   await expect(page.getByRole("button", { name: "Review disclosure" })).toBeEnabled();
   await tab("Context").click();
-  await expect(page.locator("details summary")).toHaveCount(2);
-  await page.locator("details summary").filter({ hasText: "Library page" }).click();
+  await expect(page.locator(".content-view details summary")).toHaveCount(2);
+  await page.locator(".content-view details summary").filter({ hasText: "Library page" }).click();
   await expect(page.getByLabel("Text for Library page", { exact: true })).toHaveValue("Saturday hours: 10:00–14:00.");
   await expect(page.getByLabel("Text for Library excerpt", { exact: true })).toHaveValue("Search excerpt only (full page not fetched): Open Saturday.");
   expect(disclosures).toEqual([{ kind: "search", value: "synthetic library hours" }, { kind: "page", value: url }]);

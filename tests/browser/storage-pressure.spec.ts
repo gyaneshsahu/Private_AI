@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { expect, test } from "@playwright/test";
 
 test("storage quota failure preserves the draft and prior encrypted snapshot until explicit save", async ({
@@ -21,9 +22,7 @@ test("storage quota failure preserves the draft and prior encrypted snapshot unt
   });
   await page.goto("/");
   const tab = (name: string) =>
-    page
-      .getByRole("navigation", { name: "Workspace" })
-      .getByRole("button", { name, exact: false });
+    workspaceControl(page, name);
   await page
     .getByLabel("Message PrivateAI")
     .fill("SYNTHETIC ORIGINAL SAVED DRAFT");
@@ -97,9 +96,8 @@ test("narrow and magnified workspace supports keyboard activation and error reco
   await page.setViewportSize({ width: 320, height: 780 });
   await page.goto("/");
   await page.getByLabel("Message PrivateAI").fill("SYNTHETIC KEYBOARD DRAFT");
-  const saved = page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name: "Saved", exact: false });
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  const saved = page.getByRole("navigation", { name: "Workspace" }).getByRole("button", { name: /^Saved/ });
   await saved.focus();
   await page.keyboard.press("Enter");
   const pass = page.getByLabel("Vault passphrase");

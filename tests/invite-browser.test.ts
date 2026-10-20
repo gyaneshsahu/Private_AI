@@ -1,3 +1,4 @@
+import { workspaceControl } from "../evaluation/workspace-navigation";
 import { expect, it } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "node:http";
@@ -105,9 +106,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
       await ui(page.getByLabel("Message PrivateAI")).toBeVisible();
     };
     const saved = () =>
-      page
-        .getByRole("navigation", { name: "Workspace" })
-        .getByRole("button", { name: "Saved", exact: false })
+      workspaceControl(page, "Saved")
         .click();
     const unlock = async () => {
       await saved();
@@ -130,6 +129,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     await ui(
       page.getByText("Encrypted snapshot saved", { exact: false }),
     ).toBeVisible();
+    await workspaceControl(page, "Account").click();
     await page.getByRole("button", { name: "Sign out", exact: true }).click();
     await ui(page).toHaveURL(origin + "/auth");
     await accept(bob);
@@ -149,13 +149,12 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     await login.getByRole("button", { name: "Sign in", exact: true }).click();
     await unlock();
     await page.getByRole("button", { name: "Open", exact: true }).click();
-    await page
-      .getByRole("navigation", { name: "Workspace" })
-      .getByRole("button", { name: "Conversation", exact: false })
+    await workspaceControl(page, "Conversation")
       .click();
     await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
       "ALICE SYNTHETIC PRIVATE DRAFT",
     );
+    await workspaceControl(page, "Account").click();
     await page
       .getByRole("button", { name: "Change sign-in password", exact: true })
       .click();
@@ -204,9 +203,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     ).toBe(true);
     await unlock();
     await page.getByRole("button", { name: "Open", exact: true }).click();
-    await page
-      .getByRole("navigation", { name: "Workspace" })
-      .getByRole("button", { name: "Conversation", exact: false })
+    await workspaceControl(page, "Conversation")
       .click();
     await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
       "ALICE SYNTHETIC PRIVATE DRAFT",
@@ -248,9 +245,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     );
     await unlock();
     await page.getByRole("button", { name: "Open", exact: true }).click();
-    await page
-      .getByRole("navigation", { name: "Workspace" })
-      .getByRole("button", { name: "Conversation", exact: false })
+    await workspaceControl(page, "Conversation")
       .click();
     await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
       "ALICE SYNTHETIC PRIVATE DRAFT",

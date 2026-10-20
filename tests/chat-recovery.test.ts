@@ -1,3 +1,4 @@
+import { workspaceControl } from "../evaluation/workspace-navigation";
 import { workspaceBrowserDependencies } from "../evaluation/browser-dependencies";
 import { it, expect } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
@@ -98,16 +99,14 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     // Cold packaged loading is exercised separately by Playwright.
     await page.evaluate("import('/src/Answer.tsx')");
     const tab = (name: string) =>
-      page
-        .getByRole("navigation", { name: "Workspace" })
-        .getByRole("button", { name, exact: false });
+      workspaceControl(page, name);
     await tab("Context").click();
     await page.getByLabel("Add documents or screenshots").setInputFiles({
       name: "synthetic-source.txt",
       mimeType: "text/plain",
       buffer: Buffer.from("ORIGINAL SYNTHETIC SOURCE: 95 EUR"),
     });
-    await ui(page.locator("details summary")).toBeVisible();
+    await ui(page.locator(".content-view details summary")).toBeVisible();
     await tab("Conversation").click();
     await page.evaluate(() => Object.assign(window, { fixtureMode: "stall" }));
     await page
@@ -160,7 +159,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       .getByLabel("Message PrivateAI")
       .fill("UNSENT FOLLOW-UP DURING RETRY");
     await page
-      .getByRole("button", { name: "Retry last turn explicitly", exact: false })
+      .getByRole("button", { name: "Retry last response", exact: false })
       .click();
     await ui(page.locator("article.assistant")).toHaveCount(1);
     await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
@@ -246,7 +245,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       ),
     ).toBe(2);
     await tab("Context").click();
-    await page.locator("details summary").click();
+    await page.locator(".content-view details summary").click();
     await page
       .getByLabel("Text for synthetic-source.txt", { exact: true })
       .fill("CORRECTED SYNTHETIC SOURCE: 90 EUR");

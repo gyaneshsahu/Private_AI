@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { expect, test } from "@playwright/test";
 
 test("trial boundaries are readable on a narrow screen with keyboard dismissal and no disclosure", async ({
@@ -10,6 +11,7 @@ test("trial boundaries are readable on a narrow screen with keyboard dismissal a
       external.push(request.url());
   });
   await page.goto("/");
+  await workspaceControl(page, "Settings").click();
   const trigger = page.getByRole("button", {
     name: "Trial scope and safety",
     exact: true,

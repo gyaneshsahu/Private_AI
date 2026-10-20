@@ -1,11 +1,10 @@
+import { workspaceControl } from "./workspace-navigation";
 import { expect, test, type Page } from "@playwright/test";
 import { decodeVaultBackup } from "../../src/vault-backup";
 import { mkdir } from "node:fs/promises";
 
 const tab = (page: Page, name: string) =>
-  page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name, exact: false });
+  workspaceControl(page, name);
 const password = "synthetic portable backup password";
 async function unlock(page: Page, secret = password) {
   await tab(page, "Saved").click();
@@ -137,7 +136,7 @@ test("downloads only encrypted saved content and restores documents/drafts into 
       "SYNTHETIC SAVED PORTABLE DRAFT",
     );
     await tab(restored, "Context").click();
-    await restored.locator("details summary").click();
+    await restored.locator(".content-view details summary").click();
     await expect(
       restored
         .getByRole("textbox", { name: /Text for synthetic-notes/ })

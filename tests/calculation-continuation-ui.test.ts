@@ -1,3 +1,4 @@
+import { workspaceControl } from "../evaluation/workspace-navigation";
 import { it, expect } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
@@ -94,9 +95,7 @@ it("delivers bounded continuation in the actual temporary research workspace wit
       return route.continue();
     });
     const tab = (name: string) =>
-      page
-        .getByRole("navigation", { name: "Workspace" })
-        .getByRole("button", { name, exact: false });
+      workspaceControl(page, name);
     await page.goto(origin);
     await tab("Research").click();
     await page.getByLabel("Exact search query").fill("public synthetic price");
@@ -137,7 +136,7 @@ it("delivers bounded continuation in the actual temporary research workspace wit
     ).toBeDisabled();
     expect(
       await page.evaluate(async () => ({
-        local: localStorage.length,
+        local: Object.keys(localStorage).filter(key => key !== "privateai.appearance").length,
         session: sessionStorage.length,
         caches: (await caches.keys()).length,
         workers: (await navigator.serviceWorker.getRegistrations()).length,

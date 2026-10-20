@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { test, expect } from "@playwright/test";
 
 test("attaches from the keyboard in chat, reviews local corrections and preserves the draft without disclosure", async ({
@@ -16,6 +17,7 @@ test("attaches from the keyboard in chat, reviews local corrections and preserve
   await page
     .getByLabel("Message PrivateAI")
     .fill("Compare these synthetic notes");
+  await page.getByLabel("Attachments and tools", { exact: true }).click();
   const chooser = page.waitForEvent("filechooser");
   await page.getByRole("button", { name: "Attach file", exact: true }).focus();
   await page.keyboard.press("Enter");
@@ -46,16 +48,14 @@ test("attaches from the keyboard in chat, reviews local corrections and preserve
   await attachments
     .getByRole("button", { name: "Review first-note.txt", exact: true })
     .click();
-  await page.locator("details summary").first().click();
+  await page.locator(".content-view details summary").first().click();
   await page
     .getByLabel("Text for first-note.txt", { exact: true })
     .fill("SYNTHETIC FIRST: corrected June 5");
   await page
     .getByRole("checkbox", { name: "second-note.txt", exact: true })
     .uncheck();
-  await page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name: "Conversation" })
+  await workspaceControl(page, "Conversation")
     .click();
   await expect(attachments.getByRole("listitem").nth(1)).toContainText(
     "Excluded",
@@ -66,9 +66,7 @@ test("attaches from the keyboard in chat, reviews local corrections and preserve
       () => document.documentElement.scrollWidth > innerWidth,
     ),
   ).toBe(false);
-  await page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name: "Saved" })
+  await workspaceControl(page, "Saved")
     .click();
   await page
     .getByLabel("Vault passphrase")
@@ -108,6 +106,7 @@ test("attachment limit and unsupported-file errors keep the chat draft and exist
       .getByRole("list", { name: "Conversation attachments" })
       .getByRole("listitem"),
   ).toHaveCount(5);
+  await page.getByLabel("Attachments and tools", { exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Attach file", exact: true }),
   ).toBeDisabled();

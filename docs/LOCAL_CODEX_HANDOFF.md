@@ -1,6 +1,20 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
-## Representative visual chat — 20 October, awaiting design approval
+## Representative chat structure revised — 20 October, design review pending
+
+Owner explicitly rejected the first visual direction as too technical and requested structural revision, not a platform rebuild. Existing components retained. Added searchable saved-chat sidebar, desktop collapse/expand, modal mobile drawer, account/help/data controls at the bottom, muted-violet accents and a placeholder clay monogram. Header actions and Settings replace the permanent theme selector; System/Light/Dark preference survives reload. Only the non-sensitive `privateai.appearance` value is stored outside the vault; storage denial falls back to session use. Unlocked chat search remains memory-only and is cleared on lock.
+
+Composer now expands with input and stays reachable while scrolling the actual 30-message transcript. Attachments/research/files are in Tools; detailed selection/limits are in Included context. Repeated context checkboxes were removed from message rows, without changing selection semantics. Source-change details are expandable and original evidence still opens. Private chat's unavailable state remains visible; retry stays explicit and disabled when unqualified. Account/sign-out controls use the Account page. The manual experimental calculator is available only with the explicit developmentTools query flag (not a security boundary); inference calculator behavior is unchanged.
+
+Functional map and scope gaps: `docs/ui-device-test-plan.md`. Rename/save/delete and branch controls reuse the existing implementation. Pin/archive need implementation; projects/memory/scheduling/public sharing and modality proposals remain documented decisions, not silently approved features or removals. No Auto routing claim. Dedicated sign-in/account routes have not received the new styling; broader rollout still needs owner design approval.
+
+Evidence: `.local/ui-structure-20261020/index.html`, actual built-browser desktop/mobile light/dark, scrolled error states, sidebar open/collapsed, tools, sources and Settings. Inspected and corrected inherited mobile grid distortion, menu/composer stacking at reduced height, native dialog Tab containment, nested-source Escape handling and attachment-status contrast. 50 distinct built-browser tests passed across targeted runs after repairs (not a single 50-test CI claim); 21 tests across 8 synthetic UI/stream suites passed after scoped reruns. Build/typecheck pass. Earlier failures included obsolete navigation/storage selectors, one non-reproduced optional-calculator import wait, and the concrete UI issues above; no provider quality scores inferred. A non-sensitive preference is the sole allowed localStorage entry in no-persistence checks; temporary research content remains excluded. CI, durable and hosted checks were not rerun for this UI batch.
+
+Limits: reduced-height viewport and enlarged text are browser simulations, not an actual phone keyboard/TalkBack result. Streaming/cancellation/retry use synthetic provider fixtures; no live provider/private data or paid requests. Source remains a modal dialog (not a docked inspector); final branding and pin/archive remain unfinished. Provider, human quality/safety and release gates remain closed. Next: owner reviews the structural candidate, then approved design can extend to remaining workflows. Do not treat either screenshot packet as human approval.
+
+
+
+## Superseded first visual candidate — 20 October, owner requested revision
 
 Implemented reference-led chat appearance in src/chat-design.css and App: warm neutrals, charcoal dark theme, terracotta controls, restrained CSS clay monogram, light/dark/system session theme, conversation title/count and Jump to latest. Existing brand identity retained; no ChatGPT logo or fake voice feature. No external font/CDN/analytics or theme persistence. Shared tokens are scoped to the workspace; dedicated account/sign-in routes have not been restyled. Full product propagation awaits owner design approval.
 

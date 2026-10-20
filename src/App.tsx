@@ -1,3 +1,4 @@
+import { containDialogFocus } from "./dialog-focus";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   emptyConversation,
@@ -19,6 +20,8 @@ import { VaultBackup } from "./VaultBackup";
 import { VaultSecurity } from "./VaultSecurity";
 import { BACKUP_MAX_BYTES } from "./vault-backup";
 import { containsTemporaryResearch } from "./saved-conversation";
+import { WorkspaceNavigation } from "./WorkspaceNavigation";
+import { readAppearance, saveAppearance } from "./appearance";
 import { ConversationLibrary } from "./ConversationLibrary";
 import { ConversationBranches } from "./ConversationBranches";
 import { branchConversation, switchBranch } from "./conversation-branches";
@@ -39,8 +42,69 @@ const Answer = lazy(() =>
 );
 export function App() {
   const [appearance, setAppearance] = useState<"system" | "light" | "dark">(
-    "system",
+    readAppearance,
   );
+  const [navigationOpen, setNavigationOpen] = useState(false);
+  const [navigationCollapsed, setNavigationCollapsed] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [contextOpen, setContextOpen] = useState(false);
+  const settingsDialog = useRef<HTMLDialogElement>(null);
+  const contextDialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    saveAppearance(appearance);
+  }, [appearance]);
+  useEffect(() => {
+    if (!settingsOpen) return;
+    const dialog = settingsDialog.current;
+    const trigger = document.activeElement as HTMLElement | null;
+    dialog?.showModal();
+    return () => {
+      dialog?.close();
+      if (trigger?.checkVisibility()) trigger.focus();
+      else
+        document
+          .querySelector<HTMLElement>(".conversation-menu summary")
+          ?.focus();
+    };
+  }, [settingsOpen]);
+  useEffect(() => {
+    if (!contextOpen) return;
+    const dialog = contextDialog.current;
+    const trigger = document.activeElement as HTMLElement | null;
+    dialog?.showModal();
+    return () => {
+      dialog?.close();
+      if (trigger?.checkVisibility()) trigger.focus();
+      else document.querySelector<HTMLElement>(".context-count")?.focus();
+    };
+  }, [contextOpen]);
+  useEffect(() => {
+    const closeMenus = (event: MouseEvent | KeyboardEvent) => {
+      if (event instanceof KeyboardEvent && event.key !== "Escape") return;
+      document
+        .querySelectorAll<HTMLDetailsElement>(
+          ".tools-menu[open], .conversation-menu[open]",
+        )
+        .forEach((menu) => {
+          if (
+            event instanceof KeyboardEvent ||
+            !(event.target instanceof Node) ||
+            !menu.contains(event.target) ||
+            (event.target instanceof Element && event.target.closest("button"))
+          ) {
+            menu.open = false;
+            if (event instanceof KeyboardEvent)
+              menu.querySelector<HTMLElement>("summary")?.focus();
+          }
+        });
+    };
+    document.addEventListener("click", closeMenus);
+    document.addEventListener("keydown", closeMenus);
+    return () => {
+      document.removeEventListener("click", closeMenus);
+      document.removeEventListener("keydown", closeMenus);
+    };
+  }, []);
   const [systemDark, setSystemDark] = useState(
     () => matchMedia("(prefers-color-scheme: dark)").matches,
   );
@@ -75,6 +139,7 @@ export function App() {
   );
   const [busy, setBusy] = useState("");
   const [source, setSource] = useState<Source>();
+  const sourceDialog = useRef<HTMLDialogElement>(null);
   const chatFileInput = useRef<HTMLInputElement>(null);
   const [researchKind, setResearchKind] = useState<"search" | "page">("search");
   const [query, setQuery] = useState("");
@@ -126,13 +191,17 @@ export function App() {
   useEffect(() => {
     if (!source) return;
     const previous = document.activeElement as HTMLElement;
-    const dialog = document.querySelector<HTMLElement>(".source-dialog");
+    const dialog = sourceDialog.current;
+    dialog?.showModal();
     const buttons = dialog?.querySelectorAll<HTMLElement>(
       'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]',
     );
     buttons?.[0]?.focus();
     const trap = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSource(undefined);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setSource(undefined);
+      }
       if (event.key === "Tab" && buttons?.length) {
         if (event.shiftKey && document.activeElement === buttons[0]) {
           event.preventDefault();
@@ -149,6 +218,7 @@ export function App() {
     document.addEventListener("keydown", trap);
     return () => {
       document.removeEventListener("keydown", trap);
+      dialog?.close();
       previous?.focus();
     };
   }, [source]);
@@ -770,115 +840,148 @@ export function App() {
       if (current === epoch.current) setBusy("");
     }
   }
+  const openSaved = (c: Conversation) => {
+    if (!allowReplace()) return;
+    reset();
+    savedBase.current = c;
+    setConversation(structuredClone(c));
+    setInput(c.draft ?? "");
+    setTab("Conversation");
+    setNavigationOpen(false);
+    setNotice("Opened a saved snapshot. Save again to keep later changes.");
+  };
+
   const sources = conversation.attachments.flatMap((a) => a.sources);
   const sourceHistory = new Map(sources.map((item) => [item.id, item]));
   return (
     <div
-      className="app-shell chat-design"
+      className={`app-shell chat-design ${navigationCollapsed ? "navigation-collapsed" : ""}`}
       data-theme={
         appearance === "system" ? (systemDark ? "dark" : "light") : appearance
       }
     >
-      <aside className="sidebar">
-        <a className="brand" href="/" aria-label="PrivateAI home">
-          <span className="brand-mark" aria-hidden="true">
-            <span className="clay-leaf" />P
-          </span>
-          Private<span>AI</span>
-        </a>
-        <p className="eyebrow">YOUR PERSONAL SPACE</p>
+      <WorkspaceNavigation
+        open={navigationOpen}
+        collapsed={navigationCollapsed}
+        onClose={() => setNavigationOpen(false)}
+        onCollapse={() => setNavigationCollapsed(true)}
+        onExpand={() => {
+          setNavigationCollapsed(false);
+          setNavigationOpen(false);
+        }}
+        conversations={saved}
+        unlocked={unlocked}
+        busy={!!busy}
+        newDisabled={!!busy && !controller.current}
+        currentId={conversation.id}
+        onOpen={openSaved}
+        onNew={() => {
+          if (!allowReplace()) return;
+          reset();
+          setTab("Conversation");
+          setNavigationOpen(false);
+        }}
+        onNavigate={(target) => {
+          setTab(target);
+          setNavigationOpen(false);
+        }}
+        onSettings={() => {
+          setNavigationOpen(false);
+          setSettingsOpen(true);
+        }}
+      />
+      <dialog
+        ref={settingsDialog}
+        onKeyDown={containDialogFocus}
+        className="settings-dialog"
+        aria-label="Settings"
+        onCancel={() => setSettingsOpen(false)}
+        onClose={() => setSettingsOpen(false)}
+      >
+        <div className="row">
+          <h2>Settings</h2>
+          <button
+            onClick={() => setSettingsOpen(false)}
+            aria-label="Close settings"
+          >
+            ×
+          </button>
+        </div>
+        <label htmlFor="chat-appearance">Appearance</label>
+        <select
+          id="chat-appearance"
+          value={appearance}
+          onChange={(event) =>
+            setAppearance(event.target.value as typeof appearance)
+          }
+        >
+          <option value="system">System theme</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+        <p className="muted">
+          Only this appearance preference is saved outside your encrypted vault.
+          Conversation contents are not included.
+        </p>
         <button
-          className="new-chat"
-          disabled={!!busy && !controller.current}
           onClick={() => {
-            if (!allowReplace()) return;
-            reset();
-            setTab("Conversation");
+            setSettingsOpen(false);
+            setTab("Saved");
           }}
         >
-          ＋ New conversation
+          History &amp; data controls
         </button>
-        <nav aria-label="Workspace">
-          {(
-            [
-              "Conversation",
-              "Context",
-              "Research",
-              "Saved",
-              "Account",
-              "Help",
-            ] as Tab[]
-          ).map((name, i) => (
-            <button
-              className={tab === name ? "nav-item selected" : "nav-item"}
-              key={name}
-              onClick={() => setTab(name)}
-              aria-current={tab === name ? "page" : undefined}
-            >
-              <span aria-hidden="true">
-                {["◌", "▤", "⌕", "▣", "○", "?"][i]}
-              </span>
-              {name}
-              {name === "Context" && (
-                <small>{conversation.attachments.length}</small>
-              )}
-            </button>
-          ))}
-        </nav>
-        <div className="sidebar-note">
-          <span className="small-dot" />
-          Temporary by default
-          <p>
-            Your workspace stays on this device. Sharing starts with your
-            choice.
-          </p>
-        </div>
         <div className="workspace-help">
           <button
             className="text-button"
-            onClick={() =>
+            onClick={() => {
               setSource({
                 id: "workspace-guide",
                 title: "Using PrivateAI",
                 text: "Start in Conversation. Write a message or use a starter to prepare an editable draft. Nothing sends until you choose Send. This evaluation is for synthetic examples; private chat remains unavailable until its privacy checks pass.\n\nAdd context when you need it. In Context, import DOCX body text, a text PDF, UTF-8 text, Markdown, data or source-code file, PNG or JPEG. Code is read as text, never executed; spreadsheets must be exported as CSV or PDF. Files are read on your device. Limits: five files (up to three screenshots), 10 MB each, 20 PDF pages; printed English text. Review extracted numbers, tables and wording before using them. Scanned PDFs and handwriting are not supported. Select only the context you want included.\n\nSave deliberately. Temporary work disappears on reload. In Saved, create or unlock a vault, then choose Save encrypted snapshot. Save again after changes. Your passphrase cannot be recovered. History stays in this browser unless you explicitly download an encrypted backup in Saved; there is no cloud sync. Restore needs the backup and its original passphrase and adds copies to an unlocked vault. Backups include saved snapshots only, never current unsaved work or temporary research. Deleting browser history does not delete downloaded copies. Locking clears unsaved work. Removing an attachment does not remove its earlier messages or saved snapshots.\n\nResearch is your choice. Review the exact query or public URL before approving it. The research service and recipient can see it; your chat is not added automatically.\n\nStay in control. Stop ends an active response; an incomplete reply is excluded from later context. Retry is a separate request. Copy answer places completed text on your device clipboard; locking the vault does not clear that clipboard. Edit an earlier message to start a new branch. To remove a saved conversation, delete its snapshot in Saved. A new conversation clears the current workspace but does not delete saved snapshots.",
-              })
-            }
+              });
+            }}
           >
             Getting started
           </button>
           <button
             className="text-button"
-            onClick={() =>
+            onClick={() => {
               setSource({
                 id: "trial-safety",
                 title: "Trial scope and safety",
                 text: "This initial trial is for adults aged 18 and over. Explicit sexual generation is outside its scope; non-graphic sexual-health, consent and relationship advice are supported. The assistant should refuse help enabling serious harm and respond supportively to distress. These instructions are being evaluated, not a guarantee that every unsafe answer will be prevented. Check important advice; PrivateAI is not an emergency service and cannot contact help for you. If you are in immediate danger, contact local emergency services or someone you trust. No separate moderation service receives your messages. Private-data chat remains gated until provider privacy qualification passes.",
-              })
-            }
+              });
+            }}
           >
             Trial scope and safety
           </button>
           <button
             className="text-button"
-            onClick={() =>
+            onClick={() => {
               setSource({
                 id: "privacy",
                 title: "Your privacy boundaries",
                 text: "This is a restricted evaluation, not a production privacy guarantee. Chat stays disabled until live confidential processing is qualified. Your device and browser can read local content. Saved history is encrypted when locked. There is no passphrase recovery or cloud sync; an explicitly downloaded encrypted backup can restore saved snapshots using its original passphrase. Temporary content is not intentionally written to application storage, but device memory, browser internals and backups are outside that guarantee. Approved queries and URLs are visible to our research service and the recipient. Anonymous access is not implemented. A malicious website update could capture content before encryption.",
-              })
-            }
+              });
+            }}
           >
             Privacy boundaries ↗
           </button>
         </div>
-        <div className="workspace-label">
-          RESTRICTED EVALUATION <span>0.1</span>
-        </div>
-      </aside>
+      </dialog>
       <main>
-        <header>
-          <div>
-            <span className="eyebrow">PRIVATEAI WORKSPACE</span>
+        <header className="conversation-header">
+          <button
+            className="navigation-toggle"
+            aria-label="Open navigation"
+            onClick={() => {
+              setNavigationOpen(true);
+            }}
+          >
+            ☰
+          </button>
+          <div className="header-title">
             <h1>
               {tab === "Conversation" &&
               conversation.title !== "New conversation"
@@ -902,67 +1005,32 @@ export function App() {
               </p>
             )}
           </div>
-          <div className="appearance-controls">
-            <label className="sr-only" htmlFor="chat-appearance">
-              Appearance
-            </label>
-            <select
-              id="chat-appearance"
-              value={appearance}
-              onChange={(event) =>
-                setAppearance(event.target.value as "system" | "light" | "dark")
-              }
-            >
-              <option value="system">System theme</option>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-            </select>
-            <span className="pill">
-              <span className="small-dot" />
-              {unlocked ? "Local vault unlocked" : "Temporary session"}
-            </span>
-          </div>
+          <details className="conversation-menu">
+            <summary aria-label="Conversation actions">•••</summary>
+            <div className="menu-surface">
+              <button onClick={() => setTab("Conversation")}>
+                Conversation
+              </button>
+              <button onClick={() => setTab("Saved")}>
+                Rename, save &amp; manage history
+              </button>
+              {tab === "Conversation" && <button onClick={() => setContextOpen(true)}>
+                Included context
+              </button>}
+              <button onClick={() => setTab("Context")}>
+                Conversation files
+              </button>
+              <button onClick={() => setSettingsOpen(true)}>Settings</button>
+            </div>
+          </details>
         </header>
-        <div className="connection-banner">
-          {status?.accountId && !status.consumerWorkspace && (
-            <button
-              onClick={() => {
-                if (!allowReplace()) return;
-                vault.current?.lock();
-                vault.current?.onInvalidate?.();
-                accessNavigation.current = true;
-                window.location.assign("/auth/password");
-              }}
-            >
-              Change sign-in password
-            </button>
-          )}
-          {status?.accountId && (
-            <button
-              disabled={!!busy}
-              onClick={async () => {
-                if (status.consumerWorkspace) {
-                  await signOutConsumer();
-                  return;
-                }
-                if (!allowReplace()) return;
-                vault.current?.lock();
-                vault.current?.onInvalidate?.();
-                try {
-                  const response = await fetch("/auth/logout", {
-                    method: "POST",
-                  });
-                  if (!response.ok) throw new Error();
-                  accessNavigation.current = true;
-                  window.location.assign("/auth");
-                } catch {
-                  fail("Workspace locked. Sign out failed; try again.");
-                }
-              }}
-            >
-              Sign out
-            </button>
-          )}
+        <details className="connection-banner">
+          <summary>
+            {status?.inference.ready
+              ? "Protected connection available"
+              : "Private chat isn’t available yet"}{" "}
+            <span>Privacy details</span>
+          </summary>
           <span className="status-icon">◇</span>
           <div>
             <strong>
@@ -976,7 +1044,7 @@ export function App() {
                 : "Local documents and your vault work here. Messages stay on this device until provider verification and access are complete."}
             </p>
           </div>
-        </div>
+        </details>
         {notice && (
           <div role="status" className="notice">
             {notice}
@@ -1138,52 +1206,41 @@ export function App() {
                   </Suspense>
                   {sourceHistoryStatus(message, sourceHistory) ===
                     "changed" && (
-                    <p className="source-history-note">
-                      Reference material changed or was removed after this
-                      answer. Its citations open the earlier captured version.
-                      Review this answer before using it in a follow-up; uncheck
-                      Include in context to exclude it without deleting it.
-                    </p>
+                    <details className="source-history-note">
+                      <summary>Sources changed since this answer</summary>
+                      <p>
+                        Reference material changed or was removed after this
+                        answer. Its citations open the earlier captured version.
+                        Review this answer before using it in a follow-up;
+                        deselect the message in Included context to exclude it
+                        without deleting it.
+                      </p>
+                    </details>
                   )}
-                  {sourceHistoryStatus(message, sourceHistory) ===
-                    "unrecorded" && (
-                    <p className="source-history-note">
-                      This older answer has no recorded source snapshot. Its
-                      citations cannot be matched to the evidence used at the
-                      time; current attachments are not substituted.
-                    </p>
-                  )}
+                  {!!message.text &&
+                    sourceHistoryStatus(message, sourceHistory) ===
+                      "unrecorded" && (
+                      <details className="source-history-note">
+                        <summary>Original sources unavailable</summary>
+                        <p>
+                          This older answer has no recorded source snapshot. Its
+                          citations cannot be matched to the evidence used at
+                          the time; current attachments are not substituted.
+                        </p>
+                      </details>
+                    )}
                   <div className="message-actions">
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={
-                          message.included && message.status === "complete"
-                        }
-                        disabled={!!busy || message.status !== "complete"}
-                        onChange={(e) =>
-                          setConversation((c) => ({
-                            ...c,
-                            messages: c.messages.map((m) =>
-                              m.id === message.id
-                                ? { ...m, included: e.target.checked }
-                                : m,
-                            ),
-                          }))
-                        }
-                      />{" "}
-                      Include in context
-                    </label>
                     {message.role === "user" && (
                       <button
                         disabled={!!busy}
+                        aria-label="Edit into a new branch"
                         id={`edit-message-${message.id}`}
                         onClick={() => {
                           setEditId(message.id);
                           setEditText(message.text);
                         }}
                       >
-                        Edit into a new branch
+                        Edit
                       </button>
                     )}
                     {message.role === "assistant" && (
@@ -1248,215 +1305,293 @@ export function App() {
                 </button>
               </div>
             )}
-            <form
-              className="composer"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void send();
-              }}
-            >
-              <label className="sr-only" htmlFor="message-input">
-                Message PrivateAI
-              </label>
-              <textarea
-                id="message-input"
-                placeholder="What would you like to work through?"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                maxLength={20000}
-                rows={3}
-              />
-              <div className="composer-footer">
-                <input
-                  ref={chatFileInput}
-                  type="file"
-                  hidden
-                  aria-label="Attach files to this conversation"
-                  multiple
-                  accept={DOCUMENT_ACCEPT}
-                  disabled={!!busy}
-                  onChange={(event) => {
-                    void importFiles(event.target.files);
-                    event.target.value = "";
-                  }}
-                />
-                <button
-                  type="button"
-                  className="text-button"
-                  disabled={!!busy || conversation.attachments.length >= 5}
-                  onClick={() => chatFileInput.current?.click()}
-                >
-                  Attach file
-                </button>
-                <button
-                  type="button"
-                  className="text-button"
-                  onClick={() => setTab("Context")}
-                >
-                  Review context{" "}
-                  <span>
-                    {conversation.attachments.filter((a) => a.selected).length}{" "}
-                    selected
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className="text-button"
-                  onClick={() => setTab("Research")}
-                >
-                  Research
-                </button>
-                <button
-                  className="primary"
-                  disabled={!!busy || !input.trim() || !status?.inference.ready}
-                  type="submit"
-                >
-                  Send ↑
-                </button>
-              </div>
-            </form>
-            {conversation.attachments.length > 0 && (
-              <ul
-                className="composer-attachments"
-                aria-label="Conversation attachments"
-              >
-                {conversation.attachments.map((attachment) => (
-                  <li key={attachment.id}>
-                    <span>{attachment.name}</span>
-                    <small>
-                      {attachment.selected ? "Included" : "Excluded"}
-                    </small>
-                    <button
-                      type="button"
-                      onClick={() => setTab("Context")}
-                      aria-label={`Review ${attachment.name}`}
-                    >
-                      Review
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <p className="composer-note">
-              Attachments are read on this device. Review extracted text before
-              sending. DOCX body text, text PDF, UTF-8 text, Markdown, data,
-              source code, PNG and JPEG; five files, including up to three
-              screenshots, 10 MB each, 60,000 extracted characters per file and
-              20 PDF pages. Images use text extraction, not general image
-              understanding.
-            </p>
-            <p className="composer-note" data-testid="context-size">
-              Selected input: {selectedContextSize.characters.toLocaleString()}{" "}
-              characters
-              {status?.inference.qualification
-                ? ` of ${status.inference.qualification.maxInputCharacters.toLocaleString()}`
-                : " · sending limit unavailable until chat is qualified"}
-              . Includes instructions, selected messages, documents and your
-              draft. This is not a token count. Oversized requests are blocked;
-              history is not silently shortened. There is no indefinite memory.
-            </p>
-            <p className="composer-note">
-              Only selected context is included. PrivateAI can make
-              mistakes—check important details.
-            </p>
-            <ContextReview
-              conversation={conversation}
-              size={selectedContextSize}
-              limit={status?.inference.qualification?.maxInputCharacters}
-              busy={!!busy}
-              includeMessage={(id, included) =>
-                setConversation((current) => ({
-                  ...current,
-                  messages: current.messages.map((message) =>
-                    message.id === id ? { ...message, included } : message,
-                  ),
-                }))
-              }
-              includeAttachment={(id, selected) =>
-                setConversation((current) => ({
-                  ...current,
-                  attachments: current.attachments.map((attachment) =>
-                    attachment.id === id
-                      ? { ...attachment, selected }
-                      : attachment,
-                  ),
-                }))
-              }
-            />
-            {conversation.messages.length > 0 && (
-              <button
-                className="text-button"
-                disabled={!!busy || !status?.inference.ready}
-                onClick={() => {
-                  const last = [...conversation.messages]
-                    .reverse()
-                    .find((m) => m.role === "user");
-                  if (last) {
-                    const index = conversation.messages.indexOf(last);
-                    try {
-                      const base =
-                        index === conversation.messages.length - 1
-                          ? {
-                              ...conversation,
-                              messages: conversation.messages.slice(0, index),
-                            }
-                          : branchConversation(conversation, input, last.id);
-                      void send(base, last.text, false);
-                    } catch (error) {
-                      fail((error as Error).message);
-                    }
-                  }
+            <div className="composer-dock">
+              <form
+                className="composer"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void send();
                 }}
               >
-                {conversation.messages.at(-1)?.role === "user"
-                  ? "Answer this question (may incur a charge)"
-                  : "Retry last turn explicitly (may incur another charge)"}
-              </button>
-            )}
-            <details className="panel">
-              <summary>Exact decimal calculator</summary>
-              <p>
-                Enter source numbers explicitly. This calculator runs locally;
-                it does not execute model-generated code.
-              </p>
-              <div className="calculator">
-                <input
-                  aria-label="First number"
-                  value={operandA}
-                  onChange={(e) => setOperandA(e.target.value)}
+                <label className="sr-only" htmlFor="message-input">
+                  Message PrivateAI
+                </label>
+                <textarea
+                  id="message-input"
+                  placeholder="What would you like to work through?"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  maxLength={20000}
+                  rows={1}
+                  onInput={(event) => {
+                    const field = event.currentTarget;
+                    field.style.height = "auto";
+                    field.style.height = `${Math.min(field.scrollHeight, 160)}px`;
+                  }}
                 />
-                <select
-                  aria-label="Operation"
-                  value={operation}
-                  onChange={(e) => setOperation(e.target.value)}
+                <div className="composer-footer">
+                  <input
+                    ref={chatFileInput}
+                    type="file"
+                    hidden
+                    aria-label="Attach files to this conversation"
+                    multiple
+                    accept={DOCUMENT_ACCEPT}
+                    disabled={!!busy}
+                    onChange={(event) => {
+                      void importFiles(event.target.files);
+                      event.target.value = "";
+                    }}
+                  />
+                  <details className="tools-menu">
+                    <summary aria-label="Attachments and tools">＋</summary>
+                    <div className="menu-surface">
+                      <button
+                        type="button"
+                        className="text-button"
+                        disabled={
+                          !!busy || conversation.attachments.length >= 5
+                        }
+                        onClick={() => chatFileInput.current?.click()}
+                      >
+                        Attach file
+                      </button>
+                      <button
+                        type="button"
+                        className="text-button"
+                        onClick={() => setContextOpen(true)}
+                      >
+                        Review context{" "}
+                        <span>
+                          {
+                            conversation.attachments.filter((a) => a.selected)
+                              .length
+                          }{" "}
+                          selected
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className="text-button"
+                        onClick={() => setTab("Research")}
+                      >
+                        Research
+                      </button>
+                      <button type="button" onClick={() => setTab("Context")}>
+                        Conversation files
+                      </button>
+                      <p className="muted">
+                        Files are read on this device. Review extracted text
+                        before sending.
+                      </p>
+                    </div>
+                  </details>
+                  <button
+                    type="button"
+                    className="context-count"
+                    onClick={() => setContextOpen(true)}
+                  >
+                    {selectedContextSize.includedMessages} messages included ·{" "}
+                    {conversation.attachments.filter((a) => a.selected).length}{" "}
+                    files
+                  </button>
+                  {controller.current ? (
+                    <button
+                      type="button"
+                      className="primary"
+                      onClick={() => controller.current?.abort()}
+                    >
+                      Stop response
+                    </button>
+                  ) : (
+                    <button
+                      className="primary"
+                      disabled={
+                        !!busy || !input.trim() || !status?.inference.ready
+                      }
+                      type="submit"
+                    >
+                      Send ↑
+                    </button>
+                  )}
+                </div>
+              </form>
+              {conversation.attachments.length > 0 && (
+                <ul
+                  className="composer-attachments"
+                  aria-label="Conversation attachments"
                 >
-                  <option value="+">+</option>
-                  <option value="-">−</option>
-                  <option value="*">×</option>
-                  <option value="/">÷</option>
-                  <option value="change">% change</option>
-                </select>
-                <input
-                  aria-label="Second number"
-                  value={operandB}
-                  onChange={(e) => setOperandB(e.target.value)}
-                />
+                  {conversation.attachments.map((attachment) => (
+                    <li key={attachment.id}>
+                      <span>{attachment.name}</span>
+                      <small>
+                        {attachment.selected ? "Included" : "Excluded"}
+                      </small>
+                      <button
+                        type="button"
+                        onClick={() => setTab("Context")}
+                        aria-label={`Review ${attachment.name}`}
+                      >
+                        Review
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {conversation.messages.length > 0 && (
                 <button
+                  className="text-button"
+                  title={
+                    status?.inference.ready
+                      ? "Starts a new request and may incur another charge"
+                      : "Retry is unavailable while private chat is gated"
+                  }
+                  disabled={!!busy || !status?.inference.ready}
                   onClick={() => {
-                    try {
-                      setCalculation(
-                        `${operandA} ${operation} ${operandB} = ${calculate(operandA, operation, operandB)}`,
-                      );
-                    } catch (e) {
-                      fail((e as Error).message);
+                    const last = [...conversation.messages]
+                      .reverse()
+                      .find((m) => m.role === "user");
+                    if (last) {
+                      const index = conversation.messages.indexOf(last);
+                      try {
+                        const base =
+                          index === conversation.messages.length - 1
+                            ? {
+                                ...conversation,
+                                messages: conversation.messages.slice(0, index),
+                              }
+                            : branchConversation(conversation, input, last.id);
+                        void send(base, last.text, false);
+                      } catch (error) {
+                        fail((error as Error).message);
+                      }
                     }
                   }}
                 >
-                  Calculate
+                  {conversation.messages.at(-1)?.role === "user"
+                    ? "Answer this question"
+                    : "Retry last response"}
+                </button>
+              )}
+              <p className="composer-caption">
+                {unlocked
+                  ? "Local vault unlocked · Save explicitly to keep changes"
+                  : "Temporary chat · Not saved"}{" "}
+                · Check important answers.
+              </p>
+            </div>
+            <dialog
+              ref={contextDialog}
+              onKeyDown={containDialogFocus}
+              className="context-dialog"
+              aria-label="Included context"
+              onCancel={() => setContextOpen(false)}
+              onClose={() => setContextOpen(false)}
+            >
+              <div className="row">
+                <h2>Included context</h2>
+                <button
+                  aria-label="Close context"
+                  onClick={() => setContextOpen(false)}
+                >
+                  ×
                 </button>
               </div>
-              <output>{calculation}</output>
-            </details>
+              <ContextReview
+                expanded
+                conversation={conversation}
+                size={selectedContextSize}
+                limit={status?.inference.qualification?.maxInputCharacters}
+                busy={!!busy}
+                includeMessage={(id, included) =>
+                  setConversation((current) => ({
+                    ...current,
+                    messages: current.messages.map((message) =>
+                      message.id === id ? { ...message, included } : message,
+                    ),
+                  }))
+                }
+                includeAttachment={(id, selected) =>
+                  setConversation((current) => ({
+                    ...current,
+                    attachments: current.attachments.map((attachment) =>
+                      attachment.id === id
+                        ? { ...attachment, selected }
+                        : attachment,
+                    ),
+                  }))
+                }
+              />
+              <p className="composer-note">
+                Attachments are read on this device. Review extracted text
+                before sending. DOCX body text, text PDF, UTF-8 text, Markdown,
+                data, source code, PNG and JPEG; five files, including up to
+                three screenshots, 10 MB each, 60,000 extracted characters per
+                file and 20 PDF pages. Images use text extraction, not general
+                image understanding.
+              </p>
+              <p className="composer-note" data-testid="context-size">
+                Selected input:{" "}
+                {selectedContextSize.characters.toLocaleString()} characters
+                {status?.inference.qualification
+                  ? ` of ${status.inference.qualification.maxInputCharacters.toLocaleString()}`
+                  : " · sending limit unavailable until chat is qualified"}
+                . Includes instructions, selected messages, documents and your
+                draft. This is not a token count. Oversized requests are
+                blocked; history is not silently shortened. There is no
+                indefinite memory.
+              </p>
+              <p className="composer-note">
+                Only selected context is included. PrivateAI can make
+                mistakes—check important details.
+              </p>
+            </dialog>
+            {new URLSearchParams(location.search).has("developmentTools") && (
+              <details className="panel">
+                <summary>Exact decimal calculator</summary>
+                <p>
+                  Enter source numbers explicitly. This calculator runs locally;
+                  it does not execute model-generated code.
+                </p>
+                <div className="calculator">
+                  <input
+                    aria-label="First number"
+                    value={operandA}
+                    onChange={(e) => setOperandA(e.target.value)}
+                  />
+                  <select
+                    aria-label="Operation"
+                    value={operation}
+                    onChange={(e) => setOperation(e.target.value)}
+                  >
+                    <option value="+">+</option>
+                    <option value="-">−</option>
+                    <option value="*">×</option>
+                    <option value="/">÷</option>
+                    <option value="change">% change</option>
+                  </select>
+                  <input
+                    aria-label="Second number"
+                    value={operandB}
+                    onChange={(e) => setOperandB(e.target.value)}
+                  />
+                  <button
+                    onClick={() => {
+                      try {
+                        setCalculation(
+                          `${operandA} ${operation} ${operandB} = ${calculate(operandA, operation, operandB)}`,
+                        );
+                      } catch (e) {
+                        fail((e as Error).message);
+                      }
+                    }}
+                  >
+                    Calculate
+                  </button>
+                </div>
+                <output>{calculation}</output>
+              </details>
+            )}
             {conversation.usage.length > 0 && (
               <p className="muted">
                 Reported inference:{" "}
@@ -1748,28 +1883,69 @@ export function App() {
         )}
         {tab === "Help" && <SupportPanel />}
         {tab === "Account" && (
-          <AccountUsage
-            allowance={status?.requestAllowance}
-            consumer={status?.consumerWorkspace}
-            billing={
-              status?.billingRehearsal
-                ? {
-                    csrf: status.csrf,
-                    onNavigate: (url) => {
-                      if (!allowReplace()) return;
-                      accessNavigation.current = true;
-                      window.location.assign(url);
-                    },
+          <>
+            {status?.accountId && !status.consumerWorkspace && (
+              <button
+                onClick={() => {
+                  if (!allowReplace()) return;
+                  vault.current?.lock();
+                  vault.current?.onInvalidate?.();
+                  accessNavigation.current = true;
+                  window.location.assign("/auth/password");
+                }}
+              >
+                Change sign-in password
+              </button>
+            )}
+            {status?.accountId && (
+              <button
+                disabled={!!busy}
+                onClick={async () => {
+                  if (status.consumerWorkspace) {
+                    await signOutConsumer();
+                    return;
                   }
-                : undefined
-            }
-            busy={!!busy}
-            onManage={() => {
-              if (!allowReplace()) return;
-              accessNavigation.current = true;
-              window.location.assign("/auth");
-            }}
-          />
+                  if (!allowReplace()) return;
+                  vault.current?.lock();
+                  vault.current?.onInvalidate?.();
+                  try {
+                    const response = await fetch("/auth/logout", {
+                      method: "POST",
+                    });
+                    if (!response.ok) throw new Error();
+                    accessNavigation.current = true;
+                    window.location.assign("/auth");
+                  } catch {
+                    fail("Workspace locked. Sign out failed; try again.");
+                  }
+                }}
+              >
+                Sign out
+              </button>
+            )}
+            <AccountUsage
+              allowance={status?.requestAllowance}
+              consumer={status?.consumerWorkspace}
+              billing={
+                status?.billingRehearsal
+                  ? {
+                      csrf: status.csrf,
+                      onNavigate: (url) => {
+                        if (!allowReplace()) return;
+                        accessNavigation.current = true;
+                        window.location.assign(url);
+                      },
+                    }
+                  : undefined
+              }
+              busy={!!busy}
+              onManage={() => {
+                if (!allowReplace()) return;
+                accessNavigation.current = true;
+                window.location.assign("/auth");
+              }}
+            />
+          </>
         )}
         {tab === "Saved" && (
           <section className="content-view">
@@ -1905,17 +2081,7 @@ export function App() {
                 <ConversationLibrary
                   conversations={saved}
                   busy={!!busy}
-                  onOpen={(c) => {
-                    if (!allowReplace()) return;
-                    reset();
-                    savedBase.current = c;
-                    setConversation(structuredClone(c));
-                    setInput(c.draft ?? "");
-                    setTab("Conversation");
-                    setNotice(
-                      "Opened a saved snapshot. Save again to keep later changes.",
-                    );
-                  }}
+                  onOpen={openSaved}
                   onDelete={async (c) => {
                     const current = epoch.current;
                     setBusy("Deleting encrypted snapshot…");
@@ -1952,64 +2118,66 @@ export function App() {
             )}
           </section>
         )}
-        <footer>
-          Personal help. Sharing under your control.
-          <span>Built for a bounded evaluation.</span>
-        </footer>
+        {tab !== "Conversation" && (
+          <footer>
+            Personal help. Sharing under your control.
+            <span>Built for a bounded evaluation.</span>
+          </footer>
+        )}
       </main>
       {source && (
-        <div className="modal-backdrop">
-          <section
-            className="source-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-label={source.title}
-          >
-            <div className="row">
-              <h2>{source.title}</h2>
-              <button
-                onClick={() => setSource(undefined)}
-                aria-label="Close source"
+        <dialog
+          ref={sourceDialog}
+          onCancel={() => setSource(undefined)}
+          className="source-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-label={source.title}
+        >
+          <div className="row">
+            <h2>{source.title}</h2>
+            <button
+              onClick={() => setSource(undefined)}
+              aria-label="Close source"
+            >
+              ×
+            </button>
+          </div>
+          {source.url && (
+            <p className="muted">
+              Source URL:{" "}
+              <a
+                href={researchSourceUrl(source.url)}
+                target="_blank"
+                rel="noopener noreferrer"
+                referrerPolicy="no-referrer"
               >
-                ×
-              </button>
-            </div>
-            {source.url && (
-              <p className="muted">
-                Source URL:{" "}
-                <a
-                  href={researchSourceUrl(source.url)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  referrerPolicy="no-referrer"
-                >
-                  {source.url}
-                </a>{" "}
-                · Retrieved: {source.retrievedAt}
-              </p>
-            )}
-            {source.providerDate && (
-              <p>
-                Provider-reported page date: {source.providerDate} (not verified
-                as publication or event date).
-              </p>
-            )}
-            {source.evidenceKind && (
-              <p>
-                Evidence: {source.evidenceKind}. Retrieved material may be
-                incomplete.
-              </p>
-            )}
-            {source.userEdited && (
-              <p className="source-history-note">
-                User-edited text; not an unmodified extraction or verified
-                quotation from the original source.
-              </p>
-            )}
-            <pre>{source.text}</pre>
-            <button onClick={() => setSource(undefined)}>Close</button>
-          </section>
-        </div>
+                {source.url}
+              </a>{" "}
+              · Retrieved: {source.retrievedAt}
+            </p>
+          )}
+          {source.providerDate && (
+            <p>
+              Provider-reported page date: {source.providerDate} (not verified
+              as publication or event date).
+            </p>
+          )}
+          {source.evidenceKind && (
+            <p>
+              Evidence: {source.evidenceKind}. Retrieved material may be
+              incomplete.
+            </p>
+          )}
+          {source.userEdited && (
+            <p className="source-history-note">
+              User-edited text; not an unmodified extraction or verified
+              quotation from the original source.
+            </p>
+          )}
+          <pre>{source.text}</pre>
+          <button onClick={() => setSource(undefined)}>Close</button>
+        </dialog>
       )}
     </div>
   );

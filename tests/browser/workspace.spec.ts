@@ -1,3 +1,4 @@
+import { workspaceControl } from "./workspace-navigation";
 import { expect, test } from "@playwright/test";
 import { Buffer } from "node:buffer";
 
@@ -8,18 +9,15 @@ test("temporary text extraction, context corrections and calculator work without
   page.on("request", (r) => {
     if (!r.url().startsWith("http://127.0.0.1:4173/")) external.push(r.url());
   });
-  await page.goto("/");
+  await page.goto("/?developmentTools");
   await expect(
-    page.getByText("Private chat is not connected yet"),
+    page.getByText("Private chat isn’t available yet", { exact: false }),
   ).toBeVisible();
   await page.getByLabel("Message PrivateAI").fill("PRIVATE CANARY 4829");
   await expect(
     page.getByRole("button", { name: "Send ↑", exact: true }),
   ).toBeDisabled();
-  await page
-    .getByRole("button", { name: "Context", exact: false })
-    .first()
-    .click();
+  await workspaceControl(page, "Context").click();
   await page.getByLabel("Add documents or screenshots").setInputFiles({
     name: "bill.txt",
     mimeType: "text/plain",
@@ -30,14 +28,14 @@ test("temporary text extraction, context corrections and calculator work without
   await expect(
     page.getByText("bill.txt", { exact: false }).first(),
   ).toBeVisible();
-  await page.locator("details summary").first().click();
+  await page.locator(".content-view details summary").first().click();
   await expect(
     page.getByLabel("Text for bill.txt", { exact: true }),
   ).toContainText("120.50 EUR");
   await page
     .getByLabel("Text for bill.txt", { exact: true })
     .fill("Corrected total 102.50 EUR");
-  expect(await page.evaluate(() => localStorage.length)).toBe(0);
+  expect(await page.evaluate(() => Object.keys(localStorage).filter(key => key !== "privateai.appearance"))).toEqual([]);
   expect(
     await page.evaluate(
       async () =>
@@ -46,10 +44,7 @@ test("temporary text extraction, context corrections and calculator work without
         ).length,
     ),
   ).toBe(0);
-  await page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name: "Conversation", exact: false })
-    .first()
+  await workspaceControl(page, "Conversation")
     .click();
   await page.getByText("Exact decimal calculator", { exact: true }).click();
   await page.getByLabel("First number").fill("0.1");
@@ -57,10 +52,7 @@ test("temporary text extraction, context corrections and calculator work without
   await page.getByRole("button", { name: "Calculate", exact: true }).click();
   await expect(page.locator("output")).toHaveText("0.1 + 0.2 = 0.3");
   await page.reload();
-  await page
-    .getByRole("button", { name: "Context", exact: false })
-    .first()
-    .click();
+  await workspaceControl(page, "Context").click();
   await expect(
     page.getByText("Your context is empty.", { exact: false }),
   ).toBeVisible();
@@ -74,11 +66,8 @@ test("research review and cancellation make no research request; unsafe page app
   page.on("request", (r) => {
     if (r.url().includes("/api/research/")) requests.push(r.url());
   });
-  await page.goto("/");
-  await page
-    .getByRole("button", { name: "Research", exact: false })
-    .first()
-    .click();
+  await page.goto("/?developmentTools");
+  await workspaceControl(page, "Research").click();
   await page.getByLabel("Research method").selectOption("page");
   await page
     .getByLabel("Exact HTTPS URL")
@@ -98,11 +87,8 @@ test("research review and cancellation make no research request; unsafe page app
 test("encrypted snapshots survive reload, lock clears content and deletion persists", async ({
   page,
 }) => {
-  await page.goto("/");
-  await page
-    .getByRole("button", { name: "Context", exact: false })
-    .first()
-    .click();
+  await page.goto("/?developmentTools");
+  await workspaceControl(page, "Context").click();
   await page.getByLabel("Add documents or screenshots").setInputFiles({
     name: "private.txt",
     mimeType: "text/plain",
@@ -143,11 +129,8 @@ test("encrypted snapshots survive reload, lock clears content and deletion persi
     page.getByRole("button", { name: "Open", exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Open", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Context", exact: false })
-    .first()
-    .click();
-  await page.locator("details summary").first().click();
+  await workspaceControl(page, "Context").click();
+  await page.locator(".content-view details summary").first().click();
   await expect(page.getByLabel("Text for private.txt")).toContainText(
     "SENSITIVE NOTE 991",
   );
@@ -168,7 +151,7 @@ test("real local screenshot OCR reads printed text without a remote OCR service"
   page.on("request", (r) => {
     if (!r.url().startsWith("http://127.0.0.1:4173/")) external.push(r.url());
   });
-  await page.goto("/");
+  await page.goto("/?developmentTools");
   const image = await page.evaluate(() => {
     const canvas = document.createElement("canvas");
     canvas.width = 1000;
@@ -181,17 +164,14 @@ test("real local screenshot OCR reads printed text without a remote OCR service"
     ctx.fillText("Total: 120.50 EUR", 30, 100);
     return canvas.toDataURL("image/png").split(",")[1];
   });
-  await page
-    .getByRole("button", { name: "Context", exact: false })
-    .first()
-    .click();
+  await workspaceControl(page, "Context").click();
   await page.getByLabel("Add documents or screenshots").setInputFiles({
     name: "screenshot.png",
     mimeType: "image/png",
     buffer: Buffer.from(image, "base64"),
   });
-  await expect(page.locator("details summary")).toBeVisible({ timeout: 45000 });
-  await page.locator("details summary").click();
+  await expect(page.locator(".content-view details summary")).toBeVisible({ timeout: 45000 });
+  await page.locator(".content-view details summary").click();
   await expect(page.getByLabel("Text for screenshot.png page 1")).toContainText(
     "120.50 EUR",
   );
@@ -201,14 +181,11 @@ test("real local screenshot OCR reads printed text without a remote OCR service"
 test("desktop and basic phone layouts have no horizontal overflow", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/?developmentTools");
   for (const width of [1440, 360]) {
     await page.setViewportSize({ width, height: 900 });
     for (const tab of ["Conversation", "Context", "Research", "Saved"]) {
-      await page
-        .getByRole("navigation", { name: "Workspace" })
-        .getByRole("button", { name: tab, exact: false })
-        .first()
+      await workspaceControl(page, tab)
         .click();
       expect(
         await page.evaluate(
@@ -219,10 +196,7 @@ test("desktop and basic phone layouts have no horizontal overflow", async ({
   }
   await page.screenshot({ path: "test-results/phone.png", fullPage: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page
-    .getByRole("navigation", { name: "Workspace" })
-    .getByRole("button", { name: "Conversation", exact: false })
-    .first()
+  await workspaceControl(page, "Conversation")
     .click();
   await page.screenshot({ path: "test-results/desktop.png", fullPage: true });
 });
