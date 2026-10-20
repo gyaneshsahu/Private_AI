@@ -1,5 +1,12 @@
 # PrivateAI readiness checklist
 
+## Owner identity supplied; private configuration draft — 20 October
+
+Owner supplied the exact Google email directly. It is now the sole entry in the ignored `.local/private-secrets/render-config.draft.json`; do not infer or substitute the Render dashboard account identity. Redacted checks confirm one exact identity, restricted deployment mode and disabled email. The draft inherits owner/SYSTEM-only filesystem access and is Git-ignored. It is deliberately NOT deployment-ready: certificate pin and certificate/trust files remain pending. No secrets were uploaded, no service settings changed, no database connection/schema initialization occurred, and no actual Google login is claimed.
+
+Next: finish the explicit Render build/entry selection and local certificate/configuration package; verify external PostgreSQL TLS from the permitted hosting network; prepare explicit schema provisioning and rollback instructions. Owner then enters reviewed secret files, service settings and DNS. Keep inference/private-data/public access closed. Existing supplier-outreach edits belong to the owner and remain untouched.
+
+
 ## External database URL saved and validated — 20 October
 
 Redacted local validation confirms database-url.txt is no longer a placeholder, has valid PostgreSQL credentials/URL structure, names privateai_accounts and the expected dpg-dbbpa98ae00c73acf98g-a.frankfurt-postgres.render.com external host, with no query or fragment. Contents were not printed, transmitted or used to connect. The owner's supplied screenshot confirms both intended database inbound CIDRs. No live secret mount/configuration changed. Exact owner Google email was requested for the allowlist; do not infer it from dashboard identity. Prepare remaining private configuration only after that answer. Live TLS/connectivity/schema checks still pending and must execute from the permitted hosting network, not by reopening access to all IPs.
