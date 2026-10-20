@@ -22,7 +22,11 @@ import everydayFixtures from "./cases/everyday-transfer-20261019.json";
 import { selectionModels, assertSelectionPolicy } from "./selection-policy";
 import selectionFixtures from "./cases/model-selection-20261020.json";
 import assessmentFixtures from "./cases/complete-assessment-20261020.json";
-const assessment = process.argv.includes("--complete-assessment");
+import fidelityFixtures from "./cases/fidelity-transfer-20261020.json";
+const fidelity = process.argv.includes("--fidelity-study");
+if (fidelity && process.argv.includes("--complete-assessment"))
+  throw Error("Choose one assessment");
+const assessment = fidelity || process.argv.includes("--complete-assessment");
 if (assessment && process.argv.includes("--selection-study"))
   throw Error("Choose a single frozen study");
 const selection = assessment || process.argv.includes("--selection-study");
@@ -136,7 +140,9 @@ if (
   throw Error("Choose separate optional-tools batch");
 const fixtures = selection
   ? assessment
-    ? assessmentFixtures
+    ? fidelity
+      ? fidelityFixtures
+      : assessmentFixtures
     : selectionFixtures
   : everyday
     ? everydayFixtures
@@ -184,7 +190,9 @@ const fixtures = selection
               : workspaceFixtures;
 const fixturePath = selection
   ? assessment
-    ? "evaluation/cases/complete-assessment-20261020.json"
+    ? fidelity
+      ? "evaluation/cases/fidelity-transfer-20261020.json"
+      : "evaluation/cases/complete-assessment-20261020.json"
     : "evaluation/cases/model-selection-20261020.json"
   : everyday
     ? "evaluation/cases/everyday-transfer-20261019.json"

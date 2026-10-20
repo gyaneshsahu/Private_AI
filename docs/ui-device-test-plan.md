@@ -1,5 +1,16 @@
 # Conversation-first UI and device review
 
+## Focused visual batch — 20 October
+
+AUDIT_STARTED / AWAITING_OWNER_REFERENCE: owner will attach screenshots next message. Do not finalize visual changes before that reference arrives.
+
+Current audit: styles.css hard-codes light colours; no dark palette/theme selector exists. Inter is named but not bundled, so system fallback may render. Chat, account preview and production accounts need shared semantic colour/typography tokens.
+
+Planned scope: chat-first conversation layout and history; reachable mobile composer; source/document panels; sign-in and gated/locked/error/privacy states; light/dark/system themes, restrained clay accents, working icons, hover/focus transitions and reduced motion. Preserve exact evidence, source-change warnings, incomplete-answer labeling, keyboard focus and accessible names. No fake microphone/voice controls or provider activation. No new font CDN or tracking.
+
+Deliverable after reference review: the same synthetic workflow at desktop and390px in both themes, including long answers, history, composer, sources/documents and sign-in/privacy states. Verify contrast, overflow, keyboard focus and reduced motion. Actual Galaxy A52/TalkBack remains separate human evidence.
+
+
 ## Next Galaxy A52 / TalkBack session (prepared; not yet run)
 
 Use the updated candidate only when an operator provides a reachable reviewed test build. The current hosted auth page is not evidence for these workspace changes. Use synthetic text only. Earlier auth-page checks remain passed; this full workspace session remains BLOCKED pending access.

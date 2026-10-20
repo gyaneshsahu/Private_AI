@@ -4,7 +4,7 @@ import { validateExperiment, developmentCase } from "./experiment";
 import { streamVerifiedConversation } from "../src/verified-chat";
 import { classifyEvaluationFailure } from "./reply-failure";
 import { replyTiming } from "./reply-timing";
-import { isWorkspaceCase } from "./workspace-arm";
+import { isWorkspaceCase, isFidelityCase } from "./workspace-arm";
 import type { CalculationSession } from "../src/calculation-session";
 const history = new Map<string, string>();
 let lastRaw: string | undefined;
@@ -24,7 +24,9 @@ export async function streamReply(
     throw Error("Workspace permit required");
   const fixture = developmentCase(permit.developmentCaseId, "robustness_case");
   const retainSynthetic =
-    fixture.sources.length > 0 || fixture.id.startsWith("selection-");
+    fixture.sources.length > 0 ||
+    fixture.id.startsWith("selection-") ||
+    isFidelityCase(fixture.id);
   const prompt = c.messages.at(-1)?.text;
   if (turn >= fixture.turns.length || prompt !== fixture.turns[turn])
     throw Error("Fixed evaluation turn required");

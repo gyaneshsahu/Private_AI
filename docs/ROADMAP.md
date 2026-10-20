@@ -1,5 +1,18 @@
 # PrivateAI delivery roadmap
 
+## Fidelity study completed; visual reference pending — 20 October
+
+Owner requested the prepared eight cases, then a focused light/dark UI batch. Ran unchanged DeepSeek-low/constraints-v4 only: **16/16delivered replies,8/8complete conversations**, median1961ms, reported token costUSD0.0125191. No paid retry, prompt change or candidate promotion. The previously proposed two-arm comparison was not executed. Full questions, expected facts, raw model events and delivered answers: `evaluation/results/fidelity-transfer-20261020.json`; review page `.local/review-batches/fidelity-transfer-20261020/complete-review.html`. All human scores blank.
+
+Engineering observations: F06turn1 drops the extension-silence point in both reminders (completeness concern); turn2 restores it without erasing the omission. F04 adds lengthy unrequested contractual/dispute guidance. F05 begins No before explaining that reopening is unconfirmed; review that ambiguity. F01/F02 distinguish silence from prohibition, F03 keeps inspected-sample scope. S01/S02 retain visible safety actions/precautions, but do not pass human safety acceptance. No claim of general source-fidelity repair.
+
+Preserved two pre-forwarding failures in `evaluation/results/fidelity-transfer-20261020-preflight.json`: initial browser case-admission rejection caused a runner timeout; after repair, old router pin correctly blocked changed deployment. Both gateway attempt arrays are empty. New permits used exact public router v0.0.161 digest b7d96b79eeefcaefc82fe8a879cc779e21024f2a86329d81bb39e466202d68fe, independently matched by installed SDK verification. Development pin only; no production qualification change. Fixed exact-case admission and raw synthetic evidence retention. Offline rehearsal16mock replies; final29gate tests/4files and typecheck pass. Initial sandbox test run failed on socket/temp restrictions; unsandboxed scoped run passed. Preserve failures, not model quality scores.
+
+Read-only budget after: roundedactual0.85,credit10.15,accountlimit3,keylimit5verifiedbefore,autoreloadoff. Retain0.2781056historical uncertainty +0.01rounding: cumulativebound1.1381056. Retire unused0.4278272reserve; do not add reported cost again to refreshed actual. Owner authorization5subject to actualcontrols. No account change or Brave query.
+
+UI audit started in ui-device-test-plan.md. Owner will attach references next message; final layout/palette waits for them. Scope includes conversation/history/composer/documents/sources/sign-in/privacy, light/dark typography, working icons and reduced-motion interactions. No nonfunctional voice control. Infrastructure refinements remain paused; private-data and launch gates closed.
+
+
 ## Active supplier-independent batch — 20 October
 
 Infrastructure refinements and hosting purchases are paused by owner instruction. Return to deployment only for a specific hosted test. Supplier replies trigger one architecture decision; no new reply has been supplied.

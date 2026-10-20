@@ -88,3 +88,11 @@ it("requires explicit continuation mode rather than changing an existing arm", (
     assertWorkspaceArm(permit, "x", "baseline", "optional", false, true),
   ).toThrow();
 });
+
+it("admits the fixed fidelity set without accepting arbitrary new case IDs", async () => {
+  const { isWorkspaceCase } = await import("../evaluation/workspace-arm");
+  for (const id of ["F01", "F02", "F03", "F04", "F05", "F06", "S01", "S02"])
+    expect(isWorkspaceCase(id)).toBe(true);
+  for (const id of ["F07", "S03", "F01-custom"])
+    expect(isWorkspaceCase(id)).toBe(false);
+});

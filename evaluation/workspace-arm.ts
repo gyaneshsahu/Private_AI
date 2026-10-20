@@ -1,5 +1,10 @@
+import fidelityCases from "./cases/fidelity-transfer-20261020.json";
+export const isFidelityCase = (id: string) =>
+  fidelityCases.some((c) => c.id === id);
 export function isWorkspaceCase(id: string) {
-  return /^(workspace|assisted|everyday|selection)-/.test(id);
+  return (
+    /^(workspace|assisted|everyday|selection)-/.test(id) || isFidelityCase(id)
+  );
 }
 export function assertWorkspaceArm(
   permit: {
