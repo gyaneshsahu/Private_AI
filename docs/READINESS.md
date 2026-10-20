@@ -1,5 +1,11 @@
 # PrivateAI readiness checklist
 
+## Restricted Render deployment succeeded — 20 October
+
+Owner deployment `dep-dbbqkq61egvs73avm8pg` of exact CI-passed `4eb86b108bb1651ee5be65928a126f605bc26bf6` succeeded at 19:54 Europe/Berlin. Pre-deploy reported initialize-empty applied=12, pending=0, remoteTlsVerificationRequired=true. Runtime reported restricted deployment listening with email and inference disabled. Independent HTTPS probes returned /healthz 200 and /auth 403 on the old onrender.com hostname, as intended. Earlier old-instance secret checks did not validate newly saved files; the successful candidate initialization/startup now supersedes that uncertainty. No secrets were printed.
+
+Next owner action: clear the one-time Pre-Deploy Command and Save only before any future deployment; the database is no longer empty. Then add app.cometrow.com as the Render custom domain and configure reviewed DNS, followed by TLS and actual owner Google sign-in/cancellation/logout checks. These account checks are not yet passed. Private-data/public-launch gates remain closed, and the 36 infrastructure checks not executed in CI remain separately tracked. No agent dashboard settings changes.
+
 ## Deployment stopped: secret files contain paths — 20 October
 
 Owner started exact candidate `4eb86b108bb1651ee5be65928a126f605bc26bf6`. Render deploy `dep-dbbqd63ncjis738qjcrg` built successfully, then failed pre-deploy with exit 1 before candidate startup. Read-only inspection from the existing service shell confirmed all ten mounted secret files contain their corresponding local file reference; render-config.json and google-social.json do not parse as JSON. Diagnostics printed only filenames, lengths and booleans, never credentials. This is a secret-content configuration failure, not evidence of a database authentication failure. No agent settings changes, credential uploads, migration retry or DNS changes were performed.
