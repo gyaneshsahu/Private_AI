@@ -97,7 +97,7 @@ const esc = (x) =>
 const pre = (x) =>
   `<pre>${esc(typeof x === "string" ? x : JSON.stringify(x, null, 2))}</pre>`;
 let html =
-  '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fresh complete-answer assessment</title><style>body{font:17px/1.5 system-ui;max-width:1100px;margin:auto;padding:24px}pre{white-space:pre-wrap;overflow-wrap:anywhere}article{border:1px solid #999;padding:16px;margin:16px 0}</style><h1>Fresh complete-answer assessment</h1><p>DeepSeek low · Gemma thinking off · GLM low. Human review applies to case 07 only; other scores remain blank. Earlier failures and release gates remain open.</p>' +
+  '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fresh complete-answer assessment</title><style>body{font:17px/1.5 system-ui;max-width:1100px;margin:auto;padding:24px}pre{white-space:pre-wrap;overflow-wrap:anywhere}article{border:1px solid #999;padding:16px;margin:16px 0}</style><h1>Fresh complete-answer assessment</h1><p>DeepSeek low, unchanged constraints-v4. Human review below applies only to explicitly graded turns; all others remain blank. Earlier failures and release gates remain open.</p>' +
   pre(human) +
   pre(metrics) +
   pre(evidence.limits) +

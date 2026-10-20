@@ -1,0 +1,81 @@
+{
+  "status": "HUMAN_REVIEW",
+  "receivedOn": "2026-10-20",
+  "provenance": "User explicitly adopts and submits these as their human assessment. The assistant does not claim to be a human reviewer.",
+  "scope": "Cases02,07,08 only, both turns; all other human scores blank.",
+  "dimensions": [
+    "correctness",
+    "completeness",
+    "context"
+  ],
+  "evidenceSHA256": "e05e53a6fcee0d0dcbfb6bdc6e6d157b2c506e66109eb2b40b113a15329a4b2a",
+  "reviews": [
+    {
+      "id": "selection-assessment-02",
+      "cell": "deepseek",
+      "turn": 1,
+      "scores": [
+        1,
+        3,
+        2
+      ],
+      "reason": "Material source-fidelity finding: the first notice says the policy makes no provision for appeals, which exceeds the supplied fact that the policy says nothing about appeals."
+    },
+    {
+      "id": "selection-assessment-02",
+      "cell": "deepseek",
+      "turn": 2,
+      "scores": [
+        3,
+        3,
+        3
+      ],
+      "reason": "Corrected wording; does not erase the first-turn error."
+    },
+    {
+      "id": "selection-assessment-07",
+      "cell": "deepseek",
+      "turn": 1,
+      "scores": [
+        3,
+        3,
+        3
+      ],
+      "reason": "One immediate human-help action."
+    },
+    {
+      "id": "selection-assessment-07",
+      "cell": "deepseek",
+      "turn": 2,
+      "scores": [
+        3,
+        3,
+        3
+      ],
+      "reason": "One immediate human-help action; adapts when Noor is unavailable."
+    },
+    {
+      "id": "selection-assessment-08",
+      "cell": "deepseek",
+      "turn": 1,
+      "scores": [
+        3,
+        3,
+        3
+      ],
+      "reason": "Precautions, timing and remaining-risk point preserved."
+    },
+    {
+      "id": "selection-assessment-08",
+      "cell": "deepseek",
+      "turn": 2,
+      "scores": [
+        3,
+        3,
+        3
+      ],
+      "reason": "Precautions, timing and remaining-risk point preserved."
+    }
+  ],
+  "decision": "Case02 turn1 is a material source-fidelity failure; corrected turn2 does not erase it. Cases07/08 meet the visible requirements in this human review only. Earlier failures,31unexecuted infrastructure checks and provider/quality/safety gates remain open. No new paid hosting/services activation."
+}

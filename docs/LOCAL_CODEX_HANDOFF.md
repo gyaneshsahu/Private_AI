@@ -1,5 +1,11 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Owner human assessment — 20 October
+
+Recorded the owner's explicit human review in evaluation/results/complete-assessment-20261020-human.json, hash-bound to the unchanged raw evidence. Case02 turn1: **1/3/2, material source-fidelity failure** (policy silence was strengthened to “makes no provision for appeals”). Turn2:3/3/3; correction does not erase turn1. Cases07and08:3/3/3 on both turns, limited to these visible conversations. All other human grades remain blank. The review page now displays the overlay and correctly identifies the sole DeepSeek-low configuration; removed stale model-selection header text. No prompt tuning, paid rerun or model promotion.
+
+Earlier safety/quality failures remain. The31infrastructure checks not executed in CI39346288525 remain explicit: authenticated-ingress16, gateway/workspace12, database-restore2, deployment-package1. Supplier replies still pending; no new provider evidence supplied. Next: adjudicate Tinfoil's exact enterprise architecture/retention/opaque-usage offer, or the documented conditional fallback, and propose only a minimum-cost choice that enables a specific hosted milestone. Existing Render retained; VM/email/monitoring inactive. This human review passes neither general safety/quality nor launch qualification.
+
 ## Fresh complete-answer assessment and minimum-cost path — 20 October
 
 [CI39346288525](https://github.com/gyaneshsahu/Private_AI/actions/runs/39346288525) for1f2b425 is **SUCCESS**:490offline tests passed/141skipped,48built-browser tests passed,120durable tests passed/zero skipped. All workflow steps completed successfully. Durable coverage accounts for110offline skips; **31checks were NOT RUN in this CI**: authenticated-ingress16, ingress-workspace12, account-restore2, deployment-package1. They need separate fixtures. No failing executed checks; these31are not passes or waived release requirements.
