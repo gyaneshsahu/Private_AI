@@ -1,5 +1,14 @@
 # PrivateAI readiness checklist
 
+## Restricted Render rollout approved — 20 October
+
+Owner approved the restricted Render/PostgreSQL proposal and its explicit platform-hop trust. Approval is for the owner-only Google milestone at the stated $13.55/month base estimate before tax/overages; not private inference/public launch. Standing account-control preference persists: owner performs service purchases/settings, DNS and secret configuration; agent inspects read-only and prepares/tests code.
+
+Fresh read-only dashboard inspection confirms existing service in Frankfurt, Docker, 0.5c-512mb, branch codex/provider-qualification and deployed commit 40f2e33b90b40124c74210fd46aae560978bbd12; health path /healthz, edge cache profile None. New Postgres form defaults to version18 and 15GB ($10.50/month). Owner instructions explicitly select version17 (tested), 0.1c-256mb $6/month and 1GB at $0.30/GB = $6.30/month; autoscaling and HA off; no Datadog. Name privateai-accounts, database privateai_accounts, user privateai_app, My project / Production, Frankfurt. Do not submit default15GB accidentally. No form values changed or service created by agent.
+
+Next owner action: create that database and report only completion, not connection credentials. Then inspect its TLS/access fields and prepare secret configuration locally; do not paste database URLs/passwords into chat. Do not change existing web-service branch, deploy or DNS yet. Preserve rollback and private-data gates.
+
+
 ## Inactive Render adapter validated — 20 October
 
 Implemented `render-candidate` Docker target, `server/render-entry.ts`, shared `deployment-process.ts`, HTTP-to-loopback-mTLS bridge and explicit restricted secret configuration. Example: `deployment/render-config.example.json`; not an active manifest. Ordinary entrypoint rejects bridge configuration; Render entrypoint requires it. Existing default Docker runtime is unchanged. Loopback binding and owner email allowlist required. Render's TLS-to-HTTP platform hop remains explicitly trusted; local mTLS does not authenticate that upstream hop.
