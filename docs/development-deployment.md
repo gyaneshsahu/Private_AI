@@ -1,5 +1,23 @@
 # Restricted development deployment
 
+## Next hosted milestone: prepared, not authorized for activation
+
+The minimum-cost action **now** is no migration: retain the existing restricted Render service ($7.25/month recorded recurring base before tax/overages), incremental spend $0. This does not deliver the production-candidate journey. The earlier VM/email/monitoring proposal below is superseded as an activation plan and remains comparison evidence only.
+
+The named next hosted milestone is one restricted synthetic account completing sign-in/recovery, document draft, encrypted save/reopen, authoritative allowance enforcement and sign-out on desktop and Galaxy A52. Model-backed conversation remains separately blocked on provider qualification and answer acceptance; do not present a disabled Send button as successful inference.
+
+| Prerequisite | Concrete decision/evidence required |
+| --- | --- |
+| Hosting fit | Existing Render must gain a supported trusted-edge adapter plus reviewed durable PostgreSQL arrangement, or the owner must approve a separately priced host fitting Caddy/mTLS/PostgreSQL. Neither path is currently established at zero incremental cost. Do not weaken authenticated ingress to fit Render. |
+| Email | Review actual sender/domain, recipient-only payload, tracking/retention, delivery and recovery behavior. Current package deliberately supports disabled delivery; a real email adapter and its integration tests are required before this milestone. No paid email activation. |
+| Package | Current locally tested image: `sha256:f4a39a4d635b9205f23308b373384ad625a96775f432ca41c7159c3c9e3fde9d`. App-only compose still requires reviewed gateway/database networking, private configuration and secrets. |
+| Rollout | Review exact target, immutable image, DNS/TLS, database migration and backup/restore plan. Retain old restricted service for rollback; never route live accounts to synthetic fixtures. No automatic migration. |
+| Hosted verification | Repeat the relevant31 checks against an isolated hosted fixture, then inspect real gateway/log exclusion, backup custody/restore, monitoring and the phone journey. Local success is prerequisite evidence, not a substitute. |
+| Release | Provider privacy/retention/authoritative usage and human quality/safety remain independent gates. No private data, public access or invitation approval. |
+
+On20October all31 existing infrastructure checks passed locally, with no skips/failures. The rebuilt actual container passed database interruption/recovery, forced stop/restart and graceful shutdown. See `evaluation/results/infrastructure-20261020.json`. Stop adding isolated infrastructure scenarios absent a concrete failed journey. Next deployment proposal must supply one feasible target and complete incremental cost after the provider/usage architecture is settled; no service purchase is requested now.
+
+
 ## Current minimum-cost decision — 20 October owner steering
 
 The earlier VM/email/monitoring bill of materials is **comparison evidence only, not the current activation plan**. Do not activate those services. Current choice is to retain the existing restricted Render service at its $7.25/month recurring base, with zero incremental hosting spend while provider and quality decisions are open. It cannot yet host the new production candidate unchanged; do not describe it as completing that milestone.

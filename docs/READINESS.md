@@ -1,5 +1,14 @@
 # PrivateAI readiness checklist
 
+## Infrastructure execution and hosted boundary — 20 October
+
+All **31 previously CI-unexecuted checks now passed locally**, zero failed/skipped: authenticated ingress16, browser workspace12, database restore2, packaged process1. The rebuilt candidate also passed database readiness outage/recovery, SIGKILL/restart and graceful shutdown. Evidence: `evaluation/results/infrastructure-20261020.json`. This is local synthetic evidence, **not hosted verification**. Initial sandbox Docker access was denied before execution; the authorized run succeeded. Synthetic resources were cleaned/stopped. No paid inference or service changes.
+
+Latest [CI39347716639](https://github.com/gyaneshsahu/Private_AI/actions/runs/39347716639), commit002b4d5, completed **SUCCESS** (offline and durable jobs). The preceding39347397863 was cancelled. These31 checks remain outside that CI workflow; historical statements that they did not run in CI remain accurate. Do not reclassify them as CI passes.
+
+Minimum-cost next milestone is prepared in `docs/development-deployment.md`: keep existing Render unchanged at its recorded recurring base; no new purchase. Current candidate cannot deploy there unchanged, and real email remains fail-closed. Provider fallback remains conditional; no private-data or launch approval. Human case02 source-fidelity failure and earlier safety failures remain open.
+
+
 ## Owner human assessment — 20 October
 
 Recorded the owner's explicit human review in evaluation/results/complete-assessment-20261020-human.json, hash-bound to the unchanged raw evidence. Case02 turn1: **1/3/2, material source-fidelity failure** (policy silence was strengthened to “makes no provision for appeals”). Turn2:3/3/3; correction does not erase turn1. Cases07and08:3/3/3 on both turns, limited to these visible conversations. All other human grades remain blank. The review page now displays the overlay and correctly identifies the sole DeepSeek-low configuration; removed stale model-selection header text. No prompt tuning, paid rerun or model promotion.

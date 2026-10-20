@@ -1,5 +1,14 @@
 # Provider qualification — NOT_PASSED
 
+## Fallback source review: integration decision — 20 October
+
+Re-inspected the already pinned Privatemode SDK source (`.local/provider-source-20261019/sdk_js_src_privatemode-ai.ts`, revision recorded in `evaluation/results/provider-sdk-source-20261019.json`); no new provider request or credential was used. `initializeWithManifestRetry` fetches a replacement manifest and calls Wasm initialization **before** invoking `onManifestUpdate`. Therefore that callback alone cannot enforce approval before replacement initialization. Checking the returned manifest before inference may prevent a prompt send, but does not prove continuous freshness, GPU binding or revocation. Do not claim a callback solves qualification.
+
+The same source accepts an asynchronous auth provider returning either API-key or JWT credentials. A provider-issued short-lived, narrowly scoped JWT is a potentially simpler alternative to exposing a shared key or inventing a general relay; **issuance, supported scopes, expiry, per-account cost enforcement and authenticated settlement remain unproven**. Existing secret-expiry handling automatically retries once; any future adapter must expose/account for that behavior rather than promising no retries. Source logging defaults and explicit error logging also require content-leak review with public synthetic payloads.
+
+Recommendation remains conditional: prefer Tinfoil if its reply supplies released, testable controls; otherwise time-box a Privatemode browser proof around strict deployment approval, revocation/freshness and provider-issued constrained credentials (or a proven opaque relay). Do not integrate a second provider into production before these questions are answered. A successful offline mock could validate our policy code but cannot establish provider guarantees. No new supplier email is requested; retain these questions for one consolidated evidence review when replies arrive.
+
+
 ## Limited working product: decision on the pending reply — 20 October
 
 No new Tinfoil reply has been supplied. Evaluate the enterprise offer against the **same** privacy/usage boundary, not its product name. Require (1) an exact released browser-verifiable deployment and worker/GPU trust chain, with freshness, revocation and rollback rejection before sensitive sends; (2) enforceable prompt/cache retention and documented log/billing-metadata retention; (3) provider-enforced allowed models/output/cost bounds for malicious encrypted clients and authenticated request settlement, including cancellation/duplicates; (4) supported model lifetime, capacity, commercial terms, minimum commitment and all-in price. A quote or assurance without runnable technical evidence does not pass. Existing answers remain recorded; do not resend the final supplier email.

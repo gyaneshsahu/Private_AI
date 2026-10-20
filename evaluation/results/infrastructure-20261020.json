@@ -1,0 +1,49 @@
+{
+  "date": "2026-10-20",
+  "sourceCommit": "002b4d5fd4fba465022daf391a2908bfc28fa426",
+  "scope": "local synthetic infrastructure; not hosted qualification",
+  "ci": {
+    "run": 39347716639,
+    "conclusion": "success",
+    "jobs": [
+      "offline",
+      "durable"
+    ],
+    "infrastructureChecksExecutedInCI": false
+  },
+  "checks": [
+    {
+      "command": "npm run test:ingress",
+      "passed": 16
+    },
+    {
+      "command": "npm run test:ingress -- --browser",
+      "passed": 12
+    },
+    {
+      "command": "PRIVATEAI_SYNTHETIC_PG=<local synthetic fixture> PRIVATEAI_SYNTHETIC_RESTORE=1 npx vitest run tests/account-restore.test.ts --maxWorkers=1",
+      "passed": 2
+    },
+    {
+      "command": "npm run test:ingress -- --package",
+      "passed": 1
+    }
+  ],
+  "failed": 0,
+  "skipped": 0,
+  "candidateImage": "sha256:f4a39a4d635b9205f23308b373384ad625a96775f432ca41c7159c3c9e3fde9d",
+  "containerLifecycle": [
+    "database readiness 200/503/200",
+    "SIGKILL exit 137",
+    "explicit restart ready",
+    "graceful stop exit 0"
+  ],
+  "limitations": [
+    "Browser suite used existing built dist with current mounted server/shared/tests; package rebuilt current source separately.",
+    "No hosted TLS, real email, off-host recovery, real-device full journey or provider qualification.",
+    "Initial sandbox Docker access denied before test execution; authorized isolated run succeeded."
+  ],
+  "cleanup": "Harness-owned containers/certificates cleaned; existing synthetic PostgreSQL fixture stopped.",
+  "paidInferenceRequests": 0,
+  "accountChanges": 0
+}
