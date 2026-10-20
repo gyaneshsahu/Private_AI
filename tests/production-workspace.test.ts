@@ -16,6 +16,10 @@ import { createApp } from "../server/app";
 import { productionAccountTarget } from "../shared/account-design";
 import { applyAccountMigrations } from "../server/account-migrations";
 import { usageDatabase } from "./fixtures/usage-postgres";
+import { emptyConversation } from "../shared/contracts";
+import { newMessage } from "../src/conversation";
+import { derive } from "../src/vault-crypto";
+import { encodeVaultBackup } from "../src/vault-backup";
 import { localTLS } from "./fixtures/local-tls";
 
 const enabled = !!process.env.PRIVATEAI_SYNTHETIC_PG;
@@ -52,16 +56,36 @@ for (const viewport of [
         await routeLocally(context);
         const page = await context.newPage();
         const email = `journey-${viewport.width}@example.test`;
-        const signIn = async () => {
+        const signIn = async (targetEmail = email) => {
           await page.goto(origin + "/account");
-          await page.getByLabel("Email address", { exact: true }).fill(email);
+          await browserExpect(
+            page.getByRole("button", {
+              name: "Continue with email",
+              exact: true,
+            }),
+          ).toBeEnabled();
+          await mkdir(".local/ui-integrated-20261020", { recursive: true });
+          for (const theme of ["light", "dark"]) {
+            await page
+              .getByLabel("Appearance", { exact: true })
+              .selectOption(theme);
+            await page.screenshot({
+              path: `.local/ui-integrated-20261020/sign-in-${viewport.width}-${theme}.png`,
+              animations: "disabled",
+            });
+          }
+          await page
+            .getByLabel("Email address", { exact: true })
+            .fill(targetEmail);
           await page
             .getByRole("button", { name: "Continue with email", exact: true })
             .click();
           await browserExpect(
             page.getByLabel("Verification code"),
           ).toBeVisible();
-          await page.getByLabel("Verification code").fill(codes.get(email)!);
+          await page
+            .getByLabel("Verification code")
+            .fill(codes.get(targetEmail)!);
           await page
             .getByRole("button", { name: "Verify code", exact: true })
             .click();
@@ -69,8 +93,7 @@ for (const viewport of [
             page.getByRole("heading", { name: "Your account", exact: true }),
           ).toBeVisible();
         };
-        const nav = (name: string) =>
-          workspaceControl(page, name);
+        const nav = (name: string) => workspaceControl(page, name);
         const unlock = async () => {
           await nav("Saved").click();
           await page
@@ -129,6 +152,160 @@ for (const viewport of [
         await browserExpect(
           page.getByRole("article", { name: "JOURNEY_PRIVATE_TITLE" }),
         ).toBeVisible();
+        const sidebar = async () => {
+          const toggle = page.getByRole("button", {
+            name: "Open navigation",
+            exact: true,
+          });
+          if (
+            (await toggle.isVisible()) &&
+            !(await page
+              .getByRole("dialog", { name: "Navigation", exact: true })
+              .isVisible())
+          )
+            await toggle.click();
+        };
+        await sidebar();
+        for (const name of ["JOURNEY_Project", "JOURNEY_Second project"]) {
+          await page
+            .getByRole("button", { name: "Create project", exact: true })
+            .click();
+          await page.getByLabel("Project name", { exact: true }).fill(name);
+          await page
+            .locator(".project-form")
+            .getByRole("button", { name: "Create", exact: true })
+            .click();
+          await browserExpect(page.locator(".project-list")).toContainText(
+            name,
+          );
+        }
+        await page
+          .getByLabel("Actions for project JOURNEY_Project", { exact: true })
+          .click();
+        await page
+          .getByRole("button", { name: "Rename project", exact: true })
+          .click();
+        await page
+          .getByLabel("Project name", { exact: true })
+          .fill("JOURNEY_Renamed");
+        await page
+          .getByRole("button", { name: "Save project name", exact: true })
+          .click();
+        await page.getByRole("button", { name: "Recent", exact: true }).click();
+        const actions = page.getByLabel("Actions for JOURNEY_PRIVATE_TITLE", {
+          exact: true,
+        });
+        await actions.click();
+        await page.getByRole("button", { name: "Pin", exact: true }).click();
+        await actions.click();
+        await page
+          .getByLabel("Project for JOURNEY_PRIVATE_TITLE", { exact: true })
+          .selectOption({ label: "JOURNEY_Renamed" });
+        await page.keyboard.press("Escape");
+        await actions.click();
+        await page
+          .getByRole("button", { name: "Archive", exact: true })
+          .click();
+        await page
+          .getByRole("button", { name: "Archived", exact: true })
+          .click();
+        await actions.click();
+        await page
+          .getByRole("button", { name: "Restore chat", exact: true })
+          .click();
+        await page.getByRole("button", { name: "Recent", exact: true }).click();
+        await page
+          .getByRole("searchbox", { name: "Search chats" })
+          .fill("JOURNEY_PRIVATE_TITLE");
+        await browserExpect(page.locator(".chat-list-row")).toHaveCount(1);
+        await page.getByRole("searchbox", { name: "Search chats" }).fill("");
+        if (
+          await page
+            .getByRole("dialog", { name: "Navigation", exact: true })
+            .isVisible()
+        )
+          await page.getByRole("button", { name: "Close navigation" }).click();
+        // Actual encrypted restore path, with explicitly synthetic model replies (no inference).
+        const reviewSource = {
+          id: "journey-source",
+          title: "Synthetic release notice",
+          text: "The launch is planned. No opening has been confirmed.",
+        };
+        const fixtureChats = Array.from({ length: 3 }, (_, i) => ({
+          ...emptyConversation(),
+          title: `JOURNEY_REPLIES_${i}`,
+          messages: Array.from({ length: i === 0 ? 30 : 4 }, (_, turn) =>
+            turn % 2 === 0
+              ? newMessage("user", `Synthetic question ${turn}`)
+              : {
+                  ...newMessage(
+                    "assistant",
+                    "## Review\n\nA plan does not confirm opening. [journey-source]\n\n| State | Evidence |\n|---|---|\n| Planned | Notice |\n\n```js\nconst open = false;\n```",
+                  ),
+                  sourceSnapshot: [reviewSource],
+                },
+          ),
+        }));
+        fixtureChats[1].messages.push({
+          ...newMessage("assistant", ""),
+          status: "partial",
+          failure: "timeout",
+          included: false,
+        } as (typeof fixtureChats)[1]["messages"][number]);
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const backup = await encodeVaultBackup(
+          await derive("JOURNEY_SYNTHETIC_SECRET_ONLY", salt),
+          salt,
+          fixtureChats,
+        );
+        await page
+          .getByLabel("Encrypted backup file", { exact: true })
+          .setInputFiles({
+            name: "synthetic.privateai-backup",
+            mimeType: "application/json",
+            buffer: Buffer.from(backup),
+          });
+        await page
+          .getByLabel("Original backup passphrase", { exact: true })
+          .fill("JOURNEY_SYNTHETIC_SECRET_ONLY");
+        await page
+          .getByRole("checkbox", {
+            name: "I want to add copies from this backup to the current vault.",
+          })
+          .check();
+        await page
+          .getByRole("button", { name: "Restore as new copies" })
+          .click();
+        await browserExpect(page.getByRole("article")).toHaveCount(4);
+        page.once("dialog", (dialog) => dialog.accept());
+        await page
+          .getByRole("article", { name: "JOURNEY_REPLIES_0", exact: true })
+          .getByRole("button", { name: "Open", exact: true })
+          .click();
+        await browserExpect(page.locator(".messages article")).toHaveCount(30);
+        await page
+          .getByRole("button", {
+            name: "Synthetic release notice",
+            exact: true,
+          })
+          .first()
+          .click();
+        await browserExpect(page.getByRole("dialog")).toContainText(
+          reviewSource.text,
+        );
+        await page.keyboard.press("Escape");
+        for (const theme of ["light", "dark"]) {
+          await nav("Settings").click();
+          await page
+            .getByLabel("Appearance", { exact: true })
+            .selectOption(theme);
+          await page.getByRole("button", { name: "Close settings" }).click();
+          await page.screenshot({
+            path: `.local/ui-integrated-20261020/workspace-${viewport.width}-${theme}.png`,
+            animations: "disabled",
+          });
+        }
+        await nav("Saved").click();
         const stored = await page.evaluate(async () => {
           const result: unknown[] = [];
           for (const info of await indexedDB.databases()) {
@@ -234,6 +411,44 @@ for (const viewport of [
         await browserExpect(
           page.getByRole("article", { name: "JOURNEY_PRIVATE_TITLE" }),
         ).toBeVisible();
+        await sidebar();
+        await browserExpect(page.locator(".project-list")).toContainText(
+          "JOURNEY_Renamed",
+        );
+        page.once("dialog", (d) => d.accept());
+        await page
+          .getByLabel("Actions for project JOURNEY_Renamed", { exact: true })
+          .click();
+        await page
+          .getByRole("button", { name: "Remove project", exact: true })
+          .click();
+        await browserExpect(page.locator(".project-list")).not.toContainText(
+          "JOURNEY_Renamed",
+        );
+        await browserExpect(page.locator(".chat-list-row")).toHaveCount(4);
+        if (
+          await page
+            .getByRole("dialog", { name: "Navigation", exact: true })
+            .isVisible()
+        )
+          await page.getByRole("button", { name: "Close navigation" }).click();
+        await nav("Account").click();
+        await page
+          .getByRole("button", { name: "Sign out", exact: true })
+          .click();
+        await signIn(`second-${viewport.width}@example.test`);
+        await page
+          .getByRole("link", { name: "Open workspace", exact: true })
+          .click();
+        await unlock();
+        await browserExpect(page.getByRole("article")).toHaveCount(0);
+        await sidebar();
+        await browserExpect(page.locator(".project-list")).not.toContainText(
+          "JOURNEY_",
+        );
+        await browserExpect(page.locator(".account-label")).toContainText(
+          `second-${viewport.width}@example.test`,
+        );
         expect(blocked).toEqual([]);
         expect(
           transmissions.map((entry) => entry.body).join("\n"),
@@ -243,7 +458,7 @@ for (const viewport of [
         await browser.close();
       }
     },
-    45000,
+    90000,
   );
 
 function makeWorkspace() {
@@ -504,8 +719,7 @@ it.skipIf(!enabled)(
           value.body.includes("SYNTHETIC DRAFT MUST STAY LOCAL"),
         ),
       ).toBe(false);
-      await workspaceControl(page, "Account")
-        .click();
+      await workspaceControl(page, "Account").click();
       page.on("dialog", (dialog) => dialog.accept());
       await page.getByRole("button", { name: /Manage sign-in/ }).click();
       await browserExpect(

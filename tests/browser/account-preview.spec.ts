@@ -64,12 +64,22 @@ test("inactive account preview shows all methods without requests or browser cre
   ).toBeVisible();
   expect(
     await page.evaluate(async () => ({
-      local: localStorage.length,
+      local: Object.fromEntries(
+        Object.keys(localStorage).map((key) => [
+          key,
+          localStorage.getItem(key),
+        ]),
+      ),
       session: sessionStorage.length,
       databases: (await indexedDB.databases()).length,
       caches: (await caches.keys()).length,
     })),
-  ).toEqual({ local: 0, session: 0, databases: 0, caches: 0 });
+  ).toEqual({
+    local: { "privateai.appearance": "system" },
+    session: 0,
+    databases: 0,
+    caches: 0,
+  });
   expect(await page.context().cookies()).toEqual([]);
   expect(requests).toEqual([]);
   expect(errors).toEqual([]);

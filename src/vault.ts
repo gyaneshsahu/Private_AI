@@ -160,6 +160,24 @@ export class Vault {
             : this.versions.get(basedOn);
       if (basedOn && (basedOn.id !== snapshot.id || expected === undefined))
         throw new VaultConflictError();
+      let projectRecord: Cipher | undefined;
+      if (snapshot.projectId) {
+        const projectDb = await db(databaseName);
+        try {
+          projectRecord = await projectDb.get("meta", "projects");
+        } finally {
+          projectDb.close();
+        }
+        const projects = projectRecord
+          ? projectsSchema.parse(
+              JSON.parse(await unseal(key, projectRecord, "projects-v1")),
+            )
+          : [];
+        if (!projects.some((p) => p.id === snapshot.projectId))
+          throw Error(
+            "Project no longer exists. Remove its assignment before saving.",
+          );
+      }
       const dataKey = await crypto.subtle.generateKey(
         { name: "AES-GCM", length: 256 },
         true,
@@ -186,6 +204,20 @@ export class Vault {
           throw new Error("Vault locked before save completed.");
         const tx = database.transaction(["meta", "conversations"], "readwrite");
         requireVaultIdentity(await tx.objectStore("meta").get("vault"), salt);
+        if (snapshot.projectId) {
+          const currentProjects = (await tx
+            .objectStore("meta")
+            .get("projects")) as Cipher | undefined;
+          if (
+            JSON.stringify(
+              currentProjects && Array.from(currentProjects.iv),
+            ) !== JSON.stringify(projectRecord && Array.from(projectRecord.iv))
+          ) {
+            tx.abort();
+            await tx.done.catch(() => {});
+            throw new VaultConflictError();
+          }
+        }
         if (await tx.objectStore("meta").get(`deleted:${snapshot.id}`)) {
           await tx.done;
           throw new Error(
@@ -353,6 +385,133 @@ export class Vault {
         await tx.store.put(encrypted, "projects");
         await tx.done;
         return next;
+      } finally {
+        database.close();
+      }
+    });
+  }
+  editProject(id: string, name?: string): Promise<void> {
+    const key = this.key,
+      salt = this.salt,
+      generation = this.generation,
+      databaseName = this.databaseName;
+    if (!key) return Promise.reject(Error("Unlock your vault first."));
+    return this.enqueue(async () => {
+      const database = await db(databaseName);
+      const unchanged = () => {
+        if (generation !== this.generation || !this.key)
+          throw Error("Vault changed during project update.");
+      };
+      try {
+        unchanged();
+        const read = database.transaction(
+          ["meta", "conversations"],
+          "readonly",
+        );
+        requireVaultIdentity(await read.objectStore("meta").get("vault"), salt);
+        const previous = (await read.objectStore("meta").get("projects")) as
+          Cipher | undefined;
+        const ids = await read.objectStore("conversations").getAllKeys();
+        const records = await read.objectStore("conversations").getAll();
+        await read.done;
+        const projects = previous
+          ? projectsSchema.parse(
+              JSON.parse(await unseal(key, previous, "projects-v1")),
+            )
+          : [];
+        if (!projects.some((p) => p.id === id))
+          throw Error("Project no longer exists. Unlock again to refresh.");
+        const next = projectsSchema.parse(
+          name === undefined
+            ? projects.filter((p) => p.id !== id)
+            : projects.map((p) => (p.id === id ? { ...p, name } : p)),
+        );
+        const encryptedProjects = await seal(
+          key,
+          JSON.stringify(next),
+          "projects-v1",
+        );
+        const replacements: {
+          id: IDBValidKey;
+          version: string;
+          wrapped: Cipher;
+          data: Cipher;
+        }[] = [];
+        if (name === undefined)
+          for (const [index, recordId] of ids.entries()) {
+            unchanged();
+            const record = records[index] as { wrapped: Cipher; data: Cipher };
+            const raw = await unseal(key, record.wrapped, `key:${recordId}`);
+            const dataKey = await crypto.subtle.importKey(
+              "raw",
+              new Uint8Array(JSON.parse(raw)),
+              "AES-GCM",
+              false,
+              ["encrypt", "decrypt"],
+            );
+            const decoded = JSON.parse(
+              await unseal(dataKey, record.data, `conversation:${recordId}`),
+            ) as Conversation;
+            savedConversationSchema.parse(decoded);
+            if (decoded.id !== recordId || containsTemporaryResearch(decoded))
+              throw Error("Unreadable history prevents safe project removal.");
+            if (decoded.projectId === id) {
+              delete decoded.projectId;
+              replacements.push({
+                id: recordId,
+                version: recordVersion(record),
+                wrapped: await seal(key, raw, `key:${recordId}`),
+                data: await seal(
+                  dataKey,
+                  JSON.stringify(decoded),
+                  `conversation:${recordId}`,
+                ),
+              });
+            }
+          }
+        unchanged();
+        const tx = database.transaction(["meta", "conversations"], "readwrite");
+        try {
+          requireVaultIdentity(await tx.objectStore("meta").get("vault"), salt);
+          const current = (await tx.objectStore("meta").get("projects")) as
+            Cipher | undefined;
+          if (
+            JSON.stringify(current && Array.from(current.iv)) !==
+            JSON.stringify(previous && Array.from(previous.iv))
+          )
+            throw Error("Projects changed in another tab.");
+          const store = tx.objectStore("conversations");
+          if (name === undefined) {
+            if ((await store.count()) !== records.length)
+              throw Error("History changed during removal. Try again.");
+            for (const [index, recordId] of ids.entries()) {
+              const existing = await store.get(recordId);
+              if (
+                !existing ||
+                recordVersion(existing) !== recordVersion(records[index])
+              )
+                throw Error("History changed during removal. Try again.");
+            }
+          }
+          for (const {
+            id: recordId,
+            version: _version,
+            ...record
+          } of replacements) {
+            unchanged();
+            await store.put(record, recordId);
+          }
+          unchanged();
+          await tx.objectStore("meta").put(encryptedProjects, "projects");
+          unchanged();
+          await tx.done;
+        } catch (error) {
+          try {
+            tx.abort();
+          } catch {}
+          await tx.done.catch(() => {});
+          throw error;
+        }
       } finally {
         database.close();
       }

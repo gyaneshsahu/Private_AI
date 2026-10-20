@@ -24,6 +24,7 @@ export function WorkspaceNavigation(props: {
   onSettings: () => void;
   onSignOut: () => void;
   onCreateProject: (name: string) => Promise<string | undefined>;
+  onEditProject: (id: string, name?: string) => Promise<boolean>;
   onOrganize: (
     c: Conversation,
     change: Pick<Conversation, "pinned" | "archived" | "projectId" | "title">,
@@ -48,6 +49,7 @@ export function WorkspaceNavigation(props: {
     onSettings,
     onSignOut,
     onCreateProject,
+    onEditProject,
     onOrganize,
   } = props;
   const dialog = useRef<HTMLDialogElement>(null);
@@ -57,6 +59,7 @@ export function WorkspaceNavigation(props: {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("recent");
   const [creating, setCreating] = useState(false);
+  const [editingProject, setEditingProject] = useState<string>();
   const [projectName, setProjectName] = useState("");
   const drawer = narrow || collapsed;
   const visible = useMemo(
@@ -153,7 +156,11 @@ export function WorkspaceNavigation(props: {
                 className="icon-button"
                 aria-label="Create project"
                 disabled={busy}
-                onClick={() => setCreating(!creating)}
+                onClick={() => {
+                  setEditingProject(undefined);
+                  setProjectName("");
+                  setCreating(!creating);
+                }}
               >
                 <Icon name="plus" />
               </button>
@@ -163,11 +170,16 @@ export function WorkspaceNavigation(props: {
                 className="project-form"
                 onSubmit={async (e) => {
                   e.preventDefault();
-                  const id = await onCreateProject(projectName);
+                  const id = editingProject
+                    ? (await onEditProject(editingProject, projectName))
+                      ? editingProject
+                      : undefined
+                    : await onCreateProject(projectName);
                   if (id) {
                     setFilter(id);
                     setProjectName("");
                     setCreating(false);
+                    setEditingProject(undefined);
                   }
                 }}
               >
@@ -182,7 +194,7 @@ export function WorkspaceNavigation(props: {
                 </label>
                 <div className="row">
                   <button type="submit" disabled={busy || !projectName.trim()}>
-                    Create
+                    {editingProject ? "Save project name" : "Create"}
                   </button>
                   <button type="button" onClick={() => setCreating(false)}>
                     Cancel
@@ -192,22 +204,56 @@ export function WorkspaceNavigation(props: {
             )}
             <div className="project-list">
               {projects.map((p) => (
-                <button
-                  key={p.id}
-                  className={filter === p.id ? "selected" : ""}
-                  aria-pressed={filter === p.id}
-                  onClick={() => setFilter(p.id)}
-                >
-                  <Icon name="folder" />
-                  <span>{p.name}</span>
-                  <small>
-                    {
-                      conversations.filter(
-                        (c) => c.projectId === p.id && !c.archived,
-                      ).length
-                    }
-                  </small>
-                </button>
+                <div className="project-row" key={p.id}>
+                  <button
+                    className={filter === p.id ? "selected" : ""}
+                    aria-pressed={filter === p.id}
+                    onClick={() => setFilter(p.id)}
+                  >
+                    <Icon name="folder" />
+                    <span>{p.name}</span>
+                    <small>
+                      {
+                        conversations.filter(
+                          (c) => c.projectId === p.id && !c.archived,
+                        ).length
+                      }
+                    </small>
+                  </button>
+                  <details className="project-actions">
+                    <summary aria-label={`Actions for project ${p.name}`}>
+                      <Icon name="more" />
+                    </summary>
+                    <div>
+                      <button
+                        disabled={busy}
+                        onClick={() => {
+                          setEditingProject(p.id);
+                          setProjectName(p.name);
+                          setCreating(true);
+                        }}
+                      >
+                        Rename project
+                      </button>
+                      <button
+                        disabled={busy}
+                        onClick={async () => {
+                          if (
+                            confirm(
+                              `Remove project “${p.name}”? Its chats will be kept without a project, including archived chats.`,
+                            ) &&
+                            (await onEditProject(p.id))
+                          ) {
+                            setFilter("recent");
+                            setCreating(false);
+                          }
+                        }}
+                      >
+                        Remove project
+                      </button>
+                    </div>
+                  </details>
+                </div>
               ))}
             </div>
             {!projects.length && (

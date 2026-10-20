@@ -87,7 +87,7 @@ export function App() {
       if (event instanceof KeyboardEvent && event.key !== "Escape") return;
       document
         .querySelectorAll<HTMLDetailsElement>(
-          ".tools-menu[open], .conversation-menu[open], .account-menu[open], .chat-item-menu[open]",
+          ".tools-menu[open], .conversation-menu[open], .account-menu[open], .chat-item-menu[open], .project-actions[open]",
         )
         .forEach((menu) => {
           if (
@@ -895,6 +895,35 @@ export function App() {
       if (current === epoch.current) setBusy("");
     }
   }
+  async function editProject(id: string, name?: string): Promise<boolean> {
+    const current = epoch.current;
+    setBusy("Updating encrypted project…");
+    try {
+      await vault.current!.editProject(id, name);
+      const available = await vault.current!.readAvailable();
+      const next = await vault.current!.readProjects();
+      if (current !== epoch.current) return false;
+      setSaved(available.conversations);
+      setProjects(next);
+      if (name === undefined && conversation.projectId === id) {
+        setConversation((previous) => ({ ...previous, projectId: undefined }));
+        savedBase.current =
+          available.conversations.find((c) => c.id === conversation.id) ?? null;
+      }
+      setNotice(
+        name === undefined
+          ? "Project removed. Its chats were kept without a project; archived chats remain archived."
+          : "Project renamed.",
+      );
+      return true;
+    } catch (error) {
+      if (current === epoch.current)
+        fail(error instanceof Error ? error.message : "Project update failed.");
+      return false;
+    } finally {
+      if (current === epoch.current) setBusy("");
+    }
+  }
   async function organizeChat(
     c: Conversation,
     change: Pick<Conversation, "pinned" | "archived" | "projectId" | "title">,
@@ -965,6 +994,7 @@ export function App() {
         status={status}
         onSignOut={() => void signOut()}
         onCreateProject={createProject}
+        onEditProject={editProject}
         onOrganize={(c, change) => void organizeChat(c, change)}
         unlocked={unlocked}
         busy={!!busy}

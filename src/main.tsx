@@ -1,3 +1,4 @@
+import { AccountTheme } from "./AccountTheme";
 import React, { lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
@@ -15,10 +16,14 @@ createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     {lab || pageUrl.pathname === "/account" ? (
       <Suspense fallback={<p>Loading account…</p>}>
-        <AccountLab synthetic={lab} />
+        <AccountTheme>
+          <AccountLab synthetic={lab} />
+        </AccountTheme>
       </Suspense>
     ) : isAccountPreview(new URL(window.location.href)) ? (
-      <AccountPreview />
+      <AccountTheme>
+        <AccountPreview />
+      </AccountTheme>
     ) : (
       <App />
     )}

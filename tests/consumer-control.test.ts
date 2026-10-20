@@ -379,8 +379,7 @@ it.skipIf(!enabled)(
       await page
         .getByLabel("Message PrivateAI")
         .fill("SYNTHETIC PRIVATE DRAFT MUST NOT LEAVE BROWSER");
-      await workspaceControl(page, "Research")
-        .click();
+      await workspaceControl(page, "Research").click();
       await page.getByLabel("Exact search query").fill(query.value);
       await page.getByRole("button", { name: "Review disclosure" }).click();
       const delivered = page.waitForResponse((r) =>
@@ -400,8 +399,7 @@ it.skipIf(!enabled)(
       expect(
         (await h.db.pool.query("SELECT * FROM research_consent")).rows,
       ).toHaveLength(0);
-      await workspaceControl(page, "Conversation")
-        .click();
+      await workspaceControl(page, "Conversation").click();
       await browserExpect(page.getByLabel("Message PrivateAI")).toHaveValue(
         "SYNTHETIC PRIVATE DRAFT MUST NOT LEAVE BROWSER",
       );
@@ -436,8 +434,7 @@ it.skipIf(!enabled)(
         return route.abort();
       });
       const page = await context.newPage();
-      const tab = (p: Page, name: string) =>
-        workspaceControl(p, name);
+      const tab = (p: Page, name: string) => workspaceControl(p, name);
       const login = async (email: string) => {
         await browserExpect(
           page.getByLabel("Test email address"),
@@ -481,7 +478,10 @@ it.skipIf(!enabled)(
           .getByRole("button", { name: "Create or unlock vault" })
           .click();
         await browserExpect(
-          page.getByText("Local vault unlocked", { exact: true }),
+          page.getByRole("button", {
+            name: "Save encrypted snapshot",
+            exact: true,
+          }),
         ).toBeVisible();
       };
       await page.goto(h.origin);
@@ -528,7 +528,10 @@ it.skipIf(!enabled)(
       await login("owner-b@example.test");
       await unlock();
       await browserExpect(
-        page.getByText("ACCOUNT A PRIVATE TITLE", { exact: true }),
+        page.getByRole("article", {
+          name: "ACCOUNT A PRIVATE TITLE",
+          exact: true,
+        }),
       ).toHaveCount(0);
       await browserExpect(
         page.getByRole("button", { name: "Open", exact: true }),
@@ -538,7 +541,10 @@ it.skipIf(!enabled)(
       await login("owner-a@example.test");
       await unlock();
       await browserExpect(
-        page.getByText("ACCOUNT A PRIVATE TITLE", { exact: true }),
+        page.getByRole("article", {
+          name: "ACCOUNT A PRIVATE TITLE",
+          exact: true,
+        }),
       ).toBeVisible();
       await page.getByRole("button", { name: "Open", exact: true }).click();
       await browserExpect(page.getByLabel("Message PrivateAI")).toHaveValue(

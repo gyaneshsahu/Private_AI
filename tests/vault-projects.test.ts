@@ -99,3 +99,37 @@ it("rejects backups that would silently lose project membership", async () => {
     ]),
   ).rejects.toThrow("unknown project");
 });
+
+it("renames and removes projects atomically, keeps chats and rejects stale membership", async () => {
+  const v = create();
+  await v.unlock("synthetic project edit password");
+  const [p] = await v.createProject("Original");
+  const original = await v.save({
+    ...emptyConversation(),
+    projectId: p.id,
+    pinned: true,
+    archived: true,
+    draft: "keep draft",
+  });
+  await v.editProject(p.id, "Renamed");
+  expect((await v.readProjects())[0].name).toBe("Renamed");
+  await v.editProject(p.id);
+  expect(await v.readProjects()).toEqual([]);
+  const [chat] = await v.list();
+  expect(chat.projectId).toBeUndefined();
+  expect(chat.draft).toBe("keep draft");
+  expect(chat.archived).toBe(true);
+  expect(chat.pinned).toBe(true);
+  await expect(v.save(original, original)).rejects.toThrow("no longer exists");
+});
+it("refuses project removal rather than silently discarding unreadable history", async () => {
+  const id = crypto.randomUUID(),
+    v = create(id);
+  await v.unlock("synthetic corrupt project password");
+  const [p] = await v.createProject("Keep me");
+  const db = await openDB(`privateai-vault-${id}`, 1);
+  await db.put("conversations", { corrupt: true }, "broken");
+  db.close();
+  await expect(v.editProject(p.id)).rejects.toThrow();
+  expect(await v.readProjects()).toEqual([p]);
+});

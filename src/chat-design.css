@@ -1313,3 +1313,132 @@
 .chat-design details.conversation-menu {
   background: transparent;
 }
+
+.chat-design .project-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  position: relative;
+}
+.chat-design .project-row > button {
+  width: calc(100% - 34px);
+}
+.chat-design details.project-actions {
+  width: 34px;
+  background: transparent;
+  border: 0;
+}
+.chat-design .project-actions summary {
+  display: grid;
+  place-items: center;
+  min-height: 40px;
+  cursor: pointer;
+  list-style: none;
+}
+.chat-design .project-actions[open] {
+  width: 100%;
+}
+.chat-design .project-actions[open] summary {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 34px;
+}
+.chat-design .project-actions > div {
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.chat-design .project-actions button {
+  font-size: 13px;
+}
+.account-shell.chat-design {
+  height: auto;
+  min-height: 100dvh;
+  overflow: visible;
+}
+.account-shell.chat-design main.account-preview {
+  margin: 0;
+  width: 100%;
+  height: auto;
+  min-height: calc(100dvh - 70px);
+  padding: 18px 20px 40px;
+  background: var(--canvas);
+  color: var(--ink);
+}
+.account-shell .account-appearance {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 24px;
+  font-size: 12px;
+}
+.account-shell .account-appearance select {
+  width: auto;
+}
+.account-shell .account-preview-card {
+  background: var(--surface);
+  border-color: var(--line);
+  box-shadow: var(--shadow);
+  max-width: 540px;
+}
+.account-shell
+  :is(
+    .account-preview-banner,
+    .account-preview-intro,
+    .account-preview-small,
+    .account-preview-divider
+  ) {
+  color: var(--muted);
+}
+.account-shell .account-preview-card h1 {
+  font-family: inherit;
+  color: var(--ink);
+}
+.account-shell .account-preview-actions .account-preview-primary {
+  background: linear-gradient(#8063bb, #6849a6);
+  border-color: #6849a6;
+  color: white;
+}
+.account-shell .account-preview-brand {
+  color: var(--ink);
+}
+.account-shell .account-preview-brand::before {
+  content: "P";
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 34px;
+  margin-right: 10px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #e4d8fa, #b39adf);
+  color: #483467;
+  box-shadow:
+    inset 2px 2px 3px #fff8,
+    0 2px 4px #0001;
+  font-size: 18px;
+}
+.account-shell .account-preview-card :is(input, button, select) {
+  max-width: 100%;
+}
+.account-shell .account-preview-card :is(p, li, summary) {
+  overflow-wrap: anywhere;
+}
+.account-shell .account-preview-notice {
+  color: var(--ink);
+  background: var(--subtle);
+  border-color: var(--line);
+}
+.account-shell .account-preview-card a {
+  color: var(--accent);
+}
+@media (max-width: 600px) {
+  .account-shell .account-preview-card {
+    padding: 24px 18px;
+  }
+  .account-shell .account-appearance {
+    padding: 12px 20px;
+  }
+}

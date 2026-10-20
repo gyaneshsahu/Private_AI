@@ -137,3 +137,7 @@ colors and density; desired chat/history navigation on desktop and phone; placem
 of attachments/research; and the actual phones/browsers available for testing.
 Describe the main first-use flow and any must-have controls. Explicitly distinguish
 new capabilities from presentation changes so design does not silently expand scope.
+
+## 20 October integrated follow-up
+
+Owner approved the UI. Project rename/removal and dedicated sign-in theme propagation are now implemented and locally integrated with PostgreSQL-backed accounts (see READINESS). Actual Galaxy A52 workspace keyboard/TalkBack testing remains pending; do not request it during this development batch. Browser viewport, enlarged-text and keyboard tests are simulations, not physical-device passes.

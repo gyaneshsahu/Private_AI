@@ -4,6 +4,7 @@ import type { Page } from "@playwright/test";
 export function workspaceControl(page: Page, name: string) {
   return {
     async click() {
+      await page.locator(".app-shell").waitFor({ state: "visible" });
       if (["Context", "Research"].includes(name)) {
         await workspaceControl(page, "Conversation").click();
         await page.getByLabel("Attachments and tools", { exact: true }).click();
