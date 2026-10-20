@@ -1,5 +1,10 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Owner saved candidate settings — 20 October
+
+Read-only Render Settings inspection confirms branch codex/development-handoff, Dockerfile.render, build context `.`, empty Docker Command, `/healthz`, and exact one-time pre-deploy command `node --import tsx server/deployment-database-entry.ts initialize-empty /etc/secrets/render-config.json`. Owner reports Auto-Deploy Off (disabled selector did not expose its value in the accessibility tree). Last successful live commit remains 40f2e33b90b40124c74210fd46aae560978bbd12. No agent service settings changed and no deployment started. Next owner action: Manual Deploy → Deploy a specific commit → `4eb86b108bb1651ee5be65928a126f605bc26bf6`, whose Validate run39464528366 passed. Do not select latest HEAD; later commits are documentation. Inspect pre-deploy/runtime result before any retry; remove one-time initializer after successful schema creation. No DNS or private-data/public gate changes.
+
+
 ## Exact deployment candidate CI passed — 20 October
 
 **Deploy only `4eb86b108bb1651ee5be65928a126f605bc26bf6`**, not latest HEAD. Validate run https://github.com/gyaneshsahu/Private_AI/actions/runs/39464528366 completed SUCCESS, both offline and durable jobs passed. Counts: offline unit stage 499 passed/148 skipped; browser 51 passed; durable 122 passed, zero skipped. Container smoke, persistence, invite isolation, recovery and packaged encrypted-registry check passed. The database job covers 112 of the unit-stage skipped tests (and repeats ten already-runnable checks). **36 infrastructure tests remain unexecuted in this CI run:** authenticated-ingress16, ingress-workspace12, render-bridge5, account-restore2, deployment-package1. These are not silently counted as CI passes. The prior local packaged batch passed 22 of these (16+5+1); other historical evidence does not become fresh CI coverage. Original 31 infrastructure count increases to36 with the five Render bridge cases.
