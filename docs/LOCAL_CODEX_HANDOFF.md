@@ -1,5 +1,11 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Custom-domain and owner Google journey — 20 October
+
+Public DNS resolves app.cometrow.com to private-ai-deployment.onrender.com. Verified HTTPS probes returned /account 200, /healthz 200 and /auth 303 to /account, without bypassing TLS validation. Owner completed real Google sign-in; screenshot and subsequent browser inspection confirm the intended owner identity, linked Google and an active session. Following Open workspace from /account succeeds; loaded workspace shows the same identity, a locked local vault, unavailable usage/no active plan, disabled future capabilities and disabled private-chat sending. Account menu renders account/usage, settings, saved/data controls, help and sign-out. This is actual hosted inspection, not a synthetic fixture. No private prompts, vault contents, paid inference or account changes were submitted by the agent.
+
+Direct browser-tool navigation to / returned cross-origin denial, while the intended /account → workspace navigation succeeded; preserve this distinction rather than claiming unrestricted entry. Logout/cancellation, other-user denial, hosted vault persistence and usage remain unverified in this batch. Email recovery wording previously asserted availability although this deployment disables delivery. Local copy now states delivery is required; build/typecheck passed, not yet deployed. Capability-aware disabling remains a follow-up rather than implying the copy change implements email recovery. The one-time pre-deploy removal still needs read-only confirmation. Provider qualification and release gates remain closed.
+
 ## Restricted Render deployment succeeded — 20 October
 
 Owner deployment `dep-dbbqkq61egvs73avm8pg` of exact CI-passed `4eb86b108bb1651ee5be65928a126f605bc26bf6` succeeded at 19:54 Europe/Berlin. Pre-deploy reported initialize-empty applied=12, pending=0, remoteTlsVerificationRequired=true. Runtime reported restricted deployment listening with email and inference disabled. Independent HTTPS probes returned /healthz 200 and /auth 403 on the old onrender.com hostname, as intended. Earlier old-instance secret checks did not validate newly saved files; the successful candidate initialization/startup now supersedes that uncertainty. No secrets were printed.

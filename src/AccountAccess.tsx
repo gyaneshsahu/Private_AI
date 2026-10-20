@@ -173,7 +173,7 @@ export default function AccountAccess({
           </ul>
           <h3>Sign-in methods</h3>
           <p>
-            Email remains available. Removal requires a new email-code sign-in
+            Removal requires working email delivery and a new email-code sign-in
             and signs out other sessions. Removing a provider here does not
             revoke its permissions on the provider's website.
           </p>

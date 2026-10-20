@@ -357,9 +357,10 @@ export default function AccountLab({
               Finish sign-in recovery
             </button>
             <p className="account-preview-small">
-              After signing in again with email, finish recovery to close other
-              sessions. Use Account access below to remove a lost passkey or
-              linked provider after verifying email.
+              Recovery requires working email delivery. After signing in again
+              with email, finish recovery to close other sessions. Use Account
+              access below to remove a lost passkey or linked provider after
+              verifying email.
             </p>
             {notices.length > 0 && (
               <section aria-label="Security notices">
