@@ -38,6 +38,19 @@ const Answer = lazy(() =>
   import("./Answer").then((module) => ({ default: module.Answer })),
 );
 export function App() {
+  const [appearance, setAppearance] = useState<"system" | "light" | "dark">(
+    "system",
+  );
+  const [systemDark, setSystemDark] = useState(
+    () => matchMedia("(prefers-color-scheme: dark)").matches,
+  );
+  useEffect(() => {
+    const media = matchMedia("(prefers-color-scheme: dark)");
+    const update = () => setSystemDark(media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
   const [tab, setTab] = useState<Tab>(() =>
     new URLSearchParams(location.search).has("billing")
       ? "Account"
@@ -760,10 +773,18 @@ export function App() {
   const sources = conversation.attachments.flatMap((a) => a.sources);
   const sourceHistory = new Map(sources.map((item) => [item.id, item]));
   return (
-    <div className="app-shell">
+    <div
+      className="app-shell chat-design"
+      data-theme={
+        appearance === "system" ? (systemDark ? "dark" : "light") : appearance
+      }
+    >
       <aside className="sidebar">
         <a className="brand" href="/" aria-label="PrivateAI home">
-          <span className="brand-mark">P</span>Private<span>AI</span>
+          <span className="brand-mark" aria-hidden="true">
+            <span className="clay-leaf" />P
+          </span>
+          Private<span>AI</span>
         </a>
         <p className="eyebrow">YOUR PERSONAL SPACE</p>
         <button
@@ -858,12 +879,49 @@ export function App() {
         <header>
           <div>
             <span className="eyebrow">PRIVATEAI WORKSPACE</span>
-            <h1>{tab}</h1>
+            <h1>
+              {tab === "Conversation" &&
+              conversation.title !== "New conversation"
+                ? conversation.title
+                : tab}
+            </h1>
+            {tab === "Conversation" && conversation.messages.length > 0 && (
+              <p className="conversation-meta">
+                {conversation.messages.length} messages ·{" "}
+                <button
+                  className="text-button"
+                  onClick={() =>
+                    outputEnd.current?.scrollIntoView({
+                      block: "end",
+                      behavior: "instant",
+                    })
+                  }
+                >
+                  Jump to latest ↓
+                </button>
+              </p>
+            )}
           </div>
-          <span className="pill">
-            <span className="small-dot" />
-            {unlocked ? "Local vault unlocked" : "Temporary session"}
-          </span>
+          <div className="appearance-controls">
+            <label className="sr-only" htmlFor="chat-appearance">
+              Appearance
+            </label>
+            <select
+              id="chat-appearance"
+              value={appearance}
+              onChange={(event) =>
+                setAppearance(event.target.value as "system" | "light" | "dark")
+              }
+            >
+              <option value="system">System theme</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+            <span className="pill">
+              <span className="small-dot" />
+              {unlocked ? "Local vault unlocked" : "Temporary session"}
+            </span>
+          </div>
         </header>
         <div className="connection-banner">
           {status?.accountId && !status.consumerWorkspace && (

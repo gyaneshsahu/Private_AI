@@ -4,6 +4,7 @@ import { App } from "./App";
 import { AccountPreview } from "./AccountPreview";
 import { isAccountPreview } from "../shared/account-design";
 import "./styles.css";
+import "./chat-design.css";
 const AccountLab = lazy(() => import("./AccountLab"));
 const pageUrl = new URL(window.location.href);
 const lab =

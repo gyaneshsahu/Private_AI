@@ -1,5 +1,16 @@
 # PrivateAI readiness checklist
 
+## Representative visual chat — 20 October, awaiting design approval
+
+Implemented reference-led chat appearance in src/chat-design.css and App: warm neutrals, charcoal dark theme, terracotta controls, restrained CSS clay monogram, light/dark/system session theme, conversation title/count and Jump to latest. Existing brand identity retained; no ChatGPT logo or fake voice feature. No external font/CDN/analytics or theme persistence. Shared tokens are scoped to the workspace; dedicated account/sign-in routes have not been restyled. Full product propagation awaits owner design approval.
+
+Actual built-browser screenshots reviewed in light/dark at1440px and390px: `.local/ui-review-20261020/index.html`. Corrected early lazy-render capture, inherited serif headings, low-contrast banner colour, source-dialog colour, narrow table wrapping and captures during theme transitions. Final table/code remain horizontally scrollable inside their regions, not the page. Layout uses current navigation and Saved history; mobile drawer/recent-chat sidebar and syntax colouring remain design follow-ups, not falsely implemented.
+
+Validation: build/typecheck pass;13distinct built-browser tests across visual chat, branches, attachments, drafts, encrypted history and account navigation pass. Final representative test additionally covers30messages, reduced-height keyboard simulation,200%root text, source open/Escape, disabled incomplete Copy/Send, system theme changes and focus return.21existing reply-stream/cancellation, async race and citation regressions pass. Synthetic restored messages are fixtures, not new model outputs. Real Galaxy A52 keyboard/TalkBack, visual streaming on a qualified live service and full product visual consistency remain unverified. Privacy/quality/launch gates unchanged, no paid requests or deployment.
+
+Next: owner approves or revises the representative design, then apply reviewed components/tokens throughout product and verify affected workflows. No approval inferred from screenshots being supplied.
+
+
 ## Fidelity study completed; visual reference pending — 20 October
 
 Owner requested the prepared eight cases, then a focused light/dark UI batch. Ran unchanged DeepSeek-low/constraints-v4 only: **16/16delivered replies,8/8complete conversations**, median1961ms, reported token costUSD0.0125191. No paid retry, prompt change or candidate promotion. The previously proposed two-arm comparison was not executed. Full questions, expected facts, raw model events and delivered answers: `evaluation/results/fidelity-transfer-20261020.json`; review page `.local/review-batches/fidelity-transfer-20261020/complete-review.html`. All human scores blank.
