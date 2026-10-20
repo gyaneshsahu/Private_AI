@@ -1442,3 +1442,80 @@
     padding: 12px 20px;
   }
 }
+/* Compact account entry: same product tokens, quieter hierarchy. */
+.account-shell .account-entry {
+  max-width: 448px;
+  padding: 36px 32px 28px;
+  border-radius: 24px;
+  box-shadow: 0 16px 48px #0000000a;
+}
+.account-shell .account-entry h1 {
+  font-size: 25px;
+  font-weight: 600;
+  letter-spacing: -0.65px;
+}
+.account-shell .account-entry .account-preview-intro {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 12px 0 26px;
+}
+.account-shell .account-entry .account-preview-actions {
+  gap: 12px;
+}
+.account-shell .account-entry :is(input, button) {
+  border-radius: 24px;
+  min-height: 48px;
+}
+.account-shell .account-entry .account-preview-primary {
+  background: var(--ink);
+  color: var(--canvas);
+  border-color: var(--ink);
+  box-shadow: none;
+}
+.account-shell .account-entry .account-preview-primary:hover:not(:disabled) {
+  opacity: 0.88;
+}
+.account-shell .account-social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: transparent;
+}
+.account-shell .account-social:disabled {
+  opacity: 1;
+  color: var(--muted);
+  cursor: not-allowed;
+}
+.account-shell .account-social small {
+  font-size: 10px;
+  font-weight: 400;
+}
+.account-shell .account-provider-mark {
+  font-weight: 650;
+  width: 18px;
+}
+.account-shell .account-entry .account-preview-divider {
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+.account-shell .account-entry label {
+  font-size: 12px;
+}
+.account-shell .account-preview-privacy {
+  border-color: var(--line);
+  padding-top: 16px;
+  margin-top: 20px;
+}
+.account-shell .account-preview-privacy p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+.account-shell .account-entry > details {
+  font-size: 12px;
+}
+@media (max-width: 600px) {
+  .account-shell .account-entry {
+    padding: 28px 24px 24px;
+  }
+}

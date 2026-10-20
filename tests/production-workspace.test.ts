@@ -64,6 +64,25 @@ for (const viewport of [
               exact: true,
             }),
           ).toBeEnabled();
+          for (const provider of ["Google", "Apple"]) {
+            await browserExpect(
+              page.getByRole("button", {
+                name: `Continue with ${provider} Coming later`,
+                exact: true,
+              }),
+            ).toBeDisabled();
+          }
+          await page
+            .getByText("Privacy and account recovery", { exact: true })
+            .click();
+          await browserExpect(
+            page.getByText("PrivateAI stores your email address", {
+              exact: false,
+            }),
+          ).toBeVisible();
+          await page
+            .getByText("Privacy and account recovery", { exact: true })
+            .click();
           await mkdir(".local/ui-integrated-20261020", { recursive: true });
           for (const theme of ["light", "dark"]) {
             await page

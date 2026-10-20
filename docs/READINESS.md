@@ -1,5 +1,12 @@
 # PrivateAI readiness checklist
 
+## Sign-in visual refinement — 20 October
+
+Owner rejected the first dedicated account-page treatment and supplied a compact social/email reference. Refined the real account entry to a 448px card, quieter typography, rounded social/email/passkey controls, neutral primary action, email divider and collapsible privacy/recovery disclosure. Google/Apple remain explicitly disabled Coming later when not configured; no provider activation or permissions added. Inactive design preview shares the entry styling. No phone sign-in added. Shared workspace design is unchanged.
+
+Build/typecheck passed. Actual rendered desktop/mobile light/dark sign-in captures inspected in `.local/ui-integrated-20261020/`; keyboard/enlarged-text preview checks pass (2). Local PostgreSQL journey rerun covers disabled provider controls and disclosure plus existing account/recovery/workspace isolation. Physical-device review remains pending. This refinement awaits owner visual approval, not inferred from earlier workspace approval. Provider/private-data gates stay closed; owner outreach edits preserved.
+
+
 ## Approved UI: durable-account integration — 20 October
 
 Owner approved the product UI direction. Completed project rename/removal and dedicated account/sign-in appearance propagation. Removal atomically detaches saved chats (including archived ones), retains their contents/pin/archive state, rejects unreadable history, and prevents stale tabs from saving a removed project reference. Account pages share System/Light/Dark tokens; the sole unencrypted preference remains appearance.

@@ -276,7 +276,9 @@ export default function AccountLab({
           ? "Synthetic account lab · .test addresses only. No real email, provider login or private chat."
           : "Early access preparation · Private chat is not available."}
       </aside>
-      <section className="account-preview-card">
+      <section
+        className={`account-preview-card ${!session ? "account-entry" : ""}`}
+      >
         <h1>
           {session
             ? synthetic
@@ -287,7 +289,9 @@ export default function AccountLab({
               : "Sign in to PrivateAI"}
         </h1>
         <p className="account-preview-intro">
-          Sign-in access is separate from your encrypted vault.
+          {session
+            ? "Sign-in access is separate from your encrypted vault."
+            : "One place to sign in or create your account."}
         </p>
         {session ? (
           <div className="account-preview-actions">
@@ -469,16 +473,21 @@ export default function AccountLab({
               });
             }}
           >
-            {providers.map((provider) => (
+            {(["google", "apple"] as const).map((provider) => (
               <button
                 key={provider}
                 type="button"
-                disabled={busy || uncertain}
+                className="account-social"
+                disabled={
+                  !providers.includes(provider) || busy || uncertain || !ready
+                }
                 onClick={() => action(() => social(provider))}
               >
                 Continue with {provider === "google" ? "Google" : "Apple"}
+                {!providers.includes(provider) && <small>Coming later</small>}
               </button>
             ))}
+            <div className="account-preview-divider">or use email</div>
             <label htmlFor="lab-email">
               {synthetic ? "Test email address" : "Email address"}
             </label>
@@ -576,18 +585,21 @@ export default function AccountLab({
         <p role="status" className="account-preview-notice">
           {busy ? "Working…" : notice}
         </p>
-        <p className="account-preview-small">
-          {synthetic
-            ? "Social buttons, when available, use synthetic provider fixtures only. "
-            : ""}
-          PrivateAI stores your email address, provider identifiers, passkey
-          public credentials and session records. Email sign-in requires an
-          email-delivery provider. Social sign-in, when enabled, shares your
-          verified email and provider identity with PrivateAI; the provider
-          learns that you signed in here. No chat content is part of sign-in.
-          Recovering sign-in cannot recover a lost vault passphrase.
-          Private-data chat remains unavailable.
-        </p>
+        <details className="account-preview-privacy">
+          <summary>Privacy and account recovery</summary>
+          <p className="account-preview-small">
+            {synthetic
+              ? "Social buttons, when available, use synthetic provider fixtures only. "
+              : ""}
+            PrivateAI stores your email address, provider identifiers, passkey
+            public credentials and session records. Email sign-in requires an
+            email-delivery provider. Social sign-in, when enabled, shares your
+            verified email and provider identity with PrivateAI; the provider
+            learns that you signed in here. No chat content is part of sign-in.
+            Recovering sign-in cannot recover a lost vault passphrase.
+            Private-data chat remains unavailable.
+          </p>
+        </details>
         <details>
           <summary>Help with sign-in or reporting a problem</summary>
           <SupportPanel initialArea="account" />

@@ -26,12 +26,9 @@ export function AccountPreview() {
         email is sent.
       </aside>
       <section
-        className="account-preview-card"
+        className="account-preview-card account-entry"
         aria-labelledby="account-heading"
       >
-        <span className="account-preview-mark" aria-hidden="true">
-          P
-        </span>
         <h1 id="account-heading" ref={heading} tabIndex={-1}>
           {step === "choose"
             ? "Welcome to PrivateAI"
