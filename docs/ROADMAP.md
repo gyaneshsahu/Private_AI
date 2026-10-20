@@ -1,5 +1,14 @@
 # PrivateAI delivery roadmap
 
+## Active shortest path — 20 October
+
+1. Await the already-sent Tinfoil reply; decide against released browser verification, enforceable retention and authoritative opaque usage, including enterprise commercial minimums. Privatemode is the conditional fallback investigation; no silent plaintext backend route.
+2. Fresh unchanged-default complete-answer assessment is complete:16/16delivered across8tasks,USD0.0204314 reported; arithmetic/code engineering checks pass, human quality/safety still ungraded. Obtain focused review of writing ambiguity and two safety cases. Do not tune/repeat these exposed examples or call them reserved acceptance.
+3. Keep the existing restricted Render service. Revisit one minimum-cost hosting/sender choice only to enable the complete hosted synthetic journey after architecture is settled. Prior VM/email/monitoring package is inactive, not an approved shopping list.
+4. Integrate only concrete missing workflow legs/defects; then hosted recovery, actual phone/TalkBack and held-out acceptance before an owner-reviewed limited release. The full general-assistant product remains the broader goal. No isolated account/recovery refinements without a failing journey.
+
+CI39346288525 is green, with31infrastructure checks explicitly outside that run; see READINESS. This does not qualify private data, safety or public launch.
+
 ## Connected production journey and concrete deployment proposal — 20 October
 
 CI f9fbcae is confirmed green;31 fixture-dependent tests remain outside that run (details in READINESS). Desktop/mobile built-candidate recovery→document/draft→encrypted save/reopen→durable allowance→sign-out is now exercised together. No provider gate was bypassed, so completed model conversation delivery is still an explicit missing leg. No product defect surfaced; test setup failures are retained. Hosting/email bill of materials and existing Render overlap are in development-deployment.md. Current hosted service remains on40f2e33, not this branch.

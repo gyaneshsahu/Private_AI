@@ -21,8 +21,12 @@ import toolFixtures from "./cases/research-tools.json";
 import everydayFixtures from "./cases/everyday-transfer-20261019.json";
 import { selectionModels, assertSelectionPolicy } from "./selection-policy";
 import selectionFixtures from "./cases/model-selection-20261020.json";
-const selection = process.argv.includes("--selection-study");
-const selectionCells = Object.keys(selectionModels);
+import assessmentFixtures from "./cases/complete-assessment-20261020.json";
+const assessment = process.argv.includes("--complete-assessment");
+if (assessment && process.argv.includes("--selection-study"))
+  throw Error("Choose a single frozen study");
+const selection = assessment || process.argv.includes("--selection-study");
+const selectionCells = assessment ? ["deepseek"] : Object.keys(selectionModels);
 if (
   selection &&
   process.argv.some((a) =>
@@ -131,7 +135,9 @@ if (
 )
   throw Error("Choose separate optional-tools batch");
 const fixtures = selection
-  ? selectionFixtures
+  ? assessment
+    ? assessmentFixtures
+    : selectionFixtures
   : everyday
     ? everydayFixtures
         .filter((f) => !everydayRemaining || Number(f.id.slice(-2)) >= 3)
@@ -177,7 +183,9 @@ const fixtures = selection
               ? assistedFixtures
               : workspaceFixtures;
 const fixturePath = selection
-  ? "evaluation/cases/model-selection-20261020.json"
+  ? assessment
+    ? "evaluation/cases/complete-assessment-20261020.json"
+    : "evaluation/cases/model-selection-20261020.json"
   : everyday
     ? "evaluation/cases/everyday-transfer-20261019.json"
     : optionalTools
@@ -320,7 +328,11 @@ if ((continuation || independentArms) && !dry && !bootstrapOnly) {
   assertWorkspaceBudget(plan, plannedRequests, plannedReserve, permitCeiling);
 }
 const report: any = {
-  mode: dry ? "OFFLINE_UI_ONLY" : "LIVE_PUBLIC_AND_AUTHORED",
+  mode: dry
+    ? "OFFLINE_UI_ONLY"
+    : bootstrapOnly
+      ? "BOOTSTRAP_NO_INFERENCE"
+      : "LIVE_PUBLIC_AND_AUTHORED",
   humanScores: null,
   results: [],
   qualification: "NOT_PASSED",
@@ -362,8 +374,8 @@ try {
     let pairedSources: any[] | undefined;
     for (const cell of selection
       ? [
-          ...selectionCells.slice(caseIndex % 3),
-          ...selectionCells.slice(0, caseIndex % 3),
+          ...selectionCells.slice(caseIndex % selectionCells.length),
+          ...selectionCells.slice(0, caseIndex % selectionCells.length),
         ]
       : matched
         ? [...cells.slice(caseIndex), ...cells.slice(0, caseIndex)]
@@ -558,10 +570,12 @@ try {
         if (url.pathname === "/api/research/execute") {
           const started = Date.now();
           if (fixture.sources.length || pairedSources || dry) {
+            // Fixture injection time is metadata, not evidence of a live fetch.
+            record.authoredInjectedAt = new Date().toISOString();
             sources = fixture.sources.length
               ? fixture.sources.map((s) => ({
                   ...s,
-                  retrievedAt: "2026-10-15T00:00:00.000Z",
+                  retrievedAt: record.authoredInjectedAt,
                 }))
               : (pairedSources ?? [
                   {
@@ -570,7 +584,7 @@ try {
                     text: "Synthetic public placeholder.",
                     url: "https://example.com/synthetic",
                     evidenceKind: "search-excerpt",
-                    retrievedAt: "2026-10-15T00:00:00.000Z",
+                    retrievedAt: record.authoredInjectedAt,
                   },
                 ]);
             record.retrievalKind =

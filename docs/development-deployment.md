@@ -1,5 +1,11 @@
 # Restricted development deployment
 
+## Current minimum-cost decision — 20 October owner steering
+
+The earlier VM/email/monitoring bill of materials is **comparison evidence only, not the current activation plan**. Do not activate those services. Current choice is to retain the existing restricted Render service at its $7.25/month recurring base, with zero incremental hosting spend while provider and quality decisions are open. It cannot yet host the new production candidate unchanged; do not describe it as completing that milestone.
+
+Bring the owner **one revised deployment choice only when it enables a named milestone**: the same built candidate completing hosted synthetic sign-in/recovery → document conversation → encrypted save/reopen → enforced usage → sign-out on desktop and phone. Before that proposal, settle the provider boundary, choose the minimal supported ingress and sender path, reuse an existing mailbox where possible, identify exact incremental monthly/one-off costs and prepare rollback. Include external monitoring and recoverable backups where that hosted milestone needs them; do not pre-buy an entire launch stack. No isolated account/recovery extension unless the connected journey exposes a concrete defect. Supplier qualification, hosted operations and human quality/safety each retain their own acceptance evidence.
+
 ## Connected journey and hosting/email proposal — 20 October
 
 Decision status: **proposal for owner review, no purchase or activation**. Keep existing Render unchanged while preparing one synthetic staging deployment on a German Hetzner CX33 using the reviewed Caddy → mTLS Node → PostgreSQL package. This fits the currently tested transport architecture; a Render migration still needs a supported trusted-edge adapter. A single VM is not highly available and requires a named operator for patching, alerts and recovery. Do not buy infrastructure merely to bypass provider or quality blockers.
