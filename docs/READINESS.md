@@ -1,5 +1,12 @@
 # PrivateAI readiness checklist
 
+## Hosted database TLS preflight passed — 20 October
+
+Read-only PostgreSQL SSL negotiation ran through the existing Render service Web Shell, using built-in Node net/tls, no credentials, authentication, SQL or remote file writes. External hostname verified successfully (`rejectUnauthorized:true`); issuer YR1, leaf expiry 4 December 2026 13:22 UTC, trust anchor ISRG Root X1 fingerprint `96:BC:EC:06:26:49:76:F3:74:60:77:9A:CF:28:C5:A7:CF:E8:A3:C0:AA:E1:1A:8F:FC:EE:05:C0:BD:DF:08:C6`. Saved the matching certificate from local Node trusted roots as the protected bundle's database-ca.pem. This proves network/TLS reachability from the existing service, NOT database password/schema validity or a deployed new app. No service setting changed.
+
+The protected configuration now passes the actual loadDeploymentConfig parser with local file-path substitutions, Google credentials, one owner identity and explicit remote TLS trust. No database connection was made with credentials. The initial draft/pending-trust notes below are superseded by this preflight. Next owner action is runtime secret-file mounting using the table at the top of development-deployment.md. Save without deploy if offered; no branch/DNS/deploy changes yet. Schema initialization and hosted OAuth remain pending.
+
+
 ## Explicit restricted Render package — 20 October
 
 Prepared `Dockerfile.render`, generated from the shared candidate stages by `node scripts/render-dockerfile.mjs`; `--check` and a packaging regression detect drift. It ends at the Render entrypoint and uses `/etc/secrets/render-config.json`. Existing `Dockerfile` default/legacy deployment remains unchanged. Added runtime secret filenames to `.dockerignore`: Render copies secret files into the build context (https://render.com/docs/docker-secrets). Render supports an explicit Dockerfile Path, not a customizable build command (https://render.com/docs/docker).
