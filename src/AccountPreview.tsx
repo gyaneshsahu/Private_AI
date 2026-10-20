@@ -55,16 +55,6 @@ export function AccountPreview() {
             >
               Continue with Google
             </button>
-            <button
-              type="button"
-              onClick={() =>
-                setNotice(
-                  "Apple sign-in is not connected in this preview. The live flow will support Apple’s Hide My Email option.",
-                )
-              }
-            >
-              Continue with Apple
-            </button>
             <div className="account-preview-divider">
               <span>or</span>
             </div>
@@ -74,17 +64,6 @@ export function AccountPreview() {
               onClick={() => changeStep("email")}
             >
               Continue with email
-            </button>
-            <button
-              className="account-preview-passkey"
-              type="button"
-              onClick={() =>
-                setNotice(
-                  "Passkey sign-in is not connected in this preview. After setting up an account, you will be able to add a passkey and use your device to sign in. No device prompt was requested.",
-                )
-              }
-            >
-              Sign in with a passkey
             </button>
           </div>
         ) : step === "email" ? (

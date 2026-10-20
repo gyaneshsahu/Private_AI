@@ -1,5 +1,14 @@
 # PrivateAI readiness checklist
 
+## Google + email sign-in choices — 20 October
+
+Owner now wants only Continue with Google and Continue with email in production login/preview. Apple and phone are absent; passkey entry is not a third login choice. Backend adapters, existing linked account/security management and the synthetic Apple test path remain intact; no account migration. Gmail is accepted by email's standard email validation; delivery still requires reviewed sender activation. Google OAuth Web client has been created by the owner; no credentials received or activated.
+
+Prepared ignored `.local/private-secrets/google-social.json` with placeholders only, directory Windows inheritance removed and full access granted to current user and SYSTEM. Owner should replace the two placeholder values in Notepad, not paste secrets into chat. This local preparation does not mount a live secret, enable a provider or configure hosting. Treat the file as secret after completion; never print/read its values into tool output. Check configuration only through redacted validation. Actual account/key limits and provider gates unchanged.
+
+Validation: 27 tests passed across PostgreSQL production-workspace, production-social and synthetic social suites; five preview/recovery browser tests passed. Updated screenshot inspection exposed a white-on-pale hover collision on the email primary button; added specific light/dark hover colors and reran the two affected durable viewport journeys. Build/typecheck passed. Other six production-workspace checks excluded by that targeted rerun already passed in the full run; not infrastructure skips. Owner outreach file preserved.
+
+
 ## Social sign-in production preparation — 20 October
 
 Phone row removed from real sign-in and its SVG variant removed. Existing Google/Apple adapters audited: pinned Better Auth 1.7.11, verified OIDC, minimal scopes, no same-email auto-merge, no retained provider tokens. Fixed missing packaged-runtime connection: optional absolute socialCredentialsFile is bounded/strictly parsed server-side and passed to the production candidate; absent means disabled, invalid means fail closed. No deployment manifest/credential/account setting changed. Updated stale browser navigation/theme selectors in shared OAuth suite.

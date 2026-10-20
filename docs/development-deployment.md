@@ -1,5 +1,14 @@
 # Restricted development deployment
 
+## Current owner credential step — Google client created, 20 October
+
+The owner created a Google Web OAuth client. Production login now offers Google and email only; Apple backend support remains inactive/preserved and its earlier setup is not an immediate action item.
+
+Open `.local/private-secrets/google-social.json` in Windows Notepad. It is already Git-ignored and its parent ACL is restricted to the current Windows user and SYSTEM. Replace `REPLACE_WITH_GOOGLE_CLIENT_ID` and `REPLACE_WITH_GOOGLE_CLIENT_SECRET` with values from Google Auth Platform → Clients → the Web client. Preserve the JSON structure, save UTF-8, and tell Codex only “Google credentials saved”. Never paste or screenshot the values in chat. Confirm the registered callback is exactly `https://app.cometrow.com/api/auth/callback/google` and authorized JavaScript origin (if used) is `https://app.cometrow.com`.
+
+Saving does not enable a service: no active deployment references this file. Next is redacted configuration validation and a separately reviewed restricted hosting/callback test. This file must not be copied into browser assets, source control, images or general backups. For hosted rollout, provision a separate read-only server-secret mount and set `socialCredentialsFile` to its absolute path only after owner review. Local Windows path is not a hosting mount path. Email supports Gmail addresses but currently configured fail-closed deployment sender must be reviewed before real email-code delivery.
+
+
 ## Google and Apple sign-in setup — current, 20 October
 
 Owner has neither a Google OAuth client nor Apple Developer membership/Services ID. No purchase, console change, live credential activation, account migration or public access is authorized. Phone sign-in has been removed, not deferred in the login UI. Prior account-adapter descriptions below are historical: a production adapter and packaged secret-file wiring now exist, but live interoperability is not verified.

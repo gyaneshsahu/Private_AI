@@ -60,11 +60,11 @@ for (const viewport of [
           await page.goto(origin + "/account");
           await browserExpect(
             page.getByRole("button", {
-              name: "Continue",
+              name: "Continue with email",
               exact: true,
             }),
           ).toBeEnabled();
-          for (const provider of ["Google", "Apple"]) {
+          for (const provider of ["Google"]) {
             await browserExpect(
               page.getByRole("button", {
                 name: `Continue with ${provider} Coming soon`,
@@ -100,7 +100,7 @@ for (const viewport of [
             .getByLabel("Email address", { exact: true })
             .fill(targetEmail);
           await page
-            .getByRole("button", { name: "Continue", exact: true })
+            .getByRole("button", { name: "Continue with email", exact: true })
             .click();
           await browserExpect(
             page.getByLabel("Verification code"),
@@ -687,7 +687,9 @@ it.skipIf(!enabled)(
       await page
         .getByLabel("Email address", { exact: true })
         .fill("workspace@example.test");
-      await page.getByRole("button", { name: "Continue", exact: true }).click();
+      await page
+        .getByRole("button", { name: "Continue with email", exact: true })
+        .click();
       await browserExpect(page.getByLabel("Verification code")).toBeFocused();
       await page
         .getByLabel("Verification code")
@@ -806,12 +808,11 @@ it.skipIf(!enabled)(
         page.getByLabel("Email address", { exact: true }),
       ).toBeDisabled();
       await browserExpect(
-        page.getByRole("button", { name: "Continue", exact: true }),
+        page.getByRole("button", { name: "Continue with email", exact: true }),
       ).toBeDisabled();
-      await page.getByText("Use a passkey", { exact: true }).click();
       await browserExpect(
         page.getByRole("button", { name: "Sign in with a passkey" }),
-      ).toBeDisabled();
+      ).toHaveCount(0);
       expect(transmissions).toEqual([]);
       await context.close();
     } finally {
@@ -842,7 +843,9 @@ it.skipIf(!enabled)(
       await page
         .getByLabel("Email address", { exact: true })
         .fill("failure@example.test");
-      await page.getByRole("button", { name: "Continue", exact: true }).click();
+      await page
+        .getByRole("button", { name: "Continue with email", exact: true })
+        .click();
       await browserExpect(page.getByRole("status")).toContainText(
         "Code delivery could not be confirmed",
       );
@@ -859,7 +862,7 @@ it.skipIf(!enabled)(
         .click();
       await browserExpect(page.getByLabel("Verification code")).toHaveCount(0);
       await browserExpect(
-        page.getByRole("button", { name: "Continue", exact: true }),
+        page.getByRole("button", { name: "Continue with email", exact: true }),
       ).toBeEnabled();
       await page.addStyleTag({
         content: "html { font-size: 200% !important; }",
@@ -906,12 +909,14 @@ it.skipIf(!enabled)(
         .getByLabel("Email address", { exact: true })
         .fill("outage@example.test");
       await browserExpect(
-        page.getByRole("button", { name: "Continue", exact: true }),
+        page.getByRole("button", { name: "Continue with email", exact: true }),
       ).toBeEnabled();
       active.operations.beginDrain();
       expect((await request("/readyz")).status).toBe(503);
       expect((await request("/healthz")).status).toBe(200);
-      await page.getByRole("button", { name: "Continue", exact: true }).click();
+      await page
+        .getByRole("button", { name: "Continue with email", exact: true })
+        .click();
       await browserExpect(page.getByRole("status")).toContainText(
         "This action was not started",
       );
@@ -925,7 +930,9 @@ it.skipIf(!enabled)(
       active = makeWorkspace();
       expect(await active.ready).toBe(true);
       expect((await request("/readyz")).status).toBe(200);
-      await page.getByRole("button", { name: "Continue", exact: true }).click();
+      await page
+        .getByRole("button", { name: "Continue with email", exact: true })
+        .click();
       await browserExpect(page.getByLabel("Verification code")).toBeFocused();
       await page
         .getByLabel("Verification code")

@@ -65,7 +65,9 @@ for (const failure of [
       await page
         .getByLabel("Email address", { exact: true })
         .fill("synthetic@example.test");
-      await page.getByRole("button", { name: "Continue", exact: true }).click();
+      await page
+        .getByRole("button", { name: "Continue with email", exact: true })
+        .click();
       if (failure === "code verification") {
         await page.getByLabel("Verification code").fill("12345678");
         await page

@@ -32,12 +32,11 @@ test("inactive account preview shows all methods without requests or browser cre
   await expect(page.getByRole("status")).toContainText(
     "Google sign-in is not connected",
   );
-  await page.getByRole("button", { name: "Continue with Apple" }).click();
-  await expect(page.getByRole("status")).toContainText("Hide My Email");
-  await page.getByRole("button", { name: "Sign in with a passkey" }).click();
-  await expect(page.getByRole("status")).toContainText(
-    "No device prompt was requested",
-  );
+  await expect(
+    page.getByRole("button", {
+      name: /Continue with Apple|Continue with phone|Sign in with a passkey/,
+    }),
+  ).toHaveCount(0);
   await page.getByRole("button", { name: "Continue with email" }).click();
   await expect(
     page.getByRole("heading", { name: "Continue with email" }),
@@ -97,9 +96,8 @@ test("preview stays usable at phone width, enlarged text and keyboard navigation
   ).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(
-    page.getByRole("button", { name: "Continue with Apple" }),
+    page.getByRole("button", { name: "Continue with email" }),
   ).toBeFocused();
-  await page.keyboard.press("Tab");
   await page.keyboard.press("Enter");
   await expect(page.getByLabel("Email address")).toBeVisible();
   await page.addStyleTag({ content: ":root { font-size: 30px; }" });

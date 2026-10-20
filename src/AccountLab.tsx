@@ -485,7 +485,10 @@ export default function AccountLab({
               });
             }}
           >
-            {(["google", "apple"] as const).map((provider) => (
+            {(synthetic
+              ? (["google", "apple"] as const)
+              : (["google"] as const)
+            ).map((provider) => (
               <button
                 key={provider}
                 type="button"
@@ -542,7 +545,7 @@ export default function AccountLab({
                   : "Verify code"
                 : synthetic
                   ? "Send test code"
-                  : "Continue"}
+                  : "Continue with email"}
             </button>
             {sent && (
               <button
@@ -587,7 +590,7 @@ export default function AccountLab({
         </p>
       </section>
       <div className="account-entry-extras">
-        {!session && (
+        {!session && synthetic && (
           <details open={synthetic}>
             <summary>Use a passkey</summary>{" "}
             <button

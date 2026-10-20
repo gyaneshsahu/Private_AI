@@ -388,7 +388,7 @@ export function accountSocialSuite(production = false) {
           production ? `${origin}/account` : `${origin}/?account-lab=1`,
         );
         await browserExpect(
-          page.getByRole("button", { name: "Continue with Apple" }),
+          page.getByRole("button", { name: "Continue with Google" }),
         ).toBeVisible();
         await mkdir(".local/account-review", { recursive: true });
         await page.screenshot({
@@ -420,7 +420,11 @@ export function accountSocialSuite(production = false) {
         await page
           .getByRole("button", { name: "Sign out", exact: true })
           .click();
-        await page.getByRole("button", { name: "Continue with Apple" }).click();
+        await page
+          .getByRole("button", {
+            name: production ? "Continue with Google" : "Continue with Apple",
+          })
+          .click();
         await browserExpect(
           page.getByRole("heading", {
             name: production ? "Your account" : "Your test account",

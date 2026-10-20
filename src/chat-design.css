@@ -1605,3 +1605,15 @@
     padding: 36px 24px 26px;
   }
 }
+.account-shell
+  .account-login-page
+  .account-preview-primary:hover:not(:disabled) {
+  background: #252525;
+  color: white;
+}
+.account-shell[data-theme="dark"]
+  .account-login-page
+  .account-preview-primary:hover:not(:disabled) {
+  background: #dedede;
+  color: #101010;
+}

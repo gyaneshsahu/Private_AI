@@ -465,7 +465,7 @@ describe.runIf(
           .getByLabel("Email address", { exact: true })
           .fill("browser@example.test");
         await page
-          .getByRole("button", { name: "Continue", exact: true })
+          .getByRole("button", { name: "Continue with email", exact: true })
           .click();
         await browserExpect(page.getByLabel("Verification code")).toBeFocused();
         await page
@@ -589,7 +589,7 @@ describe.runIf(
           .getByLabel("Email address", { exact: true })
           .fill("outage@example.test");
         await page
-          .getByRole("button", { name: "Continue", exact: true })
+          .getByRole("button", { name: "Continue with email", exact: true })
           .click();
         await browserExpect(
           page
@@ -603,7 +603,7 @@ describe.runIf(
         await restart();
         expect(await active.ready).toBe(true);
         await page
-          .getByRole("button", { name: "Continue", exact: true })
+          .getByRole("button", { name: "Continue with email", exact: true })
           .click();
         await browserExpect(page.getByLabel("Verification code")).toBeFocused();
         expect(codes.has("outage@example.test")).toBe(true);
