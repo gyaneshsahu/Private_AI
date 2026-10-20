@@ -1,5 +1,26 @@
 # Restricted development deployment
 
+## Final cutover settings — use ONLY after exact candidate CI passes
+
+Owner performs these settings, not the agent. Auto-deploy stays Off. Select **Save only** wherever offered; if a setting requires immediate deployment, stop before saving and coordinate order. The ten runtime secret filenames were verified saved; their contents are still verified only by the forthcoming packaged preflight. Do not reveal them in logs/chat.
+
+| Render setting | Candidate value |
+| --- | --- |
+| Branch | codex/development-handoff |
+| Dockerfile Path | Dockerfile.render |
+| Docker Build Context Directory | . |
+| Docker Command | empty (image supplies entrypoint/config argument) |
+| Health Check Path | /healthz |
+| Auto-Deploy | Off |
+| Pre-Deploy Command, FIRST initialization only | `node --import tsx server/deployment-database-entry.ts initialize-empty /etc/secrets/render-config.json` |
+
+First pre-deploy intentionally creates the reviewed account schema in the new empty privateai_accounts database. It refuses an occupied schema. Existing legacy account registry/disk is untouched and is NOT migrated. If initialization succeeds but startup fails, do not rerun initialize-empty blindly: inspect the migration state with the read-only `check` command, then remove the initialization pre-deploy command before retrying the exact candidate. After the first successful initialization, clear this one-time command (Save only). Automatic startup never performs schema writes. Future schema upgrades require an explicit reviewed migration plan.
+
+Manually deploy the **specific full commit SHA whose Validate run passed**, not an unverified latest commit. Verify pre-deploy completion, new runtime readiness and `/healthz`. The old onrender.com hostname intentionally rejects ordinary account requests; only /healthz is available there. Do not interpret that 403 as failed startup. Next separately configure the custom domain and user-entered DNS, verify TLS, then actual Google owner consent, cancellation, logout and denial of unlisted identities. Email/inference stay disabled. Provider privacy and human answer quality are separate unopened gates. Mounted disk means a cutover may interrupt service; this is not a zero-downtime promise.
+
+Rollback: leave auto-deploy Off; restore branch codex/provider-qualification, Dockerfile Path Dockerfile, empty Docker Command and empty Pre-Deploy Command. Keep health /healthz, existing disk, legacy environment variables and secrets intact. Manually redeploy known previous commit `40f2e33b90b40124c74210fd46aae560978bbd12`, then verify its health and anonymous access denial. Do not drop/restore PostgreSQL, revoke accounts, delete the disk or overwrite the old registry as part of rollback. If DNS was changed, review its reversal separately; do not direct users to an old runtime and claim the new Google flow works. New-schema data is retained for diagnosis.
+
+
 ## Next owner step: mount the reviewed runtime files (do not deploy yet)
 
 Existing Render **private-ai-deployment → Environment → Secret Files**. Add each file below using its contents, with the exact Render filename. Do not put secrets in environment/build arguments or chat. Select **Save only** if offered. If the UI offers only a deploy action, stop and report it so rollout steps can be coordinated. Keep current branch, Dockerfile, DNS and account limits unchanged at this step.

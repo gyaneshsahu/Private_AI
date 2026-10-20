@@ -467,7 +467,9 @@ export function accountSocialSuite(production = false) {
             overflow: document.documentElement.scrollWidth > window.innerWidth,
           })),
         ).toEqual({
-          local: { "privateai.appearance": "system" },
+          // Only the production journey above opens the workspace, which persists
+          // its appearance preference. Account-only visits make no storage write.
+          local: production ? { "privateai.appearance": "system" } : {},
           session: 0,
           overflow: false,
         });

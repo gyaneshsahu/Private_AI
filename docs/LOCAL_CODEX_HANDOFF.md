@@ -1,5 +1,10 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## CI social-fixture correction and deployment hold — 20 October
+
+Run 39462543973: offline job PASSED; durable job FAILED with 121/122 passing. The sole failure was account-social-suite expecting an automatically written system-theme preference for the account-only journey. AccountTheme now deliberately writes only explicit user choices. Corrected the exact expected storage map: empty for account-only visits; the production fixture also enters the workspace, which currently persists its system preference. No assertion was removed, wildcarded or weakened to permit unknown storage. The prior mobile vault timeout did not recur in this CI run. Complete local durable suite now PASSED: 122/122 across all 16 required files, zero skipped; diagnostic durable-360da7ce-8726-4069-9e7c-a14458b9cd69.json retained locally. The next exact-commit CI result must still pass before deployment. Owner reports auto-deploy Off; no deployment or settings change by agent. Earlier failures remain recorded.
+
+
 ## Runtime secrets saved; CI correction before cutover — 20 October
 
 Owner reports Save only complete. Read-only Render Environment inspection confirms all ten exact runtime secret filenames persisted; contents stayed hidden and are not claimed verified. Existing live commit remains 40f2e33 on codex/provider-qualification. No agent settings change or deploy. Mounted content/schema/Google interoperability remain pending.
