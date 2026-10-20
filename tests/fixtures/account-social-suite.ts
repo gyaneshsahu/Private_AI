@@ -714,6 +714,51 @@ export function accountSocialSuite(production = false) {
     expect(cookieFrom(response)).not.toMatch(/session_token=[^;\s]+/);
   }
 
+  if (production)
+    it.skipIf(!connectionString)(
+      "restricts Google enrollment to listed verified identities before creating an account",
+      async () => {
+        const previous = activeRouter;
+        try {
+          const isolated = createProductionConsumerCandidate({
+            secret: randomBytes(48).toString("base64url"),
+            database: pool,
+            social: credentials,
+            allowedEmails: ["allowed-owner@example.test"],
+            deliverCode: async () => {
+              throw Error("Disabled");
+            },
+          });
+          expect(await isolated.ready).toBe(true);
+          activeRouter = isolated.app;
+          const denied = await begin("google");
+          rejected(
+            await callback(
+              prepare(denied, "not-listed@example.test"),
+              denied.cookie,
+            ),
+          );
+          expect(
+            (
+              await pool.query(
+                'SELECT count(*)::int n FROM "user" WHERE email=$1',
+                ["not-listed@example.test"],
+              )
+            ).rows[0].n,
+          ).toBe(0);
+          const allowed = await begin("google");
+          successful(
+            await callback(
+              prepare(allowed, "allowed-owner@example.test"),
+              allowed.cookie,
+            ),
+          );
+        } finally {
+          activeRouter = previous;
+        }
+      },
+    );
+
   it.skipIf(!connectionString)(
     "verifies Google code, PKCE and nonce, persists session and rejects callback replay",
     async () => {

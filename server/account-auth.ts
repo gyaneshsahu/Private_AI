@@ -77,6 +77,8 @@ export interface ProductionAccountCandidateConfig {
   workspaceEnabled?: boolean;
   /** Inactive wiring only: no environment activation or fallback credentials. */
   social?: ProductionSocialCredentials;
+  /** Restricted hosted enrollment; exact verified emails, no domain wildcards. */
+  allowedEmails?: string[];
   /** Inactive authenticated proxy alternative; never enables Express trust proxy. */
   ingress?: { peerCertificateSha256: readonly string[] };
 }
@@ -85,6 +87,15 @@ export interface ProductionAccountCandidateConfig {
 export function createProductionAccountCandidate(
   config: ProductionAccountCandidateConfig,
 ) {
+  const allowedEmails =
+    config.allowedEmails === undefined
+      ? undefined
+      : z
+          .array(z.email().max(254))
+          .min(1)
+          .max(10)
+          .parse(config.allowedEmails)
+          .map((email) => email.toLowerCase());
   if (config.secret.length < 32)
     throw Error(
       "A separately provisioned production authentication secret is required.",
@@ -97,6 +108,7 @@ export function createProductionAccountCandidate(
     synthetic: false,
     workspaceEnabled: config.workspaceEnabled === true,
     productionSocial: config.social,
+    allowedEmails,
     ingress: config.ingress
       ? createMutualTlsIngress({
           origin: productionAccountTarget.origin,
@@ -110,6 +122,7 @@ function createAccountAuth(
   config: SyntheticAccountConfig & {
     synthetic: boolean;
     productionSocial?: ProductionSocialCredentials;
+    allowedEmails?: string[];
     ingress?: AuthenticatedIngress;
   },
 ) {
@@ -130,6 +143,8 @@ function createAccountAuth(
   const origin = new URL(config.origin);
   const acceptsEmail = (value: string) =>
     z.email().max(254).safeParse(value).success &&
+    (!config.allowedEmails ||
+      config.allowedEmails.includes(value.toLowerCase())) &&
     (!config.synthetic || /^[^\s@]+@[^\s@]+\.test$/i.test(value));
   const appName = config.synthetic
     ? "PrivateAI synthetic account lab"

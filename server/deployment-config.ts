@@ -13,6 +13,7 @@ const schema = z
     assets: path,
     secretFile: path,
     socialCredentialsFile: path.optional(),
+    allowedEmails: z.array(z.email().max(254)).min(1).max(10).optional(),
     databaseUrlFile: path,
     databaseCaFile: path.optional(),
     tlsKeyFile: path,
@@ -23,7 +24,11 @@ const schema = z
       .min(1)
       .max(2),
   })
-  .strict();
+  .strict()
+  .refine(
+    (config) => !config.socialCredentialsFile || !!config.allowedEmails,
+    "Restricted social sign-in requires an identity allowlist.",
+  );
 
 async function boundedFile(file: string) {
   if (!isAbsolute(file)) throw Error("Invalid file path.");

@@ -1,5 +1,22 @@
 # Restricted development deployment
 
+## Restricted Google-only hosted test: exact preflight and rollout boundary
+
+20 October read-only lookup: `app.cometrow.com` has no DNS answer. Credential-file structure is valid, but neither credentials nor registered console callback have been verified by Google. No request containing credentials has been sent.
+
+The smallest next milestone is **owner Google sign-in → cancel/retry → sign-out → denied unauthenticated access**, with private inference and public registration closed. This is deliberately narrower than the later email-recovery/complete product milestone. Email remains fail-closed; do not count it as working because the UI accepts an address.
+
+Before any live change, review these exact elements together:
+
+1. **Target and deployment:** PostgreSQL plus a gateway capable of the tested authenticated mTLS ingress, serving the production-candidate entrypoint. Existing old Render runtime is not that target; do not change only DNS or set raw forwarded-header trust. Retain it for rollback. No new host purchase is approved.
+2. **Private runtime configuration:** use the reviewed deployment config, adding `socialCredentialsFile: "/run/privateai/google-social.json"` and `allowedEmails: ["OWNER_EXACT_GOOGLE_EMAIL"]` with an actual operator-provided identity, never the placeholder. File is mounted read-only server-side. Without a nonempty valid allowlist the packaged configuration now fails closed. No unrestricted production enrollment is authorized. Allowed-email changes require review/restart; this admission list does not revoke existing sessions, so use a fresh isolated test database and retain explicit session revocation procedures.
+3. **DNS/TLS:** only once that target exists, owner sets `app` to its exact hostname/IP and verifies a valid certificate for app.cometrow.com. Earlier Render CNAME values are conditional reference material, not instructions to point the new flow at the old runtime.
+4. **Google console:** owner verifies exact Web-client redirect `https://app.cometrow.com/api/auth/callback/google`; no wildcard or temporary-host callback. Real monitored support identity and accurate public privacy/branding pages remain required for production release.
+5. **Acceptance:** owner-listed Google account succeeds; another synthetic approved test identity not on the allowlist is rejected without an account; cancellation does not retry; logout denies old session; no callback code/token appears in app/edge logs; restart preserves account/session policy and private-chat gate. Owner performs real consent; never automate consent with their session. Rollback: remove provider secret reference/restore prior reviewed runtime, revoke test sessions, preserve audit evidence. Do not restore a database over newer revocations.
+
+No monthly service cost is added by this local preflight. A live hosting change still needs one concrete target/cost decision; the previous VM/email/monitoring bundle is not reactivated by Google credential availability.
+
+
 ## Current owner credential step — Google client created, 20 October
 
 The owner created a Google Web OAuth client. Production login now offers Google and email only; Apple backend support remains inactive/preserved and its earlier setup is not an immediate action item.

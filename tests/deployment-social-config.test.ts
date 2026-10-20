@@ -48,6 +48,17 @@ it("loads social credentials only from an explicitly supplied server secret file
     configFile,
     JSON.stringify({ ...config, socialCredentialsFile }),
   );
+  await expect(loadDeploymentConfig(configFile)).rejects.toThrow(
+    "Deployment configuration unavailable or invalid.",
+  );
+  await writeFile(
+    configFile,
+    JSON.stringify({
+      ...config,
+      socialCredentialsFile,
+      allowedEmails: ["owner@example.test"],
+    }),
+  );
   expect((await loadDeploymentConfig(configFile)).social).toEqual(credentials);
   for (const invalid of [
     {},

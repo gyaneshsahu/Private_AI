@@ -39,6 +39,7 @@ try {
     database,
     secret: config.secret,
     social: config.social,
+    allowedEmails: config.allowedEmails,
     assets: config.assets,
     tls: config.tls,
     ingress: { peerCertificateSha256: config.peerCertificateSha256 },

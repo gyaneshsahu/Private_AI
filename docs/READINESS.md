@@ -1,5 +1,16 @@
 # PrivateAI readiness checklist
 
+## Restricted Google hosted-test preflight — 20 October
+
+Read-only DNS lookup of app.cometrow.com returned DNS name does not exist (after sandbox denied the initial lookup). No DNS was changed. Existing deployment records identify an older restricted Render runtime; this is not evidence that the production PostgreSQL/mTLS account package is hosted. Do not point the approved callback domain at the old runtime simply to make DNS resolve.
+
+Implemented a concrete hosted-test safeguard: packaged socialCredentialsFile configuration now requires 1–10 explicit allowedEmails; the production auth adapter checks the verified email against this list before accepting enrollment/sign-in. Exact lowercase comparison only, no wildcard/domain or Gmail-alias rewriting. Existing direct production adapters remain opt-in; this is not a public launch configuration or an existing-session revocation tool. No real owner email was inferred or configured. The package still disables email delivery and inference. No active config, real Google credential, DNS, host or account setting was used or changed.
+
+17 tests passed across production-social, deployment-social-config and account-social-config using isolated PostgreSQL and signed synthetic provider responses. New proof: unlisted Google identity produces no user row; listed identity signs in. Typecheck passed. Existing browser build was reused (no frontend change). No hosted/real Google interoperability claim.
+
+Next hosted test is Google-only restricted owner sign-in/cancel/logout at app.cometrow.com; email recovery stays explicitly untested until a sender is reviewed. Requires a reviewed gateway/PostgreSQL host, domain TLS, immutable candidate deployment, private secret mount and operator-supplied owner email allowlist. Existing owner-only DNS/hosting approvals and no-purchase boundary remain in force. No broader infrastructure test expansion. Provider/private-data/launch gates remain closed.
+
+
 ## Google credential validation — 20 October
 
 Owner saved the Google-only secret file. Redacted local validation passed strict JSON/schema, non-placeholder values and production-adapter construction. UTF-8 without BOM; file remains Git-ignored, with access limited to owner and SYSTEM. No secret values printed, no network requests, no activation or live configuration change. This does not prove Google's credential validity or registered callback settings. Next: separately reviewed restricted hosted rollout at app.cometrow.com and an actual owner Google sign-in/cancel/logout test; private-data and public-launch gates remain closed.
