@@ -7,9 +7,6 @@ export function AccountTheme({ children }: { children: ReactNode }) {
     () => matchMedia("(prefers-color-scheme: dark)").matches,
   );
   useEffect(() => {
-    saveAppearance(appearance);
-  }, [appearance]);
-  useEffect(() => {
     const m = matchMedia("(prefers-color-scheme: dark)");
     const update = () => setDark(m.matches);
     m.addEventListener("change", update);
@@ -28,7 +25,11 @@ export function AccountTheme({ children }: { children: ReactNode }) {
         <select
           aria-label="Appearance"
           value={appearance}
-          onChange={(e) => setAppearance(e.target.value as typeof appearance)}
+          onChange={(e) => {
+            const next = e.target.value as typeof appearance;
+            setAppearance(next);
+            saveAppearance(next);
+          }}
         >
           <option value="system">System theme</option>
           <option value="light">Light</option>

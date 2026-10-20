@@ -74,7 +74,7 @@ test("inactive account preview shows all methods without requests or browser cre
       caches: (await caches.keys()).length,
     })),
   ).toEqual({
-    local: { "privateai.appearance": "system" },
+    local: {},
     session: 0,
     databases: 0,
     caches: 0,
@@ -82,6 +82,12 @@ test("inactive account preview shows all methods without requests or browser cre
   expect(await page.context().cookies()).toEqual([]);
   expect(requests).toEqual([]);
   expect(errors).toEqual([]);
+  await page.getByLabel("Appearance", { exact: true }).selectOption("dark");
+  expect(
+    await page.evaluate(() => Object.fromEntries(Object.entries(localStorage))),
+  ).toEqual({ "privateai.appearance": "dark" });
+  await page.reload();
+  await expect(page.getByLabel("Appearance", { exact: true })).toHaveValue("dark");
 });
 
 test("preview stays usable at phone width, enlarged text and keyboard navigation", async ({

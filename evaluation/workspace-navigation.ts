@@ -4,6 +4,8 @@ import type { Page } from "@playwright/test";
 export function workspaceControl(page: Page, name: string) {
   return {
     async click() {
+      // Multi-tab journeys must activate the tab before interacting with its UI.
+      await page.bringToFront();
       await page.locator(".app-shell").waitFor({ state: "visible" });
       if (["Context", "Research"].includes(name)) {
         await workspaceControl(page, "Conversation").click();

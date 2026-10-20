@@ -1,5 +1,12 @@
 # PrivateAI readiness checklist
 
+## Runtime secrets saved; CI correction before cutover — 20 October
+
+Owner reports Save only complete. Read-only Render Environment inspection confirms all ten exact runtime secret filenames persisted; contents stayed hidden and are not claimed verified. Existing live commit remains 40f2e33 on codex/provider-qualification. No agent settings change or deploy. Mounted content/schema/Google interoperability remain pending.
+
+CI run 39460555373 failed: 50/51 browser journeys passed (multi-tab vault navigation timeout), 120/122 durable checks passed (two account journeys expected no local storage but default appearance was written). Fixed AccountTheme to persist only an explicit user selection; expanded preview check proves clean initial storage and chosen theme persistence across reload. Navigation helper now activates its target tab before interaction; local timeout did not reproduce, so Linux confirmation remains necessary. Local validation: build/typecheck, 24/24 affected account checks, 3/3 focused browser checks pass. Full local browser run before updating the preview assertion: 50 passed, one expected default-theme assertion failed; corrected targeted rerun passes. Earlier CI failures remain preserved, not waived. Next: wait for new CI before requesting branch/Dockerfile/pre-deploy cutover. No DNS change yet; private-data/public gates remain closed.
+
+
 ## Hosted database TLS preflight passed — 20 October
 
 Read-only PostgreSQL SSL negotiation ran through the existing Render service Web Shell, using built-in Node net/tls, no credentials, authentication, SQL or remote file writes. External hostname verified successfully (`rejectUnauthorized:true`); issuer YR1, leaf expiry 4 December 2026 13:22 UTC, trust anchor ISRG Root X1 fingerprint `96:BC:EC:06:26:49:76:F3:74:60:77:9A:CF:28:C5:A7:CF:E8:A3:C0:AA:E1:1A:8F:FC:EE:05:C0:BD:DF:08:C6`. Saved the matching certificate from local Node trusted roots as the protected bundle's database-ca.pem. This proves network/TLS reachability from the existing service, NOT database password/schema validity or a deployed new app. No service setting changed.
