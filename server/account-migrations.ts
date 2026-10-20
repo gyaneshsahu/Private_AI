@@ -83,6 +83,7 @@ export async function planAccountMigrations(
 /** Explicit provisioning operation, never called by application startup. */
 export async function applyAccountMigrations(
   database: Pool,
+  options: { requireEmpty?: boolean } = {},
 ): Promise<MigrationPlan> {
   const migrations = await sources();
   const client = await database.connect();
@@ -91,6 +92,21 @@ export async function applyAccountMigrations(
     await client.query(
       "SELECT pg_advisory_xact_lock(hashtextextended(current_database() || ':' || current_schema() || ':privateai-schema',0))",
     );
+    if (options.requireEmpty) {
+      const occupied = await client.query(
+        `SELECT EXISTS (
+          SELECT 1 FROM pg_class WHERE relnamespace = current_schema()::regnamespace
+          UNION ALL
+          SELECT 1 FROM pg_proc WHERE pronamespace = current_schema()::regnamespace
+          UNION ALL
+          SELECT 1 FROM pg_type WHERE typnamespace = current_schema()::regnamespace
+        ) AS occupied`,
+      );
+      if (occupied.rows[0].occupied)
+        throw Error(
+          "Initial provisioning requires an empty schema. Stop and review.",
+        );
+    }
     const before = await plan(client, migrations);
     await client.query(`CREATE TABLE IF NOT EXISTS privateai_schema_migrations (
       name TEXT PRIMARY KEY, checksum TEXT NOT NULL, applied_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP

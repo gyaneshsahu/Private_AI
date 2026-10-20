@@ -8,6 +8,29 @@ import { usageDatabase } from "./fixtures/usage-postgres";
 
 const enabled = !!process.env.PRIVATEAI_SYNTHETIC_PG;
 it.skipIf(!enabled)(
+  "initial provisioning refuses existing objects and refuses a second initialization",
+  async () => {
+    const db = await usageDatabase({ empty: true });
+    try {
+      await db.pool.query("CREATE TYPE preserved_type AS ENUM ('synthetic')");
+      await expect(
+        applyAccountMigrations(db.pool, { requireEmpty: true }),
+      ).rejects.toThrow("empty schema");
+      expect((await planAccountMigrations(db.pool)).applied).toEqual([]);
+      await db.pool.query("DROP TYPE preserved_type");
+      expect(
+        (await applyAccountMigrations(db.pool, { requireEmpty: true })).applied,
+      ).toHaveLength(12);
+      await expect(
+        applyAccountMigrations(db.pool, { requireEmpty: true }),
+      ).rejects.toThrow("empty schema");
+      expect((await planAccountMigrations(db.pool)).pending).toEqual([]);
+    } finally {
+      await db.dispose();
+    }
+  },
+);
+it.skipIf(!enabled)(
   "plans without mutation and applies once under concurrent migrators without losing account rows",
   async () => {
     const db = await usageDatabase({ empty: true });

@@ -1,5 +1,18 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Explicit restricted Render package — 20 October
+
+Prepared `Dockerfile.render`, generated from the shared candidate stages by `node scripts/render-dockerfile.mjs`; `--check` and a packaging regression detect drift. It ends at the Render entrypoint and uses `/etc/secrets/render-config.json`. Existing `Dockerfile` default/legacy deployment remains unchanged. Added runtime secret filenames to `.dockerignore`: Render copies secret files into the build context (https://render.com/docs/docker-secrets). Render supports an explicit Dockerfile Path, not a customizable build command (https://render.com/docs/docker).
+
+Added a separate operator command `node --import tsx server/deployment-database-entry.ts check /etc/secrets/render-config.json` and explicit `initialize-empty` operation. Initialization takes the migration advisory lock and refuses existing relations, functions or types in the target schema; it is not called at startup and has NOT run against hosted PostgreSQL. Both commands retain verified remote TLS and redact errors. Initialization is not an upgrade/recovery command.
+
+Local validation: typecheck/build pass; 4/4 real local synthetic PostgreSQL migration tests; 1/1 packaging regression; 22/22 isolated packaged Render/mTLS/lifecycle tests with no skips. Docker image config `sha256:3d6f4b068c27efdbd5a78709024132dea5012fcb2d7828eb2a938c73dbbed7a1`, image manifest `sha256:586c0bec600d3b8392a21d535f14ecd5a180a259142cd09e0473a0913f58426b`. Preserved initial execution failures: sandbox blocked local PG connection and OpenSSL execution; authorized local reruns passed. Existing verifier build warning remains. Owner outreach whitespace/edit was not modified.
+
+Protected ignored `render-bundle` now contains a random authentication secret, dedicated loopback server/client certificates and pinned owner-only config. OpenSSL verification passed for both certificate purposes. Leaf expiry **18 January 2027 16:43 UTC**; rotate before expiry. CA private key remains outside the upload bundle, owner/SYSTEM-only ACL confirmed. Upload ONLY named runtime files; never upload the CA private key, CSR/extensions, local preparation scripts or the whole folder. Database trust PEM is still pending, so the bundle is NOT ready to activate.
+
+Next required preflight: run `scripts/database-tls-probe.cjs` from the existing Render service's Shell (paste its contents into `node` via a heredoc, since the old runtime does not contain it). It uses PostgreSQL SSL negotiation and Node hostname/CA verification, sends no credentials/SQL, and outputs only public certificate information. Syntax checked locally; live probe NOT executed. Review its verified certificate before saving `database-ca.pem`. No firewall broadening. Then review/mount secrets and coordinate schema initialization, branch/Dockerfile selection and DNS as one owner-performed rollout. No live settings, credentials upload, schema, DNS or inference changed this batch. Private-data and public-launch gates remain closed.
+
+
 ## Owner identity supplied; private configuration draft — 20 October
 
 Owner supplied the exact Google email directly. It is now the sole entry in the ignored `.local/private-secrets/render-config.draft.json`; do not infer or substitute the Render dashboard account identity. Redacted checks confirm one exact identity, restricted deployment mode and disabled email. The draft inherits owner/SYSTEM-only filesystem access and is Git-ignored. It is deliberately NOT deployment-ready: certificate pin and certificate/trust files remain pending. No secrets were uploaded, no service settings changed, no database connection/schema initialization occurred, and no actual Google login is claimed.

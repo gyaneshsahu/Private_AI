@@ -9,3 +9,16 @@ test-results
 playwright-report
 attachments
 *.log
+# Render places secret files in the build context; they are runtime-only.
+auth-secret
+database-url
+database-ca.pem
+server.key
+server.pem
+client-ca.pem
+bridge.key
+bridge.pem
+google-social.json
+render-config.json
+*.csr
+*.key
