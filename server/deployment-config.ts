@@ -1,6 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
 import { isAbsolute } from "node:path";
 import { z } from "zod";
+import { parseSocialCredentials } from "./account-social";
 
 const path = z.string().refine(isAbsolute);
 const schema = z
@@ -11,6 +12,7 @@ const schema = z
     port: z.number().int().min(1024).max(65535),
     assets: path,
     secretFile: path,
+    socialCredentialsFile: path.optional(),
     databaseUrlFile: path,
     databaseCaFile: path.optional(),
     tlsKeyFile: path,
@@ -62,6 +64,15 @@ export async function loadDeploymentConfig(file: string) {
     return {
       ...config,
       secret,
+      social: config.socialCredentialsFile
+        ? parseSocialCredentials(
+            JSON.parse(
+              (await boundedFile(config.socialCredentialsFile)).toString(
+                "utf8",
+              ),
+            ),
+          )
+        : undefined,
       connectionString,
       databaseCa: config.databaseCaFile
         ? await boundedFile(config.databaseCaFile)

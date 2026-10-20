@@ -34,6 +34,16 @@ const credentialsSchema = z
   })
   .strict();
 export type ProductionSocialCredentials = z.infer<typeof credentialsSchema>;
+/** Validate secret-file contents without exposing invalid values in diagnostics. */
+export function parseSocialCredentials(
+  input: unknown,
+): ProductionSocialCredentials {
+  const parsed = credentialsSchema.safeParse(input);
+  if (!parsed.success) throw Error("Invalid social sign-in configuration.");
+  if (!parsed.data.google && !parsed.data.apple)
+    throw Error("Social sign-in file must configure a provider.");
+  return parsed.data;
+}
 type Provider = "google" | "apple";
 const endpoints = {
   google: {

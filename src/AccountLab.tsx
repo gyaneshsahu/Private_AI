@@ -500,10 +500,6 @@ export default function AccountLab({
                 {!providers.includes(provider) && <small>Coming soon</small>}
               </button>
             ))}
-            <button type="button" className="account-social" disabled>
-              <SignInIcon provider="phone" />
-              Continue with phone<small>Coming soon</small>
-            </button>
             <div className="account-preview-divider">OR</div>
             <label className="sr-only" htmlFor="lab-email">
               {synthetic ? "Test email address" : "Email address"}

@@ -1,5 +1,12 @@
 # PrivateAI readiness checklist
 
+## Social sign-in production preparation — 20 October
+
+Phone row removed from real sign-in and its SVG variant removed. Existing Google/Apple adapters audited: pinned Better Auth 1.7.11, verified OIDC, minimal scopes, no same-email auto-merge, no retained provider tokens. Fixed missing packaged-runtime connection: optional absolute socialCredentialsFile is bounded/strictly parsed server-side and passed to the production candidate; absent means disabled, invalid means fail closed. No deployment manifest/credential/account setting changed. Updated stale browser navigation/theme selectors in shared OAuth suite.
+
+25 tests passed across production-social, account-social-postgres, account-social-config and deployment-social-config with isolated PostgreSQL and simulated provider endpoints. Includes actual built browser Google sign-in → Apple linking → Apple sign-in → reload → gated workspace and cancellation; not live provider acceptance. Build/typecheck pass. Owner confirmed neither provider account/client exists. Exact setup/costs/secret-file shape and rollout blockers are in development-deployment.md. Apple membership USD99/year/local checkout; prepare Google first. Apple relay/email recovery and grant revocation/signed lifecycle notification work remain open. Tokens are deliberately discarded; do not change retention silently. No claim of full production qualification. Phone sign-in supersedes the earlier Coming soon requirement and is removed from current scope. Owner outreach edits preserved.
+
+
 ## Reference-matched sign-in card — 20 October
 
 Owner rejected the prior account entry and explicitly requested the supplied card structure and Google/Apple/phone icons. Production account entry now uses Log in or sign up, short supporting text, inline SVG provider/phone icons, three rounded method rows, OR divider, placeholder email field with retained accessible label, Continue, and a close link to the workspace. No brand block or long explanatory text in the card. Passkey, privacy/recovery and help remain accessible below it. Unconfigured Google/Apple and the unimplemented phone method are disabled Coming soon; no number collection, SMS purchase or provider activation. Synthetic account-lab passkey controls remain expanded for existing test workflows.

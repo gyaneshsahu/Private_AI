@@ -1,5 +1,56 @@
 # Restricted development deployment
 
+## Google and Apple sign-in setup — current, 20 October
+
+Owner has neither a Google OAuth client nor Apple Developer membership/Services ID. No purchase, console change, live credential activation, account migration or public access is authorized. Phone sign-in has been removed, not deferred in the login UI. Prior account-adapter descriptions below are historical: a production adapter and packaged secret-file wiring now exist, but live interoperability is not verified.
+
+### Costs and recommended sequence
+
+Prepare Google first. Standard OAuth client registration does not require purchasing a paid authentication platform; do not enable Identity Platform, Firebase billing or unrelated paid APIs for this integration. Hosting, PostgreSQL, domain and email delivery remain separate existing/planned costs. Google's cited setup documentation does not give a per-login tariff; no new Google paid service is proposed.
+
+Apple lists **USD 99 per membership year**, charged in local currency where available; verify the actual German checkout total/tax before paying. Enroll as an **individual**, not an incorporated company. Do not purchase yet solely for this integration: membership/primary App ID eligibility, relay-email recovery and token-revocation lifecycle remain prerequisites. [Apple membership](https://developer.apple.com/help/account/membership/program-enrollment/).
+
+### Google: owner setup fields (prepare; do not publish/activate yet)
+
+1. Open Google Cloud Console → create/select a dedicated project, suggested name `PrivateAI`. Open Google Auth Platform → Branding / Get started.
+2. App name `PrivateAI`; user support email and developer contact: your real monitored CometRow mailbox (not an uncreated placeholder). Describe the operator as the founder in Germany. Audience: External. Keep a restricted testing rollout until review; add your own test account where the console offers test users.
+3. Authorized domain `cometrow.com`. Homepage, privacy and terms URLs must be real, public, accurate pages you own; do not submit invented `/privacy` or `/terms` paths before those pages exist. Complete domain ownership/branding verification requested by Google. Request only `openid` and `email`; no Drive, Gmail or extra scopes.
+4. Clients → Create client → **Web application**, name `PrivateAI web`. Authorized redirect URI exactly `https://app.cometrow.com/api/auth/callback/google`. If an authorized JavaScript origin is requested, `https://app.cometrow.com`. No wildcard, localhost or temporary Render production callback.
+5. Save the console-generated client ID and client secret in a password manager/server secret store. Do not paste secrets into chat, commit them, or put them in frontend/VITE variables. Tell Codex only that the client exists and where the protected secret file is configured.
+
+[Google setup](https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid), [production policy](https://developers.google.com/identity/protocols/oauth2/production-readiness/policy-compliance), [basic identity scope publishing distinctions](https://developers.google.com/identity/protocols/oauth2/production-readiness/overview).
+
+### Apple: owner fields after the prerequisites are reviewed
+
+1. Apple Developer → Certificates, Identifiers & Profiles. Enable Sign in with Apple on an eligible primary App ID. Suggested explicit identifier `com.cometrow.privateai` subject to availability; Apple's web configuration requires an associated primary Apple-platform App ID, not just domain ownership. Confirm eligibility before membership purchase.
+2. Create Services ID, suggested `com.cometrow.privateai.web` (actual registered value is the client ID). Enable Sign in with Apple and associate it with the primary App ID. Website domain `app.cometrow.com`; return URL exactly `https://app.cometrow.com/api/auth/callback/apple`.
+3. Create a Sign in with Apple key linked to that primary App ID. Download the `.p8` once to protected storage; record its Key ID and your Team ID. Never send the key in chat. The server signs a fresh ES256 client secret with five-minute lifetime; the `.p8` still requires operator rotation/revocation controls.
+4. Before recovery-email tests, register the actual outgoing email sources with Apple's Private Email Relay and configure the selected sender's SPF/DKIM. Test both real and Hide My Email identities. The sender is not activated by this work.
+
+[Apple web setup](https://developer.apple.com/help/account/capabilities/configure-sign-in-with-apple-for-the-web/), [private key](https://developer.apple.com/help/account/capabilities/create-a-sign-in-with-apple-private-key/), [relay setup](https://developer.apple.com/help/account/capabilities/configure-private-email-relay-service/).
+
+### Server preparation — no secrets in the deployment manifest
+
+`loadDeploymentConfig` now accepts optional absolute `socialCredentialsFile`. Omit it to keep both providers disabled. The file is bounded, strictly parsed and read only server-side; malformed/empty configurations fail startup with redacted diagnostics. Runtime passes validated credentials to the existing production adapter. Example **shape only**, not working credentials:
+
+```json
+{
+  "google": { "clientId": "CONSOLE_VALUE.apps.googleusercontent.com", "clientSecret": "SERVER_SECRET" },
+  "apple": { "clientId": "ACTUAL_SERVICES_ID", "teamId": "ACTUAL_TEAM_ID", "keyId": "ACTUAL_KEY_ID", "privateKey": "PEM_CONTENT_WITH_ESCAPED_NEWLINES" }
+}
+```
+
+Include only reviewed providers. Mount this file read-only outside browser assets/repository (for example `/run/secrets/privateai-social.json`) and reference that absolute path in the reviewed restricted deployment configuration. Merely adding it to an active deployment would activate configured methods: **owner rollout review is required before mounting/changing the live configuration**. Email remains disabled in this packaged configuration; that prevents email recovery and is a launch blocker even if OAuth sign-in works. No existing deployment file has been changed.
+
+### Acceptance still required before production approval
+
+Local tests cover fixed endpoints, bounded token exchange/discovery, minimal scopes, PKCE/state/nonce/signature/issuer/audience/expiry, Apple form-post, cancellation, replay rejection, PostgreSQL sessions, explicit linking without same-email merging, sign-out and no stored provider tokens. Real provider responses are simulated; no Google/Apple credentials were used.
+
+Remaining: hosted intended-domain HTTPS/mTLS callback checks, real provider consent/cancel/return in desktop and mobile browsers, email recovery including Apple relay, secret rotation/restart, production branding/domain review and live account lifecycle. Keep inference/private data gated during restricted owner testing.
+
+**Apple lifecycle gap:** provider access/refresh/ID tokens are deliberately discarded. Local account closure is not equivalent to revoking the Apple grant. Apple's token-revocation endpoint needs a user token, and signed server notifications for consent revocation/deletion are not implemented here. Before Apple production approval, implement and test a reviewed lifecycle: prefer obtaining a fresh token during explicit Apple reauthentication for grant revocation; evaluate the lost-access path and signed notification handling. Do not start storing long-lived provider tokens without a specific retention/privacy decision. [Apple deletion/revocation guidance](https://developer.apple.com/documentation/technotes/tn3194-handling-account-deletions-and-revoking-tokens-for-sign-in-with-apple), [signed notifications](https://developer.apple.com/documentation/signinwithapple/processing-changes-for-sign-in-with-apple-accounts).
+
+
 ## Next hosted milestone: prepared, not authorized for activation
 
 The minimum-cost action **now** is no migration: retain the existing restricted Render service ($7.25/month recorded recurring base before tax/overages), incremental spend $0. This does not deliver the production-candidate journey. The earlier VM/email/monitoring proposal below is superseded as an activation plan and remains comparison evidence only.

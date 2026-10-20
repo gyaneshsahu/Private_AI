@@ -64,7 +64,7 @@ for (const viewport of [
               exact: true,
             }),
           ).toBeEnabled();
-          for (const provider of ["Google", "Apple", "phone"]) {
+          for (const provider of ["Google", "Apple"]) {
             await browserExpect(
               page.getByRole("button", {
                 name: `Continue with ${provider} Coming soon`,
@@ -83,6 +83,9 @@ for (const viewport of [
           await page
             .getByText("Privacy and account recovery", { exact: true })
             .click();
+          await browserExpect(
+            page.getByRole("button", { name: /Continue with phone/ }),
+          ).toHaveCount(0);
           await mkdir(".local/ui-integrated-20261020", { recursive: true });
           for (const theme of ["light", "dark"]) {
             await page

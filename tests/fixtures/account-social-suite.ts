@@ -1,3 +1,4 @@
+import { workspaceControl } from "../../evaluation/workspace-navigation";
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { Pool } from "pg";
 import {
@@ -443,10 +444,7 @@ export function accountSocialSuite(production = false) {
           await browserExpect(
             page.getByRole("button", { name: "Send ↑", exact: true }),
           ).toBeDisabled();
-          await page
-            .getByRole("navigation", { name: "Workspace" })
-            .getByRole("button", { name: "Account", exact: false })
-            .click();
+          await workspaceControl(page, "Account").click();
           page.once("dialog", (dialog) => dialog.accept());
           await page.getByRole("button", { name: /Manage sign-in/ }).click();
           await browserExpect(
@@ -455,11 +453,20 @@ export function accountSocialSuite(production = false) {
         }
         expect(
           await page.evaluate(() => ({
-            local: localStorage.length,
+            local: Object.fromEntries(
+              Object.keys(localStorage).map((key) => [
+                key,
+                localStorage.getItem(key),
+              ]),
+            ),
             session: sessionStorage.length,
             overflow: document.documentElement.scrollWidth > window.innerWidth,
           })),
-        ).toEqual({ local: 0, session: 0, overflow: false });
+        ).toEqual({
+          local: { "privateai.appearance": "system" },
+          session: 0,
+          overflow: false,
+        });
         await page
           .getByRole("button", { name: "Sign out", exact: true })
           .click();

@@ -38,6 +38,7 @@ try {
   runtime = await prepareProductionRuntime({
     database,
     secret: config.secret,
+    social: config.social,
     assets: config.assets,
     tls: config.tls,
     ingress: { peerCertificateSha256: config.peerCertificateSha256 },
