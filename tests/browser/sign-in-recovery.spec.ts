@@ -38,7 +38,11 @@ for (const failure of [
       }
       const json =
         path === "/api/account/options"
-          ? { synthetic: false, socialProviders: ["google"] }
+          ? {
+              synthetic: false,
+              emailEnabled: true,
+              socialProviders: ["google"],
+            }
           : path === "/api/auth/get-session"
             ? signedIn
               ? {

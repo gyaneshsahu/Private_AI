@@ -28,10 +28,12 @@ const accessSchema = z.object({
 });
 
 export default function AccountAccess({
+  emailEnabled,
   revision,
   changed,
   verifyEmail,
 }: {
+  emailEnabled: boolean;
   revision: number;
   changed: () => Promise<void>;
   verifyEmail: () => void;
@@ -172,13 +174,19 @@ export default function AccountAccess({
             ))}
           </ul>
           <h3>Sign-in methods</h3>
+          {!emailEnabled && (
+            <p>
+              Email delivery is disabled. Recovery and sign-in method removal
+              are unavailable.
+            </p>
+          )}
           <p>
             Removal requires working email delivery and a new email-code sign-in
             and signs out other sessions. Removing a provider here does not
             revoke its permissions on the provider's website.
           </p>
           <button
-            disabled={busy || loading || needsRefresh}
+            disabled={!emailEnabled || busy || loading || needsRefresh}
             onClick={verifyEmail}
           >
             Verify email for removal
@@ -199,7 +207,7 @@ export default function AccountAccess({
               <li key={method.id}>
                 {method.label}
                 <button
-                  disabled={busy || loading || needsRefresh}
+                  disabled={!emailEnabled || busy || loading || needsRefresh}
                   aria-label={`Remove ${method.label}`}
                   onClick={() => {
                     if (

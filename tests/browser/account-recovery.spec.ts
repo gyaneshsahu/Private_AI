@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 const currentId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const otherId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const keyId = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
-async function prepare(page: Page, target: string) {
+async function prepare(page: Page, target: string, emailEnabled = true) {
   let attempts = 0;
   const session = (id: string, current: boolean) => ({
     id,
@@ -24,7 +24,7 @@ async function prepare(page: Page, target: string) {
     }
     const json =
       path === "/api/account/options"
-        ? { synthetic: false, socialProviders: [] }
+        ? { synthetic: false, emailEnabled, socialProviders: [] }
         : path === "/api/auth/get-session"
           ? attempts && target === "/api/account/close"
             ? null
@@ -162,4 +162,48 @@ test("uncertain recovery completion is reconciled without repeating its POST", a
     page.getByRole("button", { name: "Finish sign-in recovery", exact: true }),
   ).toBeEnabled();
   expect(attempts()).toBe(1);
+});
+
+test("disabled email keeps recovery and credential removal unavailable while session controls work", async ({
+  page,
+}) => {
+  const attempts = await prepare(page, "/api/account/access/remove", false);
+  await expect(
+    page.getByRole("button", { name: "Finish sign-in recovery" }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Verify email for removal" }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Remove Synthetic passkey" }),
+  ).toBeDisabled();
+  await expect(page.getByLabel("Type DELETE ACCOUNT to confirm")).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Close account", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "Sign out", exact: true }),
+  ).toBeEnabled();
+  expect(attempts()).toBe(0);
+});
+
+test("disabled email sign-in cannot collect an address or request a code", async ({
+  page,
+}) => {
+  await prepare(page, "/api/auth/email-otp/send-verification-otp", false);
+  await page.route("**/api/auth/get-session", (route) =>
+    route.fulfill({ status: 200, json: null }),
+  );
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Continue with email" }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("textbox", { name: "Email address" }),
+  ).toBeDisabled();
+  await expect(
+    page.getByText(
+      "Email sign-in and recovery are not available yet. Use Google to sign in.",
+    ),
+  ).toBeVisible();
 });

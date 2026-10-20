@@ -795,6 +795,7 @@ it.skipIf(!enabled)(
           json: {
             synthetic: true,
             workspaceEnabled: true,
+            emailEnabled: true,
             socialProviders: [],
           },
         }),

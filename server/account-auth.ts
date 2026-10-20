@@ -51,6 +51,7 @@ export interface SyntheticAccountConfig {
   socialFixtures?: boolean;
   /** Advertise navigation only when composed with the synthetic workspace. */
   workspaceEnabled?: boolean;
+  emailEnabled?: boolean;
 }
 
 /** Unmounted integration for synthetic tests only. No environment activation. */
@@ -75,6 +76,7 @@ export interface ProductionAccountCandidateConfig {
   /** Supplied by a separately reviewed email adapter; tests use a no-network sink. */
   deliverCode: SignInCodeSender;
   workspaceEnabled?: boolean;
+  emailEnabled?: boolean;
   /** Inactive wiring only: no environment activation or fallback credentials. */
   social?: ProductionSocialCredentials;
   /** Restricted hosted enrollment; exact verified emails, no domain wildcards. */
@@ -110,6 +112,7 @@ export function createProductionAccountCandidate(
     origin: productionAccountTarget.origin,
     synthetic: false,
     workspaceEnabled: config.workspaceEnabled === true,
+    emailEnabled: config.emailEnabled !== false,
     productionSocial: config.social,
     allowedEmails,
     ingress: config.ingress
@@ -581,6 +584,7 @@ function createAccountAuth(
       res.json({
         synthetic: config.synthetic,
         workspaceEnabled: config.workspaceEnabled === true,
+        emailEnabled: config.emailEnabled !== false,
         socialProviders: enabledSocial.filter((provider) =>
           registered.includes(provider),
         ),

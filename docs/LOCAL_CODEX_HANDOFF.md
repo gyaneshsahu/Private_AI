@@ -1,5 +1,13 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Hosted logout and email capability correction — 20 October
+
+Read-only Render settings confirm Pre-Deploy Command is now empty, custom domain verified and certificate issued. Live candidate remains 4eb86b1. Actual owner session signed out through the hosted account UI; reload remains signed out. This did not remove credentials or modify the vault. Google cancellation and second real identity denial are still pending; no real-account isolation pass is claimed.
+
+Fixed a concrete hosted mismatch: the restricted deployment now advertises emailEnabled=false in account options. Browser controls fail closed when capability is absent/false: email input/submission, recovery completion, credential removal verification/removal and closure are unavailable; session sign-out remains available. Existing sender remains fail-closed; this change does not activate email or change privacy gates. Local build/typecheck passed. Synthetic PostgreSQL production-account/workspace tests: 15/15 passed. Targeted browser fixtures: 9/9 passed, including two new disabled-email checks. Sandbox loopback startup failed initially; rerun with local access passed. An initial new browser test mistakenly tried filling the intentionally disabled closure field; stopped and corrected it to assert disabled, preserving the final 9/9 result as a rerun rather than a clean first attempt.
+
+Changes are not yet deployed; require exact-commit CI before another owner deployment. Two-user/vault tests retain their earlier local evidence only, not new hosted verification. Remaining launch/privacy/quality gates are unchanged.
+
 ## Custom-domain and owner Google journey — 20 October
 
 Public DNS resolves app.cometrow.com to private-ai-deployment.onrender.com. Verified HTTPS probes returned /account 200, /healthz 200 and /auth 303 to /account, without bypassing TLS validation. Owner completed real Google sign-in; screenshot and subsequent browser inspection confirm the intended owner identity, linked Google and an active session. Following Open workspace from /account succeeds; loaded workspace shows the same identity, a locked local vault, unavailable usage/no active plan, disabled future capabilities and disabled private-chat sending. Account menu renders account/usage, settings, saved/data controls, help and sign-out. This is actual hosted inspection, not a synthetic fixture. No private prompts, vault contents, paid inference or account changes were submitted by the agent.

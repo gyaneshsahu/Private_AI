@@ -164,6 +164,7 @@ it.skipIf(!enabled)(
     expect(await response.json()).toEqual({
       synthetic: false,
       workspaceEnabled: false,
+      emailEnabled: true,
       socialProviders: [],
     });
   },

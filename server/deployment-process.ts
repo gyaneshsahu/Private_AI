@@ -66,6 +66,7 @@ export async function startDeployment(render = false) {
         peerCertificateSha256: config.peerCertificateSha256,
         admission: render ? "shared" : "client-ip",
       },
+      emailEnabled: false,
       deliverCode: async () => {
         throw Error("Email delivery disabled.");
       },

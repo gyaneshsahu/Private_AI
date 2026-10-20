@@ -19,6 +19,7 @@ const optionsSchema = z.object({
   synthetic: z.boolean(),
   socialProviders: z.array(providerSchema),
   workspaceEnabled: z.boolean().optional(),
+  emailEnabled: z.boolean().optional(),
 });
 const accountsSchema = z.object({
   providers: z.array(z.object({ providerId: z.string() })),
@@ -71,6 +72,7 @@ export default function AccountLab({
   const [notice, setNotice] = useState("");
   const [providers, setProviders] = useState<Provider[]>([]);
   const [linked, setLinked] = useState<string[]>([]);
+  const [emailEnabled, setEmailEnabled] = useState(false);
   const [workspaceEnabled, setWorkspaceEnabled] = useState(false);
   const [accessRevision, setAccessRevision] = useState(0);
   const [notices, setNotices] = useState<
@@ -135,6 +137,7 @@ export default function AccountLab({
         if (options.synthetic !== synthetic)
           throw Error("Account mode mismatch");
         setProviders(options.socialProviders);
+        setEmailEnabled(options.emailEnabled === true);
         setWorkspaceEnabled(options.workspaceEnabled === true);
         await refresh();
         setReady(true);
@@ -326,7 +329,7 @@ export default function AccountLab({
               </button>
             ))}
             <button
-              disabled={busy || uncertain}
+              disabled={!emailEnabled || busy || uncertain}
               onClick={() =>
                 action(async () => {
                   const response = await accountRequest(
@@ -430,6 +433,7 @@ export default function AccountLab({
               Sign out
             </button>
             <AccountDeletion
+              emailEnabled={emailEnabled}
               synthetic={synthetic}
               closed={async () => {
                 await refresh();
@@ -441,6 +445,7 @@ export default function AccountLab({
               }}
             />
             <AccountAccess
+              emailEnabled={emailEnabled}
               revision={accessRevision}
               changed={refresh}
               verifyEmail={() =>
@@ -517,7 +522,7 @@ export default function AccountLab({
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               autoComplete={synthetic ? "off" : "email"}
-              disabled={!ready || busy || uncertain}
+              disabled={!emailEnabled || !ready || busy || uncertain}
             />
             {sent && (
               <>
@@ -537,7 +542,7 @@ export default function AccountLab({
             )}
             <button
               className="account-preview-primary"
-              disabled={busy || uncertain || !ready}
+              disabled={!emailEnabled || busy || uncertain || !ready}
               type="submit"
             >
               {sent
@@ -548,6 +553,12 @@ export default function AccountLab({
                   ? "Send test code"
                   : "Continue with email"}
             </button>
+            {!emailEnabled && ready && (
+              <p role="status">
+                Email sign-in and recovery are not available yet. Use Google to
+                sign in.
+              </p>
+            )}
             {sent && (
               <button
                 disabled={busy || uncertain}

@@ -2,9 +2,11 @@ import { useState } from "react";
 import { accountRequest } from "./account-request";
 
 export default function AccountDeletion({
+  emailEnabled,
   closed,
   synthetic = true,
 }: {
+  emailEnabled: boolean;
   closed: () => Promise<void>;
   synthetic?: boolean;
 }) {
@@ -32,7 +34,8 @@ export default function AccountDeletion({
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          if (busy || uncertain || confirmation !== phrase) return;
+          if (!emailEnabled || busy || uncertain || confirmation !== phrase)
+            return;
           setBusy(true);
           setMessage("");
           void (async () => {
@@ -83,11 +86,13 @@ export default function AccountDeletion({
           value={confirmation}
           onChange={(event) => setConfirmation(event.target.value)}
           autoComplete="off"
-          disabled={busy || uncertain}
+          disabled={!emailEnabled || busy || uncertain}
         />
         <button
           type="submit"
-          disabled={busy || uncertain || confirmation !== phrase}
+          disabled={
+            !emailEnabled || busy || uncertain || confirmation !== phrase
+          }
         >
           {synthetic ? "Close test account" : "Close account"}
         </button>
