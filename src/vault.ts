@@ -1,3 +1,4 @@
+import { projectsSchema, type Project } from "./projects";
 import { openDB } from "idb";
 import type { Conversation } from "../shared/contracts";
 import {
@@ -8,7 +9,7 @@ import { derive, seal, unseal, type Cipher } from "./vault-crypto";
 export type { Cipher } from "./vault-crypto";
 import {
   encodeVaultBackup,
-  decodeVaultBackup,
+  decodeVaultBackupContent,
   BACKUP_MAX_CONVERSATIONS,
 } from "./vault-backup";
 const db = (name: string) =>
@@ -291,6 +292,72 @@ export class Vault {
       database.close();
     }
   }
+  async readProjects(): Promise<Project[]> {
+    const key = this.key,
+      generation = this.generation;
+    if (!key) throw Error("Unlock your vault first.");
+    await this.queue;
+    if (generation !== this.generation) throw Error("Vault changed.");
+    const database = await db(this.databaseName);
+    try {
+      requireVaultIdentity(await database.get("meta", "vault"), this.salt);
+      const record = (await database.get("meta", "projects")) as
+        Cipher | undefined;
+      const projects = record
+        ? projectsSchema.parse(
+            JSON.parse(await unseal(key, record, "projects-v1")),
+          )
+        : [];
+      if (generation !== this.generation) throw Error("Vault changed.");
+      return projects;
+    } finally {
+      database.close();
+    }
+  }
+  createProject(name: string): Promise<Project[]> {
+    const key = this.key,
+      salt = this.salt,
+      generation = this.generation,
+      databaseName = this.databaseName;
+    if (!key) return Promise.reject(Error("Unlock your vault first."));
+    return this.enqueue(async () => {
+      const database = await db(databaseName);
+      try {
+        requireVaultIdentity(await database.get("meta", "vault"), salt);
+        const previous = (await database.get("meta", "projects")) as
+          Cipher | undefined;
+        const projects = previous
+          ? projectsSchema.parse(
+              JSON.parse(await unseal(key, previous, "projects-v1")),
+            )
+          : [];
+        const next = projectsSchema.parse([
+          ...projects,
+          { id: crypto.randomUUID(), name },
+        ]);
+        const encrypted = await seal(key, JSON.stringify(next), "projects-v1");
+        const tx = database.transaction("meta", "readwrite");
+        requireVaultIdentity(await tx.store.get("vault"), salt);
+        const current = (await tx.store.get("projects")) as Cipher | undefined;
+        if (
+          JSON.stringify(current && Array.from(current.iv)) !==
+            JSON.stringify(previous && Array.from(previous.iv)) ||
+          generation !== this.generation
+        ) {
+          tx.abort();
+          await tx.done.catch(() => {});
+          throw Error(
+            "Projects changed in another tab. Unlock again and retry.",
+          );
+        }
+        await tx.store.put(encrypted, "projects");
+        await tx.done;
+        return next;
+      } finally {
+        database.close();
+      }
+    });
+  }
   async exportBackup(): Promise<string> {
     const key = this.key,
       salt = this.salt,
@@ -302,7 +369,12 @@ export class Vault {
       throw Error(
         "Unreadable snapshots prevent a complete backup. Existing data was not changed.",
       );
-    const text = await encodeVaultBackup(key, salt, available.conversations);
+    const text = await encodeVaultBackup(
+      key,
+      salt,
+      available.conversations,
+      await this.readProjects(),
+    );
     if (generation !== this.generation || !this.key)
       throw Error("Backup cancelled because the vault changed.");
     return text;
@@ -317,12 +389,45 @@ export class Vault {
         Error("Unlock the destination vault before restoring."),
       );
     return this.enqueue(async () => {
-      const conversations = await decodeVaultBackup(text, passphrase);
+      const { conversations, projects } = await decodeVaultBackupContent(
+        text,
+        passphrase,
+      );
+      const databaseBefore = await db(databaseName);
+      let projectRecord: Cipher | undefined;
+      try {
+        projectRecord = await databaseBefore.get("meta", "projects");
+      } finally {
+        databaseBefore.close();
+      }
+      const existingProjects = projectRecord
+        ? projectsSchema.parse(
+            JSON.parse(await unseal(key, projectRecord, "projects-v1")),
+          )
+        : [];
+      const projectIds = new Map(
+        projects.map((p) => [p.id, crypto.randomUUID()]),
+      );
+      const mergedProjects = projectsSchema.parse([
+        ...existingProjects,
+        ...projects.map((p) => ({ ...p, id: projectIds.get(p.id)! })),
+      ]);
+      const nextProjects = await seal(
+        key,
+        JSON.stringify(mergedProjects),
+        "projects-v1",
+      );
       const encrypted = [];
       for (const original of conversations) {
         if (generation !== this.generation || !this.key)
           throw Error("Restore cancelled because the vault changed.");
-        const snapshot = { ...original, id: crypto.randomUUID() };
+        const snapshot = {
+          ...original,
+          id: crypto.randomUUID(),
+          projectId: original.projectId
+            ? projectIds.get(original.projectId)
+            : undefined,
+        };
         const dataKey = await crypto.subtle.generateKey(
           { name: "AES-GCM", length: 256 },
           true,
@@ -350,6 +455,16 @@ export class Vault {
         const tx = database.transaction(["meta", "conversations"], "readwrite");
         try {
           requireVaultIdentity(await tx.objectStore("meta").get("vault"), salt);
+          const currentProjects = (await tx
+            .objectStore("meta")
+            .get("projects")) as Cipher | undefined;
+          if (
+            JSON.stringify(
+              currentProjects && Array.from(currentProjects.iv),
+            ) !== JSON.stringify(projectRecord && Array.from(projectRecord.iv))
+          )
+            throw Error("Projects changed during restore.");
+          await tx.objectStore("meta").put(nextProjects, "projects");
           for (const { id, ...record } of encrypted) {
             if (
               generation !== this.generation ||
@@ -412,6 +527,9 @@ export class Vault {
           read.objectStore("conversations").getAllKeys(),
           read.objectStore("conversations").getAll(),
         ]);
+        const projectRecord = (await read
+          .objectStore("meta")
+          .get("projects")) as Cipher | undefined;
         await read.done;
         const currentKey = await derive(currentPassphrase, meta.salt);
         if (
@@ -422,6 +540,19 @@ export class Vault {
         const nextSalt = random(16);
         const nextKey = await derive(nextPassphrase, nextSalt);
         const check = await seal(nextKey, "privateai-v1", "vault-check-v1");
+        const nextProjects = projectRecord
+          ? await seal(
+              nextKey,
+              JSON.stringify(
+                projectsSchema.parse(
+                  JSON.parse(
+                    await unseal(currentKey, projectRecord, "projects-v1"),
+                  ),
+                ),
+              ),
+              "projects-v1",
+            )
+          : undefined;
         const replacements: {
           id: IDBValidKey;
           version: string;
@@ -473,6 +604,17 @@ export class Vault {
             );
           }
           unchanged();
+          const currentProjects = (await tx
+            .objectStore("meta")
+            .get("projects")) as Cipher | undefined;
+          if (
+            JSON.stringify(
+              currentProjects && Array.from(currentProjects.iv),
+            ) !== JSON.stringify(projectRecord && Array.from(projectRecord.iv))
+          )
+            throw Error("Projects changed during passphrase update.");
+          if (nextProjects)
+            await tx.objectStore("meta").put(nextProjects, "projects");
           await tx.objectStore("meta").put({ salt: nextSalt, check }, "vault");
           unchanged();
           await tx.done;

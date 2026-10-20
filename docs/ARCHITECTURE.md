@@ -1,5 +1,11 @@
 # PrivateAI — architecture and trust boundaries
 
+### Encrypted workspace organization — 20 October
+
+Projects are an AES-GCM encrypted registry in the existing account-scoped IndexedDB meta store, authenticated with `projects-v1`; names are not a plaintext navigation index. Creation compares the prior cipher IV inside the write transaction to reject concurrent overwrite. Pin/archive/project IDs are optional validated conversation fields inside existing encrypted snapshots; organization uses existing snapshot-version checks and preserves unsaved drafts. No organization fields are composed into model context. Lock/account changes clear in-memory projects and searches.
+
+Encrypted backups optionally carry the validated registry (100 projects), preserve old backup readability and remap project IDs on restore-as-copies. Registry and conversations restore atomically; passphrase rotation decrypts/validates/re-encrypts projects alongside conversation key wraps, comparing concurrent registry state before commit. The same metadata protections and no-recovery limits apply. The authenticated status response includes the verified consumer email solely for current account display; no new client persistence or identity lookup is added. Disabled media/sharing controls have no handlers or permission requests.
+
 ### Atomic local vault passphrase change — 20 October
 
 `Vault.changePassphrase` verifies the current passphrase against the existing vault check, derives a new key using the existing PBKDF2 parameters and a fresh salt, decrypts/validates each saved conversation, and prepares new AES-GCM wraps for the existing per-conversation data keys. A single IndexedDB transaction compares vault identity, record count and wrapped-key versions before updating every wrap and vault metadata. Failed validation, concurrent changes or transaction errors preserve the prior committed state. Encrypted conversation bodies are retained unchanged; no migration or server escrow is introduced.

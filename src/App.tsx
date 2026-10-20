@@ -1,3 +1,5 @@
+import { Icon } from "./Icon";
+import type { Project } from "./projects";
 import { containDialogFocus } from "./dialog-focus";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -46,6 +48,8 @@ export function App() {
   );
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [navigationCollapsed, setNavigationCollapsed] = useState(false);
+  const [settingsSection, setSettingsSection] = useState("appearance");
+  const [projects, setProjects] = useState<Project[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
   const settingsDialog = useRef<HTMLDialogElement>(null);
@@ -83,7 +87,7 @@ export function App() {
       if (event instanceof KeyboardEvent && event.key !== "Escape") return;
       document
         .querySelectorAll<HTMLDetailsElement>(
-          ".tools-menu[open], .conversation-menu[open]",
+          ".tools-menu[open], .conversation-menu[open], .account-menu[open], .chat-item-menu[open]",
         )
         .forEach((menu) => {
           if (
@@ -93,6 +97,7 @@ export function App() {
             (event.target instanceof Element && event.target.closest("button"))
           ) {
             menu.open = false;
+            if (event instanceof KeyboardEvent) event.preventDefault();
             if (event instanceof KeyboardEvent)
               menu.querySelector<HTMLElement>("summary")?.focus();
           }
@@ -261,6 +266,7 @@ export function App() {
       setSource(undefined);
       setUnlocked(false);
       setSaved([]);
+      setProjects([]);
       setUnreadableSnapshots(0);
       setInput("");
       setQuery("");
@@ -700,9 +706,11 @@ export function App() {
     try {
       await vault.current!.unlock(secret);
       const snapshots = await vault.current!.readAvailable();
+      const projectList = await vault.current!.readProjects();
       if (current !== epoch.current) return;
       setUnlocked(true);
       setSaved(snapshots.conversations);
+      setProjects(projectList);
       setUnreadableSnapshots(snapshots.unreadable);
       setNotice(
         "Vault unlocked on this device. Saving is explicit; temporary chats are not saved automatically.",
@@ -739,8 +747,10 @@ export function App() {
       setSaveConflict(false);
       if (asCopy) setConversation(snapshot);
       const snapshots = await vault.current!.readAvailable();
+      const projectList = await vault.current!.readProjects();
       if (current !== epoch.current) return;
       setSaved(snapshots.conversations);
+      setProjects(projectList);
       setUnreadableSnapshots(snapshots.unreadable);
       setNotice(
         "Encrypted snapshot saved on this browser. Later changes require saving again.",
@@ -825,8 +835,10 @@ export function App() {
       const count = await vault.current!.restoreBackup(text, secret);
       if (current !== epoch.current) return;
       const snapshots = await vault.current!.readAvailable();
+      const projectList = await vault.current!.readProjects();
       if (current !== epoch.current) return;
       setSaved(snapshots.conversations);
+      setProjects(projectList);
       setUnreadableSnapshots(snapshots.unreadable);
       setNotice(
         `Restored ${count} saved ${count === 1 ? "conversation" : "conversations"} as new copies. Your open workspace was not changed. The copies use this vault’s passphrase.`,
@@ -835,6 +847,85 @@ export function App() {
       if (current === epoch.current)
         fail(
           "Restore could not complete. Check the original backup passphrase, file integrity and available browser storage. Temporary research and unsupported backups are rejected. Existing snapshots were not overwritten; inspect Saved before trying again.",
+        );
+    } finally {
+      if (current === epoch.current) setBusy("");
+    }
+  }
+  async function signOut() {
+    if (!status?.accountId) return;
+
+    if (status.consumerWorkspace) {
+      await signOutConsumer();
+      return;
+    }
+    if (!allowReplace()) return;
+    vault.current?.lock();
+    vault.current?.onInvalidate?.();
+    try {
+      const response = await fetch("/auth/logout", {
+        method: "POST",
+      });
+      if (!response.ok) throw new Error();
+      accessNavigation.current = true;
+      window.location.assign("/auth");
+    } catch {
+      fail("Workspace locked. Sign out failed; try again.");
+    }
+  }
+  async function createProject(name: string): Promise<string | undefined> {
+    const current = epoch.current;
+    setBusy("Creating encrypted project…");
+    try {
+      const next = await vault.current!.createProject(name);
+      if (current !== epoch.current) return;
+      setProjects(next);
+      setNotice(
+        "Project created in this device’s encrypted vault. Project chats are not automatically included in model context.",
+      );
+      return next.at(-1)?.id;
+    } catch (error) {
+      if (current === epoch.current)
+        fail(
+          error instanceof Error
+            ? error.message
+            : "Project could not be created.",
+        );
+    } finally {
+      if (current === epoch.current) setBusy("");
+    }
+  }
+  async function organizeChat(
+    c: Conversation,
+    change: Pick<Conversation, "pinned" | "archived" | "projectId" | "title">,
+  ) {
+    const current = epoch.current;
+    setBusy("Updating encrypted organization…");
+    try {
+      const snapshot = await vault.current!.save({ ...c, ...change }, c);
+      if (current !== epoch.current) return;
+      if (conversation.id === c.id) {
+        savedBase.current = snapshot;
+        setConversation((previous) => ({
+          ...previous,
+          pinned: snapshot.pinned,
+          archived: snapshot.archived,
+          projectId: snapshot.projectId,
+        }));
+      }
+      const available = await vault.current!.readAvailable();
+      if (current !== epoch.current) return;
+      setSaved(available.conversations);
+      setUnreadableSnapshots(available.unreadable);
+      setNotice(
+        "Saved chat organization updated. Open drafts still require saving explicitly.",
+      );
+    } catch (error) {
+      if (current === epoch.current)
+        fail(
+          error instanceof Error
+            ? error.message
+            : "Organization could not be saved.",
         );
     } finally {
       if (current === epoch.current) setBusy("");
@@ -870,14 +961,20 @@ export function App() {
           setNavigationOpen(false);
         }}
         conversations={saved}
+        projects={projects}
+        status={status}
+        onSignOut={() => void signOut()}
+        onCreateProject={createProject}
+        onOrganize={(c, change) => void organizeChat(c, change)}
         unlocked={unlocked}
         busy={!!busy}
         newDisabled={!!busy && !controller.current}
         currentId={conversation.id}
         onOpen={openSaved}
-        onNew={() => {
+        onNew={(projectId) => {
           if (!allowReplace()) return;
           reset();
+          if (projectId) setConversation({ ...emptyConversation(), projectId });
           setTab("Conversation");
           setNavigationOpen(false);
         }}
@@ -907,30 +1004,97 @@ export function App() {
             ×
           </button>
         </div>
-        <label htmlFor="chat-appearance">Appearance</label>
-        <select
-          id="chat-appearance"
-          value={appearance}
-          onChange={(event) =>
-            setAppearance(event.target.value as typeof appearance)
-          }
-        >
-          <option value="system">System theme</option>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
-        <p className="muted">
-          Only this appearance preference is saved outside your encrypted vault.
-          Conversation contents are not included.
-        </p>
-        <button
-          onClick={() => {
-            setSettingsOpen(false);
-            setTab("Saved");
-          }}
-        >
-          History &amp; data controls
-        </button>
+        <div className="settings-layout">
+          <nav aria-label="Settings sections">
+            {(
+              [
+                ["appearance", "sun", "Appearance"],
+                ["account", "user", "Account & security"],
+                ["privacy", "shield", "Privacy & data"],
+                ["usage", "usage", "Plan & usage"],
+              ] as const
+            ).map(([id, icon, label]) => (
+              <button
+                key={id}
+                aria-current={settingsSection === id ? "page" : undefined}
+                onClick={() => setSettingsSection(id)}
+              >
+                <Icon name={icon} />
+                {label}
+              </button>
+            ))}
+          </nav>
+          <section className="settings-content">
+            {settingsSection === "appearance" && (
+              <>
+                <label htmlFor="chat-appearance">Appearance</label>
+                <select
+                  id="chat-appearance"
+                  value={appearance}
+                  onChange={(event) =>
+                    setAppearance(event.target.value as typeof appearance)
+                  }
+                >
+                  <option value="system">System theme</option>
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                </select>
+                <p className="muted">
+                  Only this appearance preference is saved outside your
+                  encrypted vault. Conversation contents are not included.
+                </p>
+              </>
+            )}
+            {settingsSection === "account" && (
+              <>
+                <h3>Account &amp; security</h3>
+                <p>
+                  {status?.accountEmail ??
+                    (status?.accountId
+                      ? `Signed-in account ${status.accountId}`
+                      : "Local development session. No account is signed in.")}
+                </p>
+                <p>
+                  Sign-in recovery and your local vault passphrase are separate.
+                  Recovering sign-in does not decrypt a lost vault.
+                </p>
+                <button
+                  onClick={() => {
+                    setSettingsOpen(false);
+                    setTab("Account");
+                  }}
+                >
+                  Account &amp; usage
+                </button>
+              </>
+            )}
+            {settingsSection === "privacy" && (
+              <>
+                <h3>Privacy &amp; data</h3>
+                <p>
+                  Private chat remains unavailable until provider verification
+                  passes. Research is temporary; it cannot be saved in history
+                  or backups.
+                </p>
+                <p>
+                  Projects organize local saved chats. They do not automatically
+                  send other chats or files to a model.
+                </p>
+                <button
+                  onClick={() => {
+                    setSettingsOpen(false);
+                    setTab("Saved");
+                  }}
+                >
+                  History &amp; data controls
+                </button>
+              </>
+            )}
+            {settingsSection === "usage" && (
+              <AccountUsage allowance={status?.requestAllowance} />
+            )}
+          </section>
+        </div>
         <div className="workspace-help">
           <button
             className="text-button"
@@ -979,7 +1143,7 @@ export function App() {
               setNavigationOpen(true);
             }}
           >
-            ☰
+            <Icon name="sidebar" />
           </button>
           <div className="header-title">
             <h1>
@@ -988,6 +1152,13 @@ export function App() {
                 ? conversation.title
                 : tab}
             </h1>
+            {tab === "Conversation" &&
+              projects.some((p) => p.id === conversation.projectId) && (
+                <p className="project-breadcrumb">
+                  <Icon name="folder" />
+                  {projects.find((p) => p.id === conversation.projectId)?.name}
+                </p>
+              )}
             {tab === "Conversation" && conversation.messages.length > 0 && (
               <p className="conversation-meta">
                 {conversation.messages.length} messages ·{" "}
@@ -1005,18 +1176,37 @@ export function App() {
               </p>
             )}
           </div>
+          <button
+            className="share-preview"
+            disabled
+            title="Explicit chat sharing — Coming later"
+          >
+            <Icon name="share" />
+            <span>
+              Share <small>Coming later</small>
+            </span>
+          </button>
           <details className="conversation-menu">
-            <summary aria-label="Conversation actions">•••</summary>
+            <summary aria-label="Conversation actions">
+              <Icon name="more" />
+            </summary>
             <div className="menu-surface">
               <button onClick={() => setTab("Conversation")}>
+                <Icon name="chat" />
                 Conversation
+              </button>
+              <button disabled>
+                <Icon name="share" />
+                Share chat · Coming later
               </button>
               <button onClick={() => setTab("Saved")}>
                 Rename, save &amp; manage history
               </button>
-              {tab === "Conversation" && <button onClick={() => setContextOpen(true)}>
-                Included context
-              </button>}
+              {tab === "Conversation" && (
+                <button onClick={() => setContextOpen(true)}>
+                  Included context
+                </button>
+              )}
               <button onClick={() => setTab("Context")}>
                 Conversation files
               </button>
@@ -1240,6 +1430,7 @@ export function App() {
                           setEditText(message.text);
                         }}
                       >
+                        <Icon name="edit" />
                         Edit
                       </button>
                     )}
@@ -1250,6 +1441,7 @@ export function App() {
                         }
                         onClick={() => void copyAnswer(message.text)}
                       >
+                        <Icon name="copy" />
                         Copy answer
                       </button>
                     )}
@@ -1344,7 +1536,9 @@ export function App() {
                     }}
                   />
                   <details className="tools-menu">
-                    <summary aria-label="Attachments and tools">＋</summary>
+                    <summary aria-label="Attachments and tools">
+                      <Icon name="plus" />
+                    </summary>
                     <div className="menu-surface">
                       <button
                         type="button"
@@ -1354,6 +1548,7 @@ export function App() {
                         }
                         onClick={() => chatFileInput.current?.click()}
                       >
+                        <Icon name="file" />
                         Attach file
                       </button>
                       <button
@@ -1375,11 +1570,36 @@ export function App() {
                         className="text-button"
                         onClick={() => setTab("Research")}
                       >
+                        <Icon name="globe" />
                         Research
                       </button>
                       <button type="button" onClick={() => setTab("Context")}>
+                        <Icon name="folder" />
                         Conversation files
                       </button>
+                      <div
+                        className="coming-later-list"
+                        aria-label="Planned capabilities"
+                      >
+                        {(
+                          [
+                            ["camera", "Camera / photo attachment"],
+                            ["image", "Create image"],
+                            ["mic", "Microphone dictation"],
+                            ["voice", "Live voice conversation"],
+                          ] as const
+                        ).map(([icon, label]) => (
+                          <button key={icon} type="button" disabled>
+                            <Icon name={icon} />
+                            <span>{label}</span>
+                            <small>Coming later</small>
+                          </button>
+                        ))}
+                      </div>
+                      <p className="muted">
+                        Voice, camera and image creation are not connected. No
+                        permissions or media are collected.
+                      </p>
                       <p className="muted">
                         Files are read on this device. Review extracted text
                         before sending.
@@ -1394,6 +1614,25 @@ export function App() {
                     {selectedContextSize.includedMessages} messages included ·{" "}
                     {conversation.attachments.filter((a) => a.selected).length}{" "}
                     files
+                  </button>
+                  <button
+                    type="button"
+                    className="future-voice"
+                    disabled
+                    aria-label="Microphone dictation — Coming later"
+                    title="Microphone dictation — Coming later"
+                  >
+                    <Icon name="mic" />
+                    <small>Coming later</small>
+                  </button>
+                  <button
+                    type="button"
+                    className="future-voice"
+                    disabled
+                    aria-label="Live voice — Coming later"
+                    title="Live voice — Coming later"
+                  >
+                    <Icon name="voice" />
                   </button>
                   {controller.current ? (
                     <button
@@ -1410,8 +1649,9 @@ export function App() {
                         !!busy || !input.trim() || !status?.inference.ready
                       }
                       type="submit"
+                      aria-label="Send ↑"
                     >
-                      Send ↑
+                      Send <Icon name="send" />
                     </button>
                   )}
                 </div>
@@ -1898,28 +2138,7 @@ export function App() {
               </button>
             )}
             {status?.accountId && (
-              <button
-                disabled={!!busy}
-                onClick={async () => {
-                  if (status.consumerWorkspace) {
-                    await signOutConsumer();
-                    return;
-                  }
-                  if (!allowReplace()) return;
-                  vault.current?.lock();
-                  vault.current?.onInvalidate?.();
-                  try {
-                    const response = await fetch("/auth/logout", {
-                      method: "POST",
-                    });
-                    if (!response.ok) throw new Error();
-                    accessNavigation.current = true;
-                    window.location.assign("/auth");
-                  } catch {
-                    fail("Workspace locked. Sign out failed; try again.");
-                  }
-                }}
-              >
+              <button disabled={!!busy} onClick={() => void signOut()}>
                 Sign out
               </button>
             )}
@@ -2054,6 +2273,7 @@ export function App() {
                       vault.current!.lock();
                       setUnlocked(false);
                       setSaved([]);
+                      setProjects([]);
                       setUnreadableSnapshots(0);
                       reset();
                       setPassphrase("");
@@ -2080,6 +2300,7 @@ export function App() {
                 )}
                 <ConversationLibrary
                   conversations={saved}
+
                   busy={!!busy}
                   onOpen={openSaved}
                   onDelete={async (c) => {
@@ -2088,8 +2309,10 @@ export function App() {
                     try {
                       await vault.current!.delete(c.id);
                       const snapshots = await vault.current!.readAvailable();
+                      const projectList = await vault.current!.readProjects();
                       if (current !== epoch.current) return;
                       setSaved(snapshots.conversations);
+                      setProjects(projectList);
                       setUnreadableSnapshots(snapshots.unreadable);
                       if (conversation.id === c.id) reset();
                       setNotice(
@@ -2110,7 +2333,10 @@ export function App() {
                 />
                 <VaultBackup
                   busy={!!busy}
-                  canExport={saved.length > 0 && unreadableSnapshots === 0}
+                  canExport={
+                    (saved.length > 0 || projects.length > 0) &&
+                    unreadableSnapshots === 0
+                  }
                   onExport={exportVaultBackup}
                   onRestore={restoreVaultBackup}
                 />

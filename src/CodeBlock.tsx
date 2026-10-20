@@ -1,3 +1,4 @@
+import { Icon } from "./Icon";
 import { useEffect, useState, type ReactNode } from "react";
 
 export function CodeBlock({
@@ -30,6 +31,7 @@ export function CodeBlock({
             }
           }}
         >
+          <Icon name="copy" />
           Copy code
         </button>
       </div>

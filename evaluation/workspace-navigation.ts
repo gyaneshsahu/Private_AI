@@ -36,6 +36,13 @@ export function workspaceControl(page: Page, name: string) {
             .click();
           return;
         }
+        const account = page.getByLabel("Account menu", { exact: true });
+        if (
+          !(await page
+            .locator(".account-menu")
+            .evaluate((el) => (el as HTMLDetailsElement).open))
+        )
+          await account.click();
         await page
           .getByRole("navigation", { name: "Workspace" })
           .getByRole("button", {

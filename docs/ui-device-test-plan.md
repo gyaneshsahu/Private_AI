@@ -1,6 +1,28 @@
 # Conversation-first UI and device review
 
-## Structural revision — 20 October, owner rejected first design
+## Current product UI batch — 20 October, design review pending
+
+Owner's five navigation/settings/tool screenshots are organizational references, not permission to copy branding. PrivateAI retains neutral light, charcoal dark, muted violet and a small clay monogram. This supersedes the earlier statement that projects and pin/archive are deferred from the UI pass.
+
+| Area | Before this batch | Current implementation / boundary |
+| --- | --- | --- |
+| Chat navigation | Search, saved snapshots, responsive drawer/collapse | Shared local SVG icons; project list with counts; recent/archive views; pin/unpin, archive/restore and move-to-project actions. Search operates on decrypted memory only and within the selected view. |
+| Projects | Not implemented | Create named encrypted project, start a chat in it, move saved chats in/out, reopen across reload; empty projects persist. Organization only: never implicit model context. Up to 100 projects. Project rename/removal and shared projects remain follow-ups. |
+| Snapshot integrity | Explicit saves, concurrency/version checks | Organization edits save the existing snapshot metadata without silently saving an open unsent draft. Original conflict checks remain. Temporary research cannot enter projects through a save. |
+| Backup/security | Encrypted conversation backups; passphrase rotation | Project registry encrypted separately in account-scoped vault metadata; backups include it. Restore creates fresh project IDs and remaps chats. Passphrase change re-encrypts registry in the same atomic transaction. Old backups still read; older app versions cannot necessarily open new project-bearing backups. |
+| Account menu | Scattered bottom links | One account button: verified email for consumer sessions, account ID for legacy sessions, explicit local-development state without a session. Real request allowance when available; no fabricated subscription. Settings, data controls, help and sign-out reuse working paths. Identity comes from authenticated no-store status; not cached in browser storage. |
+| Settings | Appearance and help links | Appearance, account/security, privacy/data, plan/usage sections. Theme remains the only non-sensitive persisted preference; security/data actions open their existing managers. No fake notification, memory or subscription switches. |
+| Composer/answers | Files, context, research, retry/stop, copy/edit | Shared icons, improved menu hierarchy, source/file controls, consistent focus. PNG/JPEG text extraction through Attach file remains available; this is not general image understanding. |
+| Future capabilities | No previews | Disabled Coming later menu controls for dictation, live voice, camera/photo capture, image creation and sharing; desktop voice/share previews also disabled. No permission, capture, upload, share-link or provider call is attached to them. Mobile uses menus to avoid crowding the composer. |
+
+### Review evidence and limits
+
+Review `.local/ui-product-20261020/index.html` for actual built-app desktop/mobile light/dark, populated projects, account, tools, source and settings captures. Fixtures are synthetic: displayed identities and allowances in screenshots come from intercepted test responses, not a real paid plan. The local app itself renders its real current status. The 24-chat/two-project journey includes pin/archive/restore, move, reload, unsaved draft protection and account change; the representative chat has tables/code/citations/errors and a separate 30-message transcript. No live model or paid API call is used for visual QA.
+
+Keyboard focus/labels, Escape, drawer containment, theme persistence/denied storage, reduced height and enlarged-text simulation are checked in browser tests. Actual Galaxy A52 keyboard/TalkBack validation of this new workspace is still required; the earlier auth-page pass does not qualify this UI. Dedicated sign-in/security pages keep their existing functional styling pending broader design approval. Source review remains modal. No provider/privacy, model-quality, safety, hosted or launch gate passes from UI work.
+
+
+## Historical structural revision — superseded by the current product UI batch
 
 Owner assessment is a design rejection, not approval to propagate. Retain readable answers and neutral/charcoal themes; revise navigation, history, composer and information hierarchy. Muted violet replaces terracotta. Brand monogram remains a placeholder pending identity approval. Representative journey is local/synthetic; unavailable private inference remains explicit.
 

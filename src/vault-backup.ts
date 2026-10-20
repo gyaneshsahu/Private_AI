@@ -1,3 +1,4 @@
+import { projectsSchema, type Project } from "./projects";
 import { z } from "zod";
 import { derive, seal, unseal } from "./vault-crypto";
 import {
@@ -25,9 +26,9 @@ const envelope = z
 const payload = z
   .object({
     version: z.literal(1),
+    projects: projectsSchema.optional(),
     conversations: z
       .array(savedConversationSchema)
-      .min(1)
       .max(BACKUP_MAX_CONVERSATIONS),
   })
   .strict();
@@ -47,23 +48,35 @@ function decode(value: string): Uint8Array<ArrayBuffer> {
   if (encode(bytes) !== value) throw Error("Invalid encrypted backup.");
   return bytes;
 }
-function validate(value: unknown): Conversation[] {
+function validate(value: unknown): {
+  conversations: Conversation[];
+  projects: Project[];
+} {
   const result = payload.parse(value);
   if (
     new Set(result.conversations.map((c) => c.id)).size !==
       result.conversations.length ||
-    result.conversations.some(containsTemporaryResearch)
+    result.conversations.some(containsTemporaryResearch) ||
+    result.conversations.some(
+      (c) => c.projectId && !result.projects?.some((p) => p.id === c.projectId),
+    )
   )
-    throw Error("Backup contains duplicate identities or temporary research.");
+    throw Error(
+      "Backup contains duplicate identities, an unknown project or temporary research.",
+    );
   // Preserve historical fields after validation, as with existing saved snapshots.
-  return (value as { conversations: Conversation[] }).conversations;
+  return {
+    conversations: (value as { conversations: Conversation[] }).conversations,
+    projects: result.projects ?? [],
+  };
 }
 export async function encodeVaultBackup(
   key: CryptoKey,
   salt: Uint8Array<ArrayBuffer>,
   conversations: Conversation[],
+  projects: Project[] = [],
 ): Promise<string> {
-  const content = { version: 1, conversations };
+  const content = { version: 1, conversations, projects };
   validate(content);
   const text = JSON.stringify(content);
   if (
@@ -83,10 +96,10 @@ export async function encodeVaultBackup(
     data: encode(new Uint8Array(encrypted.data)),
   });
 }
-export async function decodeVaultBackup(
+export async function decodeVaultBackupContent(
   text: string,
   passphrase: string,
-): Promise<Conversation[]> {
+): Promise<{ conversations: Conversation[]; projects: Project[] }> {
   if (
     text.length > BACKUP_MAX_BYTES ||
     new TextEncoder().encode(text).byteLength > BACKUP_MAX_BYTES
@@ -102,4 +115,11 @@ export async function decodeVaultBackup(
   const key = await derive(passphrase, salt);
   const decoded = await unseal(key, { iv, data: data.buffer }, aad);
   return validate(JSON.parse(decoded));
+}
+
+export async function decodeVaultBackup(
+  text: string,
+  passphrase: string,
+): Promise<Conversation[]> {
+  return (await decodeVaultBackupContent(text, passphrase)).conversations;
 }

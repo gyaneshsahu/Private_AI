@@ -1,5 +1,7 @@
 # PrivateAI: approved implementation and acceptance contract
 
+**20 October UI evidence (not release acceptance):** encrypted project organization, pin/archive, unified account/settings, disabled future-capability states and desktop/mobile browser interactions are implemented and locally tested; READINESS records exact runs and failures. Organization must never expand model context or persist temporary research. Screenshots use synthetic identities/allowances. Actual workspace phone/TalkBack, provider privacy, complete-answer safety/quality and hosted acceptance remain required. No acceptance threshold or human score changed.
+
 ## Production target amendment — 19 October 2026
 
 Owner confirms purchase of `cometrow.com` and approves `https://app.cometrow.com` as the intended app/sign-in identity. This authorizes configuration preparation only. Verify DNS/TLS separately; DNS changes, Google/Apple activation and account migration require a reviewed rollout, and privacy/quality/public-launch gates remain unchanged.

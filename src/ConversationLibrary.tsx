@@ -66,6 +66,8 @@ export function ConversationLibrary({
               {conversation.messages.length} messages ·{" "}
               {conversation.attachments.length} attachments
               {conversation.draft ? " · Unsent draft" : ""}
+              {conversation.pinned ? " · Pinned" : ""}
+              {conversation.archived ? " · Archived" : ""}
               {conversation.branches
                 ? ` · ${conversation.branches.archived.length + 1} branches`
                 : ""}

@@ -224,6 +224,9 @@ export function createApp(config: Config) {
         ? {
             accountId: res.locals.accountId,
             accessEpoch: res.locals.accessEpoch,
+            ...(res.locals.accountEmail
+              ? { accountEmail: res.locals.accountEmail }
+              : {}),
           }
         : {}),
       inference: {

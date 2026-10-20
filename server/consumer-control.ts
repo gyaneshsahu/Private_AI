@@ -25,11 +25,9 @@ export function consumerControl(config: {
   const session: RequestHandler = async (req, res, next) => {
     try {
       if (!(await accountRecoveryOpen(config.database))) {
-        res
-          .status(503)
-          .json({
-            error: "Account access is paused for recovery verification.",
-          });
+        res.status(503).json({
+          error: "Account access is paused for recovery verification.",
+        });
         return;
       }
       const current = await config.auth.api.getSession({
@@ -75,6 +73,7 @@ export function consumerControl(config: {
       res.locals.session = id;
       res.locals.csrf = csrf;
       res.locals.accountId = current.user.id;
+      res.locals.accountEmail = current.user.email;
       res.locals.accessEpoch = fingerprint("privateai-consumer-epoch-v1", id);
       next();
     } catch {

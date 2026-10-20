@@ -21,8 +21,7 @@ test("storage quota failure preserves the draft and prior encrypted snapshot unt
     if (r.method() === "POST") posts.push(r.url());
   });
   await page.goto("/");
-  const tab = (name: string) =>
-    workspaceControl(page, name);
+  const tab = (name: string) => workspaceControl(page, name);
   await page
     .getByLabel("Message PrivateAI")
     .fill("SYNTHETIC ORIGINAL SAVED DRAFT");
@@ -97,7 +96,11 @@ test("narrow and magnified workspace supports keyboard activation and error reco
   await page.goto("/");
   await page.getByLabel("Message PrivateAI").fill("SYNTHETIC KEYBOARD DRAFT");
   await page.getByRole("button", { name: "Open navigation" }).click();
-  const saved = page.getByRole("navigation", { name: "Workspace" }).getByRole("button", { name: /^Saved/ });
+  await page.getByLabel("Account menu", { exact: true }).focus();
+  await page.keyboard.press("Enter");
+  const saved = page
+    .getByRole("navigation", { name: "Workspace" })
+    .getByRole("button", { name: /^Saved/ });
   await saved.focus();
   await page.keyboard.press("Enter");
   const pass = page.getByLabel("Vault passphrase");

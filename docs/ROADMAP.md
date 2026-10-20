@@ -1,6 +1,23 @@
 # PrivateAI delivery roadmap
 
-## Current UI milestone — 20 October
+## Active UI milestone — product organization, 20 October
+
+Owner authorized functional encrypted projects/pin/archive, unified account/settings and visible disabled future-capability previews. Implemented in the existing production candidate; see ui-device-test-plan.md for the before/after map and READINESS for validation. Review actual screens at `.local/ui-product-20261020/index.html` before wider design propagation. Next after design review: align dedicated account/sign-in/security screens and validate on Galaxy A52/TalkBack; project rename/removal is an incremental follow-up, not automatic context or shared workspaces. Provider qualification, fresh complete-answer quality/safety and hosted operations remain independent release requirements. No new infrastructure or service activation.
+
+### Capability dependencies after the UI pass
+
+These are visible **disabled Coming later** designs, not implemented media/sharing products or approval to activate providers.
+
+| Capability | Frontend | Backend/service | Privacy requirement | Acceptance before enabling |
+| --- | --- | --- | --- | --- |
+| Microphone dictation | Deliberate start/stop, recording indicator, editable transcript, discard | Select and evaluate maintained on-device or qualified transcription path; duration/size/usage bounds | Explicit permission only on action; microphone lifecycle, audio/transcript retention and encryption evidence; never silently use browser/cloud speech services | Languages/accents/noise accuracy, denied permission, interruption, mobile backgrounding, no capture after stop and correct cost |
+| Live voice conversation | Session state, interrupt/mute/end, transcript/correction, accessible text alternative | Streaming speech and model integration, backpressure, cancellation, timeout and billing accounting | Browser-to-qualified-deployment transport for both directions; voice retention/identity risks; same private-data gate | Turn-taking, interruption, safety across turns, latency, failure recovery, end-session capture stop and actual-device checks |
+| Camera/photo capture | Camera/gallery picker, preview/remove, metadata disclosure and text-extraction vs vision distinction | Existing local PNG/JPEG OCR is limited; general vision needs a separately qualified model path, input validation and bounds | Explicit capture approval, metadata minimization, no background camera, no unreviewed upload; image/sensitive-data retention | Orientation, large/corrupt files, OCR accuracy, unsupported content, permission denial, real camera lifecycle; malicious image instructions |
+| Image creation/editing | Prompt/reference preview, progress/cancel, download and provenance | Maintained generation/editing service, bounded usage and job handling; none selected/activated | Provider qualification for prompts/reference images, retention, usage rights and safety decision | Quality on fresh tasks, edits preserve requested features, failures/cost/cancellation, abuse and disclosure review |
+| Explicit chat sharing | Select turns, redact/preview, audience/expiry, revoke; exclude unsent drafts | Reviewed access-controlled snapshot/link design and deletion/revocation semantics | Separate privacy/product rollout review; project/history never automatically exposed; supplier saving rights prohibit current temporary research sharing | Unauthorized access, link leakage, expiry/revoke, content deletion, account changes; user confirms exact shared content |
+
+
+## Previous UI milestone — superseded by product organization batch
 
 First visual candidate was not approved. Structural revision implements searchable history, collapsible sidebar/mobile drawer, reachable composer, on-demand context/privacy/tools and persistent violet-accented themes. Functional map, existing capabilities and explicitly unfinished/deferred proposals are in ui-device-test-plan.md; evidence in READINESS. Review `.local/ui-structure-20261020/index.html` before broad visual propagation. Pin/archive and final identity remain unfinished. This is progress on the same public-product architecture; privacy, complete-answer quality/safety and hosted qualification remain separate release gates. Supplier replies remain pending; no infrastructure expansion or paid activation in this batch.
 

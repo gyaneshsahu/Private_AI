@@ -17,6 +17,9 @@ const source = z.object({
 const conversationBody = z.object({
   id: z.string().min(1),
   title: z.string(),
+  pinned: z.boolean().optional(),
+  archived: z.boolean().optional(),
+  projectId: z.string().uuid().optional(),
   createdAt: z.string(),
   draft: z.string().optional(),
   temporarySearch: z.boolean().optional(),

@@ -107,7 +107,7 @@ test("representative themes, long history, source and responsive keyboard contro
     await page.getByLabel("Appearance", { exact: true }).selectOption(theme);
     await page.getByRole("button", { name: "Close settings" }).click();
   };
-  await mkdir(".local/ui-structure-20261020", { recursive: true });
+  await mkdir(".local/ui-product-20261020", { recursive: true });
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1000 });
     for (const theme of ["light", "dark"]) {
@@ -118,7 +118,7 @@ test("representative themes, long history, source and responsive keyboard contro
       );
       await page.locator("main").evaluate((el) => el.scrollTo(0, 0));
       await page.screenshot({
-        path: `.local/ui-structure-20261020/${theme}-${width}.png`,
+        path: `.local/ui-product-20261020/${theme}-${width}.png`,
         fullPage: false,
         animations: "disabled",
       });
@@ -127,7 +127,7 @@ test("representative themes, long history, source and responsive keyboard contro
         .evaluate((el) => el.scrollTo(0, el.scrollHeight));
       await expect(page.getByLabel("Message PrivateAI")).toBeInViewport();
       await page.screenshot({
-        path: `.local/ui-structure-20261020/${theme}-${width}-error.png`,
+        path: `.local/ui-product-20261020/${theme}-${width}-error.png`,
         animations: "disabled",
       });
       expect(
@@ -190,7 +190,7 @@ test("representative themes, long history, source and responsive keyboard contro
     .getByRole("searchbox", { name: "Search chats" })
     .fill("export format");
   await page.screenshot({
-    path: ".local/ui-structure-20261020/mobile-drawer.png",
+    path: ".local/ui-product-20261020/mobile-drawer.png",
     animations: "disabled",
   });
   await page
@@ -202,12 +202,12 @@ test("representative themes, long history, source and responsive keyboard contro
     page.getByRole("button", { name: "Open navigation" }),
   ).toBeVisible();
   await page.screenshot({
-    path: ".local/ui-structure-20261020/desktop-collapsed.png",
+    path: ".local/ui-product-20261020/desktop-collapsed.png",
     animations: "disabled",
   });
   await page.getByLabel("Attachments and tools", { exact: true }).click();
   await page.screenshot({
-    path: ".local/ui-structure-20261020/tools.png",
+    path: ".local/ui-product-20261020/tools.png",
     animations: "disabled",
   });
   await page.keyboard.press("Escape");
@@ -228,18 +228,18 @@ test("representative themes, long history, source and responsive keyboard contro
   ).toContainText("synthetic.txt");
   await page.getByRole("button", { name: source.title, exact: true }).click();
   await page.screenshot({
-    path: ".local/ui-structure-20261020/sources.png",
+    path: ".local/ui-product-20261020/sources.png",
     animations: "disabled",
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({
-    path: ".local/ui-structure-20261020/mobile-sources.png",
+    path: ".local/ui-product-20261020/mobile-sources.png",
     animations: "disabled",
   });
   await page.keyboard.press("Escape");
   await page.getByLabel("Attachments and tools", { exact: true }).click();
   await page.screenshot({
-    path: ".local/ui-structure-20261020/mobile-tools.png",
+    path: ".local/ui-product-20261020/mobile-tools.png",
     animations: "disabled",
   });
   await page.keyboard.press("Escape");
@@ -255,7 +255,7 @@ test("representative themes, long history, source and responsive keyboard contro
   await settings("dark");
   await workspaceControl(page, "Settings").click();
   await page.screenshot({
-    path: ".local/ui-structure-20261020/mobile-settings.png",
+    path: ".local/ui-product-20261020/mobile-settings.png",
     animations: "disabled",
   });
   await page.getByRole("button", { name: "Close settings" }).click();

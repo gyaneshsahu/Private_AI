@@ -127,6 +127,10 @@ export interface Usage {
   estimatedUSD: number;
 }
 export interface Conversation {
+  /** Vault organization only; never model context. */
+  pinned?: boolean;
+  archived?: boolean;
+  projectId?: string;
   /** Sticky for the whole conversation: replies may reproduce temporary search results. */
   temporarySearch?: boolean;
   id: string;
@@ -149,6 +153,7 @@ export interface AppStatus {
   consumerWorkspace?: boolean;
   requestAllowance?: RequestAllowance;
   accountId?: string;
+  accountEmail?: string;
   accessEpoch?: string;
   csrf: string;
   inference: { ready: boolean; reason: string; qualification?: Qualification };

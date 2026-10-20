@@ -35,7 +35,11 @@ test("temporary text extraction, context corrections and calculator work without
   await page
     .getByLabel("Text for bill.txt", { exact: true })
     .fill("Corrected total 102.50 EUR");
-  expect(await page.evaluate(() => Object.keys(localStorage).filter(key => key !== "privateai.appearance"))).toEqual([]);
+  expect(
+    await page.evaluate(() =>
+      Object.keys(localStorage).filter((key) => key !== "privateai.appearance"),
+    ),
+  ).toEqual([]);
   expect(
     await page.evaluate(
       async () =>
@@ -44,8 +48,7 @@ test("temporary text extraction, context corrections and calculator work without
         ).length,
     ),
   ).toBe(0);
-  await workspaceControl(page, "Conversation")
-    .click();
+  await workspaceControl(page, "Conversation").click();
   await page.getByText("Exact decimal calculator", { exact: true }).click();
   await page.getByLabel("First number").fill("0.1");
   await page.getByLabel("Second number").fill("0.2");
@@ -99,10 +102,7 @@ test("encrypted snapshots survive reload, lock clears content and deletion persi
   await expect(
     page.getByText("private.txt", { exact: false }).first(),
   ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Saved", exact: false })
-    .first()
-    .click();
+  await workspaceControl(page, "Saved").click();
   await page
     .getByLabel("Vault passphrase")
     .fill("correct horse battery staple");
@@ -117,10 +117,7 @@ test("encrypted snapshots survive reload, lock clears content and deletion persi
   await page.getByRole("button", { name: "Lock and clear workspace" }).click();
   await expect(page.getByText("Local vault unlocked")).not.toBeVisible();
   await page.reload();
-  await page
-    .getByRole("button", { name: "Saved", exact: false })
-    .first()
-    .click();
+  await workspaceControl(page, "Saved").click();
   await page
     .getByLabel("Vault passphrase")
     .fill("correct horse battery staple");
@@ -134,10 +131,7 @@ test("encrypted snapshots survive reload, lock clears content and deletion persi
   await expect(page.getByLabel("Text for private.txt")).toContainText(
     "SENSITIVE NOTE 991",
   );
-  await page
-    .getByRole("button", { name: "Saved", exact: false })
-    .first()
-    .click();
+  await workspaceControl(page, "Saved").click();
   await page.getByRole("button", { name: "Delete", exact: true }).click();
   await expect(
     page.getByText("No saved conversations yet.", { exact: false }),
@@ -170,7 +164,9 @@ test("real local screenshot OCR reads printed text without a remote OCR service"
     mimeType: "image/png",
     buffer: Buffer.from(image, "base64"),
   });
-  await expect(page.locator(".content-view details summary")).toBeVisible({ timeout: 45000 });
+  await expect(page.locator(".content-view details summary")).toBeVisible({
+    timeout: 45000,
+  });
   await page.locator(".content-view details summary").click();
   await expect(page.getByLabel("Text for screenshot.png page 1")).toContainText(
     "120.50 EUR",
@@ -185,8 +181,7 @@ test("desktop and basic phone layouts have no horizontal overflow", async ({
   for (const width of [1440, 360]) {
     await page.setViewportSize({ width, height: 900 });
     for (const tab of ["Conversation", "Context", "Research", "Saved"]) {
-      await workspaceControl(page, tab)
-        .click();
+      await workspaceControl(page, tab).click();
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,
@@ -196,7 +191,6 @@ test("desktop and basic phone layouts have no horizontal overflow", async ({
   }
   await page.screenshot({ path: "test-results/phone.png", fullPage: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await workspaceControl(page, "Conversation")
-    .click();
+  await workspaceControl(page, "Conversation").click();
   await page.screenshot({ path: "test-results/desktop.png", fullPage: true });
 });
