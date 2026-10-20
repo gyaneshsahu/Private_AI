@@ -1,5 +1,12 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Database rule verification and secret preparation — 20 October
+
+After owner reported saved, refreshed dashboard shows only one editable database CIDR row: 74.220.51.0/24. 74.220.59.0/24 is not present in the rendered table. Summary badge says two ranges but conflicts with the concrete row listing; do not treat badge as verification of both required ranges. Workspace/environment broad rules remain unchanged. Owner must add the second database source and save; agent did not modify settings.
+
+Prepared .local/private-secrets/database-url.txt with placeholder only, no overwrite. Git-ignored; inherited ACL grants only current owner and SYSTEM. Owner may paste Render External Database URL there, never into chat. No credential copied/revealed or connection attempted. This is local preparation, not a secret mount or service activation.
+
+
 ## Owner-created PostgreSQL inspected — 20 October
 
 Read-only dashboard confirms privateai-accounts (dpg-dbbpa98ae00c73acf98g-a), PostgreSQL17, Frankfurt, 0.1c-256mb and 1GB storage; autoscaling/HA disabled and no Datadog. Initial status was Creating; subsequent refreshed dashboard confirms Available and username privateai_app. This is provider provisioning, not proof of a successful application connection/schema/hosted readiness. Existing web service unchanged. Database-level inbound rule currently 0.0.0.0/0. Web service Connect → Outbound shows 74.220.51.0/24 and 74.220.59.0/24; these are shared regional ranges, NOT exclusive service identity. Owner next replaces only this database's broad inbound rule with these two ranges, leaving workspace/environment rules untouched to avoid affecting other services. Password authentication and verified TLS remain required. Agent made no settings changes and did not reveal/copy connection secrets. Provisioning is confirmed; applied restriction still requires verification.
