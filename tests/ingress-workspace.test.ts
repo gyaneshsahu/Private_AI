@@ -107,7 +107,9 @@ describe.runIf(
     const runtime = await make();
     await expect(runtime.listen(-1)).rejects.toThrow("listen request");
     const starting = runtime.listen(0);
-    const rejected = expect(starting).rejects.toThrow("startup was not admitted");
+    const rejected = expect(starting).rejects.toThrow(
+      "startup was not admitted",
+    );
     await runtime.stop();
     await rejected;
     expect(runtime.server.listening).toBe(false);
@@ -444,7 +446,7 @@ describe.runIf(
         });
         await page.goto(origin + "/");
         await browserExpect(
-          page.getByRole("heading", { name: "Sign in to PrivateAI" }),
+          page.getByRole("heading", { name: "Log in or sign up" }),
         ).toBeVisible();
         await page
           .getByText("Help with sign-in or reporting a problem", {
@@ -463,7 +465,7 @@ describe.runIf(
           .getByLabel("Email address", { exact: true })
           .fill("browser@example.test");
         await page
-          .getByRole("button", { name: "Continue with email", exact: true })
+          .getByRole("button", { name: "Continue", exact: true })
           .click();
         await browserExpect(page.getByLabel("Verification code")).toBeFocused();
         await page
@@ -494,8 +496,7 @@ describe.runIf(
         await page
           .getByRole("link", { name: "Open workspace", exact: true })
           .click();
-        const tab = (name: string) =>
-          workspaceControl(page, name);
+        const tab = (name: string) => workspaceControl(page, name);
         await page
           .getByLabel("Message PrivateAI")
           .fill("INGRESS_LOCAL_DRAFT_CANARY");
@@ -566,7 +567,7 @@ describe.runIf(
           .click();
         await page.goto(origin + "/");
         await browserExpect(
-          page.getByRole("heading", { name: "Sign in to PrivateAI" }),
+          page.getByRole("heading", { name: "Log in or sign up" }),
         ).toBeVisible();
         expect(outbound).toEqual([]);
         for (const marker of [
@@ -588,7 +589,7 @@ describe.runIf(
           .getByLabel("Email address", { exact: true })
           .fill("outage@example.test");
         await page
-          .getByRole("button", { name: "Continue with email", exact: true })
+          .getByRole("button", { name: "Continue", exact: true })
           .click();
         await browserExpect(
           page
@@ -602,7 +603,7 @@ describe.runIf(
         await restart();
         expect(await active.ready).toBe(true);
         await page
-          .getByRole("button", { name: "Continue with email", exact: true })
+          .getByRole("button", { name: "Continue", exact: true })
           .click();
         await browserExpect(page.getByLabel("Verification code")).toBeFocused();
         expect(codes.has("outage@example.test")).toBe(true);

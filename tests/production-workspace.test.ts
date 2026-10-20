@@ -60,14 +60,14 @@ for (const viewport of [
           await page.goto(origin + "/account");
           await browserExpect(
             page.getByRole("button", {
-              name: "Continue with email",
+              name: "Continue",
               exact: true,
             }),
           ).toBeEnabled();
-          for (const provider of ["Google", "Apple"]) {
+          for (const provider of ["Google", "Apple", "phone"]) {
             await browserExpect(
               page.getByRole("button", {
-                name: `Continue with ${provider} Coming later`,
+                name: `Continue with ${provider} Coming soon`,
                 exact: true,
               }),
             ).toBeDisabled();
@@ -97,7 +97,7 @@ for (const viewport of [
             .getByLabel("Email address", { exact: true })
             .fill(targetEmail);
           await page
-            .getByRole("button", { name: "Continue with email", exact: true })
+            .getByRole("button", { name: "Continue", exact: true })
             .click();
           await browserExpect(
             page.getByLabel("Verification code"),
@@ -416,7 +416,7 @@ for (const viewport of [
           .getByRole("button", { name: "Sign out", exact: true })
           .click();
         await browserExpect(
-          page.getByRole("heading", { name: "Sign in to PrivateAI" }),
+          page.getByRole("heading", { name: "Log in or sign up" }),
         ).toBeVisible();
         expect(
           await page.evaluate(async () => (await fetch("/api/status")).status),
@@ -679,14 +679,12 @@ it.skipIf(!enabled)(
       const page = await context.newPage();
       await page.goto(origin + "/");
       await browserExpect(
-        page.getByRole("heading", { name: "Sign in to PrivateAI" }),
+        page.getByRole("heading", { name: "Log in or sign up" }),
       ).toBeVisible();
       await page
         .getByLabel("Email address", { exact: true })
         .fill("workspace@example.test");
-      await page
-        .getByRole("button", { name: "Continue with email", exact: true })
-        .click();
+      await page.getByRole("button", { name: "Continue", exact: true }).click();
       await browserExpect(page.getByLabel("Verification code")).toBeFocused();
       await page
         .getByLabel("Verification code")
@@ -757,7 +755,7 @@ it.skipIf(!enabled)(
         .getByRole("button", { name: "Close account", exact: true })
         .click();
       await browserExpect(
-        page.getByRole("heading", { name: "Sign in to PrivateAI" }),
+        page.getByRole("heading", { name: "Log in or sign up" }),
       ).toBeVisible();
       expect((await request("/api/status")).status).toBe(401);
       expect(blocked).toEqual([]);
@@ -805,8 +803,9 @@ it.skipIf(!enabled)(
         page.getByLabel("Email address", { exact: true }),
       ).toBeDisabled();
       await browserExpect(
-        page.getByRole("button", { name: "Continue with email" }),
+        page.getByRole("button", { name: "Continue", exact: true }),
       ).toBeDisabled();
+      await page.getByText("Use a passkey", { exact: true }).click();
       await browserExpect(
         page.getByRole("button", { name: "Sign in with a passkey" }),
       ).toBeDisabled();
@@ -840,9 +839,7 @@ it.skipIf(!enabled)(
       await page
         .getByLabel("Email address", { exact: true })
         .fill("failure@example.test");
-      await page
-        .getByRole("button", { name: "Continue with email", exact: true })
-        .click();
+      await page.getByRole("button", { name: "Continue", exact: true }).click();
       await browserExpect(page.getByRole("status")).toContainText(
         "Code delivery could not be confirmed",
       );
@@ -859,7 +856,7 @@ it.skipIf(!enabled)(
         .click();
       await browserExpect(page.getByLabel("Verification code")).toHaveCount(0);
       await browserExpect(
-        page.getByRole("button", { name: "Continue with email", exact: true }),
+        page.getByRole("button", { name: "Continue", exact: true }),
       ).toBeEnabled();
       await page.addStyleTag({
         content: "html { font-size: 200% !important; }",
@@ -906,14 +903,12 @@ it.skipIf(!enabled)(
         .getByLabel("Email address", { exact: true })
         .fill("outage@example.test");
       await browserExpect(
-        page.getByRole("button", { name: "Continue with email", exact: true }),
+        page.getByRole("button", { name: "Continue", exact: true }),
       ).toBeEnabled();
       active.operations.beginDrain();
       expect((await request("/readyz")).status).toBe(503);
       expect((await request("/healthz")).status).toBe(200);
-      await page
-        .getByRole("button", { name: "Continue with email", exact: true })
-        .click();
+      await page.getByRole("button", { name: "Continue", exact: true }).click();
       await browserExpect(page.getByRole("status")).toContainText(
         "This action was not started",
       );
@@ -927,9 +922,7 @@ it.skipIf(!enabled)(
       active = makeWorkspace();
       expect(await active.ready).toBe(true);
       expect((await request("/readyz")).status).toBe(200);
-      await page
-        .getByRole("button", { name: "Continue with email", exact: true })
-        .click();
+      await page.getByRole("button", { name: "Continue", exact: true }).click();
       await browserExpect(page.getByLabel("Verification code")).toBeFocused();
       await page
         .getByLabel("Verification code")

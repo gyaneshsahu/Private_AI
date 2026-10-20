@@ -1519,3 +1519,89 @@
     padding: 28px 24px 24px;
   }
 }
+.account-shell .account-login-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.account-login-page > .account-preview-brand,
+.account-login-page > .account-preview-banner {
+  display: none;
+}
+.account-shell .account-login-page .account-entry {
+  position: relative;
+  width: 100%;
+  max-width: 448px;
+  margin: 0 auto;
+  padding: 38px 40px 28px;
+  border-radius: 22px;
+}
+.account-shell .account-login-page .account-entry h1 {
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+}
+.account-shell .account-login-page .account-preview-intro {
+  margin: 16px 0 28px;
+  font-size: 14px;
+  color: var(--ink);
+}
+.account-shell .account-entry-close {
+  position: absolute;
+  top: 17px;
+  right: 20px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 22px;
+  line-height: 24px;
+}
+.account-shell .account-login-page .account-social {
+  gap: 8px;
+  font-size: 14px;
+  color: var(--ink);
+}
+.account-shell .account-social svg {
+  flex-shrink: 0;
+}
+.account-shell .account-login-page .account-preview-divider {
+  margin: 14px 0;
+  font-size: 11px;
+}
+.account-shell .account-login-page .account-preview-divider::before,
+.account-shell .account-login-page .account-preview-divider::after {
+  background: var(--line);
+}
+.account-shell .account-login-page .account-preview-primary {
+  background: #101010;
+  border-color: #101010;
+  color: white;
+}
+.account-shell[data-theme="dark"] .account-login-page .account-preview-primary {
+  background: #f5f5f5;
+  border-color: #f5f5f5;
+  color: #101010;
+}
+.account-shell .account-entry-extras {
+  max-width: 448px;
+  width: 100%;
+  margin: 20px auto 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.account-shell .account-entry-extras details {
+  margin: 8px 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.account-shell .account-entry-extras summary {
+  cursor: pointer;
+}
+.account-shell .account-login-page .account-entry input {
+  background: var(--canvas);
+}
+@media (max-width: 480px) {
+  .account-shell .account-login-page .account-entry {
+    padding: 36px 24px 26px;
+  }
+}

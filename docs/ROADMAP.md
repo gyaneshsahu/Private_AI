@@ -1,5 +1,7 @@
 # PrivateAI delivery roadmap
 
+Phone sign-in is now a disabled Coming soon design requested by the owner. Implementation requires a reviewed phone-number privacy purpose/retention policy, SMS provider and per-country cost/abuse limits, verified enrollment/recovery design and SIM-swap/account-takeover tests. No number collection or SMS activation is approved by this UI change.
+
 ## Next functional capability batch — proposal after approved UI integration
 
 The approved UI now runs through local PostgreSQL-backed production accounts; project rename/removal and account theme styling are complete. Evidence and limits are in READINESS. No further general redesign is planned.

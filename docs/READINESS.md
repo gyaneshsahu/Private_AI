@@ -1,5 +1,12 @@
 # PrivateAI readiness checklist
 
+## Reference-matched sign-in card — 20 October
+
+Owner rejected the prior account entry and explicitly requested the supplied card structure and Google/Apple/phone icons. Production account entry now uses Log in or sign up, short supporting text, inline SVG provider/phone icons, three rounded method rows, OR divider, placeholder email field with retained accessible label, Continue, and a close link to the workspace. No brand block or long explanatory text in the card. Passkey, privacy/recovery and help remain accessible below it. Unconfigured Google/Apple and the unimplemented phone method are disabled Coming soon; no number collection, SMS purchase or provider activation. Synthetic account-lab passkey controls remain expanded for existing test workflows.
+
+Desktop/mobile light/dark rendered captures inspected at `.local/ui-integrated-20261020/`. Build/typecheck pass; three browser recovery tests pass (uncertain code request, verification and social redirect without replay). A stale non-exact Continue selector failed after the label change and was repaired. All eight PostgreSQL production-workspace tests passed, including both viewport journeys and disabled-provider assertions. Existing zlib warning and privacy/release gates unchanged. This supersedes earlier account styling, not owner approval of the new render.
+
+
 ## Sign-in visual refinement — 20 October
 
 Owner rejected the first dedicated account-page treatment and supplied a compact social/email reference. Refined the real account entry to a 448px card, quieter typography, rounded social/email/passkey controls, neutral primary action, email divider and collapsible privacy/recovery disclosure. Google/Apple remain explicitly disabled Coming later when not configured; no provider activation or permissions added. Inactive design preview shares the entry styling. No phone sign-in added. Shared workspace design is unchanged.

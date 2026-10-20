@@ -1,3 +1,4 @@
+import { SignInIcon } from "./SignInIcon";
 import { useEffect, useRef, useState } from "react";
 import { createAuthClient } from "better-auth/client";
 import { passkeyClient } from "@better-auth/passkey/client";
@@ -267,7 +268,9 @@ export default function AccountLab({
     window.location.assign(target.href);
   }
   return (
-    <main className="account-preview">
+    <main
+      className={`account-preview ${!session && !synthetic ? "account-login-page" : ""}`}
+    >
       <a className="account-preview-brand" href="/">
         Private<span>AI</span>
       </a>
@@ -279,6 +282,15 @@ export default function AccountLab({
       <section
         className={`account-preview-card ${!session ? "account-entry" : ""}`}
       >
+        {!session && !synthetic && (
+          <a
+            href="/"
+            className="account-entry-close"
+            aria-label="Close sign-in"
+          >
+            ×
+          </a>
+        )}
         <h1>
           {session
             ? synthetic
@@ -286,12 +298,12 @@ export default function AccountLab({
               : "Your account"
             : synthetic
               ? "Sign in to the account lab"
-              : "Sign in to PrivateAI"}
+              : "Log in or sign up"}
         </h1>
         <p className="account-preview-intro">
           {session
             ? "Sign-in access is separate from your encrypted vault."
-            : "One place to sign in or create your account."}
+            : "Chat, explore ideas and work with your files."}
         </p>
         {session ? (
           <div className="account-preview-actions">
@@ -483,16 +495,22 @@ export default function AccountLab({
                 }
                 onClick={() => action(() => social(provider))}
               >
+                <SignInIcon provider={provider} />
                 Continue with {provider === "google" ? "Google" : "Apple"}
-                {!providers.includes(provider) && <small>Coming later</small>}
+                {!providers.includes(provider) && <small>Coming soon</small>}
               </button>
             ))}
-            <div className="account-preview-divider">or use email</div>
-            <label htmlFor="lab-email">
+            <button type="button" className="account-social" disabled>
+              <SignInIcon provider="phone" />
+              Continue with phone<small>Coming soon</small>
+            </button>
+            <div className="account-preview-divider">OR</div>
+            <label className="sr-only" htmlFor="lab-email">
               {synthetic ? "Test email address" : "Email address"}
             </label>
             <input
               id="lab-email"
+              placeholder="Email address"
               type="email"
               required
               readOnly={sent}
@@ -528,7 +546,7 @@ export default function AccountLab({
                   : "Verify code"
                 : synthetic
                   ? "Send test code"
-                  : "Continue with email"}
+                  : "Continue"}
             </button>
             {sent && (
               <button
@@ -543,20 +561,6 @@ export default function AccountLab({
                 Use another email
               </button>
             )}
-            <button
-              disabled={busy || uncertain || !ready}
-              type="button"
-              onClick={() =>
-                action(async () => {
-                  await passkey(() => client.signIn.passkey());
-                  await refresh();
-                })
-              }
-            >
-              {synthetic
-                ? "Sign in with a test passkey"
-                : "Sign in with a passkey"}
-            </button>
           </form>
         )}
         {uncertain && (
@@ -585,6 +589,27 @@ export default function AccountLab({
         <p role="status" className="account-preview-notice">
           {busy ? "Working…" : notice}
         </p>
+      </section>
+      <div className="account-entry-extras">
+        {!session && (
+          <details open={synthetic}>
+            <summary>Use a passkey</summary>{" "}
+            <button
+              disabled={busy || uncertain || !ready}
+              type="button"
+              onClick={() =>
+                action(async () => {
+                  await passkey(() => client.signIn.passkey());
+                  await refresh();
+                })
+              }
+            >
+              {synthetic
+                ? "Sign in with a test passkey"
+                : "Sign in with a passkey"}
+            </button>
+          </details>
+        )}
         <details className="account-preview-privacy">
           <summary>Privacy and account recovery</summary>
           <p className="account-preview-small">
@@ -604,7 +629,7 @@ export default function AccountLab({
           <summary>Help with sign-in or reporting a problem</summary>
           <SupportPanel initialArea="account" />
         </details>
-      </section>
+      </div>
     </main>
   );
 }
