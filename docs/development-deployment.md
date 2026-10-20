@@ -1,5 +1,52 @@
 # Restricted development deployment
 
+## Proposed Render reuse — restricted Google milestone, 20 October
+
+**Decision: reuse is technically plausible, but the existing package is NOT ready for cutover.** Recommend retaining the existing service and adding the smallest paid managed PostgreSQL instance, after the Render-specific bridge passes the tests below. This is one restricted owner-login deployment, not approval for private inference or public launch. No purchase or live change has occurred.
+
+### Exact proposed topology and changes
+
+Browser HTTPS → Render TLS edge → HTTP listener on `$PORT` in the existing container → loopback mTLS production runtime → managed PostgreSQL external TLS endpoint with certificate/hostname verification. Render remains trusted with account traffic and OAuth callbacks. The local mTLS hop authenticates our bridge; it does **not** cryptographically authenticate Render's upstream HTTP hop. This platform trust must be explicit in rollout review.
+
+1. Keep `private-ai-deployment`, its existing region, Hobby workspace, $7 compute and 1 GB legacy disk. Preserve the old deployment commit/config and disk contents. Do not reuse the legacy account registry as the new account database.
+2. Prepare a new explicit container target containing the production candidate and a small supervised ingress bridge. Only the bridge binds `0.0.0.0:$PORT`; application mTLS binds loopback. Both stop if either fails. Default Docker target currently starts the OLD runtime and must not be used accidentally.
+3. Bridge rejects unexpected Host/Origin, removes supplied edge/forwarding headers, disables content/access logging and caching, and uses a shared admission-rate bucket for this owner-only test. Do not claim a verified visitor IP, trust arbitrary X-Forwarded-For, or manufacture a client-IP claim. The ingress interface needs an explicit shared-bucket identity rather than labelling it a real address. Application per-account quotas remain authoritative. A shared bucket can cause denial of service to the owner; this is not a public-scale admission design.
+4. Add paid Render Postgres 0.1 CPU / 256 MB (formerly Basic-256mb), **1 GB storage**, same region. Fresh database, reviewed schema initialization, no account migration. Use the external hostname with verified TLS and an explicit reviewed CA bundle; restrict external access to the service's documented outbound ranges. Render's internal self-signed TLS does not satisfy the existing certificate-verification contract. Never set rejectUnauthorized:false. Validate live chain/hostname and connection recovery before admitting sign-in. Keep storage autoscaling off; owner controls all settings.
+5. Mount Google credentials, auth secret, database connection/CA and bridge/application TLS material as server-only secret files. Require exact owner email allowlist. No provider secrets in VITE variables or image layers. Email delivery and inference remain disabled. No real document/chat content for this milestone.
+6. Owner adds the custom domain only after package review. Expected DNS is CNAME `app` → `private-ai-deployment.onrender.com`, but confirm the exact target shown by Render before entry. Google redirect stays `https://app.cometrow.com/api/auth/callback/google`; origin `https://app.cometrow.com`. Do not change DNS yet.
+
+### Monthly cost proposed for approval
+
+| Item | USD/month before tax |
+| --- | ---: |
+| Existing web compute | 7.00 |
+| Existing 1 GB disk retained for rollback | 0.25 |
+| Paid PostgreSQL 256 MB compute | 6.00 |
+| 1 GB PostgreSQL storage allowance at $0.30/GB | 0.30 |
+| Hobby workspace; managed TLS; first custom domain | 0.00 |
+| **Budgeted recurring total** | **13.55** |
+| **Increment over recorded $7.25 existing base** | **6.30** |
+
+The pricing page also advertises 1 GB included: if the creation quote applies that inclusion, total is **$13.25**, increment **$6.00**. Do not represent the extra $0.30 as an established charge. Final checkout quote controls. Tax, existing domain renewal and variable egress/build overages are excluded; this is a base monthly estimate, not a capped invoice. No email, monitoring, VM, second web service or model spend is added by the login milestone. Existing service cost comes from the recorded 20 October dashboard inspection, not a fresh authenticated dashboard read this batch. If 512 MB proves insufficient in a packaged memory-limit test, stop and revise the proposal before any upgrade; the current 1 GB local compose limit is not proof of 512 MB fitness.
+
+### Pre-cutover evidence and rollback
+
+Before asking the owner to purchase/configure: test the new bridge through the packaged app at 512 MB, forwarded-header spoofing and wrong Host/Origin, direct application-port denial, exact allowlist, signed synthetic Google success/cancel/logout, database failure/recovery and coordinated shutdown. Verify secrets and OAuth codes do not enter application logs. Current tests do not establish these Render-specific properties. Graphify query did not locate these newer runtime relationships; the source files were inspected directly.
+
+After reviewed provisioning: verify live PostgreSQL certificate identity; run the relevant existing infrastructure checks against the restricted target; inspect Render request-log treatment of callback query strings (application no-logging alone is insufficient); confirm custom-domain TLS. Owner then performs real Google consent/sign-in and cancellation without sharing password or cookies. Test unauthorized identity rejection, unauthenticated API denial, reload, logout invalidation, and desktop/mobile browser behavior. Public sign-in shell can be reachable; protected data/actions must remain owner-only. Synthetic fixtures are not real Google interoperability evidence.
+
+Rollback: stop candidate admission; restore the recorded old immutable deployment and its original configuration without new OAuth secrets. Remove/disable the new custom-domain binding if necessary so app.cometrow.com cannot serve the old runtime as a misleading replacement. Keep the new database intact for investigation, revoke its test sessions, and do not overwrite later revocations with an older backup. DNS caches can delay recovery; rollback is not instantaneous or zero downtime (existing persistent disk already constrains deploy behavior). Deleting/cancelling the paid database is an owner decision, not an automatic rollback step. Hobby paid PostgreSQL supplies a three-day PITR window; perform a synthetic restore check before calling hosted recovery verified.
+
+### Primary evidence
+
+- [Render HTTP port and TLS edge](https://render.com/docs/web-services): platform TLS termination is incompatible with direct use of our existing mandatory-mTLS listener.
+- [PostgreSQL connection and TLS rules](https://render.com/docs/postgresql-creating-connecting) and [external certificate verification](https://render.com/tutorials/postgres-on-render/connection-strings).
+- [Pricing](https://render.com/pricing) and [published small-host cost details](https://render.com/articles/how-much-does-cloud-application-hosting-cost-for-small-businesses).
+- [Paid PostgreSQL recovery windows](https://render.com/docs/postgresql-backups).
+
+**Next engineering step:** build/test the inactive Render bridge and fixed-memory package. **Next owner decision after that evidence:** approve this restricted Render/PostgreSQL rollout and its explicit platform trust/cost. DNS, secret mounting and real Google testing follow that approval. Provider privacy and answer-quality acceptance remain independent closed gates.
+
+
 ## Restricted Google-only hosted test: exact preflight and rollout boundary
 
 20 October read-only lookup: `app.cometrow.com` has no DNS answer. Credential-file structure is valid, but neither credentials nor registered console callback have been verified by Google. No request containing credentials has been sent.

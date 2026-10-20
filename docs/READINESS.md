@@ -1,5 +1,10 @@
 # PrivateAI readiness checklist
 
+## Render reuse assessment — 20 October
+
+Prepared one restricted Google hosting proposal in development-deployment.md: reuse recorded $7.25/month Render service/disk plus $6 PostgreSQL and up to $0.30 storage = $13.55/month base budget before tax/overages ($13.25 if advertised included storage applies). No purchases, DNS, credentials or settings changed. Not ready for cutover: Render terminates TLS then forwards HTTP; package demands authenticated mTLS. Proposed inactive local bridge requires explicit platform trust, a shared admission bucket without invented visitor-IP verification, and packaged 512 MB testing. Render internal PostgreSQL self-signed TLS does not meet current verification contract; external verified TLS is proposed, subject to live chain verification and access restrictions. Callback log treatment remains a hosted check. Existing code inspected; no code changes/tests claimed this assessment. Rollback and exact pre-cutover/owner steps are recorded. Private-data, quality and public-release gates remain closed. Next: implement/test bridge locally, then seek review of the concrete package before provisioning.
+
+
 ## Restricted Google hosted-test preflight — 20 October
 
 Read-only DNS lookup of app.cometrow.com returned DNS name does not exist (after sandbox denied the initial lookup). No DNS was changed. Existing deployment records identify an older restricted Render runtime; this is not evidence that the production PostgreSQL/mTLS account package is hosted. Do not point the approved callback domain at the old runtime simply to make DNS resolve.
