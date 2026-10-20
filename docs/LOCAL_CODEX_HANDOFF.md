@@ -1,5 +1,10 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Owner-created PostgreSQL inspected — 20 October
+
+Read-only dashboard confirms privateai-accounts (dpg-dbbpa98ae00c73acf98g-a), PostgreSQL17, Frankfurt, 0.1c-256mb and 1GB storage; autoscaling/HA disabled and no Datadog. Initial status was Creating; subsequent refreshed dashboard confirms Available and username privateai_app. This is provider provisioning, not proof of a successful application connection/schema/hosted readiness. Existing web service unchanged. Database-level inbound rule currently 0.0.0.0/0. Web service Connect → Outbound shows 74.220.51.0/24 and 74.220.59.0/24; these are shared regional ranges, NOT exclusive service identity. Owner next replaces only this database's broad inbound rule with these two ranges, leaving workspace/environment rules untouched to avoid affecting other services. Password authentication and verified TLS remain required. Agent made no settings changes and did not reveal/copy connection secrets. Provisioning is confirmed; applied restriction still requires verification.
+
+
 ## Restricted Render rollout approved — 20 October
 
 Owner approved the restricted Render/PostgreSQL proposal and its explicit platform-hop trust. Approval is for the owner-only Google milestone at the stated $13.55/month base estimate before tax/overages; not private inference/public launch. Standing account-control preference persists: owner performs service purchases/settings, DNS and secret configuration; agent inspects read-only and prepares/tests code.
