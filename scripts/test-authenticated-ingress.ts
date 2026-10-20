@@ -19,7 +19,8 @@ if (
 const tls = await ingressTLS();
 const container = `privateai-ingress-${randomUUID()}`;
 const browser = process.argv.includes("--browser");
-const packaged = process.argv.includes("--package");
+const render = process.argv.includes("--render");
+const packaged = render || process.argv.includes("--package");
 const workspace = packaged || browser || process.argv.includes("--workspace");
 const database = `${container}-db`;
 const host =
@@ -96,6 +97,9 @@ try {
       `--name=${container}`,
       "--pull=never",
       workspace ? `--network=container:${database}` : "--network=none",
+      ...(render
+        ? ["--memory=512m", "--memory-swap=512m", "--pids-limit=128"]
+        : []),
       "--user=1000:1000",
       "--read-only",
       "--cap-drop=ALL",
@@ -122,6 +126,7 @@ try {
       "--mount",
       `type=bind,source=${caddy},target=/usr/local/bin/caddy,readonly`,
       "--env=PRIVATEAI_SYNTHETIC_INGRESS_TLS_DIR=/fixtures",
+      ...(render ? ["--env=PRIVATEAI_SYNTHETIC_RENDER=1"] : []),
       "--env=PRIVATEAI_SYNTHETIC_CADDY=/usr/local/bin/caddy",
       "--env=XDG_DATA_HOME=/tmp/test-data",
       ...(browser
@@ -145,25 +150,35 @@ try {
           ]
         : []),
       "--entrypoint=node",
-      packaged
-        ? "privateai-deployment-candidate:local"
-        : browser
-          ? "privateai-ingress-browser-test:local"
-          : workspace
-            ? "privateai-account-ingress-test:local"
-            : "privateai-evaluation:latest",
+      render
+        ? "privateai-render-candidate:local"
+        : packaged
+          ? "privateai-deployment-candidate:local"
+          : browser
+            ? "privateai-ingress-browser-test:local"
+            : workspace
+              ? "privateai-account-ingress-test:local"
+              : "privateai-evaluation:latest",
       "node_modules/vitest/vitest.mjs",
       "run",
-      packaged
-        ? "tests/deployment-package.test.ts"
-        : workspace
-          ? "tests/ingress-workspace.test.ts"
-          : "tests/authenticated-ingress.test.ts",
+      render
+        ? "tests/render-bridge.test.ts"
+        : packaged
+          ? "tests/deployment-package.test.ts"
+          : workspace
+            ? "tests/ingress-workspace.test.ts"
+            : "tests/authenticated-ingress.test.ts",
+      ...(render
+        ? [
+            "tests/deployment-package.test.ts",
+            "tests/authenticated-ingress.test.ts",
+          ]
+        : []),
       "--maxWorkers=1",
     ],
     { env, stdio: "inherit", windowsHide: true, timeout: 90000 },
   );
-  if (packaged) {
+  if (packaged && !render) {
     const docker = (args: string[], timeout = 15000) =>
       execFileSync("docker", [host, ...args], {
         env,

@@ -80,7 +80,10 @@ export interface ProductionAccountCandidateConfig {
   /** Restricted hosted enrollment; exact verified emails, no domain wildcards. */
   allowedEmails?: string[];
   /** Inactive authenticated proxy alternative; never enables Express trust proxy. */
-  ingress?: { peerCertificateSha256: readonly string[] };
+  ingress?: {
+    peerCertificateSha256: readonly string[];
+    admission?: "client-ip" | "shared";
+  };
 }
 
 /** Unmounted preparation. TLS or explicit authenticated ingress; no environment activation. */
@@ -113,6 +116,7 @@ export function createProductionAccountCandidate(
       ? createMutualTlsIngress({
           origin: productionAccountTarget.origin,
           peerCertificateSha256: config.ingress.peerCertificateSha256,
+          admission: config.ingress.admission,
         })
       : undefined,
   });
@@ -478,7 +482,7 @@ function createAccountAuth(
     const ingress = config.ingress;
     router.use((req, res, next) => {
       // The workspace may already have authenticated this exact request before admission.
-      if (ingress.clientAddress(req) !== undefined) next();
+      if (ingress.authenticated(req)) next();
       else ingress.middleware(req, res, next);
     });
   }
@@ -535,11 +539,14 @@ function createAccountAuth(
     const clientAddress = config.ingress
       ? config.ingress.clientAddress(req)
       : req.socket.remoteAddress;
-    if (!clientAddress) {
+    if (!clientAddress && !config.ingress?.authenticated(req)) {
       res.status(403).json({ error: "Verified client address required." });
       return;
     }
-    req.headers["x-privateai-client-ip"] = clientAddress;
+    // With no verified visitor IP, Better Auth uses its shared per-path bucket.
+    // Never disable IP tracking: that would disable this rate limit entirely.
+    if (clientAddress) req.headers["x-privateai-client-ip"] = clientAddress;
+    else delete req.headers["x-privateai-client-ip"];
     try {
       if (!(await accountRecoveryOpen(config.database))) {
         res.status(503).json({

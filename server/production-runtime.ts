@@ -7,7 +7,10 @@ import { createProductionConsumerCandidate } from "./consumer-workspace";
 import type { ProductionAccountCandidateConfig } from "./account-auth";
 
 export interface ProductionRuntimeConfig extends ProductionAccountCandidateConfig {
-  ingress: { peerCertificateSha256: readonly string[] };
+  ingress: {
+    peerCertificateSha256: readonly string[];
+    admission?: "client-ip" | "shared";
+  };
   tls: { key: Buffer; cert: Buffer; ca: Buffer };
   assets: string;
 }

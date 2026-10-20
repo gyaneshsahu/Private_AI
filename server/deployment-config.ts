@@ -14,6 +14,15 @@ const schema = z
     secretFile: path,
     socialCredentialsFile: path.optional(),
     allowedEmails: z.array(z.email().max(254)).min(1).max(10).optional(),
+    renderBridge: z
+      .object({
+        keyFile: path,
+        certFile: path,
+        caFile: path,
+        servername: z.string().min(1).max(253),
+      })
+      .strict()
+      .optional(),
     databaseUrlFile: path,
     databaseCaFile: path.optional(),
     tlsKeyFile: path,
@@ -28,6 +37,12 @@ const schema = z
   .refine(
     (config) => !config.socialCredentialsFile || !!config.allowedEmails,
     "Restricted social sign-in requires an identity allowlist.",
+  )
+  .refine(
+    (config) =>
+      !config.renderBridge ||
+      (config.host === "127.0.0.1" && !!config.allowedEmails),
+    "Render bridge requires loopback and restricted identities.",
   );
 
 async function boundedFile(file: string) {
@@ -69,6 +84,14 @@ export async function loadDeploymentConfig(file: string) {
     return {
       ...config,
       secret,
+      renderBridge: config.renderBridge
+        ? {
+            key: await boundedFile(config.renderBridge.keyFile),
+            cert: await boundedFile(config.renderBridge.certFile),
+            ca: await boundedFile(config.renderBridge.caFile),
+            servername: config.renderBridge.servername,
+          }
+        : undefined,
       social: config.socialCredentialsFile
         ? parseSocialCredentials(
             JSON.parse(

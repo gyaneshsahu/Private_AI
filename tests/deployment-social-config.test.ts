@@ -34,6 +34,37 @@ it("loads social credentials only from an explicitly supplied server secret file
   };
   const configFile = await file("config", JSON.stringify(config));
   expect((await loadDeploymentConfig(configFile)).social).toBeUndefined();
+  const renderBridge = {
+    keyFile: config.tlsKeyFile,
+    certFile: config.tlsCertFile,
+    caFile: config.clientCaFile,
+    servername: "localhost",
+  };
+  for (const candidate of [
+    { ...config, renderBridge },
+    {
+      ...config,
+      renderBridge,
+      allowedEmails: ["owner@example.test"],
+      host: "0.0.0.0",
+    },
+  ]) {
+    await writeFile(configFile, JSON.stringify(candidate));
+    await expect(loadDeploymentConfig(configFile)).rejects.toThrow(
+      "Deployment configuration unavailable or invalid.",
+    );
+  }
+  await writeFile(
+    configFile,
+    JSON.stringify({
+      ...config,
+      renderBridge,
+      allowedEmails: ["owner@example.test"],
+    }),
+  );
+  expect(
+    (await loadDeploymentConfig(configFile)).renderBridge?.servername,
+  ).toBe("localhost");
   const credentials = {
     google: {
       clientId: "synthetic.apps.googleusercontent.com",

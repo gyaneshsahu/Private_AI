@@ -4,6 +4,8 @@ import { spawn } from "node:child_process";
 import { writeFile } from "node:fs/promises";
 import { X509Certificate } from "node:crypto";
 import { request } from "node:https";
+import { request as httpRequest } from "node:http";
+const render = process.env.PRIVATEAI_SYNTHETIC_RENDER === "1";
 import { ingressTLS } from "./fixtures/ingress-tls";
 import { applyAccountMigrations } from "../server/account-migrations";
 
@@ -15,6 +17,17 @@ it.runIf(!!process.env.PRIVATEAI_SYNTHETIC_INGRESS_TLS_DIR)(
       connectionString: process.env.PRIVATEAI_SYNTHETIC_PG,
     });
     const config = {
+      ...(render
+        ? {
+            allowedEmails: ["package@example.test"],
+            renderBridge: {
+              keyFile: "/fixtures/proxy.key",
+              certFile: "/fixtures/proxy.pem",
+              caFile: "/fixtures/ca.pem",
+              servername: "localhost",
+            },
+          }
+        : {}),
       mode: "restricted-deployment",
       email: "disabled",
       host: "127.0.0.1",
@@ -41,7 +54,7 @@ it.runIf(!!process.env.PRIVATEAI_SYNTHETIC_INGRESS_TLS_DIR)(
         [
           "--import",
           "tsx",
-          "server/deployment-entry.ts",
+          render ? "server/render-entry.ts" : "server/deployment-entry.ts",
           "/tmp/runtime-config.json",
         ],
         { stdio: ["ignore", "pipe", "pipe"] },
@@ -59,10 +72,10 @@ it.runIf(!!process.env.PRIVATEAI_SYNTHETIC_INGRESS_TLS_DIR)(
     }
     function call(path: string, body?: unknown) {
       return new Promise<{ status: number; body: string }>((done, reject) => {
-        const req = request(
+        const req = (render ? httpRequest : request)(
           {
             hostname: "127.0.0.1",
-            port: 8443,
+            port: render ? 10000 : 8443,
             servername: "localhost",
             ca: tls.ca,
             ...tls.proxy,
@@ -144,7 +157,7 @@ it.runIf(!!process.env.PRIVATEAI_SYNTHETIC_INGRESS_TLS_DIR)(
           "LOCK TABLE privateai_schema_migrations IN ACCESS EXCLUSIVE MODE",
         );
         expect((await call("/readyz")).status).toBe(503);
-        expect((await call("/healthz")).status).toBe(200);
+        expect((await call("/healthz")).status).toBe(render ? 503 : 200);
       } finally {
         await lock.query("ROLLBACK");
         lock.release();

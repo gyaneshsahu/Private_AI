@@ -22,6 +22,10 @@ STOPSIGNAL SIGTERM
 ENTRYPOINT ["node", "--import", "tsx", "server/deployment-entry.ts"]
 CMD ["/run/privateai/config.json"]
 
+FROM deployment-candidate AS render-candidate
+EXPOSE 10000
+ENTRYPOINT ["node", "--import", "tsx", "server/render-entry.ts"]
+
 FROM node:24-bookworm-slim AS runtime
 RUN apt-get update && apt-get install -y --no-install-recommends age \
     && rm -rf /var/lib/apt/lists/*

@@ -7,11 +7,13 @@ import ipaddr from "ipaddr.js";
 export interface AuthenticatedIngress {
   middleware: RequestHandler;
   clientAddress(request: Request): string | undefined;
+  authenticated(request: Request): boolean;
 }
 
 /** Inactive proxy boundary. The TLS listener must verify a dedicated client CA. */
 export function createMutualTlsIngress(config: {
   origin: string;
+  admission?: "client-ip" | "shared";
   peerCertificateSha256: readonly string[];
 }): AuthenticatedIngress {
   const origin = new URL(config.origin);
@@ -33,7 +35,7 @@ export function createMutualTlsIngress(config: {
       "Configure one or two distinct SHA-256 proxy certificate pins.",
     );
   const pins = new Set(config.peerCertificateSha256);
-  const verified = new WeakMap<Request, string>();
+  const verified = new WeakMap<Request, string | null>();
   function singleHeader(request: Request, name: string) {
     const values: string[] = [];
     for (let index = 0; index < request.rawHeaders.length; index += 2)
@@ -42,7 +44,8 @@ export function createMutualTlsIngress(config: {
     return values.length === 1 ? values[0] : undefined;
   }
   return {
-    clientAddress: (request) => verified.get(request),
+    clientAddress: (request) => verified.get(request) ?? undefined,
+    authenticated: (request) => verified.has(request),
     middleware(request, response, next) {
       verified.delete(request);
       response.setHeader("Cache-Control", "no-store");
@@ -70,13 +73,21 @@ export function createMutualTlsIngress(config: {
         if (
           singleHeader(request, "host") !== origin.host ||
           singleHeader(request, "x-privateai-edge-proto") !== "https" ||
-          !address ||
-          address.length > 45 ||
-          address.includes("%") ||
-          !isIP(address)
+          (config.admission === "shared"
+            ? address !== undefined ||
+              singleHeader(request, "x-privateai-edge-admission") !== "shared"
+            : !address ||
+              address.length > 45 ||
+              address.includes("%") ||
+              !isIP(address))
         )
           throw Error("Invalid edge metadata");
-        verified.set(request, ipaddr.process(address).toString());
+        verified.set(
+          request,
+          config.admission === "shared"
+            ? null
+            : ipaddr.process(address!).toString(),
+        );
         // All downstream consumers must use clientAddress, never forwarded input.
         for (const header of [
           "forwarded",
@@ -87,6 +98,7 @@ export function createMutualTlsIngress(config: {
           "x-privateai-client-ip",
           "x-privateai-edge-client-ip",
           "x-privateai-edge-proto",
+          "x-privateai-edge-admission",
         ])
           delete request.headers[header];
       } catch {

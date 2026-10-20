@@ -1,0 +1,26 @@
+{
+  "mode": "restricted-deployment",
+  "email": "disabled",
+  "host": "127.0.0.1",
+  "port": 8443,
+  "assets": "/app/dist",
+  "secretFile": "/etc/secrets/auth-secret",
+  "databaseUrlFile": "/etc/secrets/database-url",
+  "databaseCaFile": "/etc/secrets/database-ca.pem",
+  "tlsKeyFile": "/etc/secrets/server.key",
+  "tlsCertFile": "/etc/secrets/server.pem",
+  "clientCaFile": "/etc/secrets/client-ca.pem",
+  "peerCertificateSha256": [
+    "REPLACE_WITH_REVIEWED_GATEWAY_CERTIFICATE_SHA256"
+  ],
+  "allowedEmails": [
+    "REPLACE_WITH_OWNER_EMAIL@example.com"
+  ],
+  "socialCredentialsFile": "/etc/secrets/google-social.json",
+  "renderBridge": {
+    "keyFile": "/etc/secrets/bridge.key",
+    "certFile": "/etc/secrets/bridge.pem",
+    "caFile": "/etc/secrets/client-ca.pem",
+    "servername": "localhost"
+  }
+}
