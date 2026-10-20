@@ -1,5 +1,10 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+## Google credential validation — 20 October
+
+Owner saved the Google-only secret file. Redacted local validation passed strict JSON/schema, non-placeholder values and production-adapter construction. UTF-8 without BOM; file remains Git-ignored, with access limited to owner and SYSTEM. No secret values printed, no network requests, no activation or live configuration change. This does not prove Google's credential validity or registered callback settings. Next: separately reviewed restricted hosted rollout at app.cometrow.com and an actual owner Google sign-in/cancel/logout test; private-data and public-launch gates remain closed.
+
+
 ## Google + email sign-in choices — 20 October
 
 Owner now wants only Continue with Google and Continue with email in production login/preview. Apple and phone are absent; passkey entry is not a third login choice. Backend adapters, existing linked account/security management and the synthetic Apple test path remain intact; no account migration. Gmail is accepted by email's standard email validation; delivery still requires reviewed sender activation. Google OAuth Web client has been created by the owner; no credentials received or activated.
