@@ -8,6 +8,8 @@ Candidate alternative identified from supplier documentation, not evaluated and 
 
 Open before any evaluation: (1) storage and citation rights: Exa's own terms (§4.2 copying restriction, reviewed 6 October) applied when we would be the direct customer; through Tinfoil the applicable terms are Tinfoil's, which have not been checked for retained titles, URLs or excerpts; (2) product change: the model composes queries inside the enclave, replacing the current user-approved displayed query, so the research approval flow and the temporary-session boundary would need redesign; (3) the Responses API `web_search` tool and chat-completions `web_search_options` are outside our fixed request contract and frozen evaluations; (4) the per-request fee is not published on the guide; (5) availability on the exact qualified router and worker release is unverified. This is a documentation finding, not provider selection; the 6 October decision stands and no offer is activated.
 
+Evaluation recorded 21 October: see [enclave-search-evaluation-20261021.md](enclave-search-evaluation-20261021.md).
+
 
 **20October owner confirmation / consolidated outreach:** The19October Tinfoil draft was NOT sent. One focused draft per provider, answered/open evidence ledger and verified recipient guidance are now in [provider-outreach-20261020.md](provider-outreach-20261020.md). These supersede earlier unsent drafts, including the local Brave reply template. Status DRAFT_FOR_OWNER_REVIEW / NOT_SENT; no supplier contacted. Founder operates individually in Germany, may incorporate later, and intends to send from a CometRow mailbox (exact address not assumed). Existing provider/privacy/storage/commercial gates remain closed.
 

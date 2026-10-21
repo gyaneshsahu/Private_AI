@@ -1,5 +1,10 @@
 # Restricted development deployment
 
+## Current candidate — 21 October
+
+**Next deployment: exact commit `9c9be8e12440367bc3755385f4190626e5d921b4`** (email capability disabled across account actions). Its Validate run https://github.com/gyaneshsahu/Private_AI/actions/runs/39473918073 passed: offline 499 passed / 148 skipped, browser 53 passed, durable 122 passed with zero skips, container smoke and packaged encrypted recovery passed; the same 36 infrastructure checks were not executed in CI (local execution evidence for 21 October is in READINESS.md). The live service still runs `4eb86b108bb1651ee5be65928a126f605bc26bf6`, which remains the rollback target with Pre-Deploy Command empty and no database rollback. Owner steps: Manual Deploy → Deploy a specific commit → the SHA above; Auto-Deploy off; Pre-Deploy Command empty; no secret, migration, DNS or billing change; afterwards verify the email-disabled account controls, Google sign-in, cancellation, sign-out and workspace entry. The 20 October section below describes the previous candidate and is retained as history.
+
+
 ## Exact deployment candidate CI passed — 20 October
 
 **Deploy only `4eb86b108bb1651ee5be65928a126f605bc26bf6`**, not latest HEAD. Validate run https://github.com/gyaneshsahu/Private_AI/actions/runs/39464528366 completed SUCCESS, both offline and durable jobs passed. Counts: offline unit stage 499 passed/148 skipped; browser 51 passed; durable 122 passed, zero skipped. Container smoke, persistence, invite isolation, recovery and packaged encrypted-registry check passed. The database job covers 112 of the unit-stage skipped tests (and repeats ten already-runnable checks). **36 infrastructure tests remain unexecuted in this CI run:** authenticated-ingress16, ingress-workspace12, render-bridge5, account-restore2, deployment-package1. These are not silently counted as CI passes. The prior local packaged batch passed 22 of these (16+5+1); other historical evidence does not become fresh CI coverage. Original 31 infrastructure count increases to36 with the five Render bridge cases.
