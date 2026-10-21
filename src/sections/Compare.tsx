@@ -12,6 +12,7 @@ import { ease, useLoop } from "../anim";
 import { BRAND } from "../brand";
 import { PERSONAL_COUNT, RECEIPT } from "../receipt";
 import { Reveal } from "../Reveal";
+import { Spikes } from "./Spikes";
 
 // One shared storyboard keeps both columns in step (milliseconds per beat).
 const BEATS = [700, 1300, 2000, 1500, 1500, 2000, 4400];
@@ -238,6 +239,7 @@ export function Compare() {
           )}
         </div>
       </div>
+      <Spikes />
     </section>
   );
 }

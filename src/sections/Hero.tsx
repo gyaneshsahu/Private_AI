@@ -2,6 +2,8 @@ import { motion } from "motion/react";
 import { ease } from "../anim";
 import { BRAND } from "../brand";
 import { HeroDemo } from "./HeroDemo";
+import { LightRays } from "./LightRays";
+import { Ribbon } from "./Ribbon";
 
 const PROMISES = [
   "Your personal details never leave your device",
@@ -40,6 +42,7 @@ export function Hero() {
     <section className="hero" id="top" aria-labelledby="hero-title">
       <div className="hero-grid">
         <div className="hero-copy">
+          <LightRays />
           <motion.span
             className="status-pill"
             initial={{ opacity: 0, y: 12 }}
@@ -57,7 +60,7 @@ export function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease, delay: 0.08 }}
           >
-            Ask AI about your life. <em>Keep your life to yourself.</em>
+            The AI that actually <em>cares about your privacy.</em>
           </motion.h1>
 
           <motion.p
@@ -95,6 +98,7 @@ export function Hero() {
         </div>
 
         <div className="hero-stage">
+          <Ribbon />
           <motion.div
             className="hero-stage-inner"
             initial={{ opacity: 0, y: 32 }}
