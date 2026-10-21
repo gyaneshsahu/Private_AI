@@ -9,7 +9,8 @@ Updated 21 October 2026. Items below supersede the 15 October list where they di
 3. **Deploy the exact candidate.** In Render: Manual Deploy → Deploy a specific commit → `9c9be8e12440367bc3755385f4190626e5d921b4`. Keep Auto-Deploy off and Pre-Deploy Command empty; no secret, migration, DNS or billing change. Then verify on app.cometrow.com: email-disabled account controls, Google sign-in, cancellation, sign-out and workspace entry. Report only outcomes, never screenshots containing private data.
 4. **After deployment, the hosted checks still unverified:** second real identity denied, vault save and reopen across reload, usage display reading unavailable with no plan, and the Galaxy A52 keyboard/TalkBack workspace pass from ui-device-test-plan.md with synthetic content only. Record OS, browser and release identity.
 5. **Human review packets** remain as listed in item 2 of the 15 October list below; no duplicate grading is requested. Two safety cases and the writing-ambiguity case from the 20 October complete-answer assessment still need your grade before any held-out acceptance.
-6. **Hosting, retention and trial ownership** items 4 and 5 below are unchanged: no action until the proposals are concrete.
+6. **Review the local photo-to-text feature and decide the camera header.** Merged on `codex/development-handoff` on 21 October, not deployed. Decide whether `server/app.ts` may send `Permissions-Policy: camera=(self)` instead of `camera=()` so the Use camera path can work; until then only Choose photo works. If approved, the agent makes the one-line change with a test and the feature goes into the next exact-commit CI candidate.
+7. **Hosting, retention and trial ownership** items 4 and 5 below are unchanged: no action until the proposals are concrete.
 
 
 ## Founder-only actions, in blocking order — 15 October list, retained as history
