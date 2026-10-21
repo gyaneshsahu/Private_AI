@@ -1617,3 +1617,115 @@
   background: #dedede;
   color: #101010;
 }
+
+.chat-design .photo-dialog {
+  width: min(680px, calc(100vw - 24px));
+  overflow: auto;
+}
+.chat-design .photo-dialog > .muted {
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+.chat-design .photo-error {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  font-size: 13px;
+}
+.chat-design .photo-paths {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.chat-design .photo-path {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.chat-design .photo-path button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-weight: 600;
+}
+.chat-design .photo-path small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.chat-design .photo-stage {
+  display: grid;
+  gap: 12px;
+}
+.chat-design .photo-video,
+.chat-design .photo-preview {
+  display: block;
+  max-width: 100%;
+  max-height: 50dvh;
+  justify-self: center;
+  background: var(--subtle);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.chat-design .photo-video {
+  width: 100%;
+  object-fit: contain;
+}
+.chat-design .photo-preview {
+  height: auto;
+}
+.chat-design .photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chat-design .photo-actions button {
+  min-height: 40px;
+}
+.chat-design .photo-crop {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.chat-design .photo-crop legend {
+  padding: 0 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.chat-design .photo-crop label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+}
+.chat-design .photo-crop input {
+  width: 100%;
+  min-width: 0;
+}
+.chat-design .photo-stage .muted {
+  margin: 0;
+  font-size: 12px;
+}
+@media (max-width: 760px) {
+  .chat-design .photo-paths {
+    grid-template-columns: 1fr;
+  }
+  .chat-design .photo-crop {
+    grid-template-columns: 1fr 1fr;
+  }
+  .chat-design .photo-video,
+  .chat-design .photo-preview {
+    max-height: 40dvh;
+  }
+}
