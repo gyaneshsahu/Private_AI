@@ -86,12 +86,21 @@ async function printedText(page: Page, text: string): Promise<Buffer> {
 
 /** Insert a PNG tEXt chunk directly after IHDR, as cameras and editors do. */
 function withTextChunk(png: Buffer, keyword: string, value: string): Buffer {
-  const body = Buffer.concat([Buffer.from("tEXt"), Buffer.from(`${keyword}\0${value}`)]);
+  const body = Buffer.concat([
+    Buffer.from("tEXt"),
+    Buffer.from(`${keyword}\0${value}`),
+  ]);
   const length = Buffer.alloc(4);
   length.writeUInt32BE(body.length - 4);
   const crc = Buffer.alloc(4);
   crc.writeUInt32BE(crc32(body));
-  return Buffer.concat([png.subarray(0, 33), length, body, crc, png.subarray(33)]);
+  return Buffer.concat([
+    png.subarray(0, 33),
+    length,
+    body,
+    crc,
+    png.subarray(33),
+  ]);
 }
 
 function trackDisclosures(page: Page): string[] {
@@ -131,24 +140,38 @@ test("a chosen photo is previewed, rotated, cropped, re-encoded without metadata
     "SYNTHETIC METADATA CANARY",
   );
   expect(listImageMetadata(photo)).toEqual(["tEXt"]);
-  await page.getByLabel("Message PrivateAI").fill("Read this synthetic receipt");
+  await page
+    .getByLabel("Message PrivateAI")
+    .fill("Read this synthetic receipt");
   const dialog = await openPhotoDialog(page);
   expect(
-    await page.evaluate(() => (window as unknown as Probe).__media.calls.length),
+    await page.evaluate(
+      () => (window as unknown as Probe).__media.calls.length,
+    ),
   ).toBe(0);
   await dialog.getByLabel("Choose a PNG or JPEG photo").setInputFiles({
     name: "receipt.png",
     mimeType: "image/png",
     buffer: photo,
   });
-  await expect(dialog.getByRole("img", { name: /^Photo preview/ })).toBeVisible();
-  await dialog.getByRole("button", { name: "Rotate right", exact: true }).click();
   await expect(
-    dialog.getByRole("img", { name: "Photo preview, 200 by 1000 pixels, rotated 90 degrees" }),
+    dialog.getByRole("img", { name: /^Photo preview/ }),
   ).toBeVisible();
-  await dialog.getByRole("button", { name: "Rotate left", exact: true }).click();
+  await dialog
+    .getByRole("button", { name: "Rotate right", exact: true })
+    .click();
   await expect(
-    dialog.getByRole("img", { name: "Photo preview, 1000 by 200 pixels, rotated 0 degrees" }),
+    dialog.getByRole("img", {
+      name: "Photo preview, 200 by 1000 pixels, rotated 90 degrees",
+    }),
+  ).toBeVisible();
+  await dialog
+    .getByRole("button", { name: "Rotate left", exact: true })
+    .click();
+  await expect(
+    dialog.getByRole("img", {
+      name: "Photo preview, 1000 by 200 pixels, rotated 0 degrees",
+    }),
   ).toBeVisible();
   await dialog.getByLabel("Crop from left (%)").fill("2");
   await dialog.getByLabel("Crop from right (%)").fill("2");
@@ -158,17 +181,27 @@ test("a chosen photo is previewed, rotated, cropped, re-encoded without metadata
     "Camera metadata such as location, device and time is not kept",
   );
   expect(
-    await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth,
+    ),
   ).toBe(false);
-  await dialog.getByRole("button", { name: "Use this photo", exact: true }).click();
+  await dialog
+    .getByRole("button", { name: "Use this photo", exact: true })
+    .click();
   await expect(dialog).toBeHidden();
-  const attachments = page.getByRole("list", { name: "Conversation attachments" });
-  await expect(attachments.getByRole("listitem")).toHaveCount(1, { timeout: 45000 });
+  const attachments = page.getByRole("list", {
+    name: "Conversation attachments",
+  });
+  await expect(attachments.getByRole("listitem")).toHaveCount(1, {
+    timeout: 45000,
+  });
   await expect(attachments).toContainText(/photo-\d+\.png/);
   await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
     "Read this synthetic receipt",
   );
-  const posted = await page.evaluate(() => (window as unknown as Probe).__posted);
+  const posted = await page.evaluate(
+    () => (window as unknown as Probe).__posted,
+  );
   expect(posted).toHaveLength(1);
   expect(posted[0].name).toMatch(/^photo-\d+\.png$/);
   expect(posted[0].type).toBe("image/png");
@@ -181,11 +214,13 @@ test("a chosen photo is previewed, rotated, cropped, re-encoded without metadata
     .getByRole("button", { name: /^Review photo-\d+\.png$/ })
     .click();
   await page.locator(".content-view details summary").first().click();
-  await expect(page.getByLabel(/^Text for photo-\d+\.png page 1$/)).toContainText(
-    "120.50 EUR",
-  );
+  await expect(
+    page.getByLabel(/^Text for photo-\d+\.png page 1$/),
+  ).toContainText("120.50 EUR");
   expect(
-    await page.evaluate(() => (window as unknown as Probe).__media.calls.length),
+    await page.evaluate(
+      () => (window as unknown as Probe).__media.calls.length,
+    ),
   ).toBe(0);
   expect(disclosures).toEqual([]);
 });
@@ -204,38 +239,54 @@ test("the camera is requested only from Use camera, prefers the rear camera, sto
   await expect(dialog.getByLabel("Camera preview")).toBeVisible();
   expect(
     await page.evaluate(() => (window as unknown as Probe).__media.calls),
-  ).toEqual([{ video: { facingMode: { ideal: "environment" } }, audio: false }]);
-  await expect(dialog).toContainText("The camera stays on only while this preview is open");
+  ).toEqual([
+    { video: { facingMode: { ideal: "environment" } }, audio: false },
+  ]);
+  await expect(dialog).toContainText(
+    "The camera stays on only while this preview is open",
+  );
   const take = dialog.getByRole("button", { name: "Take photo", exact: true });
   await expect(take).toBeEnabled({ timeout: 15000 });
   await take.click();
   await expect(
-    dialog.getByRole("img", { name: "Photo preview, 1000 by 240 pixels, rotated 0 degrees" }),
+    dialog.getByRole("img", {
+      name: "Photo preview, 1000 by 240 pixels, rotated 0 degrees",
+    }),
   ).toBeVisible();
   await expect(dialog.getByLabel("Camera preview")).toHaveCount(0);
   expect(
     await page.evaluate(() =>
-      (window as unknown as Probe).__media.tracks.map((track) => track.readyState),
+      (window as unknown as Probe).__media.tracks.map(
+        (track) => track.readyState,
+      ),
     ),
   ).toEqual(["ended"]);
-  await dialog.getByRole("button", { name: "Use this photo", exact: true }).click();
+  await dialog
+    .getByRole("button", { name: "Use this photo", exact: true })
+    .click();
   await expect(dialog).toBeHidden();
-  const attachments = page.getByRole("list", { name: "Conversation attachments" });
-  await expect(attachments.getByRole("listitem")).toHaveCount(1, { timeout: 45000 });
+  const attachments = page.getByRole("list", {
+    name: "Conversation attachments",
+  });
+  await expect(attachments.getByRole("listitem")).toHaveCount(1, {
+    timeout: 45000,
+  });
   await attachments
     .getByRole("button", { name: /^Review photo-\d+\.png$/ })
     .click();
   await page.locator(".content-view details summary").first().click();
-  await expect(page.getByLabel(/^Text for photo-\d+\.png page 1$/)).toContainText(
-    "4821",
-  );
+  await expect(
+    page.getByLabel(/^Text for photo-\d+\.png page 1$/),
+  ).toContainText("4821");
   expect(
-    await page.evaluate(() => (window as unknown as Probe).__media.calls.length),
+    await page.evaluate(
+      () => (window as unknown as Probe).__media.calls.length,
+    ),
   ).toBe(1);
   expect(disclosures).toEqual([]);
 });
 
-test("discard releases decoded bitmaps, malformed photos are refused, a blocked camera explains itself, and Escape closes without importing", async ({
+test("discard releases decoded bitmaps, malformed photos are refused, an absent camera explains itself, and Escape closes without importing", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -250,17 +301,27 @@ test("discard releases decoded bitmaps, malformed photos are refused, a blocked 
     mimeType: "image/png",
     buffer: photo,
   });
-  await expect(dialog.getByRole("img", { name: /^Photo preview/ })).toBeVisible();
+  await expect(
+    dialog.getByRole("img", { name: /^Photo preview/ }),
+  ).toBeVisible();
   await dialog.getByRole("button", { name: "Discard", exact: true }).click();
-  await expect(dialog.getByRole("img", { name: /^Photo preview/ })).toHaveCount(0);
-  await expect(dialog.getByRole("button", { name: "Use camera", exact: true })).toBeVisible();
-  expect(await page.evaluate(() => (window as unknown as Probe).__closed)).toBe(1);
+  await expect(dialog.getByRole("img", { name: /^Photo preview/ })).toHaveCount(
+    0,
+  );
+  await expect(
+    dialog.getByRole("button", { name: "Use camera", exact: true }),
+  ).toBeVisible();
+  expect(await page.evaluate(() => (window as unknown as Probe).__closed)).toBe(
+    1,
+  );
   await chooser.setInputFiles({
     name: "broken.png",
     mimeType: "image/png",
     buffer: Buffer.from("not a png at all"),
   });
-  await expect(dialog.getByRole("alert")).toContainText("Choose a PNG or JPEG photo");
+  await expect(dialog.getByRole("alert")).toContainText(
+    "Choose a PNG or JPEG photo",
+  );
   await chooser.setInputFiles({
     name: "truncated.png",
     mimeType: "image/png",
@@ -273,21 +334,68 @@ test("discard releases decoded bitmaps, malformed photos are refused, a blocked 
     buffer: Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x02]),
   });
   await expect(dialog.getByRole("alert")).toContainText("do not match");
-  await expect(dialog.getByRole("img", { name: /^Photo preview/ })).toHaveCount(0);
-  // The served app sends Permissions-Policy camera=(), so a real request is
-  // refused: the dialog must explain this and keep the photo path available.
+  await expect(dialog.getByRole("img", { name: /^Photo preview/ })).toHaveCount(
+    0,
+  );
+  // The served app sends Permissions-Policy camera=(self): the document may
+  // ask for the camera. Playwright's headless browser has no media capture at
+  // all, so a real request still fails here; the proof is that the policy
+  // allows the feature and the rejection is not a policy or permission
+  // denial, while the dialog explains itself and keeps the photo path open.
+  expect(
+    await page.evaluate(() => {
+      const doc = document as unknown as {
+        permissionsPolicy?: { allowsFeature(name: string): boolean };
+        featurePolicy?: { allowsFeature(name: string): boolean };
+      };
+      return (
+        (doc.permissionsPolicy ?? doc.featurePolicy)?.allowsFeature("camera") ??
+        null
+      );
+    }),
+  ).toBe(true);
+  await page.context().grantPermissions(["camera"]);
+  await page.evaluate(() => {
+    const media = navigator.mediaDevices;
+    const original = media.getUserMedia.bind(media);
+    (window as unknown as { __cameraError?: string }).__cameraError = "";
+    media.getUserMedia = async (constraints) => {
+      try {
+        return await original(constraints);
+      } catch (cause) {
+        (window as unknown as { __cameraError?: string }).__cameraError =
+          cause instanceof Error ? cause.name : String(cause);
+        throw cause;
+      }
+    };
+  });
   await dialog.getByRole("button", { name: "Use camera", exact: true }).click();
   await expect(dialog.getByRole("alert")).toContainText(
-    "blocked by this site's policy. Choose a photo instead.",
+    "Choose a photo instead.",
   );
+  const cameraError = await page.evaluate(
+    () => (window as unknown as { __cameraError?: string }).__cameraError,
+  );
+  expect(cameraError).not.toBe("");
+  expect(["NotAllowedError", "SecurityError"]).not.toContain(cameraError);
   await expect(dialog.getByLabel("Camera preview")).toHaveCount(0);
-  await expect(dialog.getByRole("button", { name: "Choose photo", exact: true })).toBeEnabled();
+  await expect(
+    dialog.getByRole("button", { name: "Choose photo", exact: true }),
+  ).toBeEnabled();
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
   expect(
-    await page.evaluate(() => document.activeElement?.getAttribute("aria-label")),
+    await page.evaluate(() =>
+      document.activeElement?.getAttribute("aria-label"),
+    ),
   ).toBe("Attachments and tools");
-  await expect(page.getByRole("list", { name: "Conversation attachments" })).toHaveCount(0);
-  await expect(page.getByRole("region", { name: "File import results" })).toHaveCount(0);
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue("Keep this synthetic draft");
+  await expect(
+    page.getByRole("list", { name: "Conversation attachments" }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("region", { name: "File import results" }),
+  ).toHaveCount(0);
+  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+    "Keep this synthetic draft",
+  );
 });

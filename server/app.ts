@@ -97,7 +97,10 @@ export function createApp(config: Config) {
       "Referrer-Policy": "no-referrer",
       "X-Content-Type-Options": "nosniff",
       "X-Frame-Options": "DENY",
-      "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+      // Camera is allowed for this origin only; the client requests it solely
+      // from the Photo to text dialog's Use camera button. Owner approved
+      // 21 October 2026. Microphone and geolocation stay blocked.
+      "Permissions-Policy": "camera=(self), microphone=(), geolocation=()",
     });
     // Hosted access is restricted before session, API and static-file handling.
     const billingReturn =
