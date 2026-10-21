@@ -483,16 +483,11 @@ describe.runIf(
         await browserExpect(
           page.getByRole("status").filter({ hasText: "Passkey added." }),
         ).toBeVisible();
-        await workspaceControl(page, "Account").click();
-        await page
-          .getByRole("button", { name: "Sign out", exact: true })
-          .click();
-        await page
-          .getByRole("button", { name: "Sign in with a passkey", exact: true })
-          .click();
-        await browserExpect(
-          page.getByRole("heading", { name: "Your account", exact: true }),
-        ).toBeVisible();
+        // Production login offers only Google and email since 20 October, so the
+        // journey stays signed in here; the absence of passkey entry is asserted
+        // on the login page after the final sign-out. A second email code at this
+        // point would exhaust the shared per-path rate bucket before the outage
+        // retry below.
         await page
           .getByRole("link", { name: "Open workspace", exact: true })
           .click();
@@ -561,7 +556,6 @@ describe.runIf(
         await browserExpect(
           page.getByRole("heading", { name: "Your account", exact: true }),
         ).toBeVisible();
-        await workspaceControl(page, "Account").click();
         await page
           .getByRole("button", { name: "Sign out", exact: true })
           .click();
@@ -569,6 +563,9 @@ describe.runIf(
         await browserExpect(
           page.getByRole("heading", { name: "Log in or sign up" }),
         ).toBeVisible();
+        await browserExpect(
+          page.getByRole("button", { name: "Sign in with a passkey" }),
+        ).toHaveCount(0);
         expect(outbound).toEqual([]);
         for (const marker of [
           "INGRESS_LOCAL_DRAFT_CANARY",

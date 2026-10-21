@@ -141,6 +141,9 @@ try {
                   `type=bind,source=${resolve("server")},target=/app/server,readonly`,
                   "--mount",
                   `type=bind,source=${resolve("shared")},target=/app/shared,readonly`,
+                  // The workspace test imports evaluation helpers that the build image never copies.
+                  "--mount",
+                  `type=bind,source=${resolve("evaluation")},target=/app/evaluation,readonly`,
                   "--mount",
                   `type=bind,source=${resolve("dist")},target=/app/dist,readonly`,
                 ]),

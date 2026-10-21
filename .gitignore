@@ -10,3 +10,4 @@ coverage/
 .local/
 graphify-out/
 *.log
+.claude/
