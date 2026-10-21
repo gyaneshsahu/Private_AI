@@ -177,8 +177,12 @@ test("projects, pin/archive, account menus and isolation through the rendered wo
   });
   await page.getByRole("button", { name: "Close settings" }).click();
   await page.getByLabel("Attachments and tools", { exact: true }).click();
+  await expect(
+    page
+      .locator(".tools-menu")
+      .getByRole("button", { name: "Photo to text", exact: true }),
+  ).toBeEnabled();
   for (const name of [
-    "Camera / photo attachment",
     "Create image",
     "Microphone dictation",
     "Live voice conversation",

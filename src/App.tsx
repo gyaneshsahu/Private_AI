@@ -17,6 +17,7 @@ import {
 } from "./conversation";
 import { DOCUMENT_ACCEPT } from "./document-formats";
 import { importDocuments, type ImportOutcome } from "./document-import";
+import { PhotoCapture } from "./PhotoCapture";
 import { Vault, VaultConflictError } from "./vault";
 import { VaultBackup } from "./VaultBackup";
 import { VaultSecurity } from "./VaultSecurity";
@@ -52,6 +53,7 @@ export function App() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
+  const [photoOpen, setPhotoOpen] = useState(false);
   const settingsDialog = useRef<HTMLDialogElement>(null);
   const contextDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -575,7 +577,7 @@ export function App() {
       }
     }
   }
-  async function importFiles(files: FileList | null) {
+  async function importFiles(files: FileList | readonly File[] | null) {
     if (!files || busy) return;
     if (
       files.length + conversation.attachments.length > 5 ||
@@ -1584,6 +1586,21 @@ export function App() {
                       <button
                         type="button"
                         className="text-button"
+                        disabled={
+                          !!busy ||
+                          conversation.attachments.length >= 5 ||
+                          conversation.attachments.filter(
+                            (a) => a.kind === "screenshot",
+                          ).length >= 3
+                        }
+                        onClick={() => setPhotoOpen(true)}
+                      >
+                        <Icon name="camera" />
+                        Photo to text
+                      </button>
+                      <button
+                        type="button"
+                        className="text-button"
                         onClick={() => setContextOpen(true)}
                       >
                         Review context{" "}
@@ -1613,7 +1630,6 @@ export function App() {
                       >
                         {(
                           [
-                            ["camera", "Camera / photo attachment"],
                             ["image", "Create image"],
                             ["mic", "Microphone dictation"],
                             ["voice", "Live voice conversation"],
@@ -1627,8 +1643,11 @@ export function App() {
                         ))}
                       </div>
                       <p className="muted">
-                        Voice, camera and image creation are not connected. No
-                        permissions or media are collected.
+                        Photo to text reads printed text on this device and
+                        asks for the camera only when you press Use camera; it
+                        is not general image understanding. Dictation, live
+                        voice, image creation and sharing are not connected: no
+                        permissions or media are collected for them.
                       </p>
                       <p className="muted">
                         Files are read on this device. Review extracted text
@@ -2381,6 +2400,12 @@ export function App() {
           </footer>
         )}
       </main>
+      {photoOpen && (
+        <PhotoCapture
+          onClose={() => setPhotoOpen(false)}
+          onUse={(file) => void importFiles([file])}
+        />
+      )}
       {source && (
         <dialog
           ref={sourceDialog}
