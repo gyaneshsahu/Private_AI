@@ -16,6 +16,8 @@ Consequences. Four of the five sent questions are answered by the supplier's own
 
 Candidate delegated-verification design (not implemented, not approved, not a qualification claim): the relay runs the Go V3 verifier, beta, against the approved enclave to obtain the freshness and revocation checks the browser lacks, then publishes the verified release digest and attested key fingerprint to the browser over the authenticated session. The browser keeps verifying independently with the pinned 1.2.2 verifier and refuses to send unless both results agree. The relay never receives plaintext. Open points: V3 is beta; the proxy guide notes Go clients attest directly against the enclave; whether this satisfies gate 2 (freshness, revocation, rollback) requires a written assessment and negative tests before any private-data admission.
 
+Assessment recorded 21 October: see [relay-mitigation-assessment-20261021.md](relay-mitigation-assessment-20261021.md).
+
 Separately, the web search guide documents search executed inside the enclave through Exa under zero data retention; see [search-provider-comparison.md](search-provider-comparison.md), 21 October entry.
 
 ## Fallback source review: integration decision — 20 October

@@ -1,5 +1,7 @@
 # PrivateAI local Codex handoff — updated 19 October 2026
 
+**Superseded 21 October 2026:** development moved from Codex to Claude Code; the current handoff is `CLAUDE_HANDOFF.md` at the repository root and the status ledger remains `docs/READINESS.md`. This file is retained as history and is no longer updated.
+
 ## Email capability candidate CI passed — 20 October
 
 Validate run https://github.com/gyaneshsahu/Private_AI/actions/runs/39473918073 completed SUCCESS for exact commit `9c9be8e12440367bc3755385f4190626e5d921b4`: offline and durable jobs passed. Offline unit stage: 499 passed / 148 skipped; browser: 53 passed; durable: 122 passed, zero skipped across 16 files. Container smoke and packaged encrypted recovery also passed. The durable job covers 112 of the unit-stage skips; the same 36 infrastructure checks remain unexecuted in this CI, not waived or counted as passes.
