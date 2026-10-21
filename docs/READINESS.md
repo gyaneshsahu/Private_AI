@@ -1,5 +1,9 @@
 # PrivateAI readiness checklist
 
+## Supplier status, Brave outcome and Tinfoil deadline — 21 October
+
+Owner report: the consolidated Tinfoil email was sent; no reply yet. Owner decision: wait until 23 October, then select a solution under the provider-qualification decision sequence if nothing arrives. Brave has answered the 8 October reply and later follow-ups only with the automated acknowledgement or the repeated discovery-channel question; the owner no longer expects a substantive reply. A public-documentation re-check on 21 October shows four of the five Tinfoil questions answered by the supplier's own publications as not available today (JS verifier without freshness, revocation or TDX; no cache TTL or opt-out; soft spending limits; DeepSeek V4.1 Flash still experimental), with npm `tinfoil` unchanged at 1.2.2 since 3 October. Details and sources: provider-qualification.md and search-provider-comparison.md, 21 October entries. No code, deployment, account, provider or gate change; private-data and public-launch gates remain closed.
+
 ## Email capability candidate CI passed — 20 October
 
 Validate run https://github.com/gyaneshsahu/Private_AI/actions/runs/39473918073 completed SUCCESS for exact commit `9c9be8e12440367bc3755385f4190626e5d921b4`: offline and durable jobs passed. Offline unit stage: 499 passed / 148 skipped; browser: 53 passed; durable: 122 passed, zero skipped across 16 files. Container smoke and packaged encrypted recovery also passed. The durable job covers 112 of the unit-stage skips; the same 36 infrastructure checks remain unexecuted in this CI, not waived or counted as passes.

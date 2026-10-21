@@ -1,8 +1,38 @@
 # Final consolidated supplier drafts — 20 October 2026
 
-Status: DRAFT_FOR_OWNER_REVIEW / NOT_SENT. Owner explicitly confirms the19October Tinfoil draft was not sent. These drafts supersede earlier unsent drafts; preserve prior replies as evidence. No contact, account change, contract acceptance or provider qualification is authorized by preparation.
+Status: OWNER_REPORTED_SENT / AWAITING_REPLIES since the 20 October owner report; see "Owner update — 21 October" below. Historical: the 19 October Tinfoil draft was not sent, and these drafts superseded earlier unsent drafts. Preserve prior replies as evidence. Sending does not establish contact permission, account change, contract acceptance or provider qualification.
 
 From: the founder's chosen CometRow mailbox (exact address/readiness not confirmed). PrivateAI is the product; CometRow is the intended email/domain identity, not an asserted incorporated company. Use the existing supplier conversations where possible. A new sender may require account-ownership verification: offer to confirm through the original account email, never include keys/passwords. No invented traffic forecast, incorporation, discovery channel or compliance certification.
+
+## Owner update — 21 October
+
+Owner statements on 21 October, recorded as reported and not independently verified:
+
+- **Tinfoil.** The consolidated email was sent to Sacha. The owner pasted the sent version in chat; it is shorter than Draft 1 below and is preserved verbatim under "Owner-supplied sent Tinfoil text". Send date and recipient address are as reported. No reply has been received. Owner decision: wait until **23 October**; if no reply arrives, select a solution under the decision sequence in [provider-qualification.md](provider-qualification.md).
+- **Brave.** The owner replied to ticket 390102 on 8 October and sent follow-ups, including Draft 2. Each Brave response was the automated acknowledgement or a repeat of the 7 October discovery-channel question; no substantive answer has been received. The owner does not expect one. The outgoing texts and whether the two discovery questions were answered inside the thread are not recorded here. See [search-provider-comparison.md](search-provider-comparison.md), 21 October entry, for the resulting recommendation.
+- A public-documentation re-check of the five Tinfoil questions is recorded in [provider-qualification.md](provider-qualification.md), 21 October entry: four of the five are answered by the supplier's own publications as not available today; question 4 is contractual and belongs with legal@tinfoil.sh and contact@tinfoil.sh.
+
+### Owner-supplied sent Tinfoil text
+
+Pasted by the owner on 21 October as the email sent to Sacha. Reproduced for the evidence ledger only.
+
+> Hi Sacha,
+>
+> Thank you for your previous technical answers. We are evaluating Tinfoil as an inference provider for PrivateAI and would like to understand the production and enterprise arrangements available for our architecture. Please involve the appropriate engineering and commercial contacts if needed.
+>
+> Our browser encrypts prompts and responses for confidential inference; our application backend relays encrypted traffic and must not receive plaintext chat. We have recorded your explanations of worker admission, current JavaScript-verifier limitations, volatile KV caching and soft account limits. The remaining decisions are:
+>
+> 1. Production verification: Is there a released, supported browser implementation that verifies or securely delegates verification of the admitted router, worker and GPU, including freshness, revocation, rollback protection, minimum security versions and TDX where applicable? Please identify the exact package and deployment versions, a working example, accepted evidence age and fail-closed behavior. If this is unavailable, what supported architecture preserves browser-to-enclave encryption while providing those checks?
+> 2. Enforced retention: Is cache disablement or a maximum cache lifetime now enforceable, including under an enterprise or dedicated deployment? Please distinguish enforced deletion from cache isolation and expected eviction. What content and diagnostic handling applies outside the enclave?
+> 3. Enforceable usage and accounting: Can Tinfoil enforce allowed models, output limits and per-request or per-user monetary limits for encrypted requests, including concurrent requests? What authenticated, request-linked usage record can our backend retrieve without seeing content after completion, disconnection, cancellation or an uncertain result? Please distinguish hard controls from soft dashboard limits and explain duplicate-request handling.
+> 4. Data-processing terms: Which retention periods apply to identifiable request IDs, timestamps, IPs, model and token usage, account/key linkage, security logs and billing records? Your earlier 90-day answer appears to span categories with different periods in the published policy. Please include backup exceptions, processing locations, subprocessors and the applicable DPA and transfer terms.
+> 5. Supported production service: DeepSeek V4.1 Flash is a development candidate, but is listed as experimental. Which suitable models have production availability, version/deprecation commitments, rate and concurrency limits, support or SLA options, and enterprise pricing or minimum commitments? For the relevant deployments, which tool-calling, streaming and structured-argument constraints are actually enforced, and are unsupported schema constraints rejected?
+>
+> Please identify what is available now, what requires a different plan or deployment, and what is still planned. A technical and commercial discussion would be useful if that is the most efficient way to resolve these points. This inquiry does not authorize an account, billing or deployment change.
+>
+> Best regards,
+> Gyanesh Sahu
+> PrivateAI · CometRow
 
 ## Already answered / do not ask again
 
@@ -78,6 +108,59 @@ Gyanesh Sahu
 Founder, PrivateAI | CometRow
 Germany — operating as an individual
 Intended application: https://app.cometrow.com
+
+## Short re-routed follow-ups — prepared 21 October, DRAFT / NOT_SENT
+
+Owner decides whether to send any of these, and when relative to the 23 October deadline. They do not repeat questions the public documentation already answers (see provider-qualification.md, 21 October). No account, billing or plan change is authorized by sending them.
+
+### Draft 3 — Tinfoil engineering thread (reply inside Sacha's existing conversation)
+
+Hi Sacha,
+
+Following my last message: I do not need the documented answers repeated. Could we have a 30-minute call with one person from engineering and one who handles commercial terms? I can walk through our relay design and the exact checks we need before admitting private data. Any slot this week or next works for me.
+
+Thanks,
+Gyanesh Sahu
+Founder, PrivateAI | CometRow
+Germany — operating as an individual
+
+### Draft 4 — Tinfoil legal (To: legal@tinfoil.sh, CC: contact@tinfoil.sh)
+
+Subject: PrivateAI / CometRow — DPA applicability and retention mapping for API use from Germany
+
+Hello,
+
+I am the founder of PrivateAI (app.cometrow.com), an individual based in Germany, evaluating the Tinfoil API for a consumer assistant. Three questions on the privacy policy effective 12 October and the published DPA:
+
+1. Please map request IDs, timestamps, IP addresses, model and token counts, and key/account linkage to the retention categories in section 9 of the privacy policy, including backup exceptions. An earlier engineering answer gave 90 days, which seems to span categories with different periods.
+2. Can an individual founder in Germany contract commercial API use under the DPA with standard contractual clauses? Please identify the processing locations and subprocessors involved and the incident-notification terms.
+3. How does the DPA's incidental special-category provision apply to a general assistant where users may discuss personal matters? We do not offer a healthcare service.
+
+This is a clarification request only and does not authorize any account or billing change.
+
+Best regards,
+Gyanesh Sahu
+Founder, PrivateAI | CometRow
+Germany — operating as an individual
+
+### Draft 5 — Tinfoil commercial (To: contact@tinfoil.sh)
+
+Subject: PrivateAI / CometRow — production model and plan questions
+
+Hello,
+
+We are building a browser-encrypted assistant on the Tinfoil API through our own relay, which never sees plaintext. Before committing to a plan:
+
+1. Which chat models have production status with a version and deprecation commitment? DeepSeek V4.1 Flash is our development default but is listed as experimental, and the changelog shows models removed within weeks of being added.
+2. What rate and concurrency limits apply at our tier, and what support or SLA options exist?
+3. Does an enterprise plan add enforced spending ceilings, cache lifetime controls or a supported browser verification route? What is the minimum commitment and pricing?
+
+A short call would be welcome if that is faster. This does not authorize any account, billing or plan change.
+
+Best regards,
+Gyanesh Sahu
+Founder, PrivateAI | CometRow
+Germany — operating as an individual
 
 ## Evidence and review notes (not part of either email)
 
