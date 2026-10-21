@@ -1,5 +1,9 @@
 # PrivateAI readiness checklist
 
+## Dev-dependency security patch: vite 8.3.5 — 21 October
+
+`vite` 8.3.2 → 8.3.5 (exact pin), the only `npm audit` finding (high, launch-editor argument escaping on Windows, dev server only). `npm audit` now reports zero findings. Validation on the same Windows machine: `npm run build` passed; `npm run test:e2e` 53 passed; `npm test` first full run 497 passed / 1 failed / 149 skipped, the failure being a 14.8 s timeout in `tests/invite-browser.test.ts` ("accepts two invitations and keeps the signed-out user's saved workspace isolated in the same browser") while a sub-agent worktree was running its own install and builds on the same machine; the file passed 1/1 when rerun alone immediately afterwards, and a second full `npm test` result is recorded below this entry when available. The retained failure is a load-sensitive timeout, not an assertion failure. No other dependency, runtime behaviour, provider or gate changed; CI on the exact commit is still required before this becomes a deployment candidate, and the live and next hosted candidates (`4eb86b1`, `9c9be8e`) are unaffected.
+
 ## Local Windows baseline and the 36 infrastructure checks executed — 21 October
 
 Executed by the agent on the founder's Windows machine against commit `c99ce6a04403a449e355492306df07929e1c8667` (docs-only commits above the CI-passed `9c9be8e`), Node 24.22.0, Docker Desktop 29.8.0 started by the agent for this batch. Synthetic fixtures and disposable certificates only; no provider call, credential, hosted service, DNS, account or gate change. Local results on one developer machine are not CI evidence and not hosted evidence.
