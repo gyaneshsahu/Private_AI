@@ -204,3 +204,105 @@ it.skipIf(!enabled)(
     }
   },
 );
+
+it.skipIf(!enabled)(
+  "summarises metered totals, exact published cost and unmetered settlements for the current period",
+  async () => {
+    const db = await usageDatabase();
+    try {
+      const ledger = new PostgresUsageLedger(db.pool, () => 10);
+      await ledger.createAllowance({
+        accountId: "alice",
+        periodId: "current",
+        startsAt: 0,
+        endsAt: 100,
+        requestLimit: 6,
+      });
+      const before = await ledger.summary("alice");
+      expect(before).toMatchObject({
+        meteredRequests: 0,
+        promptTokens: 0,
+        completionTokens: 0,
+        unmeteredRequests: 0,
+      });
+      expect(before).not.toHaveProperty("costUsd");
+      const settle = async (
+        id: string,
+        outcome: "transport_complete" | "uncertain",
+        metrics?: Parameters<typeof ledger.finish>[3],
+      ) => {
+        expect(await ledger.reserve("alice", id)).toBe(true);
+        await ledger.dispatch("alice", id);
+        await ledger.finish("alice", id, outcome, metrics);
+      };
+      await settle("a", "transport_complete", {
+        promptTokens: 100,
+        completionTokens: 20,
+        model: "m",
+        costUsd: "0.000046",
+      });
+      await settle("b", "transport_complete", {
+        promptTokens: 1000,
+        completionTokens: 500,
+        model: "m",
+        costUsd: "0.1",
+      });
+      await settle("c", "transport_complete", {
+        promptTokens: 7,
+        completionTokens: 3,
+        model: "m",
+      });
+      await settle("d", "transport_complete");
+      await settle("e", "uncertain");
+      expect(await ledger.reserve("alice", "f")).toBe(true);
+      await ledger.dispatch("alice", "f");
+      expect(await ledger.summary("alice")).toEqual({
+        state: "exhausted",
+        limit: 6,
+        used: 6,
+        remaining: 0,
+        pending: 1,
+        uncertain: 1,
+        resetsAt: new Date(100).toISOString(),
+        meteredRequests: 3,
+        promptTokens: 1107,
+        completionTokens: 523,
+        costUsd: "0.100046",
+        unmeteredRequests: 2,
+      });
+      expect(await ledger.hasAllowance("current")).toBe(true);
+      expect(await ledger.hasAllowance("missing")).toBe(false);
+    } finally {
+      await db.dispose();
+    }
+  },
+);
+
+it.skipIf(!enabled)(
+  "keeps a zero published cost as a cost rather than dropping it",
+  async () => {
+    const db = await usageDatabase();
+    try {
+      const ledger = new PostgresUsageLedger(db.pool, () => 10);
+      await ledger.createAllowance({
+        accountId: "alice",
+        periodId: "zero",
+        startsAt: 0,
+        endsAt: 100,
+        requestLimit: 1,
+      });
+      expect(await ledger.reserve("alice", "z")).toBe(true);
+      await ledger.dispatch("alice", "z");
+      await ledger.finish("alice", "z", "transport_complete", {
+        promptTokens: 1,
+        completionTokens: 1,
+        model: "m",
+        costUsd: "0",
+      });
+      expect(await ledger.metrics("z")).toMatchObject({ costUsd: "0" });
+      expect(await ledger.summary("alice")).toMatchObject({ costUsd: "0" });
+    } finally {
+      await db.dispose();
+    }
+  },
+);

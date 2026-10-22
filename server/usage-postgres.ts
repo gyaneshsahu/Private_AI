@@ -8,6 +8,7 @@ import {
   type UsageLedger,
 } from "./usage-contract";
 import { usageMetricsSchema, type UsageMetrics } from "./usage-metrics";
+import { normalizeDecimalString } from "./usage-cost";
 
 /** Shared request counts only. Injected pool/migrations; never auto-activated. */
 export class PostgresUsageLedger implements UsageLedger {
@@ -73,14 +74,30 @@ export class PostgresUsageLedger implements UsageLedger {
       );
     });
   }
+  /** True when an allowance with this period ID exists, whatever its account or dates. */
+  async hasAllowance(periodId: string): Promise<boolean> {
+    usageId.parse(periodId);
+    const result = await this.database.query(
+      "SELECT 1 FROM usage_allowances WHERE period_id=$1",
+      [periodId],
+    );
+    return result.rowCount === 1;
+  }
   async summary(accountId: string): Promise<RequestAllowance> {
     usageId.parse(accountId);
     const now = await this.now(this.database);
     const result = await this.database.query(
       `SELECT a.request_limit,a.ends_at,COUNT(r.request_id)::int AS used,
       COUNT(*) FILTER (WHERE r.state IN ('reserved','dispatched'))::int AS pending,
-      COUNT(*) FILTER (WHERE r.state='uncertain')::int AS uncertain
+      COUNT(*) FILTER (WHERE r.state='uncertain')::int AS uncertain,
+      COUNT(m.request_id)::int AS metered,
+      COALESCE(SUM(m.prompt_tokens),0)::text AS prompt_tokens,
+      COALESCE(SUM(m.completion_tokens),0)::text AS completion_tokens,
+      COUNT(m.cost_usd)::int AS costed,
+      COALESCE(SUM(m.cost_usd),0)::text AS cost_usd,
+      COUNT(*) FILTER (WHERE r.state IN ('transport_complete','uncertain') AND m.request_id IS NULL)::int AS unmetered
       FROM usage_allowances a LEFT JOIN usage_requests r ON a.period_id=r.period_id
+      LEFT JOIN usage_metrics m ON m.request_id=r.request_id
       WHERE a.account_id=$1 AND a.starts_at<=$2 AND a.ends_at>$2 GROUP BY a.period_id`,
       [accountId, now],
     );
@@ -94,6 +111,13 @@ export class PostgresUsageLedger implements UsageLedger {
       pending: row.pending,
       uncertain: row.uncertain,
       resetsAt: new Date(Number(row.ends_at)).toISOString(),
+      meteredRequests: row.metered,
+      promptTokens: Number(row.prompt_tokens),
+      completionTokens: Number(row.completion_tokens),
+      ...(row.costed > 0
+        ? { costUsd: normalizeDecimalString(String(row.cost_usd)) }
+        : {}),
+      unmeteredRequests: row.unmetered,
     };
   }
   async reserve(accountId: string, requestId: string): Promise<boolean> {
@@ -188,7 +212,7 @@ export class PostgresUsageLedger implements UsageLedger {
           completionTokens: Number(row.completion_tokens),
           model: String(row.model),
           ...(row.cost_usd != null
-            ? { costUsd: String(row.cost_usd).replace(/\.?0+$/, "") }
+            ? { costUsd: normalizeDecimalString(String(row.cost_usd)) }
             : {}),
           ...(row.web_search_calls != null
             ? { webSearchCalls: Number(row.web_search_calls) }
