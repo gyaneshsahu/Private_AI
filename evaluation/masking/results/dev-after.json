@@ -1,0 +1,3133 @@
+{
+  "split": "dev",
+  "label": "after",
+  "corpusSha256": "7671578cd5c71de6503ab7803e51a80fb79293146af91adceb1726e40f01117a",
+  "definitions": [
+    "caught: every letter and digit of the ground-truth span is inside some detection (any kind)",
+    "kindCorrect: caught, and every covering detection has the ground-truth kind",
+    "partial: some but not all letters and digits covered; counted as missed",
+    "true positive detection: overlaps a ground-truth identifier in at least one letter or digit",
+    "false positive detection: overlaps no ground-truth identifier (names and addresses are not promised kinds)",
+    "recall = caught / identifiers; precision = true positive detections / detections; 95% Wilson intervals",
+    "byKind: recall rows count ground-truth identifiers of that kind; precision rows count detections of that kind"
+  ],
+  "overall": {
+    "samples": 720,
+    "identifiers": 3764,
+    "caught": 3699,
+    "kindCorrect": 3685,
+    "missed": 65,
+    "partial": 5,
+    "detections": 3699,
+    "truePositives": 3699,
+    "falsePositives": 0,
+    "recall": 0.9827,
+    "recallCi95": [
+      0.9781,
+      0.9864
+    ],
+    "precision": 1,
+    "precisionCi95": [
+      0.999,
+      1
+    ]
+  },
+  "byCategory": {
+    "invoice": {
+      "samples": 60,
+      "identifiers": 273,
+      "caught": 273,
+      "kindCorrect": 273,
+      "missed": 0,
+      "partial": 0,
+      "detections": 273,
+      "truePositives": 273,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9861,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9861,
+        1
+      ]
+    },
+    "tax-letter": {
+      "samples": 60,
+      "identifiers": 276,
+      "caught": 276,
+      "kindCorrect": 274,
+      "missed": 0,
+      "partial": 0,
+      "detections": 276,
+      "truePositives": 276,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9863,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9863,
+        1
+      ]
+    },
+    "contract": {
+      "samples": 60,
+      "identifiers": 360,
+      "caught": 360,
+      "kindCorrect": 360,
+      "missed": 0,
+      "partial": 0,
+      "detections": 360,
+      "truePositives": 360,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9894,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9894,
+        1
+      ]
+    },
+    "cv": {
+      "samples": 60,
+      "identifiers": 180,
+      "caught": 180,
+      "kindCorrect": 180,
+      "missed": 0,
+      "partial": 0,
+      "detections": 180,
+      "truePositives": 180,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9791,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9791,
+        1
+      ]
+    },
+    "medical-letter": {
+      "samples": 60,
+      "identifiers": 225,
+      "caught": 225,
+      "kindCorrect": 225,
+      "missed": 0,
+      "partial": 0,
+      "detections": 225,
+      "truePositives": 225,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9832,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9832,
+        1
+      ]
+    },
+    "bank-statement": {
+      "samples": 60,
+      "identifiers": 209,
+      "caught": 209,
+      "kindCorrect": 209,
+      "missed": 0,
+      "partial": 0,
+      "detections": 209,
+      "truePositives": 209,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.982,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.982,
+        1
+      ]
+    },
+    "email": {
+      "samples": 60,
+      "identifiers": 308,
+      "caught": 308,
+      "kindCorrect": 308,
+      "missed": 0,
+      "partial": 0,
+      "detections": 308,
+      "truePositives": 308,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9877,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9877,
+        1
+      ]
+    },
+    "chat": {
+      "samples": 60,
+      "identifiers": 217,
+      "caught": 217,
+      "kindCorrect": 217,
+      "missed": 0,
+      "partial": 0,
+      "detections": 217,
+      "truePositives": 217,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9826,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9826,
+        1
+      ]
+    },
+    "form": {
+      "samples": 60,
+      "identifiers": 240,
+      "caught": 240,
+      "kindCorrect": 240,
+      "missed": 0,
+      "partial": 0,
+      "detections": 240,
+      "truePositives": 240,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9842,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9842,
+        1
+      ]
+    },
+    "table": {
+      "samples": 60,
+      "identifiers": 839,
+      "caught": 836,
+      "kindCorrect": 836,
+      "missed": 3,
+      "partial": 0,
+      "detections": 836,
+      "truePositives": 836,
+      "falsePositives": 0,
+      "recall": 0.9964,
+      "recallCi95": [
+        0.9895,
+        0.9988
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9954,
+        1
+      ]
+    },
+    "scan-ocr": {
+      "samples": 120,
+      "identifiers": 637,
+      "caught": 575,
+      "kindCorrect": 563,
+      "missed": 62,
+      "partial": 5,
+      "detections": 575,
+      "truePositives": 575,
+      "falsePositives": 0,
+      "recall": 0.9027,
+      "recallCi95": [
+        0.8772,
+        0.9233
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9934,
+        1
+      ]
+    }
+  },
+  "byKind": {
+    "IBAN": {
+      "samples": 376,
+      "identifiers": 648,
+      "caught": 644,
+      "kindCorrect": 644,
+      "missed": 4,
+      "partial": 0,
+      "detections": 644,
+      "truePositives": 644,
+      "falsePositives": 0,
+      "recall": 0.9938,
+      "recallCi95": [
+        0.9842,
+        0.9976
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9941,
+        1
+      ]
+    },
+    "CARD": {
+      "samples": 45,
+      "identifiers": 45,
+      "caught": 44,
+      "kindCorrect": 44,
+      "missed": 1,
+      "partial": 1,
+      "detections": 44,
+      "truePositives": 44,
+      "falsePositives": 0,
+      "recall": 0.9778,
+      "recallCi95": [
+        0.8843,
+        0.9961
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9197,
+        1
+      ]
+    },
+    "TAX-ID": {
+      "samples": 216,
+      "identifiers": 422,
+      "caught": 417,
+      "kindCorrect": 414,
+      "missed": 5,
+      "partial": 0,
+      "detections": 414,
+      "truePositives": 414,
+      "falsePositives": 0,
+      "recall": 0.9882,
+      "recallCi95": [
+        0.9726,
+        0.9949
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9908,
+        1
+      ]
+    },
+    "INSURANCE": {
+      "samples": 169,
+      "identifiers": 400,
+      "caught": 392,
+      "kindCorrect": 392,
+      "missed": 8,
+      "partial": 0,
+      "detections": 392,
+      "truePositives": 392,
+      "falsePositives": 0,
+      "recall": 0.98,
+      "recallCi95": [
+        0.961,
+        0.9898
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9903,
+        1
+      ]
+    },
+    "ID-NUMBER": {
+      "samples": 149,
+      "identifiers": 279,
+      "caught": 274,
+      "kindCorrect": 274,
+      "missed": 5,
+      "partial": 0,
+      "detections": 279,
+      "truePositives": 279,
+      "falsePositives": 0,
+      "recall": 0.9821,
+      "recallCi95": [
+        0.9587,
+        0.9923
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9864,
+        1
+      ]
+    },
+    "EMAIL": {
+      "samples": 437,
+      "identifiers": 610,
+      "caught": 599,
+      "kindCorrect": 599,
+      "missed": 11,
+      "partial": 3,
+      "detections": 602,
+      "truePositives": 602,
+      "falsePositives": 0,
+      "recall": 0.982,
+      "recallCi95": [
+        0.968,
+        0.9899
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9937,
+        1
+      ]
+    },
+    "PHONE": {
+      "samples": 534,
+      "identifiers": 791,
+      "caught": 780,
+      "kindCorrect": 780,
+      "missed": 11,
+      "partial": 1,
+      "detections": 786,
+      "truePositives": 786,
+      "falsePositives": 0,
+      "recall": 0.9861,
+      "recallCi95": [
+        0.9753,
+        0.9922
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9951,
+        1
+      ]
+    },
+    "BIRTH-DATE": {
+      "samples": 435,
+      "identifiers": 569,
+      "caught": 549,
+      "kindCorrect": 538,
+      "missed": 20,
+      "partial": 0,
+      "detections": 538,
+      "truePositives": 538,
+      "falsePositives": 0,
+      "recall": 0.9649,
+      "recallCi95": [
+        0.9463,
+        0.9771
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9929,
+        1
+      ]
+    }
+  },
+  "byLayout": {
+    "de-account-opening": {
+      "samples": 12,
+      "identifiers": 72,
+      "caught": 72,
+      "kindCorrect": 72,
+      "missed": 0,
+      "partial": 0,
+      "detections": 72,
+      "truePositives": 72,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9493,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9493,
+        1
+      ]
+    },
+    "de-account-statement": {
+      "samples": 15,
+      "identifiers": 48,
+      "caught": 48,
+      "kindCorrect": 48,
+      "missed": 0,
+      "partial": 0,
+      "detections": 48,
+      "truePositives": 48,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9259,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9259,
+        1
+      ]
+    },
+    "de-aligned-columns": {
+      "samples": 12,
+      "identifiers": 180,
+      "caught": 177,
+      "kindCorrect": 177,
+      "missed": 3,
+      "partial": 0,
+      "detections": 177,
+      "truePositives": 177,
+      "falsePositives": 0,
+      "recall": 0.9833,
+      "recallCi95": [
+        0.9522,
+        0.9943
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9788,
+        1
+      ]
+    },
+    "de-bank-csv": {
+      "samples": 15,
+      "identifiers": 76,
+      "caught": 76,
+      "kindCorrect": 76,
+      "missed": 0,
+      "partial": 0,
+      "detections": 76,
+      "truePositives": 76,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9519,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9519,
+        1
+      ]
+    },
+    "de-car-sale": {
+      "samples": 15,
+      "identifiers": 75,
+      "caught": 75,
+      "kindCorrect": 75,
+      "missed": 0,
+      "partial": 0,
+      "detections": 75,
+      "truePositives": 75,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9513,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9513,
+        1
+      ]
+    },
+    "de-chat-plain": {
+      "samples": 15,
+      "identifiers": 52,
+      "caught": 52,
+      "kindCorrect": 52,
+      "missed": 0,
+      "partial": 0,
+      "detections": 52,
+      "truePositives": 52,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9312,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9312,
+        1
+      ]
+    },
+    "de-credit-card-statement": {
+      "samples": 15,
+      "identifiers": 45,
+      "caught": 45,
+      "kindCorrect": 45,
+      "missed": 0,
+      "partial": 0,
+      "detections": 45,
+      "truePositives": 45,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9213,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9213,
+        1
+      ]
+    },
+    "de-csv-semicolon": {
+      "samples": 12,
+      "identifiers": 142,
+      "caught": 142,
+      "kindCorrect": 142,
+      "missed": 0,
+      "partial": 0,
+      "detections": 142,
+      "truePositives": 142,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9737,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9737,
+        1
+      ]
+    },
+    "de-cv": {
+      "samples": 15,
+      "identifiers": 45,
+      "caught": 45,
+      "kindCorrect": 45,
+      "missed": 0,
+      "partial": 0,
+      "detections": 45,
+      "truePositives": 45,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9213,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9213,
+        1
+      ]
+    },
+    "de-cv-header-line": {
+      "samples": 15,
+      "identifiers": 45,
+      "caught": 45,
+      "kindCorrect": 45,
+      "missed": 0,
+      "partial": 0,
+      "detections": 45,
+      "truePositives": 45,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9213,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9213,
+        1
+      ]
+    },
+    "de-discharge-letter": {
+      "samples": 15,
+      "identifiers": 45,
+      "caught": 45,
+      "kindCorrect": 45,
+      "missed": 0,
+      "partial": 0,
+      "detections": 45,
+      "truePositives": 45,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9213,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9213,
+        1
+      ]
+    },
+    "de-doctor-letter": {
+      "samples": 15,
+      "identifiers": 90,
+      "caught": 90,
+      "kindCorrect": 90,
+      "missed": 0,
+      "partial": 0,
+      "detections": 90,
+      "truePositives": 90,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9591,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9591,
+        1
+      ]
+    },
+    "de-email-html-copy": {
+      "samples": 15,
+      "identifiers": 60,
+      "caught": 60,
+      "kindCorrect": 60,
+      "missed": 0,
+      "partial": 0,
+      "detections": 60,
+      "truePositives": 60,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9398,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9398,
+        1
+      ]
+    },
+    "de-email-obfuscated": {
+      "samples": 15,
+      "identifiers": 60,
+      "caught": 60,
+      "kindCorrect": 60,
+      "missed": 0,
+      "partial": 0,
+      "detections": 60,
+      "truePositives": 60,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9398,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9398,
+        1
+      ]
+    },
+    "de-email-thread": {
+      "samples": 15,
+      "identifiers": 98,
+      "caught": 98,
+      "kindCorrect": 98,
+      "missed": 0,
+      "partial": 0,
+      "detections": 98,
+      "truePositives": 98,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9623,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9623,
+        1
+      ]
+    },
+    "de-employment": {
+      "samples": 15,
+      "identifiers": 90,
+      "caught": 90,
+      "kindCorrect": 90,
+      "missed": 0,
+      "partial": 0,
+      "detections": 90,
+      "truePositives": 90,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9591,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9591,
+        1
+      ]
+    },
+    "de-freelancer-invoice": {
+      "samples": 12,
+      "identifiers": 54,
+      "caught": 54,
+      "kindCorrect": 54,
+      "missed": 0,
+      "partial": 0,
+      "detections": 54,
+      "truePositives": 54,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9336,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9336,
+        1
+      ]
+    },
+    "de-insurance-claim": {
+      "samples": 12,
+      "identifiers": 48,
+      "caught": 48,
+      "kindCorrect": 48,
+      "missed": 0,
+      "partial": 0,
+      "detections": 48,
+      "truePositives": 48,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9259,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9259,
+        1
+      ]
+    },
+    "de-markdown-table": {
+      "samples": 12,
+      "identifiers": 175,
+      "caught": 175,
+      "kindCorrect": 175,
+      "missed": 0,
+      "partial": 0,
+      "detections": 175,
+      "truePositives": 175,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9785,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9785,
+        1
+      ]
+    },
+    "de-payroll-tax-certificate": {
+      "samples": 12,
+      "identifiers": 36,
+      "caught": 36,
+      "kindCorrect": 36,
+      "missed": 0,
+      "partial": 0,
+      "detections": 36,
+      "truePositives": 36,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9036,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9036,
+        1
+      ]
+    },
+    "de-phone-bill": {
+      "samples": 12,
+      "identifiers": 76,
+      "caught": 76,
+      "kindCorrect": 76,
+      "missed": 0,
+      "partial": 0,
+      "detections": 76,
+      "truePositives": 76,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9519,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9519,
+        1
+      ]
+    },
+    "de-registration-form": {
+      "samples": 12,
+      "identifiers": 48,
+      "caught": 48,
+      "kindCorrect": 48,
+      "missed": 0,
+      "partial": 0,
+      "detections": 48,
+      "truePositives": 48,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9259,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9259,
+        1
+      ]
+    },
+    "de-sepa-mandate": {
+      "samples": 12,
+      "identifiers": 12,
+      "caught": 12,
+      "kindCorrect": 12,
+      "missed": 0,
+      "partial": 0,
+      "detections": 12,
+      "truePositives": 12,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.7575,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7575,
+        1
+      ]
+    },
+    "de-sick-note": {
+      "samples": 15,
+      "identifiers": 30,
+      "caught": 30,
+      "kindCorrect": 30,
+      "missed": 0,
+      "partial": 0,
+      "detections": 30,
+      "truePositives": 30,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.8865,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.8865,
+        1
+      ]
+    },
+    "de-tax-adviser-letter": {
+      "samples": 12,
+      "identifiers": 84,
+      "caught": 84,
+      "kindCorrect": 84,
+      "missed": 0,
+      "partial": 0,
+      "detections": 84,
+      "truePositives": 84,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9563,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9563,
+        1
+      ]
+    },
+    "de-tax-assessment": {
+      "samples": 12,
+      "identifiers": 60,
+      "caught": 60,
+      "kindCorrect": 60,
+      "missed": 0,
+      "partial": 0,
+      "detections": 60,
+      "truePositives": 60,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9398,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9398,
+        1
+      ]
+    },
+    "de-tax-id-notice": {
+      "samples": 12,
+      "identifiers": 24,
+      "caught": 24,
+      "kindCorrect": 24,
+      "missed": 0,
+      "partial": 0,
+      "detections": 24,
+      "truePositives": 24,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.862,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.862,
+        1
+      ]
+    },
+    "de-tenancy": {
+      "samples": 15,
+      "identifiers": 90,
+      "caught": 90,
+      "kindCorrect": 90,
+      "missed": 0,
+      "partial": 0,
+      "detections": 90,
+      "truePositives": 90,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9591,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9591,
+        1
+      ]
+    },
+    "de-utility-bill": {
+      "samples": 12,
+      "identifiers": 68,
+      "caught": 68,
+      "kindCorrect": 68,
+      "missed": 0,
+      "partial": 0,
+      "detections": 68,
+      "truePositives": 68,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9465,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9465,
+        1
+      ]
+    },
+    "de-whatsapp-export": {
+      "samples": 15,
+      "identifiers": 57,
+      "caught": 57,
+      "kindCorrect": 57,
+      "missed": 0,
+      "partial": 0,
+      "detections": 57,
+      "truePositives": 57,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9369,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9369,
+        1
+      ]
+    },
+    "en-account-statement": {
+      "samples": 15,
+      "identifiers": 40,
+      "caught": 40,
+      "kindCorrect": 40,
+      "missed": 0,
+      "partial": 0,
+      "detections": 40,
+      "truePositives": 40,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9124,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9124,
+        1
+      ]
+    },
+    "en-application-form": {
+      "samples": 12,
+      "identifiers": 60,
+      "caught": 60,
+      "kindCorrect": 60,
+      "missed": 0,
+      "partial": 0,
+      "detections": 60,
+      "truePositives": 60,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9398,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9398,
+        1
+      ]
+    },
+    "en-chat-export": {
+      "samples": 15,
+      "identifiers": 54,
+      "caught": 54,
+      "kindCorrect": 54,
+      "missed": 0,
+      "partial": 0,
+      "detections": 54,
+      "truePositives": 54,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9336,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9336,
+        1
+      ]
+    },
+    "en-csv-comma": {
+      "samples": 12,
+      "identifiers": 170,
+      "caught": 170,
+      "kindCorrect": 170,
+      "missed": 0,
+      "partial": 0,
+      "detections": 170,
+      "truePositives": 170,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9779,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9779,
+        1
+      ]
+    },
+    "en-cv": {
+      "samples": 15,
+      "identifiers": 45,
+      "caught": 45,
+      "kindCorrect": 45,
+      "missed": 0,
+      "partial": 0,
+      "detections": 45,
+      "truePositives": 45,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9213,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9213,
+        1
+      ]
+    },
+    "en-cv-sidebar": {
+      "samples": 15,
+      "identifiers": 45,
+      "caught": 45,
+      "kindCorrect": 45,
+      "missed": 0,
+      "partial": 0,
+      "detections": 45,
+      "truePositives": 45,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9213,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9213,
+        1
+      ]
+    },
+    "en-email": {
+      "samples": 15,
+      "identifiers": 90,
+      "caught": 90,
+      "kindCorrect": 90,
+      "missed": 0,
+      "partial": 0,
+      "detections": 90,
+      "truePositives": 90,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9591,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9591,
+        1
+      ]
+    },
+    "en-employment": {
+      "samples": 15,
+      "identifiers": 105,
+      "caught": 105,
+      "kindCorrect": 105,
+      "missed": 0,
+      "partial": 0,
+      "detections": 105,
+      "truePositives": 105,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9647,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9647,
+        1
+      ]
+    },
+    "en-freelancer-invoice": {
+      "samples": 12,
+      "identifiers": 55,
+      "caught": 55,
+      "kindCorrect": 55,
+      "missed": 0,
+      "partial": 0,
+      "detections": 55,
+      "truePositives": 55,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9347,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9347,
+        1
+      ]
+    },
+    "en-medical-report": {
+      "samples": 15,
+      "identifiers": 60,
+      "caught": 60,
+      "kindCorrect": 60,
+      "missed": 0,
+      "partial": 0,
+      "detections": 60,
+      "truePositives": 60,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9398,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9398,
+        1
+      ]
+    },
+    "en-online-order": {
+      "samples": 12,
+      "identifiers": 20,
+      "caught": 20,
+      "kindCorrect": 20,
+      "missed": 0,
+      "partial": 0,
+      "detections": 20,
+      "truePositives": 20,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.8389,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.8389,
+        1
+      ]
+    },
+    "en-support-chat": {
+      "samples": 15,
+      "identifiers": 54,
+      "caught": 54,
+      "kindCorrect": 54,
+      "missed": 0,
+      "partial": 0,
+      "detections": 54,
+      "truePositives": 54,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9336,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9336,
+        1
+      ]
+    },
+    "en-tax-letter": {
+      "samples": 12,
+      "identifiers": 72,
+      "caught": 72,
+      "kindCorrect": 70,
+      "missed": 0,
+      "partial": 0,
+      "detections": 72,
+      "truePositives": 72,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9493,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9493,
+        1
+      ]
+    },
+    "en-tsv": {
+      "samples": 12,
+      "identifiers": 172,
+      "caught": 172,
+      "kindCorrect": 172,
+      "missed": 0,
+      "partial": 0,
+      "detections": 172,
+      "truePositives": 172,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.9782,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9782,
+        1
+      ]
+    },
+    "ocr:de-account-opening": {
+      "samples": 3,
+      "identifiers": 18,
+      "caught": 17,
+      "kindCorrect": 17,
+      "missed": 1,
+      "partial": 0,
+      "detections": 17,
+      "truePositives": 17,
+      "falsePositives": 0,
+      "recall": 0.9444,
+      "recallCi95": [
+        0.7424,
+        0.9901
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.8157,
+        1
+      ]
+    },
+    "ocr:de-account-statement": {
+      "samples": 2,
+      "identifiers": 7,
+      "caught": 7,
+      "kindCorrect": 7,
+      "missed": 0,
+      "partial": 0,
+      "detections": 7,
+      "truePositives": 7,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.6457,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.6457,
+        1
+      ]
+    },
+    "ocr:de-aligned-columns": {
+      "samples": 3,
+      "identifiers": 30,
+      "caught": 29,
+      "kindCorrect": 29,
+      "missed": 1,
+      "partial": 0,
+      "detections": 29,
+      "truePositives": 29,
+      "falsePositives": 0,
+      "recall": 0.9667,
+      "recallCi95": [
+        0.8333,
+        0.9941
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.883,
+        1
+      ]
+    },
+    "ocr:de-bank-csv": {
+      "samples": 3,
+      "identifiers": 16,
+      "caught": 15,
+      "kindCorrect": 15,
+      "missed": 1,
+      "partial": 0,
+      "detections": 15,
+      "truePositives": 15,
+      "falsePositives": 0,
+      "recall": 0.9375,
+      "recallCi95": [
+        0.7167,
+        0.9889
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7961,
+        1
+      ]
+    },
+    "ocr:de-car-sale": {
+      "samples": 2,
+      "identifiers": 10,
+      "caught": 9,
+      "kindCorrect": 9,
+      "missed": 1,
+      "partial": 0,
+      "detections": 9,
+      "truePositives": 9,
+      "falsePositives": 0,
+      "recall": 0.9,
+      "recallCi95": [
+        0.5958,
+        0.9821
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7009,
+        1
+      ]
+    },
+    "ocr:de-chat-plain": {
+      "samples": 2,
+      "identifiers": 7,
+      "caught": 7,
+      "kindCorrect": 7,
+      "missed": 0,
+      "partial": 0,
+      "detections": 7,
+      "truePositives": 7,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.6457,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.6457,
+        1
+      ]
+    },
+    "ocr:de-credit-card-statement": {
+      "samples": 3,
+      "identifiers": 9,
+      "caught": 8,
+      "kindCorrect": 8,
+      "missed": 1,
+      "partial": 1,
+      "detections": 9,
+      "truePositives": 9,
+      "falsePositives": 0,
+      "recall": 0.8889,
+      "recallCi95": [
+        0.565,
+        0.9801
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7009,
+        1
+      ]
+    },
+    "ocr:de-csv-semicolon": {
+      "samples": 3,
+      "identifiers": 54,
+      "caught": 52,
+      "kindCorrect": 52,
+      "missed": 2,
+      "partial": 0,
+      "detections": 52,
+      "truePositives": 52,
+      "falsePositives": 0,
+      "recall": 0.963,
+      "recallCi95": [
+        0.8746,
+        0.9898
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9312,
+        1
+      ]
+    },
+    "ocr:de-cv": {
+      "samples": 3,
+      "identifiers": 9,
+      "caught": 7,
+      "kindCorrect": 7,
+      "missed": 2,
+      "partial": 0,
+      "detections": 7,
+      "truePositives": 7,
+      "falsePositives": 0,
+      "recall": 0.7778,
+      "recallCi95": [
+        0.4526,
+        0.9368
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.6457,
+        1
+      ]
+    },
+    "ocr:de-cv-header-line": {
+      "samples": 2,
+      "identifiers": 6,
+      "caught": 6,
+      "kindCorrect": 6,
+      "missed": 0,
+      "partial": 0,
+      "detections": 6,
+      "truePositives": 6,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.6097,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.6097,
+        1
+      ]
+    },
+    "ocr:de-discharge-letter": {
+      "samples": 3,
+      "identifiers": 9,
+      "caught": 9,
+      "kindCorrect": 9,
+      "missed": 0,
+      "partial": 0,
+      "detections": 9,
+      "truePositives": 9,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.7009,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7009,
+        1
+      ]
+    },
+    "ocr:de-doctor-letter": {
+      "samples": 3,
+      "identifiers": 18,
+      "caught": 16,
+      "kindCorrect": 16,
+      "missed": 2,
+      "partial": 0,
+      "detections": 16,
+      "truePositives": 16,
+      "falsePositives": 0,
+      "recall": 0.8889,
+      "recallCi95": [
+        0.672,
+        0.969
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.8064,
+        1
+      ]
+    },
+    "ocr:de-email-html-copy": {
+      "samples": 3,
+      "identifiers": 12,
+      "caught": 12,
+      "kindCorrect": 12,
+      "missed": 0,
+      "partial": 0,
+      "detections": 12,
+      "truePositives": 12,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.7575,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7575,
+        1
+      ]
+    },
+    "ocr:de-email-obfuscated": {
+      "samples": 2,
+      "identifiers": 8,
+      "caught": 8,
+      "kindCorrect": 8,
+      "missed": 0,
+      "partial": 0,
+      "detections": 8,
+      "truePositives": 8,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.6756,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.6756,
+        1
+      ]
+    },
+    "ocr:de-email-thread": {
+      "samples": 3,
+      "identifiers": 21,
+      "caught": 20,
+      "kindCorrect": 20,
+      "missed": 1,
+      "partial": 0,
+      "detections": 20,
+      "truePositives": 20,
+      "falsePositives": 0,
+      "recall": 0.9524,
+      "recallCi95": [
+        0.7733,
+        0.9915
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.8389,
+        1
+      ]
+    },
+    "ocr:de-employment": {
+      "samples": 2,
+      "identifiers": 12,
+      "caught": 12,
+      "kindCorrect": 12,
+      "missed": 0,
+      "partial": 0,
+      "detections": 12,
+      "truePositives": 12,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.7575,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7575,
+        1
+      ]
+    },
+    "ocr:de-freelancer-invoice": {
+      "samples": 3,
+      "identifiers": 12,
+      "caught": 11,
+      "kindCorrect": 11,
+      "missed": 1,
+      "partial": 0,
+      "detections": 11,
+      "truePositives": 11,
+      "falsePositives": 0,
+      "recall": 0.9167,
+      "recallCi95": [
+        0.6461,
+        0.9851
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7412,
+        1
+      ]
+    },
+    "ocr:de-id-card-scan": {
+      "samples": 5,
+      "identifiers": 20,
+      "caught": 19,
+      "kindCorrect": 14,
+      "missed": 1,
+      "partial": 0,
+      "detections": 19,
+      "truePositives": 19,
+      "falsePositives": 0,
+      "recall": 0.95,
+      "recallCi95": [
+        0.7639,
+        0.9911
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.8318,
+        1
+      ]
+    },
+    "ocr:de-insurance-claim": {
+      "samples": 3,
+      "identifiers": 12,
+      "caught": 12,
+      "kindCorrect": 12,
+      "missed": 0,
+      "partial": 0,
+      "detections": 12,
+      "truePositives": 12,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.7575,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7575,
+        1
+      ]
+    },
+    "ocr:de-markdown-table": {
+      "samples": 3,
+      "identifiers": 31,
+      "caught": 27,
+      "kindCorrect": 27,
+      "missed": 4,
+      "partial": 1,
+      "detections": 28,
+      "truePositives": 28,
+      "falsePositives": 0,
+      "recall": 0.871,
+      "recallCi95": [
+        0.7115,
+        0.9487
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.8794,
+        1
+      ]
+    },
+    "ocr:de-passport-scan": {
+      "samples": 5,
+      "identifiers": 20,
+      "caught": 19,
+      "kindCorrect": 14,
+      "missed": 1,
+      "partial": 0,
+      "detections": 14,
+      "truePositives": 14,
+      "falsePositives": 0,
+      "recall": 0.95,
+      "recallCi95": [
+        0.7639,
+        0.9911
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7847,
+        1
+      ]
+    },
+    "ocr:de-payroll-tax-certificate": {
+      "samples": 2,
+      "identifiers": 6,
+      "caught": 6,
+      "kindCorrect": 5,
+      "missed": 0,
+      "partial": 0,
+      "detections": 6,
+      "truePositives": 6,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.6097,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.6097,
+        1
+      ]
+    },
+    "ocr:de-phone-bill": {
+      "samples": 3,
+      "identifiers": 20,
+      "caught": 18,
+      "kindCorrect": 18,
+      "missed": 2,
+      "partial": 0,
+      "detections": 18,
+      "truePositives": 18,
+      "falsePositives": 0,
+      "recall": 0.9,
+      "recallCi95": [
+        0.699,
+        0.9721
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.8241,
+        1
+      ]
+    },
+    "ocr:de-registration-form": {
+      "samples": 3,
+      "identifiers": 12,
+      "caught": 9,
+      "kindCorrect": 9,
+      "missed": 3,
+      "partial": 1,
+      "detections": 10,
+      "truePositives": 10,
+      "falsePositives": 0,
+      "recall": 0.75,
+      "recallCi95": [
+        0.4677,
+        0.9111
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7225,
+        1
+      ]
+    },
+    "ocr:de-sepa-mandate": {
+      "samples": 3,
+      "identifiers": 3,
+      "caught": 3,
+      "kindCorrect": 3,
+      "missed": 0,
+      "partial": 0,
+      "detections": 3,
+      "truePositives": 3,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.4385,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.4385,
+        1
+      ]
+    },
+    "ocr:de-sick-note": {
+      "samples": 3,
+      "identifiers": 6,
+      "caught": 3,
+      "kindCorrect": 3,
+      "missed": 3,
+      "partial": 0,
+      "detections": 3,
+      "truePositives": 3,
+      "falsePositives": 0,
+      "recall": 0.5,
+      "recallCi95": [
+        0.1876,
+        0.8124
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.4385,
+        1
+      ]
+    },
+    "ocr:de-tax-adviser-letter": {
+      "samples": 2,
+      "identifiers": 14,
+      "caught": 12,
+      "kindCorrect": 12,
+      "missed": 2,
+      "partial": 0,
+      "detections": 12,
+      "truePositives": 12,
+      "falsePositives": 0,
+      "recall": 0.8571,
+      "recallCi95": [
+        0.6006,
+        0.9599
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7575,
+        1
+      ]
+    },
+    "ocr:de-tax-assessment": {
+      "samples": 3,
+      "identifiers": 15,
+      "caught": 10,
+      "kindCorrect": 10,
+      "missed": 5,
+      "partial": 0,
+      "detections": 10,
+      "truePositives": 10,
+      "falsePositives": 0,
+      "recall": 0.6667,
+      "recallCi95": [
+        0.4171,
+        0.8482
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7225,
+        1
+      ]
+    },
+    "ocr:de-tax-id-notice": {
+      "samples": 2,
+      "identifiers": 4,
+      "caught": 3,
+      "kindCorrect": 3,
+      "missed": 1,
+      "partial": 0,
+      "detections": 3,
+      "truePositives": 3,
+      "falsePositives": 0,
+      "recall": 0.75,
+      "recallCi95": [
+        0.3006,
+        0.9544
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.4385,
+        1
+      ]
+    },
+    "ocr:de-tenancy": {
+      "samples": 2,
+      "identifiers": 12,
+      "caught": 12,
+      "kindCorrect": 12,
+      "missed": 0,
+      "partial": 0,
+      "detections": 12,
+      "truePositives": 12,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.7575,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7575,
+        1
+      ]
+    },
+    "ocr:de-utility-bill": {
+      "samples": 2,
+      "identifiers": 11,
+      "caught": 10,
+      "kindCorrect": 10,
+      "missed": 1,
+      "partial": 0,
+      "detections": 10,
+      "truePositives": 10,
+      "falsePositives": 0,
+      "recall": 0.9091,
+      "recallCi95": [
+        0.6226,
+        0.9838
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7225,
+        1
+      ]
+    },
+    "ocr:de-whatsapp-export": {
+      "samples": 2,
+      "identifiers": 7,
+      "caught": 7,
+      "kindCorrect": 7,
+      "missed": 0,
+      "partial": 0,
+      "detections": 7,
+      "truePositives": 7,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.6457,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.6457,
+        1
+      ]
+    },
+    "ocr:en-account-statement": {
+      "samples": 2,
+      "identifiers": 6,
+      "caught": 6,
+      "kindCorrect": 6,
+      "missed": 0,
+      "partial": 0,
+      "detections": 6,
+      "truePositives": 6,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.6097,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.6097,
+        1
+      ]
+    },
+    "ocr:en-application-form": {
+      "samples": 2,
+      "identifiers": 10,
+      "caught": 10,
+      "kindCorrect": 10,
+      "missed": 0,
+      "partial": 0,
+      "detections": 10,
+      "truePositives": 10,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.7225,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7225,
+        1
+      ]
+    },
+    "ocr:en-chat-export": {
+      "samples": 2,
+      "identifiers": 7,
+      "caught": 6,
+      "kindCorrect": 6,
+      "missed": 1,
+      "partial": 0,
+      "detections": 6,
+      "truePositives": 6,
+      "falsePositives": 0,
+      "recall": 0.8571,
+      "recallCi95": [
+        0.4869,
+        0.9743
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.6097,
+        1
+      ]
+    },
+    "ocr:en-csv-comma": {
+      "samples": 3,
+      "identifiers": 41,
+      "caught": 36,
+      "kindCorrect": 36,
+      "missed": 5,
+      "partial": 0,
+      "detections": 36,
+      "truePositives": 36,
+      "falsePositives": 0,
+      "recall": 0.878,
+      "recallCi95": [
+        0.7446,
+        0.9468
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.9036,
+        1
+      ]
+    },
+    "ocr:en-cv": {
+      "samples": 2,
+      "identifiers": 6,
+      "caught": 5,
+      "kindCorrect": 5,
+      "missed": 1,
+      "partial": 0,
+      "detections": 5,
+      "truePositives": 5,
+      "falsePositives": 0,
+      "recall": 0.8333,
+      "recallCi95": [
+        0.4365,
+        0.9699
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.5655,
+        1
+      ]
+    },
+    "ocr:en-cv-sidebar": {
+      "samples": 2,
+      "identifiers": 6,
+      "caught": 6,
+      "kindCorrect": 6,
+      "missed": 0,
+      "partial": 0,
+      "detections": 6,
+      "truePositives": 6,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.6097,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.6097,
+        1
+      ]
+    },
+    "ocr:en-email": {
+      "samples": 2,
+      "identifiers": 12,
+      "caught": 11,
+      "kindCorrect": 11,
+      "missed": 1,
+      "partial": 0,
+      "detections": 11,
+      "truePositives": 11,
+      "falsePositives": 0,
+      "recall": 0.9167,
+      "recallCi95": [
+        0.6461,
+        0.9851
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7412,
+        1
+      ]
+    },
+    "ocr:en-employment": {
+      "samples": 3,
+      "identifiers": 21,
+      "caught": 16,
+      "kindCorrect": 16,
+      "missed": 5,
+      "partial": 1,
+      "detections": 17,
+      "truePositives": 17,
+      "falsePositives": 0,
+      "recall": 0.7619,
+      "recallCi95": [
+        0.5491,
+        0.8937
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.8157,
+        1
+      ]
+    },
+    "ocr:en-freelancer-invoice": {
+      "samples": 2,
+      "identifiers": 10,
+      "caught": 9,
+      "kindCorrect": 9,
+      "missed": 1,
+      "partial": 0,
+      "detections": 9,
+      "truePositives": 9,
+      "falsePositives": 0,
+      "recall": 0.9,
+      "recallCi95": [
+        0.5958,
+        0.9821
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7009,
+        1
+      ]
+    },
+    "ocr:en-medical-report": {
+      "samples": 3,
+      "identifiers": 12,
+      "caught": 9,
+      "kindCorrect": 8,
+      "missed": 3,
+      "partial": 0,
+      "detections": 9,
+      "truePositives": 9,
+      "falsePositives": 0,
+      "recall": 0.75,
+      "recallCi95": [
+        0.4677,
+        0.9111
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.7009,
+        1
+      ]
+    },
+    "ocr:en-online-order": {
+      "samples": 2,
+      "identifiers": 4,
+      "caught": 4,
+      "kindCorrect": 4,
+      "missed": 0,
+      "partial": 0,
+      "detections": 4,
+      "truePositives": 4,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.5101,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.5101,
+        1
+      ]
+    },
+    "ocr:en-support-chat": {
+      "samples": 2,
+      "identifiers": 7,
+      "caught": 7,
+      "kindCorrect": 7,
+      "missed": 0,
+      "partial": 0,
+      "detections": 7,
+      "truePositives": 7,
+      "falsePositives": 0,
+      "recall": 1,
+      "recallCi95": [
+        0.6457,
+        1
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.6457,
+        1
+      ]
+    },
+    "ocr:en-tax-letter": {
+      "samples": 3,
+      "identifiers": 18,
+      "caught": 16,
+      "kindCorrect": 16,
+      "missed": 2,
+      "partial": 1,
+      "detections": 17,
+      "truePositives": 17,
+      "falsePositives": 0,
+      "recall": 0.8889,
+      "recallCi95": [
+        0.672,
+        0.969
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.8157,
+        1
+      ]
+    },
+    "ocr:en-tsv": {
+      "samples": 2,
+      "identifiers": 26,
+      "caught": 19,
+      "kindCorrect": 19,
+      "missed": 7,
+      "partial": 0,
+      "detections": 19,
+      "truePositives": 19,
+      "falsePositives": 0,
+      "recall": 0.7308,
+      "recallCi95": [
+        0.5392,
+        0.863
+      ],
+      "precision": 1,
+      "precisionCi95": [
+        0.8318,
+        1
+      ]
+    }
+  },
+  "notCovered": {
+    "NAME": {
+      "spans": 1581,
+      "fullyLeftInClear": 1581
+    },
+    "ADDRESS": {
+      "spans": 435,
+      "fullyLeftInClear": 435
+    }
+  },
+  "misses": [
+    {
+      "sample": "dev-table-054",
+      "category": "table",
+      "layout": "de-aligned-columns",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:dd.mm.yyyy",
+      "value": "07.10.2005",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 8,
+      "context": " NL33  UUKX  4139  1323  39   [[07.10.2005]]⏎Maximilian Albers  "
+    },
+    {
+      "sample": "dev-table-054",
+      "category": "table",
+      "layout": "de-aligned-columns",
+      "kind": "ID-NUMBER",
+      "variant": "doc:de-id",
+      "value": "R22XCMV3Z",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 9,
+      "context": "ann   00068238   I191298986   [[R22XCMV3Z]]   DE372717057596385"
+    },
+    {
+      "sample": "dev-table-054",
+      "category": "table",
+      "layout": "de-aligned-columns",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:dd.mm.yyyy",
+      "value": "13.12.1993",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 8,
+      "context": "3Z   DE37271705759638567553   [[13.12.1993]]⏎"
+    },
+    {
+      "sample": "dev-scan-ocr-004",
+      "category": "scan-ocr",
+      "layout": "ocr:en-cv",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:dd/mm/yyyy",
+      "value": "14109/1967",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 9,
+      "context": "gallagher255@example.net⏎DOB: [[14109/1967]]⏎Nationality: Indian"
+    },
+    {
+      "sample": "dev-scan-ocr-005",
+      "category": "scan-ocr",
+      "layout": "ocr:de-car-sale",
+      "kind": "PHONE",
+      "variant": "de-mobile:national-space",
+      "value": "0l78 5190207",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 11,
+      "context": "erplatz 54, 50667 Koln, Tel.: [[0l78 5190207]], Personalausweisnum"
+    },
+    {
+      "sample": "dev-scan-ocr-009",
+      "category": "scan-ocr",
+      "layout": "ocr:de-phone-bill",
+      "kind": "PHONE",
+      "variant": "de-landline:parentheses",
+      "value": "(o40) 66969262",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 11,
+      "context": "7100:08:46 0,00€⏎06.05. 11:21 [[(o40) 66969262]] 00:38:07 0,00 €⏎19."
+    },
+    {
+      "sample": "dev-scan-ocr-009",
+      "category": "scan-ocr",
+      "layout": "ocr:de-phone-bill",
+      "kind": "PHONE",
+      "variant": "de-mobile:national-compact",
+      "value": "015290334874",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 12,
+      "context": "2 00:38:07 0,00 €⏎19.02. 22:48[[015290334874]] 0040:57 0,00 €⏎25.0"
+    },
+    {
+      "sample": "dev-scan-ocr-010",
+      "category": "scan-ocr",
+      "layout": "ocr:de-tax-adviser-letter",
+      "kind": "TAX-ID",
+      "variant": "taxid:2-3-3-3",
+      "value": "4Z 659 118 0|3",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 10,
+      "context": "045 819 60738, Ihre Steuer-ID [[4Z 659 118 0|3]], dieIhrer Ehefrau/I"
+    },
+    {
+      "sample": "dev-scan-ocr-011",
+      "category": "scan-ocr",
+      "layout": "ocr:de-tax-id-notice",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:d. Monat yyyy",
+      "value": "2. Oktober 1951",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 12,
+      "context": "eburt⏎Geburtsort⏎⏎Krause⏎Emre⏎[[2. Oktober 1951]]⏎Koln⏎Bonn, 04.03.20"
+    },
+    {
+      "sample": "dev-scan-ocr-018",
+      "category": "scan-ocr",
+      "layout": "ocr:de-tax-assessment",
+      "kind": "PHONE",
+      "variant": "de-landline:national-space",
+      "value": "030 23|25898",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 10,
+      "context": "nummer\t17 929 950 340⏎Telefon\t[[030 23|25898]]⏎Datum\t2025-09-27⏎Be"
+    },
+    {
+      "sample": "dev-scan-ocr-018",
+      "category": "scan-ocr",
+      "layout": "ocr:de-tax-assessment",
+      "kind": "IBAN",
+      "variant": "iban:NL:double-space",
+      "value": "NL52  GCMV  1173  05B8 93",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 18,
+      "context": "ungsbetrag wird auf das Konto [[NL52  GCMV  1173  05B8 93]]überwiesen.⏎Bankverb"
+    },
+    {
+      "sample": "dev-scan-ocr-018",
+      "category": "scan-ocr",
+      "layout": "ocr:de-tax-assessment",
+      "kind": "IBAN",
+      "variant": "iban:DE:grouped",
+      "value": "DE18 7469 2277 8820 58666|",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 21,
+      "context": "ung Finanzamt:Bundesbank IBAN [[DE18 7469 2277 8820 58666|]] BIC MARKDEF1100⏎Öff"
+    },
+    {
+      "sample": "dev-scan-ocr-022",
+      "category": "scan-ocr",
+      "layout": "ocr:de-freelancer-invoice",
+      "kind": "EMAIL",
+      "variant": "email:plain",
+      "value": "an na_zimmermann@ma\nil.example",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 25,
+      "context": "t⏎am Main⏎Tel. 0179/1241160 · [[an na_zimmermann@ma⏎il.example]]⏎⏎An⏎Agentur Blauwal"
+    },
+    {
+      "sample": "dev-scan-ocr-023",
+      "category": "scan-ocr",
+      "layout": "ocr:de-id-card-scan",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:id-card",
+      "value": "16.02.197 1",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 8,
+      "context": "te of birth/Date de naissance⏎[[16.02.197 1]]⏎Staatsangehorigkeit"
+    },
+    {
+      "sample": "dev-scan-ocr-028",
+      "category": "scan-ocr",
+      "layout": "ocr:en-tsv",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:d Month yyyy",
+      "value": "28 January 1944",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 13,
+      "context": "⏎no.⏎Sabine Yilmaz\t12/10/2024\t[[28 January 1944]]\ts.yilmaz@mail.examp"
+    },
+    {
+      "sample": "dev-scan-ocr-028",
+      "category": "scan-ocr",
+      "layout": "ocr:en-tsv",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:d Month yyyy",
+      "value": "15 September 1997",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 15,
+      "context": "O6212⏎Priya Turner\t01/06/2025\t[[15 September 1997]]\tpriya.turner+shop@f"
+    },
+    {
+      "sample": "dev-scan-ocr-028",
+      "category": "scan-ocr",
+      "layout": "ocr:en-tsv",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:d Month yyyy",
+      "value": "1 October 1972",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 12,
+      "context": "463⏎Sophie Schafer\t14.09.2024\t[[1 October 1972]]\tsophie,schaefer@exa"
+    },
+    {
+      "sample": "dev-scan-ocr-028",
+      "category": "scan-ocr",
+      "layout": "ocr:en-tsv",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:d Month yyyy",
+      "value": "23 April 2003",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 11,
+      "context": "07⏎Chloe Gallagher\t21.12.2025\t[[23 April 2003]]\tc.gallagher(a)mail."
+    },
+    {
+      "sample": "dev-scan-ocr-028",
+      "category": "scan-ocr",
+      "layout": "ocr:en-tsv",
+      "kind": "EMAIL",
+      "variant": "email:plain",
+      "value": "c.gallagher(a)mail.example",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 22,
+      "context": "gher\t21.12.2025\t23 April 2003\t[[c.gallagher(a)mail.example]]\tEUR⏎5,444.07\tF77707"
+    },
+    {
+      "sample": "dev-scan-ocr-028",
+      "category": "scan-ocr",
+      "layout": "ocr:en-tsv",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:yyyy-mm-dd",
+      "value": "1977-06-11",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 8,
+      "context": "072104⏎Lukas Weber\t21.01.2024\t[[1977-06-11]]\tlukas.weber@example"
+    },
+    {
+      "sample": "dev-scan-ocr-028",
+      "category": "scan-ocr",
+      "layout": "ocr:en-tsv",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:yyyy-mm-dd",
+      "value": "1988-11-26",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 8,
+      "context": "38S89⏎Sabine Vogel\t12/12/2024\t[[1988-11-26]]\tsabine-vogel@web.ex"
+    },
+    {
+      "sample": "dev-scan-ocr-030",
+      "category": "scan-ocr",
+      "layout": "ocr:de-registration-form",
+      "kind": "PHONE",
+      "variant": "de-mobile:intl-zero",
+      "value": "+49 (0)1777765O06",
+      "reason": "partial",
+      "overlappedBy": [
+        "PHONE"
+      ],
+      "leftInClear": 3,
+      "context": "0KTZWH4⏎Telefon (freiwillig): [[+49 (0)1777765O06]]⏎E-Mail (freiwillig)"
+    },
+    {
+      "sample": "dev-scan-ocr-031",
+      "category": "scan-ocr",
+      "layout": "ocr:de-utility-bill",
+      "kind": "PHONE",
+      "variant": "de-service:national-space",
+      "value": "0800 189b227",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 11,
+      "context": "3581425⏎Fragen? Kundenservice [[0800 189b227]] (Mo-Fr 8-18 Uhr)ode"
+    },
+    {
+      "sample": "dev-scan-ocr-035",
+      "category": "scan-ocr",
+      "layout": "ocr:en-employment",
+      "kind": "EMAIL",
+      "variant": "email:plain",
+      "value": "sabineneumann93@familie,test",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 26,
+      "context": " 71⏎Mobile⏎07700 900351⏎Email⏎[[sabineneumann93@familie,test]]⏎"
+    },
+    {
+      "sample": "dev-scan-ocr-038",
+      "category": "scan-ocr",
+      "layout": "ocr:de-account-opening",
+      "kind": "EMAIL",
+      "variant": "email:plain",
+      "value": "t,becker&ma il.example",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 18,
+      "context": "elefon\t0049 7531 38362⏎E-Mail\t[[t,becker&ma il.example]]⏎Referenzkonto (IBAN"
+    },
+    {
+      "sample": "dev-scan-ocr-041",
+      "category": "scan-ocr",
+      "layout": "ocr:en-csv-comma",
+      "kind": "INSURANCE",
+      "variant": "pension:compact",
+      "value": "1S070859K69B",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 12,
+      "context": "\",\"P568710715\",\"28246197050\",\"[[1S070859K69B]]\",\"10865\"⏎\"Arjun Cla"
+    },
+    {
+      "sample": "dev-scan-ocr-041",
+      "category": "scan-ocr",
+      "layout": "ocr:en-csv-comma",
+      "kind": "INSURANCE",
+      "variant": "pension:spaced",
+      "value": "17\n210655 S |25",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 11,
+      "context": "\",\"E820306127\",\"71536392404\",\"[[17⏎210655 S |25]]\",\"P-858001\"⏎\"Emily "
+    },
+    {
+      "sample": "dev-scan-ocr-041",
+      "category": "scan-ocr",
+      "layout": "ocr:en-csv-comma",
+      "kind": "INSURANCE",
+      "variant": "pension:spaced",
+      "value": "4923l281\nR607",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 12,
+      "context": "\",\"L298551533\",\"12807945609\",\"[[4923l281⏎R607]]\",\"75168\"⏎"
+    },
+    {
+      "sample": "dev-scan-ocr-045",
+      "category": "scan-ocr",
+      "layout": "ocr:en-tax-letter",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:d Month yyyy",
+      "value": "20 Jul y 1965",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 10,
+      "context": "80 541 235 698⏎Date of birth: [[20 Jul y 1965]]⏎Assessed income tax"
+    },
+    {
+      "sample": "dev-scan-ocr-049",
+      "category": "scan-ocr",
+      "layout": "ocr:en-email",
+      "kind": "EMAIL",
+      "variant": "email:plain",
+      "value": "h.reid(a)familie.test",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 17,
+      "context": "From: Harry Reid <[[h.reid(a)familie.test]]>⏎Sent: 10 October 2"
+    },
+    {
+      "sample": "dev-scan-ocr-055",
+      "category": "scan-ocr",
+      "layout": "ocr:en-tax-letter",
+      "kind": "EMAIL",
+      "variant": "email:plain",
+      "value": "p oststelle@firma.example",
+      "reason": "partial",
+      "overlappedBy": [
+        "EMAIL"
+      ],
+      "leftInClear": 1,
+      "context": "call 030 23125341 or write to [[p oststelle@firma.example]].⏎"
+    },
+    {
+      "sample": "dev-scan-ocr-056",
+      "category": "scan-ocr",
+      "layout": "ocr:en-employment",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:dd/mm/yyyy",
+      "value": "I0/01/1967",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 8,
+      "context": "h⏎Foster (the Employee), born [[I0/01/1967]], residing at Am Müh"
+    },
+    {
+      "sample": "dev-scan-ocr-056",
+      "category": "scan-ocr",
+      "layout": "ocr:en-employment",
+      "kind": "TAX-ID",
+      "variant": "taxid:2-3-3-3",
+      "value": "17 240 b37 757",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 11,
+      "context": "year.⏎Employee details⏎Tax ID⏎[[17 240 b37 757]]⏎Pensioninsurance nu"
+    },
+    {
+      "sample": "dev-scan-ocr-064",
+      "category": "scan-ocr",
+      "layout": "ocr:de-email-thread",
+      "kind": "PHONE",
+      "variant": "de-mobile:national-space",
+      "value": "01792I59824",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 11,
+      "context": "ang 42, 78462 Konstanz⏎Mobil: [[01792I59824]]⏎⏎> Am 04.01.2025 um"
+    },
+    {
+      "sample": "dev-scan-ocr-065",
+      "category": "scan-ocr",
+      "layout": "ocr:de-sick-note",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:dd.mm.yyyy",
+      "value": "01.02.1 997",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 8,
+      "context": "cherten: Albers,Niklas  geb.am[[01.02.1 997]]⏎Kostentragerkennung"
+    },
+    {
+      "sample": "dev-scan-ocr-065",
+      "category": "scan-ocr",
+      "layout": "ocr:de-sick-note",
+      "kind": "INSURANCE",
+      "variant": "health:compact",
+      "value": "1867740172",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 10,
+      "context": " 784673429  Versicherten-Nr.: [[1867740172]]  Status: 1000000⏎Be"
+    },
+    {
+      "sample": "dev-scan-ocr-069",
+      "category": "scan-ocr",
+      "layout": "ocr:en-csv-comma",
+      "kind": "TAX-ID",
+      "variant": "taxid:2-3-3-3",
+      "value": "12107 345 68b",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 11,
+      "context": " 31 263 94 61\"⏎\"Jack Clarke\",\"[[12107 345 68b]]\",\"28/05/1987\",\"+44 "
+    },
+    {
+      "sample": "dev-scan-ocr-070",
+      "category": "scan-ocr",
+      "layout": "ocr:de-bank-csv",
+      "kind": "IBAN",
+      "variant": "iban:DE:compact",
+      "value": "DE5156220b784763564940",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 22,
+      "context": "rause\";\"EREF 37567021262127\";\"[[DE5156220b784763564940]]\";\"INGDDEFFXXX\";\"-46"
+    },
+    {
+      "sample": "dev-scan-ocr-071",
+      "category": "scan-ocr",
+      "layout": "ocr:en-chat-export",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:d Month yyyy",
+      "value": "1 January1949",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 12,
+      "context": "23/08/2024, 0937 - Lukas: dob [[1 January1949]],⏎phone 07700 900715"
+    },
+    {
+      "sample": "dev-scan-ocr-074",
+      "category": "scan-ocr",
+      "layout": "ocr:de-cv",
+      "kind": "PHONE",
+      "variant": "de-landline:national-slash",
+      "value": "062Z1164507",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 11,
+      "context": "tieg 41, 28195 Bremen⏎Telefon⏎[[062Z1164507]]⏎E-Mail⏎ralf-schaefe"
+    },
+    {
+      "sample": "dev-scan-ocr-074",
+      "category": "scan-ocr",
+      "layout": "ocr:de-cv",
+      "kind": "EMAIL",
+      "variant": "email:plain",
+      "value": "ralf-schaefer@we b.example",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 22,
+      "context": "en⏎Telefon⏎062Z1164507⏎E-Mail⏎[[ralf-schaefer@we b.example]]⏎*27. Dezember 1965 "
+    },
+    {
+      "sample": "dev-scan-ocr-076",
+      "category": "scan-ocr",
+      "layout": "ocr:de-doctor-letter",
+      "kind": "PHONE",
+      "variant": "de-landline:pairs",
+      "value": "o4321 b5 96 83",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 11,
+      "context": "e 5, 12345 Musterstadt · Tel. [[o4321 b5 96 83]] · Fax +49 89 999988"
+    },
+    {
+      "sample": "dev-scan-ocr-077",
+      "category": "scan-ocr",
+      "layout": "ocr:de-tax-adviser-letter",
+      "kind": "EMAIL",
+      "variant": "email:plain",
+      "value": "kanzlei@servic e.example",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 21,
+      "context": "ckfragen: +49 2131 91923 oder [[kanzlei@servic e.example]].⏎"
+    },
+    {
+      "sample": "dev-scan-ocr-083",
+      "category": "scan-ocr",
+      "layout": "ocr:de-passport-scan",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:passport",
+      "value": "02.12.2000",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 8,
+      "context": "te of birth/Date de⏎naissance⏎[[02.12.2000]]⏎P<D<<HARTMANN<<ANNA"
+    },
+    {
+      "sample": "dev-scan-ocr-084",
+      "category": "scan-ocr",
+      "layout": "ocr:en-medical-report",
+      "kind": "EMAIL",
+      "variant": "email:plain",
+      "value": "clinic@service,example",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 20,
+      "context": "0/06/2026.⏎Dr. OliverBennett, [[clinic@service,example]]⏎"
+    },
+    {
+      "sample": "dev-scan-ocr-087",
+      "category": "scan-ocr",
+      "layout": "ocr:de-registration-form",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:dd.mm.yy",
+      "value": "11,12,62",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 6,
+      "context": " (freiwillig)⏎⏎Yilmaz⏎Michael⏎[[11,12,62]]⏎München⏎deutsch⏎Fli"
+    },
+    {
+      "sample": "dev-scan-ocr-087",
+      "category": "scan-ocr",
+      "layout": "ocr:de-registration-form",
+      "kind": "ID-NUMBER",
+      "variant": "doc:de-id",
+      "value": "V587VXL6T",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 9,
+      "context": "⏎Fliederweg 50, 80331 Munchen⏎[[V587VXL6T]]⏎01 758614466⏎michae"
+    },
+    {
+      "sample": "dev-scan-ocr-092",
+      "category": "scan-ocr",
+      "layout": "ocr:de-tax-assessment",
+      "kind": "PHONE",
+      "variant": "de-landline:national-space",
+      "value": "089 99998335",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 11,
+      "context": "⏎295/7367/7429⏎49 688 072 535⏎[[089 99998335]]⏎2024-10-25⏎Bescheid"
+    },
+    {
+      "sample": "dev-scan-ocr-092",
+      "category": "scan-ocr",
+      "layout": "ocr:de-tax-assessment",
+      "kind": "IBAN",
+      "variant": "iban:DE:compact",
+      "value": "DE2127|395450251288755",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 21,
+      "context": "ng Finanzamt: Bundesbank IBAN [[DE2127|395450251288755]] BIC MARKDEF1100⏎Off"
+    },
+    {
+      "sample": "dev-scan-ocr-094",
+      "category": "scan-ocr",
+      "layout": "ocr:en-freelancer-invoice",
+      "kind": "TAX-ID",
+      "variant": "vat:compact",
+      "value": "DE30024|029",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 10,
+      "context": " number: 29/140/63788⏎VAT ID: [[DE30024|029]]⏎"
+    },
+    {
+      "sample": "dev-scan-ocr-097",
+      "category": "scan-ocr",
+      "layout": "ocr:de-aligned-columns",
+      "kind": "INSURANCE",
+      "variant": "pension:compact",
+      "value": "38030763Nb02",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 12,
+      "context": "example.com⏎Andreas Neumann   [[38030763Nb02]]   0160/4931416   00"
+    },
+    {
+      "sample": "dev-scan-ocr-100",
+      "category": "scan-ocr",
+      "layout": "ocr:de-doctor-letter",
+      "kind": "PHONE",
+      "variant": "de-landline:parentheses",
+      "value": "(030) 231Z5480",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 11,
+      "context": ".2026. Ruckfragen gerne unter [[(030) 231Z5480]].⏎"
+    },
+    {
+      "sample": "dev-scan-ocr-103",
+      "category": "scan-ocr",
+      "layout": "ocr:en-medical-report",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:d Month yyyy",
+      "value": "19November 2000",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 14,
+      "context": "ce number⏎Phone⏎⏎PetraSchafer⏎[[19November 2000]]⏎Holunderstieg 54a, "
+    },
+    {
+      "sample": "dev-scan-ocr-103",
+      "category": "scan-ocr",
+      "layout": "ocr:en-medical-report",
+      "kind": "INSURANCE",
+      "variant": "health:compact",
+      "value": "V08721 734|",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 9,
+      "context": "Holunderstieg 54a, 50667 Koln⏎[[V08721 734|]]⏎+49 175 557326 1⏎As"
+    },
+    {
+      "sample": "dev-scan-ocr-109",
+      "category": "scan-ocr",
+      "layout": "ocr:de-sick-note",
+      "kind": "INSURANCE",
+      "variant": "health:compact",
+      "value": "F981869b85",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 10,
+      "context": " 372888071  Versicherten-Nr.: [[F981869b85]]  Status: 1000000⏎Be"
+    },
+    {
+      "sample": "dev-scan-ocr-110",
+      "category": "scan-ocr",
+      "layout": "ocr:en-employment",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:dd/mm/yyyy",
+      "value": "14/0311964",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 9,
+      "context": "y Turner (the⏎Employee), born [[14/0311964]], residing at Schill"
+    },
+    {
+      "sample": "dev-scan-ocr-110",
+      "category": "scan-ocr",
+      "layout": "ocr:en-employment",
+      "kind": "EMAIL",
+      "variant": "email:plain",
+      "value": "turner6 22@web.example",
+      "reason": "partial",
+      "overlappedBy": [
+        "EMAIL"
+      ],
+      "leftInClear": 7,
+      "context": "92⏎Mobile⏎0152/96488755⏎Email⏎[[turner6 22@web.example]]⏎"
+    },
+    {
+      "sample": "dev-scan-ocr-111",
+      "category": "scan-ocr",
+      "layout": "ocr:en-csv-comma",
+      "kind": "INSURANCE",
+      "variant": "health:compact",
+      "value": "W82130b632",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 10,
+      "context": "milian Lindner\",\"EUR 560.88\",\"[[W82130b632]]\",\"08/07/1982\",\"49 5"
+    },
+    {
+      "sample": "dev-scan-ocr-113",
+      "category": "scan-ocr",
+      "layout": "ocr:de-credit-card-statement",
+      "kind": "CARD",
+      "variant": "card:mastercard:space",
+      "value": "5522 0439 1935b293",
+      "reason": "partial",
+      "overlappedBy": [
+        "PHONE"
+      ],
+      "leftInClear": 8,
+      "context": "r: Petra Brandt⏎Kartennummer: [[5522 0439 1935b293]]⏎Abrechnungsdatum: 0"
+    },
+    {
+      "sample": "dev-scan-ocr-116",
+      "category": "scan-ocr",
+      "layout": "ocr:de-csv-semicolon",
+      "kind": "BIRTH-DATE",
+      "variant": "birth:dd.mm.yyyy",
+      "value": "22.0l.1960",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 8,
+      "context": "n@post.example;26 381 745 490;[[22.0l.1960]];W48PGBCP5⏎Hannes Sc"
+    },
+    {
+      "sample": "dev-scan-ocr-116",
+      "category": "scan-ocr",
+      "layout": "ocr:de-csv-semicolon",
+      "kind": "TAX-ID",
+      "variant": "taxid:2-3-3-3",
+      "value": "75 113 214 9b1",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 11,
+      "context": "hie Engel;s,engel@web.example;[[75 113 214 9b1]];2006-06-22;RFF4FRVP"
+    },
+    {
+      "sample": "dev-scan-ocr-120",
+      "category": "scan-ocr",
+      "layout": "ocr:de-markdown-table",
+      "kind": "EMAIL",
+      "variant": "email:plain",
+      "value": "i nes.lange@example.org",
+      "reason": "partial",
+      "overlappedBy": [
+        "EMAIL"
+      ],
+      "leftInClear": 1,
+      "context": "| 14.03.2024⏎|⏎| Ines Lange | [[i nes.lange@example.org]] | X8JCX992C | 10.03"
+    },
+    {
+      "sample": "dev-scan-ocr-120",
+      "category": "scan-ocr",
+      "layout": "ocr:de-markdown-table",
+      "kind": "ID-NUMBER",
+      "variant": "doc:de-id",
+      "value": "X8JCX992C",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 9,
+      "context": "e | i nes.lange@example.org | [[X8JCX992C]] | 10.03.2025⏎|⏎| Ra"
+    },
+    {
+      "sample": "dev-scan-ocr-120",
+      "category": "scan-ocr",
+      "layout": "ocr:de-markdown-table",
+      "kind": "ID-NUMBER",
+      "variant": "doc:de-id",
+      "value": "L00H883C9",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 9,
+      "context": "in | ralf.klein@example.com | [[L00H883C9]] | 22.09.2026⏎|⏎| Ha"
+    },
+    {
+      "sample": "dev-scan-ocr-120",
+      "category": "scan-ocr",
+      "layout": "ocr:de-markdown-table",
+      "kind": "ID-NUMBER",
+      "variant": "doc:de-id",
+      "value": "RT0F43638",
+      "reason": "missed",
+      "overlappedBy": [],
+      "leftInClear": 9,
+      "context": "aelschroeder88@post.example | [[RT0F43638]]⏎| 24.06.2024 |⏎"
+    }
+  ],
+  "falsePositives": []
+}
