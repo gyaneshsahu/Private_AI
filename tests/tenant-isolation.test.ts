@@ -61,7 +61,6 @@ const metrics = (n: number) => ({
 
 type Ledger = UsageLedger & {
   createAllowance(input: ReturnType<typeof grant>): void | Promise<void>;
-  metrics(requestId: string): unknown;
 };
 async function ledgerFor(backend: "sqlite" | "postgres"): Promise<Ledger> {
   if (backend === "sqlite") {
@@ -125,7 +124,7 @@ for (const backend of ["sqlite", "postgres"] as const)
               usage.finish(A, "b-secret", outcome, metrics(7)),
             ),
           ).rejects.toThrow();
-        expect(await usage.metrics("b-secret")).toBeUndefined();
+        expect(await usage.metrics(A, "b-secret")).toBeUndefined();
         expect(await usage.summary(B)).toMatchObject({
           used: 1,
           pending: 1,
@@ -135,6 +134,9 @@ for (const backend of ["sqlite", "postgres"] as const)
         expect(await usage.summary(A)).toMatchObject({ used: 0, pending: 0 });
         // B's own settlement still succeeds afterwards.
         await usage.finish(B, "b-secret", "transport_complete", metrics(3));
+        // Metering is readable only through the owning account.
+        expect(await usage.metrics(B, "b-secret")).toEqual(metrics(3));
+        expect(await usage.metrics(A, "b-secret")).toBeUndefined();
         expect(await usage.summary(B)).toMatchObject({
           pending: 0,
           meteredRequests: 1,
@@ -261,6 +263,7 @@ async function relay() {
           usage.dispatch(accountId, requestId),
         finish: (accountId, requestId, outcome, metered) =>
           usage.finish(accountId, requestId, outcome, metered),
+        metrics: (accountId, requestId) => usage.metrics(accountId, requestId),
       },
       qualification,
       apiKey: "SYNTHETIC_NOT_REAL",
@@ -463,8 +466,14 @@ describe("relay isolation over HTTP (SQLite ledger)", () => {
         })
       ).status,
     ).toBe(400);
-    // B's cancel reports success generically but must not remove A's grant.
-    await h.call(b, "/api/research/cancel", { id: issued.id });
+    // B's cancel must not remove A's grant, and its answer must be
+    // indistinguishable from cancelling an approval that never existed.
+    const foreign = await h.call(b, "/api/research/cancel", { id: issued.id });
+    const missing = await h.call(await h.account(), "/api/research/cancel", {
+      id: "0".repeat(48),
+    });
+    expect(foreign.status).toBe(missing.status);
+    expect(await foreign.text()).toBe(await missing.text());
     expect(search).not.toHaveBeenCalled();
     expect(
       (
@@ -777,8 +786,20 @@ describe.skipIf(!pgEnabled)("consumer workspace (PostgreSQL)", () => {
     await expect(
       h.instance.control.approvals.consume(b.session, prepared.id, query),
     ).rejects.toThrow();
-    // B's cancel cannot remove A's grant either.
-    await h.call("/api/research/cancel", { id: prepared.id }, b.headers);
+    // B's cancel cannot remove A's grant either, and answers exactly as a
+    // cancel of an approval that never existed.
+    const foreign = await h.call(
+      "/api/research/cancel",
+      { id: prepared.id },
+      b.headers,
+    );
+    const missing = await h.call(
+      "/api/research/cancel",
+      { id: "0".repeat(48) },
+      b.headers,
+    );
+    expect(foreign.status).toBe(missing.status);
+    expect(await foreign.text()).toBe(await missing.text());
     expect(
       (await h.db.pool.query("SELECT count(*)::int n FROM research_consent"))
         .rows[0].n,

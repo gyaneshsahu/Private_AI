@@ -38,6 +38,13 @@ RUN set -eu; \
 
 FROM build AS deployment-candidate
 ENV NODE_ENV=production
+# The production candidate refuses to build while the privacy policy still
+# carries an owner placeholder ("not yet named", "not yet made"). Rehearsal
+# builds that must exist before those decisions pass
+# --build-arg PRIVACY_PLACEHOLDERS=allow and are never deployment candidates.
+ARG PRIVACY_PLACEHOLDERS=forbid
+COPY scripts/policy-placeholders.ts ./scripts/policy-placeholders.ts
+RUN node --import tsx scripts/policy-placeholders.ts "$PRIVACY_PLACEHOLDERS"
 # Read-only supplier CLI; no update checks (server/attestation-audit.ts never invokes `tinfoil update`).
 COPY --from=tinfoil-verifier --chmod=0555 /out/tinfoil /usr/local/bin/tinfoil
 # The slim base ships no CA store; the Go CLI needs one for TLS to the enclave,

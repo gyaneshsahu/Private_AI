@@ -173,11 +173,11 @@ it("records completed-request metering once and never for uncertain outcomes", a
       ...metrics,
       promptTokens: 99,
     });
-    expect(ledger.metrics("a")).toEqual(metrics);
+    expect(ledger.metrics("alice", "a")).toEqual(metrics);
     expect(ledger.reserve("alice", "b")).toBe(true);
     ledger.dispatch("alice", "b");
     ledger.finish("alice", "b", "uncertain", metrics);
-    expect(ledger.metrics("b")).toBeUndefined();
+    expect(ledger.metrics("alice", "b")).toBeUndefined();
     expect(ledger.reserve("alice", "c")).toBe(true);
     ledger.dispatch("alice", "c");
     expect(() =>
@@ -186,7 +186,7 @@ it("records completed-request metering once and never for uncertain outcomes", a
         model: "bad model",
       }),
     ).toThrow();
-    expect(ledger.metrics("c")).toBeUndefined();
+    expect(ledger.metrics("alice", "c")).toBeUndefined();
     expect(ledger.summary("alice")).toMatchObject({
       used: 3,
       pending: 1,

@@ -220,13 +220,14 @@ export class SqliteUsageLedger implements UsageLedger {
     });
   }
   /** Completed-request metering for one request, or undefined when none was recorded. */
-  metrics(requestId: string): UsageMetrics | undefined {
+  metrics(accountId: string, requestId: string): UsageMetrics | undefined {
+    id.parse(accountId);
     id.parse(requestId);
     const row = this.db
       .prepare(
-        "SELECT prompt_tokens,completion_tokens,model,cost_usd,web_search_calls FROM usage_metrics WHERE request_id=?",
+        "SELECT m.prompt_tokens,m.completion_tokens,m.model,m.cost_usd,m.web_search_calls FROM usage_metrics m JOIN usage_requests r ON r.request_id=m.request_id WHERE m.request_id=? AND r.account_id=?",
       )
-      .get(requestId);
+      .get(requestId, accountId);
     return row
       ? {
           promptTokens: Number(row.prompt_tokens),

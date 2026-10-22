@@ -43,7 +43,7 @@ jobs:
       - run: node scripts/container-recovery.mjs
       - name: Build the Render candidate and smoke-test the pinned attestation CLI inside it
         run: |
-          docker build --target render-candidate -t privateai-render-candidate:local -f Dockerfile.render "$RUNNER_TEMP/privateai-build"
+          docker build --target render-candidate --build-arg PRIVACY_PLACEHOLDERS=allow -t privateai-render-candidate:local -f Dockerfile.render "$RUNNER_TEMP/privateai-build"
           node scripts/attestation-cli-smoke.mjs privateai-render-candidate:local
       - name: Verify encrypted recovery in packaged Linux runtime
         run: docker run --rm --network none --mount "type=bind,source=$PWD/tests,target=/app/tests,readonly" -e PRIVATEAI_TEST_AGE=/usr/bin/age privateai-evaluation node node_modules/vitest/vitest.mjs run tests/encrypted-registry.test.ts

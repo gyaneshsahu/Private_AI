@@ -104,8 +104,8 @@ it.skipIf(!enabled)(
           promptTokens: 99,
         }),
       ]);
-      expect(await ledger.metrics("c")).toEqual(metrics);
-      expect(await ledger.metrics("a")).toBeUndefined();
+      expect(await ledger.metrics("alice", "c")).toEqual(metrics);
+      expect(await ledger.metrics("alice", "a")).toBeUndefined();
       expect(await ledger.summary("alice")).toMatchObject({
         used: 3,
         pending: 1,
@@ -299,7 +299,7 @@ it.skipIf(!enabled)(
         model: "m",
         costUsd: "0",
       });
-      expect(await ledger.metrics("z")).toMatchObject({ costUsd: "0" });
+      expect(await ledger.metrics("alice", "z")).toMatchObject({ costUsd: "0" });
       expect(await ledger.summary("alice")).toMatchObject({ costUsd: "0" });
     } finally {
       await db.dispose();

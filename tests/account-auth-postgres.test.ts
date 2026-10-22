@@ -762,7 +762,7 @@ it.skipIf(!enabled)(
 );
 
 it.skipIf(!enabled)(
-  "caps sign-in code deliveries per address across client addresses, independently of the per-IP limit",
+  "caps sign-in code deliveries per recipient across client addresses without voiding the last delivered code",
   async () => {
     await pool.query('DELETE FROM "rateLimit"');
     await pool.query("DELETE FROM signin_delivery");
@@ -772,25 +772,36 @@ it.skipIf(!enabled)(
       call("email-otp/send-verification-otp", { email, type: "sign-in" });
     // The verified client address comes from the socket, never from a header,
     // so an attacker rotating addresses is modelled by clearing the per-IP
-    // bucket before every delivery: only the per-address cap remains.
+    // bucket before every delivery: only the per-recipient cap remains.
     for (let attempt = 0; attempt < 5; attempt++) {
       await pool.query('DELETE FROM "rateLimit"');
       expect((await send(target)).status, `delivery ${attempt + 1}`).toBe(200);
     }
     await pool.query('DELETE FROM "rateLimit"');
     expect((await send(target)).status).toBe(429);
+    expect((await send(target.toUpperCase())).status).toBe(429);
     expect(messages.length - before).toBe(5);
-    // Another address from the same client is unaffected by the per-address cap.
+    // The refusal happened before Better Auth rotated the stored code, so the
+    // fifth delivered code still signs in.
+    const login = await call("sign-in/email-otp", {
+      email: target,
+      otp: messages.at(-1)!.otp,
+    });
+    expect(login.status).toBe(200);
+    // Another address from the same client is unaffected by the per-recipient cap.
     expect(
       (await send(`other-${randomUUID().slice(0, 8)}@example.test`)).status,
     ).toBe(200);
+    // The log holds keyed hashes only: five rows for the target, none naming it.
+    const rows = await pool.query("SELECT identifier FROM signin_delivery");
+    expect(rows.rows).toHaveLength(6);
+    for (const row of rows.rows) {
+      expect(row.identifier).toMatch(/^[0-9a-f]{64}$/);
+      expect(row.identifier).not.toContain("@");
+    }
     expect(
-      (
-        await pool.query(
-          "SELECT count(*)::int AS n FROM signin_delivery WHERE identifier=$1",
-          [target],
-        )
-      ).rows[0].n,
-    ).toBe(5);
+      new Set(rows.rows.map((row: { identifier: string }) => row.identifier))
+        .size,
+    ).toBe(2);
   },
 );

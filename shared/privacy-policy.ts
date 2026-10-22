@@ -37,6 +37,24 @@ export const POLICY_SECTIONS: readonly PrivacySection[] = [
   },
 ];
 
+/**
+ * Phrases that mark an owner decision still missing from the policy. The
+ * production candidate build refuses to proceed while any is present
+ * (scripts/policy-placeholders.ts); remove the phrase only together with the
+ * decision it stands for.
+ */
+export const POLICY_PLACEHOLDERS = ["not yet named", "not yet made"] as const;
+
+/** Every section still carrying a placeholder phrase, with the phrase. */
+export function policyPlaceholders(): { id: string; phrase: string }[] {
+  const found: { id: string; phrase: string }[] = [];
+  for (const section of POLICY_SECTIONS)
+    for (const phrase of POLICY_PLACEHOLDERS)
+      if (section.text.toLowerCase().includes(phrase))
+        found.push({ id: section.id, phrase });
+  return found;
+}
+
 export function privacyPolicyText(): string {
   return (
     `CometRow privacy policy, ${POLICY_DATE}\n\n` +

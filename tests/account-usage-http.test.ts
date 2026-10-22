@@ -29,6 +29,7 @@ for (const backend of ["sqlite", "postgres"] as const)
       let waiting = 0;
       let unavailable = false;
       const finished: {
+        accountId: string;
         requestId: string;
         outcome: string;
         metrics?: unknown;
@@ -82,8 +83,10 @@ for (const backend of ["sqlite", "postgres"] as const)
             },
             dispatch: (accountId, requestId) =>
               usage.dispatch(accountId, requestId),
+            metrics: (accountId, requestId) =>
+              usage.metrics(accountId, requestId),
             finish: (accountId, requestId, outcome, metrics) => {
-              finished.push({ requestId, outcome, metrics });
+              finished.push({ accountId, requestId, outcome, metrics });
               return usage.finish(accountId, requestId, outcome, metrics);
             },
           },
@@ -164,7 +167,9 @@ for (const backend of ["sqlite", "postgres"] as const)
         });
         await expect.poll(() => finished.length).toBe(1);
         expect(finished[0].outcome).toBe("transport_complete");
-        expect(await usage.metrics(finished[0].requestId)).toEqual({
+        expect(
+          await usage.metrics(finished[0].accountId, finished[0].requestId),
+        ).toEqual({
           promptTokens: 12,
           completionTokens: 34,
           model: "SYNTHETIC_ONLY",
@@ -182,7 +187,9 @@ for (const backend of ["sqlite", "postgres"] as const)
         expect(upstream).toHaveBeenCalledTimes(2);
         await expect.poll(() => finished.length).toBe(2);
         expect(finished[1].outcome).toBe("uncertain");
-        expect(await usage.metrics(finished[1].requestId)).toBeUndefined();
+        expect(
+          await usage.metrics(finished[1].accountId, finished[1].requestId),
+        ).toBeUndefined();
         await expect
           .poll(async () => {
             const summary = await usage.summary(alice.id);

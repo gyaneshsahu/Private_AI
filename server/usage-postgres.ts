@@ -212,11 +212,15 @@ export class PostgresUsageLedger implements UsageLedger {
     });
   }
   /** Completed-request metering for one request, or undefined when none was recorded. */
-  async metrics(requestId: string): Promise<UsageMetrics | undefined> {
+  async metrics(
+    accountId: string,
+    requestId: string,
+  ): Promise<UsageMetrics | undefined> {
+    usageId.parse(accountId);
     usageId.parse(requestId);
     const result = await this.database.query(
-      "SELECT prompt_tokens,completion_tokens,model,cost_usd::text AS cost_usd,web_search_calls FROM usage_metrics WHERE request_id=$1",
-      [requestId],
+      "SELECT m.prompt_tokens,m.completion_tokens,m.model,m.cost_usd::text AS cost_usd,m.web_search_calls FROM usage_metrics m JOIN usage_requests r ON r.request_id=m.request_id WHERE m.request_id=$1 AND r.account_id=$2",
+      [requestId, accountId],
     );
     const row = result.rows[0];
     return row

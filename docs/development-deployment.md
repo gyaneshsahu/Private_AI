@@ -4,9 +4,9 @@
 
 Candidates from 22 October contain the block-only attestation audit (`server/attestation-audit.ts`). It is active only when the deployment config carries an `attestationAudit` block; `deployment/render-config.example.json` and the mounted hosted config have none, so the guard passes through. Owner instruction of 22 October: do **not** add that block to any deployment until the release pinning policy in `docs/threat-model-20261022.md` is decided; with the router rotating several times a week, a pin to a recorded digest would refuse all private inference. Startup never enables it by itself.
 
-## Upgrade step for any candidate after 22 October: apply migration 0013
+## Upgrade step for any candidate after 22 October: apply migrations 0013 and 0020
 
-Commits from 22 October onward add `server/migrations/0013-usage-metrics.sql` (completed-request metering). Startup never migrates, so a candidate containing it stays unready (503) until the owner runs, once, from the service shell with Docker and the mounted config: `node --import tsx server/deployment-database-entry.ts apply-pending /etc/secrets/render-config.json`. It applies only unrecorded migrations under the advisory lock, refuses mismatched checksums and prints counts only. Run `check` first to see `pending: 1`, then `apply-pending`, then deploy. This does not apply to `4eb86b1` (live) or `9c9be8e` (next candidate).
+Commits from 22 October onward add `server/migrations/0013-usage-metrics.sql` (completed-request metering) and, from `196f81f`, `server/migrations/0020-signin-delivery.sql` (per-recipient sign-in code log, keyed hashes only). Startup never migrates, so a candidate containing it stays unready (503) until the owner runs, once, from the service shell with Docker and the mounted config: `node --import tsx server/deployment-database-entry.ts apply-pending /etc/secrets/render-config.json`. It applies only unrecorded migrations under the advisory lock, refuses mismatched checksums and prints counts only. Run `check` first to see `pending: 2` (or `pending: 1` for a candidate between `fe2889a` and `196f81f`), then `apply-pending`, then `check` again for `pending: 0`, then deploy. Both migrations only add tables, so the previous release keeps running against the migrated schema; there is no database rollback. This does not apply to `4eb86b1` (live) or `9c9be8e` (next candidate).
 
 ## Current candidate — 21 October
 
@@ -106,7 +106,7 @@ Separately 17/17 production OAuth/config regressions passed, including the exist
 
 **Preserved failed attempts:** initial fixture precreated usage tables before migrations; corrected to an empty isolated schema. Windows-host strict TLS failed under local interception; verification was retained and container tests passed. Expanded upload test found oversized bodies reached account handling before rejection, causing an abort diagnostic and consuming a sign-in attempt. Fixed by bounding the complete body before forwarding; isolated independent test rate state; final rerun passes.
 
-Final local image config ID: `sha256:6985758623662b1745f221afdbf8d1cc6bfd32a3cb15e7d79f11b47642091317`; manifest: `sha256:a4d2e0ef14195f0228c4e73e75e0a89a441513837fffc4b098e63dfcad71273b`. Not published/deployed. Build: `docker build --target render-candidate -t privateai-render-candidate:local .`. Rehearsal: `node --import tsx scripts/test-authenticated-ingress.ts --render` using existing documented Docker/Caddy fixture prerequisites. Only tests/fixtures are mounted; server/browser code comes from image.
+Final local image config ID: `sha256:6985758623662b1745f221afdbf8d1cc6bfd32a3cb15e7d79f11b47642091317`; manifest: `sha256:a4d2e0ef14195f0228c4e73e75e0a89a441513837fffc4b098e63dfcad71273b`. Not published/deployed. Build: `docker build --target render-candidate -t privateai-render-candidate:local .` (from 22 October this fails by design while the privacy policy carries owner placeholders; rehearsal images add `--build-arg PRIVACY_PLACEHOLDERS=allow` and are never deployment candidates). Rehearsal: `node --import tsx scripts/test-authenticated-ingress.ts --render` using existing documented Docker/Caddy fixture prerequisites. Only tests/fixtures are mounted; server/browser code comes from image.
 
 **Next owner review:** restricted Render/PostgreSQL rollout at $13.55/month base budget, up to $6.30 incremental before tax/overages ($0.30 less if included database storage applies), and explicit Render platform-hop trust for account traffic. No purchase/DNS/secret mounting occurred. After approval, owner provisions PostgreSQL/server secret files and domain; validate external DB certificate/hostname and outbound access restriction, platform OAuth callback-query logging, exact immutable image/entrypoint and `/healthz` before admitting sign-in. Then actual Google consent/cancel/logout and owner-only access at app.cometrow.com. No account migration, paid email or public launch. Existing proposal rollback applies. Provider privacy and human quality/safety remain independent closed gates. Owner outreach edits preserved; no Galaxy/TalkBack request this batch.
 
@@ -346,6 +346,8 @@ Reproduce from the repository with Docker running and the existing synthetic Cad
 
 ```powershell
 docker build --target deployment-candidate -t privateai-deployment-candidate:local .
+# From 22 October the default build refuses while the privacy policy still has owner placeholders;
+# a rehearsal image (never a deployment candidate) adds --build-arg PRIVACY_PLACEHOLDERS=allow.
 npm run test:ingress -- --package
 ```
 

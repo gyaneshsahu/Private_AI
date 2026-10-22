@@ -24,6 +24,11 @@ export interface UsageLedger {
   summary(accountId: string): Result<RequestAllowance>;
   reserve(accountId: string, requestId: string): Result<boolean>;
   dispatch(accountId: string, requestId: string): Result<void>;
+  /** Completed-request metering for one of the account's own requests; another account's request ID reads as absent. */
+  metrics(
+    accountId: string,
+    requestId: string,
+  ): Result<import("./usage-metrics").UsageMetrics | undefined>;
   /**
    * Settles the request count. `metrics` is the provider's completed-request
    * metering (tokens, model, published cost) and is recorded only with a

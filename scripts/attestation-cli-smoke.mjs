@@ -1,14 +1,16 @@
 // In-image smoke test for the pinned supplier CLI: runs the real CLI inside the
 // built Render candidate against the real enclave, with network, no API key and
-// no inference, and checks only that the TLS handshake and attestation fetch
-// reached the enclave and produced a verification record. It does NOT assert
-// the record's verdict: on a network with TLS interception the key-binding step
-// fails by design, and the release digest is not compared with any pin here.
+// no inference. It passes only when the CLI exits 0 with no handshake error and
+// its record carries a 64-hex release digest, a future freshness expiry and the
+// verdict "ok" (scripts/attestation-cli-smoke-evaluate.mjs, unit-tested). The
+// digest is reported, not compared with any pin: pinning is a policy decision.
+// On a network with TLS interception the handshake fails and so does this.
 //
 //   docker build --target render-candidate -t privateai-render-candidate:local -f Dockerfile.render .
 //   node scripts/attestation-cli-smoke.mjs [image]
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { evaluateSmoke } from "./attestation-cli-smoke-evaluate.mjs";
 
 const image = process.argv[2] ?? "privateai-render-candidate:local";
 const enclave = "inference.tinfoil.sh";
@@ -68,45 +70,18 @@ try {
   stderr = String(error.stderr ?? "");
   code = typeof error.status === "number" ? error.status : 1;
 }
-const handshakeFailed =
-  /unknown authority|tls: failed|x509|no such host|connection refused|i\/o timeout|dial tcp/i.test(
-    stderr,
-  );
-// The CLI prints its record with json.MarshalIndent, so it spans several
-// lines; parse the whole output first and fall back to a single trailing line.
-let record;
-for (const candidate of [
-  stdout.trim(),
-  stdout.trim().split("\n").filter(Boolean).at(-1) ?? "",
-]) {
-  try {
-    record = JSON.parse(candidate);
-    break;
-  } catch {
-    record = undefined;
-  }
-}
-const reached = !!record && typeof record === "object" && "digest" in record;
+const outcome = evaluateSmoke({ stdout, stderr, exitCode: code });
 const result = {
   kind: "ATTESTATION_CLI_IMAGE_SMOKE",
   image,
   enclave,
   repository,
-  exitCode: code,
-  handshakeFailed,
-  reachedEnclave: reached,
-  digest: reached ? record.digest : undefined,
-  freshnessExpiresAt: reached ? record.freshness_expires_at : undefined,
-  verdict: reached ? record.status : undefined,
-  // Only the CLI's own error line is surfaced; it carries no request content.
-  error: reached
-    ? record.error
-    : (stderr.split("\n").find((line) => line.trim()) ?? ""),
+  ...outcome,
 };
 console.log(JSON.stringify(result));
-if (!reached || handshakeFailed) {
+if (!outcome.ok) {
   console.error(
-    "The pinned CLI could not complete a TLS handshake and attestation fetch from inside the image.",
+    `The pinned CLI did not complete a verified attestation from inside the image: ${outcome.reasons.join("; ")}.`,
   );
   process.exit(1);
 }

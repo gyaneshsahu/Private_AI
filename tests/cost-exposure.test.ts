@@ -25,8 +25,12 @@ afterEach(() => upstream.mockReset());
 it("an interrupted stream settles as uncertain with no metering, and the documented exposure bound holds", async () => {
   const registry = new InviteRegistry(":memory:");
   const usage = new SqliteUsageLedger(":memory:");
-  const finished: { requestId: string; outcome: string; metrics?: unknown }[] =
-    [];
+  const finished: {
+    accountId: string;
+    requestId: string;
+    outcome: string;
+    metrics?: unknown;
+  }[] = [];
   const server = createServer();
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
   const address = server.address();
@@ -64,8 +68,9 @@ it("an interrupted stream settles as uncertain with no metering, and the documen
         reserve: (accountId, requestId) => usage.reserve(accountId, requestId),
         dispatch: (accountId, requestId) =>
           usage.dispatch(accountId, requestId),
+        metrics: (accountId, requestId) => usage.metrics(accountId, requestId),
         finish: (accountId, requestId, outcome, metrics) => {
-          finished.push({ requestId, outcome, metrics });
+          finished.push({ accountId, requestId, outcome, metrics });
           return usage.finish(accountId, requestId, outcome, metrics);
         },
       },
@@ -147,7 +152,9 @@ it("an interrupted stream settles as uncertain with no metering, and the documen
     await expect.poll(() => finished.length).toBe(1);
     expect(finished[0].outcome).toBe("uncertain");
     expect(finished[0].metrics).toBeUndefined();
-    expect(usage.metrics(finished[0].requestId)).toBeUndefined();
+    expect(
+      usage.metrics(finished[0].accountId, finished[0].requestId),
+    ).toBeUndefined();
     expect(usage.summary(invite.id)).toMatchObject({
       used: 1,
       pending: 0,

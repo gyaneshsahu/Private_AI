@@ -156,7 +156,7 @@ it.skipIf(!process.env.PRIVATEAI_SYNTHETIC_PG)(
         costUsd: "0.000046",
         unmeteredRequests: 0,
       });
-      expect(await runtimeUsage.metrics("role-request")).toEqual({
+      expect(await runtimeUsage.metrics(status.accountId, "role-request")).toEqual({
         promptTokens: 12,
         completionTokens: 34,
         model: "SYNTHETIC_ONLY",
@@ -167,7 +167,7 @@ it.skipIf(!process.env.PRIVATEAI_SYNTHETIC_PG)(
       );
       await runtimeUsage.dispatch(status.accountId, "role-lost");
       await runtimeUsage.finish(status.accountId, "role-lost", "uncertain");
-      expect(await runtimeUsage.metrics("role-lost")).toBeUndefined();
+      expect(await runtimeUsage.metrics(status.accountId, "role-lost")).toBeUndefined();
       expect(await runtimeUsage.summary(status.accountId)).toMatchObject({
         used: 2,
         uncertain: 1,

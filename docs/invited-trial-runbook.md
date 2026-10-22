@@ -305,7 +305,7 @@ on sign-in. `express-session` plus bounded TTL-cleaned `memorystore` provide coo
 session handling; hosted cookies are Secure, HttpOnly and SameSite=Strict.
 Same-origin POST checks protect login/logout and API actions; API CSRF/grants are
 bound to both account and login session. Login attempts are capped at 30/minute
-per instance; application POSTs at 200/hour per invite and 2,000/hour per instance (legacy registry only). Current bounds on the production candidate, 22 October: the per-account request allowance in the usage ledger, one request in flight per account, three in flight per instance, Better Auth's database-backed per-IP limit of 60 requests per minute per path and 3 sign-in code requests per minute, and a per-address cap of 5 sign-in codes per hour across all client addresses.
+per instance; application POSTs at 200/hour per invite and 2,000/hour per instance (legacy registry only). Current bounds on the production candidate, 22 October: the per-account request allowance in the usage ledger, one request in flight per account, three in flight per instance, Better Auth's database-backed per-IP limit of 60 requests per minute per path and 3 sign-in code requests per minute, and a per-recipient cap of 5 sign-in codes per hour to one address across all client addresses (migration 0020; the log stores a keyed hash of the address, and a refused request leaves the last delivered code valid).
 These are request limits, not a substitute for provider spending controls.
 
 Sign-in and invitation redemption share a two-check concurrency bound per process.
@@ -335,7 +335,11 @@ Saved ciphertext is retained on logout/revocation. Private-data inference remain
 gated independently; access acceptance cannot qualify the provider.
 
 Single instance only: the session store is in memory and restart signs everyone
-out. The registry must persist securely across restarts. Do not scale to multiple
+out. Research approvals on the invite path (`Approvals` in `server/research.ts`)
+are also held in process memory, bound to the session that prepared them: a
+second instance would neither see nor honour them, so cancel and execute must
+reach the instance that issued the approval. The account path keeps approvals in
+`research_consent` in PostgreSQL and does not share this constraint. The registry must persist securely across restarts. Do not scale to multiple
 processes without shared session/rate state and further validation. The access
 page is a functional first version; hosted TLS/proxy validation, security review,
 recovery design and usability review remain release work. Session middleware
@@ -367,6 +371,17 @@ prospective-user observation before opening the trial.
 5. Pin release/qualification evidence, deploy through passing CI, then run hosted
    TLS/access/cookie/streaming checks against that exact release. Current local
    validation does not certify the older hosted deployment.
+   Before deploying any candidate from 22 October onward, apply the pending
+   migrations once on the hosted database, in this order, from the service shell
+   with the mounted config (startup never migrates and the candidate stays 503
+   until this is done):
+   `node --import tsx server/deployment-database-entry.ts check /etc/secrets/render-config.json`
+   must report `pending: 2` (0013 usage metrics, 0020 sign-in delivery log);
+   then `node --import tsx server/deployment-database-entry.ts apply-pending /etc/secrets/render-config.json`;
+   then `check` again must report `pending: 0`. The command applies only
+   unrecorded migrations under the advisory lock, refuses mismatched checksums and
+   prints counts only. There is no database rollback; the previous release keeps
+   running against the migrated schema because both migrations only add tables.
 6. Observe keyboard and real-phone use: compose, attach/correct, save/reopen,
    stop/retry, inspect sources, approve/cancel research, lock and delete. Capture
    consented usability findings without copying private conversation content.

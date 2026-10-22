@@ -149,10 +149,13 @@ function createAccountAuth(
     for (const provider of enabledSocial)
       allowedPaths.add(`/callback/${provider}`);
   }
-  const deliveryAttempt = new AsyncLocalStorage<{
-    failed: boolean;
-    capped: boolean;
-  }>();
+  const deliveryAttempt = new AsyncLocalStorage<{ failed: boolean }>();
+  /** Keyed hash of the lowercased address for the sign-in delivery log; the table never holds addresses. */
+  const deliveryIdentifier = (email: string) =>
+    createHmac("sha256", config.secret)
+      .update("privateai-signin-delivery\0")
+      .update(email.toLowerCase())
+      .digest("hex");
   const origin = new URL(config.origin);
   const acceptsEmail = (value: string) =>
     z.email().max(254).safeParse(value).success &&
@@ -373,16 +376,29 @@ function createAccountAuth(
               ? "Use a synthetic .test address."
               : "A valid email address is required.",
           });
+        // Per-recipient cap, independent of the per-IP rate limit, checked here
+        // before Better Auth rotates the stored code: a refused request leaves
+        // the last delivered code valid, and an attacker rotating client
+        // addresses cannot flood one inbox.
+        if (
+          ctx.path === "/email-otp/send-verification-otp" &&
+          typeof ctx.body?.email === "string"
+        ) {
+          const recent = await config.database.query(
+            "SELECT count(*)::int AS n FROM signin_delivery WHERE identifier=$1 AND sent_at > clock_timestamp() - interval '1 hour'",
+            [deliveryIdentifier(ctx.body.email)],
+          );
+          if (Number(recent.rows[0]?.n ?? 0) >= DELIVERIES_PER_ADDRESS_PER_HOUR)
+            throw new APIError("TOO_MANY_REQUESTS", {
+              message:
+                "Too many sign-in codes were sent to this address in the last hour. Try again later.",
+            });
+        }
       }),
       after: createAuthMiddleware(async (ctx) => {
         // Better Auth 1.7.11 catches sender exceptions and otherwise returns success.
         // Surface our bounded submission result through its supported response hook.
         if (ctx.path !== "/email-otp/send-verification-otp") return;
-        if (deliveryAttempt.getStore()?.capped)
-          throw new APIError("TOO_MANY_REQUESTS", {
-            message:
-              "Too many sign-in codes were sent to this address in the last hour. Try again later.",
-          });
         if (!config.synthetic && deliveryAttempt.getStore()?.failed)
           throw new APIError("SERVICE_UNAVAILABLE", {
             message:
@@ -451,24 +467,11 @@ function createAccountAuth(
         async sendVerificationOTP({ email, otp, type }) {
           if (type !== "sign-in" || !acceptsEmail(email))
             throw Error("Permitted sign-in delivery only.");
-          // Per-address cap, independent of the per-IP rate limit: an attacker
-          // rotating addresses cannot flood one inbox with sign-in codes.
-          const identifier = email.toLowerCase();
-          const recent = await config.database.query(
-            "SELECT count(*)::int AS n FROM signin_delivery WHERE identifier=$1 AND sent_at > clock_timestamp() - interval '1 hour'",
-            [identifier],
-          );
-          if (
-            Number(recent.rows[0]?.n ?? 0) >= DELIVERIES_PER_ADDRESS_PER_HOUR
-          ) {
-            // Better Auth swallows sender exceptions; the after hook turns this into 429.
-            const attempt = deliveryAttempt.getStore();
-            if (attempt) attempt.capped = true;
-            return;
-          }
+          // Count the delivery attempt (the before hook enforces the cap);
+          // the row holds a keyed hash of the address, never the address.
           await config.database.query(
             "INSERT INTO signin_delivery(identifier) VALUES($1)",
-            [identifier],
+            [deliveryIdentifier(email)],
           );
           await config.database.query(
             "DELETE FROM signin_delivery WHERE sent_at < clock_timestamp() - interval '1 day'",
@@ -597,7 +600,7 @@ function createAccountAuth(
       const start = await config.database.query(
         "SELECT clock_timestamp()::text AS started",
       );
-      deliveryAttempt.run({ failed: false, capped: false }, () =>
+      deliveryAttempt.run({ failed: false }, () =>
         accountRequestStart.run(start.rows[0].started, next),
       );
     } catch {
