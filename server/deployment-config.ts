@@ -2,6 +2,7 @@ import { readFile, stat } from "node:fs/promises";
 import { isAbsolute } from "node:path";
 import { z } from "zod";
 import { parseSocialCredentials } from "./account-social";
+import { attestationAuditDefaults } from "./attestation-audit-state";
 
 const path = z.string().refine(isAbsolute);
 const schema = z
@@ -32,6 +33,43 @@ const schema = z
       .array(z.string().regex(/^[a-f0-9]{64}$/))
       .min(1)
       .max(2),
+    // Relay-side, block-only attestation audit (server/attestation-audit.ts).
+    attestationAudit: z
+      .object({
+        enabled: z.boolean(),
+        origin: z
+          .string()
+          .url()
+          .refine((value) => {
+            const u = new URL(value);
+            return (
+              u.protocol === "https:" &&
+              !u.username &&
+              !u.password &&
+              u.port === "" &&
+              u.pathname === "/" &&
+              !u.search &&
+              !u.hash
+            );
+          }),
+        repository: z.string().regex(/^tinfoilsh\/[a-zA-Z0-9_-]+$/),
+        releaseDigests: z
+          .array(z.string().regex(/^[a-f0-9]{64}$/))
+          .min(1)
+          .max(4),
+        binary: path.optional(),
+        intervalMinutes: z.number().int().min(15).max(1440).optional(),
+        maxAgeMinutes: z.number().int().min(15).max(10080).optional(),
+        timeoutSeconds: z.number().int().min(5).max(300).optional(),
+      })
+      .strict()
+      .refine(
+        (audit) =>
+          (audit.maxAgeMinutes ?? attestationAuditDefaults.maxAgeMinutes) >=
+          (audit.intervalMinutes ?? attestationAuditDefaults.intervalMinutes),
+        "Attestation audit maximum age must cover at least one interval.",
+      )
+      .optional(),
   })
   .strict()
   .refine(
@@ -84,6 +122,9 @@ export async function loadDeploymentConfig(file: string) {
     return {
       ...config,
       secret,
+      attestationAudit: config.attestationAudit
+        ? { ...attestationAuditDefaults, ...config.attestationAudit }
+        : undefined,
       renderBridge: config.renderBridge
         ? {
             key: await boundedFile(config.renderBridge.keyFile),
