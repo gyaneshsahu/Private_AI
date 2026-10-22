@@ -1,4 +1,23 @@
 # PrivateAI readiness checklist
+## End-of-day validation after all approved merges — 22 October
+
+State: `codex/development-handoff` at `38c2e2a`, local only, not pushed since `7ce181a` (CI run 39800056457 covers that earlier commit). Merged today after owner approval: documentation batch (C), masking miss-rate tests (A), relay attestation audit (B, guard wired), Phase 3 (D). Two defects surfaced by the first post-merge PostgreSQL run and fixed: the restricted runtime role had no grant on `usage_metrics` (migration 0013), so the usage summary and settlement failed under the privilege test; and the new entitlement test counted one assessment too many. Candidate images were rebuilt from this branch with the verifier stage; on this workstation the build needs the antivirus root passed as a build-only secret for `npm ci`, which is never committed nor present in the image.
+
+| Suite | Result on `38c2e2a` |
+| --- | --- |
+| `npm run build` and typecheck | pass |
+| `npm test` (host, quiet) | 581 passed / 0 failed / 152 skipped, 140 files (run on `94611c2`, before the two fixes, which touched only PostgreSQL paths) |
+| `npx playwright test` | 59 passed |
+| `npm run test:durable` | 124 passed, zero skipped, 16 files |
+| PostgreSQL-gated suites incl. the three new Phase 3 cases, account restore, migrations (13), privileges | 19 passed |
+| authenticated-ingress | 16/16 |
+| ingress-workspace through real Caddy and mTLS, browser image | 12/12 |
+| deployment-package plus packaged container scenario | 1/1 and passed |
+| Render bridge, deployment package and ingress inside the Render candidate | 22/22 |
+| In-image attestation CLI smoke (`scripts/attestation-cli-smoke.mjs`) | fails on this workstation only because the antivirus intercepts TLS (`x509: unknown authority`), which the script reports rather than masks; now a CI step on a clean network, result pending the next push |
+
+Owner instructions recorded today: no new paid spend is approved and every older figure is historical (statement aligned in PRD, README, acceptance, provider-qualification and the launch plan); the attestation-audit configuration stays absent from every deployment until the release pinning policy in the threat model is decided; incident and support contacts remain placeholders for the owner to name. Hosted deployment of any of today's commits still requires exact-commit CI, the one-time `apply-pending` migration step and the owner's manual deploy. Private-data and public-launch gates are unchanged and closed.
+
 ## Phase 3 merged: usage and cost display, test-mode entitlement, retention proposal, request timing — 22 October
 
 Worktree D merged locally after owner approval; its ledger fragment is folded in here and removed. No migration was needed; `src/App.tsx` is untouched.
