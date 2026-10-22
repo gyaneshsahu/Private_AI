@@ -3,6 +3,7 @@ import { workspaceBrowserDependencies } from "../evaluation/browser-dependencies
 import { it, expect } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
+import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 
 it("keeps citations tied to captured evidence through correction, removal and encrypted reopen", async () => {
@@ -15,6 +16,7 @@ it("keeps citations tied to captured evidence through correction, removal and en
     worker: { format: "es" },
   });
   await vite.listen();
+  await warmDevServer(vite);
   const address = vite.httpServer!.address();
   if (!address || typeof address === "string") throw Error("No listener");
   const origin = `http://127.0.0.1:${address.port}`;
@@ -44,7 +46,7 @@ it("keeps citations tied to captured evidence through correction, removal and en
         });
       return route.continue();
     });
-    await page.goto(origin);
+    await page.goto(origin, { timeout: 30000 });
     // These are workflow assertions; await the real lazy renderer module first.
     // Cold packaged loading is exercised separately by Playwright.
     await page.evaluate("import('/src/Answer.tsx')");
@@ -61,8 +63,7 @@ it("keeps citations tied to captured evidence through correction, removal and en
     })()`);
     await page.reload();
     await page.evaluate("import('/src/Answer.tsx')");
-    const tab = (name: string) =>
-      workspaceControl(page, name);
+    const tab = (name: string) => workspaceControl(page, name);
     const unlock = async () => {
       await tab("Saved").click();
       await page
@@ -97,7 +98,10 @@ it("keeps citations tied to captured evidence through correction, removal and en
       .getByRole("button", { name: "Close", exact: true })
       .click();
     await page.getByRole("button", { name: /messages included/ }).click();
-    await page.locator(".context-review").getByRole("checkbox", { name: /Earlier captured answer/ }).uncheck();
+    await page
+      .locator(".context-review")
+      .getByRole("checkbox", { name: /Earlier captured answer/ })
+      .uncheck();
     await page.keyboard.press("Escape");
     await tab("Saved").click();
     await page.getByRole("button", { name: "Save encrypted snapshot" }).click();
@@ -119,7 +123,11 @@ it("keeps citations tied to captured evidence through correction, removal and en
     await page.getByRole("button", { name: "Remove", exact: true }).click();
     await tab("Conversation").click();
     await page.getByRole("button", { name: /messages included/ }).click();
-    await ui(page.locator(".context-review").getByRole("checkbox", { name: /Earlier captured answer/ })).not.toBeChecked();
+    await ui(
+      page
+        .locator(".context-review")
+        .getByRole("checkbox", { name: /Earlier captured answer/ }),
+    ).not.toBeChecked();
     await page.keyboard.press("Escape");
     await answers.nth(0).locator("button.citation").click();
     await ui(page.getByRole("dialog")).toContainText("Collection before 14:00");

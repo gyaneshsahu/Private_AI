@@ -25,8 +25,7 @@ test("search is explicitly approved and remains temporary after source removal",
       },
     });
   });
-  const tab = (name: string) =>
-    workspaceControl(page, name);
+  const tab = (name: string) => workspaceControl(page, name);
   await page.goto("/");
   await tab("Research").click();
   await page.getByLabel("Exact search query").fill("synthetic library hours");
@@ -64,20 +63,17 @@ test("search is explicitly approved and remains temporary after source removal",
     .getByLabel("Vault passphrase")
     .fill("synthetic temporary search browser password");
   await page.getByRole("button", { name: "Create or unlock vault" }).click();
+  // Saving is allowed since 22 October: results and links are stripped, the
+  // written answer stays. The notice says so; nothing is saved until Save.
   await expect(
-    page.getByRole("button", { name: "Save encrypted snapshot" }),
-  ).toBeDisabled();
-  await expect(
-    page.getByRole("button", { name: "Download encrypted backup" }),
-  ).toBeDisabled();
-  await expect(
-    page.getByText(
-      "This search conversation is temporary and cannot be saved",
-      { exact: false },
-    ),
+    page.getByText("Search results and source links are never saved", {
+      exact: false,
+    }),
   ).toBeVisible();
   const storage = await page.evaluate(async () => ({
-    local: Object.keys(localStorage).filter(key => key !== "privateai.appearance").length,
+    local: Object.keys(localStorage).filter(
+      (key) => key !== "privateai.appearance",
+    ).length,
     session: sessionStorage.length,
     caches: (await caches.keys()).length,
     workers: (await navigator.serviceWorker.getRegistrations()).length,
@@ -101,8 +97,7 @@ test("malformed research is rejected without changing the draft or retrying", as
       json: { sources: [{ id: "broken-source", text: { unexpected: true } }] },
     });
   });
-  const tab = (name: string) =>
-    workspaceControl(page, name);
+  const tab = (name: string) => workspaceControl(page, name);
   await page.goto("/");
   await page.getByLabel("Message PrivateAI").fill("SYNTHETIC preserved draft");
   await tab("Research").click();
@@ -161,8 +156,7 @@ test("approved research retains inspectable provenance through encrypted save an
       },
     });
   });
-  const tab = (name: string) =>
-    workspaceControl(page, name);
+  const tab = (name: string) => workspaceControl(page, name);
   await page.goto("/");
   await page
     .getByLabel("Message PrivateAI")

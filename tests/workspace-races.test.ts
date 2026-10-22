@@ -2,6 +2,7 @@ import { workspaceControl } from "../evaluation/workspace-navigation";
 import { it, expect } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
+import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 
 type Fixture = Window & {
@@ -47,6 +48,7 @@ it("clearing pending imports and locking pending encrypted saves cannot restore 
     worker: { format: "es" },
   });
   await vite.listen();
+  await warmDevServer(vite);
   const address = vite.httpServer!.address();
   if (!address || typeof address === "string") throw Error("No port");
   const origin = `http://127.0.0.1:${address.port}`;
@@ -72,9 +74,8 @@ it("clearing pending imports and locking pending encrypted saves cannot restore 
         });
       return route.continue();
     });
-    await page.goto(origin);
-    const tab = (name: string) =>
-      workspaceControl(page, name);
+    await page.goto(origin, { timeout: 30000 });
+    const tab = (name: string) => workspaceControl(page, name);
     await tab("Context").click();
     await page.getByLabel("Add documents or screenshots").setInputFiles(
       ["first.txt", "second.txt"].map((name) => ({

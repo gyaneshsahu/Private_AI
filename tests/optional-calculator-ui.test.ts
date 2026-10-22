@@ -2,6 +2,7 @@ import { workspaceControl } from "../evaluation/workspace-navigation";
 import { it, expect } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
+import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 
 it("displays optional native calculator results and a corrected total through the actual application", async () => {
@@ -54,6 +55,7 @@ it("displays optional native calculator results and a corrected total through th
     worker: { format: "es" },
   });
   await vite.listen();
+  await warmDevServer(vite);
   const address = vite.httpServer!.address();
   if (!address || typeof address === "string") throw Error("No local port");
   const origin = `http://127.0.0.1:${address.port}`;
@@ -81,9 +83,8 @@ it("displays optional native calculator results and a corrected total through th
         });
       return route.continue();
     });
-    await page.goto(origin);
-    const tab = (name: string) =>
-      workspaceControl(page, name);
+    await page.goto(origin, { timeout: 30000 });
+    const tab = (name: string) => workspaceControl(page, name);
     await tab("Context").click();
     await page.getByLabel("Add documents or screenshots").setInputFiles({
       name: "synthetic.txt",
@@ -138,7 +139,9 @@ it("displays optional native calculator results and a corrected total through th
     );
     expect(
       await page.evaluate(() => ({
-        local: Object.keys(localStorage).filter(key => key !== "privateai.appearance").length,
+        local: Object.keys(localStorage).filter(
+          (key) => key !== "privateai.appearance",
+        ).length,
         session: sessionStorage.length,
       })),
     ).toEqual({ local: 0, session: 0 });

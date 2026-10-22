@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { it, expect } from "vitest";
 import { createServer } from "vite";
+import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { chromium } from "@playwright/test";
 import { existsSync } from "node:fs";
 import {
@@ -192,6 +193,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
     }
   });
   await vite.listen();
+  await warmDevServer(vite);
   const address = vite.httpServer!.address();
   if (!address || typeof address === "string") throw new Error();
   const origin = `http://127.0.0.1:${address.port}`;
@@ -215,7 +217,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       }
       return route.continue();
     });
-    await page.goto(origin);
+    await page.goto(origin, { timeout: 30000 });
     await page.addScriptTag({
       type: "module",
       url: `${origin}/tests/fixtures/browser-fault-entry.ts`,

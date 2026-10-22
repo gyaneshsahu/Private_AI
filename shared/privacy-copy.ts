@@ -40,7 +40,7 @@ export const PRIVACY_COPY: readonly PrivacySection[] = [
   {
     id: "research",
     heading: "When you search the web",
-    text: "A web search only happens when you approve the exact search text shown to you. Recognised identifiers are removed from that text on your device first, and you are warned if it may still contain a name or other personal detail. That text is sent from our server to the search provider, which can read it and may keep it for up to 90 days; your own address is not sent. Search results are shown only during the conversation and are not saved, and today the written answer built on them is not kept in your saved history either; saving that answer and re-running the search for current sources is planned, not yet switched on.",
+    text: "A web search only happens when you approve the exact search text shown to you. Recognised identifiers are removed from that text on your device first, and you are warned if it may still contain a name or other personal detail. That text is sent from our server to the search provider, which can read it and may keep it for up to 90 days; your own address is not sent. Search results and their links are shown only during the conversation and are never saved. The written answer built on them is kept in your saved history on this device; a reopened conversation says it came from a live search and offers to search again for current sources, which needs your approval again.",
   },
   {
     id: "notyet",

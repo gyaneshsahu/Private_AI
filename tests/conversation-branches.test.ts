@@ -133,7 +133,7 @@ it("searches inactive branches locally and validates identities, bounds and flat
 });
 
 it.each(["sticky", "query", "excerpt", "snapshot"])(
-  "cannot save hidden temporary research: %s",
+  "strips hidden temporary research from every branch on save: %s",
   async (kind) => {
     const c = example();
     const next = branchConversation(
@@ -154,8 +154,22 @@ it.each(["sticky", "query", "excerpt", "snapshot"])(
       ];
     expect(containsTemporaryResearch(next)).toBe(true);
     const store = new Vault();
+    store.selectAccount(crypto.randomUUID());
     try {
-      await expect(store.save(next)).rejects.toThrow("temporary");
+      await store.unlock("synthetic branch password");
+      await store.save(next);
+      const saved = (await store.readAvailable()).conversations.find(
+        (x) => x.id === next.id,
+      )!;
+      expect(containsTemporaryResearch(saved)).toBe(false);
+      const text = JSON.stringify(saved.branches?.archived ?? []);
+      expect(text).not.toContain("search-excerpt");
+      expect(text).not.toContain("llm-context");
+      expect(text).not.toContain('"temporarySearch":true');
+      if (kind === "query")
+        expect(
+          saved.branches?.archived[0].attachments[0].liveSearch,
+        ).toBeDefined();
     } finally {
       store.close();
     }

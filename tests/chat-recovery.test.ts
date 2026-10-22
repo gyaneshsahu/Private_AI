@@ -8,6 +8,7 @@ type FixtureWindow = Window & {
   copiedAnswer?: string;
 };
 import { createServer } from "vite";
+import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 
 it("real conversation UI stops partial output, retries explicitly, preserves source evidence and clears late work", async () => {
@@ -66,6 +67,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     worker: { format: "es" },
   });
   await vite.listen();
+  await warmDevServer(vite);
   const address = vite.httpServer!.address();
   if (!address || typeof address === "string") throw Error("No port");
   const origin = `http://127.0.0.1:${address.port}`;
@@ -94,12 +96,11 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
         });
       return route.continue();
     });
-    await page.goto(origin);
+    await page.goto(origin, { timeout: 30000 });
     // These are workflow assertions; await the real lazy renderer module first.
     // Cold packaged loading is exercised separately by Playwright.
     await page.evaluate("import('/src/Answer.tsx')");
-    const tab = (name: string) =>
-      workspaceControl(page, name);
+    const tab = (name: string) => workspaceControl(page, name);
     await tab("Context").click();
     await page.getByLabel("Add documents or screenshots").setInputFiles({
       name: "synthetic-source.txt",

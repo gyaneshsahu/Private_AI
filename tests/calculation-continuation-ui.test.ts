@@ -2,6 +2,7 @@ import { workspaceControl } from "../evaluation/workspace-navigation";
 import { it, expect } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
+import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 
 it("delivers bounded continuation in the actual temporary research workspace without persistence", async () => {
@@ -39,6 +40,7 @@ it("delivers bounded continuation in the actual temporary research workspace wit
     worker: { format: "es" },
   });
   await vite.listen();
+  await warmDevServer(vite);
   const address = vite.httpServer!.address();
   if (!address || typeof address === "string") throw Error("No port");
   const origin = `http://127.0.0.1:${address.port}`;
@@ -94,9 +96,8 @@ it("delivers bounded continuation in the actual temporary research workspace wit
       }
       return route.continue();
     });
-    const tab = (name: string) =>
-      workspaceControl(page, name);
-    await page.goto(origin);
+    const tab = (name: string) => workspaceControl(page, name);
+    await page.goto(origin, { timeout: 30000 });
     await tab("Research").click();
     await page.getByLabel("Exact search query").fill("public synthetic price");
     await page.getByRole("button", { name: "Review disclosure" }).click();
@@ -131,12 +132,16 @@ it("delivers bounded continuation in the actual temporary research workspace wit
       .getByLabel("Vault passphrase")
       .fill("synthetic continuation browser password");
     await page.getByRole("button", { name: "Create or unlock vault" }).click();
+    // Saving is allowed since 22 October: results are stripped, the written
+    // answer stays; nothing is persisted here because Save is not clicked.
     await ui(
       page.getByRole("button", { name: "Save encrypted snapshot" }),
-    ).toBeDisabled();
+    ).toBeEnabled();
     expect(
       await page.evaluate(async () => ({
-        local: Object.keys(localStorage).filter(key => key !== "privateai.appearance").length,
+        local: Object.keys(localStorage).filter(
+          (key) => key !== "privateai.appearance",
+        ).length,
         session: sessionStorage.length,
         caches: (await caches.keys()).length,
         workers: (await navigator.serviceWorker.getRegistrations()).length,

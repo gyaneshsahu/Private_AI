@@ -2,6 +2,7 @@ import { documentBrowserDependencies } from "../evaluation/browser-dependencies"
 import { it, expect } from "vitest";
 import { chromium } from "@playwright/test";
 import { createServer } from "vite";
+import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { existsSync } from "node:fs";
 import { approvedLocalGet } from "../evaluation/network-observation";
 import developmentCases from "../evaluation/cases/development.json";
@@ -73,6 +74,7 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
     } else next();
   });
   await vite.listen();
+  await warmDevServer(vite);
   const address = vite.httpServer!.address();
   if (!address || typeof address === "string") throw new Error();
   const origin = `http://127.0.0.1:${address.port}`;
@@ -94,7 +96,7 @@ it("runs real browser extraction and follow-up state with an explicitly mocked m
       await route.continue();
     });
     const page = await context.newPage();
-    await page.goto(origin);
+    await page.goto(origin, { timeout: 30000 });
     // String keeps Vitest's SSR transform out of the browser's native import.
     await page.evaluate("import('/evaluation/browser-entry.ts')");
     expect(await page.evaluate(() => "privateAiSyntheticRun" in window)).toBe(

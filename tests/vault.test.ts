@@ -6,29 +6,46 @@ import { emptyConversation } from "../shared/contracts";
 import { composeContext, forkAt } from "../src/conversation";
 const stores: Vault[] = [];
 it("atomically refuses a stale cross-tab overwrite, including after a library refresh", async () => {
-  const account = crypto.randomUUID(), first = store(), second = store();
+  const account = crypto.randomUUID(),
+    first = store(),
+    second = store();
   first.selectAccount(account);
   second.selectAccount(account);
   await first.unlock("synthetic concurrent history password");
   await second.unlock("synthetic concurrent history password");
-  const original = await first.save({ ...emptyConversation(), draft: "Original" });
+  const original = await first.save({
+    ...emptyConversation(),
+    draft: "Original",
+  });
   const stale = (await second.list())[0];
   await first.save({ ...original, draft: "First tab preserved" }, original);
   await second.readAvailable(); // Refreshing a library or exporting must not authorize a stale workspace.
-  await expect(second.save({ ...stale, draft: "Stale overwrite" }, stale)).rejects.toThrow("changed in another tab");
+  await expect(
+    second.save({ ...stale, draft: "Stale overwrite" }, stale),
+  ).rejects.toThrow("changed in another tab");
   expect((await first.list())[0].draft).toBe("First tab preserved");
-  const copy = await second.save({ ...stale, id: crypto.randomUUID(), draft: "Second tab copy" }, null);
+  const copy = await second.save(
+    { ...stale, id: crypto.randomUUID(), draft: "Second tab copy" },
+    null,
+  );
   await second.save({ ...copy, draft: "Copy updated" }, copy);
-  expect((await first.list()).map((c) => c.draft).sort()).toEqual(["Copy updated", "First tab preserved"]);
+  expect((await first.list()).map((c) => c.draft).sort()).toEqual([
+    "Copy updated",
+    "First tab preserved",
+  ]);
 });
 it("allows only one competing update and refuses an unobserved existing identity", async () => {
-  const account = crypto.randomUUID(), first = store(), second = store();
+  const account = crypto.randomUUID(),
+    first = store(),
+    second = store();
   first.selectAccount(account);
   second.selectAccount(account);
   await first.unlock("synthetic competing history password");
   await second.unlock("synthetic competing history password");
   const original = await first.save(emptyConversation());
-  await expect(second.save({ ...original, draft: "Blind overwrite" }, null)).rejects.toThrow("changed in another tab");
+  await expect(
+    second.save({ ...original, draft: "Blind overwrite" }, null),
+  ).rejects.toThrow("changed in another tab");
   const other = (await second.list())[0];
   const results = await Promise.allSettled([
     first.save({ ...original, draft: "A" }, original),
@@ -37,7 +54,7 @@ it("allows only one competing update and refuses an unobserved existing identity
   expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
   expect(results.filter((r) => r.status === "rejected")).toHaveLength(1);
 });
-it("never persists temporary search answers even after their attachments are removed", async () => {
+it("saves the written answer of a live search but never its results, links or sticky flag", async () => {
   const v = store();
   v.selectAccount(crypto.randomUUID());
   await v.unlock("synthetic temporary search password");
@@ -45,14 +62,48 @@ it("never persists temporary search answers even after their attachments are rem
   c.messages.push({
     id: "answer",
     role: "assistant",
-    text: "SYNTHETIC excerpt copied into answer",
+    text: "SYNTHETIC answer written from a live search",
     status: "complete",
     included: true,
+    sourceSnapshot: [
+      {
+        id: "search-1",
+        title: "SYNTHETIC result title",
+        text: "SYNTHETIC excerpt",
+        url: "https://example.com/synthetic-result",
+        evidenceKind: "search-excerpt",
+      },
+    ],
   });
-  await expect(v.save(c)).rejects.toThrow("temporary");
-  expect(
-    (await v.readAvailable()).conversations.some((x) => x.id === c.id),
-  ).toBe(false);
+  c.attachments.push({
+    id: "r",
+    name: "Public search results",
+    selected: true,
+    kind: "research",
+    researchQuery: "synthetic public query",
+    sources: [
+      {
+        id: "search-1",
+        title: "SYNTHETIC result title",
+        text: "SYNTHETIC excerpt",
+        url: "https://example.com/synthetic-result",
+        evidenceKind: "search-excerpt",
+      },
+    ],
+  });
+  await v.save(c);
+  const saved = (await v.readAvailable()).conversations.find(
+    (x) => x.id === c.id,
+  )!;
+  expect(saved.temporarySearch).toBeUndefined();
+  expect(saved.messages[0].text).toContain("written from a live search");
+  expect(saved.messages[0].sourceSnapshot).toBeUndefined();
+  expect(saved.attachments[0].sources).toEqual([]);
+  expect(saved.attachments[0].researchQuery).toBe("synthetic public query");
+  expect(saved.attachments[0].liveSearch?.strippedAt).toMatch(/T/);
+  expect(JSON.stringify(saved)).not.toContain("SYNTHETIC excerpt");
+  expect(JSON.stringify(saved)).not.toContain("example.com/synthetic-result");
+  expect(JSON.stringify(saved)).not.toContain("SYNTHETIC result title");
   const fresh = emptyConversation();
   await v.save(fresh);
   expect(
@@ -252,7 +303,7 @@ describe("real WebCrypto vault, synthetic inputs only", () => {
   });
 });
 
-it("blocks search provenance even without the sticky flag, including source snapshots and edits", async () => {
+it("strips search provenance on save even without the sticky flag, including source snapshots and branches", async () => {
   const v = store();
   v.selectAccount(crypto.randomUUID());
   await v.unlock("synthetic provenance backstop password");
@@ -278,19 +329,32 @@ it("blocks search provenance even without the sticky flag, including source snap
     included: true,
     sourceSnapshot: [source],
   });
-  await expect(v.save(c)).rejects.toThrow("temporary");
+  await v.save(c);
+  let saved = (await v.readAvailable()).conversations.find(
+    (x) => x.id === c.id,
+  )!;
+  expect(saved.messages[1].sourceSnapshot).toBeUndefined();
+  expect(JSON.stringify(saved)).not.toContain("SYNTHETIC temporary evidence");
   c.temporarySearch = true;
-  await expect(v.save(forkAt(c, "u", "Synthetic correction"))).rejects.toThrow(
-    "temporary",
-  );
-  c.temporarySearch = false;
-  c.messages = [];
-  c.attachments.push({
+  const forked = forkAt(c, "u", "Synthetic correction");
+  await v.save(forked);
+  saved = (await v.readAvailable()).conversations.find((x) => x.id === c.id)!;
+  expect(saved.temporarySearch).toBeUndefined();
+  for (const branch of [saved, ...(saved.branches?.archived ?? [])])
+    expect(JSON.stringify(branch)).not.toContain(
+      "SYNTHETIC temporary evidence",
+    );
+  const direct = emptyConversation();
+  direct.attachments.push({
     id: "r",
     name: "Research",
     selected: false,
     sources: [source],
   });
-  await expect(v.save(c)).rejects.toThrow("temporary");
-  expect((await v.readAvailable()).conversations).toEqual([]);
+  await v.save(direct);
+  const savedDirect = (await v.readAvailable()).conversations.find(
+    (x) => x.id === direct.id,
+  )!;
+  expect(savedDirect.attachments[0].sources).toEqual([]);
+  expect(savedDirect.attachments[0].liveSearch).toBeUndefined();
 });

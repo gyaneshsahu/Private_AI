@@ -116,6 +116,12 @@ export interface Attachment {
   warning?: string;
   kind?: "document" | "screenshot" | "research";
   researchQuery?: string;
+  /**
+   * Set when this search attachment was saved: its results and links were
+   * removed on this device (owner decision, 22 October 2026) and only the
+   * approved query remains, so the user can search again for current sources.
+   */
+  liveSearch?: { strippedAt: string };
 }
 export interface Message {
   id: string;

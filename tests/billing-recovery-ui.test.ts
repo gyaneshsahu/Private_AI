@@ -2,6 +2,7 @@ import { workspaceControl } from "../evaluation/workspace-navigation";
 import { it } from "vitest";
 import { chromium, expect } from "@playwright/test";
 import { createServer } from "vite";
+import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 
 it("billing UI recovers from a lost checkout response without another POST", async () => {
@@ -11,6 +12,7 @@ it("billing UI recovers from a lost checkout response without another POST", asy
     server: { host: "127.0.0.1", port: 0, hmr: false },
   });
   await vite.listen();
+  await warmDevServer(vite);
   const address = vite.httpServer!.address();
   if (!address || typeof address === "string") throw Error("Missing port");
   const origin = `http://127.0.0.1:${address.port}`;
@@ -58,9 +60,8 @@ it("billing UI recovers from a lost checkout response without another POST", asy
       }
       return route.continue();
     });
-    await page.goto(origin);
-    await workspaceControl(page, "Account")
-      .click();
+    await page.goto(origin, { timeout: 30000 });
+    await workspaceControl(page, "Account").click();
     await page.getByRole("button", { name: "Open test checkout" }).click();
     await expect(
       page.getByText("Checking billing…", { exact: true }),

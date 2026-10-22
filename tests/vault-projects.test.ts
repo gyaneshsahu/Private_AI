@@ -56,7 +56,7 @@ it("encrypts projects and organization, restores new project identities and pres
   v.lock(false);
   await expect(v.readProjects()).rejects.toThrow();
 });
-it("backs up an empty project and refuses invalid names and temporary research organization", async () => {
+it("backs up an empty project, refuses invalid names, and strips the sticky search flag when saving into a project", async () => {
   const v = create(),
     secret = "synthetic empty project password";
   await v.unlock(secret);
@@ -67,13 +67,17 @@ it("backs up an empty project and refuses invalid names and temporary research o
   await target.restoreBackup(await v.exportBackup(), secret);
   expect(await target.list()).toEqual([]);
   expect((await target.readProjects())[0].name).toBe("Empty project");
-  await expect(
-    v.save({
-      ...emptyConversation(),
-      temporarySearch: true,
-      projectId: (await v.readProjects())[0].id,
-    }),
-  ).rejects.toThrow("temporary");
+  const organised = {
+    ...emptyConversation(),
+    temporarySearch: true,
+    projectId: (await v.readProjects())[0].id,
+  };
+  await v.save(organised);
+  const saved = (await v.readAvailable()).conversations.find(
+    (x) => x.id === organised.id,
+  )!;
+  expect(saved.temporarySearch).toBeUndefined();
+  expect(saved.projectId).toBe(organised.projectId);
 });
 it("does not lose concurrent project writes", async () => {
   const id = crypto.randomUUID(),

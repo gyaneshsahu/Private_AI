@@ -743,7 +743,7 @@ export function App() {
         setNotice(
           sources.length
             ? approved.kind === "search"
-              ? "Search results added to context. Return to Conversation to ask about them. This conversation is temporary and cannot be saved; results and replies disappear when you clear or reload the workspace."
+              ? "Search results added to context. Return to Conversation to ask about them. Search results and source links are never saved; if you save this conversation, only your written answers and the approved query are kept, and you can search again later."
               : "Public sources added to your selected context. Search excerpts are labelled; pages are fetched only with approval."
             : "The search returned no sources.",
         );
@@ -2148,6 +2148,43 @@ export function App() {
                     />{" "}
                     {attachment.name}
                   </label>
+                  {attachment.liveSearch && attachment.researchQuery && (
+                    <div
+                      className="live-search-note"
+                      role="region"
+                      aria-label="From a live search"
+                    >
+                      <p className="muted">
+                        From a live search on{" "}
+                        {new Date(
+                          attachment.liveSearch.strippedAt,
+                        ).toLocaleDateString()}
+                        . Results and links were not kept; search again to see
+                        current sources. The search needs your approval again.
+                      </p>
+                      <button
+                        type="button"
+                        disabled={!!busy}
+                        onClick={() => {
+                          const text = attachment.researchQuery ?? "";
+                          const prepared = prepareSearchQuery(text);
+                          setResearchKind("search");
+                          setQuery(text);
+                          setProposalNote({
+                            note: prepared.note,
+                            warning: prepared.warning,
+                          });
+                          setProposal({
+                            kind: "search",
+                            value: prepared.value,
+                          });
+                          setTab("Research");
+                        }}
+                      >
+                        Search again
+                      </button>
+                    </div>
+                  )}
                   <button
                     disabled={!!busy}
                     onClick={() => {
@@ -2516,7 +2553,6 @@ export function App() {
                       !!busy ||
                       !conversation.title.trim() ||
                       !!conversation.incognito ||
-                      containsTemporaryResearch(conversation) ||
                       (!conversation.messages.length &&
                         !conversation.attachments.length &&
                         !input.length)
@@ -2526,22 +2562,16 @@ export function App() {
                     Save encrypted snapshot
                   </button>
                   {saveConflict && (
-                    <button
-                      disabled={
-                        !!busy || containsTemporaryResearch(conversation)
-                      }
-                      onClick={() => void save(true)}
-                    >
+                    <button disabled={!!busy} onClick={() => void save(true)}>
                       Save as new conversation
                     </button>
                   )}
                   {containsTemporaryResearch(conversation) && (
                     <p role="status">
-                      This search conversation is temporary and cannot be saved,
-                      including its answers. You can copy a completed answer;
-                      automatic exports remain unavailable. Removing search
-                      attachments does not change this. Start a new conversation
-                      for work you want to save.
+                      Search results and source links are never saved. Saving
+                      keeps your written answers and the approved search text;
+                      the reopened conversation says it came from a live search
+                      and offers to search again for current sources.
                     </p>
                   )}
                   <button

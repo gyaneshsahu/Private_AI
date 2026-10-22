@@ -2,6 +2,7 @@ import { expect, it } from "vitest";
 import { completionEvents } from "../src/completion-events";
 import { consumeReply, IncompleteReplyError } from "../src/reply-stream";
 import { createServer } from "vite";
+import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { chromium } from "@playwright/test";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -91,6 +92,7 @@ it("reproduces browser ERR_ABORTED after local parser rejection with no provider
   let browser;
   try {
     await vite.listen();
+    await warmDevServer(vite);
     const address = vite.httpServer!.address();
     if (!address || typeof address === "string")
       throw new Error("No loopback server");
@@ -106,7 +108,7 @@ it("reproduces browser ERR_ABORTED after local parser rejection with no provider
       return route.continue();
     });
     const page = await context.newPage();
-    await page.goto(origin);
+    await page.goto(origin, { timeout: 30000 });
     const terminal = page.waitForEvent("requestfailed", {
       predicate: (r) => new URL(r.url()).pathname === "/synthetic-stream",
       timeout: 10000,

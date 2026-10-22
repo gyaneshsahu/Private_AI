@@ -2,6 +2,7 @@ import { workspaceControl } from "../evaluation/workspace-navigation";
 import { it, expect } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
+import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 
 it("reviews and changes bounded context in the actual workspace, preserves encrypted selections and never sends them", async () => {
@@ -13,6 +14,7 @@ it("reviews and changes bounded context in the actual workspace, preserves encry
     worker: { format: "es" },
   });
   await vite.listen();
+  await warmDevServer(vite);
   const address = vite.httpServer!.address();
   if (!address || typeof address === "string") throw Error("No listener");
   const origin = `http://127.0.0.1:${address.port}`;
@@ -45,7 +47,7 @@ it("reviews and changes bounded context in the actual workspace, preserves encry
         });
       return route.continue();
     });
-    await page.goto(origin);
+    await page.goto(origin, { timeout: 30000 });
     await page.evaluate(`(async () => {
       const { Vault } = await import('/src/vault.ts');
       const { emptyConversation } = await import('/shared/contracts.ts');
@@ -58,8 +60,7 @@ it("reviews and changes bounded context in the actual workspace, preserves encry
       await vault.save(c); vault.close();
     })()`);
     await page.reload();
-    const tab = (name: string) =>
-      workspaceControl(page, name);
+    const tab = (name: string) => workspaceControl(page, name);
     await tab("Saved").click();
     await page
       .getByLabel("Vault passphrase")

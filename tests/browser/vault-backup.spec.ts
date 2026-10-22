@@ -230,9 +230,7 @@ test("current temporary research never enters a backup of earlier saved history"
     page.getByRole("status").filter({ hasText: "Search results added" }),
   ).toBeVisible();
   await tab(page, "Saved").click();
-  await expect(
-    page.getByRole("button", { name: "Save encrypted snapshot" }),
-  ).toBeDisabled();
+  // Unsaved live research never enters a backup of the earlier snapshot.
   const backup = await download(page);
   const decoded = await decodeVaultBackup(backup.toString(), password);
   expect(decoded).toHaveLength(1);
@@ -240,4 +238,22 @@ test("current temporary research never enters a backup of earlier saved history"
   expect(JSON.stringify(decoded)).not.toMatch(
     /TEMPORARY|CANARY|canary|example\.test/,
   );
+  // Saving is allowed since 22 October: the snapshot keeps the approved query
+  // and the written draft, never the result title, excerpt or link.
+  await expect(
+    page.getByRole("button", { name: "Save encrypted snapshot" }),
+  ).toBeEnabled();
+  await page.getByRole("button", { name: "Save encrypted snapshot" }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Encrypted snapshot saved" }),
+  ).toBeVisible();
+  const afterSave = await decodeVaultBackup(
+    (await download(page)).toString(),
+    password,
+  );
+  expect(afterSave).toHaveLength(1);
+  const text = JSON.stringify(afterSave);
+  expect(text).toContain("synthetic research query canary");
+  expect(text).toContain("strippedAt");
+  expect(text).not.toMatch(/TEMPORARY RESEARCH CANARY|EXCERPT CANARY|example\.test/);
 });

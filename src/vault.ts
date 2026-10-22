@@ -3,6 +3,7 @@ import { deleteDB, openDB } from "idb";
 import type { Conversation } from "../shared/contracts";
 import {
   containsTemporaryResearch,
+  stripLiveSearch,
   savedConversationSchema,
 } from "./saved-conversation";
 import { derive, seal, unseal, type Cipher } from "./vault-crypto";
@@ -138,10 +139,13 @@ export class Vault {
     return next;
   }
   save(conversation: Conversation, basedOn?: Conversation | null) {
+    // Live search results and links never reach storage: the snapshot keeps the
+    // written answers and the approved query, marked as from a live search.
+    conversation = stripLiveSearch(conversation);
     if (containsTemporaryResearch(conversation))
       return Promise.reject(
         new Error(
-          "Search conversations are temporary in this test version and cannot be saved. Start a new conversation to save other work.",
+          "Temporary research could not be removed from this conversation, so it was not saved.",
         ),
       );
     const key = this.key,
