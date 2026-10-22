@@ -7,6 +7,7 @@ import {
   type UsageLedger,
 } from "./usage-contract";
 import { usageMetricsSchema, type UsageMetrics } from "./usage-metrics";
+import { sumDecimalStrings } from "./usage-cost";
 export type { UsageLedger } from "./usage-contract";
 
 /** Durable request counts, not token billing or proof of completed answers. */
@@ -77,21 +78,51 @@ export class SqliteUsageLedger implements UsageLedger {
         );
     });
   }
+  /** True when an allowance with this period ID exists, whatever its account or dates. */
+  hasAllowance(periodId: string): boolean {
+    id.parse(periodId);
+    return !!this.db
+      .prepare("SELECT 1 FROM usage_allowances WHERE period_id=?")
+      .get(periodId);
+  }
+  /** End of the account's latest allowance ending at or before `endsAt`, for gap-free renewals. */
+  lastAllowanceEnd(accountId: string, endsAt: number): number | undefined {
+    id.parse(accountId);
+    const row = this.db
+      .prepare(
+        "SELECT MAX(ends_at) AS ends_at FROM usage_allowances WHERE account_id=? AND ends_at<=?",
+      )
+      .get(accountId, endsAt);
+    return row?.ends_at == null ? undefined : Number(row.ends_at);
+  }
   summary(accountId: string): RequestAllowance {
     id.parse(accountId);
     const now = this.now();
     const row = this.db
       .prepare(
-        `SELECT a.request_limit, a.ends_at,
+        `SELECT a.period_id, a.request_limit, a.ends_at,
       COUNT(r.request_id) AS used,
       COALESCE(SUM(CASE WHEN r.state IN ('reserved','dispatched') THEN 1 ELSE 0 END),0) AS pending,
-      COALESCE(SUM(CASE WHEN r.state='uncertain' THEN 1 ELSE 0 END),0) AS uncertain
+      COALESCE(SUM(CASE WHEN r.state='uncertain' THEN 1 ELSE 0 END),0) AS uncertain,
+      COUNT(m.request_id) AS metered,
+      COALESCE(SUM(m.prompt_tokens),0) AS prompt_tokens,
+      COALESCE(SUM(m.completion_tokens),0) AS completion_tokens,
+      COALESCE(SUM(CASE WHEN r.state IN ('transport_complete','uncertain') AND m.request_id IS NULL THEN 1 ELSE 0 END),0) AS unmetered
       FROM usage_allowances a LEFT JOIN usage_requests r ON a.period_id=r.period_id
+      LEFT JOIN usage_metrics m ON m.request_id=r.request_id
       WHERE a.account_id=? AND a.starts_at<=? AND a.ends_at>?
       GROUP BY a.period_id`,
       )
       .get(accountId, now, now);
     if (!row) return { state: "unavailable" };
+    // Costs are TEXT decimals; summed exactly here rather than as SQLite floats.
+    const costs = this.db
+      .prepare(
+        `SELECT m.cost_usd FROM usage_metrics m JOIN usage_requests r ON r.request_id=m.request_id
+      WHERE r.period_id=? AND m.cost_usd IS NOT NULL`,
+      )
+      .all(String(row.period_id))
+      .map((cost) => String(cost.cost_usd));
     const used = Number(row.used),
       limit = Number(row.request_limit);
     return {
@@ -102,6 +133,11 @@ export class SqliteUsageLedger implements UsageLedger {
       pending: Number(row.pending),
       uncertain: Number(row.uncertain),
       resetsAt: new Date(Number(row.ends_at)).toISOString(),
+      meteredRequests: Number(row.metered),
+      promptTokens: Number(row.prompt_tokens),
+      completionTokens: Number(row.completion_tokens),
+      ...(costs.length ? { costUsd: sumDecimalStrings(costs) } : {}),
+      unmeteredRequests: Number(row.unmetered),
     };
   }
   reserve(accountId: string, requestId: string): boolean {

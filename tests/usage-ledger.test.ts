@@ -196,3 +196,93 @@ it("records completed-request metering once and never for uncertain outcomes", a
     ledger.close();
   }
 });
+
+it("summarises metered totals, exact published cost and unmetered settlements for the current period", () => {
+  let now = 10;
+  const ledger = new SqliteUsageLedger(":memory:", () => now);
+  try {
+    ledger.createAllowance({
+      accountId: "alice",
+      periodId: "current",
+      startsAt: 0,
+      endsAt: 100,
+      requestLimit: 6,
+    });
+    expect(ledger.summary("alice")).toMatchObject({
+      state: "active",
+      used: 0,
+      meteredRequests: 0,
+      promptTokens: 0,
+      completionTokens: 0,
+      unmeteredRequests: 0,
+    });
+    expect(ledger.summary("alice")).not.toHaveProperty("costUsd");
+    const settle = (
+      id: string,
+      outcome: "transport_complete" | "uncertain",
+      metrics?: Parameters<typeof ledger.finish>[3],
+    ) => {
+      expect(ledger.reserve("alice", id)).toBe(true);
+      ledger.dispatch("alice", id);
+      ledger.finish("alice", id, outcome, metrics);
+    };
+    settle("a", "transport_complete", {
+      promptTokens: 100,
+      completionTokens: 20,
+      model: "m",
+      costUsd: "0.000046",
+    });
+    settle("b", "transport_complete", {
+      promptTokens: 1000,
+      completionTokens: 500,
+      model: "m",
+      costUsd: "0.1",
+    });
+    // Completed without a published cost: tokens count, cost cannot.
+    settle("c", "transport_complete", {
+      promptTokens: 7,
+      completionTokens: 3,
+      model: "m",
+    });
+    // Completed transport but no trailer at all: settled and unmetered.
+    settle("d", "transport_complete");
+    settle("e", "uncertain");
+    expect(ledger.reserve("alice", "f")).toBe(true);
+    ledger.dispatch("alice", "f");
+    expect(ledger.summary("alice")).toEqual({
+      state: "exhausted",
+      limit: 6,
+      used: 6,
+      remaining: 0,
+      pending: 1,
+      uncertain: 1,
+      resetsAt: new Date(100).toISOString(),
+      meteredRequests: 3,
+      promptTokens: 1107,
+      completionTokens: 523,
+      costUsd: "0.100046",
+      unmeteredRequests: 2,
+    });
+    expect(ledger.hasAllowance("current")).toBe(true);
+    expect(ledger.hasAllowance("missing")).toBe(false);
+    // A past period's metering never leaks into the next allowance.
+    now = 100;
+    expect(ledger.summary("alice")).toEqual({ state: "unavailable" });
+    ledger.createAllowance({
+      accountId: "alice",
+      periodId: "next",
+      startsAt: 100,
+      endsAt: 200,
+      requestLimit: 1,
+    });
+    expect(ledger.summary("alice")).toMatchObject({
+      used: 0,
+      meteredRequests: 0,
+      promptTokens: 0,
+      unmeteredRequests: 0,
+    });
+    expect(ledger.summary("alice")).not.toHaveProperty("costUsd");
+  } finally {
+    ledger.close();
+  }
+});

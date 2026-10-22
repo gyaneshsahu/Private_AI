@@ -9,7 +9,7 @@ test("account view preserves drafts and never invents a paid allowance", async (
   await workspaceControl(page, "Account")
     .click();
   await expect(
-    page.getByText("No request allowance is available to display.", {
+    page.getByText("No plan is active for this account yet.", {
       exact: false,
     }),
   ).toBeVisible();
@@ -43,6 +43,11 @@ test("synthetic account status renders request counts without claiming token bil
           pending: 1,
           uncertain: 1,
           resetsAt: "2026-11-01T00:00:00Z",
+          meteredRequests: 1,
+          promptTokens: 1200,
+          completionTokens: 340,
+          costUsd: "0.00046",
+          unmeteredRequests: 1,
         },
       },
     });
@@ -58,6 +63,20 @@ test("synthetic account status renders request counts without claiming token bil
     page.getByText("not token charges or completed-answer counts", {
       exact: false,
     }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("1,200 prompt tokens and 340 completion tokens", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Published cost so far: USD 0.00046", { exact: false }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      "interrupted requests are billed by the provider but cannot be counted here",
+      { exact: false },
+    ),
   ).toBeVisible();
   expect(
     await page.evaluate(

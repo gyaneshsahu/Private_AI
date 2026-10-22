@@ -200,6 +200,15 @@ export type RequestAllowance =
       pending: number;
       uncertain: number;
       resetsAt: string;
+      /** Settled requests whose provider metering (tokens, published cost) was recorded. */
+      meteredRequests: number;
+      /** Token totals over metered requests in this period; zero when none. */
+      promptTokens: number;
+      completionTokens: number;
+      /** Published-rate cost summed over metered requests as a decimal string; absent when no metered request reported a cost. */
+      costUsd?: string;
+      /** Settled requests with no metering: interrupted, cancelled or uncertain. The provider bills them but nothing can be counted here. */
+      unmeteredRequests: number;
     };
 export const emptyConversation = (): Conversation => ({
   id: crypto.randomUUID(),
