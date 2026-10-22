@@ -119,7 +119,8 @@ const LABEL_BEFORE = (keywords: string, window = 24) =>
 const detectors: Detector[] = [
   {
     kind: "IBAN",
-    pattern: /\b[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]){11,30}\b/g,
+    // One space or line break between groups: PDF text wraps IBANs mid-number.
+    pattern: /\b[A-Z]{2}\d{2}(?:[ \n]?[A-Z0-9]){11,30}\b/g,
     accept: (match) => isValidIban(match[0]),
   },
   {
@@ -128,7 +129,7 @@ const detectors: Detector[] = [
   },
   {
     kind: "CARD",
-    pattern: /\b(?:\d[ -]?){12,18}\d\b/g,
+    pattern: /\b(?:\d[ \n-]?){12,18}\d\b/g,
     accept: (match) => isValidCardNumber(match[0]),
   },
   {
@@ -139,7 +140,7 @@ const detectors: Detector[] = [
   },
   {
     kind: "TAX-ID",
-    pattern: /\b\d{2}[ ]?\d{3}[ ]?\d{3}[ ]?\d{3}\b/g,
+    pattern: /\b\d{2}[ \n]?\d{3}[ \n]?\d{3}[ \n]?\d{3}\b/g,
     accept: (match) => isValidGermanTaxId(match[0]),
   },
   {
@@ -184,10 +185,20 @@ const detectors: Detector[] = [
   },
 ];
 
-/** Finds identifiers in text, longest and earliest first, without overlaps. */
+/** Invisible characters that split identifiers when text is copied from HTML or PDFs. */
+export const INVISIBLE = /[\u200B\u200C\u200D\uFEFF\u00AD]/g;
+
+/**
+ * Finds identifiers in text, longest and earliest first, without overlaps.
+ * The text must already be normalised with `INVISIBLE` removed; `mask()` does
+ * that. A digit run that an IBAN or card check digit rejected is never
+ * re-reported as a phone number, so a wrapped IBAN is not half-masked under
+ * the wrong label.
+ */
 export function findIdentifiers(
   text: string,
 ): { kind: IdentifierKind; start: number; end: number; value: string }[] {
+  const rejected: [number, number][] = [];
   const found: {
     kind: IdentifierKind;
     start: number;
@@ -206,7 +217,16 @@ export function findIdentifiers(
         continue;
       }
       if (taken.some(([a, b]) => start < b && end > a)) continue;
-      if (detector.accept && !detector.accept(match, text)) continue;
+      if (detector.accept && !detector.accept(match, text)) {
+        if (detector.kind === "IBAN" || detector.kind === "CARD")
+          rejected.push([start, end]);
+        continue;
+      }
+      if (
+        (detector.kind === "PHONE" || detector.kind === "CARD") &&
+        rejected.some(([a, b]) => start < b && end > a)
+      )
+        continue;
       taken.push([start, end]);
       found.push({ kind: detector.kind, start, end, value: match[0] });
     }
@@ -229,7 +249,8 @@ export function createMaskingSession(): MaskingSession {
     kept.push(entry);
     return entry.placeholder;
   };
-  const mask = (text: string) => {
+  const mask = (raw: string) => {
+    const text = raw.replace(INVISIBLE, "");
     let output = "";
     let cursor = 0;
     for (const hit of findIdentifiers(text)) {
@@ -311,3 +332,41 @@ export function describeKept(
 /** Instruction appended to the system prompt so the model preserves placeholders verbatim. */
 export const MASKING_INSTRUCTION =
   " Some identifiers were replaced on the user's device with placeholders such as {{IBAN-1}} or {{PHONE-2}}. Treat each placeholder as the exact value it stands for, copy it unchanged wherever you need to refer to it, and never ask the user to reveal the value behind it.";
+
+/** Possible personal text the detector cannot classify: two capitalised words or a long digit run. */
+const POSSIBLY_PERSONAL =
+  /\b[A-ZÄÖÜ][a-zäöüß]{2,} [A-ZÄÖÜ][a-zäöüß]{2,}\b|\d{5,}/;
+
+/**
+ * Prepares a web-search query for the approval preview: recognised identifiers
+ * are removed (not placeholdered, since the search provider must not receive
+ * them at all) and the user is warned when the rest may still name a person.
+ */
+export function prepareSearchQuery(query: string): {
+  value: string;
+  removed: Partial<Record<IdentifierKind, number>>;
+  note: string;
+  warning: boolean;
+} {
+  const text = query.replace(INVISIBLE, "");
+  const removed: Partial<Record<IdentifierKind, number>> = {};
+  let value = "";
+  let cursor = 0;
+  for (const hit of findIdentifiers(text)) {
+    removed[hit.kind] = (removed[hit.kind] ?? 0) + 1;
+    value +=
+      text.slice(cursor, hit.start) + `[${KIND_LABELS[hit.kind]} removed]`;
+    cursor = hit.end;
+  }
+  value = (value + text.slice(cursor)).replace(/\s{2,}/g, " ").trim();
+  const summary = describeKept(removed).replace(
+    "Kept on this device",
+    "Removed from the search text before approval",
+  );
+  return {
+    value,
+    removed,
+    note: summary,
+    warning: POSSIBLY_PERSONAL.test(value),
+  };
+}

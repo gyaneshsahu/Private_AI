@@ -10,10 +10,10 @@ Done before and during the handover: restricted Render deployment live at app.co
 
 | # | Item | Status |
 | --- | --- | --- |
-| 2.3 | Research-query masking: run the identifier detector on the approval preview; masked by default with a kept note; warn when unrecognised personal text remains. Launch blocker. Sequential here. | TODO |
-| 2.4 | Attachment and adversarial masking tests with a miss-rate report; detector unchanged, proposals only. Launch blocker. Worktree A. | DOING |
+| 2.3 | Research-query masking: run the identifier detector on the approval preview; masked by default with a kept note; warn when unrecognised personal text remains. Launch blocker. Sequential here. | DONE 22 October (identifiers removed before approval; warning for names and long numbers; detector fixes from worktree A folded in) |
+| 2.4 | Attachment and adversarial masking tests with a miss-rate report; detector unchanged, proposals only. Launch blocker. Worktree A. | DONE in worktree A (23 cases, 13 known misses at the time; awaiting owner approval to merge) |
 | 2.5 | Relay attestation audit, block-only and partial: pinned, checksum-verified supplier CLI in the Render image; can only refuse requests, never supply a key; guards stale or revoked supplier evidence, not a malicious operator. Browser-side freshness and revocation stay BLOCKED on the supplier's V3 JavaScript verifier (source: Sacha, 13 October 02:34 email, "hope to complete in the next two weeks"; not planned on). Worktree B. | DOING |
-| 2.6 | Cost-exposure test for cancelled and interrupted requests: ledger shows uncertain with no metering, client shows cost unknown, documented bound = one in-flight request per account × max output tokens × published price. Sequential here. | TODO |
+| 2.6 | Cost-exposure test for cancelled and interrupted requests: ledger shows uncertain with no metering, client shows cost unknown, documented bound = one in-flight request per account × max output tokens × published price. Sequential here. | DONE 22 October |
 | 3.4 | Tenant-isolation tests across accounts (vault, history, usage, projects) on the hosted candidate configuration. Launch blocker (PRD). Sequential here after 3.2. | TODO |
 | 3.5 | Signup and rate abuse controls: invitation-only admission stays; per-identity and per-address limits on sign-in, code requests and relay admission reviewed and tested. Launch blocker (PRD). Sequential here. | TODO |
 | 4.1 | Brave live research, conditional on Brave API access remaining under the public plan (the unanswered ticket concerns storage rights and plan terms, not access). Implements the 22 October owner decision: save the written answer, never store results or links, one-tap re-run for sources. | TODO (conditional) |

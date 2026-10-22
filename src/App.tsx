@@ -16,7 +16,7 @@ import {
   selectedSources,
 } from "./conversation";
 import { DOCUMENT_ACCEPT } from "./document-formats";
-import { describeKept } from "./identifier-masking";
+import { describeKept, prepareSearchQuery } from "./identifier-masking";
 import {
   DISAPPEAR_LABELS,
   expireMessages,
@@ -158,6 +158,10 @@ export function App() {
   const [researchKind, setResearchKind] = useState<"search" | "page">("search");
   const [query, setQuery] = useState("");
   const [proposal, setProposal] = useState<Disclosure>();
+  const [proposalNote, setProposalNote] = useState<{
+    note: string;
+    warning: boolean;
+  }>();
   const [passphrase, setPassphrase] = useState("");
   const [unlocked, setUnlocked] = useState(false);
   const [saved, setSaved] = useState<Conversation[]>([]);
@@ -2270,7 +2274,26 @@ export function App() {
                       new URL(query).protocol !== "https:"
                     )
                       throw new Error();
-                    setProposal({ kind: researchKind, value: query.trim() });
+                    if (researchKind === "search") {
+                      const prepared = prepareSearchQuery(query.trim());
+                      if (!prepared.value) {
+                        fail(
+                          "Nothing is left of the search text after removing personal details.",
+                        );
+                        return;
+                      }
+                      setProposalNote({
+                        note: prepared.note,
+                        warning: prepared.warning,
+                      });
+                      setProposal({
+                        kind: researchKind,
+                        value: prepared.value,
+                      });
+                    } else {
+                      setProposalNote(undefined);
+                      setProposal({ kind: researchKind, value: query.trim() });
+                    }
                   } catch {
                     fail("Enter a public HTTPS URL.");
                   }
@@ -2291,6 +2314,20 @@ export function App() {
                   ?
                 </h3>
                 <pre>{proposal.value}</pre>
+                {proposalNote?.note && (
+                  <p className="muted kept-on-device">
+                    {proposalNote.note} Edit the search text above if you need
+                    something else searched.
+                  </p>
+                )}
+                {proposalNote?.warning && (
+                  <p className="warning" role="alert">
+                    This search text may still contain personal details, such as
+                    a name or a long number, that cannot be recognised
+                    automatically. The search provider will see exactly this
+                    text. Approve only if that is fine.
+                  </p>
+                )}
                 <p>
                   Recipient:{" "}
                   {proposal.kind === "search"

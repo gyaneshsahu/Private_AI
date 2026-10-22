@@ -24,7 +24,7 @@ Your plan allows a set number of requests, and only one request runs at a time p
 
 ## When you search the web
 
-A web search only happens when you approve the exact search text shown to you. That text is sent from our server to the search provider, which can read it and may keep it for up to 90 days; your own address is not sent. Search results are shown during the conversation and are not saved; the written answer is saved with your history, and you can run the search again later for current sources.
+A web search only happens when you approve the exact search text shown to you. Recognised identifiers are removed from that text on your device first, and you are warned if it may still contain a name or other personal detail. That text is sent from our server to the search provider, which can read it and may keep it for up to 90 days; your own address is not sent. Search results are shown during the conversation and are not saved; the written answer is saved with your history, and you can run the search again later for current sources.
 
 ## What we cannot promise yet
 
