@@ -83,6 +83,19 @@ export class PostgresUsageLedger implements UsageLedger {
     );
     return result.rowCount === 1;
   }
+  /** End of the account's latest allowance ending at or before `endsAt`, for gap-free renewals. */
+  async lastAllowanceEnd(
+    accountId: string,
+    endsAt: number,
+  ): Promise<number | undefined> {
+    usageId.parse(accountId);
+    const result = await this.database.query(
+      "SELECT MAX(ends_at)::text AS ends_at FROM usage_allowances WHERE account_id=$1 AND ends_at<=$2",
+      [accountId, endsAt],
+    );
+    const value = result.rows[0]?.ends_at;
+    return value == null ? undefined : Number(value);
+  }
   async summary(accountId: string): Promise<RequestAllowance> {
     usageId.parse(accountId);
     const now = await this.now(this.database);

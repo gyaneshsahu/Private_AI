@@ -85,6 +85,16 @@ export class SqliteUsageLedger implements UsageLedger {
       .prepare("SELECT 1 FROM usage_allowances WHERE period_id=?")
       .get(periodId);
   }
+  /** End of the account's latest allowance ending at or before `endsAt`, for gap-free renewals. */
+  lastAllowanceEnd(accountId: string, endsAt: number): number | undefined {
+    id.parse(accountId);
+    const row = this.db
+      .prepare(
+        "SELECT MAX(ends_at) AS ends_at FROM usage_allowances WHERE account_id=? AND ends_at<=?",
+      )
+      .get(accountId, endsAt);
+    return row?.ends_at == null ? undefined : Number(row.ends_at);
+  }
   summary(accountId: string): RequestAllowance {
     id.parse(accountId);
     const now = this.now();
