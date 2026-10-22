@@ -10,8 +10,14 @@ Object.assign(window, {
     Object.assign(window, { verificationFaultMode: mode });
     const conversation = emptyConversation();
     conversation.messages.push(
-      newMessage("user", "SYNTHETIC_REQUEST_CANARY: calculate 2 + 2"),
+      newMessage(
+        "user",
+        mode === "masked"
+          ? "SYNTHETIC_REQUEST_CANARY: pay DE89 3704 0044 0532 0130 00 and call +49 170 1234567"
+          : "SYNTHETIC_REQUEST_CANARY: calculate 2 + 2",
+      ),
     );
+    let keptOnDevice: unknown;
     const checkedHistory = new Map<string, string>();
     if (mode === "checked_history") {
       const earlier = newMessage(
@@ -100,6 +106,12 @@ Object.assign(window, {
         (doc) => evidence.push(doc),
         undefined,
         checkedHistory,
+        undefined,
+        undefined,
+        undefined,
+        (kept) => {
+          keptOnDevice = kept;
+        },
       );
       answer.status = "complete";
     } catch (error) {
@@ -114,6 +126,7 @@ Object.assign(window, {
       usage,
       evidence,
       answer,
+      keptOnDevice,
       context: composeContext(conversation, 8000),
     };
   },

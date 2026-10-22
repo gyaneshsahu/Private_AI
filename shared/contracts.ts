@@ -111,6 +111,8 @@ export interface Message {
   included: boolean;
   sourceSnapshot?: Source[];
   failure?: "stopped" | "timeout" | "incomplete" | "unavailable" | "empty";
+  /** Plain-language note of identifiers masked on this device for this reply, e.g. "Kept on this device: 1 bank account." */
+  keptOnDevice?: string;
 }
 export interface ConversationBranch {
   id: string;

@@ -4,6 +4,12 @@ import {
 } from "./calculation-continuation";
 import { IncompleteReplyError } from "./reply-stream";
 import {
+  createMaskingSession,
+  MASKING_INSTRUCTION,
+  type IdentifierKind,
+  type MaskingSession,
+} from "./identifier-masking";
+import {
   calculatorTool,
   consumeCalculatorTurn,
   renderCalculatorTurn,
@@ -90,7 +96,58 @@ export function assertVerification(
       "The verified deployment does not match the reviewed provider configuration. Nothing was sent.",
     );
 }
+/**
+ * Identifiers are masked on this device before encryption and restored in the
+ * streamed reply; `onKeptOnDevice` receives the per-kind count once the
+ * outbound context is final, so the UI can say what never left the device.
+ */
 export async function streamVerifiedConversation(
+  conversation: Conversation,
+  report: VerifiedChatPolicy,
+  csrf: string,
+  signal: AbortSignal,
+  onChunk: (text: string) => void,
+  onStatus: (text: string) => void,
+  authorize: () => void,
+  onVerified?: (evidence: { host: string; releaseDigest: string }) => void,
+  onCheckedDiagnosticDraft?: (raw: string) => void,
+  checkedHistory?: ReadonlyMap<string, string>,
+  calculationSession?: CalculationSession,
+  onModelEvent?: (event: unknown, round?: 1 | 2) => void,
+  authorizeContinuation?: (
+    signal: AbortSignal,
+  ) => Promise<{ approvalId: string }>,
+  onKeptOnDevice?: (kept: Partial<Record<IdentifierKind, number>>) => void,
+): Promise<Usage | undefined> {
+  const masking = createMaskingSession();
+  const restored = masking.streamRestore(onChunk);
+  try {
+    return await streamMaskedConversation(
+      masking,
+      onKeptOnDevice,
+      conversation,
+      report,
+      csrf,
+      signal,
+      (text) => restored.push(text),
+      onStatus,
+      authorize,
+      onVerified,
+      onCheckedDiagnosticDraft,
+      checkedHistory,
+      calculationSession,
+      onModelEvent,
+      authorizeContinuation,
+    );
+  } finally {
+    restored.flush();
+  }
+}
+
+async function streamMaskedConversation(
+  masking: MaskingSession,
+  onKeptOnDevice:
+    ((kept: Partial<Record<IdentifierKind, number>>) => void) | undefined,
   conversation: Conversation,
   report: VerifiedChatPolicy,
   csrf: string,
@@ -304,6 +361,11 @@ export async function streamVerifiedConversation(
     // One fixed encrypted route; optional continuation is separately authorized. The
     // maintained verifier and EHBP SDK still own attestation and cryptography.
     // Parse SSE locally to avoid SDK error paths logging decrypted provider data.
+    // Last step before encryption: identifiers leave this device only as placeholders.
+    for (const message of messages)
+      message.content = masking.mask(message.content);
+    if (masking.kept.length) messages[0].content += MASKING_INSTRUCTION;
+    onKeptOnDevice?.(masking.summary());
     const requestBody = {
       model: report.model,
       ...(report.gptOssReasoningEffort !== undefined

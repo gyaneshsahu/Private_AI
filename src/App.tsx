@@ -16,6 +16,7 @@ import {
   selectedSources,
 } from "./conversation";
 import { DOCUMENT_ACCEPT } from "./document-formats";
+import { describeKept } from "./identifier-masking";
 import { importDocuments, type ImportOutcome } from "./document-import";
 import { PhotoCapture } from "./PhotoCapture";
 import { Vault, VaultConflictError } from "./vault";
@@ -509,6 +510,16 @@ export function App() {
             setBusy(message);
         },
         calculationSession,
+        (kept) => {
+          const note = describeKept(kept);
+          if (epoch.current === current && !abort.signal.aborted && note)
+            setConversation((c) => ({
+              ...c,
+              messages: c.messages.map((m) =>
+                m.id === answer.id ? { ...m, keptOnDevice: note } : m,
+              ),
+            }));
+        },
       );
       abort.signal.throwIfAborted();
       if (epoch.current === current) {
@@ -1399,6 +1410,12 @@ export function App() {
                       </span>
                     )}
                   </div>
+                  {message.keptOnDevice && (
+                    <p className="muted kept-on-device">
+                      {message.keptOnDevice} Placeholders went to the secure
+                      server instead; the values were put back here.
+                    </p>
+                  )}
                   {message.failure && (
                     <p className="muted">
                       {
@@ -1643,10 +1660,10 @@ export function App() {
                         ))}
                       </div>
                       <p className="muted">
-                        Photo to text reads printed text on this device and
-                        asks for the camera only when you press Use camera; it
-                        is not general image understanding. Dictation, live
-                        voice, image creation and sharing are not connected: no
+                        Photo to text reads printed text on this device and asks
+                        for the camera only when you press Use camera; it is not
+                        general image understanding. Dictation, live voice,
+                        image creation and sharing are not connected: no
                         permissions or media are collected for them.
                       </p>
                       <p className="muted">

@@ -34,6 +34,7 @@ const conversationBody = z.object({
       failure: z
         .enum(["stopped", "timeout", "incomplete", "unavailable", "empty"])
         .optional(),
+      keptOnDevice: z.string().max(300).optional(),
     }),
   ),
   attachments: z.array(

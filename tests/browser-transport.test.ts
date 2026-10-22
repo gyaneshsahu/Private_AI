@@ -119,6 +119,11 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         text = frame(JSON.stringify(checked), "stop");
       }
       if (mode === "output_limit") text = frame("", "length");
+      if (mode === "masked")
+        // The placeholder is split across frames to exercise streamed reinsertion.
+        text =
+          frame("Transfer to {{IB", null) +
+          frame("AN-1}} or call {{PHONE-1}}.", "stop");
       if (mode === "thinking_on") {
         text =
           `data: ${JSON.stringify({ choices: [{ index: 0, delta: { reasoning_content: "SYNTHETIC_REASONING_CANARY" }, finish_reason: null }] })}\n\n` +
@@ -221,6 +226,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       "oss_high",
       "deepseek_off",
       "policy_v2",
+      "masked",
       "pre_cancel",
       "stalled_verification",
       "wrong_host",
@@ -249,6 +255,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         "oss_high",
         "deepseek_off",
         "policy_v2",
+        "masked",
       ].includes(mode);
       const finished = succeeds
         ? page.waitForEvent("requestfinished", {
@@ -310,6 +317,22 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         expect(result.answer.text).toBe("");
         expect(result.usage.total).toBe(5);
         expect(result.testError).toContain("reached its output limit");
+      }
+      if (mode === "masked") {
+        const payload = JSON.parse(requests[before].plaintext);
+        const wire = JSON.stringify(payload);
+        expect(wire).not.toContain("0532 0130");
+        expect(wire).not.toContain("1234567");
+        expect(payload.messages.at(-1).content).toContain(
+          "pay {{IBAN-1}} and call {{PHONE-1}}",
+        );
+        expect(payload.messages[0].content).toContain(
+          "placeholders such as {{IBAN-1}}",
+        );
+        expect(result.answer.text).toBe(
+          "Transfer to DE89 3704 0044 0532 0130 00 or call +49 170 1234567.",
+        );
+        expect(result.keptOnDevice).toEqual({ IBAN: 1, PHONE: 1 });
       }
       if (!preSend) {
         const payload = JSON.parse(requests[before].plaintext);

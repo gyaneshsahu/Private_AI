@@ -5,6 +5,7 @@ import {
 } from "../shared/contracts";
 import { streamVerifiedConversation } from "./verified-chat";
 import type { CalculationSession } from "./calculation-session";
+import type { IdentifierKind } from "./identifier-masking";
 export { assertVerification } from "./verified-chat";
 
 // The product path always requires complete qualification. Isolated synthetic
@@ -17,6 +18,7 @@ export async function streamReply(
   onChunk: (text: string) => void,
   onStatus: (text: string) => void,
   _calculationSession?: CalculationSession,
+  onKeptOnDevice?: (kept: Partial<Record<IdentifierKind, number>>) => void,
 ): Promise<Usage | undefined> {
   const report = validateQualification(qualification);
   return streamVerifiedConversation(
@@ -29,5 +31,12 @@ export async function streamReply(
     () => {
       validateQualification(report);
     },
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    onKeptOnDevice,
   );
 }
