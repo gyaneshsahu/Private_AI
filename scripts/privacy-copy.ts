@@ -3,6 +3,7 @@
 //   node --import tsx scripts/privacy-copy.ts
 import { writeFileSync } from "node:fs";
 import { PRIVACY_COPY } from "../shared/privacy-copy";
+import { POLICY_DATE, POLICY_SECTIONS } from "../shared/privacy-policy";
 
 export function renderPrivacyMarkdown(): string {
   return (
@@ -14,5 +15,17 @@ export function renderPrivacyMarkdown(): string {
   );
 }
 
-if (process.argv[1]?.endsWith("privacy-copy.ts"))
+export function renderPolicyMarkdown(): string {
+  return (
+    `# CometRow privacy policy — ${POLICY_DATE}\r\n\r\n` +
+    "Generated from `shared/privacy-policy.ts`, which the app renders as its Privacy policy page; a test keeps this file identical to it. Owner placeholders are stated as not yet named, never invented.\r\n\r\n" +
+    POLICY_SECTIONS.map(
+      (section) => `## ${section.heading}\r\n\r\n${section.text}\r\n`,
+    ).join("\r\n")
+  );
+}
+
+if (process.argv[1]?.endsWith("privacy-copy.ts")) {
   writeFileSync("docs/privacy-copy-20261022.md", renderPrivacyMarkdown());
+  writeFileSync("docs/privacy-policy-20261022.md", renderPolicyMarkdown());
+}

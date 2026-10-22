@@ -1,5 +1,5 @@
 import { projectsSchema, type Project } from "./projects";
-import { openDB } from "idb";
+import { deleteDB, openDB } from "idb";
 import type { Conversation } from "../shared/contracts";
 import {
   containsTemporaryResearch,
@@ -820,5 +820,21 @@ export class Vault {
         database.close();
       }
     });
+  }
+  /**
+   * Deletes this account's whole vault database on this device (every saved
+   * conversation, project and tombstone) and locks. Device-only: nothing on
+   * the secure server, the provider or our request records is affected.
+   */
+  async eraseEverything(): Promise<void> {
+    const databaseName = this.databaseName;
+    this.lock();
+    await this.queue;
+    await deleteDB(databaseName, {
+      blocked() {
+        /* another tab still holds the database open; deletion completes when it closes */
+      },
+    });
+    this.channel?.postMessage("lock");
   }
 }

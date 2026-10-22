@@ -23,6 +23,7 @@ import {
   type DisappearAfter,
 } from "./conversation";
 import { PRIVACY_SUMMARY, privacyText } from "../shared/privacy-copy";
+import { privacyPolicyText } from "../shared/privacy-policy";
 import { importDocuments, type ImportOutcome } from "./document-import";
 import { PhotoCapture } from "./PhotoCapture";
 import { Vault, VaultConflictError } from "./vault";
@@ -787,6 +788,39 @@ export function App() {
       if (current === epoch.current) setBusy("");
     }
   }
+  async function eraseEverything() {
+    if (
+      !window.confirm(
+        "Delete every saved conversation and project on this device and lock the vault? This cannot be undone. Downloaded backup files, the secure server's short-term memory and our request records are not affected.",
+      )
+    )
+      return;
+    const current = epoch.current;
+    setBusy("Deleting everything saved on this device…");
+    try {
+      controller.current?.abort();
+      await vault.current!.eraseEverything();
+      if (current !== epoch.current) return;
+      setUnlocked(false);
+      setSaved([]);
+      setProjects([]);
+      setUnreadableSnapshots(0);
+      reset();
+      setPassphrase("");
+      setConversation(emptyConversation());
+      setInput("");
+      setNotice(
+        "Everything saved on this device was deleted and the vault is locked. Downloaded backups, the secure server's short-term memory and our request records were not affected.",
+      );
+    } catch {
+      if (current === epoch.current)
+        fail(
+          "Deletion did not complete. Close other tabs of this app and try again; nothing was partly deleted.",
+        );
+    } finally {
+      if (current === epoch.current) setBusy("");
+    }
+  }
   async function save(asCopy = false) {
     if (conversation.incognito) {
       fail(
@@ -1195,6 +1229,19 @@ export function App() {
               <>
                 <h3>Privacy &amp; data</h3>
                 <p>{PRIVACY_SUMMARY}</p>
+                <button
+                  className="text-button"
+                  onClick={() => {
+                    setSettingsOpen(false);
+                    setSource({
+                      id: "privacy-policy",
+                      title: "Privacy policy",
+                      text: privacyPolicyText(),
+                    });
+                  }}
+                >
+                  Privacy policy ↗
+                </button>
                 <p>
                   Private chat remains unavailable until provider verification
                   passes. Search results are shown only during a conversation;
@@ -2511,6 +2558,41 @@ export function App() {
                     Lock and clear workspace
                   </button>
                 </div>
+                <section
+                  className="panel danger"
+                  role="region"
+                  aria-label="Delete everything on this device"
+                >
+                  <h3>Delete everything on this device</h3>
+                  <p>
+                    Removes every saved conversation and project in this browser
+                    and locks the vault. It cannot be undone, and it does not
+                    reach encrypted backup files you downloaded. It cannot
+                    delete the secure server's short-term working memory, which
+                    clears on its own, or our request records (which account
+                    asked, when, how many times, model, published cost). To
+                    close your account as well, use the account page.
+                  </p>
+                  <button
+                    disabled={!!busy}
+                    onClick={() => void eraseEverything()}
+                  >
+                    Delete everything on this device
+                  </button>
+                  <button
+                    className="text-button"
+                    onClick={() =>
+                      setSource({
+                        id: "privacy-policy",
+                        title: "Privacy policy",
+                        text: privacyPolicyText(),
+                      })
+                    }
+                  >
+                    What you can and cannot delete ↗
+                  </button>
+                </section>
+                <div className="row"></div>
                 {unreadableSnapshots > 0 && (
                   <p role="alert">
                     {unreadableSnapshots} saved{" "}

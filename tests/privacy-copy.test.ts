@@ -5,7 +5,11 @@ import {
   PRIVACY_SUMMARY,
   privacyText,
 } from "../shared/privacy-copy";
-import { renderPrivacyMarkdown } from "../scripts/privacy-copy";
+import {
+  renderPolicyMarkdown,
+  renderPrivacyMarkdown,
+} from "../scripts/privacy-copy";
+import { POLICY_SECTIONS, privacyPolicyText } from "../shared/privacy-policy";
 
 it("keeps the published privacy statement identical to the app's copy", async () => {
   const published = await readFile("docs/privacy-copy-20261022.md", "utf8");
@@ -36,4 +40,18 @@ it("never overclaims: no absolute promises the product cannot keep", () => {
   expect(everything).toContain("spending limits on the secure server are soft");
   expect(everything).toContain("there is no anonymous mode");
   expect(everything).toContain("switched on only after our checks");
+});
+
+it("keeps the published privacy policy identical to the app's page and built on the statement", async () => {
+  const published = await readFile("docs/privacy-policy-20261022.md", "utf8");
+  expect(published.replace(/\r\n/g, "\n")).toBe(
+    renderPolicyMarkdown().replace(/\r\n/g, "\n"),
+  );
+  for (const section of PRIVACY_COPY)
+    expect(POLICY_SECTIONS).toContainEqual(section);
+  const text = privacyPolicyText();
+  expect(text).toContain("What you can delete, and how");
+  expect(text).toContain("What we cannot delete for you");
+  expect(text).toContain("not yet named");
+  expect(text.toLowerCase()).not.toContain("guarantee");
 });

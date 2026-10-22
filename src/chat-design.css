@@ -1756,3 +1756,11 @@
 .chat-design .disappearing-banner {
   border-style: dotted;
 }
+
+.chat-design .panel.danger {
+  border: 1px solid #b4452a66;
+  margin-top: 1rem;
+}
+.chat-design .panel.danger h3 {
+  margin-top: 0;
+}
