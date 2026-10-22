@@ -30,7 +30,7 @@ export const PRIVACY_COPY: readonly PrivacySection[] = [
   {
     id: "provider",
     heading: "What the secure server keeps",
-    text: "The company that runs the secure server states that it does not keep your question or answer after the reply is sent and does not use them to train any AI. It keeps a short-term working memory inside the sealed server that can hold parts of recent questions for minutes, at most a few hours, and clears on its own; there is no button that empties it immediately. It keeps billing records such as time, model and token counts, without content, for about 90 days.",
+    text: "The company that runs the secure server states that it does not keep your question or answer after the reply is sent and does not use them to train any AI. It keeps a short-term working memory inside the sealed server that can hold parts of recent questions for minutes, at most a few hours, and clears on its own; there is no button that empties it immediately. It keeps records such as time, model and token counts, without content, for the periods in its published policy: about 90 days for most of them, longer for accounting records.",
   },
   {
     id: "limits",
@@ -40,7 +40,7 @@ export const PRIVACY_COPY: readonly PrivacySection[] = [
   {
     id: "research",
     heading: "When you search the web",
-    text: "A web search only happens when you approve the exact search text shown to you. Recognised identifiers are removed from that text on your device first, and you are warned if it may still contain a name or other personal detail. That text is sent from our server to the search provider, which can read it and may keep it for up to 90 days; your own address is not sent. Search results are shown during the conversation and are not saved; the written answer is saved with your history, and you can run the search again later for current sources.",
+    text: "A web search only happens when you approve the exact search text shown to you. Recognised identifiers are removed from that text on your device first, and you are warned if it may still contain a name or other personal detail. That text is sent from our server to the search provider, which can read it and may keep it for up to 90 days; your own address is not sent. Search results are shown only during the conversation and are not saved, and today the written answer built on them is not kept in your saved history either; saving that answer and re-running the search for current sources is planned, not yet switched on.",
   },
   {
     id: "notyet",

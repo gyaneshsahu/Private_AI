@@ -218,8 +218,8 @@ export function findIdentifiers(
       }
       if (taken.some(([a, b]) => start < b && end > a)) continue;
       if (detector.accept && !detector.accept(match, text)) {
-        if (detector.kind === "IBAN" || detector.kind === "CARD")
-          rejected.push([start, end]);
+        // Only an IBAN-shaped span is remembered: a card-shaped digit run is any long number.
+        if (detector.kind === "IBAN") rejected.push([start, end]);
         continue;
       }
       if (
