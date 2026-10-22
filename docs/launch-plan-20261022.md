@@ -6,6 +6,24 @@ One ordered list. Work goes top to bottom; nothing is skipped to a later phase u
 
 Done before and during the handover: restricted Render deployment live at app.cometrow.com on `4eb86b1`; owner Google sign-in and sign-out observed; email capability disabled honestly (`9c9be8e`, CI green, not yet deployed); UI product-organisation milestone approved; accessibility repair; photo-to-text implemented locally (21 October); all 36 infrastructure checks executed locally (21 October); supplier public-doc re-check, enclave-search evaluation and relay-mitigation assessment written (21 October). Open from Codex: hosted checks after deploying `9c9be8e`, prepared fidelity cases never run, human review packets, Galaxy A52 workspace checks, supplier decisions.
 
+## Approved changes and additions — 22 October (owner approval of the roadmap and work split)
+
+| # | Item | Status |
+| --- | --- | --- |
+| 2.3 | Research-query masking: run the identifier detector on the approval preview; masked by default with a kept note; warn when unrecognised personal text remains. Launch blocker. Sequential here. | TODO |
+| 2.4 | Attachment and adversarial masking tests with a miss-rate report; detector unchanged, proposals only. Launch blocker. Worktree A. | DOING |
+| 2.5 | Relay attestation audit, block-only and partial: pinned, checksum-verified supplier CLI in the Render image; can only refuse requests, never supply a key; guards stale or revoked supplier evidence, not a malicious operator. Browser-side freshness and revocation stay BLOCKED on the supplier's V3 JavaScript verifier (source: Sacha, 13 October 02:34 email, "hope to complete in the next two weeks"; not planned on). Worktree B. | DOING |
+| 2.6 | Cost-exposure test for cancelled and interrupted requests: ledger shows uncertain with no metering, client shows cost unknown, documented bound = one in-flight request per account × max output tokens × published price. Sequential here. | TODO |
+| 3.4 | Tenant-isolation tests across accounts (vault, history, usage, projects) on the hosted candidate configuration. Launch blocker (PRD). Sequential here after 3.2. | TODO |
+| 3.5 | Signup and rate abuse controls: invitation-only admission stays; per-identity and per-address limits on sign-in, code requests and relay admission reviewed and tested. Launch blocker (PRD). Sequential here. | TODO |
+| 4.1 | Brave live research, conditional on Brave API access remaining under the public plan (the unanswered ticket concerns storage rights and plan terms, not access). Implements the 22 October owner decision: save the written answer, never store results or links, one-tap re-run for sources. | TODO (conditional) |
+| 4.2 | In-enclave search evaluation moved earlier: prepare the bounded three-request harness now so it can run the day the owner approves scope and spend; running it needs an owner permit. | TODO (prepare now) |
+| 7.5 | Deployment review checklist for public hosting (PRD requirement): secrets, headers, rate limits, logging, rollback, migrations, monitoring, incident contact. Docs then a code check where possible. | TODO |
+| D1 | Docs worktree writes privacy policy text, deletion path and incident-contact placeholder only; the in-app policy page and the delete-everything control are sequential here (touch src/). Owner will name the incident contact. | DOING (docs) / TODO (app) |
+| 3.6 | Client-side time-to-first-token measurement in the local experiment runner (never measured since 4 October). | TODO |
+
+Rules in force: subagents commit on their own branches, never edit READINESS.md (they use docs/ledger-fragments/), never merge or push; durable PostgreSQL and browser suites run once here after each merge; migration numbers are checked across all branches before use (0013 taken); no push without the owner's explicit instruction.
+
 ## Phase 0 — Owner actions, this week (nothing else waits on each other)
 
 | # | Item | Status |
