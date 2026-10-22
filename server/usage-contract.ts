@@ -18,14 +18,21 @@ export const usageAllowanceSchema = z
   );
 export const usageOutcome = z.enum(["transport_complete", "uncertain"]);
 type Result<T> = T | Promise<T>;
+export type { UsageMetrics } from "./usage-metrics";
 
 export interface UsageLedger {
   summary(accountId: string): Result<RequestAllowance>;
   reserve(accountId: string, requestId: string): Result<boolean>;
   dispatch(accountId: string, requestId: string): Result<void>;
+  /**
+   * Settles the request count. `metrics` is the provider's completed-request
+   * metering (tokens, model, published cost) and is recorded only with a
+   * `transport_complete` outcome; interrupted requests have none.
+   */
   finish(
     accountId: string,
     requestId: string,
     outcome: z.infer<typeof usageOutcome>,
+    metrics?: import("./usage-metrics").UsageMetrics,
   ): Result<void>;
 }

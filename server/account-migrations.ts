@@ -15,6 +15,7 @@ const names = [
   "0010-billing-event-inbox.sql",
   "0011-billing-assessments.sql",
   "0012-billing-operations.sql",
+  "0013-usage-metrics.sql",
 ] as const;
 interface Migration {
   name: string;

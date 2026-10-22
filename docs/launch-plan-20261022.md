@@ -22,7 +22,7 @@ Done before and during the handover: restricted Render deployment live at app.co
 
 | # | Item | Status |
 | --- | --- | --- |
-| 1.1 | Relay guards: pin the qualified model with `X-Tinfoil-Model` on every forwarded request; per-account in-flight bound; request `X-Tinfoil-Request-Usage-Metrics` and persist tokens, model and cost per request ID for completed requests. Tests in production-relay and relay-browser. | TODO |
+| 1.1 | Relay guards: pin the qualified model with `X-Tinfoil-Model` on every forwarded request; per-account in-flight bound; request `X-Tinfoil-Request-Usage-Metrics` and persist tokens, model and cost per request ID for completed requests. Tests in production-relay and relay-browser. | DONE 22 October (READINESS entry "Relay guards"); needs the one-time `apply-pending` migration on the hosted database before the next deployment |
 | 1.2 | On-device identifier masking: detect tax IDs, bank accounts, passport and ID numbers, phone numbers, emails and dates of birth before encryption; replace with placeholders; reinsert in the answer on the device. Show the user what was kept back. Needs 0.4. | TODO |
 | 1.3 | Model configuration: qualified model stays a report value; add a tested non-experimental fallback and a clear in-app notice when the model changes. | TODO |
 | 1.4 | Plain-language privacy text, one source used by the app's privacy panel and handed to the website: what stays on the device, what is sealed, what our server sees, cache behaviour, soft spending caps. | TODO |

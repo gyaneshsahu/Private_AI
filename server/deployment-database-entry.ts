@@ -12,7 +12,7 @@ try {
   if (
     !file ||
     extra.length ||
-    !["check", "initialize-empty"].includes(operation)
+    !["check", "initialize-empty", "apply-pending"].includes(operation)
   )
     throw Error("Invalid command.");
   const config = await loadDeploymentConfig(file);
@@ -26,10 +26,15 @@ try {
       : false,
   });
   database.on("error", () => {});
+  // `apply-pending` is the reviewed upgrade step for an already initialized
+  // schema: it applies only migrations not yet recorded, under the advisory
+  // lock, and refuses a history whose checksums differ. Startup never does this.
   const result =
     operation === "check"
       ? await planAccountMigrations(database)
-      : await applyAccountMigrations(database, { requireEmpty: true });
+      : await applyAccountMigrations(database, {
+          requireEmpty: operation === "initialize-empty",
+        });
   console.log(
     JSON.stringify({
       operation,

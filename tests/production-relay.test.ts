@@ -1,10 +1,12 @@
 import { afterEach, expect, it, vi } from "vitest";
 import type { Server } from "node:http";
 import { checks } from "../shared/contracts";
+import { asUndiciRequestResult } from "./fixtures/undici-request";
 const upstream = vi.hoisted(() => vi.fn());
 vi.mock("undici", async (importOriginal) => ({
   ...(await importOriginal<typeof import("undici")>()),
-  fetch: upstream,
+  request: (url: unknown, options: unknown) =>
+    Promise.resolve(upstream(url, options)).then(asUndiciRequestResult),
 }));
 import { createApp } from "../server/app";
 const servers: Server[] = [];
@@ -183,4 +185,29 @@ it("bounds three simultaneous relays, rejects excess work and releases failed sl
     for (const resolve of release) resolve(valid());
     await Promise.allSettled(pending);
   }
+});
+
+it("production relay refuses a client that names a different model and never trusts the client header", async () => {
+  upstream.mockImplementation(
+    async () =>
+      new Response(new Uint8Array(8), {
+        headers: { "Ehbp-Response-Nonce": "b".repeat(64) },
+      }),
+  );
+  const { root, headers } = await setup();
+  const send = (model?: string) =>
+    fetch(root + "/api/inference/v1/chat/completions", {
+      method: "POST",
+      headers: model ? { ...headers, "X-Tinfoil-Model": model } : headers,
+      body: new Uint8Array(32).fill(9),
+    });
+  expect((await send("OTHER_MODEL")).status).toBe(400);
+  expect(upstream).not.toHaveBeenCalled();
+  expect((await send("TEST_ONLY")).status).toBe(200);
+  expect((await send()).status).toBe(200);
+  for (const call of upstream.mock.calls)
+    expect(call[1].headers).toMatchObject({
+      "X-Tinfoil-Model": "TEST_ONLY",
+      "X-Tinfoil-Request-Usage-Metrics": "true",
+    });
 });

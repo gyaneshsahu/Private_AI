@@ -5,10 +5,12 @@ import { SqliteUsageLedger } from "../server/usage-ledger";
 import { PostgresUsageLedger } from "../server/usage-postgres";
 import { usageDatabase } from "./fixtures/usage-postgres";
 import { checks } from "../shared/contracts";
+import { asUndiciRequestResult, withTrailers } from "./fixtures/undici-request";
 const upstream = vi.hoisted(() => vi.fn());
 vi.mock("undici", async (importOriginal) => ({
   ...(await importOriginal<typeof import("undici")>()),
-  fetch: upstream,
+  request: (url: unknown, options: unknown) =>
+    Promise.resolve(upstream(url, options)).then(asUndiciRequestResult),
 }));
 import { createApp } from "../server/app";
 
@@ -26,6 +28,11 @@ for (const backend of ["sqlite", "postgres"] as const)
       let releaseAdmission: (() => void) | undefined;
       let waiting = 0;
       let unavailable = false;
+      const finished: {
+        requestId: string;
+        outcome: string;
+        metrics?: unknown;
+      }[] = [];
       const server = createServer();
       await new Promise<void>((resolve) =>
         server.listen(0, "127.0.0.1", resolve),
@@ -75,8 +82,10 @@ for (const backend of ["sqlite", "postgres"] as const)
             },
             dispatch: (accountId, requestId) =>
               usage.dispatch(accountId, requestId),
-            finish: (accountId, requestId, outcome) =>
-              usage.finish(accountId, requestId, outcome),
+            finish: (accountId, requestId, outcome, metrics) => {
+              finished.push({ requestId, outcome, metrics });
+              return usage.finish(accountId, requestId, outcome, metrics);
+            },
           },
           qualification,
           apiKey: "SYNTHETIC_NOT_REAL",
@@ -137,11 +146,30 @@ for (const backend of ["sqlite", "postgres"] as const)
         expect((await send(bob)).status).toBe(429);
         expect(upstream).not.toHaveBeenCalled();
         upstream.mockResolvedValueOnce(
-          new Response(new Uint8Array(64), {
-            headers: { "Ehbp-Response-Nonce": "b".repeat(64) },
-          }),
+          withTrailers(
+            new Response(new Uint8Array(64), {
+              headers: { "Ehbp-Response-Nonce": "b".repeat(64) },
+            }),
+            {
+              "x-tinfoil-usage-metrics":
+                "prompt=12,completion=34,total=46,model=SYNTHETIC_ONLY,cost_usd=0.000046",
+            },
+          ),
         );
         expect((await send(alice)).status).toBe(200);
+        // The relay names the qualified model and asks for metering on every forward.
+        expect(upstream.mock.calls[0][1].headers).toMatchObject({
+          "X-Tinfoil-Model": "SYNTHETIC_ONLY",
+          "X-Tinfoil-Request-Usage-Metrics": "true",
+        });
+        await expect.poll(() => finished.length).toBe(1);
+        expect(finished[0].outcome).toBe("transport_complete");
+        expect(await usage.metrics(finished[0].requestId)).toEqual({
+          promptTokens: 12,
+          completionTokens: 34,
+          model: "SYNTHETIC_ONLY",
+          costUsd: "0.000046",
+        });
         upstream.mockRejectedValueOnce(
           new Error("SYNTHETIC_SECRET_DIAGNOSTIC"),
         );
@@ -152,6 +180,9 @@ for (const backend of ["sqlite", "postgres"] as const)
         );
         expect((await send(alice)).status).toBe(429);
         expect(upstream).toHaveBeenCalledTimes(2);
+        await expect.poll(() => finished.length).toBe(2);
+        expect(finished[1].outcome).toBe("uncertain");
+        expect(await usage.metrics(finished[1].requestId)).toBeUndefined();
         await expect
           .poll(async () => {
             const summary = await usage.summary(alice.id);
@@ -196,22 +227,25 @@ for (const backend of ["sqlite", "postgres"] as const)
               headers: { "Ehbp-Response-Nonce": "b".repeat(64) },
             }),
         );
-        const concurrent = Array.from({ length: 3 }, () => send(bob));
-        await expect.poll(() => waiting).toBe(3);
+        // One request in flight per account: a second concurrent request from the
+        // same account is refused locally before shared admission is consulted.
+        const concurrent = [send(bob)];
+        await expect.poll(() => waiting).toBe(1);
         expect((await send(bob)).status).toBe(429);
+        expect(waiting).toBe(1);
         expect(upstream).toHaveBeenCalledTimes(2);
         releaseAdmission!();
         admissionBarrier = undefined;
         expect(
           (await Promise.all(concurrent)).map((response) => response.status),
-        ).toEqual([200, 200, 200]);
+        ).toEqual([200]);
         await expect
           .poll(async () => {
             const summary = await usage.summary(bob.id);
             return summary.state === "unavailable" ? -1 : summary.pending;
           })
           .toBe(0);
-        expect(upstream).toHaveBeenCalledTimes(5);
+        expect(upstream).toHaveBeenCalledTimes(3);
         unavailable = true;
         expect((await send(bob)).status).toBe(503);
         expect(
@@ -221,7 +255,7 @@ for (const backend of ["sqlite", "postgres"] as const)
             ).json()
           ).requestAllowance,
         ).toEqual({ state: "unavailable" });
-        expect(upstream).toHaveBeenCalledTimes(5);
+        expect(upstream).toHaveBeenCalledTimes(3);
         unavailable = false;
         expect((await send(bob)).status).toBe(200);
         await expect

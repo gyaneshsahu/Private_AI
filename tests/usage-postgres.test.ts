@@ -90,10 +90,22 @@ it.skipIf(!enabled)(
       await expect(
         ledger.finish("bob", "c", "transport_complete"),
       ).rejects.toThrow();
+      const metrics = {
+        promptTokens: 12,
+        completionTokens: 34,
+        model: "m",
+        costUsd: "0.000046",
+        webSearchCalls: 1,
+      };
       await Promise.all([
-        ledger.finish("alice", "c", "transport_complete"),
-        ledger.finish("alice", "c", "transport_complete"),
+        ledger.finish("alice", "c", "transport_complete", metrics),
+        ledger.finish("alice", "c", "transport_complete", {
+          ...metrics,
+          promptTokens: 99,
+        }),
       ]);
+      expect(await ledger.metrics("c")).toEqual(metrics);
+      expect(await ledger.metrics("a")).toBeUndefined();
       expect(await ledger.summary("alice")).toMatchObject({
         used: 3,
         pending: 1,

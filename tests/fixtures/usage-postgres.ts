@@ -38,9 +38,11 @@ export async function usageDatabase(options: { empty?: boolean } = {}) {
     await admin.query(`CREATE SCHEMA "${schema}"`);
     const pool = connect();
     if (!options.empty)
-      await pool.query(
-        await readFile("server/migrations/0004-usage-ledger.sql", "utf8"),
-      );
+      for (const migration of [
+        "server/migrations/0004-usage-ledger.sql",
+        "server/migrations/0013-usage-metrics.sql",
+      ])
+        await pool.query(await readFile(migration, "utf8"));
     return { pool, connect, close, dispose };
   } catch (error) {
     await dispose();

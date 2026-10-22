@@ -6,6 +6,7 @@ import {
   usageAllowanceSchema as allowance,
   type UsageLedger,
 } from "./usage-contract";
+import { usageMetricsSchema, type UsageMetrics } from "./usage-metrics";
 export type { UsageLedger } from "./usage-contract";
 
 /** Durable request counts, not token billing or proof of completed answers. */
@@ -31,7 +32,14 @@ export class SqliteUsageLedger implements UsageLedger {
         state TEXT NOT NULL CHECK(state IN ('reserved','dispatched','transport_complete','uncertain')),
         created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL
       );
-      CREATE INDEX IF NOT EXISTS usage_period_requests ON usage_requests(period_id);`);
+      CREATE INDEX IF NOT EXISTS usage_period_requests ON usage_requests(period_id);
+      CREATE TABLE IF NOT EXISTS usage_metrics (
+        request_id TEXT PRIMARY KEY REFERENCES usage_requests(request_id),
+        prompt_tokens INTEGER NOT NULL CHECK(prompt_tokens>=0),
+        completion_tokens INTEGER NOT NULL CHECK(completion_tokens>=0),
+        model TEXT NOT NULL, cost_usd TEXT, web_search_calls INTEGER,
+        recorded_at INTEGER NOT NULL
+      );`);
   }
   private transaction<T>(run: () => T): T {
     this.db.exec("BEGIN IMMEDIATE");
@@ -138,10 +146,15 @@ export class SqliteUsageLedger implements UsageLedger {
     accountId: string,
     requestId: string,
     outcome: "transport_complete" | "uncertain",
+    metrics?: UsageMetrics,
   ): void {
     id.parse(accountId);
     id.parse(requestId);
     z.enum(["transport_complete", "uncertain"]).parse(outcome);
+    const metered =
+      outcome === "transport_complete" && metrics
+        ? usageMetricsSchema.parse(metrics)
+        : undefined;
     this.transaction(() => {
       const row = this.db
         .prepare(
@@ -150,12 +163,45 @@ export class SqliteUsageLedger implements UsageLedger {
         .get(accountId, requestId);
       if (row?.state === outcome) return;
       if (row?.state !== "dispatched") throw Error("Invalid usage settlement.");
+      const now = this.now();
       this.db
         .prepare(
           "UPDATE usage_requests SET state=?,updated_at=? WHERE account_id=? AND request_id=?",
         )
-        .run(outcome, this.now(), accountId, requestId);
+        .run(outcome, now, accountId, requestId);
+      if (metered)
+        this.db
+          .prepare("INSERT OR IGNORE INTO usage_metrics VALUES(?,?,?,?,?,?,?)")
+          .run(
+            requestId,
+            metered.promptTokens,
+            metered.completionTokens,
+            metered.model,
+            metered.costUsd ?? null,
+            metered.webSearchCalls ?? null,
+            now,
+          );
     });
+  }
+  /** Completed-request metering for one request, or undefined when none was recorded. */
+  metrics(requestId: string): UsageMetrics | undefined {
+    id.parse(requestId);
+    const row = this.db
+      .prepare(
+        "SELECT prompt_tokens,completion_tokens,model,cost_usd,web_search_calls FROM usage_metrics WHERE request_id=?",
+      )
+      .get(requestId);
+    return row
+      ? {
+          promptTokens: Number(row.prompt_tokens),
+          completionTokens: Number(row.completion_tokens),
+          model: String(row.model),
+          ...(row.cost_usd != null ? { costUsd: String(row.cost_usd) } : {}),
+          ...(row.web_search_calls != null
+            ? { webSearchCalls: Number(row.web_search_calls) }
+            : {}),
+        }
+      : undefined;
   }
   close() {
     this.db.close();

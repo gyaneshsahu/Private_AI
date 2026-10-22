@@ -1,5 +1,9 @@
 # Restricted development deployment
 
+## Upgrade step for any candidate after 22 October: apply migration 0013
+
+Commits from 22 October onward add `server/migrations/0013-usage-metrics.sql` (completed-request metering). Startup never migrates, so a candidate containing it stays unready (503) until the owner runs, once, from the service shell with Docker and the mounted config: `node --import tsx server/deployment-database-entry.ts apply-pending /etc/secrets/render-config.json`. It applies only unrecorded migrations under the advisory lock, refuses mismatched checksums and prints counts only. Run `check` first to see `pending: 1`, then `apply-pending`, then deploy. This does not apply to `4eb86b1` (live) or `9c9be8e` (next candidate).
+
 ## Current candidate — 21 October
 
 **Next deployment: exact commit `9c9be8e12440367bc3755385f4190626e5d921b4`** (email capability disabled across account actions). Its Validate run https://github.com/gyaneshsahu/Private_AI/actions/runs/39473918073 passed: offline 499 passed / 148 skipped, browser 53 passed, durable 122 passed with zero skips, container smoke and packaged encrypted recovery passed; the same 36 infrastructure checks were not executed in CI (local execution evidence for 21 October is in READINESS.md). The live service still runs `4eb86b108bb1651ee5be65928a126f605bc26bf6`, which remains the rollback target with Pre-Deploy Command empty and no database rollback. Owner steps: Manual Deploy → Deploy a specific commit → the SHA above; Auto-Deploy off; Pre-Deploy Command empty; no secret, migration, DNS or billing change; afterwards verify the email-disabled account controls, Google sign-in, cancellation, sign-out and workspace entry. The 20 October section below describes the previous candidate and is retained as history.

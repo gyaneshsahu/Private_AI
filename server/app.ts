@@ -18,7 +18,8 @@ import {
   searchWeb,
   type ResearchApprovals,
 } from "./research";
-import { fetch } from "undici";
+import { request as upstreamRequest } from "undici";
+import { parseUsageMetrics } from "./usage-metrics";
 import {
   serviceDispatcher,
   proxyConfigured,
@@ -244,6 +245,7 @@ export function createApp(config: Config) {
     });
   });
   let active = 0;
+  const inFlight = new Map<string, number>();
   app.post(
     "/api/inference/v1/chat/completions",
     express.raw({ type: "*/*", limit: "1mb" }),
@@ -270,16 +272,38 @@ export function createApp(config: Config) {
         });
         return;
       }
+      // The relay names the qualified model itself and the enclave rejects a
+      // body that disagrees; a client may not name a different model.
+      if (
+        req.headers["x-tinfoil-model"] !== undefined &&
+        req.headers["x-tinfoil-model"] !== q.model
+      ) {
+        res.status(400).json({
+          error: "Only the qualified model is accepted.",
+        });
+        return;
+      }
       if (active >= 3) {
         res.status(429).json({ error: "Three requests are already running." });
         return;
       }
       const accountId: string | undefined = res.locals.accountId;
+      // One request in flight per signed-in account: the supplier's own advice
+      // for a hard ceiling is to bound concurrency, since spending caps are soft.
+      if (accountId && (inFlight.get(accountId) ?? 0) >= 1) {
+        res.status(429).json({
+          error: "A request is already running for this account.",
+        });
+        return;
+      }
       const requestId = randomUUID();
-      // Claim the local slot before awaiting shared admission.
+      // Claim the local slots before awaiting shared admission.
       active++;
+      if (accountId)
+        inFlight.set(accountId, (inFlight.get(accountId) ?? 0) + 1);
       let dispatched = false;
       let transportComplete = false;
+      let metrics: ReturnType<typeof parseUsageMetrics>;
       const abort = new AbortController();
       res.on("close", () => {
         if (!res.writableFinished) abort.abort();
@@ -308,12 +332,13 @@ export function createApp(config: Config) {
           }
         }
         if (abort.signal.aborted) return;
-        const upstream = await fetch(
+        // undici.request rather than fetch: the provider's usage metrics for a
+        // streamed reply arrive as an HTTP trailer, which fetch cannot expose.
+        const upstream = await upstreamRequest(
           new URL("/v1/chat/completions", approvedOrigin),
           {
             dispatcher: serviceDispatcher,
             method: "POST",
-            redirect: "error",
             body: new Uint8Array(req.body),
             signal: AbortSignal.any([abort.signal, AbortSignal.timeout(90000)]),
             headers: {
@@ -323,33 +348,41 @@ export function createApp(config: Config) {
               "Ehbp-Encapsulated-Key": String(
                 req.headers["ehbp-encapsulated-key"],
               ),
+              // The enclave checks this against the encrypted body and rejects a mismatch.
+              "X-Tinfoil-Model": q.model,
+              "X-Tinfoil-Request-Usage-Metrics": "true",
             },
           },
         );
+        const header = (name: string) => {
+          const value = upstream.headers[name];
+          return Array.isArray(value) ? value[0] : value;
+        };
         // Never reflect upstream errors: they may contain sensitive content or diagnostics.
-        if (!upstream.ok || !upstream.headers.get("ehbp-response-nonce")) {
-          await upstream.body?.cancel();
+        if (upstream.statusCode !== 200 || !header("ehbp-response-nonce")) {
+          await upstream.body.dump().catch(() => {});
           res.status(502).json({
             error:
               "Encrypted provider response unavailable. No automatic retry was made.",
           });
           return;
         }
-        res.setHeader(
-          "Ehbp-Response-Nonce",
-          upstream.headers.get("ehbp-response-nonce")!,
-        );
+        res.setHeader("Ehbp-Response-Nonce", header("ehbp-response-nonce")!);
         res.setHeader(
           "Content-Type",
-          upstream.headers.get("content-type") ?? "application/octet-stream",
+          header("content-type") ?? "application/octet-stream",
         );
-        if (!upstream.body) throw new Error("Missing encrypted body");
         for await (const chunk of upstream.body) {
           if (abort.signal.aborted) break;
           if (!res.write(chunk))
             await once(res, "drain", { signal: abort.signal });
         }
         transportComplete = !abort.signal.aborted;
+        if (transportComplete)
+          metrics = parseUsageMetrics(
+            upstream.trailers["x-tinfoil-usage-metrics"] ??
+              header("x-tinfoil-usage-metrics"),
+          );
         res.end();
       } catch {
         if (!res.headersSent)
@@ -359,12 +392,18 @@ export function createApp(config: Config) {
         else res.destroy();
       } finally {
         active--;
+        if (accountId) {
+          const remaining = (inFlight.get(accountId) ?? 1) - 1;
+          if (remaining > 0) inFlight.set(accountId, remaining);
+          else inFlight.delete(accountId);
+        }
         if (config.usage && accountId && dispatched) {
           try {
             await config.usage.finish(
               accountId,
               requestId,
               transportComplete ? "transport_complete" : "uncertain",
+              transportComplete ? metrics : undefined,
             );
           } catch {
             /* Reservation remains counted if durable settlement is unavailable. */

@@ -149,3 +149,50 @@ it("admits against the same durable allowance through two connections and rotate
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+it("records completed-request metering once and never for uncertain outcomes", async () => {
+  const ledger = new SqliteUsageLedger(":memory:", () => 10);
+  try {
+    ledger.createAllowance({
+      accountId: "alice",
+      periodId: "p",
+      startsAt: 0,
+      endsAt: 100,
+      requestLimit: 3,
+    });
+    const metrics = {
+      promptTokens: 12,
+      completionTokens: 34,
+      model: "m",
+      costUsd: "0.000046",
+    };
+    expect(ledger.reserve("alice", "a")).toBe(true);
+    ledger.dispatch("alice", "a");
+    ledger.finish("alice", "a", "transport_complete", metrics);
+    ledger.finish("alice", "a", "transport_complete", {
+      ...metrics,
+      promptTokens: 99,
+    });
+    expect(ledger.metrics("a")).toEqual(metrics);
+    expect(ledger.reserve("alice", "b")).toBe(true);
+    ledger.dispatch("alice", "b");
+    ledger.finish("alice", "b", "uncertain", metrics);
+    expect(ledger.metrics("b")).toBeUndefined();
+    expect(ledger.reserve("alice", "c")).toBe(true);
+    ledger.dispatch("alice", "c");
+    expect(() =>
+      ledger.finish("alice", "c", "transport_complete", {
+        ...metrics,
+        model: "bad model",
+      }),
+    ).toThrow();
+    expect(ledger.metrics("c")).toBeUndefined();
+    expect(ledger.summary("alice")).toMatchObject({
+      used: 3,
+      pending: 1,
+      uncertain: 1,
+    });
+  } finally {
+    ledger.close();
+  }
+});

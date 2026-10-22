@@ -7,6 +7,7 @@ import {
   usageOutcome,
   type UsageLedger,
 } from "./usage-contract";
+import { usageMetricsSchema, type UsageMetrics } from "./usage-metrics";
 
 /** Shared request counts only. Injected pool/migrations; never auto-activated. */
 export class PostgresUsageLedger implements UsageLedger {
@@ -135,10 +136,15 @@ export class PostgresUsageLedger implements UsageLedger {
     accountId: string,
     requestId: string,
     outcome: z.infer<typeof usageOutcome>,
+    metrics?: UsageMetrics,
   ): Promise<void> {
     usageId.parse(accountId);
     usageId.parse(requestId);
     usageOutcome.parse(outcome);
+    const metered =
+      outcome === "transport_complete" && metrics
+        ? usageMetricsSchema.parse(metrics)
+        : undefined;
     await this.transaction(async (client) => {
       const result = await client.query(
         "SELECT state FROM usage_requests WHERE account_id=$1 AND request_id=$2 FOR UPDATE",
@@ -147,10 +153,47 @@ export class PostgresUsageLedger implements UsageLedger {
       if (result.rows[0]?.state === outcome) return;
       if (result.rows[0]?.state !== "dispatched")
         throw Error("Invalid usage settlement.");
+      const now = await this.now(client);
       await client.query(
         "UPDATE usage_requests SET state=$1,updated_at=$2 WHERE request_id=$3",
-        [outcome, await this.now(client), requestId],
+        [outcome, now, requestId],
       );
+      if (metered)
+        await client.query(
+          `INSERT INTO usage_metrics VALUES($1,$2,$3,$4,$5,$6,$7)
+          ON CONFLICT (request_id) DO NOTHING`,
+          [
+            requestId,
+            metered.promptTokens,
+            metered.completionTokens,
+            metered.model,
+            metered.costUsd ?? null,
+            metered.webSearchCalls ?? null,
+            now,
+          ],
+        );
     });
+  }
+  /** Completed-request metering for one request, or undefined when none was recorded. */
+  async metrics(requestId: string): Promise<UsageMetrics | undefined> {
+    usageId.parse(requestId);
+    const result = await this.database.query(
+      "SELECT prompt_tokens,completion_tokens,model,cost_usd::text AS cost_usd,web_search_calls FROM usage_metrics WHERE request_id=$1",
+      [requestId],
+    );
+    const row = result.rows[0];
+    return row
+      ? {
+          promptTokens: Number(row.prompt_tokens),
+          completionTokens: Number(row.completion_tokens),
+          model: String(row.model),
+          ...(row.cost_usd != null
+            ? { costUsd: String(row.cost_usd).replace(/\.?0+$/, "") }
+            : {}),
+          ...(row.web_search_calls != null
+            ? { webSearchCalls: Number(row.web_search_calls) }
+            : {}),
+        }
+      : undefined;
   }
 }
