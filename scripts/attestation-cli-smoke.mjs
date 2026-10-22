@@ -72,11 +72,19 @@ const handshakeFailed =
   /unknown authority|tls: failed|x509|no such host|connection refused|i\/o timeout|dial tcp/i.test(
     stderr,
   );
+// The CLI prints its record with json.MarshalIndent, so it spans several
+// lines; parse the whole output first and fall back to a single trailing line.
 let record;
-try {
-  record = JSON.parse(stdout.trim().split("\n").filter(Boolean).at(-1) ?? "");
-} catch {
-  record = undefined;
+for (const candidate of [
+  stdout.trim(),
+  stdout.trim().split("\n").filter(Boolean).at(-1) ?? "",
+]) {
+  try {
+    record = JSON.parse(candidate);
+    break;
+  } catch {
+    record = undefined;
+  }
 }
 const reached = !!record && typeof record === "object" && "digest" in record;
 const result = {
