@@ -61,6 +61,10 @@ const schema = z
         intervalMinutes: z.number().int().min(15).max(1440).optional(),
         maxAgeMinutes: z.number().int().min(15).max(10080).optional(),
         timeoutSeconds: z.number().int().min(5).max(300).optional(),
+        retryDelaysMinutes: z
+          .array(z.number().int().min(1).max(60))
+          .max(8)
+          .optional(),
       })
       .strict()
       .refine(
@@ -68,6 +72,15 @@ const schema = z
           (audit.maxAgeMinutes ?? attestationAuditDefaults.maxAgeMinutes) >=
           (audit.intervalMinutes ?? attestationAuditDefaults.intervalMinutes),
         "Attestation audit maximum age must cover at least one interval.",
+      )
+      .refine(
+        (audit) =>
+          (audit.retryDelaysMinutes ?? attestationAuditDefaults.retryDelaysMinutes).every(
+            (delay) =>
+              delay <=
+              (audit.intervalMinutes ?? attestationAuditDefaults.intervalMinutes),
+          ),
+        "Attestation audit retries must fit within one interval.",
       )
       .optional(),
   })

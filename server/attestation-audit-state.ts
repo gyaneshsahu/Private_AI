@@ -1,11 +1,16 @@
 import type { AttestationAuditResult } from "./attestation-audit";
 
-/** Default cadence: six hours; maximum age of the last success: twenty-four hours. */
+/**
+ * Defaults: six-hour cadence, twenty-four-hour maximum age of the last
+ * success, two-minute CLI bound, and retries 1, 2, 4 and 8 minutes after a
+ * failed audit before the normal cadence resumes.
+ */
 export const attestationAuditDefaults = {
   binary: "/usr/local/bin/tinfoil",
   intervalMinutes: 360,
   maxAgeMinutes: 1440,
   timeoutSeconds: 120,
+  retryDelaysMinutes: [1, 2, 4, 8] as readonly number[],
 } as const;
 
 export interface AttestationAuditStateOptions {
@@ -14,6 +19,8 @@ export interface AttestationAuditStateOptions {
   intervalMs?: number;
   /** A success older than this no longer admits requests. */
   maxAgeMs?: number;
+  /** Delays after a failed audit before each retry; empty disables retries. */
+  retryDelaysMs?: readonly number[];
   run: () => Promise<AttestationAuditResult>;
   now?: () => number;
 }
@@ -22,10 +29,18 @@ export interface AttestationAuditSnapshot {
   enabled: boolean;
   last?: AttestationAuditResult;
   lastSuccessAt?: string;
+  /** True while a retry after a failure is scheduled or running. */
+  retryPending: boolean;
 }
 
 export interface AttestationAuditState {
-  /** True only when auditing is enabled AND (the last audit failed, or no success is within the maximum age, or the witnessed freshness has expired). */
+  /**
+   * True only when auditing is enabled AND one of: the last audit was a
+   * verification failure; the last audit was a transient error (network,
+   * DNS, TLS, timeout) and either no retry is pending or the previous
+   * success is no longer current; no success is within the maximum age; the
+   * witnessed freshness has expired.
+   */
   shouldBlock(): { block: boolean; reason: string };
   /** Runs one audit now; concurrent calls share the in-flight run. Never throws. */
   refresh(): Promise<AttestationAuditResult | undefined>;
@@ -43,17 +58,46 @@ export function createAttestationAuditState(
     options.intervalMs ?? attestationAuditDefaults.intervalMinutes * 60_000;
   const maxAgeMs =
     options.maxAgeMs ?? attestationAuditDefaults.maxAgeMinutes * 60_000;
+  const retryDelaysMs =
+    options.retryDelaysMs ??
+    attestationAuditDefaults.retryDelaysMinutes.map((m) => m * 60_000);
   if (
     !Number.isFinite(intervalMs) ||
     intervalMs < 1 ||
     !Number.isFinite(maxAgeMs) ||
-    maxAgeMs < intervalMs
+    maxAgeMs < intervalMs ||
+    retryDelaysMs.length > 8 ||
+    retryDelaysMs.some((d) => !Number.isFinite(d) || d < 1 || d > intervalMs)
   )
     throw Error("Invalid attestation audit cadence.");
   let last: AttestationAuditResult | undefined;
   let lastSuccess: { at: number; freshnessExpiresAt?: number } | undefined;
   let timer: ReturnType<typeof setInterval> | undefined;
+  let retryTimer: ReturnType<typeof setTimeout> | undefined;
+  let retriesUsed = 0;
+  let retryPending = false;
   let inFlight: Promise<AttestationAuditResult | undefined> | undefined;
+
+  function clearRetry() {
+    if (retryTimer) clearTimeout(retryTimer);
+    retryTimer = undefined;
+  }
+
+  /** Whether the previous success still admits requests on its own. */
+  function successCurrent(at: number) {
+    if (!lastSuccess) return { current: false, reason: "no successful attestation audit yet" };
+    if (at - lastSuccess.at > maxAgeMs)
+      return {
+        current: false,
+        reason: "last successful attestation audit exceeds the maximum age",
+      };
+    if (
+      lastSuccess.freshnessExpiresAt !== undefined &&
+      lastSuccess.freshnessExpiresAt <= at
+    )
+      return { current: false, reason: "supplier freshness witness expired" };
+    return { current: true, reason: "attestation audit current" };
+  }
 
   async function refresh() {
     if (!options.enabled) return undefined;
@@ -71,6 +115,7 @@ export function createAttestationAuditState(
         };
       }
       last = result;
+      clearRetry();
       if (result.ok) {
         const expiry = result.freshnessExpiresAt
           ? Date.parse(result.freshnessExpiresAt)
@@ -79,6 +124,16 @@ export function createAttestationAuditState(
           at: now(),
           ...(Number.isFinite(expiry) ? { freshnessExpiresAt: expiry } : {}),
         };
+        retriesUsed = 0;
+        retryPending = false;
+      } else if (retriesUsed < retryDelaysMs.length) {
+        // Bounded backoff before the normal cadence resumes; the retry is
+        // "pending" from now until its own result has been recorded.
+        retryPending = true;
+        retryTimer = setTimeout(() => void refresh(), retryDelaysMs[retriesUsed++]);
+        retryTimer.unref();
+      } else {
+        retryPending = false;
       }
       return result;
     })().finally(() => {
@@ -91,25 +146,28 @@ export function createAttestationAuditState(
     shouldBlock() {
       if (!options.enabled)
         return { block: false, reason: "attestation audit disabled" };
-      if (last && !last.ok)
+      const at = now();
+      const success = successCurrent(at);
+      if (last && !last.ok) {
+        const detail = last.reason ?? "unknown";
+        if (!last.transient)
+          return { block: true, reason: `last attestation audit failed: ${detail}` };
+        if (!success.current)
+          return {
+            block: true,
+            reason: `transient attestation audit error and ${success.reason}`,
+          };
+        if (!retryPending)
+          return {
+            block: true,
+            reason: `attestation audit retries exhausted: ${detail}`,
+          };
         return {
-          block: true,
-          reason: `last attestation audit failed: ${last.reason ?? "unknown"}`,
+          block: false,
+          reason: `transient attestation audit error, retry pending: ${detail}`,
         };
-      if (!lastSuccess)
-        return { block: true, reason: "no successful attestation audit yet" };
-      const current = now();
-      if (current - lastSuccess.at > maxAgeMs)
-        return {
-          block: true,
-          reason: "last successful attestation audit exceeds the maximum age",
-        };
-      if (
-        lastSuccess.freshnessExpiresAt !== undefined &&
-        lastSuccess.freshnessExpiresAt <= current
-      )
-        return { block: true, reason: "supplier freshness witness expired" };
-      return { block: false, reason: "attestation audit current" };
+      }
+      return { block: !success.current, reason: success.reason };
     },
     refresh,
     async start() {
@@ -121,6 +179,8 @@ export function createAttestationAuditState(
     stop() {
       if (timer) clearInterval(timer);
       timer = undefined;
+      clearRetry();
+      retryPending = false;
     },
     snapshot() {
       return {
@@ -129,6 +189,7 @@ export function createAttestationAuditState(
         ...(lastSuccess
           ? { lastSuccessAt: new Date(lastSuccess.at).toISOString() }
           : {}),
+        retryPending,
       };
     },
   };

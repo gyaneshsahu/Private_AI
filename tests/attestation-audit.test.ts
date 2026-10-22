@@ -72,21 +72,34 @@ describe("runAttestationAudit", () => {
     expect((await audit("pinned")).ok).toBe(true);
   });
 
-  it("fails on a non-zero exit with or without a record", async () => {
+  it("fails on a non-zero exit with or without a record; verdicts are never transient", async () => {
     const failed = await audit("fail");
     expect(failed.ok).toBe(false);
     expect(failed.reason).toBe("supplier verification failed");
     expect(failed.releaseDigest).toBe(digest);
+    expect(failed.transient).toBeUndefined();
     const crashed = await audit("crash");
     expect(crashed.ok).toBe(false);
     expect(crashed.reason).toBe("supplier verification failed");
+    expect(crashed.transient).toBeUndefined();
   });
 
-  it("fails on timeout within the bound", async () => {
+  it("classifies a pre-verdict network error as transient", async () => {
+    const result = await audit("netfail");
+    expect(result).toEqual({
+      ok: false,
+      checkedAt: expect.any(String),
+      reason: "transient audit error",
+      transient: true,
+    });
+  });
+
+  it("fails on timeout within the bound and marks it transient", async () => {
     const started = Date.now();
     const result = await audit("hang", { timeoutMs: 1500 });
     expect(result.ok).toBe(false);
     expect(result.reason).toBe("audit timed out");
+    expect(result.transient).toBe(true);
     expect(Date.now() - started).toBeLessThan(8000);
   });
 
@@ -130,13 +143,14 @@ function fakeState(
   enabled: boolean,
   results: AttestationAuditResult[],
   clock: { now: number },
-  cadence: { intervalMs?: number; maxAgeMs?: number } = {},
+  cadence: { intervalMs?: number; maxAgeMs?: number; retryDelaysMs?: number[] } = {},
 ) {
   const queue = [...results];
   return createAttestationAuditState({
     enabled,
     intervalMs: cadence.intervalMs ?? 1000,
     maxAgeMs: cadence.maxAgeMs ?? 4000,
+    retryDelaysMs: cadence.retryDelaysMs ?? [],
     now: () => clock.now,
     run: async () => {
       const next = queue.shift();
@@ -155,6 +169,12 @@ const fail = (at: number): AttestationAuditResult => ({
   ok: false,
   checkedAt: new Date(at).toISOString(),
   reason: "supplier verification failed",
+});
+const transient = (at: number): AttestationAuditResult => ({
+  ok: false,
+  checkedAt: new Date(at).toISOString(),
+  reason: "transient audit error",
+  transient: true,
 });
 
 describe("attestation audit state", () => {
@@ -210,6 +230,115 @@ describe("attestation audit state", () => {
       block: true,
       reason: "last attestation audit failed: audit runner failed",
     });
+  });
+
+  it("keeps serving on a transient error while a retry is pending and the previous success is current", async () => {
+    const clock = { now: 50_000 };
+    const state = fakeState(
+      true,
+      [pass(clock.now), transient(clock.now), transient(clock.now), transient(clock.now)],
+      clock,
+      { intervalMs: 3000, retryDelaysMs: [2000, 2500] },
+    );
+    // Transient error with no prior success blocks.
+    const cold = fakeState(true, [transient(clock.now)], clock, {
+      intervalMs: 3000,
+      retryDelaysMs: [2000],
+    });
+    await cold.refresh();
+    expect(cold.shouldBlock()).toMatchObject({ block: true });
+    expect(cold.shouldBlock().reason).toContain("no successful");
+    cold.stop();
+
+    await state.refresh(); // success
+    await state.refresh(); // transient, retry 1 scheduled
+    expect(state.snapshot().retryPending).toBe(true);
+    expect(state.shouldBlock()).toEqual({
+      block: false,
+      reason: "transient attestation audit error, retry pending: transient audit error",
+    });
+    await state.refresh(); // transient again, retry 2 scheduled
+    expect(state.shouldBlock().block).toBe(false);
+    await state.refresh(); // transient, retries exhausted
+    expect(state.snapshot().retryPending).toBe(false);
+    expect(state.shouldBlock()).toEqual({
+      block: true,
+      reason: "attestation audit retries exhausted: transient audit error",
+    });
+    state.stop();
+  });
+
+  it("blocks a transient error once the previous success is stale or its witness expired", async () => {
+    const clock = { now: 50_000 };
+    const stale = fakeState(true, [pass(clock.now), transient(clock.now)], clock, {
+      intervalMs: 3000,
+      retryDelaysMs: [2000],
+    });
+    await stale.refresh();
+    await stale.refresh();
+    expect(stale.shouldBlock().block).toBe(false);
+    clock.now += 4001; // beyond maxAge (4s)
+    expect(stale.shouldBlock()).toEqual({
+      block: true,
+      reason:
+        "transient attestation audit error and last successful attestation audit exceeds the maximum age",
+    });
+    stale.stop();
+    const clock2 = { now: 50_000 };
+    const expired = fakeState(true, [pass(clock2.now, 2000), transient(clock2.now)], clock2, {
+      intervalMs: 3000,
+      retryDelaysMs: [2000],
+    });
+    await expired.refresh();
+    await expired.refresh();
+    expect(expired.shouldBlock().block).toBe(false);
+    clock2.now += 2000;
+    expect(expired.shouldBlock().reason).toBe(
+      "transient attestation audit error and supplier freshness witness expired",
+    );
+    expired.stop();
+  });
+
+  it("fails closed immediately on a verification failure even with a current success and retries left", async () => {
+    const clock = { now: 50_000 };
+    const state = fakeState(true, [pass(clock.now), fail(clock.now)], clock, {
+      intervalMs: 3000,
+      retryDelaysMs: [2000, 2500],
+    });
+    await state.refresh();
+    await state.refresh();
+    expect(state.snapshot().retryPending).toBe(true);
+    expect(state.shouldBlock()).toEqual({
+      block: true,
+      reason: "last attestation audit failed: supplier verification failed",
+    });
+    state.stop();
+  });
+
+  it("retries with the configured backoff after a failure and resumes the cadence after a success", async () => {
+    const clock = { now: 0 };
+    const state = fakeState(
+      true,
+      [pass(0), transient(0), transient(0), ...Array.from({ length: 20 }, () => pass(0))],
+      clock,
+      { intervalMs: 5000, maxAgeMs: 60_000, retryDelaysMs: [30, 60] },
+    );
+    await state.start(); // success at once
+    await state.refresh(); // transient -> retry in 30ms
+    expect(state.shouldBlock().block).toBe(false);
+    await new Promise((done) => setTimeout(done, 45)); // retry 1 ran: transient -> retry in 60ms
+    expect(state.snapshot().last?.transient).toBe(true);
+    expect(state.snapshot().retryPending).toBe(true);
+    expect(state.shouldBlock().block).toBe(false);
+    await new Promise((done) => setTimeout(done, 90)); // retry 2 ran: success
+    expect(state.snapshot().last?.ok).toBe(true);
+    expect(state.snapshot().retryPending).toBe(false);
+    expect(state.shouldBlock()).toEqual({ block: false, reason: "attestation audit current" });
+    state.stop();
+    // Retries longer than the interval are rejected.
+    expect(() =>
+      fakeState(true, [], clock, { intervalMs: 100, maxAgeMs: 1000, retryDelaysMs: [200] }),
+    ).toThrow();
   });
 
   it("refreshes on the timer and rejects an impossible cadence", async () => {
@@ -350,6 +479,12 @@ describe("deployment configuration", () => {
     expect(loaded).toEqual({ ...attestationAuditDefaults, ...attestationAudit });
     expect(loaded?.intervalMinutes).toBe(360);
     expect(loaded?.binary).toBe("/usr/local/bin/tinfoil");
+    expect(loaded?.retryDelaysMinutes).toEqual([1, 2, 4, 8]);
+    await writeFile(
+      configFile,
+      JSON.stringify({ ...base, attestationAudit: { ...attestationAudit, retryDelaysMinutes: [] } }),
+    );
+    expect((await loadDeploymentConfig(configFile)).attestationAudit?.retryDelaysMinutes).toEqual([]);
     const state = createDeploymentAttestationAudit(loaded!);
     expect(state.shouldBlock().block).toBe(true);
     for (const bad of [
@@ -359,6 +494,9 @@ describe("deployment configuration", () => {
       { ...attestationAudit, releaseDigests: [] },
       { ...attestationAudit, binary: "tinfoil" },
       { ...attestationAudit, unknown: true },
+      { ...attestationAudit, intervalMinutes: 15, retryDelaysMinutes: [1, 2, 4, 8, 16] },
+      { ...attestationAudit, retryDelaysMinutes: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+      { ...attestationAudit, retryDelaysMinutes: [0] },
     ]) {
       await writeFile(configFile, JSON.stringify({ ...base, attestationAudit: bad }));
       await expect(loadDeploymentConfig(configFile)).rejects.toThrow(
@@ -394,7 +532,16 @@ describe("Dockerfile.render verifier stage", () => {
       .filter((line) => !line.startsWith("#"))
       .join("\n");
     expect(instructions).not.toMatch(/install\.sh|tinfoil update|curl .*\| *sh/);
-    // Nothing from the verifier stage except the binary reaches the runtime stages.
-    expect(render.match(/--from=tinfoil-verifier/g)).toHaveLength(1);
+    // Only the binary and the exported CA store reach the runtime stages; the
+    // CA store comes from Node's bundled roots, not from a build secret.
+    expect(render.match(/--from=tinfoil-verifier/g)).toHaveLength(2);
+    expect(render).toContain(
+      "COPY --from=tinfoil-verifier /out/etc/ssl/certs/ /etc/ssl/certs/",
+    );
+    expect(render).toContain(
+      "install -m 0444 -o root -g root /tmp/ca-certificates.crt /out/etc/ssl/certs/ca-certificates.crt",
+    );
+    expect(render).toContain("require('node:tls').rootCertificates");
+    expect(instructions).not.toMatch(/proxy_ca.*ca-certificates|apt-get install.*ca-certificates/);
   });
 });

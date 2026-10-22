@@ -46,6 +46,12 @@ export interface AttestationAuditResult {
   freshnessExpiresAt?: string;
   /** Fixed, content-free reason for a failed audit. */
   reason?: string;
+  /**
+   * True when a failure looks transient (our timeout, or a network, DNS, TLS
+   * or upstream-availability error reported before any verdict) rather than
+   * a verification verdict. Verdicts are never transient.
+   */
+  transient?: boolean;
 }
 
 export interface AttestationAuditOptions {
@@ -64,7 +70,12 @@ export interface AttestationAuditOptions {
 
 const digestPattern = /^[a-f0-9]{64}$/;
 const maximumOutputBytes = 64 * 1024;
+const maximumDiagnosticBytes = 16 * 1024;
 const defaultTimeoutMs = 120_000;
+// Error texts the Go CLI and its HTTP/TLS stack emit for conditions that are
+// not a verdict about the enclave. Used only to classify; never surfaced.
+const transientPattern =
+  /no such host|connection refused|connection reset|network is unreachable|i\/o timeout|timeout|deadline exceeded|dial tcp|tls: |TLS handshake|x509: |unexpected EOF|temporary failure|rate limit|status(?: code)?:? (?:429|5\d\d)|fetch error/i;
 
 function enclaveHost(origin: string) {
   const url = new URL(origin);
@@ -188,7 +199,9 @@ function parseRecord(
 /**
  * Runs one audit. Never throws: every failure (bad options, spawn error,
  * timeout, non-zero exit, malformed or disagreeing output) is a result with
- * `ok: false` and a fixed reason. Only stdout is parsed; stderr is discarded.
+ * `ok: false` and a fixed reason. Only stdout is parsed for the verdict;
+ * stderr is read (bounded) solely to classify a pre-verdict failure as
+ * transient, and is never stored or surfaced.
  */
 export async function runAttestationAudit(
   options: AttestationAuditOptions,
@@ -227,14 +240,19 @@ export async function runAttestationAudit(
       if (timer) clearTimeout(timer);
       resolve(result);
     };
-    const fail = (reason: string) =>
-      finish({ ok: false, checkedAt: new Date(now()).toISOString(), reason });
+    const fail = (reason: string, transient = false) =>
+      finish({
+        ok: false,
+        checkedAt: new Date(now()).toISOString(),
+        reason,
+        ...(transient ? { transient: true } : {}),
+      });
     let child: ReturnType<typeof spawn>;
     try {
       child = spawn(options.binary, args, {
         shell: false,
         windowsHide: true,
-        stdio: ["ignore", "pipe", "ignore"],
+        stdio: ["ignore", "pipe", "pipe"],
         env: childEnvironment(),
       });
     } catch {
@@ -245,11 +263,12 @@ export async function runAttestationAudit(
     let size = 0;
     let overflow = false;
     let timedOut = false;
+    let diagnostic = "";
     timer = setTimeout(() => {
       timedOut = true;
       child.kill("SIGKILL");
       // Resolve even if the process ignores the signal or `close` is delayed.
-      setTimeout(() => fail("audit timed out"), 1000).unref();
+      setTimeout(() => fail("audit timed out", true), 1000).unref();
     }, timeoutMs);
     child.on("error", () => fail("audit binary unavailable"));
     child.stdout?.on("data", (chunk: Buffer) => {
@@ -259,9 +278,13 @@ export async function runAttestationAudit(
         child.kill("SIGKILL");
       } else chunks.push(chunk);
     });
+    child.stderr?.on("data", (chunk: Buffer) => {
+      if (diagnostic.length < maximumDiagnosticBytes)
+        diagnostic += chunk.toString("utf8", 0, maximumDiagnosticBytes - diagnostic.length);
+    });
     child.on("close", (code) => {
       if (timedOut) {
-        fail("audit timed out");
+        fail("audit timed out", true);
         return;
       }
       if (overflow) {
@@ -271,13 +294,20 @@ export async function runAttestationAudit(
       const stdout = Buffer.concat(chunks).toString("utf8");
       const parsed = parseRecord(stdout, { host, digests }, now());
       if (code !== 0) {
+        // A record on stdout is a verdict (the CLI prints it, then exits 1 on
+        // `status: fail`). No record plus a network-shaped error on stderr is
+        // a transient failure; anything else is treated as a verdict.
+        const verdictPrinted = parsed.reason !== "malformed audit output";
+        const transient = !verdictPrinted && transientPattern.test(diagnostic);
         finish({
           ...parsed,
           ok: false,
-          reason:
-            parsed.reason === "malformed audit output"
-              ? "supplier verification failed"
-              : (parsed.reason ?? "supplier verification failed"),
+          reason: verdictPrinted
+            ? (parsed.reason ?? "supplier verification failed")
+            : transient
+              ? "transient audit error"
+              : "supplier verification failed",
+          ...(transient ? { transient: true } : {}),
         });
         return;
       }
@@ -293,6 +323,7 @@ export interface DeploymentAttestationAudit extends AttestationAuditTarget {
   intervalMinutes: number;
   maxAgeMinutes: number;
   timeoutSeconds: number;
+  retryDelaysMinutes: readonly number[];
 }
 
 /** Builds the timer-refreshed state for a deployment; the caller starts and stops it. */
@@ -304,6 +335,7 @@ export function createDeploymentAttestationAudit(
     enabled: config.enabled,
     intervalMs: config.intervalMinutes * 60_000,
     maxAgeMs: config.maxAgeMinutes * 60_000,
+    retryDelaysMs: config.retryDelaysMinutes.map((m) => m * 60_000),
     run: () =>
       runAttestationAudit({
         binary: config.binary,

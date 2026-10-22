@@ -55,7 +55,15 @@ switch (mode) {
     );
     break;
   case "crash":
-    process.stderr.write("verification failed: fetching freshness witness\n");
+    // Pre-record error that is not network-shaped: treated as a verdict.
+    process.stderr.write("Error: verifying attestation: measurement mismatch\n");
+    process.exitCode = 1;
+    break;
+  case "netfail":
+    // Pre-record network error, as the Go CLI prints it: transient.
+    process.stderr.write(
+      'Error: verifying attestation: fetch error: Get "https://netfail.example/.well-known/tinfoil-attestation": dial tcp: lookup netfail.example: no such host\n',
+    );
     process.exitCode = 1;
     break;
   case "hang":

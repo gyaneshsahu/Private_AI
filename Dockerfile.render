@@ -30,12 +30,20 @@ RUN set -eu; \
     mkdir -p /tmp/tinfoil-cli /out; \
     tar -xzf /tmp/tinfoil-cli.tar.gz -C /tmp/tinfoil-cli tinfoil; \
     install -m 0555 -o root -g root /tmp/tinfoil-cli/tinfoil /out/tinfoil; \
-    test "$(/out/tinfoil --version)" = "tinfoil version ${TINFOIL_CLI_VERSION}"
+    test "$(/out/tinfoil --version)" = "tinfoil version ${TINFOIL_CLI_VERSION}"; \
+    install -d -m 0755 /out/etc/ssl/certs; \
+    node -e "process.stdout.write(require('node:tls').rootCertificates.join('\n') + '\n')" > /tmp/ca-certificates.crt; \
+    test "$(grep -c 'BEGIN CERTIFICATE' /tmp/ca-certificates.crt)" -gt 100; \
+    install -m 0444 -o root -g root /tmp/ca-certificates.crt /out/etc/ssl/certs/ca-certificates.crt
 
 FROM build AS deployment-candidate
 ENV NODE_ENV=production
 # Read-only supplier CLI; no update checks (server/attestation-audit.ts never invokes `tinfoil update`).
 COPY --from=tinfoil-verifier --chmod=0555 /out/tinfoil /usr/local/bin/tinfoil
+# The slim base ships no CA store; the Go CLI needs one for TLS to the enclave,
+# GitHub and Sigstore. Node's bundled roots (pinned by the base digest) are exported
+# by the verifier stage; no package manager, no build secret, nothing host-specific.
+COPY --from=tinfoil-verifier /out/etc/ssl/certs/ /etc/ssl/certs/
 ENV TINFOIL_NO_UPDATE_CHECK=1
 USER node
 EXPOSE 8443
