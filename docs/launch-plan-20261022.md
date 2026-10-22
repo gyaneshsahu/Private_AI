@@ -1,5 +1,8 @@
 # CometRow launch plan — 22 October 2026
 
+**Approved spend (owner statement, 22 October 2026):** no new paid spend is approved. Anything already spent, including the 4 October experiment cap and the Brave test on 12 October, is history. Any future paid step, such as the in-enclave research harness or the Phase 5 evaluation runs, needs the owner to name the service, the current price and a specific cap first. Every older figure in this document (USD 2, USD 3, USD 5, USD 10, USD 25, USD 50 to 100) is a historical or proposal figure and no longer an authorisation.
+
+
 One ordered list. Work goes top to bottom; nothing is skipped to a later phase unless it is blocked. Status words: TODO, DOING, DONE, BLOCKED(by what). "Owner" means the founder does it; everything else is agent work. Decisions and evidence are recorded in READINESS.md as before; this file only tracks order and status.
 
 ## Where Codex left off (for orientation)
@@ -33,7 +36,7 @@ Rules in force: subagents commit on their own branches, never edit READINESS.md 
 | 0.3 | Hosted checks on app.cometrow.com: email-disabled controls, Google sign-in, cancellation, sign-out, workspace entry, second identity denied, vault save/reopen, usage display. Report outcomes only. | TODO |
 | 0.4 | Approve the narrower privacy claim: "ID numbers, bank and contact details stay on your device; everything else is sealed." This decides Phase 1.2. | TODO |
 | 0.5 | Approve downloading the pinned speech model files for the dictation proof of concept (Phase 9). | TODO |
-| 0.6 | Approve a spending cap for the quality and safety evaluation runs (Phase 5); current authorisation is USD 3 cumulative. | TODO |
+| 0.6 | Spending: owner stated on 22 October that no new paid spend is approved; before any paid step (research harness, Phase 5 runs) the owner names the service, the current price and a specific cap. Older USD figures are historical. | DONE 22 October (statement); each future paid step still needs its own cap |
 | 0.7 | Grade the open human review packets: two safety cases and the writing-ambiguity case from the 20 October assessment. | TODO |
 
 ## Phase 1 — Trust core (agent, no supplier dependency)

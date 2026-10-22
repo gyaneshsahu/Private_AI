@@ -1,5 +1,8 @@
 # Provider qualification — NOT_PASSED
 
+**Approved spend (owner statement, 22 October 2026):** no new paid spend is approved. Anything already spent, including the 4 October experiment cap and the Brave test on 12 October, is history. Any future paid step, such as the in-enclave research harness or the Phase 5 evaluation runs, needs the owner to name the service, the current price and a specific cap first. Every older figure in this document (USD 2, USD 3, USD 5, USD 10, USD 25, USD 50 to 100) is a historical or proposal figure and no longer an authorisation.
+
+
 ## Supplier public documentation re-check — 21 October 2026
 
 Status remains **NOT_PASSED**. On 21 October the agent re-read Tinfoil's published documentation, the npm registry and the public contact pages. No provider request, credential use, account change or supplier contact was made. These are supplier statements and public release metadata, not verification of the deployment serving our account. Owner decision the same day: wait for the Tinfoil reply until **23 October**; if none arrives, select a solution under the existing decision sequence in "Limited working product" below. The owner-supplied sent Tinfoil text is preserved in [provider-outreach-20261020.md](provider-outreach-20261020.md).
