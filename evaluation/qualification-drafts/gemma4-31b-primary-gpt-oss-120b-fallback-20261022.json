@@ -1,0 +1,103 @@
+{
+  "status": "CANDIDATE_DRAFT_NOT_SELECTED_NOT_LOADABLE",
+  "draftedAt": "2026-10-22",
+  "note": "Candidate qualification report for launch plan 8.5. The models are CANDIDATES, not selected; nothing in code or configuration points at this file, and it fails shared/contracts.ts validateQualification by design (review statuses are 'candidate', not 'pass'). To become a report, every check must be replaced by status 'pass' with the evidence named in evidenceRequired, the digests and dates filled from a same-day verification, and the owner must select the models and approve the spend figure. docs/model-selection-proposal-20261022.md explains the choice.",
+  "provider": "tinfoil",
+  "model": "gemma4-31b",
+  "fallbackModel": "gpt-oss-120b",
+  "gemmaThinking": false,
+  "gptOssReasoningEffort": "high",
+  "origin": "https://inference.tinfoil.sh",
+  "repository": "tinfoilsh/confidential-model-router",
+  "releaseDigests": [
+    "REPLACE_WITH_THE_ROUTER_DIGEST_VERIFIED_ON_THE_DAY_OF_REVIEW"
+  ],
+  "workerEvidence": {
+    "gemma4-31b": {
+      "workerRepository": "REPLACE: the worker repository serving gemma4-31b on the qualified router (admitted-worker inspection or supplier-stated mapping, with source and date)",
+      "workerReleaseDigest": "REPLACE",
+      "lastSeen": "The 7 October supplier reply named Gemma worker v0.0.25; not current."
+    },
+    "gpt-oss-120b": {
+      "workerRepository": "REPLACE: same requirement as the primary (provider-outreach-20261020.md, fallback-model evidence requirement, 22 October)",
+      "workerReleaseDigest": "REPLACE",
+      "lastSeen": "The 7 October supplier reply named GPT-OSS worker v0.0.28; not current."
+    }
+  },
+  "reviewedAt": "REPLACE_ISO_DATETIME_OF_THE_REVIEW",
+  "validUntil": "REPLACE_ISO_DATETIME_AT_MOST_SEVEN_DAYS_LATER_ONE_WEEK_IS_THE_SUPPLIER_DEPRECATION_NOTICE",
+  "review": {
+    "browserVerification": {
+      "status": "candidate",
+      "evidenceRequired": [
+        "Same-day browser preflight record against the digest above (LIVE_BROWSER_PREFLIGHT, securityVerified true), as on 4 and 15 October.",
+        "Statement that the JavaScript verifier 1.2.2 checks repository, digest and key binding only; freshness, revocation and TDX are not checked in the browser (supplier, 22 October: no ETA)."
+      ]
+    },
+    "freshnessAndRevocation": {
+      "status": "candidate",
+      "evidenceRequired": [
+        "Cannot pass in the browser today. Either the delegated relay verification (relay-mitigation-assessment-20261021.md, mitigation A) is built, assessed and negative-tested, or the owner records an explicit acceptance of pin-only rollback for the chosen scope. This gate is why private chat stays disabled."
+      ]
+    },
+    "protectedWorkerChain": {
+      "status": "candidate",
+      "evidenceRequired": [
+        "Worker repository and release digest for each model (workerEvidence above) bound to the router digest, from the admitted-worker inspection endpoint or a dated supplier mapping."
+      ]
+    },
+    "retentionAndLogs": {
+      "status": "candidate",
+      "evidenceRequired": [
+        "Supplier statements of 22 October: metadata retained 90 days; no cache lifetime control planned. Record which per-request fields count as metadata once itemised (open legal@ question)."
+      ]
+    },
+    "noExternalTools": {
+      "status": "candidate",
+      "evidenceRequired": [
+        "The fixed inference request includes no tool options and no web_search_options (unchanged). If in-enclave search is ever enabled, this check must be re-described with its own evidence (enclave-search-evaluation-20261021.md)."
+      ]
+    },
+    "liveStreaming": {
+      "status": "candidate",
+      "evidenceRequired": [
+        "20 October selection screen, Gemma arm: 14 of 14 deliveries completed, median 1.7 s to delivery; GPT-OSS: prior matched replies 22.9 to 74 s with a 503 (not re-screened). A fresh completed streaming conversation on each model with usage frames, on the digest above."
+      ]
+    },
+    "negativeTests": {
+      "status": "candidate",
+      "evidenceRequired": [
+        "Existing local negative tests (wrong key, altered ciphertext, truncated stream, cancellation, expiry) rerun against the report; one live rejection with X-Tinfoil-Model set to a model other than the two named here."
+      ]
+    },
+    "usageAndBudget": {
+      "status": "candidate",
+      "evidenceRequired": [
+        "Tariffs re-read on the day (20 October read: Gemma 0.40/1.00, GPT-OSS 0.15/0.60 USD per million); metered cost_usd from the usage trailer reconciled against the dashboard for the fresh conversations; the owner's named cap for that paid step."
+      ]
+    }
+  },
+  "qualityEvidence": {
+    "selectionScreen20261020": {
+      "gemma4-31b": "Fastest and cheapest arm (USD 0.0062 for 14 replies); material arithmetic failure in the reasoning case (09:23 minus 18 minutes given as 08:58); first document summary omitted the open seating question; sparse-array edge checks failed in coding. Human grades blank.",
+      "gpt-oss-120b": "Not an arm of the 20 October screen; prior matched replies showed instruction and source-silence failures and long latency.",
+      "requiredBeforeSelection": "Re-run the frozen screen on both candidates including the two 22 October checks (placeholder copying, citation form); human grades on reasoning, documents and safety; the arithmetic failure must not recur or the default changes."
+    }
+  },
+  "maxInputCharacters": 8000,
+  "maxOutputTokens": 4096,
+  "pricing": {
+    "inputPerMillion": 0.4,
+    "outputPerMillion": 1.0,
+    "currency": "USD",
+    "readOn": "2026-10-20 (shortlist); must be re-read on the review day"
+  },
+  "fallbackPricing": {
+    "inputPerMillion": 0.15,
+    "outputPerMillion": 0.6,
+    "currency": "USD",
+    "readOn": "2026-10-20 (shortlist); must be re-read on the review day"
+  },
+  "approvedSpendUSD": null,
+  "approvedSpendNote": "No new paid spend is approved (owner statement, 22 October). The owner names the service, the current price and a specific cap before the review's paid steps."
+}

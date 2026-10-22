@@ -26,6 +26,7 @@ import assistedCases from "./cases/research-assisted.json";
 import toolCases from "./cases/research-tools.json";
 import everydayCases from "./cases/everyday-transfer-20261019.json";
 import selectionCases from "./cases/model-selection-20261020.json";
+import selectionChecks from "./cases/model-selection-checks-20261022.json";
 import fidelityCases from "./cases/fidelity-transfer-20261020.json";
 import assessmentCases from "./cases/complete-assessment-20261020.json";
 import heldoutCases from "./cases/heldout.json";
@@ -33,6 +34,7 @@ import { qualificationSchema } from "../shared/contracts";
 const robustnessCases = [
   ...originalRobustnessCases,
   ...selectionCases,
+  ...selectionChecks,
   ...assessmentCases,
   ...fidelityCases,
   ...transferCases,

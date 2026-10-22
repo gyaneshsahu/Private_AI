@@ -1,7 +1,10 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import fixtures from "./cases/model-selection-20261020.json";
+import baseFixtures from "./cases/model-selection-20261020.json";
+// 22 October additions: placeholder copying and citation delimiter checks.
+import addedFixtures from "./cases/model-selection-checks-20261022.json";
+const fixtures = [...baseFixtures, ...addedFixtures];
 import { selectionModels, assertSelectionPolicy } from "./selection-policy";
 import { validateExperiment } from "./experiment";
 const root = ".local/model-selection-20261020";
@@ -14,7 +17,8 @@ const template = JSON.parse(
 );
 const now = new Date().toISOString();
 const reserve = Object.values(selectionModels).reduce(
-  (n, s) => n + (14 * (8000 * 4 * s.input + 4096 * s.output)) / 1e6,
+  (n, s) =>
+    n + (fixtures.length * 2 * (8000 * 4 * s.input + 4096 * s.output)) / 1e6,
   0,
 );
 const budgetEvidence =
@@ -23,7 +27,7 @@ const plan = {
   status: "FROZEN_BEFORE_EXECUTION",
   frozenAt: now,
   stopPolicy: "independent-arms",
-  maxRequests: 42,
+  maxRequests: fixtures.length * 2 * Object.keys(selectionModels).length,
   maxSearches: 0,
   automaticRetries: 0,
   actualBeforeUSD: 0.76,
@@ -40,6 +44,9 @@ const plan = {
   humanScores: null,
   fixtureSHA256: createHash("sha256")
     .update(await readFile("evaluation/cases/model-selection-20261020.json"))
+    .update(
+      await readFile("evaluation/cases/model-selection-checks-20261022.json"),
+    )
     .digest("hex"),
   implementationHashes: {} as Record<string, string>,
   scope:
@@ -59,6 +66,8 @@ for (const file of new Set([
   "evaluation/selection-policy.ts",
   "evaluation/prepare-selection.ts",
   "evaluation/cases/model-selection-20261020.json",
+  "evaluation/cases/model-selection-checks-20261022.json",
+  "evaluation/selection-checks.ts",
 ]))
   if (/\.(ts|tsx|json)$/.test(file))
     plan.implementationHashes[file] = createHash("sha256")

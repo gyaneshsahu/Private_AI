@@ -1,0 +1,60 @@
+[
+  {
+    "id": "selection-08",
+    "family": "chat",
+    "query": "authored selection 8: masking placeholder fidelity",
+    "synthetic": true,
+    "turns": [
+      "Some details in this message were replaced on my device by stand-ins in double curly braces, such as {{IBAN-1}}; copy every stand-in exactly as written, character for character, wherever you refer to it. Please draft a two-sentence note to my landlord: the deposit should be returned to my account {{IBAN-1}}, and any questions can go to {{EMAIL-1}} or {{PHONE-1}}.",
+      "Shorten it to one sentence that still names the account and one way to reach me, keeping the stand-ins exactly as they are."
+    ],
+    "sources": [],
+    "expected": [
+      "Two sentences; contains the exact strings {{IBAN-1}}, {{EMAIL-1}} and {{PHONE-1}} unchanged; no rewritten form such as [IBAN-1], IBAN-1, {IBAN-1} or an invented account number, address or phone number.",
+      "One sentence; contains {{IBAN-1}} exactly and exactly one of {{EMAIL-1}} or {{PHONE-1}} unchanged; no invented value."
+    ],
+    "mandatoryFacts": [
+      "Two sentences; contains the exact strings {{IBAN-1}}, {{EMAIL-1}} and {{PHONE-1}} unchanged; no rewritten form such as [IBAN-1], IBAN-1, {IBAN-1} or an invented account number, address or phone number.",
+      "One sentence; contains {{IBAN-1}} exactly and exactly one of {{EMAIL-1}} or {{PHONE-1}} unchanged; no invented value."
+    ],
+    "forbiddenConclusions": [
+      "Any IBAN-looking, email-looking or phone-looking value invented in place of a stand-in.",
+      "A stand-in altered in spelling, case, braces or numbering."
+    ],
+    "humanScores": null,
+    "mechanicalCheck": "evaluation/selection-checks.ts placeholdersCopiedExactly(reply, ['{{IBAN-1}}','{{EMAIL-1}}','{{PHONE-1}}']) on turn 1; on turn 2 with ['{{IBAN-1}}'] plus one of the others. Exact copying matters because src/identifier-masking.ts restores originals only where a known placeholder appears verbatim; an altered stand-in leaves the user with a broken value."
+  },
+  {
+    "id": "selection-09",
+    "family": "documents",
+    "query": "authored selection 9: citation delimiter form",
+    "synthetic": true,
+    "turns": [
+      "Using only the supplied note, state in two sentences what was agreed about the delivery date and the payment, and cite the note after each sentence using the source ID in square brackets, like [id].",
+      "Which of the two points is still provisional? One sentence, cited the same way."
+    ],
+    "sources": [
+      {
+        "id": "note-7283fc55",
+        "title": "Authored supplier note",
+        "text": "Supplier note, 19 October 2026. Agreed: delivery on 3 November 2026 to the workshop address. Agreed: payment of 60 percent on delivery and 40 percent after the inspection. Provisional, to be confirmed by the supplier: the inspection date, proposed as 10 November 2026.",
+        "url": "https://example.com/authored-supplier-note",
+        "evidenceKind": "page"
+      }
+    ],
+    "expected": [
+      "Delivery 3 November 2026 to the workshop; payment 60 percent on delivery and 40 percent after inspection; each sentence cited as [note-7283fc55] with ASCII square brackets, not the fullwidth 【note-7283fc55】 form observed on 4 October.",
+      "The inspection date (proposed 10 November) is provisional; cited as [note-7283fc55] in square brackets."
+    ],
+    "mandatoryFacts": [
+      "Delivery 3 November 2026 to the workshop; payment 60 percent on delivery and 40 percent after inspection; each sentence cited as [note-7283fc55] with ASCII square brackets, not the fullwidth 【note-7283fc55】 form observed on 4 October.",
+      "The inspection date (proposed 10 November) is provisional; cited as [note-7283fc55] in square brackets."
+    ],
+    "forbiddenConclusions": [
+      "Treating the inspection date as agreed.",
+      "A citation to an ID that is not note-7283fc55."
+    ],
+    "humanScores": null,
+    "mechanicalCheck": "evaluation/selection-checks.ts citationForm(reply) must be 'square' on every turn. The renderer has linked both forms since the 4 October repair (src/answer-format.ts), so a fullwidth citation is a format deviation to record per model, not a broken link."
+  }
+]
