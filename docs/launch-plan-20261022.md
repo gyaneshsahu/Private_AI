@@ -20,7 +20,7 @@ Done before and during the handover: restricted Render deployment live at app.co
 | 4.2 | In-enclave search evaluation moved earlier: prepare the bounded three-request harness now so it can run the day the owner approves scope and spend; running it needs an owner permit. | TODO (prepare now) |
 | 7.5 | Deployment review checklist for public hosting (PRD requirement): secrets, headers, rate limits, logging, rollback, migrations, monitoring, incident contact. Docs then a code check where possible. | TODO |
 | D1 | Docs worktree writes privacy policy text, deletion path and incident-contact placeholder only; the in-app policy page and the delete-everything control are sequential here (touch src/). Owner will name the incident contact. | DOING (docs) / TODO (app) |
-| 3.6 | Client-side time-to-first-token measurement in the local experiment runner (never measured since 4 October). | TODO |
+| 3.6 | Client-side time-to-first-token measurement in the local experiment runner (never measured since 4 October). | DONE 22 October (send-point and final-usage timing added; first-chunk timing existed since 16 October) |
 
 Rules in force: subagents commit on their own branches, never edit READINESS.md (they use docs/ledger-fragments/), never merge or push; durable PostgreSQL and browser suites run once here after each merge; migration numbers are checked across all branches before use (0013 taken); no push without the owner's explicit instruction.
 
@@ -57,9 +57,9 @@ Rules in force: subagents commit on their own branches, never edit READINESS.md 
 
 | # | Item | Status |
 | --- | --- | --- |
-| 3.1 | Plan and usage display: account page shows the real allowance, usage and plan state instead of "no active plan", using the usage ledger. | TODO |
-| 3.2 | Entitlement reconciliation from the existing test-mode billing receipts to account allowances (roadmap M5 next slice). No live billing activation. | TODO |
-| 3.3 | Inactive-account retention: review migration, holds and backup cleanup; prepare the activation proposal for the owner. | TODO |
+| 3.1 | Plan and usage display: account page shows the real allowance, usage and plan state instead of "no active plan", using the usage ledger. | DONE 22 October (merged from worktree D) |
+| 3.2 | Entitlement reconciliation from the existing test-mode billing receipts to account allowances (roadmap M5 next slice). No live billing activation. | DONE 22 October (test mode only; merged from worktree D) |
+| 3.3 | Inactive-account retention: review migration, holds and backup cleanup; prepare the activation proposal for the owner. | DONE 22 October (proposal written; code covers closed accounts only; owner decision) |
 
 ## Phase 4 — Research (search)
 

@@ -26,3 +26,16 @@ The promise being defended is the one-sentence summary in `shared/privacy-copy.t
 - **Metadata is not covered by the promise and never was.** Rows 1, 5 and 6 leak account, timing, size, model, token counts and approved search text by design; the privacy statement says "we know which account asked, never what".
 - **Everything "locally tested" above still needs exact-commit CI and the hosted checks in launch plan 0.3** before it counts as evidence for an invitee.
 - **This table is not a security review.** Independent review, load testing and a real-device pass remain open items in `docs/acceptance.md` and the launch plan.
+
+## Release pinning policy for the attestation audit — options, 22 October (decision open)
+
+Context: the relay audit (launch plan 2.5) and the browser verifier both compare the router's release digest against a pin. The live run on 22 October showed the router at v0.0.166 while the recorded pins are v0.0.158 and v0.0.159; the router rotated seven times in three days. **The attestation-audit configuration must not be enabled in any deployment until one of these policies is chosen**; until then the guard passes through and the browser keeps its own pin behaviour.
+
+| Option | What is accepted | Guards against | Does not guard against | Operating cost |
+| --- | --- | --- | --- | --- |
+| A. Signed-release provenance | Any router release whose GitHub artifact attestation (Sigstore, SLSA provenance from the supplier's release workflow) verifies, with the seven-day freshness witness and revocation list | Tampered or unsigned builds; withdrawn releases; stale evidence | A legitimately signed release that changes behaviour we have not reviewed (the supplier can ship anything it signs) | None per release; relies entirely on the supplier's release process |
+| B. Short reviewed allowlist | Only digests the owner reviewed and listed (current plus the previous one or two), refreshed when the supplier publishes a release | Unreviewed releases, including signed ones | Service interruption when the supplier rotates faster than review (observed: seven releases in three days); a stale allowlist refuses all traffic | A review per release, several times a week at the observed cadence |
+| C. Provenance plus bounded lag | Option A, additionally refusing a release older than N days or newer than the latest reviewed by more than M releases, with an alert on each new release | Rollback to old releases; silent drift beyond a chosen window | Same as A inside the window | An alert to triage per release; review only when the window is exceeded |
+| D. Supplier-side pin | Ask the supplier for a dedicated or pinned deployment (an enterprise question in the unanswered 20 October email) | Rotation outside our control | Nothing until the supplier offers it | Commercial; unknown |
+
+Recommendation for the owner's decision: C as the launch posture (provenance is what a maintained tool can verify today; the lag bound keeps the audit from going stale), B only if the review cadence is realistic, D in parallel as a supplier question. Whichever is chosen applies to the browser pin and the relay audit alike, since they compare the same quantity.

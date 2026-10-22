@@ -1,5 +1,9 @@
 # Restricted development deployment
 
+## Attestation audit configuration: keep absent until the pinning policy is decided — 22 October
+
+Candidates from 22 October contain the block-only attestation audit (`server/attestation-audit.ts`). It is active only when the deployment config carries an `attestationAudit` block; `deployment/render-config.example.json` and the mounted hosted config have none, so the guard passes through. Owner instruction of 22 October: do **not** add that block to any deployment until the release pinning policy in `docs/threat-model-20261022.md` is decided; with the router rotating several times a week, a pin to a recorded digest would refuse all private inference. Startup never enables it by itself.
+
 ## Upgrade step for any candidate after 22 October: apply migration 0013
 
 Commits from 22 October onward add `server/migrations/0013-usage-metrics.sql` (completed-request metering). Startup never migrates, so a candidate containing it stays unready (503) until the owner runs, once, from the service shell with Docker and the mounted config: `node --import tsx server/deployment-database-entry.ts apply-pending /etc/secrets/render-config.json`. It applies only unrecorded migrations under the advisory lock, refuses mismatched checksums and prints counts only. Run `check` first to see `pending: 1`, then `apply-pending`, then deploy. This does not apply to `4eb86b1` (live) or `9c9be8e` (next candidate).

@@ -1,4 +1,30 @@
 # PrivateAI readiness checklist
+## Phase 3 merged: usage and cost display, test-mode entitlement, retention proposal, request timing — 22 October
+
+Worktree D merged locally after owner approval; its ledger fragment is folded in here and removed. No migration was needed; `src/App.tsx` is untouched.
+
+- **3.1 Usage and cost display.** `src/AccountUsagePage.tsx` (own component; `src/AccountUsage.tsx` re-exports it) shows requests used and remaining, the period end, metered token totals and published cost, with the sentence that cost is at published rates for completed requests only and that interrupted requests are billed by the provider but cannot be counted here; with no allowance it says "No plan is active for this account yet". Both ledgers' `summary()` now return `meteredRequests`, `promptTokens`, `completionTokens`, `costUsd` (exact decimal sum) and `unmeteredRequests`. A read-back defect found on the way: the PostgreSQL `metrics()` dropped a zero cost to an empty string; fixed.
+- **3.2 Entitlement from test-mode receipts.** `server/billing-entitlement.ts`: a signed, reconciled test-mode receipt for the single in-code plan (`rehearsal-monthly`, 200 requests, 31-day period) creates or extends a request allowance through the ledgers' `createAllowance`, idempotent by period ID, with renewal starting at the later of the previous allowance end and the period start; live mode, unreconciled or inactive receipts, unknown prices, missing terms, past periods, closed or unbound accounts and overlaps with operator-created allowances are refused. The migration 0011 comment and the reconciliation reason that say assessments never grant allowances are now historical: a request allowance can be granted, private chat access remains gated.
+- **3.3 Retention activation proposal** in `docs/retention-activation-proposal-20261022.md`, with a correction to earlier wording: the code purges explicitly closed accounts (PostgreSQL, seven days after the request, synthetic databases only) and expired invitations; no inactivity rule exists; nothing is eligible on the hosted service while email delivery is off. Activation is an owner decision.
+- **3.6 Request timing** in the local experiment runner: per request, preparation time, time to first content delta and time to the final usage frame, persisted in the runner's result record and accepted by the reviewer. Correction to the launch plan wording: first-chunk timing had been recorded since 16 October; what was missing was timing from the send point and the final-usage mark. No experiment was run.
+- **Other contradictions recorded by the worktree:** the backup retention policy's "up to 14 days across backups" describes the Windows SQLite registry backups, while the hosted PostgreSQL has a three-day point-in-time window; the handoff's "usage unavailable / no active plan" wording did not match the old page text; no branch had migrations 0014 to 0016, so those reservations were names only.
+
+Tests in the worktree: 25 passed, 8 skipped without PostgreSQL; the three new PostgreSQL cases (metered summary, zero cost, entitlement from a reconciled receipt) and the changed account-usage browser spec run here in the final durable and browser run recorded below.
+
+## Masking miss table, before and after the 22 October fixes — 22 October
+
+Measured by `tests/identifier-masking-documents.test.ts` (23 cases: 22 identifier layouts plus one control block), re-run after the IBAN shrink fix (`ee14fe5`): 29/29 assertions in the masking test files pass, and the control block of amounts, dates, invoice numbers, percentages, years and the 112 number still produces no false positive.
+
+| Measure | Before (`7ce181a`) | After (`ee14fe5`) |
+| --- | --- | --- |
+| Identifier layouts fully masked | 9 of 22 | 13 of 22 |
+| Known misses | 13 | 9 |
+| Misses mislabelled as a phone number (worse than a miss) | 4 | 1 (country code on the previous line) |
+| Control block false positives | 0 | 0 |
+| Cases flipped to hit | | tax ID split across a line break; IBAN wrapped at a line end; email with a zero-width space inside the local part; email with a zero-width space before the @ |
+| Cases changed but still missed | | the two OCR letter-for-digit IBANs now fail cleanly instead of being half-masked under a phone label |
+| Still missed | fullwidth and Arabic-Indic digits, last-four-digit fragments, numbers in words, passport or birth-date labels on a previous line, IBAN with the country code on the previous line, OCR substitutions | same |
+
 ## Relay attestation audit, block-only, merged and wired — 22 October
 
 Launch plan item 2.5 (worktree B, merged locally after owner approval, `server/app.ts` now mounts the guard before the relay route). Partial and block-only, stated plainly: the relay can only refuse to forward; it never supplies, replaces or validates the key the browser uses; it guards against stale or revoked supplier evidence and a router release the browser would otherwise still accept, not against a malicious operator; the CLI's V3 checks are beta; freshness is bounded by the audit cadence plus the seven-day witness. Browser-side freshness and revocation remain blocked on the supplier's V3 JavaScript verifier.
