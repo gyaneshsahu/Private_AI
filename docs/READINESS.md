@@ -1,4 +1,10 @@
 # PrivateAI readiness checklist
+## One plain-language privacy statement for app and website — 22 October
+
+Launch plan item 1.4, implemented locally, not deployed. `shared/privacy-copy.ts` is now the single source of the product's privacy statement: seven short sections in everyday words (what stays on your device, what is sealed and sent, what we can see, what the secure server keeps, spending and limits, when you search the web, what we cannot promise yet) plus a one-sentence summary. The app's "Your privacy boundaries" dialog and the Privacy & data settings panel render it; `docs/privacy-copy-20261022.md` is generated from it by `scripts/privacy-copy.ts` for the website, and a test fails if the two drift apart. A second test forbids absolute wording ("never leave your device", "nobody can look inside", "guarantee", "completely anonymous" and similar) and requires the honest statements: names and addresses are not recognised, we never see content, the server's working memory clears on its own with no immediate-delete button, spending limits are soft, there is no anonymous mode, and private chat is switched on only after the server checks pass.
+
+Every sentence describes the product as it is on this branch after items 1.1 to 1.3, with the supplier's published retention statements attributed to them rather than asserted by us. The statement replaces the earlier "restricted evaluation" boundaries text in the app; the website remake should copy `docs/privacy-copy-20261022.md` rather than paraphrase it. Validation on this machine: typecheck and build pass; `npm test` 522 passed / 0 failed / 149 skipped across 132 files; `npm run test:e2e` 56 passed. Exact-commit CI still required.
+
 ## Qualified fallback model with explicit user confirmation — 22 October
 
 Launch plan item 1.3, implemented locally, not deployed. Background: the supplier's 22 October mailing states catalog models can be swapped or deprecated at any time, and the changelog shows a model removed within a month of being added. The qualified model stays a value in the qualification report; this change adds an optional second name and an honest path to it.

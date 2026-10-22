@@ -17,6 +17,7 @@ import {
 } from "./conversation";
 import { DOCUMENT_ACCEPT } from "./document-formats";
 import { describeKept } from "./identifier-masking";
+import { PRIVACY_SUMMARY, privacyText } from "../shared/privacy-copy";
 import { importDocuments, type ImportOutcome } from "./document-import";
 import { PhotoCapture } from "./PhotoCapture";
 import { Vault, VaultConflictError } from "./vault";
@@ -1141,10 +1142,11 @@ export function App() {
             {settingsSection === "privacy" && (
               <>
                 <h3>Privacy &amp; data</h3>
+                <p>{PRIVACY_SUMMARY}</p>
                 <p>
                   Private chat remains unavailable until provider verification
-                  passes. Research is temporary; it cannot be saved in history
-                  or backups.
+                  passes. Search results are shown only during a conversation;
+                  the written answer is saved with your history.
                 </p>
                 <p>
                   Projects organize local saved chats. They do not automatically
@@ -1196,7 +1198,7 @@ export function App() {
               setSource({
                 id: "privacy",
                 title: "Your privacy boundaries",
-                text: "This is a restricted evaluation, not a production privacy guarantee. Chat stays disabled until live confidential processing is qualified. Your device and browser can read local content. Saved history is encrypted when locked. There is no passphrase recovery or cloud sync; an explicitly downloaded encrypted backup can restore saved snapshots using its original passphrase. Temporary content is not intentionally written to application storage, but device memory, browser internals and backups are outside that guarantee. Approved queries and URLs are visible to our research service and the recipient. Anonymous access is not implemented. A malicious website update could capture content before encryption.",
+                text: privacyText(),
               });
             }}
           >
