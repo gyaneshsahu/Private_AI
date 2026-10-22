@@ -214,6 +214,21 @@ describe("OCR noise inside an IBAN (tesseract on a scanned letter)", () => {
   });
 });
 
+describe("table rows after a wrapped cell (found by the 23 October held-out run, not fixed)", () => {
+  it("[known miss] a labelled column loses its header in rows below a row whose IBAN wrapped onto its own line", () => {
+    const table =
+      "Name   Ausweis-Nr.   IBAN\n" +
+      "Lukas Becker   XL07XT3R6   DE89 3704\n" +
+      "0044 0532 0130 00\n" +
+      "Jan Becker   PF3YYM3ZJ   DE89 3704 0044 0532 0130 00\n";
+    expect(hits(table)).toEqual([
+      ["ID-NUMBER", "XL07XT3R6"],
+      ["IBAN", "DE89 3704\n0044 0532 0130 00"],
+      ["IBAN", "DE89 3704 0044 0532 0130 00"],
+    ]);
+  });
+});
+
 describe("control block of ordinary numbers", () => {
   it("masks nothing in amounts, dates, invoice numbers, percentages, years and 112", () => {
     const invoice =
