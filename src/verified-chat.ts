@@ -38,6 +38,13 @@ import {
   researchContractInstruction,
 } from "./research-contract";
 import { completionEvents } from "./completion-events";
+import {
+  defaultInferenceProvider,
+  inferenceClientFor,
+} from "./providers/inference-client";
+// Registers the only adapter built today; a second supplier registers its own.
+import "./providers/tinfoil-client";
+export { assertVerification } from "./providers/tinfoil-client";
 import { consumeReply } from "./reply-stream";
 import {
   checkedResponseInstruction,
@@ -59,6 +66,8 @@ export type VerifiedChatPolicy = Pick<
   | "maxOutputTokens"
   | "pricing"
 > & {
+  /** Confidential-inference supplier; the qualification report names it. Defaults to the only adapter built today. */
+  provider?: Qualification["provider"];
   deepSeekThinking?: boolean;
   deepSeekReasoningEffort?: "low";
   gemmaThinking?: boolean;
@@ -75,27 +84,6 @@ export type VerifiedChatPolicy = Pick<
   calculatorContinuation?: boolean;
 };
 
-export function assertVerification(
-  doc: {
-    securityVerified: boolean;
-    releaseDigest: string;
-    configRepo: string;
-    hpkePublicKey: string;
-    enclaveHost: string;
-  },
-  report: Pick<VerifiedChatPolicy, "origin" | "repository" | "releaseDigests">,
-) {
-  if (
-    !doc.securityVerified ||
-    !doc.hpkePublicKey ||
-    doc.configRepo !== report.repository ||
-    !report.releaseDigests.includes(doc.releaseDigest) ||
-    doc.enclaveHost !== new URL(report.origin).hostname
-  )
-    throw new Error(
-      "The verified deployment does not match the reviewed provider configuration. Nothing was sent.",
-    );
-}
 /**
  * Identifiers are masked on this device before encryption and restored in the
  * streamed reply; `onKeptOnDevice` receives the per-kind count once the
@@ -328,33 +316,18 @@ async function streamMaskedConversation(
       throw new Error(
         "Selected context including the response schema is too large. Nothing was sent.",
       );
-    onStatus("Loading inference libraries…");
-    const [{ Verifier, fetchAttestationBundle }, { Identity, Transport }] =
-      await abortable(Promise.all([import("tinfoil"), import("ehbp")]), signal);
-    onStatus("Fetching attestation…");
-    const bundle = await abortable(
-      fetchAttestationBundle({
-        enclaveURL: report.origin,
-        configRepo: report.repository,
-      }),
-      signal,
+    const adapter = inferenceClientFor(
+      report.provider ?? defaultInferenceProvider,
     );
-    if (bundle.domain !== new URL(report.origin).hostname)
-      throw new Error("Unexpected verification destination. Nothing was sent.");
-    onStatus("Verifying the protected destination…");
-    const verifier = new Verifier({ configRepo: report.repository });
-    await abortable(verifier.verifyBundle(bundle), signal);
-    const doc = verifier.getVerificationDocument();
-    if (!doc) throw new Error("Verification evidence unavailable.");
-    assertVerification(doc, report);
-    onVerified?.({ host: doc.enclaveHost, releaseDigest: doc.releaseDigest });
+    const policy = {
+      ...report,
+      provider: report.provider ?? defaultInferenceProvider,
+    } as const;
+    const destination = await adapter.verify(policy, signal, onStatus);
+    onVerified?.(destination.evidence);
     signal.throwIfAborted();
     onStatus("Preparing encrypted transport…");
-    const identity = await abortable(
-      Identity.fromPublicKeyHex(doc.hpkePublicKey),
-      signal,
-    );
-    const transport = new Transport(identity, location.host);
+    const transport = await destination.transport();
     onStatus("Receiving a protected response…");
     authorize();
     signal.throwIfAborted();
@@ -368,34 +341,10 @@ async function streamMaskedConversation(
     onKeptOnDevice?.(masking.summary());
     const requestBody = {
       model: report.model,
-      ...(report.gptOssReasoningEffort !== undefined
-        ? { reasoning_effort: report.gptOssReasoningEffort }
-        : {}),
       messages,
       ...responseFormat,
       ...toolOptions,
-      ...(report.deepSeekThinking !== undefined
-        ? {
-            chat_template_kwargs: {
-              thinking: report.deepSeekThinking,
-              ...(report.deepSeekReasoningEffort
-                ? { reasoning_effort: report.deepSeekReasoningEffort }
-                : {}),
-            },
-          }
-        : report.gemmaThinking !== undefined
-          ? {
-              chat_template_kwargs: {
-                enable_thinking: report.gemmaThinking,
-              },
-            }
-          : report.glmReasoningEffort !== undefined
-            ? {
-                chat_template_kwargs: {
-                  reasoning_effort: report.glmReasoningEffort,
-                },
-              }
-            : {}),
+      ...adapter.modelOptions(policy),
       stream: true,
       stream_options: { include_usage: true },
       max_completion_tokens: report.maxOutputTokens,
@@ -417,8 +366,7 @@ async function streamMaskedConversation(
           "Content-Type": "application/json",
           Accept: "text/event-stream",
           "X-PrivateAI-CSRF": csrf,
-          "X-Tinfoil-Enclave-Url": report.origin,
-          "X-Tinfoil-Model": report.model,
+          ...adapter.requestHeaders(policy),
         },
         body: JSON.stringify(requestBody),
         signal,
@@ -462,30 +410,17 @@ async function streamMaskedConversation(
             report.maxInputCharacters - JSON.stringify(toolOptions).length,
           );
           signal.throwIfAborted();
-          const nextBundle = await abortable(
-            fetchAttestationBundle({
-              enclaveURL: report.origin,
-              configRepo: report.repository,
-            }),
+          const nextDestination = await adapter.verify(
+            policy,
             signal,
+            () => {},
           );
-          if (nextBundle.domain !== new URL(report.origin).hostname)
-            throw Error("Unexpected verification destination.");
-          const nextVerifier = new Verifier({ configRepo: report.repository });
-          await abortable(nextVerifier.verifyBundle(nextBundle), signal);
-          const nextDoc = nextVerifier.getVerificationDocument();
-          if (!nextDoc) throw Error("Verification evidence unavailable.");
-          assertVerification(nextDoc, report);
-          if (nextDoc.releaseDigest !== doc.releaseDigest)
+          if (
+            nextDestination.evidence.releaseDigest !==
+            destination.evidence.releaseDigest
+          )
             throw Error("Deployment changed during calculation.");
-          onVerified?.({
-            host: nextDoc.enclaveHost,
-            releaseDigest: nextDoc.releaseDigest,
-          });
-          const nextIdentity = await abortable(
-            Identity.fromPublicKeyHex(nextDoc.hpkePublicKey),
-            signal,
-          );
+          onVerified?.(nextDestination.evidence);
           signal.throwIfAborted();
           authorize();
           const continuationApproval = await abortable(
@@ -496,7 +431,7 @@ async function streamMaskedConversation(
             throw Error("Invalid continuation approval");
           signal.throwIfAborted();
           onStatus("Explaining the calculated result…");
-          const nextTransport = new Transport(nextIdentity, location.host);
+          const nextTransport = await nextDestination.transport();
           const nextResponse = await nextTransport.request(
             location.origin + "/api/inference/v1/chat/completions",
             {
@@ -505,8 +440,7 @@ async function streamMaskedConversation(
                 "Content-Type": "application/json",
                 Accept: "text/event-stream",
                 "X-PrivateAI-CSRF": csrf,
-                "X-Tinfoil-Enclave-Url": report.origin,
-                "X-Tinfoil-Model": report.model,
+                ...adapter.requestHeaders(policy),
                 "X-PrivateAI-Continuation-Approval":
                   continuationApproval.approvalId,
               },

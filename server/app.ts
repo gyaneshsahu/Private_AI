@@ -12,15 +12,16 @@ import {
   validateQualification,
   type Qualification,
 } from "../shared/contracts";
-import {
-  Approvals,
-  fetchPage,
-  searchWeb,
-  type ResearchApprovals,
-} from "./research";
+import { Approvals, fetchPage, type ResearchApprovals } from "./research";
 import { request as upstreamRequest } from "undici";
-import { parseUsageMetrics } from "./usage-metrics";
-import { attestationAuditGuard } from "./attestation-audit";
+import type { UsageMetrics } from "./usage-metrics";
+import {
+  inferenceRelayFor,
+  type InferenceRelayAdapter,
+} from "./providers/inference-relay";
+import { braveSearchProvider, type SearchProvider } from "./providers/search";
+// Registers the only adapter built today; a second supplier registers its own.
+import "./providers/tinfoil-relay";
 import {
   serviceDispatcher,
   proxyConfigured,
@@ -33,6 +34,10 @@ export interface Config {
   apiKey?: string;
   searchKey?: string;
   searchMode?: "web" | "llm-context";
+  /** Web search adapter; defaults to Brave from `searchKey`. Tests may inject one. */
+  search?: SearchProvider;
+  /** Relay adapter override for tests; production resolves it from the qualification's provider. */
+  inferenceRelay?: InferenceRelayAdapter;
   dev?: boolean;
   accessKey?: string;
   invites?: InviteRegistry;
@@ -72,12 +77,18 @@ export function createApp(config: Config) {
     }
   };
   const qualification = parseQualification();
-  const approvedOrigin = qualification?.origin;
+  const relayFor = (q: Qualification) =>
+    config.inferenceRelay ?? inferenceRelayFor(q.provider);
+  const search =
+    config.search ??
+    (config.searchKey
+      ? braveSearchProvider(config.searchKey, config.searchMode)
+      : undefined);
   // Fixed security headers go first, ahead of every access gate, so refused
   // responses (403 from the origin and transport checks, 401 from the invite
   // gate, 503 while paused) carry them too (launch plan 7.4).
   const verificationHosts = qualification
-    ? ` https://atc.tinfoil.sh https://github-proxy.tinfoil.sh https://kds-proxy.tinfoil.sh https://tuf-repo-cdn.sigstore.dev ${new URL(qualification.origin).origin}`
+    ? " " + relayFor(qualification).verificationHosts(qualification).join(" ")
     : "";
   const contentSecurityPolicy = `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'${config.dev ? " 'unsafe-inline'" : ""}; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; worker-src 'self' blob:; connect-src 'self'${verificationHosts}${config.dev ? " ws://127.0.0.1:*" : ""}; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`;
   app.use((_req, res, next) => {
@@ -103,7 +114,9 @@ export function createApp(config: Config) {
     ),
   );
   if (config.invites) app.use(inviteAccess(config.origin, config.invites));
-  const approvals = config.consumer?.approvals ?? new Approvals();
+  const approvals =
+    config.consumer?.approvals ??
+    new Approvals(undefined, search?.recipientLabel);
   const sessions = new Map<
     string,
     {
@@ -253,7 +266,16 @@ export function createApp(config: Config) {
   const inFlight = new Map<string, number>();
   // Block-only attestation audit: can refuse forwarding, never supplies a key.
   // Pass-through until a deployment installs an audit configuration.
-  app.use("/api/inference", attestationAuditGuard());
+  // Block-only guard of the configured adapter (for Tinfoil, the release audit;
+  // a pass-through until its deployment configuration exists).
+  app.use("/api/inference", (req, res, next) => {
+    const q = parseQualification();
+    if (!q) {
+      next();
+      return;
+    }
+    relayFor(q).guard()(req, res, next);
+  });
   app.post(
     "/api/inference/v1/chat/completions",
     express.raw({ type: "*/*", limit: "1mb" }),
@@ -266,39 +288,12 @@ export function createApp(config: Config) {
         });
         return;
       }
-      if (
-        req.headers["x-tinfoil-enclave-url"] !== approvedOrigin ||
-        !/^[a-f0-9]{64}$/i.test(
-          String(req.headers["ehbp-encapsulated-key"] ?? ""),
-        ) ||
-        !Buffer.isBuffer(req.body) ||
-        req.body.length < 16
-      ) {
-        res.status(400).json({
-          error:
-            "Only encrypted requests to the qualified destination are accepted.",
-        });
+      const relay = relayFor(q);
+      const admission = relay.admit(req.headers, req.body, q);
+      if (!admission.ok) {
+        res.status(400).json({ error: admission.error });
         return;
       }
-      // The relay names the qualified model itself and the enclave rejects a
-      // body that disagrees; a client may not name a different model.
-      const requestedModel = req.headers["x-tinfoil-model"];
-      const allowedModels = new Set([
-        q.model,
-        ...(q.fallbackModel ? [q.fallbackModel] : []),
-      ]);
-      if (
-        requestedModel !== undefined &&
-        (typeof requestedModel !== "string" ||
-          !allowedModels.has(requestedModel))
-      ) {
-        res.status(400).json({
-          error: "Only the qualified model is accepted.",
-        });
-        return;
-      }
-      const forwardedModel =
-        typeof requestedModel === "string" ? requestedModel : q.model;
       if (active >= 3) {
         res.status(429).json({ error: "Three requests are already running." });
         return;
@@ -319,7 +314,7 @@ export function createApp(config: Config) {
         inFlight.set(accountId, (inFlight.get(accountId) ?? 0) + 1);
       let dispatched = false;
       let transportComplete = false;
-      let metrics: ReturnType<typeof parseUsageMetrics>;
+      let metrics: UsageMetrics | undefined;
       const abort = new AbortController();
       res.on("close", () => {
         if (!res.writableFinished) abort.abort();
@@ -350,52 +345,39 @@ export function createApp(config: Config) {
         if (abort.signal.aborted) return;
         // undici.request rather than fetch: the provider's usage metrics for a
         // streamed reply arrive as an HTTP trailer, which fetch cannot expose.
-        const upstream = await upstreamRequest(
-          new URL("/v1/chat/completions", approvedOrigin),
-          {
-            dispatcher: serviceDispatcher,
-            method: "POST",
-            body: new Uint8Array(req.body),
-            signal: AbortSignal.any([abort.signal, AbortSignal.timeout(90000)]),
-            headers: {
-              Authorization: `Bearer ${config.apiKey}`,
-              "Content-Type": "application/json",
-              Accept: "text/event-stream",
-              "Ehbp-Encapsulated-Key": String(
-                req.headers["ehbp-encapsulated-key"],
-              ),
-              // The enclave checks this against the encrypted body and rejects a mismatch.
-              "X-Tinfoil-Model": forwardedModel,
-              "X-Tinfoil-Request-Usage-Metrics": "true",
-            },
-          },
-        );
-        const header = (name: string) => {
-          const value = upstream.headers[name];
-          return Array.isArray(value) ? value[0] : value;
+        const plan = relay.upstream({
+          qualification: q,
+          apiKey: config.apiKey,
+          model: admission.model,
+          encapsulatedKey: admission.encapsulatedKey,
+        });
+        const upstream = await upstreamRequest(plan.url, {
+          dispatcher: serviceDispatcher,
+          method: "POST",
+          body: new Uint8Array(req.body),
+          signal: AbortSignal.any([abort.signal, AbortSignal.timeout(90000)]),
+          headers: plan.headers,
+        });
+        const reply = {
+          statusCode: upstream.statusCode,
+          headers: upstream.headers,
+          trailers: upstream.trailers,
         };
         // Never reflect upstream errors: they may contain sensitive content or diagnostics.
-        if (upstream.statusCode !== 200 || !header("ehbp-response-nonce")) {
+        const accepted = relay.accept(reply);
+        if (!accepted.ok) {
           await upstream.body.dump().catch(() => {});
           // Only the class of failure is exposed: a rejection (nothing was run or
           // billed) lets the client offer the fallback model; nothing else leaks.
-          res.setHeader(
-            "X-PrivateAI-Upstream",
-            upstream.statusCode >= 400 && upstream.statusCode < 500
-              ? "rejected"
-              : "unavailable",
-          );
+          res.setHeader("X-PrivateAI-Upstream", relay.classifyFailure(reply));
           res.status(502).json({
             error:
               "Encrypted provider response unavailable. No automatic retry was made.",
           });
           return;
         }
-        res.setHeader("Ehbp-Response-Nonce", header("ehbp-response-nonce")!);
-        res.setHeader(
-          "Content-Type",
-          header("content-type") ?? "application/octet-stream",
-        );
+        for (const [name, value] of Object.entries(accepted.passthrough))
+          res.setHeader(name, value);
         for await (const chunk of upstream.body) {
           if (abort.signal.aborted) break;
           if (!res.write(chunk))
@@ -403,10 +385,11 @@ export function createApp(config: Config) {
         }
         transportComplete = !abort.signal.aborted;
         if (transportComplete)
-          metrics = parseUsageMetrics(
-            upstream.trailers["x-tinfoil-usage-metrics"] ??
-              header("x-tinfoil-usage-metrics"),
-          );
+          metrics = relay.usage({
+            statusCode: upstream.statusCode,
+            headers: upstream.headers,
+            trailers: upstream.trailers,
+          });
         res.end();
       } catch {
         if (!res.headersSent)
@@ -471,7 +454,7 @@ export function createApp(config: Config) {
         id,
         disclosure,
       );
-      if (request.kind === "search" && !config.searchKey) {
+      if (request.kind === "search" && !search) {
         res.status(503).json({
           error: "Search service is not configured. No query was sent.",
         });
@@ -479,12 +462,7 @@ export function createApp(config: Config) {
       }
       const sources =
         request.kind === "search"
-          ? await searchWeb(
-              request.value,
-              config.searchKey!,
-              abort.signal,
-              config.searchMode,
-            )
+          ? await search!.search(request.value, abort.signal)
           : await fetchPage(request.value, abort.signal);
       res.json({ sources });
     } catch {

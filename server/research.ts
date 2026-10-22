@@ -63,7 +63,10 @@ export class Approvals implements ResearchApprovals {
     string,
     { session: string; request: Disclosure; expires: number }
   >();
-  constructor(private now = Date.now) {}
+  constructor(
+    private now = Date.now,
+    private searchRecipient = "Brave Search API",
+  ) {}
   issue(session: string, input: unknown) {
     const request = disclosureSchema.parse(input);
     if (request.kind === "page") pageUrl(request.value);
@@ -80,7 +83,7 @@ export class Approvals implements ResearchApprovals {
       request,
       recipient:
         request.kind === "search"
-          ? "Brave Search API"
+          ? this.searchRecipient
           : new URL(request.value).hostname,
     };
   }
