@@ -126,27 +126,29 @@ export function WorkspaceNavigation(props: {
           Keep sidebar open
         </button>
       )}
-      <button
-        className="new-chat"
-        onClick={() =>
-          onNew(projects.some((p) => p.id === filter) ? filter : undefined)
-        }
-        disabled={newDisabled}
-        aria-label="New conversation"
-      >
-        <Icon name="plus" />
-        New chat
-      </button>
-      <button
-        className="new-chat new-incognito"
-        onClick={onNewIncognito}
-        disabled={newDisabled}
-        aria-label="New incognito chat"
-        title="Never saved on this device; gone when you close, lock or sign out"
-      >
-        <Icon name="shield" />
-        Incognito chat
-      </button>
+      <div className="new-chat-row">
+        <button
+          className="new-chat"
+          onClick={() =>
+            onNew(projects.some((p) => p.id === filter) ? filter : undefined)
+          }
+          disabled={newDisabled}
+          aria-label="New conversation"
+        >
+          <Icon name="plus" />
+          New chat
+        </button>
+        <button
+          className="new-chat new-incognito"
+          onClick={onNewIncognito}
+          disabled={newDisabled}
+          aria-label="New incognito chat"
+          title="Never saved on this device; gone when you close, lock or sign out"
+        >
+          <Icon name="shield" />
+          Incognito
+        </button>
+      </div>
       {unlocked ? (
         <>
           <label className="history-search">

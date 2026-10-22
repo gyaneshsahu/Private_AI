@@ -1730,9 +1730,17 @@
   }
 }
 
-.chat-design .new-incognito {
-  margin-top: 0.25rem;
-  opacity: 0.85;
+.chat-design .new-chat-row {
+  display: flex;
+  gap: 8px;
+}
+.chat-design .new-chat-row .new-chat {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.chat-design .new-chat-row .new-incognito {
+  flex: 0 0 auto;
+  opacity: 0.9;
 }
 .chat-design .incognito-banner {
   border-style: dashed;
