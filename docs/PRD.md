@@ -1,5 +1,54 @@
 # PrivateAI — product requirements
 
+## v0.2 amendment — 22 October 2026: the first release is a gated private alpha
+
+This amends the "Working requirements v0.2 · 4 October 2026" below and the 19 October direction; it does not delete either. Recorded by the agent on 22 October 2026 from `docs/launch-plan-20261022.md` (the agreed order of work) and `docs/acceptance.md`. Status words follow the launch plan. No gate is passed by this section; the owner's launch decision remains the owner's.
+
+### What the first release is
+
+- **A gated private alpha, not a public launch.** Launch plan Phase 8.4: at most two invitees, for seven days, on the same hosted architecture that is live today as the restricted owner-only candidate at app.cometrow.com. No public signup, no self-service account creation, no app-store listing, no marketing page that invites registration.
+- **Who may be invited.** Identities named by the owner in the deployment allowlist (`server/deployment-config.ts` requires an identity allowlist for restricted social sign-in). Invitees use synthetic or non-sensitive inputs until the provider gate passes; the invitation text must say so.
+- **Duration.** Seven days from the first invitee's first sign-in; access expires at the end rather than renewing. Extending it is a new owner decision.
+- **Pause criteria** (from `docs/invited-trial-runbook.md` and the 22 October plan): pause the alpha for a serious safety output, a privacy-boundary violation, an account-isolation failure, unexplained data exposure, a failed recovery, spending beyond the approved cap, or loss of the supplier evidence the qualification report rests on (an expired or withdrawn qualification makes the relay refuse inference on its own). Pausing means removing inference from the candidate or revoking access; it is not a retry.
+- **Revoke criteria.** Revoke an invitee's access for misuse, for any request that reaches the relay with another model header, or at the invitee's own request. Revocation ends sessions; it cannot retract requests already admitted or content already delivered (ARCHITECTURE "Account access management").
+- **Support contact.** `SUPPORT_CONTACT_TO_BE_NAMED_BY_OWNER`. Email is the selected channel (19 October operating plan); the mailbox, response expectation and intake retention rules are not yet confirmed. The alpha does not start until this is named, per launch plan 8.4.
+- **What invitees get.** Chat through the sealed server with the qualified model only, on-device identifier masking, encrypted local history and backups, documents and images, and research only if Phase 4.1 is verified. Incognito and disappearing messages (Phase 2) ship only if done before 8.4. Dictation, live voice, image creation, sharing and anonymous accounts stay disabled "Coming later" controls (Phase 9).
+
+### Launch blockers, exactly as the launch plan marks them on 22 October
+
+| Item | Status in `docs/launch-plan-20261022.md` |
+| --- | --- |
+| 8.4 Limited release: at most two invitees, seven days, pause and revoke criteria, support contact named | BLOCKED(8.3, 6.1, 7.1) |
+| 8.3 Provider qualification report with linked evidence; enable private chat for the owner account only | BLOCKED(8.2, 5.3) |
+| 8.2 Integrate the V3 JavaScript verifier if released; otherwise delegated relay verification per the 21 October assessment | BLOCKED(8.1) |
+| 8.1 Provider direction decision: 23 October for cache, limits, terms and models; 31 October for the V3 browser verifier | BLOCKED(Tinfoil) |
+| 5.3 Held-out acceptance on one frozen configuration | BLOCKED(5.2) |
+| 5.2 Human adjudication of results; retain failures; no relabelling | BLOCKED(5.1) |
+| 5.1 Run the prepared fidelity and safety cases within the approved cap, no retries | BLOCKED(0.6) |
+| 6.1 Galaxy A52 / TalkBack workspace session on the deployed candidate | BLOCKED(0.2) |
+| 6.2 Photo-to-text on a real camera | BLOCKED(0.2) |
+| 4.2 In-enclave search (Tinfoil + Exa) bounded synthetic test | BLOCKED(8.1) |
+| 7.1 Hosted recovery rehearsal: paused recovery and rollback; measured recovery time | TODO (a direct prerequisite of 8.4) |
+| 0.2 Deploy exact `9c9be8e12440367bc3755385f4190626e5d921b4` on Render | TODO (owner; unblocks 6.1, 6.2) |
+| 0.6 Approve a spending cap for the quality and safety evaluation runs | TODO (owner; unblocks 5.1) |
+| 0.7 Grade the open human review packets | TODO (owner; needed by Phase 5) |
+| 0.1 Reply to Sacha in the Tinfoil thread with the six-point email | TODO (owner; 8.1 waits on the supplier) |
+
+Phase 1 (relay guards, identifier masking, fallback model, privacy statement) is DONE locally and not deployed; the next hosted candidate containing it needs the one-time `apply-pending` migration before deployment (launch plan 1.1).
+
+### Acceptance gates from `docs/acceptance.md` that apply to the alpha
+
+- **Provider qualification: mandatory live gate.** All eight evidence items (browser verification with freshness, expiry, revocation and trust-root behaviour; protected router-to-worker processing; retention and logging evidence from primary sources; real browser-to-gateway-to-provider encrypted chat with streaming, follow-ups, cancellation and measured usage; gateway inspection showing no plaintext outside the approved path; negative checks for wrong keys, invalid or stale evidence, altered ciphertext, outages, interrupted streams and key rotation, with fault-injected checks labelled; provider-side tools disabled; usage and billing reconciliation with externally enforced spending controls). "Stage A stays BLOCKED until these checks support the selected live path." Status: NOT_PASSED (`docs/provider-qualification.md`).
+- **Behavioral safety: mandatory before invitations.** Supportive self-harm handling, calibrated health information, serious-harm refusal, exploitation and consent boundaries, paired harmless requests; human adjudication of consequential findings; no unresolved critical failure. Status: human grades for the open packets are blank (launch plan 0.7).
+- **Trial quality floors.** At least 65/72 successful held-out executions overall and 10/12 in every family, under the approved severity and recurrence rules; a material defect in two distinct conversations blocks that capability. Status: the prepared fidelity cases have never run (launch plan 5.1).
+- **Storage and logs, external disclosure, confidential path** rows of the PRD evidence table (section 4 below): plaintext durable content, logged secrets, cross-session exposure, unauthorized disclosure or an unqualified live path each block.
+- **Observed complete user journeys and support ownership** from the 19 October amendment apply to the alpha in reduced form: at least the owner's hosted checks (launch plan 0.3) and a named support contact. The remaining public-opening requirements of that amendment (consumer recovery and deletion live, durable usage enforcement under concurrency, payment lifecycle, privacy and legal review, security review, abuse and load evidence) are **not** required for the two-invitee alpha but remain required before public opening; the alpha does not shorten them.
+- **Limited-user feedback does not authorize public access automatically**; the final launch remains the founder's decision (acceptance.md, 19 October amendment).
+
+### What this amendment does not change
+
+Quality floors, serious-failure rules, the provider and private-data gates, the USD spending authorizations recorded below and in `docs/acceptance.md`, and the 19 October "one public-launchable product" direction are unchanged. The alpha is the limited-user release check that direction already called for, with its size, duration and stop rules now written down.
+
 **20 October product UI organization:** encrypted local projects and saved-chat pin/archive/move are now implemented for review. Project membership is organizational only; it never adds unrelated chats/files to a prompt. Account identity/usage must reflect authenticated status, with no invented paid plan. Settings expose supported controls. Dictation, live voice, camera/photo capture, image creation and explicit sharing are disabled Coming later designs pending the frontend/backend/privacy/acceptance dependencies recorded in ROADMAP. Existing local image text extraction remains distinct from general vision. Private-data and launch gates stay closed.
 
 **20 October local vault security workflow:** users can change a known vault passphrase while preserving saved conversations and documents. The workflow verifies the current secret, confirms the new secret and warns about unsaved work in other tabs. It updates all records atomically and locks the workspace. Older backups still require their original passphrase; lost-passphrase recovery is not offered. This is implemented and locally tested, not real-device/security release qualification or approval to admit private data.
