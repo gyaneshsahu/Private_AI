@@ -50,7 +50,7 @@ Rules in force: subagents commit on their own branches, never edit READINESS.md 
 | # | Item | Status |
 | --- | --- | --- |
 | 2.1 | Incognito conversation: nothing written to the vault or storage; cleared on close; visible indicator. | DONE 22 October (adds a mode banner, save refusal and no discard warning over the existing memory-only default; device-only copy in banner and privacy statement) |
-| 2.2 | Disappearing messages: per-conversation auto-delete after an hour, a day or a week; enforced on the device at unlock and on a timer. | TODO |
+| 2.2 | Disappearing messages: per-conversation auto-delete after an hour, a day or a week; enforced on the device at unlock and on a timer. | DONE 22 October (pruned on open, on a timer and written back to the vault; device-only copy) |
 | 2.3 | Decide and record: no anonymous mode at launch; wording "we only ever know that your account asked, never what". | TODO |
 
 ## Phase 3 — Account, plan and usage

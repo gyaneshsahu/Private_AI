@@ -127,6 +127,8 @@ export interface Message {
   failure?: "stopped" | "timeout" | "incomplete" | "unavailable" | "empty";
   /** Plain-language note of identifiers masked on this device for this reply, e.g. "Kept on this device: 1 bank account." */
   keptOnDevice?: string;
+  /** Creation time, ISO 8601; absent on messages saved before 22 October 2026. */
+  at?: string;
   /** Set when the user chose the fallback model after the usual model rejected the request. */
   answeredBy?: string;
 }
@@ -156,6 +158,11 @@ export interface Conversation {
    * nothing about the sealed server's short-term memory or our request records.
    */
   incognito?: boolean;
+  /**
+   * Device-only: messages older than this window are deleted from this device
+   * when the conversation is open or opened. Nothing is deleted anywhere else.
+   */
+  disappearAfter?: "hour" | "day" | "week";
   id: string;
   title: string;
   messages: Message[];

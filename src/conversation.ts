@@ -103,7 +103,56 @@ export function newMessage(role: Message["role"], text: string): Message {
     text,
     status: "complete",
     included: true,
+    at: new Date().toISOString(),
   };
+}
+
+export const DISAPPEAR_WINDOWS = {
+  hour: 3_600_000,
+  day: 86_400_000,
+  week: 604_800_000,
+} as const;
+export type DisappearAfter = keyof typeof DISAPPEAR_WINDOWS;
+export const DISAPPEAR_LABELS: Record<DisappearAfter, string> = {
+  hour: "1 hour",
+  day: "1 day",
+  week: "1 week",
+};
+
+/**
+ * Removes messages older than the conversation's disappearing window from the
+ * active and archived branches. Device-only: it never touches the secure
+ * server's short-term memory or our request records. Messages without a
+ * timestamp (saved before 22 October 2026) are kept.
+ */
+export function expireMessages(
+  conversation: Conversation,
+  now = Date.now(),
+): { conversation: Conversation; removed: number } {
+  if (!conversation.disappearAfter) return { conversation, removed: 0 };
+  const limit = now - DISAPPEAR_WINDOWS[conversation.disappearAfter];
+  const keep = (message: Message) =>
+    !message.at || !(Date.parse(message.at) <= limit);
+  let removed = 0;
+  const prune = <T extends { messages: Message[] }>(branch: T): T => {
+    const messages = branch.messages.filter(keep);
+    removed += branch.messages.length - messages.length;
+    return messages.length === branch.messages.length
+      ? branch
+      : { ...branch, messages };
+  };
+  const pruned = prune(conversation);
+  const archived = conversation.branches?.archived.map(prune);
+  const result =
+    removed === 0
+      ? conversation
+      : {
+          ...pruned,
+          ...(conversation.branches && archived
+            ? { branches: { ...conversation.branches, archived } }
+            : {}),
+        };
+  return { conversation: result, removed };
 }
 
 export function measureContext(

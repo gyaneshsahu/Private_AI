@@ -17,6 +17,11 @@ import {
 } from "./conversation";
 import { DOCUMENT_ACCEPT } from "./document-formats";
 import { describeKept } from "./identifier-masking";
+import {
+  DISAPPEAR_LABELS,
+  expireMessages,
+  type DisappearAfter,
+} from "./conversation";
 import { PRIVACY_SUMMARY, privacyText } from "../shared/privacy-copy";
 import { importDocuments, type ImportOutcome } from "./document-import";
 import { PhotoCapture } from "./PhotoCapture";
@@ -168,6 +173,17 @@ export function App() {
   const epoch = useRef(0);
   const accessNavigation = useRef(false);
   const outputEnd = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!conversation.disappearAfter) return;
+    const tick = () =>
+      setConversation((c) => {
+        const expired = expireMessages(c);
+        return expired.removed ? expired.conversation : c;
+      });
+    tick();
+    const timer = setInterval(tick, 60_000);
+    return () => clearInterval(timer);
+  }, [conversation.disappearAfter]);
   const unsaved = useMemo(() => {
     // An incognito chat is meant to be lost; never warn about discarding it.
     if (conversation.incognito) return false;
@@ -1013,11 +1029,24 @@ export function App() {
     if (!allowReplace()) return;
     reset();
     savedBase.current = c;
-    setConversation(structuredClone(c));
+    const expired = expireMessages(c);
+    setConversation(structuredClone(expired.conversation));
     setInput(c.draft ?? "");
     setTab("Conversation");
     setNavigationOpen(false);
-    setNotice("Opened a saved snapshot. Save again to keep later changes.");
+    if (expired.removed) {
+      setNotice(
+        `Opened a saved snapshot. ${expired.removed} message${expired.removed === 1 ? "" : "s"} older than ${DISAPPEAR_LABELS[c.disappearAfter!]} disappeared from this device.`,
+      );
+      // Persist the pruned copy so the deleted messages do not survive in the vault.
+      void vault.current
+        ?.save(expired.conversation, c)
+        .then((snapshot) => {
+          savedBase.current = snapshot;
+        })
+        .catch(() => {});
+    } else
+      setNotice("Opened a saved snapshot. Save again to keep later changes.");
   };
 
   const sources = conversation.attachments.flatMap((a) => a.sources);
@@ -1301,6 +1330,34 @@ export function App() {
               <button onClick={() => setTab("Context")}>
                 Conversation files
               </button>
+              <label className="menu-select">
+                Disappearing messages
+                <select
+                  aria-label="Disappearing messages"
+                  value={conversation.disappearAfter ?? "off"}
+                  disabled={!!busy}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setConversation((c) => {
+                      const next = {
+                        ...c,
+                        disappearAfter:
+                          value === "off"
+                            ? undefined
+                            : (value as DisappearAfter),
+                      };
+                      if (next.disappearAfter === undefined)
+                        delete next.disappearAfter;
+                      return expireMessages(next).conversation;
+                    });
+                  }}
+                >
+                  <option value="off">Off</option>
+                  <option value="hour">After 1 hour</option>
+                  <option value="day">After 1 day</option>
+                  <option value="week">After 1 week</option>
+                </select>
+              </label>
               <button onClick={() => setSettingsOpen(true)}>Settings</button>
             </div>
           </details>
@@ -1332,6 +1389,15 @@ export function App() {
             this device; it is gone when you start another chat, lock, reload or
             sign out. This does not change what the secure server keeps for a
             short time or the request records we hold.
+          </div>
+        )}
+        {conversation.disappearAfter && (
+          <div role="status" className="notice disappearing-banner">
+            <strong>Disappearing messages.</strong> Messages older than{" "}
+            {DISAPPEAR_LABELS[conversation.disappearAfter]} are deleted from
+            this device while the chat is open or when you open it again,
+            including from its saved copy. This does not change what the secure
+            server keeps for a short time or the request records we hold.
           </div>
         )}
         {notice && (

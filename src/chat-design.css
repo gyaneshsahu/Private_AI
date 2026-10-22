@@ -1737,3 +1737,14 @@
 .chat-design .incognito-banner {
   border-style: dashed;
 }
+
+.chat-design .menu-select {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9em;
+}
+.chat-design .disappearing-banner {
+  border-style: dotted;
+}

@@ -23,6 +23,7 @@ const conversationBody = z.object({
   createdAt: z.string(),
   draft: z.string().optional(),
   temporarySearch: z.boolean().optional(),
+  disappearAfter: z.enum(["hour", "day", "week"]).optional(),
   messages: z.array(
     z.object({
       id: z.string(),
@@ -36,6 +37,7 @@ const conversationBody = z.object({
         .optional(),
       keptOnDevice: z.string().max(300).optional(),
       answeredBy: z.string().max(300).optional(),
+      at: z.string().datetime().optional(),
     }),
   ),
   attachments: z.array(
