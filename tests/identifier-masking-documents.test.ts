@@ -7,7 +7,10 @@
  * rather than a wish list. Tests whose name carries `[known miss]` document a
  * gap; when the detector is improved, those assertions are expected to fail
  * and must be rewritten, not deleted. The ledger note that interprets these
- * results lives in docs/ledger-fragments/2026-10-22-masking-miss-rate.md.
+ * results was folded into docs/READINESS.md ("Masking miss table"); the
+ * 23 October benchmark (evaluation/masking, ledger fragment
+ * 2026-10-22-masking-benchmark.md) turned five of the nine known misses into
+ * hits, re-tagged below as "caught since 23 October".
  */
 import { describe, expect, it } from "vitest";
 import {
@@ -63,12 +66,10 @@ describe("IBAN in a wrapped bank-details block", () => {
     );
   });
 
-  it("[known miss] IBAN with the country code separated by a newline: no IBAN hit, PHONE mislabel leaks the prefix", () => {
+  it("masks an IBAN whose country code sits before a line break (caught since 23 October; was mislabelled as a phone)", () => {
     const text = "Konto DE\n89 3704 0044 0532 0130 00 bei der Commerzbank\n";
-    expect(hits(text)).toEqual([["PHONE", "0044 0532 0130 00"]]);
-    expect(mask(text)).toBe(
-      "Konto DE\n89 3704 {{PHONE-1}} bei der Commerzbank\n",
-    );
+    expect(hits(text)).toEqual([["IBAN", "DE\n89 3704 0044 0532 0130 00"]]);
+    expect(mask(text)).toBe("Konto {{IBAN-1}} bei der Commerzbank\n");
   });
 });
 
@@ -167,10 +168,12 @@ describe("labelled document numbers and birth dates across lines", () => {
     );
   });
 
-  it("[known miss] passport number with the label on the previous line is left in clear text", () => {
+  it("masks a passport number whose label is on the previous line (caught since 23 October)", () => {
     const text = "Reisepass\nNr.: C01X00T47\nGültig bis 04.03.2030";
-    expect(hits(text)).toEqual([]);
-    expect(mask(text)).toBe(text);
+    expect(hits(text)).toEqual([["ID-NUMBER", "C01X00T47"]]);
+    expect(mask(text)).toBe(
+      "Reisepass\nNr.: {{ID-NUMBER-1}}\nGültig bis 04.03.2030",
+    );
   });
 
   it("masks a birth date whose label is on the same line", () => {
@@ -182,24 +185,47 @@ describe("labelled document numbers and birth dates across lines", () => {
     );
   });
 
-  it("[known miss] birth date with the label two lines above is left in clear text", () => {
+  it("masks a birth date whose label is two lines above, across a blank line (caught since 23 October)", () => {
     const text = "Geburtsdatum\n\n03.05.1988\nGeburtsort Berlin";
+    expect(hits(text)).toEqual([["BIRTH-DATE", "03.05.1988"]]);
+    expect(mask(text)).toBe(
+      "Geburtsdatum\n\n{{BIRTH-DATE-1}}\nGeburtsort Berlin",
+    );
+  });
+});
+
+describe("OCR noise inside an IBAN (tesseract on a scanned letter)", () => {
+  it("masks an IBAN with 'O' read for '0' (caught since 23 October: letters repaired where the country's IBAN is all digits)", () => {
+    const text = "IBAN DE89 37O4 0044 0532 0130 00";
+    expect(hits(text)).toEqual([["IBAN", "DE89 37O4 0044 0532 0130 00"]]);
+    expect(mask(text)).toBe("IBAN {{IBAN-1}}");
+  });
+
+  it("masks an IBAN with 'O' for '0' and 'l' for '1' (caught since 23 October)", () => {
+    const text = "IBAN DE89 37O4 0044 0532 0l30 00";
+    expect(hits(text)).toEqual([["IBAN", "DE89 37O4 0044 0532 0l30 00"]]);
+    expect(mask(text)).toBe("IBAN {{IBAN-1}}");
+  });
+
+  it("[known miss] a wrong digit (not a letter read for a digit) cannot be repaired: the IBAN leaks", () => {
+    const text = "IBAN DE89 3704 0044 0532 0130 01";
     expect(hits(text)).toEqual([]);
     expect(mask(text)).toBe(text);
   });
 });
 
-describe("OCR noise inside an IBAN (tesseract on a scanned letter)", () => {
-  it("[known miss] 'O' read for '0': mod-97 fails and nothing is masked (no longer mislabelled as a phone)", () => {
-    const text = "IBAN DE89 37O4 0044 0532 0130 00";
-    expect(hits(text)).toEqual([]);
-    expect(mask(text)).toBe(text);
-  });
-
-  it("[known miss] 'O' for '0' and 'l' for '1': nothing is masked, the IBAN leaks whole (no longer mislabelled)", () => {
-    const text = "IBAN DE89 37O4 0044 0532 0l30 00";
-    expect(hits(text)).toEqual([]);
-    expect(mask(text)).toBe(text);
+describe("table rows after a wrapped cell (found by the 23 October held-out run, not fixed)", () => {
+  it("[known miss] a labelled column loses its header in rows below a row whose IBAN wrapped onto its own line", () => {
+    const table =
+      "Name   Ausweis-Nr.   IBAN\n" +
+      "Lukas Becker   XL07XT3R6   DE89 3704\n" +
+      "0044 0532 0130 00\n" +
+      "Jan Becker   PF3YYM3ZJ   DE89 3704 0044 0532 0130 00\n";
+    expect(hits(table)).toEqual([
+      ["ID-NUMBER", "XL07XT3R6"],
+      ["IBAN", "DE89 3704\n0044 0532 0130 00"],
+      ["IBAN", "DE89 3704 0044 0532 0130 00"],
+    ]);
   });
 });
 

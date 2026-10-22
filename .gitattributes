@@ -1,3 +1,5 @@
 # Frozen fixtures are hashed as bytes; Windows checkouts must preserve LF.
 evaluation/cases/*.json text eol=lf
 evaluation/arithmetic-gate/*.json text eol=lf
+# Masking benchmark splits are hashed as bytes; keep LF on every checkout.
+evaluation/masking/**/*.json text eol=lf
