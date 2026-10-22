@@ -1,5 +1,5 @@
 # PrivateAI readiness checklist
-r
+
 ## Relay guards: qualified-model header, one request per account, completed-request metering — 22 October
 
 Launch plan item 1.1, implemented locally and not deployed. These are the controls the relay can enforce itself whatever the supplier answers; they do not close a qualification gate and do not change what the supplier retains.
