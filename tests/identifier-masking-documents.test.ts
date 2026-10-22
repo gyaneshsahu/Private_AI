@@ -33,12 +33,16 @@ describe("German tax receipt (PDF text layer)", () => {
 
   it("masks the formatted Steuernummer on its own line", () => {
     expect(hits(receipt)).toContainEqual(["TAX-ID", "12/345/67890"]);
-    expect(mask(receipt)).toContain("Steuernummer: {{TAX-ID-1}}\n");
+    // The split Steuer-ID earlier in the receipt is caught first (fix of 22 October), so this is the second tax number.
+    expect(mask(receipt)).toContain("Steuernummer: {{TAX-ID-2}}\n");
   });
 
-  it("[known miss] leaves the tax ID split across a line break in clear text", () => {
-    expect(hits(receipt)).toEqual([["TAX-ID", "12/345/67890"]]);
-    expect(mask(receipt)).toContain("Steuer-ID: 86 095\n742 719\n");
+  it("masks the tax ID split across a line break (caught since 22 October)", () => {
+    expect(hits(receipt)).toEqual([
+      ["TAX-ID", "86 095\n742 719"],
+      ["TAX-ID", "12/345/67890"],
+    ]);
+    expect(mask(receipt)).toContain("Steuer-ID: {{TAX-ID-1}}\n");
   });
 
   it("masks the same tax ID when its groups stay on one line", () => {
@@ -49,14 +53,13 @@ describe("German tax receipt (PDF text layer)", () => {
 });
 
 describe("IBAN in a wrapped bank-details block", () => {
-  it("[known miss] IBAN wrapped mid-number at a line end: no IBAN hit, a partial PHONE mislabel leaks the rest", () => {
+  it("masks an IBAN wrapped mid-number at a line end (caught since 22 October)", () => {
     const text =
       "Bankverbindung\nIBAN: DE89 3704 0044 0532\n0130 00\nBIC: COBADEFFXXX\n";
-    // The IBAN pattern stops at the newline and the truncated candidate fails
-    // mod-97; the phone detector then grabs the "0044 0532" fragment.
-    expect(hits(text)).toEqual([["PHONE", "0044 0532"]]);
+    // The candidate runs on into "BIC" and is cut back at whitespace until mod-97 passes.
+    expect(hits(text)).toEqual([["IBAN", "DE89 3704 0044 0532\n0130 00"]]);
     expect(mask(text)).toBe(
-      "Bankverbindung\nIBAN: DE89 3704 {{PHONE-1}}\n0130 00\nBIC: COBADEFFXXX\n",
+      "Bankverbindung\nIBAN: {{IBAN-1}}\nBIC: COBADEFFXXX\n",
     );
   });
 
@@ -77,7 +80,8 @@ describe("card numbers", () => {
   });
 
   it("[known miss] fullwidth digits (U+FF10-FF19) are not digits to the detector", () => {
-    const text = "Kartennummer ４１１１ １１１１ １１１１ １１１１ gültig bis 12/27";
+    const text =
+      "Kartennummer ４１１１ １１１１ １１１１ １１１１ gültig bis 12/27";
     expect(hits(text)).toEqual([]);
     expect(mask(text)).toBe(text);
   });
@@ -111,16 +115,15 @@ describe("phone number layouts common in German documents", () => {
   });
 
   it("masks 0049 30 1234567", () => {
-    expect(hits("Fax 0049 30 1234567")).toEqual([
-      ["PHONE", "0049 30 1234567"],
-    ]);
+    expect(hits("Fax 0049 30 1234567")).toEqual([["PHONE", "0049 30 1234567"]]);
     expect(mask("Fax 0049 30 1234567")).toBe("Fax {{PHONE-1}}");
   });
 });
 
 describe("partial and spelled-out identifiers", () => {
   it("[known miss] last four digits of a card or account are left in clear text (by design: too short to recognise)", () => {
-    const card = "Zahlung mit der Karte, die auf 1111 endet (**** **** **** 1111)";
+    const card =
+      "Zahlung mit der Karte, die auf 1111 endet (**** **** **** 1111)";
     const account = "Konto endet auf 3000; Telefon endet auf 4567";
     expect(hits(card)).toEqual([]);
     expect(hits(account)).toEqual([]);
@@ -141,16 +144,16 @@ describe("partial and spelled-out identifiers", () => {
 });
 
 describe("email with a zero-width space (copied from HTML or a PDF text layer)", () => {
-  it("[known miss] ZWSP inside the local part: only the tail after the ZWSP is masked, the first name leaks", () => {
-    const text = "E-Mail: anna​.weber@example.test";
+  it("masks an email with a zero-width space inside the local part (caught since 22 October; raw detection still sees the tail only)", () => {
+    const text = "E-Mail: anna\u200B.weber@example.test";
     expect(hits(text)).toEqual([["EMAIL", ".weber@example.test"]]);
-    expect(mask(text)).toBe("E-Mail: anna​{{EMAIL-1}}");
+    expect(mask(text)).toBe("E-Mail: {{EMAIL-1}}");
   });
 
-  it("[known miss] ZWSP directly before the @: nothing is masked", () => {
-    const text = "E-Mail: anna.weber​@example.test";
+  it("masks an email with a zero-width space before the @ (caught since 22 October)", () => {
+    const text = "E-Mail: anna.weber\u200B@example.test";
     expect(hits(text)).toEqual([]);
-    expect(mask(text)).toBe(text);
+    expect(mask(text)).toBe("E-Mail: {{EMAIL-1}}");
   });
 });
 
@@ -159,7 +162,9 @@ describe("labelled document numbers and birth dates across lines", () => {
     expect(hits("Reisepass-Nr.: C01X00T47")).toEqual([
       ["ID-NUMBER", "C01X00T47"],
     ]);
-    expect(mask("Reisepass-Nr.: C01X00T47")).toBe("Reisepass-Nr.: {{ID-NUMBER-1}}");
+    expect(mask("Reisepass-Nr.: C01X00T47")).toBe(
+      "Reisepass-Nr.: {{ID-NUMBER-1}}",
+    );
   });
 
   it("[known miss] passport number with the label on the previous line is left in clear text", () => {
@@ -172,7 +177,9 @@ describe("labelled document numbers and birth dates across lines", () => {
     expect(hits("Geburtsdatum: 03.05.1988")).toEqual([
       ["BIRTH-DATE", "03.05.1988"],
     ]);
-    expect(mask("Geburtsdatum: 03.05.1988")).toBe("Geburtsdatum: {{BIRTH-DATE-1}}");
+    expect(mask("Geburtsdatum: 03.05.1988")).toBe(
+      "Geburtsdatum: {{BIRTH-DATE-1}}",
+    );
   });
 
   it("[known miss] birth date with the label two lines above is left in clear text", () => {
@@ -183,16 +190,16 @@ describe("labelled document numbers and birth dates across lines", () => {
 });
 
 describe("OCR noise inside an IBAN (tesseract on a scanned letter)", () => {
-  it("[known miss] 'O' read for '0': mod-97 fails, PHONE mislabel masks only the tail", () => {
+  it("[known miss] 'O' read for '0': mod-97 fails and nothing is masked (no longer mislabelled as a phone)", () => {
     const text = "IBAN DE89 37O4 0044 0532 0130 00";
-    expect(hits(text)).toEqual([["PHONE", "0044 0532 0130 00"]]);
-    expect(mask(text)).toBe("IBAN DE89 37O4 {{PHONE-1}}");
+    expect(hits(text)).toEqual([]);
+    expect(mask(text)).toBe(text);
   });
 
-  it("[known miss] 'O' for '0' and 'l' for '1': PHONE mislabel masks a fragment, most digits leak", () => {
+  it("[known miss] 'O' for '0' and 'l' for '1': nothing is masked, the IBAN leaks whole (no longer mislabelled)", () => {
     const text = "IBAN DE89 37O4 0044 0532 0l30 00";
-    expect(hits(text)).toEqual([["PHONE", "0044 0532 0"]]);
-    expect(mask(text)).toBe("IBAN DE89 37O4 {{PHONE-1}}l30 00");
+    expect(hits(text)).toEqual([]);
+    expect(mask(text)).toBe(text);
   });
 });
 

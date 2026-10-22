@@ -185,6 +185,17 @@ const detectors: Detector[] = [
   },
 ];
 
+/** Shortens an over-long IBAN candidate at whitespace boundaries until mod-97 passes. */
+function shrinkIban(candidate: string): string | undefined {
+  let value = candidate;
+  for (;;) {
+    const cut = Math.max(value.lastIndexOf(" "), value.lastIndexOf("\n"));
+    if (cut < 15) return undefined;
+    value = value.slice(0, cut);
+    if (isValidIban(value)) return value;
+  }
+}
+
 /** Invisible characters that split identifiers when text is copied from HTML or PDFs. */
 export const INVISIBLE = /[\u200B\u200C\u200D\uFEFF\u00AD]/g;
 
@@ -218,8 +229,22 @@ export function findIdentifiers(
       }
       if (taken.some(([a, b]) => start < b && end > a)) continue;
       if (detector.accept && !detector.accept(match, text)) {
-        // Only an IBAN-shaped span is remembered: a card-shaped digit run is any long number.
-        if (detector.kind === "IBAN") rejected.push([start, end]);
+        // A wrapped IBAN can run on into the next line's letters; cut the
+        // candidate back at whitespace until the check digit passes.
+        const shrunk =
+          detector.kind === "IBAN" ? shrinkIban(match[0]) : undefined;
+        if (shrunk === undefined) {
+          // Only an IBAN-shaped span is remembered: a card-shaped digit run is any long number.
+          if (detector.kind === "IBAN") rejected.push([start, end]);
+          continue;
+        }
+        taken.push([start, start + shrunk.length]);
+        found.push({
+          kind: detector.kind,
+          start,
+          end: start + shrunk.length,
+          value: shrunk,
+        });
         continue;
       }
       if (
