@@ -1,4 +1,15 @@
 # PrivateAI readiness checklist
+## Qualified fallback model with explicit user confirmation — 22 October
+
+Launch plan item 1.3, implemented locally, not deployed. Background: the supplier's 22 October mailing states catalog models can be swapped or deprecated at any time, and the changelog shows a model removed within a month of being added. The qualified model stays a value in the qualification report; this change adds an optional second name and an honest path to it.
+
+- **Report.** `fallbackModel` is an optional field of the qualification report; it must differ from `model` and may not be `auto`. It names a second catalog model on the same qualified deployment and inherits the same review evidence; it is not a second qualification. Model-specific reasoning toggles stay bound to the usual model and are not applied to the fallback.
+- **Relay.** The relay accepts the client's `X-Tinfoil-Model` header only when it names the usual or the fallback model, forwards that choice, and otherwise still pins the usual model. When the enclave refuses a request (any 4xx, which the supplier states is not billed), the relay now answers 502 with `X-PrivateAI-Upstream: rejected`; other failures carry `unavailable`. Only that class is exposed; upstream status text and bodies are never reflected.
+- **Client.** The browser sends its chosen model in the header so the enclave check and the relay allowlist agree with the encrypted body. A rejected request surfaces as the new `HTTP_UPSTREAM_REJECTED` failure with the message "The protected service did not accept this request; nothing was run or billed." If a fallback model is qualified, the app then asks, in a confirmation dialog, whether to answer with the fallback model, naming both models; cancelling leaves the question unanswered. The fallback is a separate, explicitly confirmed request, never an automatic retry, which keeps the existing no-retry rule. A reply produced this way carries a visible note, "Answered by the fallback model …", saved with the conversation.
+- **Not changed.** No fallback is named in any report today; the development default remains the single provisional model. Naming one is an owner decision that requires the same qualification evidence for the second model's worker repository and digests. Switching models is never silent.
+
+Tests: qualification validation accepts a distinct fallback and refuses identical, automatic or empty names; relay forwards the fallback header, refuses a third model, and classifies 404 as rejected and 503 as unavailable without leaking upstream text; completion events classify a rejected 502; the real-browser transport test's new `rejected` scenario shows the client message without the relay's error body. Validation on this machine: typecheck and build pass; `npm test` 520 passed / 0 failed / 149 skipped across 131 files; `npm run test:e2e` 56 passed. Exact-commit CI still required.
+
 
 ## On-device identifier masking before encryption — 22 October
 

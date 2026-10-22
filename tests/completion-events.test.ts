@@ -28,12 +28,18 @@ const run = (body: string) =>
 it.each([
   [429, "HTTP_RATE_LIMITED", "limiting requests"],
   [502, "HTTP_SERVICE_UNAVAILABLE", "service is unavailable"],
+  [
+    502,
+    "HTTP_UPSTREAM_REJECTED",
+    "did not accept this request",
+    { "X-PrivateAI-Upstream": "rejected" },
+  ],
   [503, "HTTP_SERVICE_UNAVAILABLE", "service is unavailable"],
   [504, "HTTP_SERVICE_UNAVAILABLE", "service is unavailable"],
   [401, "HTTP_RESPONSE_INVALID", "Response incomplete"],
 ])(
   "classifies HTTP %s without reading provider error content or claiming known cost",
-  async (status, code, message) => {
+  async (status, code, message, headers?: Record<string, string>) => {
     let cancelled = false;
     const body = new ReadableStream({
       start(c) {
@@ -47,7 +53,7 @@ it.each([
     await expect(
       consumeReply(
         completionEvents(
-          new Response(body, { status: Number(status) }),
+          new Response(body, { status: Number(status), headers }),
           signal(),
         ),
         pricing,

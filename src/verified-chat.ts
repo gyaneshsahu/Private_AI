@@ -418,6 +418,7 @@ async function streamMaskedConversation(
           Accept: "text/event-stream",
           "X-PrivateAI-CSRF": csrf,
           "X-Tinfoil-Enclave-Url": report.origin,
+          "X-Tinfoil-Model": report.model,
         },
         body: JSON.stringify(requestBody),
         signal,
@@ -505,6 +506,7 @@ async function streamMaskedConversation(
                 Accept: "text/event-stream",
                 "X-PrivateAI-CSRF": csrf,
                 "X-Tinfoil-Enclave-Url": report.origin,
+                "X-Tinfoil-Model": report.model,
                 "X-PrivateAI-Continuation-Approval":
                   continuationApproval.approvalId,
               },

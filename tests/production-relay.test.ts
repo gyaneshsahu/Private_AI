@@ -211,3 +211,46 @@ it("production relay refuses a client that names a different model and never tru
       "X-Tinfoil-Request-Usage-Metrics": "true",
     });
 });
+
+it("production relay forwards a qualified fallback model and exposes only the class of an upstream refusal", async () => {
+  const { root, headers, qualification } = await setup();
+  (qualification as { fallbackModel?: string }).fallbackModel = "TEST_FALLBACK";
+  upstream.mockImplementation(
+    async () =>
+      new Response(new Uint8Array(8), {
+        headers: { "Ehbp-Response-Nonce": "b".repeat(64) },
+      }),
+  );
+  const send = (model?: string) =>
+    fetch(root + "/api/inference/v1/chat/completions", {
+      method: "POST",
+      headers: model ? { ...headers, "X-Tinfoil-Model": model } : headers,
+      body: new Uint8Array(32).fill(9),
+    });
+  expect((await send("TEST_FALLBACK")).status).toBe(200);
+  expect(upstream.mock.calls[0][1].headers["X-Tinfoil-Model"]).toBe(
+    "TEST_FALLBACK",
+  );
+  expect((await send()).status).toBe(200);
+  expect(upstream.mock.calls[1][1].headers["X-Tinfoil-Model"]).toBe(
+    "TEST_ONLY",
+  );
+  expect((await send("THIRD_MODEL")).status).toBe(400);
+  upstream.mockImplementationOnce(
+    async () =>
+      new Response("SYNTHETIC_UPSTREAM_SECRET model not found", {
+        status: 404,
+      }),
+  );
+  const rejected = await send();
+  expect(rejected.status).toBe(502);
+  expect(rejected.headers.get("x-privateai-upstream")).toBe("rejected");
+  expect(await rejected.text()).not.toContain("SYNTHETIC_UPSTREAM_SECRET");
+  upstream.mockImplementationOnce(
+    async () => new Response("SYNTHETIC_UPSTREAM_SECRET", { status: 503 }),
+  );
+  const unavailable = await send();
+  expect(unavailable.status).toBe(502);
+  expect(unavailable.headers.get("x-privateai-upstream")).toBe("unavailable");
+  expect(await unavailable.text()).not.toContain("SYNTHETIC_UPSTREAM_SECRET");
+});

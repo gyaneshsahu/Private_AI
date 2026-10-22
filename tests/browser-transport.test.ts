@@ -96,6 +96,12 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         res.end("SYNTHETIC_ERROR_CANARY");
         return;
       }
+      if (mode === "rejected") {
+        res.statusCode = 502;
+        res.setHeader("X-PrivateAI-Upstream", "rejected");
+        res.end(JSON.stringify({ error: "SYNTHETIC_ERROR_CANARY" }));
+        return;
+      }
       const frame = (content: string, finish: string | null) =>
         `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content }, finish_reason: finish }] })}\n\n`;
       let text = frame("TEST answer: 4", mode === "truncated" ? null : "stop");
@@ -237,6 +243,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       "tampered",
       "missing_nonce",
       "http_error",
+      "rejected",
       "malformed",
       "named_error",
       "truncated",
@@ -317,6 +324,11 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         expect(result.answer.text).toBe("");
         expect(result.usage.total).toBe(5);
         expect(result.testError).toContain("reached its output limit");
+      }
+      if (mode === "rejected") {
+        expect(result.testError).toContain("did not accept this request");
+        expect(result.testError).not.toContain("SYNTHETIC_ERROR_CANARY");
+        expect(result.answer.text).toBe("");
       }
       if (mode === "masked") {
         const payload = JSON.parse(requests[before].plaintext);

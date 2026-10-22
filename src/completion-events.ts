@@ -15,9 +15,12 @@ export async function* completionEvents(
     throw new StreamProtocolError(
       response.status === 429
         ? "HTTP_RATE_LIMITED"
-        : [502, 503, 504].includes(response.status)
-          ? "HTTP_SERVICE_UNAVAILABLE"
-          : "HTTP_RESPONSE_INVALID",
+        : response.status === 502 &&
+            response.headers.get("x-privateai-upstream") === "rejected"
+          ? "HTTP_UPSTREAM_REJECTED"
+          : [502, 503, 504].includes(response.status)
+            ? "HTTP_SERVICE_UNAVAILABLE"
+            : "HTTP_RESPONSE_INVALID",
     );
   }
   const reader = response.body.getReader();

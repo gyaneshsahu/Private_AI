@@ -19,6 +19,15 @@ export const qualificationSchema = z.object({
       (value) => value !== "auto",
       "Automatic model routing is not qualified.",
     ),
+  /** Optional second qualified model for the same deployment; the user must confirm its use. */
+  fallbackModel: z
+    .string()
+    .min(1)
+    .refine(
+      (value) => value !== "auto",
+      "Automatic model routing is not qualified.",
+    )
+    .optional(),
   origin: z
     .string()
     .url()
@@ -60,6 +69,11 @@ export function validateQualification(
   now = Date.now(),
 ): Qualification {
   const report = qualificationSchema.parse(input);
+  if (
+    report.fallbackModel !== undefined &&
+    report.fallbackModel === report.model
+  )
+    throw Error("The fallback model must differ from the qualified model.");
   if (
     Date.parse(report.reviewedAt) > now ||
     Date.parse(report.validUntil) <= now ||
@@ -113,6 +127,8 @@ export interface Message {
   failure?: "stopped" | "timeout" | "incomplete" | "unavailable" | "empty";
   /** Plain-language note of identifiers masked on this device for this reply, e.g. "Kept on this device: 1 bank account." */
   keptOnDevice?: string;
+  /** Set when the user chose the fallback model after the usual model rejected the request. */
+  answeredBy?: string;
 }
 export interface ConversationBranch {
   id: string;

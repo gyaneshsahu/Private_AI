@@ -485,61 +485,88 @@ export function App() {
     });
     controller.current = abort;
     const current = epoch.current;
+    const qualified = status.inference.qualification;
     try {
-      const { streamReply } = await abortable(
-        import("./inference"),
-        abort.signal,
-      );
-      abort.signal.throwIfAborted();
-      const usage = await streamReply(
-        next,
-        status.inference.qualification,
-        status.csrf,
-        abort.signal,
-        (chunk) => {
-          if (epoch.current === current && !abort.signal.aborted)
-            setConversation((c) => ({
-              ...c,
-              messages: c.messages.map((m) =>
-                m.id === answer.id ? { ...m, text: m.text + chunk } : m,
-              ),
-            }));
-        },
-        (message) => {
-          if (epoch.current === current && !abort.signal.aborted)
-            setBusy(message);
-        },
-        calculationSession,
-        (kept) => {
-          const note = describeKept(kept);
-          if (epoch.current === current && !abort.signal.aborted && note)
-            setConversation((c) => ({
-              ...c,
-              messages: c.messages.map((m) =>
-                m.id === answer.id ? { ...m, keptOnDevice: note } : m,
-              ),
-            }));
-        },
-      );
-      abort.signal.throwIfAborted();
-      if (epoch.current === current) {
-        setConversation((c) => ({
-          ...c,
-          messages: c.messages.map((m) =>
-            m.id === answer.id
-              ? {
-                  ...m,
-                  status: m.text ? "complete" : "error",
-                  ...(!m.text ? { failure: "empty" as const } : {}),
-                }
-              : m,
-          ),
-          usage: usage ? [...c.usage, usage] : c.usage,
-        }));
-        if (!usage)
-          setNotice(
-            "Provider usage was not reported. This request’s cost remains unknown.",
-          );
+      const attempt = async (choice: "primary" | "fallback") => {
+        const { streamReply } = await abortable(
+          import("./inference"),
+          abort.signal,
+        );
+        abort.signal.throwIfAborted();
+        const usage = await streamReply(
+          next,
+          status.inference.qualification,
+          status.csrf,
+          abort.signal,
+          (chunk) => {
+            if (epoch.current === current && !abort.signal.aborted)
+              setConversation((c) => ({
+                ...c,
+                messages: c.messages.map((m) =>
+                  m.id === answer.id ? { ...m, text: m.text + chunk } : m,
+                ),
+              }));
+          },
+          (message) => {
+            if (epoch.current === current && !abort.signal.aborted)
+              setBusy(message);
+          },
+          calculationSession,
+          (kept) => {
+            const note = describeKept(kept);
+            if (epoch.current === current && !abort.signal.aborted && note)
+              setConversation((c) => ({
+                ...c,
+                messages: c.messages.map((m) =>
+                  m.id === answer.id ? { ...m, keptOnDevice: note } : m,
+                ),
+              }));
+          },
+          choice,
+        );
+        abort.signal.throwIfAborted();
+        if (epoch.current === current) {
+          setConversation((c) => ({
+            ...c,
+            messages: c.messages.map((m) =>
+              m.id === answer.id
+                ? {
+                    ...m,
+                    status: m.text ? "complete" : "error",
+                    ...(!m.text ? { failure: "empty" as const } : {}),
+                    ...(choice === "fallback" && qualified?.fallbackModel
+                      ? {
+                          answeredBy: `Answered by the fallback model ${qualified.fallbackModel} after the usual model did not accept the request.`,
+                        }
+                      : {}),
+                  }
+                : m,
+            ),
+            usage: usage ? [...c.usage, usage] : c.usage,
+          }));
+          if (!usage)
+            setNotice(
+              "Provider usage was not reported. This request’s cost remains unknown.",
+            );
+        }
+      };
+      try {
+        await attempt("primary");
+      } catch (error) {
+        // A rejection means nothing ran and nothing was billed. The fallback is
+        // a different, explicitly confirmed request, never an automatic retry.
+        if (
+          error instanceof IncompleteReplyError &&
+          error.diagnostic?.code === "HTTP_UPSTREAM_REJECTED" &&
+          qualified?.fallbackModel &&
+          !abort.signal.aborted &&
+          window.confirm(
+            `The usual model (${qualified.model}) did not accept this request and nothing was billed. Answer with the fallback model ${qualified.fallbackModel} instead? Cancel to leave it unanswered.`,
+          )
+        ) {
+          abort.signal.throwIfAborted();
+          await attempt("fallback");
+        } else throw error;
       }
     } catch (error) {
       calculationSession.clear();
@@ -1410,6 +1437,9 @@ export function App() {
                       </span>
                     )}
                   </div>
+                  {message.answeredBy && (
+                    <p className="muted answered-by">{message.answeredBy}</p>
+                  )}
                   {message.keptOnDevice && (
                     <p className="muted kept-on-device">
                       {message.keptOnDevice} Placeholders went to the secure

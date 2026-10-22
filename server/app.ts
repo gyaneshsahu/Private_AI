@@ -274,15 +274,23 @@ export function createApp(config: Config) {
       }
       // The relay names the qualified model itself and the enclave rejects a
       // body that disagrees; a client may not name a different model.
+      const requestedModel = req.headers["x-tinfoil-model"];
+      const allowedModels = new Set([
+        q.model,
+        ...(q.fallbackModel ? [q.fallbackModel] : []),
+      ]);
       if (
-        req.headers["x-tinfoil-model"] !== undefined &&
-        req.headers["x-tinfoil-model"] !== q.model
+        requestedModel !== undefined &&
+        (typeof requestedModel !== "string" ||
+          !allowedModels.has(requestedModel))
       ) {
         res.status(400).json({
           error: "Only the qualified model is accepted.",
         });
         return;
       }
+      const forwardedModel =
+        typeof requestedModel === "string" ? requestedModel : q.model;
       if (active >= 3) {
         res.status(429).json({ error: "Three requests are already running." });
         return;
@@ -349,7 +357,7 @@ export function createApp(config: Config) {
                 req.headers["ehbp-encapsulated-key"],
               ),
               // The enclave checks this against the encrypted body and rejects a mismatch.
-              "X-Tinfoil-Model": q.model,
+              "X-Tinfoil-Model": forwardedModel,
               "X-Tinfoil-Request-Usage-Metrics": "true",
             },
           },
@@ -361,6 +369,14 @@ export function createApp(config: Config) {
         // Never reflect upstream errors: they may contain sensitive content or diagnostics.
         if (upstream.statusCode !== 200 || !header("ehbp-response-nonce")) {
           await upstream.body.dump().catch(() => {});
+          // Only the class of failure is exposed: a rejection (nothing was run or
+          // billed) lets the client offer the fallback model; nothing else leaks.
+          res.setHeader(
+            "X-PrivateAI-Upstream",
+            upstream.statusCode >= 400 && upstream.statusCode < 500
+              ? "rejected"
+              : "unavailable",
+          );
           res.status(502).json({
             error:
               "Encrypted provider response unavailable. No automatic retry was made.",

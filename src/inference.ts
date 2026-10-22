@@ -19,11 +19,20 @@ export async function streamReply(
   onStatus: (text: string) => void,
   _calculationSession?: CalculationSession,
   onKeptOnDevice?: (kept: Partial<Record<IdentifierKind, number>>) => void,
+  modelChoice: "primary" | "fallback" = "primary",
 ): Promise<Usage | undefined> {
   const report = validateQualification(qualification);
+  if (modelChoice === "fallback" && !report.fallbackModel)
+    throw Error("No fallback model is qualified.");
+  // The fallback is the same qualified deployment with a different catalog
+  // name; model-specific reasoning toggles belong to the usual model only.
+  const policy =
+    modelChoice === "fallback"
+      ? { ...report, model: report.fallbackModel! }
+      : report;
   return streamVerifiedConversation(
     conversation,
-    report,
+    policy,
     csrf,
     signal,
     onChunk,
