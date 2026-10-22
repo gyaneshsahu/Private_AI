@@ -1,0 +1,2619 @@
+{
+  "status": "FROZEN_PROPOSAL_NOT_RUN",
+  "authoredOn": "2026-10-22",
+  "synthetic": true,
+  "note": "Synthetic tax and finance arithmetic for CometRow model screening. No real company, person or account data. Expected values are exact after normalisation; a value with `rounding` accepts any reply value that rounds half-up to it at the stated places, because the case text states that rounding. `forbidden` lists known-wrong results only. Threshold: THRESHOLD.md.",
+  "cases": [
+    {
+      "id": "arith-01",
+      "family": "arithmetic",
+      "category": "vat",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 1",
+      "turns": [
+        "Ich schreibe eine Rechnung über netto 1.234,56 EUR. Bitte berechne die Umsatzsteuer mit 19 % und den Bruttobetrag, jeweils kaufmännisch auf Cent gerundet.",
+        "Korrektur: Der Nettobetrag ist 1.243,56 EUR, nicht 1.234,56 EUR. Bitte Umsatzsteuer und Brutto neu berechnen."
+      ],
+      "expected": [
+        [
+          {
+            "label": "Umsatzsteuer",
+            "kind": "money",
+            "value": "234.57",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(1234.56, 0.19), 2)"
+          },
+          {
+            "label": "Brutto",
+            "kind": "money",
+            "value": "1469.13",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(1234.56, round(mul(1234.56, 0.19), 2))"
+          }
+        ],
+        [
+          {
+            "label": "Umsatzsteuer",
+            "kind": "money",
+            "value": "236.28",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(1243.56, 0.19), 2)"
+          },
+          {
+            "label": "Brutto",
+            "kind": "money",
+            "value": "1479.84",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(1243.56, round(mul(1243.56, 0.19), 2))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Umsatzsteuer: 234,57 EUR; Brutto: 1.469,13 EUR",
+        "Umsatzsteuer: 236,28 EUR; Brutto: 1.479,84 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-02",
+      "family": "arithmetic",
+      "category": "vat",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 2",
+      "turns": [
+        "An invoice has a net amount of 2,450.00 EUR. Add VAT at 19%. What are the VAT amount and the gross amount?",
+        "Correction: the item is a printed book, so the reduced rate of 7% applies instead of 19%. Recalculate the VAT and the gross amount."
+      ],
+      "expected": [
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "465.50",
+            "currency": "EUR",
+            "derivation": "mul(2450, 0.19)"
+          },
+          {
+            "label": "gross",
+            "kind": "money",
+            "value": "2915.50",
+            "currency": "EUR",
+            "derivation": "mul(2450, 1.19)"
+          }
+        ],
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "171.50",
+            "currency": "EUR",
+            "derivation": "mul(2450, 0.07)"
+          },
+          {
+            "label": "gross",
+            "kind": "money",
+            "value": "2621.50",
+            "currency": "EUR",
+            "derivation": "mul(2450, 1.07)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "204.09",
+            "currency": "EUR",
+            "reason": "7% applied to the old gross amount"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "VAT: 465.50 EUR; gross: 2,915.50 EUR",
+        "VAT: 171.50 EUR; gross: 2,621.50 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-03",
+      "family": "arithmetic",
+      "category": "vat",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "authored arithmetic gate 3",
+      "turns": [
+        "Lebensmittel für netto 86,40 EUR, ermäßigter Umsatzsteuersatz 7 %. Wie hoch sind Umsatzsteuer und Bruttobetrag? Bitte kaufmännisch auf Cent runden.",
+        "Zusätzlich kaufe ich Zubehör für netto 39,90 EUR zum Satz von 19 %. Wie hoch sind die gesamte Umsatzsteuer und der gesamte Bruttobetrag beider Posten? Umsatzsteuer je Posten kaufmännisch auf Cent runden."
+      ],
+      "expected": [
+        [
+          {
+            "label": "Umsatzsteuer",
+            "kind": "money",
+            "value": "6.05",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(86.40, 0.07), 2)"
+          },
+          {
+            "label": "Brutto",
+            "kind": "money",
+            "value": "92.45",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(86.40, round(mul(86.40, 0.07), 2))"
+          }
+        ],
+        [
+          {
+            "label": "Umsatzsteuer gesamt",
+            "kind": "money",
+            "value": "13.63",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(round(mul(86.40, 0.07), 2), round(mul(39.90, 0.19), 2))"
+          },
+          {
+            "label": "Brutto gesamt",
+            "kind": "money",
+            "value": "139.93",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(86.40, 39.90, round(mul(86.40, 0.07), 2), round(mul(39.90, 0.19), 2))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        [
+          {
+            "label": "Umsatzsteuer gesamt",
+            "kind": "money",
+            "value": "24.00",
+            "currency": "EUR",
+            "reason": "19% applied to both items"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Umsatzsteuer: 6,05 EUR; Brutto: 92,45 EUR",
+        "Umsatzsteuer gesamt: 13,63 EUR; Brutto gesamt: 139,93 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-04",
+      "family": "arithmetic",
+      "category": "vat",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 4",
+      "turns": [
+        "Three line items, all net: 120.00 EUR, 75.50 EUR and 9.99 EUR. VAT is 19%, calculated once on the net total and rounded to the cent. Give the net total, the VAT and the gross total.",
+        "Sorry, the second item is 57.50 EUR, not 75.50 EUR. Please redo the net total, the VAT and the gross total."
+      ],
+      "expected": [
+        [
+          {
+            "label": "net total",
+            "kind": "money",
+            "value": "205.49",
+            "currency": "EUR",
+            "derivation": "add(120, 75.50, 9.99)"
+          },
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "39.04",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(add(120, 75.50, 9.99), 0.19), 2)"
+          },
+          {
+            "label": "gross total",
+            "kind": "money",
+            "value": "244.53",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(add(120, 75.50, 9.99), round(mul(add(120, 75.50, 9.99), 0.19), 2))"
+          }
+        ],
+        [
+          {
+            "label": "net total",
+            "kind": "money",
+            "value": "187.49",
+            "currency": "EUR",
+            "derivation": "add(120, 57.50, 9.99)"
+          },
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "35.62",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(add(120, 57.50, 9.99), 0.19), 2)"
+          },
+          {
+            "label": "gross total",
+            "kind": "money",
+            "value": "223.11",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(add(120, 57.50, 9.99), round(mul(add(120, 57.50, 9.99), 0.19), 2))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "net total: 205.49 EUR; VAT: 39.04 EUR; gross total: 244.53 EUR",
+        "net total: 187.49 EUR; VAT: 35.62 EUR; gross total: 223.11 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-05",
+      "family": "arithmetic",
+      "category": "vat",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 5",
+      "turns": [
+        "Ich berechne 3 Stunden Beratung zu je 95,00 EUR netto. Dazu kommen 19 % Umsatzsteuer. Wie hoch sind Netto, Umsatzsteuer und Brutto?",
+        "Korrektur: Es waren 3,5 Stunden, nicht 3 Stunden. Bitte neu berechnen und die Umsatzsteuer kaufmännisch auf Cent runden."
+      ],
+      "expected": [
+        [
+          {
+            "label": "Netto",
+            "kind": "money",
+            "value": "285.00",
+            "currency": "EUR",
+            "derivation": "mul(3, 95)"
+          },
+          {
+            "label": "Umsatzsteuer",
+            "kind": "money",
+            "value": "54.15",
+            "currency": "EUR",
+            "derivation": "mul(3, 95, 0.19)"
+          },
+          {
+            "label": "Brutto",
+            "kind": "money",
+            "value": "339.15",
+            "currency": "EUR",
+            "derivation": "mul(3, 95, 1.19)"
+          }
+        ],
+        [
+          {
+            "label": "Netto",
+            "kind": "money",
+            "value": "332.50",
+            "currency": "EUR",
+            "derivation": "mul(3.5, 95)"
+          },
+          {
+            "label": "Umsatzsteuer",
+            "kind": "money",
+            "value": "63.18",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(3.5, 95, 0.19), 2)"
+          },
+          {
+            "label": "Brutto",
+            "kind": "money",
+            "value": "395.68",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(mul(3.5, 95), round(mul(3.5, 95, 0.19), 2))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        [
+          {
+            "label": "Umsatzsteuer",
+            "kind": "money",
+            "value": "63.17",
+            "currency": "EUR",
+            "reason": "rounded down instead of commercial rounding"
+          },
+          {
+            "label": "Brutto",
+            "kind": "money",
+            "value": "395.67",
+            "currency": "EUR",
+            "reason": "rounded down instead of commercial rounding"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Netto: 285,00 EUR; Umsatzsteuer: 54,15 EUR; Brutto: 339,15 EUR",
+        "Netto: 332,50 EUR; Umsatzsteuer: 63,18 EUR; Brutto: 395,68 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-06",
+      "family": "arithmetic",
+      "category": "net-gross",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 6",
+      "turns": [
+        "A receipt shows 119.00 EUR gross, including 19% VAT. What are the net amount and the VAT included?",
+        "Correction: the receipt total is 149.94 EUR gross, same 19% rate. What are the net amount and the VAT now?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "net",
+            "kind": "money",
+            "value": "100.00",
+            "currency": "EUR",
+            "derivation": "div(119, 1.19)"
+          },
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "19.00",
+            "currency": "EUR",
+            "derivation": "sub(119, div(119, 1.19))"
+          }
+        ],
+        [
+          {
+            "label": "net",
+            "kind": "money",
+            "value": "126.00",
+            "currency": "EUR",
+            "derivation": "div(149.94, 1.19)"
+          },
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "23.94",
+            "currency": "EUR",
+            "derivation": "sub(149.94, div(149.94, 1.19))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "22.61",
+            "currency": "EUR",
+            "reason": "19% taken of the gross amount"
+          },
+          {
+            "label": "net",
+            "kind": "money",
+            "value": "96.39",
+            "currency": "EUR",
+            "reason": "19% taken of the gross amount"
+          }
+        ],
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "28.49",
+            "currency": "EUR",
+            "reason": "19% taken of the gross amount"
+          },
+          {
+            "label": "net",
+            "kind": "money",
+            "value": "121.45",
+            "currency": "EUR",
+            "reason": "19% taken of the gross amount"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "net: 100.00 EUR; VAT: 19.00 EUR",
+        "net: 126.00 EUR; VAT: 23.94 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-07",
+      "family": "arithmetic",
+      "category": "net-gross",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "authored arithmetic gate 7",
+      "turns": [
+        "Ich habe 535,00 EUR brutto bezahlt, darin sind 7 % Umsatzsteuer enthalten. Wie hoch sind der Nettobetrag und die enthaltene Umsatzsteuer?",
+        "Und wenn in denselben 535,00 EUR brutto stattdessen 19 % Umsatzsteuer enthalten sind? Bitte kaufmännisch auf Cent runden."
+      ],
+      "expected": [
+        [
+          {
+            "label": "Netto",
+            "kind": "money",
+            "value": "500.00",
+            "currency": "EUR",
+            "derivation": "div(535, 1.07)"
+          },
+          {
+            "label": "Umsatzsteuer",
+            "kind": "money",
+            "value": "35.00",
+            "currency": "EUR",
+            "derivation": "sub(535, div(535, 1.07))"
+          }
+        ],
+        [
+          {
+            "label": "Netto",
+            "kind": "money",
+            "value": "449.58",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(div(535, 1.19), 2)"
+          },
+          {
+            "label": "Umsatzsteuer",
+            "kind": "money",
+            "value": "85.42",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "sub(535, round(div(535, 1.19), 2))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "Umsatzsteuer",
+            "kind": "money",
+            "value": "37.45",
+            "currency": "EUR",
+            "reason": "7% taken of the gross amount"
+          },
+          {
+            "label": "Netto",
+            "kind": "money",
+            "value": "497.55",
+            "currency": "EUR",
+            "reason": "7% taken of the gross amount"
+          }
+        ],
+        [
+          {
+            "label": "Umsatzsteuer",
+            "kind": "money",
+            "value": "101.65",
+            "currency": "EUR",
+            "reason": "19% taken of the gross amount"
+          },
+          {
+            "label": "Netto",
+            "kind": "money",
+            "value": "433.35",
+            "currency": "EUR",
+            "reason": "19% taken of the gross amount"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Netto: 500,00 EUR; Umsatzsteuer: 35,00 EUR",
+        "Netto: 449,58 EUR; Umsatzsteuer: 85,42 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-08",
+      "family": "arithmetic",
+      "category": "net-gross",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 8",
+      "turns": [
+        "I was paid 2,000.00 EUR gross for a job, with 19% VAT included. How much VAT do I owe and what is my net revenue? Round to the cent.",
+        "I misread the statement: the payment was 2,380.00 EUR gross. Same rate. Recalculate both figures."
+      ],
+      "expected": [
+        [
+          {
+            "label": "net",
+            "kind": "money",
+            "value": "1680.67",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(div(2000, 1.19), 2)"
+          },
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "319.33",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "sub(2000, round(div(2000, 1.19), 2))"
+          }
+        ],
+        [
+          {
+            "label": "net",
+            "kind": "money",
+            "value": "2000.00",
+            "currency": "EUR",
+            "derivation": "div(2380, 1.19)"
+          },
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "380.00",
+            "currency": "EUR",
+            "derivation": "sub(2380, div(2380, 1.19))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "380.00",
+            "currency": "EUR",
+            "reason": "19% taken of the gross amount"
+          }
+        ],
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "452.20",
+            "currency": "EUR",
+            "reason": "19% taken of the gross amount"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "net: 1,680.67 EUR; VAT: 319.33 EUR",
+        "net: 2,000.00 EUR; VAT: 380.00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-09",
+      "family": "arithmetic",
+      "category": "net-gross",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 9",
+      "turns": [
+        "Für eine Lieferung habe ich 1.070,00 EUR brutto bezahlt (7 % Umsatzsteuer). Wie viel Vorsteuer ist enthalten, und wie hoch ist der Nettobetrag?",
+        "Korrektur: Der Bruttobetrag war 1.177,00 EUR. Bitte Vorsteuer und Netto neu berechnen."
+      ],
+      "expected": [
+        [
+          {
+            "label": "Vorsteuer",
+            "kind": "money",
+            "value": "70.00",
+            "currency": "EUR",
+            "derivation": "sub(1070, div(1070, 1.07))"
+          },
+          {
+            "label": "Netto",
+            "kind": "money",
+            "value": "1000.00",
+            "currency": "EUR",
+            "derivation": "div(1070, 1.07)"
+          }
+        ],
+        [
+          {
+            "label": "Vorsteuer",
+            "kind": "money",
+            "value": "77.00",
+            "currency": "EUR",
+            "derivation": "sub(1177, div(1177, 1.07))"
+          },
+          {
+            "label": "Netto",
+            "kind": "money",
+            "value": "1100.00",
+            "currency": "EUR",
+            "derivation": "div(1177, 1.07)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "Vorsteuer",
+            "kind": "money",
+            "value": "74.90",
+            "currency": "EUR",
+            "reason": "7% taken of the gross amount"
+          }
+        ],
+        [
+          {
+            "label": "Vorsteuer",
+            "kind": "money",
+            "value": "82.39",
+            "currency": "EUR",
+            "reason": "7% taken of the gross amount"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Vorsteuer: 70,00 EUR; Netto: 1.000,00 EUR",
+        "Vorsteuer: 77,00 EUR; Netto: 1.100,00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-10",
+      "family": "arithmetic",
+      "category": "net-gross",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 10",
+      "turns": [
+        "A receipt totals 226.00 EUR gross. It contains one item at the 7% VAT rate costing 107.00 EUR gross; everything else is at 19%. What is the total VAT on the receipt, and the total net amount?",
+        "Correction: the 7% item costs 160.50 EUR gross, and the receipt total is 279.50 EUR gross. Recalculate the total VAT and the total net amount."
+      ],
+      "expected": [
+        [
+          {
+            "label": "total VAT",
+            "kind": "money",
+            "value": "26.00",
+            "currency": "EUR",
+            "derivation": "add(sub(107, div(107, 1.07)), sub(sub(226, 107), div(sub(226, 107), 1.19)))"
+          },
+          {
+            "label": "total net",
+            "kind": "money",
+            "value": "200.00",
+            "currency": "EUR",
+            "derivation": "add(div(107, 1.07), div(sub(226, 107), 1.19))"
+          }
+        ],
+        [
+          {
+            "label": "total VAT",
+            "kind": "money",
+            "value": "29.50",
+            "currency": "EUR",
+            "derivation": "add(sub(160.50, div(160.50, 1.07)), sub(sub(279.50, 160.50), div(sub(279.50, 160.50), 1.19)))"
+          },
+          {
+            "label": "total net",
+            "kind": "money",
+            "value": "250.00",
+            "currency": "EUR",
+            "derivation": "add(div(160.50, 1.07), div(sub(279.50, 160.50), 1.19))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "total VAT: 26.00 EUR; total net: 200.00 EUR",
+        "total VAT: 29.50 EUR; total net: 250.00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-11",
+      "family": "arithmetic",
+      "category": "percent-change",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 11",
+      "turns": [
+        "Meine Miete steigt von 850,00 EUR auf 909,50 EUR im Monat. Um wie viel Prozent steigt sie?",
+        "Korrektur: Die neue Miete beträgt 892,50 EUR, nicht 909,50 EUR. Um wie viel Prozent steigt sie jetzt?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Anstieg",
+            "kind": "percent",
+            "value": "7",
+            "derivation": "mul(div(sub(909.50, 850), 850), 100)"
+          }
+        ],
+        [
+          {
+            "label": "Anstieg",
+            "kind": "percent",
+            "value": "5",
+            "derivation": "mul(div(sub(892.50, 850), 850), 100)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "Anstieg",
+            "kind": "percent",
+            "value": "6.54",
+            "reason": "increase divided by the new rent"
+          }
+        ],
+        [
+          {
+            "label": "Anstieg",
+            "kind": "percent",
+            "value": "4.76",
+            "reason": "increase divided by the new rent"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Anstieg: 7 %",
+        "Anstieg: 5 %"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-12",
+      "family": "arithmetic",
+      "category": "percent-change",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "authored arithmetic gate 12",
+      "turns": [
+        "Annual revenue went from 48,000 EUR to 55,200 EUR. What is the percentage increase?",
+        "If revenue then falls by 15% from 55,200 EUR, what is the new revenue? Is it back at 48,000 EUR?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "increase",
+            "kind": "percent",
+            "value": "15",
+            "derivation": "mul(div(sub(55200, 48000), 48000), 100)"
+          }
+        ],
+        [
+          {
+            "label": "new revenue",
+            "kind": "money",
+            "value": "46920.00",
+            "currency": "EUR",
+            "derivation": "mul(55200, 0.85)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "increase: 15%",
+        "new revenue: 46,920.00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-13",
+      "family": "arithmetic",
+      "category": "percent-change",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 13",
+      "turns": [
+        "Ein Artikel kostet 79,99 EUR und wird um 15 % reduziert. Wie hoch ist der neue Preis, kaufmännisch auf Cent gerundet?",
+        "Korrektur: Der Rabatt beträgt 25 %, nicht 15 %. Wie hoch ist der neue Preis?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "neuer Preis",
+            "kind": "money",
+            "value": "67.99",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(79.99, 0.85), 2)"
+          }
+        ],
+        [
+          {
+            "label": "neuer Preis",
+            "kind": "money",
+            "value": "59.99",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(79.99, 0.75), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "neuer Preis: 67,99 EUR",
+        "neuer Preis: 59,99 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-14",
+      "family": "arithmetic",
+      "category": "percent-change",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "authored arithmetic gate 14",
+      "turns": [
+        "The VAT rate on a service rises from 16% to 19%. On a net invoice of 1,000.00 EUR, by what percentage does the VAT amount increase?",
+        "And by what percentage does the gross amount increase? Round to two decimal places."
+      ],
+      "expected": [
+        [
+          {
+            "label": "VAT increase",
+            "kind": "percent",
+            "value": "18.75",
+            "derivation": "mul(div(sub(mul(1000, 0.19), mul(1000, 0.16)), mul(1000, 0.16)), 100)"
+          }
+        ],
+        [
+          {
+            "label": "gross increase",
+            "kind": "percent",
+            "value": "2.59",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(div(sub(1190, 1160), 1160), 100), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "VAT increase: 18.75%",
+        "gross increase: 2.59%"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-15",
+      "family": "arithmetic",
+      "category": "instalments-simple-interest",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 15",
+      "turns": [
+        "Ich leihe mir 6.000,00 EUR zu 4 % einfachen Zinsen pro Jahr für 2 Jahre. Wie hoch sind die Zinsen und der gesamte Rückzahlungsbetrag?",
+        "Korrektur: Die Laufzeit ist 18 Monate, nicht 2 Jahre. Der Gesamtbetrag wird in 18 gleichen Monatsraten zurückgezahlt. Wie hoch sind Zinsen, Gesamtbetrag und eine Monatsrate (kaufmännisch auf Cent gerundet)?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Zinsen",
+            "kind": "money",
+            "value": "480.00",
+            "currency": "EUR",
+            "derivation": "mul(6000, 0.04, 2)"
+          },
+          {
+            "label": "Rückzahlung",
+            "kind": "money",
+            "value": "6480.00",
+            "currency": "EUR",
+            "derivation": "add(6000, mul(6000, 0.04, 2))"
+          }
+        ],
+        [
+          {
+            "label": "Zinsen",
+            "kind": "money",
+            "value": "360.00",
+            "currency": "EUR",
+            "derivation": "mul(6000, 0.04, div(18, 12))"
+          },
+          {
+            "label": "Gesamtbetrag",
+            "kind": "money",
+            "value": "6360.00",
+            "currency": "EUR",
+            "derivation": "add(6000, mul(6000, 0.04, div(18, 12)))"
+          },
+          {
+            "label": "Monatsrate",
+            "kind": "money",
+            "value": "353.33",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(div(add(6000, mul(6000, 0.04, div(18, 12))), 18), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Zinsen: 480,00 EUR; Rückzahlung: 6.480,00 EUR",
+        "Zinsen: 360,00 EUR; Gesamtbetrag: 6.360,00 EUR; Monatsrate: 353,33 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-16",
+      "family": "arithmetic",
+      "category": "instalments-simple-interest",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 16",
+      "turns": [
+        "A 2,400.00 EUR laptop is paid in 12 equal monthly instalments with no interest. How much is each instalment, and how much remains to be paid after 5 instalments?",
+        "Correction: the laptop costs 2,640.00 EUR. Same plan. Recalculate both figures."
+      ],
+      "expected": [
+        [
+          {
+            "label": "instalment",
+            "kind": "money",
+            "value": "200.00",
+            "currency": "EUR",
+            "derivation": "div(2400, 12)"
+          },
+          {
+            "label": "remaining",
+            "kind": "money",
+            "value": "1400.00",
+            "currency": "EUR",
+            "derivation": "sub(2400, mul(5, div(2400, 12)))"
+          }
+        ],
+        [
+          {
+            "label": "instalment",
+            "kind": "money",
+            "value": "220.00",
+            "currency": "EUR",
+            "derivation": "div(2640, 12)"
+          },
+          {
+            "label": "remaining",
+            "kind": "money",
+            "value": "1540.00",
+            "currency": "EUR",
+            "derivation": "sub(2640, mul(5, div(2640, 12)))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "instalment: 200.00 EUR; remaining: 1,400.00 EUR",
+        "instalment: 220.00 EUR; remaining: 1,540.00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-17",
+      "family": "arithmetic",
+      "category": "instalments-simple-interest",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 17",
+      "turns": [
+        "Ich muss 3.600,00 EUR Steuern nachzahlen und darf in 8 gleichen Raten zahlen. Wie hoch ist eine Rate, und wie viel habe ich nach 3 Raten bezahlt?",
+        "Korrektur: Die Nachzahlung beträgt 3.960,00 EUR. Bitte beide Werte neu berechnen."
+      ],
+      "expected": [
+        [
+          {
+            "label": "Rate",
+            "kind": "money",
+            "value": "450.00",
+            "currency": "EUR",
+            "derivation": "div(3600, 8)"
+          },
+          {
+            "label": "bezahlt nach 3 Raten",
+            "kind": "money",
+            "value": "1350.00",
+            "currency": "EUR",
+            "derivation": "mul(3, div(3600, 8))"
+          }
+        ],
+        [
+          {
+            "label": "Rate",
+            "kind": "money",
+            "value": "495.00",
+            "currency": "EUR",
+            "derivation": "div(3960, 8)"
+          },
+          {
+            "label": "bezahlt nach 3 Raten",
+            "kind": "money",
+            "value": "1485.00",
+            "currency": "EUR",
+            "derivation": "mul(3, div(3960, 8))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Rate: 450,00 EUR; bezahlt nach 3 Raten: 1.350,00 EUR",
+        "Rate: 495,00 EUR; bezahlt nach 3 Raten: 1.485,00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-18",
+      "family": "arithmetic",
+      "category": "instalments-simple-interest",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 18",
+      "turns": [
+        "What is the simple interest at 5% per year on 10,000.00 EUR for 73 days, using a 365-day year?",
+        "Correction: the amount is 12,500.00 EUR and the period is 146 days. Recalculate the interest."
+      ],
+      "expected": [
+        [
+          {
+            "label": "interest",
+            "kind": "money",
+            "value": "100.00",
+            "currency": "EUR",
+            "derivation": "div(mul(10000, 0.05, 73), 365)"
+          }
+        ],
+        [
+          {
+            "label": "interest",
+            "kind": "money",
+            "value": "250.00",
+            "currency": "EUR",
+            "derivation": "div(mul(12500, 0.05, 146), 365)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "interest: 100.00 EUR",
+        "interest: 250.00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-19",
+      "family": "arithmetic",
+      "category": "instalments-simple-interest",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 19",
+      "turns": [
+        "Synthetische Regel für diese Aufgabe: Der Zuschlag beträgt 1 % pro angefangenem Monat der Verspätung, berechnet auf den auf volle 50 EUR abgerundeten Betrag. Betrag 2.450,00 EUR, Verspätung 3 Monate und 2 Tage. Wie hoch ist der Zuschlag?",
+        "Korrektur: Der Betrag ist 2.475,00 EUR, die Verspätung bleibt gleich. Wie hoch ist der Zuschlag jetzt?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Zuschlag",
+            "kind": "money",
+            "value": "98.00",
+            "currency": "EUR",
+            "derivation": "mul(2450, 0.01, 4)"
+          }
+        ],
+        [
+          {
+            "label": "Zuschlag",
+            "kind": "money",
+            "value": "98.00",
+            "currency": "EUR",
+            "derivation": "mul(sub(2475, 25), 0.01, 4)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "Zuschlag",
+            "kind": "money",
+            "value": "73.50",
+            "currency": "EUR",
+            "reason": "only completed months counted"
+          }
+        ],
+        [
+          {
+            "label": "Zuschlag",
+            "kind": "money",
+            "value": "99.00",
+            "currency": "EUR",
+            "reason": "amount not rounded down to full 50 EUR"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Zuschlag: 98,00 EUR",
+        "Zuschlag: 98,00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-20",
+      "family": "arithmetic",
+      "category": "compound-interest",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 20",
+      "turns": [
+        "I invest 5,000.00 EUR at 3% interest per year, compounded annually, for 4 years. What is the final balance and the total interest earned? Round to the cent.",
+        "Correction: the rate is 3.5% per year, not 3%. Recalculate the final balance and the interest."
+      ],
+      "expected": [
+        [
+          {
+            "label": "balance",
+            "kind": "money",
+            "value": "5627.54",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(5000, pow(1.03, 4)), 2)"
+          },
+          {
+            "label": "interest",
+            "kind": "money",
+            "value": "627.54",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "sub(round(mul(5000, pow(1.03, 4)), 2), 5000)"
+          }
+        ],
+        [
+          {
+            "label": "balance",
+            "kind": "money",
+            "value": "5737.62",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(5000, pow(1.035, 4)), 2)"
+          },
+          {
+            "label": "interest",
+            "kind": "money",
+            "value": "737.62",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "sub(round(mul(5000, pow(1.035, 4)), 2), 5000)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "balance: 5,627.54 EUR; interest: 627.54 EUR",
+        "balance: 5,737.62 EUR; interest: 737.62 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-21",
+      "family": "arithmetic",
+      "category": "compound-interest",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "authored arithmetic gate 21",
+      "turns": [
+        "10.000,00 EUR werden mit 2,5 % pro Jahr verzinst, mit monatlicher Zinsgutschrift (2,5 % geteilt durch 12 pro Monat) und Zinseszins, für 1 Jahr. Wie hoch ist der Endbetrag, kaufmännisch auf Cent gerundet?",
+        "Und bei jährlicher Zinsgutschrift von 2,5 %? Wie groß ist der Unterschied zum Endbetrag mit monatlicher Gutschrift?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Endbetrag monatlich",
+            "kind": "money",
+            "value": "10252.88",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(10000, pow(add(1, div(0.025, 12)), 12)), 2)"
+          }
+        ],
+        [
+          {
+            "label": "Endbetrag jährlich",
+            "kind": "money",
+            "value": "10250.00",
+            "currency": "EUR",
+            "derivation": "mul(10000, 1.025)"
+          },
+          {
+            "label": "Unterschied",
+            "kind": "money",
+            "value": "2.88",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "sub(round(mul(10000, pow(add(1, div(0.025, 12)), 12)), 2), mul(10000, 1.025))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Endbetrag monatlich: 10.252,88 EUR",
+        "Endbetrag jährlich: 10.250,00 EUR; Unterschied: 2,88 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-22",
+      "family": "arithmetic",
+      "category": "compound-interest",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 22",
+      "turns": [
+        "I deposit 200.00 EUR at the start of each year for 3 years. The account pays 2% interest per year, compounded annually. What is the balance at the end of year 3, rounded to the cent?",
+        "Correction: the yearly deposit is 250.00 EUR, not 200.00 EUR. What is the balance at the end of year 3?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "balance",
+            "kind": "money",
+            "value": "624.32",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(200, add(1.02, pow(1.02, 2), pow(1.02, 3))), 2)"
+          }
+        ],
+        [
+          {
+            "label": "balance",
+            "kind": "money",
+            "value": "780.40",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(250, add(1.02, pow(1.02, 2), pow(1.02, 3))), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "balance: 624.32 EUR",
+        "balance: 780.40 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-23",
+      "family": "arithmetic",
+      "category": "compound-interest",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 23",
+      "turns": [
+        "Ein Darlehen über 8.000,00 EUR wächst mit 6 % Zinsen pro Jahr (Zinseszins, jährliche Verzinsung), ohne Zahlungen. Wie hoch ist die Schuld nach 3 Jahren, kaufmännisch auf Cent gerundet?",
+        "Korrektur: Der Zinssatz ist 5 %, nicht 6 %. Wie hoch ist die Schuld nach 3 Jahren?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Schuld",
+            "kind": "money",
+            "value": "9528.13",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(8000, pow(1.06, 3)), 2)"
+          }
+        ],
+        [
+          {
+            "label": "Schuld",
+            "kind": "money",
+            "value": "9261.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(8000, pow(1.05, 3)), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "Schuld",
+            "kind": "money",
+            "value": "9440.00",
+            "currency": "EUR",
+            "reason": "simple interest instead of compound"
+          }
+        ],
+        [
+          {
+            "label": "Schuld",
+            "kind": "money",
+            "value": "9200.00",
+            "currency": "EUR",
+            "reason": "simple interest instead of compound"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Schuld: 9.528,13 EUR",
+        "Schuld: 9.261,00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-24",
+      "family": "arithmetic",
+      "category": "table-sum",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 24",
+      "turns": [
+        "Hier sind meine Betriebsausgaben im Oktober:\n\n| Posten | Betrag |\n|---|---|\n| Büromiete | 1.250,00 EUR |\n| Software | 89,90 EUR |\n| Telefon | 34,99 EUR |\n| Fahrtkosten | 212,40 EUR |\n| Porto | 17,85 EUR |\n\nWie hoch ist die Summe?",
+        "Korrektur: Die Fahrtkosten betragen 221,40 EUR, nicht 212,40 EUR. Wie hoch ist die Summe jetzt?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Summe",
+            "kind": "money",
+            "value": "1605.14",
+            "currency": "EUR",
+            "derivation": "add(1250, 89.90, 34.99, 212.40, 17.85)"
+          }
+        ],
+        [
+          {
+            "label": "Summe",
+            "kind": "money",
+            "value": "1614.14",
+            "currency": "EUR",
+            "derivation": "add(1250, 89.90, 34.99, 221.40, 17.85)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Summe: 1.605,14 EUR",
+        "Summe: 1.614,14 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-25",
+      "family": "arithmetic",
+      "category": "table-sum",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "authored arithmetic gate 25",
+      "turns": [
+        "Here are my invoices for the quarter:\n\n| Invoice | Amount |\n|---|---|\n| A-101 | 1,180.00 EUR |\n| A-102 | 245.75 EUR |\n| A-103 | 3,099.99 EUR |\n| A-104 | 12.30 EUR |\n\nWhat is the total?",
+        "Invoice A-104 was cancelled, and a new invoice A-105 for 1,005.50 EUR was added. What is the new total?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "4538.04",
+            "currency": "EUR",
+            "derivation": "add(1180, 245.75, 3099.99, 12.30)"
+          }
+        ],
+        [
+          {
+            "label": "new total",
+            "kind": "money",
+            "value": "5531.24",
+            "currency": "EUR",
+            "derivation": "add(1180, 245.75, 3099.99, 1005.50)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "total: 4,538.04 EUR",
+        "new total: 5,531.24 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-26",
+      "family": "arithmetic",
+      "category": "table-sum",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 26",
+      "turns": [
+        "Meine Zahlen für das Projekt:\n\nEinnahmen:\n- Rechnung 1: 2.400,00 EUR\n- Rechnung 2: 1.150,50 EUR\n\nAusgaben:\n- Material: 640,25 EUR\n- Lizenz: 89,99 EUR\n- Unterauftrag: 1.002,00 EUR\n\nWie hoch sind die Summe der Einnahmen, die Summe der Ausgaben und der Überschuss?",
+        "Korrektur: Rechnung 2 beträgt 1.510,50 EUR, nicht 1.150,50 EUR. Bitte Einnahmen und Überschuss neu berechnen."
+      ],
+      "expected": [
+        [
+          {
+            "label": "Einnahmen",
+            "kind": "money",
+            "value": "3550.50",
+            "currency": "EUR",
+            "derivation": "add(2400, 1150.50)"
+          },
+          {
+            "label": "Ausgaben",
+            "kind": "money",
+            "value": "1732.24",
+            "currency": "EUR",
+            "derivation": "add(640.25, 89.99, 1002)"
+          },
+          {
+            "label": "Überschuss",
+            "kind": "money",
+            "value": "1818.26",
+            "currency": "EUR",
+            "derivation": "sub(add(2400, 1150.50), add(640.25, 89.99, 1002))"
+          }
+        ],
+        [
+          {
+            "label": "Einnahmen",
+            "kind": "money",
+            "value": "3910.50",
+            "currency": "EUR",
+            "derivation": "add(2400, 1510.50)"
+          },
+          {
+            "label": "Überschuss",
+            "kind": "money",
+            "value": "2178.26",
+            "currency": "EUR",
+            "derivation": "sub(add(2400, 1510.50), add(640.25, 89.99, 1002))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Einnahmen: 3.550,50 EUR; Ausgaben: 1.732,24 EUR; Überschuss: 1.818,26 EUR",
+        "Einnahmen: 3.910,50 EUR; Überschuss: 2.178,26 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-27",
+      "family": "arithmetic",
+      "category": "table-sum",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 27",
+      "turns": [
+        "I received three payments in US dollars: 540.00 USD, 1,296.00 USD and 81.00 USD. Convert each to euros at 1 EUR = 1.08 USD, round each to the cent, and give the euro total.",
+        "Correction: the exchange rate was 1 EUR = 1.20 USD. Recalculate the euro total."
+      ],
+      "expected": [
+        [
+          {
+            "label": "second payment in EUR",
+            "kind": "money",
+            "value": "1200.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(div(1296, 1.08), 2)"
+          },
+          {
+            "label": "euro total",
+            "kind": "money",
+            "value": "1775.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(round(div(540, 1.08), 2), round(div(1296, 1.08), 2), round(div(81, 1.08), 2))"
+          }
+        ],
+        [
+          {
+            "label": "euro total",
+            "kind": "money",
+            "value": "1597.50",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(round(div(540, 1.2), 2), round(div(1296, 1.2), 2), round(div(81, 1.2), 2))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "second payment in EUR: 1,200.00 EUR; euro total: 1,775.00 EUR",
+        "euro total: 1,597.50 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-28",
+      "family": "arithmetic",
+      "category": "table-sum",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 28",
+      "turns": [
+        "Monthly revenue for the first half-year:\n\n| Month | Revenue |\n|---|---|\n| January | 4,210.00 EUR |\n| February | 3,987.50 EUR |\n| March | 5,002.25 EUR |\n| April | 4,450.00 EUR |\n| May | 3,875.75 EUR |\n| June | 4,999.99 EUR |\n\nWhat is the half-year total and the monthly average, rounded to the cent?",
+        "Correction: March revenue was 5,200.25 EUR, not 5,002.25 EUR. Recalculate the total and the monthly average."
+      ],
+      "expected": [
+        [
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "26525.49",
+            "currency": "EUR",
+            "derivation": "add(4210, 3987.50, 5002.25, 4450, 3875.75, 4999.99)"
+          },
+          {
+            "label": "average",
+            "kind": "money",
+            "value": "4420.92",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(div(add(4210, 3987.50, 5002.25, 4450, 3875.75, 4999.99), 6), 2)"
+          }
+        ],
+        [
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "26723.49",
+            "currency": "EUR",
+            "derivation": "add(4210, 3987.50, 5200.25, 4450, 3875.75, 4999.99)"
+          },
+          {
+            "label": "average",
+            "kind": "money",
+            "value": "4453.92",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(div(add(4210, 3987.50, 5200.25, 4450, 3875.75, 4999.99), 6), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "average",
+            "kind": "money",
+            "value": "4420.91",
+            "currency": "EUR",
+            "reason": "rounded down instead of half up"
+          }
+        ],
+        [
+          {
+            "label": "average",
+            "kind": "money",
+            "value": "4453.91",
+            "currency": "EUR",
+            "reason": "rounded down instead of half up"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "total: 26,525.49 EUR; average: 4,420.92 EUR",
+        "total: 26,723.49 EUR; average: 4,453.92 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-29",
+      "family": "arithmetic",
+      "category": "date-time",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 29",
+      "turns": [
+        "My train leaves at 10:12. The walk to the station takes 23 minutes, and I want to be on the platform 6 minutes before departure. What is the latest time I can leave home?",
+        "Correction: the walk takes 31 minutes, not 23. What is the latest time to leave now?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "leave by",
+            "kind": "time",
+            "value": "09:43",
+            "derivation": "fmtClock(sub(sub(clock(\"10:12\"), 6), 23))"
+          }
+        ],
+        [
+          {
+            "label": "leave by",
+            "kind": "time",
+            "value": "09:35",
+            "derivation": "fmtClock(sub(sub(clock(\"10:12\"), 6), 31))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "leave by",
+            "kind": "time",
+            "value": "09:49",
+            "reason": "platform buffer ignored"
+          }
+        ],
+        [
+          {
+            "label": "leave by",
+            "kind": "time",
+            "value": "09:41",
+            "reason": "platform buffer ignored"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "leave by: 09:43",
+        "leave by: 09:35"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-30",
+      "family": "arithmetic",
+      "category": "date-time",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 30",
+      "turns": [
+        "Ich muss spätestens um 09:23 Uhr am Bahnhof sein. Der Fußweg dauert 18 Minuten. Wann muss ich spätestens losgehen?",
+        "Korrektur: Ich muss erst um 10:07 Uhr am Bahnhof sein, und der Weg dauert 25 Minuten. Wann muss ich jetzt spätestens losgehen?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Losgehen",
+            "kind": "time",
+            "value": "09:05",
+            "derivation": "fmtClock(sub(clock(\"09:23\"), 18))"
+          }
+        ],
+        [
+          {
+            "label": "Losgehen",
+            "kind": "time",
+            "value": "09:42",
+            "derivation": "fmtClock(sub(clock(\"10:07\"), 25))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "Losgehen",
+            "kind": "time",
+            "value": "08:58",
+            "reason": "the 20 October failure (09:23 minus 18 minutes given as 08:58)"
+          },
+          {
+            "label": "Losgehen",
+            "kind": "time",
+            "value": "09:41",
+            "reason": "minutes added instead of subtracted"
+          }
+        ],
+        [
+          {
+            "label": "Losgehen",
+            "kind": "time",
+            "value": "10:32",
+            "reason": "minutes added instead of subtracted"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Losgehen: 09:05",
+        "Losgehen: 09:42"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-31",
+      "family": "arithmetic",
+      "category": "date-time",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 31",
+      "turns": [
+        "My timesheet for one day: 08:45 to 12:10 and 13:05 to 17:20. How long did I work in total, in hours and minutes? At 62.00 EUR per hour, what is the fee, rounded to the cent?",
+        "Correction: the afternoon block ended at 17:50, not 17:20. Recalculate the time worked and the fee."
+      ],
+      "expected": [
+        [
+          {
+            "label": "time worked",
+            "kind": "duration",
+            "value": "460",
+            "derivation": "add(sub(clock(\"12:10\"), clock(\"08:45\")), sub(clock(\"17:20\"), clock(\"13:05\")))"
+          },
+          {
+            "label": "fee",
+            "kind": "money",
+            "value": "475.33",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(62, div(add(sub(clock(\"12:10\"), clock(\"08:45\")), sub(clock(\"17:20\"), clock(\"13:05\"))), 60)), 2)"
+          }
+        ],
+        [
+          {
+            "label": "time worked",
+            "kind": "duration",
+            "value": "490",
+            "derivation": "add(sub(clock(\"12:10\"), clock(\"08:45\")), sub(clock(\"17:50\"), clock(\"13:05\")))"
+          },
+          {
+            "label": "fee",
+            "kind": "money",
+            "value": "506.33",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(62, div(add(sub(clock(\"12:10\"), clock(\"08:45\")), sub(clock(\"17:50\"), clock(\"13:05\"))), 60)), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "time worked: 7 h 40 min; fee: 475.33 EUR",
+        "time worked: 8 h 10 min; fee: 506.33 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-32",
+      "family": "arithmetic",
+      "category": "date-time",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 32",
+      "turns": [
+        "Das Rechnungsdatum ist der 03.11.2026, das Zahlungsziel beträgt 14 Tage ab Rechnungsdatum. Bis zu welchem Datum muss gezahlt werden? Und wie viele Tage sind es vom Rechnungsdatum bis zum 31.12.2026 (Rechnungsdatum nicht mitgezählt, 31.12.2026 mitgezählt)?",
+        "Korrektur: Das Rechnungsdatum ist der 23.11.2026. Bitte beide Angaben neu berechnen."
+      ],
+      "expected": [
+        [
+          {
+            "label": "Fälligkeit",
+            "kind": "date",
+            "value": "2026-11-17",
+            "derivation": "addDays(\"2026-11-03\", 14)"
+          },
+          {
+            "label": "Tage bis 31.12.",
+            "kind": "number",
+            "value": "58",
+            "unit": "days",
+            "derivation": "daysBetween(\"2026-11-03\", \"2026-12-31\")"
+          }
+        ],
+        [
+          {
+            "label": "Fälligkeit",
+            "kind": "date",
+            "value": "2026-12-07",
+            "derivation": "addDays(\"2026-11-23\", 14)"
+          },
+          {
+            "label": "Tage bis 31.12.",
+            "kind": "number",
+            "value": "38",
+            "unit": "days",
+            "derivation": "daysBetween(\"2026-11-23\", \"2026-12-31\")"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Fälligkeit: 17.11.2026; Tage bis 31.12.: 58 Tage",
+        "Fälligkeit: 07.12.2026; Tage bis 31.12.: 38 Tage"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-33",
+      "family": "arithmetic",
+      "category": "date-time",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 33",
+      "turns": [
+        "A payment plan has its first payment on 31 January 2028, then one payment every 30 days. On which dates are the second and third payments due?",
+        "Sorry, the first payment is on 31 January 2027, not 2028. Which dates are the second and third payments due now?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "second payment",
+            "kind": "date",
+            "value": "2028-03-01",
+            "derivation": "addDays(\"2028-01-31\", 30)"
+          },
+          {
+            "label": "third payment",
+            "kind": "date",
+            "value": "2028-03-31",
+            "derivation": "addDays(\"2028-01-31\", 60)"
+          }
+        ],
+        [
+          {
+            "label": "second payment",
+            "kind": "date",
+            "value": "2027-03-02",
+            "derivation": "addDays(\"2027-01-31\", 30)"
+          },
+          {
+            "label": "third payment",
+            "kind": "date",
+            "value": "2027-04-01",
+            "derivation": "addDays(\"2027-01-31\", 60)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        [
+          {
+            "label": "second payment",
+            "kind": "date",
+            "value": "2027-03-01",
+            "reason": "leap-year February kept after the year changed"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "second payment: 2028-03-01; third payment: 2028-03-31",
+        "second payment: 2027-03-02; third payment: 2027-04-01"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-34",
+      "family": "arithmetic",
+      "category": "date-time",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 34",
+      "turns": [
+        "Eine Nachtschicht beginnt um 22:40 Uhr und dauert 7 Stunden und 35 Minuten. Wann endet sie? Der Stundenlohn beträgt 16,80 EUR, für die ganze Schicht gibt es 25 % Zuschlag. Wie hoch ist der Lohn für die Schicht, kaufmännisch auf Cent gerundet?",
+        "Korrektur: Die Schicht dauert 8 Stunden und 5 Minuten. Wann endet sie, und wie hoch ist der Lohn?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Schichtende",
+            "kind": "time",
+            "value": "06:15",
+            "derivation": "fmtClock(add(clock(\"22:40\"), hm(7, 35)))"
+          },
+          {
+            "label": "Lohn",
+            "kind": "money",
+            "value": "159.25",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(16.80, 1.25, div(hm(7, 35), 60)), 2)"
+          }
+        ],
+        [
+          {
+            "label": "Schichtende",
+            "kind": "time",
+            "value": "06:45",
+            "derivation": "fmtClock(add(clock(\"22:40\"), hm(8, 5)))"
+          },
+          {
+            "label": "Lohn",
+            "kind": "money",
+            "value": "169.75",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(16.80, 1.25, div(hm(8, 5), 60)), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Schichtende: 06:15; Lohn: 159,25 EUR",
+        "Schichtende: 06:45; Lohn: 169,75 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-35",
+      "family": "arithmetic",
+      "category": "proration",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 35",
+      "turns": [
+        "An annual software licence costs 1,460.00 EUR for 365 days. The customer cancels after using it for 146 days. Pro rata by days, how much of the fee was used, and how much is refunded?",
+        "Correction: the customer used it for 200 days, not 146. Recalculate the used amount and the refund."
+      ],
+      "expected": [
+        [
+          {
+            "label": "used",
+            "kind": "money",
+            "value": "584.00",
+            "currency": "EUR",
+            "derivation": "div(mul(1460, 146), 365)"
+          },
+          {
+            "label": "refund",
+            "kind": "money",
+            "value": "876.00",
+            "currency": "EUR",
+            "derivation": "sub(1460, div(mul(1460, 146), 365))"
+          }
+        ],
+        [
+          {
+            "label": "used",
+            "kind": "money",
+            "value": "800.00",
+            "currency": "EUR",
+            "derivation": "div(mul(1460, 200), 365)"
+          },
+          {
+            "label": "refund",
+            "kind": "money",
+            "value": "660.00",
+            "currency": "EUR",
+            "derivation": "sub(1460, div(mul(1460, 200), 365))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "used: 584.00 EUR; refund: 876.00 EUR",
+        "used: 800.00 EUR; refund: 660.00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-36",
+      "family": "arithmetic",
+      "category": "proration",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 36",
+      "turns": [
+        "Die Monatsmiete beträgt 930,00 EUR, der November 2026 hat 30 Tage. Einzug ist am 18.11.2026, der Einzugstag zählt mit. Wie viele Tage sind zu zahlen, und wie hoch ist die anteilige Miete für November?",
+        "Korrektur: Der Einzug ist am 09.11.2026. Bitte Tage und anteilige Miete neu berechnen."
+      ],
+      "expected": [
+        [
+          {
+            "label": "Tage",
+            "kind": "number",
+            "value": "13",
+            "unit": "days",
+            "derivation": "add(daysBetween(\"2026-11-18\", \"2026-11-30\"), 1)"
+          },
+          {
+            "label": "anteilige Miete",
+            "kind": "money",
+            "value": "403.00",
+            "currency": "EUR",
+            "derivation": "div(mul(930, add(daysBetween(\"2026-11-18\", \"2026-11-30\"), 1)), 30)"
+          }
+        ],
+        [
+          {
+            "label": "Tage",
+            "kind": "number",
+            "value": "22",
+            "unit": "days",
+            "derivation": "add(daysBetween(\"2026-11-09\", \"2026-11-30\"), 1)"
+          },
+          {
+            "label": "anteilige Miete",
+            "kind": "money",
+            "value": "682.00",
+            "currency": "EUR",
+            "derivation": "div(mul(930, add(daysBetween(\"2026-11-09\", \"2026-11-30\"), 1)), 30)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Tage: 13 Tage; anteilige Miete: 403,00 EUR",
+        "Tage: 22 Tage; anteilige Miete: 682,00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-37",
+      "family": "arithmetic",
+      "category": "proration",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 37",
+      "turns": [
+        "A quarterly service fee of 1,092.00 EUR covers 1 October to 31 December 2026, which is 92 days. The service ends on 15 November 2026, and that day is included. How many days are billable, and what is the pro-rated fee?",
+        "Correction: the service ends on 30 November 2026 (included). Recalculate the days and the pro-rated fee, rounded to the cent."
+      ],
+      "expected": [
+        [
+          {
+            "label": "billable days",
+            "kind": "number",
+            "value": "46",
+            "unit": "days",
+            "derivation": "add(daysBetween(\"2026-10-01\", \"2026-11-15\"), 1)"
+          },
+          {
+            "label": "fee",
+            "kind": "money",
+            "value": "546.00",
+            "currency": "EUR",
+            "derivation": "div(mul(1092, add(daysBetween(\"2026-10-01\", \"2026-11-15\"), 1)), 92)"
+          }
+        ],
+        [
+          {
+            "label": "billable days",
+            "kind": "number",
+            "value": "61",
+            "unit": "days",
+            "derivation": "add(daysBetween(\"2026-10-01\", \"2026-11-30\"), 1)"
+          },
+          {
+            "label": "fee",
+            "kind": "money",
+            "value": "724.04",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(1092, div(add(daysBetween(\"2026-10-01\", \"2026-11-30\"), 1), 92)), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "billable days: 46 days; fee: 546.00 EUR",
+        "billable days: 61 days; fee: 724.04 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-38",
+      "family": "arithmetic",
+      "category": "multi-step",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 38",
+      "turns": [
+        "Ich verkaufe 2 Lizenzen zu je 249,00 EUR netto. Auf die Summe gibt es 10 % Rabatt, danach kommen 19 % Umsatzsteuer. Wie hoch sind der rabattierte Nettobetrag, die Umsatzsteuer (kaufmännisch auf Cent gerundet) und der Bruttobetrag?",
+        "Korrektur: Es sind 3 Lizenzen, nicht 2. Bitte alles neu berechnen."
+      ],
+      "expected": [
+        [
+          {
+            "label": "Netto rabattiert",
+            "kind": "money",
+            "value": "448.20",
+            "currency": "EUR",
+            "derivation": "mul(2, 249, 0.9)"
+          },
+          {
+            "label": "Umsatzsteuer",
+            "kind": "money",
+            "value": "85.16",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(2, 249, 0.9, 0.19), 2)"
+          },
+          {
+            "label": "Brutto",
+            "kind": "money",
+            "value": "533.36",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(mul(2, 249, 0.9), round(mul(2, 249, 0.9, 0.19), 2))"
+          }
+        ],
+        [
+          {
+            "label": "Netto rabattiert",
+            "kind": "money",
+            "value": "672.30",
+            "currency": "EUR",
+            "derivation": "mul(3, 249, 0.9)"
+          },
+          {
+            "label": "Umsatzsteuer",
+            "kind": "money",
+            "value": "127.74",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(3, 249, 0.9, 0.19), 2)"
+          },
+          {
+            "label": "Brutto",
+            "kind": "money",
+            "value": "800.04",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(mul(3, 249, 0.9), round(mul(3, 249, 0.9, 0.19), 2))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Netto rabattiert: 448,20 EUR; Umsatzsteuer: 85,16 EUR; Brutto: 533,36 EUR",
+        "Netto rabattiert: 672,30 EUR; Umsatzsteuer: 127,74 EUR; Brutto: 800,04 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-39",
+      "family": "arithmetic",
+      "category": "multi-step",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 39",
+      "turns": [
+        "My freelance income this quarter was 4,800.00 EUR and my deductible expenses were 1,235.60 EUR. I set aside 30% of the profit for income tax. How much do I set aside, and how much of the profit remains?",
+        "Correction: the expenses were 1,325.60 EUR, not 1,235.60 EUR. Recalculate both figures."
+      ],
+      "expected": [
+        [
+          {
+            "label": "set aside",
+            "kind": "money",
+            "value": "1069.32",
+            "currency": "EUR",
+            "derivation": "mul(sub(4800, 1235.60), 0.30)"
+          },
+          {
+            "label": "remaining profit",
+            "kind": "money",
+            "value": "2495.08",
+            "currency": "EUR",
+            "derivation": "mul(sub(4800, 1235.60), 0.70)"
+          }
+        ],
+        [
+          {
+            "label": "set aside",
+            "kind": "money",
+            "value": "1042.32",
+            "currency": "EUR",
+            "derivation": "mul(sub(4800, 1325.60), 0.30)"
+          },
+          {
+            "label": "remaining profit",
+            "kind": "money",
+            "value": "2432.08",
+            "currency": "EUR",
+            "derivation": "mul(sub(4800, 1325.60), 0.70)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "set aside",
+            "kind": "money",
+            "value": "1440.00",
+            "currency": "EUR",
+            "reason": "30% of income instead of profit"
+          }
+        ],
+        [
+          {
+            "label": "set aside",
+            "kind": "money",
+            "value": "1440.00",
+            "currency": "EUR",
+            "reason": "30% of income instead of profit"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "set aside: 1,069.32 EUR; remaining profit: 2,495.08 EUR",
+        "set aside: 1,042.32 EUR; remaining profit: 2,432.08 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "arith-40",
+      "family": "arithmetic",
+      "category": "multi-step",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "authored arithmetic gate 40",
+      "turns": [
+        "Eine Rechnung über 2.380,00 EUR brutto (19 % Umsatzsteuer enthalten) gewährt 2 % Skonto bei Zahlung innerhalb von 10 Tagen. Wie hoch ist der Zahlbetrag mit Skonto, und wie viel Umsatzsteuer ist in diesem Zahlbetrag enthalten?",
+        "Korrektur: Das Skonto beträgt 3 %, nicht 2 %. Bitte beide Werte neu berechnen."
+      ],
+      "expected": [
+        [
+          {
+            "label": "Zahlbetrag",
+            "kind": "money",
+            "value": "2332.40",
+            "currency": "EUR",
+            "derivation": "mul(2380, 0.98)"
+          },
+          {
+            "label": "enthaltene Umsatzsteuer",
+            "kind": "money",
+            "value": "372.40",
+            "currency": "EUR",
+            "derivation": "sub(mul(2380, 0.98), div(mul(2380, 0.98), 1.19))"
+          }
+        ],
+        [
+          {
+            "label": "Zahlbetrag",
+            "kind": "money",
+            "value": "2308.60",
+            "currency": "EUR",
+            "derivation": "mul(2380, 0.97)"
+          },
+          {
+            "label": "enthaltene Umsatzsteuer",
+            "kind": "money",
+            "value": "368.60",
+            "currency": "EUR",
+            "derivation": "sub(mul(2380, 0.97), div(mul(2380, 0.97), 1.19))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "enthaltene Umsatzsteuer",
+            "kind": "money",
+            "value": "443.16",
+            "currency": "EUR",
+            "reason": "19% taken of the gross amount"
+          }
+        ],
+        [
+          {
+            "label": "enthaltene Umsatzsteuer",
+            "kind": "money",
+            "value": "438.63",
+            "currency": "EUR",
+            "reason": "19% taken of the gross amount"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Zahlbetrag: 2.332,40 EUR; enthaltene Umsatzsteuer: 372,40 EUR",
+        "Zahlbetrag: 2.308,60 EUR; enthaltene Umsatzsteuer: 368,60 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    }
+  ]
+}
