@@ -20,6 +20,7 @@ import {
 } from "./research";
 import { request as upstreamRequest } from "undici";
 import { parseUsageMetrics } from "./usage-metrics";
+import { attestationAuditGuard } from "./attestation-audit";
 import {
   serviceDispatcher,
   proxyConfigured,
@@ -246,6 +247,9 @@ export function createApp(config: Config) {
   });
   let active = 0;
   const inFlight = new Map<string, number>();
+  // Block-only attestation audit: can refuse forwarding, never supplies a key.
+  // Pass-through until a deployment installs an audit configuration.
+  app.use("/api/inference", attestationAuditGuard());
   app.post(
     "/api/inference/v1/chat/completions",
     express.raw({ type: "*/*", limit: "1mb" }),
