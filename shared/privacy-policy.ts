@@ -23,7 +23,7 @@ export const POLICY_SECTIONS: readonly PrivacySection[] = [
   {
     id: "cannot",
     heading: "What we cannot delete for you",
-    text: "The secure server's short-term working memory, which clears on its own within minutes to a few hours and has no delete button. The provider's records of time, model and token counts, kept under its published policy. Our own request records: which account asked, when, how many times, which model, and the published cost; how long we keep them is an owner decision not yet made and will be stated here when it is. Search-provider records of search text you approved, kept under that provider's policy.",
+    text: "The secure server's short-term working memory, which clears on its own within minutes to a few hours and has no delete button. The provider's records of time, model and token counts, which the provider states it keeps for 90 days. Our own request records: which account asked, when, how many times, which model, and the published cost; how long we keep them is an owner decision not yet made and will be stated here when it is. Search-provider records of search text you approved, kept under that provider's policy.",
   },
   {
     id: "contact",

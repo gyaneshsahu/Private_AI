@@ -12,7 +12,7 @@ Before anything is sent, CometRow looks for ID numbers, bank account and card nu
 
 ## What is sealed and sent
 
-The rest of your question, your selected files and the earlier messages you included are locked in your browser so that only one secure server can open them. The server is a sealed computer with a protected graphics processor that is checked by your browser before each request. Our own systems pass the locked package along and cannot open it.
+The rest of your question, your selected files and the earlier messages you included are locked in your browser so that only one secure server can open them. The server is a sealed computer with a protected graphics processor. Before each request your browser checks that it is talking to an approved sealed release; that check is partial today: it cannot tell whether the approval was later withdrawn or how old the evidence is, and the company has given no date for a fuller browser check. Our own systems pass the locked package along and cannot open it.
 
 ## What we can see
 
@@ -20,7 +20,7 @@ We can see that your account asked something, when, how many times, which model 
 
 ## What the secure server keeps
 
-The company that runs the secure server states that it does not keep your question or answer after the reply is sent and does not use them to train any AI. It keeps a short-term working memory inside the sealed server that can hold parts of recent questions for minutes, at most a few hours, and clears on its own; there is no button that empties it immediately. It keeps records such as time, model and token counts, without content, for the periods in its published policy: about 90 days for most of them, longer for accounting records.
+The company that runs the secure server states that it does not keep your question or answer after the reply is sent and does not use them to train any AI. It keeps a short-term working memory inside the sealed server that can hold parts of recent questions until it clears on its own, usually within minutes, sometimes hours; there is no button that empties it, no promised maximum time, and the company has said it does not plan to add one. It keeps records such as time, model and token counts, without content; the company states it keeps these for 90 days, longer for accounting records.
 
 ## Spending and limits
 
@@ -40,7 +40,7 @@ One saved conversation: open Saved and choose Delete next to it. Everything save
 
 ## What we cannot delete for you
 
-The secure server's short-term working memory, which clears on its own within minutes to a few hours and has no delete button. The provider's records of time, model and token counts, kept under its published policy. Our own request records: which account asked, when, how many times, which model, and the published cost; how long we keep them is an owner decision not yet made and will be stated here when it is. Search-provider records of search text you approved, kept under that provider's policy.
+The secure server's short-term working memory, which clears on its own within minutes to a few hours and has no delete button. The provider's records of time, model and token counts, which the provider states it keeps for 90 days. Our own request records: which account asked, when, how many times, which model, and the published cost; how long we keep them is an owner decision not yet made and will be stated here when it is. Search-provider records of search text you approved, kept under that provider's policy.
 
 ## Questions, requests and incidents
 

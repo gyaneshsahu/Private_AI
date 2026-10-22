@@ -24,7 +24,7 @@ This amends the "Working requirements v0.2 · 4 October 2026" below and the 19 O
 | 8.4 Limited release: at most two invitees, seven days, pause and revoke criteria, support contact named | BLOCKED(8.3, 6.1, 7.1) |
 | 8.3 Provider qualification report with linked evidence; enable private chat for the owner account only | BLOCKED(8.2, 5.3) |
 | 8.2 Integrate the V3 JavaScript verifier if released; otherwise delegated relay verification per the 21 October assessment | BLOCKED(8.1) |
-| 8.1 Provider direction decision: 23 October for cache, limits, terms and models; 31 October for the V3 browser verifier | BLOCKED(Tinfoil) |
+| 8.1 Provider direction decision: 23 October for cache, limits, terms and models; the V3 browser verifier has no supplier ETA (22 October reply) | READY for the owner's decision |
 | 5.3 Held-out acceptance on one frozen configuration | BLOCKED(5.2) |
 | 5.2 Human adjudication of results; retain failures; no relabelling | BLOCKED(5.1) |
 | 5.1 Run the prepared fidelity and safety cases within the approved cap, no retries | BLOCKED(0.6) |

@@ -58,10 +58,17 @@ describe("enclave search harness (preparation only)", () => {
     expect(plan.neverWritten).toContain("the model's reply text");
     expect(plan.durableRecord.queryHash).toMatch(/[a-f0-9]{64}/);
     expect(plan.spend.capUSD).toBe(1);
+    expect(plan.feeFloorUSD).toBe(0.15);
   });
 
-  it("refuses more than three requests, a cap above the owner's ceiling, a missing price, and a private-looking query", () => {
+  it("refuses more than three requests, a cap above the owner's ceiling or below the fee floor, a missing price, and a private-looking query", () => {
     const policy = permit().policy;
+    expect(() =>
+      validateEnclaveSearchPermit(
+        permit({ spend: { ...permit().spend, capUSD: 0.1 } }),
+        now,
+      ),
+    ).toThrow(/web search fee/);
     expect(() =>
       validateEnclaveSearchPermit(
         permit({ policy: { ...policy, maxRequests: 4 } }),

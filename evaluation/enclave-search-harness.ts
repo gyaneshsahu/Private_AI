@@ -60,6 +60,14 @@ export const enclaveSearchPermitSchema = z
   .strict();
 export type EnclaveSearchPermit = z.infer<typeof enclaveSearchPermitSchema>;
 
+/**
+ * Web search fee per request, USD. Supplier statement of 22 October 2026
+ * (supplier email): "costs $0.05 per request. It works with all chat
+ * models." Not yet read from the rendered pricing page nor observed in a
+ * metered cost_usd; see docs/provider-qualification.md.
+ */
+export const WEB_SEARCH_FEE_USD = 0.05;
+
 const identifierLike =
   /@|\b\d{6,}\b|\b[A-Z]{2}\d{2}[A-Z0-9]{10,30}\b|\b\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{2,4}\b/;
 
@@ -80,6 +88,10 @@ export function validateEnclaveSearchPermit(
     );
   if (Date.parse(permit.spend.priceCheckedAt) < approved - 86400e3)
     throw Error("The price must have been checked within a day of approval.");
+  if (permit.spend.capUSD < permit.policy.maxRequests * WEB_SEARCH_FEE_USD)
+    throw Error(
+      "The cap must cover at least the web search fee for every planned request.",
+    );
   return permit;
 }
 
@@ -109,6 +121,8 @@ export interface HarnessPlan {
   approvalId: string;
   spend: EnclaveSearchPermit["spend"];
   releaseDigest: string;
+  /** Search fees alone if every planned request searches; tokens come on top. */
+  feeFloorUSD: number;
   requests: PlannedRequest[];
   sequence: string[];
   durableRecord: Record<string, string>;
@@ -157,6 +171,9 @@ export function planEnclaveSearchHarness(
     approvalId: permit.approvalId,
     spend: permit.spend,
     releaseDigest: permit.policy.releaseDigest,
+    feeFloorUSD: Number(
+      (permit.policy.maxRequests * WEB_SEARCH_FEE_USD).toFixed(2),
+    ),
     requests,
     sequence: [
       "browser verification against the exact release digest must pass the same day, with the usual negative checks, before request 1",

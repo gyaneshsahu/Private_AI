@@ -3,6 +3,10 @@
 **Approved spend (owner statement, 22 October 2026):** no new paid spend is approved. Anything already spent, including the 4 October experiment cap and the Brave test on 12 October, is history. Any future paid step, such as the in-enclave research harness or the Phase 5 evaluation runs, needs the owner to name the service, the current price and a specific cap first. Every older figure in this document (USD 2, USD 3, USD 5, USD 10, USD 25, USD 50 to 100) is a historical or proposal figure and no longer an authorisation.
 
 
+## Supplier reply received — 22 October 2026 (owner-forwarded)
+
+Status remains **NOT_PASSED**. The verbatim reply, the sender's name and the row-by-row table are kept outside the public repository in the git-ignored `docs/private/` folder (owner's machine and backups only). Supplier statements recorded from it, not verified against the deployment serving our account: no date for a browser-side V3 verifier (only the Go SDK supports V3); no cache controls and no purge control for the enclave's working memory, none planned; no hard spending ceilings; at least one week's deprecation notice for non-experimental models; in-enclave web search at USD 0.05 per request; an individual founder in Germany may contract under the DPA; metadata retained 90 days, longer for accounting records. The owner's six questions are summarised in the ledger entry of 22 October.
+
 ## Supplier public documentation re-check — 21 October 2026
 
 Status remains **NOT_PASSED**. On 21 October the agent re-read Tinfoil's published documentation, the npm registry and the public contact pages. No provider request, credential use, account change or supplier contact was made. These are supplier statements and public release metadata, not verification of the deployment serving our account. Owner decision the same day: wait for the Tinfoil reply until **23 October**; if none arrives, select a solution under the existing decision sequence in "Limited working product" below. The owner-supplied sent Tinfoil text is preserved in [provider-outreach-20261020.md](provider-outreach-20261020.md).

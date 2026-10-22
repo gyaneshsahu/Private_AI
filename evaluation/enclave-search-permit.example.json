@@ -6,7 +6,7 @@
   "approvalEvidence": null,
   "spend": {
     "service": "Tinfoil",
-    "priceEvidence": null,
+    "priceEvidence": "Supplier statement, email of 22 October 2026: web search costs USD 0.05 per request and works with all chat models; listed at https://tinfoil.sh/pricing#api. Owner re-reads the page and sets priceCheckedAt before approving.",
     "priceCheckedAt": null,
     "capUSD": null
   },

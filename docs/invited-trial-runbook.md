@@ -476,6 +476,34 @@ They do not prove host disaster recovery, power-loss durability or lost-password
 recovery. The packaged encrypted source-loss service drill now passes locally and
 in CI; actual hosted cutover and sustained recovery objectives remain open.
 
+## Model lifecycle: deprecation notice and weekly check — 22 October
+
+Supplier statement (22 October, verbatim in the git-ignored docs/private/ folder): every
+chat model not labelled `experimental` has production status with a **minimum
+deprecation notice of one week**; experimental ("decision") models may be swapped
+or removed at any time. Consequences for operation:
+
+1. The qualified model in the deployment's qualification report must be a
+   non-experimental model before any invitee is admitted (launch plan 8.5;
+   candidates in model-selection-proposal-20261022.md). An experimental model may
+   only ever be the development permit's model, never the hosted default.
+2. **Weekly check, same weekday, owner or operator:** read the chat model page
+   (https://docs.tinfoil.sh/models/chat.md) and the changelog
+   (https://docs.tinfoil.sh/resources/changelog.md); confirm the qualified model
+   and the fallback model, if any, are still listed without the experimental
+   label and without a deprecation entry; record the date and result in
+   READINESS.md. A week is the whole notice window, so a missed check can mean
+   discovering a removal only when requests fail.
+3. On a deprecation entry for the qualified model: within the notice week, name
+   the replacement from the proposal, obtain the same evidence as for the current
+   model (worker repository, release digest, pricing read), and re-issue the
+   qualification report; if that cannot be completed in time, pause private chat
+   (operator stop control) rather than let requests fail into the fallback
+   dialog unannounced.
+4. A `X-PrivateAI-Upstream: unavailable` rate that rises without a deployment on
+   our side is the early signal of a swap or removal; check the catalog before
+   anything else.
+
 ## Open evidence
 
 Full provider-chain qualification, human quality grades, realistic planning
