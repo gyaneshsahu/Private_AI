@@ -1,4 +1,8 @@
 # PrivateAI readiness checklist
+## Phase 2 validation and a small-screen layout fix — 22 October
+
+After items 2.1, 2.2, 2.3 and 2.6 the first full browser run failed one journey (`tests/browser/chat-design.spec.ts`, reduced-height viewport): the full-width Incognito chat button had pushed the saved-chat list below the drawer's visible area at 420 px, where it cannot scroll into view. A real small-screen layout defect introduced by 2.1, found by the existing test, fixed by placing both new-chat buttons on one row (`18707f9`). One unit UI test (`tests/source-history-ui.test.ts`) timed out once at page load while a worktree was installing on the same machine and passed alone; retained as a load timeout. Final validation on `18707f9`, machine otherwise quiet: build and typecheck pass; `npm test` 527 passed / 0 failed / 149 skipped across 135 files; `npx playwright test` 59 passed. Durable PostgreSQL, ingress and packaged suites run once after the approved worktree merges below. Exact-commit CI still required.
+
 ## Research-query masking, detector fixes and the cost-exposure test — 22 October
 
 Launch plan items 2.3 and 2.6, implemented locally, not deployed.
