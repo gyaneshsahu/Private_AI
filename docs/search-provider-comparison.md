@@ -1,4 +1,8 @@
 # Search provider eligibility for saved citations
+## Saved research decision: keep the answer, refresh the sources — 22 October
+
+Owner decided on 22 October, after the agent restated the cause (Brave's published terms prohibit retaining any data received through the API; the storage-rights request was never answered): the AI's written answer to a search-assisted question is saved in the user's encrypted history like any other reply; Brave results, snippets and source links are not stored; a reopened chat shows that the answer came from a live search and offers a one-tap re-run of the same user-approved query for current sources; a source page the user explicitly opened through the existing public-page workflow may retain its address and the passage read, as user-initiated content outside the API data. This replaces the temporary-session exclusion of search replies from saved history and is recorded in docs/launch-plan-20261022.md Phase 4.1. In-enclave search through Tinfoil remains the long-term option if Tinfoil stays. Not implemented yet; no supplier contact.
+
 
 ## Brave outcome and enclave-search candidate — 21 October
 

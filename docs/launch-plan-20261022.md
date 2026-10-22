@@ -47,7 +47,7 @@ Done before and during the handover: restricted Render deployment live at app.co
 
 | # | Item | Status |
 | --- | --- | --- |
-| 4.1 | Keep Brave for temporary research under the public plan; saved research stays off. Verify the live consent → retrieval → cited answer → follow-up path once hosted. | TODO |
+| 4.1 | Brave stays for live research under the public plan. Owner decision 22 October: the AI's written answer is saved in encrypted history; Brave results and source links are never stored; reopened chats show "from a live search, search again to see current sources" with one-tap re-run; a source page the user opened through the page workflow may keep its address and the passage read, as the user's own action. Verify the live consent → retrieval → cited answer → reopen → re-run path once hosted. | TODO |
 | 4.2 | In-enclave search (Tinfoil + Exa): bounded three-request synthetic test, only if Tinfoil remains the direction after Phase 8.1. | BLOCKED(8.1) |
 
 ## Phase 5 — Quality and safety (needs 0.6 and 0.7)
