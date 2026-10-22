@@ -20,6 +20,7 @@ export function WorkspaceNavigation(props: {
   status?: AppStatus;
   onOpen: (c: Conversation) => void;
   onNew: (projectId?: string) => void;
+  onNewIncognito: () => void;
   onNavigate: (tab: "Saved" | "Account" | "Help") => void;
   onSettings: () => void;
   onSignOut: () => void;
@@ -45,6 +46,7 @@ export function WorkspaceNavigation(props: {
     status,
     onOpen,
     onNew,
+    onNewIncognito,
     onNavigate,
     onSettings,
     onSignOut,
@@ -134,6 +136,16 @@ export function WorkspaceNavigation(props: {
       >
         <Icon name="plus" />
         New chat
+      </button>
+      <button
+        className="new-chat new-incognito"
+        onClick={onNewIncognito}
+        disabled={newDisabled}
+        aria-label="New incognito chat"
+        title="Never saved on this device; gone when you close, lock or sign out"
+      >
+        <Icon name="shield" />
+        Incognito chat
       </button>
       {unlocked ? (
         <>

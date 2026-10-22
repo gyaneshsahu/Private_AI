@@ -169,6 +169,8 @@ export function App() {
   const accessNavigation = useRef(false);
   const outputEnd = useRef<HTMLDivElement>(null);
   const unsaved = useMemo(() => {
+    // An incognito chat is meant to be lost; never warn about discarding it.
+    if (conversation.incognito) return false;
     const previous = saved.find((item) => item.id === conversation.id);
     if (!previous)
       return !!(
@@ -766,6 +768,12 @@ export function App() {
     }
   }
   async function save(asCopy = false) {
+    if (conversation.incognito) {
+      fail(
+        "Incognito chats are never saved. Start a normal chat to keep history.",
+      );
+      return;
+    }
     const current = epoch.current;
     setBusy("Encrypting your conversation…");
     try {
@@ -1049,6 +1057,17 @@ export function App() {
           setTab("Conversation");
           setNavigationOpen(false);
         }}
+        onNewIncognito={() => {
+          if (!allowReplace()) return;
+          reset();
+          setConversation({
+            ...emptyConversation(),
+            incognito: true,
+            title: "Incognito chat",
+          });
+          setTab("Conversation");
+          setNavigationOpen(false);
+        }}
         onNavigate={(target) => {
           setTab(target);
           setNavigationOpen(false);
@@ -1307,6 +1326,14 @@ export function App() {
             </p>
           </div>
         </details>
+        {conversation.incognito && (
+          <div role="status" className="notice incognito-banner">
+            <strong>Incognito chat.</strong> Nothing from this chat is saved on
+            this device; it is gone when you start another chat, lock, reload or
+            sign out. This does not change what the secure server keeps for a
+            short time or the request records we hold.
+          </div>
+        )}
         {notice && (
           <div role="status" className="notice">
             {notice}
@@ -2338,6 +2365,7 @@ export function App() {
                     disabled={
                       !!busy ||
                       !conversation.title.trim() ||
+                      !!conversation.incognito ||
                       containsTemporaryResearch(conversation) ||
                       (!conversation.messages.length &&
                         !conversation.attachments.length &&

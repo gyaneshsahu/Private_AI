@@ -1729,3 +1729,11 @@
     max-height: 40dvh;
   }
 }
+
+.chat-design .new-incognito {
+  margin-top: 0.25rem;
+  opacity: 0.85;
+}
+.chat-design .incognito-banner {
+  border-style: dashed;
+}

@@ -151,6 +151,11 @@ export interface Conversation {
   projectId?: string;
   /** Sticky for the whole conversation: replies may reproduce temporary search results. */
   temporarySearch?: boolean;
+  /**
+   * Device-only: never saved, cleared on lock, reload or sign-out. It changes
+   * nothing about the sealed server's short-term memory or our request records.
+   */
+  incognito?: boolean;
   id: string;
   title: string;
   messages: Message[];
