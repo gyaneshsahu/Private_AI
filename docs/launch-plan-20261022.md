@@ -20,8 +20,8 @@ Done before and during the handover: restricted Render deployment live at app.co
 | 3.4 | Tenant-isolation tests across accounts (vault, history, usage, projects) on the hosted candidate configuration. Launch blocker (PRD). Written in worktree E (`tests/tenant-isolation.test.ts`, 23 cases, no source changes, no failures found); merged `ad39b2a` after owner approval, all 23 cases incl. 8 PostgreSQL cases pass; ledger metering reads scoped to the account afterwards. Hosted second-identity denial stays unverified. | DONE (local) |
 | 3.5 | Signup and rate abuse controls: invitation-only admission stays; per-identity and per-address limits on sign-in, code requests and relay admission reviewed and tested. Launch blocker (PRD). Sequential here. Reviewed 22 October; per-recipient sign-in code cap added (migration 0020). | DONE |
 | 4.1 | Brave live research, conditional on Brave API access remaining under the public plan (the unanswered ticket concerns storage rights and plan terms, not access). Implements the 22 October owner decision: save the written answer, never store results or links, one-tap re-run for sources. | TODO (conditional) |
-| 4.2 | In-enclave search evaluation moved earlier: prepare the bounded three-request harness now so it can run the day the owner approves scope and spend; running it needs an owner permit. | TODO (prepare now) |
-| 7.5 | Deployment review checklist for public hosting (PRD requirement): secrets, headers, rate limits, logging, rollback, migrations, monitoring, incident contact. Docs then a code check where possible. | TODO |
+| 4.2 | In-enclave search evaluation moved earlier: prepare the bounded three-request harness now so it can run the day the owner approves scope and spend; running it needs an owner permit. Prepared 22 October (`evaluation/enclave-search-harness.ts`, plan mode only, no network client); the live sender is written only against a permit naming service, price and cap. | DONE (preparation); run BLOCKED on owner permit |
+| 7.5 | Deployment review checklist for public hosting (PRD requirement): secrets, headers, rate limits, logging, rollback, migrations, monitoring, incident contact. Docs then a code check where possible. `docs/deployment-review-checklist-20261022.md` plus `tests/deployment-review-checklist.test.ts`. | DONE (local) |
 | D1 | Docs worktree writes privacy policy text, deletion path and incident-contact placeholder only; the in-app policy page and the delete-everything control are sequential here (touch src/). Owner will name the incident contact. | DONE (app and docs; placeholders for the owner) |
 | 3.6 | Client-side time-to-first-token measurement in the local experiment runner (never measured since 4 October). | DONE 22 October (send-point and final-usage timing added; first-chunk timing existed since 16 October) |
 
@@ -93,7 +93,7 @@ Rules in force: subagents commit on their own branches, never edit READINESS.md 
 | 7.1 | Hosted recovery rehearsal: paused recovery and rollback under the approved data-transfer scope; measured recovery time. | TODO |
 | 7.2 | Off-host encrypted backup destination and separately held recovery key: proposal for owner approval. | TODO |
 | 7.3 | Independent liveness and certificate-expiry alerts that work when the service is down; content-free. | TODO |
-| 7.4 | Reorder security headers before the access gates so refused responses also carry them (observation from 21 October). | TODO |
+| 7.4 | Reorder security headers before the access gates so refused responses also carry them (observation from 21 October). Done 22 October with gated-shape tests. | DONE (local) |
 
 ## Phase 8 — Tinfoil-dependent (cannot start before their answers or release)
 

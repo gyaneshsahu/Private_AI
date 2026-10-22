@@ -64,6 +64,36 @@ export function createApp(config: Config) {
     throw Error(
       "Consumer integration requires the isolated lab or the unqualified production candidate without upstream credentials.",
     );
+  const parseQualification = (): Qualification | undefined => {
+    try {
+      return validateQualification(config.qualification);
+    } catch {
+      return undefined;
+    }
+  };
+  const qualification = parseQualification();
+  const approvedOrigin = qualification?.origin;
+  // Fixed security headers go first, ahead of every access gate, so refused
+  // responses (403 from the origin and transport checks, 401 from the invite
+  // gate, 503 while paused) carry them too (launch plan 7.4).
+  const verificationHosts = qualification
+    ? ` https://atc.tinfoil.sh https://github-proxy.tinfoil.sh https://kds-proxy.tinfoil.sh https://tuf-repo-cdn.sigstore.dev ${new URL(qualification.origin).origin}`
+    : "";
+  const contentSecurityPolicy = `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'${config.dev ? " 'unsafe-inline'" : ""}; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; worker-src 'self' blob:; connect-src 'self'${verificationHosts}${config.dev ? " ws://127.0.0.1:*" : ""}; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`;
+  app.use((_req, res, next) => {
+    res.set({
+      "Cache-Control": "no-store",
+      "Referrer-Policy": "no-referrer",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      // Camera is allowed for this origin only; the client requests it solely
+      // from the Photo to text dialog's Use camera button. Owner approved
+      // 21 October 2026. Microphone and geolocation stay blocked.
+      "Permissions-Policy": "camera=(self), microphone=(), geolocation=()",
+      "Content-Security-Policy": contentSecurityPolicy,
+    });
+    next();
+  });
   app.use(
     deploymentAccess(
       config.origin,
@@ -84,26 +114,7 @@ export function createApp(config: Config) {
       accessSession?: string;
     }
   >();
-  const parseQualification = (): Qualification | undefined => {
-    try {
-      return validateQualification(config.qualification);
-    } catch {
-      return undefined;
-    }
-  };
-  const qualification = parseQualification();
-  const approvedOrigin = qualification?.origin;
   app.use((req, res, next) => {
-    res.set({
-      "Cache-Control": "no-store",
-      "Referrer-Policy": "no-referrer",
-      "X-Content-Type-Options": "nosniff",
-      "X-Frame-Options": "DENY",
-      // Camera is allowed for this origin only; the client requests it solely
-      // from the Photo to text dialog's Use camera button. Owner approved
-      // 21 October 2026. Microphone and geolocation stay blocked.
-      "Permissions-Policy": "camera=(self), microphone=(), geolocation=()",
-    });
     // Hosted access is restricted before session, API and static-file handling.
     const billingReturn =
       !!config.consumer?.billingRouter &&
@@ -127,13 +138,6 @@ export function createApp(config: Config) {
       res.status(403).json({ error: "Cross-origin access denied." });
       return;
     }
-    const verificationHosts = qualification
-      ? ` https://atc.tinfoil.sh https://github-proxy.tinfoil.sh https://kds-proxy.tinfoil.sh https://tuf-repo-cdn.sigstore.dev ${new URL(qualification.origin).origin}`
-      : "";
-    res.setHeader(
-      "Content-Security-Policy",
-      `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'${config.dev ? " 'unsafe-inline'" : ""}; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; worker-src 'self' blob:; connect-src 'self'${verificationHosts}${config.dev ? " ws://127.0.0.1:*" : ""}; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`,
-    );
     next();
   });
   app.use(

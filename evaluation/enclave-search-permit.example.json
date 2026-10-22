@@ -1,0 +1,24 @@
+{
+  "purpose": "SYNTHETIC_ONLY_ENCLAVE_SEARCH_NOT_QUALIFICATION",
+  "approvalId": "REPLACE_owner_approval_id",
+  "approvedAt": null,
+  "expiresAt": null,
+  "approvalEvidence": null,
+  "spend": {
+    "service": "Tinfoil",
+    "priceEvidence": null,
+    "priceCheckedAt": null,
+    "capUSD": null
+  },
+  "policy": {
+    "origin": "https://inference.tinfoil.sh",
+    "repository": "tinfoilsh/confidential-model-router",
+    "releaseDigest": null,
+    "model": null,
+    "allowedDomains": ["en.wikipedia.org"],
+    "maxAgeHours": 720,
+    "query": "What is the boiling point of water at sea level in degrees Celsius?",
+    "maxRequests": 3,
+    "maxOutputTokens": 512
+  }
+}
