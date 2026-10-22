@@ -14,8 +14,37 @@ COPY scripts/assets.mjs ./scripts/assets.mjs
 COPY index.html tsconfig.json vite.config.ts ./
 RUN npm run build
 
+# Supplier CLI for the relay-side attestation audit (server/attestation-audit.ts).
+# Pinned GitHub release asset for linux/amd64; BuildKit checks the checksum before
+# the layer exists and sha256sum re-checks it inside the stage. Only the binary
+# reaches the runtime image, root-owned and read-only. The release carries a
+# GitHub artifact attestation (SLSA v1 provenance) that was verified with
+# `gh attestation verify --repo tinfoilsh/tinfoil-cli` outside the build; see
+# docs/ledger-fragments/2026-10-22-relay-attestation-audit.md.
+FROM node:24-bookworm-slim@sha256:a5f4366e834695d5f363b920c104953a535d3a9864d1bdf74566a0ebe01daee5 AS tinfoil-verifier
+ARG TINFOIL_CLI_VERSION=0.19.10
+ARG TINFOIL_CLI_SHA256=331c9598792289909757335044751344e1933a1c67f4640d40831dfb00746704
+ADD --checksum=sha256:${TINFOIL_CLI_SHA256} https://github.com/tinfoilsh/tinfoil-cli/releases/download/v${TINFOIL_CLI_VERSION}/tinfoil-cli_${TINFOIL_CLI_VERSION}_linux_amd64.tar.gz /tmp/tinfoil-cli.tar.gz
+RUN set -eu; \
+    echo "${TINFOIL_CLI_SHA256}  /tmp/tinfoil-cli.tar.gz" | sha256sum -c -; \
+    mkdir -p /tmp/tinfoil-cli /out; \
+    tar -xzf /tmp/tinfoil-cli.tar.gz -C /tmp/tinfoil-cli tinfoil; \
+    install -m 0555 -o root -g root /tmp/tinfoil-cli/tinfoil /out/tinfoil; \
+    test "$(/out/tinfoil --version)" = "tinfoil version ${TINFOIL_CLI_VERSION}"; \
+    install -d -m 0755 /out/etc/ssl/certs; \
+    node -e "process.stdout.write(require('node:tls').rootCertificates.join('\n') + '\n')" > /tmp/ca-certificates.crt; \
+    test "$(grep -c 'BEGIN CERTIFICATE' /tmp/ca-certificates.crt)" -gt 100; \
+    install -m 0444 -o root -g root /tmp/ca-certificates.crt /out/etc/ssl/certs/ca-certificates.crt
+
 FROM build AS deployment-candidate
 ENV NODE_ENV=production
+# Read-only supplier CLI; no update checks (server/attestation-audit.ts never invokes `tinfoil update`).
+COPY --from=tinfoil-verifier --chmod=0555 /out/tinfoil /usr/local/bin/tinfoil
+# The slim base ships no CA store; the Go CLI needs one for TLS to the enclave,
+# GitHub and Sigstore. Node's bundled roots (pinned by the base digest) are exported
+# by the verifier stage; no package manager, no build secret, nothing host-specific.
+COPY --from=tinfoil-verifier /out/etc/ssl/certs/ /etc/ssl/certs/
+ENV TINFOIL_NO_UPDATE_CHECK=1
 USER node
 EXPOSE 8443
 STOPSIGNAL SIGTERM

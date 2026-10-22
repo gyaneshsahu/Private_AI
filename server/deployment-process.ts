@@ -2,9 +2,15 @@ import { Pool } from "pg";
 import { loadDeploymentConfig } from "./deployment-config";
 import { prepareProductionRuntime } from "./production-runtime";
 import { createRenderBridge } from "./render-bridge";
+import {
+  createDeploymentAttestationAudit,
+  installAttestationAudit,
+  type AttestationAuditState,
+} from "./attestation-audit";
 
 export async function startDeployment(render = false) {
   let bridge: ReturnType<typeof createRenderBridge> | undefined;
+  let audit: AttestationAuditState | undefined;
 
   let database: Pool | undefined;
   let runtime: Awaited<ReturnType<typeof prepareProductionRuntime>> | undefined;
@@ -14,6 +20,7 @@ export async function startDeployment(render = false) {
     stopping = true;
     const deadline = setTimeout(() => process.exit(1), 15_000);
     try {
+      audit?.stop();
       if (bridge) {
         bridge.close();
         bridge.closeIdleConnections();
@@ -72,6 +79,15 @@ export async function startDeployment(render = false) {
       },
     });
     if (stopping) throw Error("Stopping.");
+    if (config.attestationAudit) {
+      // Block-only relay audit; the guard in server/attestation-audit.ts
+      // consults this state and refuses to forward while it is not current.
+      // The first audit does not delay listening: the guard already refuses
+      // until a success exists, and start() never rejects.
+      audit = createDeploymentAttestationAudit(config.attestationAudit);
+      installAttestationAudit(audit);
+      void audit.start();
+    }
     await runtime.listen(config.port, config.host);
     if (config.renderBridge) {
       bridge = createRenderBridge({
