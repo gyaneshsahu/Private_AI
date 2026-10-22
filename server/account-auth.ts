@@ -55,6 +55,9 @@ export interface SyntheticAccountConfig {
 }
 
 /** Unmounted integration for synthetic tests only. No environment activation. */
+/** Sign-in codes one address may receive per hour, across all client addresses. */
+const DELIVERIES_PER_ADDRESS_PER_HOUR = 5;
+
 export function createSyntheticAccountAuth(config: SyntheticAccountConfig) {
   const origin = new URL(config.origin);
   if (
@@ -146,7 +149,10 @@ function createAccountAuth(
     for (const provider of enabledSocial)
       allowedPaths.add(`/callback/${provider}`);
   }
-  const deliveryAttempt = new AsyncLocalStorage<{ failed: boolean }>();
+  const deliveryAttempt = new AsyncLocalStorage<{
+    failed: boolean;
+    capped: boolean;
+  }>();
   const origin = new URL(config.origin);
   const acceptsEmail = (value: string) =>
     z.email().max(254).safeParse(value).success &&
@@ -371,11 +377,13 @@ function createAccountAuth(
       after: createAuthMiddleware(async (ctx) => {
         // Better Auth 1.7.11 catches sender exceptions and otherwise returns success.
         // Surface our bounded submission result through its supported response hook.
-        if (
-          !config.synthetic &&
-          ctx.path === "/email-otp/send-verification-otp" &&
-          deliveryAttempt.getStore()?.failed
-        )
+        if (ctx.path !== "/email-otp/send-verification-otp") return;
+        if (deliveryAttempt.getStore()?.capped)
+          throw new APIError("TOO_MANY_REQUESTS", {
+            message:
+              "Too many sign-in codes were sent to this address in the last hour. Try again later.",
+          });
+        if (!config.synthetic && deliveryAttempt.getStore()?.failed)
           throw new APIError("SERVICE_UNAVAILABLE", {
             message:
               "Code delivery could not be confirmed. Wait before requesting a new code.",
@@ -443,6 +451,28 @@ function createAccountAuth(
         async sendVerificationOTP({ email, otp, type }) {
           if (type !== "sign-in" || !acceptsEmail(email))
             throw Error("Permitted sign-in delivery only.");
+          // Per-address cap, independent of the per-IP rate limit: an attacker
+          // rotating addresses cannot flood one inbox with sign-in codes.
+          const identifier = email.toLowerCase();
+          const recent = await config.database.query(
+            "SELECT count(*)::int AS n FROM signin_delivery WHERE identifier=$1 AND sent_at > clock_timestamp() - interval '1 hour'",
+            [identifier],
+          );
+          if (
+            Number(recent.rows[0]?.n ?? 0) >= DELIVERIES_PER_ADDRESS_PER_HOUR
+          ) {
+            // Better Auth swallows sender exceptions; the after hook turns this into 429.
+            const attempt = deliveryAttempt.getStore();
+            if (attempt) attempt.capped = true;
+            return;
+          }
+          await config.database.query(
+            "INSERT INTO signin_delivery(identifier) VALUES($1)",
+            [identifier],
+          );
+          await config.database.query(
+            "DELETE FROM signin_delivery WHERE sent_at < clock_timestamp() - interval '1 day'",
+          );
           try {
             await config.deliverCode({ email, otp });
           } catch (error) {
@@ -567,7 +597,7 @@ function createAccountAuth(
       const start = await config.database.query(
         "SELECT clock_timestamp()::text AS started",
       );
-      deliveryAttempt.run({ failed: false }, () =>
+      deliveryAttempt.run({ failed: false, capped: false }, () =>
         accountRequestStart.run(start.rows[0].started, next),
       );
     } catch {

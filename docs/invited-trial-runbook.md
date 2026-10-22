@@ -42,7 +42,7 @@ any subsequently authorized private-data workflow. Do not collect private prompt
 answers, files or passphrases in feedback; collect task category, outcome, error
 label and an optional participant-created synthetic reproduction instead.
 
-Existing enforcement is 200 requests per hour per account and 2,000 globally per
+Historical note (legacy invite registry, superseded 22 October): enforcement was 200 requests per hour per account and 2,000 globally per
 hour; these are ceilings, not a recommended trial workload or an approved spending
 plan. Once the model is selected, propose a separate concrete trial cost allowance
 and any suitable lower limits for the founder to approve and apply. The current
@@ -305,7 +305,7 @@ on sign-in. `express-session` plus bounded TTL-cleaned `memorystore` provide coo
 session handling; hosted cookies are Secure, HttpOnly and SameSite=Strict.
 Same-origin POST checks protect login/logout and API actions; API CSRF/grants are
 bound to both account and login session. Login attempts are capped at 30/minute
-per instance; application POSTs at 200/hour per invite and 2,000/hour per instance.
+per instance; application POSTs at 200/hour per invite and 2,000/hour per instance (legacy registry only). Current bounds on the production candidate, 22 October: the per-account request allowance in the usage ledger, one request in flight per account, three in flight per instance, Better Auth's database-backed per-IP limit of 60 requests per minute per path and 3 sign-in code requests per minute, and a per-address cap of 5 sign-in codes per hour across all client addresses.
 These are request limits, not a substitute for provider spending controls.
 
 Sign-in and invitation redemption share a two-check concurrency bound per process.

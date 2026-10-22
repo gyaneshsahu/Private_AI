@@ -39,3 +39,11 @@ Context: the relay audit (launch plan 2.5) and the browser verifier both compare
 | D. Supplier-side pin | Ask the supplier for a dedicated or pinned deployment (an enterprise question in the unanswered 20 October email) | Rotation outside our control | Nothing until the supplier offers it | Commercial; unknown |
 
 Recommendation for the owner's decision: C as the launch posture (provenance is what a maintained tool can verify today; the lag bound keeps the audit from going stale), B only if the review cadence is realistic, D in parallel as a supplier question. Whichever is chosen applies to the browser pin and the relay audit alike, since they compare the same quantity.
+
+## Update, 22 October (launch plan 3.5): signup and rate abuse controls as built
+
+- Signup: there is no public signup. Social sign-in admits only the identity allowlist in the deployment config (at most ten addresses); email sign-in sends codes only to permitted addresses; passkeys require an existing session.
+- Rate limits: Better Auth's database-backed limiter, keyed by the verified client address and path, allows 60 requests per minute per path and 3 sign-in code requests per minute. IP tracking is never disabled; without a verified address the shared per-path bucket applies.
+- New in 3.5: a per-address cap of 5 sign-in codes per hour, counted in `signin_delivery` (migration 0020, no content, pruned after a day), so rotating client addresses cannot flood one inbox. Refused with 429.
+- Relay: one request in flight per signed-in account, three per instance, and the ledger allowance per period; interrupted requests are bounded by the cost-exposure test.
+- Still open: per-instance bounds are not shared across instances; no CAPTCHA or risk scoring, which the owner-only candidate does not need; abuse monitoring without content (launch plan 7.3).

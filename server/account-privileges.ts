@@ -26,6 +26,8 @@ export function accountPrivilegePlan(input: {
     `GRANT UPDATE (state,updated_at) ON ${table("usage_requests")} TO ${runtime}`,
     // Completed-request metering (migration 0013): read for the usage summary, insert at settlement.
     `GRANT SELECT,INSERT ON ${table("usage_metrics")} TO ${runtime}`,
+    // Sign-in code delivery log (migration 0020): count, record and prune, never update.
+    `GRANT SELECT,INSERT,DELETE ON ${table("signin_delivery")} TO ${runtime}`,
     `GRANT SELECT,INSERT ON ${table("account_security_event")} TO ${runtime}`,
     `GRANT SELECT,INSERT ON ${table("account_closure")} TO ${runtime}`,
     `GRANT SELECT ON ${table("account_recovery_control")},${table("account_security_event")},${table("account_closure")} TO ${notice}`,
