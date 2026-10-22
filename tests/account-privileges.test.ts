@@ -134,14 +134,54 @@ it.skipIf(!process.env.PRIVATEAI_SYNTHETIC_PG)(
         true,
       );
       await runtimeUsage.dispatch(status.accountId, "role-request");
+      // Every ledger path the production runtime uses runs under the restricted role:
+      // settlement with metering, metered summary, metrics read-back, an uncertain
+      // settlement without metering, and the entitlement helpers.
       await runtimeUsage.finish(
         status.accountId,
         "role-request",
         "transport_complete",
+        {
+          promptTokens: 12,
+          completionTokens: 34,
+          model: "SYNTHETIC_ONLY",
+          costUsd: "0.000046",
+        },
       );
       expect(await runtimeUsage.summary(status.accountId)).toMatchObject({
         used: 1,
+        meteredRequests: 1,
+        promptTokens: 12,
+        completionTokens: 34,
+        costUsd: "0.000046",
+        unmeteredRequests: 0,
       });
+      expect(await runtimeUsage.metrics("role-request")).toEqual({
+        promptTokens: 12,
+        completionTokens: 34,
+        model: "SYNTHETIC_ONLY",
+        costUsd: "0.000046",
+      });
+      expect(await runtimeUsage.reserve(status.accountId, "role-lost")).toBe(
+        true,
+      );
+      await runtimeUsage.dispatch(status.accountId, "role-lost");
+      await runtimeUsage.finish(status.accountId, "role-lost", "uncertain");
+      expect(await runtimeUsage.metrics("role-lost")).toBeUndefined();
+      expect(await runtimeUsage.summary(status.accountId)).toMatchObject({
+        used: 2,
+        uncertain: 1,
+        meteredRequests: 1,
+        unmeteredRequests: 1,
+      });
+      expect(await runtimeUsage.hasAllowance("roles")).toBe(true);
+      expect(await runtimeUsage.hasAllowance("absent")).toBe(false);
+      expect(
+        await runtimeUsage.lastAllowanceEnd(
+          status.accountId,
+          Date.now() + 60000,
+        ),
+      ).toBeGreaterThan(Date.now());
       expect(
         await finishSignInRecovery(runtime.pool, status.accountId, session),
       ).toBe("completed");
@@ -161,6 +201,8 @@ it.skipIf(!process.env.PRIVATEAI_SYNTHETIC_PG)(
         "UPDATE account_recovery_control SET mode='normal'",
         "UPDATE usage_allowances SET request_limit=1000000",
         "DELETE FROM usage_requests",
+        "UPDATE usage_metrics SET cost_usd=0",
+        "DELETE FROM usage_metrics",
         "UPDATE account_security_event SET \"deliveryState\"='pending'",
       ])
         await expect(runtime.pool.query(sql)).rejects.toMatchObject({
@@ -172,6 +214,8 @@ it.skipIf(!process.env.PRIVATEAI_SYNTHETIC_PG)(
         'SELECT * FROM "passkey"',
         "UPDATE account_recovery_control SET mode='normal'",
         "DELETE FROM account_security_event",
+        "SELECT * FROM usage_requests",
+        "SELECT * FROM usage_metrics",
       ])
         await expect(notice.pool.query(sql)).rejects.toMatchObject({
           code: "42501",
