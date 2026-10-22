@@ -170,3 +170,26 @@ Germany — operating as an individual
 - [Brave privacy notice](https://api-dashboard.search.brave.com/documentation/resources/privacy-notice), updated25August2026: query retention and DPA exclusion; [pricing](https://api-dashboard.search.brave.com/documentation/pricing): public Search/LLM Context offer, not verification of this account's terms.
 - Code checked: server/research.ts Web/LLM Context selection, source metadata and local results disabled for Context; src/verified-chat.ts explicit per-request cache secret; shared/contracts.ts qualification gate. Temporary-memory handling is our current application policy, not a Brave contractual approval or a promise about browser/device internals.
 - Provider replies do not automatically authorize private-data admission, saved research, live subscriptions or launch. Owner review/send and subsequent engineering validation remain separate.
+
+## Owner-reported send and receipt dates — recorded 22 October 2026
+
+All dates and times in this subsection are **owner-reported** on 22 October and not independently verified by the agent; no mailbox, header or supplier system was inspected. Where the qualification ledger recorded a different date, both are kept: the ledger dates are the days the agent was shown the text, not send or receipt times.
+
+| Thread | Owner-reported event | Ledger note |
+| --- | --- | --- |
+| Brave, ticket 390102 | Owner replied to Sherrell Bullock's 7 October message on **8 October**, with later follow-ups including the 20 October consolidated text (Draft 2). Every Brave response was the automated acknowledgement or the repeated discovery-channel question; no substantive reply. | Matches the 21 October owner update above. Outgoing texts are not recorded. Brave is treated as unresponsive (search-provider-comparison, 21 October). |
+| Tinfoil, Sacha | Follow-up sent **12 October**; reply received **13 October 02:34** (owner's clock). | provider-qualification.md recorded the reply under "Supplier reply received — 15 October 2026" because the owner supplied it on 15 October with "original email timestamp/headers not supplied". The 13 October 02:34 time is the owner's later statement; the 15 October ledger heading is unchanged. |
+| Tinfoil, Sacha | Consolidated email (the "Owner-supplied sent Tinfoil text" above) sent **20 October 01:29**; **unanswered** as of 22 October. | The 21 October update says "sent" without a time; the time is added here as owner-reported. Owner waits until 23 October (launch plan 8.1). |
+| Tinfoil, mailing list | A Tinfoil mailing received on **22 October** stating that catalog models can be swapped or deprecated at any time. **Not a reply** to any question above; a bulk mailing to customers. | Recorded in READINESS "Qualified fallback model" 22 October as the background for plan item 1.3. It answers no part of questions 1–5 and does not move the 23 October deadline. |
+
+### Fallback-model evidence requirement — recorded 22 October
+
+Plan item 1.3 added an optional `fallbackModel` to the qualification report (READINESS, 22 October). Before any second model may be named in the report, it needs the **same** evidence as the primary, not a subset:
+
+1. The worker repository and release digest(s) serving that model on the qualified router, obtained the same way as for the primary (admitted-worker inspection or supplier-stated mapping, recorded with its source and date).
+2. Release evidence for that worker: the exact release identifiers and measurements, with the GitHub release listing or supplier reply they come from.
+3. GPU admission evidence for that worker's deployment, to the same standard applied to the primary (router appraisal of GPU boot and attestation predicate type; see provider-chain-review.md).
+4. The same negative checks (wrong digest refused, rejection classified, no plaintext on the wire) run against the fallback name.
+5. Its own catalog status, price and deprecation exposure recorded; an "experimental" label disqualifies it as a fallback for the same reason it disqualifies the primary from release default.
+
+A model name copied from the catalog, a price page or the 22 October mailing is not evidence. Until these five items exist for a candidate, `fallbackModel` stays absent from every report; naming one is an owner decision recorded in READINESS with the evidence linked. No supplier question is added by this requirement; the existing consolidated queue stands.
