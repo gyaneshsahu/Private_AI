@@ -44,6 +44,19 @@ const resultSchema = z.object({
         .array(z.object({ host: z.string(), releaseDigest: z.string() }))
         .max(12),
       timings: z.array(z.number().nonnegative().finite()).max(12),
+      // Client-side request timing (3.6); absent in records before 22 October 2026.
+      requestTimings: z
+        .array(
+          z.object({
+            measuredFrom: z.enum(["request_sent", "call_start"]),
+            preparationMs: z.number().int().nonnegative().nullable(),
+            timeToFirstContentDeltaMs: z.number().int().nonnegative().nullable(),
+            timeToFinalUsageFrameMs: z.number().int().nonnegative().nullable(),
+            elapsedMs: z.number().int().nonnegative(),
+          }),
+        )
+        .max(12)
+        .optional(),
       conversation: z.object({
         messages: z.array(z.object({ role: z.string(), status: z.string() })),
         usage: z.array(usageSchema).max(12),
@@ -169,6 +182,7 @@ export function reviewResult(input: unknown, permitInput: unknown) {
     },
     actualChargedUSD: null,
     turnDurationsMs: c?.timings ?? [],
+    requestTimings: c?.requestTimings ?? [],
     recordedNetworkFailures: r.network.filter(
       (n) => n.outcome === "REQUEST_FAILED",
     ).length,

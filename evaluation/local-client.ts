@@ -3,6 +3,7 @@ import { newMessage, measureContext } from "../src/conversation";
 import { extract } from "../src/documents";
 import { streamVerifiedConversation } from "../src/verified-chat";
 import { IncompleteReplyError } from "../src/reply-stream";
+import { requestTiming, type RequestTiming } from "./request-timing";
 import {
   invoiceText,
   experimentRequestLimit,
@@ -19,6 +20,8 @@ export async function runSynthetic(input: unknown, csrf: string) {
   );
   const evidence: { host: string; releaseDigest: string }[] = [];
   const timings: number[] = [];
+  // Per request: time to first content delta and to the final usage frame.
+  const requestTimings: RequestTiming[] = [];
   const contextMeasurements: Array<{ characters: number; messages: number }> =
     [];
   const visibleStream: Array<{
@@ -82,6 +85,7 @@ export async function runSynthetic(input: unknown, csrf: string) {
         chunks: [] as Array<{ elapsedMs: number; text: string }>,
       };
       visibleStream.push(visible);
+      const timing = requestTiming();
       try {
         const usage = await streamVerifiedConversation(
           conversation,
@@ -101,6 +105,7 @@ export async function runSynthetic(input: unknown, csrf: string) {
               throw new Error(
                 "Synthetic visible-stream evidence exceeds its bound.",
               );
+            timing.chunk(chunk);
             answer.text += chunk;
             visible.chunks.push({
               elapsedMs: performance.now() - start,
@@ -108,6 +113,7 @@ export async function runSynthetic(input: unknown, csrf: string) {
             });
           },
           (status) => {
+            timing.status(status);
             stage = status;
           },
           () => {
@@ -115,11 +121,13 @@ export async function runSynthetic(input: unknown, csrf: string) {
           },
           (doc) => evidence.push(doc),
         );
+        if (usage) timing.usage();
         answer.status = "complete";
         if (usage) conversation.usage.push(usage);
         if (!usage) throw new Error("Usage was not returned.");
       } finally {
         timings.push(performance.now() - start);
+        requestTimings.push(timing.snapshot());
         conversation.messages.push(answer);
       }
     }
@@ -162,6 +170,7 @@ export async function runSynthetic(input: unknown, csrf: string) {
     visibleStream,
     evidence,
     timings,
+    requestTimings,
     contextMeasurements,
     diagnostic,
     failure,
