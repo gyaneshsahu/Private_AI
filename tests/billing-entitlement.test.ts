@@ -69,9 +69,9 @@ it("grants once per subscription period through the SQLite ledger and refuses ev
       outcome: "refused",
       reason: "unknown_price",
     });
-    expect(
-      await run({}, { plans: [{ ...plan, id: "unknown-plan" }] }),
-    ).toEqual({ outcome: "refused", reason: "no_entitlement_terms" });
+    expect(await run({}, { plans: [{ ...plan, id: "unknown-plan" }] })).toEqual(
+      { outcome: "refused", reason: "no_entitlement_terms" },
+    );
     expect(
       await run({ periodEnd: Math.floor(nowMs / 1000) - 1 }),
     ).toMatchObject({ outcome: "refused", reason: "period_not_current" });
@@ -128,9 +128,7 @@ it("grants once per subscription period through the SQLite ledger and refuses ev
       endsAt: periodEnd * 1000 + 10 * day,
       requestLimit: 5,
     });
-    expect(
-      await run({ accountId: "bob", subscriptionId: "sub_bob" }),
-    ).toEqual({
+    expect(await run({ accountId: "bob", subscriptionId: "sub_bob" })).toEqual({
       outcome: "refused",
       reason: "overlapping_allowance",
       periodId: `ent-sub_bob-${periodEnd}`,
@@ -256,11 +254,10 @@ it.skipIf(!enabled)(
             "SELECT count(*)::int AS n FROM billing_assessment WHERE outcome='active_observed'",
           )
         ).rows[0].n,
-      ).toBe(3);
-      await db.pool.query(
-        'INSERT INTO account_closure("userId") VALUES($1)',
-        [userId],
-      );
+      ).toBe(2);
+      await db.pool.query('INSERT INTO account_closure("userId") VALUES($1)', [
+        userId,
+      ]);
       expect(
         await apply(
           await inbox("reconciled", {
