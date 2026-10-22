@@ -11,3 +11,4 @@ coverage/
 graphify-out/
 *.log
 .claude/
+docs/private/

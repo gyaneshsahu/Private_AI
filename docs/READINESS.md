@@ -1,4 +1,8 @@
 # PrivateAI readiness checklist
+## Validate run on bfbde7f: all green, first verified in-image attestation on a clean network — 22 October
+
+Pushed `2d70e32..bfbde7f` (authorized push). CI run 39817594043: `durable` succeeded in under three minutes, `offline` in six, both faster than the previous run. The in-image smoke step on the clean runner now passes with the full evaluation: the pinned CLI v0.19.10 inside `privateai-render-candidate:local` (built with the rehearsal flag) exited 0, no handshake error, verdict `ok`, release digest `028561f15aa975d729692f86822f2daea1652287ea5927ce3b8a8c3dbbd7cd01`, supplier freshness expiry 2026-10-28T01:29:39Z. This is the first evidence that the CLI as shipped in the image completes attestation verification end to end; the digest is recorded here as an observation, not a pin, since the router rotates and the pinning policy is the owner's open decision. The gate output in the same step confirmed the three policy placeholders and that the image was allowed only as a rehearsal image. Hosted deployment of this commit still requires the `check`, `apply-pending`, `check` sequence for 0013 and 0020 and the owner's manual deploy, and no deployable (default-build) candidate exists until the placeholders are filled.
+
 ## Owner follow-ups after D1 and 3.5: hashed delivery log, cap before rotation, scoped metering, cancel equivalence, build gate — 22 October
 
 Worktree E merged (`ad39b2a`, tests only). Its three hardening notes and the owner's six items of 22 October, as built:

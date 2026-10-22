@@ -113,7 +113,7 @@ because the Docker engine is unavailable; hosted mount/restore evidence is pendi
 Example Windows operator setup, for local synthetic rehearsal only:
 
 ```powershell
-$env:PRIVATEAI_INVITES_FILE = 'C:\Gyanesh\Startups\Private_AI\.local\trial-access.sqlite'
+$env:PRIVATEAI_INVITES_FILE = '.local\trial-access.sqlite'
 node --import tsx scripts/invites.ts issue 24
 npm start
 ```
