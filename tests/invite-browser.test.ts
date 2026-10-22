@@ -3,6 +3,7 @@ import { expect, it } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "node:http";
 import { createServer as createViteServer } from "vite";
+import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { createApp } from "../server/app";
 import { InviteRegistry } from "../server/invite-registry";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
@@ -19,6 +20,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     appType: "spa",
     logLevel: "silent",
   });
+  await warmDevServer(vite);
   const app = createApp({ origin, invites: registry, dev: true });
   app.use(vite.middlewares);
   server.on("request", app);
@@ -52,7 +54,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
         page.getByRole("heading", { name: "Your conversation starts here." }),
       ).toBeVisible();
     }
-    await page.goto(origin);
+    await page.goto(origin, { timeout: 30000 });
     for (const width of [1280, 360]) {
       await page.setViewportSize({ width, height: 900 });
       expect(
@@ -72,7 +74,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     });
     await page.setViewportSize({ width: 1280, height: 900 });
     const accept = async (invite: typeof alice) => {
-      await page.goto(origin);
+      await page.goto(origin, { timeout: 30000 });
       const form = page.locator('form[action="/auth/register"]');
       if (invite.id === alice.id) {
         await form.getByLabel("Access ID").fill(invite.id);
@@ -105,9 +107,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
       expect((await accepted).status()).toBe(303);
       await ui(page.getByLabel("Message PrivateAI")).toBeVisible();
     };
-    const saved = () =>
-      workspaceControl(page, "Saved")
-        .click();
+    const saved = () => workspaceControl(page, "Saved").click();
     const unlock = async () => {
       await saved();
       await page
@@ -149,8 +149,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     await login.getByRole("button", { name: "Sign in", exact: true }).click();
     await unlock();
     await page.getByRole("button", { name: "Open", exact: true }).click();
-    await workspaceControl(page, "Conversation")
-      .click();
+    await workspaceControl(page, "Conversation").click();
     await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
       "ALICE SYNTHETIC PRIVATE DRAFT",
     );
@@ -203,8 +202,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     ).toBe(true);
     await unlock();
     await page.getByRole("button", { name: "Open", exact: true }).click();
-    await workspaceControl(page, "Conversation")
-      .click();
+    await workspaceControl(page, "Conversation").click();
     await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
       "ALICE SYNTHETIC PRIVATE DRAFT",
     );
@@ -245,8 +243,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     );
     await unlock();
     await page.getByRole("button", { name: "Open", exact: true }).click();
-    await workspaceControl(page, "Conversation")
-      .click();
+    await workspaceControl(page, "Conversation").click();
     await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
       "ALICE SYNTHETIC PRIVATE DRAFT",
     );
