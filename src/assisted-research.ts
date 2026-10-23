@@ -127,10 +127,12 @@ export function renderAssistedResearch(
         );
         const references = [
           ...new Set(
-            block.program.inputs.map((input) =>
+            block.program.inputs.flatMap((input) =>
               input.evidence.kind === "source"
-                ? `[${input.evidence.sourceId}]`
-                : `(your message ${input.evidence.userTurn})`,
+                ? [`[${input.evidence.sourceId}]`]
+                : input.evidence.kind === "user"
+                  ? [`(your message ${input.evidence.userTurn})`]
+                  : [],
             ),
           ),
         ];

@@ -28,6 +28,8 @@ const calculatorUnit = z.enum([
   "kW",
   "Wh",
   "kWh",
+  "min",
+  "d",
 ]);
 export const calculatorArguments = z
   .object({
@@ -49,7 +51,7 @@ export const calculatorTool = {
   function: {
     name: "calculate",
     description:
-      "Compute up to twelve named derived results in one call. Each result references a step id and may specify its own unit; otherwise the top-level unit applies. Compute a requested derived quantity from exact source or user operands. Use ordinary text for explanations and questions. Input evidence refers only to exact supplied-source or user-message quotations; an earlier assistant answer is not a user message. No arbitrary code. The application displays the result directly; operation and unit selection still need to match the question.",
+      "Compute up to twelve named derived results in one call. Each result references a step id and may specify its own unit; otherwise the top-level unit applies. Compute a requested derived quantity from exact source or user operands. Use ordinary text for explanations and questions. Input evidence refers only to exact supplied-source or user-message quotations, or {kind:'constant'} for a calendar or unit constant (1, 2, 7, 12, 24, 30, 52, 60, 100, 365, 366, 1000); an earlier assistant answer is not a user message. An operand value may be the number as written or its plain decimal form (1234.56 for 1.234,56 or 1,234.56); clock times are handled as minutes (unit min) and days (unit d). No arbitrary code. The application displays the result directly; operation and unit selection still need to match the question.",
     parameters: z.toJSONSchema(calculatorArguments),
   },
 };
@@ -247,10 +249,12 @@ export async function consumeCalculatorTurn(
     }));
     const references = [
       ...new Set(
-        args.inputs.map((input) =>
+        args.inputs.flatMap((input) =>
           input.evidence.kind === "source"
-            ? input.evidence.sourceId
-            : `user:${input.evidence.userTurn}`,
+            ? [input.evidence.sourceId]
+            : input.evidence.kind === "user"
+              ? [`user:${input.evidence.userTurn}`]
+              : [],
         ),
       ),
     ];

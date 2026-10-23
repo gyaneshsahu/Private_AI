@@ -65,6 +65,9 @@ it("retains strict digit handling and supports mixed ordinary prose", () => {
     "14",
     "8",
   ]);
-  expect(evidenceNumberTokens("1,000")).toEqual(["1,000"]);
+  // Since 23 October the written form is joined by its canonical readings:
+  // "1,000" is 1000 in English and 1.000 in German, and the quote alone cannot tell.
+  expect(evidenceNumberTokens("1,000")).toEqual(["1,000", "1.000", "1000"]);
+  expect(evidenceNumberTokens("1,000.50")).toEqual(["1,000.50", "1000.50"]);
   expect(evidenceNumberTokens("eight and a fee of 5")).toEqual(["5", "8"]);
 });
