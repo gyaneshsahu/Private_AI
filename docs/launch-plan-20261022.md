@@ -57,7 +57,7 @@ Rules in force: subagents commit on their own branches, never edit READINESS.md 
 | --- | --- | --- |
 | 2.1 | Incognito conversation: nothing written to the vault or storage; cleared on close; visible indicator. | DONE 22 October (adds a mode banner, save refusal and no discard warning over the existing memory-only default; device-only copy in banner and privacy statement) |
 | 2.2 | Disappearing messages: per-conversation auto-delete after an hour, a day or a week; enforced on the device at unlock and on a timer. | DONE 22 October (pruned on open, on a timer and written back to the vault; device-only copy) |
-| 2.3 | Decide and record: no anonymous mode at launch; wording "we only ever know that your account asked, never what". | TODO |
+| 2.3 | Decide and record: no anonymous mode at launch; wording "we only ever know that your account asked, never what". | DONE 23 October (recorded in the privacy copy "What we can see": no anonymous mode, every request from a signed-in account, incognito included, "we only ever know that your account asked, never what"; policy documents regenerated) |
 
 ## Phase 3 — Account, plan and usage
 
@@ -94,8 +94,8 @@ Rules in force: subagents commit on their own branches, never edit READINESS.md 
 | # | Item | Status |
 | --- | --- | --- |
 | 7.1 | Hosted recovery rehearsal: paused recovery and rollback under the approved data-transfer scope; measured recovery time. | TODO |
-| 7.2 | Off-host encrypted backup destination and separately held recovery key: proposal for owner approval. | TODO |
-| 7.3 | Independent liveness and certificate-expiry alerts that work when the service is down; content-free. | TODO |
+| 7.2 | Off-host encrypted backup destination and separately held recovery key: proposal for owner approval. | PROPOSED 23 October: `docs/offhost-backup-proposal-20261023.md` (age-encrypted nightly dump to a non-Render EU host, key held only by the owner; five owner decisions) |
+| 7.3 | Independent liveness and certificate-expiry alerts that work when the service is down; content-free. | PROPOSED 23 October: `docs/liveness-alerts-proposal-20261023.md` (external content-free probes of /healthz, /readyz, TLS, DNS and a backup heartbeat; four owner decisions); `scripts/certificate-expiry.ts` added as a read-only manual check |
 | 7.4 | Reorder security headers before the access gates so refused responses also carry them (observation from 21 October). Done 22 October with gated-shape tests. | DONE (local) |
 
 ## Phase 8 — Tinfoil-dependent (cannot start before their answers or release)

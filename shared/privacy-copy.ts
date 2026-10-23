@@ -25,7 +25,7 @@ export const PRIVACY_COPY: readonly PrivacySection[] = [
   {
     id: "ours",
     heading: "What we can see",
-    text: "We can see that your account asked something, when, how many times, which model answered, and afterwards how long the question and answer were and what they cost at published rates. We never see what you asked or what was answered. We keep no copy of your conversations; saved history lives only on your device, locked with a password we do not have.",
+    text: "We can see that your account asked something, when, how many times, which model answered, and afterwards how long the question and answer were and what they cost at published rates. We never see what you asked or what was answered. There is no anonymous mode: every request comes from a signed-in account, incognito chats included, so we only ever know that your account asked, never what. We keep no copy of your conversations; saved history lives only on your device, locked with a password we do not have.",
   },
   {
     id: "provider",
