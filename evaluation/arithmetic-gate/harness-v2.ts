@@ -20,6 +20,7 @@
 import { appendFile, mkdir, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import devSet from "./dev-v2-20261023.json";
+import unseenV2 from "./unseen-v2-20261023.json";
 import { LIMITS, checkLiveCatalog, gateModels, referencePrices, type Cell, type Price } from "./prepare-run";
 import { scoreConversation, type GateCase } from "./scorer";
 import {
@@ -226,10 +227,11 @@ async function main() {
   const cap = Number(arg("cap"));
   const retries = Number(arg("retry", "0"));
   const idsArg = arg("ids", "");
-  if (setName !== "dev") throw Error("harness-v2 runs the dev set only (--cases dev); gate v2 needs the owner's approval of THRESHOLD-v2.md");
+  // unseen-v2 admitted on 23 October after the owner approved THRESHOLD-v2.md as written (commit c5ff132); the frozen gate, practice, unseen and public sets stay refused here.
+  if (setName !== "dev" && setName !== "unseen-v2") throw Error("harness-v2 runs --cases dev or --cases unseen-v2 only");
   if (!gateModels[cell]) throw Error(`unknown cell ${cell}`);
   if (![0, 1].includes(retries)) throw Error("--retry 0|1");
-  const cases = (devSet.cases as unknown as GateCase[]).filter((c) => !idsArg || idsArg.split(",").includes(c.id));
+  const cases = ((setName === "dev" ? devSet : unseenV2).cases as unknown as GateCase[]).filter((c) => !idsArg || idsArg.split(",").includes(c.id));
   if (!cases.length) throw Error("no cases selected");
   await mkdir(`${ROOT}/${label}`, { recursive: true });
   const catalogResponse = await fetch(`${ORIGIN}/v1/models`, { headers: { authorization: `Bearer ${key}` } });
