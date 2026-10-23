@@ -118,7 +118,9 @@ export function designAUserMessage(annotatedText: string, turn: number, spans: S
   return [
     `User message ${turn} (span ids in brackets):\n${annotatedText}`,
     `Spans available (all user messages so far):\n${spans.map(spanLine).join("\n") || "- none"}`,
-    "Return the JSON program for the latest question.",
+    turn > 1
+      ? "This is a follow-up: answer it from the spans above alone (earlier messages' spans stay available; a corrected figure replaces the earlier one). Recompute every figure asked for; never refer to an earlier answer. Return the JSON program for the latest question."
+      : "Return the JSON program for the latest question.",
   ].join("\n\n");
 }
 

@@ -38,8 +38,10 @@ export const COST_LOG = ".local/arithmetic-gate-20261022/cost-log.jsonl";
 const PACE_MS = 1500;
 const RATE_LIMIT_PAUSE_MS = 30000;
 const ORIGIN = "https://inference.tinfoil.sh";
-const MAX_OUTPUT_TOKENS = 2048;
-const MAX_PROMPT_CHARACTERS = 12000;
+/** Output limit per request; Kimi K3 reasons before the JSON and reasoning counts as output. */
+const maxOutputTokens = (cell: Cell) => (cell === "kimi" ? 4096 : 2048);
+/** Worst-case prompt size for the cap check: the system text, a span table and one retry exchange stay well under this. */
+const MAX_PROMPT_TOKENS = 4000;
 
 function arg(name: string, fallback?: string): string {
   const i = process.argv.indexOf(`--${name}`);
@@ -95,7 +97,7 @@ async function callModel(messages: Message[], schema: unknown, cell: Cell, key: 
     response_format: { type: "json_schema", json_schema: { name: "arithmetic_program_v2", strict: true, schema } },
     ...adapter.modelOptions(policy),
     stream: false,
-    max_completion_tokens: MAX_OUTPUT_TOKENS,
+    max_completion_tokens: maxOutputTokens(cell),
     user_cache_secret: randomUUID(),
   };
   const record: AttemptRecord = { raw: "", elapsedMs: 0 };
@@ -168,10 +170,15 @@ export async function runConversation(
       } catch (error) {
         if (!(error instanceof DesignAError)) throw error;
         result.failure = { code: error.code, detail: error.detail };
-        if (error.code === "CANNOT_ANSWER") break;
         messages.push(
           { role: "assistant", content: result.raw },
-          { role: "user", content: `That program was rejected: ${error.code}: ${error.detail}. Return a corrected JSON program for the same question, using only the span ids and constants listed.` },
+          {
+            role: "user",
+            content:
+              error.code === "CANNOT_ANSWER"
+                ? "You reported that the question cannot be answered. Every span listed, including those from earlier messages, may be used, and the follow-up question is answered from those spans alone. If a program can answer it, return the program with its results and limitation none; otherwise reply cannot_answer again."
+                : `That program was rejected: ${error.code}: ${error.detail}. Return a corrected JSON program for the same question, using only the span ids and constants listed.`,
+          },
         );
       }
     }
@@ -241,7 +248,7 @@ async function main() {
     price = referencePrices[cell];
     console.log("using reference price", JSON.stringify(price));
   }
-  const worstPerRequest = (MAX_PROMPT_CHARACTERS * LIMITS.tokensPerCharacterBound * price.input + MAX_OUTPUT_TOKENS * price.output) / 1e6 + price.request;
+  const worstPerRequest = (MAX_PROMPT_TOKENS * price.input + maxOutputTokens(cell) * price.output) / 1e6 + price.request;
   const requestsPerConversation = 2 * (1 + retries);
   const records: ConversationRecordV2[] = [];
   let costUSD = 0, input = 0, output = 0, requests = 0;
