@@ -6,6 +6,7 @@ import { z } from "zod";
 import "./account-preview.css";
 import AccountAccess from "./AccountAccess";
 import AccountDeletion from "./AccountDeletion";
+import AccountExport from "./AccountExport";
 import { SupportPanel } from "./SupportPanel";
 import { accountRequest } from "./account-request";
 import { createPasskeyTransport } from "./passkey-transport";
@@ -432,6 +433,7 @@ export default function AccountLab({
             >
               Sign out
             </button>
+            <AccountExport />
             <AccountDeletion
               emailEnabled={emailEnabled}
               synthetic={synthetic}

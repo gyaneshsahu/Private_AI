@@ -195,6 +195,17 @@ it.skipIf(!process.env.PRIVATEAI_SYNTHETIC_PG)(
         ),
       ).toBe("accepted");
       expect(accepted).toEqual(["roles@example.test"]);
+      // The account export reads every table it lists under the restricted
+      // runtime role, including the billing tables granted for it.
+      const exported = await fetch(origin + "/api/account/export", {
+        headers: { origin, cookie },
+      });
+      expect(exported.status).toBe(200);
+      const bundle = await exported.json();
+      expect(bundle.usage.requests).toHaveLength(2);
+      expect(bundle.usage.allowances.map((a: { period_id: string }) => a.period_id)).toEqual(["roles"]);
+      expect(bundle.billing).toEqual({ customerBinding: null, operations: [] });
+
       for (const sql of [
         "CREATE TABLE forbidden(id integer)",
         'ALTER TABLE "user" ADD COLUMN forbidden text',

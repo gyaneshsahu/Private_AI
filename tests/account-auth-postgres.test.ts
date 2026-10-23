@@ -805,3 +805,61 @@ it.skipIf(!enabled)(
     ).toBe(2);
   },
 );
+
+it.skipIf(!enabled)(
+  "exports the account's records as one bundle without any secret, and refuses when signed out",
+  async () => {
+    const email = "export@example.test";
+    expect(
+      (
+        await call("email-otp/send-verification-otp", {
+          email,
+          type: "sign-in",
+        })
+      ).status,
+    ).toBe(200);
+    const signed = await call("sign-in/email-otp", {
+      email,
+      otp: messages.at(-1)!.otp,
+    });
+    expect(signed.status).toBe(200);
+    const cookie = cookieFrom(signed);
+    const exportCall = (headers: Record<string, string>) =>
+      fetch(`${origin}/api/account/export`, { headers: { origin, ...headers } });
+    expect((await exportCall({})).status).toBe(401);
+    const response = await exportCall({ cookie });
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-disposition")).toMatch(
+      /^attachment; filename="cometrow-account-data-\d{4}-\d{2}-\d{2}\.json"$/,
+    );
+    const bundle = await response.json();
+    expect(bundle).toMatchObject({
+      format: "cometrow-account-export",
+      version: 1,
+      account: { email, emailVerified: true },
+      signInMethods: [],
+      passkeys: [],
+      securityNotices: [],
+      closure: null,
+      usage: { allowances: [], requests: [] },
+      billing: { customerBinding: null, operations: [] },
+      researchApprovals: [],
+    });
+    expect(bundle.sessions).toHaveLength(1);
+    expect(bundle.sessions[0].current).toBe(true);
+    // The export carries no session token, verification code, secret or
+    // connection identifier: every string in it is checked against the values
+    // this test can see, and the key names never mention them.
+    const tokens = (
+      await pool.query('SELECT token FROM session WHERE "userId"=$1', [
+        bundle.account.id,
+      ])
+    ).rows.map((row) => row.token as string);
+    // The note sentence names what is excluded, so it is checked separately.
+    expect(bundle.note).toContain("never held and are not included");
+    const text = JSON.stringify({ ...bundle, note: undefined });
+    for (const token of tokens) expect(text).not.toContain(token);
+    expect(text).not.toContain(messages.at(-1)!.otp);
+    expect(text).not.toMatch(/token|secret|password|ipAddress|userAgent/i);
+  },
+);

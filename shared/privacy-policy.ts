@@ -1,4 +1,5 @@
 import { PRIVACY_COPY, type PrivacySection } from "./privacy-copy";
+import { LEGAL_IDENTITY } from "./legal-identity";
 
 /**
  * The in-app privacy policy page. It is built from the privacy statement so
@@ -12,7 +13,7 @@ export const POLICY_SECTIONS: readonly PrivacySection[] = [
   {
     id: "who",
     heading: "Who is responsible",
-    text: "CometRow is run by its founder in Germany as an individual, not yet a registered company. The legal identity, postal address and privacy contact will be published here before anyone outside the founder is given access; until then they are not yet named.",
+    text: `CometRow is run by ${LEGAL_IDENTITY.operatorName}, ${LEGAL_IDENTITY.legalForm}, ${LEGAL_IDENTITY.addressLines.join(", ")}, ${LEGAL_IDENTITY.country}. Privacy requests go to ${LEGAL_IDENTITY.privacyContactEmail}. Data protection officer: ${LEGAL_IDENTITY.dataProtectionOfficer}. The same details are in the imprint. Where a value reads "not yet named", the owner has not published it yet and nobody outside the founder is given access until it is.`,
   },
   ...PRIVACY_COPY,
   {
@@ -28,7 +29,7 @@ export const POLICY_SECTIONS: readonly PrivacySection[] = [
   {
     id: "contact",
     heading: "Questions, requests and incidents",
-    text: "A privacy contact and an incident contact are not yet named. Until they are published here, there is no public way to send a data request, and nobody outside the founder has access to the service. If you ever find a security problem, do not test it against other people's accounts.",
+    text: `Privacy requests: ${LEGAL_IDENTITY.privacyContactEmail}. Security incidents: ${LEGAL_IDENTITY.incidentContactEmail}. Support: ${LEGAL_IDENTITY.supportContactEmail}. You can download the records we hold about your account from the account page at any time, and close the account there. ${LEGAL_IDENTITY.supervisoryAuthorityNote} If you ever find a security problem, do not test it against other people's accounts.`,
   },
   {
     id: "changes",

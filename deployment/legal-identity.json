@@ -1,0 +1,14 @@
+{
+  "note": "Operator identity shown in the imprint and the privacy policy. The owner fills every field; a build of the deployment candidate refuses while any value is a placeholder (scripts/policy-placeholders.ts). No secrets belong here.",
+  "operatorName": "not yet named",
+  "legalForm": "individual (natural person), Germany",
+  "addressLines": ["not yet named"],
+  "country": "Germany",
+  "privacyContactEmail": "not yet named",
+  "incidentContactEmail": "not yet named",
+  "supportContactEmail": "not yet named",
+  "vatId": "",
+  "responsibleForContent": "not yet named",
+  "dataProtectionOfficer": "none appointed",
+  "supervisoryAuthorityNote": "The competent data protection authority is that of the German federal state of the operator's residence; named once the address is filled in."
+}

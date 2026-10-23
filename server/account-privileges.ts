@@ -30,6 +30,8 @@ export function accountPrivilegePlan(input: {
     `GRANT SELECT,INSERT,DELETE ON ${table("signin_delivery")} TO ${runtime}`,
     `GRANT SELECT,INSERT ON ${table("account_security_event")} TO ${runtime}`,
     `GRANT SELECT,INSERT ON ${table("account_closure")} TO ${runtime}`,
+    // Account data export reads the account's own billing binding and operations.
+    `GRANT SELECT ON ${table("billing_customer_binding")},${table("billing_operation")} TO ${runtime}`,
     `GRANT SELECT ON ${table("account_recovery_control")},${table("account_security_event")},${table("account_closure")} TO ${notice}`,
     `GRANT UPDATE ("deliveryState","dispatchToken","dispatchedAt","settledAt") ON ${table("account_security_event")} TO ${notice}`,
   ];

@@ -834,6 +834,83 @@ function createAccountAuth(
       }
     },
   );
+  // Data export (GDPR Art. 15 and 20): every record the service holds about
+  // the signed-in account, without secrets. Conversations are never held
+  // server-side, so they are not here; the vault backup covers them.
+  router.get("/api/account/export", async (req, res) => {
+    try {
+      const current = await auth.api.getSession({
+        headers: fromNodeHeaders(req.headers),
+      });
+      if (!current) {
+        res.status(401).json({ error: "Sign in to download your data." });
+        return;
+      }
+      const userId = current.user.id;
+      const db = config.database;
+      const rows = async (sql: string, params: unknown[] = [userId]) =>
+        (await db.query(sql, params)).rows;
+      const single = <T>(list: T[]): T | null => list[0] ?? null;
+      const [user] = await rows(
+        'SELECT id,email,"emailVerified","createdAt","updatedAt" FROM "user" WHERE id=$1',
+      );
+      const bundle = {
+        format: "cometrow-account-export",
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        note: "Records this service holds about your account. Secret keys, tokens, passphrases, conversations, documents and search text are never held and are not included.",
+        account: user ?? null,
+        signInMethods: await rows(
+          'SELECT "providerId","createdAt" FROM account WHERE "userId"=$1 ORDER BY "createdAt",id',
+        ),
+        passkeys: await rows(
+          'SELECT id,name,"deviceType","backedUp","createdAt" FROM passkey WHERE "userId"=$1 ORDER BY "createdAt",id',
+        ),
+        sessions: await rows(
+          'SELECT id,"createdAt","updatedAt","expiresAt",id=$2 AS current FROM session WHERE "userId"=$1 ORDER BY "createdAt",id',
+          [userId, current.session.id],
+        ),
+        securityNotices: await rows(
+          'SELECT id,kind,"createdAt","deliveryState" FROM account_security_event WHERE "userId"=$1 ORDER BY "createdAt",id',
+        ),
+        credentialChanges: await rows(
+          'SELECT "changedAt" FROM account_credential_change WHERE "userId"=$1 ORDER BY "changedAt"',
+        ),
+        emailProofs: await rows(
+          'SELECT p."verifiedEmail",p."createdAt",p."consumedAt" FROM account_email_proof p JOIN session s ON s.id=p."sessionId" WHERE s."userId"=$1 ORDER BY p."createdAt"',
+        ),
+        closure: single(await rows(
+          'SELECT "requestedAt","purgeAfter","purgedAt","holdUntil" FROM account_closure WHERE "userId"=$1',
+        )),
+        usage: {
+          allowances: await rows(
+            "SELECT period_id,starts_at,ends_at,request_limit FROM usage_allowances WHERE account_id=$1 ORDER BY starts_at",
+          ),
+          requests: await rows(
+            "SELECT r.request_id,r.period_id,r.state,r.created_at,r.updated_at,m.prompt_tokens,m.completion_tokens,m.model,m.cost_usd::text AS cost_usd,m.web_search_calls FROM usage_requests r LEFT JOIN usage_metrics m ON m.request_id=r.request_id WHERE r.account_id=$1 ORDER BY r.created_at,r.request_id",
+          ),
+        },
+        billing: {
+          customerBinding: single(await rows(
+            "SELECT customer_id,created_at FROM billing_customer_binding WHERE account_id=$1",
+          )),
+          operations: await rows(
+            "SELECT kind,state,price_id,created_at,updated_at FROM billing_operation WHERE account_id=$1 ORDER BY created_at,id",
+          ),
+        },
+        researchApprovals: await rows(
+          'SELECT c.id,c.expires_at FROM research_consent c JOIN session s ON s.id=c.session_id WHERE s."userId"=$1 ORDER BY c.expires_at',
+        ),
+      };
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="cometrow-account-data-${bundle.exportedAt.slice(0, 10)}.json"`,
+      );
+      res.json(bundle);
+    } catch {
+      res.status(503).json({ error: "Export is unavailable right now." });
+    }
+  });
   let enrollments = 0;
   router.all("/api/auth/*splat", async (req, res) => {
     // These routes can add a method after verifying a challenge or provider callback.

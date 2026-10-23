@@ -69,4 +69,14 @@ test("delete everything on this device removes the vault database, states what i
   await expect(policy).toContainText("What you can delete, and how");
   await expect(policy).toContainText("not yet named");
   await expect(policy).toContainText("What stays on your device");
+  // The imprint opens from the same section and carries the operator identity
+  // placeholders until the owner fills deployment/legal-identity.json.
+  await policy.getByRole("button", { name: "Close source" }).click();
+  await workspaceControl(page, "Settings").click();
+  await page.getByRole("button", { name: "Privacy & data" }).click();
+  await page.getByRole("button", { name: "Imprint", exact: false }).click();
+  const imprint = page.getByRole("dialog", { name: "Imprint" });
+  await expect(imprint).toContainText("Service provider");
+  await expect(imprint).toContainText("Security incidents:");
+  await expect(imprint).toContainText("not yet named");
 });

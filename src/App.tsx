@@ -29,6 +29,7 @@ import {
 } from "./conversation";
 import { PRIVACY_SUMMARY, privacyText } from "../shared/privacy-copy";
 import { privacyPolicyText } from "../shared/privacy-policy";
+import { imprintText } from "../shared/legal-identity";
 import { importDocuments, type ImportOutcome } from "./document-import";
 import { PhotoCapture } from "./PhotoCapture";
 import { Vault, VaultConflictError } from "./vault";
@@ -1249,6 +1250,19 @@ export function App() {
                   }}
                 >
                   Privacy policy ↗
+                </button>
+                <button
+                  className="text-button"
+                  onClick={() => {
+                    setSettingsOpen(false);
+                    setSource({
+                      id: "imprint",
+                      title: "Imprint",
+                      text: imprintText(),
+                    });
+                  }}
+                >
+                  Imprint ↗
                 </button>
                 <p>
                   Private chat remains unavailable until provider verification

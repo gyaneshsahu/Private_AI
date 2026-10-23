@@ -108,6 +108,18 @@ Rules in force: subagents commit on their own branches, never edit READINESS.md 
 | 8.3 | Provider qualification report with linked evidence; enable private chat for the owner account only. | BLOCKED(8.2, 5.3) |
 | 8.4 | Limited release: at most two invitees, seven days, pause and revoke criteria, support contact named. | BLOCKED(8.3, 6.1, 7.1) |
 
+## Phase C — Consumer-launch gaps (owner direction 23 October: imprint, controller identity, incident contact, deletion and export, DPIA, terms, EU hosting, billing items)
+
+| # | Item | Status |
+| --- | --- | --- |
+| C1 | Controller identity and imprint: one identity file (`deployment/legal-identity.json`, schema in `shared/legal-identity.ts`) feeds the imprint (Settings → Privacy & data → Imprint, generated `docs/imprint-20261023.md`) and the policy's responsibility and contact sections; every unfilled field shows "not yet named" and the production build gate refuses while any remains. | DONE 23 October (code); the owner fills the file: operator name, address, privacy, incident and support addresses, responsible person, VAT id or none |
+| C2 | Incident contact: `incidentContactEmail` in the identity file, shown in the imprint and the policy contact section, named in the deployment review checklist. | DONE 23 October (placeholder until C1 is filled) |
+| C3 | Deletion and export: account closure and delete-everything existed; `GET /api/account/export` returns every record held about the account (identity, sign-in methods, passkeys, sessions, notices, credential changes, email proofs, closure, allowances and requests with metrics, billing binding and operations, research approvals) without tokens or secrets; Download button on the account page; durable tests under the owner and the restricted runtime role. | DONE 23 October |
+| C4 | DPIA draft along Article 35 from the system as built: `docs/dpia-draft-20261023.md`. | DRAFT 23 October (owner and lawyer review; transfer row needs the supplier's location) |
+| C5 | Terms of use draft for consumers: `docs/terms-draft-20261023.md`. | DRAFT 23 October (not published; legal review) |
+| C6 | EU hosting: relay and database are in Frankfurt by the recorded provisioning; inference location is a supplier question; `docs/eu-hosting-20261023.md` lists each component and the owner's four decisions. | DONE 23 October (note); decisions open |
+| C7 | Billing items for a consumer launch: `docs/billing-items-20261023.md`, ten gaps (price with VAT, tax identity, invoices, withdrawal consent, terms acceptance, cancellation button, failed-payment grace, refunds, live-mode activation, retention). | REVIEWED 23 October; all ten wait on owner or legal decisions before code |
+
 ## Phase 9 — Later capabilities (not before 8.4)
 
 Dictation proof of concept (needs 0.5), live voice, image creation, public sharing, anonymous accounts. All stay as disabled "Coming later" controls until then.

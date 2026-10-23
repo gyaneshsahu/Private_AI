@@ -4,7 +4,7 @@ Generated from `shared/privacy-policy.ts`, which the app renders as its Privacy 
 
 ## Who is responsible
 
-CometRow is run by its founder in Germany as an individual, not yet a registered company. The legal identity, postal address and privacy contact will be published here before anyone outside the founder is given access; until then they are not yet named.
+CometRow is run by not yet named, individual (natural person), Germany, not yet named, Germany. Privacy requests go to not yet named. Data protection officer: none appointed. The same details are in the imprint. Where a value reads "not yet named", the owner has not published it yet and nobody outside the founder is given access until it is.
 
 ## What stays on your device
 
@@ -44,7 +44,7 @@ The secure server's short-term working memory, which clears on its own within mi
 
 ## Questions, requests and incidents
 
-A privacy contact and an incident contact are not yet named. Until they are published here, there is no public way to send a data request, and nobody outside the founder has access to the service. If you ever find a security problem, do not test it against other people's accounts.
+Privacy requests: not yet named. Security incidents: not yet named. Support: not yet named. You can download the records we hold about your account from the account page at any time, and close the account there. The competent data protection authority is that of the German federal state of the operator's residence; named once the address is filled in. If you ever find a security problem, do not test it against other people's accounts.
 
 ## Changes to this policy
 
