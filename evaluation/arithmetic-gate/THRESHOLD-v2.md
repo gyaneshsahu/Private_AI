@@ -1,6 +1,6 @@
 # Arithmetic gate v2 threshold (Design A)
 
-**Status: PROPOSED 23 October 2026, NOT APPROVED.** The case set is frozen now; the pass bar below is a proposal for the owner. Gate v2 has not been run and must not be run until the owner approves this file. Running it before approval would be a new, unapproved gate.
+**Status: APPROVED AS WRITTEN by the owner on 23 October 2026 (option a).** The owner's decisions, pasted into the main session: pass bar as written, no lowering of the verified bar, no raising of the flagged bar, no change to the flag policy before the run; the outcome policy below written and committed before the run; the 12 critical cases reported separately; C2 is a Kimi K3 12-case ceiling probe only, not a product option, GLM-5.3 left out; C1 run once with no reruns and no tuning after the result; Design A not wired into `src/conversation.ts` or any product path until the owner has reviewed the result; spend inside USD 3 for this run and USD 5 total; synthetic data only. The case set was frozen before approval and is unchanged.
 
 ## Frozen case set
 
@@ -37,9 +37,20 @@ Every conversation is exactly one of the four; failures are never excluded from 
 
 **Read this honestly:** the dev-set run of C1 would fail the verified and flagged bars as proposed. Most dev-set flags were false flags from the model's own estimate ("claimed") being stale or junk, not from wrong programs. The bar states what the product needs, not what the model showed; the owner may (a) approve it as written and accept a likely FAIL on the verified rate while silent-wrong stays the decisive measure, (b) lower the verified bar to 45 of 90 and raise the flagged ceiling to 40 of 90, or (c) change the flag policy first (for example, stop flagging unusable estimates: on the dev batches that would have removed 6 of 12 false flags in one run but turned 2 caught errors into silent wrongs in another). The sub-agent recommends (a): silent-wrong zero is the only bar that protects the user, and a FAIL on the verified rate is information, not harm.
 
+## Outcome policy (owner decision 2, written before the run)
+
+- **Pass** (all five measures met, pooled over 90): recorded as PASS for C1 only, with the full table and the Wilson 95 % bounds. It is mechanical numeric evidence on 30 synthetic cases and moves no other gate. Design A stays unwired until the owner has reviewed the result and decides the product path.
+- **Fail on verified or flagged only** (silent wrong 0 of 90 and the critical cases clean): recorded as FAIL with the counts. No rerun, no tuning. The main session proposes changes to the cross-check (the model's estimate) as a new gate with a new name and a new case set, for the owner's decision. Design A stays unwired.
+- **Any silent wrong** (in the pooled 90 or in the 36 critical conversations): FAIL regardless of the other measures. Every silent-wrong conversation is listed with its program and rendered answer. Design A in this form is not a product candidate; any change is a new gate.
+- **Critical cases** (owner decision 3): the 12 critical cases (`unseen2-01, -02, -05, -07, -10, -12, -16, -17, -19, -21, -24, -27`), 36 conversations over three repetitions, are reported as their own table. Any silent wrong or no-answer among them is a fail, whatever the pooled numbers say.
+- **No-answer and flagged excesses** are reported as fails of their measure, never excluded from the denominator.
+- **C2, Kimi K3 ceiling probe** (owner decision 4): the 12 critical cases, one repetition, no retry (`--cases unseen-v2 --cell kimi --retry 0 --reps 1 --ids <the twelve>`), about 24 requests, estimated at about USD 0.50 from the dev probe's USD 0.021 per request, cap USD 0.80. It reports the same outcomes beside C1 as a ceiling for the model decision; it is not a product option and passes or fails nothing.
+- **Spend** (owner decision 7): C1 estimated at about USD 0.12 (216 requests), cap set at USD 1.00 in the harness; both runs stay inside USD 3 for this gate and USD 5 total; the main session stops and asks before either cap could be passed.
+- **Reporting** (owner decision 5): the full outcome table per repetition and pooled, Wilson 95 % bounds for every measure, the critical-case table, every wrong-flagged and silent-wrong conversation, the cost from the cost log, and the verdict against this file. Reported to the owner when the result is ready, not before.
+
 ## Procedure after approval
 
-- Run C1 once: `harness-v2.ts --cases unseen-v2 --cell gptoss --retry 1 --reps 3` (the harness must first be extended to accept `unseen-v2`; today it refuses everything but `dev`, deliberately). Then C2 once if its spend is approved. Results under `.local\arithmetic-v2-20261023\<label>\results.json`; one line per batch in the shared cost log.
+- Run C1 once: `harness-v2.ts --cases unseen-v2 --cell gptoss --retry 1 --reps 3` (the harness is extended to accept `unseen-v2` after this file is committed; it refused everything but `dev` until then, deliberately). Then C2 once as the 12-case ceiling probe approved above. Results under `.local\arithmetic-v2-20261023\<label>\results.json`; one line per batch in the shared cost log.
 - Estimated cost: C1 about 216 requests, about USD 0.12; C2 about 60 requests, about USD 1.30. Both within the USD 3.19 remaining after the dev work.
 - No tuning on the frozen set. Any change to `src/arithmetic/design-a.ts`, `spans.ts`, `evaluator.ts`, `locale-number.ts`, the schema, the instruction or the harness after the run is a new gate with a new name.
 - Verdict: counts per outcome with Wilson intervals, per repetition and pooled; critical cases listed; every wrong-flagged and silent-wrong conversation listed with its program. A pass is mechanical numeric evidence on 30 synthetic cases; it grades neither explanations nor method choice and moves no other gate.
