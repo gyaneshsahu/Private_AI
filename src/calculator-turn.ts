@@ -30,6 +30,8 @@ const calculatorUnit = z.enum([
   "kWh",
   "min",
   "d",
+  // Minutes since midnight rendered as HH:MM; inputs come from clock times in the evidence.
+  "clock",
 ]);
 export const calculatorArguments = z
   .object({
@@ -51,7 +53,7 @@ export const calculatorTool = {
   function: {
     name: "calculate",
     description:
-      "Compute up to twelve derived results in one call. Each entry in results names the id of an existing step (results[].id must equal a steps[].id; do not invent new result names) and may specify its own unit; otherwise the top-level unit applies. Compute a requested derived quantity from exact source or user operands. Use ordinary text for explanations and questions. Input evidence refers only to exact supplied-source or user-message quotations, or {kind:'constant'} for a calendar or unit constant (1, 2, 7, 12, 24, 30, 52, 60, 100, 365, 366, 1000); an earlier assistant answer is not a user message. An operand value may be the number as written or its plain decimal form (1234.56 for 1.234,56 or 1,234.56); clock times are handled as minutes (unit min) and days (unit d). No arbitrary code. The application displays the result directly; operation and unit selection still need to match the question.",
+      "Compute up to twelve derived results in one call. Each entry in results names the id of an existing step (results[].id must equal a steps[].id; do not invent new result names) and may specify its own unit; otherwise the top-level unit applies. Compute a requested derived quantity from exact source or user operands. Use ordinary text for explanations and questions. Input evidence refers only to exact supplied-source or user-message quotations, or {kind:'constant'} for a calendar or unit constant (1, 2, 7, 12, 24, 30, 52, 60, 100, 365, 366, 1000); an earlier assistant answer is not a user message. An operand value may be the number as written or its plain decimal form (1234.56 for 1.234,56 or 1,234.56); clock times are handled as minutes since midnight (a quoted 09:23 may be used as 563), with unit min for durations, unit clock to display a result as HH:MM, and unit d for days. A quoted percentage may be used as 19, 0.19 or 1.19. No arbitrary code. The application displays the result directly; operation and unit selection still need to match the question.",
     parameters: z.toJSONSchema(calculatorArguments),
   },
 };
@@ -70,6 +72,14 @@ export function normalizeEvidenceShorthand(
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
     return parsed;
   const args = parsed as { inputs?: unknown };
+  // One input written as an object instead of a one-element array.
+  if (
+    args.inputs &&
+    typeof args.inputs === "object" &&
+    !Array.isArray(args.inputs) &&
+    !Array.isArray((args.inputs as { evidence?: unknown }).evidence)
+  )
+    args.inputs = [args.inputs];
   if (!Array.isArray(args.inputs)) return parsed;
   const users = conversation.messages.filter(
     (m) => m.role === "user" && m.included && m.status === "complete",
@@ -91,6 +101,15 @@ export function normalizeEvidenceShorthand(
       return { ...candidate, evidence: resolve(evidence) ?? evidence };
     if (evidence && typeof evidence === "object" && !Array.isArray(evidence)) {
       const e = evidence as Record<string, unknown>;
+      // Spelling variants of the kind, and a constant that carries a stray quote.
+      if (
+        e.kind === "userMessage" ||
+        e.kind === "user_message" ||
+        e.kind === "userTurn"
+      )
+        return { ...candidate, evidence: { ...e, kind: "user" } };
+      if (e.kind === "constant" && Object.keys(e).length > 1)
+        return { ...candidate, evidence: { kind: "constant" } };
       if (e.kind === undefined) {
         if (typeof e.sourceId === "string")
           return { ...candidate, evidence: { kind: "source", ...e } };
@@ -121,18 +140,50 @@ export function normalizeEvidenceShorthand(
     const ids = key === undefined ? undefined : valueIds.get(key);
     return ids && ids.length === 1 ? ids[0] : operand;
   };
+  // A running total written as repeated steps with one id ("summe", "summe",
+  // "summe") is a chain: later copies get fresh ids and later references
+  // follow the latest definition; results naming the id take the final one.
+  const defined = new Set<string>();
+  for (const input of inputs)
+    if (
+      input &&
+      typeof input === "object" &&
+      typeof (input as { id?: unknown }).id === "string"
+    )
+      defined.add((input as { id: string }).id);
+  const latest = new Map<string, string>();
+  const chainRef = (operand: unknown) =>
+    typeof operand === "string" ? (latest.get(operand) ?? operand) : operand;
   const steps = Array.isArray(argsWithSteps.steps)
-    ? argsWithSteps.steps.map((step) =>
-        step && typeof step === "object" && !Array.isArray(step)
-          ? {
-              ...(step as object),
-              left: resolveOperand((step as { left?: unknown }).left),
-              right: resolveOperand((step as { right?: unknown }).right),
-            }
-          : step,
-      )
+    ? argsWithSteps.steps.map((step) => {
+        if (!step || typeof step !== "object" || Array.isArray(step))
+          return step;
+        const s = step as { id?: unknown; left?: unknown; right?: unknown };
+        const left = chainRef(resolveOperand(s.left));
+        const right = chainRef(resolveOperand(s.right));
+        let id = s.id;
+        if (typeof id === "string" && defined.has(id)) {
+          let n = 2;
+          while (defined.has(`${id}_${n}`)) n++;
+          latest.set(id, `${id}_${n}`);
+          id = `${id}_${n}`;
+        }
+        if (typeof id === "string") defined.add(id);
+        return { ...(step as object), id, left, right };
+      })
     : argsWithSteps.steps;
-  return { ...(parsed as object), inputs, steps };
+  const argsWithResults = parsed as { results?: unknown };
+  const results = Array.isArray(argsWithResults.results)
+    ? argsWithResults.results.map((result) =>
+        result && typeof result === "object" && !Array.isArray(result)
+          ? {
+              ...(result as object),
+              id: chainRef((result as { id?: unknown }).id),
+            }
+          : result,
+      )
+    : argsWithResults.results;
+  return { ...(parsed as object), inputs, steps, results };
 }
 
 function normalizeDecimal(text: string): string | undefined {
@@ -394,6 +445,15 @@ export function renderCalculatorTurn(turn: CalculatorTurn): string {
         )
         .join(" ");
       const label = id.replaceAll("_", " ");
+      if (unit === "clock") {
+        const minutes = Number(value);
+        if (Number.isInteger(minutes)) {
+          const wrapped = ((minutes % 1440) + 1440) % 1440;
+          const hh = String(Math.floor(wrapped / 60)).padStart(2, "0");
+          const mm = String(wrapped % 60).padStart(2, "0");
+          return `**Calculated ${label}: ${hh}:${mm}** ${citations}`;
+        }
+      }
       return `**Calculated ${label}: ${value} ${unit}** ${citations}`;
     }),
     "Arithmetic calculated locally; the selected inputs, method and explanation are not independently verified.",

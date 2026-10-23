@@ -42,6 +42,8 @@ import {
 import { createTinfoilClientAdapter } from "../../src/providers/tinfoil-client";
 
 const ROOT = ".local/arithmetic-gate-20261022";
+const PACE_MS = 1500;
+const RATE_LIMIT_PAUSE_MS = 30000;
 const ORIGIN = "https://inference.tinfoil.sh";
 const CALCULATOR_INSTRUCTION =
   " Use ordinary source-linked prose for explanations. For derived numerical answers, optionally call calculate once with exact evidence-grounded operands. The browser displays its result directly; do not write a separate calculated total in prose. No tool is required for writing or missing-information questions. Calculator execution does not verify method applicability. User evidence uses one-based indices of included user turns.";
@@ -59,6 +61,8 @@ export type ReplyRecord = {
   usage?: { input: number; output: number; estimatedUSD: number };
   elapsedMs: number;
   failure?: string;
+  /** HTTP 429 from the supplier; retried once after a pause and never charged. */
+  rateLimited?: number;
   toolCall?: boolean;
   calculatorFailure?: string;
   /** Practice diagnostics (synthetic data only): the raw tool arguments and schema issues. */
@@ -144,7 +148,16 @@ async function runConversation(
     const timer = setTimeout(() => controller.abort(), 120000);
     const record: ReplyRecord = { turn: turn + 1, answer: "", elapsedMs: 0 };
     try {
-      const response = await request(body, key, controller.signal);
+      // Pace requests; a 429 is a transport refusal, not a model answer: wait
+      // and send the identical request once more before recording a failure.
+      await new Promise((r) => setTimeout(r, PACE_MS));
+      let response = await request(body, key, controller.signal);
+      if (response.status === 429) {
+        record.rateLimited = (record.rateLimited ?? 0) + 1;
+        await response.body?.cancel();
+        await new Promise((r) => setTimeout(r, RATE_LIMIT_PAUSE_MS));
+        response = await request(body, key, controller.signal);
+      }
       const events = completionEvents(response, controller.signal);
       if (arm === "calculator") {
         try {
@@ -294,12 +307,16 @@ async function main() {
         requests++;
         input += reply.usage?.input ?? 0;
         output += reply.usage?.output ?? 0;
+        // No usage means no answer; a refused request (rate limit) costs nothing,
+        // any other failure is charged at the worst case to stay conservative.
         costUSD += reply.usage
           ? (reply.usage.input * price.input +
               reply.usage.output * price.output) /
               1e6 +
             price.request
-          : worstPerRequest;
+          : /limiting requests/.test(reply.failure ?? "")
+            ? 0
+            : worstPerRequest;
       }
       console.log(
         `${gateCase.id} r${repetition} ${arm}: ${record.score.pass ? "PASS" : "FAIL"}` +

@@ -400,7 +400,8 @@ describe("existing calculator path limits", () => {
     expect(run("Netto 86,40 EUR, USt 7 %.", "86.40", "7")()).toBe("6.05");
   });
   it("refuses a constant the user did not write unless it is an allowed calendar or unit constant, and has minute and day units", () => {
-    expect(run("Net 120.00 EUR, VAT 19%.", "120.00", "1.19")).toThrow();
+    // 1.19 is what a quoted "19%" stands for since 23 October; 1.21 is not.
+    expect(run("Net 120.00 EUR, VAT 19%.", "120.00", "1.21")).toThrow();
     for (const unit of ["min", "d"])
       expect(calculatorArguments.shape.unit.safeParse(unit).success, unit).toBe(
         true,

@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 const small = [
   "zero",
   "one",
@@ -85,8 +86,9 @@ export function quoteNumberLocale(quote: string): "de" | "en" | undefined {
   en += (quote.match(/\d,\d{3}\.\d/g) ?? []).length * 2;
   // German typography: a space before the percent sign, "Uhr", "EUR" after the amount.
   de += (quote.match(/\d\s%/g) ?? []).length;
-  de += (quote.match(/\bUhr\b|\bbrutto\b|\bnetto\b|\bRechnung\b|\bBetrag\b/gi) ?? [])
-    .length;
+  de += (
+    quote.match(/\bUhr\b|\bbrutto\b|\bnetto\b|\bRechnung\b|\bBetrag\b/gi) ?? []
+  ).length;
   en += (quote.match(/\d%/g) ?? []).length;
   if (de === en) return undefined;
   return de > en ? "de" : "en";
@@ -132,9 +134,11 @@ export function canonicalNumberForms(
       ? canonical(parts[0], parts[1])
       : undefined;
   const asGrouped = grouped(parts) ? canonical(parts.join("")) : undefined;
-  const ambiguous = parts.length === 2 && parts[1].length === 3 && grouped(parts);
+  const ambiguous =
+    parts.length === 2 && parts[1].length === 3 && grouped(parts);
   if (!ambiguous) {
-    if (parts.length === 2 && parts[1].length !== 3) return asDecimal ? [asDecimal] : [];
+    if (parts.length === 2 && parts[1].length !== 3)
+      return asDecimal ? [asDecimal] : [];
     return asGrouped ? [asGrouped] : asDecimal ? [asDecimal] : [];
   }
   // "1.234" or "1,234": decimal in one locale, grouped thousands in the other.
@@ -155,9 +159,27 @@ export function evidenceNumberTokens(quote: string): string[] {
     t.replace(/[.,]+$/, ""),
   );
   const tokens = [...written];
+  const push = (form: string) => {
+    if (!tokens.includes(form)) tokens.push(form);
+  };
   for (const token of written)
-    for (const form of canonicalNumberForms(token, locale))
-      if (!tokens.includes(form)) tokens.push(form);
+    for (const form of canonicalNumberForms(token, locale)) push(form);
+  // A written percentage also stands for its fraction and its gross factor:
+  // "19 %" may be used as 19, 0.19 or 1.19. No other derivation is offered.
+  for (const match of joined.matchAll(/(\d[\d.,]*)\s?%/g))
+    for (const form of canonicalNumberForms(
+      match[1].replace(/[.,]+$/, ""),
+      locale,
+    )) {
+      if (!/^-?\d+(?:\.\d+)?$/.test(form)) continue;
+      const fraction = new Decimal(form).div(100);
+      push(fraction.toString());
+      push(fraction.add(1).toString());
+    }
+  // A clock time stands for its minutes since midnight ("09:23" is 563), so a
+  // calculator may subtract minutes from it and render the result as a clock.
+  for (const match of joined.matchAll(/\b([01]?\d|2[0-3]):([0-5]\d)\b/g))
+    push(String(Number(match[1]) * 60 + Number(match[2])));
   const words = [...quote.toLowerCase().matchAll(/[a-z]+/g)];
   for (let i = 0; i < words.length; i++) {
     if (!numberWords.has(words[i][0]) || words[i][0] === "and") continue;
