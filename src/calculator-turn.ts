@@ -51,10 +51,97 @@ export const calculatorTool = {
   function: {
     name: "calculate",
     description:
-      "Compute up to twelve named derived results in one call. Each result references a step id and may specify its own unit; otherwise the top-level unit applies. Compute a requested derived quantity from exact source or user operands. Use ordinary text for explanations and questions. Input evidence refers only to exact supplied-source or user-message quotations, or {kind:'constant'} for a calendar or unit constant (1, 2, 7, 12, 24, 30, 52, 60, 100, 365, 366, 1000); an earlier assistant answer is not a user message. An operand value may be the number as written or its plain decimal form (1234.56 for 1.234,56 or 1,234.56); clock times are handled as minutes (unit min) and days (unit d). No arbitrary code. The application displays the result directly; operation and unit selection still need to match the question.",
+      "Compute up to twelve derived results in one call. Each entry in results names the id of an existing step (results[].id must equal a steps[].id; do not invent new result names) and may specify its own unit; otherwise the top-level unit applies. Compute a requested derived quantity from exact source or user operands. Use ordinary text for explanations and questions. Input evidence refers only to exact supplied-source or user-message quotations, or {kind:'constant'} for a calendar or unit constant (1, 2, 7, 12, 24, 30, 52, 60, 100, 365, 366, 1000); an earlier assistant answer is not a user message. An operand value may be the number as written or its plain decimal form (1234.56 for 1.234,56 or 1,234.56); clock times are handled as minutes (unit min) and days (unit d). No arbitrary code. The application displays the result directly; operation and unit selection still need to match the question.",
     parameters: z.toJSONSchema(calculatorArguments),
   },
 };
+/**
+ * Models often write an input's evidence as the bare quotation ("2.345,67 EUR")
+ * or as an object without `kind`. Resolve such shorthand to the strict shape
+ * when, and only when, the quotation occurs verbatim in a supplied source or an
+ * included user message (latest first); anything else is left for the schema
+ * to refuse. No value is ever inferred.
+ */
+export function normalizeEvidenceShorthand(
+  parsed: unknown,
+  sources: Source[],
+  conversation: Conversation,
+): unknown {
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
+    return parsed;
+  const args = parsed as { inputs?: unknown };
+  if (!Array.isArray(args.inputs)) return parsed;
+  const users = conversation.messages.filter(
+    (m) => m.role === "user" && m.included && m.status === "complete",
+  );
+  const resolve = (quote: string) => {
+    if (!quote.trim()) return undefined;
+    for (let turn = users.length; turn >= 1; turn--)
+      if (users[turn - 1].text.includes(quote))
+        return { kind: "user", userTurn: turn, quote };
+    const source = sources.find((s) => s.text.includes(quote));
+    return source ? { kind: "source", sourceId: source.id, quote } : undefined;
+  };
+  const inputs = args.inputs.map((input) => {
+    if (!input || typeof input !== "object" || Array.isArray(input))
+      return input;
+    const candidate = input as { evidence?: unknown };
+    const evidence = candidate.evidence;
+    if (typeof evidence === "string")
+      return { ...candidate, evidence: resolve(evidence) ?? evidence };
+    if (evidence && typeof evidence === "object" && !Array.isArray(evidence)) {
+      const e = evidence as Record<string, unknown>;
+      if (e.kind === undefined) {
+        if (typeof e.sourceId === "string")
+          return { ...candidate, evidence: { kind: "source", ...e } };
+        if (typeof e.userTurn === "number")
+          return { ...candidate, evidence: { kind: "user", ...e } };
+        if (typeof e.quote === "string" && Object.keys(e).length === 1)
+          return { ...candidate, evidence: resolve(e.quote) ?? evidence };
+      }
+    }
+    return input;
+  });
+  // A step operand written as a number ("2435.67") instead of an input id is
+  // accepted only when exactly one input carries that same value; it is then
+  // the input's id. No new value enters the calculation this way.
+  const argsWithSteps = parsed as { steps?: unknown };
+  const valueIds = new Map<string, string[]>();
+  for (const input of inputs) {
+    if (!input || typeof input !== "object") continue;
+    const { id, value } = input as { id?: unknown; value?: unknown };
+    if (typeof id !== "string" || typeof value !== "string") continue;
+    const key = normalizeDecimal(value);
+    if (key === undefined) continue;
+    valueIds.set(key, [...(valueIds.get(key) ?? []), id]);
+  }
+  const resolveOperand = (operand: unknown) => {
+    if (typeof operand !== "string") return operand;
+    const key = normalizeDecimal(operand);
+    const ids = key === undefined ? undefined : valueIds.get(key);
+    return ids && ids.length === 1 ? ids[0] : operand;
+  };
+  const steps = Array.isArray(argsWithSteps.steps)
+    ? argsWithSteps.steps.map((step) =>
+        step && typeof step === "object" && !Array.isArray(step)
+          ? {
+              ...(step as object),
+              left: resolveOperand((step as { left?: unknown }).left),
+              right: resolveOperand((step as { right?: unknown }).right),
+            }
+          : step,
+      )
+    : argsWithSteps.steps;
+  return { ...(parsed as object), inputs, steps };
+}
+
+function normalizeDecimal(text: string): string | undefined {
+  if (!/^-?\d+(?:\.\d+)?$/.test(text)) return undefined;
+  const [integer, fraction = ""] = text.replace(/^-/, "").split(".");
+  const trimmed = fraction.replace(/0+$/, "");
+  return `${text.startsWith("-") ? "-" : ""}${integer.replace(/^0+(?=\d)/, "")}${trimmed ? "." + trimmed : ""}`;
+}
+
 export class CalculatorValidationError extends IncompleteReplyError {
   constructor(
     readonly calculatorFailure:
@@ -194,6 +281,7 @@ export async function consumeCalculatorTurn(
     } catch {
       throw new CalculatorValidationError("INVALID_JSON", usage);
     }
+    parsed = normalizeEvidenceShorthand(parsed, sources, conversation);
     const validated = calculatorArguments.safeParse(parsed);
     if (!validated.success) {
       const knownFields = new Set([

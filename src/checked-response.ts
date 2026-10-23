@@ -84,7 +84,14 @@ export const checkedResponseSchema = z
       .max(32),
     results: z
       .array(
-        z.object({ id, decimals: z.number().int().min(0).max(8) }).strict(),
+        z
+          .object({
+            id: id.describe(
+              "The id of the STEP whose value is displayed (not a new name, not an input id).",
+            ),
+            decimals: z.number().int().min(0).max(8),
+          })
+          .strict(),
       )
       .max(12),
     passages: z.array(evidenceSchema).max(12),
@@ -173,7 +180,17 @@ export function renderCheckedResponse(
       input.evidence.kind === "constant"
         ? [...CONSTANT_OPERANDS]
         : evidenceNumberTokens(input.evidence.quote);
-    if (!tokens.includes(input.value)) throw new ContractError("OPERAND");
+    // The value must equal a number in the evidence; "850" for "850,00 EUR"
+    // and "1234.5" for "1.234,50" are the same number, so compare numerically.
+    const numeric = new Arithmetic(input.value);
+    if (
+      !tokens.includes(input.value) &&
+      !tokens.some(
+        (token) =>
+          /^-?\d+(?:\.\d+)?$/.test(token) && new Arithmetic(token).eq(numeric),
+      )
+    )
+      throw new ContractError("OPERAND");
     if (values.has(input.id)) throw new ContractError("DEPENDENCY");
     values.set(input.id, new Arithmetic(input.value));
     renderedInputs.push(

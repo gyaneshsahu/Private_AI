@@ -110,6 +110,42 @@ describe("checked response accepts canonical operands and allowed constants", ()
       render(program("1234.56", { value: "19", constant: true })),
     ).toThrow();
   });
+  it("accepts an operand equal in value to a written number with trailing zeros", () => {
+    const rent = {
+      id: "rent-source",
+      title: "Synthetic",
+      text: "Miete 850,00 EUR, neu 901,00 EUR.",
+    };
+    const p = {
+      inputs: [
+        {
+          id: "old",
+          value: "850",
+          evidence: { kind: "source", sourceId: rent.id, quote: rent.text },
+        },
+        {
+          id: "new",
+          value: "901",
+          evidence: { kind: "source", sourceId: rent.id, quote: rent.text },
+        },
+      ],
+      steps: [
+        { id: "diff", op: "subtract", left: "new", right: "old" },
+        { id: "pct", op: "ratioPercent", left: "diff", right: "old" },
+      ],
+      results: [{ id: "pct", decimals: 2 }],
+      passages: [],
+      limitation: "none",
+    };
+    expect(
+      renderCheckedResponse(
+        JSON.stringify(p),
+        [rent as never],
+        emptyConversation(),
+        "result",
+      ),
+    ).toBe("6.00");
+  });
   it("still refuses an operand absent from the evidence", () => {
     expect(() => render(program("1234.57", { value: "19" }))).toThrow();
   });

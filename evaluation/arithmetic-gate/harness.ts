@@ -61,6 +61,9 @@ export type ReplyRecord = {
   failure?: string;
   toolCall?: boolean;
   calculatorFailure?: string;
+  /** Practice diagnostics (synthetic data only): the raw tool arguments and schema issues. */
+  rawArguments?: string;
+  schemaIssues?: unknown;
 };
 export type ConversationRecord = {
   caseId: string;
@@ -151,6 +154,9 @@ async function runConversation(
             controller.signal,
             [],
             conversation,
+            (raw) => {
+              record.rawArguments = raw;
+            },
           );
           record.toolCall = !!result.toolCall;
           record.answer = renderCalculatorTurn(result);
@@ -160,6 +166,7 @@ async function runConversation(
             record.calculatorFailure = `${error.calculatorFailure}${error.validationDetail ? ":" + String(error.validationDetail) : ""}`;
             record.usage = error.usage;
             record.failure = "calculator-validation";
+            record.schemaIssues = error.schemaIssues;
           } else throw error;
         }
       } else {
