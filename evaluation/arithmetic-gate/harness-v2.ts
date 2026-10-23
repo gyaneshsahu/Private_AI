@@ -152,6 +152,16 @@ export async function runConversation(
     for (let attempt = 0; attempt <= retries && !outcome; attempt++) {
       const result = await callModel(messages, schema, cell, key);
       record.attempts.push(result);
+      if (result.transportFailure === "output truncated at the token limit") {
+        // A model failure, not a transport one: the retry asks for a shorter program.
+        result.failure = { code: "TRUNCATED", detail: "the reply ran past the output limit" };
+        delete result.transportFailure;
+        messages.push(
+          { role: "assistant", content: result.raw.slice(0, 2000) },
+          { role: "user", content: "That reply was cut off before it was complete. Return the JSON program again, short and complete, with nothing but the fields of the schema." },
+        );
+        continue;
+      }
       if (result.transportFailure) break;
       try {
         outcome = renderDesignA(result.raw, spans, gateCase.locale);

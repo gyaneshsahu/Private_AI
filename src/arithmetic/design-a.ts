@@ -225,6 +225,8 @@ function parseReply(raw: string): Parsed {
     if (typeof format !== "string" || !(RESULT_FORMATS as readonly string[]).includes(format))
       throw new DesignAError("INVALID_SCHEMA", `result ${i + 1}: format must be one of ${RESULT_FORMATS.join(", ")}`);
     if (typeof unit !== "string" || unit.length > 12 || /\d/.test(unit)) throw new DesignAError("INVALID_SCHEMA", `result ${i + 1}: unit must be a short word without digits`);
+    if (format !== "money" && format !== "number" && /^(?:EUR|USD|GBP|CHF|€|\$|£)$/i.test(unit.trim()))
+      throw new DesignAError("RESULT_FORMAT", `result ${i + 1}: a ${format} result cannot carry the currency unit ${unit.trim()}`);
     if (!Number.isInteger(decimals) || (decimals as number) < 0 || (decimals as number) > 8)
       throw new DesignAError("INVALID_SCHEMA", `result ${i + 1}: decimals must be an integer 0..8`);
     if (typeof claimed !== "string" || claimed.length > 24) throw new DesignAError("INVALID_SCHEMA", `result ${i + 1}: claimed must be a short string`);
@@ -418,6 +420,8 @@ export function renderDesignA(raw: string, spans: Span[], locale: NumberLocale):
     const shown = showValue(value, r, locale);
     const { state, claim } = claimState(value, r);
     if (claim === "differs") flags.push(`${r.label}: the model's own figure differed from the calculated value; the calculated value is shown`);
+    // Dev batches of 23 October: figures whose estimate was junk were wrong 2 times in 8; the user is told that no cross-check happened.
+    if (claim === "unusable") flags.push(`${r.label}: the model gave no usable estimate of its own, so this figure was not cross-checked`);
     return { label: r.label, value: value.toString(), shown, format: r.format, state, claim, ...(claim === "differs" ? { claimDiffered: true } : {}) };
   });
   for (const id of usedSpans) {

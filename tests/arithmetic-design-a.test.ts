@@ -250,14 +250,19 @@ describe("value types: dates and clock times keep their format", () => {
     ]);
     expect(out.flags).toEqual([]);
   });
-  it("treats a junk estimate as no cross-check: nothing flagged, nothing invented", () => {
+  it("flags a junk estimate as not cross-checked, without inventing a difference", () => {
     const out = renderDesignA(
       program([{ id: "s1", op: "add", args: ["t1n2", "t1n4"], decimals: 0, mode: "none" }], [{ ref: "s1", label: "x", format: "number", unit: "", decimals: 0, claimed: "ref s1" }]),
       spans,
       "de",
     );
     expect(out.results[0]).toMatchObject({ state: "calculated", claim: "unusable" });
-    expect(out.flags).toEqual([]);
+    expect(out.results[0].claimDiffered).toBeUndefined();
+    expect(out.flags).toEqual(["x: the model gave no usable estimate of its own, so this figure was not cross-checked"]);
+  });
+  it("refuses a currency unit on a minutes, clock, date or percent result", () => {
+    expect(fails(program([{ id: "s1", op: "add", args: ["t1n2", "t1n4"], decimals: 0, mode: "none" }], [{ ref: "s1", label: "x", format: "minutes", unit: "EUR", decimals: 0, claimed: "55" }]), spans)).toBe("RESULT_FORMAT");
+    expect(fails(program([{ id: "s1", op: "add", args: ["t1n2", "t1n4"], decimals: 0, mode: "none" }], [{ ref: "s1", label: "x", format: "percent", unit: "CHF", decimals: 0, claimed: "55" }]), spans)).toBe("RESULT_FORMAT");
   });
   it("accepts a clock estimate written HH:MM and a date estimate written as ISO", () => {
     const out = renderDesignA(
