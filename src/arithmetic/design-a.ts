@@ -56,12 +56,13 @@ export function designASchema(spans: Span[]) {
         items: {
           type: "object",
           properties: {
+            id: { type: "string", enum: Array.from({ length: MAX_STEPS }, (_, i) => `s${i + 1}`) },
             op: { type: "string", enum: [...OPERATIONS] },
             args: { type: "array", minItems: 1, maxItems: 12, items: { type: "string", enum: refs } },
             decimals: { type: "integer", minimum: 0, maximum: 8 },
             mode: { type: "string", enum: [...ROUNDING_MODES, "none"] },
           },
-          required: ["op", "args", "decimals", "mode"],
+          required: ["id", "op", "args", "decimals", "mode"],
           additionalProperties: false,
         },
       },
@@ -76,7 +77,7 @@ export function designASchema(spans: Span[]) {
             format: { type: "string", enum: [...RESULT_FORMATS] },
             unit: { type: "string", maxLength: 12 },
             decimals: { type: "integer", minimum: 0, maximum: 8 },
-            claimed: { type: "string", maxLength: 24 },
+            claimed: { type: "string", minLength: 1, maxLength: 24 },
           },
           required: ["ref", "label", "format", "unit", "decimals", "claimed"],
           additionalProperties: false,
@@ -93,10 +94,10 @@ export function designASchema(spans: Span[]) {
 export function designAInstruction(): string {
   const ops = OPERATIONS.map((op) => `${op}: ${OPERATION_HELP[op]}`).join("\n");
   return [
-    "You turn a calculation question into a small program. You never compute a number yourself and never write a number as text: every operand is a span id from the user's text (such as t1n3) or one of the constants const:1, const:2, const:7, const:12, const:24, const:30, const:52, const:60, const:100, const:365, const:366, const:1000. Steps are numbered s1, s2, ... in order and later steps may use earlier step ids as args. Our software evaluates the program with exact decimal arithmetic and shows the user only the results you list.",
+    "You turn a calculation question into a small program. You never compute a number yourself and never write a number as text: every operand is a span id from the user's text (such as t1n3) or one of the constants const:1, const:2, const:7, const:12, const:24, const:30, const:52, const:60, const:100, const:365, const:366, const:1000. Give every step an id: s1 for the first step, s2 for the second, and so on; a step may use the ids of steps written before it as args, never its own id or a later one. A result ref must be the id of a step you wrote (or a span id). Our software evaluates the program with exact decimal arithmetic and shows the user only the results you list.",
     "Operations (args in order):\n" + ops,
-    "Rules: percentages are spans as written (19 for \"19 %\"), so use percent_of, add_percent or subtract_percent with the percentage span. Clock times and durations are minutes; a date is a day count; add or subtract days or minutes directly and give the result the format clock, date, minutes or days. Round only where the question asks for it (round with decimals and mode; half-up is commercial rounding, swiss-0.05 is Swiss five-centime rounding). When a quantity is stated in the latest user message and contradicts an earlier one, use the latest. When the question needs a number that is not in the text and not a constant, set limitation to cannot_answer and return no results.",
-    "results: one entry per figure the user asked for: ref is the step (or span) to show, label a short name in the user's language, format one of money, number, percent, clock, date, minutes, days, unit the currency code or unit word (empty when the format implies it), decimals the places to show, claimed your own best estimate of that figure as a plain decimal (dot decimal mark, no grouping) or an empty string. Set mode to none and decimals to 0 on every step that is not a round step. note: at most 300 characters on the method, no numbers. Reply with JSON only.",
+    "Rules: percentages are spans as written (19 for \"19 %\"), so use percent_of, add_percent or subtract_percent with the percentage span; a growth factor such as 1.03 or 1.002 is add_percent(const:1, p) where p is the percentage (divide p first for a monthly rate). Clock times and durations are minutes; a date is a day count; add or subtract days or minutes directly. A result that is a date must have format date; a clock time must have format clock; a span of days or minutes has format days or minutes; dates and clock times are never multiplied or divided. Round only where the question asks for it: round takes exactly ONE arg (the value) plus decimals and mode; half-up is commercial rounding; rounding to 5 centimes (Rappen) is mode swiss-0.05 with decimals 2, never a multiply-round-divide chain. List every figure the question asks for as its own result. When a quantity is stated in the latest user message and contradicts an earlier one, use the latest. When the question needs a number that is not in the text and not a constant, set limitation to cannot_answer and return no results.",
+    "results: one entry per figure the user asked for: ref is the step (or span) to show, label a short name in the user's language, format one of money, number, percent, clock, date, minutes, days, unit the currency code or unit word (empty when the format implies it), decimals the places to show, claimed your own independent estimate of that figure for the CURRENT question as a plain decimal (dot decimal mark, no grouping; minutes for clock and minutes formats, the day number for date). claimed is required: work it out yourself; never copy a figure from an earlier answer. Our software compares it with the exact result and warns the user when they differ. Set mode to none and decimals to 0 on every step that is not a round step. note: at most 300 characters on the method in plain words, no numbers, no program listing. Reply with JSON only.",
   ].join("\n\n");
 }
 
@@ -164,7 +165,7 @@ export type DesignAOutcome = {
   note: string;
 };
 
-type ParsedStep = { op: Step["op"]; args: string[]; decimals: number; mode: RoundingMode | "none" };
+type ParsedStep = { id: string; op: Step["op"]; args: string[]; decimals: number; mode: RoundingMode | "none" };
 type ParsedResult = { ref: string; label: string; format: ResultFormat; unit: string; decimals: number; claimed: string };
 type Parsed = { steps: ParsedStep[]; results: ParsedResult[]; note: string; limitation: "none" | "cannot_answer" };
 
@@ -182,9 +183,14 @@ function parseReply(raw: string): Parsed {
   if (!Array.isArray(results) || results.length > MAX_RESULTS) throw new DesignAError("INVALID_SCHEMA", `results must be an array of at most ${MAX_RESULTS}`);
   if (limitation !== "none" && limitation !== "cannot_answer") throw new DesignAError("INVALID_SCHEMA", "limitation must be none or cannot_answer");
   const ID = /^(?:t\d{1,3}n\d{1,3}|const:\d+|s\d{1,2})$/;
+  const stepIds = new Set<string>();
   const parsedSteps = steps.map((s, i): ParsedStep => {
     if (!isObject(s)) throw new DesignAError("INVALID_SCHEMA", `step ${i + 1} must be an object`);
-    const { op, args, decimals = 0, mode = "none" } = s;
+    const { id, op, args, decimals = 0, mode = "none" } = s;
+    if (typeof id !== "string" || !/^s\d{1,2}$/.test(id) || Number(id.slice(1)) < 1 || Number(id.slice(1)) > MAX_STEPS)
+      throw new DesignAError("INVALID_SCHEMA", `step ${i + 1}: id must be s1..s${MAX_STEPS}`);
+    if (stepIds.has(id)) throw new DesignAError("INVALID_SCHEMA", `step ${i + 1}: id ${id} is used twice`);
+    stepIds.add(id);
     if (typeof op !== "string" || !(OPERATIONS as readonly string[]).includes(op))
       throw new DesignAError("INVALID_SCHEMA", `step ${i + 1}: op must be one of ${OPERATIONS.join(", ")}`);
     if (!Array.isArray(args) || !args.length || args.length > 12 || args.some((a) => typeof a !== "string" || !ID.test(a)))
@@ -193,7 +199,7 @@ function parseReply(raw: string): Parsed {
       throw new DesignAError("INVALID_SCHEMA", `step ${i + 1}: decimals must be an integer 0..8`);
     if (typeof mode !== "string" || !([...ROUNDING_MODES, "none"] as string[]).includes(mode))
       throw new DesignAError("INVALID_SCHEMA", `step ${i + 1}: mode must be one of ${[...ROUNDING_MODES, "none"].join(", ")}`);
-    return { op: op as Step["op"], args: args as string[], decimals: decimals as number, mode: mode as RoundingMode | "none" };
+    return { id, op: op as Step["op"], args: args as string[], decimals: decimals as number, mode: mode as RoundingMode | "none" };
   });
   const parsedResults = results.map((r, i): ParsedResult => {
     if (!isObject(r)) throw new DesignAError("INVALID_SCHEMA", `result ${i + 1} must be an object`);
@@ -249,14 +255,49 @@ function showValue(value: Dec, result: ParsedResult, locale: NumberLocale): stri
 }
 
 /** Compares the model's own estimate with the computed value at the shown precision. */
-function claimState(value: Dec, result: ParsedResult): { state: NumberState; claimDiffered: boolean } {
-  if (!result.claimed) return { state: "calculated", claimDiffered: false };
+function claimState(value: Dec, result: ParsedResult): { state: NumberState; claim: "matches" | "differs" | "unusable" | "none" } {
+  if (!result.claimed) return { state: "calculated", claim: "none" };
   const parsed = parseLocaleNumber(result.claimed);
-  if (parsed.kind !== "value") return { state: "calculated", claimDiffered: parsed.kind === "invalid" };
+  if (parsed.kind !== "value") return { state: "calculated", claim: parsed.kind === "invalid" ? "unusable" : "none" };
   const places = result.format === "clock" || result.format === "date" || result.format === "minutes" ? 0 : result.decimals;
   const matches = new D(roundDecimal(value, places)).eq(roundDecimal(parsed.value, places));
-  return matches ? { state: "recomputed and matches", claimDiffered: false } : { state: "calculated", claimDiffered: true };
+  return matches ? { state: "recomputed and matches", claim: "matches" } : { state: "calculated", claim: "differs" };
 }
+
+type ValueType = "plain" | "date" | "clock";
+/**
+ * Types every value: a span's kind, then per step. Dates and clock times may be
+ * shifted by plain amounts or subtracted from each other; nothing else.
+ */
+function typeProgram(steps: Step[], spanById: Map<string, Span>): Map<string, ValueType> {
+  const types = new Map<string, ValueType>();
+  const typeOf = (ref: string): ValueType => {
+    const known = types.get(ref);
+    if (known) return known;
+    const span = spanById.get(ref);
+    return span?.kind === "date" ? "date" : span?.kind === "time" ? "clock" : "plain";
+  };
+  for (const step of steps) {
+    const t = step.args.map(typeOf);
+    const plainOnly = t.every((x) => x === "plain");
+    let out: ValueType = "plain";
+    if (step.op === "add" || step.op === "subtract") {
+      const [a, b] = t;
+      if (a === "plain" && b === "plain") out = "plain";
+      else if (a !== "plain" && b === "plain") out = a;
+      else if (step.op === "add" && a === "plain" && b !== "plain") out = b;
+      else if (step.op === "subtract" && a === b) out = "plain";
+      else throw new DesignAError("EVALUATION", `step ${step.id}: cannot ${step.op} a ${a === "plain" ? b : a} and a ${b === "plain" || a === b ? a : b} this way`);
+    } else if (step.op === "round" || step.op === "min" || step.op === "max") {
+      if (new Set(t).size > 1) throw new DesignAError("EVALUATION", `step ${step.id}: mixed dates, clock times and plain numbers`);
+      out = t[0];
+    } else if (!plainOnly) throw new DesignAError("EVALUATION", `step ${step.id}: a date or clock time cannot be used in ${step.op}`);
+    types.set(step.id, out);
+  }
+  return types;
+}
+
+const typeOfFormat: Record<ResultFormat, ValueType> = { money: "plain", number: "plain", percent: "plain", minutes: "plain", days: "plain", clock: "clock", date: "date" };
 
 /** Every number, time, duration or date in `text` that equals no ledger value. */
 export function ledgerCheck(text: string, ledger: string[], locale: NumberLocale): string[] {
@@ -302,9 +343,9 @@ export function renderDesignA(raw: string, spans: Span[], locale: NumberLocale):
       return;
     }
     if (ref.startsWith("s")) {
-      const n = Number(ref.slice(1));
-      if (!Number.isInteger(n) || n < 1 || n > parsed.steps.length) throw new DesignAError("UNKNOWN_REFERENCE", `${where}: ${ref} is not a step of this program`);
-      if (n > stepIndex) throw new DesignAError("FORWARD_REFERENCE", `${where}: ${ref} is not an earlier step`);
+      const at = parsed.steps.findIndex((s) => s.id === ref);
+      if (at < 0) throw new DesignAError("UNKNOWN_REFERENCE", `${where}: ${ref} is not a step of this program`);
+      if (at >= stepIndex) throw new DesignAError("FORWARD_REFERENCE", `${where}: ${ref} is not a step written before it`);
       return;
     }
     const span = spanById.get(ref);
@@ -313,9 +354,9 @@ export function renderDesignA(raw: string, spans: Span[], locale: NumberLocale):
     usedSpans.add(ref);
   };
   const steps: Step[] = parsed.steps.map((s, i) => {
-    s.args.forEach((a) => resolve(a, i, `step s${i + 1}`));
+    s.args.forEach((a) => resolve(a, i, `step ${s.id}`));
     return {
-      id: `s${i + 1}`,
+      id: s.id,
       op: s.op,
       args: s.args,
       ...(s.op === "round" ? { decimals: s.decimals, mode: s.mode === "none" ? "half-up" : s.mode } : {}),
@@ -330,13 +371,18 @@ export function renderDesignA(raw: string, spans: Span[], locale: NumberLocale):
     if (error instanceof EvaluationError) throw new DesignAError("EVALUATION", error.message);
     throw error;
   }
+  const types = typeProgram(steps, spanById);
   const flags: string[] = [];
   const results: RenderedResult[] = parsed.results.map((r) => {
     const value = values.get(r.ref)!;
+    const type = types.get(r.ref) ?? (spanById.get(r.ref)?.kind === "date" ? "date" : spanById.get(r.ref)?.kind === "time" ? "clock" : "plain");
+    if (type !== typeOfFormat[r.format])
+      throw new DesignAError("RESULT_FORMAT", `${r.label}: the value is a ${type === "plain" ? "plain number" : type} but the format is ${r.format}`);
     const shown = showValue(value, r, locale);
-    const { state, claimDiffered } = claimState(value, r);
-    if (claimDiffered) flags.push(`${r.label}: the model's own figure differed from the calculated value; the calculated value is shown`);
-    return { label: r.label, value: value.toString(), shown, format: r.format, state, ...(claimDiffered ? { claimDiffered } : {}) };
+    const { state, claim } = claimState(value, r);
+    if (claim === "differs") flags.push(`${r.label}: the model's own figure differed from the calculated value; the calculated value is shown`);
+    if (claim === "unusable") flags.push(`${r.label}: the model gave no usable estimate of its own, so this figure was not cross-checked`);
+    return { label: r.label, value: value.toString(), shown, format: r.format, state, ...(claim === "differs" ? { claimDiffered: true } : {}) };
   });
   for (const id of usedSpans) {
     const span = spanById.get(id)!;

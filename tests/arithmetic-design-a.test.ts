@@ -90,9 +90,9 @@ describe("the schema and the prompt", () => {
 describe("rendering from computed values only", () => {
   const vat = JSON.stringify({
     steps: [
-      { op: "percent_of", args: ["t1n1", "t1n2"], decimals: 0, mode: "none" },
-      { op: "round", args: ["s1"], decimals: 2, mode: "half-up" },
-      { op: "add", args: ["t1n1", "s2"], decimals: 0, mode: "none" },
+      { id: "s1", op: "percent_of", args: ["t1n1", "t1n2"], decimals: 0, mode: "none" },
+      { id: "s2", op: "round", args: ["s1"], decimals: 2, mode: "half-up" },
+      { id: "s3", op: "add", args: ["t1n1", "s2"], decimals: 0, mode: "none" },
     ],
     results: [
       { ref: "s2", label: "Umsatzsteuer", format: "money", unit: "EUR", decimals: 2, claimed: "234.57" },
@@ -133,7 +133,7 @@ describe("rendering from computed values only", () => {
     const spans = turnSpans("Total 1.234 and 19 percent", 1, "en");
     const out = renderDesignA(
       JSON.stringify({
-        steps: [{ op: "percent_of", args: ["t1n1", "t1n2"], decimals: 0, mode: "none" }],
+        steps: [{ id: "s1", op: "percent_of", args: ["t1n1", "t1n2"], decimals: 0, mode: "none" }],
         results: [{ ref: "s1", label: "VAT", format: "money", unit: "EUR", decimals: 2, claimed: "" }],
         note: "",
         limitation: "none",
@@ -156,15 +156,15 @@ describe("rendering from computed values only", () => {
     const out = renderDesignA(
       JSON.stringify({
         steps: [
-          { op: "subtract", args: [id("10:12"), id("23 minutes")], decimals: 0, mode: "none" },
-          { op: "subtract", args: ["s1", id("6 minutes")], decimals: 0, mode: "none" },
-          { op: "add", args: [id("31 January 2028"), id("30")], decimals: 0, mode: "none" },
-          { op: "add", args: [id("23 minutes"), id("6 minutes")], decimals: 0, mode: "none" },
-          { op: "divide", args: [id("1,092.00"), id("92")], decimals: 0, mode: "none" },
-          { op: "multiply", args: ["s5", id("61")], decimals: 0, mode: "none" },
-          { op: "round", args: ["s6"], decimals: 2, mode: "half-up" },
-          { op: "subtract", args: [id("909.50"), id("850.00")], decimals: 0, mode: "none" },
-          { op: "ratio_percent", args: ["s8", id("850.00")], decimals: 0, mode: "none" },
+          { id: "s1", op: "subtract", args: [id("10:12"), id("23 minutes")], decimals: 0, mode: "none" },
+          { id: "s2", op: "subtract", args: ["s1", id("6 minutes")], decimals: 0, mode: "none" },
+          { id: "s3", op: "add", args: [id("31 January 2028"), id("30")], decimals: 0, mode: "none" },
+          { id: "s4", op: "add", args: [id("23 minutes"), id("6 minutes")], decimals: 0, mode: "none" },
+          { id: "s5", op: "divide", args: [id("1,092.00"), id("92")], decimals: 0, mode: "none" },
+          { id: "s6", op: "multiply", args: ["s5", id("61")], decimals: 0, mode: "none" },
+          { id: "s7", op: "round", args: ["s6"], decimals: 2, mode: "half-up" },
+          { id: "s8", op: "subtract", args: [id("909.50"), id("850.00")], decimals: 0, mode: "none" },
+          { id: "s9", op: "ratio_percent", args: ["s8", id("850.00")], decimals: 0, mode: "none" },
         ],
         results: [
           { ref: "s2", label: "leave by", format: "clock", unit: "", decimals: 0, claimed: "" },
@@ -200,18 +200,65 @@ describe("rendering from computed values only", () => {
 
 describe("refusals", () => {
   it("names each failure", () => {
-    const base = { steps: [{ op: "add", args: ["t1n1", "t1n2"], decimals: 0, mode: "none" }], results: [{ ref: "s1", label: "x", format: "money", unit: "EUR", decimals: 2, claimed: "" }], note: "", limitation: "none" };
+    const base = { steps: [{ id: "s1", op: "add", args: ["t1n1", "t1n2"], decimals: 0, mode: "none" }], results: [{ ref: "s1", label: "x", format: "money", unit: "EUR", decimals: 2, claimed: "" }], note: "", limitation: "none" };
     const json = (patch: Record<string, unknown>) => JSON.stringify({ ...base, ...patch });
     expect(fails("{")).toBe("INVALID_JSON");
-    expect(fails(json({ steps: [{ op: "times", args: ["t1n1", "t1n2"] }] }))).toBe("INVALID_SCHEMA");
-    expect(fails(json({ steps: [{ op: "add", args: ["t1n1", "1.07"], decimals: 0, mode: "none" }] }))).toBe("INVALID_SCHEMA");
-    expect(fails(json({ steps: [{ op: "add", args: ["t1n1", "t1n9"], decimals: 0, mode: "none" }] }))).toBe("UNKNOWN_REFERENCE");
-    expect(fails(json({ steps: [{ op: "add", args: ["t1n1", "const:19"], decimals: 0, mode: "none" }] }))).toBe("UNKNOWN_REFERENCE");
-    expect(fails(json({ steps: [{ op: "add", args: ["t1n1", "s2"], decimals: 0, mode: "none" }, { op: "add", args: ["t1n1", "t1n2"], decimals: 0, mode: "none" }] }))).toBe("FORWARD_REFERENCE");
-    expect(fails(json({ steps: [{ op: "divide", args: ["t1n1", "t1n1"], decimals: 0, mode: "none" }, { op: "subtract", args: ["s1", "s1"], decimals: 0, mode: "none" }, { op: "divide", args: ["t1n1", "s2"], decimals: 0, mode: "none" }], results: [{ ref: "s3", label: "x", format: "money", unit: "EUR", decimals: 2, claimed: "" }] }))).toBe("EVALUATION");
+    expect(fails(json({ steps: [{ id: "s1", op: "times", args: ["t1n1", "t1n2"] }] }))).toBe("INVALID_SCHEMA");
+    expect(fails(json({ steps: [{ id: "s1", op: "add", args: ["t1n1", "1.07"], decimals: 0, mode: "none" }] }))).toBe("INVALID_SCHEMA");
+    expect(fails(json({ steps: [{ id: "s1", op: "add", args: ["t1n1", "t1n9"], decimals: 0, mode: "none" }] }))).toBe("UNKNOWN_REFERENCE");
+    expect(fails(json({ steps: [{ id: "s1", op: "add", args: ["t1n1", "const:19"], decimals: 0, mode: "none" }] }))).toBe("UNKNOWN_REFERENCE");
+    expect(fails(json({ steps: [{ id: "s1", op: "add", args: ["t1n1", "s2"], decimals: 0, mode: "none" }, { id: "s2", op: "add", args: ["t1n1", "t1n2"], decimals: 0, mode: "none" }] }))).toBe("FORWARD_REFERENCE");
+    expect(fails(json({ steps: [{ id: "s1", op: "divide", args: ["t1n1", "t1n1"], decimals: 0, mode: "none" }, { id: "s2", op: "subtract", args: ["s1", "s1"], decimals: 0, mode: "none" }, { id: "s3", op: "divide", args: ["t1n1", "s2"], decimals: 0, mode: "none" }], results: [{ ref: "s3", label: "x", format: "money", unit: "EUR", decimals: 2, claimed: "" }] }))).toBe("EVALUATION");
     expect(fails(json({ results: [{ ref: "s1", label: "x", format: "clock", unit: "", decimals: 0, claimed: "" }] }))).toBe("RESULT_FORMAT");
     expect(fails(json({ limitation: "cannot_answer", results: [] }))).toBe("CANNOT_ANSWER");
     expect(fails(json({ results: [] }))).toBe("EMPTY");
+  });
+});
+
+describe("value types: dates and clock times keep their format", () => {
+  const text = "Die Rechnung ist vom 14.08.2026 und zahlbar innerhalb von 30 Tagen. Zug um 08:05 Uhr, Weg 25 Minuten.";
+  const spans = turnSpans(text, 1, "de");
+  const program = (steps: unknown[], results: unknown[]) => JSON.stringify({ steps, results, note: "", limitation: "none" });
+  it("refuses a date shown as days or a plain number shown as a date", () => {
+    expect(fails(program([{ id: "s1", op: "add", args: ["t1n1", "t1n2"], decimals: 0, mode: "none" }], [{ ref: "s1", label: "Fälligkeit", format: "days", unit: "", decimals: 0, claimed: "20724" }]), spans)).toBe("RESULT_FORMAT");
+    expect(fails(program([{ id: "s1", op: "add", args: ["t1n2", "t1n4"], decimals: 0, mode: "none" }], [{ ref: "s1", label: "x", format: "date", unit: "", decimals: 0, claimed: "1" }]), spans)).toBe("RESULT_FORMAT");
+    expect(fails(program([{ id: "s1", op: "subtract", args: ["t1n3", "t1n4"], decimals: 0, mode: "none" }], [{ ref: "s1", label: "x", format: "minutes", unit: "", decimals: 0, claimed: "1" }]), spans)).toBe("RESULT_FORMAT");
+  });
+  it("refuses arithmetic that makes no sense on a date or clock time", () => {
+    expect(fails(program([{ id: "s1", op: "multiply", args: ["t1n1", "t1n2"], decimals: 0, mode: "none" }], [{ ref: "s1", label: "x", format: "number", unit: "", decimals: 0, claimed: "1" }]), spans)).toBe("EVALUATION");
+    expect(fails(program([{ id: "s1", op: "add", args: ["t1n1", "t1n3"], decimals: 0, mode: "none" }], [{ ref: "s1", label: "x", format: "date", unit: "", decimals: 0, claimed: "1" }]), spans)).toBe("EVALUATION");
+    expect(fails(program([{ id: "s1", op: "subtract", args: ["t1n2", "t1n1"], decimals: 0, mode: "none" }], [{ ref: "s1", label: "x", format: "number", unit: "", decimals: 0, claimed: "1" }]), spans)).toBe("EVALUATION");
+  });
+  it("renders a date plus days as a date and a clock time minus minutes as a clock time", () => {
+    const out = renderDesignA(
+      program(
+        [
+          { id: "s1", op: "add", args: ["t1n1", "t1n2"], decimals: 0, mode: "none" },
+          { id: "s2", op: "subtract", args: ["t1n3", "t1n4"], decimals: 0, mode: "none" },
+        ],
+        [
+          { ref: "s1", label: "Fälligkeit", format: "date", unit: "", decimals: 0, claimed: String(isoToDays("2026-09-13")) },
+          { ref: "s2", label: "spätestens los", format: "clock", unit: "", decimals: 0, claimed: "460" },
+        ],
+      ),
+      spans,
+      "de",
+    );
+    expect(out.results.map((r) => [r.shown, r.state])).toEqual([
+      ["13. September 2026 (2026-09-13)", "recomputed and matches"],
+      ["07:40", "recomputed and matches"],
+    ]);
+    expect(out.flags).toEqual([]);
+  });
+  it("flags a junk estimate as not cross-checked, without inventing a difference", () => {
+    const out = renderDesignA(
+      program([{ id: "s1", op: "add", args: ["t1n2", "t1n4"], decimals: 0, mode: "none" }], [{ ref: "s1", label: "x", format: "number", unit: "", decimals: 0, claimed: "ref s1" }]),
+      spans,
+      "de",
+    );
+    expect(out.results[0]).toMatchObject({ state: "calculated" });
+    expect(out.results[0].claimDiffered).toBeUndefined();
+    expect(out.flags[0]).toMatch(/no usable estimate/);
   });
 });
 
