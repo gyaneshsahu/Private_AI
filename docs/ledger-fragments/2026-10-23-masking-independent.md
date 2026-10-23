@@ -1,0 +1,61 @@
+## Independent masking check on hand-written documents; names and addresses answered (worktree H) - 23 October
+
+Owner instruction (23 October): "add an independent check on documents not produced by the same generator, and tell me whether names and addresses are measured". Verified in this worktree: `npx tsc --noEmit` passes; `npx vitest run tests/masking-independent.test.ts tests/masking-benchmark.test.ts` 13 passed. Nothing else was run. `src/identifier-masking.ts` is unchanged: this is a measurement, not a tuning round. All numbers are on SYNTHETIC documents and may not be quoted as product accuracy.
+
+**Names and addresses, in one sentence:** names and addresses are not detected and were never measured as detection targets; both corpora only count them ("not covered, counted"), and on this corpus all 184 names and all 73 addresses stayed in clear text and no detection touched any of them.
+
+- **Method.** `evaluation/masking/independent/`: 54 documents written by hand as literal text (`documents.ts`, `documents-2.ts`), 12 categories (bill 4, invoice 4, tax letter 4, contract 4, CV 4, medical letter 4, bank statement 4, email 5, chat 5, form 5, table 5, scan-ocr 6), German 29, English 18, mixed 7 (by document). Layouts the generator never emits: two-column PDF text, footnote markers glued to identifiers, a three-column letterhead footer, a bilingual parallel-column contract, a Markdown invoice, a screenshot described in words, a forwarded chain with `>`/`>>` quotes, an Outlook chain copied from HTML (no-break spaces, soft hyphen), WhatsApp iOS and Android exports (phone number as sender), a team-chat thread, one-character-per-box PDF form fields, a web-form response, a semicolon CSV bank export, a comma CSV payroll export, a Markdown pipe table, an ASCII box table, two negative controls (a group chat and an inventory list full of numbers), and six scans whose OCR damage was typed by hand. No import from `values.ts`, `doc.ts`, `layouts.ts` or `corpus.ts` (a test fails otherwise; the scorer's only link to the generator is a type import erased at runtime); no identifier value except dates appears in the development split (tested). Check digits from a new helper, `check-digits.ts` (IBAN mod-97, Luhn, ISO 7064 tax ID and VAT ID, health and pension insurance numbers, ICAO zone); the test re-checks every clean value and caught two invalid tax IDs of mine before the measurement. Scored with `evaluation/masking/score.ts` unchanged, so definitions and Wilson intervals match the benchmark. Results: `evaluation/masking/results/independent.json`. 301 identifiers, 184 names, 73 addresses. No public dataset; nothing real.
+- **Per category** (recall = caught / identifiers; precision = true-positive detections / detections; 95 % Wilson):
+
+| Category | Docs | Identifiers | Caught | Missed | FP | Recall | Recall 95% CI | Precision | Precision 95% CI |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| bill | 4 | 17 | 17 | 0 | 0 | 100.0% | 81.6–100.0 | 100.0% | 81.6–100.0 |
+| invoice | 4 | 16 | 16 | 0 | 0 | 100.0% | 80.6–100.0 | 100.0% | 80.6–100.0 |
+| tax-letter | 4 | 25 | 25 | 0 | 1 | 100.0% | 86.7–100.0 | 96.2% | 81.1–99.3 |
+| contract | 4 | 28 | 28 | 0 | 0 | 100.0% | 87.9–100.0 | 100.0% | 87.9–100.0 |
+| cv | 4 | 16 | 16 | 0 | 0 | 100.0% | 80.6–100.0 | 100.0% | 80.6–100.0 |
+| medical-letter | 4 | 16 | 15 | 1 | 3 | 93.8% | 71.7–98.9 | 83.3% | 60.8–94.2 |
+| bank-statement | 4 | 20 | 20 | 0 | 0 | 100.0% | 83.9–100.0 | 100.0% | 83.9–100.0 |
+| email | 5 | 37 | 33 | 4 | 0 | 89.2% | 75.3–95.7 | 100.0% | 89.6–100.0 |
+| chat | 5 | 18 | 17 | 1 | 2 | 94.4% | 74.2–99.0 | 89.5% | 68.6–97.1 |
+| form | 5 | 25 | 23 | 2 | 0 | 92.0% | 75.0–97.8 | 100.0% | 85.7–100.0 |
+| table | 5 | 62 | 54 | 8 | 5 | 87.1% | 76.5–93.3 | 91.5% | 81.7–96.3 |
+| scan-ocr | 6 | 21 | 7 | 14 | 0 | 33.3% | 17.2–54.6 | 100.0% | 67.6–100.0 |
+| **overall** | 54 | 301 | 271 | 30 | 11 | 90.0% | 86.1–92.9 | 96.1% | 93.2–97.8 |
+| all except scans | 48 | 280 | 264 | 16 | 11 | 94.3% | 90.9–96.5 | 96.0% | 93.0–97.8 |
+
+Scans split by whether OCR damage sits inside the value: damaged 2 of 14 caught (14.3 %, 4.0 to 39.9), undamaged 5 of 7 (71.4 %, 35.9 to 91.8). The scan row is not comparable with the benchmark's 90.3 %: here damage was typed into two thirds of the scan identifiers on purpose, far above the benchmark's per-character rates.
+
+- **Per kind:** IBAN 46/51 (90.2 %, 79.0 to 95.7), card 7/7 (100 %, 64.6 to 100), tax ID 32/33 (97.0 %, 84.7 to 99.5), insurance 20/21 (95.2 %, 77.3 to 99.2), ID number 14/16 (87.5 %, 64.0 to 96.5), email 43/48 (89.6 %, 77.8 to 95.5), phone 73/78 (93.6 %, 85.9 to 97.2; precision 90.2 %, 8 false positives), birth date 36/47 (76.6 %, 62.8 to 86.4; precision 91.9 %, 3 false positives). Two identifiers were caught under the wrong label.
+- **Names and addresses table** (not ground truth; "touched" means at least one letter or digit inside some detection):
+
+| Category | Names | touched | left in clear | Addresses | touched | left in clear |
+| --- | --- | --- | --- | --- | --- | --- |
+| bill | 6 | 0 | 6 | 3 | 0 | 3 |
+| invoice | 9 | 0 | 9 | 12 | 0 | 12 |
+| tax-letter | 11 | 0 | 11 | 3 | 0 | 3 |
+| contract | 9 | 0 | 9 | 11 | 0 | 11 |
+| cv | 7 | 0 | 7 | 4 | 0 | 4 |
+| medical-letter | 15 | 0 | 15 | 8 | 0 | 8 |
+| bank-statement | 10 | 0 | 10 | 4 | 0 | 4 |
+| email | 25 | 0 | 25 | 4 | 0 | 4 |
+| chat | 40 | 0 | 40 | 0 | 0 | 0 |
+| form | 12 | 0 | 12 | 7 | 0 | 7 |
+| table | 27 | 0 | 27 | 12 | 0 | 12 |
+| scan-ocr | 13 | 0 | 13 | 5 | 0 | 5 |
+| **overall** | 184 | 0 | 184 | 73 | 0 | 73 |
+
+- **Miss list (30; each with context in `independent.json`).** Not in scans (16):
+  - table-02 `payroll-csv-comma`, 4 emails: in `...,DE36280501000091827364,f.mertens@fernwerk.example` the email pattern's comma branch (meant for OCR commas) starts the match at the preceding CSV field; the merged candidate overlaps the IBAN and is dropped. Confirmed by a probe: `x,f.mertens@...` is masked as one email including `x,`.
+  - table-02, 4 ISO birth dates under a CSV header `dob` (the tab-separated member list with `Geb.-Datum` was caught 5 of 5).
+  - email-02 `outlook-reply-chain-html-copy`: an IBAN and a phone with no-break spaces (U+00A0) between groups, both missed entirely (probe confirms: no detection at all); plus the customer's truncated IBAN (`truncated-invalid`, missed by design: it cannot pass mod-97).
+  - email-04: "Date of birth: 15th of February 1977" (ordinal written date; the numeric copy on the same line was caught).
+  - chat-01 `whatsapp-ios-export`: "Papa ist am 17.4.58 geboren" (label after the date, two-digit year).
+  - form-01 `comb-field-pdf-form`: IBAN and birth date typed one character per box (`D E 2 1 7 9 ...`, `2 3 0 9 1 9 8 2`).
+  - medical-04 `prescription-form-fields`: birth date under "geb. am" with an address column between label and value.
+  - In scans (14): scan-01 identity card number `LZ6R93Kl7` and birth date `17.O4.1988` (the clean machine-readable zone copies were caught); scan-02 passport number in the visual zone with its label one line above (missed; the zone copy caught) and the birth date five lines below its label after OCR read the label column first; scan-03 a wrapped IBAN with O and l (`DE3l 43O6 ... 2O65 4O`), tax ID `2958O37l629`, phone `O6181 2O9-3318`; scan-04 UK IBAN partly masked, email with comma for dot, phone partly masked; scan-05 two fax-header and contact phones `O345 22lO ...`, birth date `3l.12.1968`, pension number `O4 3ll268 B O29` (the damaged health insurance number `N2948lO659` was caught).
+- **False positives (11):** phone on numbers with a leading zero and a label that says what they are: Riester contract `0071-554-3920` (tax-02), Objekt-Nr. `0441-2207` (table-04), PZN `06930275` (medical-04), four lot numbers `LOT 2026 0918 4471` (table-05, a negative control); phone on a date plus hour `07.10.2026 08` from `07.10.2026 08:12` (medical-03, confirmed by probe); birth date on WhatsApp timestamps `[14.08.26` and `03.10.26` on the line after a message ending in "Geburtsdatum" (chat-01, chat-04), and on a report date under the `Geb.-Dat.` column (medical-03). None touched a name or address.
+- **Proposed fixes, not made (owner rule: describe in the generator's terms, then re-measure; do not tune on this set):** map U+00A0 and U+202F to a space before detection, as invisible characters are already stripped; refuse the email comma branch when the left part is a complete CSV field (no OCR context) or retry from after the comma; accept `dob`, `date_of_birth`, `birth_date` and `Geburtsdatum` as CSV and TSV header cells; reject phone candidates directly preceded by a date or followed by `:` and two digits, and those after labels such as Nr., no., LOT, PZN, Objekt, contract; stop the label-on-line-above birth-date rule at a chat timestamp line start and require column alignment; join runs of single characters separated by single spaces (comb fields) before the IBAN check, and a labelled eight-digit box run as a date; optional: "geboren" after a date, ordinal English dates. Each needs new generator layouts first so the development split carries the case.
+- **Honest limits.** Hand-written by one model, the same model family that built the generator and tuned the detector, so shared blind spots are likely; independent in code and data, not in author. Before writing the documents I read the detector's IBAN and email patterns and its check-digit functions while setting up the scorer, but not its phone, birth-date or ID-number logic. Still synthetic; no real document. Small counts (301 identifiers, 4 to 6 documents per category), so per-category intervals are 18 to 37 points wide and the 100 % rows mean "nothing missed in 16 to 28 identifiers". Ground truth is mine and includes judgement calls the benchmark README does not enumerate (birth date with the label after it, ordinal written dates, boxed fields, OCR reading order, a truncated IBAN); under the README's narrower birth-date rule, birth-date recall is 36 of 43 (83.7 %). The scan damage is deliberately heavy and uncalibrated. Names and addresses are counted, not detected; their 0 touched is a false-positive measure only.
+- **Contradictions with existing documents:** the ledger's held-out per-category recall of 100 % for email, chat, form and medical letter, 99.7 % for tables, and precision 99.95 % do not carry over to documents the generator did not write (here email 89.2 %, chat 94.4 %, form 92.0 %, medical 93.8 %, table 87.1 %, precision 96.1 %); the ledger already says 100 % means "every format the generator emits", which this check confirms. The 23 October entry says phones firing on leading-zero customer and staff numbers were fixed; that holds for the generator's decoys only: here labelled leading-zero contract, object, lot and PZN numbers and a date with an hour still fire as phones. The entry's "independent probe over the repository's own documents found no false positive for the new detector" stands, but on document-like text there are 11. Its by-design miss list ("birth dates with no label") understates the birth-date gap: labelled dates are missed when the label follows the date, is an ordinal written date, or sits in a CSV header `dob`; no-break spaces in HTML copies are a miss class not listed anywhere.
+- **Owner decisions:** (1) whether to schedule a tuning round for the CSV email bug, no-break spaces, CSV `dob` headers and the phone and chat-timestamp false positives, built through new generator layouts and a new development seed, with this set re-run afterwards as the independent check (recommendation: yes; the first two are bugs, not scope); (2) whether comb-field forms and "geboren after the date" enter scope; (3) whether an IBAN-shaped value after an IBAN label that fails mod-97 should be masked anyway (privacy over precision); (4) whether to lock this set like the held-out split (hash pinned, one reader) or treat it as reusable; (5) still open from the 23 October entry: a check on real, consented or licensed documents and an OCR calibration, since this check is synthetic and single-author; (6) recommendation unchanged: no synthetic percentage outside internal documents, and product copy keeps saying names and addresses are not masked.
