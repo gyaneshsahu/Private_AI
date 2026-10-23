@@ -38,6 +38,13 @@ const conversationBody = z.object({
       keptOnDevice: z.string().max(300).optional(),
       answeredBy: z.string().max(300).optional(),
       at: z.string().datetime().optional(),
+      arithmeticCheck: z
+        .object({
+          relations: z.number().int().nonnegative(),
+          mismatches: z.number().int().nonnegative(),
+        })
+        .strict()
+        .optional(),
     }),
   ),
   attachments: z.array(

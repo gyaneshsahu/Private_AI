@@ -137,6 +137,12 @@ export interface Message {
   at?: string;
   /** Set when the user chose the fallback model after the usual model rejected the request. */
   answeredBy?: string;
+  /**
+   * Local-only result of recalculating the arithmetic the reply writes out
+   * (src/arithmetic/postcheck.ts): how many stated relations were checked and
+   * how many did not add up. Never model context, never sent anywhere.
+   */
+  arithmeticCheck?: { relations: number; mismatches: number };
 }
 export interface ConversationBranch {
   id: string;

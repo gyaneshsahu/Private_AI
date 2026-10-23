@@ -17,6 +17,7 @@ import {
 } from "./conversation";
 import { DOCUMENT_ACCEPT } from "./document-formats";
 import { describeKept, prepareSearchQuery } from "./identifier-masking";
+import { ARITHMETIC_WARNING, checkArithmetic } from "./arithmetic/check";
 import {
   DISAPPEAR_LABELS,
   expireMessages,
@@ -558,6 +559,9 @@ export function App() {
                     ...m,
                     status: m.text ? "complete" : "error",
                     ...(!m.text ? { failure: "empty" as const } : {}),
+                    ...(m.text
+                      ? { arithmeticCheck: checkArithmetic(m.text) }
+                      : {}),
                     ...(choice === "fallback" && qualified?.fallbackModel
                       ? {
                           answeredBy: `Answered by the fallback model ${qualified.fallbackModel} after the usual model did not accept the request.`,
@@ -1586,6 +1590,12 @@ export function App() {
                   {message.answeredBy && (
                     <p className="muted answered-by">{message.answeredBy}</p>
                   )}
+                  {message.arithmeticCheck &&
+                    message.arithmeticCheck.mismatches > 0 && (
+                      <p className="warning arithmetic-check" role="alert">
+                        {ARITHMETIC_WARNING}
+                      </p>
+                    )}
                   {message.keptOnDevice && (
                     <p className="muted kept-on-device">
                       {message.keptOnDevice} Placeholders went to the secure
