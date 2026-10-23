@@ -97,7 +97,7 @@ describe("calculator evidence shorthand (seen on Gemma 4 31B, 23 October practic
         steps: [
           { id: "vat", op: "percentOf", left: "2435.67", right: "19" },
           { id: "gross", op: "add", left: "net", right: "vat" },
-          { id: "dup", op: "add", left: "5", right: "7" },
+          { id: "dup", op: "add", left: "5", right: "9" },
         ],
       },
       [],
@@ -105,8 +105,8 @@ describe("calculator evidence shorthand (seen on Gemma 4 31B, 23 October practic
     ) as { steps: { left: unknown; right: unknown }[] };
     expect(out.steps[0]).toMatchObject({ left: "net", right: "rate" });
     expect(out.steps[1]).toMatchObject({ left: "net", right: "vat" });
-    // "5" matches two inputs (5 and 5.0) and "7" matches none: both stay as written.
-    expect(out.steps[2]).toMatchObject({ left: "5", right: "7" });
+    // "5" matches two inputs (5 and 5.0) and "9" is neither an input, a constant nor derivable: both stay as written.
+    expect(out.steps[2]).toMatchObject({ left: "5", right: "9" });
   });
   it("leaves a quotation that occurs nowhere, and malformed shapes, for the schema to refuse", () => {
     const out = normalizeEvidenceShorthand(

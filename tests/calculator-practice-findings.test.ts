@@ -152,6 +152,95 @@ describe("shapes seen in practice are normalised, nothing else", () => {
     ) as { inputs: { evidence: unknown }[] };
     expect(c.inputs[0].evidence).toEqual({ kind: "constant" });
   });
+  it("GPT-OSS: camelCase ids become snake_case everywhere, a quotation with different spacing is located, and a constant carrying a value from the text is bound to that text", () => {
+    const p = {
+      inputs: [
+        {
+          id: "netAmount",
+          value: "1785.00",
+          evidence: { kind: "user", quote: "1.785,00EUR", userTurn: 1 },
+        },
+        {
+          id: "vatRate",
+          value: "19",
+          evidence: { kind: "constant", quote: "19%" },
+        },
+        { id: "travel", value: "18", evidence: { kind: "constant" } },
+        { id: "hundred", value: "100", evidence: { kind: "constant" } },
+      ],
+      steps: [
+        {
+          id: "vatAmount",
+          op: "percentOf",
+          left: "netAmount",
+          right: "vatRate",
+        },
+      ],
+      results: [{ id: "vatAmount", decimals: 2 }],
+    };
+    const n = normalizeEvidenceShorthand(p, [], conversation()) as {
+      inputs: { id: string; evidence: unknown }[];
+      steps: { id: string; left: string; right: string }[];
+      results: { id: string }[];
+    };
+    expect(n.inputs.map((i) => i.id)).toEqual([
+      "net_amount",
+      "vat_rate",
+      "travel",
+      "hundred",
+    ]);
+    expect(n.inputs[0].evidence).toEqual({
+      kind: "user",
+      quote: "1.785,00 EUR",
+      userTurn: 1,
+    });
+    expect(n.inputs[1].evidence).toEqual({
+      kind: "user",
+      quote: "19 %",
+      userTurn: 1,
+    });
+    expect(n.inputs[2].evidence).toEqual({
+      kind: "user",
+      quote: "18",
+      userTurn: 1,
+    });
+    expect(n.inputs[3].evidence).toEqual({ kind: "constant" });
+    expect(n.steps[0]).toMatchObject({
+      id: "vat_amount",
+      left: "net_amount",
+      right: "vat_rate",
+    });
+    expect(n.results[0].id).toBe("vat_amount");
+  });
+  it("literal step operands that an input's quotation stands for, or allowed constants, become inputs", () => {
+    const p = {
+      inputs: [
+        { id: "rate", value: "19", evidence: "19 %" },
+        { id: "brutto", value: "1785.00", evidence: "1.785,00 EUR" },
+      ],
+      steps: [
+        { id: "netto", op: "divide", left: "brutto", right: "1.19" },
+        { id: "pct", op: "multiply", left: "netto", right: "100" },
+        { id: "odd", op: "add", left: "netto", right: "42" },
+      ],
+      results: [{ id: "netto", decimals: 2 }],
+    };
+    const n = normalizeEvidenceShorthand(p, [], conversation()) as {
+      inputs: { id: string; value: string; evidence: unknown }[];
+      steps: { right: string }[];
+    };
+    expect(n.steps[0].right).toBe("rate_1_19");
+    expect(n.inputs.find((i) => i.id === "rate_1_19")).toMatchObject({
+      value: "1.19",
+      evidence: { kind: "user", userTurn: 1, quote: "19 %" },
+    });
+    expect(n.steps[1].right).toBe("const_100");
+    expect(n.inputs.find((i) => i.id === "const_100")).toMatchObject({
+      value: "100",
+      evidence: { kind: "constant" },
+    });
+    expect(n.steps[2].right).toBe("42");
+  });
   it("GPT-OSS: an input object whose evidence is an array stays as written for the schema to refuse", () => {
     const p = {
       inputs: {
