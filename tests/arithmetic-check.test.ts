@@ -20,6 +20,7 @@ describe("arithmetic post-check on a completed reply (owner wording, 23 October)
     expect(checkArithmetic("Thanks, that is all I needed.")).toEqual({
       relations: 0,
       mismatches: 0,
+      ambiguous: 0,
     });
     expect(
       checkArithmetic("Netto 1.234,56 EUR × 19 % = 234,57 EUR Umsatzsteuer."),

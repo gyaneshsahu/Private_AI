@@ -142,7 +142,11 @@ export interface Message {
    * (src/arithmetic/postcheck.ts): how many stated relations were checked and
    * how many did not add up. Never model context, never sent anywhere.
    */
-  arithmeticCheck?: { relations: number; mismatches: number };
+  arithmeticCheck?: {
+    relations: number;
+    mismatches: number;
+    ambiguous?: number;
+  };
 }
 export interface ConversationBranch {
   id: string;

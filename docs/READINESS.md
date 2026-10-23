@@ -1,4 +1,23 @@
 # PrivateAI readiness checklist
+## Arithmetic gate run once on the frozen set: no model passes - 23 October
+
+The frozen gate (`evaluation/arithmetic-gate/cases.json`, 40 cases, SHA-256 prefix `5afecfe9e176ad10`; threshold FROZEN 23 October) ran once, three repetitions, both arms, Gemma 4 31B (thinking off) and GPT-OSS 120B (reasoning low), through the harness over the direct API with the product's own prompt, tool and consumers. Verdicts from `evaluation/arithmetic-gate/verdict.ts`; results under `.local/arithmetic-gate-20261022/*-gate-*-final/`.
+
+| Model, arm | Exact conversations | Rate | Wilson 95 % | Critical failures | Verdict |
+| --- | --- | --- | --- | --- | --- |
+| GPT-OSS 120B, model alone + post-check | 105 of 120 | 87.5 % | 80.4 to 92.3 | arith-20, arith-30 | FAIL |
+| Gemma 4 31B, model alone + post-check | 100 of 120 | 83.3 % | 75.7 to 88.9 | arith-06, arith-07, arith-29 | FAIL |
+| GPT-OSS 120B, calculator + post-check | 54 of 120 | 45.0 % | 36.4 to 53.9 | eight cases | FAIL |
+| Gemma 4 31B, calculator + post-check | 54 of 120 | 45.0 % | 36.4 to 53.9 | four cases | FAIL |
+
+Post-check on the model-alone arms: GPT-OSS caught 6 of 15 wrong conversations (40 %, interval 19.8 to 64.3) with 13 false alarms on 105 exact ones (12.4 %); Gemma caught 2 of 20 (10 %) with 4 false alarms on 100 (4 %). On the calculator arms the post-check caught none of the 66 wrong conversations, because the calculator renders only results, never working.
+
+**Classification of the model-alone failures (analysis only; the frozen scorer was not changed, so the verdicts stand as measured).** GPT-OSS: model errors in arith-08 and arith-09 (2 380 / 1.19 given as 1 999.15; 1 177 / 1.07 as 1 100.93), arith-20 (critical; 5 737.60 from a truncated power instead of 5 737.62), arith-21 (10 252.84 instead of 10 252.88), arith-19 (an invented rounding step), arith-25 (a four-item sum off by one euro in both turns). Scorer artefacts, where the answer was right but written in a form the frozen scorer does not read: arith-15 (LaTeX thousands separators in a German reply read as decimals), arith-30 (critical; "09 Uhr 05 Minuten" for 09:05), arith-34 ("06 : 15 Uhr" with spaces), arith-31 ("7 h 40 m" for 460 minutes; the fee matched). Unclear: arith-33, where the model dates the second payment 29 February 2028 and the case expects 1 March 2028 for "one payment every 30 days" from 31 January (the model counts a 30-day gap as 29 days later; the case counts 30 days after). Had the artefacts not counted, GPT-OSS alone would still fail on arith-20 (critical) and on the 97 % bar. Gemma: model errors throughout (arith-03, arith-06 critical with 119 / 1.19 given as 99.99, arith-07 critical, arith-10 wrong method, arith-29 critical, arith-31, arith-36, arith-37, arith-40) plus the same arith-33 reading. The calculator arms fail on the models' tool use: wrong methods presented as calculated results, invented operations, omitted inputs, values written as expressions; the 23 October normalisation reduced schema refusals but cannot repair a wrong method.
+
+**Consequences.** No model is eligible as default under the frozen threshold; private chat stays gated regardless. The silent-wrong class (wrong and not flagged) is the one that matters for tax and finance users: 9 of 120 conversations for GPT-OSS alone and 18 of 120 for Gemma alone. Options for the owner are listed in the report of 23 October; nothing is tuned against the frozen set.
+
+**Spend.** The four gate batches cost USD 0.40 by reported usage (0.057, 0.089, 0.084, 0.169); usage-only total to date USD 0.52; the conservative cost log reads higher because refused requests before pacing were charged at the worst case.
+
 ## Arithmetic: calculator fixes, practice iterations on Tinfoil, threshold frozen - 23 October
 
 Owner permit of 23 October: practice runs within a USD 5 total cap, the frozen gate untouched until the end and run once on the shipped version, cheap models first, cost after each batch. Spend is reported two ways: the conservative cost log (`.local/arithmetic-gate-20261022/cost-log.jsonl`, which charges any reply without usage at the worst case) and the usage-only sum from reported tokens at live catalog prices. The owner's prepaid balance is the real limit; the dashboard needs the owner's sign-in.

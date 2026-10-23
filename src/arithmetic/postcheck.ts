@@ -33,6 +33,8 @@ export type PostcheckResult = {
   relations: Relation[];
   mismatches: Relation[];
   flagged: boolean;
+  /** Numbers whose thousands and decimal marks could be read two ways and the reply gave no locale clue. */
+  ambiguous: number;
 };
 
 const fillers = new RegExp(
@@ -480,5 +482,11 @@ export function postcheck(
   }
 
   const mismatches = relations.filter((r) => !r.ok);
-  return { relations, mismatches, flagged: mismatches.length > 0 };
+  return {
+    relations,
+    mismatches,
+    flagged: mismatches.length > 0,
+    ambiguous: mentions.filter((m) => m.kind === "number" && m.ambiguous)
+      .length,
+  };
 }

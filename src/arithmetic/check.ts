@@ -9,6 +9,10 @@ import type { NumberLocale } from "./numbers";
 export const ARITHMETIC_WARNING =
   "We recalculated the figures in this answer and some did not match. Please check these numbers before you rely on them.";
 
+/** Shown when a number's thousands and decimal marks could be read two ways; never a silent guess. */
+export const AMBIGUOUS_NUMBER_WARNING =
+  "A number in this answer could be read two ways (for example 1.234 as one thousand two hundred thirty-four or as one point two three four). Please check the separators before you rely on it.";
+
 /** A coarse locale hint from the reply's own words; the parser re-judges from its numbers. */
 export function replyLocale(text: string): NumberLocale {
   const de = (
@@ -25,15 +29,17 @@ export function replyLocale(text: string): NumberLocale {
 export function checkArithmetic(text: string): {
   relations: number;
   mismatches: number;
+  ambiguous: number;
 } {
   try {
     const result = postcheck(text, replyLocale(text));
     return {
       relations: result.relations.length,
       mismatches: result.mismatches.length,
+      ambiguous: result.ambiguous,
     };
   } catch {
     // The check never breaks an answer; an unparseable reply is simply unchecked.
-    return { relations: 0, mismatches: 0 };
+    return { relations: 0, mismatches: 0, ambiguous: 0 };
   }
 }

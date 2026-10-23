@@ -59,6 +59,7 @@ export const calculatorTool = {
 };
 export { normalizeEvidenceShorthand } from "./calculator-normalize";
 import { normalizeEvidenceShorthand } from "./calculator-normalize";
+import { ambiguousReading } from "./number-evidence";
 
 export class CalculatorValidationError extends IncompleteReplyError {
   constructor(
@@ -89,6 +90,8 @@ export type CalculatorTurn = {
     unit: string;
     references: string[];
   }[];
+  /** Operands read from an ambiguous number without a locale clue; shown to the user. */
+  ambiguities?: string[];
   usage: Usage;
 };
 
@@ -265,6 +268,15 @@ export async function consumeCalculatorTurn(
       ),
     ];
     onValidatedArguments?.(JSON.stringify(args));
+    const ambiguities = args.inputs.flatMap((input) => {
+      if (input.evidence.kind === "constant") return [];
+      const reading = ambiguousReading(input.evidence.quote, input.value);
+      return reading
+        ? [
+            `"${reading.written}" was read as ${reading.readAs}; if you meant ${reading.otherReading}, say so.`,
+          ]
+        : [];
+    });
     if (values.length === 1)
       return {
         text,
@@ -275,12 +287,14 @@ export async function consumeCalculatorTurn(
           unit: values[0].unit,
           references,
         },
+        ...(ambiguities.length ? { ambiguities } : {}),
         usage,
       };
     return {
       text,
       toolCall: { id: callId!, arguments: originalArguments },
       calculations: values.map((value) => ({ ...value, references })),
+      ...(ambiguities.length ? { ambiguities } : {}),
       usage,
     };
   } catch (error) {
@@ -323,6 +337,9 @@ export function renderCalculatorTurn(turn: CalculatorTurn): string {
       }
       return `**Calculated ${label}: ${value} ${unit}** ${citations}`;
     }),
+    ...(turn.ambiguities?.length
+      ? [`**Please check the numbers:** ${turn.ambiguities.join(" ")}`]
+      : []),
     "Arithmetic calculated locally; the selected inputs, method and explanation are not independently verified.",
   ]
     .filter(Boolean)

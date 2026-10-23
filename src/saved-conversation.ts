@@ -42,6 +42,7 @@ const conversationBody = z.object({
         .object({
           relations: z.number().int().nonnegative(),
           mismatches: z.number().int().nonnegative(),
+          ambiguous: z.number().int().nonnegative().optional(),
         })
         .strict()
         .optional(),

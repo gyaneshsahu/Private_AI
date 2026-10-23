@@ -17,7 +17,11 @@ import {
 } from "./conversation";
 import { DOCUMENT_ACCEPT } from "./document-formats";
 import { describeKept, prepareSearchQuery } from "./identifier-masking";
-import { ARITHMETIC_WARNING, checkArithmetic } from "./arithmetic/check";
+import {
+  AMBIGUOUS_NUMBER_WARNING,
+  ARITHMETIC_WARNING,
+  checkArithmetic,
+} from "./arithmetic/check";
 import {
   DISAPPEAR_LABELS,
   expireMessages,
@@ -1594,6 +1598,12 @@ export function App() {
                     message.arithmeticCheck.mismatches > 0 && (
                       <p className="warning arithmetic-check" role="alert">
                         {ARITHMETIC_WARNING}
+                      </p>
+                    )}
+                  {message.arithmeticCheck &&
+                    (message.arithmeticCheck.ambiguous ?? 0) > 0 && (
+                      <p className="warning arithmetic-check" role="alert">
+                        {AMBIGUOUS_NUMBER_WARNING}
                       </p>
                     )}
                   {message.keptOnDevice && (

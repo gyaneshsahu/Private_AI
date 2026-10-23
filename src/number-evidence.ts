@@ -148,6 +148,33 @@ export function canonicalNumberForms(
   return [asDecimal!, asGrouped!];
 }
 
+/**
+ * For an operand accepted against a quotation: the written token and both of
+ * its readings when the token is ambiguous (1.234 / 1,234) and the quotation
+ * gives no locale clue. The calculator shows this to the user instead of
+ * guessing silently; undefined when the reading was unambiguous.
+ */
+export function ambiguousReading(
+  quote: string,
+  value: string,
+): { written: string; readAs: string; otherReading: string } | undefined {
+  const joined = quote.replace(/(\d)[\u00a0\u202f'](?=\d{3}(?!\d))/g, "$1");
+  if (quoteNumberLocale(joined) !== undefined) return undefined;
+  const numeric = (s: string) =>
+    s.includes(".") ? s.replace(/0+$/, "").replace(/\.$/, "") : s;
+  for (const token of (joined.match(/[-+]?\d[\d.,]*/g) ?? []).map((t) =>
+    t.replace(/[.,]+$/, ""),
+  )) {
+    const forms = canonicalNumberForms(token, undefined);
+    if (forms.length !== 2) continue;
+    const hit = forms.find((f) => numeric(f) === numeric(value));
+    if (!hit) continue;
+    const other = forms.find((f) => f !== hit)!;
+    return { written: token, readAs: hit, otherReading: other };
+  }
+  return undefined;
+}
+
 // Narrow lexical normalization, not semantic extraction. Unsupported numeric
 // phrases are rejected whole, so “one hundred” cannot supply an operand of 1.
 // Tokens include the written form and its canonical decimal forms, so an

@@ -18,6 +18,8 @@ import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import gate from "./cases.json";
 import practice from "./practice.json";
+import unseen from "./unseen-20261023.json";
+import publicSet from "./public-20261023.json";
 import {
   LIMITS,
   checkLiveCatalog,
@@ -68,6 +70,8 @@ export type ReplyRecord = {
   /** Practice diagnostics (synthetic data only): the raw tool arguments and schema issues. */
   rawArguments?: string;
   schemaIssues?: unknown;
+  /** The arguments as validated after normalisation (practice diagnostics). */
+  validatedArguments?: string;
 };
 export type ConversationRecord = {
   caseId: string;
@@ -170,6 +174,10 @@ async function runConversation(
             (raw) => {
               record.rawArguments = raw;
             },
+            undefined,
+            (validated) => {
+              record.validatedArguments = validated;
+            },
           );
           record.toolCall = !!result.toolCall;
           record.answer = renderCalculatorTurn(result);
@@ -232,8 +240,16 @@ async function main() {
   const cap = Number(arg("cap"));
   const idsArg = arg("ids", "");
   const set =
-    setName === "gate" ? gate : setName === "practice" ? practice : undefined;
-  if (!set) throw Error("--cases must be practice or gate");
+    setName === "gate"
+      ? gate
+      : setName === "practice"
+        ? practice
+        : setName === "unseen"
+          ? unseen
+          : setName === "public"
+            ? publicSet
+            : undefined;
+  if (!set) throw Error("--cases must be practice, gate, unseen or public");
   if (!gateModels[cell]) throw Error(`unknown cell ${cell}`);
   if (arm !== "alone" && arm !== "calculator")
     throw Error("--arm alone|calculator");

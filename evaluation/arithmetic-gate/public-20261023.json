@@ -1,0 +1,1040 @@
+{
+  "status": "PUBLIC_SOURCE_STYLE_HAND_CHECKED_NOT_GATE",
+  "authoredOn": "2026-10-23",
+  "synthetic": true,
+  "note": "Twenty self-contained problems of the kinds found in public commercial-arithmetic and tax textbooks and official worked examples (simple and compound interest, German 30/360 day count, proportion, percentage base, VAT-inclusive prices, markup versus margin, discount then cash discount, mixtures, averages, date spans). Every expected value was derived by hand and the derivation is written beside it; no generator produced them. Not scraped from any single publication; the 'source' field names the problem type. Never used for tuning; run once per model and arm; never pooled with cases.json, practice.json or unseen-20261023.json.",
+  "cases": [
+    {
+      "id": "public-01",
+      "family": "arithmetic",
+      "category": "simple-interest",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "textbook simple interest",
+      "source": "simple interest, I = P x r x t (commercial arithmetic textbook type)",
+      "turns": [
+        "A principal of 2,500.00 EUR earns 6% simple interest per year for 3 years. What is the interest and the total amount at the end?",
+        "Make that 4 years. Interest and total?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "interest",
+            "kind": "money",
+            "value": "450.00",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "2500 x 0.06 = 150 per year; x 3 = 450"
+          },
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "2950.00",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "2500 + 450"
+          }
+        ],
+        [
+          {
+            "label": "interest",
+            "kind": "money",
+            "value": "600.00",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "150 x 4"
+          },
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "3100.00",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "2500 + 600"
+          }
+        ]
+      ],
+      "forbidden": [[], []],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-02",
+      "family": "arithmetic",
+      "category": "inverse-proportion",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "Dreisatz umgekehrt proportional",
+      "source": "inverse proportion (Dreisatz), textbook type",
+      "turns": [
+        "8 Arbeiter brauchen für eine Arbeit 15 Tage. Wie viele Tage brauchen 12 Arbeiter bei gleicher Leistung?",
+        "Und wie viele Tage brauchen 6 Arbeiter?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Tage",
+            "kind": "number",
+            "value": "10",
+            "unit": "days",
+            "rounding": { "decimals": 0 },
+            "derivation": "8 x 15 = 120 worker-days; 120 / 12 = 10"
+          }
+        ],
+        [
+          {
+            "label": "Tage",
+            "kind": "number",
+            "value": "20",
+            "unit": "days",
+            "rounding": { "decimals": 0 },
+            "derivation": "120 / 6 = 20"
+          }
+        ]
+      ],
+      "forbidden": [[], []],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-03",
+      "family": "arithmetic",
+      "category": "percent-of",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "percentage of a number",
+      "source": "percentage of a quantity, textbook type",
+      "turns": [
+        "What is 17.5% of 640.00 EUR?",
+        "And 12.5% of the same amount?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "amount",
+            "kind": "money",
+            "value": "112.00",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "640 x 0.175 = 112"
+          }
+        ],
+        [
+          {
+            "label": "amount",
+            "kind": "money",
+            "value": "80.00",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "640 x 0.125 = 80"
+          }
+        ]
+      ],
+      "forbidden": [[], []],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-04",
+      "family": "arithmetic",
+      "category": "percent-base",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "Grundwert nach Rabatt",
+      "source": "percentage base value (Grundwert), textbook type",
+      "turns": [
+        "Nach 20 % Rabatt kostet eine Jacke 96,00 EUR. Wie hoch war der ursprüngliche Preis?",
+        "Wenn der Rabatt 25 % betrug, wie hoch war der ursprüngliche Preis?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Preis",
+            "kind": "money",
+            "value": "120.00",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "96 / 0.80 = 120"
+          }
+        ],
+        [
+          {
+            "label": "Preis",
+            "kind": "money",
+            "value": "128.00",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "96 / 0.75 = 128"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "wrong",
+            "kind": "money",
+            "value": "115.20",
+            "currency": "EUR",
+            "reason": "20 % added to the reduced price instead of dividing by 0.8"
+          }
+        ],
+        []
+      ],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-05",
+      "family": "arithmetic",
+      "category": "vat-inclusive",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "VAT-inclusive price UK",
+      "source": "VAT-inclusive price at 20 % (HMRC-style worked example type)",
+      "turns": [
+        "A bill of 240.00 GBP includes VAT at 20%. What are the net amount and the VAT?",
+        "Same question for a bill of 360.00 GBP."
+      ],
+      "expected": [
+        [
+          {
+            "label": "net",
+            "kind": "money",
+            "value": "200.00",
+            "currency": "GBP",
+            "rounding": { "decimals": 2 },
+            "derivation": "240 / 1.20 = 200"
+          },
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "40.00",
+            "currency": "GBP",
+            "rounding": { "decimals": 2 },
+            "derivation": "240 - 200 = 40"
+          }
+        ],
+        [
+          {
+            "label": "net",
+            "kind": "money",
+            "value": "300.00",
+            "currency": "GBP",
+            "rounding": { "decimals": 2 },
+            "derivation": "360 / 1.20 = 300"
+          },
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "60.00",
+            "currency": "GBP",
+            "rounding": { "decimals": 2 },
+            "derivation": "360 - 300 = 60"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "wrong",
+            "kind": "money",
+            "value": "48.00",
+            "currency": "GBP",
+            "reason": "20 % of the gross instead of 20/120"
+          }
+        ],
+        [
+          {
+            "label": "wrong",
+            "kind": "money",
+            "value": "72.00",
+            "currency": "GBP",
+            "reason": "20 % of the gross"
+          }
+        ]
+      ],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-06",
+      "family": "arithmetic",
+      "category": "compound-annual",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "Zinseszins jährlich",
+      "source": "compound interest K_n = K_0 x q^n, textbook type",
+      "turns": [
+        "5.000,00 EUR werden zu 3 % pro Jahr mit Zinseszins angelegt. Wie hoch ist das Kapital nach 5 Jahren (auf Cent gerundet)?",
+        "Und nach 4 Jahren?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Kapital",
+            "kind": "money",
+            "value": "5796.37",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "1.03^5 = 1.1592740743; x 5000 = 5796.370"
+          }
+        ],
+        [
+          {
+            "label": "Kapital",
+            "kind": "money",
+            "value": "5627.54",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "1.03^4 = 1.12550881; x 5000 = 5627.544"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "wrong",
+            "kind": "money",
+            "value": "5750.00",
+            "currency": "EUR",
+            "reason": "simple interest"
+          }
+        ],
+        []
+      ],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-07",
+      "family": "arithmetic",
+      "category": "unit-price",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "price per kilogram",
+      "source": "unit price comparison, consumer arithmetic type",
+      "turns": [
+        "Pack A: 750 g for 4.20 EUR. Pack B: 1.2 kg for 6.48 EUR. What is the price per kilogram of each?",
+        "Pack B actually costs 6.84 EUR. Price per kilogram of pack B?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "A per kg",
+            "kind": "money",
+            "value": "5.60",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "4.20 / 0.75 = 5.60"
+          },
+          {
+            "label": "B per kg",
+            "kind": "money",
+            "value": "5.40",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "6.48 / 1.2 = 5.40"
+          }
+        ],
+        [
+          {
+            "label": "B per kg",
+            "kind": "money",
+            "value": "5.70",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "6.84 / 1.2 = 5.70"
+          }
+        ]
+      ],
+      "forbidden": [[], []],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-08",
+      "family": "arithmetic",
+      "category": "vat-inclusive-7",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "Buchpreis brutto 7 %",
+      "source": "reduced-rate VAT-inclusive price, German retail example type",
+      "turns": [
+        "Ein Buch kostet 14,99 EUR brutto; darin sind 7 % Mehrwertsteuer enthalten. Wie hoch sind Nettopreis und Mehrwertsteuer (auf Cent gerundet)?",
+        "Und bei einem Buch für 29,99 EUR brutto?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Netto",
+            "kind": "money",
+            "value": "14.01",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "14.99 / 1.07 = 14.0093 -> 14.01"
+          },
+          {
+            "label": "MwSt",
+            "kind": "money",
+            "value": "0.98",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "14.99 - 14.01 = 0.98"
+          }
+        ],
+        [
+          {
+            "label": "Netto",
+            "kind": "money",
+            "value": "28.03",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "29.99 / 1.07 = 28.0280 -> 28.03"
+          },
+          {
+            "label": "MwSt",
+            "kind": "money",
+            "value": "1.96",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "29.99 - 28.03 = 1.96"
+          }
+        ]
+      ],
+      "forbidden": [[], []],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-09",
+      "family": "arithmetic",
+      "category": "speed-time",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "travel time from distance and speed",
+      "source": "distance, speed, time, textbook type",
+      "turns": [
+        "How long does a 285 km drive take at an average of 95 km/h? Answer in hours and minutes.",
+        "At an average of 76 km/h instead?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "time",
+            "kind": "duration",
+            "value": "180",
+            "derivation": "285 / 95 = 3 h = 180 min"
+          }
+        ],
+        [
+          {
+            "label": "time",
+            "kind": "duration",
+            "value": "225",
+            "derivation": "285 / 76 = 3.75 h = 3 h 45 min = 225 min"
+          }
+        ]
+      ],
+      "forbidden": [[], []],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-10",
+      "family": "arithmetic",
+      "category": "salary-increase",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "Gehaltserhöhung in Prozent",
+      "source": "percentage increase of a base amount, textbook type",
+      "turns": [
+        "Ein Gehalt von 3.250,00 EUR wird um 4 % erhöht. Wie hoch ist das neue Gehalt?",
+        "Bei einer Erhöhung um 3,5 %?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "neues Gehalt",
+            "kind": "money",
+            "value": "3380.00",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "3250 x 0.04 = 130; 3250 + 130"
+          }
+        ],
+        [
+          {
+            "label": "neues Gehalt",
+            "kind": "money",
+            "value": "3363.75",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "3250 x 0.035 = 113.75; 3250 + 113.75"
+          }
+        ]
+      ],
+      "forbidden": [[], []],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-11",
+      "family": "arithmetic",
+      "category": "mean",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "arithmetic mean",
+      "source": "arithmetic mean of scores, textbook type",
+      "turns": [
+        "Scores: 78, 85, 92 and 69. What is the mean (two decimals)?",
+        "A fifth score of 91 is added. New mean?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "mean",
+            "kind": "number",
+            "value": "81.00",
+            "rounding": { "decimals": 2 },
+            "derivation": "78 + 85 + 92 + 69 = 324; / 4 = 81"
+          }
+        ],
+        [
+          {
+            "label": "mean",
+            "kind": "number",
+            "value": "83.00",
+            "rounding": { "decimals": 2 },
+            "derivation": "324 + 91 = 415; / 5 = 83"
+          }
+        ]
+      ],
+      "forbidden": [[], []],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-12",
+      "family": "arithmetic",
+      "category": "fraction-share",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "Anteile nach Bruchteilen",
+      "source": "shares by fractions, textbook type",
+      "turns": [
+        "Nebenkosten von 1.250,00 EUR werden aufgeteilt: Mieter A zahlt 3/8, Mieter B den Rest. Wie viel zahlt jeder?",
+        "Wenn A stattdessen 2/5 zahlt, wie viel zahlen A und B?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "A",
+            "kind": "money",
+            "value": "468.75",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "1250 x 3/8 = 468.75"
+          },
+          {
+            "label": "B",
+            "kind": "money",
+            "value": "781.25",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "1250 - 468.75"
+          }
+        ],
+        [
+          {
+            "label": "A",
+            "kind": "money",
+            "value": "500.00",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "1250 x 2/5 = 500"
+          },
+          {
+            "label": "B",
+            "kind": "money",
+            "value": "750.00",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "1250 - 500"
+          }
+        ]
+      ],
+      "forbidden": [[], []],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-13",
+      "family": "arithmetic",
+      "category": "compound-monthly",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "nominal rate compounded monthly",
+      "source": "nominal annual rate compounded monthly, finance textbook type",
+      "turns": [
+        "1,000.00 EUR is invested at a nominal 6% per year, compounded monthly (0.5% per month). What is the balance after 1 year, rounded to the cent?",
+        "After 2 years?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "balance",
+            "kind": "money",
+            "value": "1061.68",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "1.005^12 = 1.0616778; x 1000"
+          }
+        ],
+        [
+          {
+            "label": "balance",
+            "kind": "money",
+            "value": "1127.16",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "1.005^24 = 1.1271598; x 1000"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "wrong",
+            "kind": "money",
+            "value": "1060.00",
+            "currency": "EUR",
+            "reason": "annual compounding or simple interest"
+          }
+        ],
+        []
+      ],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-14",
+      "family": "arithmetic",
+      "category": "percentage-points",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "Prozentpunkte und Prozent",
+      "source": "percentage points versus percent change, textbook type",
+      "turns": [
+        "Ein Zinssatz steigt von 2,0 % auf 2,5 %. Um wie viele Prozentpunkte und um wie viel Prozent ist das?",
+        "Und bei einem Anstieg von 2,0 % auf 3,0 %?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Prozentpunkte",
+            "kind": "number",
+            "value": "0.5",
+            "rounding": { "decimals": 1 },
+            "derivation": "2.5 - 2.0"
+          },
+          {
+            "label": "Prozent",
+            "kind": "percent",
+            "value": "25",
+            "rounding": { "decimals": 2 },
+            "derivation": "0.5 / 2.0 = 25 %"
+          }
+        ],
+        [
+          {
+            "label": "Prozentpunkte",
+            "kind": "number",
+            "value": "1.0",
+            "rounding": { "decimals": 1 },
+            "derivation": "3.0 - 2.0"
+          },
+          {
+            "label": "Prozent",
+            "kind": "percent",
+            "value": "50",
+            "rounding": { "decimals": 2 },
+            "derivation": "1.0 / 2.0 = 50 %"
+          }
+        ]
+      ],
+      "forbidden": [[], []],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-15",
+      "family": "arithmetic",
+      "category": "mixed-rate-invoice",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "invoice with standard and zero rate",
+      "source": "invoice with standard-rated and zero-rated lines, VAT worked example type",
+      "turns": [
+        "Invoice lines: 3 units at 12.50 GBP, standard-rated at 20%; 2 units at 8.00 GBP, zero-rated. What are the total VAT and the total payable?",
+        "Make it 4 units at 12.50 GBP standard-rated. Total VAT and total payable?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "7.50",
+            "currency": "GBP",
+            "rounding": { "decimals": 2 },
+            "derivation": "3 x 12.50 = 37.50; x 0.20 = 7.50"
+          },
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "61.00",
+            "currency": "GBP",
+            "rounding": { "decimals": 2 },
+            "derivation": "37.50 + 7.50 + 16.00 = 61.00"
+          }
+        ],
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "10.00",
+            "currency": "GBP",
+            "rounding": { "decimals": 2 },
+            "derivation": "4 x 12.50 = 50.00; x 0.20 = 10.00"
+          },
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "76.00",
+            "currency": "GBP",
+            "rounding": { "decimals": 2 },
+            "derivation": "50.00 + 10.00 + 16.00 = 76.00"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "wrong",
+            "kind": "money",
+            "value": "10.70",
+            "currency": "GBP",
+            "reason": "VAT charged on the zero-rated line too"
+          }
+        ],
+        []
+      ],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-16",
+      "family": "arithmetic",
+      "category": "day-count-30-360-de",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "deutsche Zinsmethode 30/360",
+      "source": "German interest method 30/360 (deutsche kaufmännische Zinsmethode), textbook type",
+      "turns": [
+        "Ein Kapital von 12.000,00 EUR wird vom 10.03. bis zum 25.08. desselben Jahres zu 3,5 % verzinst, berechnet nach der deutschen Zinsmethode (jeder Monat 30 Tage, das Jahr 360 Tage, erster Tag nicht mitgezählt). Wie viele Zinstage sind das, und wie hoch sind die Zinsen (auf Cent gerundet)?",
+        "Bei 4 % statt 3,5 %: Zinsen?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Zinstage",
+            "kind": "number",
+            "value": "165",
+            "unit": "days",
+            "rounding": { "decimals": 0 },
+            "derivation": "(8 - 3) x 30 + (25 - 10) = 150 + 15 = 165"
+          },
+          {
+            "label": "Zinsen",
+            "kind": "money",
+            "value": "192.50",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "12000 x 0.035 x 165 / 360 = 420 x 0.458333 = 192.50"
+          }
+        ],
+        [
+          {
+            "label": "Zinsen",
+            "kind": "money",
+            "value": "220.00",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "12000 x 0.04 x 165 / 360 = 480 x 0.458333 = 220.00"
+          }
+        ]
+      ],
+      "forbidden": [[], []],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-17",
+      "family": "arithmetic",
+      "category": "markup-margin",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "markup on cost versus margin on price",
+      "source": "markup versus margin, business arithmetic type",
+      "turns": [
+        "An item costs 80.00 EUR. What is the selling price with a 25% markup on cost, and what selling price gives a 25% margin on the selling price?",
+        "Same two questions with 30% instead of 25%."
+      ],
+      "expected": [
+        [
+          {
+            "label": "markup price",
+            "kind": "money",
+            "value": "100.00",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "80 x 1.25 = 100"
+          },
+          {
+            "label": "margin price",
+            "kind": "money",
+            "value": "106.67",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "80 / 0.75 = 106.6667"
+          }
+        ],
+        [
+          {
+            "label": "markup price",
+            "kind": "money",
+            "value": "104.00",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "80 x 1.30 = 104"
+          },
+          {
+            "label": "margin price",
+            "kind": "money",
+            "value": "114.29",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "80 / 0.70 = 114.2857"
+          }
+        ]
+      ],
+      "forbidden": [[], []],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-18",
+      "family": "arithmetic",
+      "category": "discount-then-cash-discount",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "Rabatt und Skonto nacheinander",
+      "source": "trade discount then cash discount, commercial arithmetic type",
+      "turns": [
+        "Listenpreis 1.500,00 EUR, 10 % Rabatt, danach 2 % Skonto. Wie hoch ist der Zahlbetrag?",
+        "Bei 15 % Rabatt und 2 % Skonto?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Zahlbetrag",
+            "kind": "money",
+            "value": "1323.00",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "1500 x 0.90 = 1350; x 0.98 = 1323"
+          }
+        ],
+        [
+          {
+            "label": "Zahlbetrag",
+            "kind": "money",
+            "value": "1249.50",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "1500 x 0.85 = 1275; x 0.98 = 1249.50"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "wrong",
+            "kind": "money",
+            "value": "1320.00",
+            "currency": "EUR",
+            "reason": "12 % taken off the list price at once"
+          }
+        ],
+        []
+      ],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-19",
+      "family": "arithmetic",
+      "category": "date-span-en",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "days between two dates",
+      "source": "calendar day count, textbook type",
+      "turns": [
+        "How many days are there from 15 March 2026 to 2 July 2026, not counting the start day but counting the end day?",
+        "And from 15 March 2026 to 2 August 2026, counted the same way?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "days",
+            "kind": "number",
+            "value": "109",
+            "unit": "days",
+            "rounding": { "decimals": 0 },
+            "derivation": "16 (rest of March) + 30 + 31 + 30 + 2 = 109"
+          }
+        ],
+        [
+          {
+            "label": "days",
+            "kind": "number",
+            "value": "140",
+            "unit": "days",
+            "rounding": { "decimals": 0 },
+            "derivation": "109 + 31 (July) = 140"
+          }
+        ]
+      ],
+      "forbidden": [[], []],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "public-20",
+      "family": "arithmetic",
+      "category": "mixture-price",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "Mischungsrechnung Preis je kg",
+      "source": "mixture price (Mischungsrechnung), textbook type",
+      "turns": [
+        "3 kg Kaffee zu 12,00 EUR je kg werden mit 2 kg Kaffee zu 18,00 EUR je kg gemischt. Wie viel kostet 1 kg der Mischung?",
+        "Wenn die zweite Sorte 21,00 EUR je kg kostet?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Preis je kg",
+            "kind": "money",
+            "value": "14.40",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "(3 x 12 + 2 x 18) / 5 = 72 / 5 = 14.40"
+          }
+        ],
+        [
+          {
+            "label": "Preis je kg",
+            "kind": "money",
+            "value": "15.60",
+            "currency": "EUR",
+            "rounding": { "decimals": 2 },
+            "derivation": "(36 + 42) / 5 = 78 / 5 = 15.60"
+          }
+        ]
+      ],
+      "forbidden": [[], []],
+      "mandatoryFacts": ["", ""],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    }
+  ]
+}
