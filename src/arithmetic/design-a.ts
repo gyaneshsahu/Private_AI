@@ -96,7 +96,7 @@ export function designAInstruction(): string {
   return [
     "You turn a calculation question into a small program. You never compute a number yourself and never write a number as text: every operand is a span id from the user's text (such as t1n3) or one of the constants const:1, const:2, const:7, const:12, const:24, const:30, const:52, const:60, const:100, const:365, const:366, const:1000. Give every step an id: s1 for the first step, s2 for the second, and so on; a step may use the ids of steps written before it as args, never its own id or a later one. A result ref must be the id of a step you wrote (or a span id). Our software evaluates the program with exact decimal arithmetic and shows the user only the results you list.",
     "Operations (args in order):\n" + ops,
-    "Rules: percentages are spans as written (19 for \"19 %\"), so use percent_of, add_percent or subtract_percent with the percentage span; a growth factor such as 1.03 or 1.002 is add_percent(const:1, p) where p is the percentage (divide p first for a monthly rate). Clock times and durations are minutes; a date is a day count; add or subtract days or minutes directly. A result that is a date must have format date; a clock time must have format clock; a span of days or minutes has format days or minutes; dates and clock times are never multiplied or divided. Round only where the question asks for it: round takes exactly ONE arg (the value) plus decimals and mode; half-up is commercial rounding; rounding to 5 centimes (Rappen) is mode swiss-0.05 with decimals 2, never a multiply-round-divide chain. List every figure the question asks for as its own result. When a quantity is stated in the latest user message and contradicts an earlier one, use the latest. When the question needs a number that is not in the text and not a constant, set limitation to cannot_answer and return no results.",
+    "Rules: percentages are spans as written (19 for \"19 %\"), so use percent_of, add_percent or subtract_percent with the percentage span; a growth factor such as 1.03 or 1.002 is add_percent(const:1, p) where p is the percentage (divide p first for a monthly rate). Clock times and durations are minutes; a date is a day count; add or subtract days or minutes directly. A result that is a date must have format date; a clock time must have format clock; a span of days or minutes has format days or minutes; dates and clock times are never multiplied or divided. Round only where the question asks for it: round has one arg (the value); the places go in decimals and the mode in mode; half-up is commercial rounding and is also rounding to the cent, Rappen or centime (decimals 2); rounding to the nearest 5 centimes (Fünfrappenrundung) is mode swiss-0.05 with decimals 2, never a multiply-round-divide chain. List every figure the question asks for as its own result. When a quantity is stated in the latest user message and contradicts an earlier one, use the latest. When the question needs a number that is not in the text and not a constant, set limitation to cannot_answer and return no results.",
     "results: one entry per figure the user asked for: ref is the step (or span) to show, label a short name in the user's language, format one of money, number, percent, clock, date, minutes, days, unit the currency code or unit word (empty when the format implies it), decimals the places to show, claimed your own independent estimate of that figure for the CURRENT question as a plain decimal (dot decimal mark, no grouping; minutes for clock and minutes formats, the day number for date). claimed is required: work it out yourself; never copy a figure from an earlier answer. Our software compares it with the exact result and warns the user when they differ. Set mode to none and decimals to 0 on every step that is not a round step. note: at most 300 characters on the method in plain words, no numbers, no program listing. Reply with JSON only.",
   ].join("\n\n");
 }
@@ -150,6 +150,8 @@ export type RenderedResult = {
   shown: string;
   format: ResultFormat;
   state: NumberState;
+  /** How the model's own estimate compared: matches, close (within tolerance), differs, unusable (not a number) or none. */
+  claim: "matches" | "close" | "differs" | "unusable" | "none";
   /** Set when the model's own estimate differed from the computed value. */
   claimDiffered?: boolean;
 };
@@ -183,18 +185,32 @@ function parseReply(raw: string): Parsed {
   if (!Array.isArray(results) || results.length > MAX_RESULTS) throw new DesignAError("INVALID_SCHEMA", `results must be an array of at most ${MAX_RESULTS}`);
   if (limitation !== "none" && limitation !== "cannot_answer") throw new DesignAError("INVALID_SCHEMA", "limitation must be none or cannot_answer");
   const ID = /^(?:t\d{1,3}n\d{1,3}|const:\d+|s\d{1,2})$/;
+  // Shape rules observed in the dev batches of 23 October (each a general class,
+  // no value is invented): a step id written twice is a chain (the later step
+  // redefines it and later references mean the latest definition), and extra
+  // constant args on a round step are redundant with its decimals field.
   const stepIds = new Set<string>();
+  const latest = new Map<string, string>();
+  const chained = (ref: string) => latest.get(ref) ?? ref;
   const parsedSteps = steps.map((s, i): ParsedStep => {
     if (!isObject(s)) throw new DesignAError("INVALID_SCHEMA", `step ${i + 1} must be an object`);
-    const { id, op, args, decimals = 0, mode = "none" } = s;
-    if (typeof id !== "string" || !/^s\d{1,2}$/.test(id) || Number(id.slice(1)) < 1 || Number(id.slice(1)) > MAX_STEPS)
+    const { id: rawId, op, args: rawArgs, decimals = 0, mode = "none" } = s;
+    if (typeof rawId !== "string" || !/^s\d{1,2}$/.test(rawId) || Number(rawId.slice(1)) < 1 || Number(rawId.slice(1)) > MAX_STEPS)
       throw new DesignAError("INVALID_SCHEMA", `step ${i + 1}: id must be s1..s${MAX_STEPS}`);
-    if (stepIds.has(id)) throw new DesignAError("INVALID_SCHEMA", `step ${i + 1}: id ${id} is used twice`);
-    stepIds.add(id);
+    let id: string = rawId;
     if (typeof op !== "string" || !(OPERATIONS as readonly string[]).includes(op))
       throw new DesignAError("INVALID_SCHEMA", `step ${i + 1}: op must be one of ${OPERATIONS.join(", ")}`);
-    if (!Array.isArray(args) || !args.length || args.length > 12 || args.some((a) => typeof a !== "string" || !ID.test(a)))
+    if (!Array.isArray(rawArgs) || !rawArgs.length || rawArgs.length > 12 || rawArgs.some((a) => typeof a !== "string" || !ID.test(a)))
       throw new DesignAError("INVALID_SCHEMA", `step ${i + 1}: args must be 1 to 12 span ids, const:<value> or earlier step ids`);
+    let args = (rawArgs as string[]).map(chained);
+    if (op === "round" && args.length > 1 && args.slice(1).every((a) => a.startsWith("const:"))) args = [args[0]];
+    if (stepIds.has(id)) {
+      let n = 2;
+      while (stepIds.has(`${id}_${n}`)) n++;
+      latest.set(id, `${id}_${n}`);
+      id = `${id}_${n}`;
+    }
+    stepIds.add(id);
     if (!Number.isInteger(decimals) || (decimals as number) < 0 || (decimals as number) > 8)
       throw new DesignAError("INVALID_SCHEMA", `step ${i + 1}: decimals must be an integer 0..8`);
     if (typeof mode !== "string" || !([...ROUNDING_MODES, "none"] as string[]).includes(mode))
@@ -212,7 +228,7 @@ function parseReply(raw: string): Parsed {
     if (!Number.isInteger(decimals) || (decimals as number) < 0 || (decimals as number) > 8)
       throw new DesignAError("INVALID_SCHEMA", `result ${i + 1}: decimals must be an integer 0..8`);
     if (typeof claimed !== "string" || claimed.length > 24) throw new DesignAError("INVALID_SCHEMA", `result ${i + 1}: claimed must be a short string`);
-    return { ref, label: label.trim(), format: format as ResultFormat, unit: unit.trim(), decimals: decimals as number, claimed: claimed.trim() };
+    return { ref: chained(ref), label: label.trim(), format: format as ResultFormat, unit: unit.trim(), decimals: decimals as number, claimed: claimed.trim() };
   });
   if (note !== undefined && (typeof note !== "string" || note.length > 300)) throw new DesignAError("INVALID_SCHEMA", "note must be at most 300 characters");
   return { steps: parsedSteps, results: parsedResults, note: typeof note === "string" ? note.trim() : "", limitation };
@@ -254,14 +270,35 @@ function showValue(value: Dec, result: ParsedResult, locale: NumberLocale): stri
   }
 }
 
-/** Compares the model's own estimate with the computed value at the shown precision. */
-function claimState(value: Dec, result: ParsedResult): { state: NumberState; claim: "matches" | "differs" | "unusable" | "none" } {
+/** How far a model estimate may sit from the exact value and still count as consistent (method cross-check, not a precision check). */
+export const CLAIM_TOLERANCE = 0.01;
+
+/**
+ * Compares the model's own estimate with the computed value. An exact match at
+ * the shown precision gives "recomputed and matches"; a figure within
+ * CLAIM_TOLERANCE is consistent (state "calculated", nothing flagged); a figure
+ * further away is flagged. An estimate that is not a number ("ref", "20679 +
+ * 30") is unusable: the figure is simply not cross-checked, nothing is flagged.
+ * Clock claims may be written HH:MM and date claims as YYYY-MM-DD.
+ */
+function claimState(value: Dec, result: ParsedResult): { state: NumberState; claim: "matches" | "close" | "differs" | "unusable" | "none" } {
   if (!result.claimed) return { state: "calculated", claim: "none" };
-  const parsed = parseLocaleNumber(result.claimed);
-  if (parsed.kind !== "value") return { state: "calculated", claim: parsed.kind === "invalid" ? "unusable" : "none" };
+  let claimed: string | undefined;
+  const clock = /^(\d{1,2}):(\d{2})$/.exec(result.claimed);
+  const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(result.claimed);
+  if (result.format === "clock" && clock) claimed = String(+clock[1] * 60 + +clock[2]);
+  else if (result.format === "date" && iso) claimed = String(Math.round(Date.parse(`${result.claimed}T00:00:00Z`) / 86400000));
+  else {
+    const parsed = parseLocaleNumber(result.claimed);
+    if (parsed.kind === "value") claimed = parsed.value;
+    else if (parsed.kind === "ambiguous") return { state: "calculated", claim: "none" };
+  }
+  if (claimed === undefined || !/^-?\d+(?:\.\d+)?$/.test(claimed)) return { state: "calculated", claim: "unusable" };
   const places = result.format === "clock" || result.format === "date" || result.format === "minutes" ? 0 : result.decimals;
-  const matches = new D(roundDecimal(value, places)).eq(roundDecimal(parsed.value, places));
-  return matches ? { state: "recomputed and matches", claim: "matches" } : { state: "calculated", claim: "differs" };
+  if (new D(roundDecimal(value, places)).eq(roundDecimal(claimed, places))) return { state: "recomputed and matches", claim: "matches" };
+  const gap = new D(claimed).minus(value).abs();
+  const allowed = value.abs().times(CLAIM_TOLERANCE);
+  return gap.lte(allowed) ? { state: "calculated", claim: "close" } : { state: "calculated", claim: "differs" };
 }
 
 type ValueType = "plain" | "date" | "clock";
@@ -381,8 +418,7 @@ export function renderDesignA(raw: string, spans: Span[], locale: NumberLocale):
     const shown = showValue(value, r, locale);
     const { state, claim } = claimState(value, r);
     if (claim === "differs") flags.push(`${r.label}: the model's own figure differed from the calculated value; the calculated value is shown`);
-    if (claim === "unusable") flags.push(`${r.label}: the model gave no usable estimate of its own, so this figure was not cross-checked`);
-    return { label: r.label, value: value.toString(), shown, format: r.format, state, ...(claim === "differs" ? { claimDiffered: true } : {}) };
+    return { label: r.label, value: value.toString(), shown, format: r.format, state, claim, ...(claim === "differs" ? { claimDiffered: true } : {}) };
   });
   for (const id of usedSpans) {
     const span = spanById.get(id)!;

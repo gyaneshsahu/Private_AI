@@ -169,9 +169,9 @@ const drafts: Draft[] = [
     query: "price increase then decrease in percent",
     turns: [
       "Ein Preis steigt von 1.250,00 EUR auf 1.400,00 EUR. Um wie viel Prozent steigt er?",
-      "Und wenn er stattdessen von 1.250,00 EUR auf 1.100,00 EUR fällt: um wie viel Prozent sinkt er?",
+      "Und wenn er stattdessen von 1.250,00 EUR auf 1.100,00 EUR fällt: wie hoch ist die Änderung in Prozent? Bitte mit negativem Vorzeichen für einen Rückgang.",
     ],
-    expected: [[percent("Anstieg", "mul(div(sub(1400, 1250), 1250), 100)")], [percent("Rückgang", "mul(div(sub(1250, 1100), 1250), 100)")]],
+    expected: [[percent("Anstieg", "mul(div(sub(1400, 1250), 1250), 100)")], [percent("Änderung", "mul(div(sub(1100, 1250), 1250), 100)")]],
   },
   {
     category: "percent-change",

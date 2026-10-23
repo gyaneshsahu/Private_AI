@@ -123,11 +123,11 @@ describe("rendering from computed values only", () => {
   });
   it("flags a model estimate that differs, and still shows the calculated value", () => {
     const spans = turnSpans(de1, 1, "de");
-    const out = renderDesignA(vat.replace('"claimed":"234.57"', '"claimed":"234.75"'), spans, "de");
+    const out = renderDesignA(vat.replace('"claimed":"234.57"', '"claimed":"254.75"'), spans, "de");
     expect(out.results[0]).toMatchObject({ shown: "234,57 EUR", state: "calculated", claimDiffered: true });
     expect(out.flags).toHaveLength(1);
     expect(out.answer).toContain("Please check");
-    expect(out.answer).not.toContain("234,75");
+    expect(out.answer).not.toContain("254,75");
   });
   it("flags an ambiguous span that was used", () => {
     const spans = turnSpans("Total 1.234 and 19 percent", 1, "en");
@@ -250,15 +250,89 @@ describe("value types: dates and clock times keep their format", () => {
     ]);
     expect(out.flags).toEqual([]);
   });
-  it("flags a junk estimate as not cross-checked, without inventing a difference", () => {
+  it("treats a junk estimate as no cross-check: nothing flagged, nothing invented", () => {
     const out = renderDesignA(
       program([{ id: "s1", op: "add", args: ["t1n2", "t1n4"], decimals: 0, mode: "none" }], [{ ref: "s1", label: "x", format: "number", unit: "", decimals: 0, claimed: "ref s1" }]),
       spans,
       "de",
     );
-    expect(out.results[0]).toMatchObject({ state: "calculated" });
-    expect(out.results[0].claimDiffered).toBeUndefined();
-    expect(out.flags[0]).toMatch(/no usable estimate/);
+    expect(out.results[0]).toMatchObject({ state: "calculated", claim: "unusable" });
+    expect(out.flags).toEqual([]);
+  });
+  it("accepts a clock estimate written HH:MM and a date estimate written as ISO", () => {
+    const out = renderDesignA(
+      program(
+        [
+          { id: "s1", op: "add", args: ["t1n1", "t1n2"], decimals: 0, mode: "none" },
+          { id: "s2", op: "subtract", args: ["t1n3", "t1n4"], decimals: 0, mode: "none" },
+        ],
+        [
+          { ref: "s1", label: "Fälligkeit", format: "date", unit: "", decimals: 0, claimed: "2026-09-13" },
+          { ref: "s2", label: "los", format: "clock", unit: "", decimals: 0, claimed: "7:40" },
+        ],
+      ),
+      spans,
+      "de",
+    );
+    expect(out.results.map((r) => r.claim)).toEqual(["matches", "matches"]);
+  });
+  it("counts an estimate within one percent as consistent and flags one further away", () => {
+    const run = (claimed: string) =>
+      renderDesignA(
+        program([{ id: "s1", op: "multiply", args: ["t1n2", "t1n4"], decimals: 0, mode: "none" }], [{ ref: "s1", label: "x", format: "number", unit: "", decimals: 2, claimed }]),
+        spans,
+        "de",
+      );
+    expect(run("750").results[0]).toMatchObject({ state: "recomputed and matches", claim: "matches" });
+    expect(run("745").results[0]).toMatchObject({ state: "calculated", claim: "close" });
+    expect(run("745").flags).toEqual([]);
+    expect(run("700").results[0]).toMatchObject({ state: "calculated", claim: "differs", claimDiffered: true });
+    expect(run("700").flags).toHaveLength(1);
+  });
+});
+
+describe("shape rules from the dev batches (general classes, no invented values)", () => {
+  const spans = turnSpans(de1, 1, "de");
+  it("ignores redundant constant args on a round step but not a span or step arg", () => {
+    const out = renderDesignA(
+      JSON.stringify({
+        steps: [
+          { id: "s1", op: "percent_of", args: ["t1n1", "t1n2"], decimals: 0, mode: "none" },
+          { id: "s2", op: "round", args: ["s1", "const:2", "const:1"], decimals: 2, mode: "half-up" },
+        ],
+        results: [{ ref: "s2", label: "USt", format: "money", unit: "EUR", decimals: 2, claimed: "234.57" }],
+        note: "",
+        limitation: "none",
+      }),
+      spans,
+      "de",
+    );
+    expect(out.results[0].shown).toBe("234,57 EUR");
+    expect(fails(JSON.stringify({ steps: [{ id: "s1", op: "round", args: ["t1n1", "t1n2"], decimals: 2, mode: "half-up" }], results: [{ ref: "s1", label: "x", format: "money", unit: "EUR", decimals: 2, claimed: "1" }], note: "", limitation: "none" }))).toBe("EVALUATION");
+  });
+  it("reads a reused step id as a chain: later references mean the latest definition", () => {
+    const out = renderDesignA(
+      JSON.stringify({
+        steps: [
+          { id: "s1", op: "percent_of", args: ["t1n1", "t1n2"], decimals: 0, mode: "none" },
+          { id: "s1", op: "round", args: ["s1"], decimals: 2, mode: "half-up" },
+          { id: "s2", op: "add", args: ["t1n1", "s1"], decimals: 0, mode: "none" },
+        ],
+        results: [
+          { ref: "s1", label: "USt", format: "money", unit: "EUR", decimals: 2, claimed: "234.57" },
+          { ref: "s2", label: "Brutto", format: "money", unit: "EUR", decimals: 2, claimed: "1469.13" },
+        ],
+        note: "",
+        limitation: "none",
+      }),
+      spans,
+      "de",
+    );
+    expect(out.results.map((r) => [r.shown, r.state])).toEqual([
+      ["234,57 EUR", "recomputed and matches"],
+      ["1469,13 EUR", "recomputed and matches"],
+    ]);
+    expect(out.program.steps.map((s) => s.id)).toEqual(["s1", "s1_2", "s2"]);
   });
 });
 
