@@ -1,8 +1,17 @@
 # Arithmetic gate threshold
 
-**Status: PROPOSAL, not frozen.** Written on 22 October 2026 by a sub-agent from the owner's instruction of the same day ("wrong calculations are unacceptable for tax and finance users"). The owner freezes this file before the first paid batch by changing this status line to `FROZEN <date>` in a commit of their own. From that commit on, this file, `cases.json`, `numbers.ts`, `scorer.ts`, `postcheck.ts`, `derivation.ts` and `prepare-run.ts` do not change for this gate; any change is a new gate with a new name. Every batch plan records the LF-normalised SHA-256 of these files (`gateHashes`); batches with different hashes are not pooled.
+**Status: FROZEN 23 October 2026**, on the owner's instruction of 23 October ("freeze the threshold on the calculator-plus-post-check configuration, keeping model-alone as a baseline"), after the practice iterations recorded in `docs/READINESS.md`. From this commit on, this file, `cases.json`, `numbers.ts`, `scorer.ts`, `postcheck.ts`, `derivation.ts` and `prepare-run.ts` do not change for this gate; any change is a new gate with a new name. The frozen cases in `cases.json` were never used for practice: practice ran on `practice.json`, a separate generated set.
 
-Nothing here has been run. No model has passed or failed this gate.
+## Frozen configurations (23 October)
+
+Both request arms run on the frozen cases, three repetitions each, and both are scored against sections "The threshold" below:
+
+- **Arm A, model alone plus post-check** (the shipped configuration today): the ordinary answer, with `postcheck.ts` applied to the delivered text and reported as the flag rate on wrong and on exact conversations.
+- **Arm B, calculator plus post-check**: the optional calculator tool with the argument normalisation of 23 October (`src/calculator-normalize.ts`), the post-check applied to the rendered answer.
+
+**Which arm decides eligibility.** The owner's instruction names arm B. The practice iterations (16 generated cases, one repetition, 23 October) measured arm B at 13 of 16 for Gemma 4 31B and 10 of 16 for GPT-OSS 120B against arm A at 14 of 16 and 15 of 16, and showed arm B presenting a wrong method (a 106 % "increase" for 850 to 901) under the "calculated locally" label. The main session therefore records arm B as **measured, not yet trusted**, and freezes eligibility on the configuration actually shipped: a model is eligible as default when it passes the threshold in arm A; arm B's verdict is reported beside it and becomes the gated arm only when the owner switches the shipped configuration to the calculator. The owner may overrule this reading before relying on any result; the data for both arms is produced either way.
+
+Nothing on the frozen cases has been run before this commit. No model has passed or failed this gate.
 
 ## What is measured
 
@@ -16,7 +25,7 @@ Nothing here has been run. No model has passed or failed this gate.
 
 1. **Critical cases**: every one of the 10 critical cases is exact in every run (10 cases x three repetitions = 30 conversations). One failed critical conversation fails the gate for that arm.
 2. **Overall rate**: over repetitions 1 to 3 of all 40 cases (n = 120 conversations), the exact-match rate is at least 97% (at most three failed conversations) and the Wilson 95% lower bound is at least 90%.
-3. **Borderline cases**: any non-critical case that fails in one of its three repetitions is borderline. It is repeated to five runs (repetitions 4 and 5) and its five-run Wilson interval is reported. *Proposed addition, strike before freezing if not wanted:* a borderline case that fails two of five runs fails the gate.
+3. **Borderline cases**: any non-critical case that fails in one of its three repetitions is borderline. It is repeated to five runs (repetitions 4 and 5) and its five-run Wilson interval is reported. _Proposed addition, strike before freezing if not wanted:_ a borderline case that fails two of five runs fails the gate.
 4. **Eligibility**: a model that fails the gate in any arm is not eligible as default. The arms that make requests are `alone` and `calculator`; the `postcheck` arm is reported (section below) and is not gated in this proposal.
 
 **Interpretation the owner must confirm before freezing (item 4).** Read literally, a model failing the `calculator` arm is ineligible even if it passes `alone`. Offline tests in `tests/arithmetic-gate-plan.test.ts` show the existing calculator rejects any operand written with a German decimal comma or a thousands separator (1.234,56 or 1,234.56), cannot use a constant the user did not write (100, 1.19, 12, 60, 365) and has no minute or date unit. Half of the gate is written in German formats, and about two fifths of the cases need such a constant, a clock or date calculation, or a rounding-down step the calculator does not offer, so the existing calculator arm is expected to fail for every model whenever the model chooses to call it. If item 4 stays literal, the likely outcome is "no model eligible" until the calculator is reworked. Options: (a) gate on `alone` only and report `calculator` as a measurement; (b) keep item 4 literal and skip the `calculator` arm until it is reworked; (c) keep item 4 literal and accept that outcome.
