@@ -1,4 +1,33 @@
 # PrivateAI readiness checklist
+## Gate v2 (Design A) run once: FAIL on the verified and flagged bars and one critical no-answer; silent wrong zero of 90; Kimi 12-case ceiling probe 12 of 12 - 23 October
+
+Owner decisions of 23 October (pasted, evening): pass bar approved as written (option a), no lowering, no flag-policy change before the run; outcome policy written and committed first (`c5ff132`); critical cases reported separately with any silent wrong or no-answer a fail; C2 a Kimi K3 12-case ceiling probe only, GLM-5.3 out; C1 run once, no reruns or tuning; Design A not wired into any product path until the owner has reviewed this; spend inside USD 3 for the run and USD 5 total; synthetic data only; report when ready. The harness admitted `unseen-v2` in `dd86ca4`, the verdict script was committed in `b5ab7ba` before any result existed, then both runs went once with the key loaded into that process only.
+
+- **C1: GPT-OSS 120B, reasoning low, Design A with one feedback retry, three repetitions over the frozen 30-case set (SHA-256 prefix 2a57ddeb, unchanged), 90 conversations (verified from `results.json`).**
+
+| Group | n | Verified by recomputation (Wilson 95 %) | False flag | Wrong, flagged | Silent wrong (Wilson 95 %) | No answer |
+| --- | --- | --- | --- | --- | --- | --- |
+| repetition 1 | 30 | 12 (40.0 %; 24.6-57.7 %) | 14 | 3 | 0 (0.0-11.4 %) | 1 |
+| repetition 2 | 30 | 16 (53.3 %; 36.1-69.8 %) | 10 | 4 | 0 (0.0-11.4 %) | 0 |
+| repetition 3 | 30 | 12 (40.0 %; 24.6-57.7 %) | 14 | 4 | 0 (0.0-11.4 %) | 0 |
+| pooled | 90 | 40 (44.4 %; 34.6-54.7 %) | 38 | 11 | 0 (0.0-4.1 %) | 1 |
+| critical cases, pooled | 36 | 17 (47.2 %; 32.0-63.0 %) | 15 | 3 | 0 (0.0-9.6 %) | 1 |
+
+| Measure | Bar | Result | Met |
+| --- | --- | --- | --- |
+| Silent wrong | 0 of 90 | 0 of 90 | yes |
+| Verified by recomputation | at least 60 of 90 | 40 of 90 | no |
+| Flagged | at most 27 of 90 | 49 of 90 | no |
+| No answer | at most 9 of 90 | 1 of 90 | yes |
+| Critical cases | no silent wrong, no no-answer of 36 | 0 silent wrong, 1 no-answer | no |
+
+**Verdict: FAIL** (outcome policy: the critical no-answer and the two missed bars; silent wrong is zero everywhere). 201 requests, USD 0.100 by reported usage. Validation failures seen inside the retry loop: CANNOT_ANSWER 13, UNKNOWN_REFERENCE 3, INVALID_SCHEMA 2, EVALUATION 2, FORWARD_REFERENCE 2, TRUNCATED 1.
+- **What the 38 false flags were:** 23 conversations flagged only because the model's own estimate was junk ("not cross-checked"), 9 because the estimate differed from the correct calculated value, 3 both, 2 the designed ambiguity flag on English thousands like "1,935", 1 a figure in the explanation outside the ledger. The flag mechanism, not the programs, fails the bar: 78 of 90 conversations were exactly right.
+- **What the 11 wrong-flagged were (all caught, none silent):** `unseen2-13` (percent change, three times): `ratio_percent` giving 121.43 % instead of 21.43 %, the same ratio-instead-of-change method error the Gemma classification found; `unseen2-15` (Swiss VAT, twice) and `unseen2-19` (overtime at 150 %, twice, critical): wrong method (150 % added instead of taken as the rate), once compounded by a duplicated program; `unseen2-12` (critical), `-14`, `-23`, `-28`, `-30` once each. The one no-answer, `unseen2-19` r1 (critical): EVALUATION then UNKNOWN_REFERENCE on both attempts. Every listed conversation with program and answer is in `evaluation/arithmetic-gate/verdicts/gate-v2-20261023/c1-gptoss-retry1-reps3.md`.
+- **C2 ceiling probe, Kimi K3, the 12 critical cases, one repetition, no retry (verified):** 12 of 12 verified by recomputation, no flags, no wrong, no no-answer; 24 requests, USD 0.409; about 20 times the GPT-OSS price per request. Not a product option by the owner's decision; it shows the design's ceiling when the model's method choice and estimate are reliable.
+- **Spend.** Gate v2 runs USD 0.509 by reported usage (within the USD 3 run cap); whole arithmetic effort USD 1.96 by reported usage, USD 2.17 by the cost log; remaining under the USD 5 cap at least USD 2.68 on the conservative basis. No request was refused.
+- **Reading, for the owner's review.** Silent wrong is zero on 90 unseen conversations (upper bound 4.1 %) and on every dev run: Design A delivers on the one measure that protects a user. It fails the product bars because the cross-check is the model's own estimate, which GPT-OSS at low reasoning often omits or gets wrong even when its program is right; and because method errors (ratio versus change, percent-of versus add-percent) are caught only by that same estimate. Options, none started: a second independent extraction instead of the estimate as the cross-check; method-level checks for the known confusions (percent change, surcharge rates); GPT-OSS at a higher reasoning effort; a dearer model for arithmetic turns only. Each is a new gate with a new set. Design A stays unwired; `src/conversation.ts` untouched.
+
 ## Plan rows 2.3, 7.2 and 7.3: no-anonymous-mode wording recorded, off-host backup and liveness-alert proposals - 23 October
 
 Owner direction of 23 October (evening): continue with rows 2.3, 7.2 and 7.3, no push, and say whether any touches `src/conversation.ts`: none does.

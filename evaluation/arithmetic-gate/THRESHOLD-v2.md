@@ -48,6 +48,12 @@ Every conversation is exactly one of the four; failures are never excluded from 
 - **Spend** (owner decision 7): C1 estimated at about USD 0.12 (216 requests), cap set at USD 1.00 in the harness; both runs stay inside USD 3 for this gate and USD 5 total; the main session stops and asks before either cap could be passed.
 - **Reporting** (owner decision 5): the full outcome table per repetition and pooled, Wilson 95 % bounds for every measure, the critical-case table, every wrong-flagged and silent-wrong conversation, the cost from the cost log, and the verdict against this file. Reported to the owner when the result is ready, not before.
 
+## Result (run once, 23 October 2026, after commit dd86ca4; no rerun, no tuning)
+
+- **C1 FAIL.** 90 conversations, cost USD 0.100: silent wrong 0 of 90 (met; Wilson 95 % upper bound 4.1 %); verified by recomputation 40 of 90 (bar 60: NOT met); flagged 49 of 90, 38 false flags and 11 wrong-flagged (bar 27: NOT met); no answer 1 of 90 (met); critical cases 0 silent wrong but 1 no-answer of 36 (NOT met). Full tables with Wilson bounds and every listed conversation: `verdicts/gate-v2-20261023/c1-gptoss-retry1-reps3.md`.
+- **C2 ceiling probe (not a product option, passes nothing).** Kimi K3, the 12 critical cases, one repetition, no retry: 12 of 12 verified by recomputation, no flags, no wrong, no no-answer; 24 requests, USD 0.409. `verdicts/gate-v2-20261023/c2-kimi-12-case-probe.md`.
+- Any further run of this set under any changed code is a new gate with a new name.
+
 ## Procedure after approval
 
 - Run C1 once: `harness-v2.ts --cases unseen-v2 --cell gptoss --retry 1 --reps 3` (the harness is extended to accept `unseen-v2` after this file is committed; it refused everything but `dev` until then, deliberately). Then C2 once as the 12-case ceiling probe approved above. Results under `.local\arithmetic-v2-20261023\<label>\results.json`; one line per batch in the shared cost log.
