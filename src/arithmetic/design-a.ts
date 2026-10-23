@@ -369,7 +369,43 @@ export const STATE_SUFFIX: Record<NumberState, string> = {
  * Validates the model's JSON against the spans, evaluates the program and
  * renders the answer. Throws DesignAError when no answer can be shown.
  */
-export function renderDesignA(raw: string, spans: Span[], locale: NumberLocale): DesignAOutcome {
+export { typeProgram, typeOfFormat };
+
+/** One figure as call 1 computed it, before any cross-check or claim logic. */
+export type ExtractedResult = {
+  ref: string;
+  label: string;
+  format: ResultFormat;
+  unit: string;
+  /** Places actually shown (money defaults to 2). */
+  places: number;
+  value: string;
+  shown: string;
+  claimed: string;
+};
+
+export type DesignAExtraction = {
+  parsed: Parsed;
+  program: Program;
+  values: Map<string, Dec>;
+  types: Map<string, ValueType>;
+  spanById: Map<string, Span>;
+  usedSpans: Set<string>;
+  results: ExtractedResult[];
+  /** Every operand, computed value and shown rounding; what a number in the answer may equal. */
+  ledger: string[];
+  /** Ambiguous spans the program used. */
+  ambiguityFlags: string[];
+  note: string;
+};
+
+/**
+ * Parses, validates and evaluates one Design A reply: the program over span
+ * ids and constants, every value computed here, each result typed and
+ * rendered. No claim comparison and no answer text yet; renderDesignA and
+ * Design B build on this.
+ */
+export function extractDesignA(raw: string, spans: Span[], locale: NumberLocale): DesignAExtraction {
   const parsed = parseReply(raw);
   if (parsed.limitation === "cannot_answer") throw new DesignAError("CANNOT_ANSWER", "the model reported that the question cannot be answered from the numbers in the text");
   if (!parsed.results.length) throw new DesignAError("EMPTY", "no results listed");
@@ -413,22 +449,19 @@ export function renderDesignA(raw: string, spans: Span[], locale: NumberLocale):
     throw error;
   }
   const types = typeProgram(steps, spanById);
-  const flags: string[] = [];
-  const results: RenderedResult[] = parsed.results.map((r) => {
+  const results: ExtractedResult[] = parsed.results.map((r) => {
     const value = values.get(r.ref)!;
     const type = types.get(r.ref) ?? (spanById.get(r.ref)?.kind === "date" ? "date" : spanById.get(r.ref)?.kind === "time" ? "clock" : "plain");
     if (type !== typeOfFormat[r.format])
       throw new DesignAError("RESULT_FORMAT", `${r.label}: the value is a ${type === "plain" ? "plain number" : type} but the format is ${r.format}`);
     const shown = showValue(value, r, locale);
-    const { state, claim } = claimState(value, r);
-    if (claim === "differs") flags.push(`${r.label}: the model's own figure differed from the calculated value; the calculated value is shown`);
-    // Dev batches of 23 October: figures whose estimate was junk were wrong 2 times in 8; the user is told that no cross-check happened.
-    if (claim === "unusable") flags.push(`${r.label}: the model gave no usable estimate of its own, so this figure was not cross-checked`);
-    return { label: r.label, value: value.toString(), shown, format: r.format, state, claim, ...(claim === "differs" ? { claimDiffered: true } : {}) };
+    const places = r.format === "money" ? r.decimals || 2 : r.format === "clock" || r.format === "date" || r.format === "minutes" ? 0 : r.decimals;
+    return { ref: r.ref, label: r.label, format: r.format, unit: r.unit, places, value: value.toString(), shown, claimed: r.claimed };
   });
+  const ambiguityFlags: string[] = [];
   for (const id of usedSpans) {
     const span = spanById.get(id)!;
-    if (span.ambiguous && span.ambiguity) flags.push(span.ambiguity);
+    if (span.ambiguous && span.ambiguity) ambiguityFlags.push(span.ambiguity);
   }
   // The ledger: every operand and every computed value, plus each shown value at its rounding.
   const ledger = [
@@ -438,18 +471,27 @@ export function renderDesignA(raw: string, spans: Span[], locale: NumberLocale):
       ...spans.flatMap((s) => (s.alt ? [s.alt] : [])),
       ...DESIGN_A_CONSTANTS,
       ...results.flatMap((r) => {
-        const parsedResult = parsed.results[results.indexOf(r)];
         const value = new D(r.value);
-        const places = r.format === "money" ? parsedResult.decimals || 2 : parsedResult.decimals;
-        const extra = [roundDecimal(value, places)];
+        const extra = [roundDecimal(value, r.places)];
         if (r.format === "minutes" && value.isInteger()) extra.push(String(Math.floor(value.toNumber() / 60)), String(value.toNumber() % 60));
         if (r.format === "date") extra.push(...daysToIso(value.toNumber()).split("-").map((p) => String(Number(p))));
         return extra;
       }),
     ]),
   ];
-  const lines = results.map((r) => `**${r.label}: ${r.shown}** (${STATE_SUFFIX[r.state]})`);
-  let note = parsed.note;
+  return { parsed, program, values, types, spanById, usedSpans, results, ledger, ambiguityFlags, note: parsed.note };
+}
+
+/** Appends the model's note (figures outside the ledger marked) and the warning block, then runs the final ledger check. */
+export function composeAnswer(
+  lines: string[],
+  noteText: string,
+  flags: string[],
+  ledger: string[],
+  locale: NumberLocale,
+  footer: string,
+): { answer: string; note: string } {
+  let note = noteText;
   if (note) {
     const unchecked = ledgerCheck(note, ledger, locale);
     if (unchecked.length) {
@@ -457,16 +499,36 @@ export function renderDesignA(raw: string, spans: Span[], locale: NumberLocale):
       for (const token of unchecked) note = note.split(token).join(`${token} [${STATE_SUFFIX["not checked by us"]}]`);
     }
   }
-  const answer = [
-    lines.join("\n\n"),
-    note ? `Method (from the model): ${note}` : "",
-    flags.length ? `**Please check:** ${flags.join(" ")}` : "",
-    "Figures marked \"calculated\" or \"recomputed and matches\" were computed by this software from the numbers in your message; the choice of numbers and method is the model's and is not independently checked.",
-  ]
+  const answer = [lines.join("\n\n"), note ? `Method (from the model): ${note}` : "", flags.length ? `**Please check:** ${flags.join(" ")}` : "", footer]
     .filter(Boolean)
     .join("\n\n");
   // Final check: every number in the rendered text is in the ledger (by construction, but verified).
   const unchecked = ledgerCheck(answer.replace(/\*\*Please check:\*\*[^\n]*/g, ""), ledger, locale);
   if (unchecked.length) flags.push(`figures outside the ledger: ${unchecked.join(", ")}`);
-  return { answer, results, ledger, flags, program, note };
+  return { answer, note };
+}
+
+export const DESIGN_A_FOOTER =
+  "Figures marked \"calculated\" or \"recomputed and matches\" were computed by this software from the numbers in your message; the choice of numbers and method is the model's and is not independently checked.";
+
+/**
+ * Design A rendering: the extraction plus the model's own estimate as the
+ * cross-check (the configuration gate v2 measured). Throws DesignAError when
+ * no answer can be shown.
+ */
+export function renderDesignA(raw: string, spans: Span[], locale: NumberLocale): DesignAOutcome {
+  const extraction = extractDesignA(raw, spans, locale);
+  const flags: string[] = [];
+  const results: RenderedResult[] = extraction.results.map((r) => {
+    const parsedResult: ParsedResult = { ref: r.ref, label: r.label, format: r.format, unit: r.unit, decimals: r.places, claimed: r.claimed };
+    const { state, claim } = claimState(new D(r.value), parsedResult);
+    if (claim === "differs") flags.push(`${r.label}: the model's own figure differed from the calculated value; the calculated value is shown`);
+    // Dev batches of 23 October: figures whose estimate was junk were wrong 2 times in 8; the user is told that no cross-check happened.
+    if (claim === "unusable") flags.push(`${r.label}: the model gave no usable estimate of its own, so this figure was not cross-checked`);
+    return { label: r.label, value: r.value, shown: r.shown, format: r.format, state, claim, ...(claim === "differs" ? { claimDiffered: true } : {}) };
+  });
+  flags.push(...extraction.ambiguityFlags);
+  const lines = results.map((r) => `**${r.label}: ${r.shown}** (${STATE_SUFFIX[r.state]})`);
+  const { answer, note } = composeAnswer(lines, extraction.note, flags, extraction.ledger, locale, DESIGN_A_FOOTER);
+  return { answer, results, ledger: extraction.ledger, flags, program: extraction.program, note };
 }
