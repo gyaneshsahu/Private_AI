@@ -1,4 +1,13 @@
 # PrivateAI readiness checklist
+## Hosting slices 7.6 (D13, restricted database roles) and 7.7 (D4, apply-pending runbook) prepared - 24 October
+
+Owner process change of 24 October: return to the main flow with four hosting slices first. Status table of every phase and slice with alpha blockers: `docs/status-20261024.md`.
+
+- **7.6 (verified by tests, hosted step is the owner's).** `server/account-privileges.ts` gained `describeConnectedRole` (read-only: current role, superuser, createrole, CREATE on the current schema, and `restricted` when none of them). `server/deployment-database-entry.ts` gained two operator commands: `privileges-plan <schema> <runtime_role> <notice_role>` prints the reviewed grant SQL and connects to nothing; `privileges-check <config>` connects with the configured URL and prints what that role can do, changing nothing. `tests/account-privileges.test.ts` proves the runtime and notice roles report restricted and the owner does not, against the synthetic container (2 tests pass; the test also re-proves the plan). The runbook has the seven-step procedure: print plan, owner creates roles and runs the plan, swap the Render secret to the runtime URL, `privileges-check` must print restricted, `check` must still print pending 0, readiness and a sign-in, rollback by restoring the owner URL; migrations keep using the owner URL. Not done on the hosted database: that is the owner's step and needs 0.2.
+- **7.7 (docs only).** Runbook section with the exact `check`, `apply-pending`, `check` outputs, the single-instance constraint, the verification query on `privateai_schema_migrations` for `0013-usage-metrics.sql` and `0020-signin-delivery.sql`, and the no-rollback note.
+- **Validation.** `npx tsc --noEmit` exit 0; `privileges-plan` dry-run prints the plan and refuses bad arguments; privileges test 2 passed against the synthetic PostgreSQL. Full suite not rerun for this slice (no shared code paths changed besides one added export).
+- Next in order: 7.8 (D16 hardening), then 7.9 (D14 confirmations, needs 0.2). Nothing pushed.
+
 ## Gate v3 (Design B) run once after the limit was lifted: FAIL on the verified and flagged bars, silent wrong zero of 90; arithmetic track parked - 24 October
 
 Owner messages of 24 October: the Tinfoil usage limit is lifted, rerun C1 once as the approved single run, same code and set, no tuning; then the process change: finish gate v3, record, commit; on a fail ship without a "recomputed and matches" claim and close the arithmetic track until Phase 5; no new design.

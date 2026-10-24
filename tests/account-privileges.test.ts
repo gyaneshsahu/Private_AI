@@ -4,7 +4,7 @@ import { Pool } from "pg";
 import { createServer } from "node:http";
 import { usageDatabase } from "./fixtures/usage-postgres";
 import { applyAccountMigrations } from "../server/account-migrations";
-import { accountPrivilegePlan } from "../server/account-privileges";
+import { accountPrivilegePlan, describeConnectedRole } from "../server/account-privileges";
 import { finishSignInRecovery } from "../server/account-recovery";
 import {
   dispatchOneSecurityNotice,
@@ -70,6 +70,10 @@ it.skipIf(!process.env.PRIVATEAI_SYNTHETIC_PG)(
       }))
         await db.pool.query(sql);
       expect(await inspectProductionDatabase(runtime.pool)).toBe(true);
+      // The hosted role check (plan 7.6): the restricted roles report restricted, the owner does not.
+      expect(await describeConnectedRole(runtime.pool)).toMatchObject({ role: runtime.role, restricted: true, createInSchema: false, superuser: false });
+      expect(await describeConnectedRole(notice.pool)).toMatchObject({ role: notice.role, restricted: true });
+      expect((await describeConnectedRole(db.pool)).restricted).toBe(false);
       expect(await inspectProductionDatabase(notice.pool)).toBe(false);
       await new Promise<void>((resolve) =>
         server.listen(0, "127.0.0.1", resolve),

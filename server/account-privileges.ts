@@ -36,3 +36,32 @@ export function accountPrivilegePlan(input: {
     `GRANT UPDATE ("deliveryState","dispatchToken","dispatchedAt","settledAt") ON ${table("account_security_event")} TO ${notice}`,
   ];
 }
+
+/** What the connected role can do; read-only, for the hosted role check (plan 7.6). */
+export async function describeConnectedRole(database: {
+  query(
+    sql: string,
+    params?: unknown[],
+  ): Promise<{ rows: Record<string, unknown>[] }>;
+}): Promise<{
+  role: string;
+  superuser: boolean;
+  createRole: boolean;
+  createInSchema: boolean;
+  restricted: boolean;
+}> {
+  const { rows } = await database.query(
+    "SELECT current_user AS role, rolsuper AS superuser, rolcreaterole AS createrole, has_schema_privilege(current_user, current_schema(), 'CREATE') AS createinschema FROM pg_roles WHERE rolname = current_user",
+  );
+  const row = rows[0] ?? {};
+  const superuser = row.superuser === true,
+    createRole = row.createrole === true,
+    createInSchema = row.createinschema === true;
+  return {
+    role: String(row.role ?? ""),
+    superuser,
+    createRole,
+    createInSchema,
+    restricted: !superuser && !createRole && !createInSchema,
+  };
+}
