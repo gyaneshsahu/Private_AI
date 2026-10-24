@@ -45,6 +45,11 @@ Design A's cross-check was the model's own estimate; 38 of 49 flags on gate v2 w
 - **Spend**: about 240 to 300 requests, about USD 0.15 at the current GPT-OSS price (dev batches cost USD 0.05 per 24 conversations); cap USD 0.50 in the harness; inside USD 5 total.
 - **Reporting**: outcome table per repetition and pooled with Wilson bounds, critical-case table, every wrong-flagged and silent-wrong conversation with both programs, false-flag causes by class, cost from the cost log, verdict against this file. A `verdict-v3.ts` is to be committed before the run.
 
+## Run record (24 October 2026, after commit 74edfce)
+
+- **First attempt ABORTED BY SUPPLIER QUOTA; not a measurement.** `gptoss-unseen-v3-c1` started 10:20 UTC; 9 conversations (unseen3-01 to -09, repetition 1) were answered, then every request was refused with HTTP 402: the supplier paused API access because the account's billing-period usage limit was reached. 80 of 117 attempts were refusals. No code changed, nothing was tuned, the set is unchanged. Evidence: `verdicts/gate-v3-20261023/c1-gptoss-design-b-ABORTED-quota.md`. Among the 9 answered conversations: 3 verified by recomputation, 2 false flags (two readings differed), 2 wrong-flagged (percent change computed as a ratio, caught by the method rule and the differing reading), 2 no-answer from validation (truncated, cannot_answer); 0 silent wrong.
+- The approved single run has therefore not taken place. Whether the rerun after the quota is lifted counts as that single run is the owner's decision; the main session recommends yes, since the model saw 9 conversations once and nothing was changed in response. The cost log line for the aborted attempt overstates (worst case charged for 402 refusals): logged USD 0.1668, usage USD 0.0186.
+
 ## Procedure after approval
 
 The main session relays approval; the harness is extended by one line to admit `unseen-v3`; C1 runs once; results under `.local\arithmetic-v3-20261023\<label>\results.json`; one line in the shared cost log. No tuning on the frozen set; any change to `src/arithmetic/*`, the schemas, the instructions or the harness after the run is a new gate.
