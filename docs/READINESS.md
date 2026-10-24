@@ -1,4 +1,81 @@
 # PrivateAI readiness checklist
+## Unpushed history rewritten to keep private material out of the public repository - 24 October
+
+Owner direction of 24 October: before any push, move the verbatim supplier reply, the hardening record and the hosted operational runbook sections to a git-ignored `docs/private/` folder with pointers, then rewrite the unpushed range so the private files and the redacted strings are absent from every commit; back up first; map old to new hashes here; grep the range; run gitleaks; rerun the suites; do not push.
+
+- **Backup (verified).** `git bundle --all` of the pre-rewrite state at `C:\Gyanesh\Private_AI-history-backup\codex-development-handoff-7a18648-202610241342.bundle` (outside the repository) and the local branch `backup/pre-rewrite-7a18648`. Both keep the old history including the private material; the branch must never be pushed and should be deleted once the owner is satisfied.
+- **Method (verified).** `git filter-repo` is not installed; `git filter-branch --tree-filter` with an idempotent sanitizer script ran over `bfbde7f..codex/development-handoff` (61 commits, 6 of them merges). The sanitizer removes the 22 October reply section, replaces the hardening record and the two runbook sections with pointers, redacts the sender's name, the antivirus product, the local drive path, the backup folder and the credential-store entry in text added in the range, drops the `/etc/secrets` paths from text added in the range, and makes the checklist test read the private record only when present. It never touches lines that were already public on origin. The owner's uncommitted `package.json` and `scripts/test-authenticated-ingress.ts` were stashed during the rewrite and restored.
+- **Grep of `git log -p bfbde7f..HEAD` after the rewrite (verified).** Zero hits for: the private file name, `auth-secret`, `database-url`, `database-ca.pem`, `server.key`, `client-ca.pem`, `bridge.key`, `google-social.json`, the backup folder, the credential-store entry, the antivirus product. Remaining hits are all lines that were already public on origin before this range and appear as diff context, as the old side of a modified line, or as a removal the owner asked for: the sender's first name 15 times (plan rows 0.1 and 2.5, the outreach table, all on origin since 20 to 22 October), `/etc/secrets` and `render-config.json` twice each (the operator-command line of the 22 October ledger entry and its modified version), the local drive path once (a runbook line removed by a 22 October commit). Making those zero would require rewriting history that is already on origin.
+- **gitleaks (verified).** `ghcr.io/gitleaks/gitleaks:latest` v8.30.1 on the range: 55 non-merge commits scanned, no leaks found.
+- **Validation on the rewritten tip `fd3c7d3` (verified).** `npx tsc --noEmit` exit 0; Vitest 845 passed, 162 skipped, 155 files; `npm run build` passes; Playwright 61 passed. The rewritten tree differs from the pre-rewrite tip only in the sanitized text (15 files, 24 lines).
+- **Older public files unchanged.** `docs/LOCAL_CODEX_HANDOFF.md`, `docs/ARCHITECTURE.md`, `docs/provider-outreach-20261020.md` and the older reply sections of `docs/provider-qualification.md` still name the supplier contact, the backup folder, the credential entries and the antivirus; they were pushed before 22 October.
+
+**Old to new commit hashes (the range `bfbde7f..`, oldest first):**
+
+| Old | New | Subject |
+| --- | --- | --- |
+| 46c4c64 | 46b017e | docs: record the green Validate run on bfbde7f and the first verified in |
+| 068aeb8 | 01eb86e | feat: security headers before every gate (7.4); deployment review checkl |
+| a9a415a | f88ce52 | docs: record the Tinfoil reply of 22 October verbatim; privacy copy stat |
+| 6cd6c2d | 854d8be | eval: candidate qualification-report draft (Gemma 4 31B primary, GPT-OSS |
+| e990098 | 2c338d9 | docs: file the owner target-users research PDF under docs/research with  |
+| 8255169 | 18fe1e4 | docs: record the authorised Tinfoil access check (one token, USD 0.00000 |
+| f9ac8bd | 1b7f1f8 | refactor: provider-neutral interfaces for the inference relay, browser i |
+| 81489d3 | 0168d5a | evaluation: synthetic masking benchmark with dev split, locked held-out  |
+| b013502 | a253476 | evaluation: frozen arithmetic gate proposal, locale-tolerant scorer, off |
+| 1b54ee1 | 8a26a13 | masking: tune detector on the development split only |
+| 4540b75 | 088e7e4 | docs: masking benchmark ledger fragment and the single held-out result |
+| 96f5a77 | 1f1dd9d | feat: save live-search answers without results or links, reopen with Sea |
+| 3b7c22a | 35f3773 | merge: arithmetic gate proposal, scorer, post-check and capped batch pre |
+| 905473f | 93002dd | merge: masking benchmark with locked held-out split and detector tuned o |
+| f35a292 | 746e8fa | docs: fold the masking benchmark and arithmetic gate fragments into the  |
+| 490d885 | 7ce39bf | fix: calculator accepts German and English number formats as canonical o |
+| 89d827f | 3cf3b99 | feat: arithmetic post-check warning on completed replies (owner wording) |
+| bc6e3d6 | c03f61c | fix: calculator accepts evidence shorthand, numeric operand equality and |
+| 09fcb17 | f3f8f5c | fix: calculator tolerances from the practice batches: percentage stands  |
+| 0210a87 | e4547e1 | evaluation: independent masking check on 54 hand-written documents; name |
+| 868835f | 7531b1e | merge: independent hand-authored masking corpus and evaluation from work |
+| be65732 | 0c0ac1a | fix: calculator argument normaliser in its own module: snake_case ids, l |
+| dfc64e2 | c2cedcf | docs: fold the independent masking check into the ledger; plan row updat |
+| 64cc7bb | 20d34c5 | gate: freeze THRESHOLD.md (23 October) with both arms measured and eligi |
+| 5c822ca | 273691c | docs: ledger entry for the calculator fixes, practice iterations and thr |
+| 4514dcb | b336db0 | feat: ambiguous number separators are shown to the user, never guessed s |
+| a0275ee | dd0bf37 | docs: unseen and public set results, per-arm reporting, ambiguity visibi |
+| 743bc7f | ebf0d78 | feat: consumer-launch gaps (Phase C): operator identity file with imprin |
+| 5e9e501 | 6d9936e | arithmetic v2 phase 0: locale number parser (de, en, Swiss) with reporte |
+| 56976f3 | 14a768a | arithmetic v2 phase 1: Design A (span ids, program over ids and constant |
+| 2224073 | eaadf46 | design A: explicit step ids, value typing (date, clock, plain) enforced  |
+| 45bbf84 | cf49af6 | design A: shape rules (redundant round args, reused step id as chain), e |
+| 000c227 | 2a874c7 | design A: unusable estimates flag as not cross-checked, currency unit re |
+| 982848b | f802f00 | harness v2: cannot_answer retryable with feedback, realistic cap bound,  |
+| 0ee8afd | ffe5881 | gate v2 preparation: unseen-v2 case set (30, generated once, frozen by S |
+| d4e7b9c | 80c0ba5 | docs: ledger fragment for arithmetic v2 (Design A) phases 0 to 3 prepara |
+| 16c0e45 | 4f76d31 | Merge branch 'worktree-agent-a2a30c2ad9238ac61' into codex/development-h |
+| c8d1ff2 | 8ffa707 | docs: arithmetic v2 fragment folded into the ledger with corrections (Ge |
+| b105e93 | 06b175e | feat: plan rows 2.3, 7.2, 7.3: no-anonymous-mode wording in the privacy  |
+| c5ff132 | f2f1018 | gate v2: owner approval recorded as written (option a) and the outcome p |
+| dd86ca4 | 8c9bdcf | gate v2: harness-v2 admits --cases unseen-v2 after the owner's approval; |
+| b5ab7ba | 7a09c8d | gate v2: verdict-v2 reporting script (Wilson bounds, per repetition and  |
+| 2e979c1 | a6213c3 | gate v2 result recorded: C1 run once and FAILED on the verified and flag |
+| 299c9c2 | 788d7c4 | design B: second independent extraction (chain formulas) as the cross-ch |
+| 26f2f02 | 34fa091 | arithmetic v3: harness with two independent calls per turn, dev-v3 set ( |
+| 7465db2 | d0cd88e | design B: second reader refuses self-subtracting chains, helpers-first a |
+| 1f76d4b | f8d1188 | gate v3 preparation: unseen-v3 case set (30, generated once, frozen by S |
+| 67102be | 4ba4a70 | design B: extra round args refused instead of dropped, self-applied perc |
+| 0edccff | 98d09cd | docs: ledger fragment for arithmetic v3 (Design B) dev results and gate  |
+| 75f37a9 | e6e1990 | Merge branch 'worktree-agent-a2a30c2ad9238ac61' into codex/development-h |
+| df7c705 | f07de11 | docs: arithmetic v3 (Design B) fragment folded into the ledger, plan row |
+| 7376b12 | e2e64fe | gate v3: owner approval as written recorded with the spend reconciliatio |
+| 74edfce | f5b4c4b | gate v3: harness-v3 admits --cases unseen-v3 after the owner's approval; |
+| dde6650 | 9e0864a | gate v3: first run aborted by the supplier's billing-period usage limit  |
+| f34fbc3 | 7fba9c9 | gate v3 result: approved single run FAIL on the verified and flagged bar |
+| e6d1093 | a278cb3 | docs: status table of every phase and slice with alpha blockers (owner p |
+| c832346 | e27a166 | hosting 7.6 and 7.7: privileges-plan and privileges-check operator comma |
+| 7281b72 | 0917860 | hosting 7.8 (D16): hardening document (secrets inventory, rate-limit bou |
+| d0fc36e | ce99181 | hosting 7.1 prepared (not run): recovery rehearsal checklist, read-only  |
+| 823c434 | 89d1952 | privacy of the public repository: verbatim supplier reply, hardening rec |
+| 7a18648 | fd3c7d3 | handoff: point the supplier-status bullet at the private reply file |
+
 ## Hosting slice 7.1 (recovery rehearsal) prepared, not run - 24 October
 
 The joint rehearsal is a later owner-and-agent session; nothing below ran against Render or the live database.
