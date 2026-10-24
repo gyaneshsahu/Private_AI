@@ -106,7 +106,13 @@ Rules in force: subagents commit on their own branches, never edit READINESS.md 
 ## Side tracks (owner process change, 24 October)
 
 - **Arithmetic: parked after gate v3.** Pass: wire Design B as one separate, reviewed slice. Fail: ship without a "recomputed and matches" claim and close the track. No further arithmetic work until the main flow reaches Phase 5.
-- **Masking: one fixed-scope slice after Phase 3, not before.** Only: A4 (mask search queries), A5 (attachment tests), and a held-out German set with per-category recall. No new masking heuristics outside that slice.
+- **Masking side track, slice M1 (owner direction 25 October, from the DFKI study of 24 October). Runs after the hosting slice (7.9 and the owner's hosted steps), not before. Our own implementation only; no DFKI code copied. Out of scope: any name or address model, new recognisers, anything not listed.**
+  - M1.1 Tolerant restoration in `src/identifier-masking.ts`: match placeholders ignoring case and inner spacing, tolerate a missing brace, restore only when the normalised token equals a placeholder on the kept list; never restore inside link targets, image URLs or anything the browser fetches (A15). Tests: case and spacing variants, unknown placeholders untouched, URL contexts untouched, and the same URL test for the current exact restore.
+  - M1.2 Unicode word boundaries in the detector regexes; re-run the dev split before and after and report the change in hits and false positives.
+  - M1.3 Third-party benchmark: check the OpenPII-1M licence first and report it; then score the detector on its email, phone, card and IBAN subset as a one-off evaluation. Synthetic and public data only, no spend.
+  - M1.4 Per-item review check: confirm whether the user can accept or reject each masked item before sending; if not, report the gap and do not build it yet.
+  - Report: test counts and the before-and-after numbers.
+- **Masking, later slice (unchanged):** A4 (mask search queries), A5 (attachment tests), a held-out German set with per-category recall. No new masking heuristics outside these slices.
 
 ## Phase 8 — Tinfoil-dependent (cannot start before their answers or release)
 

@@ -1,4 +1,8 @@
 # PrivateAI readiness checklist
+## Masking slice M1 scheduled from the DFKI study; nothing started - 25 October
+
+Owner direction of 25 October after the read-only study of the DFKI Privacy Guardrail extension (study kept outside the repository at `C:\Gyanesh\studies\pii-guardrail-report-20261024.md`; clone not integrated, nothing run or spent): four items form the first masking slice, to run after the hosting slice (7.9 and the owner's hosted steps). Recorded in the plan under "Masking side track, slice M1": tolerant placeholder restoration gated on the kept list and never inside fetched URLs, Unicode word boundaries with a before-and-after dev-split run, a third-party benchmark on OpenPII-1M after a licence check, and a check whether per-item accept or reject exists before sending. Own implementation only, no DFKI code. Out of scope: name or address models, new recognisers. Verified today only that the current `restore()` matches the exact `{{KIND-N}}` form (the regex at the top of `src/identifier-masking.ts`).
+
 ## Operator identity filled and request-record retention stated as 90 days; placeholder gate now passes - 24 October
 
 Owner message of 24 October: fill `deployment/legal-identity.json` with the given values (owner-reported: name, Münster address, privacy, security and support addresses at cometrow.com, responsible person), set the retention sentence to 90 days, commit, redeploy.
