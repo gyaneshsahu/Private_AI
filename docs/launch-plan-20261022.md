@@ -93,7 +93,7 @@ Rules in force: subagents commit on their own branches, never edit READINESS.md 
 
 | # | Item | Status |
 | --- | --- | --- |
-| 7.1 | Hosted recovery rehearsal: paused recovery and rollback under the approved data-transfer scope; measured recovery time. | TODO |
+| 7.1 | Hosted recovery rehearsal: paused recovery and rollback under the approved data-transfer scope; measured recovery time. | PREPARED 24 October (`docs/recovery-rehearsal-20261024.md`, `scripts/recovery-rehearsal.ts` read-only helper and test; the rehearsal is a joint owner-and-agent session, not run) |
 | 7.2 | Off-host encrypted backup destination and separately held recovery key: proposal for owner approval. | PROPOSED 23 October: `docs/offhost-backup-proposal-20261023.md` (age-encrypted nightly dump to a non-Render EU host, key held only by the owner; five owner decisions) |
 | 7.3 | Independent liveness and certificate-expiry alerts that work when the service is down; content-free. | PROPOSED 23 October: `docs/liveness-alerts-proposal-20261023.md` (external content-free probes of /healthz, /readyz, TLS, DNS and a backup heartbeat; four owner decisions); `scripts/certificate-expiry.ts` added as a read-only manual check |
 | 7.4 | Reorder security headers before the access gates so refused responses also carry them (observation from 21 October). Done 22 October with gated-shape tests. | DONE (local) |

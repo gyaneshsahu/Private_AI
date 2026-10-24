@@ -1,4 +1,12 @@
 # PrivateAI readiness checklist
+## Hosting slice 7.1 (recovery rehearsal) prepared, not run - 24 October
+
+The joint rehearsal is a later owner-and-agent session; nothing below ran against Render or the live database.
+
+- **Verified (repository, local run).** `scripts/recovery-rehearsal.ts` (new): `steps` prints the seven rehearsal steps with their commands; `record <step> <url-file> <receipt.json> [origin]` runs only SELECT statements (migration plan via `planAccountMigrations`, recovery mode via `accountRecoveryOpen`, row counts of seven account tables) and GET probes of `/readyz` and `/healthz`, and appends a timestamped entry with `sinceFirstMs` to a JSON receipt that holds no URL or secret; every statement passes `assertReadOnly`, which refuses anything but a single SELECT. `tests/recovery-rehearsal.test.ts` (new, pure unit, no Docker): refusal of UPDATE, DELETE, DROP and a chained statement; receipt shape and elapsed time with a fake database; 2 tests pass. `npx tsc --noEmit` clean. `docs/recovery-rehearsal-20261024.md` (new): preconditions, seven-step sequence with owner and agent columns, pass and rollback per step, what is measured, stop criteria, the never list.
+- **Owner-reported / owner's steps, not done.** The rehearsal itself: throwaway synthetic database and its URL file outside the checkout, Render snapshot, simulated loss on the throwaway database only, restore, `privileges-check` and `check` from the service shell, leaving recovery, the measured recovery time. No pass threshold exists yet; the first run sets the baseline.
+- Files: `scripts/recovery-rehearsal.ts`, `tests/recovery-rehearsal.test.ts`, `docs/recovery-rehearsal-20261024.md` (all new), `docs/launch-plan-20261022.md` (7.1 row), `docs/status-20261024.md` (7.1 row), `docs/READINESS.md`, `CLAUDE_HANDOFF.md`. `package.json` and `scripts/test-authenticated-ingress.ts` carry the owner's uncommitted edits and were not touched.
+
 ## Hosting slice 7.8 (D16, hardening of the hosted candidate) prepared - 24 October
 
 Scope fixed from the owner's label: the open deployment-review items that need no supplier decision. Nothing ran against the live host; no gate changes.

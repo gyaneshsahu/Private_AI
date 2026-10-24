@@ -6,6 +6,7 @@ Branch: `codex/development-handoff`
 
 ## Recent work
 
+- 24 October: launch plan 7.1 prepared, not run: `docs/recovery-rehearsal-20261024.md` checklist and `scripts/recovery-rehearsal.ts` (read-only `steps` / `record`, JSON receipt without secrets, test in `tests/recovery-rehearsal.test.ts`). The rehearsal is a joint owner-and-agent session on a throwaway synthetic database; owner brings the URL file outside the checkout, Render snapshot access and the service shell.
 - `4eb86b1` — restricted Render deployment package and guarded PostgreSQL initialization. Deployed successfully; 12 migrations applied to the new `privateai_accounts` database. Runtime starts with email and inference disabled.
 - `1511f1d` — recorded hosted deployment evidence and post-deploy status.
 - `8926f86` — recorded owner Google sign-in/workspace journey; corrected inaccurate email-recovery wording locally.
