@@ -298,8 +298,8 @@ describe("value types: dates and clock times keep their format", () => {
 
 describe("shape rules from the dev batches (general classes, no invented values)", () => {
   const spans = turnSpans(de1, 1, "de");
-  it("ignores redundant constant args on a round step but not a span or step arg", () => {
-    const out = renderDesignA(
+  it("refuses extra args on a round step (places belong in decimals), whatever they are", () => {
+    const refused = fails(
       JSON.stringify({
         steps: [
           { id: "s1", op: "percent_of", args: ["t1n1", "t1n2"], decimals: 0, mode: "none" },
@@ -310,10 +310,9 @@ describe("shape rules from the dev batches (general classes, no invented values)
         limitation: "none",
       }),
       spans,
-      "de",
     );
-    expect(out.results[0].shown).toBe("234,57 EUR");
-    expect(fails(JSON.stringify({ steps: [{ id: "s1", op: "round", args: ["t1n1", "t1n2"], decimals: 2, mode: "half-up" }], results: [{ ref: "s1", label: "x", format: "money", unit: "EUR", decimals: 2, claimed: "1" }], note: "", limitation: "none" }))).toBe("EVALUATION");
+    expect(refused).toBe("INVALID_SCHEMA");
+    expect(fails(JSON.stringify({ steps: [{ id: "s1", op: "round", args: ["t1n1", "t1n2"], decimals: 2, mode: "half-up" }], results: [{ ref: "s1", label: "x", format: "money", unit: "EUR", decimals: 2, claimed: "1" }], note: "", limitation: "none" }))).toBe("INVALID_SCHEMA");
   });
   it("reads a reused step id as a chain: later references mean the latest definition", () => {
     const out = renderDesignA(
