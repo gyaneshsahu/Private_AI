@@ -88,4 +88,34 @@ describe("deployment review checklist (launch plan 7.5) matches the repository",
         "ARG PRIVACY_PLACEHOLDERS=forbid",
       );
   });
+  it("hardening (7.8): the rate-limit table and the header script match the code", async () => {
+    // The record lives outside the public repository; the check runs where it is present.
+    const docPath = "docs/private/hardening-20261024.md";
+    const { existsSync } = await import("node:fs");
+    if (!existsSync(docPath)) return;
+    const doc = await read(docPath);
+    const auth = await read("server/account-auth.ts");
+    const app = await read("server/app.ts");
+    for (const [file, line] of [
+      [auth, 'rateLimit: { enabled: true, storage: "database", window: 60, max: 60 }'],
+      [auth, "rateLimit: { window: 60, max: 3 }"],
+      [auth, "DELIVERIES_PER_ADDRESS_PER_HOUR = 5"],
+      [app, "if (active >= 3)"],
+      [await read("server/billing-entitlement.ts"), "requestLimit: 200"],
+      [await read("server/deployment-config.ts"), ".max(10)"],
+    ]) {
+      expect(file, line).toContain(line);
+      expect(doc, line).toContain(line);
+    }
+    const script = await read("scripts/check-headers.mjs");
+    expect(script).not.toMatch(/method:/);
+    for (const header of [
+      '"cache-control": "no-store"',
+      '"referrer-policy": "no-referrer"',
+      '"x-content-type-options": "nosniff"',
+      '"x-frame-options": "DENY"',
+      '"permissions-policy": "camera=(self), microphone=(), geolocation=()"',
+    ])
+      expect(script, header).toContain(header);
+  });
 });
