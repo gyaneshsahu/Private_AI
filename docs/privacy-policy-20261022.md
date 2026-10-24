@@ -4,7 +4,7 @@ Generated from `shared/privacy-policy.ts`, which the app renders as its Privacy 
 
 ## Who is responsible
 
-CometRow is run by not yet named, individual (natural person), Germany, not yet named, Germany. Privacy requests go to not yet named. Data protection officer: none appointed. The same details are in the imprint. Where a value reads "not yet named", the owner has not published it yet and nobody outside the founder is given access until it is.
+CometRow is run by Ganesh Sahu, individual (natural person), Germany, Maikottenweg 178C, 48149 Münster, Germany. Privacy requests go to privacy@cometrow.com. Data protection officer: none appointed. The same details are in the imprint.
 
 ## What stays on your device
 
@@ -40,11 +40,11 @@ One saved conversation: open Saved and choose Delete next to it. Everything save
 
 ## What we cannot delete for you
 
-The secure server's short-term working memory, which clears on its own within minutes to a few hours and has no delete button. The provider's records of time, model and token counts, which the provider states it keeps for 90 days. Our own request records: which account asked, when, how many times, which model, and the published cost; how long we keep them is an owner decision not yet made and will be stated here when it is. Search-provider records of search text you approved, kept under that provider's policy.
+The secure server's short-term working memory, which clears on its own within minutes to a few hours and has no delete button. The provider's records of time, model and token counts, which the provider states it keeps for 90 days. Our own request records: which account asked, when, how many times, which model, and the published cost; we keep them for 90 days and then delete them. Search-provider records of search text you approved, kept under that provider's policy.
 
 ## Questions, requests and incidents
 
-Privacy requests: not yet named. Security incidents: not yet named. Support: not yet named. You can download the records we hold about your account from the account page at any time, and close the account there. The competent data protection authority is that of the German federal state of the operator's residence; named once the address is filled in. If you ever find a security problem, do not test it against other people's accounts.
+Privacy requests: privacy@cometrow.com. Security incidents: security@cometrow.com. Support: support@cometrow.com. You can download the records we hold about your account from the account page at any time, and close the account there. The competent data protection authority is the Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen (LDI NRW), Düsseldorf. If you ever find a security problem, do not test it against other people's accounts.
 
 ## Changes to this policy
 

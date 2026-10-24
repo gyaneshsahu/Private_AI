@@ -13,7 +13,7 @@ export const POLICY_SECTIONS: readonly PrivacySection[] = [
   {
     id: "who",
     heading: "Who is responsible",
-    text: `CometRow is run by ${LEGAL_IDENTITY.operatorName}, ${LEGAL_IDENTITY.legalForm}, ${LEGAL_IDENTITY.addressLines.join(", ")}, ${LEGAL_IDENTITY.country}. Privacy requests go to ${LEGAL_IDENTITY.privacyContactEmail}. Data protection officer: ${LEGAL_IDENTITY.dataProtectionOfficer}. The same details are in the imprint. Where a value reads "not yet named", the owner has not published it yet and nobody outside the founder is given access until it is.`,
+    text: `CometRow is run by ${LEGAL_IDENTITY.operatorName}, ${LEGAL_IDENTITY.legalForm}, ${LEGAL_IDENTITY.addressLines.join(", ")}, ${LEGAL_IDENTITY.country}. Privacy requests go to ${LEGAL_IDENTITY.privacyContactEmail}. Data protection officer: ${LEGAL_IDENTITY.dataProtectionOfficer}. The same details are in the imprint.`,
   },
   ...PRIVACY_COPY,
   {
@@ -24,7 +24,7 @@ export const POLICY_SECTIONS: readonly PrivacySection[] = [
   {
     id: "cannot",
     heading: "What we cannot delete for you",
-    text: "The secure server's short-term working memory, which clears on its own within minutes to a few hours and has no delete button. The provider's records of time, model and token counts, which the provider states it keeps for 90 days. Our own request records: which account asked, when, how many times, which model, and the published cost; how long we keep them is an owner decision not yet made and will be stated here when it is. Search-provider records of search text you approved, kept under that provider's policy.",
+    text: "The secure server's short-term working memory, which clears on its own within minutes to a few hours and has no delete button. The provider's records of time, model and token counts, which the provider states it keeps for 90 days. Our own request records: which account asked, when, how many times, which model, and the published cost; we keep them for 90 days and then delete them. Search-provider records of search text you approved, kept under that provider's policy.",
   },
   {
     id: "contact",

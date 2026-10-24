@@ -13,9 +13,19 @@ import { renderImprintMarkdown } from "../scripts/privacy-copy";
 describe("operator identity, imprint and policy wiring", () => {
   it("reads deployment/legal-identity.json and lists every placeholder by field", () => {
     expect(legalIdentitySchema.safeParse(LEGAL_IDENTITY).success).toBe(true);
-    const placeholders = identityPlaceholders();
-    // Current state: the owner has not published the identity yet.
-    expect(placeholders).toEqual([
+    // Filled by the owner on 24 October 2026: no placeholder remains.
+    expect(identityPlaceholders()).toEqual([]);
+    expect(
+      identityPlaceholders({
+        ...LEGAL_IDENTITY,
+        operatorName: "not yet named",
+        addressLines: ["not yet named"],
+        privacyContactEmail: "not yet named",
+        incidentContactEmail: "not yet named",
+        supportContactEmail: "not yet named",
+        responsibleForContent: "not yet named",
+      }),
+    ).toEqual([
       "operatorName",
       "addressLines[0]",
       "privacyContactEmail",
@@ -23,17 +33,6 @@ describe("operator identity, imprint and policy wiring", () => {
       "supportContactEmail",
       "responsibleForContent",
     ]);
-    expect(
-      identityPlaceholders({
-        ...LEGAL_IDENTITY,
-        operatorName: "Example Operator",
-        addressLines: ["Example Street 1", "12345 Example"],
-        privacyContactEmail: "privacy@example.test",
-        incidentContactEmail: "security@example.test",
-        supportContactEmail: "support@example.test",
-        responsibleForContent: "Example Operator",
-      }),
-    ).toEqual([]);
   });
 
   it("renders the imprint sections required of a German service provider", () => {
@@ -48,7 +47,8 @@ describe("operator identity, imprint and policy wiring", () => {
     const text = imprintText();
     expect(text).toContain("Germany");
     expect(text).toContain("Security incidents:");
-    expect(text).toContain("not yet named");
+    expect(text).not.toContain("not yet named");
+    expect(text).toContain("48149 Münster");
     expect(text).toContain("CometRow is the public name");
   });
 
@@ -60,11 +60,7 @@ describe("operator identity, imprint and policy wiring", () => {
     expect(contact.text).toContain(
       "download the records we hold about your account",
     );
-    expect(policyPlaceholders().map((p) => p.id)).toEqual([
-      "who",
-      "cannot",
-      "contact",
-    ]);
+    expect(policyPlaceholders()).toEqual([]);
   });
 
   it("keeps the generated imprint document identical to the source", async () => {

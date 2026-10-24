@@ -8,30 +8,29 @@ import {
 
 describe("privacy policy placeholders gate the production candidate build", () => {
   it("finds every section that still carries an owner placeholder today", () => {
-    const found = policyPlaceholders();
-    // Current state, 22 October: controller identity, retention and contacts
-    // are owner decisions not yet made. Update this list only with the decision.
-    expect(found).toEqual([
-      { id: "who", phrase: "not yet named" },
-      { id: "cannot", phrase: "not yet made" },
-      { id: "contact", phrase: "not yet named" },
-    ]);
+    // 24 October: the owner filled the identity file and decided 90 days of
+    // request-record retention, so no section carries a placeholder.
+    expect(policyPlaceholders()).toEqual([]);
     for (const phrase of POLICY_PLACEHOLDERS)
       expect(phrase).toBe(phrase.toLowerCase());
   });
 
   it("refuses the default (forbid) build while placeholders remain and names each one", () => {
-    const gate = placeholderGate("forbid");
+    const remaining = [{ id: "contact", phrase: "not yet named" }];
+    const gate = placeholderGate("forbid", remaining);
     expect(gate.exitCode).toBe(1);
     expect(gate.lines.join("\n")).toContain(
       'section "contact" still says "not yet named"',
     );
     expect(gate.lines.at(-1)).toContain("cannot be built");
-    expect(placeholderGate("nonsense").exitCode).toBe(2);
+    expect(placeholderGate("nonsense", remaining).exitCode).toBe(2);
+    expect(placeholderGate("forbid").exitCode).toBe(0);
   });
 
   it("allows only an explicit rehearsal build, and says so", () => {
-    const gate = placeholderGate("allow");
+    const gate = placeholderGate("allow", [
+      { id: "contact", phrase: "not yet named" },
+    ]);
     expect(gate.exitCode).toBe(0);
     expect(gate.lines.at(-1)).toContain("not a deployment candidate");
   });

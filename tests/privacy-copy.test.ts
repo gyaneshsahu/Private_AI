@@ -52,6 +52,7 @@ it("keeps the published privacy policy identical to the app's page and built on 
   const text = privacyPolicyText();
   expect(text).toContain("What you can delete, and how");
   expect(text).toContain("What we cannot delete for you");
-  expect(text).toContain("not yet named");
+  expect(text).not.toContain("not yet named");
+  expect(text).toContain("90 days and then delete them");
   expect(text.toLowerCase()).not.toContain("guarantee");
 });

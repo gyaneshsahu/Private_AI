@@ -67,7 +67,7 @@ test("delete everything on this device removes the vault database, states what i
     .click();
   const policy = page.getByRole("dialog", { name: "Privacy policy" });
   await expect(policy).toContainText("What you can delete, and how");
-  await expect(policy).toContainText("not yet named");
+  await expect(policy).toContainText("90 days and then delete them");
   await expect(policy).toContainText("What stays on your device");
   // The imprint opens from the same section and carries the operator identity
   // placeholders until the owner fills deployment/legal-identity.json.
@@ -78,5 +78,5 @@ test("delete everything on this device removes the vault database, states what i
   const imprint = page.getByRole("dialog", { name: "Imprint" });
   await expect(imprint).toContainText("Service provider");
   await expect(imprint).toContainText("Security incidents:");
-  await expect(imprint).toContainText("not yet named");
+  await expect(imprint).toContainText("48149 Münster");
 });

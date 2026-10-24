@@ -1,4 +1,13 @@
 # PrivateAI readiness checklist
+## Operator identity filled and request-record retention stated as 90 days; placeholder gate now passes - 24 October
+
+Owner message of 24 October: fill `deployment/legal-identity.json` with the given values (owner-reported: name, Münster address, privacy, security and support addresses at cometrow.com, responsible person), set the retention sentence to 90 days, commit, redeploy.
+
+- **Identity (verified by tests).** The six placeholder fields are filled; the supervisory-authority note names LDI NRW (Münster is in North Rhine-Westphalia). `docs/imprint-20261023.md` and the policy documents are regenerated; `identityPlaceholders()` and `policyPlaceholders()` return empty; `node scripts/policy-placeholders.ts forbid` prints "no placeholders" and exits 0, so the default Docker build no longer refuses. The explanatory sentence about placeholders in the policy's "who" section is removed. Tests updated: the identity, placeholder-gate (negative path now through an injected list), privacy-copy and delete-everything browser specs assert the filled values.
+- **Retention sentence (owner decision, stated; deletion NOT active).** The policy now says request records are kept for 90 days and then deleted. Nothing in the hosted service deletes `usage_requests` or `usage_metrics` rows yet: `server/inactive-retention.ts` and the retention activation proposal of 22 October cover closed accounts and the inactive registry, not the request ledger. Until a 90-day purge job exists and runs, the policy states more than the system does. This must be built and activated before any user outside the owner relies on the statement; it is the next engineering item for the policy's truthfulness.
+- **Validation (verified).** `npx tsc --noEmit` exit 0; Vitest 845 passed, 162 skipped, 155 files; `npm run build` passes; Playwright 61 passed including the imprint and policy checks with the filled values.
+- Public data note: the imprint content is public by law once the service is offered; it now sits in the public repository as intended. No secrets in the file.
+
 ## Unpushed history rewritten to keep private material out of the public repository - 24 October
 
 Owner direction of 24 October: before any push, move the verbatim supplier reply, the hardening record and the hosted operational runbook sections to a git-ignored `docs/private/` folder with pointers, then rewrite the unpushed range so the private files and the redacted strings are absent from every commit; back up first; map old to new hashes here; grep the range; run gitleaks; rerun the suites; do not push.

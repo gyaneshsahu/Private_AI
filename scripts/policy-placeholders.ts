@@ -5,11 +5,13 @@
 //   node --import tsx scripts/policy-placeholders.ts [forbid|allow]
 import { policyPlaceholders } from "../shared/privacy-policy";
 
-export function placeholderGate(mode: string): {
+export function placeholderGate(
+  mode: string,
+  found = policyPlaceholders(),
+): {
   exitCode: number;
   lines: string[];
 } {
-  const found = policyPlaceholders();
   const lines = found.map(
     (item) => `privacy policy section "${item.id}" still says "${item.phrase}"`,
   );
