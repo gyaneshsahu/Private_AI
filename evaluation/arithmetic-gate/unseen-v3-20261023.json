@@ -1,0 +1,1718 @@
+{
+  "status": "UNSEEN SET for gate v3 (Design B). FROZEN by SHA-256 in THRESHOLD-v3.md; never used for development; never pooled with any other set.",
+  "authoredOn": "2026-10-24",
+  "synthetic": true,
+  "note": "Generated once by make-unseen-v3.ts; every expected value is computed from its derivation. 30 cases, 15 German and 15 English, 16 critical, with the four weak kinds of gate v2 (percentage change, surcharge and rate phrases, Swiss VAT, overtime) in both languages and styles the earlier sets do not use.",
+  "cases": [
+    {
+      "id": "unseen3-01",
+      "family": "arithmetic",
+      "category": "vat",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "email about a quote",
+      "source": "email about a quote",
+      "turns": [
+        "Hallo, kurze Rückfrage zum Angebot: 6.420,00 EUR netto, darauf 19 % Umsatzsteuer. Wie hoch sind Steuer und Brutto?",
+        "Für den Anteil Bücher von 1.200,00 EUR netto gilt 7 %. Steuer und Brutto nur für diesen Anteil?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Steuer",
+            "kind": "money",
+            "value": "1219.80",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(6420, 0.19)"
+          },
+          {
+            "label": "Brutto",
+            "kind": "money",
+            "value": "7639.80",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(6420, mul(6420, 0.19))"
+          }
+        ],
+        [
+          {
+            "label": "Steuer",
+            "kind": "money",
+            "value": "84.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(1200, 0.07)"
+          },
+          {
+            "label": "Brutto",
+            "kind": "money",
+            "value": "1284.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(1200, mul(1200, 0.07))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Steuer: 1219,80 EUR; Brutto: 7639,80 EUR",
+        "Steuer: 84,00 EUR; Brutto: 1284,00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-02",
+      "family": "arithmetic",
+      "category": "net-gross",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "taxi and hotel receipts",
+      "source": "taxi and hotel receipts",
+      "turns": [
+        "Taxiquittung 36,50 EUR brutto inkl. 7 % Umsatzsteuer. Netto und Steuer, auf Cent gerundet?",
+        "Hotelrechnung 214,00 EUR brutto inkl. 7 % Umsatzsteuer?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Netto",
+            "kind": "money",
+            "value": "34.11",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(div(36.50, 1.07), 2)"
+          },
+          {
+            "label": "Steuer",
+            "kind": "money",
+            "value": "2.39",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "sub(36.50, round(div(36.50, 1.07), 2))"
+          }
+        ],
+        [
+          {
+            "label": "Netto",
+            "kind": "money",
+            "value": "200.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(div(214, 1.07), 2)"
+          },
+          {
+            "label": "Steuer",
+            "kind": "money",
+            "value": "14.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "sub(214, round(div(214, 1.07), 2))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Netto: 34,11 EUR; Steuer: 2,39 EUR",
+        "Netto: 200,00 EUR; Steuer: 14,00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-03",
+      "family": "arithmetic",
+      "category": "percent-change",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "membership fee",
+      "source": "membership fee",
+      "turns": [
+        "Mein Beitrag ist von 42,50 EUR auf 46,75 EUR im Monat gestiegen. Um wie viel Prozent ist er gestiegen, mit zwei Nachkommastellen?",
+        "Und von 46,75 EUR auf 44,00 EUR: Änderung in Prozent, negativ bei Rückgang, zwei Nachkommastellen?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Anstieg",
+            "kind": "percent",
+            "value": "10.00",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(div(sub(46.75, 42.50), 42.50), 100), 2)"
+          }
+        ],
+        [
+          {
+            "label": "Änderung",
+            "kind": "percent",
+            "value": "-5.88",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(div(sub(44, 46.75), 46.75), 100), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Anstieg: 10,00 %",
+        "Änderung: -5,88 %"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-04",
+      "family": "arithmetic",
+      "category": "percent-change",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "monthly costs",
+      "source": "monthly costs",
+      "turns": [
+        "Die monatlichen Kosten sind von 1.280,00 EUR auf 1.472,00 EUR gestiegen. Prozentuale Veränderung, eine Nachkommastelle?",
+        "Und von 1.472,00 EUR auf 1.398,40 EUR: Änderung in Prozent, negativ bei Rückgang?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Veränderung",
+            "kind": "percent",
+            "value": "15.0",
+            "rounding": {
+              "decimals": 1
+            },
+            "derivation": "round(mul(div(sub(1472, 1280), 1280), 100), 1)"
+          }
+        ],
+        [
+          {
+            "label": "Änderung",
+            "kind": "percent",
+            "value": "-5.0",
+            "rounding": {
+              "decimals": 1
+            },
+            "derivation": "round(mul(div(sub(1398.40, 1472), 1472), 100), 1)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Veränderung: 15,0 %",
+        "Änderung: -5,0 %"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-05",
+      "family": "arithmetic",
+      "category": "overtime-rate",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "Sunday and holiday rate",
+      "source": "Sunday and holiday rate",
+      "turns": [
+        "Tarif 21,00 EUR pro Stunde. Sonntagsarbeit wird mit 150 % des normalen Satzes bezahlt. Lohn für 5 Sonntagsstunden?",
+        "Feiertagsarbeit wird mit 200 % des normalen Satzes bezahlt. Lohn für 5 Feiertagsstunden?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Lohn",
+            "kind": "money",
+            "value": "157.50",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(mul(21, 1.5), 5)"
+          }
+        ],
+        [
+          {
+            "label": "Lohn",
+            "kind": "money",
+            "value": "210.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(mul(21, 2), 5)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Lohn: 157,50 EUR",
+        "Lohn: 210,00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-06",
+      "family": "arithmetic",
+      "category": "surcharge",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "parking tariff",
+      "source": "parking tariff",
+      "turns": [
+        "Parkgebühr 12,00 EUR pro Tag, am Wochenende zzgl. 25 % Zuschlag. Preis am Wochenende?",
+        "Ab Januar beträgt der Zuschlag 40 %. Preis am Wochenende dann?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Preis",
+            "kind": "money",
+            "value": "15.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(12, 1.25)"
+          }
+        ],
+        [
+          {
+            "label": "Preis",
+            "kind": "money",
+            "value": "16.80",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(12, 1.4)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Preis: 15,00 EUR",
+        "Preis: 16,80 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-07",
+      "family": "arithmetic",
+      "category": "swiss-vat",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "Zurich quote",
+      "source": "Zurich quote",
+      "turns": [
+        "Offerte aus Zürich: CHF 4'380.00 netto, 8.1 % MwSt. Steuer auf den Rappen, Total auf 5 Rappen gerundet?",
+        "Mit dem reduzierten Satz von 2.6 %?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Steuer",
+            "kind": "money",
+            "value": "354.78",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(4380, 0.081), 2)"
+          },
+          {
+            "label": "Total",
+            "kind": "money",
+            "value": "4734.80",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "div(round(mul(add(4380, round(mul(4380, 0.081), 2)), 20), 0), 20)"
+          }
+        ],
+        [
+          {
+            "label": "Steuer",
+            "kind": "money",
+            "value": "113.88",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(4380, 0.026), 2)"
+          },
+          {
+            "label": "Total",
+            "kind": "money",
+            "value": "4493.90",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "div(round(mul(add(4380, round(mul(4380, 0.026), 2)), 20), 0), 20)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Steuer: 354,78; Total: 4734,80",
+        "Steuer: 113,88; Total: 4493,90"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-08",
+      "family": "arithmetic",
+      "category": "instalments-simple-interest",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "loan over months",
+      "source": "loan over months",
+      "turns": [
+        "Darlehen 15.000,00 EUR, 3,5 % einfache Zinsen pro Jahr, Laufzeit 20 Monate. Zinsen und Rückzahlungsbetrag?",
+        "Korrektur: Laufzeit 30 Monate. Zinsen und Rückzahlungsbetrag?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Zinsen",
+            "kind": "money",
+            "value": "875.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "div(mul(15000, 0.035, 20), 12)"
+          },
+          {
+            "label": "Rückzahlung",
+            "kind": "money",
+            "value": "15875.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(15000, div(mul(15000, 0.035, 20), 12))"
+          }
+        ],
+        [
+          {
+            "label": "Zinsen",
+            "kind": "money",
+            "value": "1312.50",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "div(mul(15000, 0.035, 30), 12)"
+          },
+          {
+            "label": "Rückzahlung",
+            "kind": "money",
+            "value": "16312.50",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(15000, div(mul(15000, 0.035, 30), 12))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Zinsen: 875,00 EUR; Rückzahlung: 15.875,00 EUR",
+        "Zinsen: 1312,50 EUR; Rückzahlung: 16.312,50 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-09",
+      "family": "arithmetic",
+      "category": "compound-interest",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "savings, yearly",
+      "source": "savings, yearly",
+      "turns": [
+        "3.500,00 EUR zu 1,5 % pro Jahr mit jährlichem Zinseszins, 4 Jahre. Endbetrag auf Cent gerundet?",
+        "Und nach 8 Jahren?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Endbetrag",
+            "kind": "money",
+            "value": "3714.77",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(3500, pow(1.015, 4)), 2)"
+          }
+        ],
+        [
+          {
+            "label": "Endbetrag",
+            "kind": "money",
+            "value": "3942.72",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(3500, pow(1.015, 8)), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Endbetrag: 3714,77 EUR",
+        "Endbetrag: 3942,72 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-10",
+      "family": "arithmetic",
+      "category": "table-sum",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "spreadsheet rows with a share",
+      "source": "spreadsheet rows with a share",
+      "turns": [
+        "Zeile 1: 230,00 EUR; Zeile 2: 1.045,50 EUR; Zeile 3: 78,25 EUR; Zeile 4: 612,00 EUR. Summe? Und Zeile 2 als Anteil an der Summe in Prozent, eine Nachkommastelle?",
+        "Zeile 4 war 162,00 EUR, nicht 612,00 EUR. Summe und Anteil von Zeile 2 nochmal?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Summe",
+            "kind": "money",
+            "value": "1965.75",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(230, 1045.50, 78.25, 612)"
+          },
+          {
+            "label": "Anteil Zeile 2",
+            "kind": "percent",
+            "value": "53.2",
+            "rounding": {
+              "decimals": 1
+            },
+            "derivation": "round(mul(div(1045.50, add(230, 1045.50, 78.25, 612)), 100), 1)"
+          }
+        ],
+        [
+          {
+            "label": "Summe",
+            "kind": "money",
+            "value": "1515.75",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(230, 1045.50, 78.25, 162)"
+          },
+          {
+            "label": "Anteil Zeile 2",
+            "kind": "percent",
+            "value": "69.0",
+            "rounding": {
+              "decimals": 1
+            },
+            "derivation": "round(mul(div(1045.50, add(230, 1045.50, 78.25, 162)), 100), 1)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Summe: 1965,75 EUR; Anteil Zeile 2: 53,2 %",
+        "Summe: 1515,75 EUR; Anteil Zeile 2: 69,0 %"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-11",
+      "family": "arithmetic",
+      "category": "date-time",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "flight, airport lead time",
+      "source": "flight, airport lead time",
+      "turns": [
+        "Abflug 06:50 Uhr. Ich will 90 Minuten vorher am Flughafen sein; die Fahrt dauert 35 Minuten. Wann losfahren?",
+        "Die Fahrt dauert 55 Minuten. Wann jetzt?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "losfahren",
+            "kind": "time",
+            "value": "04:45",
+            "derivation": "fmtClock(sub(clock(\"06:50\"), add(90, 35)))"
+          }
+        ],
+        [
+          {
+            "label": "losfahren",
+            "kind": "time",
+            "value": "04:25",
+            "derivation": "fmtClock(sub(clock(\"06:50\"), add(90, 55)))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "losfahren: 04:45 Uhr",
+        "losfahren: 04:25 Uhr"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-12",
+      "family": "arithmetic",
+      "category": "date-time",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "return window",
+      "source": "return window",
+      "turns": [
+        "Rückgaberecht 30 Tage ab Lieferung am 15.03.2026. Letzter Tag?",
+        "Die Lieferung war am 28.03.2026. Letzter Tag?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "letzter Tag",
+            "kind": "date",
+            "value": "2026-04-14",
+            "derivation": "addDays(\"2026-03-15\", 30)"
+          }
+        ],
+        [
+          {
+            "label": "letzter Tag",
+            "kind": "date",
+            "value": "2026-04-27",
+            "derivation": "addDays(\"2026-03-28\", 30)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "letzter Tag: 14.04.2026",
+        "letzter Tag: 27.04.2026"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-13",
+      "family": "arithmetic",
+      "category": "proration",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "yearly subscription refund",
+      "source": "yearly subscription refund",
+      "turns": [
+        "Jahresabo 228,00 EUR für 12 Monate, gekündigt nach 4 Monaten. Erstattung für die restlichen Monate?",
+        "Korrektur: gekündigt nach 9 Monaten. Erstattung?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Erstattung",
+            "kind": "money",
+            "value": "152.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(div(228, 12), sub(12, 4))"
+          }
+        ],
+        [
+          {
+            "label": "Erstattung",
+            "kind": "money",
+            "value": "57.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(div(228, 12), sub(12, 9))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Erstattung: 152,00 EUR",
+        "Erstattung: 57,00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-14",
+      "family": "arithmetic",
+      "category": "multi-step",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "discount then VAT",
+      "source": "discount then VAT",
+      "turns": [
+        "Listenpreis 1.250,00 EUR netto, 12 % Rabatt, dann 19 % Umsatzsteuer auf den rabattierten Preis. Bruttobetrag?",
+        "Der Rabatt beträgt 20 %, nicht 12 %. Brutto?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Brutto",
+            "kind": "money",
+            "value": "1309.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(mul(1250, 0.88), 1.19)"
+          }
+        ],
+        [
+          {
+            "label": "Brutto",
+            "kind": "money",
+            "value": "1190.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(mul(1250, 0.8), 1.19)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Brutto: 1309,00 EUR",
+        "Brutto: 1190,00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-15",
+      "family": "arithmetic",
+      "category": "skonto",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "cash discount",
+      "source": "cash discount",
+      "turns": [
+        "Rechnung 5.236,00 EUR brutto, bei Zahlung innerhalb von 7 Tagen abzüglich 3 % Skonto. Skontobetrag und Zahlbetrag?",
+        "Es sind nur 2 % Skonto. Skontobetrag und Zahlbetrag?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Skonto",
+            "kind": "money",
+            "value": "157.08",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(5236, 0.03)"
+          },
+          {
+            "label": "Zahlbetrag",
+            "kind": "money",
+            "value": "5078.92",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "sub(5236, mul(5236, 0.03))"
+          }
+        ],
+        [
+          {
+            "label": "Skonto",
+            "kind": "money",
+            "value": "104.72",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(5236, 0.02)"
+          },
+          {
+            "label": "Zahlbetrag",
+            "kind": "money",
+            "value": "5131.28",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "sub(5236, mul(5236, 0.02))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "Skonto: 157,08 EUR; Zahlbetrag: 5078,92 EUR",
+        "Skonto: 104,72 EUR; Zahlbetrag: 5131,28 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-16",
+      "family": "arithmetic",
+      "category": "vat",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "quote, net plus VAT",
+      "source": "quote, net plus VAT",
+      "turns": [
+        "Quote: 3,850.00 EUR net plus 19% VAT. What are the VAT and the total?",
+        "Correction: the rate is 7%. VAT and total?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "731.50",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(3850, 0.19)"
+          },
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "4581.50",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(3850, mul(3850, 0.19))"
+          }
+        ],
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "269.50",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(3850, 0.07)"
+          },
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "4119.50",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(3850, mul(3850, 0.07))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "VAT: 731.50 EUR; total: 4581.50 EUR",
+        "VAT: 269.50 EUR; total: 4119.50 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-17",
+      "family": "arithmetic",
+      "category": "net-gross",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "UK hotel and taxi receipts",
+      "source": "UK hotel and taxi receipts",
+      "turns": [
+        "A hotel bill of £264.00 includes 20% VAT. What are the net amount and the VAT?",
+        "A taxi receipt of £18.00 includes 20% VAT. Net and VAT?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "net",
+            "kind": "money",
+            "value": "220.00",
+            "currency": "GBP",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(div(264, 1.2), 2)"
+          },
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "44.00",
+            "currency": "GBP",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "sub(264, round(div(264, 1.2), 2))"
+          }
+        ],
+        [
+          {
+            "label": "net",
+            "kind": "money",
+            "value": "15.00",
+            "currency": "GBP",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(div(18, 1.2), 2)"
+          },
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "3.00",
+            "currency": "GBP",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "sub(18, round(div(18, 1.2), 2))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "net: 220.00 GBP; VAT: 44.00 GBP",
+        "net: 15.00 GBP; VAT: 3.00 GBP"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-18",
+      "family": "arithmetic",
+      "category": "percent-change",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "subscription price",
+      "source": "subscription price",
+      "turns": [
+        "Our subscription went from 11.99 USD to 13.49 USD a month. By what percentage did it increase, to two decimals?",
+        "If it drops from 13.49 USD to 12.99 USD, what is the change in percent, negative for a decrease?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "increase",
+            "kind": "percent",
+            "value": "12.51",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(div(sub(13.49, 11.99), 11.99), 100), 2)"
+          }
+        ],
+        [
+          {
+            "label": "change",
+            "kind": "percent",
+            "value": "-3.71",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(div(sub(12.99, 13.49), 13.49), 100), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "increase: 12.51%",
+        "change: -3.71%"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-19",
+      "family": "arithmetic",
+      "category": "percent-change",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "page views",
+      "source": "page views",
+      "turns": [
+        "Page views rose from 48,200.00 to 55,430.00. What is the percentage rise, to one decimal place?",
+        "From 55,430.00 to 52,658.50: change in percent, negative for a fall, one decimal?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "rise",
+            "kind": "percent",
+            "value": "15.0",
+            "rounding": {
+              "decimals": 1
+            },
+            "derivation": "round(mul(div(sub(55430, 48200), 48200), 100), 1)"
+          }
+        ],
+        [
+          {
+            "label": "change",
+            "kind": "percent",
+            "value": "-5.0",
+            "rounding": {
+              "decimals": 1
+            },
+            "derivation": "round(mul(div(sub(52658.50, 55430), 55430), 100), 1)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "rise: 15.0%",
+        "change: -5.0%"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-20",
+      "family": "arithmetic",
+      "category": "overtime-rate",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "night shift multiplier",
+      "source": "night shift multiplier",
+      "turns": [
+        "My rate is 26.00 EUR an hour. Night shifts are paid at 125% of the normal rate. Pay for 8 night hours?",
+        "And at 175% of the normal rate?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "pay",
+            "kind": "money",
+            "value": "260.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(mul(26, 1.25), 8)"
+          }
+        ],
+        [
+          {
+            "label": "pay",
+            "kind": "money",
+            "value": "364.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(mul(26, 1.75), 8)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "pay: 260.00 EUR",
+        "pay: 364.00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-21",
+      "family": "arithmetic",
+      "category": "surcharge",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "express delivery",
+      "source": "express delivery",
+      "turns": [
+        "Delivery costs 6.50 EUR plus a 30% express surcharge. What is the express delivery price?",
+        "The express surcharge is now 50%. Price?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "price",
+            "kind": "money",
+            "value": "8.45",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(6.50, 1.3)"
+          }
+        ],
+        [
+          {
+            "label": "price",
+            "kind": "money",
+            "value": "9.75",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(6.50, 1.5)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "price: 8.45 EUR",
+        "price: 9.75 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-22",
+      "family": "arithmetic",
+      "category": "swiss-vat",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "Swiss bill in English",
+      "source": "Swiss bill in English",
+      "turns": [
+        "Swiss bill: CHF 915.00 net plus 8.1% VAT. VAT to the centime, and the total rounded to 5 centimes?",
+        "At the 3.8% rate?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "74.12",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(915, 0.081), 2)"
+          },
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "989.10",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "div(round(mul(add(915, round(mul(915, 0.081), 2)), 20), 0), 20)"
+          }
+        ],
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "34.77",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(915, 0.038), 2)"
+          },
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "949.75",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "div(round(mul(add(915, round(mul(915, 0.038), 2)), 20), 0), 20)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "VAT: 74.12; total: 989.10",
+        "VAT: 34.77; total: 949.75"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-23",
+      "family": "arithmetic",
+      "category": "overtime-rate",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "weekly timesheet with threshold",
+      "source": "weekly timesheet with threshold",
+      "turns": [
+        "I'm paid 21.50 EUR an hour; this week's timesheet shows 46 working hours, and anything over 40 is paid at 150% of the normal rate. Gross pay?",
+        "With 41 working hours?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "gross pay",
+            "kind": "money",
+            "value": "1053.50",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(mul(40, 21.50), mul(sub(46, 40), mul(21.50, 1.5)))"
+          }
+        ],
+        [
+          {
+            "label": "gross pay",
+            "kind": "money",
+            "value": "892.25",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(mul(40, 21.50), mul(sub(41, 40), mul(21.50, 1.5)))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "gross pay: 1053.50 EUR",
+        "gross pay: 892.25 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-24",
+      "family": "arithmetic",
+      "category": "instalments-simple-interest",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "daily interest",
+      "source": "daily interest",
+      "turns": [
+        "2,800.00 EUR earns 4.2% simple interest a year for 75 days on a 365-day year. Interest to the cent?",
+        "For 275 days?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "interest",
+            "kind": "money",
+            "value": "24.16",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(div(mul(2800, 0.042, 75), 365), 2)"
+          }
+        ],
+        [
+          {
+            "label": "interest",
+            "kind": "money",
+            "value": "88.60",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(div(mul(2800, 0.042, 275), 365), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "interest: 24.16 EUR",
+        "interest: 88.60 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-25",
+      "family": "arithmetic",
+      "category": "compound-interest",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "yearly compounding",
+      "source": "yearly compounding",
+      "turns": [
+        "6,500.00 EUR at 2.2% a year, compounded yearly, for 5 years. Final amount to the cent?",
+        "For 2 years?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "final amount",
+            "kind": "money",
+            "value": "7247.16",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(6500, pow(1.022, 5)), 2)"
+          }
+        ],
+        [
+          {
+            "label": "final amount",
+            "kind": "money",
+            "value": "6789.15",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(6500, pow(1.022, 2)), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "final amount: 7247.16 EUR",
+        "final amount: 6789.15 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-26",
+      "family": "arithmetic",
+      "category": "table-sum",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "small receipts, average",
+      "source": "small receipts, average",
+      "turns": [
+        "Receipts: 12.40 EUR, 7.95 EUR, 23.10 EUR, 4.55 EUR and 31.00 EUR. What are the total and the average of the 5 receipts, to the cent?",
+        "Without the 31.00 EUR receipt: total and the average of the 4?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "79.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(12.40, 7.95, 23.10, 4.55, 31)"
+          },
+          {
+            "label": "average",
+            "kind": "money",
+            "value": "15.80",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(div(add(12.40, 7.95, 23.10, 4.55, 31), 5), 2)"
+          }
+        ],
+        [
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "48.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "add(12.40, 7.95, 23.10, 4.55)"
+          },
+          {
+            "label": "average",
+            "kind": "money",
+            "value": "12.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(div(add(12.40, 7.95, 23.10, 4.55), 4), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "total: 79.00 EUR; average: 15.80 EUR",
+        "total: 48.00 EUR; average: 12.00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-27",
+      "family": "arithmetic",
+      "category": "date-time",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "meeting, train plus walk",
+      "source": "meeting, train plus walk",
+      "turns": [
+        "The meeting is at 15:10. The train takes 1 hour 25 minutes and the walk 10 minutes. Latest departure?",
+        "The train takes 1 hour 40 minutes. Latest departure now?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "latest departure",
+            "kind": "time",
+            "value": "13:35",
+            "derivation": "fmtClock(sub(clock(\"15:10\"), add(85, 10)))"
+          }
+        ],
+        [
+          {
+            "label": "latest departure",
+            "kind": "time",
+            "value": "13:20",
+            "derivation": "fmtClock(sub(clock(\"15:10\"), add(100, 10)))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "latest departure: 13:35",
+        "latest departure: 13:20"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-28",
+      "family": "arithmetic",
+      "category": "date-time",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "trial period",
+      "source": "trial period",
+      "turns": [
+        "A 60-day trial starts on 2026-11-02 and ends 60 days after the start. On what date does it end?",
+        "If it starts on 2026-11-20 instead?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "end date",
+            "kind": "date",
+            "value": "2027-01-01",
+            "derivation": "addDays(\"2026-11-02\", 60)"
+          }
+        ],
+        [
+          {
+            "label": "end date",
+            "kind": "date",
+            "value": "2027-01-19",
+            "derivation": "addDays(\"2026-11-20\", 60)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "end date: 2027-01-01",
+        "end date: 2027-01-19"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-29",
+      "family": "arithmetic",
+      "category": "proration",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "gym membership refund",
+      "source": "gym membership refund",
+      "turns": [
+        "A gym membership costs 456.00 EUR for 12 months. I cancel after 5 months. Refund for the remaining months?",
+        "After 10 months?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "refund",
+            "kind": "money",
+            "value": "266.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(div(456, 12), sub(12, 5))"
+          }
+        ],
+        [
+          {
+            "label": "refund",
+            "kind": "money",
+            "value": "76.00",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "mul(div(456, 12), sub(12, 10))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "refund: 266.00 EUR",
+        "refund: 76.00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "unseen3-30",
+      "family": "arithmetic",
+      "category": "multi-step",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "student discount then booking fee",
+      "source": "student discount then booking fee",
+      "turns": [
+        "Ticket price 64.00 EUR, 15% student discount, then a 2.5% booking fee on the discounted price. Amount to pay, to the cent?",
+        "The booking fee is 4%. Amount to pay?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "amount to pay",
+            "kind": "money",
+            "value": "55.76",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(mul(64, 0.85), 1.025), 2)"
+          }
+        ],
+        [
+          {
+            "label": "amount to pay",
+            "kind": "money",
+            "value": "56.58",
+            "currency": "EUR",
+            "rounding": {
+              "decimals": 2
+            },
+            "derivation": "round(mul(mul(64, 0.85), 1.04), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "amount to pay: 55.76 EUR",
+        "amount to pay: 56.58 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    }
+  ]
+}
