@@ -449,7 +449,9 @@ export function extractDesignA(raw: string, spans: Span[], locale: NumberLocale)
     throw error;
   }
   const types = typeProgram(steps, spanById);
-  const results: ExtractedResult[] = parsed.results.map((r) => {
+  // The same step listed twice under the same label is one figure (dev batch of 24 October).
+  const distinct = parsed.results.filter((r, i) => parsed.results.findIndex((x) => x.ref === r.ref && x.label === r.label) === i);
+  const results: ExtractedResult[] = distinct.map((r) => {
     const value = values.get(r.ref)!;
     const type = types.get(r.ref) ?? (spanById.get(r.ref)?.kind === "date" ? "date" : spanById.get(r.ref)?.kind === "time" ? "clock" : "plain");
     if (type !== typeOfFormat[r.format])
