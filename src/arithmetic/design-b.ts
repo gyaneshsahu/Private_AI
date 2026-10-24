@@ -122,6 +122,8 @@ export type DesignBExtraction = {
   program: Program;
   /** Value of every formula by its index (f1 = 0). */
   values: Dec[];
+  /** Every value any chain computed along the way (steps and starts); a call-1 figure equal to one of them was also computed by the second reading. */
+  intermediates: Dec[];
   /** Figures meant to be shown (format other than helper). */
   figures: { index: number; label: string; format: ResultFormat; value: Dec; places: number }[];
 };
@@ -157,8 +159,8 @@ export function extractDesignB(raw: string, spans: Span[]): DesignBExtraction {
       if (typeof arg !== "string" || (arg !== "none" && !ID.test(arg))) throw new DesignAError("INVALID_SCHEMA", `formula ${i + 1} op ${j + 1}: arg must be a span id, constant, earlier formula or none`);
       if (op !== "round" && arg === "none") throw new DesignAError("INVALID_SCHEMA", `formula ${i + 1} op ${j + 1}: ${op} needs an arg`);
       // A chain that subtracts or divides its own start as its first op is always 0 or 1: a misread, refused with feedback.
-      if (j === 0 && arg === start && (op === "subtract" || op === "divide" || op === "ratio_percent"))
-        throw new DesignAError("INVALID_SCHEMA", `formula ${i + 1}: the first op takes the chain's own start ${start} as arg, which always gives 0 or 1; start from one value and apply the other as arg`);
+      if (j === 0 && arg === start && ["subtract", "divide", "ratio_percent", "percent_of", "add_percent", "subtract_percent"].includes(op))
+        throw new DesignAError("INVALID_SCHEMA", `formula ${i + 1}: the first op takes the chain's own start ${start} as arg (${op} of a value with itself is not a reading of the question); start from one value and apply the other as arg`);
       if (!Number.isInteger(d) || (d as number) < 0 || (d as number) > 8) throw new DesignAError("INVALID_SCHEMA", `formula ${i + 1} op ${j + 1}: decimals must be 0..8`);
       if (typeof mode !== "string" || !([...ROUNDING_MODES, "none"] as string[]).includes(mode)) throw new DesignAError("INVALID_SCHEMA", `formula ${i + 1} op ${j + 1}: unknown mode`);
       return { op: op as (typeof CHAIN_OPERATIONS)[number], arg, decimals: d as number, mode: mode as RoundingMode | "none" };
@@ -217,7 +219,8 @@ export function extractDesignB(raw: string, spans: Span[]): DesignBExtraction {
     return [{ index: i, label: f.label, format: f.format, value: values[i], places }];
   });
   if (!figures.length) throw new DesignAError("EMPTY", "the second reading lists no figure to show");
-  return { formulas, program, values, figures };
+  const intermediates = [...evaluated.values()];
+  return { formulas, program, values, intermediates, figures };
 }
 
 export type CrossCheck = "matches" | "differs" | "unavailable";
@@ -264,6 +267,9 @@ export function renderDesignB(a: DesignAExtraction, b: DesignBExtraction | undef
       used.add(hit.index);
       return { label: r.label, value: r.value, shown: r.shown, format: r.format, state: "recomputed and matches", crossCheck: "matches" };
     }
+    // A figure call 1 shows in addition (an hourly rate beside the pay) may be a value call 2 computed on its way.
+    if (b.intermediates.some((v) => roundDecimal(v, r.places) === target))
+      return { label: r.label, value: r.value, shown: r.shown, format: r.format, state: "recomputed and matches", crossCheck: "matches" };
     return { label: r.label, value: r.value, shown: r.shown, format: r.format, state: "not cross-checked", crossCheck: "differs" };
   });
   if (!b) {

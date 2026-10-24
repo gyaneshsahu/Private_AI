@@ -205,7 +205,10 @@ function parseReply(raw: string): Parsed {
     if (!Array.isArray(rawArgs) || !rawArgs.length || rawArgs.length > 12 || rawArgs.some((a) => typeof a !== "string" || !ID.test(a)))
       throw new DesignAError("INVALID_SCHEMA", `step ${i + 1}: args must be 1 to 12 span ids, const:<value> or earlier step ids`);
     let args = (rawArgs as string[]).map(chained);
-    if (op === "round" && args.length > 1 && args.slice(1).every((a) => a.startsWith("const:"))) args = [args[0]];
+    // 24 October (dev-v3 batch 2): dropping extra constant args on round produced a figure rounded to 0 places
+    // when the model had put the places into the args; the shape is now refused with feedback instead.
+    if (op === "round" && args.length > 1)
+      throw new DesignAError("INVALID_SCHEMA", `step ${i + 1}: round takes one arg; put the places in decimals and the mode in mode`);
     if (stepIds.has(id)) {
       let n = 2;
       while (stepIds.has(`${id}_${n}`)) n++;

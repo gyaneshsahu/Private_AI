@@ -110,6 +110,16 @@ describe("cross-check and rendering", () => {
     expect(out.flags[0]).toMatch(/two independent readings of this question gave different figures for Umsatzsteuer/);
     expect(out.flagClasses).toEqual(["cross-check-differs"]);
   });
+  it("accepts a call-1 figure that the second reading computed only as an intermediate value", () => {
+    const withExtra = JSON.parse(callA);
+    withExtra.results.push({ ref: "s1", label: "USt ungerundet", format: "money", unit: "EUR", decimals: 4, claimed: "" });
+    const extra = extractDesignA(JSON.stringify(withExtra), spans, "de");
+    const out = renderDesignB(extra, extractDesignB(callB, spans), [de1], spans, "de");
+    expect(out.results.map((r) => r.crossCheck)).toEqual(["matches", "matches", "matches"]);
+  });
+  it("refuses a chain whose first op applies a percentage to its own start", () => {
+    expect(fails(chain([{ label: "x", format: "money", unit: "", decimals: 2, start: "t1n1", ops: [{ op: "percent_of", arg: "t1n1", decimals: 0, mode: "none" }] }]))).toBe("INVALID_SCHEMA");
+  });
   it("marks every figure not cross-checked, with a flag, when the second reading is unavailable", () => {
     const out = renderDesignB(a, undefined, [de1], spans, "de");
     expect(out.results.every((r) => r.state === "not cross-checked" && r.crossCheck === "unavailable")).toBe(true);
