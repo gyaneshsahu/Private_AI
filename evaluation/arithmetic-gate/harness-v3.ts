@@ -16,6 +16,7 @@ import { appendFile, mkdir, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import devV2 from "./dev-v2-20261023.json";
 import devV3 from "./dev-v3-20261023.json";
+import unseenV3 from "./unseen-v3-20261023.json";
 import { checkLiveCatalog, gateModels, referencePrices, type Cell, type Price } from "./prepare-run";
 import { scoreConversation, type GateCase } from "./scorer";
 import { DesignAError, designAInstruction, designASchema, designAUserMessage, extractDesignA, type DesignAExtraction } from "../../src/arithmetic/design-a";
@@ -246,10 +247,11 @@ async function main() {
   const retries = Number(arg("retry", "1"));
   const idsArg = arg("ids", "");
   // Dev sets only: unseen-v3 is admitted only after the owner approves THRESHOLD-v3.md.
-  if (setName !== "dev-v3" && setName !== "dev") throw Error("harness-v3 runs --cases dev-v3 or --cases dev only until THRESHOLD-v3.md is approved");
+  // unseen-v3 admitted on 24 October after the owner approved THRESHOLD-v3.md as written.
+  if (!["dev-v3", "dev", "unseen-v3"].includes(setName)) throw Error("harness-v3 runs --cases dev-v3, dev or unseen-v3 only");
   if (!gateModels[cell]) throw Error(`unknown cell ${cell}`);
   if (![0, 1].includes(retries)) throw Error("--retry 0|1");
-  const cases = ((setName === "dev-v3" ? devV3 : devV2).cases as unknown as GateCase[]).filter((c) => !idsArg || idsArg.split(",").includes(c.id));
+  const cases = ((setName === "dev-v3" ? devV3 : setName === "unseen-v3" ? unseenV3 : devV2).cases as unknown as GateCase[]).filter((c) => !idsArg || idsArg.split(",").includes(c.id));
   if (!cases.length) throw Error("no cases selected");
   await mkdir(`${ROOT}/${label}`, { recursive: true });
   const catalogResponse = await fetch(`${ORIGIN}/v1/models`, { headers: { authorization: `Bearer ${key}` } });
