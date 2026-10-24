@@ -1,4 +1,48 @@
 # PrivateAI readiness checklist
+## Gate v3 (Design B) run once after the limit was lifted: FAIL on the verified and flagged bars, silent wrong zero of 90; arithmetic track parked - 24 October
+
+Owner messages of 24 October: the Tinfoil usage limit is lifted, rerun C1 once as the approved single run, same code and set, no tuning; then the process change: finish gate v3, record, commit; on a fail ship without a "recomputed and matches" claim and close the arithmetic track until Phase 5; no new design.
+
+- **Run (verified from `results.json`, label `gptoss-unseen-v3-c1-run2`, commit 74edfce code, frozen set SHA-256 prefix 96b7932c unchanged).** GPT-OSS 120B low, Design B, one retry per call, three repetitions, 90 conversations, 416 requests, USD 0.208 by reported usage.
+
+| Group | n | Verified by recomputation (Wilson 95 %) | False flag | Wrong, flagged | Silent wrong (Wilson 95 %) | No answer |
+| --- | --- | --- | --- | --- | --- | --- |
+| repetition 1 | 30 | 9 (30.0 %; 16.7-47.9 %) | 11 | 8 | 0 (0.0-11.4 %) | 2 |
+| repetition 2 | 30 | 14 (46.7 %; 30.2-63.9 %) | 10 | 6 | 0 (0.0-11.4 %) | 0 |
+| repetition 3 | 30 | 17 (56.7 %; 39.2-72.6 %) | 6 | 7 | 0 (0.0-11.4 %) | 0 |
+| pooled | 90 | 40 (44.4 %; 34.6-54.7 %) | 27 | 21 | 0 (0.0-4.1 %) | 2 |
+| critical, pooled | 48 | 19 (39.6 %; 27.0-53.7 %) | 13 | 15 | 0 (0.0-7.4 %) | 1 |
+
+| Kind | n | Verified | False flag | Wrong, flagged | Silent wrong | No answer |
+| --- | --- | --- | --- | --- | --- | --- |
+| compound-interest | 6 | 1 | 4 | 1 | 0 | 0 |
+| date-time | 12 | 9 | 3 | 0 | 0 | 0 |
+| instalments-simple-interest | 6 | 2 | 4 | 0 | 0 | 0 |
+| multi-step | 6 | 6 | 0 | 0 | 0 | 0 |
+| net-gross | 6 | 3 | 3 | 0 | 0 | 0 |
+| overtime-rate | 9 | 2 | 2 | 5 | 0 | 0 |
+| percent-change | 12 | 2 | 2 | 8 | 0 | 0 |
+| proration | 6 | 2 | 2 | 1 | 0 | 1 |
+| skonto | 3 | 2 | 1 | 0 | 0 | 0 |
+| surcharge | 6 | 5 | 1 | 0 | 0 | 0 |
+| swiss-vat | 6 | 0 | 3 | 3 | 0 | 0 |
+| table-sum | 6 | 1 | 2 | 3 | 0 | 0 |
+| vat | 6 | 5 | 0 | 0 | 0 | 1 |
+
+| Measure | Bar | Result | Met |
+| --- | --- | --- | --- |
+| Silent wrong | 0 of 90 | 0 of 90 | yes |
+| Verified by recomputation | at least 60 of 90 | 40 of 90 | no |
+| Flagged | at most 27 of 90 | 48 of 90 (27 false, 21 wrong) | no |
+| No answer | at most 9 of 90 | 2 of 90 | yes |
+| Critical cases | no silent wrong, no no-answer of 48 | 0 silent wrong, 1 no-answer | no (see note) |
+
+**Verdict: FAIL** on the verified and flagged bars. Note on the critical no-answer: `unseen3-01` r1 was the first request of the run and was refused with HTTP 402 before the lifted limit took effect; it is a transport refusal, not a model failure, and the verdict does not depend on it. One other attempt (`unseen3-22` r3, turn 2) hit a network error and ended as a false flag. Both are listed in the verdict file.
+- **What the flags were.** False flags (27): 19 the two independent readings differed with call 1 right, 7 the second reading unavailable after its retry (truncated or invalid JSON), 1 both. Wrong-flagged (21): all caught; by the differing second reading together with a method rule in 10, by the differing reading alone in 7, by the second reading being unavailable in 1 (plus a method rule in 2), by the ledger check on the prose in 1. Per kind, the weak kinds stayed weak: percent-change 8 of 12 wrong, overtime-rate 5 of 9, swiss-vat 3 of 6 and 0 verified, table-sum 3 of 6. Second-reader validation failures: cannot_answer 27, invalid schema 11, truncated 11.
+- **Reading.** Design B keeps silent wrong at zero on 90 unseen conversations and catches every wrong program, but at GPT-OSS low the second reader fails or disagrees too often for the product bars, and the model's method choice on percent change, overtime rates and Swiss VAT is wrong in a third to two thirds of those kinds. By the owner's process change the track is closed: the product ships without a "recomputed and matches" claim, Design A and B stay unwired, and nothing more happens here until the main flow reaches Phase 5.
+- **Spend.** This run USD 0.208; whole arithmetic effort USD 2.36 by reported usage, USD 2.72 by the cost log (which overstates the aborted attempt). Remaining under the USD 5 cap: USD 2.64 by usage, at least USD 2.13 on the most conservative basis.
+- Nothing wired into the product; nothing pushed.
+
 ## Gate v3 approved and started; the run was ABORTED by the supplier's billing-period usage limit after 9 conversations - 24 October
 
 Owner message of 24 October: approve THRESHOLD-v3.md as written, run gate v3 once, reconcile the spend first, state the effect of the two first-call rule changes on the Design A path, no product wiring until the v3 result is reviewed, report counts against the bar with a per-kind breakdown.
