@@ -388,7 +388,7 @@ prospective-user observation before opening the trial.
 
 ## Restricted database roles (plan 7.6) and apply-pending migrations (plan 7.7) on the hosted database
 
-The step-by-step procedures (operator commands `privileges-plan`, `privileges-check`, `check`, `apply-pending`, the secret-file swap, the verification query and rollback) are kept outside the public repository in the git-ignored `docs/private/` folder. The commands themselves are in `server/deployment-database-entry.ts`; `tests/account-privileges.test.ts` proves the grant plan and the role check against a synthetic database.
+The step-by-step procedures (operator commands `privileges-plan`, `privileges-check`, `check`, `apply-pending`, the secret-file swap, the verification query and rollback) are kept outside the public repository in `docs/private/runbook-operational-20261024.md` (git-ignored). The commands themselves are in `server/deployment-database-entry.ts`; `tests/account-privileges.test.ts` proves the grant plan and the role check against a synthetic database.
 
 ## Operator stop and recovery
 
