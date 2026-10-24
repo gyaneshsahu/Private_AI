@@ -35,7 +35,7 @@ Rules in force: subagents commit on their own branches, never edit READINESS.md 
 | # | Item | Status |
 | --- | --- | --- |
 | 0.1 | Reply to the supplier contact in the Tinfoil thread with the six-point email (chat, 22 October). Email only, no call. | TODO |
-| 0.2 | Deploy exact `9c9be8e12440367bc3755385f4190626e5d921b4` on Render: Manual Deploy → specific commit, Auto-Deploy off, Pre-Deploy empty. | TODO |
+| 0.2 | Deploy the current candidate on Render: Manual Deploy → specific commit, Auto-Deploy off, Pre-Deploy empty. | DONE 24 October: `f0cc0ba` live after a one-time Pre-Deploy apply-pending (0013, 0020); readyz 200 |
 | 0.3 | Hosted checks on app.cometrow.com: email-disabled controls, Google sign-in, cancellation, sign-out, workspace entry, second identity denied, vault save/reopen, usage display. Report outcomes only. | TODO |
 | 0.4 | Approve the narrower privacy claim: "ID numbers, bank and contact details stay on your device; everything else is sealed." This decides Phase 1.2. | TODO |
 | 0.5 | Approve downloading the pinned speech model files for the dictation proof of concept (Phase 9). | TODO |
