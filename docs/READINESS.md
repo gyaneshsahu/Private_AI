@@ -1,4 +1,19 @@
 # PrivateAI readiness checklist
+## Masking M1.3: OpenPII-1M scored once (email 96.2 %, phone 88.0 %, card 6.5 % of mostly invalid numbers) - 25 October
+
+- **Run (owner-approved, 25 October).** `data/validation.jsonl` of `ai4privacy/pii-masking-openpii-1m` at revision `ecfdc547`, streamed once through `evaluation/masking/score-openpii.ts` (curl to stdin; nothing stored). 284,746 rows read; 41,005 German or English rows with at least one email, phone or card span scored; 112 skipped because their offsets did not index the text. Matching is the benchmark's (`score.ts`). No spend. Dataset credit: OpenPII 1M, Ai4Privacy / Ai Suisse SA, CC-BY-4.0.
+- **Results (verified, `evaluation/masking/results/openpii-validation.json`, counts only).**
+
+| Label | Spans | Caught | Recall | 95 % CI | Partial |
+|---|---|---|---|---|---|
+| EMAIL | 32,070 | 30,841 | 96.2 % | 95.9 to 96.4 | 1,055 |
+| TELEPHONENUM | 23,747 | 20,890 | 88.0 % | 87.6 to 88.4 | 63 |
+| CREDITCARDNUMBER | 13,100 | 855 | 6.5 % | 6.1 to 7.0 | 0 |
+
+  German and English are within two points of each other for every label. 64,888 detections; 159 touch no annotated span of any label (EMAIL 123, PHONE 32, IBAN 2, ID-NUMBER 1, BIRTH-DATE 1), precision 99.7 to 99.8 %. Some of these may be values the dataset left unannotated; not inspected (miss and false-positive texts were printed to the console only, first 60 misses).
+- **Reading (interpretation, partly verified).** (1) Cards: the detector requires a valid Luhn check digit by design. Of the 51 missed card values printed, 4 pass Luhn, which is what random digits give (about 1 in 10); the dataset's card numbers are mostly not valid card numbers, so 6.5 % does not measure recall on real cards. A Luhn-valid breakdown needs a second pass over the file. (2) Phones: the printed misses are mostly formats no German or international number has (`+0985459.6866`, `+03 65.752 5618`, `0003 043647636`, `6308 129-6368`, `(159)-9595628`); the detector anchors on `+<country>`, `00` or a leading `0`. Part of the 12 % gap is the dataset's random formats, part may be real; not separated. (3) Email: misses include addresses with non-ASCII local parts (`hansöhrneman@...`, `HPDÇ@...`); the email pattern is ASCII-only. Such addresses are legal (SMTPUTF8) but rare; this is a real, measurable gap and a candidate for the generator-first fix rule, not changed here.
+- **Not done.** No detector change from this data (the independent-set rule applies: describe a fix in the generator's terms first). The training split was not used.
+
 ## Masking M1.3: OpenPII-1M licence checked (CC-BY-4.0); no IBAN label; nothing downloaded - 25 October
 
 - **Licence (verified on the dataset card and the Hugging Face API, 25 October; card revision `ecfdc54`, last modified 4 April 2026).** `ai4privacy/pii-masking-openpii-1m` is licensed CC-BY-4.0, "Copyright 2026 Ai Suisse SA". The card permits research and commercial use, redistribution and modification with attribution: credit "Ai4Privacy / Ai Suisse SA" and link the repository; a BibTeX citation is given (DOI 10.57967/hf/8202). The card states the data is synthetic only. Metadata quirk: the YAML says `license: other` with `license_name: cc-by-4.0`; the card body and its licence section both say CC-BY-4.0. Not gated.

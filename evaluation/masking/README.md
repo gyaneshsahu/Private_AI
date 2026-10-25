@@ -11,6 +11,7 @@ Measures `src/identifier-masking.ts` (browser-side assisted redaction) on synthe
 - `generate-dev.ts` writes `dev/dev.json`; `evaluate-dev.ts [label]` writes `results/dev-<label>.json`.
 - `write-heldout.ts` and `evaluate-heldout.ts`: see `heldout/README.md`. The held-out split is read by `evaluate-heldout.ts` only.
 - `independent/`: a separate, hand-written corpus that shares nothing with this generator, scored with `score.ts`; see `independent/README.md` and `results/independent.json`.
+- `score-openpii.ts`: one-off third-party check (plan M1.3) on the EMAIL, TELEPHONENUM and CREDITCARDNUMBER spans of German and English rows of OpenPII 1M (Ai4Privacy / Ai Suisse SA, CC-BY-4.0, https://huggingface.co/datasets/ai4privacy/pii-masking-openpii-1m), streamed on stdin and never stored; counts only in `results/openpii-validation.json`.
 - `tests/masking-benchmark.test.ts`: regenerates the development split byte for byte, checks ground-truth check digits, and pins `results/dev-current.json`.
 
 ## Ground truth

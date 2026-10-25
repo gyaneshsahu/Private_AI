@@ -1,0 +1,129 @@
+{
+  "dataset": "ai4privacy/pii-masking-openpii-1m",
+  "revision": "ecfdc547f4a0955600cfe6ab98ba2a162207fcc0",
+  "split": "validation",
+  "licence": "CC-BY-4.0, Ai4Privacy / Ai Suisse SA",
+  "languages": [
+    "de",
+    "en"
+  ],
+  "rowsRead": 284746,
+  "rowsScored": 41005,
+  "rowsSkippedForOffsets": 112,
+  "detections": 64888,
+  "falsePositives": {
+    "total": 159,
+    "byKind": {
+      "EMAIL": 123,
+      "PHONE": 32,
+      "BIRTH-DATE": 1,
+      "ID-NUMBER": 1,
+      "IBAN": 2
+    },
+    "precision95": [
+      0.9971,
+      0.9979
+    ]
+  },
+  "byLabel": {
+    "CREDITCARDNUMBER": {
+      "spans": 13100,
+      "caught": 855,
+      "kindCorrect": 855,
+      "partial": 0,
+      "recall": 0.06526717557251908,
+      "recall95": [
+        0.0612,
+        0.0696
+      ]
+    },
+    "CREDITCARDNUMBER/de": {
+      "spans": 5127,
+      "caught": 340,
+      "kindCorrect": 340,
+      "partial": 0,
+      "recall": 0.06631558416227813,
+      "recall95": [
+        0.0598,
+        0.0735
+      ]
+    },
+    "CREDITCARDNUMBER/en": {
+      "spans": 7973,
+      "caught": 515,
+      "kindCorrect": 515,
+      "partial": 0,
+      "recall": 0.06459300137965635,
+      "recall95": [
+        0.0594,
+        0.0702
+      ]
+    },
+    "EMAIL": {
+      "spans": 32070,
+      "caught": 30841,
+      "kindCorrect": 30841,
+      "partial": 1055,
+      "recall": 0.9616775802931088,
+      "recall95": [
+        0.9595,
+        0.9637
+      ]
+    },
+    "EMAIL/de": {
+      "spans": 12023,
+      "caught": 11549,
+      "kindCorrect": 11549,
+      "partial": 404,
+      "recall": 0.9605755635032853,
+      "recall95": [
+        0.9569,
+        0.9639
+      ]
+    },
+    "EMAIL/en": {
+      "spans": 20047,
+      "caught": 19292,
+      "kindCorrect": 19292,
+      "partial": 651,
+      "recall": 0.9623385045143912,
+      "recall95": [
+        0.9596,
+        0.9649
+      ]
+    },
+    "TELEPHONENUM": {
+      "spans": 23747,
+      "caught": 20890,
+      "kindCorrect": 20887,
+      "partial": 63,
+      "recall": 0.8796900661136143,
+      "recall95": [
+        0.8755,
+        0.8838
+      ]
+    },
+    "TELEPHONENUM/de": {
+      "spans": 9064,
+      "caught": 8087,
+      "kindCorrect": 8086,
+      "partial": 20,
+      "recall": 0.8922109443954104,
+      "recall95": [
+        0.8857,
+        0.8984
+      ]
+    },
+    "TELEPHONENUM/en": {
+      "spans": 14683,
+      "caught": 12803,
+      "kindCorrect": 12801,
+      "partial": 43,
+      "recall": 0.8719607709596131,
+      "recall95": [
+        0.8665,
+        0.8773
+      ]
+    }
+  }
+}
