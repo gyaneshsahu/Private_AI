@@ -1,6 +1,6 @@
 # Rollback drill checklist (launch plan 7.8) — prepared 25 October 2026
 
-Status: PREPARED, not run. The owner performs every step at the Render dashboard and on their own laptop; the agent only prepared this list and records the result in `docs/READINESS.md` as owner-reported. The written procedure is section 5 of the private hardening record (`docs/private/hardening-20261024.md`); this file is the run sheet for it.
+Status: RUN 25 October with A = `dac6cd5`, B = `7e30333` (the alternative below the table); owner-reported results and timings in `docs/READINESS.md`. Originally prepared, not run. The owner performs every step at the Render dashboard and on their own laptop; the agent only prepared this list and records the result in `docs/READINESS.md` as owner-reported. The written procedure is section 5 of the private hardening record (`docs/private/hardening-20261024.md`); this file is the run sheet for it.
 
 ## What the drill does
 
@@ -19,7 +19,7 @@ If `dac6cd5` has been deployed before the drill runs, A is `dac6cd5a173f62598d82
 |---|---|---|---|
 | readyz | `curl -sS -o /dev/null -w "%{http_code}\n" https://app.cometrow.com/readyz` | 200 | 200 |
 | healthz | `curl -sS -o /dev/null -w "%{http_code}\n" https://app.cometrow.com/healthz` | 200 | 200 |
-| headers | `node scripts/check-headers.mjs https://app.cometrow.com` | `/readyz` and `/healthz` rows not ok, every other row ok | `/readyz` rows ok, `/healthz` rows not ok, every other row ok |
+| headers | `node scripts/check-headers.mjs https://app.cometrow.com` | `/healthz` row not ok, every other row ok | `/healthz` row not ok, every other row ok (the script checks `/healthz`, `/api/status`, `/`, `/missing`; readyz is covered by curl) |
 | sign-in | browser: Google sign-in with the allowlisted owner identity, workspace opens, sign out | works | works |
 | account page | browser: open the account page while signed in | loads; usage shows unavailable or no active plan (no subscription configured) | same |
 

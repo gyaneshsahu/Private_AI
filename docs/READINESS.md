@@ -1,4 +1,28 @@
 # PrivateAI readiness checklist
+## Rollback drill (7.8) run; live header check passes on dac6cd5 - 25 October
+
+- **Releases (owner-reported from Render Events).** `dac6cd5` was live (deployed 01:43 UTC), so the run sheet's alternative pair applied: A = `dac6cd5`, B = `7e30333`. Both directions used the Events Rollback button (reuses the earlier build; the 51 s duration is consistent with no rebuild, not separately confirmed). Times below are UTC, converted by the owner from GMT+1 (clocks went back at 03:00 CEST the same night).
+- **Baseline on A (owner-reported).** readyz 200, healthz 200; `node scripts/check-headers.mjs https://app.cometrow.com`: `/healthz`, `/api/status` (401), `/`, `/missing` (404) all `ok`, HEADER CHECK PASSED. This is the first live run on `dac6cd5` and closes the 7.8 probe-header finding on the live host. Google sign-in, workspace entry, account page (sign-in methods, sessions, export and close-account sections rendered; "No real subscription is connected here yet" shown) and sign-out to the sign-in page all worked.
+- **On B after rollback (owner-reported).** readyz 200, healthz 200; check-headers: `/healthz` MISSING `x-content-type-options`, `x-frame-options`, `permissions-policy`, `content-security-policy`, other rows ok, HEADER CHECK FAILED, exactly the expected reading for `7e30333` and the proof the rollback took effect. Sign-in, account page and sign-out worked.
+- **On A after roll forward (owner-reported).** readyz 200, healthz 200, every check-headers row ok, PASSED; sign-in, account page and sign-out worked. Events: `dac6cd5` live, no failed events. Logs 11:30 to 11:45 UTC: zero matches for `migration`, `pending` and `privileges`.
+- **Deploy IDs (owner-reported).** Rollback to `7e30333`: `dep-dbekrifavr4c73b8l29g`. Roll forward to `dac6cd5`: `dep-dbel0vavcj2c73dackmg`; this is also the ID the event's notice named as its "Rolled back to" target, so it may be the original `dac6cd5` deploy rather than the new event. Not resolved; harmless for the drill.
+
+| Mark | Meaning | Time (UTC) |
+|---|---|---|
+| T0 | rollback clicked (event "Deployed" time) | 11:30:54 |
+| T1 | rollback Live | 11:31:45 |
+| T2 | B verified | about 11:35 (owner estimate) |
+| T3 | forward clicked (event "Deployed" time) | 11:39:44 |
+| T4 | forward Live | 11:40 (minute only) |
+| T5 | A verified | about 11:43 (owner estimate) |
+| T1-T0 | rollback deploy duration | 51 s |
+| T2-T0 | rollback to verified service | about 4 min |
+| T4-T3 | forward deploy duration | 16 to 75 s |
+| T5-T3 | forward to verified service | about 3 min |
+
+- No interruption reported during either overlap. Not covered: `privileges-check` output (7.6) is still not reported.
+- Run sheet corrected: the headers row of the expected-readings table named `/readyz` rows, but `scripts/check-headers.mjs` checks `/healthz`, `/api/status`, `/` and `/missing` only; readyz is covered by curl.
+
 ## Rollback drill (7.8) prepared as an owner run sheet - 25 October
 
 - **Prepared (not run).** `docs/rollback-drill-20261025.md`: roll the live service from `7e30333` back to `f0cc0ba` and forward again at the Render dashboard, with the expected readings per release (readyz, healthz, `scripts/check-headers.mjs`, one owner sign-in, account page) and a six-mark timing table. No hosted action was taken by the agent. Outcome and timings are recorded here as owner-reported when the owner pastes them.
