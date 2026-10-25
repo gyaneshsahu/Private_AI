@@ -1,4 +1,8 @@
 # PrivateAI readiness checklist
+## ae439fa live: CometRow log line, purge runs without failure - 25 October
+
+- **Owner-reported.** Validate green on `ae439fa`; deployed at Render; the log shows "CometRow restricted deployment listening; email and inference disabled." and no "Request record purge failed." line, so the purge function runs under the runtime role on the hosted database. Verified by the agent: `/readyz` 200 after the deploy.
+
 ## Name change recorded: PrivateAI is now CometRow; readable text renamed, stored identifiers kept - 25 October
 
 - **Owner direction (25 October).** Rename PrivateAI to CometRow wherever needed and record the change in the important documents so there is no confusion later.
