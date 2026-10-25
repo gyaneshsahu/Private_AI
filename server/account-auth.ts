@@ -175,6 +175,10 @@ function createAccountAuth(
     trustedOrigins: [config.origin],
     telemetry: { enabled: false },
     logger: { disabled: true },
+    // Stale or undecodable OAuth state cannot carry errorCallbackURL; land on the app's notice, not the blocked /error route.
+    onAPIError: {
+      errorURL: `${config.origin}${config.synthetic ? "/?account-lab=1" : "/account"}`,
+    },
     emailAndPassword: { enabled: false },
     socialProviders: {},
     databaseHooks: {

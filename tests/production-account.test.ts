@@ -390,3 +390,36 @@ it.skipIf(!enabled)(
     }
   },
 );
+
+it.skipIf(!enabled)(
+  "sends a stale Google callback to the account notice, not the blocked error route",
+  async () => {
+    const previous = candidate;
+    candidate = createProductionAccountCandidate({
+      database: db.pool,
+      secret,
+      social: {
+        google: {
+          clientId: "synthetic.apps.googleusercontent.com",
+          clientSecret: "synthetic-google-secret",
+        },
+      },
+      deliverCode: async () => {
+        throw Error("Email disabled");
+      },
+    });
+    try {
+      // Browser Back onto an old callback replays a state the server no longer holds.
+      const response = await call(
+        "auth/callback/google?state=stale-state&code=stale-code",
+      );
+      expect(response.status).toBe(302);
+      const location = new URL(response.headers.get("location")!);
+      expect(location.origin + location.pathname).toBe(`${origin}/account`);
+      expect(location.searchParams.get("error")).toBe("state_mismatch");
+      expect(response.headers.getSetCookie()).toHaveLength(0);
+    } finally {
+      candidate = previous;
+    }
+  },
+);
