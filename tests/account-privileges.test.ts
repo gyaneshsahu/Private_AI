@@ -10,6 +10,7 @@ import {
   dispatchOneSecurityNotice,
   syntheticNoticeTransport,
 } from "../server/security-notices";
+import { purgeExpiredRequests } from "../server/request-retention";
 import { PostgresUsageLedger } from "../server/usage-postgres";
 import { createSyntheticConsumerWorkspace } from "../server/consumer-workspace";
 import { inspectProductionDatabase } from "../server/production-operations";
@@ -231,10 +232,17 @@ it.skipIf(!process.env.PRIVATEAI_SYNTHETIC_PG)(
         "DELETE FROM account_security_event",
         "SELECT * FROM usage_requests",
         "SELECT * FROM usage_metrics",
+        "SELECT * FROM purge_expired_requests()",
       ])
         await expect(notice.pool.query(sql)).rejects.toMatchObject({
           code: "42501",
         });
+      // The runtime may run the fixed 90-day purge, though it cannot DELETE usage rows itself.
+      expect(await purgeExpiredRequests(runtime.pool)).toEqual({
+        requests: 0,
+        metrics: 0,
+        held: 0,
+      });
       await expect(
         runtimeUsage.createAllowance({
           accountId: status.accountId,

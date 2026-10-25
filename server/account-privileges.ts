@@ -1,3 +1,5 @@
+import { requestPurgeFunctionSql } from "./request-retention";
+
 /** SQL for operator review only. Does not create roles, passwords, databases or execute grants. */
 export function accountPrivilegePlan(input: {
   schema: string;
@@ -34,6 +36,10 @@ export function accountPrivilegePlan(input: {
     `GRANT SELECT ON ${table("billing_customer_binding")},${table("billing_operation")} TO ${runtime}`,
     `GRANT SELECT ON ${table("account_recovery_control")},${table("account_security_event")},${table("account_closure")} TO ${notice}`,
     `GRANT UPDATE ("deliveryState","dispatchToken","dispatchedAt","settledAt") ON ${table("account_security_event")} TO ${notice}`,
+    // 90-day request-record purge: callable by the runtime, which keeps no DELETE on usage tables.
+    requestPurgeFunctionSql(schema),
+    `REVOKE ALL ON FUNCTION ${schema}.purge_expired_requests() FROM PUBLIC`,
+    `GRANT EXECUTE ON FUNCTION ${schema}.purge_expired_requests() TO ${runtime}`,
   ];
 }
 

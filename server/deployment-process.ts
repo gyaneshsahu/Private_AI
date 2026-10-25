@@ -2,6 +2,7 @@ import { Pool } from "pg";
 import { loadDeploymentConfig } from "./deployment-config";
 import { prepareProductionRuntime } from "./production-runtime";
 import { createRenderBridge } from "./render-bridge";
+import { scheduleRequestPurge } from "./request-retention";
 import {
   createDeploymentAttestationAudit,
   installAttestationAudit,
@@ -11,6 +12,7 @@ import {
 export async function startDeployment(render = false) {
   let bridge: ReturnType<typeof createRenderBridge> | undefined;
   let audit: AttestationAuditState | undefined;
+  let stopPurge: (() => void) | undefined;
 
   let database: Pool | undefined;
   let runtime: Awaited<ReturnType<typeof prepareProductionRuntime>> | undefined;
@@ -21,6 +23,7 @@ export async function startDeployment(render = false) {
     const deadline = setTimeout(() => process.exit(1), 15_000);
     try {
       audit?.stop();
+      stopPurge?.();
       if (bridge) {
         bridge.close();
         bridge.closeIdleConnections();
@@ -103,6 +106,10 @@ export async function startDeployment(render = false) {
     }
     process.stdout.write(
       "PrivateAI restricted deployment listening; email and inference disabled.\n",
+    );
+    // Privacy policy: request records are deleted after 90 days (server/request-retention.ts).
+    stopPurge = scheduleRequestPurge(database, (line) =>
+      process.stdout.write(line),
     );
   } catch {
     process.stderr.write("PrivateAI restricted deployment startup failed.\n");
