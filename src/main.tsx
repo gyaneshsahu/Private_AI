@@ -15,11 +15,25 @@ const lab =
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     {lab || pageUrl.pathname === "/account" ? (
-      <Suspense fallback={<p>Loading account…</p>}>
-        <AccountTheme>
+      <AccountTheme>
+        <Suspense
+          fallback={
+            <main
+              className="account-preview account-login-page"
+              aria-busy="true"
+            >
+              <span className="account-preview-brand">
+                Private<span>AI</span>
+              </span>
+              <section className="account-preview-card account-entry">
+                <p role="status">Loading account…</p>
+              </section>
+            </main>
+          }
+        >
           <AccountLab synthetic={lab} />
-        </AccountTheme>
-      </Suspense>
+        </Suspense>
+      </AccountTheme>
     ) : isAccountPreview(new URL(window.location.href)) ? (
       <AccountTheme>
         <AccountPreview />
