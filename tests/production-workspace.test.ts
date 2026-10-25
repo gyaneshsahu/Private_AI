@@ -76,7 +76,7 @@ for (const viewport of [
             .getByText("Privacy and account recovery", { exact: true })
             .click();
           await browserExpect(
-            page.getByText("PrivateAI stores your email address", {
+            page.getByText("CometRow stores your email address", {
               exact: false,
             }),
           ).toBeVisible();

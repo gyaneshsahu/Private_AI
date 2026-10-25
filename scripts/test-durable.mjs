@@ -21,6 +21,7 @@ const files = [
   "billing-events",
   "billing-reconciliation",
   "billing-workflow",
+  "request-retention",
 ].map((name) => `tests/${name}.test.ts`);
 
 async function main() {
