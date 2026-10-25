@@ -1,4 +1,11 @@
 # PrivateAI readiness checklist
+## Both 7.9 fixes live; Google cancellation and links from other sites confirmed - 25 October
+
+- **Deploy (owner-reported).** `bb059ea` deployed at Render; the owner reports the Google cancellation rerun on laptop and phone and a link opened from another app on the phone all worked ("everything worked"; no per-check detail given).
+- **Verified by the agent on the live host (read-only, 14:26 UTC).** `GET /api/auth/callback/google?state=stale-test&code=stale-test` answers 302 to `https://app.cometrow.com/account?error=state_mismatch` (was a 403 dead end); `GET /` as a cross-site top-level navigation answers 200 (was 403); `GET /api/status` with the same headers still 403; `scripts/check-headers.mjs` HEADER CHECK PASSED, every row ok.
+- **CI.** Validate run 40201937709 on `bb059ea`: durable job success (it runs both new PostgreSQL-gated tests); the offline job was still running (Playwright and evaluation checks) when the deploy was already live, so the deploy went out before Validate was fully green. Offline Vitest passed locally (846 passed, 163 skipped); Playwright was not run locally.
+- **7.9 status.** Every listed confirmation passes on laptop and phone (owner-reported, with the agent's live checks above). Open: Safe Browsing warning seen once on the callback URL, cause unknown (owner: Search Console security issues); phone model not reported; cosmetic and policy observations in the entries below.
+
 ## 7.6 privileges-check reported; 7.9 laptop checks started; Google back-out lands on a blocked error route (fixed in code, not deployed) - 25 October
 
 - **7.6 (owner-reported, Render service shell on `dac6cd5`).** `privileges-check` printed `restricted: true`, role `cometrow_runtime`, `superuser: false`, `createRole: false`, `createInSchema: false` (owner confirmed every field as expected; raw line not pasted). `check` printed `{"operation":"check","applied":14,"pending":0,"remoteTlsVerificationRequired":true}` (pasted verbatim). 7.6 is fully closed.
