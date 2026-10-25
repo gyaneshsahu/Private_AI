@@ -163,7 +163,7 @@ function createAccountAuth(
       config.allowedEmails.includes(value.toLowerCase())) &&
     (!config.synthetic || /^[^\s@]+@[^\s@]+\.test$/i.test(value));
   const appName = config.synthetic
-    ? "PrivateAI synthetic account lab"
+    ? "CometRow synthetic account lab"
     : "CometRow";
 
   const auth = betterAuth({

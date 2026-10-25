@@ -392,7 +392,7 @@ export default function AccountLab({
                   await passkey(() =>
                     client.passkey.addPasskey({
                       name: synthetic
-                        ? "PrivateAI synthetic passkey"
+                        ? "CometRow synthetic passkey"
                         : "CometRow passkey",
                     }),
                   );

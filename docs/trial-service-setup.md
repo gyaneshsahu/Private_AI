@@ -29,14 +29,14 @@ says plan activation requires a card, prepaid auto-reload can buy additional
 credits, and retaining returned API data needs permission from its team.
 These were checked on 6 October; verify the actual account terms before accepting.
 
-PrivateAI retains source snippets, titles and URLs for inspectable citations and
+CometRow retains source snippets, titles and URLs for inspectable citations and
 optional encrypted saved conversations. The published retention restriction
 therefore conflicts with our intended workflow unless our plan/agreement permits
 it. Do not call the integration qualified or silently remove source persistence.
 Account creation alone will not resolve this dependency. Before purchasing or
 activating a plan, obtain written confirmation from Brave covering:
 
-> May PrivateAI keep web-search titles, URLs and snippets in a user's temporary
+> May CometRow keep web-search titles, URLs and snippets in a user's temporary
 > conversation and optional browser-local encrypted history, display saved citations
 > when reopened, and retain synthetic integration-test evidence? No model training,
 > redistribution dataset or public search-results cache is intended. Which plan

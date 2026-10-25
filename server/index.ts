@@ -47,7 +47,7 @@ if (dev) {
 }
 const server = app.listen(port, hosted ? "0.0.0.0" : "127.0.0.1", () => {
   console.log(
-    `PrivateAI ${hosted ? "restricted hosted evaluation" : "loopback"} listening on port ${port}. No request content logging enabled.`,
+    `CometRow ${hosted ? "restricted hosted evaluation" : "loopback"} listening on port ${port}. No request content logging enabled.`,
   );
 });
 

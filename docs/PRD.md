@@ -1,4 +1,6 @@
-# PrivateAI — product requirements
+# CometRow — product requirements
+
+> **Name change, 25 October 2026:** this product was called PrivateAI until 25 October 2026 and is now CometRow. Some technical identifiers keep the old name on purpose; the full record is in `name-change-20261025.md`.
 
 Approved spend: none new. **Approved spend (owner statement, 22 October 2026):** no new paid spend is approved. Anything already spent, including the 4 October experiment cap and the Brave test on 12 October, is history. Any future paid step, such as the in-enclave research harness or the Phase 5 evaluation runs, needs the owner to name the service, the current price and a specific cap first. Every older figure in this document (USD 2, USD 3, USD 5, USD 10, USD 25, USD 50 to 100) is a historical or proposal figure and no longer an authorisation.
 
@@ -67,7 +69,7 @@ Quality floors, serious-failure rules, the provider and private-data gates, the 
 
 **19 October saved-history recovery implementation:** user-initiated encrypted file backup and restore-as-copies is now locally implemented/tested. It covers already-saved conversations, requires the original backup passphrase, preserves destination history and supports manual portability without uploads. It does not recover forgotten passphrases, save temporary search, add cloud sync or approve private-data use. Actual-device and security qualification remain in READINESS; automated cross-device history is still a separate product/privacy decision.
 
-**19 October confirmed domain:** owner reports purchasing `cometrow.com` and approves `https://app.cometrow.com` for the assistant and sign-in. DNS control, hosting association and TLS are not yet verified. Preparation is authorized; DNS changes, Google/Apple activation and account migration require a reviewed rollout. This does not rename PrivateAI or approve private-data/public access.
+**19 October confirmed domain:** owner reports purchasing `cometrow.com` and approves `https://app.cometrow.com` for the assistant and sign-in. DNS control, hosting association and TLS are not yet verified. Preparation is authorized; DNS changes, Google/Apple activation and account migration require a reviewed rollout. This does not rename CometRow or approve private-data/public access.
 
 **19 October account design decision:** launch sign-in should offer Google, Apple and email, with passkeys for convenient subsequent sign-in. Build this inactive for review; provider activation and existing-account migration remain separately gated. Disclose account identifiers/email and provider involvement; no silent email-based account merging or promise that sign-in recovery restores a lost vault passphrase. Proposed email experience uses one-time codes. The first local preview is a design walkthrough, not working authentication.
 

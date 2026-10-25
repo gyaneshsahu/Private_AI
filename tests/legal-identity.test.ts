@@ -49,7 +49,7 @@ describe("operator identity, imprint and policy wiring", () => {
     expect(text).toContain("Security incidents:");
     expect(text).not.toContain("not yet named");
     expect(text).toContain("48149 Münster");
-    expect(text).toContain("CometRow is the public name");
+    expect(text).toContain("Until 25 October 2026 it was called PrivateAI");
   });
 
   it("feeds the policy's responsibility and contact sections from the same identity, so the placeholder gate sees them", () => {

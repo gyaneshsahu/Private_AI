@@ -1,4 +1,6 @@
-# PrivateAI
+# CometRow
+
+> **Name change, 25 October 2026:** this product was called PrivateAI until 25 October 2026 and is now CometRow. Some technical identifiers keep the old name on purpose; the full record is in `docs/name-change-20261025.md`.
 
 A general-purpose AI assistant under production development. **The current goal is one public-launchable product**, with limited-user testing on the same architecture before public opening. Chat, encrypted history, documents/images, research, reasoning/coding, accounts, usage, subscriptions and operations are active scope. Provider qualification and release readiness remain incomplete; private-data access and public launch are closed.
 

@@ -105,14 +105,14 @@ export async function startDeployment(render = false) {
       });
     }
     process.stdout.write(
-      "PrivateAI restricted deployment listening; email and inference disabled.\n",
+      "CometRow restricted deployment listening; email and inference disabled.\n",
     );
     // Privacy policy: request records are deleted after 90 days (server/request-retention.ts).
     stopPurge = scheduleRequestPurge(database, (line) =>
       process.stdout.write(line),
     );
   } catch {
-    process.stderr.write("PrivateAI restricted deployment startup failed.\n");
+    process.stderr.write("CometRow restricted deployment startup failed.\n");
     await stop(1);
   }
 }

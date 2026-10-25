@@ -79,7 +79,7 @@ Browser-local encrypted vaults do not substitute for service access control.
 ## Individual access implementation (local validation)
 
 The founder selected PrivateAI-only, operator-issued invitations. No external
-identity service is involved. This is **not anonymous access**: PrivateAI and the
+identity service is involved. This is **not anonymous access**: CometRow and the
 host still receive identity/network metadata. External identity integration can
 be reconsidered for public launch.
 
@@ -375,7 +375,7 @@ prospective-user observation before opening the trial.
    migrations once on the hosted database, in this order, with the mounted config.
    Startup never migrates, and a candidate started against a database with a
    pending migration does not serve 503: its admission check fails and the
-   process exits with "PrivateAI restricted deployment startup failed" (seen on
+   process exits with "CometRow restricted deployment startup failed" (seen on
    24 October with f0cc0ba). A crashing service has no shell, so run the command
    as Render's Pre-Deploy Command for that one deploy and clear the field
    afterwards; from the service shell otherwise:

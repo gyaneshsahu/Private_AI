@@ -2,7 +2,7 @@
 
 ## Current product UI batch — 20 October, design review pending
 
-Owner's five navigation/settings/tool screenshots are organizational references, not permission to copy branding. PrivateAI retains neutral light, charcoal dark, muted violet and a small clay monogram. This supersedes the earlier statement that projects and pin/archive are deferred from the UI pass.
+Owner's five navigation/settings/tool screenshots are organizational references, not permission to copy branding. CometRow retains neutral light, charcoal dark, muted violet and a small clay monogram. This supersedes the earlier statement that projects and pin/archive are deferred from the UI pass.
 
 | Area | Before this batch | Current implementation / boundary |
 | --- | --- | --- |
@@ -77,7 +77,7 @@ Deliverable after reference review: the same synthetic workflow at desktop and39
 Use the updated candidate only when an operator provides a reachable reviewed test build. The current hosted auth page is not evidence for these workspace changes. Use synthetic text only. Earlier auth-page checks remain passed; this full workspace session remains BLOCKED pending access.
 
 1. With TalkBack and keyboard open, type a synthetic draft, attach a small synthetic text file, review/correct it and return to Conversation. Confirm the draft survives and controls remain reachable.
-2. On an operator-prepared synthetic conversation, navigate the named message articles. Open “Edit into a new branch”: focus must enter Edited message. Cancel: focus must return to the initiating Edit button. Create a branch: focus must return to Message PrivateAI; original conversation remains available.
+2. On an operator-prepared synthetic conversation, navigate the named message articles. Open “Edit into a new branch”: focus must enter Edited message. Cancel: focus must return to the initiating Edit button. Create a branch: focus must return to Message CometRow; original conversation remains available.
 3. Rotate and enable larger text/reduced motion. Repeat editing, inspect a long answer/table and open/close a source. Report clipping, focus loss or disruptive scrolling. Incomplete fixture answers must remain labelled incomplete, with Copy disabled.
 4. Save an encrypted synthetic snapshot, lock, unlock and reopen. Confirm draft/document changes; sign out. Never use a real password as the test vault passphrase.
 5. Open Attachments and tools → Photo to text. Choose photo with a synthetic printed-text PNG: rotate, crop, Use this photo; confirm the attachment, the extracted text and that TalkBack focus stays inside the dialog and returns to the tools control on Escape. Then press Use camera: on a release at or after the 21 October `camera=(self)` change, expect the permission prompt only after pressing Use camera, a live rear-camera preview, Take photo, and the camera indicator off after capture, Discard, Escape and backgrounding. Never photograph real documents.
@@ -88,7 +88,7 @@ Report PASS/FAIL/BLOCKED per step, Android/Chrome/TalkBack versions and concise 
 7 October 2026. Visual redesign awaits the founder's brief/reference images.
 Working direction: chat is the main experience; documents and research attach to
 the conversation; privacy status is clear and detailed controls appear when needed.
-Use PrivateAI's own identity, readable answers and uncluttered desktop/mobile layouts.
+Use CometRow's own identity, readable answers and uncluttered desktop/mobile layouts.
 No new navigation or visual style is finalized by this plan.
 
 ## Galaxy A52 / TalkBack: next short workspace check

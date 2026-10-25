@@ -1,4 +1,6 @@
-# PrivateAI delivery roadmap
+# CometRow delivery roadmap
+
+> **Name change, 25 October 2026:** this product was called PrivateAI until 25 October 2026 and is now CometRow. Some technical identifiers keep the old name on purpose; the full record is in `name-change-20261025.md`.
 
 Current owner priority: finish Google/Apple production sign-in; phone removed from login and deferred out of active scope. Optional secret-file runtime wiring is tested; actual provider setup/hosted callback/email recovery and Apple grant-revocation lifecycle remain open. See development-deployment.md for owner steps, costs and acceptance. Earlier phone preview instruction below is superseded.
 
@@ -301,7 +303,7 @@ ChatGPT/Gemini-level quality across most everyday tasks, with strong, verifiable
 privacy. That quality is a target to demonstrate, not a current claim. Documents,
 drafts and controlled research are initial evaluation workflows, not final scope.
 
-UI direction: clean, familiar and conversation-first, with PrivateAI's own identity.
+UI direction: clean, familiar and conversation-first, with CometRow's own identity.
 Integrate documents/research naturally; show clear privacy indicators and reveal
 advanced controls when relevant. Keep desktop/mobile workflows free of clutter and
 technical jargon.
@@ -906,7 +908,7 @@ G1–G6 and U1 independently while Q1 needs supplier evidence.
 - 5 October 2026: improved the individual invitation workflow after finding that
   rejected sign-in attempts left users on a plain error page. Errors now retain
   usable forms with cleared secrets and generic recovery guidance. Added responsive
-  PrivateAI styling under hash-based CSP, without scripts or external assets.
+  CometRow styling under hash-based CSP, without scripts or external assets.
   Browser coverage includes rejected-code recovery into successful registration,
   no reflected credentials, desktop/mobile overflow and applied styles. Hosted
   access validation and later real-user usability review remain open.

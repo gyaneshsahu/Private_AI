@@ -235,7 +235,7 @@ inside that same vault.
 
 After account setup and approval of key storage there, transfer the existing age
 identity directly in a user-operated local session into a secure note named
-`PrivateAI registry recovery`. Include its public recipient, archive location and
+`CometRow registry recovery`. Include its public recipient, archive location and
 the restore instructions; keep the private identity out of terminal transcripts,
 screenshots, chat and repository files. Do not create a new identity: existing
 archives require the original one. Before marking custody verified, retrieve the
@@ -304,7 +304,7 @@ access with every restored account revoked. The source remained untouched. A
 read-only hosted aggregate check confirmed release `12bd405`, paused access, two
 accounts and zero unrevoked accounts. No account identifiers/hashes were logged.
 
-Task `PrivateAI encrypted registry backup` is active daily at 09:00 Windows local
+Task `CometRow encrypted registry backup` is active daily at 09:00 Windows local
 time (Europe/Berlin at setup), with missed work started when available. A manually
 triggered run through Task Scheduler completed with result 0 and a fresh verified
 receipt at 10:09:47 UTC. This establishes execution in the scheduled user context,
@@ -327,7 +327,7 @@ remain open for that operational work and a complete service recovery drill.
 24-hour staleness, future/inconsistent timestamps and independent key custody.
 Only fixed health codes are emitted. Four offline monitor tests pass. The Windows
 wrapper displays a generic local warning on unhealthy state; it does not send data
-to a notification service. Task `PrivateAI backup health monitor` runs hourly and
+to a notification service. Task `CometRow backup health monitor` runs hourly and
 at sign-in under the existing user. Installed-task healthy execution returned 0;
 a labelled five-second test notification call completed. Human visibility is not
 independently confirmed. Both warning and backup tasks require this computer and

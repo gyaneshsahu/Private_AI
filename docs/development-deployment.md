@@ -200,10 +200,10 @@ Apple lists **USD 99 per membership year**, charged in local currency where avai
 
 ### Google: owner setup fields (prepare; do not publish/activate yet)
 
-1. Open Google Cloud Console → create/select a dedicated project, suggested name `PrivateAI`. Open Google Auth Platform → Branding / Get started.
-2. App name `PrivateAI`; user support email and developer contact: your real monitored CometRow mailbox (not an uncreated placeholder). Describe the operator as the founder in Germany. Audience: External. Keep a restricted testing rollout until review; add your own test account where the console offers test users.
+1. Open Google Cloud Console → create/select a dedicated project, suggested name `CometRow`. Open Google Auth Platform → Branding / Get started.
+2. App name `CometRow`; user support email and developer contact: your real monitored CometRow mailbox (not an uncreated placeholder). Describe the operator as the founder in Germany. Audience: External. Keep a restricted testing rollout until review; add your own test account where the console offers test users.
 3. Authorized domain `cometrow.com`. Homepage, privacy and terms URLs must be real, public, accurate pages you own; do not submit invented `/privacy` or `/terms` paths before those pages exist. Complete domain ownership/branding verification requested by Google. Request only `openid` and `email`; no Drive, Gmail or extra scopes.
-4. Clients → Create client → **Web application**, name `PrivateAI web`. Authorized redirect URI exactly `https://app.cometrow.com/api/auth/callback/google`. If an authorized JavaScript origin is requested, `https://app.cometrow.com`. No wildcard, localhost or temporary Render production callback.
+4. Clients → Create client → **Web application**, name `CometRow web`. Authorized redirect URI exactly `https://app.cometrow.com/api/auth/callback/google`. If an authorized JavaScript origin is requested, `https://app.cometrow.com`. No wildcard, localhost or temporary Render production callback.
 5. Save the console-generated client ID and client secret in a password manager/server secret store. Do not paste secrets into chat, commit them, or put them in frontend/VITE variables. Tell Codex only that the client exists and where the protected secret file is configured.
 
 [Google setup](https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid), [production policy](https://developers.google.com/identity/protocols/oauth2/production-readiness/policy-compliance), [basic identity scope publishing distinctions](https://developers.google.com/identity/protocols/oauth2/production-readiness/overview).
@@ -468,7 +468,7 @@ The ignored Linux AMD64 Caddy fixture at `.local/ingress-caddy/caddy` came from 
 
 **Account implementation update:** the unmounted Google/Apple/email/passkey production-origin candidate composes account controls with the workspace and prepared `/account` screen. It requires direct TLS and an explicitly supplied sender; no environment flag activates it. It is not ready to mount behind Render's TLS-terminating proxy. Reviewed edge trust/client-address policy, real social/sender setup, hosted verification and rollout review remain prerequisites. The existing production entrypoint is unchanged. See ARCHITECTURE for delivery semantics and local test limitations.
 
-**PREPARED / NOT APPLIED.** Founder confirms purchase of `cometrow.com` and approves `https://app.cometrow.com` for PrivateAI's app and sign-in. No DNS, hosting, OAuth, email, billing or account-migration change is authorized by this preparation. The historical deployment instructions below are not a current production rollout command.
+**PREPARED / NOT APPLIED.** Founder confirms purchase of `cometrow.com` and approves `https://app.cometrow.com` for CometRow's app and sign-in. No DNS, hosting, OAuth, email, billing or account-migration change is authorized by this preparation. The historical deployment instructions below are not a current production rollout command.
 
 ### Exact owner-entered settings after rollout review
 

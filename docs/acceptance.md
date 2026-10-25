@@ -1,4 +1,6 @@
-# PrivateAI: approved implementation and acceptance contract
+# CometRow: approved implementation and acceptance contract
+
+> **Name change, 25 October 2026:** this product was called PrivateAI until 25 October 2026 and is now CometRow. Some technical identifiers keep the old name on purpose; the full record is in `name-change-20261025.md`.
 
 **Approved spend (owner statement, 22 October 2026):** no new paid spend is approved. Anything already spent, including the 4 October experiment cap and the Brave test on 12 October, is history. Any future paid step, such as the in-enclave research harness or the Phase 5 evaluation runs, needs the owner to name the service, the current price and a specific cap first. Every older figure in this document (USD 2, USD 3, USD 5, USD 10, USD 25, USD 50 to 100) is a historical or proposal figure and no longer an authorisation.
 
@@ -86,7 +88,7 @@ gate without relaxing or replacing the existing quality floors.
 
 Before scoring, record the actual named ChatGPT and Gemini models/modes, account tiers, date, browsing/file settings and available tools. Product names alone are insufficient. If a product conceals its model version, state that limit and preserve the observable configuration. Do not invent current model names from old notes.
 
-Give each system equivalent source material and task instructions; distinguish product-level comparison from model-only tests. PrivateAI's disclosure approvals are exercised rather than removed for speed. Compare task success, rubric dimensions, user corrections, time and cost. Randomize answer order for human review; retain source evidence and disagreement adjudication. Use synthetic or non-sensitive inputs only. If comparator access is unavailable, mark comparative evaluation blocked rather than claiming competitiveness.
+Give each system equivalent source material and task instructions; distinguish product-level comparison from model-only tests. CometRow's disclosure approvals are exercised rather than removed for speed. Compare task success, rubric dimensions, user corrections, time and cost. Randomize answer order for human review; retain source evidence and disagreement adjudication. Use synthetic or non-sensitive inputs only. If comparator access is unavailable, mark comparative evaluation blocked rather than claiming competitiveness.
 
 ## Broader evidence before platform expansion
 

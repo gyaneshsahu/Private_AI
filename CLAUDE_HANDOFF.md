@@ -1,4 +1,6 @@
-# PrivateAI — Claude Handoff
+# CometRow (formerly PrivateAI) — Claude Handoff
+
+> **Name change, 25 October 2026:** this product was called PrivateAI until 25 October 2026 and is now CometRow. Some technical identifiers keep the old name on purpose; the full record is in `docs/name-change-20261025.md`.
 
 Updated: 25 October 2026  
 Repository: `gyaneshsahu/Private_AI`  

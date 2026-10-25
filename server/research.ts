@@ -182,7 +182,7 @@ export async function fetchPage(
       redirect: "manual",
       headers: {
         Accept: "text/html,text/plain",
-        "User-Agent": "PrivateAI-Evaluation/0.1",
+        "User-Agent": "CometRow-Evaluation/0.1",
       },
       signal: AbortSignal.any([
         AbortSignal.timeout(15000),

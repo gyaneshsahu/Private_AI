@@ -61,7 +61,7 @@ export function deploymentAccess(
     if (!timingSafeEqual(expected, digest)) {
       res.setHeader(
         "WWW-Authenticate",
-        'Basic realm="PrivateAI development", charset="UTF-8"',
+        'Basic realm="CometRow development", charset="UTF-8"',
       );
       res.status(401).json({ error: "Restricted development deployment." });
       return;

@@ -83,7 +83,7 @@ export function imprintSections(
     {
       id: "names",
       heading: "Names",
-      text: "CometRow is the public name of the service; PrivateAI is its working name in the source code and documents. Both refer to the same service and the same operator.",
+      text: "CometRow is the name of the service. Until 25 October 2026 it was called PrivateAI, and some technical identifiers in the source code still use that name. Both names refer to the same service and the same operator.",
     },
   ];
 }

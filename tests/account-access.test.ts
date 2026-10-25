@@ -842,7 +842,7 @@ it.skipIf(!enabled)(
         .click();
       await browserExpect(
         page.getByRole("button", {
-          name: "Remove PrivateAI synthetic passkey",
+          name: "Remove CometRow synthetic passkey",
         }),
       ).toBeVisible();
       await page.getByRole("button", { name: "Sign out", exact: true }).click();
@@ -850,7 +850,7 @@ it.skipIf(!enabled)(
         .getByRole("button", { name: "Sign in with a test passkey" })
         .click();
       await page
-        .getByRole("button", { name: "Remove PrivateAI synthetic passkey" })
+        .getByRole("button", { name: "Remove CometRow synthetic passkey" })
         .click();
       await browserExpect(
         page.getByText("Verify your email again before removing a method.", {
@@ -871,7 +871,7 @@ it.skipIf(!enabled)(
         }),
       ).toBeVisible();
       await page
-        .getByRole("button", { name: "Remove PrivateAI synthetic passkey" })
+        .getByRole("button", { name: "Remove CometRow synthetic passkey" })
         .click();
       await browserExpect(
         page.getByText(
@@ -881,7 +881,7 @@ it.skipIf(!enabled)(
       ).toBeVisible();
       await browserExpect(
         page.getByRole("button", {
-          name: "Remove PrivateAI synthetic passkey",
+          name: "Remove CometRow synthetic passkey",
         }),
       ).toHaveCount(0);
       expect(
@@ -969,7 +969,7 @@ it.skipIf(!enabled)(
         .click();
       await browserExpect(
         page.getByRole("button", {
-          name: "Remove PrivateAI synthetic passkey",
+          name: "Remove CometRow synthetic passkey",
         }),
       ).toBeVisible();
       await page.getByRole("button", { name: "Sign out", exact: true }).click();

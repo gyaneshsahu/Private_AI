@@ -668,7 +668,7 @@ try {
         {
           for (let t = 0; t < fixture.turns.length; t++) {
             phase = `reply-${t + 1}`;
-            await page.getByLabel("Message PrivateAI").fill(fixture.turns[t]);
+            await page.getByLabel("Message CometRow").fill(fixture.turns[t]);
             await page
               .getByRole("button", { name: "Send ↑", exact: true })
               .click();
