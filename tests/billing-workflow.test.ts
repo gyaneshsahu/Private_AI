@@ -664,7 +664,7 @@ it.skipIf(!enabled)(
 );
 
 it.skipIf(!enabled)(
-  "only exact top-level billing returns bypass cross-site navigation rejection",
+  "cross-site navigation headers never reach billing APIs",
   async () => {
     const h = await fixture(),
       a = await h.signIn();
@@ -681,15 +681,6 @@ it.skipIf(!enabled)(
     ).toBe(403);
     expect(
       (await h.call("/api/billing/overview", undefined, headers)).status,
-    ).toBe(403);
-    expect(
-      (
-        await h.call(
-          "/?billing=return&next=https://evil.test",
-          undefined,
-          headers,
-        )
-      ).status,
     ).toBe(403);
     expect(h.provider.createCustomer).not.toHaveBeenCalled();
   },

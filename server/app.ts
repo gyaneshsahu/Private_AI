@@ -129,24 +129,18 @@ export function createApp(config: Config) {
   >();
   app.use((req, res, next) => {
     // Hosted access is restricted before session, API and static-file handling.
-    const billingReturn =
-      !!config.consumer?.billingRouter &&
+    // Visitors arrive from links in mail, chat and search; page GETs only render, so
+    // top-level document navigations pass while every cross-site API call stays refused.
+    const pageNavigation =
       req.method === "GET" &&
-      ["/?billing=return", "/?billing=cancel"].includes(req.originalUrl) &&
-      req.headers["sec-fetch-mode"] === "navigate" &&
-      req.headers["sec-fetch-dest"] === "document";
-    const accountReturn =
-      config.consumer?.mode === "production-candidate" &&
-      req.method === "GET" &&
-      req.path === "/account" &&
+      req.path !== "/api" &&
+      !req.path.startsWith("/api/") &&
       req.headers["sec-fetch-mode"] === "navigate" &&
       req.headers["sec-fetch-dest"] === "document";
     if (
       req.headers.host !== new URL(config.origin).host ||
       (req.headers.origin && req.headers.origin !== config.origin) ||
-      (req.headers["sec-fetch-site"] === "cross-site" &&
-        !billingReturn &&
-        !accountReturn)
+      (req.headers["sec-fetch-site"] === "cross-site" && !pageNavigation)
     ) {
       res.status(403).json({ error: "Cross-origin access denied." });
       return;

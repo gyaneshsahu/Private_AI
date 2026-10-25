@@ -604,7 +604,7 @@ async function routeLocally(context: BrowserContext) {
 }
 
 it.skipIf(!enabled)(
-  "allows only top-level account return navigation while preserving cross-site API and method rejection",
+  "allows top-level page navigation from other sites while preserving cross-site API and method rejection",
   async () => {
     const navigation = {
       "sec-fetch-site": "cross-site",
@@ -615,8 +615,13 @@ it.skipIf(!enabled)(
     expect(
       (await request("/account?error=access_denied", navigation)).status,
     ).toBe(200);
-    for (const path of ["/api/status", "/", "/api/auth/get-session"])
+    // Links from mail, chat and search open the app; only page loads pass.
+    expect((await request("/", navigation)).status).toBe(200);
+    for (const path of ["/api/status", "/api/auth/get-session"])
       expect((await request(path, navigation)).status).toBe(403);
+    expect(
+      (await request("/", { ...navigation, "sec-fetch-mode": "cors" })).status,
+    ).toBe(403);
     expect(
       (await request("/account", { ...navigation, "sec-fetch-dest": "iframe" }))
         .status,
