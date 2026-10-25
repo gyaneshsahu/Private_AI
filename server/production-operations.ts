@@ -74,6 +74,20 @@ export function productionOperations(database: Pool) {
   });
   const middleware: RequestHandler = async (req, res, next) => {
     res.setHeader("Cache-Control", "no-store");
+    const probe =
+      req.method === "GET" &&
+      (req.originalUrl === "/healthz" || req.originalUrl === "/readyz");
+    // The probes answer before the app's header middleware (launch plan 7.4),
+    // so they carry the same fixed headers themselves; the body is plain text,
+    // so the policy allows nothing (live header check, 25 October).
+    if (probe)
+      res.set({
+        "Referrer-Policy": "no-referrer",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "Permissions-Policy": "camera=(self), microphone=(), geolocation=()",
+        "Content-Security-Policy": "default-src 'none'",
+      });
     if (req.method === "GET" && req.originalUrl === "/healthz") {
       res.type("text/plain").send("ok");
       return;
