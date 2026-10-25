@@ -1,8 +1,18 @@
 # PrivateAI — Claude Handoff
 
-Updated: 21 October 2026  
+Updated: 25 October 2026  
 Repository: `gyaneshsahu/Private_AI`  
 Branch: `codex/development-handoff`
+
+## Handoff note, 25 October 2026
+
+- **Current commit:** `dac6cd5` on `codex/development-handoff` (bridge `/healthz` headers). Pushed to origin on 25 October together with everything before it; Validate result for it is in the ledger once known.
+- **Deploy state:** live on Render is `7e30333` (identity filled, probe headers in the app, 14 migrations recorded, service runs as `cometrow_runtime`). `dac6cd5` is the next deploy candidate once Validate is green; no migrations pending; Pre-Deploy must stay empty.
+- **Open items by ID.** Owner: 0.1 supplier reply, 0.3 hosted checks, 0.7 review packets, 7.2 backup destination, 7.3 alert provider, 8.1 provider direction, 8.5 default model, Phase 5 spend permit; 7.6 `privileges-check` output not yet reported; 7.8 live header check must be rerun after deploying `dac6cd5`, rollback drill not done; 7.9 confirmations; 7.1 joint rehearsal. Agent, in order: 7.8 rollback drill support, then masking slice M1 (M1.1 to M1.4), then the later masking slice (A4, A5, German held-out set). Parked: arithmetic (track closed after gate v3; Designs A and B unwired). Policy truth gap: the 90-day request-record purge job does not exist yet (plan C1 note).
+- **Next 3 steps:** (1) deploy `dac6cd5` and rerun `node scripts/check-headers.mjs https://app.cometrow.com` (expect every row ok); (2) 7.8 rollback drill: owner redeploys the previous commit (`7e30333`) per the private hardening record and checks readyz and a sign-in, agent records the timings; (3) 7.9 confirmations on phone and laptop, then start M1.
+- **Unpushed:** nothing after this note's push; the owner's uncommitted `package.json` media-script edit stays local on purpose.
+- **Private material:** `docs/private/` (git-ignored) holds the supplier reply, the hardening record and the operational runbook; back it up outside this disk. The pre-rewrite history bundle is in `C:\Gyanesh\Private_AI-history-backup\`.
+- **Concerns log (A to F):** no file by that name exists in the repository or `docs/private/`; the owner names where it lives or approves creating it.
 
 ## Recent work
 
