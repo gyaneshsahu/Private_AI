@@ -104,7 +104,7 @@ export function AccountBilling({
         </p>
       )}
       <p>
-        Opening checkout or billing management sends you to Stripe. PrivateAI
+        Opening checkout or billing management sends you to Stripe. CometRow
         does not receive card details or send conversation content to billing.
       </p>
       {overview?.plans.map((plan) => (

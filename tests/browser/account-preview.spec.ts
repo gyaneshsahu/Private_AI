@@ -95,7 +95,7 @@ test("preview stays usable at phone width, enlarged text and keyboard navigation
 }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto("/?account-preview=1");
-  await page.getByRole("heading", { name: "Welcome to PrivateAI" }).focus();
+  await page.getByRole("heading", { name: "Welcome to CometRow" }).focus();
   await page.keyboard.press("Tab");
   await expect(
     page.getByRole("button", { name: "Continue with Google" }),
@@ -115,7 +115,7 @@ test("preview stays usable at phone width, enlarged text and keyboard navigation
   await page.setViewportSize({ width: 800, height: 360 });
   await page.getByRole("button", { name: "Other sign-in options" }).click();
   await expect(
-    page.getByRole("heading", { name: "Welcome to PrivateAI" }),
+    page.getByRole("heading", { name: "Welcome to CometRow" }),
   ).toBeFocused();
   expect(
     await page.evaluate(

@@ -13,7 +13,7 @@ test("an incognito chat is marked, cannot be saved, and leaves nothing behind af
     page.getByRole("status").filter({ hasText: "Incognito chat." }),
   ).toContainText("Nothing from this chat is saved on this device");
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("INCOGNITO_CANARY_4471 draft");
   await workspaceControl(page, "Context").click();
   await page.getByLabel("Add documents or screenshots").setInputFiles({
@@ -37,7 +37,7 @@ test("an incognito chat is marked, cannot be saved, and leaves nothing behind af
     page.getByRole("status").filter({ hasText: "Incognito chat." }),
   ).toHaveCount(0);
   await workspaceControl(page, "Conversation").click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue("");
+  await expect(page.getByLabel("Message CometRow")).toHaveValue("");
   await page.reload();
   await workspaceControl(page, "Saved").click();
   await page

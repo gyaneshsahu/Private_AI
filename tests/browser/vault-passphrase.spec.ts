@@ -49,7 +49,7 @@ test("passphrase change preserves history across tabs and older backups retain t
   });
   await page.goto("/");
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("SYNTHETIC original saved draft");
   await page.getByLabel("Attach files to this conversation").setInputFiles({
     name: "synthetic-notes.txt",
@@ -70,7 +70,7 @@ test("passphrase change preserves history across tabs and older backups retain t
   await other.goto("/");
   await unlock(other, oldSecret);
   await other.getByRole("button", { name: "Open", exact: true }).click();
-  await expect(other.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(other.getByLabel("Message CometRow")).toHaveValue(
     "SYNTHETIC original saved draft",
   );
   await fillChange(page, "incorrect synthetic password");
@@ -86,7 +86,7 @@ test("passphrase change preserves history across tabs and older backups retain t
   await expect(page.getByRole("article")).toHaveCount(1);
   await tab(page, "Conversation").click();
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("SYNTHETIC latest saved draft");
   await tab(page, "Saved").click();
   await fillChange(page);
@@ -117,7 +117,7 @@ test("passphrase change preserves history across tabs and older backups retain t
   await expect(
     page.getByLabel("Current vault passphrase", { exact: true }),
   ).toHaveCount(0);
-  await expect(other.getByLabel("Message PrivateAI")).toBeEmpty();
+  await expect(other.getByLabel("Message CometRow")).toBeEmpty();
   await tab(other, "Saved").click();
   await expect(
     other.getByRole("button", { name: "Create or unlock vault" }),
@@ -131,7 +131,7 @@ test("passphrase change preserves history across tabs and older backups retain t
   ).toBeVisible();
   await unlock(page, nextSecret);
   await page.getByRole("button", { name: "Open", exact: true }).click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "SYNTHETIC latest saved draft",
   );
   await expect(
@@ -176,7 +176,7 @@ test("passphrase change preserves history across tabs and older backups retain t
       .nth(i)
       .getByRole("button", { name: "Open", exact: true })
       .click();
-    drafts.push(await page.getByLabel("Message PrivateAI").inputValue());
+    drafts.push(await page.getByLabel("Message CometRow").inputValue());
     await tab(page, "Saved").click();
   }
   expect(drafts.sort()).toEqual([

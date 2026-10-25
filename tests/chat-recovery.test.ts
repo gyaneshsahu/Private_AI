@@ -111,7 +111,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     await tab("Conversation").click();
     await page.evaluate(() => Object.assign(window, { fixtureMode: "stall" }));
     await page
-      .getByLabel("Message PrivateAI")
+      .getByLabel("Message CometRow")
       .fill("TEST question with a source");
     await page.getByRole("button", { name: "Send ↑", exact: true }).click();
     await ui(page.getByText("TEST_PARTIAL", { exact: true })).toBeVisible();
@@ -157,13 +157,13 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       Object.assign(window, { fixtureMode: "complete" }),
     );
     await page
-      .getByLabel("Message PrivateAI")
+      .getByLabel("Message CometRow")
       .fill("UNSENT FOLLOW-UP DURING RETRY");
     await page
       .getByRole("button", { name: "Retry last response", exact: false })
       .click();
     await ui(page.locator("article.assistant")).toHaveCount(1);
-    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
+    await ui(page.getByLabel("Message CometRow")).toHaveValue(
       "UNSENT FOLLOW-UP DURING RETRY",
     );
     await ui(
@@ -262,7 +262,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       .getByRole("button", { name: "Close source", exact: true })
       .click();
     await page
-      .getByLabel("Message PrivateAI")
+      .getByLabel("Message CometRow")
       .fill("TEST follow-up correction");
     await page.getByRole("button", { name: "Send ↑", exact: true }).click();
     await ui(page.locator("article.assistant")).toHaveCount(2);
@@ -283,7 +283,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       ),
     ).toBe(true);
     expect(JSON.stringify(followup)).toContain("CORRECTED SYNTHETIC SOURCE");
-    await page.getByLabel("Message PrivateAI").fill("UNSENT NEXT QUESTION");
+    await page.getByLabel("Message CometRow").fill("UNSENT NEXT QUESTION");
     await page
       .getByRole("button", { name: "Edit into a new branch" })
       .first()
@@ -321,7 +321,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       branch.filter((m) => m.content === "TEST revised original question"),
     ).toHaveLength(1);
     expect(JSON.stringify(branch)).not.toContain("UNSENT NEXT QUESTION");
-    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
+    await ui(page.getByLabel("Message CometRow")).toHaveValue(
       "UNSENT NEXT QUESTION",
     );
     expect(JSON.stringify(branch)).not.toContain("TEST follow-up correction");
@@ -330,7 +330,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       .getByRole("button", { name: "Open Retry 1 branch", exact: true })
       .click();
     await ui(page.locator("article.assistant")).toHaveCount(2);
-    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
+    await ui(page.getByLabel("Message CometRow")).toHaveValue(
       "UNSENT NEXT QUESTION",
     );
     await page
@@ -344,7 +344,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     ).toBe(4);
     await page.evaluate(() => Object.assign(window, { fixtureMode: "stall" }));
     await page
-      .getByLabel("Message PrivateAI")
+      .getByLabel("Message CometRow")
       .fill("TEST clear during response");
     await page.getByRole("button", { name: "Send ↑", exact: true }).click();
     await ui(page.getByText("TEST_PARTIAL", { exact: true })).toBeVisible();
@@ -373,7 +373,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     ).toBeVisible();
     await tab("Conversation").click();
     await page
-      .getByLabel("Message PrivateAI")
+      .getByLabel("Message CometRow")
       .fill("TEST lock during response");
     await page.getByRole("button", { name: "Send ↑", exact: true }).click();
     await ui(page.getByText("TEST_PARTIAL", { exact: true })).toBeVisible();
@@ -399,7 +399,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
           "\n```\n\n![tracking](https://invalid.example/pixel) <script>window.injected=true</script>",
       }),
     );
-    await page.getByLabel("Message PrivateAI").fill("TEST render formatting");
+    await page.getByLabel("Message CometRow").fill("TEST render formatting");
     await page.getByRole("button", { name: "Send ↑", exact: true }).click();
     await ui(page.locator("article.assistant table")).toBeVisible();
     await ui(page.locator("article.assistant .katex")).toBeVisible();
@@ -450,12 +450,12 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     );
     const messagesBeforeLimit = await page.locator("article.message").count();
     const oversizedDraft = "SYNTHETIC_LONG_".repeat(400);
-    await page.getByLabel("Message PrivateAI").fill(oversizedDraft);
+    await page.getByLabel("Message CometRow").fill(oversizedDraft);
     await page.getByRole("button", { name: "Send ↑", exact: true }).click();
     await ui(
       page.getByText("Selected context is too large.", { exact: false }),
     ).toBeVisible();
-    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(oversizedDraft);
+    await ui(page.getByLabel("Message CometRow")).toHaveValue(oversizedDraft);
     await ui(page.locator("article.message")).toHaveCount(messagesBeforeLimit);
     expect(
       await page.evaluate(
@@ -465,7 +465,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     await page.evaluate(() =>
       Object.assign(window, { fixtureMode: "timeout" }),
     );
-    await page.getByLabel("Message PrivateAI").fill("TEST shortened question");
+    await page.getByLabel("Message CometRow").fill("TEST shortened question");
     await page.getByRole("button", { name: "Send ↑", exact: true }).click();
     await ui(
       page.getByRole("button", { name: "Stop", exact: true }),
@@ -475,7 +475,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
         () => (window as unknown as FixtureWindow).fixtureCalls.length,
       ),
     ).toBe(callsBeforeLimit + 1);
-    await ui(page.getByLabel("Message PrivateAI")).toHaveValue("");
+    await ui(page.getByLabel("Message CometRow")).toHaveValue("");
     await ui(
       page.getByRole("status").filter({ hasText: "Response timed out." }),
     ).toBeVisible();
@@ -487,7 +487,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       Object.assign(window, { fixtureMode: "invalid-research" }),
     );
     await page
-      .getByLabel("Message PrivateAI")
+      .getByLabel("Message CometRow")
       .fill("TEST invalid research evidence");
     await page.getByRole("button", { name: "Send ↑", exact: true }).click();
     await ui(
@@ -516,7 +516,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
         mode,
       );
       await page
-        .getByLabel("Message PrivateAI")
+        .getByLabel("Message CometRow")
         .fill("TEST unavailable service");
       await page.getByRole("button", { name: "Send ↑", exact: true }).click();
       await ui(

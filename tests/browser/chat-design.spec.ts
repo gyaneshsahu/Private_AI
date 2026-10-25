@@ -95,7 +95,7 @@ test("representative themes, long history, source and responsive keyboard contro
   ).toBeDisabled();
   await expect(
     page
-      .getByRole("article", { name: "PrivateAI reply 4", exact: true })
+      .getByRole("article", { name: "CometRow reply 4", exact: true })
       .getByRole("button", { name: "Copy answer" }),
   ).toBeDisabled();
   const settings = async (theme: string) => {
@@ -125,7 +125,7 @@ test("representative themes, long history, source and responsive keyboard contro
       await page
         .locator("main")
         .evaluate((el) => el.scrollTo(0, el.scrollHeight));
-      await expect(page.getByLabel("Message PrivateAI")).toBeInViewport();
+      await expect(page.getByLabel("Message CometRow")).toBeInViewport();
       await page.screenshot({
         path: `.local/ui-product-20261020/${theme}-${width}-error.png`,
         animations: "disabled",
@@ -143,7 +143,7 @@ test("representative themes, long history, source and responsive keyboard contro
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.setViewportSize({ width: 390, height: 420 });
   await page.locator("main").evaluate((el) => el.scrollTo(0, 300));
-  await expect(page.getByLabel("Message PrivateAI")).toBeInViewport();
+  await expect(page.getByLabel("Message CometRow")).toBeInViewport();
   await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "light" });
   await settings("system");
   await expect(page.locator(".app-shell")).toHaveAttribute(
@@ -178,11 +178,11 @@ test("representative themes, long history, source and responsive keyboard contro
     .getByRole("button", { name: "Jump to latest", exact: false })
     .click();
   await expect(
-    page.getByRole("article", { name: "PrivateAI reply 30", exact: true }),
+    page.getByRole("article", { name: "CometRow reply 30", exact: true }),
   ).toBeInViewport();
-  await expect(page.getByLabel("Message PrivateAI")).toBeInViewport();
+  await expect(page.getByLabel("Message CometRow")).toBeInViewport();
   await page.locator("main").evaluate((el) => el.scrollTo(0, 0));
-  await expect(page.getByLabel("Message PrivateAI")).toBeInViewport();
+  await expect(page.getByLabel("Message CometRow")).toBeInViewport();
   await page.setViewportSize({ width: 390, height: 844 });
   // Reopen the representative chat from the actual searchable sidebar.
   await page.getByRole("button", { name: "Open navigation" }).click();
@@ -292,7 +292,7 @@ test("drawer focus, desktop expansion and denied preference storage remain usabl
   await trigger.click();
   const drawer = page.getByRole("dialog", { name: "Navigation", exact: true });
   await expect(drawer).toBeVisible();
-  await page.getByRole("link", { name: "PrivateAI home" }).focus();
+  await page.getByRole("link", { name: "CometRow home" }).focus();
   await page.keyboard.press("Shift+Tab");
   expect(
     await drawer.evaluate((el) => el.contains(document.activeElement)),

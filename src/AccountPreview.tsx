@@ -17,9 +17,9 @@ export function AccountPreview() {
       <a
         className="account-preview-brand"
         href="/"
-        aria-label="PrivateAI workspace"
+        aria-label="CometRow workspace"
       >
-        Private<span>AI</span>
+        Comet<span>Row</span>
       </a>
       <aside className="account-preview-banner" aria-label="Preview status">
         Design preview · Sign-in is not connected. No account is created and no
@@ -31,7 +31,7 @@ export function AccountPreview() {
       >
         <h1 id="account-heading" ref={heading} tabIndex={-1}>
           {step === "choose"
-            ? "Welcome to PrivateAI"
+            ? "Welcome to CometRow"
             : step === "email"
               ? "Continue with email"
               : "Check your email"}
@@ -117,7 +117,7 @@ export function AccountPreview() {
           <p>
             Planned account data: your email address, linked sign-in
             identifiers, passkey public credentials and session/security
-            records. Google or Apple learns that you sign in to PrivateAI. The
+            records. Google or Apple learns that you sign in to CometRow. The
             email-delivery provider processes your address and sign-in messages.
           </p>
           <p>
@@ -126,7 +126,7 @@ export function AccountPreview() {
             files. Apple’s Hide My Email can supply a relay address.
           </p>
           <p>
-            Passkeys use your device or credential manager. PrivateAI does not
+            Passkeys use your device or credential manager. CometRow does not
             receive your fingerprint or face scan.
           </p>
           <p>

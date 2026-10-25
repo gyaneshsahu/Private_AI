@@ -39,20 +39,20 @@ test("search is explicitly approved and remains temporary after source removal",
   await page
     .getByRole("button", { name: "Prepare a question about these sources" })
     .click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     /Using the selected web sources/,
   );
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     /synthetic library hours/,
   );
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("SYNTHETIC preserve my own question");
   await tab("Research").click();
   await page
     .getByRole("button", { name: "Prepare a question about these sources" })
     .click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "SYNTHETIC preserve my own question",
   );
   expect(calls).toBe(1);
@@ -99,7 +99,7 @@ test("malformed research is rejected without changing the draft or retrying", as
   });
   const tab = (name: string) => workspaceControl(page, name);
   await page.goto("/");
-  await page.getByLabel("Message PrivateAI").fill("SYNTHETIC preserved draft");
+  await page.getByLabel("Message CometRow").fill("SYNTHETIC preserved draft");
   await tab("Research").click();
   await page.getByLabel("Research method").selectOption("page");
   await page
@@ -115,7 +115,7 @@ test("malformed research is rejected without changing the draft or retrying", as
     page.getByText("Your context is empty.", { exact: false }),
   ).toBeVisible();
   await tab("Conversation").click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "SYNTHETIC preserved draft",
   );
   expect(executions).toBe(1);
@@ -159,7 +159,7 @@ test("approved research retains inspectable provenance through encrypted save an
   const tab = (name: string) => workspaceControl(page, name);
   await page.goto("/");
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("SYNTHETIC PRIVATE DRAFT not part of research");
   await tab("Research").click();
   await page.getByLabel("Research method").selectOption("page");
@@ -223,7 +223,7 @@ test("approved research retains inspectable provenance through encrypted save an
   await expect(page.getByRole("dialog")).toContainText("Saturday: 10:00–14:00");
   await page.getByRole("button", { name: "Close source" }).click();
   await tab("Conversation").click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "SYNTHETIC PRIVATE DRAFT not part of research",
   );
   expect(executions).toBe(1);

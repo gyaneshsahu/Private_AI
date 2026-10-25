@@ -80,7 +80,7 @@ export function ContextReview({
                 includeMessage(message.id, event.target.checked)
               }
             />
-            {index + 1}. {message.role === "user" ? "You" : "PrivateAI"}:{" "}
+            {index + 1}. {message.role === "user" ? "You" : "CometRow"}:{" "}
             {message.text.slice(0, 90) || "No completed answer"}
             {message.text.length > 90 ? "…" : ""}
             {message.status !== "complete" && " · Incomplete; always excluded"}

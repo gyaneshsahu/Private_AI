@@ -141,7 +141,7 @@ test("a chosen photo is previewed, rotated, cropped, re-encoded without metadata
   );
   expect(listImageMetadata(photo)).toEqual(["tEXt"]);
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("Read this synthetic receipt");
   const dialog = await openPhotoDialog(page);
   expect(
@@ -196,7 +196,7 @@ test("a chosen photo is previewed, rotated, cropped, re-encoded without metadata
     timeout: 45000,
   });
   await expect(attachments).toContainText(/photo-\d+\.png/);
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "Read this synthetic receipt",
   );
   const posted = await page.evaluate(
@@ -293,7 +293,7 @@ test("discard releases decoded bitmaps, malformed photos are refused, an absent 
   await page.addInitScript(countBitmapReleases);
   await page.goto("/");
   const photo = await printedText(page, "Synthetic note");
-  await page.getByLabel("Message PrivateAI").fill("Keep this synthetic draft");
+  await page.getByLabel("Message CometRow").fill("Keep this synthetic draft");
   const dialog = await openPhotoDialog(page);
   const chooser = dialog.getByLabel("Choose a PNG or JPEG photo");
   await chooser.setInputFiles({
@@ -395,7 +395,7 @@ test("discard releases decoded bitmaps, malformed photos are refused, an absent 
   await expect(
     page.getByRole("region", { name: "File import results" }),
   ).toHaveCount(0);
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "Keep this synthetic draft",
   );
 });

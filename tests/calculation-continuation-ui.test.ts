@@ -107,7 +107,7 @@ it("delivers bounded continuation in the actual temporary research workspace wit
     ).toBeVisible();
     await tab("Conversation").click();
     await page
-      .getByLabel("Message PrivateAI")
+      .getByLabel("Message CometRow")
       .fill("Calculate the items and explain missing delivery information.");
     await page.getByRole("button", { name: "Send ↑", exact: true }).click();
     await ui(page.locator("article.assistant").last()).toContainText(

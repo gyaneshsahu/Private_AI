@@ -106,11 +106,11 @@ export function WorkspaceNavigation(props: {
   const body = (
     <aside className="sidebar" aria-label="Chat navigation">
       <div className="sidebar-heading">
-        <a className="brand" href="/" aria-label="PrivateAI home">
+        <a className="brand" href="/" aria-label="CometRow home">
           <span className="brand-mark" aria-hidden="true">
             P
           </span>
-          Private<span>AI</span>
+          Comet<span>Row</span>
         </a>
         <button
           className="icon-button"

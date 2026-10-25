@@ -58,7 +58,7 @@ test("downloads only encrypted saved content and restores documents/drafts into 
   const outgoing = collect(page);
   await page.goto("/");
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("SYNTHETIC SAVED PORTABLE DRAFT");
   await page.getByLabel("Attach files to this conversation").setInputFiles({
     name: "synthetic-notes.txt",
@@ -76,7 +76,7 @@ test("downloads only encrypted saved content and restores documents/drafts into 
   ).toBeVisible();
   await tab(page, "Conversation").click();
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("UNSAVED DRAFT MUST NOT BE EXPORTED");
   await tab(page, "Saved").click();
   const backup = await download(page);
@@ -91,7 +91,7 @@ test("downloads only encrypted saved content and restores documents/drafts into 
     const requests = collect(restored);
     await restored.goto("/");
     await restored
-      .getByLabel("Message PrivateAI")
+      .getByLabel("Message CometRow")
       .fill("KEEP DESTINATION WORKSPACE DRAFT");
     await unlock(restored, "synthetic destination key password");
     await choose(restored, backup);
@@ -107,7 +107,7 @@ test("downloads only encrypted saved content and restores documents/drafts into 
       restored.getByLabel("Original backup passphrase", { exact: true }),
     ).toBeEmpty();
     await tab(restored, "Conversation").click();
-    await expect(restored.getByLabel("Message PrivateAI")).toHaveValue(
+    await expect(restored.getByLabel("Message CometRow")).toHaveValue(
       "KEEP DESTINATION WORKSPACE DRAFT",
     );
     await tab(restored, "Saved").click();
@@ -132,7 +132,7 @@ test("downloads only encrypted saved content and restores documents/drafts into 
       .getByRole("article", { name: "Portable synthetic notes" })
       .getByRole("button", { name: "Open", exact: true })
       .click();
-    await expect(restored.getByLabel("Message PrivateAI")).toHaveValue(
+    await expect(restored.getByLabel("Message CometRow")).toHaveValue(
       "SYNTHETIC SAVED PORTABLE DRAFT",
     );
     await tab(restored, "Context").click();
@@ -154,7 +154,7 @@ test("wrong password and corrupt backup preserve saved history; restore requires
 }) => {
   const outgoing = collect(page);
   await page.goto("/");
-  await page.getByLabel("Message PrivateAI").fill("SYNTHETIC EXISTING HISTORY");
+  await page.getByLabel("Message CometRow").fill("SYNTHETIC EXISTING HISTORY");
   await unlock(page);
   await page.getByRole("button", { name: "Save encrypted snapshot" }).click();
   await expect(page.getByRole("article")).toHaveCount(1);
@@ -215,7 +215,7 @@ test("current temporary research never enters a backup of earlier saved history"
   );
   await page.goto("/");
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("SYNTHETIC SAVED BEFORE RESEARCH");
   await unlock(page);
   await page.getByRole("button", { name: "Save encrypted snapshot" }).click();

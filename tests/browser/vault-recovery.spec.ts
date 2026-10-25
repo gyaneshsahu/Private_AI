@@ -7,7 +7,7 @@ test("an unreadable snapshot stays stored while an intact draft can open, update
   await page.goto("/");
   const tab = (name: string) =>
     workspaceControl(page, name);
-  await page.getByLabel("Message PrivateAI").fill("SYNTHETIC INTACT DRAFT");
+  await page.getByLabel("Message CometRow").fill("SYNTHETIC INTACT DRAFT");
   await tab("Saved").click();
   await page
     .getByLabel("Vault passphrase")
@@ -56,10 +56,10 @@ test("an unreadable snapshot stays stored while an intact draft can open, update
     page.getByText("Passphrase changes are unavailable", { exact: false }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Open", exact: true }).click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "SYNTHETIC INTACT DRAFT",
   );
-  await page.getByLabel("Message PrivateAI").fill("SYNTHETIC UPDATED DRAFT");
+  await page.getByLabel("Message CometRow").fill("SYNTHETIC UPDATED DRAFT");
   await tab("Saved").click();
   await page.getByRole("button", { name: "Save encrypted snapshot" }).click();
   await expect(

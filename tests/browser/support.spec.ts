@@ -19,7 +19,7 @@ test("help preserves local drafts and offers only an explicit, content-free clip
   });
   await page.goto("/");
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("SUPPORT_PRIVATE_DRAFT_CANARY");
   await workspaceControl(page, "Help")
     .click();
@@ -51,7 +51,7 @@ test("help preserves local drafts and offers only an explicit, content-free clip
   expect(await page.evaluate(() => indexedDB.databases())).toEqual([]);
   await workspaceControl(page, "Conversation")
     .click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "SUPPORT_PRIVATE_DRAFT_CANARY",
   );
 });

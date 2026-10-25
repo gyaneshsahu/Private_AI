@@ -212,7 +212,7 @@ export default function AccountAccess({
                   onClick={() => {
                     if (
                       window.confirm(
-                        `Remove ${method.label} from PrivateAI and sign out other sessions? Your email sign-in and encrypted vault stay unchanged.`,
+                        `Remove ${method.label} from CometRow and sign out other sessions? Your email sign-in and encrypted vault stay unchanged.`,
                       )
                     )
                       void update("remove", {

@@ -443,7 +443,7 @@ export function accountSocialSuite(production = false) {
             .getByRole("link", { name: "Open workspace", exact: true })
             .click();
           await page
-            .getByLabel("Message PrivateAI")
+            .getByLabel("Message CometRow")
             .fill("SYNTHETIC SOCIAL WORKSPACE DRAFT");
           await browserExpect(
             page.getByRole("button", { name: "Send ↑", exact: true }),

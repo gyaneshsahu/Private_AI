@@ -94,7 +94,7 @@ it("displays calculator-assisted prose and a corrected total through the actual 
       ["Correct delivery to EUR 9.", "100.80 EUR"],
       ["Now tax applies only to items; delivery stays untaxed.", "99.72 EUR"],
     ]) {
-      await page.getByLabel("Message PrivateAI").fill(question);
+      await page.getByLabel("Message CometRow").fill(question);
       await page.getByRole("button", { name: "Send ↑", exact: true }).click();
       await ui(page.locator("article.assistant").last()).toContainText(total);
       await ui(page.locator("article.assistant").last()).toContainText(

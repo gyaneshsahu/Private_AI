@@ -276,7 +276,7 @@ export default function AccountLab({
       className={`account-preview ${!session && !synthetic ? "account-login-page" : ""}`}
     >
       <a className="account-preview-brand" href="/">
-        Private<span>AI</span>
+        Comet<span>Row</span>
       </a>
       <aside className="account-preview-banner">
         {synthetic
@@ -393,7 +393,7 @@ export default function AccountLab({
                     client.passkey.addPasskey({
                       name: synthetic
                         ? "PrivateAI synthetic passkey"
-                        : "PrivateAI passkey",
+                        : "CometRow passkey",
                     }),
                   );
                   setNotice(
@@ -629,10 +629,10 @@ export default function AccountLab({
             {synthetic
               ? "Social buttons, when available, use synthetic provider fixtures only. "
               : ""}
-            PrivateAI stores your email address, provider identifiers, passkey
+            CometRow stores your email address, provider identifiers, passkey
             public credentials and session records. Email sign-in requires an
             email-delivery provider. Social sign-in, when enabled, shares your
-            verified email and provider identity with PrivateAI; the provider
+            verified email and provider identity with CometRow; the provider
             learns that you signed in here. No chat content is part of sign-in.
             Recovering sign-in cannot recover a lost vault passphrase.
             Private-data chat remains unavailable.

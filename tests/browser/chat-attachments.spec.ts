@@ -15,7 +15,7 @@ test("attaches from the keyboard in chat, reviews local corrections and preserve
   });
   await page.goto("/");
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("Compare these synthetic notes");
   await page.getByLabel("Attachments and tools", { exact: true }).click();
   const chooser = page.waitForEvent("filechooser");
@@ -39,7 +39,7 @@ test("attaches from the keyboard in chat, reviews local corrections and preserve
     name: "Conversation attachments",
   });
   await expect(attachments.getByRole("listitem")).toHaveCount(2);
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "Compare these synthetic notes",
   );
   await expect(
@@ -83,7 +83,7 @@ test("attachment limit and unsupported-file errors keep the chat draft and exist
   page,
 }) => {
   await page.goto("/");
-  await page.getByLabel("Message PrivateAI").fill("Keep this synthetic draft");
+  await page.getByLabel("Message CometRow").fill("Keep this synthetic draft");
   const input = page.getByLabel("Attach files to this conversation");
   await input.setInputFiles({
     name: "unsupported.html",
@@ -110,7 +110,7 @@ test("attachment limit and unsupported-file errors keep the chat draft and exist
   await expect(
     page.getByRole("button", { name: "Attach file", exact: true }),
   ).toBeDisabled();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "Keep this synthetic draft",
   );
 });

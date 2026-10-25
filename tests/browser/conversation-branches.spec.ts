@@ -70,11 +70,11 @@ test("built workspace restores, edits, switches and saves branches without any i
     page.getByText("SYNTHETIC EDITED QUESTION", { exact: true }),
   ).toBeVisible();
   await page.getByText("Conversation branches ·", { exact: false }).click();
-  await page.getByLabel("Message PrivateAI").fill("SYNTHETIC EDIT DRAFT");
+  await page.getByLabel("Message CometRow").fill("SYNTHETIC EDIT DRAFT");
   await page
     .getByRole("button", { name: "Open Original branch", exact: true })
     .click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "SYNTHETIC ORIGINAL DRAFT",
   );
   await expect(
@@ -93,7 +93,7 @@ test("built workspace restores, edits, switches and saves branches without any i
     page.getByRole("article", { name: "Your message 1", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("article", { name: "PrivateAI reply 2", exact: true }),
+    page.getByRole("article", { name: "CometRow reply 2", exact: true }),
   ).toContainText("Response timed out");
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -106,7 +106,7 @@ test("built workspace restores, edits, switches and saves branches without any i
   await expect(
     page.getByText("SYNTHETIC SECOND EDIT", { exact: true }),
   ).toBeVisible();
-  await expect(page.getByLabel("Message PrivateAI")).toBeFocused();
+  await expect(page.getByLabel("Message CometRow")).toBeFocused();
   await tab("Saved").click();
   await page
     .getByRole("button", { name: "Save encrypted snapshot", exact: true })
@@ -133,7 +133,7 @@ test("built workspace restores, edits, switches and saves branches without any i
   await expect(
     page.getByText("Conversation branches ·", { exact: false }),
   ).toBeFocused();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "SYNTHETIC EDIT DRAFT",
   );
   await expect(

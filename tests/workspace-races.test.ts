@@ -176,7 +176,7 @@ it("clearing pending imports and locking pending encrypted saves cannot restore 
       page.getByRole("button", { name: "Lock and clear workspace" }),
     ).toBeVisible();
     await tab("Conversation").click();
-    await page.getByLabel("Message PrivateAI").fill("SYNTHETIC_UNSAVED_DRAFT");
+    await page.getByLabel("Message CometRow").fill("SYNTHETIC_UNSAVED_DRAFT");
     await tab("Saved").click();
     await page.evaluate(() => {
       const w = window as unknown as Fixture;
@@ -214,7 +214,7 @@ it("clearing pending imports and locking pending encrypted saves cannot restore 
       }),
     ).toHaveCount(0);
     await tab("Conversation").click();
-    await ui(page.getByLabel("Message PrivateAI")).toHaveValue("");
+    await ui(page.getByLabel("Message CometRow")).toHaveValue("");
     await tab("Saved").click();
     await page
       .getByRole("button", { name: "Lock and clear workspace" })
@@ -262,7 +262,7 @@ it("clearing pending imports and locking pending encrypted saves cannot restore 
       page.getByRole("button", { name: "Lock and clear workspace" }),
     ).toBeVisible();
     await tab("Conversation").click();
-    await page.getByLabel("Message PrivateAI").fill("SYNTHETIC_DELETE_RACE");
+    await page.getByLabel("Message CometRow").fill("SYNTHETIC_DELETE_RACE");
     await tab("Saved").click();
     await page.getByRole("button", { name: "Save encrypted snapshot" }).click();
     await ui(

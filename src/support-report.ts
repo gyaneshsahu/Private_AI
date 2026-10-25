@@ -34,12 +34,12 @@ export function supportReport(input: {
     Object.hasOwn(supportSymptoms, input.symptom)
       ? supportSymptoms[input.symptom as SupportSymptom]
       : "Not selected";
-  return `PrivateAI support note (format 1)\nArea: ${area}\nProblem: ${symptom}\n\nThis note contains selected categories only. No conversation, source, document, account identifier, credential or device details are attached. It has not been submitted.\n\nWhen contacting the evaluation coordinator, describe the steps using a synthetic example. Do not include passwords, verification codes, payment details, private transcripts or temporary search content.`;
+  return `CometRow support note (format 1)\nArea: ${area}\nProblem: ${symptom}\n\nThis note contains selected categories only. No conversation, source, document, account identifier, credential or device details are attached. It has not been submitted.\n\nWhen contacting the evaluation coordinator, describe the steps using a synthetic example. Do not include passwords, verification codes, payment details, private transcripts or temporary search content.`;
 }
 
 export const supportGuidance: Record<SupportArea, readonly string[]> = {
   conversation: [
-    "A missing or stopped reply is not a completed answer. Retry starts a new request and may use another allowance; PrivateAI does not retry automatically.",
+    "A missing or stopped reply is not a completed answer. Retry starts a new request and may use another allowance; CometRow does not retry automatically.",
     "Check important answers against reliable evidence. For immediate danger, contact local emergency services or a trusted person; this app cannot contact help for you.",
   ],
   research: [

@@ -5,7 +5,7 @@ test("account view preserves drafts and never invents a paid allowance", async (
   page,
 }) => {
   await page.goto("/");
-  await page.getByLabel("Message PrivateAI").fill("SYNTHETIC unsent question");
+  await page.getByLabel("Message CometRow").fill("SYNTHETIC unsent question");
   await workspaceControl(page, "Account")
     .click();
   await expect(
@@ -20,7 +20,7 @@ test("account view preserves drafts and never invents a paid allowance", async (
   ).toBeVisible();
   await workspaceControl(page, "Conversation")
     .click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "SYNTHETIC unsent question",
   );
 });

@@ -23,7 +23,7 @@ createRoot(document.getElementById("root")!).render(
               aria-busy="true"
             >
               <span className="account-preview-brand">
-                Private<span>AI</span>
+                Comet<span>Row</span>
               </span>
               <section className="account-preview-card account-entry">
                 <p role="status">Loading account…</p>

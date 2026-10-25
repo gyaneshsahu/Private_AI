@@ -42,7 +42,7 @@ test("a live search conversation saves its written draft and query, never the re
   expect(executions).toBe(1);
   await tab("Conversation").click();
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("SYNTHETIC WRITTEN DRAFT about the hours");
   await tab("Saved").click();
   await page
@@ -92,7 +92,7 @@ test("a live search conversation saves its written draft and query, never the re
   await page.getByRole("button", { name: "Create or unlock vault" }).click();
   await page.getByRole("button", { name: "Open", exact: true }).click();
   await tab("Conversation").click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "SYNTHETIC WRITTEN DRAFT about the hours",
   );
   await tab("Context").click();

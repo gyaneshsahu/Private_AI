@@ -148,7 +148,7 @@ for (const viewport of [
           .getByRole("link", { name: "Open workspace", exact: true })
           .click();
         await page
-          .getByLabel("Message PrivateAI")
+          .getByLabel("Message CometRow")
           .fill("JOURNEY_LOCAL_DRAFT: explain the corrected note");
         await page
           .getByLabel("Attach files to this conversation")
@@ -381,7 +381,7 @@ for (const viewport of [
           .getByRole("article", { name: "JOURNEY_PRIVATE_TITLE" })
           .getByRole("button", { name: "Open", exact: true })
           .click();
-        await browserExpect(page.getByLabel("Message PrivateAI")).toHaveValue(
+        await browserExpect(page.getByLabel("Message CometRow")).toHaveValue(
           "JOURNEY_LOCAL_DRAFT: explain the corrected note",
         );
         await browserExpect(
@@ -428,7 +428,7 @@ for (const viewport of [
         await page
           .getByRole("link", { name: "Open workspace", exact: true })
           .click();
-        await browserExpect(page.getByLabel("Message PrivateAI")).toBeEmpty();
+        await browserExpect(page.getByLabel("Message CometRow")).toBeEmpty();
         await unlock();
         await browserExpect(
           page.getByRole("article", { name: "JOURNEY_PRIVATE_TITLE" }),
@@ -720,7 +720,7 @@ it.skipIf(!enabled)(
         .getByRole("link", { name: "Open workspace", exact: true })
         .click();
       await page
-        .getByLabel("Message PrivateAI")
+        .getByLabel("Message CometRow")
         .fill("SYNTHETIC DRAFT MUST STAY LOCAL");
       const status = await page.evaluate(async () =>
         (await fetch("/api/status")).json(),

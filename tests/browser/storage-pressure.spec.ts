@@ -23,7 +23,7 @@ test("storage quota failure preserves the draft and prior encrypted snapshot unt
   await page.goto("/");
   const tab = (name: string) => workspaceControl(page, name);
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("SYNTHETIC ORIGINAL SAVED DRAFT");
   await tab("Saved").click();
   await page
@@ -60,7 +60,7 @@ test("storage quota failure preserves the draft and prior encrypted snapshot unt
   const before = await ciphertext();
   await tab("Conversation").click();
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("SYNTHETIC UNSAVED REPLACEMENT");
   await page.evaluate(() => {
     Object.assign(window, { syntheticStorageFull: true });
@@ -74,7 +74,7 @@ test("storage quota failure preserves the draft and prior encrypted snapshot unt
   await expect(notice).not.toContainText("SYNTHETIC_QUOTA_DETAIL");
   expect(await ciphertext()).toBe(before);
   await tab("Conversation").click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "SYNTHETIC UNSAVED REPLACEMENT",
   );
   await page.evaluate(() => {
@@ -94,7 +94,7 @@ test("narrow and magnified workspace supports keyboard activation and error reco
 }) => {
   await page.setViewportSize({ width: 320, height: 780 });
   await page.goto("/");
-  await page.getByLabel("Message PrivateAI").fill("SYNTHETIC KEYBOARD DRAFT");
+  await page.getByLabel("Message CometRow").fill("SYNTHETIC KEYBOARD DRAFT");
   await page.getByRole("button", { name: "Open navigation" }).click();
   await page.getByLabel("Account menu", { exact: true }).focus();
   await page.keyboard.press("Enter");

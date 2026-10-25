@@ -23,7 +23,7 @@ test("search excerpts lead to separately approved pages without sharing the draf
   });
   const tab = (name: string) => workspaceControl(page, name);
   await page.goto("/");
-  await page.getByLabel("Message PrivateAI").fill("SYNTHETIC private draft");
+  await page.getByLabel("Message CometRow").fill("SYNTHETIC private draft");
   await tab("Research").click();
   await page.getByLabel("Exact search query").fill("synthetic library hours");
   await page.getByRole("button", { name: "Review disclosure" }).click();
@@ -51,5 +51,5 @@ test("search excerpts lead to separately approved pages without sharing the draf
   expect(disclosures).toEqual([{ kind: "search", value: "synthetic library hours" }, { kind: "page", value: url }]);
   expect(executions).toBe(2);
   await tab("Conversation").click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue("SYNTHETIC private draft");
+  await expect(page.getByLabel("Message CometRow")).toHaveValue("SYNTHETIC private draft");
 });

@@ -377,7 +377,7 @@ it.skipIf(!enabled)(
       h.switchReplica();
       await page.getByRole("link", { name: "Open test workspace" }).click();
       await page
-        .getByLabel("Message PrivateAI")
+        .getByLabel("Message CometRow")
         .fill("SYNTHETIC PRIVATE DRAFT MUST NOT LEAVE BROWSER");
       await workspaceControl(page, "Research").click();
       await page.getByLabel("Exact search query").fill(query.value);
@@ -400,7 +400,7 @@ it.skipIf(!enabled)(
         (await h.db.pool.query("SELECT * FROM research_consent")).rows,
       ).toHaveLength(0);
       await workspaceControl(page, "Conversation").click();
-      await browserExpect(page.getByLabel("Message PrivateAI")).toHaveValue(
+      await browserExpect(page.getByLabel("Message CometRow")).toHaveValue(
         "SYNTHETIC PRIVATE DRAFT MUST NOT LEAVE BROWSER",
       );
       page.on("dialog", (dialog) => dialog.accept());
@@ -467,7 +467,7 @@ it.skipIf(!enabled)(
           .getByRole("button", { name: "Verify test code", exact: true })
           .click();
         await page.getByRole("link", { name: "Open test workspace" }).click();
-        await browserExpect(page.getByLabel("Message PrivateAI")).toBeVisible();
+        await browserExpect(page.getByLabel("Message CometRow")).toBeVisible();
       };
       const unlock = async () => {
         await tab(page, "Saved").click();
@@ -487,7 +487,7 @@ it.skipIf(!enabled)(
       await page.goto(h.origin);
       await login("owner-a@example.test");
       await page
-        .getByLabel("Message PrivateAI")
+        .getByLabel("Message CometRow")
         .fill("SYNTHETIC ACCOUNT A DRAFT");
       await unlock();
       await page
@@ -501,10 +501,10 @@ it.skipIf(!enabled)(
       ).toBeVisible();
       const other = await context.newPage();
       await other.goto(h.origin);
-      await other.getByLabel("Message PrivateAI").fill("UNSAVED OTHER TAB");
+      await other.getByLabel("Message CometRow").fill("UNSAVED OTHER TAB");
       await tab(page, "Conversation").click();
       await page
-        .getByLabel("Message PrivateAI")
+        .getByLabel("Message CometRow")
         .fill("UNSAVED ACCOUNT A CHANGE");
       await tab(page, "Account").click();
       page.once("dialog", (dialog) => dialog.dismiss());
@@ -513,14 +513,14 @@ it.skipIf(!enabled)(
         page.getByRole("button", { name: "Sign out", exact: true }),
       ).toBeVisible();
       await tab(page, "Conversation").click();
-      await browserExpect(page.getByLabel("Message PrivateAI")).toHaveValue(
+      await browserExpect(page.getByLabel("Message CometRow")).toHaveValue(
         "UNSAVED ACCOUNT A CHANGE",
       );
       await tab(page, "Account").click();
       page.once("dialog", (dialog) => dialog.accept());
       await page.getByRole("button", { name: "Sign out", exact: true }).click();
       await browserExpect(page.getByLabel("Test email address")).toBeVisible();
-      await browserExpect(other.getByLabel("Message PrivateAI")).toHaveValue(
+      await browserExpect(other.getByLabel("Message CometRow")).toHaveValue(
         "",
       );
       await other.evaluate(() => window.dispatchEvent(new Event("focus")));
@@ -547,7 +547,7 @@ it.skipIf(!enabled)(
         }),
       ).toBeVisible();
       await page.getByRole("button", { name: "Open", exact: true }).click();
-      await browserExpect(page.getByLabel("Message PrivateAI")).toHaveValue(
+      await browserExpect(page.getByLabel("Message CometRow")).toHaveValue(
         "SYNTHETIC ACCOUNT A DRAFT",
       );
       expect(external).toEqual([]);

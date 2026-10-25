@@ -17,7 +17,7 @@ test("named encrypted history is searchable locally and survives lock/reopen wit
     workspaceControl(page, name);
   await page.goto("/");
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("SYNTHETIC walking itinerary");
   await tab("Saved").click();
   await page
@@ -35,7 +35,7 @@ test("named encrypted history is searchable locally and survives lock/reopen wit
   await workspaceControl(page, "New conversation").click();
   await tab("Conversation").click();
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("SYNTHETIC explain array sorting");
   await tab("Saved").click();
   await page
@@ -105,7 +105,7 @@ test("named encrypted history is searchable locally and survives lock/reopen wit
     .getByRole("article", { name: "SYNTHETIC Weekend plans" })
     .getByRole("button", { name: "Open", exact: true })
     .click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "SYNTHETIC walking itinerary",
   );
   expect(
@@ -135,16 +135,16 @@ test("two tabs preserve competing drafts as separate encrypted conversations", a
     await expect(p.getByText("Encrypted snapshot saved on this browser.", { exact: false })).toBeVisible();
   };
   await page.goto("/");
-  await page.getByLabel("Message PrivateAI").fill("Synthetic original draft");
+  await page.getByLabel("Message CometRow").fill("Synthetic original draft");
   await unlock(page);
   await page.getByLabel("Conversation title", { exact: true }).fill("Shared synthetic notes");
   await save(page);
   await other.goto("/");
   await unlock(other);
   await other.getByRole("button", { name: "Open", exact: true }).click();
-  await other.getByLabel("Message PrivateAI").fill("Second tab valuable revision");
+  await other.getByLabel("Message CometRow").fill("Second tab valuable revision");
   await nav(page, "Conversation");
-  await page.getByLabel("Message PrivateAI").fill("First tab newer revision");
+  await page.getByLabel("Message CometRow").fill("First tab newer revision");
   await nav(page, "Saved");
   await save(page);
   await nav(other, "Saved");
@@ -159,7 +159,7 @@ test("two tabs preserve competing drafts as separate encrypted conversations", a
   await unlock(other);
   for (const [title, draft] of [["Shared synthetic notes", "First tab newer revision"], ["Shared synthetic notes (copy)", "Second tab valuable revision"]]) {
     await other.getByRole("article", { name: title, exact: true }).getByRole("button", { name: "Open", exact: true }).click();
-    await expect(other.getByLabel("Message PrivateAI")).toHaveValue(draft);
+    await expect(other.getByLabel("Message CometRow")).toHaveValue(draft);
     await nav(other, "Saved");
   }
   await expect(other.getByRole("article")).toHaveCount(2);

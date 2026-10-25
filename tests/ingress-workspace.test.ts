@@ -493,7 +493,7 @@ describe.runIf(
           .click();
         const tab = (name: string) => workspaceControl(page, name);
         await page
-          .getByLabel("Message PrivateAI")
+          .getByLabel("Message CometRow")
           .fill("INGRESS_LOCAL_DRAFT_CANARY");
         await browserExpect(
           page.getByRole("button", { name: "Send ↑", exact: true }),
@@ -538,7 +538,7 @@ describe.runIf(
           .getByRole("button", { name: "Create or unlock vault", exact: true })
           .click();
         await page.getByRole("button", { name: "Open", exact: true }).click();
-        await browserExpect(page.getByLabel("Message PrivateAI")).toHaveValue(
+        await browserExpect(page.getByLabel("Message CometRow")).toHaveValue(
           "INGRESS_LOCAL_DRAFT_CANARY",
         );
         await tab("Context").click();

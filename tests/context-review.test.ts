@@ -84,7 +84,7 @@ it("reviews and changes bounded context in the actual workspace, preserves encry
     await review.getByRole("checkbox", { name: /Earlier date/ }).uncheck();
     await ui(review).not.toContainText("Over the sending limit by");
     await ui(summary).toContainText("1 messages · 0 source passages");
-    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
+    await ui(page.getByLabel("Message CometRow")).toHaveValue(
       "Preserve this unsent question",
     );
     await page.keyboard.press("Escape");

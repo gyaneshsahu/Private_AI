@@ -9,7 +9,7 @@ test("context count updates with draft and makes unavailable sending limit expli
   const before = await hint.innerText();
   await page.keyboard.press("Escape");
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("Synthetic draft with several new characters.");
   await page.getByRole("button", { name: /messages included/ }).click();
   await expect(hint).not.toHaveText(before);

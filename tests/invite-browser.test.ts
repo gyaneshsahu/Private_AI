@@ -105,7 +105,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
       );
       await form.getByRole("button", { name: "Accept invitation" }).click();
       expect((await accepted).status()).toBe(303);
-      await ui(page.getByLabel("Message PrivateAI")).toBeVisible();
+      await ui(page.getByLabel("Message CometRow")).toBeVisible();
     };
     const saved = () => workspaceControl(page, "Saved").click();
     const unlock = async () => {
@@ -122,7 +122,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     };
     await accept(alice);
     await page
-      .getByLabel("Message PrivateAI")
+      .getByLabel("Message CometRow")
       .fill("ALICE SYNTHETIC PRIVATE DRAFT");
     await unlock();
     await page.getByRole("button", { name: "Save encrypted snapshot" }).click();
@@ -150,7 +150,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     await unlock();
     await page.getByRole("button", { name: "Open", exact: true }).click();
     await workspaceControl(page, "Conversation").click();
-    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
+    await ui(page.getByLabel("Message CometRow")).toHaveValue(
       "ALICE SYNTHETIC PRIVATE DRAFT",
     );
     await workspaceControl(page, "Account").click();
@@ -203,7 +203,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     await unlock();
     await page.getByRole("button", { name: "Open", exact: true }).click();
     await workspaceControl(page, "Conversation").click();
-    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
+    await ui(page.getByLabel("Message CometRow")).toHaveValue(
       "ALICE SYNTHETIC PRIVATE DRAFT",
     );
     const oldEpoch = await page.evaluate(
@@ -228,23 +228,23 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
         .click(),
     ]);
     expect((await siblingSignedIn).status()).toBe(303);
-    await ui(sibling.getByLabel("Message PrivateAI")).toBeVisible();
+    await ui(sibling.getByLabel("Message CometRow")).toBeVisible();
     const newEpoch = await sibling.evaluate(
       async () => (await (await fetch("/api/status")).json()).accessEpoch,
     );
     expect(newEpoch).not.toBe(oldEpoch);
     await sibling
-      .getByLabel("Message PrivateAI")
+      .getByLabel("Message CometRow")
       .fill("NEW LOGIN UNSAVED DRAFT");
     await page.evaluate(() => window.dispatchEvent(new Event("focus")));
-    await ui(page.getByLabel("Message PrivateAI")).toHaveValue("");
-    await ui(sibling.getByLabel("Message PrivateAI")).toHaveValue(
+    await ui(page.getByLabel("Message CometRow")).toHaveValue("");
+    await ui(sibling.getByLabel("Message CometRow")).toHaveValue(
       "NEW LOGIN UNSAVED DRAFT",
     );
     await unlock();
     await page.getByRole("button", { name: "Open", exact: true }).click();
     await workspaceControl(page, "Conversation").click();
-    await ui(page.getByLabel("Message PrivateAI")).toHaveValue(
+    await ui(page.getByLabel("Message CometRow")).toHaveValue(
       "ALICE SYNTHETIC PRIVATE DRAFT",
     );
   } finally {

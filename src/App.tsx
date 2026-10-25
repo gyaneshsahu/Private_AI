@@ -1294,7 +1294,7 @@ export function App() {
             onClick={() => {
               setSource({
                 id: "workspace-guide",
-                title: "Using PrivateAI",
+                title: "Using CometRow",
                 text: "Start in Conversation. Write a message or use a starter to prepare an editable draft. Nothing sends until you choose Send. This evaluation is for synthetic examples; private chat remains unavailable until its privacy checks pass.\n\nAdd context when you need it. In Context, import DOCX body text, a text PDF, UTF-8 text, Markdown, data or source-code file, PNG or JPEG. Code is read as text, never executed; spreadsheets must be exported as CSV or PDF. Files are read on your device. Limits: five files (up to three screenshots), 10 MB each, 20 PDF pages; printed English text. Review extracted numbers, tables and wording before using them. Scanned PDFs and handwriting are not supported. Select only the context you want included.\n\nSave deliberately. Temporary work disappears on reload. In Saved, create or unlock a vault, then choose Save encrypted snapshot. Save again after changes. Your passphrase cannot be recovered. History stays in this browser unless you explicitly download an encrypted backup in Saved; there is no cloud sync. Restore needs the backup and its original passphrase and adds copies to an unlocked vault. Backups include saved snapshots only, never current unsaved work or temporary research. Deleting browser history does not delete downloaded copies. Locking clears unsaved work. Removing an attachment does not remove its earlier messages or saved snapshots.\n\nResearch is your choice. Review the exact query or public URL before approving it. The research service and recipient can see it; your chat is not added automatically.\n\nStay in control. Stop ends an active response; an incomplete reply is excluded from later context. Retry is a separate request. Copy answer places completed text on your device clipboard; locking the vault does not clear that clipboard. Edit an earlier message to start a new branch. To remove a saved conversation, delete its snapshot in Saved. A new conversation clears the current workspace but does not delete saved snapshots.",
               });
             }}
@@ -1307,7 +1307,7 @@ export function App() {
               setSource({
                 id: "trial-safety",
                 title: "Trial scope and safety",
-                text: "This initial trial is for adults aged 18 and over. Explicit sexual generation is outside its scope; non-graphic sexual-health, consent and relationship advice are supported. The assistant should refuse help enabling serious harm and respond supportively to distress. These instructions are being evaluated, not a guarantee that every unsafe answer will be prevented. Check important advice; PrivateAI is not an emergency service and cannot contact help for you. If you are in immediate danger, contact local emergency services or someone you trust. No separate moderation service receives your messages. Private-data chat remains gated until provider privacy qualification passes.",
+                text: "This initial trial is for adults aged 18 and over. Explicit sexual generation is outside its scope; non-graphic sexual-health, consent and relationship advice are supported. The assistant should refuse help enabling serious harm and respond supportively to distress. These instructions are being evaluated, not a guarantee that every unsafe answer will be prevented. Check important advice; CometRow is not an emergency service and cannot contact help for you. If you are in immediate danger, contact local emergency services or someone you trust. No separate moderation service receives your messages. Private-data chat remains gated until provider privacy qualification passes.",
               });
             }}
           >
@@ -1591,11 +1591,11 @@ export function App() {
                 <article
                   key={message.id}
                   className={`message ${message.role}`}
-                  aria-label={`${message.role === "user" ? "Your message" : "PrivateAI reply"} ${index + 1}`}
+                  aria-label={`${message.role === "user" ? "Your message" : "CometRow reply"} ${index + 1}`}
                 >
                   <div className="message-heading">
                     <strong>
-                      {message.role === "user" ? "You" : "PrivateAI"}
+                      {message.role === "user" ? "You" : "CometRow"}
                     </strong>
                     {message.status !== "complete" && (
                       <span>
@@ -1765,7 +1765,7 @@ export function App() {
                 }}
               >
                 <label className="sr-only" htmlFor="message-input">
-                  Message PrivateAI
+                  Message CometRow
                 </label>
                 <textarea
                   id="message-input"
@@ -2058,7 +2058,7 @@ export function App() {
                 indefinite memory.
               </p>
               <p className="composer-note">
-                Only selected context is included. PrivateAI can make
+                Only selected context is included. CometRow can make
                 mistakes—check important details.
               </p>
             </dialog>
@@ -2451,7 +2451,7 @@ export function App() {
                   {proposal.kind === "search"
                     ? "Brave Search API"
                     : new URL(proposal.value).hostname}
-                  , through PrivateAI’s research service. Their retention
+                  , through CometRow’s research service. Their retention
                   policies apply. No private chat or attachment is included
                   automatically.
                 </p>

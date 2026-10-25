@@ -13,7 +13,7 @@ test("temporary text extraction, context corrections and calculator work without
   await expect(
     page.getByText("Private chat isn’t available yet", { exact: false }),
   ).toBeVisible();
-  await page.getByLabel("Message PrivateAI").fill("PRIVATE CANARY 4829");
+  await page.getByLabel("Message CometRow").fill("PRIVATE CANARY 4829");
   await expect(
     page.getByRole("button", { name: "Send ↑", exact: true }),
   ).toBeDisabled();

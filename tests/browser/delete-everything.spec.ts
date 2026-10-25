@@ -6,7 +6,7 @@ test("delete everything on this device removes the vault database, states what i
 }) => {
   await page.goto("/?developmentTools");
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("DELETE_EVERYTHING_CANARY_7731");
   await workspaceControl(page, "Saved").click();
   await page
@@ -49,7 +49,7 @@ test("delete everything on this device removes the vault database, states what i
   );
   expect(after.some((name) => name.startsWith("privateai-vault"))).toBe(false);
   await workspaceControl(page, "Conversation").click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue("");
+  await expect(page.getByLabel("Message CometRow")).toHaveValue("");
   // Unlocking again starts from an empty vault.
   await workspaceControl(page, "Saved").click();
   await page

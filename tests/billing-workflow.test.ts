@@ -518,7 +518,7 @@ it.skipIf(!enabled)(
       .click();
     await page.getByRole("link", { name: "Open test workspace" }).click();
     await page
-      .getByLabel("Message PrivateAI")
+      .getByLabel("Message CometRow")
       .fill("SYNTHETIC-PRIVATE-DRAFT-NOT-FOR-BILLING");
     await workspaceControl(page, "Account")
       .click();

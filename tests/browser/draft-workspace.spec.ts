@@ -6,8 +6,8 @@ test("reload warns for unsaved drafts and stops warning after an encrypted save"
   page,
 }) => {
   await page.goto("/");
-  await page.getByLabel("Message PrivateAI").click();
-  await page.getByLabel("Message PrivateAI").fill("SYNTHETIC RELOAD DRAFT");
+  await page.getByLabel("Message CometRow").click();
+  await page.getByLabel("Message CometRow").fill("SYNTHETIC RELOAD DRAFT");
   const warning = page.waitForEvent("dialog");
   await page.evaluate(() => {
     setTimeout(() => window.location.reload(), 0);
@@ -15,7 +15,7 @@ test("reload warns for unsaved drafts and stops warning after an encrypted save"
   const dialog = await warning;
   expect(dialog.type()).toBe("beforeunload");
   await dialog.dismiss();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "SYNTHETIC RELOAD DRAFT",
   );
   await workspaceControl(page, "Saved")
@@ -33,7 +33,7 @@ test("reload warns for unsaved drafts and stops warning after an encrypted save"
   });
   await page.reload();
   expect(unexpected).toEqual([]);
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue("");
+  await expect(page.getByLabel("Message CometRow")).toHaveValue("");
 });
 
 test("draft and corrected document survive explicit encrypted save; switching protects unsaved changes", async ({
@@ -51,14 +51,14 @@ test("draft and corrected document survive explicit encrypted save; switching pr
     workspaceControl(page, name);
   await page.goto("/");
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("DRAFT CANARY 732: compare this bill");
   await expect(
     page.getByRole("button", { name: "Send ↑", exact: true }),
   ).toBeDisabled();
   page.once("dialog", (dialog) => dialog.dismiss());
   await workspaceControl(page, "New conversation").click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "DRAFT CANARY 732: compare this bill",
   );
   await tab("Context").click();
@@ -118,7 +118,7 @@ test("draft and corrected document survive explicit encrypted save; switching pr
     .fill("synthetic draft test password");
   await page.getByRole("button", { name: "Create or unlock vault" }).click();
   await page.getByRole("button", { name: "Open", exact: true }).click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "DRAFT CANARY 732: compare this bill",
   );
   await tab("Context").click();
@@ -127,18 +127,18 @@ test("draft and corrected document survive explicit encrypted save; switching pr
     page.getByLabel("Text for draft-bill.txt", { exact: true }),
   ).toHaveValue("SYNTHETIC corrected amount 95 EUR");
   await tab("Conversation").click();
-  await page.getByLabel("Message PrivateAI").fill("UNSAVED replacement draft");
+  await page.getByLabel("Message CometRow").fill("UNSAVED replacement draft");
   await tab("Saved").click();
   page.once("dialog", (dialog) => dialog.dismiss());
   await page.getByRole("button", { name: "Open", exact: true }).click();
   await tab("Conversation").click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "UNSAVED replacement draft",
   );
   await tab("Saved").click();
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Open", exact: true }).click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "DRAFT CANARY 732: compare this bill",
   );
   await tab("Saved").click();
@@ -147,7 +147,7 @@ test("draft and corrected document survive explicit encrypted save; switching pr
     page.getByText("No saved conversations yet.", { exact: false }),
   ).toBeVisible();
   await tab("Conversation").click();
-  await expect(page.getByLabel("Message PrivateAI")).toBeEmpty();
+  await expect(page.getByLabel("Message CometRow")).toBeEmpty();
   expect(disclosures).toEqual([]);
 });
 
@@ -155,7 +155,7 @@ test("a draft without attachments can be saved and reopened", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByLabel("Message PrivateAI").fill("Draft only");
+  await page.getByLabel("Message CometRow").fill("Draft only");
   const saved = workspaceControl(page, "Saved");
   await saved.click();
   await page
@@ -170,10 +170,10 @@ test("a draft without attachments can be saved and reopened", async ({
     page.getByText("No unsaved workspace changes.", { exact: false }),
   ).toBeVisible();
   await workspaceControl(page, "New conversation").click();
-  await expect(page.getByLabel("Message PrivateAI")).toBeEmpty();
+  await expect(page.getByLabel("Message CometRow")).toBeEmpty();
   await saved.click();
   await page.getByRole("button", { name: "Open", exact: true }).click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue("Draft only");
+  await expect(page.getByLabel("Message CometRow")).toHaveValue("Draft only");
 });
 
 test("everyday starters prepare editable drafts and keep research an explicit action", async ({
@@ -187,14 +187,14 @@ test("everyday starters prepare editable drafts and keep research an explicit ac
   await page
     .getByRole("button", { name: "Write or revise", exact: false })
     .click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     /Help me write/,
   );
-  await page.getByLabel("Message PrivateAI").fill("My existing unsent draft");
+  await page.getByLabel("Message CometRow").fill("My existing unsent draft");
   await page
     .getByRole("button", { name: "Plan something", exact: false })
     .click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "My existing unsent draft",
   );
   await page.getByLabel("Attachments and tools", { exact: true }).click();
@@ -220,14 +220,14 @@ test("workspace guide preserves a draft and supports keyboard dismissal without 
       disclosures.push(request.url());
   });
   await page.goto("/");
-  await page.getByLabel("Message PrivateAI").fill("SYNTHETIC guide draft");
+  await page.getByLabel("Message CometRow").fill("SYNTHETIC guide draft");
   for (const width of [1440, 360]) {
     await page.setViewportSize({ width, height: 900 });
     await workspaceControl(page, "Settings").click();
     await page
       .getByRole("button", { name: "Getting started", exact: true })
       .click();
-    const guide = page.getByRole("dialog", { name: "Using PrivateAI" });
+    const guide = page.getByRole("dialog", { name: "Using CometRow" });
     await expect(guide).toBeVisible();
     await expect(guide).toContainText("Temporary work disappears on reload");
     await expect(guide).toContainText("passphrase cannot be recovered");
@@ -236,7 +236,7 @@ test("workspace guide preserves a draft and supports keyboard dismissal without 
     });
     await page.keyboard.press("Escape");
     await expect(guide).toHaveCount(0);
-    await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+    await expect(page.getByLabel("Message CometRow")).toHaveValue(
       "SYNTHETIC guide draft",
     );
     await expect(

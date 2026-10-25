@@ -77,9 +77,9 @@ export async function dispatchOneSecurityNotice(
     to: event.recipientEmail!,
     subject:
       event.kind === "credential_removed"
-        ? "PrivateAI sign-in method removed"
-        : "PrivateAI sign-in recovery completed",
-    text: `${event.kind === "credential_removed" ? "A sign-in method was removed from" : "Sign-in recovery was completed for"} your PrivateAI account at ${event.createdAt.toISOString()}. Other sessions were signed out. ${event.kind === "credential_removed" ? "Email sign-in remains available. Your encrypted vault was not reset." : "Linked sign-in methods and your encrypted vault were not reset."} If you did not request this, use your usual PrivateAI address to review your account access.`,
+        ? "CometRow sign-in method removed"
+        : "CometRow sign-in recovery completed",
+    text: `${event.kind === "credential_removed" ? "A sign-in method was removed from" : "Sign-in recovery was completed for"} your CometRow account at ${event.createdAt.toISOString()}. Other sessions were signed out. ${event.kind === "credential_removed" ? "Email sign-in remains available. Your encrypted vault was not reset." : "Linked sign-in methods and your encrypted vault were not reset."} If you did not request this, use your usual CometRow address to review your account access.`,
     idempotencyKey: `privateai-security-${event.id}`,
   };
   const abort = new AbortController();

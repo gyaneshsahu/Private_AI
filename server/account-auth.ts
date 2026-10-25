@@ -164,7 +164,7 @@ function createAccountAuth(
     (!config.synthetic || /^[^\s@]+@[^\s@]+\.test$/i.test(value));
   const appName = config.synthetic
     ? "PrivateAI synthetic account lab"
-    : "PrivateAI";
+    : "CometRow";
 
   const auth = betterAuth({
     appName,

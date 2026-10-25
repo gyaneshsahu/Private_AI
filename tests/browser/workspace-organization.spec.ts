@@ -123,12 +123,12 @@ test("projects, pin/archive, account menus and isolation through the rendered wo
     page.getByRole("heading", { name: "Plan", exact: true }),
   ).toBeVisible();
   await page
-    .getByLabel("Message PrivateAI")
+    .getByLabel("Message CometRow")
     .fill("Unsaved correction stays here");
   await actions.click();
   await page.getByRole("button", { name: "Archive", exact: true }).click();
   await expect(page.locator(".chat-list-row")).toHaveCount(0);
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "Unsaved correction stays here",
   );
   await page.getByRole("button", { name: "Archived", exact: true }).click();
@@ -216,13 +216,13 @@ test("projects, pin/archive, account menus and isolation through the rendered wo
     title,
   );
   await page.getByRole("button", { name: title, exact: true }).click();
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue(
+  await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "Unsaved correction stays here",
   );
   accountId = crypto.randomUUID();
   email = "sam.synthetic@example.test";
   await page.evaluate(() => window.dispatchEvent(new Event("focus")));
-  await expect(page.getByLabel("Message PrivateAI")).toHaveValue("");
+  await expect(page.getByLabel("Message CometRow")).toHaveValue("");
   await page.getByRole("button", { name: "Open navigation" }).click();
   await expect(page.locator(".sidebar")).not.toContainText("Product launch");
   await expect(page.locator(".account-label")).toContainText(email);
