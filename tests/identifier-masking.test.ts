@@ -6,6 +6,7 @@ import {
   isValidCardNumber,
   isValidGermanTaxId,
   isValidIban,
+  prepareSearchQuery,
 } from "../src/identifier-masking";
 
 it("validates bank, card and tax identifiers by their check digits", () => {
@@ -245,4 +246,15 @@ it("keeps URL context across streamed chunks and holds single-brace forms until 
   expect(out.join("")).toBe(
     `Open https://bank.example/?q={{IBAN-1}} and ${iban} done ![x](https://img.example/{{IBAN-1}}.png)`,
   );
+});
+
+it("treats letters with umlauts and ß as word characters at identifier edges", () => {
+  // ASCII  saw "Ö" as a non-letter, so names starting with an umlaut raised no warning.
+  expect(prepareSearchQuery("Öztürk Ünal Steuer").warning).toBe(true);
+  // Digits glued to a word are part of that word, whether the letter is ASCII or not.
+  for (const glued of ["gross86095742719", "groß86095742719"])
+    expect(findIdentifiers(glued), glued).toEqual([]);
+  expect(findIdentifiers("groß 86095742719").map((hit) => hit.kind)).toEqual([
+    "TAX-ID",
+  ]);
 });

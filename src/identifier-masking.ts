@@ -283,14 +283,28 @@ interface Label {
   /** Any mention, for column headers and label blocks. */
   any: RegExp;
 }
+const WORD = String.raw`[\p{L}\p{N}_]`;
+/** JavaScript's \b and \w are ASCII-only, so "ü" or "ß" next to a value counted as a word edge; this makes them Unicode-aware. */
+function unicodeWords(pattern: RegExp): RegExp {
+  return new RegExp(
+    pattern.source
+      .replaceAll(
+        String.raw`\b`,
+        String.raw`(?:(?<=${WORD})(?!${WORD})|(?<!${WORD})(?=${WORD}))`,
+      )
+      .replaceAll(String.raw`[\w`, String.raw`[\p{L}\p{N}_`),
+    pattern.flags + "u",
+  );
+}
 function label(keywords: string, window: number): Label {
   return {
-    sameLine: new RegExp(`(?:${keywords})[^\\n]{0,${window}}$`, "i"),
-    lineEnd: new RegExp(
-      `(?:${keywords})[^\\d\\n]{0,16}$`,
-      "i",
+    sameLine: unicodeWords(
+      new RegExp(`(?:${keywords})[^\\n]{0,${window}}$`, "i"),
     ),
-    any: new RegExp(`(?:${keywords})`, "i"),
+    lineEnd: unicodeWords(
+      new RegExp(`(?:${keywords})[^\\d\\n]{0,16}$`, "i"),
+    ),
+    any: unicodeWords(new RegExp(`(?:${keywords})`, "i")),
   };
 }
 
@@ -310,8 +324,9 @@ const CARD_LABEL = label(
   "karte|kreditkarte|kartennummer|karten-nr|card|visa|mastercard|amex",
   16,
 );
-const PHONE_LABEL =
-  /tel\b|tel\.|telefon|phone|fon\b|fax|mobil|handy|ruf|call|whatsapp|erreich|reach|nummer ist|number is/gi;
+const PHONE_LABEL = unicodeWords(
+  /tel\b|tel\.|telefon|phone|fon\b|fax|mobil|handy|ruf|call|whatsapp|erreich|reach|nummer ist|number is/gi,
+);
 const NOT_PHONE_LABEL =
   /kunden-?(?:nummer|nr)|kd\.?-?nr|customer (?:no|number|id)|vertrags(?:konto|nummer)|rechnungs-?(?:nummer|nr)|invoice|personal-?(?:nummer|nr)|pers\.-?nr|staff|fallnummer|kostenträger|betriebsstätten|arzt-nr|mandat|eref|mref|\bref\b|reference|schaden-?nummer|versicherungsschein|order|bestell|aktenzeichen|\baz\.|sendung|tracking/gi;
 
@@ -603,6 +618,8 @@ const detectors: Detector[] = [
     },
   },
 ];
+for (const detector of detectors)
+  detector.pattern = unicodeWords(detector.pattern);
 
 /** Invisible characters that split identifiers when text is copied from HTML or PDFs. */
 export const INVISIBLE = /[​‌‍﻿­]/g;
@@ -790,8 +807,9 @@ export const MASKING_INSTRUCTION =
   " Some identifiers were replaced on the user's device with placeholders such as {{IBAN-1}} or {{PHONE-2}}. Treat each placeholder as the exact value it stands for, copy it unchanged wherever you need to refer to it, and never ask the user to reveal the value behind it.";
 
 /** Possible personal text the detector cannot classify: two capitalised words or a long digit run. */
-const POSSIBLY_PERSONAL =
-  /\b[A-ZÄÖÜ][a-zäöüß]{2,} [A-ZÄÖÜ][a-zäöüß]{2,}\b|\d{5,}/;
+const POSSIBLY_PERSONAL = unicodeWords(
+  /\b[A-ZÄÖÜ][a-zäöüß]{2,} [A-ZÄÖÜ][a-zäöüß]{2,}\b|\d{5,}/,
+);
 
 /**
  * Prepares a web-search query for the approval preview: recognised identifiers
