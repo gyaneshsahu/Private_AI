@@ -220,9 +220,18 @@ describe.runIf(!!process.env.PRIVATEAI_SYNTHETIC_PG)(
           req.end();
         }),
       ).rejects.toThrow();
-      expect(
-        (await call("/healthz", undefined, { host: "render-health" })).status,
-      ).toBe(200);
+      const health = await call("/healthz", undefined, {
+        host: "render-health",
+      });
+      expect(health.status).toBe(200);
+      // The bridge answers the probe itself and must carry the fixed headers.
+      for (const [name, value] of [
+        ["x-content-type-options", "nosniff"],
+        ["x-frame-options", "DENY"],
+        ["permissions-policy", "camera=(self), microphone=(), geolocation=()"],
+        ["content-security-policy", "default-src 'none'"],
+      ])
+        expect(health.headers[name], name).toBe(value);
     });
     it("bounds uploads and fails closed when the upstream certificate name does not match", async () => {
       expect(

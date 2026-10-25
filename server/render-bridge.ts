@@ -93,7 +93,18 @@ export function createRenderBridge(config: {
         (answer) => {
           if (health) {
             answer.resume();
-            res.writeHead(answer.statusCode === 200 ? 200 : 503).end();
+            // The bridge authors this response itself, so it carries the fixed
+            // headers like every other response (live header check, 25 October).
+            res
+              .writeHead(answer.statusCode === 200 ? 200 : 503, {
+                "Referrer-Policy": "no-referrer",
+                "X-Content-Type-Options": "nosniff",
+                "X-Frame-Options": "DENY",
+                "Permissions-Policy":
+                  "camera=(self), microphone=(), geolocation=()",
+                "Content-Security-Policy": "default-src 'none'",
+              })
+              .end();
             return;
           }
           for (const [name, value] of Object.entries(answer.headers))
