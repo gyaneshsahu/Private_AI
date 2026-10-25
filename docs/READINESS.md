@@ -1,4 +1,9 @@
 # PrivateAI readiness checklist
+## Rollback drill (7.8) prepared as an owner run sheet - 25 October
+
+- **Prepared (not run).** `docs/rollback-drill-20261025.md`: roll the live service from `7e30333` back to `f0cc0ba` and forward again at the Render dashboard, with the expected readings per release (readyz, healthz, `scripts/check-headers.mjs`, one owner sign-in, account page) and a six-mark timing table. No hosted action was taken by the agent. Outcome and timings are recorded here as owner-reported when the owner pastes them.
+- Concerns log A to F: still no such file in the repository or `docs/private/`; not created.
+
 ## Probe headers, second fix: the Render bridge answers /healthz itself - 25 October
 
 - **Finding (owner-reported run of `scripts/check-headers.mjs` after deploying `7e30333`; verified by the agent with curl).** `/readyz` on the live host now carries every fixed header (proof the deploy is live and the first fix works), but `/healthz` still carries only `Cache-Control`. Cause (verified in code): on Render the public `/healthz` never reaches the app. `server/render-bridge.ts` answers it itself: it probes the upstream `/readyz` over mTLS and writes an empty 200 or 503 without any header. The first fix changed the app's probe handler, which only `/readyz` passes through.

@@ -16,6 +16,7 @@ Branch: `codex/development-handoff`
 
 ## Recent work
 
+- **25 October, 7.8 rollback drill run sheet (prepared, not run):** `docs/rollback-drill-20261025.md`, owner rolls `7e30333` back to `f0cc0ba` and forward with a timing table; agent records the owner's readings in READINESS.md when reported. Concerns log A to F still absent.
 - 24 October: launch plan 7.1 prepared, not run: `docs/recovery-rehearsal-20261024.md` checklist and `scripts/recovery-rehearsal.ts` (read-only `steps` / `record`, JSON receipt without secrets, test in `tests/recovery-rehearsal.test.ts`). The rehearsal is a joint owner-and-agent session on a throwaway synthetic database; owner brings the URL file outside the checkout, Render snapshot access and the service shell.
 - `4eb86b1` — restricted Render deployment package and guarded PostgreSQL initialization. Deployed successfully; 12 migrations applied to the new `privateai_accounts` database. Runtime starts with email and inference disabled.
 - `1511f1d` — recorded hosted deployment evidence and post-deploy status.
