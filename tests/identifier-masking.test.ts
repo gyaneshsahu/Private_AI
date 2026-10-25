@@ -164,9 +164,7 @@ it("covers the layouts added by the 23 October masking benchmark (synthetic valu
   expect(kinds("Kontakt: laura.hartmann(at)example.net")).toEqual([
     ["EMAIL", "laura.hartmann(at)example.net"],
   ]);
-  expect(kinds("Customer: 0172 0430643")).toEqual([
-    ["PHONE", "0172 0430643"],
-  ]);
+  expect(kinds("Customer: 0172 0430643")).toEqual([["PHONE", "0172 0430643"]]);
   // Precision: order numbers, EAN codes, customer and staff numbers, version
   // strings and package scopes are not identifiers.
   expect(
@@ -180,4 +178,71 @@ it("covers the layouts added by the 23 October masking benchmark (synthetic valu
   expect(
     kinds("rounding +0.0163552 uncertainty; pinned @zip.js/zip.js 2.24.0"),
   ).toEqual([]);
+});
+
+it("restores loosely echoed placeholders only when they normalise to a kept one", () => {
+  const session = createMaskingSession();
+  expect(
+    session.mask("IBAN DE89 3704 0044 0532 0130 00, tax 86095742719"),
+  ).toBe("IBAN {{IBAN-1}}, tax {{TAX-ID-1}}");
+  const iban = "DE89 3704 0044 0532 0130 00";
+  for (const variant of [
+    "{{iban-1}}",
+    "{{ IBAN - 1 }}",
+    "{{IBAN-01}}",
+    "{{IBAN-1}",
+    "{IBAN-1}}",
+  ])
+    expect(session.restore(`to ${variant}.`), variant).toBe(`to ${iban}.`);
+  expect(session.restore("{{Tax - Id-1}}")).toBe("86095742719");
+  for (const untouched of [
+    "{IBAN-1}",
+    "IBAN-1",
+    "{{iban-9}}",
+    "{{CARD-1}}",
+    "{{IBAN 1}}",
+  ])
+    expect(session.restore(untouched), untouched).toBe(untouched);
+});
+
+it("never restores inside link targets, image sources, autolinks, bare URLs or reference definitions", () => {
+  const session = createMaskingSession();
+  session.mask("DE89 3704 0044 0532 0130 00 anna@example.test");
+  const iban = "DE89 3704 0044 0532 0130 00";
+  for (const placeholder of ["{{IBAN-1}}", "{{ iban-1 }"]) {
+    for (const text of [
+      `[pay](https://bank.example/?iban=${placeholder})`,
+      `![chart](https://img.example/${placeholder}.png)`,
+      `<https://bank.example/${placeholder}>`,
+      `see https://bank.example/a?b=${placeholder} now`,
+      `www.bank.example/${placeholder}`,
+      `[1]: https://bank.example/${placeholder}`,
+    ])
+      expect(session.restore(text), text).toBe(text);
+  }
+  expect(session.restore("<{{EMAIL-1}}>")).toBe("<{{EMAIL-1}}>");
+  // Link text is shown, not followed, so it is restored; the target is not.
+  expect(
+    session.restore(
+      "[{{IBAN-1}}](https://bank.example/{{IBAN-1}}) and {{IBAN-1}}",
+    ),
+  ).toBe(`[${iban}](https://bank.example/{{IBAN-1}}) and ${iban}`);
+});
+
+it("keeps URL context across streamed chunks and holds single-brace forms until they close", () => {
+  const session = createMaskingSession();
+  session.mask("DE89 3704 0044 0532 0130 00");
+  const iban = "DE89 3704 0044 0532 0130 00";
+  const out: string[] = [];
+  const stream = session.streamRestore((text) => out.push(text));
+  stream.push("Open htt");
+  stream.push("ps://bank.example/?q={{IB");
+  stream.push("AN-1}} and {IBAN-1");
+  expect(out.join("")).toBe("Open https://bank.example/?q={{IBAN-1}} and ");
+  stream.push("}} done ![x](");
+  stream.push("https://img.example/{{IBAN-1}}.png)");
+  stream.flush();
+  expect(out.join("")).toBe(
+    `Open https://bank.example/?q={{IBAN-1}} and ${iban} done ![x](https://img.example/{{IBAN-1}}.png)`,
+  );
 });

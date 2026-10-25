@@ -45,9 +45,32 @@ export interface MaskingSession {
   summary(): Partial<Record<IdentifierKind, number>>;
 }
 
-const PLACEHOLDER =
-  /\{\{(IBAN|CARD|TAX-ID|INSURANCE|ID-NUMBER|EMAIL|PHONE|BIRTH-DATE)-(\d{1,4})\}\}/g;
-const MAX_PLACEHOLDER_LENGTH = 20;
+// Models echo placeholders loosely: any case, inner spaces, one brace dropped ({{IBAN-1} or {IBAN-1}}).
+const KIND = String.raw`(${IDENTIFIER_KINDS.map((kind) => kind.replace("-", String.raw`\s*-\s*`)).join("|")})\s*-\s*(\d{1,4})`;
+const PLACEHOLDER = new RegExp(
+  String.raw`\{\{\s*${KIND}\s*\}\}?|\{\s*${KIND}\s*\}\}`,
+  "gi",
+);
+const MAX_PLACEHOLDER_LENGTH = 32;
+/**
+ * Places the rendered answer turns into something the browser follows or fetches:
+ * Markdown link and image targets, autolinks, bare URLs and reference definitions.
+ * Each pattern starts at the left marker, so a span is known before a placeholder inside it arrives.
+ */
+const URL_CONTEXTS = [
+  /\]\(\s*<?[^)\s>]*/g,
+  /<(?:[a-z][a-z0-9+.-]{1,31}:|www\.|\{)[^>\s]*/gi,
+  /\b(?:https?|ftp):\/\/[^\s<]*|\bwww\.[^\s<]*/gi,
+  /^ {0,3}\[[^\]\n]+\]:[ \t]*<?\S*/gm,
+];
+
+function urlSpans(text: string) {
+  const spans: [number, number][] = [];
+  for (const pattern of URL_CONTEXTS)
+    for (const match of text.matchAll(pattern))
+      spans.push([match.index, match.index + match[0].length]);
+  return spans;
+}
 
 function digitsOf(value: string) {
   return value.replace(/\D/g, "");
@@ -672,25 +695,46 @@ export function createMaskingSession(): MaskingSession {
     }
     return output + text.slice(cursor);
   };
-  const restore = (text: string) =>
-    text.replace(PLACEHOLDER, (whole, kind: IdentifierKind, index: string) => {
-      const entry = kept.find(
-        (candidate) => candidate.placeholder === `{{${kind}-${Number(index)}}}`,
-      );
-      return entry ? entry.value : whole;
-    });
+  /** Restores known placeholders in full.slice(from), judging URL contexts on the whole text. */
+  const restoreFrom = (full: string, from: number) => {
+    const spans = urlSpans(full);
+    let output = "";
+    let cursor = from;
+    for (const match of full.matchAll(PLACEHOLDER)) {
+      const start = match.index;
+      if (start < from) continue;
+      const kind = (match[1] ?? match[3]).replace(/\s/g, "").toUpperCase();
+      const token = `{{${kind}-${Number(match[2] ?? match[4])}}}`;
+      const entry = kept.find((candidate) => candidate.placeholder === token);
+      if (!entry || spans.some(([a, b]) => start >= a && start < b)) continue;
+      output += full.slice(cursor, start) + entry.value;
+      cursor = start + match[0].length;
+    }
+    return output + full.slice(cursor);
+  };
+  const restore = (text: string) => restoreFrom(text, 0);
   const streamRestore = (onText: (text: string) => void) => {
+    let emitted = "";
     let pending = "";
     const emit = (final: boolean) => {
       let safeEnd = pending.length;
       if (!final) {
-        const open = pending.lastIndexOf("{{");
-        if (open !== -1 && pending.indexOf("}}", open) === -1) {
-          if (pending.length - open <= MAX_PLACEHOLDER_LENGTH) safeEnd = open;
-        } else if (pending.endsWith("{")) safeEnd = pending.length - 1;
+        let open = pending.lastIndexOf("{");
+        if (open > 0 && pending[open - 1] === "{") open--;
+        const tail = open === -1 ? "" : pending.slice(open);
+        // Hold a possible placeholder until its closing braces (or other text) arrive.
+        if (
+          open !== -1 &&
+          tail.length <= MAX_PLACEHOLDER_LENGTH &&
+          !tail.includes("}}") &&
+          (!tail.includes("}") || tail.endsWith("}"))
+        )
+          safeEnd = open;
       }
       if (safeEnd > 0) {
-        onText(restore(pending.slice(0, safeEnd)));
+        const chunk = pending.slice(0, safeEnd);
+        onText(restoreFrom(emitted + chunk, emitted.length));
+        emitted += chunk;
         pending = pending.slice(safeEnd);
       }
     };
