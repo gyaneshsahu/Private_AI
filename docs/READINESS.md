@@ -1,4 +1,9 @@
 # PrivateAI readiness checklist
+## Provider qualification plan (Tinfoil or Privatemode) written with pass bars before any run - 26 October
+
+- **Owner direction (26 October).** Timeboxed qualification; Tinfoil stays on `main` and in use until Privatemode passes every gate; any Privatemode knockout keeps Tinfoil; the loser stays the swappable second provider. Plan and bars fixed in `docs/provider-qualification-20261026.md` before any email, run or spend: stage 0 paper gates (P1 to P7 for Edgeless, T1 to T4 for Tinfoil; knockouts P1 browser-safe auth, P4 and P5 scope), stage 1 screen (GPT-OSS 120B on both, Gemma 4 31B on Tinfoil; nine frozen synthetic cases, three repetitions; bars for arithmetic, open question, coding, placeholders, citation format, safety, time to first token, error rate; Tinfoil cap USD 0.60, Privatemode free quota with spend budget zero; keys from Credential Manager), stage 2 spike on the never-pushed branch `privatemode-eval`, stage 3 full integration only after 0 to 2 pass, stage 5 scorecard in the decision page.
+- **Not done.** No email sent, no account action, no run, no spend.
+
 ## Provider and default-model decision page (8.1 decided, 8.5 proposed); Tinfoil Terms, AUP and DPA read directly - 26 October
 
 - **8.1 (owner decision, 25 October).** Tinfoil is the inference provider for the invite-only alpha and possibly later; adapter stays swappable; Privatemode is the desk-evaluated Plan B with no spend or integration; EU region and the professional segment out of scope. Recorded with the accepted facts and the alpha posture in `docs/provider-model-decision-20261026.md`.
