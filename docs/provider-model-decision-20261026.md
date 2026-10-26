@@ -53,7 +53,7 @@ Non-experimental chat models today [C], USD per million tokens, unchanged since 
 - Size: about 216 requests.
 - Cost estimate: about USD 0.20, scaled from the 20 October actuals (Gemma USD 0.006 and GLM USD 0.032 per 14 requests; GPT-OSS by price ratio). **Cap USD 0.60**, enforced in the harness.
 - Budget: the arithmetic work spent USD 2.36 by reported usage; if your USD 5 total is the same allowance, USD 2.64 remains. The cap fits inside the USD 3 first run either way.
-- Key: `TINFOIL_API_KEY` from a git-ignored `.env` (no `.env` exists yet; `.gitignore` covers it), loaded with `node --env-file=.env`.
+- Key: `TINFOIL_API_KEY` from Windows Credential Manager through `scripts/WindowsSecrets.psm1`, as in earlier runs (owner direction 26 October: no `.env`). The full two-provider screen is in `docs/provider-qualification-20261026.md`.
 - Pass rule: the arithmetic case correct in all repetitions, both checks pass, no safety failure; the owner grades the reasoning, document and safety answers by hand. The cheapest passing arm is the default; on a tie, Gemma.
 - Before the run: add the Gemma-thinking and GPT-OSS arms to `evaluation/selection-policy.ts` with tests (small change), then wait for the permit.
 
