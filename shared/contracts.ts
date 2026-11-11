@@ -11,7 +11,7 @@ export const checks = [
   "usageAndBudget",
 ] as const;
 export const qualificationSchema = z.object({
-  provider: z.literal("tinfoil"),
+  provider: z.enum(["tinfoil", "privatemode"]),
   model: z
     .string()
     .min(1)

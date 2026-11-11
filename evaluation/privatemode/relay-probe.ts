@@ -9,6 +9,8 @@ const realKey = process.env.PRIVATEMODE_API_KEY!;
 const DUMMY = "browser-holds-no-real-key";
 const canary = "CANARY-PLAINTEXT-7319";
 const seen: { path: string; auth: string; plaintextSeen: boolean }[] = [];
+// What the relay can learn from a chat request and reply without decrypting anything.
+const visibility: Record<string, unknown>[] = [];
 const relay = createServer({ key: readFileSync(process.env.RELAY_KEY!), cert: readFileSync(process.env.RELAY_CERT!) }, async (req, res) => {
   const chunks: Buffer[] = [];
   for await (const c of req) chunks.push(c as Buffer);
@@ -20,13 +22,36 @@ const relay = createServer({ key: readFileSync(process.env.RELAY_KEY!), cert: re
   process.stdout.write(`SEEN ${JSON.stringify({ relayRequests: seen.length, paths: [...new Set(seen.map((s) => s.path.split("?")[0]))], auth: [...new Set(seen.map((s) => s.auth))], plaintextSeenByRelay: seen.some((s) => s.plaintextSeen) })}
 `);
   if (headers.authorization === `Bearer ${DUMMY}`) headers.authorization = `Bearer ${realKey}`;
+  if (req.url!.startsWith("/v1/chat/completions"))
+    visibility.push({
+      requestHeaderNames: Object.keys(headers).sort(),
+      bodyIsJson: (() => { try { JSON.parse(body.toString()); return true; } catch { return false; } })(),
+      bodyTopLevelKeys: (() => { try { return Object.keys(JSON.parse(body.toString())); } catch { return []; } })(),
+      modelNameVisible: body.includes("gpt-oss"),
+      modelField: (() => { try { return JSON.parse(body.toString()).model ?? null; } catch { return null; } })(),
+      targetModelHeader: headers["privatemode-target-model"],
+      contentLengthTokens: headers["privatemode-content-length-tokens"],
+    });
+  // Binding test: does the server reject a model header that disagrees with the encrypted body?
+  if (req.url!.startsWith("/v1/chat/completions") && process.env.OVERRIDE_MODEL)
+    headers["privatemode-target-model"] = process.env.OVERRIDE_MODEL;
   const upstream = await fetch(`https://api.privatemode.ai${req.url}`, {
     method: req.method, headers, body: ["GET", "HEAD"].includes(req.method!) ? undefined : body,
   });
   const out: Record<string, string> = {};
   upstream.headers.forEach((v, k) => { if (!["content-encoding", "content-length", "transfer-encoding"].includes(k)) out[k] = v; });
+  const replyBytes = Buffer.from(await upstream.arrayBuffer());
+  if (req.url!.startsWith("/v1/chat/completions"))
+    Object.assign(visibility.at(-1)!, {
+      replyHeaderNames: Object.keys(out).sort(),
+      usageVisibleInReply: /prompt_tokens|completion_tokens/.test(replyBytes.toString()),
+      replyStatus: upstream.status,
+      replyStartsWith: replyBytes.toString().slice(0, 60),
+    });
+  process.stdout.write(`VIS ${JSON.stringify(visibility)}
+`);
   res.writeHead(upstream.status, out);
-  res.end(Buffer.from(await upstream.arrayBuffer()));
+  res.end(replyBytes);
 });
 if (process.argv.includes("--relay")) {
   // Relay process: normal TLS verification towards Privatemode; reports what it saw on exit.
@@ -61,4 +86,5 @@ try {
   child.kill("SIGTERM");
   await new Promise((r) => child.on("exit", r));
   console.log([...relayOut.matchAll(/SEEN (.*)/g)].pop()?.[1] ?? "relay report missing");
+  console.log([...relayOut.matchAll(/VIS (.*)/g)].pop()?.[1] ?? "no visibility report");
 }
