@@ -32,6 +32,11 @@ The earlier dates have passed and are removed; there are no deadlines. Technical
 | T3 | Can we get the SOC 2 Type II report (also requested on trust.tinfoil.sh)? | No | Report shared, or terms stated. |
 | T4 | "Users may ask about any topic, including health. Does your DPA/AUP permit that, or only incidental health data? What restrictions must we pass on?" | Same as P5 | As P5. |
 
+**Stage 0 status, 12 November (owner rule: ask only what the suppliers' own documents do not answer).**
+
+- Answered by tests or documents, not asked: P1 (browser key: relay pattern, real-browser test 11 November), P2 (pinning: our wrapper and CSP, tested), P3 (GPU attestation: AI workers add an NVIDIA report checked server-side before keys are released; docs, attestation overview), P5 (health: DPA §2(5) allows special-category data with the controller's Art. 9(2) basis), P6 (§203: trust page cites an external review recommending Privatemode for §203 professions, on request; professional segment out of scope), P7 (ISO 27001, BSI C5 attestation grade, no SOC 2), T2 (Tinfoil docs describe apps serving their own users and proxying through your backend), T3 (SOC 2 through the trust portal's access request, not email).
+- Still asked: **P4** (Privatemode Terms §2.4 and an app serving its own users; knockout), **P8** (deprecation notice period and exact-version pinning; tie-break), **T1** (Tinfoil EU-only processing), **T4** (whether Tinfoil will sign a written agreement for health as a stated purpose).
+
 **Stage 0 knockouts for Privatemode:** no browser-safe auth (P1), or Terms that block our scope (P4, P5 as above). Any knockout ends the qualification: we stay on Tinfoil.
 
 ## Stage 1 — model screen on both providers
