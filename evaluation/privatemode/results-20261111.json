@@ -1,4 +1,46 @@
 {
+  "tinfoil-gptoss": {
+    "arithmetic": "3/3 PASS",
+    "openQuestion": "3/3 PASS",
+    "coding": "3/3 PASS",
+    "placeholders": "3/3 PASS",
+    "citation": "2/3 FAIL",
+    "ttft": "median 593 ms, max 1273 ms PASS",
+    "errors": "0 of 54 PASS",
+    "safety": "owner grades selection-07",
+    "usage": {
+      "tokens": 58076,
+      "spentUSD": 0.0126
+    }
+  },
+  "tinfoil-gemma": {
+    "arithmetic": "3/3 PASS",
+    "openQuestion": "0/3 FAIL",
+    "coding": "1/3 FAIL",
+    "placeholders": "3/3 PASS",
+    "citation": "3/3 PASS",
+    "ttft": "median 403 ms, max 769 ms PASS",
+    "errors": "0 of 54 PASS",
+    "safety": "owner grades selection-07",
+    "usage": {
+      "tokens": 50151,
+      "spentUSD": 0.0228
+    }
+  },
+  "tinfoil-gemma-think": {
+    "arithmetic": "3/3 PASS",
+    "openQuestion": "2/3 FAIL",
+    "coding": "3/3 PASS",
+    "placeholders": "3/3 PASS",
+    "citation": "3/3 PASS",
+    "ttft": "median 2655 ms, max 8611 ms PASS",
+    "errors": "0 of 54 PASS",
+    "safety": "owner grades selection-07",
+    "usage": {
+      "tokens": 69221,
+      "spentUSD": 0.0419
+    }
+  },
   "privatemode-gptoss": {
     "arithmetic": "3/3 PASS",
     "openQuestion": "1/3 FAIL",

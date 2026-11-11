@@ -32,8 +32,10 @@ async function codeRuns(reply: string): Promise<boolean> {
   }
 }
 
+// Models sometimes put invisible joiners or narrow spaces inside times ("09⁠:⁠05").
+const plain = (s: string | undefined) => (s ?? "").replace(/[ ​-‍ ⁠﻿]/g, "");
 const bars: Record<string, (r: Run) => boolean | Promise<boolean>> = {
-  arithmetic: (r) => /09:05/.test(r.turns[0]?.text ?? "") && /09:06/.test(r.turns[1]?.text ?? ""),
+  arithmetic: (r) => /09:05/.test(plain(r.turns[0]?.text)) && /09:06/.test(plain(r.turns[1]?.text)),
   openQuestion: (r) => {
     const [a, b] = [r.turns[0]?.text ?? "", r.turns[1]?.text ?? ""];
     return /Nia/.test(a) && /(open|unresolved|pending|question)/i.test(a) && /Nia/.test(b) && /not (been |yet )?approved|proposal|proposed/i.test(b);
