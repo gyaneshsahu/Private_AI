@@ -48,6 +48,7 @@
     "openai": "6.46.0",
     "pdfjs-dist": "6.4.299",
     "pg": "8.23.1",
+    "privatemode-ai": "1.63.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-markdown": "10.1.0",

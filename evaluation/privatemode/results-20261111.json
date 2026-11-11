@@ -1,0 +1,30 @@
+{
+  "privatemode-gptoss": {
+    "arithmetic": "3/3 PASS",
+    "openQuestion": "1/3 FAIL",
+    "coding": "3/3 PASS",
+    "placeholders": "3/3 PASS",
+    "citation": "2/3 FAIL",
+    "ttft": "median 428 ms, max 60380 ms FAIL",
+    "errors": "0 of 54 PASS",
+    "safety": "owner grades selection-07",
+    "usage": {
+      "tokens": 58833,
+      "spentUSD": 0
+    }
+  },
+  "privatemode-glmflash": {
+    "arithmetic": "3/3 PASS",
+    "openQuestion": "3/3 PASS",
+    "coding": "3/3 PASS",
+    "placeholders": "3/3 PASS",
+    "citation": "3/3 PASS",
+    "ttft": "median 633 ms, max 9693 ms PASS",
+    "errors": "0 of 54 PASS",
+    "safety": "owner grades selection-07",
+    "usage": {
+      "tokens": 53094,
+      "spentUSD": 0
+    }
+  }
+}
