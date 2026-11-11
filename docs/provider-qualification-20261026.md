@@ -4,15 +4,9 @@
 
 Inputs: `docs/provider-model-decision-20261026.md` (Tinfoil facts, Terms, AUP and DPA read directly), `docs/privatemode-master-notes.md` (owner's Privatemode notes), `docs/provider-qualification.md`, the 20 October Privatemode desk evaluation in that file.
 
-## Timebox (proposed; owner may extend once)
+## Order and timing (owner update, 11 November)
 
-| Stage | Ends |
-| --- | --- |
-| 0 Paper gates: emails sent | 27 October |
-| 0 Paper gates: answers | 2 November; no answer on a knockout question by then counts as a fail |
-| 1 Model screen | within two days of the owner's permit |
-| 2 Branch spike | 6 November |
-| Decision (stage 5 scorecard) | 9 November, or earlier on any knockout |
+The earlier dates have passed and are removed; there are no deadlines. Technical checks run first, on branch `privatemode-eval`: (a) one working Privatemode call, (b) the browser-key test (P1), (c) manifest pinning and GPU attestation coverage from the SDK code and docs (P2, P3), (d) the stage 1 model screen with time to first token, with GLM-5.3-Flash added to the Privatemode arm. **The legal emails (stage 0) are on hold until the owner says go.** `main` stays on Tinfoil and alpha work continues there in parallel.
 
 ## Stage 0 — paper gates (owner sends the emails; agent drafts them)
 
@@ -24,7 +18,7 @@ Inputs: `docs/provider-model-decision-20261026.md` (Tinfoil facts, Terms, AUP an
 | P2 | Can the client pin one exact deployment manifest and **refuse** any other, instead of accepting an update through `onManifestUpdate`? What happens to in-flight and new requests when the manifest changes? | Yes, if unfixable (decided at stage 2) | Strict pinning possible; a changed manifest stops sending until we approve it. |
 | P3 | Does client-side attestation cover the GPUs (H100/B200 confidential computing), or only AMD SEV-SNP (the SDK's reference values list `snp` only)? | No | A clear written answer. GPU coverage missing is a scorecard concern, not a knockout, because Tinfoil's browser verifier has comparable gaps. |
 | P4 | Do the Terms allow an app that serves its own end users through the API, with the provider not visible to them? | **Yes** | Allowed in writing, or by a Terms clause. |
-| P5 | Is health data allowed as a stated purpose (general personal-help questions, including non-graphic sexual-health advice), or only incidentally? | **Yes**, if health is blocked and we keep it in scope | Allowed as a stated purpose, or the owner removes health from the purpose before the decision. |
+| P5 | "Users may ask about any topic, including health. Does your DPA/AUP permit that, or only incidental health data? What restrictions must we pass on?" (CometRow is a general-purpose assistant; owner positioning of 11 November) | **Yes**, if health is blocked and we keep it in scope | Allowed as a stated purpose, or the owner removes health from the purpose before the decision. |
 | P6 | Will Edgeless give a written secrecy undertaking under §203 StGB (as their insurance and legal pages cite)? | No | Yes or no, in writing. A yes is a plus for the later professional segment. |
 | P7 | Can we see the SOC 2 report or another audit report, and on what terms? | No | Report shared, or terms for access stated. |
 
@@ -35,7 +29,7 @@ Inputs: `docs/provider-model-decision-20261026.md` (Tinfoil facts, Terms, AUP an
 | T1 | Is EU-only processing offered or planned for API customers, and at what tier? | No | A written answer. A no keeps Tinfoil in the race; the EU point goes on the scorecard. |
 | T2 | Terms §10 ("may not … distribute, sell, lease … the Services"): is an app serving its own users through the API permitted? | Yes for Tinfoil too | Confirmed permitted. If refused, neither provider is used for real users until resolved. |
 | T3 | Can we get the SOC 2 Type II report (also requested on trust.tinfoil.sh)? | No | Report shared, or terms stated. |
-| T4 | Is health data allowed as a stated purpose, or only incidentally (DPA definition of incidental special category data)? | Same as P5 | As P5. |
+| T4 | "Users may ask about any topic, including health. Does your DPA/AUP permit that, or only incidental health data? What restrictions must we pass on?" | Same as P5 | As P5. |
 
 **Stage 0 knockouts for Privatemode:** no browser-safe auth (P1), or Terms that block our scope (P4, P5 as above). Any knockout ends the qualification: we stay on Tinfoil.
 
@@ -45,6 +39,7 @@ Inputs: `docs/provider-model-decision-20261026.md` (Tinfoil facts, Terms, AUP an
 - **Arms:**
   - **Shared model:** GPT-OSS 120B, reasoning low, on Tinfoil and on Privatemode (Privatemode's default is medium; we set low on both).
   - **Tinfoil only:** Gemma 4 31B with thinking off and with thinking on, for the default-model pick (8.5).
+  - **Privatemode only:** GLM-5.3-Flash, reasoning low (it cannot be switched off), added by the owner on 11 November.
 - **Size:** 9 cases × 3 repetitions per arm, with no automatic retries.
 - **Keys:** from Windows Credential Manager through `scripts/WindowsSecrets.psm1`: `TINFOIL_API_KEY` (existing) and `PRIVATEMODE_API_KEY` (owner saves it). No `.env`.
 - **Spend:**
@@ -109,6 +104,8 @@ Six areas, each rated pass, concern or fail with linked evidence:
 - **quality:** stage 1 bars
 - **cost:** per-conversation cost at the stage 1 mix
 - **operations:** rate limits, status page, deprecation notice, support response
+
+**Tie-break (owner, 11 November):** if both providers pass every gate, prefer the provider with a pinned model version and the longer deprecation notice.
 
 **The decision rule is fixed above.** Privatemode wins only if it passes every gate; any knockout keeps Tinfoil. The scorecard records why, and it does not override a knockout.
 
