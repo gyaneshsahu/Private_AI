@@ -21,6 +21,7 @@ The earlier dates have passed and are removed; there are no deadlines. Technical
 | P5 | "Users may ask about any topic, including health. Does your DPA/AUP permit that, or only incidental health data? What restrictions must we pass on?" (CometRow is a general-purpose assistant; owner positioning of 11 November) | **Yes**, if health is blocked and we keep it in scope | Allowed as a stated purpose, or the owner removes health from the purpose before the decision. |
 | P6 | Will Edgeless give a written secrecy undertaking under §203 StGB (as their insurance and legal pages cite)? | No | Yes or no, in writing. A yes is a plus for the later professional segment. |
 | P7 | Can we see the SOC 2 report or another audit report, and on what terms? | No | Report shared, or terms for access stated. |
+| P8 | What is your deprecation notice period for a model ID, and do deprecated IDs get routed to another model (as `glm-5.2` to GLM-5.3) or removed? Can we pin an exact model version? | No | A written notice period and a pinning answer; used for the tie-break (added 11 November). |
 
 **Tinfoil**
 

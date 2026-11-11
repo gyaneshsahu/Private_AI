@@ -80,3 +80,39 @@ Non-experimental chat models today [C], USD per million tokens, unchanged since 
 | Backup destination and liveness alert in place (7.2, 7.3), recovery rehearsal (7.1) | Owner decides and sets up; agent supports |
 | Safe Browsing warning explained (Search Console) | Owner |
 | Support contact and pause or revoke rule for the alpha (8.4) | Owner names; agent records |
+
+## Stage 5 scorecard — interim, 11 November 2026
+
+**Status: INTERIM. No provider decision.** Built from the stage 1 screen and the stage 2 spike (`docs/provider-qualification-20261026.md`, results on branch `privatemode-eval`). Stage 0 (legal answers; emails on hold) and stage 3 (full integration) have not run. Under the fixed rule, Privatemode wins only if it passes every gate. Until then **Tinfoil stays the provider on `main`.**
+
+| Area | Tinfoil | Privatemode | Edge today |
+| --- | --- | --- | --- |
+| **Legal fit** | US company; California law and arbitration; DPA automatic; processing in the US under SCCs; health only as incidental data without a written agreement; Terms §10 unclear for apps serving their own users; SOC 2 on request; no EU option known. Read directly 25 to 26 October. | German company (Edgeless Systems); EU infrastructure, so no third-country transfer (their docs; Terms and DPA not yet read directly); metadata up to 90 days, token usage per key kept permanently (FAQ); §203 StGB, health scope and audit reports still open. | Privatemode on paper; **pending stage 0** |
+| **Trust and verification** | Browser verifier checks hardware, approved repository and release digest; no freshness, revocation or TDX checks; the enclave enforces the model header; block-only audit stays off until A14. | SDK verifies AMD SEV-SNP and Intel TDX against a manifest we pin by SHA-256, plus a pinned Wasm hash; a changed deployment is refused (CSP blocks the refetch, our adapter closes the client); GPU attestation happens server-side, not in the client; revocation policy is client-set with strict defaults. Tested in a real browser on 11 November. | Comparable; each has gaps. **Edgeless to confirm GPU scope** |
+| **Architecture fit** | Built, deployed and tested end to end: relay with admission, per-account allowances, one in-flight request, model pin, token metering per request. | Fits our relay pattern (browser holds a placeholder, relay injects the key, relay never sees plaintext; tested). Differences: three paths at the site root; **no token metering** (usage is encrypted, so requests are counted only); Wasm needs `'wasm-unsafe-eval'`; not yet wired into the app (stage 3). | Tinfoil (done); Privatemode workable |
+| **Quality (stage 1 bars)** | GPT-OSS: all automatic bars except citation format (2/3). Gemma, thinking off: fails open question (0/3) and coding (1/3). Gemma, thinking on: fails open question (2/3). | GLM-5.3-Flash: **every automatic bar passes**. GPT-OSS: fails open question (1/3), citation format (2/3) and time to first token (one 60 s reply). | Privatemode (GLM-5.3-Flash); **safety grades pending** |
+| **Cost** | Per 1,000 conversations at the screen mix: GPT-OSS USD 0.47, Gemma USD 0.84, Gemma thinking USD 1.55. Soft spend limits; relay meters tokens. | GLM-5.3-Flash EUR 0.52, GPT-OSS EUR 0.59 per 1,000 conversations; 5M free tokens once; spend bounded by request counts plus per-key limits in the portal. | Even (both negligible); Tinfoil has better cost control |
+| **Operations** | At least one week's deprecation notice for non-experimental models (email of 22 October); exact model IDs; models removed with a changelog entry (GLM-5.3 Flash, 9 October); catalog churn observed. | Documented rate limits (100 requests per minute, standard tier); status page; aliases such as `glm-latest` move to the newest model, and the deprecated `glm-5.2` is silently routed to GLM-5.3; **no deprecation notice period documented**. | Tinfoil |
+
+**Tie-break (owner, 11 November): pinned model version and longer deprecation notice.** Today this favours Tinfoil: a documented one-week notice, and exact model IDs that are removed rather than rerouted. Privatemode's silent rerouting of a deprecated ID weakens version pinning until Edgeless states a policy. It applies only if both providers pass every gate.
+
+**Reading.** Privatemode is technically usable for CometRow. Its stage 2 knockouts (browser-safe key, pinning, manifest update) all pass with our relay and adapter, and its best model beat every Tinfoil arm on the stage 1 bars. What it has not passed yet is stage 0: the Terms, DPA, health scope and §203 answers. It also costs more integration work, and it gives up token metering at the relay.
+
+### Open before a decision
+
+| Item | Owner |
+| --- | --- |
+| Safety grades for selection-07, all five arms (`.local/provider-screen-20261111/*-safety.md` in the `privatemode-eval` worktree) | Owner |
+| Stage 0 emails. P1 is answered technically (relay pattern); P2 is answered technically (our wrapper and CSP refuse a changed deployment); still to ask: P8 deprecation and alias policy (new: notice period, and whether deprecated IDs reroute), P3 GPU attestation scope, P4 Terms for apps serving their own users, P5 general-purpose health question, P6 §203, P7 audit reports; Tinfoil T1 to T4 | Owner sends; agent drafts |
+| Read Privatemode's Terms, AUP and DPA directly, as was done for Tinfoil | Agent |
+
+### What stage 3 would add (only after stage 0 passes)
+
+1. Wire the relay into `server/app.ts`: session check, CSRF through the SDK's `extraHTTPHeaders`, per-account allowances, one in-flight request, request counting and settlement without token figures (usage page shows counts, not cost).
+2. Qualification report fields for the manifest digest and Wasm hash, with validation; provider selected by the report.
+3. Vite build: ship `privatemode.wasm` as an asset and keep the SDK's Node-only branch out of the browser bundle; content security policy with `'wasm-unsafe-eval'`.
+4. Deployment: Privatemode key as a Render secret, per-key limits set in the Privatemode portal, owner accepts the DPA.
+5. Privacy copy and policy: EU processing by Edgeless, metadata and permanent per-key usage records.
+6. Final tests: full suites; Safari, Firefox and a phone; second-account isolation on the live site; cost of a cancelled request; truncated response; attestation failure; rate limits; rollback drill back to Tinfoil.
+
+Estimate: about 4 to 6 working days for items 1 to 5, then 2 to 3 days for the tests (about 1.5 to 2 weeks). Owner time: secrets, portal limits, DPA, and the test journeys on phone and laptop.
