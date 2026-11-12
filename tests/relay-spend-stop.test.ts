@@ -82,6 +82,7 @@ it("refuses a request whose worst case would pass the approved spend, before any
   // Worst case per request: (5000 + 500) / 1e6 = USD 0.0055; 0.995 already metered.
   const usage = ledger("0.995");
   const { send } = await start({ qualification: qualification(1), usage });
+  usage.spend.mockClear(); // the status page checked spend too
   const response = await send();
   expect(response.status).toBe(429);
   expect((await response.json()).error).toContain("approved spending limit");
@@ -93,6 +94,7 @@ it("refuses a request whose worst case would pass the approved spend, before any
 it("lets a request within the approved spend continue to the allowance check", async () => {
   const usage = ledger("0.5", 10);
   const { send } = await start({ qualification: qualification(1), usage });
+  usage.spend.mockClear(); // the status page checked spend too
   const response = await send();
   // No signed-in account in this plain setup, so the allowance refuses; spend did not.
   expect(response.status).toBe(429);
@@ -138,4 +140,15 @@ it("production candidate admits credentials only with the explicit setting and a
     message = (error as Error).message;
   }
   expect(message).not.toContain("without upstream credentials");
+});
+
+it("reports chat as not ready while the approved spend is reached (T4 rehearsal finding)", async () => {
+  const reached = await start({ qualification: qualification(1), usage: ledger("0.995") });
+  expect(reached.status.inference).toMatchObject({
+    ready: false,
+    reason: "The approved spending limit for this provider review is reached.",
+  });
+  expect(reached.status.inference.qualification).toBeUndefined();
+  const room = await start({ qualification: qualification(1), usage: ledger("0.5") });
+  expect(room.status.inference.ready).toBe(true);
 });

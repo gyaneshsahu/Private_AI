@@ -1,4 +1,11 @@
 # PrivateAI readiness checklist
+## Overnight run of 12 November closed; status honest about the spend limit; recovery run sheet corrected - 12 November
+
+- **Overnight run.** Log: `docs/overnight-log.md` (tasks 1 to 8, spend, a 7-hour stall). Results: parity matrix, P9 draft, UI sweep 54/54 clean, copy audit (9 fixes, owner rows open), AUP / 18+ / inactivity drafts, Stage 3 plan, search comparison (Brave stays default), rehearsals T4 and O3. Launch blocker found and fixed: the Render bridge dropped the CSRF and chat headers (`09dcf74`, needs deploy).
+- **Status fix.** `/api/status` said chat was ready while the spend guard refused every request. It now runs the same spend check and reports not ready with the reason. Test in `tests/relay-spend-stop.test.ts` (fails without the fix); the two existing spend tests now reset the lookup count after the status call.
+- **Recovery run sheet.** `docs/recovery-rehearsal-20261024.md` and `scripts/recovery-rehearsal.ts` corrected from the local rehearsal: `DROP TABLE usage_requests CASCADE`; new step 5a (one transaction in the restored database: quarantine, delete sessions and sign-in codes, hold pending notices; the statements of `quarantineSyntheticRestore`); no service switch before reopening; counts, not `check`, prove integrity; reconciliation and roles on a restored instance. Test: the new step sits between `restored` and `checked`.
+- **Spend for the day:** Tinfoil about USD 0.47 (bound 0.50); Brave 10 searches; Privatemode free quota. At least USD 4.50 of the owner's USD 5 left (not reconciled with the dashboard).
+
 ## T6 agent part passes live on Tinfoil (6 of 6); bug found and fixed: report model settings were silently dropped - 12 November
 
 - **Key.** The owner re-saved the Tinfoil key; the entry now shows last written 2026-11-12 03:43 UTC (`tk_n`...`7idR`, 51 characters, no whitespace). One direct call: HTTP 200.

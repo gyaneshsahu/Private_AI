@@ -234,7 +234,16 @@ export function createApp(config: Config) {
   app.get("/api/status", async (_req, res) => {
     const q = parseQualification();
     const stopped = !!config.inferenceStopped?.();
-    const ready = !!q && !!config.apiKey && !stopped;
+    // The same spend check the relay applies, so the status never says ready while every
+    // request would be refused (T4 rehearsal, 12 November). Unknown spend counts as reached.
+    let capReached = false;
+    if (q && config.apiKey && !stopped && config.usage?.spend)
+      capReached = !(await spendAllows(
+        config.usage as Required<Pick<UsageLedger, "spend">>,
+        q,
+        active,
+      ).catch(() => false));
+    const ready = !!q && !!config.apiKey && !stopped && !capReached;
     res.json({
       csrf: res.locals.csrf,
       ...(config.consumer ? { consumerWorkspace: true } : {}),
@@ -273,7 +282,9 @@ export function createApp(config: Config) {
           ? "Provider qualification recorded; each request still requires browser verification."
           : stopped
             ? "Private chat is paused by the operator."
-            : "Live chat is unavailable until provider qualification and service access are complete.",
+            : capReached
+              ? "The approved spending limit for this provider review is reached."
+              : "Live chat is unavailable until provider qualification and service access are complete.",
         ...(ready ? { qualification: q } : {}),
       },
       search: !!config.searchKey,

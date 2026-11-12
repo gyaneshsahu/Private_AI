@@ -23,3 +23,5 @@ Budget at start: USD 5.00 (owner-reported), at most USD 0.03 used earlier today,
 | 13:35 | 8 Checklist and critical path | Done: T4, O3, P6, P8, P9, D12, R5, T5, A3/A7/C1, B15/C6 rows updated; new S8 (bridge fix, needs deploy); fastest order recomputed (agent's pre-decision list done; critical path is now the owner's decisions); owner-decisions ranked list rewritten with recommended defaults | see next commit | 0 |
 
 **Spend for the whole run (12 November):** Tinfoil about USD 0.47 by reported usage (bound USD 0.50: T6 runs ≤ 0.03, parity ≤ 0.0099, search 0.461); Brave 10 searches (USD 0.05 list price, probably inside the free monthly credit, not checked); Privatemode free quota only. Remaining of the owner's USD 5: at least USD 4.50 (owner-reported start, not reconciled with the dashboard).
+
+| 13:50 | Follow-up (owner said yes) | `/api/status` no longer says ready while the spend limit is reached (test); O3 run sheet corrected with a session-ending step 5a and the other fixes (test for step order) | see next commit | 0 |

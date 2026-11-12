@@ -25,19 +25,23 @@ export const STEPS = [
   ],
   [
     "loss",
-    "Owner: simulate loss on the throwaway database only (drop one account table in its shell). Agent: `record loss` (the dropped table reports an error, nothing else changes).",
+    "Owner: simulate loss on the throwaway database only (`DROP TABLE usage_requests CASCADE;` in its shell). Agent: `record loss` (the dropped table reports an error, nothing else changes).",
   ],
   [
     "restored",
     "Owner: restore the snapshot into a new throwaway database; put its URL in a new URL file. Agent: `record restored` with the new file (counts match `backup`, pending must be `[]`).",
   ],
   [
+    "quarantined",
+    "Owner: in the restored database's shell, end old sessions and sign-in codes and hold pending notices (the transaction in run-sheet step 5a, the same statements as quarantineSyntheticRestore). Agent: `record quarantined` with the new file. Without this a restore revives old sessions (rehearsal of 12 November).",
+  ],
+  [
     "checked",
-    "Owner, in the service shell: `node --import tsx server/deployment-database-entry.ts privileges-check <config>` then `check <config>` (pending 0). Agent: `record checked`.",
+    "Owner, in the service shell: `node --import tsx server/deployment-database-entry.ts privileges-check <config>` then `check <config>` (pending 0); do not switch the running service yet. `check` compares migration history only: counts must equal `backup`. Agent: `record checked`.",
   ],
   [
     "reopened",
-    "Owner: leave recovery after reconciliation: `UPDATE account_recovery_control SET mode='normal' WHERE singleton=true;`. Agent: `record reopened` (recoveryOpen true, readyz 200). Elapsed since `loss` is the recovery time.",
+    "Owner: leave recovery after reconciliation (counts equal `backup`; held notices reviewed): `UPDATE account_recovery_control SET mode='normal' WHERE singleton=true;`, then point the service at the restored database and restart. Agent: `record reopened` (recoveryOpen true, readyz 200). Elapsed since `loss` is the recovery time.",
   ],
 ] as const;
 export type Step = (typeof STEPS)[number][0];

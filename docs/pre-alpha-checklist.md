@@ -96,7 +96,7 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | --- | --- | --- | --- | --- | --- | --- |
 | O1 | Backup destination (7.2) | A lost database means lost accounts | Owner | yes | 1 h | open |
 | O2 | Alert provider for downtime (7.3) | You need to know when the service is down | Owner | yes | 1 h | open |
-| O3 | Recovery rehearsal (7.1) | A backup is only real once restored | Owner + Agent | no | 2 h | local rehearsal passed 12 Nov (restore 0.5 s); run sheet needs 4 corrections (DROP needs CASCADE, service only after restore, sessions survive a restore, no account-database reconciliation step); hosted run open |
+| O3 | Recovery rehearsal (7.1) | A backup is only real once restored | Owner + Agent | no | 2 h | local rehearsal passed 12 Nov (restore 0.5 s); run sheet corrected 12 Nov (CASCADE, new step 5a ends sessions on the restore, service switched only after reopening, reconciliation and roles); hosted run open |
 | O4 | Add the provider key and report on Render; switch chat on (runbook step) | The switch is dormant until then | Owner (Agent guides) | yes | 30 min | open (runbook section on the branch) |
 | O5 | Week-one monitoring list: readyz, spend vs cap, purge log line, refused requests, error rate | Spot problems before friends do | Agent writes, Owner watches | no | 1 h | done (`docs/week-one-monitoring.md` on the branch) |
 | O6 | Branch merge plan: merge `alpha-provider-neutral` into `codex/development-handoff`, CI, deploy; bring `main` (391 commits behind, last 4 Oct) up to date | Release one tested line, not three | Agent | yes | 2 h | steps 1 and 2 done: merged in `8a26a30`, pushed, Validate green; open: deploy (owner), `main` fast-forward and branch policy (owner, rank 15) |

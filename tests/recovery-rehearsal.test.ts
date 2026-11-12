@@ -49,3 +49,9 @@ it("records a service that is down as status 0 instead of failing the entry", as
   expect(checks.readyz?.status).toBe(0);
   expect(checks.healthz?.status).toBe(0);
 });
+
+it("ends old sessions on the restore before the checks and reopening (rehearsal of 12 November)", () => {
+  const names = STEPS.map(([name]) => name);
+  expect(names.indexOf("quarantined")).toBe(names.indexOf("restored") + 1);
+  expect(names.indexOf("checked")).toBe(names.indexOf("quarantined") + 1);
+});
