@@ -1,4 +1,4 @@
-import { PRIVACY_COPY, type PrivacySection } from "./privacy-copy";
+import { PRIVACY_COPY, privacyCopy, type PrivacySection } from "./privacy-copy";
 import { LEGAL_IDENTITY } from "./legal-identity";
 import {
   providerDisclosureSection,
@@ -42,6 +42,10 @@ export const POLICY_SECTIONS: readonly PrivacySection[] = [
   },
 ];
 
+/** DRAFT, NEEDS OWNER APPROVAL (D17): "What we cannot delete for you" when Privatemode is in use. */
+export const PRIVATEMODE_CANNOT =
+  "The secure server's short-term working memory, which is kept apart for each account and has no delete button. The provider's records of time and token counts, which the provider states it keeps for up to 90 days, and its token counts per key, which it keeps permanently for billing; we use one key for all accounts. Our own request records: which account asked, when, how many times and which model; we keep them for 90 days and then delete them. Search-provider records of search text you approved, kept under that provider's policy.";
+
 /**
  * Phrases that mark an owner decision still missing from the policy. The
  * production candidate build refuses to proceed while any is present
@@ -66,13 +70,16 @@ export function policyPlaceholders(): { id: string; phrase: string }[] {
  * it the text is the approved policy, unchanged.
  */
 export function privacyPolicyText(provider?: DisclosedProvider): string {
+  // For Privatemode, its draft statement sections (D17) and deletion wording replace Tinfoil's.
+  const statement = new Map(privacyCopy(provider).map((s) => [s.id, s]));
+  const own = POLICY_SECTIONS.map((section) =>
+    provider === "privatemode" && section.id === "cannot"
+      ? { ...section, text: PRIVATEMODE_CANNOT }
+      : (statement.get(section.id) ?? section),
+  );
   const sections = provider
-    ? [
-        POLICY_SECTIONS[0],
-        providerDisclosureSection(provider),
-        ...POLICY_SECTIONS.slice(1),
-      ]
-    : POLICY_SECTIONS;
+    ? [own[0], providerDisclosureSection(provider), ...own.slice(1)]
+    : own;
   return (
     `CometRow privacy policy, ${POLICY_DATE}\n\n` +
     sections

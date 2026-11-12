@@ -2,7 +2,7 @@
 // website and the app always carry the same words. Run with:
 //   node --import tsx scripts/privacy-copy.ts
 import { writeFileSync } from "node:fs";
-import { PRIVACY_COPY } from "../shared/privacy-copy";
+import { PRIVACY_COPY, privacyCopy } from "../shared/privacy-copy";
 import { POLICY_DATE, POLICY_SECTIONS } from "../shared/privacy-policy";
 import { imprintSections } from "../shared/legal-identity";
 
@@ -13,6 +13,17 @@ export function renderPrivacyMarkdown(): string {
     PRIVACY_COPY.map(
       (section) => `## ${section.heading}\r\n\r\n${section.text}\r\n`,
     ).join("\r\n")
+  );
+}
+
+/** The Privatemode variant of the statement (DRAFT, D17), mirrored for the website and the owner. */
+export function renderPrivatemodePrivacyMarkdown(): string {
+  return (
+    "# CometRow privacy statement when Privatemode is the provider — DRAFT, needs owner approval (D17), 12 November 2026\r\n\r\n" +
+    "Generated from `privacyCopy(\"privatemode\")` in `shared/privacy-copy.ts`; a test keeps this file identical to it. Sections not listed in `docs/privacy-wording-privatemode-20261112.md` are the approved text, unchanged. Regenerate with `node --import tsx scripts/privacy-copy.ts`.\r\n\r\n" +
+    privacyCopy("privatemode")
+      .map((section) => `## ${section.heading}\r\n\r\n${section.text}\r\n`)
+      .join("\r\n")
   );
 }
 
@@ -38,6 +49,7 @@ export function renderImprintMarkdown(): string {
 
 if (process.argv[1]?.endsWith("privacy-copy.ts")) {
   writeFileSync("docs/privacy-copy-20261022.md", renderPrivacyMarkdown());
+  writeFileSync("docs/privacy-copy-privatemode-20261112.md", renderPrivatemodePrivacyMarkdown());
   writeFileSync("docs/privacy-policy-20261022.md", renderPolicyMarkdown());
   writeFileSync("docs/imprint-20261023.md", renderImprintMarkdown());
 }

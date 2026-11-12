@@ -49,6 +49,9 @@ export function settlementSentence(allowance: ActiveAllowance): string {
 }
 
 export function meteredTokensSentence(allowance: ActiveAllowance): string {
+  // Zero metered requests means unknown token counts, not zero tokens (Privatemode never meters).
+  if (allowance.meteredRequests === 0)
+    return "No request was metered in this period, so no token counts can be shown.";
   return `${formatCount(allowance.meteredRequests)} completed ${allowance.meteredRequests === 1 ? "request was" : "requests were"} metered: ${formatCount(allowance.promptTokens)} prompt tokens and ${formatCount(allowance.completionTokens)} completion tokens.`;
 }
 
@@ -60,7 +63,7 @@ export function publishedCostSentence(allowance: ActiveAllowance): string {
 }
 
 export function unmeteredSentence(allowance: ActiveAllowance): string {
-  return `${formatCount(allowance.unmeteredRequests)} settled ${allowance.unmeteredRequests === 1 ? "request has" : "requests have"} no metering (interrupted or uncertain).`;
+  return `${formatCount(allowance.unmeteredRequests)} settled ${allowance.unmeteredRequests === 1 ? "request has" : "requests have"} no metering (interrupted, uncertain, or not reported by the provider).`;
 }
 
 export function periodEndLabel(

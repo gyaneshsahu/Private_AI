@@ -3,11 +3,13 @@ import { expect, it } from "vitest";
 import {
   PRIVACY_COPY,
   PRIVACY_SUMMARY,
+  privacyCopy,
   privacyText,
 } from "../shared/privacy-copy";
 import {
   renderPolicyMarkdown,
   renderPrivacyMarkdown,
+  renderPrivatemodePrivacyMarkdown,
 } from "../scripts/privacy-copy";
 import { POLICY_SECTIONS, privacyPolicyText } from "../shared/privacy-policy";
 
@@ -55,4 +57,40 @@ it("keeps the published privacy policy identical to the app's page and built on 
   expect(text).not.toContain("not yet named");
   expect(text).toContain("90 days and then delete them");
   expect(text.toLowerCase()).not.toContain("guarantee");
+});
+
+it("keeps the approved Tinfoil statement as the default and mirrors the Privatemode draft (D17)", async () => {
+  expect(privacyCopy("tinfoil")).toBe(PRIVACY_COPY);
+  expect(privacyText()).toBe(privacyText("tinfoil"));
+  const published = await readFile("docs/privacy-copy-privatemode-20261112.md", "utf8");
+  expect(published.replace(/\r\n/g, "\n")).toBe(renderPrivatemodePrivacyMarkdown().replace(/\r\n/g, "\n"));
+  const pm = privacyCopy("privatemode");
+  // Exactly the five provider sentences change (four sections); every other section is shared.
+  const changed = pm.filter((s, i) => s.text !== PRIVACY_COPY[i].text).map((s) => s.id);
+  expect(changed).toEqual(["sealed", "ours", "provider", "limits"]);
+  const text = privacyText("privatemode").toLowerCase();
+  for (const tinfoilOnly of [
+    "spending limits on the secure server are soft",
+    "does not plan to add one",
+    "longer for accounting records",
+    "what they cost at published rates",
+    "no date for a fuller browser check",
+  ])
+    expect(text, tinfoilOnly).not.toContain(tinfoilOnly);
+  for (const claim of [
+    "up to 90 days",
+    "token counts per key permanently",
+    "does not cover the graphics processor",
+    "reach our systems locked",
+    "each account's memory is kept apart",
+    "we never see what you asked",
+    "there is no anonymous mode",
+  ])
+    expect(text, claim).toContain(claim);
+  // The policy page follows the provider in use, and never mixes the two.
+  const policy = privacyPolicyText("privatemode").toLowerCase();
+  expect(policy).toContain("token counts per key permanently");
+  expect(policy).not.toContain("within minutes to a few hours");
+  expect(policy).not.toContain("published cost");
+  expect(privacyPolicyText("tinfoil")).toContain("within minutes to a few hours");
 });

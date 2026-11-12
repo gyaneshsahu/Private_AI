@@ -62,6 +62,12 @@ it("renders metered tokens, published cost and the fixed cost-basis sentence", (
   expect(meteredTokensSentence({ ...active, meteredRequests: 1 })).toMatch(
     /^1 completed request was metered/,
   );
+  // Unmetered provider (Privatemode): no zeros presented as real counts or cost.
+  const unmetered = { ...active, meteredRequests: 0, promptTokens: 0, completionTokens: 0, costUsd: undefined };
+  expect(meteredTokensSentence(unmetered)).toBe(
+    "No request was metered in this period, so no token counts can be shown.",
+  );
+  expect(publishedCostSentence(unmetered)).not.toMatch(/USD 0/);
   expect(publishedCostSentence(active)).toBe(
     "Published cost so far: USD 0.0123.",
   );
@@ -69,10 +75,10 @@ it("renders metered tokens, published cost and the fixed cost-basis sentence", (
     "No published cost has been reported for this period yet.",
   );
   expect(unmeteredSentence(active)).toBe(
-    "3 settled requests have no metering (interrupted or uncertain).",
+    "3 settled requests have no metering (interrupted, uncertain, or not reported by the provider).",
   );
   expect(unmeteredSentence({ ...active, unmeteredRequests: 1 })).toBe(
-    "1 settled request has no metering (interrupted or uncertain).",
+    "1 settled request has no metering (interrupted, uncertain, or not reported by the provider).",
   );
   expect(costBasisSentence).toBe(
     "Cost is at published rates for completed requests only; interrupted requests are billed by the provider but cannot be counted here.",

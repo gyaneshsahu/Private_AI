@@ -669,6 +669,7 @@ export function App() {
           },
           choice,
           mode,
+          status.inference.cacheSalt,
         );
         abort.signal.throwIfAborted();
         if (epoch.current === current) {
@@ -1492,7 +1493,8 @@ export function App() {
               setSource({
                 id: "privacy",
                 title: "Your privacy boundaries",
-                text: privacyText(),
+                // The statement for the provider in use (Privatemode's is a D17 draft).
+                text: privacyText(disclosedProvider(status)),
               });
             }}
           >

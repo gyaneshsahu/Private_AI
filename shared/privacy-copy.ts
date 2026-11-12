@@ -49,11 +49,42 @@ export const PRIVACY_COPY: readonly PrivacySection[] = [
   },
 ];
 
+export type PrivacyProvider = "tinfoil" | "privatemode";
+
+/**
+ * DRAFT, NEEDS OWNER APPROVAL (D17). The sections whose provider claims differ for
+ * Privatemode: D17's four sentences (cache, metadata retention, spending limits, browser
+ * check) plus the fifth from the Stage 3 plan ("What we can see": token counts reach us
+ * locked). Sources per claim: docs/provider-promises-20261112.md; old and new side by
+ * side in docs/privacy-wording-privatemode-20261112.md. Every other section is shared.
+ */
+export const PRIVATEMODE_PRIVACY_STATUS = "draft-needs-owner-approval";
+const PRIVATEMODE_SECTIONS: Readonly<Record<string, string>> = {
+  sealed:
+    "The rest of your question, your selected files and the earlier messages you included are locked in your browser so that only one secure server can open them. The server is a sealed computer with a protected graphics processor. Before each request your browser checks the sealed computer against a release we approved; that check is partial: it does not cover the graphics processor, which the company states it checks on its own side before your question can be opened, and we have not yet confirmed whether the browser check notices an approval that was later withdrawn. Our own systems pass the locked package along and cannot open it.",
+  ours:
+    "We can see that your account asked something, when, how many times and which model answered. We do not see how long the question and answer were or what each one cost: your browser shows you those counts, but they reach our systems locked. We never see what you asked or what was answered. There is no anonymous mode: every request comes from a signed-in account, incognito chats included, so we only ever know that your account asked, never what. We keep no copy of your conversations; saved history lives only on your device, locked with a password we do not have.",
+  provider:
+    "The company that runs the secure server states that it does not keep your question or answer after the reply is sent and does not use them to train any AI. It keeps a short-term working memory inside the sealed server that can hold parts of recent questions; each account's memory is kept apart with its own secret, so another account cannot reuse it or tell what it holds. There is no button that empties it and no promised maximum time. It keeps records such as time and token counts, without content; the company states it keeps these for up to 90 days, and keeps token counts per key permanently for billing. We use one key for all accounts, so those permanent counts are not linked to your account.",
+  limits:
+    "Your plan allows a set number of requests, and only one request runs at a time per account. We also set limits on our key at the secure server; the company states that it enforces them there, so new requests are refused once a limit is reached.",
+};
+
+/** The statement for the provider in use; Tinfoil's is the approved text, unchanged. */
+export function privacyCopy(provider: PrivacyProvider = "tinfoil"): readonly PrivacySection[] {
+  if (provider === "tinfoil") return PRIVACY_COPY;
+  return PRIVACY_COPY.map((section) =>
+    PRIVATEMODE_SECTIONS[section.id]
+      ? { ...section, text: PRIVATEMODE_SECTIONS[section.id] }
+      : section,
+  );
+}
+
 /** Full statement as plain text, headings included, for in-app display and export. */
-export function privacyText(): string {
-  return PRIVACY_COPY.map(
-    (section) => `${section.heading}\n${section.text}`,
-  ).join("\n\n");
+export function privacyText(provider: PrivacyProvider = "tinfoil"): string {
+  return privacyCopy(provider)
+    .map((section) => `${section.heading}\n${section.text}`)
+    .join("\n\n");
 }
 
 /** One sentence for the settings panel. */

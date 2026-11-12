@@ -1,0 +1,31 @@
+# CometRow privacy statement when Privatemode is the provider — DRAFT, needs owner approval (D17), 12 November 2026
+
+Generated from `privacyCopy("privatemode")` in `shared/privacy-copy.ts`; a test keeps this file identical to it. Sections not listed in `docs/privacy-wording-privatemode-20261112.md` are the approved text, unchanged. Regenerate with `node --import tsx scripts/privacy-copy.ts`.
+
+## What stays on your device
+
+Before anything is sent, CometRow looks for ID numbers, bank account and card numbers, tax and insurance numbers, passport or ID card numbers next to their label, phone numbers, email addresses and dates of birth next to their label. It replaces each one with a stand-in like {{IBAN-1}} and keeps the real value on your device. The answer comes back with the real values put back in, and a note under the answer tells you what was kept. Names, addresses and other facts written in your own words are not recognised; treat them as part of the sealed question below. An incognito chat is never saved on this device, and disappearing messages are deleted from this device after the time you choose; neither changes what the secure server or our records hold.
+
+## What is sealed and sent
+
+The rest of your question, your selected files and the earlier messages you included are locked in your browser so that only one secure server can open them. The server is a sealed computer with a protected graphics processor. Before each request your browser checks the sealed computer against a release we approved; that check is partial: it does not cover the graphics processor, which the company states it checks on its own side before your question can be opened, and we have not yet confirmed whether the browser check notices an approval that was later withdrawn. Our own systems pass the locked package along and cannot open it.
+
+## What we can see
+
+We can see that your account asked something, when, how many times and which model answered. We do not see how long the question and answer were or what each one cost: your browser shows you those counts, but they reach our systems locked. We never see what you asked or what was answered. There is no anonymous mode: every request comes from a signed-in account, incognito chats included, so we only ever know that your account asked, never what. We keep no copy of your conversations; saved history lives only on your device, locked with a password we do not have.
+
+## What the secure server keeps
+
+The company that runs the secure server states that it does not keep your question or answer after the reply is sent and does not use them to train any AI. It keeps a short-term working memory inside the sealed server that can hold parts of recent questions; each account's memory is kept apart with its own secret, so another account cannot reuse it or tell what it holds. There is no button that empties it and no promised maximum time. It keeps records such as time and token counts, without content; the company states it keeps these for up to 90 days, and keeps token counts per key permanently for billing. We use one key for all accounts, so those permanent counts are not linked to your account.
+
+## Spending and limits
+
+Your plan allows a set number of requests, and only one request runs at a time per account. We also set limits on our key at the secure server; the company states that it enforces them there, so new requests are refused once a limit is reached.
+
+## When you search the web
+
+A web search only happens when you approve the exact search text shown to you, in Research or by tapping a search suggestion, or when you have switched on automatic search. Recognised identifiers are removed from that text on your device first, and you are warned if it may still contain a name or other personal detail. That text is sent from our server to the search provider, which can read it and may keep it for up to 90 days; your own address is not sent. Under the same approval, our server also opens the top result page, preferring an official site, and reads its text. That site sees our server's address, not yours. If the page address contains a recognised personal detail, the page is opened without the part that holds it, or not at all. The page text is used only for answers in that conversation and is never saved. If you switch on automatic search, a question that looks time-sensitive is searched without asking each time: recognised identifiers are removed on your device first and the exact text sent is shown to you. The setting is off until you switch it on and is kept only on this device. Search results and their links are shown only during the conversation and are never saved. The written answer built on them is kept in your saved history on this device; a reopened conversation says it came from a live search and offers to search again for current sources, which needs your approval again.
+
+## What we cannot promise yet
+
+Private chat is switched on only after our checks of the secure server pass. Your browser, your device and anyone who can read your screen can see your conversations. If you lose your password, nobody can recover your saved history. There is no anonymous mode: we know which account asked, never what was asked. A broken or malicious update to this app could read content before it is sealed, which is why updates are published with their exact version.
