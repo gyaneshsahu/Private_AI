@@ -29,7 +29,7 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | L1 | Approve the health-consent text (D2) | Art. 9 consent must be shown in words you stand behind | Owner | yes | 30 min | open (draft behind a flag) |
 | L2 | Consent record: device only or server proof (D3) | GDPR Art. 7(1): you must be able to show consent | Owner | yes | 15 min decide; 1–2 days if server | open (default: device only) |
 | L3 | Approve the provider privacy text (D8) | Users must know who processes messages and where | Owner | yes | 30 min | open (draft behind a flag) |
-| L4 | D10: the live policy names no provider and no transfer | The policy is untrue the moment chat sends a message | Agent, then Owner | yes | 2 h | open |
+| L4 | D10: the live policy names no provider and no transfer | The policy is untrue the moment chat sends a message | Agent, then Owner | yes | 2 h | done in the app (policy names the report's provider whenever chat is ready, branch); published policy file and website still to regenerate at switch-on (O4); texts await D8 |
 | L5 | Accept the chosen provider's DPA as a business customer; note the transfer assessment in the DPIA | Processor contract (Art. 28) | Owner | yes | 1 h | open |
 | L6 | Health legal basis (Art. 9(2)(a) explicit consent) settled with the provider's terms | Both providers put the basis on us; Tinfoil limits health to incidental without a written agreement | Owner | yes | depends on T4 | open |
 | L7 | Retention rule: 90-day request purge | The policy promises it | Agent | yes | 0 | done (live on Render, function installed 25 Oct) |
@@ -50,7 +50,7 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 
 | # | Item | Why it matters | Who | Blocks alpha? | Effort | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| S1 | Expired sessions rejected server-side | A copied old cookie must not work | Agent | yes | 2 h (test, fix if needed) | unknown (no test in the repo proves it) |
+| S1 | Expired sessions rejected server-side | A copied old cookie must not work | Agent | yes | 2 h (test, fix if needed) | done (test on branch `alpha-provider-neutral`: expired session refused with the old cookie; cookie cache off) |
 | S2 | Rotate the exposed database password | You named it exposed; I have no record of where | Owner | yes | 1 h | unknown |
 | S3 | Rotate the Privatemode key | You asked for it; the key was never printed in this work | Owner | no (spend budget is zero) | 15 min | unknown |
 | S4 | Restricted database roles in use | Limits damage if the service is breached | Agent | yes | 0 | done (owner-reported 25 Oct: `cometrow_runtime`, restricted, pending 0) |
@@ -83,7 +83,7 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | --- | --- | --- | --- | --- | --- | --- |
 | T1 | Isolation test with a second Google account on the live site | One user must never see another's data | Owner + Agent | yes | 1 h | open |
 | T2 | Safari, Firefox and phone checks of a real chat | Friends use different browsers | Owner | yes | 2 h | open |
-| T3 | Masking gaps known and stated: scans 87.3 %, ID numbers 94.1 %, page-fetch URLs unchecked (D11, D12) | Copy must not promise more than the detector does | Agent | no (stated as known limits) | 1 h | open |
+| T3 | Masking gaps known and stated: scans 87.3 %, ID numbers 94.1 %, page-fetch URLs unchecked (D11, D12) | Copy must not promise more than the detector does | Agent | no (stated as known limits) | 1 h | done in the app (note under answers, page-fetch approval, branch); privacy-statement sentence is owner decision D13 |
 | T4 | Rollback test with chat on | Rollback was drilled without chat | Owner (Agent guides) | yes | 1 h | open (drilled 25 Oct, chat off) |
 | T5 | Full suites green on the merged branch, CI green | Deploy only tested code | Agent | yes | 1 h | open (green on each branch separately) |
 | T6 | Cancelled request, truncated reply and attestation failure on the live provider | Cost and error behaviour with real money | Agent + Owner | yes | 2 h | open |
@@ -97,8 +97,8 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | O2 | Alert provider for downtime (7.3) | You need to know when the service is down | Owner | yes | 1 h | open |
 | O3 | Recovery rehearsal (7.1) | A backup is only real once restored | Owner + Agent | no | 2 h | open |
 | O4 | Add the provider key and report on Render; switch chat on (runbook step) | The switch is dormant until then | Owner (Agent guides) | yes | 30 min | open (runbook section on the branch) |
-| O5 | Week-one monitoring list: readyz, spend vs cap, purge log line, refused requests, error rate | Spot problems before friends do | Agent writes, Owner watches | no | 1 h | open |
-| O6 | Branch merge plan: merge `alpha-provider-neutral` into `codex/development-handoff`, CI, deploy; bring `main` (391 commits behind, last 4 Oct) up to date | Release one tested line, not three | Agent | yes | 2 h | open |
+| O5 | Week-one monitoring list: readyz, spend vs cap, purge log line, refused requests, error rate | Spot problems before friends do | Agent writes, Owner watches | no | 1 h | done (`docs/week-one-monitoring.md` on the branch) |
+| O6 | Branch merge plan: merge `alpha-provider-neutral` into `codex/development-handoff`, CI, deploy; bring `main` (391 commits behind, last 4 Oct) up to date | Release one tested line, not three | Agent | yes | 2 h | plan ready and trial-merged green (`docs/branch-merge-plan-20261112.md`); needs Owner approval to merge and push |
 | O7 | `privatemode-eval` stays unmerged unless Privatemode wins; then it feeds Stage 3 | Keeps the spike out of production | Agent | no | 0 | open |
 
 ## Fastest order to alpha (recomputed 12 November)
