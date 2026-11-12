@@ -18,6 +18,10 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # Supply chain (A18): registry signatures and provenance of every installed package,
+      # and no known high or critical vulnerability in production dependencies.
+      - run: npm audit signatures
+      - run: npm audit --omit=dev --audit-level=high
       - name: Install distribution age for encrypted recovery verification
         run: |
           sudo apt-get update

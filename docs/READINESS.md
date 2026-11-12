@@ -1,4 +1,11 @@
 # PrivateAI readiness checklist
+## A18: three high production vulnerabilities fixed; supply-chain checks added to CI - 12 November
+
+- **Found (verified, `npm audit` 12 November).** 3 high and 1 moderate in production dependencies: `undici` 8.11.2 (relay client; denial of service in the EventSource parser), `zod` 4.6.5 (input validation; memory exhaustion on oversized constrained collections), `body-parser` 2.3.0 under Express (denial of service via trailing bytes after a compressed body), `qs` 6.16.0 (moderate). No exploitation observed; production runs without chat, but body parsing and validation are live.
+- **Fixed (verified).** Minor and patch upgrades only: `undici` 8.12.4, `zod` 4.6.7 (exact pins in `package.json`), `body-parser` 2.4.0 and `qs` within Express's range (lockfile). `npm audit` afterwards: 0 vulnerabilities, production and development. `npm audit signatures`: all installed packages verified, 95 with provenance attestations.
+- **CI (A18).** `validate.yml` offline job now runs `npm audit signatures` and `npm audit --omit=dev --audit-level=high` after `npm ci`. `tests/dependency-pins.test.ts` fails on any version range in `package.json`, a missing or non-v3 lockfile, `npm install` in CI, or a missing audit step. GitHub's dependency-review action needs pull requests, which this repository does not use, so the audit runs on every push instead.
+- **Suites on the upgraded tree.** Typecheck clean; Vitest 874 passed, 166 skipped; durable 130 passed; Playwright 61 passed. Checklist A18 done.
+
 ## A15: canary test proves model output loads nothing remote - 12 November
 
 - **Verified.** `tests/remote-content-canary-ui.test.ts` drives the real app in Chromium with a stub reply carrying a markdown image, a reference-style image, raw HTML `img`, `iframe`, `link rel=stylesheet` and `video`, a markdown link, a bare URL and an angle-bracket autolink, all pointing at a canary host. Result: zero browser requests to the canary host; the answer contains no `img`, `iframe`, `video`, `audio`, `source`, `link`, `object`, `embed` or external `a href`; the image shows as "[Image omitted: pixel]". Mutation check: making the renderer emit real `<img>` tags makes the test fail; the change was reverted. Existing defences unchanged: images replaced, links shown as text, raw HTML escaped, CSP `img-src 'self' blob: data:`. Checklist A15 done.

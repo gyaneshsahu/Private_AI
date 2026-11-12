@@ -58,9 +58,9 @@
     "stripe": "23.0.0",
     "tesseract.js": "7.0.0",
     "tinfoil": "1.2.2",
-    "undici": "8.11.2",
+    "undici": "8.12.4",
     "unist-util-visit": "5.1.0",
-    "zod": "4.6.5"
+    "zod": "4.6.7"
   },
   "overrides": {
     "katex": "$katex"
