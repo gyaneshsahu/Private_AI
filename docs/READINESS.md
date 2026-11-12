@@ -1,4 +1,14 @@
 # PrivateAI readiness checklist
+## Tinfoil 401 diagnosed: the stored entry still holds the 5 October key; search stays on Brave, Exa skipped - 12 November
+
+- **Owner direction.** Search stays on Brave; nothing changes to Exa and all Exa tests are skipped until Exa replies.
+- **Entries (names only).** `PrivateAI/Local/TINFOIL_API_KEY`, `PrivateAI/Local/PRIVATEMODE_API_KEY`, `PrivateAI/Local/BRAVE_SEARCH_API_KEY` (plus `PRIVATEAI_BACKUP_IDENTITY`), all Generic, user `PrivateAI`, Windows user `gyanesh\sahug`. No other entry in the store mentions Tinfoil.
+- **Tinfoil entry.** Last written **2026-10-05 12:13 UTC**, comment "Local development API credential" (written by `scripts/windows-secret.ps1`); 51 characters, `tk_4`...`X8GA`, no whitespace, newline or non-ASCII character. The Privatemode entry, by contrast, was last written 2026-11-11 21:44 UTC. So no save after 5 October reached the Tinfoil entry; the 11 November "renewal" kept the same value.
+- **Read path.** `LoadIntoProcess` calls `CredReadW` on target `PrivateAI/Local/TINFOIL_API_KEY`, type Generic, for the current Windows user (the stored user name is not part of the lookup) and puts the UTF-16 value in the PowerShell process environment; node child processes inherit it. The live script and the direct check both read `process.env.TINFOIL_API_KEY` from that same wrapper: same target, same user, same process tree.
+- **Direct call.** HTTP 401 `{"message":"Incorrect API key provided.","type":"invalid_request_error","code":"invalid_api_key"}`.
+- **Cause: wrong key** (the entry holds the 5 October value, which Tinfoil now rejects). Not the wrong entry, not whitespace, not a reading bug. T6 was not rerun: with this key every forwarded request returns 401, as the first run showed.
+- **Spend: USD 0.** Remaining (owner-reported basis): USD 5.00.
+
 ## Spend authority USD 5 (owner, 12 November); T6 live harness built; stored Tinfoil key rejected - 12 November
 
 - **Budget (owner-reported, not verified by the agent).** New Tinfoil key, USD 0 used, USD 5 limit; covers Tinfoil tokens, Tinfoil web search (USD 0.05 per request), Exa credits and Privatemode free quota for development and testing, synthetic data only. The agent could not read the usage page: the app's browser is not signed in, Claude in Chrome was not connected, and the billing API needs an admin key (401 with the inference key).
