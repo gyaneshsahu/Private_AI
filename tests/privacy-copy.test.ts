@@ -75,9 +75,12 @@ it("keeps the approved Tinfoil statement as the default and mirrors the Privatem
     "longer for accounting records",
     "what they cost at published rates",
     "no date for a fuller browser check",
+    "before each request",
   ])
     expect(text, tinfoilOnly).not.toContain(tinfoilOnly);
   for (const claim of [
+    // Owner, 12 November: one verified client per session, re-checked at least every 10 minutes.
+    "when you start chatting and again at least every 10 minutes, your browser checks the sealed computer",
     "up to 90 days",
     "token counts per key permanently",
     "does not cover the graphics processor",

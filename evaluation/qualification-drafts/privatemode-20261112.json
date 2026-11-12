@@ -91,9 +91,10 @@
       "status": "needs-owner-acceptance",
       "evidence": [
         "Manifest digest pinned in the report and checked in the browser before the SDK runs (src/providers/privatemode-client.ts; tests/privatemode-client.test.ts); a manifest the SDK swaps in by itself closes the client (onManifestUpdate) and the CSP blocks the SDK's own manifest refetch (spike, 11 November).",
-        "NVIDIA OCSP policy set explicitly by the client: unknown statuses refused, no grace period for revoked certificates (tests/privatemode-client.test.ts)."
+        "NVIDIA OCSP policy set explicitly by the client: unknown statuses refused, no grace period for revoked certificates (tests/privatemode-client.test.ts).",
+        "One verified client per browser session (owner decision, 12 November; Privatemode rate-limits attestation): the browser verifies when chat starts and again at least every 10 minutes, at once after any failed request and when the approved digest changes; a failed re-verification sends nothing, and the manifest and Wasm pins apply on every verification (src/providers/privatemode-client.ts; tests/privatemode-client.test.ts (a) to (g))."
       ],
-      "reason": "Whether the Wasm checks AMD and Intel revocation and the age of the evidence is unknown (not in the SDK documentation read). No relay-side audit exists for Privatemode. Accepting means a revoked or stale platform could be accepted until the report expires (at most seven days)."
+      "reason": "Whether the Wasm checks AMD and Intel revocation and the age of the evidence is unknown (not in the SDK documentation read). No relay-side audit exists for Privatemode. Accepting means a revoked or stale platform could be accepted until the report expires (at most seven days). A verified client is reused for up to 10 minutes; a deployment change the SDK does not report is caught only by the next verification."
     },
     "protectedWorkerChain": {
       "status": "needs-owner-acceptance",

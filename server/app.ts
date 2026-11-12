@@ -304,7 +304,9 @@ export function createApp(config: Config) {
       inference: {
         ready,
         reason: ready
-          ? "Provider qualification recorded; each request still requires browser verification."
+          ? q?.provider === "privatemode"
+            ? "Provider qualification recorded; the browser still verifies when chat starts and again at least every 10 minutes."
+            : "Provider qualification recorded; each request still requires browser verification."
           : stopped
             ? "Private chat is paused by the operator."
             : capReached

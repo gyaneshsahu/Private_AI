@@ -284,10 +284,15 @@ export function acceptedChecks(report: Qualification) {
 /** What the connection banner may say: "verified" only when every check is present and passed. */
 export function verificationSummary(report: Qualification): string {
   const accepted = acceptedChecks(report);
+  // Privatemode reuses one verified client per session (src/providers/privatemode-client.ts).
+  const when =
+    report.provider === "privatemode"
+      ? "when you start chatting and again at least every 10 minutes"
+      : "before each request";
   if (checks.every((check) => report.review?.[check]?.status === "pass"))
-    return "The secure server is checked before each request, and every review check passed.";
-  if (!accepted.length) return "The secure server is checked before each request.";
-  return `The secure server is checked before each request, but not every check has passed. Accepted by the owner for this limited release, not verified: ${accepted.map((c) => checkLabels[c]).join(", ")}.`;
+    return `The secure server is checked ${when}, and every review check passed.`;
+  if (!accepted.length) return `The secure server is checked ${when}.`;
+  return `The secure server is checked ${when}, but not every check has passed. Accepted by the owner for this limited release, not verified: ${accepted.map((c) => checkLabels[c]).join(", ")}.`;
 }
 
 export const disclosureSchema = z.discriminatedUnion("kind", [

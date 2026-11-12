@@ -22,7 +22,11 @@ vi.mock("privatemode-ai", () => ({
 import { inferenceClientFor } from "../src/providers/inference-client";
 import "../src/providers/privatemode-client";
 import "../src/providers/tinfoil-client";
-import { PRIVATEMODE_WASM_SHA256 } from "../src/providers/privatemode-client";
+import {
+  discardPrivatemodeSession,
+  PRIVATEMODE_VERIFY_MAX_AGE_MS,
+  PRIVATEMODE_WASM_SHA256,
+} from "../src/providers/privatemode-client";
 import { fakeManifest, fakeManifestDigest } from "./fixtures/privatemode-report";
 
 const policy = {
@@ -47,9 +51,13 @@ beforeEach(() => {
   );
 });
 afterEach(() => {
+  discardPrivatemodeSession();
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   sdk.options.length = 0;
   sdk.create.mockReset();
+  sdk.verify.mockReset().mockImplementation(async () => undefined);
+  sdk.close.mockReset();
   fetched.length = 0;
 });
 
@@ -103,8 +111,13 @@ it("forwards our request headers through the SDK and hands a refused reply back 
   const refused = await transport.request("ignored", { method: "POST", headers, body: "{}" });
   expect(refused.status).toBe(502);
   expect(refused.headers.get("x-privateai-upstream")).toBe("rejected");
+  // The refused reply ended that client; a new verification gives a new one.
+  await expect(transport.request("ignored", { method: "POST", headers, body: "{}" })).rejects.toThrow(
+    "The verified connection was closed. Nothing was sent.",
+  );
+  const fresh = await (await adapter.verify(policy, new AbortController().signal, () => {})).transport();
   sdk.create.mockRejectedValueOnce(Error("network"));
-  await expect(transport.request("ignored", { method: "POST", headers, body: "{}" })).rejects.toThrow("network");
+  await expect(fresh.request("ignored", { method: "POST", headers, body: "{}" })).rejects.toThrow("network");
 });
 
 it("sends this account's cache salt to Privatemode and refuses without one; Tinfoil keeps a fresh secret per request", () => {
@@ -117,4 +130,189 @@ it("sends this account's cache salt to Privatemode and refuses without one; Tinf
   const b = tinfoil.cacheOptions({ ...policy, provider: "tinfoil" });
   expect(Object.keys(a)).toEqual(["user_cache_secret"]);
   expect(a.user_cache_secret).not.toBe(b.user_cache_secret);
+});
+
+// Session verification (owner, 12 November, option 1): one verified client per browser session,
+// verified afresh after 10 minutes, after any failure and on any release change; fail closed.
+const otherManifest = new TextEncoder().encode('{"synthetic":"another manifest for tests"}');
+async function sha(bytes: Uint8Array) {
+  const d = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes as Uint8Array<ArrayBuffer>));
+  return Array.from(d, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+const serve = (bytes: Uint8Array) =>
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string) => {
+      fetched.push(url);
+      return new Response(bytes.slice());
+    }),
+  );
+/** One message as the app sends it: verify (or reuse), one request, the reply read to the end. */
+async function send(p = policy, reply: () => Response = () => new Response("data: [DONE]\n\n")) {
+  const destination = await inferenceClientFor("privatemode").verify(p, new AbortController().signal, () => {});
+  sdk.create.mockImplementationOnce(async () => reply());
+  const response = await (await destination.transport()).request("", { method: "POST", body: "{}" });
+  return { destination, text: await response.text(), status: response.status };
+}
+const verifications = () => sdk.options.length;
+
+it("(a) two messages within 10 minutes share one verification", async () => {
+  await send();
+  await send();
+  expect(verifications()).toBe(1);
+  expect(sdk.verify).toHaveBeenCalledTimes(1);
+  expect(fetched).toEqual(["/api/inference/privatemode/manifest"]);
+  expect(sdk.create).toHaveBeenCalledTimes(2);
+  expect(sdk.close).not.toHaveBeenCalled();
+});
+
+it("(b) a verification 10 minutes old or more is repeated before the next message; the old client is closed", async () => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  const start = new Date("2026-11-12T10:00:00Z").getTime();
+  vi.setSystemTime(start);
+  await send();
+  vi.setSystemTime(start + PRIVATEMODE_VERIFY_MAX_AGE_MS - 1);
+  await send();
+  expect(verifications()).toBe(1);
+  vi.setSystemTime(start + PRIVATEMODE_VERIFY_MAX_AGE_MS);
+  await send();
+  expect(verifications()).toBe(2);
+  expect(sdk.close).toHaveBeenCalledTimes(1);
+  // The limit counts from the last successful verification.
+  vi.setSystemTime(start + 2 * PRIVATEMODE_VERIFY_MAX_AGE_MS - 1);
+  await send();
+  expect(verifications()).toBe(2);
+  expect(PRIVATEMODE_VERIFY_MAX_AGE_MS).toBe(600_000);
+});
+
+it.each([
+  ["a transport error", () => sdk.create.mockRejectedValueOnce(Error("network"))],
+  ["a 5xx from chat", () => sdk.create.mockRejectedValueOnce(Object.assign(Error("502"), { status: 502 }))],
+  ["a 4xx from key exchange", () => sdk.create.mockRejectedValueOnce(Object.assign(Error("403"), { status: 403 }))],
+  ["a refused reply", () => sdk.create.mockResolvedValueOnce(new Response(null, { status: 503 }))],
+  [
+    "a reply that breaks mid-stream",
+    () =>
+      sdk.create.mockResolvedValueOnce(
+        new Response(
+          new ReadableStream({
+            start(c) {
+              c.enqueue(new TextEncoder().encode("data: {}\n\n"));
+              c.error(Error("connection reset"));
+            },
+          }),
+        ),
+      ),
+  ],
+  ["a stop while the reply streams", () => sdk.create.mockResolvedValueOnce(new Response("data: {}\n\n"))],
+])("(c) after %s the next message verifies afresh before sending", async (name, fail) => {
+  await send();
+  const destination = await inferenceClientFor("privatemode").verify(policy, new AbortController().signal, () => {});
+  fail();
+  try {
+    const response = await (await destination.transport()).request("", { method: "POST", body: "{}" });
+    // The app's stream parser reads, then cancels on a stop or a refused reply.
+    const reader = response.body?.getReader();
+    await reader?.read();
+    if (name.includes("mid-stream")) await reader?.read();
+    await reader?.cancel();
+  } catch {
+    // the failure itself
+  }
+  expect(verifications()).toBe(1);
+  expect(sdk.close).toHaveBeenCalledTimes(1);
+  await send();
+  expect(verifications()).toBe(2);
+  expect(sdk.verify).toHaveBeenCalledTimes(2);
+});
+
+it("(c) a failed verification caches nothing; the next message verifies again", async () => {
+  sdk.verify.mockRejectedValueOnce(Object.assign(Error("attest 429"), { status: 429 }));
+  await expect(send()).rejects.toThrow("Protected operation failed.");
+  expect(sdk.close).toHaveBeenCalledTimes(1);
+  await send();
+  expect(sdk.verify).toHaveBeenCalledTimes(2);
+  expect(sdk.create).toHaveBeenCalledTimes(1);
+});
+
+it("(d) a changed approved digest, a new session token or an SDK manifest update forces a new verification", async () => {
+  await send();
+  // The status now approves a second release as well: the client is verified again.
+  const both = [await sha(otherManifest), fakeManifestDigest];
+  await send({ ...policy, releaseDigests: both });
+  expect(verifications()).toBe(2);
+  await send({ ...policy, releaseDigests: both, csrf: "d".repeat(64) });
+  expect(verifications()).toBe(3);
+  expect(sdk.options[2].openAIOptions.defaultHeaders).toEqual({ "X-PrivateAI-CSRF": "d".repeat(64) });
+  const { destination } = await send();
+  expect(verifications()).toBe(4);
+  // The SDK reports a manifest it switched to by itself: that client stops and is forgotten.
+  expect(() => sdk.options[3].onManifestUpdate()).toThrow("manifest changed");
+  await expect((await destination.transport()).request("", { method: "POST", body: "{}" })).rejects.toThrow(
+    "differs from the reviewed one. Nothing was sent.",
+  );
+  await send();
+  expect(verifications()).toBe(5);
+  expect(sdk.close).toHaveBeenCalledTimes(4);
+});
+
+it("(e) a failed re-verification sends nothing and never falls back to the old client", async () => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  const start = Date.now();
+  const { destination: old } = await send();
+  vi.setSystemTime(start + PRIVATEMODE_VERIFY_MAX_AGE_MS);
+  sdk.verify.mockRejectedValueOnce(Error("attestation failed"));
+  await expect(send()).rejects.toThrow("Protected operation failed.");
+  expect(sdk.create).toHaveBeenCalledTimes(1);
+  // The expired client was closed and refuses, so nothing can reach the provider under it.
+  await expect((await old.transport()).request("", { method: "POST", body: "{}" })).rejects.toThrow(
+    "Nothing was sent.",
+  );
+  sdk.verify.mockRejectedValueOnce(Error("attestation failed again"));
+  await expect(send()).rejects.toThrow("Protected operation failed.");
+  expect(sdk.create).toHaveBeenCalledTimes(1);
+});
+
+it("(f) the manifest pin and the Wasm pin hold on first verification, on re-verification and across a pin change", async () => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  const start = Date.now();
+  const refused = "does not match the reviewed provider configuration. Nothing was sent.";
+  // First verification: an unapproved manifest is refused before any SDK client exists.
+  serve(otherManifest);
+  await expect(send()).rejects.toThrow(refused);
+  expect(verifications()).toBe(0);
+  serve(fakeManifest);
+  await send();
+  // Re-verification after the time limit: the served manifest changed, so it is refused.
+  vi.setSystemTime(start + PRIVATEMODE_VERIFY_MAX_AGE_MS);
+  serve(otherManifest);
+  await expect(send()).rejects.toThrow(refused);
+  expect(verifications()).toBe(1);
+  expect(sdk.create).toHaveBeenCalledTimes(1);
+  // A fresh client under the approved manifest, then the approval moves to another release
+  // while the provider still serves the old one: the cached client is not reused.
+  serve(fakeManifest);
+  await send();
+  await expect(send({ ...policy, releaseDigests: [await sha(otherManifest)] })).rejects.toThrow(refused);
+  expect(verifications()).toBe(2);
+  expect(sdk.create).toHaveBeenCalledTimes(2);
+  for (const options of sdk.options) {
+    expect(options.expectedWasmHash).toBe(PRIVATEMODE_WASM_SHA256);
+    expect(new Uint8Array(options.manifestBytes)).toEqual(fakeManifest);
+  }
+});
+
+it("(g) a stop during verification closes the client and caches nothing", async () => {
+  let release!: () => void;
+  sdk.verify.mockImplementationOnce(() => new Promise<undefined>((resolve) => (release = () => resolve(undefined))));
+  const stop = new AbortController();
+  const verifying = inferenceClientFor("privatemode").verify(policy, stop.signal, () => {});
+  await vi.waitFor(() => expect(sdk.verify).toHaveBeenCalledTimes(1));
+  stop.abort();
+  await expect(verifying).rejects.toThrow();
+  release(); // the SDK finishes after the stop; still nothing is cached
+  expect(sdk.close).toHaveBeenCalledTimes(1);
+  await send();
+  expect(verifications()).toBe(2);
+  expect(sdk.create).toHaveBeenCalledTimes(1);
 });

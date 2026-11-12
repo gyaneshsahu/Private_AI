@@ -82,3 +82,23 @@ it("never says verified for a report whose checks are missing or unknown", () =>
   );
   expect(acceptedChecks(partial)).toEqual([]);
 });
+
+it("says when the check runs for the provider in use: per session for Privatemode, Tinfoil unchanged", () => {
+  const pm = (review: Record<string, unknown> = {}) => ({ ...report(review), provider: "privatemode" }) as never;
+  expect(verificationSummary(pm())).toBe(
+    "The secure server is checked when you start chatting and again at least every 10 minutes, and every review check passed.",
+  );
+  expect(verificationSummary({ ...(pm() as object), review: {} } as never)).toBe(
+    "The secure server is checked when you start chatting and again at least every 10 minutes.",
+  );
+  const partial = verificationSummary(pm({ retentionAndLogs: accepted() }));
+  expect(partial).toMatch(/^The secure server is checked when you start chatting and again at least every 10 minutes, but not every check has passed\./);
+  for (const summary of [verificationSummary(pm()), partial]) expect(summary).not.toContain("before each request");
+  // Tinfoil's three texts stay byte for byte.
+  expect(verificationSummary(report() as never)).toBe(
+    "The secure server is checked before each request, and every review check passed.",
+  );
+  expect(verificationSummary({ ...report(), provider: undefined } as never)).toBe(
+    "The secure server is checked before each request, and every review check passed.",
+  );
+});

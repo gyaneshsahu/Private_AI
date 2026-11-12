@@ -148,7 +148,8 @@ async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolea
   const suggestedQuery = suggestionShown ? ((await suggestionBox(page).locator("pre").innerText().catch(() => "")) || undefined) : undefined;
   const tapped = !!(opts.tapSuggestion && suggestionShown);
   // Privatemode limits attestations per organisation (12 Nov probe: 10/min passes, 20/min gets
-  // HTTP 429), and the app verifies before every message: space message starts out.
+  // HTTP 429). The app now verifies once per session and at least every 10 minutes, but every new
+  // session (every 15 prompts) and every failure verifies again: keep message starts spaced out.
   const wait = lastSend + PACE_MS - Date.now();
   if (wait > 0) await page.waitForTimeout(wait);
   lastSend = Date.now();
