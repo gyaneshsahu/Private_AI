@@ -107,6 +107,8 @@ it("product prompt: no unasked counts, unsure German rules point to the official
   expect(product).toContain(
     "training data with an unpublished end date and may be out of date, and offer a web search",
   );
+  // The blind run of 12 November: Fast still said "I don't have web access in this session".
+  expect(product).toContain("Never claim you lack web access.");
   // Health and maths handling are unchanged.
   expect(product).toContain("Answer health questions helpfully and concretely");
   expect(product).toContain("Check quantities, units, time and dependencies");

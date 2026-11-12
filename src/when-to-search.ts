@@ -74,7 +74,7 @@ export const WHEN_TO_SEARCH = {
   heading: "This question may need current information.",
   label: "Search the web for:",
   explanation:
-    "One tap sends exactly this text to Brave Search through our server, and our server opens the top official result page. Nothing else from your conversation is sent. Press Send instead to answer without searching.",
+    "One tap sends exactly this text to Brave Search through our server, and our server opens the top result page, preferring an official site. Nothing else from your conversation is sent. Press Send instead to answer without searching.",
   button: "Search and answer",
   // Unchanged wording, shared with the Research tab's approval.
   warning:

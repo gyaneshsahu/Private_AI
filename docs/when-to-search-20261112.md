@@ -47,7 +47,7 @@ Suggestion box above the composer:
 - Label before the text: **"Search the web for:"** followed by the exact search text.
 - When identifiers were removed (existing wording from `describeKept`): **"Removed from the search text before approval: 1 email address."** (counts and kinds vary).
 - When the text may still name a person (existing wording): **"This search text may still contain personal details, such as a name or a long number, that cannot be recognised automatically. The search provider will see exactly this text. Approve only if that is fine."**
-- Explanation: **"One tap sends exactly this text to Brave Search through our server, and our server opens the top official result page. Nothing else from your conversation is sent. Press Send instead to answer without searching."**
+- Explanation: **"One tap sends exactly this text to Brave Search through our server, and our server opens the top result page, preferring an official site. Nothing else from your conversation is sent. Press Send instead to answer without searching."**
 - Button: **"Search and answer"**
 
 Setting in the Research tab (checkbox, off by default):
@@ -60,14 +60,14 @@ Status line under the composer after a search from a suggestion or from the sett
 - If an automatic search fails, the question is still answered from the model's knowledge: **"The automatic search did not complete, so this answer does not use web results."**
 
 Top-page notes (from part 1 of today's work; `src/research-result.ts`):
-- **"Our server also opened the top official result and read its text: <address>"**
+- **"Our server also opened the top official result and read its text: <address>"** ("the top result" when the page read is not an official site, e.g. after a fallback)
 - **"Our server also opened the top official result without the part of its address after "?", because that part contained a personal detail: <address>"**
 - **"The top result (<site>) was not opened, because its address contained a personal detail. The answer uses the search excerpts only."**
 - **"The top result (<site>) could not be opened. The answer uses the search excerpts only."**
-- Added to every search approval in the Research tab: **"Our server will also open the top official result page and read its text for this answer. That site sees our server's address, not yours."**
+- Added to every search approval in the Research tab: **"Our server will also open the top result page, preferring an official site, and read its text for this answer. That site sees our server's address, not yours."**
 
 Model prompt (default product prompt only; the model's own words will vary):
-- Without web results: "When an answer may depend on recent or changing information, such as prices, office holders or current events, say that your knowledge comes from training data with an unpublished end date and may be out of date, and offer a web search."
+- Without web results: "When an answer may depend on recent or changing information, such as prices, office holders or current events, say that your knowledge comes from training data with an unpublished end date and may be out of date, and offer a web search. Never claim you lack web access."
 - With web results: "The web results below come from a search the user approved; CometRow's server ran it and may have opened the top result page. Build the answer from them. Never say you cannot browse or have no browsing or search tools. If something asked is missing from the results, say exactly what is missing and offer another search."
 
 Research tab introduction (replaces "Your conversation is never automatically added to a search. Review the exact query or URL before sharing."):

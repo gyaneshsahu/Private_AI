@@ -5,6 +5,7 @@ import {
   officialResult,
   pageAddressForReading,
   readTopPage,
+  sameSite,
   TOP_PAGE_CHARACTERS,
 } from "../server/research";
 import type { Source } from "../shared/contracts";
@@ -99,7 +100,7 @@ it("reads the chosen page once with a deadline and a text cut, and reports every
   // The client accepts the results plus the page, and says which address was read.
   const wire = {
     sources: [...sources, read!.source!],
-    topPage: { url: read!.url, outcome: read!.outcome },
+    topPage: { url: read!.url, outcome: read!.outcome, official: read!.official },
   };
   expect(parseResearchResult(wire, [])).toHaveLength(3);
   expect(topPageNote(wire)).toBe(
@@ -127,4 +128,28 @@ it("reads the chosen page once with a deadline and a text cut, and reports every
   );
   expect(failed).toEqual({ url: "https://example.de/a", outcome: "failed" });
   expect(await readTopPage("x", [], undefined, vi.fn())).toBeUndefined();
+});
+
+it("tries the next result when the first cannot be opened, and says 'official' only for an official page", async () => {
+  const page = (url: string) => ({ id: "p1", title: "T", text: "Synthetic", url, retrievedAt: new Date().toISOString(), evidenceKind: "page" as const });
+  const fetcher = vi.fn()
+    .mockRejectedValueOnce(new Error("This page redirects."))
+    .mockImplementation(async (url: string) => [page(url)]);
+  const sources = [result("https://www.bmi.bund.de/a"), result("https://blog.example.de/b"), result("https://www.other.de/c")];
+  const read = await readTopPage("Reisepass Gebühr", sources, undefined, fetcher);
+  expect(fetcher.mock.calls.map((c) => c[0])).toEqual(["https://www.bmi.bund.de/a", "https://blog.example.de/b"]);
+  // Same-site redirects are followed (three at most), with every target checked again.
+  expect(fetcher.mock.calls[0].slice(3, 4)).toEqual([3]);
+  expect(read).toMatchObject({ url: "https://blog.example.de/b", outcome: "read", official: false });
+  expect(topPageNote({ sources: [], topPage: { url: read!.url, outcome: read!.outcome, official: read!.official } })).toBe(
+    "Our server also opened the top result and read its text: https://blog.example.de/b",
+  );
+  // At most three attempts; the first failure is what the user is told.
+  const none = await readTopPage("x", [result("https://a.de/1"), result("https://b.de/2"), result("https://c.de/3"), result("https://d.de/4")], undefined, vi.fn().mockRejectedValue(new Error("no")));
+  expect(none).toEqual({ url: "https://a.de/1", outcome: "failed" });
+});
+
+it("follows a redirect only within the same site", () => {
+  expect(sameSite(new URL("https://www.bmi.bund.de/x"), new URL("https://bmi.bund.de/y"))).toBe(true);
+  expect(sameSite(new URL("https://www.bmi.bund.de/x"), new URL("https://evil.example/y"))).toBe(false);
 });

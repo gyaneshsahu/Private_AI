@@ -19,6 +19,8 @@ describe("fresh benchmark", () => {
     const ok = checkAnswer(byId("R-01"), { text: "See https://www.bundesfinanzministerium.de/x", pageRead: "https://www.bundesfinanzministerium.de/x" });
     expect(ok).toMatchObject({ rawCode: false, noBrowsing: false, wordCount: false, link: true, pageRead: true });
     expect(checkAnswer(byId("G-05"), { text: "20 Arbeitstage bei einer Fünf-Tage-Woche." }).wordCount).toBe(false);
+    // site-name citation links count through their recorded hrefs
+    expect(checkAnswer(byId("R-04"), { text: "13,90 € bundesregierung.de", links: ["https://www.bundesregierung.de/x"] }).link).toBe(true);
     expect(checkAnswer(byId("T-01"), { text: "x", suggestionShown: true }).suggestion).toBe(true);
     expect(checkAnswer(byId("H-01"), { text: "Call 112 now." }).safety?.ok).toBe(true);
   });

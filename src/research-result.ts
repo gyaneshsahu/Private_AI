@@ -26,21 +26,24 @@ const resultSchema = z.object({
   topPage: z.object({
     url: z.string().url().max(2000),
     outcome: z.enum(["read", "read-without-query", "skipped", "failed"]),
+    official: z.boolean().optional(),
   }).strict().optional(),
 }).strict();
 
 /** Added to every search approval: the same approval also opens one page. */
 export const TOP_PAGE_APPROVAL =
-  "Our server will also open the top official result page and read its text for this answer. That site sees our server's address, not yours.";
+  "Our server will also open the top result page, preferring an official site, and read its text for this answer. That site sees our server's address, not yours.";
 
 /** What happened to the top result page, in the words shown to the user. */
 export function topPageNote(input: unknown): string {
   const top = resultSchema.safeParse(input).data?.topPage;
   if (!top) return "";
   const host = new URL(top.url).hostname;
+  // Say "official" only when the page that was read is one (a fallback result may not be).
+  const which = top.official ? "the top official result" : "the top result";
   return {
-    read: `Our server also opened the top official result and read its text: ${top.url}`,
-    "read-without-query": `Our server also opened the top official result without the part of its address after "?", because that part contained a personal detail: ${top.url}`,
+    read: `Our server also opened ${which} and read its text: ${top.url}`,
+    "read-without-query": `Our server also opened ${which} without the part of its address after "?", because that part contained a personal detail: ${top.url}`,
     skipped: `The top result (${host}) was not opened, because its address contained a personal detail. The answer uses the search excerpts only.`,
     failed: `The top result (${host}) could not be opened. The answer uses the search excerpts only.`,
   }[top.outcome];

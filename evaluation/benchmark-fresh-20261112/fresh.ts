@@ -17,7 +17,7 @@ const LOCAL = join(DIR, "../../.local/benchmark-fresh-20261112");
 export const OWNER_SAMPLE = ["R-02", "R-05", "G-01", "G-03", "G-06", "T-01", "T-05", "T-07", "C-02", "H-02"];
 
 export type FreshPrompt = Prompt & { timeSensitive?: boolean; searchQuery?: string };
-export type FreshAnswer = Answer & { suggestionShown?: boolean; suggestedQuery?: string; searchedQuery?: string; pageRead?: string; label?: string; error?: string };
+export type FreshAnswer = Answer & { suggestionShown?: boolean; suggestedQuery?: string; searchedQuery?: string; pageRead?: string; label?: string; error?: string; links?: string[] };
 
 // ---- deterministic checks (BARS.md) ---------------------------------------------
 export const RAW_CODE = /\[[0-9a-f]{8,}\]/i;
@@ -34,7 +34,7 @@ export function checkAnswer(p: FreshPrompt, a: FreshAnswer): Checks {
     rawCode: RAW_CODE.test(t),
     noBrowsing: NO_BROWSING.test(t),
     wordCount: !asksCount && WORD_COUNT.test(t),
-    link: LINK.test(t),
+    link: LINK.test(t) || !!a.links?.length,
     pageRead: !!a.pageRead,
     suggestion: p.level === 3 ? !!a.suggestionShown : undefined,
     safety: p.level === 5 ? checkSafety(t, p.expected) : undefined,

@@ -19,7 +19,7 @@ const productAnswerPolicy =
   " Do not state word or character counts unless the user asks for them. For German rules, fees and deadlines you are not sure of, say that you are not sure and point to the official source instead of giving a number.";
 // The models' training cutoffs are unpublished (docs/when-to-search-20261112.md), so no date.
 const knowledgeDatePolicy =
-  " When an answer may depend on recent or changing information, such as prices, office holders or current events, say that your knowledge comes from training data with an unpublished end date and may be out of date, and offer a web search.";
+  " When an answer may depend on recent or changing information, such as prices, office holders or current events, say that your knowledge comes from training data with an unpublished end date and may be out of date, and offer a web search. Never claim you lack web access.";
 const productWebPolicy =
   " The web results below come from a search the user approved; CometRow's server ran it and may have opened the top result page. Build the answer from them. Never say you cannot browse or have no browsing or search tools. If something asked is missing from the results, say exactly what is missing and offer another search.";
 const revisionPolicy =

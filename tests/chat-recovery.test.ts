@@ -89,7 +89,8 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
             inference: {
               ready: true,
               reason: "TEST TRANSPORT ONLY",
-              qualification: { maxInputCharacters: 4000 },
+              // 5,000: the product prompt grew on 12 November; the 6,000-character draft below must still be refused.
+              qualification: { maxInputCharacters: 5000 },
             },
             search: false,
           },

@@ -177,6 +177,8 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
     }
     if (first?.tapped) searched = true;
     const mainText = await page.locator("main").innerText().catch(() => "");
+    // Citations render as site-name links, so innerText hides the address: keep the hrefs.
+    const links = await answer(page).locator("a[href^='http']").evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).href)).catch(() => [] as string[]);
     const pageRead = /Our server also opened the top official result[^:]*: (https:\/\/\S+)/.exec(mainText)?.[1]?.replace(/[.,)]+$/, "");
     const topPageNote = /(Our server also opened the top official result[^\n]*|The top result \([^)]*\)[^\n]*)/.exec(mainText)?.[1];
     const searchedQuery = /Searched the web(?: automatically)? for: "([^"]*)"/.exec(mainText)?.[1] ?? (searched ? query : undefined);
@@ -196,7 +198,7 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
       : undefined;
     return {
       text, notices, failure, ttftMs: all[0].ttftMs, totalMs: all.reduce((n, t) => n + t.totalMs, 0), turnTimings: all, model: "(see tiers)", mode, label, searched,
-      suggestionShown: probe.suggestionShown || !!first?.suggestionShown, suggestedQuery: first?.suggestedQuery, tapped: !!first?.tapped, searchedQuery, pageRead, topPageNote,
+      suggestionShown: probe.suggestionShown || !!first?.suggestionShown, suggestedQuery: first?.suggestedQuery, tapped: !!first?.tapped, searchedQuery, pageRead, topPageNote, links,
     };
   } finally {
     await page.close();

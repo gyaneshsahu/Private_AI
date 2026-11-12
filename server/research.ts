@@ -158,6 +158,9 @@ export async function fetchPage(
   signal?: AbortSignal,
   // When set, longer page text is cut to this many characters instead of refused.
   maxText?: number,
+  // Same-site redirects to follow (the top-page read only); each target is checked again.
+  redirects = 0,
+  allowTarget: (url: URL) => boolean = () => true,
 ): Promise<Source[]> {
   const url = pageUrl(value);
   let direct: Agent | undefined;
@@ -194,6 +197,10 @@ export async function fetchPage(
     });
     if (response.status >= 300 && response.status < 400) {
       await response.body?.cancel();
+      const location = response.headers.get("location");
+      const next = location ? new URL(location, url) : undefined;
+      if (redirects > 0 && next && sameSite(url, next) && allowTarget(next))
+        return await fetchPage(next.href, signal, maxText, redirects - 1, allowTarget);
       throw new Error(
         "This page redirects. No redirected request was made; approve the destination separately.",
       );
@@ -228,6 +235,8 @@ export async function fetchPage(
     await direct?.destroy();
   }
 }
+const bareHost = (u: URL) => u.hostname.toLowerCase().replace(/^www\./, "");
+export const sameSite = (a: URL, b: URL) => bareHost(a) === bareHost(b);
 // "Official": a government, EU, international or central-bank domain, or a domain
 // named after what the question asks about (bahn.de for "BahnCard"). Results are
 // already in the search provider's rank order.
@@ -281,12 +290,15 @@ export function officialHost(hostname: string, query: string) {
     : label.length >= 3 && words.some((word) => word.startsWith(label));
 }
 export function officialResult(query: string, sources: Source[]) {
-  const web = sources.filter((source) => source.url);
-  return (
-    web.find((source) => officialHost(new URL(source.url!).hostname, query)) ??
-    web[0]
-  );
+  return topPageCandidates(query, sources)[0];
 }
+// Official results first (in rank order), then the rest; the reader tries a few.
+export function topPageCandidates(query: string, sources: Source[]) {
+  const web = sources.filter((source) => source.url);
+  const official = web.filter((source) => officialHost(new URL(source.url!).hostname, query));
+  return [...official, ...web.filter((source) => !official.includes(source))];
+}
+export const TOP_PAGE_ATTEMPTS = 3;
 // A page address can carry the user's details (a search result linking to a form
 // with an email in its query). Never send a recognised identifier to the site.
 export function pageAddressForReading(
@@ -313,6 +325,7 @@ export const TOP_PAGE_CHARACTERS = 6000;
 export interface TopPage {
   url: string;
   outcome: "read" | "read-without-query" | "skipped" | "failed";
+  official?: boolean;
   source?: Source;
 }
 // Under the same search approval: open the top official result once, with the
@@ -324,29 +337,40 @@ export async function readTopPage(
   signal?: AbortSignal,
   fetcher: typeof fetchPage = fetchPage,
 ): Promise<TopPage | undefined> {
-  const top = officialResult(query, sources);
-  if (!top?.url) return undefined;
-  const address = pageAddressForReading(top.url);
-  if (address.outcome === "skipped")
-    return { url: new URL(top.url).origin, outcome: "skipped" };
-  try {
-    const [page] = await fetcher(
-      address.url,
-      AbortSignal.any([AbortSignal.timeout(8000), ...(signal ? [signal] : [])]),
-      TOP_PAGE_CHARACTERS,
-    );
-    return {
-      url: address.url,
-      outcome: address.outcome,
-      source: {
-        ...page,
-        text: `Top result page opened by CometRow's server (first ${TOP_PAGE_CHARACTERS} characters at most): ${page.text}`,
-      },
-    };
-  } catch {
-    signal?.throwIfAborted();
-    return { url: address.url, outcome: "failed" };
+  const candidates = topPageCandidates(query, sources).slice(0, TOP_PAGE_ATTEMPTS);
+  if (!candidates.length) return undefined;
+  // A redirect target must not carry a recognised identifier either.
+  const clean = (u: URL) => pageAddressForReading(u.href).outcome === "read";
+  let first: TopPage | undefined;
+  for (const top of candidates) {
+    const address = pageAddressForReading(top.url!);
+    if (address.outcome === "skipped") {
+      first ??= { url: new URL(top.url!).origin, outcome: "skipped" };
+      continue;
+    }
+    try {
+      const [page] = await fetcher(
+        address.url,
+        AbortSignal.any([AbortSignal.timeout(8000), ...(signal ? [signal] : [])]),
+        TOP_PAGE_CHARACTERS,
+        3,
+        clean,
+      );
+      return {
+        url: page.url ?? address.url,
+        outcome: address.outcome,
+        official: officialHost(new URL(page.url ?? address.url).hostname, query),
+        source: {
+          ...page,
+          text: `Top result page opened by CometRow's server (first ${TOP_PAGE_CHARACTERS} characters at most): ${page.text}`,
+        },
+      };
+    } catch {
+      signal?.throwIfAborted();
+      first ??= { url: address.url, outcome: "failed" };
+    }
   }
+  return first;
 }
 export async function searchWeb(
   query: string,

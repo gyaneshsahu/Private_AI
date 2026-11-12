@@ -69,7 +69,7 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
                 evidenceKind: "search-excerpt",
               },
             ],
-            topPage: { url: "https://www.example.gov/fees", outcome: "read" },
+            topPage: { url: "https://www.example.gov/fees", outcome: "read", official: true },
           },
         });
       return route.continue();

@@ -548,7 +548,7 @@ export function createApp(config: Config) {
       );
       res.json({
         sources: top?.source ? [...sources, top.source] : sources,
-        ...(top ? { topPage: { url: top.url, outcome: top.outcome } } : {}),
+        ...(top ? { topPage: { url: top.url, outcome: top.outcome, ...(top.official ? { official: true } : {}) } } : {}),
       });
     } catch {
       res.status(400).json({
