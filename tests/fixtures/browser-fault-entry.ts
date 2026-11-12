@@ -17,6 +17,32 @@ Object.assign(window, {
           : "SYNTHETIC_REQUEST_CANARY: calculate 2 + 2",
       ),
     );
+    if (mode === "masked_attachment") {
+      // A document whose IBAN wraps across lines and whose birth date and tax ID sit under their labels.
+      conversation.messages[0] = newMessage("user", "Is DE89 3704 0044 0532 0130 00 the account on this invoice?");
+      conversation.attachments.push({
+        id: "synthetic-invoice",
+        name: "invoice.txt",
+        kind: "document",
+        selected: true,
+        sources: [
+          {
+            id: "invoice-1",
+            title: "Synthetic invoice",
+            text: [
+              "Rechnung Nr. 4711",
+              "Bitte überweisen Sie auf IBAN DE89 3704 0044",
+              "0532 0130 00 bis zum 30.11.2026.",
+              "Geburtsdatum:",
+              "17.04.1958",
+              "Kontakt: anna.schmidt@example.test",
+              "Steuer-ID",
+              "86095742719",
+            ].join("\n"),
+          },
+        ],
+      } as never);
+    }
     let keptOnDevice: unknown;
     const checkedHistory = new Map<string, string>();
     if (mode === "checked_history") {

@@ -126,6 +126,8 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         text = frame(JSON.stringify(checked), "stop");
       }
       if (mode === "output_limit") text = frame("", "length");
+      if (mode === "masked_attachment")
+        text = frame("Pay {{IBAN-1}}; tax ID {{TAX-ID-1}}.", "stop");
       if (mode === "masked")
         // The placeholder is split across frames to exercise streamed reinsertion.
         text =
@@ -235,6 +237,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
       "deepseek_off",
       "policy_v2",
       "masked",
+      "masked_attachment",
       "pre_cancel",
       "stalled_verification",
       "wrong_host",
@@ -265,6 +268,7 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         "deepseek_off",
         "policy_v2",
         "masked",
+        "masked_attachment",
       ].includes(mode);
       const finished = succeeds
         ? page.waitForEvent("requestfinished", {
@@ -331,6 +335,17 @@ it("real browser transport with a synthetic encrypted peer rejects faults withou
         expect(result.testError).toContain("did not accept this request");
         expect(result.testError).not.toContain("SYNTHETIC_ERROR_CANARY");
         expect(result.answer.text).toBe("");
+      }
+      if (mode === "masked_attachment") {
+        // A document whose identifiers wrap across lines or follow a label line is
+        // masked before it is serialised (A5), with the same placeholders as the message.
+        const wire = requests[before].plaintext;
+        for (const leak of ["DE89", "0532 0130", "17.04.1958", "86095742719", "anna.schmidt"])
+          expect(wire, leak).not.toContain(leak);
+        const payload = JSON.parse(wire);
+        expect(payload.messages.at(-1).content).toContain("Is {{IBAN-1}} the account");
+        expect(JSON.stringify(payload.messages)).toContain("{{IBAN-1}}");
+        expect(result.answer.text).toBe("Pay DE89 3704 0044 0532 0130 00; tax ID 86095742719.");
       }
       if (mode === "masked") {
         const payload = JSON.parse(requests[before].plaintext);

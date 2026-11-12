@@ -696,7 +696,12 @@ export function createMaskingSession(): MaskingSession {
     if (existing) return existing.placeholder;
     const next = (counters.get(kind) ?? 0) + 1;
     counters.set(kind, next);
-    const entry = { kind, placeholder: `{{${kind}-${next}}}`, value };
+    // A value wrapped across lines in a document is put back on one line in replies.
+    const entry = {
+      kind,
+      placeholder: `{{${kind}-${next}}}`,
+      value: value.replace(/[ \t]*\n[ \t]*/g, " "),
+    };
     byValue.set(key, entry);
     kept.push(entry);
     return entry.placeholder;
@@ -842,5 +847,27 @@ export function prepareSearchQuery(query: string): {
     removed,
     note: summary,
     warning: POSSIBLY_PERSONAL.test(value),
+  };
+}
+
+/**
+ * Masks attachment and research text before it is serialised into the request (A5).
+ * JSON escaping turns line breaks into the two characters "
+", which hides identifiers
+ * that wrap across lines or follow a label on the previous line, so the final pass over
+ * the composed messages alone is not enough. Same session, so placeholders stay consistent.
+ */
+export function maskAttachmentSources<
+  C extends { attachments: { sources: { text: string }[] }[] },
+>(conversation: C, masking: Pick<MaskingSession, "mask">): C {
+  return {
+    ...conversation,
+    attachments: conversation.attachments.map((attachment) => ({
+      ...attachment,
+      sources: attachment.sources.map((source) => ({
+        ...source,
+        text: masking.mask(source.text),
+      })),
+    })),
   };
 }

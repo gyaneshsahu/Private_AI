@@ -258,3 +258,24 @@ it("treats letters with umlauts and ß as word characters at identifier edges", 
     "TAX-ID",
   ]);
 });
+
+it("masks attachment text before it is serialised, so wrapped and label-line identifiers do not leak (A5)", async () => {
+  const { composeContext } = await import("../src/conversation");
+  const { emptyConversation } = await import("../shared/contracts");
+  const { maskAttachmentSources } = await import("../src/identifier-masking");
+  const doc = "IBAN DE89 3704 0044\n0532 0130 00\nGeburtsdatum:\n17.04.1958\nSteuer-ID\n86095742719";
+  const conversation = {
+    ...emptyConversation(),
+    attachments: [{ id: "a", name: "a.txt", kind: "document", selected: true, sources: [{ id: "s1", title: "Synthetic", text: doc }] } as never],
+  };
+  const leaks = (wire: string) => ["0532 0130", "17.04.1958", "86095742719"].filter((v) => wire.includes(v));
+  // Masking only the composed messages misses them: JSON turns the line breaks into "\n".
+  const late = createMaskingSession();
+  const lateWire = composeContext(conversation, 100000).map((m) => late.mask(m.content)).join("\n");
+  expect(leaks(lateWire).length).toBeGreaterThan(0);
+  // Masking the sources first catches all of them, and restore puts the IBAN back on one line.
+  const early = createMaskingSession();
+  const wire = composeContext(maskAttachmentSources(conversation, early), 100000).map((m) => early.mask(m.content)).join("\n");
+  expect(leaks(wire)).toEqual([]);
+  expect(early.restore("{{IBAN-1}}")).toBe("DE89 3704 0044 0532 0130 00");
+});
