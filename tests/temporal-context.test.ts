@@ -36,5 +36,9 @@ it("keeps the bounded compatibility context within its approved input limit", ()
   c.messages = [
     newMessage("user", "Calculate 2 + 2. Reply with just the number."),
   ];
-  expect(() => composeContext(c, 2000)).not.toThrow();
+  // The 2000-character limit belonged to the completed, non-reusable 4-5 October
+  // compatibility approval (old prompt); the product prompt grew with the
+  // 12 November health/emergency policy. 8000 is the smallest limit in current use.
+  expect(() => composeContext(c, 8000)).not.toThrow();
+  expect(() => composeContext(c, 2000)).toThrow("nothing has been silently truncated");
 });

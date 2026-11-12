@@ -246,6 +246,9 @@ async function streamMaskedConversation(
       new Date(),
       report.answerPolicyVariant,
     );
+    // The fixed policy holds no user content; masking it would turn its helpline numbers
+    // into placeholders on every request. Text appended later is still masked.
+    const policyLength = messages[0].content.length;
     const evidenceSources = selectedSources(conversation);
     if (report.optionalCalculator) {
       if (report.calculatorReplay)
@@ -336,8 +339,12 @@ async function streamMaskedConversation(
     // maintained verifier and EHBP SDK still own attestation and cryptography.
     // Parse SSE locally to avoid SDK error paths logging decrypted provider data.
     // Last step before encryption: identifiers leave this device only as placeholders.
-    for (const message of messages)
-      message.content = masking.mask(message.content);
+    for (const [index, message] of messages.entries())
+      message.content =
+        index === 0
+          ? message.content.slice(0, policyLength) +
+            masking.mask(message.content.slice(policyLength))
+          : masking.mask(message.content);
     if (masking.kept.length) messages[0].content += MASKING_INSTRUCTION;
     onKeptOnDevice?.(masking.summary());
     const requestBody = {
