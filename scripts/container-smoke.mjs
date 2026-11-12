@@ -140,10 +140,17 @@ try {
   console.log(
     "Packaged invitation CLI initializes, backs up and stages a paused synthetic recovery as the non-root runtime user.",
   );
-} catch {
+} catch (error) {
   console.error(
     "Container smoke failed. Inspect the local build/runtime; no provider request was configured.",
   );
+  // Say why (12 Nov: the cause, a missing module at start-up, was hidden). The container runs
+  // with synthetic settings only, so its log holds no secrets.
+  console.error(String(error?.stderr || error?.message || error).slice(0, 2000));
+  try {
+    // Both of the container's streams, straight to this job's output.
+    execFileSync("docker", [process.platform === "win32" ? "--host=npipe:////./pipe/dockerDesktopLinuxEngine" : "--host=unix:///var/run/docker.sock", "logs", "--tail", "40", name], { env, stdio: ["ignore", "inherit", "inherit"] });
+  } catch {}
   process.exitCode = 1;
 } finally {
   try {
