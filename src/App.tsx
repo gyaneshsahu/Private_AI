@@ -49,6 +49,10 @@ import {
   checkArithmetic,
 } from "./arithmetic/check";
 import {
+  checkAnswerCompleteness,
+  completenessWarning,
+} from "./arithmetic/completeness";
+import {
   DISAPPEAR_LABELS,
   expireMessages,
   type DisappearAfter,
@@ -681,7 +685,14 @@ export function App() {
                     status: m.text ? "complete" : "error",
                     ...(!m.text ? { failure: "empty" as const } : {}),
                     ...(m.text
-                      ? { arithmeticCheck: checkArithmetic(m.text) }
+                      ? {
+                          arithmeticCheck: checkArithmetic(m.text),
+                          completenessCheck: checkAnswerCompleteness(
+                            c.messages,
+                            m.id,
+                            m.text,
+                          ),
+                        }
                       : {}),
                     answeredBy: answerLabel(
                       choiceForThis,
@@ -1793,6 +1804,11 @@ export function App() {
                         {AMBIGUOUS_NUMBER_WARNING}
                       </p>
                     )}
+                  {!!message.completenessCheck?.missing.length && (
+                    <p className="warning arithmetic-check" role="alert">
+                      {completenessWarning(message.completenessCheck.missing)}
+                    </p>
+                  )}
                   {message.keptOnDevice && (
                     <p className="muted kept-on-device">
                       {message.keptOnDevice} Placeholders went to the secure

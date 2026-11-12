@@ -90,7 +90,16 @@ The old rules beat neither single model, which is the failure the routing resear
 - **What makes an error visible is a check:**
   - The app already recomputes every calculation written in an answer and warns on a mismatch.
   - The arithmetic gate showed that the remaining silent errors are **missing figures** (an answer leaves out a figure the question asked for), not miscalculations.
-- **Next step (not built):** a check that every figure the question asks for appears in the answer. It is deterministic and runs on the device. The research supports outside checks over "check your work": asking a model to recheck itself lowers accuracy.
+- **Next step (built 12 November, see below):** a check that every figure the question asks for appears in the answer. It is deterministic and runs on the device. The research supports outside checks over "check your work": asking a model to recheck itself lowers accuracy.
+
+#### Completeness check (built)
+
+- **What it does:** after an answer ends, the device reads which figures the user's last question asks for and checks that the answer states each one. No model call; nothing is sent or logged. Only the count and fixed names (for example "gross") are stored with the message.
+- **Warning** (same style as the arithmetic warnings, English only like them): "This answer may not state every figure you asked for: missing gross amount. Please check before you rely on it." With several: "missing tax, gross amount and pay".
+- **Figures it recognises** (German and English): tax / VAT / Steuer, gross / brutto, net / netto, total / Summe / Gesamt, discount / Skonto / Rabatt, amount to pay / Zahlbetrag, pay / Lohn, amount per person, percentage change, percentage share (Anteil), average, interest / Zinsen, repayment / Rückzahlung, final amount / Endbetrag, price / Preis, refund / Erstattung, clock time, date, and "how many".
+- **Conservative:** it warns only when the answer states figures, none of them is labelled as the asked-for figure, and every other new figure is labelled as something else (for example an hourly rate when the pay was asked for). Unlabelled working, an answer without figures, or a question it cannot read gives no warning. A short follow-up with a new figure and no request of its own ("Mit dem reduzierten Satz von 2.6 %?") is read with the question before it.
+- **Measured on stored answers:** arithmetic gate v3 (four systems, 355 conversations): 24 of the 25 silent wrong conversations get the warning, and none of the 290 correct ones. The one it misses labels the hourly rate "Stundenlohn", which other answers also use for the pay. Blind benchmark and fresh benchmark answers (396, every prompt and mode): no warnings.
+- **Code and tests:** `src/arithmetic/completeness.ts`; `tests/arithmetic-completeness.test.ts` (English and German, and the gate's question texts with synthetic complete and incomplete answers); `tests/arithmetic-completeness-ui.test.ts`.
 
 ### 5. Provider independence
 

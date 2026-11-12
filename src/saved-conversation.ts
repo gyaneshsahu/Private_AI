@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { Conversation } from "../shared/contracts";
+import { QUANTITY_KEYS } from "./arithmetic/completeness";
 
 const source = z.object({
   id: z.string(),
@@ -43,6 +44,13 @@ const conversationBody = z.object({
           relations: z.number().int().nonnegative(),
           mismatches: z.number().int().nonnegative(),
           ambiguous: z.number().int().nonnegative().optional(),
+        })
+        .strict()
+        .optional(),
+      completenessCheck: z
+        .object({
+          requested: z.number().int().nonnegative(),
+          missing: z.array(z.enum(QUANTITY_KEYS)),
         })
         .strict()
         .optional(),
