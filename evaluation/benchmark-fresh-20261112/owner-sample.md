@@ -21,37 +21,33 @@ What are the opening hours and the adult ticket price of the Neues Museum in Ber
 
 ~~~~~~markdown
 Kept on this device: 1 phone number. Placeholders went to the secure server instead; the values were put back here. Not every number is recognised, least of all in photos and scans.
-Today, Thursday 12 November 2026: Opening hours are 10:00–18:00 museumsportal-berlin.desmb.museum. Last entry is 30 minutes before closing, i.e. 17:30 museumsportal-berlin.de.
-Adult ticket: €14.00 for the Neues Museum museumsportal-berlin.de. The "Museum Island + Panorama" ticket is €24.00 museumsportal-berlin.de. Children and young people up to 18 are free museumsportal-berlin.de.
-Caveats:
-The price and hours come from the Museumsportal Berlin page; the Staatliche Museen zu Berlin's own ticket page excerpt only showed a 3-day Museum Pass Berlin at €32.00, not the single adult price smb.museum. A third-party guide also lists €14 for adults in 2026 thebettervacation.com, but that is independent, not official confirmation.
-General hours are Tuesday–Sunday 10:00–18:00, Monday closed smb.museum. The official SMB notice mentions closure 15–17 March 2027, which doesn't affect today smb.museum.
-The excerpts don't say whether today is a holiday with altered hours; the listed special days (1 Jan, 8 Mar, 1 May, 3 Oct, 24/25/26/31 Dec) don't include today museumsportal-berlin.de.
-I can't guarantee no short-notice change; checking smb.museum before you go is the safest confirmation.
+Opening hours today (Thursday, 12 November 2026): 10:00–18:00. The museum is closed on Mondays; Tuesday–Sunday opening is 10:00–18:00, with last entry 30 minutes before closing museumsportal-berlin.desmb.museum.
+Caveat: these are the museum's regular hours, and I can't independently confirm that today has no special closure. The only announced closure in the sources is 15–17 March 2027 for maintenance smb.museum.
+Adult ticket price: €14.00 for the Neues Museum; the combined "Museum Island + Panorama" ticket is €24.00. Reduced admission is €7.00 (€12.00 for the combined ticket). Children and young people up to 18 are free museumsportal-berlin.de. Both the Berlin museums portal and a third-party ticket page give €14 for 2026 museumsportal-berlin.dethebettervacation.com.
+Not confirmed: I did not find a current price for the separate Museum Pass Berlin in a listing that clearly matches the Neues Museum admission — one excerpt mentions a 3-day pass for €32.00 (€16.00 reduced) smb.museum, but I can't confirm from the sources that this covers the Neues Museum or is up to date. Check the official SMB ticket page before relying on it.
+Main entrance is the James-Simon-Galerie; the Kolonnadenhof entrance requires a valid ticket museumsportal-berlin.de.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
 Kept on this device: 1 phone number. Placeholders went to the secure server instead; the values were put back here. Not every number is recognised, least of all in photos and scans.
-Today, Thursday 12 November 2026, the Neues Museum should be open 10:00–18:00. Regular hours are Tuesday–Sunday 10:00–18:00, Monday closed, with last entry 30 minutes before closing museumsportal-berlin.desmb.museum. Exception dates listed (1 Jan, 8 Mar, 1 May, 3 Oct, 24/25/26/31 Dec) don't apply to today museumsportal-berlin.de. This comes from pages retrieved today, but they are excerpts — I can't rule out a short-notice closure; the official site is the place to check before travelling.
-Adult admission is €14.00 museumsportal-berlin.de, also given as €14 for 2026 thebettervacation.com. Reduced price is €7.00, and under-18s are free museumsportal-berlin.de. A combined "Museum Island + Panorama" ticket is €24.00 (reduced €12.00) museumsportal-berlin.de.
-Not confirmed: I found no separate adult price on the official prices excerpt; it only mentions the 3-day Museum Pass Berlin at €32.00 (reduced €16.00) for permanent exhibitions smb.museum. Details like guided-tour times on other days are incomplete in these excerpts.
+Opening hours today (Thu, 12 Nov 2026): 10:00–18:00, with last entry 30 minutes before closing (17:30) museumsportal-berlin.de. The museum is closed on Mondays; otherwise Tue–Sun 10:00–18:00 museumsportal-berlin.desmb.museum. No special hours or closure are listed for today — the only maintenance closure mentioned is 15–17 March 2027 smb.museum.
+Adult ticket price: €14 museumsportal-berlin.de, which matches the 2026 price reported by a second source thebettervacation.com. For context: reduced admission is €7, children and young people up to 18 are free, and a combined Museum Island + Panorama ticket costs €24 museumsportal-berlin.de.
+Both items are confirmed by the official Museumsportal Berlin page and the SMB website. One caveat: I'm relying on my device clock for "today"; if your actual date is a Monday, the museum would be closed.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
 Kept on this device: 1 phone number. Placeholders went to the secure server instead; the values were put back here. Not every number is recognised, least of all in photos and scans.
-Opening hours today (Thursday, 12 November 2026)
-Open 10:00–18:00, with last entry 30 minutes before closing (17:30) museumsportal-berlin.de
-The museum is normally closed Mondays and open Tue–Sun 10:00–18:00 museumsportal-berlin.desmb.museum; today is a Thursday, so regular hours apply.
-A scheduled maintenance closure (15–17 March 2027) does not affect today smb.museum.
-Adult ticket price
-€14 (reduced €7; children and young people up to 18 free) museumsportal-berlin.de
-A combined "Museum Island + Panorama" ticket costs €24 museumsportal-berlin.de, which a third-party guide also lists as the €24 Museum Island Day Ticket thebettervacation.com
-The SMB's own ticket page excerpt only showed the 3-day Museum Pass Berlin (€32), not the single-museum price smb.museum, so the €14 figure rests on the Museumsportal Berlin page (fetched today) plus that third-party guide — worth a quick check on smb.museum before you go.
-One caveat: I'm relying on the device clock for "today"; if the date is wrong, the regular Tue–Sun hours above still apply on any normal weekday.
+Neues Museum, Berlin – today, Thursday 12 November 2026
+Opening hours: Tuesday–Sunday 10:00–18:00, Monday closed; last entry 30 minutes before closing museumsportal-berlin.desmb.museum. So today it should be open 10:00–18:00, with last entry at 17:30. Note that today's specific date is not explicitly listed on the pages – this follows from the regular weekly schedule.
+Adult ticket: €14.00 museumsportal-berlin.dethebettervacation.com. Reduced price €7.00; children and young people up to 18 are free museumsportal-berlin.de.
+A couple of caveats:
+The combined "Museum Island + Panorama" ticket is €24.00 (reduced €12.00) museumsportal-berlin.de. One secondary site describes a "Museum Island Day Ticket (€24)" covering all five museums thebettervacation.com – that wording conflicts somewhat with the official page, so check at the ticket desk which option you're buying.
+The official page notes the museum will be closed 15–17 March 2027 for maintenance smb.museum, which doesn't affect today.
+These are search excerpts and one partial page, not a full read of the ticket page; prices and hours can change, so the official SMB site is the safest check before you go.
 ~~~~~~
 
 ## 2. R-05 (level 1: Research (search on))
@@ -71,45 +67,42 @@ Wie viel Kindergeld gibt es 2026 pro Kind und Monat?
 
 ~~~~~~markdown
 Kept on this device: 1 phone number. Placeholders went to the secure server instead; the values were put back here. Not every number is recognised, least of all in photos and scans.
-2026 gibt es 259 Euro Kindergeld pro Kind und Monat – unabhängig von der Anzahl der Kinder kindergeld.orgkindergeld.org. Das sind 4 Euro mehr als 2025 (255 Euro) kindergeld.orgdgb.de.
-Für mehrere Kinder ergibt sich daraus laut Tabelle kindergeld.org:
-Kinder	2025	2026
-1	255 €	259 €
-2	510 €	518 €
-3	765 €	777 €
-4	1.020 €	1.036 €
-5	1.275 €	1.295 €
-Hinweis: Die Belege stammen aus Suchauszügen und einer teilweise geladenen Seite, nicht von der offiziellen Familienkassen-Website. Für verbindliche Angaben prüfe die Seite der Familienkasse bzw. arbeitsagentur.de. Soll ich dazu eine Suche machen?
+259 Euro pro Kind und Monat ab dem 1. Januar 2026. kindergeld.org
+Das ist eine Erhöhung um 4 Euro gegenüber 2025 (255 Euro). dgb.de Der Betrag gilt einheitlich für jedes Kind, unabhängig von der Anzahl der Kinder. dgb.de finanz.de
+Details:
+Ausgezahlt wird ab dem Geburtsmonat, bis zum 18. Lebensjahr ohne Bedingungen, in Ausbildung/Studium unter Nachweis längstens bis zum 25. Geburtstag. kindergeld.org finanz.de
+Ein schriftlicher Antrag bei der Familienkasse ist erforderlich. kindergeld.org
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
 Kept on this device: 1 phone number. Placeholders went to the secure server instead; the values were put back here. Not every number is recognised, least of all in photos and scans.
-259 Euro pro Kind und Monat beträgt das Kindergeld im Jahr 2026 kindergeld.org. Die Erhöhung trat zum 1. Januar 2026 in Kraft – eine Steigerung um 4 Euro gegenüber 255 Euro im Jahr 2025 dgb.de kindergeld.org.
-Der Betrag gilt einheitlich für jedes Kind, unabhängig von der Anzahl der Kinder dgb.de raisin.com.
-Beispielhafte Monatsbeträge nach Kinderzahl kindergeld.org:
-Kinder	Kindergeld 2026/Monat
+2026 beträgt das Kindergeld 259 Euro pro Kind und Monat, unabhängig von der Anzahl der Kinder kindergeld.orgdgb.de. Die Erhöhung erfolgte zum 1. Januar 2026 von 255 Euro dgb.dekindergeld.org.
+Für mehrere Kinder ergibt sich daraus kindergeld.org:
+Kinder	Betrag/Monat 2026
 1	259 €
 2	518 €
 3	777 €
 4	1.036 €
-Verbindliche Auskünfte erteilt die Familienkasse.
+5	1.295 €
+Hinweis: Diese Angaben stammen aus Suchausschnitten und einer teilweise geladenen Seite; sie decken sich aber übereinstimmend. Verbindlich ist die Familienkasse. Die Höhe kann sich ab 2027 ändern – dazu lag mir keine belastbare Angabe vor.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
 Kept on this device: 1 phone number. Placeholders went to the secure server instead; the values were put back here. Not every number is recognised, least of all in photos and scans.
-2026 gibt es 259 Euro Kindergeld pro Kind und Monat – 4 Euro mehr als 2025 (255 Euro) kindergeld.org dgb.de. Der Betrag ist unabhängig von der Kinderzahl raisin.com dgb.de.
-Für mehrere Kinder ergibt sich laut Tabelle kindergeld.org:
-Kinder	2025	2026
-1	255 €	259 €
-2	510 €	518 €
-3	765 €	777 €
-4	1.020 €	1.036 €
-5	1.275 €	1.295 €
-Hinweis: Die Angaben stammen aus Suchergebnis-Auszügen bzw. einem teilweise geladenen Seiteninhalt kindergeld.org. Für verbindliche Beträge und Auszahlungstermine ist die offizielle Seite der Familienkasse bzw. der Bundesagentur für Arbeit die maßgebliche Quelle; die 259 € werden von mehreren Quellen übereinstimmend genannt finanz.de hopkins.law.
+2026 gibt es 259 € Kindergeld pro Kind und Monat – das ist eine Erhöhung um 4 € gegenüber 255 € im Jahr 2025 kindergeld.org kindergeld.org. Der Betrag ist seit 2023 unabhängig von der Zahl der Kinder raisin.com.
+Für mehrere Kinder ergibt sich daraus kindergeld.org:
+Kinder	2026 monatlich
+1	259 €
+2	518 €
+3	777 €
+4	1.036 €
+5	1.295 €
+Die Beträge nennen mehrere Quellen übereinstimmend, darunter der DGB mit der Erhöhung zum 1. Januar 2026 dgb.de. Ein Antrag bei der Familienkasse ist weiterhin nötig kindergeld.org finanz.de.
+Hinweis: Ich habe nur Auszüge und den Anfang der Hauptseite gesehen, keine vollständigen Originaldokumente. Für verbindliche Auskünfte ist die Familienkasse zuständig.
 ~~~~~~
 
 ## 3. G-01 (level 2: German rules, fees and deadlines)
@@ -130,50 +123,49 @@ Ich bin umgezogen. Bis wann muss ich mein Auto ummelden, und was kostet das unge
 ### Answer A
 
 ~~~~~~markdown
-Kurz gesagt
-Frist: Nach einem Umzug musst du die neue Halteradresse deines Autos in der Regel binnen einer Woche der Zulassungsstelle melden (Fahrzeug-Zulassungsverordnung). Die Frist läuft ab dem Einzug – wenn du schon umgezogen bist, also am besten zeitnah einen Termin buchen. Ich bin mir nicht ganz sicher, ob diese Frist aktuell unverändert gilt; verbindlich ist, was deine Zulassungsstelle sagt.
-Kosten: Den exakten Betrag kann ich nicht verlässlich nennen. Die Gebühren sind zwar bundeseinheitlich geregelt, hängen aber vom Aufwand ab. Als grobe, häufig genannte Größenordnung: ca. 10–30 € – weniger, wenn nur die Papiere berichtigt werden, mehr, wenn neue Kennzeichen oder Stempelplaketten dazukommen. Bitte prüfe den aktuellen Betrag auf der Website deiner Zulassungsstelle; manche (privat betriebene) Stellen verlangen zusätzlich kleine Servicepauschalen.
-Gut zu wissen
-Zuständig ist die Zulassungsstelle deines neuen Wohnorts. Bist du im selben Zulassungsbezirk geblieben, reicht meist eine einfache Adressberichtigung. Viele Bundesländer bieten die Ummeldung inzwischen auch online an („i‑Kfz“).
-Kennzeichen behalten: Dein bisheriges Kennzeichen darfst du in der Regel weiterführen, auch wenn der neue Bezirk ein anderes Kürzel hat. Neue Schilder sind optional und kosten extra.
-Unterlagen (typisch):
-Zulassungsbescheinigung Teil I (Fahrzeugschein) und Teil II (Fahrzeugbrief)
-Personalausweis oder Reisepass, ggf. aktuelle Meldebescheinigung
-IBAN / SEPA-Lastschriftmandat für die Kfz-Steuer
-Kennzeichen, falls neue Plaketten oder Schilder fällig werden
-Nicht vergessen
-Einwohnermeldeamt: Anmeldung des neuen Wohnsitzes binnen zwei Wochen (falls noch nicht geschehen).
-Kfz-Versicherung über den Umzug informieren – je nach Region kann sich der Beitrag ändern.
-Mein Wissensstand stammt aus Trainingsdaten und kann veraltet sein; die verbindlichen Zahlen und Fristen stehen auf der Website deiner Zulassungsstelle. Wenn du mir sagst, ob du im selben Zulassungsbezirk geblieben bist, kann ich dir sagen, welche Variante (Berichtigung oder Ummeldung) bei dir zutrifft.
+Ich kann Ihnen die wichtigsten Punkte nennen – bei Gebühren und Fristen im Detail bin ich mir aber nicht sicher, weil sich Regelungen ändern können. Bitte prüfen Sie das konkret bei Ihrer Zulassungsstelle bzw. auf den offiziellen Seiten (z. B. der Stadt/Gemeinde und beim Kraftfahrt-Bundesamt).
+Frist für die Ummeldung
+Grundsätzlich muss ein Fahrzeug nach einem Umzug innerhalb einer Frist von etwa sechs Wochen auf die neue Adresse umgeschrieben werden. Ob es in Ihrem Fall genau sechs Wochen sind, hängt u. a. vom Zulassungsbezirk ab – bitte bei der örtlichen Zulassungsstelle nachfragen.
+Wichtig: Nach Umzug in einen anderen Zulassungsbezirk können neue Kennzeichen nötig sein; ziehen Sie nur innerhalb des Bezirks um, bleibt das Kennzeichen meist erhalten.
+Die Ummeldung ist gebührenpflichtig und Sie sollten sie nicht hinauszögern – bei einem Verstoß kann ein Verwarnungsgeld anfallen.
+Kosten
+Die Gebühren liegen je nach Zulassungsstelle und ob neue Kennzeichen nötig sind typischerweise im niedrigen zweistelligen bis mittleren zweistelligen Euro-Bereich (ohne Schilder). Neue Kennzeichen kosten zusätzlich.
+Ich möchte Ihnen hier keine exakte Zahl nennen, da sie regional unterschiedlich ist – die genaue Gebühr erfahren Sie bei Ihrer Zulassungsstelle.
+Praktisch zu klären
+Welche Unterlagen verlangt werden (Personalausweis, Zulassungsbescheinigung Teil I und II, ggf. Vollmacht) – auch das variiert örtlich.
+Ob Sie einen Termin brauchen.
+Wenn Sie mir sagen, in welcher Stadt/Landkreis Sie jetzt wohnen, kann ich Ihnen die richtigen Suchbegriffe für die zuständige Zulassungsstelle nennen.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Ich kann Ihnen die Grundlagen nennen, aber die genauen Fristen und Gebühren hängen vom Einzelfall ab – bitte prüfen Sie die Angaben bei Ihrer Zulassungsbehörde.
-Frist
-Wenn Sie innerhalb Deutschlands umziehen und das Auto beim Umzug schon auf Sie zugelassen war: In der Regel müssen Sie die neue Adresse unverzüglich in den Fahrzeugpapieren ändern lassen. Oft wird ein Zeitraum von wenigen Wochen bzw. „unverzüglich“ genannt – ich bin mir bei der genauen Zahl nicht sicher. Verbindlich ist die Auskunft Ihrer örtlichen Zulassungsstelle.
-Wenn Sie aus dem Ausland nach Deutschland ziehen: Fahrzeuge müssen meist innerhalb einer bestimmten Frist (häufig einige Monate) umgemeldet werden, sonst drohen Steuer- und Zulassungsprobleme. Auch hier: bei der Zulassungsstelle erfragen.
-Kosten (grobe Orientierung)
-Bei einem reinen Adresswechsel ohne Halter-/Kennzeichenwechsel liegen die Gebühren typischerweise im Bereich von etwa 10–30 € (oft um 15–25 €), je nach Behörde. Kommen neue Kennzeichen, Feinstaubplakette oder andere Änderungen dazu, wird es mehr (dann eher 30–60 € oder darüber). Das sind Schätzwerte aus meinem Trainingswissen – Gebühren sind örtlich unterschiedlich und können sich geändert haben.
-Praktisch wichtig
-Halten Sie die Frist gegenüber Ihrer Zulassungsstelle ein, sonst kann es Bußgeld geben.
-Für die Änderung brauchen Sie meist: Personalausweis, Zulassungsbescheinigung Teil I und II, ggf. neue Adresse, und das Kennzeichen (je nach Verfahren).
-Bei parallelem Umzug der Kfz-Versicherung die neue Adresse melden – das kann den Beitrag ändern.
-Für die Kfz-Steuer ist der Halterwechsel/Adresswechsel ebenfalls relevant.
-Wenn Sie mir Ihr Bundesland/die Stadt nennen, kann ich Ihnen allgemein sagen, wo Sie die aktuellen Gebühren verbindlich nachsehen. Ihre genauen Symptome, ein Antrag oder eine Frist bei Ihrer Behörde sollten Sie im Zweifel direkt dort oder bei einem Fachmenschen klären – ich gebe nur allgemeine Orientierung, keine verbindliche Rechts- oder Behördenauskunft.
+Wenn du innerhalb Deutschlands umgezogen bist:
+Frist: Die Adressänderung muss unverzüglich bei der Zulassungsbehörde gemeldet werden (§ 15 FZV). Ein bundesweit einheitliches festes Datum wie „innerhalb von X Wochen“ gibt es nicht; viele Zulassungsstellen erwarten aber eine Meldung innerhalb von etwa 2 Wochen. Bei einem neuen Zulassungsbezirk brauchst du in der Regel neue Kennzeichen; im selben Bezirk wird meist nur die Adresse in den Fahrzeugpapieren geändert.
+Kosten: Das hängt von der Behörde und davon ab, ob neue Kennzeichen nötig sind. Grob:
+gleicher Zulassungsbezirk: ca. 10–25 €
+neuer Bezirk mit neuen Kennzeichen: ca. 30–70 € inklusive Kennzeichen
+Mitnehmen: Ausweis, Zulassungsbescheinigung Teil I und Teil II, ggf. Vollmacht. Bei Leasing/Finanzierung vorher klären, wer Teil II hat.
+Wichtig: Informiere auch deine Kfz-Versicherung über den Umzug.
+Die genauen Gebühren und die lokale Handhabung findest du bei deiner Zulassungsstelle; die Beträge variieren.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Kurz: Die genaue Frist solltest du bei deiner Zulassungsstelle bzw. im Internetauftritt deiner Stadt prüfen – ich bin mir bei der konkreten Zahl für 2026 nicht sicher genug, um sie dir zu nennen. Häufig genannt wird aber: unverzüglich, spätestens innerhalb von etwa 6 Wochen nach dem Umzug (oft „Ummeldung innerhalb von 6 Wochen“). Bei einem Umzug innerhalb desselben Zulassungsbezirks ändert sich oft nur die Adresse in den Papieren – das ist meist günstiger und teils formloser.
-Kosten (typische Größenordnung, je nach Kommune):
-Adressänderung / Ummeldung am selben Ort: grob 10–20 €
-Ummeldung mit neuem Kennzeichen (Umzug in anderen Bezirk): grob 25–40 €
-Dazu kommen ggf. neue Kennzeichen (Prägen, ca. 10–20 €) und bei Bedarf Feinstaubplakette (ca. 5–10 €).
-Praktisch: Termin bei der Zulassungsstelle, Personalausweis, Zulassungsbescheinigung Teil I (und II), ggf. alte Kennzeichen. Bei Versicherung und Kfz-Steuer (Zoll) die neue Adresse melden – die Steuer läuft meist automatisch über die Zulassung.
-Wenn du mir sagst, ob du innerhalb oder außerhalb deines bisherigen Zulassungsbezirks gezogen bist, kann ich es genauer eingrenzen.
+Kurz vorweg: Deine Frage betrifft aktuelle Regeln und Gebühren, die sich ändern können. Mein Wissen stammt aus Trainingsdaten mit unbekanntem Enddatum und kann veraltet sein. Für Verbindliches prüf die Website deiner Zulassungsstelle bzw. des Kraftfahrt-Bundesamts (KBA). Wenn du möchtest, kann ich eine Websuche anbieten.
+Frist
+Bei einem Umzug innerhalb Deutschlands muss das Fahrzeug in der Regel unverzüglich umgemeldet werden – üblich ist eine Frist von etwa 6 Wochen nach dem Umzug (oft als „unverzüglich, spätestens binnen 6 Wochen" formuliert). Die genaue Auslegung und mögliche Kulanz regelt die örtliche Zulassungsstelle. Verlass dich für deinen Fall auf deren Angaben.
+Bei einem Umzug ins Ausland gelten andere Regeln (Ausfuhr, ggf. neue Zulassung im Zielland).
+Kosten (typische Größenordnung)
+Ummeldung mit neuen Kennzeichen und neuer Feinstaubplakette: grob ca. 30–60 € bei der Zulassungsstelle, je nach Gemeinde und Leistungen.
+Behältst du deine Kennzeichen (möglich, wenn der bisherige Halterkreis passt), fällt oft weniger an, ca. 15–30 €.
+Dazu kommen ggf. Kosten für neue Kennzeichen (ca. 10–30 € pro Satz) und bei manchen Versicherern eine Vertragsänderung (meist kostenlos, aber melden musst du den Umzug).
+Online-Ummeldung (i-Kfz) ist in vielen Fällen möglich und oft günstiger, aber nicht überall und nicht für alle Fälle.
+Praktisch wichtig
+Melde den Umzug auch deiner Kfz-Versicherung – die Prämie hängt u. a. von der Region ab (Regionalklasse). Das kann teurer oder günstiger werden.
+Nimm zur Zulassungsstelle Personalausweis, Zulassungsbescheinigung Teil I und II, ggf. alten Kennzeichen und eVB-Nummer mit. Genaue Liste bei deiner Zulassungsstelle.
+Wenn du mir deine Stadt bzw. deinen Landkreis nennst, kann ich dir sagen, wonach du bei der dortigen Zulassungsstelle konkret suchen solltest – oder ich mache eine Websuche zu den aktuellen Gebühren.
 ~~~~~~
 
 ## 4. G-03 (level 2: German rules, fees and deadlines)
@@ -192,25 +184,26 @@ Wie hoch ist der Rundfunkbeitrag im Moment pro Monat?
 ### Answer A
 
 ~~~~~~markdown
-Der Rundfunkbeitrag in Deutschland beträgt derzeit 18,36 € pro Monat je Wohnung (Stand meines Wissens; der Betrag ist seit 2021 unverändert).
-Wichtig: Meine Informationen können veraltet sein, und die Höhe wird regelmäßig politisch und rechtlich diskutiert. Für den aktuell verbindlichen Betrag prüfe bitte die offizielle Seite des ARD ZDF Deutschlandradio Beitragsservice (rundfunkbeitrag.de) – dort steht der gültige Satz und auch, wer befreit werden kann.
+Der Rundfunkbeitrag liegt aktuell bei 18,36 € pro Monat (55,08 € pro Quartal). Er gilt seit 2015 unverändert in dieser Höhe.
+Wichtig: Zuletzt gab es Diskussionen und eine Entscheidung zum ARD-Staatsvertrag und zur Beitragsentwicklung. Da sich solche Beschlüsse kurzfristig ändern können, kann mein Wissensstand veraltet sein – für die aktuell verbindliche Höhe prüfe bitte die offizielle Seite des ARD ZDF Deutschlandradio Beitragsservice (rundfunkbeitrag.de).
+Wenn du möchtest, suche ich dir die aktuelle Bestätigung heraus.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Der Rundfunkbeitrag betrug nach meinem letzten gesicherten Kenntnisstand 18,36 € pro Monat (55,08 € je Quartal) – pro Wohnung, unabhängig von der Anzahl der Bewohner oder Geräte. Dieser Wert gilt seit 2021.
-Es gab allerdings Diskussionen über eine Erhöhung; ob und wann eine Änderung beschlossen wurde, kann ich nicht prüfen, da mein Wissen aus Trainingsdaten mit einem nicht veröffentlichten Enddatum stammt und daher veraltet sein kann.
-Verbindliche aktuelle Höhe: bitte direkt auf der offiziellen Seite rundfunkbeitrag.de (https://www.rundfunkbeitrag.de) nachsehen. Möchtest du, dass ich mit einer Websuche prüfe, ob der Beitrag inzwischen erhöht wurde?
+Kurz gesagt: Nach meinem Trainingsstand, der veraltet sein kann – der Grundbeitrag je Wohnung lag bei 18,36 €/Monat (55,08 €/Quartal), gültig seit Mai 2021. Die Länder haben eine Erhöhung auf 18,94 €/Monat beschlossen; als Inkrafttreten wurden je nach Berichtslage der 1. Juli 2025 bzw. der 1. Januar 2026 genannt. Welches Datum letztlich galt und ob es inzwischen weitere Änderungen gibt, kann ich nicht sicher sagen, da mein Wissen einen nicht veröffentlichen Stichtag hat.
+Ein paar Einordnungen:
+Der Beitrag gilt pro Wohnung, unabhängig von Anzahl der Personen, Geräte oder Radiosender.
+Verbindlich und aktuell ist die offizielle Seite des Beitragsservice von ARD, ZDF und Deutschlandradio: rundfunkbeitrag.de. Dort steht der momentane Betrag und auch, ob du unter Umständen (z. B. Schwerbehinderung, BAföG, Wohngeld) ermäßigt oder befreit bist.
+Da Gebühren sich ändern können: Möchtest du, dass ich eine Websuche nach dem aktuellen Stand mache?
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Der Rundfunkbeitrag in Deutschland beträgt derzeit 18,36 € pro Monat pro Wohnung (das entspricht 55,08 € pro Quartal).
-Hinweise:
-Mein Wissen kann veraltet sein; der Beitrag wird von den Ländern festgelegt und kann sich ändern. Verbindlich ist die offizielle Seite des ARD ZDF Deutschlandradio Beitragsservice (rundfunkbeitrag.de).
-Für bestimmte Personen gibt es Ermäßigungen oder Befreiungen (z. B. bei bestimmten Sozialleistungen); die Voraussetzungen stehen ebenfalls beim Beitragsservice.
+Der Rundfunkbeitrag beträgt seit August 2024 18,36 € pro Monat (55,08 € pro Quartal). Er gilt pro Wohnung, unabhängig von der Anzahl der Personen oder Geräte.
+Hinweis: Diese Angaben stammen aus meinem Trainingswissen und können veraltet sein. Für den aktuell verbindlichen Stand prüfe bitte die offizielle Seite des ARD ZDF Deutschlandradio Beitragsservice (rundfunkbeitrag.de) – dort findest du auch mögliche Änderungen oder Befreiungen (z. B. für Studierende, Empfänger von Sozialleistungen).
 ~~~~~~
 
 ## 5. G-06 (level 2: German rules, fees and deadlines)
@@ -230,56 +223,52 @@ Ich habe meinen Personalausweis verloren. Was muss ich tun, und was kostet ein n
 ### Answer A
 
 ~~~~~~markdown
-Wichtig zuerst: Wenn der Ausweis weg ist, gilt er als verloren – auch wenn er vielleicht nur verlegt wurde. Du solltest ihn also sperren lassen, damit niemand damit Unsinn machen kann.
-Was du tun musst
-Verlust melden und sperren lassen – bei der Polizei oder beim Bürgeramt deiner Gemeinde. Viele Städte bieten das auch online an (Suchbegriff: „Personalausweis sperren online“ auf der Seite deiner Stadt). Für die Sicherheitssperre gibt es ein bundesweites Angebot, über das du den Ausweis sofort ungültig machen lassen kannst.
-Neuen Ausweis beantragen – persönlich im Bürgeramt deines Hauptwohnsitzes, mit Termin. Nötig sind meist ein biometrisches Passfoto und ein gültiges Ausweisdokument (z. B. Reisepass) – wenn auch das fehlt, klär das beim Termin, die Ämter haben dafür Wege.
-Polizeiliche Verlustanzeige – sinnvoll, falls der Ausweis für Betrug missbraucht wird oder du ihn z. B. für Versicherungen brauchst.
-Bei Diebstahl: Anzeige bei der Polizei erstatten. Bei Identitätsdiebstahl-Verdacht (unbekannte Verträge, Mahnungen) zusätzlich Bank und ggf. Auskunfteien informieren.
+Das ist ärgerlich, aber gut lösbar. So gehen Sie am besten vor:
+1. Online-Ausweisfunktion (eID) sofort sperren lassen
+Damit niemand Ihre eID missbrauchen kann, rufen Sie die zentrale Sperr-Hotline 116 116 an (rund um die Uhr erreichbar). Die Sperre können Sie später bei der Behörde wieder aufheben lassen.
+2. Bei Diebstahl: Anzeige bei der Polizei
+Bei reinem Verlust ist keine Anzeige nötig, bei Diebstahl aber sinnvoll – sie schützt Sie, falls der Ausweis missbraucht wird.
+3. Neuen Personalausweis beantragen
+Persönlich beim Bürgeramt / Einwohnermeldeamt (oft mit Online-Termin). Dort melden Sie den Verlust und stellen den Antrag; es werden Fingerabdrücke abgenommen.
+Mitbringen: aktuelles biometrisches Passfoto und, falls vorhanden, einen Reisepass oder andere Identitätsnachweise (z. B. Geburtsurkunde).
+Bearbeitung dauert in der Regel einige Wochen. Brauchen Sie schneller einen Nachweis, stellt die Behörde einen vorläufigen Personalausweis sofort aus (3 Monate gültig, nur in Deutschland).
+Hinweis: Ab 16 besteht in Deutschland eine Besitzpflicht – Sie müssen wieder einen gültigen Personalausweis oder Reisepass besitzen, also zeitnah beantragen.
+Falls Sie sich gerade im Ausland befinden: wenden Sie sich an die zuständige deutsche Botschaft bzw. das Konsulat.
 Kosten
-Ein Personalausweis kostet in Deutschland in der Regel 37 Euro für Personen ab 24 Jahren. Für Personen unter 24 Jahren sind es meist 22,50 Euro. Dazu können Gebühren für das Passfoto und ggf. eine Verlustanzeige kommen. Die genauen Sätze legt deine Kommune fest – ich bin mir bei aktuellen Beträgen nicht sicher, bitte prüf sie auf der Seite deines Bürgeramts.
-Wichtig zur Frist: Der alte Ausweis wird mit der Sperrung ungültig. Ein neuer Ausweis dauert meist etwa zwei bis sechs Wochen; ein vorläufiger Ausweis (meist ca. 10 Euro) ist oft sofort möglich, wenn du schnell ein Dokument brauchst.
-Sag mir gern, in welcher Stadt du bist – dann kann ich dir sagen, wonach du auf deren Seite suchen solltest (Online-Sperrung, Termin, Gebühren).
+Zuletzt bekannt (Stand meiner Trainingsdaten, seit 2021): 37 € für Personen ab 24 Jahren, 22,90 € für unter 24-Jährige. Da Gebühren zuletzt geändert wurden und ich nicht sicher bin, ob das aktuell noch gilt, nennt Ihnen das Bürgeramt den verbindlichen Betrag; offizielle Informationen finden Sie auch auf dem Serviceportal des Bundes (service.bund.de).
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Wichtig zuerst: Melde den Verlust schnell – das schützt dich, falls jemand den Ausweis missbraucht.
-1. Verlust melden
-Polizei (Diebstahl/Verlustanzeige): Wenn der Ausweis gestohlen wurde oder du nicht ausschließen kannst, dass er in falsche Hände gerät, erstatte Anzeige bei der Polizei. Das ist bei Diebstahl sinnvoll, bei reinem Verlust oft optional – frag im Bürgeramt nach, ob sie eine Verlustanzeige verlangen.
-Bürgeramt / Einwohnermeldeamt: Dort meldest du den Verlust und beantragst einen neuen Ausweis. Viele Ämter verlangen eine schriftliche Verlustanzeige oder ein Formular.
-Sperrung: Den Personalausweis selbst kann man nicht wie eine Karte „sperren“. Missbrauch lässt sich aber erschweren, indem du den Verlust dokumentierst – die Polizei- bzw. Verlustanzeige ist dein Nachweis.
+In Deutschland gilt: Personalausweis verlieren = Diebstahl oder Verlust sofort melden und einen neuen beantragen. Konkrete Schritte:
+1. Verlust melden (wichtigster Schritt)
+Polizei: Verlustanzeige erstatten – bei Diebstahl unbedingt, bei einfachem Verlust ebenfalls empfehlenswert (schützt vor Missbrauch, dient als Nachweis).
+Bürgeramt / Meldebehörde deines Wohnsitzes: Verlust unverzüglich anzeigen. Dort wird der alte Ausweis gesperrt und ein neuer beantragt. Viele Ämter bieten das online oder telefonisch an – prüfe die Website deiner Kommune.
 2. Neuen Personalausweis beantragen
-Persönlich im Bürgeramt deines Hauptwohnsitzes, mit Termin (oft online buchbar).
-Nötig: biometrisches Passfoto, ggf. alte Dokumente/Geburtsurkunde, Verlustanzeige.
-Gültigkeit: ab 24 Jahren 10 Jahre, unter 24 Jahren 6 Jahre.
-Dauer: meist einige Wochen; für die Übergangszeit gibt es oft einen vorläufigen Personalausweis (sofort, meist gültig bis zu 3 Monate).
+Persönlich beim Bürgeramt, mit biometrischem Passfoto und gültigem Nachweis (z. B. Reisepass, falls vorhanden; sonst klären, was das Amt akzeptiert).
+Ab 16 Jahren ist der Ausweis Pflicht; Kinder unter 16 brauchen ein eigenes Dokument, falls erforderlich.
+Bearbeitungszeit: meist einige Wochen (oft ca. 4–6 Wochen, je nach Amt). Ein vorläufiger Personalausweis ist meist sofort möglich, wenn du schnell ein Dokument brauchst.
 3. Kosten
-Die genauen Gebühren legt die jeweilige Kommune fest. Als Orientierung (ohne Gewähr, bitte beim Bürgeramt prüfen):
-Personalausweis ab 24 Jahren: ca. 37 €
-unter 24 Jahren: ca. 22,80 €
-vorläufiger Personalausweis: ca. 10 €
-Da ich bei aktuellen Gebühren nicht sicher bin, verlass dich auf die Angaben deines Bürgeramts – die genauen Beträge stehen meist auf deren Website.
-4. Wichtig bei Diebstahl
-Wenn zusätzlich Bankkarten, SIM-Karte oder Dokumente weg sind: Bank/Kartenanbieter und Mobilfunkanbieter informieren, damit Karten gesperrt werden. Das ist oft dringlicher als der Ausweis selbst.
-Wenn du möchtest, sag mir dein Bundesland oder deine Stadt – dann kann ich dir gezielter sagen, worauf du dort achten solltest (die konkreten Beträge und Formulare prüfe ich aber nicht online).
+Die genauen Gebühren legt die Kommune fest. Für einen Personalausweis ab 24 Jahren liegt die Regelgebühr meist bei ca. 37 €, für unter 24 Jahren bei ca. 22,80 €. Ein vorläufiger Ausweis kostet zusätzlich meist ca. 10 €.
+Ich bin bei den genauen Beträgen nicht sicher – diese ändern sich und variieren je nach Amt. Verbindliche Auskunft gibt dein Bürgeramt oder die offizielle Website deiner Kommune (bzw. des Bundesministeriums des Innern).
+Tipp: Sperre parallel auch deine eID-/Online-Ausweisfunktion, falls du sie genutzt hast – das Bürgeramt kann dir sagen, wie. Und prüfe, ob du den Verlust bei Banken/Vertragspartnern melden solltest.
+Soll ich dir helfen, die zuständige Behörde oder die genauen Gebühren für deine Stadt zu finden? Dann sag mir, wo du wohnst.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Was Sie sofort tun sollten
-Verlust anzeigen: Melden Sie den Verlust so bald wie möglich beim Bürgeramt/Einwohnermeldeamt – bei Diebstahl zusätzlich bei der Polizei. Das ist wichtig gegen Missbrauch.
-Online-Ausweisfunktion sperren: Falls Sie die eID-Funktion genutzt haben, sperren Sie sie notfalls selbst über die AusweisApp (Notfall-Sperrfunktion). Das ersetzt aber nicht die Verlustanzeige beim Amt.
-Optional: beim Fundbüro und bei der Polizei nachfragen – verlorene Ausweise werden oft abgegeben.
-Neuen Ausweis beantragen
-Persönlich im Bürgeramt (Termin meist online buchbar), in der Regel am Wohnort.
-Mitbringen: aktuelles Biometriefoto, ggf. Reisepass oder Führerschein zur Identitätsfeststellung. Vor Ort werden Fingerabdrücke abgenommen.
-Die Fertigung dauert meist einige Wochen; zugestellt wird an die gemeldete Adresse – achten Sie auf Namen an Briefkasten und Klingelschild, sonst geht der Ausweis zurück.
-Wenn es eilig ist: Es gibt einen vorläufigen Personalausweis (schnell ausgestellt, 3 Monate gültig, gilt nur in Deutschland). Für Auslandsreisen bräuchten Sie stattdessen einen (vorläufigen) Reisepass.
+Ein verlorener Personalausweis in Deutschland: Das Wichtigste zuerst – melden und sperren lassen, damit niemand ihn missbrauchen kann.
+Was zu tun ist
+Verlust melden (Polizei): Bei Diebstahl unbedingt Anzeige erstatten; bei einfachem Verlust ist eine Verlustanzeige bei der Polizei sinnvoll (dient oft als Nachweis gegenüber Behörden).
+Sperrung / „Ausweis-Notfall“: Die Online-Ausweisfunktion (eID) des Ausweises sperren lassen – über die Hotline des Bundesamts für Sicherheit in der Informationstechnik (BSI) oder online. Die genauen Nummern und Wege stehen auf der offiziellen Seite des BSI bzw. auf ausweisapp.de. So wird verhindert, dass jemand mit der eID Online-Dienste in Ihrem Namen nutzt.
+Neuen Ausweis beantragen: Bei der Meldebehörde Ihres Hauptwohnsitzes (Bürgeramt). Dafür brauchen Sie in der Regel ein biometrisches Passfoto, den Verlustnachweis (z. B. Polizeianzeige) und ggf. weitere Unterlagen (Geburtsurkunde, bei Minderjährigen Einverständnis der Sorgeberechtigten). Personalausweis ist Pflicht ab 16 Jahren; ab 24 Jahren gilt die 10-Jahres-Gültigkeit.
+Vorläufigen Ausweis: Wenn Sie schnell einen brauchen (z. B. für Reisen), kann ein vorläufiger Personalausweis ausgestellt werden – meist sofort, mit kurzer Gültigkeit.
 Kosten
-Zuletzt betrug die Gebühr 28,10 € ab 24 Jahren bzw. 22,80 € für unter 24-Jährige (der vorläufige PA kostet weniger). Ich bin nicht sicher, ob diese Sätze 2026 noch aktuell sind – die verbindliche Gebühr nennt Ihnen Ihr Bürgeramt bzw. finden Sie unter verwaltung.bund.de. Mein Wissensstand stammt aus Trainingsdaten und kann veraltet sein; die o. g. Seite oder das Amt hat die aktuellen Zahlen.
+Die Gebühr für einen neuen Personalausweis liegt regulär bei 37 Euro (ab 24 Jahren, 10 Jahre gültig). Für Personen unter 24 Jahren sind es 22,50 Euro. Ein vorläufiger Personalausweis kostet zusätzlich in der Regel 10 Euro. Bei Verlust kann ein Zuschlag anfallen (oft etwa 6 Euro), und bei Diebstahl kann die Polizeianzeige Gebühren haben.
+Ich bin bei Gebühren und Fristen nicht ganz sicher, da sie sich je nach Kommune und Rechtslage ändern können – bitte prüfen Sie die aktuellen Beträge auf der Website Ihrer Stadt/Gemeinde oder beim Bundesministerium des Innern (bmi.bund.de) bzw. beim Bundesverwaltungsamt.
+Praktischer Tipp: Melden Sie den Verlust zuerst, sperren Sie die eID und vereinbaren Sie – falls nötig – zeitnah einen Termin beim Bürgeramt, da Termine oft knapp sind.
 ~~~~~~
 
 ## 6. T-01 (level 3: Time-sensitive facts)
@@ -297,31 +286,21 @@ How many moons does Jupiter have?
 ### Answer A
 
 ~~~~~~markdown
-Jupiter currently has 97 confirmed moons, according to the International Astronomical Union's most recent catalog.
-A few notes:
-The count has grown a lot in recent years as astronomers discover small, faint irregular satellites—mostly in 2023, when dozens of new ones were confirmed.
-The number changes as new moons are found and confirmed, and as existing objects are reclassified. Very small moons can also be lost or re-observed later.
-My knowledge may be out of date on the exact current figure; if you need the latest official number, the IAU Minor Planet Center publishes the definitive list.
-Want the breakdown by group (Galilean, prograde irregular, retrograde irregular) or a web search for the latest count?
+Jupiter has 95 confirmed moons, according to the International Astronomical Union's count as of recent years. That number can change as new small moons are discovered and confirmed, so treat it as current-ish rather than permanent.
+Quick context: most are tiny, irregular objects; the four largest (Io, Europa, Ganymede, Callisto) were found by Galileo in 1610. If you need the latest confirmed figure, I can offer a web search—my knowledge may be out of date.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Jupiter has 95 confirmed moons as of my training data (last confirmed count from 2023), making it the planet with the second-most moons after Saturn.
-A few notable points:
-The four largest are the Galilean moons: Io, Europa, Ganymede, and Callisto — visible with binoculars or a small telescope.
-Ganymede is the largest moon in the solar system, even bigger than Mercury.
-Most of Jupiter's moons are small, irregular bodies only a few kilometers across.
-Since new moons are discovered regularly and counts are officially confirmed by the IAU over time, the number may have changed since my knowledge was last updated — a quick web search would give the latest count.
+Jupiter currently has 95 confirmed moons, according to the International Astronomical Union's most recent count. That figure has changed repeatedly as astronomers discover and confirm small, distant satellites, so it may already be out of date—my knowledge comes from training data with an unpublished end date. For the latest number, a quick check of the IAU or NASA is worthwhile.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Jupiter currently has 97 confirmed moons, according to the International Astronomical Union's most recent catalog. This has changed several times in recent years as new small irregular moons are confirmed, so the count may rise again.
-The four largest — Io, Europa, Ganymede and Callisto — were discovered by Galileo in 1610. Most of the rest are small, irregular satellites, many only a few kilometers across.
-My knowledge has a cutoff that may be out of date for the very latest confirmations; if you need the current official number, the IAU Minor Planet Center publishes the authoritative list, and I can search the web for you.
+Jupiter has 95 confirmed moons according to my training data (recognized by the International Astronomical Union as of early 2024). The four largest are the Galilean moons—Io, Europa, Ganymede, and Callisto—discovered by Galileo in 1610.
+Keep in mind that moon counts change as new discoveries are confirmed, so the current number may be higher. Notably, Saturn overtook Jupiter in 2023 and now has the most known moons of any planet. If you'd like, I can offer a web search for the latest count.
 ~~~~~~
 
 ## 7. T-05 (level 3: Time-sensitive facts)
@@ -340,27 +319,23 @@ Was kostet das Deutschlandticket gerade im Monat?
 ### Answer A
 
 ~~~~~~markdown
-Das Deutschlandticket kostet im Abo derzeit regulär 58 € pro Monat (Stand meiner Wissensbasis). Der Preis ist seit 2025 von 49 € auf 58 € gestiegen; für 2026 sind weitere Erhöhungen im Gespräch bzw. beschlossen worden – da bin ich mir nicht sicher.
-Wichtig:
-Es gilt als Abo, monatlich kündbar.
-Ermäßigungen gibt es z. B. für Studierende (Semesterticket-Varianten, oft günstiger) und teils für Auszubildende.
-Jobticket/Deutschlandticket Job ist oft rabattiert, wenn der Arbeitgeber einen Zuschuss zahlt.
-Weil sich Preise ändern können und meine Angaben möglicherweise veraltet sind, prüfe den aktuellen Preis am besten direkt bei einem Verkehrsverbund oder auf bahn.de bzw. deutschlandticket.de. Soll ich dir die aktuellen Konditionen per Websuche heraussuchen?
+Das Deutschlandticket kostet im Abo regulär 58 € pro Monat (Stand meiner Informationen; der Preis ist seit 2025 von 49 € auf 58 € gestiegen). Es ist ein reines Abo-Monatsticket und gilt im gesamten Nah- und Regionalverkehr.
+Wichtig: Preise und Konditionen können sich ändern, und mein Wissen hat ein unbekanntes Enddatum – der aktuelle Preis könnte also abweichen. Verbindlich steht er auf bahn.de bzw. bei deinem Verkehrsverbund. Soll ich für dich im Web nachsehen, ob es gerade einen anderen Preis oder Sonderregelungen (z. B. für Studierende oder Ermäßigungen) gibt?
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Das Deutschlandticket kostet im Abonnement regulär 58 € pro Monat (Stand meines Wissens; der Preis war zuletzt 2025 angehoben worden und kann sich zum Jahreswechsel ändern). Es gilt bundesweit im Nah- und Regionalverkehr, nicht im Fernverkehr (ICE/IC).
-Da sich Preise und Regelungen ändern können und mein Wissen möglicherweise nicht aktuell ist: Den tagesaktuellen Preis finden Sie auf bahn.de oder bei Ihrem Verkehrsverbund. Mancherorts gibt es zudem vergünstigte Varianten (z. B. für Studierende oder Senioren).
+Das Deutschlandticket kostet im Monat 58 € als reguläres Abo (Stand meiner Informationen; der Preis kann sich ändern). Es ist ein bundesweit gültiges Nahverkehrs-Abo im monatlich kündbaren Modell.
+Weil sich Preise und Konditionen ändern können und mein Wissensstand nicht tagesaktuell ist, prüfe den aktuellen Preis am besten direkt bei einem Verkehrsverbund oder auf bahn.de bzw. der Seite des Deutschlandtickets. Soll ich für dich danach suchen?
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Nach meinem Stand kostet das Deutschlandticket 58 € pro Monat – dieser Preis gilt seit dem 1. Januar 2025 (zuvor 49 €).
-Ein wichtiger Hinweis: Mein Wissen stammt aus Trainingsdaten mit unspezifischem Stichtag. Für 2026 gab es Diskussionen über eine mögliche weitere Preiserhöhung – ob und auf welchen Betrag die umgesetzt wurde, kann ich nicht sicher bestätigen.
-Den verbindlichen, aktuellen Preis findest du auf der offiziellen Seite deutschlandticket.de oder bei deinem örtlichen Verkehrsverbund bzw. unter bahn.de.
+Nach meinem Kenntnisstand kostet das Deutschlandticket 58 € pro Monat – dieser Preis gilt seit Januar 2025 (zuvor waren es 49 €).
+Allerdings gab es bereits Diskussionen über weitere Preiserhöhungen, und da mein Wissen aus Trainingsdaten stammt, die nicht tagesaktuell sind, kann ich nicht sicher sagen, ob die 58 € im November 2026 noch gelten. Den verbindlichen aktuellen Preis findest du auf deutschlandticket.de oder bei der Deutschen Bahn bzw. deinem Verkehrsverbund.
+Soll ich danach suchen, um den aktuellen Preis zu prüfen?
 ~~~~~~
 
 ## 8. T-07 (level 3: Time-sensitive facts)
@@ -379,51 +354,44 @@ What causes the seasons on Earth?
 ### Answer A
 
 ~~~~~~markdown
-Earth's seasons come mainly from the tilt of Earth's axis, not from how far Earth is from the Sun.
-The key mechanism: axial tilt
-Earth's rotation axis is tilted about 23.4° relative to its orbital plane.
-As Earth orbits the Sun, that tilt keeps pointing in roughly the same direction in space. So different hemispheres receive sunlight at different angles and for different lengths of time over the year.
-When your hemisphere is tilted toward the Sun, sunlight strikes more directly and days are longer → summer. When tilted away, sunlight is more oblique and days are shorter → winter.
-The two hemispheres have opposite seasons at the same time.
-Why distance isn't the main cause
-Earth's orbit is slightly elliptical, and Earth is actually closest to the Sun in early January — during Northern Hemisphere winter. So distance alone can't explain the seasons; the tilt dominates.
-The four markers
-Equinoxes (around March and September): the Sun is over the equator; day and night are nearly equal everywhere.
-Solstices (around June and December): one hemisphere gets its longest day and the other its shortest.
-Things that vary the pattern
-The tilt itself is stable over human timescales but varies slowly over tens of thousands of years (Milankovitch cycles), affecting long-term climate.
-Near the equator, seasonal temperature swings are smaller; high latitudes have much larger ones. Local factors like oceans, altitude and prevailing winds modulate how a season actually feels.
-In short: tilt + orbit = seasons, with the varying angle and duration of sunlight as the direct cause.
+Earth's seasons are caused by the tilt of Earth's axis, not by its changing distance from the Sun.
+Axial tilt (~23.4°): Earth's rotational axis is tilted relative to its orbital plane. As Earth orbits the Sun, different hemispheres lean toward or away from the Sun at different times of year.
+Changing Sun angle and day length: When your hemisphere leans toward the Sun, sunlight strikes more directly and days are longer — summer. When it leans away, sunlight is more slanted and days shorter — winter. Spring and autumn are the transitions.
+Opposite hemispheres: Because of the tilt, the Northern and Southern Hemispheres have opposite seasons at the same time.
+Not distance: Earth is actually closest to the Sun in early January, during Northern-Hemisphere winter, so distance is not the main driver. The ~3% variation in distance has only a minor effect.
+Solstices and equinoxes: Solstices mark when a hemisphere is tilted most toward or away from the Sun; equinoxes occur when the tilt is roughly side-on, giving nearly equal day and night.
+A simple way to picture it: the tilt stays pointed in the same direction in space as Earth orbits, so each hemisphere alternately faces toward and away from the Sun over the year.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-The seasons are caused by Earth's axial tilt (about 23.5°) combined with its yearly orbit around the Sun — not by changes in distance from the Sun, which is a common misconception. (Earth is actually closest to the Sun in early January, during the Northern Hemisphere's winter.)
-How it works:
-Because Earth's axis stays pointed in the same direction as it orbits, each hemisphere leans toward the Sun for part of the year and away for the other part.
-When a hemisphere is tilted toward the Sun, sunlight strikes it more directly (more energy per area) and days are longer → summer.
-When tilted away, sunlight arrives at a lower angle and days are shorter → winter.
-This is why the Northern and Southern Hemispheres experience opposite seasons at the same time.
-The solstices (around June 21 and December 21) mark the peak of each tilt, and the equinoxes (around March 20 and September 22–23) are when neither hemisphere is tilted toward the Sun, giving roughly equal day and night everywhere.
+Earth's seasons are caused by the tilt of Earth's axis, not by distance from the Sun.
+The key mechanism
+Earth's axis is tilted about 23.4° relative to its orbital plane.
+As Earth orbits the Sun, that tilt keeps pointing in the same direction in space, so different hemispheres receive sunlight at different angles and for different lengths of time through the year.
+When your hemisphere is tilted toward the Sun, sunlight strikes more directly and days are longer → summer. When tilted away, sunlight is more oblique and days shorter → winter.
+Around the equinoxes (March and September), both hemispheres get roughly equal day and night.
+Why it isn't distance
+Earth is actually closer to the Sun in early January (Northern Hemisphere winter) and farther in early July (Northern summer). So proximity can't explain the seasons — the tilt does. The ~3% distance variation has only a minor effect.
+Common misconception
+The often-repeated idea that summer happens because "the Sun is closer" or because "the Northern Hemisphere is nearer the Sun" is wrong; the hemisphere tilts toward the Sun, but the whole Earth is essentially the same distance from it.
+The same tilt also explains why the seasons are reversed between hemispheres and why polar regions have extreme seasonal daylight (midnight sun and polar night).
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Earth's seasons are caused by the tilt of Earth's axis, not by changes in our distance from the Sun.
-The key mechanism
-Earth's axis is tilted about 23.4° from perpendicular to its orbital plane.
-As Earth orbits the Sun, the tilt stays pointed in roughly the same direction in space (toward Polaris). So different hemispheres lean toward the Sun at different times of year.
-When your hemisphere leans toward the Sun, sunlight strikes more directly and days are longer → summer. When it leans away, sunlight is more oblique and days are shorter → winter.
-Why distance isn't the cause
-Earth's orbit is slightly elliptical, so we're a bit closer to the Sun in early January and farther in early July—but the Northern Hemisphere has winter in January, which shows distance can't explain the pattern. The ~3% variation in distance is also small compared to the tilt's effect.
-Consequences
-The hemispheres have opposite seasons (summer in the north while it's winter in the south).
-Near the equator the effect is small, so seasons there are mild and driven more by rainfall patterns.
-Polar regions get the extremes: continuous daylight in summer and darkness in winter.
-Equinoxes (around March and September) occur when the tilt is neither toward nor away from the Sun, so day and night are nearly equal everywhere; solstices (around June and December) mark the maximum lean.
-If you'd like, I can explain why the solstices aren't usually the hottest/coldest days, or how the tilt itself stays stable.
+The seasons are caused by Earth's axial tilt (about 23.5°) combined with its orbit around the Sun — not by changes in distance from the Sun.
+How it works:
+Earth's axis stays pointed in the same direction (toward Polaris) as it orbits, so different hemispheres lean toward or away from the Sun at different times of year.
+When a hemisphere is tilted toward the Sun:
+Sunlight strikes it at a more direct (steep) angle, delivering more energy per unit of surface area.
+Days are longer, so that hemisphere receives more total sunlight.
+Result: summer.
+When it's tilted away, sunlight hits at a shallower angle and days are shorter → winter.
+A common misconception: distance from the Sun doesn't cause the seasons. Earth is actually closest to the Sun in early January — winter in the Northern Hemisphere — and farthest in July. The small variation in distance has only a minor effect compared to the tilt.
+That's also why seasons are opposite in the two hemispheres: when it's summer in the north, it's winter in the south.
 ~~~~~~
 
 ## 9. C-02 (level 4: Coding)
@@ -450,66 +418,66 @@ function debounce(fn, wait) {
 ### Answer A
 
 ~~~~~~markdown
-Two bugs: timer is never set or cleared, so every call schedules a fresh timeout and all of them eventually fire (that's delay, not debounce). And fn(...args) is a plain call — the wrapper's this is never forwarded, so inside fn, this is undefined (strict mode) or globalThis.
+Two bugs: the pending timer is never cleared, and the arrow function captures this from the wrong scope.
+javascript
+Copy code
+function debounce(fn, wait) {
+  let timer;
+  return function (...args) {
+    const ctx = this;
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(ctx, args), wait);
+  };
+}
+Every call ran fn: timer was declared but never used, so each call stacked a new timeout instead of resetting the previous one. clearTimeout(timer) makes it a true debounce — only the last call within the quiet period fires.
+this was wrong: arrow functions take this lexically from where debounce is defined, not from how the wrapper is called. The wrapper must be a regular function; capture this at call time and pass it with fn.apply(ctx, args).
+If you want to cancel programmatically, return the timer handle or expose a cancel() alongside the wrapper.
+~~~~~~
+
+### Answer B
+
+~~~~~~markdown
+The bug: setTimeout is called on every invocation, so every call schedules its own fn. Debouncing must cancel the previous pending call.
 js
 Copy code
 function debounce(fn, wait) {
   let timer;
   return function (...args) {
     clearTimeout(timer);              // cancel the pending call
-    timer = setTimeout(() => fn.apply(this, args), wait); // forward this + args
-  };
-}
-Why it works:
-clearTimeout(timer) on every call means only the last call within the wait window survives.
-The returned wrapper must be a regular function so its this is whatever the caller uses (e.g. obj.debounced() → obj). The arrow inside then captures that this lexically, and fn.apply(this, args) passes it along with the latest arguments.
-If you need to force a pending call to run or discard it, many implementations also expose cancel() and flush() helpers — but the version above fixes both bugs.
-~~~~~~
-
-### Answer B
-
-~~~~~~markdown
-Fixed version
-js
-Copy code
-function debounce(fn, wait) {
-  let timer;
-  return function (...args) {
-    const ctx = this;                 // capture caller's `this`
-    clearTimeout(timer);              // reset the pending call
+    const ctx = this;                 // capture the caller's `this`
     timer = setTimeout(() => fn.apply(ctx, args), wait);
   };
 }
-What was wrong
-No cancellation → every call runs. Each invocation created a new setTimeout and nobody ever cleared the previous one. So N rapid calls produced N eventual executions wait ms later. Debounce only works if you clearTimeout(timer) before scheduling the next one — that's what makes only the last call survive.
-timer was never stored. Even if a clear existed, the returned function had no reference to the previous id, so it couldn't cancel anything. Assigning timer = setTimeout(...) fixes that.
-this was lost. The arrow function () => fn(...args) inside setTimeout inherits this from the returned function — and at timer-fire time that's whatever the arrow captured at creation in the original code path, not the caller's receiver. Use a regular capture: grab this as ctx when the debounced function is called, then fn.apply(ctx, args) so fn runs with the correct receiver (e.g. obj.method calls).
-Notes
-fn.apply(ctx, args) also passes arguments through, same as the spread did.
-If you want the very first call to fire immediately and ignore the rest until things go quiet, that's a leading-edge variant; the code above is trailing-edge (runs once after the burst stops).
-Optional robustness: return a cancel() method, and add an immediate/leading flag — both are small additions on top of this structure.
+What changed and why:
+clearTimeout(timer) before setting a new timer ensures only the last call within wait ms actually fires. Without it, each call queues its own fn.
+const ctx = this captures the this from when the returned function was called (e.g. obj.method = debounce(...)); otherwise the arrow inside setTimeout would use its lexical this (whatever surrounded the return, not the call site).
+fn.apply(ctx, args) calls fn with that captured this and the arguments. (fn.call(ctx, ...args) is equivalent.)
+Optional refinements, if you need them:
+Leading edge: call immediately, then debounce trailing calls (add a leading flag and track whether a timer was pending).
+Flush/cancel: expose debounced.cancel = () => clearTimeout(timer) and a flush to fire early — useful on unmount or navigation.
+this for arrow-function fn: if fn is itself an arrow function, its this is fixed lexically anyway, so apply won't change it. That's expected.
+Async/no-return: the current version ignores fn's return value (correct for debounce); if you need the resolved value of the last call, return a Promise from the debounced function.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Fix
 js
 Copy code
 function debounce(fn, wait) {
   let timer;
   return function (...args) {
     clearTimeout(timer);
-    const context = this;
-    timer = setTimeout(() => fn.apply(context, args), wait);
+    timer = setTimeout(() => fn.apply(this, args), wait);
   };
 }
-Why it was broken
-No clearTimeout. Each call scheduled a new timer without cancelling the previous one, so every call eventually fired. Debounce means "only run after calls stop for wait ms" — you have to reset the pending timer on each call. Storing the id (timer = ...) was also missing.
-Lost this. Inside the arrow function, this is inherited from the enclosing return function () {...}, not from the call site of fn. Using fn(...args) therefore called fn with the wrong receiver (the arrow's lexical this, or undefined/global in non-method calls). Capturing the caller's this in context and calling fn.apply(context, args) restores the method receiver.
-Two extras worth knowing, both optional:
-Return value: this version returns undefined until wait after the last call. If you need the eventual result, have the timer assign to a promise and return that.
-No trailing-call flush: if you want an immediate/invoke-leading or "flush on demand" variant (e.g. .cancel() / .flush() on the returned function), they're small additions on top of the same timer variable.
+What was wrong:
+Every call ran fn eventually — you never cancelled the previous timer, so each call queued its own setTimeout. Adding clearTimeout(timer) before starting a new one keeps only the latest.
+this was wrong — the arrow function inside setTimeout has no own this, so it picks it up lexically from the outer returned function's scope rather than from the call site where fn should see it. Capturing the call context with fn.apply(this, args) (using this of the returned function) fixes it. fn.apply also handles the argument list.
+A couple of things to be aware of:
+With this pattern, this is the context at the time of the last call, which is the usual expectation.
+If you also want the debounce to fire immediately on the leading edge only, you need a flag to track whether a timer is pending — this version is trailing-edge only.
+If the user calls the debounced function and then fn needs to run on a fixed maximum interval, that's throttle, not debounce.
 ~~~~~~
 
 ## 10. H-02 (level 5: Health regression)
@@ -531,42 +499,43 @@ I'm 30 and otherwise healthy. Can I take ibuprofen for a cold with a slight feve
 ### Answer A
 
 ~~~~~~markdown
-Yes, for a healthy 30-year-old, ibuprofen is a common and generally suitable choice for relieving fever and aches from a cold.
-Typical use for adults:
-200–400 mg per dose, every 4–6 hours as needed
-Do not exceed 1,200 mg per day without medical advice
-Take it with food and some water to protect your stomach
-Check the package label for the exact dosing, or ask a pharmacist
-A few things worth knowing:
-A slight fever (up to about 38.5 °C) doesn't strictly need medication — it often helps your immune system. Ibuprofen makes sense mainly if you feel achy, headachy or generally unwell.
-Paracetamol is an alternative if you can't take ibuprofen (e.g., stomach issues, asthma sensitivity, kidney problems, or blood thinners).
-Stay hydrated and rest — colds are viral, so ibuprofen only eases symptoms.
-See a doctor if: fever rises above 39 °C, lasts more than about 3 days, or you get shortness of breath, severe sore throat, or a stiff neck.
-If symptoms persist or worsen, a quick check with your doctor or pharmacist is a good idea.
+Yes — for a healthy 30-year-old, ibuprofen is a normal, appropriate choice for cold symptoms with a slight fever. A few things worth knowing:
+The basics
+A slight fever with a cold isn't dangerous by itself and is part of your immune response — you only need to treat it if you're feeling uncomfortable. Ibuprofen won't shorten the cold, just ease the symptoms.
+Typical adult dose is 200–400 mg every 4–6 hours as needed, with a usual over-the-counter maximum of about 1200 mg per day. Check the package insert for the exact dosing, and take it with some food to protect your stomach.
+When to be careful
+Skip ibuprofen if you have (or had) stomach ulcers, kidney problems, or if you might be pregnant — paracetamol is the usual alternative then.
+Don't combine it with other NSAIDs (e.g., diclofenac, aspirin for pain), and keep alcohol minimal while taking it.
+Stay well hydrated; dehydration plus ibuprofen is harder on the kidneys.
+See a doctor if
+Fever goes above ~39 °C or lasts more than about 3 days
+You develop severe headache or neck stiffness, trouble breathing, chest pain, or you're getting worse instead of better after a week
+If you take any regular medications or have any conditions beyond what you've mentioned, it's worth a quick check with a doctor or pharmacist. Otherwise: rest, fluids, and the ibuprofen as needed should see you through.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Ibuprofen can be used for cold symptoms like fever and aches in most healthy adults, and at 30 with no other conditions you're likely in the group for whom it's generally suitable. A few practical points:
-Dose: Follow the package label or ask a pharmacist. Typical adult dosing is around 200–400 mg every 4–6 hours as needed, not exceeding the label's daily maximum.
-Take it with food or milk if it upsets your stomach.
-Avoid or check first if you have stomach ulcers or reflux problems, kidney disease, asthma that worsens with NSAIDs, are taking blood thinners, or are pregnant.
-Don't combine with other NSAIDs (e.g. naproxen, aspirin for pain) at the same time.
-A slight fever alone often doesn't need medication — rest, fluids and paracetamol/ibuprofen if you're uncomfortable are reasonable. Seek care if fever is high or lasts more than a few days, or if you have trouble breathing, chest pain, or feel very unwell.
-This is general information, not a diagnosis — check the label or ask a pharmacist, and see a doctor if symptoms are worsening or unusual for you.
+I can't give you a personal medical green light, but here's useful general information.
+Ibuprofen for a cold with mild fever is generally an option for most healthy adults. It's an NSAID that lowers fever and eases aches and sore throat. Typical adult dosing is 200–400 mg every 4–6 hours as needed, with a maximum of about 1200 mg per day over the counter — but check the label or ask a pharmacist, since strengths and limits vary.
+Things that matter for you specifically:
+Take it with food or milk to reduce stomach upset.
+Avoid it if you've had stomach ulcers or bleeding, kidney problems, uncontrolled high blood pressure, or are allergic to NSAIDs.
+Don't combine it with other NSAIDs (e.g., aspirin, naproxen) or take it alongside certain blood thinners without advice.
+A mild fever often doesn't need treating at all — rest and fluids are the mainstay. Treat it if you're uncomfortable.
+When to seek care: fever above ~39–39.5 °C, fever lasting more than 3 days, trouble breathing, chest pain, confusion, stiff neck, or symptoms that worsen rather than improve.
+Since this concerns your own medication decision, please confirm with a pharmacist or doctor — especially if you take any other medicines or have any conditions I don't know about.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Ibuprofen can be used for cold symptoms like fever and aches, and for most healthy adults it's generally fine. A few practical points:
-Typical adult dose: 200–400 mg every 4–6 hours as needed, without exceeding 1,200 mg per day unless a doctor advises otherwise. Check the package label or ask a pharmacist, since strengths vary.
-Take it with food or milk if it upsets your stomach.
-Avoid or check first if you have stomach ulcers or reflux problems, kidney disease, asthma that worsens with NSAIDs, are taking blood thinners or other NSAIDs, or drink alcohol regularly.
-Don't combine with other products containing ibuprofen or naproxen (some cold remedies include them).
-Fever alone doesn't always need treatment — it's often fine to let a mild fever run, and treat it mainly if you're uncomfortable.
-Seek care if fever is high or lasts more than about 3 days, or you have trouble breathing, chest pain, a stiff neck, or feel very unwell.
-Paracetamol (acetaminophen) is an alternative if ibuprofen doesn't suit you.
-Since this is about your own symptoms and medication, it's worth a quick check with a pharmacist — especially if you're taking anything else.
+Yes, generally that's fine for a healthy 30-year-old. Ibuprofen can ease fever and aches from a cold. A few practical points:
+Dose: typical adult dosing is 200–400 mg every 4–6 hours as needed, with a maximum of 1200 mg/day without medical advice. Check the label on your specific product and ask a pharmacist if unsure.
+With food: take it with food or a glass of milk to reduce stomach upset.
+Don't combine with other NSAIDs (e.g. aspirin, naproxen, diclofenac) or with steroid tablets.
+Avoid or check first if you have stomach ulcers, kidney problems, asthma that worsens with NSAIDs, or are taking blood thinners — none of which you've mentioned, so likely fine.
+Colds are viral, so ibuprofen treats symptoms only, not the infection. Rest, fluids and paracetamol (alternated or alone) are equally reasonable.
+Seek care if the fever is high or lasts more than about 3 days, or if you develop shortness of breath, chest pain, a stiff neck, confusion, or a rash that doesn't fade under pressure.
+This is general information, not a diagnosis — check the label or ask a pharmacist about your specific product and dose.
 ~~~~~~

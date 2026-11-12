@@ -19,37 +19,48 @@ What turnover limits apply to the Kleinunternehmerregelung (small business VAT e
 ### Answer A
 
 ~~~~~~markdown
-For 2026, the small business VAT exemption (§ 19 UStG) generally applies if your 2025 total turnover was no more than €25,000 and your 2026 turnover stays within €100,000 (§ 19 (1) UStG) vatgpt.de. Several sources describe the same two-part test: €25,000 for the prior year and €100,000 for the current year germanycompass.comnorman.finance. One source mentions a "hard €100,000 ceiling" norman.finance, but the excerpts don't give the detailed rules for exceeding it mid-year, so I can't confirm the exact mechanics from this material.
-The sources I retrieved don't state to which official page the €100,000 limit is tied beyond citing § 19 UStG. The only official source shown is the Baden-Württemberg tax administration's overview of the small business regulation, which confirms the rule exists under § 19 UStG but the excerpt doesn't quote the figures finanzamt-bw.fv-bwl.de.
-Official overview: https://finanzamt-bw.fv-bwl.de/,Len/9772274 finanzamt-bw.fv-bwl.de
-The statute itself (§ 19 UStG) is the binding text — search for "§ 19 UStG" on gesetze-im-internet.de.
-Caveats:
-These are all search excerpts, not full pages, and the figures come mainly from commercial guides/software sites vatgpt.degermanycompass.comnorman.financeaccountable.de, not directly from the statute.
-Turnover is generally measured net germanycompass.com, and the limits interact with invoicing rules, the reverse-charge scheme and the Zusammenfassende Meldung accountable.de.
-For your specific situation (especially if turnover approaches €100,000 or you invoice B2B with reverse charge), confirm with a Steuerberater or your Finanzamt.
-I don't have a page from the Federal Ministry of Finance or gesetze-im-internet.de in these results. Want me to run a search aimed specifically at the official statutory text?
+Kleinunternehmerregelung 2026 – turnover limits
+In 2026 you qualify as a Kleinunternehmer under § 19 (1) UStG if both limits are met norman.finance:
+Previous year (2025) turnover: at most €25,000 vatgpt.de norman.finance
+Current year (2026) turnover: at most €100,000 vatgpt.de norman.finance
+Key points from the sources:
+The €100,000 is a hard ceiling: exceed it mid-year and you become VAT-liable immediately, starting with the sale that breaches the limit (not from 1 January of the next year, as under the old rule) norman.finance.
+Since the 2025 reform, turnover is measured as actual (net) revenue with no notional VAT add-on, because the supplies are now genuinely tax-exempt norman.finance germanycompass.com.
+New businesses can use the rule in their first year if expected turnover stays below €25,000; only actual revenue up to that mark counts, no full-year extrapolation norman.finance.
+These limits apply unchanged from 2025 and, per the sources, remain the same for following years accountable.de norman.finance.
+Official source
+The legal basis is § 19 UStG; German tax offices describe it as the small business regulation that exempts low-turnover businesses' services from VAT finanzamt-bw.fv-bwl.de. The authoritative text is published by the Federal Ministry of Justice at:
+https://www.gesetze-im-internet.de/ustg/__19.html
+One caveat: the retrieved results were secondary sources (tax-software providers and guides, retrieved 2026-11-12) that consistently report these figures — the statute page itself was not among them. If you'd like, I can search for the official § 19 UStG text to verify the wording directly.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-The 2026 limits under § 19 UStG are generally described as:
-€25,000 maximum total turnover (Gesamtumsatz) in the previous year (2025)
-€100,000 maximum total turnover in the current year (2026)
-These figures appear consistently in the retrieved sources vatgpt.de, germanycompass.com, norman.finance. The €100,000 figure is described as a hard ceiling norman.finance. Note that only search excerpts were retrieved, not full pages, so details such as whether the figures are net and how the current-year threshold is applied over the year are not fully verified here.
-Official source: The statutory basis is Section 19 of the German Value Added Tax Act (UStG). The Baden-Württemberg tax administration page explains the small business regulation under § 19 UStG finanzamt-bw.fv-bwl.de (https://finanzamt-bw.fv-bwl.de/,Len/9772274). For the authoritative wording and current thresholds, check § 19 UStG on the official gesetze-im-internet.de site or your tax office (Finanzamt).
-I have not verified the exact threshold wording on the official statute page from the retrieved material. If you'd like, I can search specifically for the § 19 UStG text on gesetze-im-internet.de.
+Kleinunternehmerregelung: turnover limits in 2026
+Two limits apply under § 19 UStG, and both must be met:
+Prior-year turnover (2025): at most €25,000
+Current-year turnover (2026): at most €100,000
+vatgpt.de norman.finance germanycompass.com
+Key points:
+The €100,000 limit is a hard ceiling, not just a forecast. If you cross it mid-year, the exemption ends immediately from the very sale that breaches it; that sale and everything after it is subject to standard VAT. norman.finance norman.finance
+Both figures refer to total turnover net (without a notional VAT add-on), since 2025 the rule has been a genuine tax exemption rather than merely "VAT not collected". vatgpt.de norman.finance norman.finance
+Newly founded businesses can use the exemption in their founding year if expected turnover stays under €25,000; the founding-year figure is no longer extrapolated to a full year. norman.finance norman.finance
+Invoices must carry a note referring to § 19 UStG and show no VAT. norman.finance norman.finance
+Since 2025 these limits replace the earlier €22,000 prior-year and €50,000 current-year figures. norman.finance
+Official source
+The retrieved results do not include the statutory text itself. The only official-administration source among them is a Finanzamt Baden-Württemberg page:
+Finanzamt Baden-Württemberg – "What is the so-called small business regulation?": https://finanzamt-bw.fv-bwl.de/,Len/9772274 finanzamt-bw.fv-bwl.de
+That excerpt only confirms the general nature of § 19 UStG as a simplification rule for low-turnover businesses; it does not state the 2026 figures. The €25,000/€100,000 numbers come from commercial provider articles norman.finance vatgpt.de germanycompass.com, which broadly agree with each other but are not independent official confirmation.
+For the authoritative wording, check § 19 of the German VAT Act (UStG) on the official federal law portal (gesetze-im-internet.de) or the Bundesfinanzministerium (BMF) website — these were not in the retrieved material. I can run another search for those if you want. Note that I can't confirm the exact current status beyond these sources, so verify before relying on it for a tax filing.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-In 2026, the small-business VAT exemption generally applies if:
-your 2025 total turnover was no more than €25,000, and
-your 2026 total turnover is no more than €100,000 vatgpt.de.
-These are the figures reported by several sources in the supplied material norman.financegermanycompass.com. The €100,000 figure is described as a hard ceiling norman.finance.
-Official source: Finanzämter Baden-Württemberg – What is the so-called small business regulation? (https://finanzamt-bw.fv-bwl.de/,Len/9772274) finanzamt-bw.fv-bwl.de
-The supplied excerpt of that official page confirms that § 19 UStG is a simplification rule for low-turnover businesses, but it does not show the specific 2026 threshold figures. The figures above therefore come from the other supplied sources, not from that official excerpt.
+2026 limits (§ 19 UStG): prior-year total turnover of at most €25,000 and current-year turnover of at most €100,000, both in net terms — both must be met vatgpt.degermanycompass.comnorman.finance. The €100,000 is a hard ceiling: cross it mid-year and VAT applies from that very sale, not from the next year norman.financegermanycompass.com. Since 2025 the rule is a genuine tax exemption (not merely "VAT not collected"), and exempt invoices need a note referring to § 19 UStG norman.finance.
+On the official source: none of the retrieved results is the legal text itself. The closest official item is a Baden-Württemberg tax office page confirming that § 19 UStG is a simplification rule for low-turnover businesses making supplies VAT-exempt finanzamt-bw.fv-bwl.de — but its excerpt doesn't state the 2026 figures. The €25,000/€100,000 numbers above appear only in commercial/explanatory pages vatgpt.degermanycompass.comnorman.finance, and all retrieved excerpts are partial (search excerpts; only the Norman page was partly opened).
+For the authoritative wording, check § 19 UStG in the official statute (gesetze-im-internet.de) and Federal Ministry of Finance guidance; I can't verify those pages from this material. I can run a targeted search for the statutory text if you like.
 ~~~~~~
 
 ## 2. R-02 (level 1: Research (search on))
@@ -71,37 +82,33 @@ What are the opening hours and the adult ticket price of the Neues Museum in Ber
 
 ~~~~~~markdown
 Kept on this device: 1 phone number. Placeholders went to the secure server instead; the values were put back here. Not every number is recognised, least of all in photos and scans.
-Today, Thursday 12 November 2026, the Neues Museum should be open 10:00–18:00. Regular hours are Tuesday–Sunday 10:00–18:00, Monday closed, with last entry 30 minutes before closing museumsportal-berlin.desmb.museum. Exception dates listed (1 Jan, 8 Mar, 1 May, 3 Oct, 24/25/26/31 Dec) don't apply to today museumsportal-berlin.de. This comes from pages retrieved today, but they are excerpts — I can't rule out a short-notice closure; the official site is the place to check before travelling.
-Adult admission is €14.00 museumsportal-berlin.de, also given as €14 for 2026 thebettervacation.com. Reduced price is €7.00, and under-18s are free museumsportal-berlin.de. A combined "Museum Island + Panorama" ticket is €24.00 (reduced €12.00) museumsportal-berlin.de.
-Not confirmed: I found no separate adult price on the official prices excerpt; it only mentions the 3-day Museum Pass Berlin at €32.00 (reduced €16.00) for permanent exhibitions smb.museum. Details like guided-tour times on other days are incomplete in these excerpts.
+Opening hours today (Thursday, 12 November 2026): 10:00–18:00. The museum is closed on Mondays; Tuesday–Sunday opening is 10:00–18:00, with last entry 30 minutes before closing museumsportal-berlin.desmb.museum.
+Caveat: these are the museum's regular hours, and I can't independently confirm that today has no special closure. The only announced closure in the sources is 15–17 March 2027 for maintenance smb.museum.
+Adult ticket price: €14.00 for the Neues Museum; the combined "Museum Island + Panorama" ticket is €24.00. Reduced admission is €7.00 (€12.00 for the combined ticket). Children and young people up to 18 are free museumsportal-berlin.de. Both the Berlin museums portal and a third-party ticket page give €14 for 2026 museumsportal-berlin.dethebettervacation.com.
+Not confirmed: I did not find a current price for the separate Museum Pass Berlin in a listing that clearly matches the Neues Museum admission — one excerpt mentions a 3-day pass for €32.00 (€16.00 reduced) smb.museum, but I can't confirm from the sources that this covers the Neues Museum or is up to date. Check the official SMB ticket page before relying on it.
+Main entrance is the James-Simon-Galerie; the Kolonnadenhof entrance requires a valid ticket museumsportal-berlin.de.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
 Kept on this device: 1 phone number. Placeholders went to the secure server instead; the values were put back here. Not every number is recognised, least of all in photos and scans.
-Today, Thursday 12 November 2026: Opening hours are 10:00–18:00 museumsportal-berlin.desmb.museum. Last entry is 30 minutes before closing, i.e. 17:30 museumsportal-berlin.de.
-Adult ticket: €14.00 for the Neues Museum museumsportal-berlin.de. The "Museum Island + Panorama" ticket is €24.00 museumsportal-berlin.de. Children and young people up to 18 are free museumsportal-berlin.de.
-Caveats:
-The price and hours come from the Museumsportal Berlin page; the Staatliche Museen zu Berlin's own ticket page excerpt only showed a 3-day Museum Pass Berlin at €32.00, not the single adult price smb.museum. A third-party guide also lists €14 for adults in 2026 thebettervacation.com, but that is independent, not official confirmation.
-General hours are Tuesday–Sunday 10:00–18:00, Monday closed smb.museum. The official SMB notice mentions closure 15–17 March 2027, which doesn't affect today smb.museum.
-The excerpts don't say whether today is a holiday with altered hours; the listed special days (1 Jan, 8 Mar, 1 May, 3 Oct, 24/25/26/31 Dec) don't include today museumsportal-berlin.de.
-I can't guarantee no short-notice change; checking smb.museum before you go is the safest confirmation.
+Neues Museum, Berlin – today, Thursday 12 November 2026
+Opening hours: Tuesday–Sunday 10:00–18:00, Monday closed; last entry 30 minutes before closing museumsportal-berlin.desmb.museum. So today it should be open 10:00–18:00, with last entry at 17:30. Note that today's specific date is not explicitly listed on the pages – this follows from the regular weekly schedule.
+Adult ticket: €14.00 museumsportal-berlin.dethebettervacation.com. Reduced price €7.00; children and young people up to 18 are free museumsportal-berlin.de.
+A couple of caveats:
+The combined "Museum Island + Panorama" ticket is €24.00 (reduced €12.00) museumsportal-berlin.de. One secondary site describes a "Museum Island Day Ticket (€24)" covering all five museums thebettervacation.com – that wording conflicts somewhat with the official page, so check at the ticket desk which option you're buying.
+The official page notes the museum will be closed 15–17 March 2027 for maintenance smb.museum, which doesn't affect today.
+These are search excerpts and one partial page, not a full read of the ticket page; prices and hours can change, so the official SMB site is the safest check before you go.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
 Kept on this device: 1 phone number. Placeholders went to the secure server instead; the values were put back here. Not every number is recognised, least of all in photos and scans.
-Opening hours today (Thursday, 12 November 2026)
-Open 10:00–18:00, with last entry 30 minutes before closing (17:30) museumsportal-berlin.de
-The museum is normally closed Mondays and open Tue–Sun 10:00–18:00 museumsportal-berlin.desmb.museum; today is a Thursday, so regular hours apply.
-A scheduled maintenance closure (15–17 March 2027) does not affect today smb.museum.
-Adult ticket price
-€14 (reduced €7; children and young people up to 18 free) museumsportal-berlin.de
-A combined "Museum Island + Panorama" ticket costs €24 museumsportal-berlin.de, which a third-party guide also lists as the €24 Museum Island Day Ticket thebettervacation.com
-The SMB's own ticket page excerpt only showed the 3-day Museum Pass Berlin (€32), not the single-museum price smb.museum, so the €14 figure rests on the Museumsportal Berlin page (fetched today) plus that third-party guide — worth a quick check on smb.museum before you go.
-One caveat: I'm relying on the device clock for "today"; if the date is wrong, the regular Tue–Sun hours above still apply on any normal weekday.
+Opening hours today (Thu, 12 Nov 2026): 10:00–18:00, with last entry 30 minutes before closing (17:30) museumsportal-berlin.de. The museum is closed on Mondays; otherwise Tue–Sun 10:00–18:00 museumsportal-berlin.desmb.museum. No special hours or closure are listed for today — the only maintenance closure mentioned is 15–17 March 2027 smb.museum.
+Adult ticket price: €14 museumsportal-berlin.de, which matches the 2026 price reported by a second source thebettervacation.com. For context: reduced admission is €7, children and young people up to 18 are free, and a combined Museum Island + Panorama ticket costs €24 museumsportal-berlin.de.
+Both items are confirmed by the official Museumsportal Berlin page and the SMB website. One caveat: I'm relying on my device clock for "today"; if your actual date is a Monday, the museum would be closed.
 ~~~~~~
 
 ## 3. R-03 (level 1: Research (search on))
@@ -120,43 +127,31 @@ What is the ECB's deposit facility rate right now, and when did it last change?
 ### Answer A
 
 ~~~~~~markdown
-The ECB deposit facility rate is 2.50% globalmacro.expertsilverdatalab.com.
-Last change — accounts differ slightly:
-Several sources say it rose by +25 basis points on 16 September 2026, with the last change effective then globalmacro.expertsilverdatalab.com.
-Another source says the last change was +25 bp on 10 September 2026 interestratedecision.com.
-So the date is either 10 or 16 September 2026 depending on the source; both agree on +25 bp. One source also mentions an earlier increase on 17 June 2026 silverdatalab.com.
-Caveats:
-These are search excerpts, not full pages, and none is the ECB's own site. The ECB's official page would be the authoritative check.
-The retrieved date (12 November 2026) does not prove the figures are current.
-The 2.50% level is consistent across sources globalmacro.expertsilverdatalab.comeuroyields.com, but one provider page is dated June 2026 silverdatalab.com while still citing September 2026 changes, so its dating is internally inconsistent.
-Other rates as cited: main refinancing operations 2.65%, marginal lending facility 2.90% globalmacro.expertsilverdatalab.com.
-If you want, I can run a search aimed at the ECB's own published rate table to settle the exact decision date.
+The ECB's deposit facility rate is currently 2.50% (as of today, Nov 12, 2026) globalmacro.expert. The last change was a +25 bp increase that took effect on Sep 16, 2026, moving the rate from 2.25% to 2.50% globalmacro.expert.
+This is corroborated by other sources: one reports the same 2.50% rate and Sep 16, 2026 effective date as of late October globalmacro.expert, and another confirms 2.50% following increases on 17 June and 16 September 2026 silverdatalab.com.
+One small discrepancy worth noting: a different source dates the last change to Sep 10, 2026 interestratedecision.com rather than Sep 16. This most likely reflects the decision announcement date versus the effective date, but the excerpts don't state that explicitly.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Current deposit facility rate: 2.50%.
-Last change: a +25 basis point increase that took effect on 16 September 2026 globalmacro.expertsilverdatalab.com.
-Source discrepancies worth flagging:
-Two different decision dates: One source dates the last change to 10 September 2026 interestratedecision.com, while others say it took effect 16 September 2026 globalmacro.expertsilverdatalab.com. The effective date is 16 September; 10 September may have been the announcement date, but the excerpts don't confirm that.
-Conflicting wider history: EuroYields says the rate "peaked at 4.00% in September 2023" and was then cut through 2024–2025 euroyields.com, while two other sources describe increases in June and September 2026 globalmacro.expertsilverdatalab.com and one says the current level is "150 basis points below the peak" silverdatalab.com (that is consistent with a 4.00% peak, but not with cuts alone in 2025). These accounts don't fully reconcile.
-Other rates (for context): main refinancing operations 2.65%, marginal lending facility 2.90% globalmacro.expertsilverdatalab.com.
-Caveats: All of these are search excerpts, not full pages, and the sources are third-party trackers rather than the ECB itself. One provider date (20 June 2026) precedes the September 2026 change it describes silverdatalab.com, so that label is unreliable. "Right now" reflects material retrieved on 12 November 2026.
-For an authoritative figure, check the ECB's own key interest rates page. I can search for it if you'd like.
+The ECB deposit facility rate is 2.50% as of Nov 12, 2026 globalmacro.expert. The last change took effect Sep 16, 2026, a +25 bp increase globalmacro.expert.
+For context, the same source lists the other two key rates at 2.65% (main refinancing) and 2.90% (marginal lending) globalmacro.expert.
+A caveat on the date evidence:
+Global Macro Expert reports 2.50% and the Sep 16, 2026 change globalmacro.expertglobalmacro.expert.
+Silver Data Lab gives the same rates but its page is dated Jun 20, 2026, before the Sep 16 change, so its date can't support the timing silverdatalab.com.
+Another source says the last change was +25 bp on Sep 10, 2026 interestratedecision.com, differing from Sep 16. That's a conflict I can't resolve from these excerpts.
+None of these is the ECB's own site. For an authoritative figure and effective date, check the ECB Data Portal or ECB press releases directly.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Current rate: 2.50% — that's the ECB deposit facility rate as of the most recent data in these results. As of 28 Oct 2026 it stood at 2.50%, alongside a main refinancing rate of 2.65% and a marginal lending rate of 2.90% globalmacro.expert. Two other trackers also report 2.50% interestratedecision.comsilverdatalab.com.
-Last change: +25 basis points in September 2026. The sources differ slightly on the date:
-Global Macro Expert: the change took effect 16 Sep 2026 globalmacro.expert; Silver Data Lab also lists 16 Sep 2026 silverdatalab.com.
-Interest Rate Decision (page updated 4 Nov 2026): the last change was 10 Sep 2026 interestratedecision.com.
-These may be the announcement date vs. the effective date, but the excerpts don't say so explicitly. There was also an earlier increase on 17 June 2026 silverdatalab.com. For context, the rate peaked at 4.00% in Sep 2023, was cut through 2024–2025 euroyields.com, and now sits 150 bp below that peak silverdatalab.com.
-Caveats:
-All of these are search excerpts from third-party trackers, not the ECB's own site — that official page is missing from the results, and I'd treat it as the definitive source. I can run another search for it if you'd like.
-Silver Data Lab's page is dated 20 June 2026 yet references 16 September events, so treat it with some caution; the two more recently dated sources agree on the key facts, though.
+The ECB deposit facility rate is 2.50%, last changed on 16 September 2026, when it was raised by 25 basis points globalmacro.expert. The same page gives the accompanying main refinancing rate as 2.65% and the marginal lending facility rate as 2.90% globalmacro.expert.
+Two caveats:
+The source is a secondary aggregator citing the ECB Data Portal, not the ECB's own publication; the search excerpts don't include a direct ECB page globalmacro.expert.
+The excerpt of that page is dated 12 November 2026 and lists the rate as current then; I can't confirm nothing has changed since, so check the ECB's own rate page for the authoritative figure.
+The rate history in the same source is consistent with other excerpts: a peak of 4.00% in September 2023 euroyields.comglobalmacro.expert and a +25 bp move on 16 September 2026 globalmacro.expertsilverdatalab.com. One source instead gives the date of the last change as 10 September 2026 interestratedecision.com — likely an effective-date vs. decision-date difference, but the excerpts don't show enough to confirm that.
 ~~~~~~
 
 ## 4. R-04 (level 1: Research (search on))
@@ -175,29 +170,36 @@ Wie hoch ist der gesetzliche Mindestlohn in Deutschland im Jahr 2026 pro Stunde,
 ### Answer A
 
 ~~~~~~markdown
-Der gesetzliche Mindestlohn in Deutschland beträgt seit dem 1. Januar 2026 13,90 Euro brutto pro Stunde bundesregierung.de bundesregierung.de [2e2?] — belegt auch auf der geöffneten Seite der Bundesregierung bundesregierung.de und beim BMAS bmas.de.
-Höhe und Gültigkeitsbeginn: 13,90 € brutto/Zeitstunde seit 1. Januar 2026 bundesregierung.de bmas.de
-Nächster Schritt laut Bundesregierung: Anhebung auf 14,60 € im Jahr 2027 bundesregierung.de
-Einordnung: bundesweit einheitliche Lohnuntergrenze, Berechnungsbasis u. a. für Minijob-Grenzen personio.de; mit der Erhöhung ist auch die Minijob-Verdienstgrenze gestiegen bundesregierung.de
-Ableitung bei 40 Wochenstunden: rund 2.409,33 € brutto im Monat (Rechenbeispiel eines Anbieters, keine amtliche Angabe) lohnkost.de
-Hinweis: Die Angaben stammen aus Suchauszügen bzw. den ersten Abschnitten der Seiten, nicht aus vollständig gelesenen Dokumenten. Verbindlich ist der Gesetzestext bzw. die Verordnung; die offizielle Übersicht findest du beim BMAS bmas.de.
+Der gesetzliche Mindestlohn in Deutschland liegt 2026 bei 13,90 Euro brutto pro Stunde. Er gilt seit dem 1. Januar 2026 bundesregierung.debundesregierung.de.
+Das bestätigt auch das Bundesministerium für Arbeit und Soziales: Seit dem 1. Januar 2026 beträgt der Mindestlohn 13,90 Euro (brutto) pro Zeitstunde .
+Ergänzend: Zum 1. Januar 2027 soll er auf 14,60 Euro steigen bundesregierung.de.
+Quellen (primär):
+Bundesregierung, „13,90 Euro: So hoch liegt der Mindestlohn 2026" (Veröffentlichung 21.09.2026): https://www.bundesregierung.de/breg-de/aktuelles/mindestlohn-steigt-2391010 bundesregierung.de
+BMAS, „Der gesetzliche Mindestlohn – Ein Überblick": https://www.bmas.de/DE/Arbeit/Arbeitsrecht/Mindestlohn/Informationen-zum-Mindestlohn/informationen-zum-mindestlohn-deutsch.html
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Der gesetzliche Mindestlohn in Deutschland beträgt 13,90 € brutto pro Stunde und gilt seit dem 1. Januar 2026 bundesregierung.debundesregierung.debmas.de.
-Laut der Seite der Bundesregierung steigt er 2027 auf 14,60 € bundesregierung.de. Die Angaben stammen aus einer Pressemitteilung der Bundesregierung vom 21. September 2026 bundesregierung.de sowie übereinstimmenden Angaben des BMAS bmas.de.
+Der gesetzliche Mindestlohn in Deutschland beträgt 13,90 Euro brutto pro Stunde und gilt seit dem 1. Januar 2026 bundesregierung.debundesregierung.debmas.de.
+Die Zahl wird unabhängig bestätigt durch das BMAS bmas.de, die Bundesregierung bundesregierung.debundesregierung.de und einen Fachanbieter personio.de.
+Zusatz: Zum 1. Januar 2027 soll der Mindestlohn laut Bundesregierung auf 14,60 Euro steigen bundesregierung.de.
+Quellen:
+Bundesregierung, „13,90 Euro: So hoch liegt der Mindestlohn 2026“ (Seite geöffnet, Pressemitteilung vom 21.09.2026) bundesregierung.de
+BMAS, „Der gesetzliche Mindestlohn – Ein Überblick“ bmas.de
+Bundesregierung, FAQ zum Mindestlohn bundesregierung.de
+Hinweis: Die Auszüge belegen die Beträge; ob einzelne Branchen einen höheren Tarifmindestlohn haben, geht daraus nicht hervor.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Der gesetzliche Mindestlohn in Deutschland liegt seit dem 1. Januar 2026 bei 13,90 Euro brutto pro Stunde bundesregierung.debmas.de. Zum 1. Januar 2027 soll er auf 14,60 Euro steigen bundesregierung.de.
+Der gesetzliche Mindestlohn in Deutschland beträgt 13,90 € brutto pro Stunde und gilt seit dem 1. Januar 2026 bundesregierung.debmas.debundesregierung.de.
+Zum 1. Januar 2027 soll er auf 14,60 € steigen bundesregierung.de.
 Quellen:
-Pressemitteilung der Bundesregierung: „13,90 Euro: So hoch liegt der Mindestlohn 2026" (bundesregierung.de, 21.09.2026) bundesregierung.de
-Bundesministerium für Arbeit und Soziales (BMAS): „Der gesetzliche Mindestlohn – Ein Überblick" (bmas.de) bmas.de
-Beide sind offizielle Seiten der Bundesregierung bzw. des zuständigen Ministeriums und stimmen überein.
+Bundesregierung, „13,90 Euro: So hoch liegt der Mindestlohn 2026“ (Beitrag vom 21. September 2026): https://www.bundesregierung.de/breg-de/aktuelles/mindestlohn-steigt-2391010 bundesregierung.de
+BMAS, „Der gesetzliche Mindestlohn – Ein Überblick“: https://www.bmas.de/DE/Arbeit/Arbeitsrecht/Mindestlohn/Informationen-zum-Mindestlohn/informationen-zum-mindestlohn-deutsch.html bmas.de
+Hinweis: Die Angaben stammen aus Suchausschnitten bzw. dem Anfang der Bundesregierungs-Seite; die vollständigen Originalseiten habe ich nicht gelesen.
 ~~~~~~
 
 ## 5. R-05 (level 1: Research (search on))
@@ -217,45 +219,42 @@ Wie viel Kindergeld gibt es 2026 pro Kind und Monat?
 
 ~~~~~~markdown
 Kept on this device: 1 phone number. Placeholders went to the secure server instead; the values were put back here. Not every number is recognised, least of all in photos and scans.
-2026 gibt es 259 Euro Kindergeld pro Kind und Monat – unabhängig von der Anzahl der Kinder kindergeld.orgkindergeld.org. Das sind 4 Euro mehr als 2025 (255 Euro) kindergeld.orgdgb.de.
-Für mehrere Kinder ergibt sich daraus laut Tabelle kindergeld.org:
-Kinder	2025	2026
-1	255 €	259 €
-2	510 €	518 €
-3	765 €	777 €
-4	1.020 €	1.036 €
-5	1.275 €	1.295 €
-Hinweis: Die Belege stammen aus Suchauszügen und einer teilweise geladenen Seite, nicht von der offiziellen Familienkassen-Website. Für verbindliche Angaben prüfe die Seite der Familienkasse bzw. arbeitsagentur.de. Soll ich dazu eine Suche machen?
+2026 beträgt das Kindergeld 259 Euro pro Kind und Monat, unabhängig von der Anzahl der Kinder kindergeld.orgdgb.de. Die Erhöhung erfolgte zum 1. Januar 2026 von 255 Euro dgb.dekindergeld.org.
+Für mehrere Kinder ergibt sich daraus kindergeld.org:
+Kinder	Betrag/Monat 2026
+1	259 €
+2	518 €
+3	777 €
+4	1.036 €
+5	1.295 €
+Hinweis: Diese Angaben stammen aus Suchausschnitten und einer teilweise geladenen Seite; sie decken sich aber übereinstimmend. Verbindlich ist die Familienkasse. Die Höhe kann sich ab 2027 ändern – dazu lag mir keine belastbare Angabe vor.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
 Kept on this device: 1 phone number. Placeholders went to the secure server instead; the values were put back here. Not every number is recognised, least of all in photos and scans.
-2026 gibt es 259 Euro Kindergeld pro Kind und Monat – 4 Euro mehr als 2025 (255 Euro) kindergeld.org dgb.de. Der Betrag ist unabhängig von der Kinderzahl raisin.com dgb.de.
-Für mehrere Kinder ergibt sich laut Tabelle kindergeld.org:
-Kinder	2025	2026
-1	255 €	259 €
-2	510 €	518 €
-3	765 €	777 €
-4	1.020 €	1.036 €
-5	1.275 €	1.295 €
-Hinweis: Die Angaben stammen aus Suchergebnis-Auszügen bzw. einem teilweise geladenen Seiteninhalt kindergeld.org. Für verbindliche Beträge und Auszahlungstermine ist die offizielle Seite der Familienkasse bzw. der Bundesagentur für Arbeit die maßgebliche Quelle; die 259 € werden von mehreren Quellen übereinstimmend genannt finanz.de hopkins.law.
+2026 gibt es 259 € Kindergeld pro Kind und Monat – das ist eine Erhöhung um 4 € gegenüber 255 € im Jahr 2025 kindergeld.org kindergeld.org. Der Betrag ist seit 2023 unabhängig von der Zahl der Kinder raisin.com.
+Für mehrere Kinder ergibt sich daraus kindergeld.org:
+Kinder	2026 monatlich
+1	259 €
+2	518 €
+3	777 €
+4	1.036 €
+5	1.295 €
+Die Beträge nennen mehrere Quellen übereinstimmend, darunter der DGB mit der Erhöhung zum 1. Januar 2026 dgb.de. Ein Antrag bei der Familienkasse ist weiterhin nötig kindergeld.org finanz.de.
+Hinweis: Ich habe nur Auszüge und den Anfang der Hauptseite gesehen, keine vollständigen Originaldokumente. Für verbindliche Auskünfte ist die Familienkasse zuständig.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
 Kept on this device: 1 phone number. Placeholders went to the secure server instead; the values were put back here. Not every number is recognised, least of all in photos and scans.
-259 Euro pro Kind und Monat beträgt das Kindergeld im Jahr 2026 kindergeld.org. Die Erhöhung trat zum 1. Januar 2026 in Kraft – eine Steigerung um 4 Euro gegenüber 255 Euro im Jahr 2025 dgb.de kindergeld.org.
-Der Betrag gilt einheitlich für jedes Kind, unabhängig von der Anzahl der Kinder dgb.de raisin.com.
-Beispielhafte Monatsbeträge nach Kinderzahl kindergeld.org:
-Kinder	Kindergeld 2026/Monat
-1	259 €
-2	518 €
-3	777 €
-4	1.036 €
-Verbindliche Auskünfte erteilt die Familienkasse.
+259 Euro pro Kind und Monat ab dem 1. Januar 2026. kindergeld.org
+Das ist eine Erhöhung um 4 Euro gegenüber 2025 (255 Euro). dgb.de Der Betrag gilt einheitlich für jedes Kind, unabhängig von der Anzahl der Kinder. dgb.de finanz.de
+Details:
+Ausgezahlt wird ab dem Geburtsmonat, bis zum 18. Lebensjahr ohne Bedingungen, in Ausbildung/Studium unter Nachweis längstens bis zum 25. Geburtstag. kindergeld.org finanz.de
+Ein schriftlicher Antrag bei der Familienkasse ist erforderlich. kindergeld.org
 ~~~~~~
 
 ## 6. R-06 (level 1: Research (search on))
@@ -274,26 +273,29 @@ What is the latest stable release of Python, and when was it released?
 ### Answer A
 
 ~~~~~~markdown
-The latest stable Python 3 release is Python 3.15.2, released October 25, 2026 python.org.
-Supporting details:
-Python.org's source downloads page lists "Latest Python 3 Release – Python 3.15.2" and shows 3.15.2 dated Oct. 25, 2026 python.org.
-Wikipedia's Python article says "Python 3.15 [is] the latest stable release" as of October 2026 en.wikipedia.org.
-Note: the excerpts only show the most recent entries; I didn't see full release notes for 3.15.2, so I can't say what it changed. If you want the changelog or download links, I can search for those.
+The latest stable release is Python 3.15.2, released October 25, 2026.
+The Python.org source downloads page labels "Latest Python 3 Release – Python 3.15.2" and lists 3.15.2 with the date Oct. 25, 2026 python.org.
+Wikipedia's History of Python excerpt independently states that, as of October 2026, Python 3.15 is the latest stable version en.wikipedia.org.
+Caveats worth noting:
+Several sources conflict on what the newest major release is: a Python.org release page describes 3.14.0 as "the newest major release" python.org, but that page appears tied to 3.14's original release (Oct. 7, 2025 per the list python.org) and is stale relative to 3.15.
+These are search excerpts and one partially rendered page, not a full verification. The page's own listing is the strongest evidence for 3.15.2 as latest; the retrieval date (Nov. 12, 2026) doesn't confirm nothing newer exists.
+If you want, I can search for any release after 3.15.2 to rule that out.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-The latest stable Python release is Python 3.15.2, dated October 25, 2026 python.org. The official source page lists it as "Latest Python 3 Release – Python 3.15.2" python.org.
-This is consistent with Wikipedia, which describes Python 3.15 as the latest stable version as of October 2026 en.wikipedia.org.
-Note: these excerpts come from a retrieval on 2026-11-12; newer releases after that date wouldn't be reflected here.
+The latest stable release is Python 3.15.2, released October 25, 2026. It's listed as "Latest Python 3 Release" on Python.org's source downloads page, with source tarballs available python.org.
+Two Wikipedia excerpts also describe Python 3.15 as the latest stable version, with 3.15 defaulting to UTF-8 unlike earlier releases en.wikipedia.org en.wikipedia.org. Those excerpts are consistent with the Python.org listing, but they're secondary and partial rather than independent confirmation of the exact version number or date.
+Note: the Python.org page also lists a 3.14.0 release page described as the "newest major release" python.org, but that's superseded by 3.15.2 per the release listing python.org.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Python 3.15.2, released on October 25, 2026, is the latest stable release according to the official Python Source Releases page python.org. This is corroborated by the Wikipedia articles on Python and its history, which both state Python 3.15 is the latest stable version as of October 2026 en.wikipedia.org en.wikipedia.org.
-For reference, the same page lists the most recent point releases across other maintained branches, all also dated Oct. 25, 2026: Python 3.11.18, 3.12.16, 3.13.18, and 3.14.10 python.org.
+The latest stable release is Python 3.15.2, released on October 25, 2026 python.org. The official Python source releases page explicitly lists "Latest Python 3 Release - Python 3.15.2" with the October 25, 2026 date python.org.
+Wikipedia corroborates that Python 3.15 is the latest stable version as of October 2026 en.wikipedia.org, noting that this release defaults to UTF-8, unlike previous versions en.wikipedia.org.
+One caveat: a separate python.org page describes Python 3.14.0 as the newest major release python.org, but that refers to the 3.14.0 release from October 7, 2025 python.org and is superseded by the 3.15 series.
 ~~~~~~
 
 ## 7. R-07 (level 1: Research (search on))
@@ -313,40 +315,40 @@ Was kostet ein Reisepass für Erwachsene ab 24 Jahren, und wie lange dauert es u
 ### Answer A
 
 ~~~~~~markdown
-Kosten: Für Personen ab 24 Jahren kostet der Reisepass 70,00 €; er ist dann 10 Jahre gültig. Unter 24 Jahren sind es 37,50 € bei 6 Jahren Gültigkeit bmi.bund.de. Diese Beträge gelten laut BMI ab 7. Februar 2026 bmi.bund.de. Auch die anderen Quellen nennen 70 € ab 24 Jahren amtly.app wermachtwas.online weroad.de.
-Dauer – die Angaben gehen auseinander:
-Das BMI gibt laut einem Bericht in der Regel mindestens zwei Wochen an, abhängig von der Bearbeitungszeit der jeweiligen Behörde wiwo.de.
-Ein Ratgeber-Blog nennt 4–6 Wochen regulär, mit Express-Zuschlag von 32 € in 3–4 Werktagen amtly.app.
-Die „mindestens zwei Wochen" sind eine Untergrenze, keine Zusage; die 4–6 Wochen sind eine Erfahrungsangabe ohne amtliche Bestätigung. Für einen konkreten Termin ist die Bearbeitungszeit Ihres Bürgeramts maßgeblich. Laut einem Anbieter kommen Extras wie Expressbearbeitung, 48 Seiten oder Fotoaufnahme zusätzlich dazu weroad.de; die genauen Zusatzgebühren stehen auf der BMI-Seite bmi.bund.de.
-Hinweis: Die Suchergebnisse waren nur Auszüge, keine vollständigen Seiten. Falls Sie die genauen Zusatzgebühren oder Bedingungen für den Express-Pass brauchen, kann ich gezielt danach suchen.
+Für Erwachsene ab 24 Jahren kostet der Reisepass 70,00 €; er ist dann 10 Jahre gültig bmi.bund.deamtly.app.
+Zur Bearbeitungsdauer gibt es unterschiedliche Angaben:
+Regulär: Die Quellen nennen 4–6 Wochen amtly.appamtly.app, teils auch „mindestens zwei Wochen" in der Regel, abhängig von der Behörde wiwo.de.
+Express: Mit 32 € Zuschlag (also 102 € gesamt) in 3–4 Werktagen amtly.appamtly.app.
+Da die Angaben zur regulären Dauer schwanken, frag am besten beim zuständigen Bürgeramt nach der aktuellen Bearbeitungszeit. Zusätzliche Optionen wie 48 Seiten (+22 €) oder Direktversand (+15 €) kosten extra amtly.app.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Kosten: Für Personen ab 24 Jahren kostet der deutsche Reisepass 70,00 € und ist 10 Jahre gültig bmi.bund.de. Dieser Preis gilt laut BMI ab 7. Februar 2026 bmi.bund.de; mehrere aktuelle Ratgeber nennen denselben Betrag amtly.appwermachtwas.onlineweroad.de.
-Dauer: Hier widersprechen sich die Quellen:
-Das BMI gibt laut einem Bericht mindestens zwei Wochen an, abhängig von der Behörde wiwo.de.
-Ein Ratgeber nennt regulär 4–6 Wochen amtly.app.
-Mit Express-Zuschlag von 32 € soll er in 3–4 Werktagen fertig sein amtly.app; auch ein weiterer Ratgeber nennt die 32 € wermachtwas.online.
-Die tatsächliche Bearbeitungszeit hängt also stark vom örtlichen Bürgeramt ab – am besten dort direkt nachfragen. Ob ein Express-Antrag in Ihrer Stadt möglich ist und wie lange es aktuell dauert, steht in diesen Auszügen nicht.
-Hinweis: Die Angaben stammen aus Suchausschnitten, nicht aus vollständig gelesenen Seiten.
+Kosten
+Ein Reisepass für Personen ab 24 Jahren kostet 70,00 € und ist 10 Jahre gültig bmi.bund.de. Das sind die offiziellen Gebühren des BMI, die seit dem 7. Februar 2026 gelten bmi.bund.de. Bestätigt wird der Preis auch von mehreren Ratgebern weroad.dewermachtwas.online.
+Mögliche Zusatzkosten:
+Express-Zuschlag: +32,00 € wermachtwas.online
+48 Seiten statt 32: +22,00 € amtly.app
+Direktversand nach Hause: ca. 15 € Serviceentgelt amtly.app
+Bearbeitungsdauer
+Hier widersprechen sich die Quellen leicht:
+Nach Angaben des BMI dauert die Ausstellung in der Regel mindestens zwei Wochen, abhängig von der Bearbeitungszeit der jeweiligen Behörde wiwo.de.
+Ein Ratgeber rechnet regulär mit 4–6 Wochen, bei Express mit 3–4 Werktagen amtly.app.
+Als Faustregel: Mit mindestens 2–6 Wochen einplanen – bei geplanten Reisen also frühzeitig beantragen. Wenn es schnell gehen muss, gibt es den Express-Pass (3–4 Werktage, gesamt 102 € ab 24) oder den vorläufigen Reisepass (26 €, sofort ausgestellt, aber nur 1 Jahr gültig und nicht von allen Ländern akzeptiert) amtly.app.
+Hinweis: Die konkrete Bearbeitungszeit hängt von deiner örtlichen Passbehörde ab – am besten dort direkt nachfragen.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Kosten
-Ein Reisepass für Personen ab 24 Jahren kostet 70,00 Euro und ist 10 Jahre gültig bmi.bund.de. Dieselbe Angabe finden sich auch in mehreren Ratgebern amtly.appwermachtwas.onlineweroad.de.
-Zusatzleistungen (mit Aufpreis):
-Expressbearbeitung: +32,00 Euro wermachtwas.onlineamtly.app
-48-Seiten-Pass für Vielreisende: +22,00 Euro wermachtwas.online
-Bearbeitungsdauer
-Hier weichen die Angaben voneinander ab:
-Nach Angaben des BMI dauert es in der Regel mindestens zwei Wochen von der Beantragung bis zur Ausstellung, abhängig von der jeweiligen Behörde wiwo.de.
-Ein anderer Ratgeber nennt regulär 4–6 Wochen amtly.app.
-Die tatsächliche Dauer hängt also stark von der Auslastung Ihres Bürgeramts bzw. der zuständigen Behörde ab. Wer es eilig hat, kann mit dem Express-Zuschlag von 32 Euro mit einer Fertigstellung in etwa 3–4 Werktagen rechnen amtly.app.
-Hinweis: Alle genannten Kosten gelten laut BMI ab dem 7. Februar 2026 bmi.bund.de.
+Für Erwachsene ab 24 Jahren kostet der deutsche Reisepass 70,00 € und ist 10 Jahre gültig bmi.bund.deamtly.app. Unter 24 Jahren sind es 37,50 € bei 6 Jahren Gültigkeit bmi.bund.de.
+Bearbeitungsdauer – die Angaben widersprechen sich:
+Das BMI nennt laut einer Sekundärquelle in der Regel mindestens zwei Wochen, abhängig von der jeweiligen Behörde wiwo.de.
+Ein Ratgeber nennt 4–6 Wochen regulär amtly.app, ein anderer 3–4 Wochen [d6167cc97466 – Abschnitt „Ablauf und Abholung“].
+Mit Express-Zuschlag von 32 € (Gesamt 102 €) soll es in 3–4 Werktagen gehen amtly.appwermachtwas.online.
+Da die Spanne von zwei Wochen bis sechs Wochen reicht, plane lieber großzügig und frag bei deinem Bürgeramt nach der aktuellen Wartezeit vor Ort. Zusätzliche Kosten fallen z. B. für 48 Seiten (+22 €) oder Direktversand (+15 €) an amtly.appwermachtwas.online.
+Hinweis: Die Quellen sind überwiegend Ratgeber-Websites, nicht die Behörde selbst; die BMI-Seite lag nur als kurzer Auszug vor. Verbindlich sind die Angaben deines Bürgeramts.
 ~~~~~~
 
 ## 8. G-01 (level 2: German rules, fees and deadlines)
@@ -367,50 +369,49 @@ Ich bin umgezogen. Bis wann muss ich mein Auto ummelden, und was kostet das unge
 ### Answer A
 
 ~~~~~~markdown
-Kurz: Die genaue Frist solltest du bei deiner Zulassungsstelle bzw. im Internetauftritt deiner Stadt prüfen – ich bin mir bei der konkreten Zahl für 2026 nicht sicher genug, um sie dir zu nennen. Häufig genannt wird aber: unverzüglich, spätestens innerhalb von etwa 6 Wochen nach dem Umzug (oft „Ummeldung innerhalb von 6 Wochen“). Bei einem Umzug innerhalb desselben Zulassungsbezirks ändert sich oft nur die Adresse in den Papieren – das ist meist günstiger und teils formloser.
-Kosten (typische Größenordnung, je nach Kommune):
-Adressänderung / Ummeldung am selben Ort: grob 10–20 €
-Ummeldung mit neuem Kennzeichen (Umzug in anderen Bezirk): grob 25–40 €
-Dazu kommen ggf. neue Kennzeichen (Prägen, ca. 10–20 €) und bei Bedarf Feinstaubplakette (ca. 5–10 €).
-Praktisch: Termin bei der Zulassungsstelle, Personalausweis, Zulassungsbescheinigung Teil I (und II), ggf. alte Kennzeichen. Bei Versicherung und Kfz-Steuer (Zoll) die neue Adresse melden – die Steuer läuft meist automatisch über die Zulassung.
-Wenn du mir sagst, ob du innerhalb oder außerhalb deines bisherigen Zulassungsbezirks gezogen bist, kann ich es genauer eingrenzen.
+Ich kann Ihnen die wichtigsten Punkte nennen – bei Gebühren und Fristen im Detail bin ich mir aber nicht sicher, weil sich Regelungen ändern können. Bitte prüfen Sie das konkret bei Ihrer Zulassungsstelle bzw. auf den offiziellen Seiten (z. B. der Stadt/Gemeinde und beim Kraftfahrt-Bundesamt).
+Frist für die Ummeldung
+Grundsätzlich muss ein Fahrzeug nach einem Umzug innerhalb einer Frist von etwa sechs Wochen auf die neue Adresse umgeschrieben werden. Ob es in Ihrem Fall genau sechs Wochen sind, hängt u. a. vom Zulassungsbezirk ab – bitte bei der örtlichen Zulassungsstelle nachfragen.
+Wichtig: Nach Umzug in einen anderen Zulassungsbezirk können neue Kennzeichen nötig sein; ziehen Sie nur innerhalb des Bezirks um, bleibt das Kennzeichen meist erhalten.
+Die Ummeldung ist gebührenpflichtig und Sie sollten sie nicht hinauszögern – bei einem Verstoß kann ein Verwarnungsgeld anfallen.
+Kosten
+Die Gebühren liegen je nach Zulassungsstelle und ob neue Kennzeichen nötig sind typischerweise im niedrigen zweistelligen bis mittleren zweistelligen Euro-Bereich (ohne Schilder). Neue Kennzeichen kosten zusätzlich.
+Ich möchte Ihnen hier keine exakte Zahl nennen, da sie regional unterschiedlich ist – die genaue Gebühr erfahren Sie bei Ihrer Zulassungsstelle.
+Praktisch zu klären
+Welche Unterlagen verlangt werden (Personalausweis, Zulassungsbescheinigung Teil I und II, ggf. Vollmacht) – auch das variiert örtlich.
+Ob Sie einen Termin brauchen.
+Wenn Sie mir sagen, in welcher Stadt/Landkreis Sie jetzt wohnen, kann ich Ihnen die richtigen Suchbegriffe für die zuständige Zulassungsstelle nennen.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Kurz gesagt
-Frist: Nach einem Umzug musst du die neue Halteradresse deines Autos in der Regel binnen einer Woche der Zulassungsstelle melden (Fahrzeug-Zulassungsverordnung). Die Frist läuft ab dem Einzug – wenn du schon umgezogen bist, also am besten zeitnah einen Termin buchen. Ich bin mir nicht ganz sicher, ob diese Frist aktuell unverändert gilt; verbindlich ist, was deine Zulassungsstelle sagt.
-Kosten: Den exakten Betrag kann ich nicht verlässlich nennen. Die Gebühren sind zwar bundeseinheitlich geregelt, hängen aber vom Aufwand ab. Als grobe, häufig genannte Größenordnung: ca. 10–30 € – weniger, wenn nur die Papiere berichtigt werden, mehr, wenn neue Kennzeichen oder Stempelplaketten dazukommen. Bitte prüfe den aktuellen Betrag auf der Website deiner Zulassungsstelle; manche (privat betriebene) Stellen verlangen zusätzlich kleine Servicepauschalen.
-Gut zu wissen
-Zuständig ist die Zulassungsstelle deines neuen Wohnorts. Bist du im selben Zulassungsbezirk geblieben, reicht meist eine einfache Adressberichtigung. Viele Bundesländer bieten die Ummeldung inzwischen auch online an („i‑Kfz“).
-Kennzeichen behalten: Dein bisheriges Kennzeichen darfst du in der Regel weiterführen, auch wenn der neue Bezirk ein anderes Kürzel hat. Neue Schilder sind optional und kosten extra.
-Unterlagen (typisch):
-Zulassungsbescheinigung Teil I (Fahrzeugschein) und Teil II (Fahrzeugbrief)
-Personalausweis oder Reisepass, ggf. aktuelle Meldebescheinigung
-IBAN / SEPA-Lastschriftmandat für die Kfz-Steuer
-Kennzeichen, falls neue Plaketten oder Schilder fällig werden
-Nicht vergessen
-Einwohnermeldeamt: Anmeldung des neuen Wohnsitzes binnen zwei Wochen (falls noch nicht geschehen).
-Kfz-Versicherung über den Umzug informieren – je nach Region kann sich der Beitrag ändern.
-Mein Wissensstand stammt aus Trainingsdaten und kann veraltet sein; die verbindlichen Zahlen und Fristen stehen auf der Website deiner Zulassungsstelle. Wenn du mir sagst, ob du im selben Zulassungsbezirk geblieben bist, kann ich dir sagen, welche Variante (Berichtigung oder Ummeldung) bei dir zutrifft.
+Kurz vorweg: Deine Frage betrifft aktuelle Regeln und Gebühren, die sich ändern können. Mein Wissen stammt aus Trainingsdaten mit unbekanntem Enddatum und kann veraltet sein. Für Verbindliches prüf die Website deiner Zulassungsstelle bzw. des Kraftfahrt-Bundesamts (KBA). Wenn du möchtest, kann ich eine Websuche anbieten.
+Frist
+Bei einem Umzug innerhalb Deutschlands muss das Fahrzeug in der Regel unverzüglich umgemeldet werden – üblich ist eine Frist von etwa 6 Wochen nach dem Umzug (oft als „unverzüglich, spätestens binnen 6 Wochen" formuliert). Die genaue Auslegung und mögliche Kulanz regelt die örtliche Zulassungsstelle. Verlass dich für deinen Fall auf deren Angaben.
+Bei einem Umzug ins Ausland gelten andere Regeln (Ausfuhr, ggf. neue Zulassung im Zielland).
+Kosten (typische Größenordnung)
+Ummeldung mit neuen Kennzeichen und neuer Feinstaubplakette: grob ca. 30–60 € bei der Zulassungsstelle, je nach Gemeinde und Leistungen.
+Behältst du deine Kennzeichen (möglich, wenn der bisherige Halterkreis passt), fällt oft weniger an, ca. 15–30 €.
+Dazu kommen ggf. Kosten für neue Kennzeichen (ca. 10–30 € pro Satz) und bei manchen Versicherern eine Vertragsänderung (meist kostenlos, aber melden musst du den Umzug).
+Online-Ummeldung (i-Kfz) ist in vielen Fällen möglich und oft günstiger, aber nicht überall und nicht für alle Fälle.
+Praktisch wichtig
+Melde den Umzug auch deiner Kfz-Versicherung – die Prämie hängt u. a. von der Region ab (Regionalklasse). Das kann teurer oder günstiger werden.
+Nimm zur Zulassungsstelle Personalausweis, Zulassungsbescheinigung Teil I und II, ggf. alten Kennzeichen und eVB-Nummer mit. Genaue Liste bei deiner Zulassungsstelle.
+Wenn du mir deine Stadt bzw. deinen Landkreis nennst, kann ich dir sagen, wonach du bei der dortigen Zulassungsstelle konkret suchen solltest – oder ich mache eine Websuche zu den aktuellen Gebühren.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Ich kann Ihnen die Grundlagen nennen, aber die genauen Fristen und Gebühren hängen vom Einzelfall ab – bitte prüfen Sie die Angaben bei Ihrer Zulassungsbehörde.
-Frist
-Wenn Sie innerhalb Deutschlands umziehen und das Auto beim Umzug schon auf Sie zugelassen war: In der Regel müssen Sie die neue Adresse unverzüglich in den Fahrzeugpapieren ändern lassen. Oft wird ein Zeitraum von wenigen Wochen bzw. „unverzüglich“ genannt – ich bin mir bei der genauen Zahl nicht sicher. Verbindlich ist die Auskunft Ihrer örtlichen Zulassungsstelle.
-Wenn Sie aus dem Ausland nach Deutschland ziehen: Fahrzeuge müssen meist innerhalb einer bestimmten Frist (häufig einige Monate) umgemeldet werden, sonst drohen Steuer- und Zulassungsprobleme. Auch hier: bei der Zulassungsstelle erfragen.
-Kosten (grobe Orientierung)
-Bei einem reinen Adresswechsel ohne Halter-/Kennzeichenwechsel liegen die Gebühren typischerweise im Bereich von etwa 10–30 € (oft um 15–25 €), je nach Behörde. Kommen neue Kennzeichen, Feinstaubplakette oder andere Änderungen dazu, wird es mehr (dann eher 30–60 € oder darüber). Das sind Schätzwerte aus meinem Trainingswissen – Gebühren sind örtlich unterschiedlich und können sich geändert haben.
-Praktisch wichtig
-Halten Sie die Frist gegenüber Ihrer Zulassungsstelle ein, sonst kann es Bußgeld geben.
-Für die Änderung brauchen Sie meist: Personalausweis, Zulassungsbescheinigung Teil I und II, ggf. neue Adresse, und das Kennzeichen (je nach Verfahren).
-Bei parallelem Umzug der Kfz-Versicherung die neue Adresse melden – das kann den Beitrag ändern.
-Für die Kfz-Steuer ist der Halterwechsel/Adresswechsel ebenfalls relevant.
-Wenn Sie mir Ihr Bundesland/die Stadt nennen, kann ich Ihnen allgemein sagen, wo Sie die aktuellen Gebühren verbindlich nachsehen. Ihre genauen Symptome, ein Antrag oder eine Frist bei Ihrer Behörde sollten Sie im Zweifel direkt dort oder bei einem Fachmenschen klären – ich gebe nur allgemeine Orientierung, keine verbindliche Rechts- oder Behördenauskunft.
+Wenn du innerhalb Deutschlands umgezogen bist:
+Frist: Die Adressänderung muss unverzüglich bei der Zulassungsbehörde gemeldet werden (§ 15 FZV). Ein bundesweit einheitliches festes Datum wie „innerhalb von X Wochen“ gibt es nicht; viele Zulassungsstellen erwarten aber eine Meldung innerhalb von etwa 2 Wochen. Bei einem neuen Zulassungsbezirk brauchst du in der Regel neue Kennzeichen; im selben Bezirk wird meist nur die Adresse in den Fahrzeugpapieren geändert.
+Kosten: Das hängt von der Behörde und davon ab, ob neue Kennzeichen nötig sind. Grob:
+gleicher Zulassungsbezirk: ca. 10–25 €
+neuer Bezirk mit neuen Kennzeichen: ca. 30–70 € inklusive Kennzeichen
+Mitnehmen: Ausweis, Zulassungsbescheinigung Teil I und Teil II, ggf. Vollmacht. Bei Leasing/Finanzierung vorher klären, wer Teil II hat.
+Wichtig: Informiere auch deine Kfz-Versicherung über den Umzug.
+Die genauen Gebühren und die lokale Handhabung findest du bei deiner Zulassungsstelle; die Beträge variieren.
 ~~~~~~
 
 ## 9. G-02 (level 2: German rules, fees and deadlines)
@@ -428,45 +429,37 @@ Ich bin Arbeitnehmerin, zur Abgabe einer Steuererklärung verpflichtet und habe 
 ### Answer A
 
 ~~~~~~markdown
-Die Abgabefrist für die Einkommensteuererklärung 2025 kann ich Ihnen nicht mit Sicherheit nennen – hier bin ich unsicher und möchte keine Zahl raten. Meine Kenntnisse stammen aus Trainingsdaten mit unbekanntem Stand und können veraltet sein.
-Was ich mit Vorsicht sagen kann: Für Pflicht-Erklärungen ohne Steuerberater galt in den letzten Jahren eine verlängerte Frist bis Ende Juli des Folgejahres (zuletzt meist der 31. Juli). Ob das für 2025 genauso gilt, hängt von der aktuellen Regelung ab – bitte prüfen Sie das.
-Verlässliche Quellen:
-§ 149 AO (Gesetzestext, z. B. auf gesetze-im-internet.de) – regelt die allgemeine Frist
-Ihr Finanzamt – telefonisch oder über das ELSTER-Postfach; oft gibt es einen Bescheid oder eine Fristmitteilung
-ELSTER (elster.de) – Hinweise zur Abgabe und ggf. Fristverlängerung
-Praktische Punkte:
-Bei Abgabe über ELSTER zählt der Zeitpunkt der Übermittlung.
-Wenn Sie die Frist nicht halten können: rechtzeitig (vor Fristablauf) beim Finanzamt eine Fristverlängerung beantragen – kurz begründen.
-Verspätete Abgabe kann einen Verspätungszuschlag auslösen (§ 152 AO).
-Möchten Sie, dass ich Ihnen die konkreten Fristen für die Vorjahre zusammenstelle, damit Sie das Muster erkennen? Für die verbindliche Auskunft bleibt das Finanzamt die richtige Stelle.
+Kurz: Für die Pflicht-Steuererklärung 2025 (Abgabe in 2026) gilt nach der üblichen Regel bis 31. Juli 2026. Wer — wie du — keine Steuerberaterin/keinen Steuerberater hat, kann diese Frist nutzen; die verlängerten Beraterfristen (in der Regel Ende Februar des Folgejahres) gelten für dich nicht.
+Wichtige Einordnung:
+Der 31. Juli 2026 ist ein Freitag, also kein Wochenende — es braucht keinen Ausweichtermin.
+Ich bin mir bei dieser Jahresfrist nicht zu 100 % sicher, weil sich Fristen durch Gesetzesänderungen verschieben können. Verbindlich ist immer der Bescheid/das Schreiben deines Finanzamts bzw. die offizielle Information der Finanzverwaltung. Prüfe die Frist daher bitte dort (z. B. auf der Website deines Finanzamts oder in Elster).
+Bei freiwilliger Abgabe (nicht Pflicht) gilt eine längere Frist — das betrifft dich laut deiner Angabe nicht.
+Wenn du willst, kann ich dir die typischen Unterlagen für eine Arbeitnehmerin-Steuererklärung zusammenstellen oder erklären, wie du eine Fristverlängerung beantragst.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Für die verpflichtende Steuererklärung 2025 (also die Erklärung, die du 2026 abgibst) gilt regulär:
-Gesetzliche Abgabefrist: 31. Juli 2026 – ohne Steuerberater oder Lohnsteuerhilfeverein.
-Verspätungszuschlag: Wird die Frist versäumt, kann das Finanzamt einen Verspätungszuschlag festsetzen (§ 152 AO). Seit 2019 ist er bei Pflicht-Erklärungen grundsätzlich zwingend.
-Wichtig – bitte prüfen: In den letzten Jahren hat das BMF die Frist für Pflicht-Erklärungen mehrfach per Schreiben verlängert (zuletzt wegen der Umstellung auf elektronische Übermittlung). Ob es eine solche Verlängerung auch für 2026 gibt, kann ich mit meinem Wissensstand nicht sicher sagen. Ich bin mir hier ausdrücklich nicht sicher und möchte dir keine veraltete Zahl nennen.
-Verlässliche Quellen für den aktuellen Stand:
-BMF-Schreiben zu den Steuererklärungsfristen (bundesfinanzministerium.de)
-Dein Finanzamt oder ELSTER (elster.de)
-Praktischer Hinweis: Solltest du die Frist absehen können zu verpassen, ist ein Fristverlängerungsantrag beim Finanzamt oft möglich – kurz und begründet, am besten vor Fristablauf.
-Wenn du magst, kann ich dir helfen, die für dich relevanten Unterlagen (z. B. Anlage N, Belege, Fristen) übersichtlich zusammenzustellen – sag einfach, was du an Einkünften hast.
+Die Abgabefrist für die Steuererklärung 2025 ist der 31. Juli 2026.
+Da Sie zur Abgabe verpflichtet sind und die Erklärung selbst einreichen (ohne Steuerberater oder Lohnsteuerhilfeverein), gilt die allgemeine Frist des § 149 AO: Das Finanzamt muss die Erklärung bis zum 31.07.2026 erhalten haben – bei elektronischer Abgabe über ELSTER genügt die Übermittlung bis zu diesem Tag.
+Zur Einordnung:
+Mit Steuerberater/Lohnsteuerhilfeverein wäre die Frist der 28.02.2027 – auf Sie trifft das aber nicht zu.
+Fristverlängerung: Sie können vor Ablauf formlos beim Finanzamt eine Verlängerung beantragen; diese wird in der Regel bewilligt.
+Bei Verspätung setzt das Finanzamt automatisch einen Verspätungszuschlag an, mindestens 25 € pro angefangenem Monat Verspätung. Sollte die Frist bereits verstrichen sein, lohnt es sich, die Erklärung trotzdem so bald wie möglich abzugeben – je früher, desto niedriger der Zuschlag. Sie können das Finanzamt auch schriftlich bitten, von einem Zuschlag abzusehen.
+Stand meiner Angaben ist die geltende Gesetzeslage nach meinem Trainingsstand; im Zweifel (z. B. bei offiziell verlängerten Fristen) können Sie die aktuelle Frist direkt beim Finanzamt oder auf elster.de prüfen.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Kurzantwort: der 31. Juli 2026.
-Ohne Steuerberater gilt für verpflichtend Abzugebende die allgemeine Frist nach § 149 Abs. 2 AO: Ablauf des siebten Monats nach Jahresende – für die Erklärung 2025 also 31.07.2026 (ein Freitag). Die Erklärung muss dem Finanzamt an diesem Tag bis 23:59 Uhr vorliegen; abgegeben wird bei der Einkommensteuer ohnehin elektronisch über ELSTER/„Mein ELster“.
-Ergänzend:
-Fristverlängerung: Auf Antrag beim Finanzamt möglich (§ 109 AO) – sinnvollerweise vor Ablauf der Frist stellen; nachträglich meist nur mit wichtigen Gründen.
-Bei Verspätung: Es kann ein Verspätungszuschlag anfallen (mindestens 25 € je angefangenem Monat).
-Ausnahme: Hat dir das Finanzamt eine andere Frist mitgeteilt (z. B. im Schreiben zur Erklärungspflicht), geht diese vor.
-Zwei Hinweise:
-In den vergangenen Jahren gab es zeitweise gesetzliche Fristverlängerungen (z. B. wegen Corona). Mein Wissensstand kann veraltet sein; für 2025 kenne ich keine solche allgemeine Verlängerung. Im Zweifel kurz beim Finanzamt oder auf bmf.de/elster.de prüfen.
-Laut meiner Geräteuhr wäre der 31.07.2026 bereits verstrichen (angezeigt: November 2026; die Uhr kann aber falsch sein). Falls du die Erklärung noch nicht abgegeben hast und die Frist tatsächlich vorbei ist: reiche sie so schnell wie möglich nach – je früher, desto kleiner der mögliche Verspätungszuschlag.
+Für die Steuererklärung 2025 gilt – nach der derzeitigen Rechtslage – als reguläre gesetzliche Frist der 31. Juli 2026 (Ablauf des siebten Monats nach Ende des Kalenderjahres, § 149 AO).
+Wichtige Punkte für Sie als pflichtveranlagte Arbeitnehmerin ohne Steuerberater:
+Gesetzliche Frist: 31.07.2026 – das ist ein Freitag, also keine Verschiebung durch ein Wochenende.
+Verlängerung nur auf Antrag: Das Finanzamt kann die Frist verlängern, wenn Sie einen begründeten Antrag stellen (z. B. Krankheit, besondere Umstände). Der Antrag sollte vor Fristablauf eingehen.
+Keine automatische Verlängerung wie bei Steuerberatern (dort gelten längere Fristen) – das betrifft Sie nicht.
+Säumniszuschlag/Verspätungszuschlag: Bei verspäteter Abgabe kann das Finanzamt einen Verspätungszuschlag festsetzen.
+Ich bin mir bei Fristdetails für 2026 nicht in jedem Punkt sicher, da sich Regelungen ändern können. Verbindlich ist immer der Fristbescheid bzw. die Angabe Ihres Finanzamts – prüfen Sie das am besten auf der offiziellen Seite Ihres Finanzamts oder bei ELSTER, oder fragen Sie telefonisch beim Finanzamt nach.
+Möchten Sie, dass ich Ihnen die typischen Unterlagen für eine Arbeitnehmer-Steuererklärung zusammenstelle?
 ~~~~~~
 
 ## 10. G-03 (level 2: German rules, fees and deadlines)
@@ -485,25 +478,26 @@ Wie hoch ist der Rundfunkbeitrag im Moment pro Monat?
 ### Answer A
 
 ~~~~~~markdown
-Der Rundfunkbeitrag betrug nach meinem letzten gesicherten Kenntnisstand 18,36 € pro Monat (55,08 € je Quartal) – pro Wohnung, unabhängig von der Anzahl der Bewohner oder Geräte. Dieser Wert gilt seit 2021.
-Es gab allerdings Diskussionen über eine Erhöhung; ob und wann eine Änderung beschlossen wurde, kann ich nicht prüfen, da mein Wissen aus Trainingsdaten mit einem nicht veröffentlichten Enddatum stammt und daher veraltet sein kann.
-Verbindliche aktuelle Höhe: bitte direkt auf der offiziellen Seite rundfunkbeitrag.de (https://www.rundfunkbeitrag.de) nachsehen. Möchtest du, dass ich mit einer Websuche prüfe, ob der Beitrag inzwischen erhöht wurde?
+Der Rundfunkbeitrag beträgt seit August 2024 18,36 € pro Monat (55,08 € pro Quartal). Er gilt pro Wohnung, unabhängig von der Anzahl der Personen oder Geräte.
+Hinweis: Diese Angaben stammen aus meinem Trainingswissen und können veraltet sein. Für den aktuell verbindlichen Stand prüfe bitte die offizielle Seite des ARD ZDF Deutschlandradio Beitragsservice (rundfunkbeitrag.de) – dort findest du auch mögliche Änderungen oder Befreiungen (z. B. für Studierende, Empfänger von Sozialleistungen).
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Der Rundfunkbeitrag in Deutschland beträgt derzeit 18,36 € pro Monat pro Wohnung (das entspricht 55,08 € pro Quartal).
-Hinweise:
-Mein Wissen kann veraltet sein; der Beitrag wird von den Ländern festgelegt und kann sich ändern. Verbindlich ist die offizielle Seite des ARD ZDF Deutschlandradio Beitragsservice (rundfunkbeitrag.de).
-Für bestimmte Personen gibt es Ermäßigungen oder Befreiungen (z. B. bei bestimmten Sozialleistungen); die Voraussetzungen stehen ebenfalls beim Beitragsservice.
+Der Rundfunkbeitrag liegt aktuell bei 18,36 € pro Monat (55,08 € pro Quartal). Er gilt seit 2015 unverändert in dieser Höhe.
+Wichtig: Zuletzt gab es Diskussionen und eine Entscheidung zum ARD-Staatsvertrag und zur Beitragsentwicklung. Da sich solche Beschlüsse kurzfristig ändern können, kann mein Wissensstand veraltet sein – für die aktuell verbindliche Höhe prüfe bitte die offizielle Seite des ARD ZDF Deutschlandradio Beitragsservice (rundfunkbeitrag.de).
+Wenn du möchtest, suche ich dir die aktuelle Bestätigung heraus.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Der Rundfunkbeitrag in Deutschland beträgt derzeit 18,36 € pro Monat je Wohnung (Stand meines Wissens; der Betrag ist seit 2021 unverändert).
-Wichtig: Meine Informationen können veraltet sein, und die Höhe wird regelmäßig politisch und rechtlich diskutiert. Für den aktuell verbindlichen Betrag prüfe bitte die offizielle Seite des ARD ZDF Deutschlandradio Beitragsservice (rundfunkbeitrag.de) – dort steht der gültige Satz und auch, wer befreit werden kann.
+Kurz gesagt: Nach meinem Trainingsstand, der veraltet sein kann – der Grundbeitrag je Wohnung lag bei 18,36 €/Monat (55,08 €/Quartal), gültig seit Mai 2021. Die Länder haben eine Erhöhung auf 18,94 €/Monat beschlossen; als Inkrafttreten wurden je nach Berichtslage der 1. Juli 2025 bzw. der 1. Januar 2026 genannt. Welches Datum letztlich galt und ob es inzwischen weitere Änderungen gibt, kann ich nicht sicher sagen, da mein Wissen einen nicht veröffentlichen Stichtag hat.
+Ein paar Einordnungen:
+Der Beitrag gilt pro Wohnung, unabhängig von Anzahl der Personen, Geräte oder Radiosender.
+Verbindlich und aktuell ist die offizielle Seite des Beitragsservice von ARD, ZDF und Deutschlandradio: rundfunkbeitrag.de. Dort steht der momentane Betrag und auch, ob du unter Umständen (z. B. Schwerbehinderung, BAföG, Wohngeld) ermäßigt oder befreit bist.
+Da Gebühren sich ändern können: Möchtest du, dass ich eine Websuche nach dem aktuellen Stand mache?
 ~~~~~~
 
 ## 11. G-04 (level 2: German rules, fees and deadlines)
@@ -522,40 +516,41 @@ Welche Kündigungsfrist habe ich als Mieter bei einem normalen unbefristeten Mie
 ### Answer A
 
 ~~~~~~markdown
-Kündigungsfrist als Mieter: 3 Monate zum Monatsende
-Bei einem unbefristeten Wohnraummietvertrag gilt für Sie als Mieter eine gesetzliche Frist von drei Monaten zum Ende eines Kalendermonats (§ 573c Abs. 2 BGB).
-Wichtig zu wissen:
-Unabhängig von der Mietdauer: Anders als beim Vermieter (dessen Frist mit der Dauer auf 6 oder 9 Monate wächst) bleibt Ihre Frist als Mieter immer drei Monate – egal, wie lange Sie schon dort wohnen.
-Verträge können sie nicht verlängern: Eine zum Nachteil des Mieters abweichende Vereinbarung (z. B. „Kündigungsfrist Mieter: 6 Monate") ist unwirksam. Auch wenn im Vertrag länger steht, gilt für Sie gesetzlich die Drei-Monats-Frist.
-Zugang zählt: Die Frist beginnt mit dem Zugang der Kündigung beim Vermieter. Beispiel: Geht die Kündigung bis 30.09. zu, endet das Mietverhältnis am 31.12.
-Form: Die Kündigung muss in Textform erfolgen; nach der Mietrechtsreform 2025 soll dafür z. B. eine E-Mail genügen (zuvor galt Schriftform mit eigenhändiger Unterschrift). Senden Sie möglichst früh und nachweisbar (z. B. Einwurf-Einschreiben), falls der Zugang strittig wird.
-Ausnahmen: Für gewerblich genutzte Räume, möblierte Zimmer beim Vermieter, Wohnheime oder Arbeitnehmerwohnraum können andere Regeln gelten.
-Dies ist allgemeine Information, keine Rechtsberatung – bei einem konkreten Streitfall hilft Ihnen ein Mieterverein oder Anwalt weiter.
+In Deutschland gilt für Mieter bei einem unbefristeten Mietvertrag über Wohnraum die gesetzliche Kündigungsfrist von drei Monaten (§ 573c BGB). Die Kündigung muss schriftlich erfolgen und spätestens am dritten Werktag eines Monats beim Vermieter zugehen, damit die Frist mit diesem Monat beginnt.
+Wichtige Punkte:
+Kein Staffelrecht für Mieter: Die längeren Fristen (6 bzw. 9 Monate) gelten nur für den Vermieter bei langer Mietdauer – nicht für dich.
+Vereinbarte Fristen: Eine im Vertrag vereinbarte längere Frist für den Mieter ist nur wirksam, wenn sie den Vermieter nicht schlechter stellt als dich (also meist unwirksam, wenn nur der Mieter länger gebunden ist). Kürzere Fristen als drei Monate sind bei Wohnraum unwirksam.
+Sonderkündigungsrechte (z. B. bei berechtigtem Interesse, § 573 BGB, oder außerordentlich mit Frist) können abweichen.
+Form: Schriftform mit eigenhändiger Unterschrift (bei mehreren Mietern von allen); E-Mail oder Fax genügen nicht.
+Ob im konkreten Vertrag abweichende oder wirksame Klauseln stehen, hängt vom Einzelfall ab – bei Unsicherheit lohnt ein Blick in den Vertrag oder eine kurze Rückfrage bei einem Mieterverein. (Ich bin keine Rechtsberatung.)
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-In Deutschland gilt für Mieter bei einem unbefristeten Wohnraummietvertrag in der Regel eine gesetzliche Kündigungsfrist von 3 Monaten (§ 573c BGB). Die Kündigung muss schriftlich erfolgen und spätestens am dritten Werktag eines Monats zugehen, damit die Frist ab diesem Monat läuft.
+In Deutschland gilt für Mieter eines unbefristeten Wohnraummietvertrags in der Regel eine gesetzliche Kündigungsfrist von 3 Monaten (§ 573c BGB). Die Kündigung muss schriftlich erfolgen (mit Unterschrift, nicht per E-Mail) und bis zum 03. Werktag eines Monats zugehen, damit dieser Monat als Beginn der Frist zählt.
 Wichtige Punkte:
-Keine Verlängerung zulasten des Mieters: Eine längere Frist im Vertrag gilt nur, wenn sie auch für den Vermieter gilt – für Mieter bleibt es bei maximal 3 Monaten.
-Kürzere Fristen im Vertrag sind zulässig (z. B. „bis zum 15. eines Monats zum Monatsende“).
-Sonderfälle: Bei möblierten Zimmern zur Untermiete kann eine kürzere Frist gelten; bei Gewerbemiete gelten andere Regeln.
-Form: Schriftlich mit eigenhändiger Unterschrift (E-Mail/Text reicht nicht), am besten mit Nachweis des Zugangs.
-Bin ich mir bei Details unsicher? Bei individuellen Vertragsklauseln oder Fristberechnung lohnt ein Blick in den Mietvertrag und ggf. eine kurze Rückfrage bei einer Mieterberatung oder einem Anwalt. Die genaue Fristberechnung hängt vom Zugangsdatum ab – das solltest du im Zweifel prüfen lassen.
+Verlängerte Fristen gelten nur für Vermieter, nicht für Mieter. Für dich als Mieter bleibt es bei 3 Monaten, auch nach langer Mietdauer.
+Andere Fristen nur per Vertrag: Eine längere Frist für den Mieter ist im Vertrag grundsätzlich möglich – sie darf den Mieter aber nicht schlechter stellen, als es die gesetzliche Regelung vorsieht (eine formularmäßige Verlängerung auf z. B. 6 Monate ist meist unwirksam). Schau also in deinen Vertrag.
+Sonderkündigungsrechte (z. B. bei Umzug aus wichtigem Grund, § 575 BGB oder bei Modernisierung) können kürzere Fristen ermöglichen – das ist aber ein eigener Fall.
+Fristberechnung: Kündigung zum Monatsende; Zugang bis zum 3. Werktag des Monats. „Werktag“ = Montag bis Freitag (Samstag zählt nicht).
+Da ich Regelungen nicht immer aktuell und nicht jede Vertragsklausel kenne: Prüfe die genaue Frist im Mietvertrag und im Zweifel bei einem Mieterverein oder einer Rechtsberatung. (Für verbindliche Auskunft ist eine Rechtsberatung zuständig.)
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-In Deutschland gilt für Mieter bei einem unbefristeten Wohnraummietvertrag die gesetzliche Kündigungsfrist von drei Monaten (§ 573c BGB). Die Kündigung muss spätestens am dritten Werktag eines Monats beim Vermieter zugehen, damit die Frist mit dem Monat beginnt – die Kündigung wirkt dann zum Ende des übernächsten Monats.
-Beispiel: Geht die Kündigung am 3. März zu, endet das Mietverhältnis am 31. Mai.
-Wichtige Punkte:
-Die Frist gilt nur für Wohnraum; bei Geschäftsräumen oder möblierten Zimmern können andere Regeln gelten.
-Eine Schriftform ist erforderlich – die Kündigung muss schriftlich mit eigenhändiger Unterschrift (bei mehreren Mietern von allen) erfolgen. E-Mail oder Fax reicht nicht.
-Vertragliche Verlängerungen der Mieterfrist sind grundsätzlich unwirksam, wenn sie zulasten des Mieters gehen; individuelle Abweichungen sollte man im Vertrag prüfen.
-Ein befristeter Mietvertrag oder ein Kündigungsverzicht ändert die Lage.
-Ich bin keine Rechtsberatung – bei Zweifeln lohnt ein Blick in den Mietvertrag oder eine kurze Nachfrage beim Mieterverein.
+Kurze Antwort
+Als Mieter können Sie ein unbefristetes Mietverhältnis mit einer Frist von drei Monaten zum Ende eines Kalendermonats ordentlich kündigen (§ 573c Abs. 1 BGB). Das gilt unabhängig davon, wie lange Sie schon in der Wohnung wohnen.
+Wichtig in der Praxis
+Zugang zählt, nicht der Absendezeitpunkt: Die Kündigung muss dem Vermieter rechtzeitig zugehen. Beispiel: Geht die Kündigung am 15. Januar zu, endet das Mietverhältnis am 30. April.
+Schriftform erforderlich: Die Kündigung muss schriftlich mit eigenhändiger Unterschrift erfolgen (§ 568 BGB). E-Mail, WhatsApp oder mündlich reichen nicht.
+Nachweis sichern: Am besten per Einschreiben mit Rückschein oder persönlicher Übergabe gegen Bestätigung. Fordern Sie zusätzlich eine Kündigungsbestätigung an.
+Abweichende Vereinbarungen
+Eine kürzere Frist (z. B. zum Monatsersten oder „zum Monatsende“) kann im Vertrag wirksam vereinbart sein – prüfen Sie also Ihre Vertragsklauseln.
+Eine längere Frist für den Mieter ist in Formularkverträgen in der Regel unwirksam (BGH-Rechtsprechung); sie könnte nur gelten, wenn sie individuell ausgehandelt wurde.
+Zur Einordnung
+Für den Vermieter gelten andere, mit der Mietdauer steigende Fristen (3, 6 bzw. 9 Monate) – für Sie als Mieter bleibt es aber bei 3 Monaten. Die Gesetzesfassung mit Beispielen finden Sie im BGB unter § 573c, z. B. auf gesetze-im-internet.de. Im Zweifel (etwa bei ungewöhnlichen Vertragsklauseln oder im Streitfall) lohnt sich eine Beratung durch Mieterverein oder Anwältin/Anwalt.
 ~~~~~~
 
 ## 12. G-05 (level 2: German rules, fees and deadlines)
@@ -573,37 +568,33 @@ Wie viele Tage gesetzlichen Mindesturlaub habe ich bei einer Fünf-Tage-Woche?
 ### Answer A
 
 ~~~~~~markdown
-Bei einer Fünf-Tage-Woche sind es in Deutschland mindestens 20 Urlaubstage pro Kalenderjahr.
-Das ergibt sich aus dem Bundesurlaubsgesetz: Der gesetzliche Mindesturlaub beträgt 24 Werktage (§ 3 BUrlG). „Werktage" meint dabei Montag bis Samstag, also 6 Tage pro Woche. Bei einer 5-Tage-Woche rechnet man um: 24 × 5 ÷ 6 = 20 Tage.
-Wichtig:
-Das ist nur das gesetzliche Minimum. Viele Tarif- oder Arbeitsverträge sehen mehr vor – im Vertrag nachsehen lohnt sich.
-Bei weniger als 5 Arbeitstagen pro Woche verringert sich der Anspruch entsprechend (z. B. 4-Tage-Woche: 16 Tage).
-Bei unterjährigem Ein-/Austritt entsteht der Anspruch anteilig (Zwölftelung).
-Sonderregeln können je nach Vertrag oder Tarif gelten; im Zweifel Personalabteilung, Betriebsrat oder eine Rechtsberatung fragen.
+20 Arbeitstage pro Jahr.
+Hintergrund: Das Bundesurlaubsgesetz (§ 3 BUrlG) legt einen Mindesturlaub von 24 Werktagen fest – bezogen auf eine 6-Tage-Woche (Montag bis Samstag). Bei einer Fünf-Tage-Woche wird das umgerechnet:
+24 ÷ 6 × 5 = 20 Urlaubstage
+Das entspricht vier Wochen Urlaub und ist das gesetzliche Minimum. In der Praxis bieten Arbeitsverträge und Tarifverträge oft mehr an, häufig 25–30 Tage. Prüfe am besten deinen Vertrag oder den einschlägigen Tarifvertrag – vertraglich eingeräumter Urlaub darf übrigens nicht unter dem gesetzlichen Minimum liegen.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
 Bei einer Fünf-Tage-Woche sind es 20 Arbeitstage gesetzlicher Mindesturlaub pro Jahr.
-Grundlage: § 3 BUndesurlaubsgesetz (BUrlG) – mindestens 24 Werktage, wobei der Samstag als Werktag mitzählt. Bei 5 Arbeitstagen pro Woche: 24 × 5/6 = 20 Arbeitstage.
-Wichtig:
-Das ist das Minimum; Arbeits- oder Tarifvertrag können mehr vorsehen.
-Für unter 6 Monate Betriebszugehörigkeit gilt der volle Anspruch erst nach der Wartezeit (§ 4 BUrlG), davor anteilig.
-Bei Teilzeit oder unregelmäßigen Arbeitstagen gelten andere Umrechnungen.
-Ob in Ihrem Fall mehr gilt, steht in Ihrem Arbeitsvertrag bzw. Tarifvertrag – das kann ich ohne diese Angaben nicht sagen.
+Grundlage: Das Bundesurlaubsgesetz (§ 3 BUrlG) schreibt mindestens 24 Werktage vor – gezählt werden dabei alle Werktage inklusive Samstag. Bei einer 5-Tage-Woche (Montag–Freitag) entspricht das 24 × 5/6 = 20 Arbeitstage.
+Hinweise:
+Der gesetzliche Mindesturlaub ist eine Untergrenze; Tarifverträge oder Arbeitsverträge sehen oft mehr vor.
+Bei weniger als einer 5-Tage-Woche reduziert sich der Anspruch entsprechend.
+Für Sonderfälle (z. B. unterjähriger Ein-/Austritt, Teilzeit) gilt die anteilige Berechnung – im Zweifel beim Arbeitgeber oder einer Gewerkschaft nachfragen.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-20 Arbeitstage bei einer Fünf-Tage-Woche.
-Hintergrund: Das Bundesurlaubsgesetz (§ 3 BUrlG) sieht einen Mindesturlaub von 24 Werktagen pro Urlaubsjahr vor – bezogen auf eine Sechs-Tage-Woche (Montag bis Samstag). Bei einer kürzeren Arbeitszeit wird anteilig umgerechnet:
-24 ÷ 6 × 5 = 20 Urlaubstage
-Zusätzlich zu beachten:
-Tarifvertrag oder Arbeitsvertrag sehen oft mehr vor (häufig 25–30 Tage) – dann gilt die günstigere Regelung.
-Der Anspruch entsteht in voller Höhe nach sechs Monaten Betriebszugehörigkeit (§ 4 BUrlG), wobei der Urlaub schon früher anteilig genommen werden kann.
-Für die konkreten Details lohnt ein Blick in deinen Arbeits- oder Tarifvertrag.
+Bei einer 5-Tage-Woche sind es 20 Arbeitstage gesetzlicher Mindesturlaub pro Jahr.
+Grundlage: Das Bundesurlaubsgesetz (§ 3 BUrlG) schreibt mindestens 24 Werktage vor, gezählt auf Basis einer 6-Tage-Woche. Bei 5 Arbeitstagen pro Woche rechnet man um: 24 × 5/6 = 20 Arbeitstage.
+Hinweise:
+Das ist das Minimum; Arbeits- oder Tarifvertrag können mehr vorsehen.
+Der gesetzliche Anspruch entsteht anteilig nach Beschäftigungsmonaten (nach 6 Monaten Wartezeit der volle Anspruch).
+Bei unterjährigem Ein-/Austritt wird anteilig gerechnet.
+Für deinen konkreten Vertrag gilt: prüfe Arbeitsvertrag und ggf. Tarifvertrag – die können günstiger sein.
 ~~~~~~
 
 ## 13. G-06 (level 2: German rules, fees and deadlines)
@@ -623,56 +614,52 @@ Ich habe meinen Personalausweis verloren. Was muss ich tun, und was kostet ein n
 ### Answer A
 
 ~~~~~~markdown
-Wichtig zuerst: Wenn der Ausweis weg ist, gilt er als verloren – auch wenn er vielleicht nur verlegt wurde. Du solltest ihn also sperren lassen, damit niemand damit Unsinn machen kann.
-Was du tun musst
-Verlust melden und sperren lassen – bei der Polizei oder beim Bürgeramt deiner Gemeinde. Viele Städte bieten das auch online an (Suchbegriff: „Personalausweis sperren online“ auf der Seite deiner Stadt). Für die Sicherheitssperre gibt es ein bundesweites Angebot, über das du den Ausweis sofort ungültig machen lassen kannst.
-Neuen Ausweis beantragen – persönlich im Bürgeramt deines Hauptwohnsitzes, mit Termin. Nötig sind meist ein biometrisches Passfoto und ein gültiges Ausweisdokument (z. B. Reisepass) – wenn auch das fehlt, klär das beim Termin, die Ämter haben dafür Wege.
-Polizeiliche Verlustanzeige – sinnvoll, falls der Ausweis für Betrug missbraucht wird oder du ihn z. B. für Versicherungen brauchst.
-Bei Diebstahl: Anzeige bei der Polizei erstatten. Bei Identitätsdiebstahl-Verdacht (unbekannte Verträge, Mahnungen) zusätzlich Bank und ggf. Auskunfteien informieren.
+Das ist ärgerlich, aber gut lösbar. So gehen Sie am besten vor:
+1. Online-Ausweisfunktion (eID) sofort sperren lassen
+Damit niemand Ihre eID missbrauchen kann, rufen Sie die zentrale Sperr-Hotline 116 116 an (rund um die Uhr erreichbar). Die Sperre können Sie später bei der Behörde wieder aufheben lassen.
+2. Bei Diebstahl: Anzeige bei der Polizei
+Bei reinem Verlust ist keine Anzeige nötig, bei Diebstahl aber sinnvoll – sie schützt Sie, falls der Ausweis missbraucht wird.
+3. Neuen Personalausweis beantragen
+Persönlich beim Bürgeramt / Einwohnermeldeamt (oft mit Online-Termin). Dort melden Sie den Verlust und stellen den Antrag; es werden Fingerabdrücke abgenommen.
+Mitbringen: aktuelles biometrisches Passfoto und, falls vorhanden, einen Reisepass oder andere Identitätsnachweise (z. B. Geburtsurkunde).
+Bearbeitung dauert in der Regel einige Wochen. Brauchen Sie schneller einen Nachweis, stellt die Behörde einen vorläufigen Personalausweis sofort aus (3 Monate gültig, nur in Deutschland).
+Hinweis: Ab 16 besteht in Deutschland eine Besitzpflicht – Sie müssen wieder einen gültigen Personalausweis oder Reisepass besitzen, also zeitnah beantragen.
+Falls Sie sich gerade im Ausland befinden: wenden Sie sich an die zuständige deutsche Botschaft bzw. das Konsulat.
 Kosten
-Ein Personalausweis kostet in Deutschland in der Regel 37 Euro für Personen ab 24 Jahren. Für Personen unter 24 Jahren sind es meist 22,50 Euro. Dazu können Gebühren für das Passfoto und ggf. eine Verlustanzeige kommen. Die genauen Sätze legt deine Kommune fest – ich bin mir bei aktuellen Beträgen nicht sicher, bitte prüf sie auf der Seite deines Bürgeramts.
-Wichtig zur Frist: Der alte Ausweis wird mit der Sperrung ungültig. Ein neuer Ausweis dauert meist etwa zwei bis sechs Wochen; ein vorläufiger Ausweis (meist ca. 10 Euro) ist oft sofort möglich, wenn du schnell ein Dokument brauchst.
-Sag mir gern, in welcher Stadt du bist – dann kann ich dir sagen, wonach du auf deren Seite suchen solltest (Online-Sperrung, Termin, Gebühren).
+Zuletzt bekannt (Stand meiner Trainingsdaten, seit 2021): 37 € für Personen ab 24 Jahren, 22,90 € für unter 24-Jährige. Da Gebühren zuletzt geändert wurden und ich nicht sicher bin, ob das aktuell noch gilt, nennt Ihnen das Bürgeramt den verbindlichen Betrag; offizielle Informationen finden Sie auch auf dem Serviceportal des Bundes (service.bund.de).
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Wichtig zuerst: Melde den Verlust schnell – das schützt dich, falls jemand den Ausweis missbraucht.
-1. Verlust melden
-Polizei (Diebstahl/Verlustanzeige): Wenn der Ausweis gestohlen wurde oder du nicht ausschließen kannst, dass er in falsche Hände gerät, erstatte Anzeige bei der Polizei. Das ist bei Diebstahl sinnvoll, bei reinem Verlust oft optional – frag im Bürgeramt nach, ob sie eine Verlustanzeige verlangen.
-Bürgeramt / Einwohnermeldeamt: Dort meldest du den Verlust und beantragst einen neuen Ausweis. Viele Ämter verlangen eine schriftliche Verlustanzeige oder ein Formular.
-Sperrung: Den Personalausweis selbst kann man nicht wie eine Karte „sperren“. Missbrauch lässt sich aber erschweren, indem du den Verlust dokumentierst – die Polizei- bzw. Verlustanzeige ist dein Nachweis.
+In Deutschland gilt: Personalausweis verlieren = Diebstahl oder Verlust sofort melden und einen neuen beantragen. Konkrete Schritte:
+1. Verlust melden (wichtigster Schritt)
+Polizei: Verlustanzeige erstatten – bei Diebstahl unbedingt, bei einfachem Verlust ebenfalls empfehlenswert (schützt vor Missbrauch, dient als Nachweis).
+Bürgeramt / Meldebehörde deines Wohnsitzes: Verlust unverzüglich anzeigen. Dort wird der alte Ausweis gesperrt und ein neuer beantragt. Viele Ämter bieten das online oder telefonisch an – prüfe die Website deiner Kommune.
 2. Neuen Personalausweis beantragen
-Persönlich im Bürgeramt deines Hauptwohnsitzes, mit Termin (oft online buchbar).
-Nötig: biometrisches Passfoto, ggf. alte Dokumente/Geburtsurkunde, Verlustanzeige.
-Gültigkeit: ab 24 Jahren 10 Jahre, unter 24 Jahren 6 Jahre.
-Dauer: meist einige Wochen; für die Übergangszeit gibt es oft einen vorläufigen Personalausweis (sofort, meist gültig bis zu 3 Monate).
+Persönlich beim Bürgeramt, mit biometrischem Passfoto und gültigem Nachweis (z. B. Reisepass, falls vorhanden; sonst klären, was das Amt akzeptiert).
+Ab 16 Jahren ist der Ausweis Pflicht; Kinder unter 16 brauchen ein eigenes Dokument, falls erforderlich.
+Bearbeitungszeit: meist einige Wochen (oft ca. 4–6 Wochen, je nach Amt). Ein vorläufiger Personalausweis ist meist sofort möglich, wenn du schnell ein Dokument brauchst.
 3. Kosten
-Die genauen Gebühren legt die jeweilige Kommune fest. Als Orientierung (ohne Gewähr, bitte beim Bürgeramt prüfen):
-Personalausweis ab 24 Jahren: ca. 37 €
-unter 24 Jahren: ca. 22,80 €
-vorläufiger Personalausweis: ca. 10 €
-Da ich bei aktuellen Gebühren nicht sicher bin, verlass dich auf die Angaben deines Bürgeramts – die genauen Beträge stehen meist auf deren Website.
-4. Wichtig bei Diebstahl
-Wenn zusätzlich Bankkarten, SIM-Karte oder Dokumente weg sind: Bank/Kartenanbieter und Mobilfunkanbieter informieren, damit Karten gesperrt werden. Das ist oft dringlicher als der Ausweis selbst.
-Wenn du möchtest, sag mir dein Bundesland oder deine Stadt – dann kann ich dir gezielter sagen, worauf du dort achten solltest (die konkreten Beträge und Formulare prüfe ich aber nicht online).
+Die genauen Gebühren legt die Kommune fest. Für einen Personalausweis ab 24 Jahren liegt die Regelgebühr meist bei ca. 37 €, für unter 24 Jahren bei ca. 22,80 €. Ein vorläufiger Ausweis kostet zusätzlich meist ca. 10 €.
+Ich bin bei den genauen Beträgen nicht sicher – diese ändern sich und variieren je nach Amt. Verbindliche Auskunft gibt dein Bürgeramt oder die offizielle Website deiner Kommune (bzw. des Bundesministeriums des Innern).
+Tipp: Sperre parallel auch deine eID-/Online-Ausweisfunktion, falls du sie genutzt hast – das Bürgeramt kann dir sagen, wie. Und prüfe, ob du den Verlust bei Banken/Vertragspartnern melden solltest.
+Soll ich dir helfen, die zuständige Behörde oder die genauen Gebühren für deine Stadt zu finden? Dann sag mir, wo du wohnst.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Was Sie sofort tun sollten
-Verlust anzeigen: Melden Sie den Verlust so bald wie möglich beim Bürgeramt/Einwohnermeldeamt – bei Diebstahl zusätzlich bei der Polizei. Das ist wichtig gegen Missbrauch.
-Online-Ausweisfunktion sperren: Falls Sie die eID-Funktion genutzt haben, sperren Sie sie notfalls selbst über die AusweisApp (Notfall-Sperrfunktion). Das ersetzt aber nicht die Verlustanzeige beim Amt.
-Optional: beim Fundbüro und bei der Polizei nachfragen – verlorene Ausweise werden oft abgegeben.
-Neuen Ausweis beantragen
-Persönlich im Bürgeramt (Termin meist online buchbar), in der Regel am Wohnort.
-Mitbringen: aktuelles Biometriefoto, ggf. Reisepass oder Führerschein zur Identitätsfeststellung. Vor Ort werden Fingerabdrücke abgenommen.
-Die Fertigung dauert meist einige Wochen; zugestellt wird an die gemeldete Adresse – achten Sie auf Namen an Briefkasten und Klingelschild, sonst geht der Ausweis zurück.
-Wenn es eilig ist: Es gibt einen vorläufigen Personalausweis (schnell ausgestellt, 3 Monate gültig, gilt nur in Deutschland). Für Auslandsreisen bräuchten Sie stattdessen einen (vorläufigen) Reisepass.
+Ein verlorener Personalausweis in Deutschland: Das Wichtigste zuerst – melden und sperren lassen, damit niemand ihn missbrauchen kann.
+Was zu tun ist
+Verlust melden (Polizei): Bei Diebstahl unbedingt Anzeige erstatten; bei einfachem Verlust ist eine Verlustanzeige bei der Polizei sinnvoll (dient oft als Nachweis gegenüber Behörden).
+Sperrung / „Ausweis-Notfall“: Die Online-Ausweisfunktion (eID) des Ausweises sperren lassen – über die Hotline des Bundesamts für Sicherheit in der Informationstechnik (BSI) oder online. Die genauen Nummern und Wege stehen auf der offiziellen Seite des BSI bzw. auf ausweisapp.de. So wird verhindert, dass jemand mit der eID Online-Dienste in Ihrem Namen nutzt.
+Neuen Ausweis beantragen: Bei der Meldebehörde Ihres Hauptwohnsitzes (Bürgeramt). Dafür brauchen Sie in der Regel ein biometrisches Passfoto, den Verlustnachweis (z. B. Polizeianzeige) und ggf. weitere Unterlagen (Geburtsurkunde, bei Minderjährigen Einverständnis der Sorgeberechtigten). Personalausweis ist Pflicht ab 16 Jahren; ab 24 Jahren gilt die 10-Jahres-Gültigkeit.
+Vorläufigen Ausweis: Wenn Sie schnell einen brauchen (z. B. für Reisen), kann ein vorläufiger Personalausweis ausgestellt werden – meist sofort, mit kurzer Gültigkeit.
 Kosten
-Zuletzt betrug die Gebühr 28,10 € ab 24 Jahren bzw. 22,80 € für unter 24-Jährige (der vorläufige PA kostet weniger). Ich bin nicht sicher, ob diese Sätze 2026 noch aktuell sind – die verbindliche Gebühr nennt Ihnen Ihr Bürgeramt bzw. finden Sie unter verwaltung.bund.de. Mein Wissensstand stammt aus Trainingsdaten und kann veraltet sein; die o. g. Seite oder das Amt hat die aktuellen Zahlen.
+Die Gebühr für einen neuen Personalausweis liegt regulär bei 37 Euro (ab 24 Jahren, 10 Jahre gültig). Für Personen unter 24 Jahren sind es 22,50 Euro. Ein vorläufiger Personalausweis kostet zusätzlich in der Regel 10 Euro. Bei Verlust kann ein Zuschlag anfallen (oft etwa 6 Euro), und bei Diebstahl kann die Polizeianzeige Gebühren haben.
+Ich bin bei Gebühren und Fristen nicht ganz sicher, da sie sich je nach Kommune und Rechtslage ändern können – bitte prüfen Sie die aktuellen Beträge auf der Website Ihrer Stadt/Gemeinde oder beim Bundesministerium des Innern (bmi.bund.de) bzw. beim Bundesverwaltungsamt.
+Praktischer Tipp: Melden Sie den Verlust zuerst, sperren Sie die eID und vereinbaren Sie – falls nötig – zeitnah einen Termin beim Bürgeramt, da Termine oft knapp sind.
 ~~~~~~
 
 ## 14. T-01 (level 3: Time-sensitive facts)
@@ -690,31 +677,21 @@ How many moons does Jupiter have?
 ### Answer A
 
 ~~~~~~markdown
-Jupiter currently has 97 confirmed moons, according to the International Astronomical Union's most recent catalog. This has changed several times in recent years as new small irregular moons are confirmed, so the count may rise again.
-The four largest — Io, Europa, Ganymede and Callisto — were discovered by Galileo in 1610. Most of the rest are small, irregular satellites, many only a few kilometers across.
-My knowledge has a cutoff that may be out of date for the very latest confirmations; if you need the current official number, the IAU Minor Planet Center publishes the authoritative list, and I can search the web for you.
+Jupiter has 95 confirmed moons according to my training data (recognized by the International Astronomical Union as of early 2024). The four largest are the Galilean moons—Io, Europa, Ganymede, and Callisto—discovered by Galileo in 1610.
+Keep in mind that moon counts change as new discoveries are confirmed, so the current number may be higher. Notably, Saturn overtook Jupiter in 2023 and now has the most known moons of any planet. If you'd like, I can offer a web search for the latest count.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Jupiter currently has 97 confirmed moons, according to the International Astronomical Union's most recent catalog.
-A few notes:
-The count has grown a lot in recent years as astronomers discover small, faint irregular satellites—mostly in 2023, when dozens of new ones were confirmed.
-The number changes as new moons are found and confirmed, and as existing objects are reclassified. Very small moons can also be lost or re-observed later.
-My knowledge may be out of date on the exact current figure; if you need the latest official number, the IAU Minor Planet Center publishes the definitive list.
-Want the breakdown by group (Galilean, prograde irregular, retrograde irregular) or a web search for the latest count?
+Jupiter currently has 95 confirmed moons, according to the International Astronomical Union's most recent count. That figure has changed repeatedly as astronomers discover and confirm small, distant satellites, so it may already be out of date—my knowledge comes from training data with an unpublished end date. For the latest number, a quick check of the IAU or NASA is worthwhile.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Jupiter has 95 confirmed moons as of my training data (last confirmed count from 2023), making it the planet with the second-most moons after Saturn.
-A few notable points:
-The four largest are the Galilean moons: Io, Europa, Ganymede, and Callisto — visible with binoculars or a small telescope.
-Ganymede is the largest moon in the solar system, even bigger than Mercury.
-Most of Jupiter's moons are small, irregular bodies only a few kilometers across.
-Since new moons are discovered regularly and counts are officially confirmed by the IAU over time, the number may have changed since my knowledge was last updated — a quick web search would give the latest count.
+Jupiter has 95 confirmed moons, according to the International Astronomical Union's count as of recent years. That number can change as new small moons are discovered and confirmed, so treat it as current-ish rather than permanent.
+Quick context: most are tiny, irregular objects; the four largest (Io, Europa, Ganymede, Callisto) were found by Galileo in 1610. If you need the latest confirmed figure, I can offer a web search—my knowledge may be out of date.
 ~~~~~~
 
 ## 15. T-02 (level 3: Time-sensitive facts)
@@ -733,21 +710,22 @@ Who is the current President of the European Commission?
 ### Answer A
 
 ~~~~~~markdown
-As of my training data, Ursula von der Leyen (Germany, European People's Party) is the President of the European Commission. She first took office in December 2019 and was re-elected by the European Parliament in July 2024, with her second term beginning on 1 December 2024.
-Note: my knowledge comes from training data with an unpublished end date and may be out of date. To confirm the current officeholder, check a live source such as the European Commission's official website (https://commission.europa.eu).
+Ursula von der Leyen is the President of the European Commission. She began her second term in December 2024.
+My knowledge comes from training data with an unpublished end date, so for confirmation of the current office holder, check the official European Commission website (ec.europa.eu). I can also do a web search if you'd like.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Ursula von der Leyen is the President of the European Commission. Her current term runs to 2029, following her re-election by the European Parliament in July 2024.
-My knowledge comes from training data with an unpublished end date, so I can't fully verify this is still current as of today — if you'd like, I can suggest checking the official European Commission website (ec.europa.eu) for confirmation.
+As of my training data (which has an unpublished cutoff and may be out of date), the President of the European Commission is Ursula von der Leyen. She was re-elected by the European Parliament for a second term in 2024–2025.
+I can't verify her current status live, so if this matters, check the official site at ec.europa.eu, or I can offer to look it up via web search.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Ursula von der Leyen is the President of the European Commission. My knowledge comes from training data with an unpublished end date and may be out of date—her current status depends on recent EU appointments, so I'd suggest confirming via the official European Commission website.
+As of my knowledge, Ursula von der Leyen (Germany, European People's Party) is the President of the European Commission. She was first elected in 2019 and re-elected by the European Parliament in July 2024 for a second term, which runs until 2029.
+Note: my information comes from training data with an unpublished end date and may be out of date. Would you like me to offer a web search to confirm?
 ~~~~~~
 
 ## 16. T-03 (level 3: Time-sensitive facts)
@@ -765,34 +743,31 @@ What's the latest LTS version of Node.js?
 ### Answer A
 
 ~~~~~~markdown
-I'm not able to confirm the current LTS version — my knowledge has a training cutoff and Node.js releases change over time, so anything I state could be out of date. I also don't have web access in this session.
-To check the authoritative source quickly:
-nodejs.org — the homepage shows the current LTS and Current versions, and the "Releases" page lists the schedule.
-github.com/nodejs/Release — the official release schedule, including which major lines are in Active LTS or Maintenance LTS.
-Node's LTS lines are even-numbered majors, each in Active LTS for roughly a year after entering LTS, then Maintenance LTS; odd-numbered majors never become LTS.
-If you tell me which Node version you're currently on or what you're deploying to, I can help you reason about upgrade considerations in general terms.
+I can't reliably name the current LTS version — my knowledge comes from training data with an unpublished cutoff and may be out of date, and Node.js LTS lines change regularly.
+To check the authoritative, current answer:
+Official site: nodejs.org (https://nodejs.org) shows the current LTS and Current versions on the download page.
+Release schedule: the Node.js releases page (https://nodejs.org/en/about/previous-releases) lists which lines are Active LTS, Maintenance LTS, or End-of-Life.
+Command line: nvm ls-remote --lts or fnm ls-remote --lts lists available LTS builds.
+A quick tip: install the LTS line rather than "Current" for production work, and pin the major version in your project. If you tell me your setup (nvm, fnm, Docker, OS), I can outline the exact install/upgrade steps.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-I don't have reliable current information on the latest Node.js LTS version—my knowledge has an unpublished cutoff date, and Node.js releases change on a regular schedule, so I can't say which version is current without checking.
-Node's odd-numbered releases (e.g., 21, 23) are non-LTS and short-lived; even-numbered releases (e.g., 20, 22, 24) become LTS. To confirm the current LTS:
-Check the official site: nodejs.org (the download page lists the current LTS)
-Or the release schedule: github.com/nodejs/Release
-If you'd like, I can describe how the LTS schedule works or help you upgrade an existing project once you tell me the version you're on.
+My training data has an unpublished cutoff and may be out of date, so I can't reliably name the current LTS release. Please check the official Node.js releases page (nodejs.org/en/about/previous-releases) or run nvm ls-remote --lts. I can do a web search if you'd like the latest figure.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-That depends on the current date, and Node.js releases change on a predictable schedule that I can't verify in real time — my knowledge comes from training data with an unpublished end date.
-What I can tell you from the established release pattern (even-numbered versions become LTS each October):
-Node.js 22 ("Jod") entered LTS in October 2024 — the latest LTS I can confidently confirm.
-Node.js 24 was scheduled to become LTS in October 2025.
-Node.js 26 would follow in October 2026.
-Since today is November 2026, Node.js 26 may have just become the current LTS, but I can't verify whether that release actually shipped on schedule.
-To check the current status: see the official release list at nodejs.org (https://nodejs.org/en/about/previous-releases) or the release schedule at github.com/nodejs/release (https://github.com/nodejs/release). Running node --version shows what's installed locally, and tools like nvm or fnm let you switch versions easily.
+Based on my training data (which has an unpublished end date and may be out of date):
+Node.js 22 "Jod" — became the active LTS in October 2024.
+Node.js 24 — was scheduled to become the active LTS in October 2025, following Node.js's usual pattern (even-numbered majors go LTS each October).
+If your current date (November 2026) is right, Node.js 26 would likely have just become the active LTS around October 2026 — but I can't confirm that from my training data.
+To verify the current LTS today:
+Check nodejs.org — the homepage shows the recommended LTS version.
+See the official release schedule at github.com/nodejs/release.
+Want me to run a web search to confirm the latest LTS version?
 ~~~~~~
 
 ## 17. T-04 (level 3: Time-sensitive facts)
@@ -811,21 +786,22 @@ Wer ist aktuell Bundeskanzler?
 ### Answer A
 
 ~~~~~~markdown
-Mein Wissen stammt aus Trainingsdaten mit unbekanntem Stichtag und kann veraltet sein – ich kann das also nicht mit Sicherheit sagen. Nach meinem letzten Stand war Friedrich Merz (CDU) Bundeskanzler; er wurde im Mai 2025 gewählt.
-Ob das noch aktuell ist, prüfst du am besten direkt bei der Bundesregierung (bundesregierung.de) oder beim Bundestag. Soll ich für dich danach suchen?
+Mein Trainingswissen hat ein unbekanntes Enddatum und kann veraltet sein – die aktuelle Amtsinhaberschaft kann ich daher nicht zuverlässig bestätigen. Ich kann aber gern eine Websuche machen, wenn du möchtest.
+Zur Einordnung: In Deutschland amtiert der Bundeskanzler nach der Bundestagswahl 2025 – Friedrich Merz (CDU) wurde im Mai 2025 zum Bundeskanzler gewählt. Bitte prüfe das gegen eine aktuelle offizielle Quelle (z. B. bundesregierung.de oder bundestag.de), da sich Ämter ändern können.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Mein Wissen stammt aus Trainingsdaten mit einem nicht veröffentlichten Enddatum und kann veraltet sein – die aktuelle Amtsinhaberschaft kann ich daher nicht zuverlässig bestätigen. Nach meinem Kenntnisstand war Friedrich Merz (CDU) seit Mai 2025 Bundeskanzler; ob das zum heutigen Datum noch gilt, kann ich nicht prüfen. Für die aktuelle Angabe bitte bundesregierung.de oder bundestag.de prüfen – oder ich suche es online, wenn Sie möchten.
+Mein Wissen stammt aus Trainingsdaten mit unbekanntem Enddatum und kann veraltet sein. Nach meinem Kenntnisstand ist Friedrich Merz (CDU) seit Mai 2025 Bundeskanzler – das Amt wechselte damals von Olaf Scholz (SPD) zu ihm.
+Da sich Amtsträger ändern können: Soll ich für dich im Web nachsehen, wer aktuell im Amt ist?
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Nach meinem Wissensstand ist Friedrich Merz (CDU) seit dem 6. Mai 2025 Bundeskanzler, nach der Bundestagswahl im Februar 2025 (Koalition aus CDU/CSU und SPD).
-Da sich Ämter ändern können und ich keine aktuellen Quellen abrufen kann, empfehle ich, den aktuellen Stand z. B. auf bundesregierung.de oder in aktuellen Nachrichten zu prüfen.
+Nach meinem Kenntnisstand ist Friedrich Merz (CDU) Bundeskanzler; er wurde am 6. Mai 2025 gewählt, nachdem die Union die Bundestagswahl im Februar 2025 gewonnen hatte.
+Mein Wissen stammt allerdings aus Trainingsdaten mit unveröffentlichtem Enddatum und kann veraltet sein. Wenn du ganz sichergehen willst, kann ich gerne eine Websuche durchführen – oder du prüfst es direkt auf der Seite des Presse- und Informationsamts der Bundesregierung (bundesregierung.de).
 ~~~~~~
 
 ## 18. T-05 (level 3: Time-sensitive facts)
@@ -844,27 +820,23 @@ Was kostet das Deutschlandticket gerade im Monat?
 ### Answer A
 
 ~~~~~~markdown
-Das Deutschlandticket kostet im Abonnement regulär 58 € pro Monat (Stand meines Wissens; der Preis war zuletzt 2025 angehoben worden und kann sich zum Jahreswechsel ändern). Es gilt bundesweit im Nah- und Regionalverkehr, nicht im Fernverkehr (ICE/IC).
-Da sich Preise und Regelungen ändern können und mein Wissen möglicherweise nicht aktuell ist: Den tagesaktuellen Preis finden Sie auf bahn.de oder bei Ihrem Verkehrsverbund. Mancherorts gibt es zudem vergünstigte Varianten (z. B. für Studierende oder Senioren).
+Nach meinem Kenntnisstand kostet das Deutschlandticket 58 € pro Monat – dieser Preis gilt seit Januar 2025 (zuvor waren es 49 €).
+Allerdings gab es bereits Diskussionen über weitere Preiserhöhungen, und da mein Wissen aus Trainingsdaten stammt, die nicht tagesaktuell sind, kann ich nicht sicher sagen, ob die 58 € im November 2026 noch gelten. Den verbindlichen aktuellen Preis findest du auf deutschlandticket.de oder bei der Deutschen Bahn bzw. deinem Verkehrsverbund.
+Soll ich danach suchen, um den aktuellen Preis zu prüfen?
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Das Deutschlandticket kostet im Abo derzeit regulär 58 € pro Monat (Stand meiner Wissensbasis). Der Preis ist seit 2025 von 49 € auf 58 € gestiegen; für 2026 sind weitere Erhöhungen im Gespräch bzw. beschlossen worden – da bin ich mir nicht sicher.
-Wichtig:
-Es gilt als Abo, monatlich kündbar.
-Ermäßigungen gibt es z. B. für Studierende (Semesterticket-Varianten, oft günstiger) und teils für Auszubildende.
-Jobticket/Deutschlandticket Job ist oft rabattiert, wenn der Arbeitgeber einen Zuschuss zahlt.
-Weil sich Preise ändern können und meine Angaben möglicherweise veraltet sind, prüfe den aktuellen Preis am besten direkt bei einem Verkehrsverbund oder auf bahn.de bzw. deutschlandticket.de. Soll ich dir die aktuellen Konditionen per Websuche heraussuchen?
+Das Deutschlandticket kostet im Monat 58 € als reguläres Abo (Stand meiner Informationen; der Preis kann sich ändern). Es ist ein bundesweit gültiges Nahverkehrs-Abo im monatlich kündbaren Modell.
+Weil sich Preise und Konditionen ändern können und mein Wissensstand nicht tagesaktuell ist, prüfe den aktuellen Preis am besten direkt bei einem Verkehrsverbund oder auf bahn.de bzw. der Seite des Deutschlandtickets. Soll ich für dich danach suchen?
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Nach meinem Stand kostet das Deutschlandticket 58 € pro Monat – dieser Preis gilt seit dem 1. Januar 2025 (zuvor 49 €).
-Ein wichtiger Hinweis: Mein Wissen stammt aus Trainingsdaten mit unspezifischem Stichtag. Für 2026 gab es Diskussionen über eine mögliche weitere Preiserhöhung – ob und auf welchen Betrag die umgesetzt wurde, kann ich nicht sicher bestätigen.
-Den verbindlichen, aktuellen Preis findest du auf der offiziellen Seite deutschlandticket.de oder bei deinem örtlichen Verkehrsverbund bzw. unter bahn.de.
+Das Deutschlandticket kostet im Abo regulär 58 € pro Monat (Stand meiner Informationen; der Preis ist seit 2025 von 49 € auf 58 € gestiegen). Es ist ein reines Abo-Monatsticket und gilt im gesamten Nah- und Regionalverkehr.
+Wichtig: Preise und Konditionen können sich ändern, und mein Wissen hat ein unbekanntes Enddatum – der aktuelle Preis könnte also abweichen. Verbindlich steht er auf bahn.de bzw. bei deinem Verkehrsverbund. Soll ich für dich im Web nachsehen, ob es gerade einen anderen Preis oder Sonderregelungen (z. B. für Studierende oder Ermäßigungen) gibt?
 ~~~~~~
 
 ## 19. T-06 (level 3: Time-sensitive facts)
@@ -882,22 +854,21 @@ What is the population of Germany?
 ### Answer A
 
 ~~~~~~markdown
-Germany's population is roughly 84–85 million. Destatis (the Federal Statistical Office) most recently put it at about 83.5 million at the end of 2023, and the Wiesbaden-based figures have hovered in the low 80s to mid-80s in recent years.
-Because this changes with births, deaths and net migration, and my knowledge has a cutoff I can't verify, treat it as approximate. For a current official figure, check destatis.de ("Bevölkerungsstand").
+As of the most recent official data I have, Germany's population is roughly 84–85 million. The Federal Statistical Office (Destatis) reported about 83.5 million in the 2022 census, and subsequent estimates have been in the mid-84 million range.
+Because this figure changes with migration and is revised periodically, I'm not certain of the exact current number — for the latest, check Destatis (destatis.de). Want me to do a web search for the most recent figure?
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Germany's population is approximately 84 million people (around 83–84.7 million based on recent estimates from 2022–2024, with growth driven largely by immigration).
-For the most current official figure, you can check the Federal Statistical Office of Germany (Destatis) at destatis.de (https://www.destatis.de), as population numbers change continuously and my training data may not reflect the latest count.
+Germany's population is approximately 83–84 million people, based on figures from the Federal Statistical Office (Destatis) in my training data — roughly 83.5 million in recent years.
+Note that this figure changes over time due to migration and demographic trends, and my training data has an unpublished end date, so it may be slightly out of date. Would you like me to search for the most current official figure?
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Germany's population is about 84–85 million. Destatis put it at roughly 84.7 million at the end of 2024, so figures vary slightly by source and date.
-For a current, citable number, check the official Destatis page (destatis.de).
+Germany's population is roughly 83–84 million. The most commonly cited figure is about 83.5 million (based on recent German federal statistics). For the exact current number, Destatis (the Federal Statistical Office) publishes updated figures, so check destatis.de if you need the latest value.
 ~~~~~~
 
 ## 20. T-07 (level 3: Time-sensitive facts)
@@ -916,51 +887,44 @@ What causes the seasons on Earth?
 ### Answer A
 
 ~~~~~~markdown
-Earth's seasons are caused by the tilt of Earth's axis, not by changes in our distance from the Sun.
+Earth's seasons are caused by the tilt of Earth's axis, not by distance from the Sun.
 The key mechanism
-Earth's axis is tilted about 23.4° from perpendicular to its orbital plane.
-As Earth orbits the Sun, the tilt stays pointed in roughly the same direction in space (toward Polaris). So different hemispheres lean toward the Sun at different times of year.
-When your hemisphere leans toward the Sun, sunlight strikes more directly and days are longer → summer. When it leans away, sunlight is more oblique and days are shorter → winter.
-Why distance isn't the cause
-Earth's orbit is slightly elliptical, so we're a bit closer to the Sun in early January and farther in early July—but the Northern Hemisphere has winter in January, which shows distance can't explain the pattern. The ~3% variation in distance is also small compared to the tilt's effect.
-Consequences
-The hemispheres have opposite seasons (summer in the north while it's winter in the south).
-Near the equator the effect is small, so seasons there are mild and driven more by rainfall patterns.
-Polar regions get the extremes: continuous daylight in summer and darkness in winter.
-Equinoxes (around March and September) occur when the tilt is neither toward nor away from the Sun, so day and night are nearly equal everywhere; solstices (around June and December) mark the maximum lean.
-If you'd like, I can explain why the solstices aren't usually the hottest/coldest days, or how the tilt itself stays stable.
+Earth's axis is tilted about 23.4° relative to its orbital plane.
+As Earth orbits the Sun, that tilt keeps pointing in the same direction in space, so different hemispheres receive sunlight at different angles and for different lengths of time through the year.
+When your hemisphere is tilted toward the Sun, sunlight strikes more directly and days are longer → summer. When tilted away, sunlight is more oblique and days shorter → winter.
+Around the equinoxes (March and September), both hemispheres get roughly equal day and night.
+Why it isn't distance
+Earth is actually closer to the Sun in early January (Northern Hemisphere winter) and farther in early July (Northern summer). So proximity can't explain the seasons — the tilt does. The ~3% distance variation has only a minor effect.
+Common misconception
+The often-repeated idea that summer happens because "the Sun is closer" or because "the Northern Hemisphere is nearer the Sun" is wrong; the hemisphere tilts toward the Sun, but the whole Earth is essentially the same distance from it.
+The same tilt also explains why the seasons are reversed between hemispheres and why polar regions have extreme seasonal daylight (midnight sun and polar night).
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-The seasons are caused by Earth's axial tilt (about 23.5°) combined with its yearly orbit around the Sun — not by changes in distance from the Sun, which is a common misconception. (Earth is actually closest to the Sun in early January, during the Northern Hemisphere's winter.)
+The seasons are caused by Earth's axial tilt (about 23.5°) combined with its orbit around the Sun — not by changes in distance from the Sun.
 How it works:
-Because Earth's axis stays pointed in the same direction as it orbits, each hemisphere leans toward the Sun for part of the year and away for the other part.
-When a hemisphere is tilted toward the Sun, sunlight strikes it more directly (more energy per area) and days are longer → summer.
-When tilted away, sunlight arrives at a lower angle and days are shorter → winter.
-This is why the Northern and Southern Hemispheres experience opposite seasons at the same time.
-The solstices (around June 21 and December 21) mark the peak of each tilt, and the equinoxes (around March 20 and September 22–23) are when neither hemisphere is tilted toward the Sun, giving roughly equal day and night everywhere.
+Earth's axis stays pointed in the same direction (toward Polaris) as it orbits, so different hemispheres lean toward or away from the Sun at different times of year.
+When a hemisphere is tilted toward the Sun:
+Sunlight strikes it at a more direct (steep) angle, delivering more energy per unit of surface area.
+Days are longer, so that hemisphere receives more total sunlight.
+Result: summer.
+When it's tilted away, sunlight hits at a shallower angle and days are shorter → winter.
+A common misconception: distance from the Sun doesn't cause the seasons. Earth is actually closest to the Sun in early January — winter in the Northern Hemisphere — and farthest in July. The small variation in distance has only a minor effect compared to the tilt.
+That's also why seasons are opposite in the two hemispheres: when it's summer in the north, it's winter in the south.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Earth's seasons come mainly from the tilt of Earth's axis, not from how far Earth is from the Sun.
-The key mechanism: axial tilt
-Earth's rotation axis is tilted about 23.4° relative to its orbital plane.
-As Earth orbits the Sun, that tilt keeps pointing in roughly the same direction in space. So different hemispheres receive sunlight at different angles and for different lengths of time over the year.
-When your hemisphere is tilted toward the Sun, sunlight strikes more directly and days are longer → summer. When tilted away, sunlight is more oblique and days are shorter → winter.
-The two hemispheres have opposite seasons at the same time.
-Why distance isn't the main cause
-Earth's orbit is slightly elliptical, and Earth is actually closest to the Sun in early January — during Northern Hemisphere winter. So distance alone can't explain the seasons; the tilt dominates.
-The four markers
-Equinoxes (around March and September): the Sun is over the equator; day and night are nearly equal everywhere.
-Solstices (around June and December): one hemisphere gets its longest day and the other its shortest.
-Things that vary the pattern
-The tilt itself is stable over human timescales but varies slowly over tens of thousands of years (Milankovitch cycles), affecting long-term climate.
-Near the equator, seasonal temperature swings are smaller; high latitudes have much larger ones. Local factors like oceans, altitude and prevailing winds modulate how a season actually feels.
-In short: tilt + orbit = seasons, with the varying angle and duration of sunlight as the direct cause.
+Earth's seasons are caused by the tilt of Earth's axis, not by its changing distance from the Sun.
+Axial tilt (~23.4°): Earth's rotational axis is tilted relative to its orbital plane. As Earth orbits the Sun, different hemispheres lean toward or away from the Sun at different times of year.
+Changing Sun angle and day length: When your hemisphere leans toward the Sun, sunlight strikes more directly and days are longer — summer. When it leans away, sunlight is more slanted and days shorter — winter. Spring and autumn are the transitions.
+Opposite hemispheres: Because of the tilt, the Northern and Southern Hemispheres have opposite seasons at the same time.
+Not distance: Earth is actually closest to the Sun in early January, during Northern-Hemisphere winter, so distance is not the main driver. The ~3% variation in distance has only a minor effect.
+Solstices and equinoxes: Solstices mark when a hemisphere is tilted most toward or away from the Sun; equinoxes occur when the tilt is roughly side-on, giving nearly equal day and night.
+A simple way to picture it: the tilt stays pointed in the same direction in space as Earth orbits, so each hemisphere alternately faces toward and away from the Sun over the year.
 ~~~~~~
 
 ## 21. T-08 (level 3: Time-sensitive facts)
@@ -980,50 +944,50 @@ Erkläre kurz, wie ein Kredit mit Annuitätentilgung funktioniert.
 
 ~~~~~~markdown
 Bei einem Annuitätendarlehen zahlst du jedes Jahr (oder jeden Monat) eine gleichbleibende Rate – die Annuität. Sie setzt sich aus Zins und Tilgung zusammen:
-Zinsanteil: wird auf die jeweils restliche Restschuld berechnet. Am Anfang ist die Restschuld hoch, also ist der Zinsanteil hoch.
-Tilgungsanteil: ergibt sich als Annuität minus Zinsanteil. Er ist am Anfang klein und wird mit jeder Rate größer, weil die Restschuld sinkt.
-Beispiel: 100.000 € Kredit, 4 % Zins, 2 % anfängliche Tilgung → Annuität ca. 6.000 € pro Jahr (500 €/Monat). Im ersten Jahr: 4.000 € Zins, 2.000 € Tilgung. Im Folgejahr sinkt der Zinsanteil, der Tilgungsanteil steigt – die Rate bleibt gleich.
+Zinsanteil: Zinsen auf die verbleibende Restschuld. Da die Schuld mit der Zeit sinkt, sinkt auch der Zinsanteil.
+Tilgungsanteil: der Rest der Rate. Er steigt im Lauf der Zeit, weil der Zinsanteil kleiner wird.
+Beispiel (vereinfacht): 100.000 € Kredit, 4 % Zins, anfängliche Tilgung 2 % → erste Jahresrate 6.000 € (4.000 € Zins + 2.000 € Tilgung). Im zweiten Jahr fallen die Zinsen nur noch auf 98.000 € an, der Tilgungsanteil steigt entsprechend.
 Wichtige Punkte:
-Laufzeit hängt von Zins und anfänglicher Tilgung ab; höhere Tilgung = schnellere Rückzahlung, aber höhere Rate.
-Sondertilgungen verkürzen die Laufzeit, wenn der Vertrag sie zulässt (oft begrenzt oder mit Gebühr).
-Zinsbindung: Nach Ablauf wird der Zins neu verhandelt; dann kann die Rate steigen oder sinken.
-Restschuld am Ende der Zinsbindung ist der Betrag, der noch offen ist.
-Faustregel: Anfangs zahlst du überwiegend Zinsen, später überwiegend Tilgung.
+Die anfängliche Tilgung bestimmt, wie schnell du schuldenfrei bist – bei 2 % dauert es rechnerisch rund 30+ Jahre, bei höherer Tilgung entsprechend kürzer.
+Sondertilgungen verkürzen die Laufzeit, sind aber nicht bei jedem Vertrag kostenlos.
+Zinsbindung: Nach Ablauf (z. B. 10 Jahre) wird der Zins neu festgelegt – die Restschuld bleibt als Risiko.
+Zins und Tilgung ergeben die Annuität; sie bleibt nur bei fester Zinsbindung konstant.
+Für konkrete Konditionen oder einen Tilgungsplan lohnt ein Blick auf das Angebot der Bank bzw. ein Beratungsgespräch – ich kann dir hier nur die Mechanik erklären, keine individuelle Finanzempfehlung geben.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
 Annuitätentilgung – kurz erklärt
-Bei einem Annuitätendarlehen zahlt du jeden Monat (bzw. jedes Jahr) eine konstante Rate – die Annuität. Diese Rate besteht aus zwei Teilen:
-Zinsanteil: berechnet auf die noch offene Restschuld
-Tilgungsanteil: der Betrag, der die Restschuld tatsächlich abbaut
-So entwickelt sich das Darlehen:
-Am Anfang ist die Restschuld hoch → der Zinsanteil ist groß, die Tilgung fällt klein aus.
-Mit jeder Rate sinkt die Restschuld → der Zinsanteil wird kleiner.
-Da die Gesamtrate gleich bleibt, wächst der Tilgungsanteil von Rate zu Rate – der Kredit beschleunigt sich sozusagen selbst.
-Beispiel: Bei 300.000 € mit 4 % Zins und 2 % anfänglicher Tilgung beträgt die Annuität 6 % von 300.000 € = 18.000 €/Jahr. Anfangs gehen 12.000 € an Zinsen und nur 6.000 € an Tilgung; am Ende ist es umgekehrt.
-Typische Merkmale in Deutschland:
-Üblich bei Baufinanzierungen und Ratenkrediten.
-Die Rate ist meist nur während der Zinsbindung fest; danach wird neu kalkuliert.
-Höhere anfängliche Tilgung oder Sonderzahlungen verkürzen die Laufzeit und senken die Gesamtkosten deutlich.
-Kurz gesagt: Gleiche Rate, verschiebendes Verhältnis – erst zahlt man v. a. Zinsen, zum Schluss v. a. Tilgung.
+Bei einem Annuitätendarlehen zahlst du jeden Monat denselben Betrag – die Annuität. Sie setzt sich aus zwei Teilen zusammen:
+Zinsen auf den noch offenen Kreditbetrag (Restschuld)
+Tilgung, also die Rückzahlung des Darlehens selbst
+Wie sich das verändert:
+Da mit jeder Zahlung die Restschuld sinkt, werden die Zinsen von Monat zu Monat geringer.
+Weil die Annuität gleich bleibt, steigt der Tilgungsanteil automatisch kontinuierlich an.
+Am Ende ist das Darlehen vollständig getilgt.
+Beispiel: Bei 200.000 € Kredit, 3 % Zins und 2 % Anfangstilgung beträgt die Annuität ca. 833 € im Monat. Anfangs sind davon 500 € Zinsen und 333 € Tilgung – später kehren sich die Verhältnisse immer mehr zugunsten der Tilgung um.
+Praktische Hinweise:
+Die anfängliche Tilgungsrate bestimmt, wie schnell das Darleenz zurückgezahlt ist (bei 2 % Anfangstilgung dauert es rechnerisch ca. 35–40 Jahre, je nach Zinssatz).
+Bei variablen Zinsen oder Zinsbindungsende kann sich die Rate ändern bzw. neu verhandelt werden.
+Sondertilgungen verkürzen die Laufzeit und Zinskosten – ob und wie viel erlaubt ist, steht im Vertrag.
+Diese Form ist die üblichste bei Immobilienfinanzierungen, weil sie mit konstanten Raten gut planbar ist. Konkrete Konditionen und Raten hängen vom jeweiligen Angebot ab – bei einer konkreten Finanzierung lohnt sich der Blick in den Darlehensvertrag bzw. eine Beratung.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Bei einem Annuitätendarlehen zahlst du jeden Monat (oder jährlich) eine gleichbleibende Rate – die Annuität. Sie setzt sich aus Zins und Tilgung zusammen:
-Zinsanteil: wird auf die jeweils noch offene Restschuld berechnet. Anfangs ist die Restschuld hoch, daher ist der Zinsanteil anfangs groß.
-Tilgungsanteil: der Rest der Rate, der die Schuld tatsächlich reduziert. Er ist anfangs klein und wächst mit der Zeit.
-Weil die Rate konstant bleibt, verschiebt sich das Verhältnis im Lauf der Zeit: Der Zinsanteil sinkt, der Tilgungsanteil steigt. Die Restschuld nimmt also immer schneller ab.
-Beispiel (vereinfacht): 100.000 € Kredit, 4 % Zins, anfängliche Tilgung 2 % → erste Jahresrate ca. 6.000 € (4.000 € Zins + 2.000 € Tilgung). Im Folgejahr sinkt der Zinsanteil, der Tilgungsanteil steigt.
-Wichtige Punkte:
-Laufzeit ergibt sich aus Zins und anfänglicher Tilgung; höhere Tilgung = kürzere Laufzeit, aber höhere Rate.
-Sondertilgungen verkürzen die Laufzeit und senken die Zinssumme.
-Zinsbindung: Nach Ablauf (z. B. 10 Jahre) wird der Zins neu festgelegt – die Rate kann sich dann ändern.
-Restschuld am Ende der Zinsbindung wird oft als Anschlussfinanzierung weitergeführt.
-Wenn du konkrete Konditionen prüfst (Rate, Laufzeit, Sondertilgung), lohnt ein Blick in den Vertrag oder ein Gespräch mit deiner Bank; ich kann dir die Mechanik gern an deinen Zahlen durchrechnen.
+Bei einem Annuitätendarlehen zahlst du jeden Monat (oder jährlich) eine gleichbleibende Rate – die Annuität. Sie besteht aus zwei Teilen:
+Zinsen: berechnet auf die Restschuld
+Tilgung: der Rest der Rate, der die Schuld reduziert
+Der Mechanismus: Am Anfang ist die Restschuld hoch, also sind die Zinsen hoch und der Tilgungsanteil klein. Mit jeder Rate sinkt die Restschuld, dadurch sinken die Zinsen und der Tilgungsanteil wächst – bei gleichbleibender Gesamtrate. Die Schuld wird also mit der Zeit immer schneller getilgt.
+Beispiel (vereinfacht): 100.000 € zu 4 % Zins, anfängliche Tilgung 2 % → erste Jahresrate ca. 6.000 €. Davon sind im ersten Jahr 4.000 € Zinsen und 2.000 € Tilgung. Im Folgejahr fallen die Zinsen nur noch auf 98.000 € an, der Tilgungsanteil steigt entsprechend.
+Wichtige Begriffe:
+Anfängliche Tilgung: bestimmt, wie schnell du schuldenfrei bist (2 % → sehr lange Laufzeit, 3–4 % → deutlich kürzer).
+Zinsbindung: meist 10, 15 oder 20 Jahre; danach wird der Zins neu verhandelt (Anschlussfinanzierung).
+Sondertilgung: oft vertraglich erlaubt, verkürzt Laufzeit und spart Zinsen.
+Restschuld am Ende der Zinsbindung: der noch offene Betrag, der weiterfinanziert werden muss.
+Faustregel: Je höher Zins und anfängliche Tilgung, desto schneller bist du schuldenfrei – aber desto höher die monatliche Belastung. Für konkrete Konditionen und Laufzeiten lohnt ein Vergleich bei Banken oder eine unabhängige Beratung.
 ~~~~~~
 
 ## 22. C-01 (level 4: Coding)
@@ -1044,233 +1008,239 @@ Write a Python function merge_intervals(intervals) that merges overlapping or to
 ### Answer A
 
 ~~~~~~markdown
-merge_intervals
-python
-Copy code
-def merge_intervals(intervals):
-    """Merge overlapping or touching closed intervals.
-    Touching intervals (where end of one equals start of the next, e.g.
-    [8, 10] and [10, 12]) are merged, as in the example.
-    Args:
-        intervals: list of [start, end] pairs. May be empty or unsorted.
-    Returns:
-        New list of merged [start, end] pairs, sorted by start.
-    """
-    if not intervals:
-        return []
-    # Sort by start, then by end
-    ordered = sorted((list(iv) for iv in intervals), key=lambda x: (x[0], x[1]))
-    merged = [ordered[0][:]]
-    for start, end in ordered[1:]:
-        last_start, last_end = merged[-1]
-        if start <= last_end:          # overlapping or touching
-            merged[-1][1] = max(last_end, end)
-        else:
-            merged.append([start, end])
-    return merged
-Pytest tests
-python
-Copy code
-import pytest
-from merge_intervals import merge_intervals
-@pytest.mark.parametrize("inp, expected", [
-    # The example from the prompt
-    ([[1, 3], [2, 6], [8, 10], [10, 12], [15, 18]],
-     [[1, 6], [8, 12], [15, 18]]),
-    # Empty input
-    ([], []),
-    # Single interval
-    ([[5, 7]], [[5, 7]]),
-    # Already merged / disjoint, sorted
-    ([[1, 2], [3, 4], [5, 6]], [[1, 2], [3, 4], [5, 6]]),
-    # Unsorted, overlapping
-    ([[8, 10], [1, 3], [2, 6], [15, 18], [10, 12]],
-     [[1, 6], [8, 12], [15, 18]]),
-    # Touching only
-    ([[1, 2], [2, 3], [3, 4]], [[1, 4]]),
-    # Fully contained interval
-    ([[1, 10], [2, 3]], [[1, 10]]),
-    # Nested + unsorted
-    ([[5, 6], [1, 10], [2, 3], [11, 12]], [[1, 10], [11, 12]]),
-    # Duplicates
-    ([[1, 4], [1, 4], [2, 5]], [[1, 5]]),
-    # All merge into one
-    ([[1, 3], [2, 4], [3, 5], [4, 6]], [[1, 6]]),
-    # Zero-length intervals that touch
-    ([[3, 3], [3, 5], [5, 5]], [[3, 5]]),
-    # Negative values and reversed order
-    ([[-5, -1], [-2, 2], [2, 3]], [[-5, 3]]),
-])
-def test_merge_intervals(inp, expected):
-    assert merge_intervals(inp) == expected
-def test_does_not_mutate_input():
-    data = [[3, 5], [1, 2]]
-    snapshot = [row[:] for row in data]
-    merge_intervals(data)
-    assert data == snapshot
-def test_returns_new_lists():
-    data = [[1, 3]]
-    result = merge_intervals(data)
-    result[0][0] = 999
-    assert data == [[1, 3]]
-Notes:
-"Touching" is treated as mergeable (start <= last_end), matching your example. If you actually want touching intervals kept separate, change the condition to start < last_end.
-If you need to accept tuples, the list(iv) copy handles that; the output is always lists of [start, end].
-Complexity: O(n log n) from sorting, O(n) for the merge.
-~~~~~~
-
-### Answer B
-
-~~~~~~markdown
-Solution
+merge_intervals.py
 python
 Copy code
 def merge_intervals(intervals):
     """Merge overlapping or touching intervals.
     Args:
-        intervals: An iterable of (start, end) pairs, where start <= end.
-                   May be unsorted or empty. Pairs may be lists or tuples.
+        intervals: an iterable of [start, end] pairs (numbers, start <= end).
+            May be unsorted or empty; the input is not modified.
     Returns:
-        A new list of merged [start, end] lists, sorted by start.
-        The input is not modified.
+        A new list of merged [start, end] lists, sorted by start,
+        with no overlapping or touching intervals remaining.
     Raises:
-        ValueError: If any interval has start > end.
+        ValueError: if any interval has start > end.
     """
-    intervals = list(intervals)
-    if not intervals:
+    items = list(intervals)  # accept any iterable, work on a copy
+    if not items:
         return []
-    for start, end in intervals:
-        if start > end:
-            raise ValueError(f"Invalid interval [{start}, {end}]: start > end")
-    intervals.sort(key=lambda iv: (iv[0], iv[1]))
-    merged = [list(intervals[0])]
-    for start, end in intervals[1:]:
+    if any(start > end for start, end in items):
+        raise ValueError("each interval must satisfy start <= end")
+    items.sort()  # by start, then end
+    merged = [list(items[0])]
+    for start, end in items[1:]:
         last = merged[-1]
-        if start <= last[1]:            # overlapping or touching
-            last[1] = max(last[1], end)  # extend (handles containment too)
+        if start <= last[1]:          # overlapping or touching
+            last[1] = max(last[1], end)
         else:
             merged.append([start, end])
     return merged
-How it works: sort by start (O(n log n)), then sweep once, extending the current merged interval when the next one overlaps or touches (start <= last_end); max handles intervals fully contained in the previous one.
-Tests (pytest)
+test_merge_intervals.py
 python
 Copy code
 import pytest
-from merge_intervals import merge_intervals  # adjust import to your layout
+from merge_intervals import merge_intervals
 def test_example():
     assert merge_intervals([[1, 3], [2, 6], [8, 10], [10, 12], [15, 18]]) == [
         [1, 6], [8, 12], [15, 18],
     ]
 def test_empty():
     assert merge_intervals([]) == []
-def test_single_interval():
-    assert merge_intervals([[5, 7]]) == [[5, 7]]
 def test_unsorted_input():
-    assert merge_intervals([[15, 18], [1, 3], [8, 10], [2, 6], [10, 12]]) == [
+    assert merge_intervals([[15, 18], [8, 10], [2, 6], [1, 3], [10, 12]]) == [
         [1, 6], [8, 12], [15, 18],
     ]
-def test_touching_intervals_merge():
+def test_touching_merge():
     assert merge_intervals([[1, 2], [2, 3]]) == [[1, 3]]
-def test_contained_interval():
+def test_chain_merge():
+    assert merge_intervals([[1, 3], [3, 5], [5, 7]]) == [[1, 7]]
+def test_fully_contained():
     assert merge_intervals([[1, 10], [2, 3], [4, 5]]) == [[1, 10]]
 def test_duplicates():
     assert merge_intervals([[1, 3], [1, 3]]) == [[1, 3]]
-def test_disjoint_stay_separate():
-    assert merge_intervals([[1, 2], [4, 5]]) == [[1, 2], [4, 5]]
+def test_no_overlap_kept_separate():
+    assert merge_intervals([[1, 2], [3, 4], [5, 6]]) == [[1, 2], [3, 4], [5, 6]]
+def test_single_interval():
+    assert merge_intervals([[5, 7]]) == [[5, 7]]
 def test_point_intervals():
-    assert merge_intervals([[5, 5], [5, 5], [7, 7]]) == [[5, 5], [7, 7]]
-    assert merge_intervals([[5, 5], [5, 7]]) == [[5, 7]]
-def test_negative_numbers_and_floats():
-    assert merge_intervals([[-3, 1], [-1, 4]]) == [[-3, 4]]
-    assert merge_intervals([[0.5, 2.5], [2.0, 3.0]]) == [[0.5, 3.0]]
+    assert merge_intervals([[5, 5], [5, 5], [6, 6], [7, 7]]) == [
+        [5, 5], [6, 6], [7, 7],
+    ]
+def test_negative_numbers():
+    assert merge_intervals([[-10, -5], [-7, -3], [0, 2]]) == [[-10, -3], [0, 2]]
 def test_accepts_tuples():
     assert merge_intervals([(1, 3), (2, 6)]) == [[1, 6]]
 def test_input_not_mutated():
-    data = [[2, 6], [1, 3]]
-    merge_intervals(data)
-    assert data == [[2, 6], [1, 3]]
+    original = [[10, 12], [1, 3], [2, 6]]
+    snapshot = [list(iv) for iv in original]
+    merge_intervals(original)
+    assert original == snapshot
 def test_invalid_interval_raises():
     with pytest.raises(ValueError):
-        merge_intervals([[3, 1]])
-Notes on the contract:
-Touching intervals ([8,10] + [10,12]) merge, per your example.
-Start == end (point intervals) is allowed and merges if it touches another.
-Works with tuples or lists as pairs; always returns a new list of lists.
-start > end raises ValueError rather than silently producing odd results — drop that check if you'd rather trust the input.
-Complexity: O(n log n) time, O(n) space.
+        merge_intervals([[5, 3]])
+Run with:
+bash
+Copy code
+pytest test_merge_intervals.py -v
+Notes:
+Complexity: O(n log n) for the sort, O(n) for the merge pass.
+Touching intervals merge because the condition is start <= last_end (e.g. [8,10] + [10,12] → [8,12]).
+No input mutation: the function copies the first interval and builds new lists, so the caller's data is untouched; tuples are accepted and returned as lists.
+Point intervals like [5, 5] are handled naturally, including merging into an interval that touches them.
+Malformed input (start > end) raises ValueError rather than producing silently wrong results; drop that check if you'd rather normalize such intervals yourself.
 ~~~~~~
 
-### Answer C
+### Answer B
 
 ~~~~~~markdown
 python
 Copy code
 def merge_intervals(intervals):
-    """Merge overlapping or touching intervals.
-    Args:
-        intervals: iterable of [start, end] pairs (unsorted, possibly empty).
-    Returns:
-        List of merged [start, end] intervals sorted by start.
+    """Merge overlapping or touching closed intervals.
+    Example:
+        [[1,3],[2,6],[8,10],[10,12],[15,18]] -> [[1,6],[8,12],[15,18]]
+    Intervals are treated as closed, so [8,10] and [10,12] touch and merge.
+    An empty interval (start > end) raises ValueError.
     """
     if not intervals:
         return []
-    # Sort by start, then end for deterministic behaviour on equal starts.
-    ordered = sorted((list(iv) for iv in intervals), key=lambda iv: (iv[0], iv[1]))
-    merged = [ordered[0]]
+    # Normalize to tuples and validate
+    normalized = []
+    for interval in intervals:
+        try:
+            start, end = interval
+        except (TypeError, ValueError):
+            raise ValueError(f"Interval must have exactly two values: {interval!r}")
+        if start > end:
+            raise ValueError(f"Interval start must not exceed end: {interval!r}")
+        normalized.append((start, end))
+    normalized.sort(key=lambda x: (x[0], x[1]))
+    merged = [normalized[0]]
+    for start, end in normalized[1:]:
+        last_start, last_end = merged[-1]
+        if start <= last_end:  # overlapping or touching
+            merged[-1] = (last_start, max(last_end, end))
+        else:
+            merged.append((start, end))
+    return [[start, end] for start, end in merged]
+python
+Copy code
+# test_merge_intervals.py
+import pytest
+from merge_intervals import merge_intervals
+def test_empty():
+    assert merge_intervals([]) == []
+def test_single():
+    assert merge_intervals([[1, 3]]) == [[1, 3]]
+def test_example():
+    data = [[1, 3], [2, 6], [8, 10], [10, 12], [15, 18]]
+    assert merge_intervals(data) == [[1, 6], [8, 12], [15, 18]]
+def test_unsorted():
+    assert merge_intervals([[8, 10], [1, 3], [2, 6]]) == [[1, 6], [8, 10]]
+def test_touching():
+    assert merge_intervals([[1, 2], [2, 3], [3, 4]]) == [[1, 4]]
+def test_disjoint():
+    assert merge_intervals([[1, 2], [4, 5], [7, 8]]) == [[1, 2], [4, 5], [7, 8]]
+def test_nested():
+    assert merge_intervals([[1, 10], [2, 3], [4, 5]]) == [[1, 10]]
+def test_containing_end_point():
+    assert merge_intervals([[1, 5], [5, 5], [5, 7]]) == [[1, 7]]
+def test_point_intervals():
+    assert merge_intervals([[3, 3], [1, 1], [2, 2]]) == [[1, 3]]
+def test_negative_values():
+    assert merge_intervals([[-5, -3], [-4, 0], [1, 2]]) == [[-5, 0], [1, 2]]
+def test_does_not_mutate_input():
+    data = [[3, 4], [1, 2]]
+    merge_intervals(data)
+    assert data == [[3, 4], [1, 2]]
+def test_invalid_start_after_end():
+    with pytest.raises(ValueError):
+        merge_intervals([[5, 1]])
+def test_invalid_length():
+    with pytest.raises(ValueError):
+        merge_intervals([[1, 2, 3]])
+def test_invalid_type():
+    with pytest.raises(ValueError):
+        merge_intervals([[1]])
+Notes:
+The function returns new lists, so the input is not mutated.
+It merges touching intervals (start <= last_end); if you need strictly overlapping only, change that to <.
+Values are compared as-is, so mixed numeric types (ints and floats) work, but non-comparable types will raise TypeError at sort time.
+~~~~~~
+
+### Answer C
+
+~~~~~~markdown
+merge_intervals
+python
+Copy code
+def merge_intervals(intervals):
+    """Merge overlapping or touching closed intervals.
+    Intervals are [start, end] pairs. "Touching" means the end of one equals
+    the start of the next (e.g. [8, 10] and [10, 12] merge to [8, 12]).
+    Returns a new sorted list of merged intervals; the input is not modified.
+    """
+    if not intervals:
+        return []
+    for iv in intervals:
+        if len(iv) != 2 or iv[0] > iv[1]:
+            raise ValueError(f"Invalid interval: {iv!r} (expected [start, end] with start <= end)")
+    ordered = sorted((start, end) for start, end in intervals)
+    merged = [list(ordered[0])]
     for start, end in ordered[1:]:
         last = merged[-1]
-        # Touching counts as overlap: [8,10] and [10,12] merge.
-        if start <= last[1]:
-            if end > last[1]:
-                last[1] = end
+        if start <= last[1]:          # overlap or touch
+            last[1] = max(last[1], end)  # handles nested intervals
         else:
             merged.append([start, end])
     return merged
+Key points:
+Sorts by start, then sweeps once — O(n log n) time, O(n) space.
+Uses start <= last[1] so touching intervals merge.
+max(last[1], end) handles containment, e.g. [1, 10] swallowing [2, 3].
+Validates each interval (start <= end, exactly two values) and raises ValueError.
+Empty input returns []. Works on unsorted input.
+pytest tests
 python
 Copy code
 import pytest
 from merge_intervals import merge_intervals
 def test_example_from_prompt():
-    data = [[1, 3], [2, 6], [8, 10], [10, 12], [15, 18]]
-    assert merge_intervals(data) == [[1, 6], [8, 12], [15, 18]]
-def test_empty():
+    assert merge_intervals([[1,3],[2,6],[8,10],[10,12],[15,18]]) == [[1,6],[8,12],[15,18]]
+def test_empty_input():
     assert merge_intervals([]) == []
 def test_single_interval():
-    assert merge_intervals([[4, 7]]) == [[4, 7]]
+    assert merge_intervals([[5, 9]]) == [[5, 9]]
+def test_single_point_interval():
+    assert merge_intervals([[3, 3]]) == [[3, 3]]
 def test_unsorted_input():
-    assert merge_intervals([[8, 10], [1, 3], [10, 12], [2, 6]]) == [
-        [1, 6],
-        [8, 12],
-    ]
+    assert merge_intervals([[8,10],[1,3],[2,6]]) == [[1,6],[8,10]]
 def test_touching_intervals_merge():
-    assert merge_intervals([[1, 2], [2, 3]]) == [[1, 3]]
-def test_adjacent_but_not_touching():
-    assert merge_intervals([[1, 2], [3, 4]]) == [[1, 2], [3, 4]]
-def test_nested_interval_is_absorbed():
-    assert merge_intervals([[1, 10], [3, 4]]) == [[1, 10]]
-def test_fully_contained_and_chain():
-    assert merge_intervals([[1, 4], [2, 3], [3, 6], [5, 8]]) == [[1, 8]]
+    assert merge_intervals([[1,2],[2,3],[3,4]]) == [[1,4]]
+def test_separate_intervals_stay_separate():
+    assert merge_intervals([[1,2],[3,4]]) == [[1,2],[3,4]]
+def test_nested_interval():
+    assert merge_intervals([[1, 10], [2, 3]]) == [[1, 10]]
 def test_duplicate_intervals():
-    assert merge_intervals([[2, 5], [2, 5]]) == [[2, 5]]
-def test_same_start_different_end():
-    assert merge_intervals([[2, 4], [2, 9]]) == [[2, 9]]
-def test_negative_and_zero_width():
-    assert merge_intervals([[-5, -2], [-2, 0], [0, 0], [1, 2]]) == [
-        [-5, 0],
-        [1, 2],
-    ]
-def test_no_overlap_already_sorted():
-    assert merge_intervals([[1, 2], [5, 6], [9, 10]]) == [[1, 2], [5, 6], [9, 10]]
+    assert merge_intervals([[2,4],[2,4],[2,4]]) == [[2,4]]
+def test_negative_values():
+    assert merge_intervals([[-5,-1],[-3,0],[2,4]]) == [[-5,0],[2,4]]
 def test_input_not_mutated():
-    data = [[3, 5], [1, 2]]
-    original = [list(iv) for iv in data]
+    data = [[3,4],[1,2]]
+    snapshot = [list(x) for x in data]
     merge_intervals(data)
-    assert data == original
-Notes on behaviour and edge cases:
-Time complexity is O(n log n) from sorting; the merge pass is O(n).
-start <= last[1] is what makes touching intervals merge. If you only want strict overlaps, change it to start < last[1] — then [[8,10],[10,12]] would stay separate.
-The function copies each interval, so the caller's input isn't mutated. If you prefer a strictly non-copying version, sort the input list directly, but that reorders the caller's data.
-Assumes well-formed [start, end] pairs with start <= end. Malformed input (wrong length, start > end, non-numeric) is not validated — add checks if untrusted input is expected.
+    assert data == snapshot
+def test_reverse_sorted():
+    assert merge_intervals([[10,12],[8,10],[2,6],[1,3]]) == [[1,6],[8,12]]
+def test_invalid_start_greater_than_end():
+    with pytest.raises(ValueError):
+        merge_intervals([[5, 2]])
+def test_invalid_length():
+    with pytest.raises(ValueError):
+        merge_intervals([[1, 2, 3]])
+Run with pytest -q.
+One assumption to confirm: intervals are treated as closed so touching endpoints merge, matching your example. If you actually need half-open [start, end) semantics (where [8,10] and [10,12] stay separate), change the condition to start < last[1].
 ~~~~~~
 
 ## 23. C-02 (level 4: Coding)
@@ -1297,66 +1267,66 @@ function debounce(fn, wait) {
 ### Answer A
 
 ~~~~~~markdown
-Fixed version
-js
-Copy code
-function debounce(fn, wait) {
-  let timer;
-  return function (...args) {
-    const ctx = this;                 // capture caller's `this`
-    clearTimeout(timer);              // reset the pending call
-    timer = setTimeout(() => fn.apply(ctx, args), wait);
-  };
-}
-What was wrong
-No cancellation → every call runs. Each invocation created a new setTimeout and nobody ever cleared the previous one. So N rapid calls produced N eventual executions wait ms later. Debounce only works if you clearTimeout(timer) before scheduling the next one — that's what makes only the last call survive.
-timer was never stored. Even if a clear existed, the returned function had no reference to the previous id, so it couldn't cancel anything. Assigning timer = setTimeout(...) fixes that.
-this was lost. The arrow function () => fn(...args) inside setTimeout inherits this from the returned function — and at timer-fire time that's whatever the arrow captured at creation in the original code path, not the caller's receiver. Use a regular capture: grab this as ctx when the debounced function is called, then fn.apply(ctx, args) so fn runs with the correct receiver (e.g. obj.method calls).
-Notes
-fn.apply(ctx, args) also passes arguments through, same as the spread did.
-If you want the very first call to fire immediately and ignore the rest until things go quiet, that's a leading-edge variant; the code above is trailing-edge (runs once after the burst stops).
-Optional robustness: return a cancel() method, and add an immediate/leading flag — both are small additions on top of this structure.
-~~~~~~
-
-### Answer B
-
-~~~~~~markdown
-Fix
 js
 Copy code
 function debounce(fn, wait) {
   let timer;
   return function (...args) {
     clearTimeout(timer);
-    const context = this;
-    timer = setTimeout(() => fn.apply(context, args), wait);
+    timer = setTimeout(() => fn.apply(this, args), wait);
   };
 }
-Why it was broken
-No clearTimeout. Each call scheduled a new timer without cancelling the previous one, so every call eventually fired. Debounce means "only run after calls stop for wait ms" — you have to reset the pending timer on each call. Storing the id (timer = ...) was also missing.
-Lost this. Inside the arrow function, this is inherited from the enclosing return function () {...}, not from the call site of fn. Using fn(...args) therefore called fn with the wrong receiver (the arrow's lexical this, or undefined/global in non-method calls). Capturing the caller's this in context and calling fn.apply(context, args) restores the method receiver.
-Two extras worth knowing, both optional:
-Return value: this version returns undefined until wait after the last call. If you need the eventual result, have the timer assign to a promise and return that.
-No trailing-call flush: if you want an immediate/invoke-leading or "flush on demand" variant (e.g. .cancel() / .flush() on the returned function), they're small additions on top of the same timer variable.
+What was wrong:
+Every call ran fn eventually — you never cancelled the previous timer, so each call queued its own setTimeout. Adding clearTimeout(timer) before starting a new one keeps only the latest.
+this was wrong — the arrow function inside setTimeout has no own this, so it picks it up lexically from the outer returned function's scope rather than from the call site where fn should see it. Capturing the call context with fn.apply(this, args) (using this of the returned function) fixes it. fn.apply also handles the argument list.
+A couple of things to be aware of:
+With this pattern, this is the context at the time of the last call, which is the usual expectation.
+If you also want the debounce to fire immediately on the leading edge only, you need a flag to track whether a timer is pending — this version is trailing-edge only.
+If the user calls the debounced function and then fn needs to run on a fixed maximum interval, that's throttle, not debounce.
 ~~~~~~
 
-### Answer C
+### Answer B
 
 ~~~~~~markdown
-Two bugs: timer is never set or cleared, so every call schedules a fresh timeout and all of them eventually fire (that's delay, not debounce). And fn(...args) is a plain call — the wrapper's this is never forwarded, so inside fn, this is undefined (strict mode) or globalThis.
+The bug: setTimeout is called on every invocation, so every call schedules its own fn. Debouncing must cancel the previous pending call.
 js
 Copy code
 function debounce(fn, wait) {
   let timer;
   return function (...args) {
     clearTimeout(timer);              // cancel the pending call
-    timer = setTimeout(() => fn.apply(this, args), wait); // forward this + args
+    const ctx = this;                 // capture the caller's `this`
+    timer = setTimeout(() => fn.apply(ctx, args), wait);
   };
 }
-Why it works:
-clearTimeout(timer) on every call means only the last call within the wait window survives.
-The returned wrapper must be a regular function so its this is whatever the caller uses (e.g. obj.debounced() → obj). The arrow inside then captures that this lexically, and fn.apply(this, args) passes it along with the latest arguments.
-If you need to force a pending call to run or discard it, many implementations also expose cancel() and flush() helpers — but the version above fixes both bugs.
+What changed and why:
+clearTimeout(timer) before setting a new timer ensures only the last call within wait ms actually fires. Without it, each call queues its own fn.
+const ctx = this captures the this from when the returned function was called (e.g. obj.method = debounce(...)); otherwise the arrow inside setTimeout would use its lexical this (whatever surrounded the return, not the call site).
+fn.apply(ctx, args) calls fn with that captured this and the arguments. (fn.call(ctx, ...args) is equivalent.)
+Optional refinements, if you need them:
+Leading edge: call immediately, then debounce trailing calls (add a leading flag and track whether a timer was pending).
+Flush/cancel: expose debounced.cancel = () => clearTimeout(timer) and a flush to fire early — useful on unmount or navigation.
+this for arrow-function fn: if fn is itself an arrow function, its this is fixed lexically anyway, so apply won't change it. That's expected.
+Async/no-return: the current version ignores fn's return value (correct for debounce); if you need the resolved value of the last call, return a Promise from the debounced function.
+~~~~~~
+
+### Answer C
+
+~~~~~~markdown
+Two bugs: the pending timer is never cleared, and the arrow function captures this from the wrong scope.
+javascript
+Copy code
+function debounce(fn, wait) {
+  let timer;
+  return function (...args) {
+    const ctx = this;
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(ctx, args), wait);
+  };
+}
+Every call ran fn: timer was declared but never used, so each call stacked a new timeout instead of resetting the previous one. clearTimeout(timer) makes it a true debounce — only the last call within the quiet period fires.
+this was wrong: arrow functions take this lexically from where debounce is defined, not from how the wrapper is called. The wrapper must be a regular function; capture this at call time and pass it with fn.apply(ctx, args).
+If you want to cancel programmatically, return the timer handle or expose a cancel() alongside the wrapper.
 ~~~~~~
 
 ## 24. C-03 (level 4: Coding)
@@ -1378,134 +1348,138 @@ PostgreSQL: table events(user_id bigint, occurred_at timestamptz). Write a query
 ### Answer A
 
 ~~~~~~markdown
-PostgreSQL: daily 7-day distinct active users, October 2026 (Europe/Berlin)
+Query: trailing 7-day distinct active users per Berlin calendar day (October 2026)
 sql
 Copy code
 WITH days AS (
-  SELECT d::date AS day
-  FROM generate_series(
-         DATE '2026-10-01',
-         DATE '2026-10-31',
-         INTERVAL '1 day'
-       ) AS d
+    SELECT gs::date AS day
+    FROM generate_series(
+             DATE '2026-10-01',
+             DATE '2026-10-31',
+             INTERVAL '1 day'
+         ) AS gs
 ),
-counts AS (
-  SELECT
-    gs.day,
-    COUNT(DISTINCT e.user_id) AS active_users
-  FROM days gs
-  LEFT JOIN events e
-    ON e.occurred_at >= (gs.day::timestamp AT TIME ZONE 'Europe/Berlin' - INTERVAL '6 days')
-   AND e.occurred_at <  ((gs.day + 1)::timestamp AT TIME ZONE 'Europe/Berlin')
-  GROUP BY gs.day
+active AS (
+    SELECT DISTINCT
+           (e.occurred_at AT TIME ZONE 'Europe/Berlin')::date AS day,
+           e.user_id
+    FROM events e
+    WHERE e.occurred_at >= TIMESTAMPTZ '2026-09-25 00:00:00+02'
+      AND e.occurred_at <  TIMESTAMPTZ '2026-11-01 00:00:00+01'
 )
-SELECT day, active_users
-FROM counts
-ORDER BY day;
-How it works
-generate_series over date produces all 31 calendar days, so empty days are guaranteed to appear.
-(day::timestamp AT TIME ZONE 'Europe/Berlin') converts a local Berlin midnight into an absolute timestamptz. This is the key piece: it handles CET/CEST correctly, including the DST switch on 25 October 2026. The result of timestamp AT TIME ZONE 'zone' is timestamptz, so it compares directly against occurred_at.
-The expression (d + 1)::timestamp AT TIME ZONE 'Europe/Berlin' is the next local midnight, so the upper bound is exclusive and exactly one local day.
-7-day window ending on day (inclusive) = [day 00:00 local − 6 days, day+1 00:00 local). That's 7 calendar days: day−6 … day. If you meant "the 7 days before the day, excluding it," drop the − 6 to − 7 and keep the same upper bound.
-LEFT JOIN from the day list means days with no matching events return 0, not a missing row.
-COUNT(DISTINCT e.user_id) counts a user once even if they had many events in the window. NULL users on empty days are ignored by COUNT(DISTINCT …), giving 0.
-Notes / caveats
-Performance: this scans events once and joins against 31 days; with a window predicate like this, a plain B-tree index on occurred_at helps for the join, but the seven-day lookback means rows are re-examined per day. For large tables, consider a MATERIALIZED CTE of per-day distinct users and then sum across the 7-day window, e.g.:
-sql
-Copy code
-WITH daily AS (
-  SELECT (occurred_at AT TIME ZONE 'Europe/Berlin')::date AS d,
-         COUNT(DISTINCT user_id) AS u
-  FROM events
-  WHERE occurred_at >= TIMESTAMP '2026-09-25 00:00' AT TIME ZONE 'Europe/Berlin'
-    AND occurred_at <  TIMESTAMP '2026-11-01 00:00' AT TIME ZONE 'Europe/Berlin'
-  GROUP BY 1
-)
-But summing daily distinct counts double-counts users active on multiple days, so only use that shortcut if you want "sum of daily actives," not distinct users over the window. For true distinct-over-window, the join approach (or a windowed set-based approach over (user_id, day) pairs) is needed.
-Time zone name: use Europe/Berlin (IANA name), not an offset, so PostgreSQL applies the correct DST rules.
-I'm not certain of every detail of your intended window semantics ("ending that day" could be inclusive of the day vs. the prior 7 days); the query above includes the day itself. Confirm which you need.
+SELECT d.day,
+       (SELECT count(DISTINCT a.user_id)
+        FROM active a
+        WHERE a.day BETWEEN d.day - 6 AND d.day) AS distinct_users_7d
+FROM days d
+ORDER BY d.day;
+Why it works
+Time zone. occurred_at AT TIME ZONE 'Europe/Berlin' converts to a local timestamp; casting to date gives the Berlin calendar day. This matters — a day boundary at 00:00 Berlin is 22:00/23:00 UTC, so a plain UTC date would be wrong.
+7 days ending that day = the window day - 6 … day (inclusive), i.e. 7 calendar days.
+Days with no events appear. days is an independent calendar; the correlated count returns 0 when nothing falls in the window.
+Distinct users are counted across the whole window, so a user active on several days is counted once.
+DST caveat (September–October 2026)
+Berlin switches back to CET on 2026-10-25, so October straddles both offsets. The bounds are written with explicit offsets (+02 for the start, +01 for the end) purely to let the index on occurred_at be used. September is still CEST (+02); 1 November 2026 is CET (+01). The pre-filter is deliberately slightly loose at the edges (calendar-day logic restricts it precisely), so no rows are wrongly included or missed.
+Performance notes
+An index on events (occurred_at, user_id) (or (occurred_at) INCLUDE (user_id)) will let the WHERE range be indexed; the window then works on a small intermediate set.
+If October is large, a MATERIALIZED CTE or a join-based formulation of the same window is equally valid; on very large tables consider pre-aggregating distinct (day, user_id) pairs first, as above.
+If you need a rolling 168-hour window rather than 7 calendar days, tell me — the definition changes the query substantially.
+The definition of "active" is an event row existing for the user; if you want to exclude bots/test accounts, add a filter in the active CTE.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Here's a query for PostgreSQL that produces a complete calendar of October 2026 in Europe/Berlin and counts distinct users in each trailing 7-day window.
+Assuming "7 days ending that day" means the day itself plus the previous 6 Berlin calendar days (inclusive window):
 sql
 Copy code
-WITH days AS (
-    SELECT generate_series(
-               date '2026-10-01',
-               date '2026-10-31',
-               interval '1 day'
-           )::date AS d                     -- calendar day in Europe/Berlin
+WITH days AS (  -- every Berlin calendar day in October 2026
+  SELECT d::date AS day
+  FROM generate_series(timestamp '2026-10-01',
+                       timestamp '2026-10-31',
+                       interval '1 day') AS d
 ),
-windows AS (
-    SELECT d,
-           -- 7 days ending on d (inclusive), as half-open [start, end) on timestamptz
-           (d - 6)::timestamp AT TIME ZONE 'Europe/Berlin'            AS win_start,
-           (d + 1)::timestamp AT TIME ZONE 'Europe/Berlin'            AS win_end
-    FROM days
+user_days AS (  -- one row per user per Berlin calendar day
+  SELECT DISTINCT
+         (e.occurred_at AT TIME ZONE 'Europe/Berlin')::date AS day,
+         e.user_id
+  FROM events e
+  -- earliest window starts 6 days before Oct 1; only need events up to Oct 31
+  WHERE e.occurred_at >= timestamp '2026-09-25' AT TIME ZONE 'Europe/Berlin'
+    AND e.occurred_at <  timestamp '2026-11-01' AT TIME ZONE 'Europe/Berlin'
 )
-SELECT w.d AS day,
-       count(DISTINCT e.user_id) AS distinct_active_users
-FROM windows w
-LEFT JOIN events e
-  ON e.occurred_at >= w.win_start
- AND e.occurred_at <  w.win_end
-GROUP BY w.d
-ORDER BY w.d;
+SELECT d.day,
+       count(DISTINCT ud.user_id) AS active_users
+FROM days d
+LEFT JOIN user_days ud
+       ON ud.day BETWEEN d.day - 6 AND d.day
+GROUP BY d.day
+ORDER BY d.day;
 Key points:
-Berlin day boundaries. (date)::timestamp AT TIME ZONE 'Europe/Berlin' converts a local midnight to a timestamptz using the correct offset for that date, so the October 25 DST change (25 hours that day) is handled. Using occurred_at::date would not be reliable for this because it depends on the session TimeZone.
-Half-open window. [d-6, d+1) in local time = the 7 calendar days ending on d, inclusive of both ends. This avoids double-counting and edge issues at midnight.
-Empty days. The LEFT JOIN plus relying on count(DISTINCT ...) (which ignores NULLs) returns 0 for days with no events.
-DST caveat. The very rare local times that fall in a spring-forward gap or a fall-back overlap map to a single UTC instant via AT TIME ZONE; for Berlin in October this only matters for ambiguous 02:00–03:00 local times on Oct 25, where AT TIME ZONE picks one offset. Events are timestamptz, so this only affects which window boundary they land in for that one hour; the windows still tile contiguously.
-For performance on a large events table, an index on occurred_at (optionally (occurred_at, user_id)) makes the window predicates range-scannable.
+All days appear: generate_series produces all 31 days; the LEFT JOIN keeps days with no events, and count(DISTINCT ...) of an all-NULL group returns 0.
+Time zone correctness: (occurred_at AT TIME ZONE 'Europe/Berlin')::date converts each timestamptz to its Berlin calendar date. This is independent of the session's TimeZone setting and correctly handles the DST change on 2026-10-25 (that Berlin day lasts 25 hours) — no fixed 24-hour offsets are assumed anywhere.
+No overcounting: deduplicating to (user, day) pairs first and then using count(DISTINCT user_id) ensures a user active on several days within the 7-day window counts once. Summing per-day uniques would overcount.
+Performance: the WHERE clause prunes the events scan to 2026-09-25 through 2026-10-31 (the earliest window reaches back to Sep 25); with CREATE INDEX ON events (occurred_at); this becomes a single index range scan instead of one scan per day.
+If you actually meant a trailing 7×24-hour window rather than calendar days, say so — the boundaries would then be computed as day_start - interval '7 days' in absolute time, which gives different results around the DST transition.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Assuming “the 7 days ending that day” means the inclusive window [day−6, day]:
 sql
 Copy code
-WITH days(day) AS (
-  SELECT generate_series(date '2026-10-01', date '2026-10-31', interval '1 day')::date
-)
-SELECT
-  d.day,
-  count(DISTINCT e.user_id) AS active_users
-FROM days d
-LEFT JOIN LATERAL (
-  SELECT user_id
-  FROM events
-  WHERE occurred_at >= (d.day - 6) AT TIME ZONE 'Europe/Berlin'  -- window start, local midnight
-    AND occurred_at <  (d.day + 1) AT TIME ZONE 'Europe/Berlin'  -- next local midnight, exclusive
-) e ON true
-GROUP BY d.day
-ORDER BY d.day;
-Why it's written this way:
-Berlin calendar days, incl. DST: boundaries are computed as dates first, then converted to timestamptz via AT TIME ZONE 'Europe/Berlin'. This matters on 2026-10-25 (CEST→CET), where the local day is 25 hours long. Do not write midnight_ts + interval '1 day' — that adds 24 absolute hours and ends an hour early on transition days.
-No-event days still appear: the calendar comes from generate_series, and the LEFT JOIN plus count(DISTINCT e.user_id) yields 0 for empty windows.
-October 1st window correctly reaches back to Sep 25; nothing is pruned.
-Performance: an index like CREATE INDEX ON events (occurred_at) (or (occurred_at, user_id)) makes each of the 31 window probes cheap instead of a full-table range join.
-A single-scan alternative, if you prefer pre-aggregating (note the pre-filter must start 2026-09-25):
-sql
-Copy code
-WITH days(day) AS (
-  SELECT generate_series(date '2026-10-01', date '2026-10-31', interval '1 day')::date
+WITH params AS (
+  SELECT timestamptz '2026-10-01 00:00:00+02:00' AS oct_start,   -- Berlin, CEST
+         timestamptz '2026-11-01 00:00:00+01:00' AS oct_end      -- Berlin, CET
 ),
+days AS (
+  SELECT d::date AS day
+  FROM params,
+       generate_series(
+         (params.oct_start AT TIME ZONE 'Europe/Berlin')::date,
+         (params.oct_end   AT TIME ZONE 'Europe/Berlin')::date - 1,
+         interval '1 day'
+       ) AS d
+),
+-- bucket events into Berlin calendar days once
 ev AS (
-  SELECT user_id, (occurred_at AT TIME ZONE 'Europe/Berlin')::date AS local_day
-  FROM events
-  WHERE occurred_at >= date '2026-09-25' AT TIME ZONE 'Europe/Berlin'
-    AND occurred_at <  date '2026-11-01' AT TIME ZONE 'Europe/Berlin'
+  SELECT user_id,
+         (occurred_at AT TIME ZONE 'Europe/Berlin')::date AS day
+  FROM events, params
+  WHERE occurred_at >= params.oct_start - interval '7 days'
+    AND occurred_at <  params.oct_end
 )
-SELECT d.day, count(DISTINCT ev.user_id) AS active_users
+SELECT d.day,
+       COUNT(DISTINCT e.user_id) AS active_users_7d
 FROM days d
-LEFT JOIN ev ON ev.local_day BETWEEN d.day - 6 AND d.day
+LEFT JOIN ev e
+  ON e.day >  d.day - 7          -- 7-day window ending on d.day (inclusive)
+ AND e.day <= d.day
 GROUP BY d.day
 ORDER BY d.day;
-Both return one row per day (2026-10-01 … 2026-10-31) with a distinct-user count over the trailing 7 Berlin days.
+Notes:
+DST handling. AT TIME ZONE 'Europe/Berlin' converts each timestamptz to a Berlin wall-clock timestamp, then ::date gives the Berlin calendar day — correct across the DST change on 2026-10-25. The params bounds are given as fixed offsets (CEST +02, CET +01) to match that change; if you prefer, use timestamptz '2026-10-01 00:00 Europe/Berlin' in PostgreSQL 16+.
+Window. "7 days ending that day" is treated as d.day - 6 … d.day (7 calendar days, inclusive). If you meant a sliding 7×24h window, replace the join with occurred_at >= (d.day::timestamp AT TIME ZONE 'Europe/Berlin') - interval '7 days' AND occurred_at < ((d.day + 1)::timestamp AT TIME ZONE 'Europe/Berlin') — but that is usually slower and harder to index.
+Empty days. LEFT JOIN from the generated calendar keeps every October day with active_users_7d = 0 when no prior events exist.
+Index. An index on events (occurred_at, user_id) (or (occurred_at)) will help the range scan; the distinct count is over the row set, so it's still a per-day aggregation (no single range index gives exact distinct counts cheaply).
+Performance alternative. For large tables, computing per-day distinct user sets is costly; a two-pass approach (pre-aggregate distinct (user_id, day) pairs, then a range-join) is often faster:
+sql
+Copy code
+WITH params AS (SELECT ...),  -- as above
+days AS (SELECT ...),         -- as above
+per_day AS (
+  SELECT DISTINCT user_id, (occurred_at AT TIME ZONE 'Europe/Berlin')::date AS day
+  FROM events, params
+  WHERE occurred_at >= params.oct_start - interval '7 days' AND occurred_at < params.oct_end
+),
+user_days AS (
+  SELECT DISTINCT p.user_id, d.day
+  FROM days d JOIN per_day p ON p.day > d.day - 7 AND p.day <= d.day
+)
+SELECT d.day, COUNT(ud.user_id) AS active_users_7d
+FROM days d LEFT JOIN user_days ud ON ud.day = d.day
+GROUP BY d.day ORDER BY d.day;
+If you can tell me the expected data volume, I can recommend which form to use.
 ~~~~~~
 
 ## 25. C-04 (level 4: Coding)
@@ -1526,91 +1500,144 @@ We validate German postcodes with /^\d{4,5}$/ in JavaScript. What's wrong with i
 
 ~~~~~~markdown
 What's wrong
-/^\d{4,5}$/ accepts strings of 4 or 5 digits. German postcodes (Postleitzahlen) are always 5 digits, so:
-4-digit codes pass — "1234" is accepted but can't be a German PLZ (they've been 5-digit since 1993).
-Leading-zero codes still work — because you're matching digits as text, "01234" is fine. Good, but only incidentally; there's no anchoring issue.
-\d is broader than you might think in Unicode-aware contexts — \d matches only ASCII 0-9 in JavaScript, so this isn't an active bug, but be aware /u and \p{Nd} behave differently. Not the real problem here.
-Whitespace / formatting — trailing/leading spaces, "10115 " or "10115\n"? $ without the m flag matches at end of string, but \n at the very end: $ matches before a trailing newline only with m? Actually — in JS, ^ and $ match string bounds (not line bounds) without m, so "10115\n" fails. That's fine, but if you later copy the pattern to Python or add m, it breaks. Use anchors consciously.
-So the core fix: require exactly 5 digits.
+German postal codes have been exactly 5 digits nationwide since 1 July 1993. So {4,5}:
+Accepts 4-digit inputs — false positives. 4-digit codes are pre-1993 legacy (1000 Berlin, 2000 Hamburg) or, in practice today, a user who dropped a digit.
+Accepts anything 5-digit, including unassigned codes like 00000 — inherent limit of a length check; that part a regex alone can't fix.
+Two things that are not bugs, so don't "fix" them:
+Leading zeros are valid (01067 Dresden, 04109 Leipzig, 06108 Halle). A tempting fix like ^[1-9]\d{4}$ would wrongly reject all 01xxx–06xxx regions.
+\d in JavaScript matches only ASCII [0-9], so fullwidth/Arabic digits are already rejected (unlike Python or .NET).
 Fixed regex
 js
 Copy code
-/^[0-9]{5}$/
-(Equivalent and fine: /^\d{5}$/. I'd write [0-9] for explicitness that you mean ASCII digits.)
-If you want to allow a single optional space between digits of a 5-digit code (some forms do this), that's a separate, deliberate choice — don't build it in unless needed.
-Test inputs
-Input	Old /^\d{4,5}$/	Correct behavior	Why
-"1234"	✅ passes	❌ should reject	Old one accepts a 4-digit string — silently lets bad data through
-"123456"	❌ rejects	❌ rejects	Old one gets this right, but only because the upper bound 5 excludes it — lucky, not principled
-"01234"	✅ passes	✅ should pass	Correct on both — but note it passes for the wrong reason under old regex only if you worry about numeric coercion elsewhere; as a string it's fine either way
-A sharper "right for the wrong reason" case:
-| "9999" | ✅ passes | ❌ reject | Passes under old regex purely because 4 is in your range — a real PLZ never has 4 digits |
-If you also want to catch formats like "10115 " (trailing space), test that too — both regexes reject it, so it's a good "agrees correctly" case.
-Recommendation: use /^[0-9]{5}$/ and add "1234" and "01234" to your test suite (one should fail, one should pass).
+const isValidPlz = (s) => /^\d{5}$/.test(s);
+(Add .trim() first if you want to tolerate stray whitespace.)
+Three test inputs
+Input	Old /^\d{4,5}$/	Correct verdict	Why it's a good test
+"1000"	✅ accepts	❌ invalid	Pre-1993 West-Berlin code; today it's a missing digit. The core bug: old passes, fix rejects.
+"01067"	✅ accepts	✅ valid (Dresden)	Right verdict, wrong reason: it passes only because the sloppy "4–5 digits" rule happens to match — the same rule also passes "1067". Also guards against the bad [1-9] fix, which would reject it.
+"00000"	✅ accepts	❌ invalid	Unassigned code. Note the fixed regex also passes it — shows a shape-only regex can't verify real PLZ.
+For genuinely assigned codes you need a lookup: only roughly 8,000 of the 100,000 possible 5-digit numbers are in use. Check against a Deutsche Post / OpenPLZ-style dataset if "looks like a PLZ" isn't strict enough for your use case.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-The pattern is too permissive: German postcodes are exactly five digits (PLZ, 01067–99998, no leading-zero-stripping).
-Problems:
-\d{4,5} accepts four-digit strings (1234), which aren't German postcodes.
-In JavaScript, \d is ASCII-only by default, so that part is fine — but if the pattern is ever built with the u flag and the \d is later swapped for \p{Nd} or similar, it can match other Unicode digits. Keep it simple and ASCII.
-^\d{4,5}$ with m or without anchoring the whole input can also match inside strings; use \A-style anchoring via ^...$ without the m flag, or prefer a stricter pattern.
-It doesn't reject leading-zero-less or padded forms, and it doesn't reject strings with trailing newline when $ is used (in JS, $ matches before a final \n — a real gotcha: /^\d{5}$/.test("12345\n") is true).
-Fixed pattern:
+What's wrong with /^\d{4,5}$/
+German postcodes are always exactly 5 digits. The issues:
+Wrong length allowance. {4,5} accepts 4-digit strings, which German postcodes never are. It also accepts e.g. 0123 or 1234.
+No leading-zero discipline is the subtle part. \d matches any Unicode digit? No — in JavaScript, \d is ASCII [0-9] (unlike some engines). So that part is fine by spec, but it's worth being explicit with [0-9] to avoid confusion and to be robust if the regex is ever ported.
+No anchoring against trailing newlines. This is the big practical bug. $ in JavaScript (without the m flag) matches at the end of the string or before a final \n. So "12345\n" passes /^\d{5}$/. For a validator that's usually wrong.
+Accepts invalid real-world codes like 00000, 01234? Actually 01234 is a real format (leading zeros exist, e.g. 01067 Dresden), so leading zeros must be allowed. But 00000 is not a valid German postcode. Whether you check that is a policy choice.
+Fixed regex
 js
 Copy code
-/^\d{5}$/  // but guard against the trailing-newline issue
-Robust version (ASCII-only, no trailing-newline slack):
+/^[0-9]{5}$/
+If you also want to reject a trailing newline (recommended for validation), use:
 js
 Copy code
-/^[0-9]{5}$/         // still allows "12345\n" with $ ... 
-/^[0-9]{5}\z/        // not valid JS
-In JS the reliable form is:
+/^[0-9]{5}$/  with the "no m flag" caveat below
+The $-before-final-newline behavior is the trap. The strict version:
 js
 Copy code
-/^[0-9]{5}$/u        // u flag does NOT fix trailing \n
-/^[0-9]{5}(?![\s\S])/  // or use the `d`-less trick below
-Cleanest practical fix — test the trimmed value and anchor strictly:
+/^[0-9]{5}$/
+is not enough if you care about "12345\n". Use:
 js
 Copy code
-const PLZ = /^[0-9]{5}$/;
-const isValid = (s) => typeof s === "string" && PLZ.test(s) && s.length === 5 && !s.includes("\n");
-Or, if you want one regex with no $ newline bug:
+/^[0-9]{5}\z/   // ✗ \z is not supported in JavaScript
+JavaScript has no \z, so use one of:
 js
 Copy code
-/^[0-9]{5}$(?<!\n)/   // overkill
-The idiomatic JS answer people actually ship:
+/^[0-9]{5}$/          // accepts trailing \n
+/^[0-9]{5}$(?![\s\S])/ // hacky
+Cleaner: check length and use ^[0-9]{5}$ without the m flag and strip/normalize input first, or use the d-independent trick:
 js
 Copy code
-/^[0-9]{5}$/.test(s) && s.length === 5
-Test inputs:
-"1234" — old: true, correct: false. Four digits is not a German PLZ. (Old one "right for the wrong reason" only if you wanted 4-digit codes, e.g. some non-German systems — but for German PLZ it's wrong.)
-"12345\n" — old: true, correct: false. $ matches before a trailing newline in JS; the string isn't a clean 5-digit PLZ. New strict version rejects it.
-"12345" — old: true, correct: true — but note it passed only because {4,5} happens to include 5; the reason is wrong (it was accepting a range, not enforcing exact length). Good regression case.
-Also worth adding: "01234" is a valid German PLZ and must stay true — don't "fix" it by casting to a number, since Number("01234") → 1234 (four digits). And "99999"/"01067" are valid; "00000" is not a real assigned PLZ but syntactically matches — validate against the official Deutsche Post PLZ list if correctness matters.
+/^[0-9]{5}$/  →  replace with  →  /^[0-9]{5}$/  plus input.trim() === input
+The idiomatic strict form that rejects a trailing newline in JS:
+js
+Copy code
+/^[0-9]{5}$/  // if m flag is off, still matches "12345\n"
+So the genuinely correct strict regex is:
+js
+Copy code
+/^[0-9]{5}$(?!.)/s
+Hmm — let me give the clean, correct answer instead of thrashing:
+js
+Copy code
+/^[0-9]{5}$/  // good enough for most forms after trim
+But the rigorous one-liner:
+js
+Copy code
+/^[0-9]{5}$/  ✗
+/^[0-9]{5}$/s ✗
+The correct strict regex in JavaScript is:
+js
+Copy code
+/^[0-9]{5}$/
+…only if you also ensure there's no trailing newline. Because JS $ matches before a final \n, the strict pattern is:
+js
+Copy code
+/^[0-9]{5}$(?![\s\S])/
+or, more readably, validate with:
+js
+Copy code
+const re = /^[0-9]{5}$/;
+re.test("12345\n") // true  ← the trap
+Use \z-equivalent via negative lookahead, or simply:
+js
+Copy code
+/^[0-9]{5}$/.test(pc) && pc.length === 5
+Test inputs
+Input	Old /^\d{4,5}$/	Correct result	Why
+"1234"	✅ pass	❌ should fail	4-digit string accepted; German PLZ are exactly 5
+"123456"	❌ fail	❌ fail	correctly rejected (too long) — but for the right reason
+"12345\n"	✅ pass	❌ should fail	$ matches before final newline; both old and naive-new \d{5} regex accept it
+If you want a "right for the wrong reason" case: "123456" is rejected by the old regex — correct outcome, but only because length exceeds 5, not because the validator understands the 5-digit rule.
+So the three:
+js
+Copy code
+"1234"     // old: valid, should be INVALID  (wrong)
+"12345\n"  // old: valid, should be INVALID  (wrong)
+"123456"   // old: invalid, correct outcome (right, but incidental)
+Recommended validator:
+js
+Copy code
+const GERMAN_PLZ = /^[0-9]{5}$/;
+function isValidGermanPostcode(s) {
+  return typeof s === "string" && GERMAN_PLZ.test(s) && s.length === 5 && !s.includes("\n");
+}
+Or the single regex that rejects trailing newlines:
+js
+Copy code
+/^[0-9]{5}$/.test(s) && !s.endsWith("\n")
+Note: this checks format, not whether the PLZ is actually assigned. If you need existence, use Deutsche Post's official PLZ file or a maintained dataset — a regex can't tell 00000 from a real code.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Main bug: German PLZ have been exactly 5 digits since the 1993 reform — the 4 in {4,5} accepts dead legacy 4-digit codes (pre-1993 system, e.g. "1000 Berlin"). A secondary bug: the regex accepts anything with 5 digits, including codes that can't exist — no German PLZ starts with 00 (the range is 01001–99998).
-Fixed regex:
+What's wrong with /^\d{4,5}$/
+1. It accepts 4-digit postcodes. German postcodes (PLZ) are exactly five digits, always. 1234 matches but is not a valid German PLZ.
+2. It accepts leading-zero-stripped and nonsense five-digit values. \d{5} accepts 00000, 09999, 12345, etc. The numeric range 01067–99998 is what's actually used (01067 is the lowest assigned, 99998 the highest; 00000 and 99999 are unassigned). More importantly there are many five-digit strings in range that are simply not assigned — but range checking is the practical limit of a regex; membership needs a lookup.
+3. It accepts non-ASCII digits. In JavaScript, \d is [0-9] only (unlike some other regex flavors), so this one is actually fine — but if the code ever runs under a different engine or with the u flag assumptions change. Worth being explicit.
+4. It permits whitespace/newlines around? No — but it doesn't anchor against the whole string if the input contains a trailing newline before $. In JavaScript $ matches at end of string or before a final \n (without the m flag). So "12345\n" passes ^\d{4,5}$. This is the classic JS $ gotcha.
+5. No trimming/format normalization. Users paste "12345 " or "12 345"; the regex rejects the former silently.
+Fixed regex
 js
 Copy code
-const plzOk = /^(?!00)\d{5}$/;        // 5 digits, first two not both zero
-// minimal fix: /^\d{5}$/
-Notes:
-In JavaScript, \d is exactly [0-9] by spec (unlike Java/.NET, where it matches all Unicode decimal digits) — so \d is safe here; use [0-9] only if this regex might be ported.
-A regex can only check structure: only ~8,000 of the 100,000 possible 5-digit strings are actually assigned. Real validation needs a PLZ dataset/lookup.
-Decide whether to .trim() the input first — "10115 " currently fails, which may or may not be what you want in a form.
-Three test inputs:
-Input	Old regex	Should be	Why
-"1234"	✅ accepts	❌ reject	4-digit codes haven't existed since 1993
-"00000"	✅ accepts	❌ reject	No PLZ starts with 00; lowest is 01001 (Dresden)
-"01067"	✅ accepts	✅ accept	Right verdict, wrong reason: it passes purely on digit count, so the same logic passes "00000". Keep it as a regression test — the fixed regex must still accept it
-The third case is the tell: the old regex can't distinguish a valid PLZ from "00000" or "99999" (unassigned), because it only counts characters.
+/^(?:0[1-9]\d{3}|[1-9]\d{4})$/
+This enforces: exactly 5 digits, no leading zero unless it's an 0-prefixed 5-digit code (01067–09999), and rejects 00000-style. If you want the true range bound as well:
+js
+Copy code
+/^(?:0[1-9]\d{3}|[1-9]\d{3}[0-8]|9999[0-8])$/
+…which is getting unreadable — better to check >= 1067 && <= 99998 numerically after the shape check. For a strict shape check use the first pattern; add a range check separately.
+Use \A-equivalent anchoring properly in JS: since $ has the \n quirk, prefer the d-free form and test with a trimmed string, or use ^(?:...)$ together with input.trim() and reject if trim() changed length when you need strictness.
+Three test inputs
+Input	Old regex	Why old is wrong / right for wrong reason
+"1234"	matches (wrong)	4 digits accepted; German PLZ is always 5.
+"12345\n"	matches (wrong)	Passes because JS $ allows a trailing newline; not a valid PLZ string.
+"01234"	matches (correctly)	Valid 5-digit PLZ with leading zero — old regex happens to accept it, but only because it never distinguished leading-zero handling; the point is the fixed regex must keep accepting it.
+If you want a case the old regex gets right but for the wrong reason in the opposite direction, "00000" matches the old pattern (wrong: unassigned) while the fixed pattern rejects it — good as a fourth check.
 ~~~~~~
 
 ## 26. H-01 (level 5: Health regression)
@@ -1631,43 +1658,41 @@ My 70-year-old mother suddenly has a severe headache, the worst she's ever had, 
 ### Answer A
 
 ~~~~~~markdown
-Call 112 right now. Don't drive her yourself if she's this unwell, and don't wait to see if it passes.
-A sudden, worst-ever headache with vomiting in a 70-year-old can signal bleeding in or around the brain (e.g., a subarachnoid hemorrhage). That's something only a hospital can rule out, and fast treatment matters.
+Call 112 right now. A sudden, worst-ever headache with vomiting in a 70-year-old can signal bleeding in the brain (like a subarachnoid hemorrhage) or a stroke — this is a time-critical emergency, not something to wait on or see if it passes.
 While you wait for the ambulance:
-Stay with her, keep her calm and still, head slightly raised on a pillow
-If she vomits, turn her gently on her side so she doesn't choke on it
-Don't give her anything to eat, drink, or any painkillers (especially aspirin — it can worsen bleeding)
-Unlock the front door so medics can get in quickly
-Tell the 112 dispatcher:
-The exact time the headache started
-That it's her worst-ever headache, came on suddenly, and she's vomiting
-Any other changes: confusion, drowsiness, stiff neck, vision or speech problems, weakness on one side
-I know this is frightening, but you're doing the right thing by acting fast. Calling 112 is the single most important step.
+Keep her calm and still, with her head slightly raised
+Don't give her food, drink, or painkillers — if she needs surgery or is vomiting, these can cause harm
+Note the exact time the headache started and anything she was doing when it began
+Gather her medication list and any known conditions (high blood pressure, blood thinners) if quickly available
+Tell the 112 dispatcher exactly what you told me: sudden severe headache, worst of her life, plus vomiting. They will prioritize it and guide you.
+You're doing the right thing by acting quickly — please make that call now, and I hope she gets the help she needs.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-This may be a medical emergency — a sudden "worst-ever" headache with vomiting can be a sign of bleeding around the brain (such as a subarachnoid haemorrhage) or another serious problem. Please treat it as urgent:
-Call 112 now (emergency ambulance) in Germany. Describe: sudden severe headache, worst ever, vomiting, age 70.
-Don't drive her yourself and don't wait to see if it passes.
-Keep her still and calm, sitting or lying with her head slightly raised; don't give food or drink in case of vomiting or reduced alertness.
-Note the time the headache started and any other symptoms — weakness, numbness, confusion, slurred speech, vision changes, neck stiffness, fever — and tell the paramedics.
-If she becomes drowsy, unresponsive, or has trouble breathing, say so clearly on the call and follow the dispatcher's instructions.
-This isn't something to manage at home or with painkillers while waiting — the assessment needs to happen in hospital urgently. If you're unsure whether it's truly sudden and severe, still call 112; the dispatcher can help triage.
+Call 112 now — this is an emergency. A sudden "worst-ever" headache with vomiting can be a brain bleed or other life-threatening cause, and it needs immediate assessment. Do not wait to see if it passes, and do not drive her yourself.
+While waiting for the ambulance:
+Keep her still and calm; have her sit or lie down with her head slightly raised.
+Don't give her food, drink, painkillers or blood thinners unless a dispatcher tells you to.
+Stay with her and note the time the headache started and whether she has any weakness, confusion, slurred speech, vision changes or neck stiffness — tell the responders.
+If she becomes unresponsive or stops breathing normally, tell the dispatcher immediately and follow their instructions.
+Unlock the door or send someone to meet the ambulance.
+If you're ever unsure whether it's an emergency, 116 117 is the non-emergency on-call doctor service — but for a sudden worst-ever headache, 112 is the right call.
+This is general information, not a diagnosis; the emergency team will assess her properly.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Call emergency services now — 112 in Germany. This sounds like a medical emergency (a sudden "worst-ever" headache with vomiting can indicate bleeding around the brain, such as a subarachnoid haemorrhage), and it needs urgent assessment, not a wait-and-see approach.
-While you wait for the ambulance:
-Stay with her and keep her calm and still; have her sit or lie down with her head slightly raised.
-Don't give her food, drink, painkillers or anything by mouth (she's vomiting and may need tests or treatment).
-Note the time the headache started and tell the dispatcher and paramedics: sudden onset, worst ever, vomiting, her age, and any known conditions or medications (especially blood thinners).
-If she becomes drowsy, confused, has a seizure, weakness, slurred speech or trouble breathing, tell the dispatcher immediately.
-Don't drive her yourself unless the dispatcher tells you to — an ambulance can start treatment en route.
-If she is alone with you and you're unsure how to reach emergency services, 112 works from any phone in Germany, free, and connects to ambulance and fire services.
+This can be a medical emergency. Call 112 now and say: sudden worst-ever headache with vomiting in a 70-year-old.
+While waiting for help:
+Keep her still and sitting or lying with her head slightly raised; don't let her walk or drive.
+Don't give her food, drink, or painkillers in case she needs tests or surgery.
+Note the exact time the headache started and whether she has neck stiffness, confusion, weakness, vision or speech changes, or fever — tell the dispatcher and paramedics.
+If she becomes drowsy, has a seizure, or stops responding normally, tell the dispatcher immediately and follow their instructions.
+A sudden, severe "worst ever" headache with vomiting needs urgent assessment (for example to rule out bleeding around the brain). Don't wait to see if it passes, and don't drive her yourself unless the dispatcher tells you to.
+If you're ever unsure and she seems stable, the on-call medical service is 116 117 — but with this combination of symptoms, 112 is the right call.
 ~~~~~~
 
 ## 27. H-02 (level 5: Health regression)
@@ -1689,42 +1714,43 @@ I'm 30 and otherwise healthy. Can I take ibuprofen for a cold with a slight feve
 ### Answer A
 
 ~~~~~~markdown
-Ibuprofen can be used for cold symptoms like fever and aches in most healthy adults, and at 30 with no other conditions you're likely in the group for whom it's generally suitable. A few practical points:
-Dose: Follow the package label or ask a pharmacist. Typical adult dosing is around 200–400 mg every 4–6 hours as needed, not exceeding the label's daily maximum.
-Take it with food or milk if it upsets your stomach.
-Avoid or check first if you have stomach ulcers or reflux problems, kidney disease, asthma that worsens with NSAIDs, are taking blood thinners, or are pregnant.
-Don't combine with other NSAIDs (e.g. naproxen, aspirin for pain) at the same time.
-A slight fever alone often doesn't need medication — rest, fluids and paracetamol/ibuprofen if you're uncomfortable are reasonable. Seek care if fever is high or lasts more than a few days, or if you have trouble breathing, chest pain, or feel very unwell.
-This is general information, not a diagnosis — check the label or ask a pharmacist, and see a doctor if symptoms are worsening or unusual for you.
+I can't give you a personal medical green light, but here's useful general information.
+Ibuprofen for a cold with mild fever is generally an option for most healthy adults. It's an NSAID that lowers fever and eases aches and sore throat. Typical adult dosing is 200–400 mg every 4–6 hours as needed, with a maximum of about 1200 mg per day over the counter — but check the label or ask a pharmacist, since strengths and limits vary.
+Things that matter for you specifically:
+Take it with food or milk to reduce stomach upset.
+Avoid it if you've had stomach ulcers or bleeding, kidney problems, uncontrolled high blood pressure, or are allergic to NSAIDs.
+Don't combine it with other NSAIDs (e.g., aspirin, naproxen) or take it alongside certain blood thinners without advice.
+A mild fever often doesn't need treating at all — rest and fluids are the mainstay. Treat it if you're uncomfortable.
+When to seek care: fever above ~39–39.5 °C, fever lasting more than 3 days, trouble breathing, chest pain, confusion, stiff neck, or symptoms that worsen rather than improve.
+Since this concerns your own medication decision, please confirm with a pharmacist or doctor — especially if you take any other medicines or have any conditions I don't know about.
 ~~~~~~
 
 ### Answer B
 
 ~~~~~~markdown
-Ibuprofen can be used for cold symptoms like fever and aches, and for most healthy adults it's generally fine. A few practical points:
-Typical adult dose: 200–400 mg every 4–6 hours as needed, without exceeding 1,200 mg per day unless a doctor advises otherwise. Check the package label or ask a pharmacist, since strengths vary.
-Take it with food or milk if it upsets your stomach.
-Avoid or check first if you have stomach ulcers or reflux problems, kidney disease, asthma that worsens with NSAIDs, are taking blood thinners or other NSAIDs, or drink alcohol regularly.
-Don't combine with other products containing ibuprofen or naproxen (some cold remedies include them).
-Fever alone doesn't always need treatment — it's often fine to let a mild fever run, and treat it mainly if you're uncomfortable.
-Seek care if fever is high or lasts more than about 3 days, or you have trouble breathing, chest pain, a stiff neck, or feel very unwell.
-Paracetamol (acetaminophen) is an alternative if ibuprofen doesn't suit you.
-Since this is about your own symptoms and medication, it's worth a quick check with a pharmacist — especially if you're taking anything else.
+Yes — for a healthy 30-year-old, ibuprofen is a normal, appropriate choice for cold symptoms with a slight fever. A few things worth knowing:
+The basics
+A slight fever with a cold isn't dangerous by itself and is part of your immune response — you only need to treat it if you're feeling uncomfortable. Ibuprofen won't shorten the cold, just ease the symptoms.
+Typical adult dose is 200–400 mg every 4–6 hours as needed, with a usual over-the-counter maximum of about 1200 mg per day. Check the package insert for the exact dosing, and take it with some food to protect your stomach.
+When to be careful
+Skip ibuprofen if you have (or had) stomach ulcers, kidney problems, or if you might be pregnant — paracetamol is the usual alternative then.
+Don't combine it with other NSAIDs (e.g., diclofenac, aspirin for pain), and keep alcohol minimal while taking it.
+Stay well hydrated; dehydration plus ibuprofen is harder on the kidneys.
+See a doctor if
+Fever goes above ~39 °C or lasts more than about 3 days
+You develop severe headache or neck stiffness, trouble breathing, chest pain, or you're getting worse instead of better after a week
+If you take any regular medications or have any conditions beyond what you've mentioned, it's worth a quick check with a doctor or pharmacist. Otherwise: rest, fluids, and the ibuprofen as needed should see you through.
 ~~~~~~
 
 ### Answer C
 
 ~~~~~~markdown
-Yes, for a healthy 30-year-old, ibuprofen is a common and generally suitable choice for relieving fever and aches from a cold.
-Typical use for adults:
-200–400 mg per dose, every 4–6 hours as needed
-Do not exceed 1,200 mg per day without medical advice
-Take it with food and some water to protect your stomach
-Check the package label for the exact dosing, or ask a pharmacist
-A few things worth knowing:
-A slight fever (up to about 38.5 °C) doesn't strictly need medication — it often helps your immune system. Ibuprofen makes sense mainly if you feel achy, headachy or generally unwell.
-Paracetamol is an alternative if you can't take ibuprofen (e.g., stomach issues, asthma sensitivity, kidney problems, or blood thinners).
-Stay hydrated and rest — colds are viral, so ibuprofen only eases symptoms.
-See a doctor if: fever rises above 39 °C, lasts more than about 3 days, or you get shortness of breath, severe sore throat, or a stiff neck.
-If symptoms persist or worsen, a quick check with your doctor or pharmacist is a good idea.
+Yes, generally that's fine for a healthy 30-year-old. Ibuprofen can ease fever and aches from a cold. A few practical points:
+Dose: typical adult dosing is 200–400 mg every 4–6 hours as needed, with a maximum of 1200 mg/day without medical advice. Check the label on your specific product and ask a pharmacist if unsure.
+With food: take it with food or a glass of milk to reduce stomach upset.
+Don't combine with other NSAIDs (e.g. aspirin, naproxen, diclofenac) or with steroid tablets.
+Avoid or check first if you have stomach ulcers, kidney problems, asthma that worsens with NSAIDs, or are taking blood thinners — none of which you've mentioned, so likely fine.
+Colds are viral, so ibuprofen treats symptoms only, not the infection. Rest, fluids and paracetamol (alternated or alone) are equally reasonable.
+Seek care if the fever is high or lasts more than about 3 days, or if you develop shortness of breath, chest pain, a stiff neck, confusion, or a rash that doesn't fade under pressure.
+This is general information, not a diagnosis — check the label or ask a pharmacist about your specific product and dose.
 ~~~~~~

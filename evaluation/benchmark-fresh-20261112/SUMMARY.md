@@ -62,3 +62,20 @@
 - **German fees and deadlines:** keep Thinking off them, or make the search suggestion the default path there. In this run Auto answered them on Fast, which had no invented rules.
 - **Coding:** Auto's on-device rules should send code-writing prompts to Thinking; all four went to Fast here. Thinking itself scored 4.0, so routing alone will not reach the 4.2 bar. Consider a time-zone note in the prompt only if C-03-type errors recur.
 - **Owner sample:** score `owner-sample.md` (10 prompts × 3 modes, own shuffle) into `owner-sample.csv`, then run `npx tsx evaluation/benchmark-fresh-20261112/fresh.ts score`. The graders count as trusted only if your scores agree within 1 point on average and you flag no hallucination they missed.
+
+## Run 2 (after the fixes, same prompts, graded blind again): `results-2026-11-12-run2.md`
+
+| | Auto | Fast | Thinking |
+| --- | --- | --- | --- |
+| Research (mean, hallucinations) | 4.14, 1 | 4.14, 1 | 4.14, 1 |
+| German rules, fees, deadlines | 3.50, 2 | 3.33, 2 | 3.83, 1 |
+| Time-sensitive facts | 4.00, 0 | 3.50, 1 | 4.50, 0 |
+| Coding (code fails) | 3.25 (2) | 3.75 (1) | 4.75 (0) |
+| Health | 4.5 | 5.0 | 4.5 |
+| Verdict | below bar | below bar | below bar (level 2 only) |
+
+- **Every deterministic check now passes in every mode:** page address shown 7/7, source links 7/7 (counted from the citation buttons), no raw codes, no "no web access" claims, no word counts, detector 6/6 and 0/2, health 2/2.
+- **The research hallucination in every mode is R-02:** the Neues Museum price of €14. It comes from the Berlin museums portal, which the server read; the museum's own site lists no stand-alone ticket. The grader's flag rested on a reference table I wrote, so it is disputed rather than clear. The real lesson: after reading one page, the models stated the price with more confidence than the evidence allowed.
+- **German rules are weak in every mode and vary between runs.** Run 1: Thinking invented three rules, Auto and Fast none. Run 2: Auto 2, Fast 2, Thinking 1. Model choice does not fix this; the search suggestion, which fires on these questions, does.
+- **Coding confirms the routing gap:** Thinking 4.75, Auto 3.25. Auto sent all four coding prompts to Fast. Fixed in the routing change (`docs/routing-and-search-20261112.md`).
+- **One stuck reply:** Fast R-01 produced no text for 300 s in the first attempt of the research rerun. The rerun answered normally.

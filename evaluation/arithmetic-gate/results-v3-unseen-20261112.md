@@ -1,6 +1,6 @@
 # Arithmetic v3 unseen set, rerun on the mode models and Privatemode (12 November 2026)
 
-**Status:** Privatemode complete (two systems, 90 conversations each). Tinfoil Fast complete (90). Tinfoil Thinking incomplete: 40 of 90 conversations measured, then blocked by Tinfoil's billing-period usage limit (owner action needed). AI cross-check: pending owner pastes.
+**Status:** complete on all four systems (90 conversations each). Tinfoil Thinking was finished after the owner raised the account limit (12 November, about 19:00 UTC; resume folders `*-resume-c`): **78 of 90 correct (86.7 %), 11 flagged, 0 silently wrong, 1 no answer**. Where this page still describes Thinking as 40 of 90, the regenerated table of `report-v3-unseen-20261112.ts` and `verdicts/unseen-v3-20261112/tinfoil-thinking.md` are current. Tinfoil spend by usage: Fast USD 0.45, Thinking USD 3.59 (the harness log books USD 8.66 because refused requests count at the worst case). AI cross-check: pending owner pastes.
 
 Authorised by the owner on 12 November 2026, who knows the set was used before (gate v3, 24 October). This rerun compares systems; it is not a new gate. The set is no longer unseen for this pipeline, and no bar from THRESHOLD-v3.md is claimed. Synthetic data only.
 
@@ -70,14 +70,14 @@ Brackets give the percentage and the Wilson 95 % bounds.
 | Group | n | Correct (verified, no flag) | Flagged | Silently wrong | No answer |
 | --- | --- | --- | --- | --- | --- |
 | Tinfoil Fast: deepseek-v4-1-flash, thinking off | 90 | 43 (47.8 %; 37.8-58.0) | 40 (44.4 %; 34.6-54.7) (23 exact, 17 wrong) | 0 (0.0 %; 0.0-4.1) | 7 (7.8 %; 3.8-15.2) |
-| Tinfoil Thinking: glm-5-3, effort max | 40 | 33 (82.5 %; 68.1-91.3) | 7 (17.5 %; 8.7-31.9) (5 exact, 2 wrong) | 0 (0.0 %; 0.0-8.8) | 0 (0.0 %; 0.0-8.8) |
+| Tinfoil Thinking: glm-5-3, effort max | 90 | 78 (86.7 %; 78.1-92.2) | 11 (12.2 %; 7.0-20.6) (7 exact, 4 wrong) | 0 (0.0 %; 0.0-4.1) | 1 (1.1 %; 0.2-6.0) |
 | Privatemode glm-5.3-flash, effort low | 90 | 43 (47.8 %; 37.8-58.0) | 25 (27.8 %; 19.6-37.8) (13 exact, 12 wrong) | 22 (24.4 %; 16.7-34.2) | 0 (0.0 %; 0.0-4.1) |
 | Privatemode glm-5.3, effort max | 90 | 81 (90.0 %; 82.1-94.6) | 6 (6.7 %; 3.1-13.8) (2 exact, 4 wrong) | 3 (3.3 %; 1.1-9.3) | 0 (0.0 %; 0.0-4.1) |
 
 | System | Measured (of 90) | Conversation records refused by a Tinfoil limit (set aside; initial run plus resumes) |
 | --- | --- | --- |
 | Tinfoil Fast: deepseek-v4-1-flash, thinking off | 90 | 62 |
-| Tinfoil Thinking: glm-5-3, effort max | 40 | 127 |
+| Tinfoil Thinking: glm-5-3, effort max | 90 | 127 |
 | Privatemode glm-5.3-flash, effort low | 90 | 0 |
 | Privatemode glm-5.3, effort max | 90 | 0 |
 

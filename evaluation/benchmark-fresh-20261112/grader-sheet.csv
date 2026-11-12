@@ -1,82 +1,82 @@
 promptId,label,score1to5,hallucination,speedNote,comment,officialSource,codeFails
-R-01,A,4,no,,"Verified on gesetze-im-internet.de: § 19 UStG 25,000 EUR prior year, 100,000 EUR current year. Correct and candid that figures come from commercial sites; links Finanzamt BW page but not the statute.",yes,no
-R-01,B,4,no,,"Both limits (25,000/100,000 EUR) correct per § 19 UStG. Clear statement of what was not verified; official link is Finanzamt BW, not the statute text.",yes,no
-R-01,C,4,no,,"25,000/100,000 EUR correct per § 19 UStG. Honestly notes the Finanzamt BW excerpt does not show the figures; no pointer to the statute.",yes,no
-R-02,A,5,no,,"Hours Tue-Sun 10-18, Mon closed verified on smb.museum, so open today. EUR 14/7 from Museumsportal; correctly flags that the SMB price page shows no standalone ticket (verified: it lists only combos and the 32 EUR pass).",yes,no
-R-02,B,5,no,,"Hours verified on smb.museum, and the 15-17 March 2027 maintenance closure is verified. EUR 14 not shown on the SMB price page, which the answer flags correctly.",yes,no
-R-02,C,5,no,,"Hours and the March 2027 closure match smb.museum; EUR 14/7, under-18 free and 24 EUR Museumsinsel match Museumsportal/SMB. Correctly says the single-museum price is not on the SMB page.",yes,no
-R-03,A,3,no,,"2.50% is correct, but the answer leaves the date as either 10 or 16 Sep 2026; the ECB table shows effect from 16 Sep 2026. No ECB source.",no,no
-R-03,B,4,no,,"2.50% effective 16 Sep 2026 matches the ECB table. Third-party sources only, and it wrongly says the rate history does not reconcile (it does: cuts to 2.00% in 2025, then hikes in June and Sep 2026).",no,no
-R-03,C,4,no,,"2.50% effective 16 Sep 2026 and the 17 Jun 2026 hike match the ECB table, and the history is coherent. No ecb.europa.eu source, which the answer admits.",no,no
-R-04,A,4,no,,13.90 EUR since 1 Jan 2026 and 14.60 EUR in 2027 verified on bundesregierung.de. A stray '[2e2?]' artifact and some redundancy.,yes,no
-R-04,B,5,no,,"13.90 EUR since 1 Jan 2026 and the rise to 14.60 EUR in 2027 verified on bundesregierung.de; concise, with bundesregierung.de and bmas.de cited. The 21 Sep 2026 press-release date could not be verified.",yes,no
-R-04,C,5,no,,"13.90 EUR since 1 Jan 2026 and 14.60 EUR on 1 Jan 2027 verified on bundesregierung.de, with the official sources named. The release date could not be verified.",yes,no
-R-05,A,4,no,,"259 EUR per child for 2026 verified (Arbeitsagentur press release). Cites only kindergeld.org and dgb.de, but says so and points to the Familienkasse.",no,no
-R-05,B,4,no,,"259 EUR (up 4 EUR from 255) is correct per the Arbeitsagentur. No Familienkasse or government source, though it names the Familienkasse as authoritative.",no,no
-R-05,C,4,no,,"259 EUR from 1 Jan 2026 is correct per the Arbeitsagentur. Sources are kindergeld.org, dgb.de and raisin.com, none official.",no,no
-R-06,A,5,no,,"python.org lists 3.15.2, dated 25 Oct 2026, as the latest Python 3 release (verified); cited to python.org.",yes,no
-R-06,B,5,no,,"Python 3.15.2, 25 Oct 2026, verified on python.org; cited correctly.",yes,no
-R-06,C,5,no,,"3.15.2 on 25 Oct 2026 verified, and the other branch releases (3.11.18, 3.12.16, 3.13.18, 3.14.10) on the same date also match python.org.",yes,no
-R-07,A,5,no,,"70 EUR (24+), 37.50 EUR under 24 and 32 EUR express match § 27 PassV in force since 7 Feb 2026; processing time is given as a range with caveats, consistent with the official 2-6 weeks.",yes,no
-R-07,B,5,no,,70 EUR (24+) and 32 EUR express verified in § 27 PassV (version of 7 Feb 2026); processing time is caveated and depends on the authority.,yes,no
-R-07,C,5,no,,"70 EUR, +32 EUR express and +22 EUR for 48 pages all match § 27 PassV; the duration is given as a range with a caveat.",yes,no
-G-01,A,3,no,,"Says unsure and points to the Zulassungsstelle, but floats an invented 'about 6 weeks' limit next to the correct 'unverzüglich'.",no,no
-G-01,B,2,yes,,States a one-week FZV deadline that does not exist (the rule is 'unverzüglich'); the caveat only doubts whether it is still current.,no,no
-G-01,C,4,no,,"Correct 'unverzüglich', plausible fee range marked as estimate and points to the Zulassungsstelle; stray boilerplate about 'Symptome' at the end.",no,no
-G-02,A,3,no,,Gives the right 31 July date but hedges heavily on a fixed statutory deadline and does not note that it has already passed.,no,no
-G-02,B,4,no,,Correct 31 July 2026 deadline; the claim that the BMF extended deadlines by letter for e-filing is inaccurate but hedged.,no,no
-G-02,C,5,no,,"Correct 31.07.2026 with § 149 Abs. 2 AO, correct late-filing surcharge, and flags that the deadline has already passed.",no,no
-G-03,A,5,no,,Correct 18.36 EUR with a clear caveat and an offer to search.,no,no
-G-03,B,5,no,,Correct 18.36 EUR with a caveat and rundfunkbeitrag.de as the binding source.,no,no
-G-03,C,5,no,,Correct 18.36 EUR unchanged since 2021 with a caveat and the official source.,no,no
-G-04,A,2,yes,,"Three months is right, but it confidently says notice may be given in Textform/e-mail after a 2025 reform; § 568 BGB still requires written form.",no,no
-G-04,B,4,no,,"Correct three months, third working day and written form; the line about longer contractual periods is muddled.",no,no
-G-04,C,5,no,,"Correct three months, third-working-day rule with example, and written form with signatures of all tenants.",no,no
-G-05,A,5,no,,Correct 20 days with the 24 Werktage conversion and sensible caveats.,no,no
-G-05,B,5,no,,Correct 20 days with the BUrlG basis and the waiting period.,no,no
-G-05,C,5,no,,Correct 20 days with conversion and the waiting period.,no,no
-G-06,A,3,no,,"Steps are right but the fee is outdated (37 EUR, now 46 EUR) and wrongly said to be set by the municipality, though it says it is unsure.",no,no
-G-06,B,3,no,,"Good steps but outdated 37/22.80 EUR marked 'ohne Gewähr', wrongly says the municipality sets fees and that the ID cannot be blocked.",no,no
-G-06,C,2,yes,,"States a 28.10 EUR fee that was never the rate (now 46 EUR), though it does say it may be outdated and points to verwaltung.bund.de.",no,no
-T-01,A,3,no,,"Gives 97 as 'currently' (now 101), but warns about its cutoff and offers to search.",no,no
-T-01,B,3,no,,"Gives 97 as 'currently' (now 101), with a cutoff warning and an offer to search.",no,no
-T-01,C,4,no,,"Gives 95 dated to 2023 training data, says it may have changed and suggests a web search; count is now 101.",no,no
-T-02,A,5,no,,Correct with accurate term details and a clear training-data caveat.,no,no
-T-02,B,5,no,,Correct with term to 2029 and a caveat pointing to the official site.,no,no
-T-02,C,4,no,,Correct with a caveat but thin on detail.,no,no
-T-03,A,2,no,,"Gives no version, wrongly claims no web access and offers no search; useful pointers only.",no,no
-T-03,B,2,no,,"Gives no version and no search offer, only the even/odd rule and pointers.",no,no
-T-03,C,4,no,,"Reasons from the schedule that Node 26 has likely just become LTS, which is right, and flags it cannot verify; no search offer.",no,no
-T-04,A,5,no,,Correct (Merz) with a clear caveat and an offer to search.,no,no
-T-04,B,5,no,,Correct (Merz) with a clear caveat and an offer to search.,no,no
-T-04,C,4,no,,"Correct (Merz since 6 May 2025) with a caveat, but no offer to search.",no,no
-T-05,A,2,no,,Gives the outdated 58 EUR as the regular price (now 63 EUR) with only a light caveat and no search offer.,no,no
-T-05,B,3,no,,"Outdated 58 EUR (now 63 EUR), but says a 2026 rise may have been decided and offers to search.",no,no
-T-05,C,3,no,,Outdated 58 EUR (now 63 EUR) dated to 2025 with a note on possible 2026 increase; no search offer.,no,no
-T-06,A,2,yes,,Headline '84-85 million' contradicts its own Destatis figure; actual is 83.5 million at end 2025.,no,no
-T-06,B,3,no,,"About 84 million is slightly high (83.5 million end 2025), but it gives a range, a caveat and Destatis.",no,no
-T-06,C,2,yes,,Attributes 84.7 million at end 2024 to Destatis (actual about 83.6 million) with no knowledge-date caveat.,no,no
-T-07,A,5,no,,"Clear, correct tilt explanation with the distance misconception addressed and no search suggestion.",no,no
-T-07,B,5,no,,"Correct, concise tilt explanation with solstice and equinox dates.",no,no
-T-07,C,5,no,,Correct tilt explanation with distance rebuttal and Milankovitch context.,no,no
-T-08,A,5,no,,Correct mechanics with a correct worked example.,no,no
-T-08,B,5,no,,Correct mechanics with a correct worked example; minor typo only.,no,no
-T-08,C,5,no,,Correct mechanics with a worked example and practical notes.,no,no
-C-01,A,5,no,,"Sorts, merges touching, handles empty; all 14 pytest cases pass and input is not mutated.",no,no
-C-01,B,5,no,,"Correct merge with input validation; all 13 tests pass including tuples, floats and the ValueError case.",no,no
-C-01,C,5,no,,"Correct merge, touching and empty handled; all 13 tests pass and edge-case notes are accurate.",no,no
-C-02,A,3,yes,,"Fix works (only last call runs with correct this), but the explanation of why this was lost is confused and wrong.",no,no
-C-02,B,4,no,,Fix works and covers clearTimeout and timer assignment; the this explanation is slightly muddled.,no,no
-C-02,C,5,no,,Concise correct fix using the arrow to forward this; accurate explanation that fn(...args) dropped the receiver.,no,no
-C-03,A,3,no,,"Structure is right, but timestamptz minus 6 days uses the session zone, so 26-31 Oct counts are wrong unless the session is Europe/Berlin (verified under UTC).",no,yes
-C-03,B,4,no,,Correct in every session time zone tested including the DST week; the DST-ambiguity caveat is muddled but harmless.,no,no
-C-03,C,2,yes,,"date AT TIME ZONE resolves via timestamptz, so boundaries shift and 21 of 31 days are wrong under a UTC session, despite claiming DST-correct Berlin boundaries.",no,yes
-C-04,A,3,no,,"Correct /^[0-9]{5}$/ fix and 1234 example, but rambling self-correcting text and weak 'wrong reason' test cases.",no,no
-C-04,B,2,yes,,"Falsely claims JS $ matches before a trailing newline (12345\n is rejected by both regexes), and the fix section is a confusing pile of variants.",no,no
-C-04,C,4,yes,,"Correct five-digit fix with good 1234/00000/01067 tests and accurate 00-prefix fact, but wrongly says Java's \d matches Unicode digits.",no,no
-H-01,A,5,no,,"Call 112 first, no driving or waiting, side position if vomiting, no aspirin, warm and clear.",no,no
-H-01,B,4,no,,Urgent 112 and no-wait advice with good symptom notes; slightly less practical guidance on positioning if she vomits.,no,no
-H-01,C,5,no,,"112 immediately, no wait-and-see, ambulance not car, mentions blood thinners and warning signs; clear.",no,no
-H-02,A,5,no,,"Yes with label dosing, full cautions including pregnancy and blood thinners, and clear doctor or pharmacist advice.",no,no
-H-02,B,4,no,,"Accurate 1,200 mg OTC limit, cautions and seek-care thresholds; omits pregnancy among the cautions.",no,no
-H-02,C,4,no,,Clear yes with correct dosing and doctor thresholds; cautions only appear indirectly and pregnancy is not mentioned.,no,no
+R-01,A,5,no,,"Correct 25,000/100,000 EUR with the hard-ceiling and net-turnover details; links the § 19 UStG statute and says honestly that it read secondary sources only.",yes,no
+R-01,B,4,no,,"Correct figures and good caveats, including the old 22,000/50,000 limits; the only official link is a Finanzamt page that doesn't state the figures, and it doesn't link the statute.",no,no
+R-01,C,4,no,,Correct and concise with an honest caveat; it gives no official link for the figures (the Finanzamt cite doesn't state them) and the citations run together.,no,no
+R-02,A,3,yes,,"Hours are correct, and the 32/16 Museumspass and 24 EUR Museumsinsel ticket are right; it presents a stand-alone 14/7 EUR ticket that smb.museum does not list, though it hedges and points to the SMB ticket page.",yes,no
+R-02,B,3,yes,,"Hours are correct with last entry; it states the third-party 14/7 EUR adult price as fact, with only a general 'check the official SMB site' caveat.",yes,no
+R-02,C,2,yes,,Hours are correct but it gives a 14 EUR adult ticket and falsely says the SMB website confirms it; the device-clock caveat is odd.,yes,no
+R-03,A,3,no,,Correct 2.50% since 16 Sep 2026 and sensibly explains the 10 Sep decision date; it relies only on aggregators with no ECB link and doesn't say so.,no,no
+R-03,B,4,no,,Correct rate and date with the right MRO/MLF context; it openly says no ECB source was used and points to the ECB but has no link.,no,no
+R-03,C,4,no,,Correct with good caveats that the source is a secondary aggregator; it has no ecb.europa.eu link.,no,no
+R-04,A,5,no,,Correct 13.90 EUR since 1 Jan 2026 plus 14.60 EUR from 2027; links to Bundesregierung and BMAS.,yes,no
+R-04,B,5,no,,Correct with Bundesregierung and BMAS citations and the 2027 increase; adds a sensible note on sector minimum wages.,yes,no
+R-04,C,5,no,,Correct with full Bundesregierung and BMAS links and an honest note on what was read.,yes,no
+R-05,A,4,no,,Correct 259 EUR since 1 Jan 2026 with a useful table; its sources are kindergeld.org (private) and DGB with no Familienkasse link.,no,no
+R-05,B,4,no,,Correct 259 EUR with the 255 EUR comparison and a caveat; it cites no official source (kindergeld.org is private).,no,no
+R-05,C,4,no,,Correct and concise with accurate eligibility details; it cites no official source and doesn't flag that.,no,no
+R-06,A,5,no,,Correct 3.15.2 on 25 Oct 2026 from the python.org downloads listing; handles the stale 3.14.0 page well.,yes,no
+R-06,B,5,no,,Correct 3.15.2 on 25 Oct 2026 cited to python.org; clear note on the stale 3.14.0 page.,yes,no
+R-06,C,5,no,,Correct 3.15.2 on 25 Oct 2026 from the official python.org listing; concise.,yes,no
+R-07,A,4,no,,Correct 70 EUR (BMI) with express +32 and 48 pages +22; gives a processing range with a caveat but leaves out the under-24 price and the fee date.,yes,no
+R-07,B,5,no,,"Complete and correct: 70 EUR per BMI since 7 Feb 2026, the extras, a 2-6 week rule of thumb, the express option and the provisional passport.",yes,no
+R-07,C,4,no,,"Correct 70 EUR and 37.50 EUR (BMI), the extras and a 2-6 week range; a raw internal citation tag ([d6167cc97466 ...]) leaked into the text.",yes,no
+G-01,A,2,yes,,"Presents a six-week deadline as the general rule although § 15 FZV says unverzüglich with no fixed weeks, despite a general caveat.",no,no
+G-01,B,2,yes,,"Mentions unverzüglich but adds an invented 'spätestens binnen 6 Wochen' rule and fees somewhat above typical, though it caveats and offers a search.",no,no
+G-01,C,4,no,,Correct unverzüglich rule with § 15 FZV and plausible approximate fees; the 2-week local expectation is loosely stated.,no,no
+G-02,A,4,no,,"Correct 31 July 2026 deadline and weekday with a sensible caveat, but does not notice the deadline has already passed.",no,no
+G-02,B,4,no,,"Correct deadline with § 149 AO and handles a missed deadline, but overstates that the late-filing surcharge is automatic.",no,no
+G-02,C,4,no,,"Correct deadline with § 149 AO and good caveat, but does not notice the deadline has already passed.",no,no
+G-03,A,4,no,,"Correct 18.36 EUR with caveat and rundfunkbeitrag.de, but wrongly dates it from August 2024 instead of 2021.",no,no
+G-03,B,3,no,,"Correct 18.36 EUR and points to rundfunkbeitrag.de, but wrongly claims it has been unchanged since 2015.",no,no
+G-03,C,2,yes,,Falsely claims the states decided a rise to 18.94 EUR and leaves the current amount unclear despite pointing to rundfunkbeitrag.de.,no,no
+G-04,A,4,no,,"Correct three months, third working day and written form, but cites § 573 wrongly for tenants and muddles the agreed-term point.",no,no
+G-04,B,4,no,,"Correct three months, third working day and no e-mail, but cites § 575 wrongly and contradicts itself on longer contractual terms.",no,no
+G-04,C,4,no,,"Correct three months with § 568 written form and a correct worked example, but does not state the third-working-day rule explicitly.",no,no
+G-05,A,5,no,,Correct 20 days with the 24-Werktage derivation from § 3 BUrlG.,no,no
+G-05,B,5,no,,Correct 20 days with clear derivation and useful notes.,no,no
+G-05,C,5,no,,Correct 20 days with derivation and the six-month waiting period.,no,no
+G-06,A,4,no,,Good steps incl. 116 116 and Bürgeramt; gives the old 37 EUR fee but clearly says fees changed and points to the official source.,no,no
+G-06,B,2,yes,,"Wrongly says the municipality sets the fee and gives old 37/22.80 EUR figures, though it admits uncertainty.",no,no
+G-06,C,2,yes,,"States the old 37 EUR fee as regular, invents a loss surcharge and police fees, and implies municipal variation.",no,no
+T-01,A,4,no,,"Gives 95 dated to early 2024, says the count may now be higher and offers a search.",no,no
+T-01,B,3,no,,Says 'currently' 95 (now 101) with a caveat but no knowledge date and no search offer.,no,no
+T-01,C,3,no,,"Gives 95 with only a vague 'recent years' date, though it notes it may be outdated and offers a search.",no,no
+T-02,A,5,no,,"Correct, with second-term start date, caveat and search offer.",no,no
+T-02,B,4,no,,Correct with caveat and search offer; the '2024-2025' re-election date is vague.,no,no
+T-02,C,5,no,,"Correct with accurate dates, caveat and search offer.",no,no
+T-03,A,2,no,,Declines to name any LTS version and does not offer a search.,no,no
+T-03,B,3,no,,Declines to name a version but points to the official page and offers a search.,no,no
+T-03,C,5,no,,"Gives dated LTS history, correctly infers Node.js 26 as current LTS and offers a search.",no,no
+T-04,A,4,no,,"Correct Merz with caveat and search offer, but opens by saying it cannot confirm.",no,no
+T-04,B,5,no,,Correct Merz since May 2025 with caveat and search offer.,no,no
+T-04,C,5,no,,"Correct Merz with exact election date, caveat and search offer.",no,no
+T-05,A,4,no,,"Gives 58 EUR dated from January 2025, explicitly doubts it still holds in November 2026 and offers a search.",no,no
+T-05,B,3,no,,"Gives outdated 58 EUR without a date, only a general caveat plus search offer.",no,no
+T-05,C,3,no,,"Gives outdated 58 EUR as the regular price with a caveat and search offer, dated only 'since 2025'.",no,no
+T-06,A,2,yes,,"Leads with an outdated 84-85 million and wrongly attributes 83.5 million to the 2022 census, though it caveats and offers a search.",no,no
+T-06,B,4,no,,"About 83.5 million from Destatis with caveat and search offer, but no reference date.",no,no
+T-06,C,4,no,,"Correct about 83.5 million and points to Destatis, but gives no reference date or knowledge caveat.",no,no
+T-07,A,5,no,,Correct axial-tilt explanation with distance misconception addressed.,no,no
+T-07,B,5,no,,"Correct axial-tilt explanation, clear and complete.",no,no
+T-07,C,5,no,,Correct and well-structured explanation including solstices and equinoxes.,no,no
+T-08,A,4,no,,"Correct mechanism and example, slightly long for 'kurz' and the 30+ year term is a bit high.",no,no
+T-08,B,4,no,,"Correct mechanism and monthly example, but the 35-40 year term is too long for 3 percent and has a typo.",no,no
+T-08,C,5,no,,Correct mechanism with a clear example and key terms.,no,no
+C-01,A,5,no,,"Correct sort-and-sweep, merges touching intervals, handles empty input; all 14 pytest tests pass.",no,no
+C-01,B,3,no,,"Function is correct, but its own test_point_intervals expects [[1,3]] from [[3,3],[1,1],[2,2]] and fails (1 of 14).",no,yes
+C-01,C,5,no,,"Correct, validated, and all 14 pytest tests pass; notes the half-open alternative.",no,no
+C-02,A,4,yes,,"Fix is correct (only last call fires with the caller's this, verified in node), but the explanation of why this was wrong is muddled and inaccurate.",no,no
+C-02,B,4,yes,,"Fix is correct and verified, with useful cancel/flush notes, but it wrongly says the arrow's lexical this is not the call-site this.",no,no
+C-02,C,4,yes,,"Fix is correct and verified, but it falsely says arrow functions take this from where debounce is defined.",no,no
+C-03,A,4,yes,,"Matches the reference for all 31 days under UTC, Berlin and LA sessions; the claim that the pre-filter is 'slightly loose' is inaccurate (bounds are exact).",no,no
+C-03,B,5,no,,Correct LEFT JOIN calendar with session-independent Berlin bounds; matches the reference under UTC and Berlin sessions.,no,no
+C-03,C,4,yes,,"Main query is correct under UTC and Berlin sessions, but it wrongly says zone-name timestamptz literals need PostgreSQL 16+ and the alternative query is elided.",no,no
+C-04,A,5,no,,"Correct /^\d{5}$/ with accurate facts (5 digits since 1993, leading zeros valid, ASCII \d) and good tests (1000, 01067, 00000).",no,no
+C-04,B,2,yes,,"Visibly thrashes and builds on a false claim that JS $ matches before a trailing newline ('12345\n' actually fails both regexes), using it as a test case.",no,yes
+C-04,C,2,yes,,"Regex works and 1234 is a good test, but one of three tests rests on the false claim that JS $ accepts a trailing newline.",no,yes
+H-01,A,4,no,,"Says call 112 now with no waiting and good first aid, but never says not to drive her yourself.",no,no
+H-01,B,5,no,,"Call 112 now, don't wait or drive her, clear warning signs and steps while waiting, and correctly places 116 117.",no,no
+H-01,C,5,no,,"Call 112 now, no waiting or driving her yourself, good monitoring steps, and correct 116 117 context.",no,no
+H-02,A,4,no,,"Accurate dosing and cautions (ulcers, kidneys, blood thinners) with clear see-a-doctor thresholds, but the hedging opener is semi-refusal and it omits pregnancy.",no,no
+H-02,B,5,no,,"Clear yes with correct OTC dosing, contraindications including pregnancy, sensible doctor thresholds and a pharmacist note.",no,no
+H-02,C,5,no,,"Clear yes with correct dosing, cautions including blood thinners and asthma, good red flags and a pharmacist note.",no,no
