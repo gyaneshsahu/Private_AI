@@ -84,7 +84,8 @@ describe("report schema", () => {
       return () => validateQualification({ ...base(), modes: m });
     };
     expect(bad((m) => (m.fast.backupModel = "gpt-oss-120b"))).toThrow("must differ");
-    expect(bad((m) => (m.fast.maxOutputTokens = 4097))).toThrow();
+    expect(bad((m) => (m.fast.maxOutputTokens = 16385))).toThrow();
+    expect(bad((m) => (m.thinking.maxOutputTokens = 16384))).not.toThrow();
     expect(bad((m) => (m.thinking.allowanceCost = 0))).toThrow();
     expect(bad((m) => (m.thinking.allowanceCost = 1.5))).toThrow();
     expect(bad((m) => (m.fast.model = "auto"))).toThrow();
@@ -117,11 +118,11 @@ describe("report schema", () => {
     expect(qualificationSchema.shape.provider.safeParse("privatemode").success).toBe(false);
   });
 
-  it("the draft report's interim modes block is a valid tier pair", async () => {
+  it("the draft report's modes block (wide screen picks) is a valid tier pair", async () => {
     const draft = JSON.parse(
       await readFile("evaluation/qualification-drafts/tinfoil-gpt-oss-120b-20261112.json", "utf8"),
     );
-    expect(draft.modesStatus).toContain("INTERIM");
+    expect(draft.modesStatus).toContain("WIDE_SCREEN");
     const report = validateQualification({ ...base(), modes: draft.modes });
     expect(report.modes!.thinking.allowanceCost).toBeGreaterThan(report.modes!.fast.allowanceCost);
   });

@@ -3,37 +3,42 @@
   "draftedAt": "2026-11-12",
   "note": "Qualification report draft for Tinfoil (checklist P9), written by the agent from evidence of 12 November. It cannot be loaded: 'needs-owner-acceptance' is not a schema status, approvedSpendUSD is null, the dates are placeholders. To become a report the owner (1) picks the models (P6), (2) for each 'needs-owner-acceptance' check either accepts it in writing (status 'accepted-by-owner', acceptedAt, reason) or keeps chat off, (3) sets approvedSpendUSD (D5), (4) the agent fills reviewedAt/validUntil and re-verifies the router digest on the day. docs/qualification-report-draft-tinfoil-20261112.md explains each check.",
   "provider": "tinfoil",
-  "model": "gpt-oss-120b",
-  "fallbackModel": "gemma4-31b",
-  "gptOssReasoningEffort": "low",
-  "gemmaThinking": true,
-  "modesStatus": "INTERIM_PLACEHOLDERS_12_NOVEMBER: the models, settings, output limits and allowance costs in 'modes' are placeholders until the wide model screen (running 12 November) picks each tier; replace them from its result before signature. All models stay at this one provider (Tinfoil). 'pricing' must then be the highest rate among every model named in this report.",
+  "model": "deepseek-v4-1-flash",
+  "fallbackModel": "glm-5-3",
+  "modesStatus": "FROM_WIDE_SCREEN_12_NOVEMBER (docs/wide-screen-20261112.md): Fast deepseek-v4-1-flash (thinking off), backup glm-5-3 high; Thinking glm-5-3 max, backup deepseek-v4-1-flash thinking low. Pending: owner safety grade of case 07 for these arms, and the blind benchmark. The file name still says gpt-oss-120b for history; the models are the ones in this block. pricing is the highest rate among them (glm-5-3).",
   "modes": {
     "fast": {
-      "model": "gpt-oss-120b",
-      "gptOssReasoningEffort": "low",
-      "backupModel": "gemma4-31b",
-      "gemmaThinking": false,
+      "model": "deepseek-v4-1-flash",
+      "deepSeekThinking": false,
+      "backupModel": "glm-5-3",
+      "glmReasoningEffort": "high",
       "maxOutputTokens": 2048,
       "allowanceCost": 1
     },
     "thinking": {
-      "model": "gpt-oss-120b",
-      "gptOssReasoningEffort": "high",
-      "backupModel": "gemma4-31b",
-      "gemmaThinking": true,
-      "maxOutputTokens": 4096,
+      "model": "glm-5-3",
+      "glmReasoningEffort": "max",
+      "backupModel": "deepseek-v4-1-flash",
+      "deepSeekThinking": true,
+      "deepSeekReasoningEffort": "low",
+      "maxOutputTokens": 16384,
       "allowanceCost": 3
     }
   },
   "origin": "https://inference.tinfoil.sh/",
   "repository": "tinfoilsh/confidential-model-router",
-  "releaseDigests": ["44da5457cd18ef85d90ea722e92f30a233296389fdd38ba9e08d68104dea7f98"],
+  "releaseDigests": [
+    "44da5457cd18ef85d90ea722e92f30a233296389fdd38ba9e08d68104dea7f98"
+  ],
   "reviewedAt": "REPLACE_ON_THE_DAY_OF_SIGNATURE",
   "validUntil": "REPLACE_AT_MOST_SEVEN_DAYS_LATER",
   "maxInputCharacters": 8000,
-  "maxOutputTokens": 4096,
-  "pricing": { "inputPerMillion": 0.15, "outputPerMillion": 0.6, "currency": "USD" },
+  "maxOutputTokens": 16384,
+  "pricing": {
+    "inputPerMillion": 1.8,
+    "outputPerMillion": 5.75,
+    "currency": "USD"
+  },
   "approvedSpendUSD": null,
   "review": {
     "browserVerification": {
@@ -96,5 +101,7 @@
   "modelEvidence": {
     "stage1Screen": "11 November, 3 repetitions of 9 synthetic cases: gpt-oss-120b (low) passed arithmetic, open question, coding, placeholders and time to first token; citation format 2 of 3 (fail). gemma4-31b with thinking: open question 2 of 3, others pass, slower (median 2.7 s). Safety case 07 awaits the owner's grade (P5).",
     "settingsFix": "Before 12 November the report schema dropped model settings; screened settings now apply (commit 335b6f7)."
-  }
+  },
+  "deepSeekThinking": false,
+  "glmReasoningEffort": "high"
 }

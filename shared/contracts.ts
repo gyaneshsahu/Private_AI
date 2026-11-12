@@ -40,7 +40,9 @@ const modelName = z
     (value) => value !== "auto",
     "Automatic model routing is not qualified.",
   );
-const outputLimit = z.number().int().positive().max(4096);
+// Thinking models spend most of their output on hidden reasoning: at 4,096 the long-answer
+// probe was cut off on every thinking arm; 16,384 completed (wide screen, 12 November).
+const outputLimit = z.number().int().positive().max(16384);
 // Model-specific settings the review covered. Without them in the schema, parsing dropped
 // them and the model ran on the supplier's default (found by the T6 live run, 12 November).
 const modelSettings = {
