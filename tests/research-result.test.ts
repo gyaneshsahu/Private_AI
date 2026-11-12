@@ -20,7 +20,7 @@ it("rejects malformed or oversized research before any source is added", () => {
       { url: "javascript:alert(1)" }, { url: "https://user:password@example.com/" },
       { retrievedAt: "yesterday" }, { toolCall: "upload" },
     ].map((change) => ({ sources: [{ ...source, ...change }] })),
-    { sources: Array.from({ length: 6 }, (_, i) => ({ ...source, id: `source-${i}` })) },
+    { sources: Array.from({ length: 7 }, (_, i) => ({ ...source, id: `source-${i}` })) },
   ]) expect(() => parseResearchResult(input, [])).toThrow(/Nothing was added/);
 });
 

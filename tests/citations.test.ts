@@ -81,7 +81,8 @@ it("opens page-qualified citations without treating a model's page claim as veri
   );
   expect(html.match(/<button/g)).toHaveLength(2);
   expect(html).toContain("invoice.txt · p2 · cited p1");
-  expect(html).toContain("[missing-01, page 1]");
+  // A code that names no source is dropped (the evidence notice still counts it).
+  expect(html).not.toContain("missing-01");
   expect(html).toContain("<code>Code [documents-04, page 1]</code>");
   expect(html).not.toContain("href=");
 });
@@ -102,6 +103,40 @@ it("resolves known source IDs but labels unsupported model line locators", () =>
   );
   expect(html.match(/<button/g)).toHaveLength(2);
   expect(html).toContain("line reference unverified");
-  expect(html).toContain("missing-01");
+  expect(html).not.toContain("missing-01");
   expect(html).not.toContain("href=");
+});
+
+// Blind benchmark, 12 November (Thinking L4-01): a ten-character code that matched none
+// of the twelve-character source ids stayed as raw text, and page titles cluttered lines.
+it("links every code that names a source, drops codes that name none, and labels web sources by site", async () => {
+  const { auditResearchAnswer } = await import("../src/research-audit");
+  const sources = [
+    {
+      id: "2c0b433bea01",
+      title: "BahnCard 25 1. und 2. Klasse – hier kaufen!",
+      text: "Synthetic",
+      url: "https://www.bahn.de/angebot/bahncard",
+    },
+    {
+      id: "9f8e7d6c5b4a",
+      title: "Synthetic third-party guide",
+      text: "Synthetic",
+      url: "https://guide.example.com/a",
+    },
+  ];
+  const text =
+    "Price 62.90 EUR [2C0B433BEA01]. Digital use [2c0b433bea]. Both [2c0b433bea01, 9f8e7d6c5b4a]. Also [2c0b433bea01; 9f8e7d6c5b4a]. Dear [recipient]. See [Guide – title](https://guide.example.com/a).";
+  const html = renderToStaticMarkup(
+    createElement(Answer, { text, sources, open: () => {} }),
+  );
+  expect(html.toLowerCase()).not.toContain("2c0b433bea");
+  expect(html.match(/<button class="citation"/g)).toHaveLength(5);
+  expect(html).toContain('title="BahnCard 25 1. und 2. Klasse – hier kaufen!"');
+  expect(html).toContain(">bahn.de</button>");
+  expect(html).toContain(">guide.example.com</button>");
+  expect(html).not.toContain(">BahnCard 25 1. und 2. Klasse");
+  expect(html).toContain("[recipient]");
+  // The evidence notice counts the dropped code (and the placeholder), not the Markdown link label.
+  expect(auditResearchAnswer(text, sources).unknownSourceReferences).toBe(2);
 });

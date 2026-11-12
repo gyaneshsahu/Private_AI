@@ -4,13 +4,19 @@
 // adapter chosen by configuration; the approval flow and the temporary-session
 // rules do not change.
 import type { Source } from "../../shared/contracts";
-import { searchWeb } from "../research";
+import { readTopPage, searchWeb, type TopPage } from "../research";
 
 export interface SearchProvider {
   readonly id: "brave";
   /** Shown to the user in the approval dialog as the recipient of the query. */
   readonly recipientLabel: string;
   search(query: string, signal?: AbortSignal): Promise<Source[]>;
+  /** Opens the top official result under the same approval; optional for adapters. */
+  readTopPage?(
+    query: string,
+    sources: Source[],
+    signal?: AbortSignal,
+  ): Promise<TopPage | undefined>;
 }
 
 export function braveSearchProvider(
@@ -21,5 +27,7 @@ export function braveSearchProvider(
     id: "brave",
     recipientLabel: "Brave Search API",
     search: (query, signal) => searchWeb(query, key, signal, mode),
+    readTopPage: (query, sources, signal) =>
+      readTopPage(query, sources, signal),
   };
 }

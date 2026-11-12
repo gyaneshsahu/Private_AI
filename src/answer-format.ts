@@ -17,19 +17,27 @@ export function sourceCitations() {
     });
     visit(tree, "text", (node, index, parent) => {
       if (index == null || !parent || parent.type === "link") return;
+      // One code, or several in one bracket ("[id1, id2]"), each with an optional page or line.
       const parts = node.value.split(
-        /(\[[a-zA-Z0-9-]{6,36}(?:,\s*(?:page|p\.)\s*[1-9]\d{0,3}|†(?:source|L\d{1,6}(?:-L\d{1,6})?))?\]|【[a-zA-Z0-9-]{6,36}(?:,\s*(?:page|p\.)\s*[1-9]\d{0,3}|†(?:source|L\d{1,6}(?:-L\d{1,6})?))?】)/gi,
+        /([\[【]\s*(?:[a-zA-Z0-9-]{6,36}(?:,\s*(?:page|p\.)\s*[1-9]\d{0,3}|†(?:source|L\d{1,6}(?:-L\d{1,6})?))?(?:\s*[,;]\s*(?=[a-zA-Z0-9-]{6,36}[,;†\]】\s])|\s*(?=[\]】])))+[\]】])/gi,
       );
       if (parts.length === 1) return;
-      const children: PhrasingContent[] = parts.filter(Boolean).map((part) =>
-        /^[\[【]/.test(part)
-          ? {
+      const children: PhrasingContent[] = parts
+        .filter(Boolean)
+        .flatMap((part) => {
+          if (!/^[\[【]/.test(part))
+            return [{ type: "text", value: part } as PhrasingContent];
+          const [open, close] = part[0] === "[" ? ["[", "]"] : ["【", "】"];
+          return part
+            .slice(1, -1)
+            .trim()
+            .split(/\s*[,;]\s*(?!\s*(?:page|p\.)\s*\d)/i)
+            .map((code): PhrasingContent => ({
               type: "link",
-              url: "#source-" + part.slice(1, -1).split(/[,†]/)[0],
-              children: [{ type: "text", value: part }],
-            }
-          : { type: "text", value: part },
-      );
+              url: "#source-" + code.split(/[,†]/)[0].trim(),
+              children: [{ type: "text", value: open + code + close }],
+            }));
+        });
       parent.children.splice(index, 1, ...children);
       return index + children.length;
     });

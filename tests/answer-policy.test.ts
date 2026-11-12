@@ -91,3 +91,52 @@ it("product (default) policy answers health questions with safe emergency wordin
     expect(text).not.toContain("112");
   }
 });
+
+it("product prompt: no unasked counts, unsure German rules point to the official source, web answers never claim no browsing", () => {
+  const c = emptyConversation();
+  c.messages.push(newMessage("user", "Please shorten the notice."));
+  const now = new Date("2026-11-12T00:00:00Z");
+  // The size limit still holds: the product prompt and a short message fit in 8,000.
+  const product = composeContext(c, 8000, now)[0].content;
+  expect(product).toContain(
+    "Do not state word or character counts unless the user asks for them.",
+  );
+  expect(product).toContain(
+    "For German rules, fees and deadlines you are not sure of, say that you are not sure and point to the official source instead of giving a number.",
+  );
+  // Health and maths handling are unchanged.
+  expect(product).toContain("Answer health questions helpfully and concretely");
+  expect(product).toContain("Check quantities, units, time and dependencies");
+  for (const variant of [
+    "constraints-v1",
+    "constraints-v2",
+    "constraints-v3",
+    "constraints-v4",
+  ] as const) {
+    const text = composeContext(c, 10000, now, variant)[0].content;
+    expect(text).not.toContain("word or character counts");
+  }
+  c.attachments.push({
+    id: "a",
+    name: "Public search results",
+    selected: true,
+    kind: "research",
+    sources: [
+      {
+        id: "abc123def456",
+        title: "Synthetic",
+        text: "Synthetic excerpt",
+        url: "https://example.com/",
+      },
+    ],
+  });
+  const web = composeContext(c, 10000, now)[0].content;
+  expect(web).not.toContain("You have no external tools");
+  expect(web).toContain(
+    "Never say you cannot browse or have no browsing or search tools.",
+  );
+  expect(web).toContain("say exactly what is missing and offer another search");
+  expect(
+    composeContext(c, 10000, now, "constraints-v1")[0].content,
+  ).toContain("You have no external tools");
+});

@@ -22,8 +22,29 @@ const resultSchema = z.object({
     retrievedAt: z.string().datetime(),
     evidenceKind: z.enum(["search-excerpt", "page", "llm-context"]).optional(),
     providerDate: z.string().min(1).max(100).optional(),
-  }).strict()).max(5),
+  }).strict()).max(6), // five results and the top page
+  topPage: z.object({
+    url: z.string().url().max(2000),
+    outcome: z.enum(["read", "read-without-query", "skipped", "failed"]),
+  }).strict().optional(),
 }).strict();
+
+/** Added to every search approval: the same approval also opens one page. */
+export const TOP_PAGE_APPROVAL =
+  "Our server will also open the top official result page and read its text for this answer. That site sees our server's address, not yours.";
+
+/** What happened to the top result page, in the words shown to the user. */
+export function topPageNote(input: unknown): string {
+  const top = resultSchema.safeParse(input).data?.topPage;
+  if (!top) return "";
+  const host = new URL(top.url).hostname;
+  return {
+    read: `Our server also opened the top official result and read its text: ${top.url}`,
+    "read-without-query": `Our server also opened the top official result without the part of its address after "?", because that part contained a personal detail: ${top.url}`,
+    skipped: `The top result (${host}) was not opened, because its address contained a personal detail. The answer uses the search excerpts only.`,
+    failed: `The top result (${host}) could not be opened. The answer uses the search excerpts only.`,
+  }[top.outcome];
+}
 
 export function parseResearchResult(input: unknown, existingIds: Iterable<string>): Source[] {
   const result = resultSchema.safeParse(input);

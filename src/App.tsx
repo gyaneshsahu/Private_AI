@@ -69,7 +69,12 @@ import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { abortable } from "./abortable";
 import { createCalculationSession } from "./calculation-session";
-import { parseResearchResult, researchSourceUrl } from "./research-result";
+import {
+  parseResearchResult,
+  researchSourceUrl,
+  topPageNote,
+  TOP_PAGE_APPROVAL,
+} from "./research-result";
 
 type Tab =
   "Conversation" | "Context" | "Research" | "Saved" | "Account" | "Help";
@@ -809,7 +814,7 @@ export function App() {
         setNotice(
           sources.length
             ? approved.kind === "search"
-              ? "Search results added to context. Return to Conversation to ask about them. Search results and source links are never saved; if you save this conversation, only your written answers and the approved query are kept, and you can search again later."
+              ? `Search results added to context. Return to Conversation to ask about them. Search results and source links are never saved; if you save this conversation, only your written answers and the approved query are kept, and you can search again later. ${topPageNote(result)}`.trim()
               : "Public sources added to your selected context. Search excerpts are labelled; pages are fetched only with approval."
             : "The search returned no sources.",
         );
@@ -2559,6 +2564,7 @@ export function App() {
                   , through CometRow’s research service. Their retention
                   policies apply. No private chat or attachment is included
                   automatically.
+                  {proposal.kind === "search" && ` ${TOP_PAGE_APPROVAL}`}
                   {proposal.kind === "page" &&
                     " The page address is sent exactly as shown; personal details in it are not removed."}
                 </p>

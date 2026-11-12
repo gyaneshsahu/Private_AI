@@ -536,11 +536,20 @@ export function createApp(config: Config) {
         });
         return;
       }
-      const sources =
-        request.kind === "search"
-          ? await search!.search(request.value, abort.signal)
-          : await fetchPage(request.value, abort.signal);
-      res.json({ sources });
+      if (request.kind === "page") {
+        res.json({ sources: await fetchPage(request.value, abort.signal) });
+        return;
+      }
+      const sources = await search!.search(request.value, abort.signal);
+      const top = await search!.readTopPage?.(
+        request.value,
+        sources,
+        abort.signal,
+      );
+      res.json({
+        sources: top?.source ? [...sources, top.source] : sources,
+        ...(top ? { topPage: { url: top.url, outcome: top.outcome } } : {}),
+      });
     } catch {
       res.status(400).json({
         error:

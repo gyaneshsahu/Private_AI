@@ -82,12 +82,29 @@ export function Answer({
                     )?.[1],
                   ) || undefined
                 : undefined;
-            const source = href?.startsWith("#source-")
-              ? sources.find((item) => item.id === href.slice(8))
+            const code = href?.startsWith("#source-")
+              ? href.slice(8).toLowerCase()
+              : undefined;
+            const source =
+              code !== undefined
+                ? sources.find((item) => item.id.toLowerCase() === code)
+                : undefined;
+            // A code that names no source (a shortened or invented id) is dropped from
+            // the text; the evidence notice above still counts it. Codes without a
+            // digit stay, since they are more likely placeholders such as [recipient].
+            if (code && !source && sources.length && /\d/.test(code))
+              return null;
+            const host = source?.url
+              ? new URL(source.url).hostname.replace(/^www\./, "")
               : undefined;
             return source ? (
-              <button className="citation" onClick={() => open(source)}>
-                {source.title}
+              <button
+                className="citation"
+                onClick={() => open(source)}
+                title={host && source.title}
+                aria-label={host && `${host}: ${source.title}`}
+              >
+                {host ?? source.title}
                 {source.page ? ` · p${source.page}` : ""}
                 {citedPage && citedPage !== source.page
                   ? ` · cited p${citedPage}`

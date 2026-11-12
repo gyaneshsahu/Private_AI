@@ -15,6 +15,7 @@ import {
   type Disclosure,
   type Source,
 } from "../shared/contracts";
+import { findIdentifiers } from "../src/identifier-masking";
 
 export function publicAddress(address: string) {
   try {
@@ -155,6 +156,8 @@ export function extractPublicText(raw: string, contentType: string) {
 export async function fetchPage(
   value: string,
   signal?: AbortSignal,
+  // When set, longer page text is cut to this many characters instead of refused.
+  maxText?: number,
 ): Promise<Source[]> {
   const url = pageUrl(value);
   let direct: Agent | undefined;
@@ -205,7 +208,8 @@ export async function fetchPage(
       throw new Error("Only public HTML and plain-text pages are supported.");
     }
     const raw = await boundedText(response);
-    const { text, title } = extractPublicText(raw, contentType);
+    const { text: full, title } = extractPublicText(raw, contentType);
+    const text = maxText ? full.slice(0, maxText) : full;
     if (!text || text.length > 60000)
       throw new Error(
         "Page is empty or exceeds the text limit. Choose a smaller source.",
@@ -222,6 +226,126 @@ export async function fetchPage(
     ];
   } finally {
     await direct?.destroy();
+  }
+}
+// "Official": a government, EU, international or central-bank domain, or a domain
+// named after what the question asks about (bahn.de for "BahnCard"). Results are
+// already in the search provider's rank order.
+const OFFICIAL_SUFFIXES = [
+  "gov",
+  "gov.uk",
+  "gouv.fr",
+  "gv.at",
+  "admin.ch",
+  "bund.de",
+  "europa.eu",
+  "int",
+  "bundesregierung.de",
+  "bundestag.de",
+  "bundesbank.de",
+  "bundesfinanzministerium.de",
+  "gesetze-im-internet.de",
+  "destatis.de",
+  "arbeitsagentur.de",
+  "deutsche-rentenversicherung.de",
+  "elster.de",
+  "bafin.de",
+  "bzst.de",
+  "bankofengland.co.uk",
+  "snb.ch",
+  "oenb.at",
+];
+const plain = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/ä/g, "ae")
+    .replace(/ö/g, "oe")
+    .replace(/ü/g, "ue")
+    .replace(/ß/g, "ss");
+export function officialHost(hostname: string, query: string) {
+  const host = hostname.toLowerCase().replace(/^www\./, "");
+  if (OFFICIAL_SUFFIXES.some((s) => host === s || host.endsWith("." + s)))
+    return true;
+  const parts = host.split(".");
+  const label = (
+    parts.length >= 3 && /^(co|com|org|net|ac|gov|or|gv)$/.test(parts.at(-2)!)
+      ? parts.at(-3)!
+      : (parts.at(-2) ?? "")
+  ).replace(/-/g, "");
+  const words = plain(query)
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+  // A short name must start a word ("bahn" in "bahncard"); a longer one may span words.
+  return label.length >= 5
+    ? words.join("").includes(label)
+    : label.length >= 3 && words.some((word) => word.startsWith(label));
+}
+export function officialResult(query: string, sources: Source[]) {
+  const web = sources.filter((source) => source.url);
+  return (
+    web.find((source) => officialHost(new URL(source.url!).hostname, query)) ??
+    web[0]
+  );
+}
+// A page address can carry the user's details (a search result linking to a form
+// with an email in its query). Never send a recognised identifier to the site.
+export function pageAddressForReading(
+  value: string,
+):
+  | { url: string; outcome: "read" | "read-without-query" }
+  | { outcome: "skipped" } {
+  const has = (text: string) => {
+    let decoded = text;
+    try {
+      decoded = decodeURIComponent(text.replace(/\+/g, " "));
+    } catch {
+      /* keep the raw text */
+    }
+    return findIdentifiers(decoded).length + findIdentifiers(text).length > 0;
+  };
+  const url = new URL(value);
+  if (!has(url.href)) return { url: url.href, outcome: "read" };
+  url.search = "";
+  if (!has(url.href)) return { url: url.href, outcome: "read-without-query" };
+  return { outcome: "skipped" };
+}
+export const TOP_PAGE_CHARACTERS = 6000;
+export interface TopPage {
+  url: string;
+  outcome: "read" | "read-without-query" | "skipped" | "failed";
+  source?: Source;
+}
+// Under the same search approval: open the top official result once, with the
+// fetchPage checks (HTTPS, public address or approved proxy host, no redirects,
+// 2 MB, no cookies), a shorter deadline and a text cut.
+export async function readTopPage(
+  query: string,
+  sources: Source[],
+  signal?: AbortSignal,
+  fetcher: typeof fetchPage = fetchPage,
+): Promise<TopPage | undefined> {
+  const top = officialResult(query, sources);
+  if (!top?.url) return undefined;
+  const address = pageAddressForReading(top.url);
+  if (address.outcome === "skipped")
+    return { url: new URL(top.url).origin, outcome: "skipped" };
+  try {
+    const [page] = await fetcher(
+      address.url,
+      AbortSignal.any([AbortSignal.timeout(8000), ...(signal ? [signal] : [])]),
+      TOP_PAGE_CHARACTERS,
+    );
+    return {
+      url: address.url,
+      outcome: address.outcome,
+      source: {
+        ...page,
+        text: `Top result page opened by CometRow's server (first ${TOP_PAGE_CHARACTERS} characters at most): ${page.text}`,
+      },
+    };
+  } catch {
+    signal?.throwIfAborted();
+    return { url: address.url, outcome: "failed" };
   }
 }
 export async function searchWeb(

@@ -32,7 +32,7 @@ it("shows attribution warnings and opens the actual cited source in Chromium", a
         exact: false,
       })
       .waitFor();
-    await page.getByRole("button", { name: "Inspection", exact: true }).click();
+    await page.getByRole("button", { name: "example.com: Inspection", exact: true }).click();
     expect(await page.locator("#opened").textContent()).toBe(
       "Inspection remains unfinished.",
     );
