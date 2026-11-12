@@ -1,5 +1,6 @@
 import {
   validateQualification,
+  policyForModel,
   type Conversation,
   type Usage,
 } from "../shared/contracts";
@@ -25,11 +26,11 @@ export async function streamReply(
   if (modelChoice === "fallback" && !report.fallbackModel)
     throw Error("No fallback model is qualified.");
   // The fallback is the same qualified deployment with a different catalog
-  // name; model-specific reasoning toggles belong to the usual model only.
-  const policy =
-    modelChoice === "fallback"
-      ? { ...report, model: report.fallbackModel! }
-      : report;
+  // name; each model gets only its own reviewed settings.
+  const policy = policyForModel(
+    report,
+    modelChoice === "fallback" ? report.fallbackModel! : report.model,
+  );
   return streamVerifiedConversation(
     conversation,
     policy,

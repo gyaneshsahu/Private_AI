@@ -38,6 +38,7 @@ function report(maxOutputTokens: number, releaseDigest: string) {
     maxOutputTokens,
     pricing: { inputPerMillion: PRICE.input, outputPerMillion: PRICE.output, currency: "USD" },
     approvedSpendUSD: 0.05,
+    gptOssReasoningEffort: "low",
   };
 }
 
@@ -92,27 +93,63 @@ const verdict = (name: string, pass: boolean, detail: Record<string, unknown>) =
   console.log(`${pass ? "PASS" : "FAIL"} ${name} ${JSON.stringify(detail).slice(0, 300)}`);
 };
 
-await withApp(report(512, digest), async (page, hits) => {
+await withApp(report(2048, digest), async (page, hits) => {
   // baseline
   await send(page, "Synthetic test. Reply with exactly the word: ready");
   await settle(page);
   const text = await assistantText(page);
   verdict("baseline", /ready/i.test(text) && hits() === 1, { relayHits: hits(), reply: text.slice(0, 120) });
 
-  // stop mid-reply, then a second request on the same account must still be admitted
-  await send(page, "Synthetic test. Write a 400-word story about a lighthouse keeper, one paragraph per line.");
-  await page.locator("article.assistant").last().filter({ hasText: /\w{4,}/ }).waitFor({ timeout: 90_000 }).catch(() => {});
-  await page.getByRole("button", { name: "Stop response" }).click({ timeout: 90_000 });
+  // stop before sending (during verification): nothing may reach the relay
+  await send(page, "Synthetic test. Reply with exactly the word: early");
+  await page.getByRole("button", { name: "Stop response" }).click({ timeout: 10_000 });
   await settle(page);
-  const stoppedPage = await pageText(page);
-  const stopped = /stopped/i.test(stoppedPage);
+  verdict("stopBeforeSend", hits() === 1 && /stopped/i.test(await pageText(page)), { relayHits: hits() });
+
+  // stop mid-stream, then a second request on the same account must still be admitted
+  await send(page, "Synthetic test. Write a 400-word story about a lighthouse keeper, one paragraph per line.");
+  // Timeline of what the user sees while the reply arrives (length of the last answer, Stop present).
+  const timeline: string[] = [];
+  const t0 = Date.now();
+  let streaming = false;
+  while (Date.now() - t0 < 90_000) {
+    const text = await assistantText(page);
+    const stopVisible = await page.getByRole("button", { name: "Stop response" }).isVisible().catch(() => false);
+    timeline.push(`${Date.now() - t0}ms:${text.length}${stopVisible ? "+stop" : ""}`);
+    if (stopVisible && text.length > 300) { streaming = true; break; }
+    if (!stopVisible && Date.now() - t0 > 3000) break;
+    await page.waitForTimeout(250);
+  }
+  if (!streaming)
+    console.log(
+      "timeline:", timeline.slice(-8).join(" "),
+      "\nstatus lines:", (await pageText(page)).split("\n").filter((l) => /incomplete|limit|stopped|retry|unavailable|reject|timed|cost/i.test(l)),
+    );
+  const streamedBeforeStop = (await assistantText(page)).length;
+  if (streaming) await page.getByRole("button", { name: "Stop response" }).click({ timeout: 10_000 });
+  await settle(page);
+  const stopped = streaming && /stopped/i.test(await pageText(page));
   await send(page, "Synthetic test. Reply with exactly the word: again");
   await settle(page);
   const again = await assistantText(page);
-  verdict("stop", stopped && /again/i.test(again) && hits() === 3, {
+  verdict("stopMidStream", stopped && /again/i.test(again) && hits() === 3, {
     relayHits: hits(),
+    streamedCharactersBeforeStop: streamedBeforeStop,
     stoppedShown: stopped,
     nextReply: again.slice(0, 80),
+  });
+});
+
+// A longer reply left to finish must complete (an earlier run saw one end as incomplete).
+await withApp(report(2048, digest), async (page, hits) => {
+  await send(page, "Synthetic test. Write a 200-word story about a lighthouse keeper.");
+  await settle(page);
+  const text = await assistantText(page);
+  const complete = !/incomplete/i.test(text) && text.length > 400;
+  verdict("longReply", complete && hits() === 1, {
+    relayHits: hits(),
+    answerCharacters: text.length,
+    statusLines: (await pageText(page)).split("\n").filter((l) => /incomplete|limit|stopped|unavailable|reject|timed|tokens/i.test(l)),
   });
 });
 

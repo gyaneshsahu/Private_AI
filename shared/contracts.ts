@@ -79,8 +79,30 @@ export const qualificationSchema = z.object({
     currency: z.literal("USD"),
   }),
   approvedSpendUSD: z.number().positive(),
+  // Model-specific settings the review covered. Without them in the schema, parsing dropped
+  // them and the model ran on the supplier's default (found by the T6 live run, 12 November).
+  gptOssReasoningEffort: z.enum(["low", "medium", "high"]).optional(),
+  gemmaThinking: z.boolean().optional(),
+  glmReasoningEffort: z.enum(["low", "high", "max"]).optional(),
+  deepSeekThinking: z.boolean().optional(),
+  deepSeekReasoningEffort: z.literal("low").optional(),
 });
 export type Qualification = z.infer<typeof qualificationSchema>;
+/** Which model each setting belongs to. */
+export const MODEL_SETTINGS = {
+  gptOssReasoningEffort: "gpt-oss-120b",
+  gemmaThinking: "gemma4-31b",
+  glmReasoningEffort: "glm-5-3",
+  deepSeekThinking: "deepseek-v4-1-flash",
+  deepSeekReasoningEffort: "deepseek-v4-1-flash",
+} as const;
+/** The report as one model's policy: that model's settings kept, every other model's removed. */
+export function policyForModel(report: Qualification, model: string): Qualification {
+  const policy: Qualification = { ...report, model };
+  for (const [setting, owner] of Object.entries(MODEL_SETTINGS))
+    if (owner !== model) delete policy[setting as keyof typeof MODEL_SETTINGS];
+  return policy;
+}
 export function validateQualification(
   input: unknown,
   now = Date.now(),
@@ -91,6 +113,9 @@ export function validateQualification(
     report.fallbackModel === report.model
   )
     throw Error("The fallback model must differ from the qualified model.");
+  for (const [setting, owner] of Object.entries(MODEL_SETTINGS))
+    if (report[setting as keyof typeof MODEL_SETTINGS] !== undefined && owner !== report.model && owner !== report.fallbackModel)
+      throw Error("A model setting names a model the report does not qualify.");
   if (
     Date.parse(report.reviewedAt) > now ||
     Date.parse(report.validUntil) <= now ||

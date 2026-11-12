@@ -37,3 +37,26 @@ it("accepts an optional distinct fallback model and refuses automatic or identic
     validateQualification({ ...report(), fallbackModel: "" }),
   ).toThrow();
 });
+
+it("keeps the reviewed model settings and gives each model only its own (T6 finding, 12 November)", async () => {
+  const { policyForModel } = await import("../shared/contracts");
+  const parsed = validateQualification({
+    ...report(),
+    model: "gemma4-31b",
+    fallbackModel: "gpt-oss-120b",
+    gemmaThinking: false,
+    gptOssReasoningEffort: "low",
+  });
+  // Before the fix, parsing silently dropped both settings.
+  expect(parsed.gemmaThinking).toBe(false);
+  expect(parsed.gptOssReasoningEffort).toBe("low");
+  const primary = policyForModel(parsed, parsed.model);
+  expect(primary).toMatchObject({ model: "gemma4-31b", gemmaThinking: false });
+  expect(primary.gptOssReasoningEffort).toBeUndefined();
+  const fallback = policyForModel(parsed, parsed.fallbackModel!);
+  expect(fallback).toMatchObject({ model: "gpt-oss-120b", gptOssReasoningEffort: "low" });
+  expect(fallback.gemmaThinking).toBeUndefined();
+  expect(() =>
+    validateQualification({ ...report(), model: "gemma4-31b", glmReasoningEffort: "low" }),
+  ).toThrow("does not qualify");
+});

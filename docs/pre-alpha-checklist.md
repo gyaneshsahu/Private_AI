@@ -86,7 +86,7 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | T3 | Masking gaps known and stated: scans 87.3 %, ID numbers 94.1 %, page-fetch URLs unchecked (D11, D12) | Copy must not promise more than the detector does | Agent | no (stated as known limits) | 1 h | done in the app (note under answers, page-fetch approval, branch); privacy-statement sentence is owner decision D13 |
 | T4 | Rollback test with chat on | Rollback was drilled without chat | Owner (Agent guides) | yes | 1 h | open (drilled 25 Oct, chat off) |
 | T5 | Full suites green on the merged branch, CI green | Deploy only tested code | Agent | yes | 1 h | open (green on each branch separately) |
-| T6 | Cancelled request, truncated reply and attestation failure on the live provider | Cost and error behaviour with real money | Agent + Owner | yes | 2 h | agent part: harness built (`evaluation/live-failure-check.ts`); wrong-digest case passes live (nothing sent); stop and truncation wait for a valid key in Credential Manager; owner part on Render after chat is on |
+| T6 | Cancelled request, truncated reply and attestation failure on the live provider | Cost and error behaviour with real money | Agent + Owner | yes | 2 h | agent part done 12 November: 6 of 6 pass live (stop before send, stop mid-stream, long reply, output limit, wrong digest); found and fixed report settings being dropped; owner part on Render after chat is on |
 | T7 | TalkBack / phone accessibility session (plan 6.1) | Screen-reader users | Owner | no | 1 h | open |
 
 ## Ops

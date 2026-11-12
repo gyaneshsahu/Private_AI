@@ -8,7 +8,7 @@ Order = what unblocks the most other work first. Items from the pre-alpha checkl
 
 | Rank | What you decide or do | Why it is here | Unblocks |
 | --- | --- | --- | --- |
-| 1 | **Store the new Tinfoil key**: `.\scripts\windows-secret.ps1 -Action Set -Name TINFOIL_API_KEY` (masked prompt) | The entry `PrivateAI/Local/TINFOIL_API_KEY` was last written 5 October (`tk_4`...`X8GA`, 51 characters, no whitespace); Tinfoil answers 401 `invalid_api_key`. Compare with the new key in the dashboard, then save it with this command and check that `cmdkey`/the module shows today's date. Budget USD 5, USD 0 used (owner-reported) | All Tinfoil test runs (T6, model checks, web search tests) |
+| ~~1~~ | **Done 12 November.** ~~Store the new Tinfoil key~~: `.\scripts\windows-secret.ps1 -Action Set -Name TINFOIL_API_KEY` (masked prompt) | The entry `PrivateAI/Local/TINFOIL_API_KEY` was last written 5 October (`tk_4`...`X8GA`, 51 characters, no whitespace); Tinfoil answers 401 `invalid_api_key`. Compare with the new key in the dashboard, then save it with this command and check that `cmdkey`/the module shows today's date. Budget USD 5, USD 0 used (owner-reported) | All Tinfoil test runs (T6, model checks, web search tests) |
 | 2 | **Provider choice (P7)**: Tinfoil or Privatemode | Almost every legal and launch step depends on which one | D8, D10, D17, P6, P9, L5, L6, S6 |
 | 3 | **Safety grades for case 07 (P5)** and the **default and fallback model (P6)** | Inputs to P7 and to the qualification report | P7, P9 |
 | 4 | **Privacy policy provider section**: D10, D8, D14, D9 in one review | No user message may reach a provider while the live policy names no provider and no transfer outside the EU | Switching chat on |
