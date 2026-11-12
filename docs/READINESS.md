@@ -1,4 +1,11 @@
 # PrivateAI readiness checklist
+## Spend authority USD 5 (owner, 12 November); T6 live harness built; stored Tinfoil key rejected - 12 November
+
+- **Budget (owner-reported, not verified by the agent).** New Tinfoil key, USD 0 used, USD 5 limit; covers Tinfoil tokens, Tinfoil web search (USD 0.05 per request), Exa credits and Privatemode free quota for development and testing, synthetic data only. The agent could not read the usage page: the app's browser is not signed in, Claude in Chrome was not connected, and the billing API needs an admin key (401 with the inference key).
+- **T6 harness.** `evaluation/live-failure-check.ts` runs the real app in a real browser against the live router, on the agent machine, with a local fixture report in `.local/` (never a qualification report): baseline reply, Stop mid-reply then a second request, a 16-token output limit, and a report pinned to a wrong release digest. Router digest of the day from `scripts/probe-provider.mjs` (no key, no inference): `44da5457cd18ef85d90ea722e92f30a233296389fdd38ba9e08d68104dea7f98`.
+- **First run.** Wrong-digest case: PASS, zero requests reached the relay, the user saw "Protected response unavailable. No weaker fallback or automatic retry was used." The other three cases could not be judged: every forwarded request (4) was refused by Tinfoil. One direct check confirmed the key in Credential Manager is rejected (401 `invalid_api_key`): the new key has not been stored there yet. For a refused key the app said "did not accept this request; nothing was run or billed", which is accurate.
+- **Spend this run: USD 0** (all requests refused before inference). Remaining (owner-reported basis): USD 5.00.
+
 ## Secret scan in CI (A9 gap closed, D18 resolved) - 12 November
 
 - **Built.** `scripts/secret-scan.mjs` checks every tracked file for credential shapes (Tinfoil, OpenAI-style, private key blocks, Google OAuth and API keys, GitHub, AWS, Stripe live, database URLs with an inline password to a non-local host). Prints file and line, never the value. No dependency. Runs in Validate after the audit steps. `tests/secret-scan.test.ts` (3 tests) covers hits, allowed synthetic and local lines, and the CI step.
