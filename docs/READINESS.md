@@ -1,4 +1,8 @@
 # PrivateAI readiness checklist
+## O5: week-one monitoring routine written (branch alpha-provider-neutral, local) - 12 November
+
+- `docs/week-one-monitoring.md`: a twice-daily owner routine for the first week of chat (readyz, Render events and log lines, purge failure line, spend against the cap, unmetered requests, use per account, supplier dashboard and status page, headers, certificate, friends' reports), each with normal value, trigger and action; three read-only SQL queries matching the spend guard's arithmetic, syntax-checked on a throwaway schema; known gaps (no refused-request counts by design, no alert until O2, Privatemode shows every request as unmetered).
+
 ## T3: masking limits stated where they apply in the app (branch alpha-provider-neutral, local) - 12 November
 
 - **Change (verified by tests).** The note under an answer that kept identifiers now adds "Not every number is recognised, least of all in photos and scans." (German held-out: scans 87.3 %, ID numbers 94.1 %). The page-fetch approval adds "The page address is sent exactly as shown; personal details in it are not removed." (search approvals unchanged; search text is masked). Asserted in `tests/health-consent-ui.test.ts`, `tests/browser/search-to-page.spec.ts` (shown for a page) and `tests/browser/research-workspace.spec.ts` (absent for a search).
