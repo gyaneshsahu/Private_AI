@@ -1278,7 +1278,7 @@ export function App() {
                     setSource({
                       id: "privacy-policy",
                       title: "Privacy policy",
-                      text: privacyPolicyText(),
+                      text: privacyPolicyText(status?.providerDisclosureDraft),
                     });
                   }}
                 >
@@ -2704,7 +2704,7 @@ export function App() {
                       setSource({
                         id: "privacy-policy",
                         title: "Privacy policy",
-                        text: privacyPolicyText(),
+                        text: privacyPolicyText(status?.providerDisclosureDraft),
                       })
                     }
                   >

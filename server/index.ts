@@ -26,6 +26,9 @@ const app = createApp({
   accessKey: process.env.PRIVATEAI_ACCESS_KEY,
   // Local review of the draft health-consent step only; the production composition never sets it.
   healthConsentDraft: process.env.PRIVATEAI_HEALTH_CONSENT_DRAFT === "1",
+  providerDisclosureDraft: (["tinfoil", "privatemode"] as const).find(
+    (p) => p === process.env.PRIVATEAI_PROVIDER_DISCLOSURE_DRAFT,
+  ),
   invites: process.env.PRIVATEAI_INVITES_FILE
     ? openInviteRegistry(process.env.PRIVATEAI_INVITES_FILE, hosted)
     : undefined,

@@ -247,6 +247,8 @@ export interface AppStatus {
   publicPageHosts?: string[] | null;
   /** Draft health-consent step (shared/health-consent.ts); off unless the server enables it. */
   healthConsentDraft?: boolean;
+  /** Draft provider section for the privacy policy (shared/provider-disclosure.ts); off unless set. */
+  providerDisclosureDraft?: "tinfoil" | "privatemode";
 }
 export type RequestAllowance =
   | { state: "unavailable" }

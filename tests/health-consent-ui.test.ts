@@ -7,7 +7,7 @@ import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { HEALTH_CONSENT } from "../shared/health-consent";
 
-it("asks once before the first message, holds the message until a choice, remembers it and can withdraw it", async () => {
+it("asks once before the first message, holds the message until a choice, remembers it and can withdraw it; the draft provider section shows only with its flag", async () => {
   const vite = await createServer({
     configFile: false,
     logLevel: "silent",
@@ -39,7 +39,7 @@ it("asks once before the first message, holds the message until a choice, rememb
     csrf: "SYNTHETIC",
     inference: { ready: true, reason: "OFFLINE ONLY", qualification: { maxInputCharacters: 8000 } },
     search: false,
-    ...(flag ? { healthConsentDraft: true } : {}),
+    ...(flag ? { healthConsentDraft: true, providerDisclosureDraft: "tinfoil" } : {}),
   });
   const open = async (flag: boolean) => {
     const context = await browser.newContext();
@@ -64,6 +64,11 @@ it("asks once before the first message, holds the message until a choice, rememb
     await ask(off.page, "Synthetic question without the flag");
     await ui(off.page.locator("article.assistant").last()).toContainText("SYNTHETIC REPLY 1");
     await ui(prompt(off.page)).toHaveCount(0);
+    await workspaceControl(off.page, "Settings").click();
+    await off.page.getByRole("button", { name: "Privacy & data" }).click();
+    await off.page.getByRole("button", { name: "Privacy policy ↗" }).click();
+    await ui(off.page.getByText("Who is responsible")).toBeVisible();
+    await ui(off.page.getByText("Who processes your messages")).toHaveCount(0);
     await off.context.close();
 
     // Flag on: the first message waits for a choice and is not sent before it.
@@ -89,6 +94,10 @@ it("asks once before the first message, holds the message until a choice, rememb
     await page.getByRole("button", { name: "Privacy & data" }).click();
     await page.getByRole("button", { name: "Withdraw permission" }).click();
     await ui(page.getByText("You chose not to allow health and other sensitive details.")).toBeVisible();
+    // The draft provider section appears in the policy only with its flag.
+    await page.getByRole("button", { name: "Privacy policy ↗" }).click();
+    await ui(page.getByText("Who processes your messages")).toBeVisible();
+    await ui(page.getByText(/processes them in the United States/)).toBeVisible();
     await page.keyboard.press("Escape");
     await ui(page.getByRole("note")).toContainText(HEALTH_CONSENT.declinedNote);
     await on.context.close();

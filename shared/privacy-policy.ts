@@ -1,5 +1,9 @@
 import { PRIVACY_COPY, type PrivacySection } from "./privacy-copy";
 import { LEGAL_IDENTITY } from "./legal-identity";
+import {
+  providerDisclosureSection,
+  type DisclosedProvider,
+} from "./provider-disclosure";
 
 /**
  * The in-app privacy policy page. It is built from the privacy statement so
@@ -56,11 +60,23 @@ export function policyPlaceholders(): { id: string; phrase: string }[] {
   return found;
 }
 
-export function privacyPolicyText(): string {
+/**
+ * The policy as shown in the app. `provider` adds the draft "Who processes your
+ * messages" section after the first section (shared/provider-disclosure.ts); without
+ * it the text is the approved policy, unchanged.
+ */
+export function privacyPolicyText(provider?: DisclosedProvider): string {
+  const sections = provider
+    ? [
+        POLICY_SECTIONS[0],
+        providerDisclosureSection(provider),
+        ...POLICY_SECTIONS.slice(1),
+      ]
+    : POLICY_SECTIONS;
   return (
     `CometRow privacy policy, ${POLICY_DATE}\n\n` +
-    POLICY_SECTIONS.map(
-      (section) => `${section.heading}\n${section.text}`,
-    ).join("\n\n")
+    sections
+      .map((section) => `${section.heading}\n${section.text}`)
+      .join("\n\n")
   );
 }

@@ -44,6 +44,8 @@ export interface Config {
   inferenceStopped?: () => boolean;
   /** Shows the draft health-consent step; never set by the production composition. */
   healthConsentDraft?: boolean;
+  /** Adds the draft provider section to the privacy policy; never set by the production composition. */
+  providerDisclosureDraft?: "tinfoil" | "privatemode";
   /** Web search adapter; defaults to Brave from `searchKey`. Tests may inject one. */
   search?: SearchProvider;
   /** Relay adapter override for tests; production resolves it from the qualification's provider. */
@@ -237,6 +239,9 @@ export function createApp(config: Config) {
       csrf: res.locals.csrf,
       ...(config.consumer ? { consumerWorkspace: true } : {}),
       ...(config.healthConsentDraft ? { healthConsentDraft: true } : {}),
+      ...(config.providerDisclosureDraft
+        ? { providerDisclosureDraft: config.providerDisclosureDraft }
+        : {}),
       ...(config.consumer?.billingRouter ? { billingRehearsal: true } : {}),
       ...(res.locals.accountId
         ? {
