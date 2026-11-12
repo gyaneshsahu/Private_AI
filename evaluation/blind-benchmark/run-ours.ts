@@ -53,7 +53,7 @@ const NOTICES = [
   /^Some calculations written in this answer/,
   /^We recalculated the figures/,
   /^Answered by the backup model/,
-  /kept on this device/,
+  /kept on this device/i,
   /^Not every number is recognised/,
   /^Incomplete · excluded from context/,
   /^Stopped by you/,
