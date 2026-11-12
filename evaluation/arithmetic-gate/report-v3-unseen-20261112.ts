@@ -1,5 +1,5 @@
-// Tables for results-v3-unseen-20261112.md: reads the twelve harness-v3
-// results files (four systems x three repetitions) under
+// Tables for results-v3-unseen-20261112.md: reads the harness-v3
+// results files (five systems x three repetitions; glm-5.3 low added 12 Nov) under
 // .local/arithmetic-v3-unseen-20261112/<system>-rep<n>/results.json and prints
 // Markdown with the verdict-v3 categories, Wilson 95 % bounds (verdict-v3.ts),
 // per kind, repetition consistency, spend and flag classes. Also writes the full
@@ -18,6 +18,7 @@ export const SYSTEMS = [
   ["tinfoil-thinking", "Tinfoil Thinking: glm-5-3, effort max"],
   ["privatemode-glm-flash", "Privatemode glm-5.3-flash, effort low"],
   ["privatemode-glm", "Privatemode glm-5.3, effort max"],
+  ["privatemode-glm-low", "Privatemode glm-5.3, effort low"],
 ] as const;
 const KIND = new Map(unseenV3.cases.map((c) => [c.id, c.category]));
 const CRITICAL = new Set(unseenV3.cases.filter((c) => c.critical).map((c) => c.id));
@@ -84,7 +85,7 @@ for (const [sys, name] of SYSTEMS) out.push(`| ${name} | ${all[sys].records.leng
 
 const key = (r: ConversationRecordV3) => `${r.caseId} r${r.repetition}`;
 const common = SYSTEMS.map(([sys]) => new Set(all[sys].records.map(key))).reduce((a, b) => new Set([...a].filter((x) => b.has(x))));
-out.push("", `### Same conversations on all four systems (${common.size} case-repetition pairs measured everywhere)`, "", ...HEAD);
+out.push("", `### Same conversations on all ${SYSTEMS.length} systems (${common.size} case-repetition pairs measured everywhere)`, "", ...HEAD);
 for (const [sys, name] of SYSTEMS) out.push(row(name, all[sys].records.filter((r) => common.has(key(r)))));
 
 out.push("", "### Per repetition", "", ...HEAD);
@@ -100,7 +101,7 @@ for (const [sys, name] of SYSTEMS) {
   for (const k of kinds) out.push(row(k, all[sys].records.filter((r) => KIND.get(r.caseId) === k)));
   out.push("");
 }
-out.push("**All four systems together, per kind**", "", ...HEAD);
+out.push(`**All ${SYSTEMS.length} systems together, per kind**`, "", ...HEAD);
 const pooled = Object.values(all).flatMap((s) => s.records);
 for (const k of kinds) out.push(row(k, pooled.filter((r) => KIND.get(r.caseId) === k)));
 

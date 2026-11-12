@@ -46,7 +46,11 @@ export const CELLS: Record<string, Spec> = {
   // Prices are the EUR list prices (docs/privatemode-master-notes.md section 6), used for the cap and a list-price equivalent only.
   "privatemode-glm-flash": { provider: "privatemode", model: "glm-5.3-flash", config: { reasoning_effort: "low" }, maxOutput: 4096, timeoutMs: 300000, price: { input: 0.2, output: 0.65, request: 0 } },
   "privatemode-glm": { provider: "privatemode", model: "glm-5.3", config: { reasoning_effort: "max" }, maxOutput: 16384, timeoutMs: 600000, price: { input: 1.55, output: 5.74, request: 0 } },
+  // 12 Nov, Fast candidate: GLM-5.3 at its minimum effort, same output limit as Flash.
+  "privatemode-glm-low": { provider: "privatemode", model: "glm-5.3", config: { reasoning_effort: "low" }, maxOutput: 4096, timeoutMs: 300000, price: { input: 1.55, output: 5.74, request: 0 } },
 };
+// A quota, budget or payment refusal stops the run at once (free allowance); it is never retried around.
+const QUOTA = /\b402\b|quota|budget|payment/i;
 // shortcut: the SDK is loaded from the read-only privatemode-parity worktree because package.json here is the owner's uncommitted file; add privatemode-ai as a dependency when the spike merges.
 const PRIVATEMODE_SDK = process.env.PRIVATEMODE_SDK ?? "file:///C:/Gyanesh/Startups/Private_AI-pm/node_modules/privatemode-ai/dist/index.js";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -345,6 +349,12 @@ async function main() {
         }
       const classes = [...new Set(record.turns.flatMap((t) => t.flagClasses))].join("+");
       console.log(`${gateCase.id} r${repetition}: ${record.outcome}${classes ? ` [${classes}]` : ""}${record.turns.flatMap((t) => t.attempts.filter((a) => a.failure).map((a) => ` {${a.call}:${a.failure!.code}}`)).join("")} cost so far ${costUSD.toFixed(4)}`);
+      const refusal = record.turns.flatMap((t) => t.attempts).find((a) => QUOTA.test(a.transportFailure ?? ""))?.transportFailure;
+      if (refusal) {
+        stopped = `quota refusal at ${gateCase.id} r${repetition}: ${refusal}`;
+        console.log(`STOP ${stopped}`);
+        break outer;
+      }
     }
   privatemode?.close();
   // Privatemode runs on the organisation's free token quota (spend budget zero, per the spike); the list price is kept as an equivalent in EUR.

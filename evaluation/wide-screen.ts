@@ -26,7 +26,9 @@ import { composeContext, newMessage } from "../src/conversation";
 import { emptyConversation, type Conversation } from "../shared/contracts";
 
 const PRIVATEMODE_SDK = process.env.PRIVATEMODE_SDK ?? "C:/Gyanesh/Startups/Private_AI-pm/node_modules/privatemode-ai/dist/index.js";
-const dir = ".local/wide-screen-20261112";
+// WIDE_SCREEN_DIR keeps a later rerun (e.g. the 12 Nov Fast-tier screen) from overwriting the first screen's files.
+const dir = process.env.WIDE_SCREEN_DIR ?? ".local/wide-screen-20261112";
+const scoresFile = process.env.WIDE_SCREEN_DIR ? `${dir}/scores.json` : "evaluation/results/wide-screen-20261112.json";
 
 type Arm = { provider: "tinfoil" | "privatemode"; model: string; options: Record<string, unknown> };
 const T = (model: string, options: Record<string, unknown> = {}): Arm => ({ provider: "tinfoil", model, options });
@@ -179,6 +181,7 @@ async function runArm(armName: string, reps: number, cap: number) {
   // Worst case per request (4 characters per token is generous); only Tinfoil spends money.
   const worst = (tokens: number) => (arm.provider === "tinfoil" ? ((LIMITS.maxInputCharacters / 4) * p.input + tokens * p.output) / 1e6 : 0);
   const fixtures = [...base, ...checks] as (typeof base)[number][];
+  let halted = false;
   stop: for (let rep = 1; rep <= reps; rep++)
     for (const fixture of fixtures) {
       let conversation: Conversation = {
@@ -196,9 +199,10 @@ async function runArm(armName: string, reps: number, cap: number) {
         const turn = await call(arm, out, composeContext(conversation, LIMITS.maxInputCharacters, new Date(), "constraints-v4"), LIMITS.maxOutputTokens);
         run.turns.push(turn);
         console.log(`${armName} rep${rep} ${fixture.id} t${run.turns.length}: ttft ${turn.ttftMs ?? "-"} ms, total ${turn.totalMs} ms${turn.error ? `, ERROR ${turn.error}` : ""}`);
-        // An authentication failure (expired or wrong key) stops the arm instead of repeating it.
-        if (turn.error && /HTTP 40[13]|Unauthorized/.test(turn.error)) {
-          console.log(`${armName} stopping: authentication failed (${turn.error.slice(0, 80)})`);
+        // An authentication or quota/budget/payment failure stops the arm instead of repeating it.
+        if (turn.error && /HTTP 40[123]|Unauthorized|\b402\b|quota|budget|payment/i.test(turn.error)) {
+          console.log(`${armName} stopping: refused (${turn.error.slice(0, 300)})`);
+          halted = true;
           break stop;
         }
         if (turn.error) break; // an incomplete first turn stops the dependent second turn
@@ -208,7 +212,7 @@ async function runArm(armName: string, reps: number, cap: number) {
     }
   // Long-answer probe at the screen's output limit; if it is cut off, once more with room to see what it needs.
   for (const maxTokens of [LIMITS.maxOutputTokens, PROBE_RETRY_TOKENS]) {
-    if (out.spent + worst(maxTokens) > cap) break;
+    if (halted || out.spent + worst(maxTokens) > cap) break;
     const conversation = { ...emptyConversation(), messages: [newMessage("user", PROBE)] } as Conversation;
     const turn = await call(arm, out, composeContext(conversation, LIMITS.maxInputCharacters, new Date(), "constraints-v4"), maxTokens);
     const probe = { ...turn, maxTokens, words: turn.text.split(/\s+/).filter(Boolean).length };
@@ -298,7 +302,7 @@ async function score() {
     // Safety replies for the owner's grade, synthetic scenario only.
     await writeFile(`${dir}/${arm}-safety.md`, data.runs.filter((r) => r.id === "selection-07").map((r) => `## ${arm} rep ${r.rep}\n\n${r.turns.map((t, i) => `**Turn ${i + 1}:** ${t.text}`).join("\n\n")}`).join("\n\n"));
   }
-  await writeFile("evaluation/results/wide-screen-20261112.json", JSON.stringify(summary, null, 2) + "\n");
+  await writeFile(scoresFile, JSON.stringify(summary, null, 2) + "\n");
   console.log(JSON.stringify(summary, null, 2));
 }
 

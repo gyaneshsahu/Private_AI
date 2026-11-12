@@ -4,6 +4,21 @@
 
 Authorised by the owner on 12 November 2026, who knows the set was used before (gate v3, 24 October). This rerun compares systems; it is not a new gate. The set is no longer unseen for this pipeline, and no bar from THRESHOLD-v3.md is claimed. Synthetic data only.
 
+## Privatemode Fast candidates, 12 Nov
+
+Added on 12 November 2026 to choose Privatemode's Fast model (Privatemode is the alpha's primary provider). New cell `privatemode-glm-low`: `glm-5.3`, `reasoning_effort: "low"`, output limit 4,096 (as Flash), same set, harness and settings (`--cases unseen-v3 --retry 1`, three repetitions in parallel, `--root .local/arithmetic-v3-unseen-20261112`, labels `privatemode-glm-low-rep<n>`). No quota, budget or payment refusal. The tables in Results below are regenerated and now include this row (they also bring Tinfoil Thinking up to its finished 90).
+
+| System | n | Correct (verified, no flag) | Flagged | Silently wrong | No answer |
+| --- | --- | --- | --- | --- | --- |
+| Privatemode glm-5.3-flash, effort low | 90 | 43 (47.8 %; 37.8-58.0) | 25 (13 exact, 12 wrong) | 22 (24.4 %; 16.7-34.2) | 0 |
+| **Privatemode glm-5.3, effort low (new)** | 90 | **50 (55.6 %; 45.3-65.4)** | 25 (12 exact, 13 wrong) | **14 (15.6 %; 9.5-24.4)** | 1 |
+| Privatemode glm-5.3, effort max (Thinking) | 90 | 81 (90.0 %; 82.1-94.6) | 6 (2 exact, 4 wrong) | 3 (3.3 %; 1.1-9.3) | 0 |
+
+- **glm-5.3 at low is closer to Flash than to glm-5.3 at max.** Critical cases: 11 of 48 silently wrong (Flash 16, max 3). Per repetition the silent wrongs were 5, 1 and 8. The Wilson bounds of low and Flash overlap.
+- **What the 14 silent wrongs are (checked from the results files):** 13 omit the second figure asked for in turn 2 (gross after the VAT, the repayment after the interest, the average after the total, the share after the sum, the payable amount after the Skonto, the five-centime total after the Swiss VAT, the VAT after the net). One shows a wrong figure: unseen3-25 r3 turn 2, a compound-interest final amount of EUR 44,129,449.00, on which both readings agreed. A completeness check (every requested figure present) would catch the 13, not that one.
+- Validation failures: B:EMPTY 26, B:FORWARD_REFERENCE 21 (call 2 more fragile than on Flash).
+- Tokens: 410 requests, 487,701 input, 89,186 output (576,887 against the free allowance; list-price equivalent EUR 1.27, about EUR 0.014 per two-turn conversation; Flash EUR 0.0016).
+
 ## What was run
 
 - Set: `unseen-v3-20261023.json`, 30 two-turn conversations (15 German, 15 English, 16 critical), three repetitions per system, so 90 conversations per system. The set holds 30 conversations; the 90 counts repetitions.
@@ -73,6 +88,7 @@ Brackets give the percentage and the Wilson 95 % bounds.
 | Tinfoil Thinking: glm-5-3, effort max | 90 | 78 (86.7 %; 78.1-92.2) | 11 (12.2 %; 7.0-20.6) (7 exact, 4 wrong) | 0 (0.0 %; 0.0-4.1) | 1 (1.1 %; 0.2-6.0) |
 | Privatemode glm-5.3-flash, effort low | 90 | 43 (47.8 %; 37.8-58.0) | 25 (27.8 %; 19.6-37.8) (13 exact, 12 wrong) | 22 (24.4 %; 16.7-34.2) | 0 (0.0 %; 0.0-4.1) |
 | Privatemode glm-5.3, effort max | 90 | 81 (90.0 %; 82.1-94.6) | 6 (6.7 %; 3.1-13.8) (2 exact, 4 wrong) | 3 (3.3 %; 1.1-9.3) | 0 (0.0 %; 0.0-4.1) |
+| Privatemode glm-5.3, effort low | 90 | 50 (55.6 %; 45.3-65.4) | 25 (27.8 %; 19.6-37.8) (12 exact, 13 wrong) | 14 (15.6 %; 9.5-24.4) | 1 (1.1 %; 0.2-6.0) |
 
 | System | Measured (of 90) | Conversation records refused by a Tinfoil limit (set aside; initial run plus resumes) |
 | --- | --- | --- |
@@ -80,15 +96,17 @@ Brackets give the percentage and the Wilson 95 % bounds.
 | Tinfoil Thinking: glm-5-3, effort max | 90 | 127 |
 | Privatemode glm-5.3-flash, effort low | 90 | 0 |
 | Privatemode glm-5.3, effort max | 90 | 0 |
+| Privatemode glm-5.3, effort low | 90 | 0 |
 
-### Same conversations on all four systems (40 case-repetition pairs measured everywhere)
+### Same conversations on all 5 systems (90 case-repetition pairs measured everywhere)
 
 | Group | n | Correct (verified, no flag) | Flagged | Silently wrong | No answer |
 | --- | --- | --- | --- | --- | --- |
-| Tinfoil Fast: deepseek-v4-1-flash, thinking off | 40 | 17 (42.5 %; 28.5-57.8) | 18 (45.0 %; 30.7-60.2) (11 exact, 7 wrong) | 0 (0.0 %; 0.0-8.8) | 5 (12.5 %; 5.5-26.1) |
-| Tinfoil Thinking: glm-5-3, effort max | 40 | 33 (82.5 %; 68.1-91.3) | 7 (17.5 %; 8.7-31.9) (5 exact, 2 wrong) | 0 (0.0 %; 0.0-8.8) | 0 (0.0 %; 0.0-8.8) |
-| Privatemode glm-5.3-flash, effort low | 40 | 20 (50.0 %; 35.2-64.8) | 11 (27.5 %; 16.1-42.8) (4 exact, 7 wrong) | 9 (22.5 %; 12.3-37.5) | 0 (0.0 %; 0.0-8.8) |
-| Privatemode glm-5.3, effort max | 40 | 36 (90.0 %; 76.9-96.0) | 4 (10.0 %; 4.0-23.1) (2 exact, 2 wrong) | 0 (0.0 %; 0.0-8.8) | 0 (0.0 %; 0.0-8.8) |
+| Tinfoil Fast: deepseek-v4-1-flash, thinking off | 90 | 43 (47.8 %; 37.8-58.0) | 40 (44.4 %; 34.6-54.7) (23 exact, 17 wrong) | 0 (0.0 %; 0.0-4.1) | 7 (7.8 %; 3.8-15.2) |
+| Tinfoil Thinking: glm-5-3, effort max | 90 | 78 (86.7 %; 78.1-92.2) | 11 (12.2 %; 7.0-20.6) (7 exact, 4 wrong) | 0 (0.0 %; 0.0-4.1) | 1 (1.1 %; 0.2-6.0) |
+| Privatemode glm-5.3-flash, effort low | 90 | 43 (47.8 %; 37.8-58.0) | 25 (27.8 %; 19.6-37.8) (13 exact, 12 wrong) | 22 (24.4 %; 16.7-34.2) | 0 (0.0 %; 0.0-4.1) |
+| Privatemode glm-5.3, effort max | 90 | 81 (90.0 %; 82.1-94.6) | 6 (6.7 %; 3.1-13.8) (2 exact, 4 wrong) | 3 (3.3 %; 1.1-9.3) | 0 (0.0 %; 0.0-4.1) |
+| Privatemode glm-5.3, effort low | 90 | 50 (55.6 %; 45.3-65.4) | 25 (27.8 %; 19.6-37.8) (12 exact, 13 wrong) | 14 (15.6 %; 9.5-24.4) | 1 (1.1 %; 0.2-6.0) |
 
 ### Per repetition
 
@@ -97,24 +115,28 @@ Brackets give the percentage and the Wilson 95 % bounds.
 | Tinfoil Fast: deepseek-v4-1-flash, thinking off, rep1 | 30 | 15 (50.0 %; 33.2-66.8) | 11 (36.7 %; 21.9-54.5) (5 exact, 6 wrong) | 0 (0.0 %; 0.0-11.4) | 4 (13.3 %; 5.3-29.7) |
 | Tinfoil Fast: deepseek-v4-1-flash, thinking off, rep2 | 30 | 13 (43.3 %; 27.4-60.8) | 15 (50.0 %; 33.2-66.8) (9 exact, 6 wrong) | 0 (0.0 %; 0.0-11.4) | 2 (6.7 %; 1.8-21.3) |
 | Tinfoil Fast: deepseek-v4-1-flash, thinking off, rep3 | 30 | 15 (50.0 %; 33.2-66.8) | 14 (46.7 %; 30.2-63.9) (9 exact, 5 wrong) | 0 (0.0 %; 0.0-11.4) | 1 (3.3 %; 0.6-16.7) |
-| Tinfoil Thinking: glm-5-3, effort max, rep1 | 23 | 19 (82.6 %; 62.9-93.0) | 4 (17.4 %; 7.0-37.1) (3 exact, 1 wrong) | 0 (0.0 %; 0.0-14.3) | 0 (0.0 %; 0.0-14.3) |
-| Tinfoil Thinking: glm-5-3, effort max, rep2 | 8 | 7 (87.5 %; 52.9-97.8) | 1 (12.5 %; 2.2-47.1) (1 exact, 0 wrong) | 0 (0.0 %; 0.0-32.4) | 0 (0.0 %; 0.0-32.4) |
-| Tinfoil Thinking: glm-5-3, effort max, rep3 | 9 | 7 (77.8 %; 45.3-93.7) | 2 (22.2 %; 6.3-54.7) (1 exact, 1 wrong) | 0 (0.0 %; -0.0-29.9) | 0 (0.0 %; -0.0-29.9) |
+| Tinfoil Thinking: glm-5-3, effort max, rep1 | 30 | 25 (83.3 %; 66.4-92.7) | 4 (13.3 %; 5.3-29.7) (3 exact, 1 wrong) | 0 (0.0 %; 0.0-11.4) | 1 (3.3 %; 0.6-16.7) |
+| Tinfoil Thinking: glm-5-3, effort max, rep2 | 30 | 27 (90.0 %; 74.4-96.5) | 3 (10.0 %; 3.5-25.6) (3 exact, 0 wrong) | 0 (0.0 %; 0.0-11.4) | 0 (0.0 %; 0.0-11.4) |
+| Tinfoil Thinking: glm-5-3, effort max, rep3 | 30 | 26 (86.7 %; 70.3-94.7) | 4 (13.3 %; 5.3-29.7) (1 exact, 3 wrong) | 0 (0.0 %; 0.0-11.4) | 0 (0.0 %; 0.0-11.4) |
 | Privatemode glm-5.3-flash, effort low, rep1 | 30 | 16 (53.3 %; 36.1-69.8) | 9 (30.0 %; 16.7-47.9) (6 exact, 3 wrong) | 5 (16.7 %; 7.3-33.6) | 0 (0.0 %; 0.0-11.4) |
 | Privatemode glm-5.3-flash, effort low, rep2 | 30 | 14 (46.7 %; 30.2-63.9) | 7 (23.3 %; 11.8-40.9) (3 exact, 4 wrong) | 9 (30.0 %; 16.7-47.9) | 0 (0.0 %; 0.0-11.4) |
 | Privatemode glm-5.3-flash, effort low, rep3 | 30 | 13 (43.3 %; 27.4-60.8) | 9 (30.0 %; 16.7-47.9) (4 exact, 5 wrong) | 8 (26.7 %; 14.2-44.4) | 0 (0.0 %; 0.0-11.4) |
 | Privatemode glm-5.3, effort max, rep1 | 30 | 27 (90.0 %; 74.4-96.5) | 3 (10.0 %; 3.5-25.6) (1 exact, 2 wrong) | 0 (0.0 %; 0.0-11.4) | 0 (0.0 %; 0.0-11.4) |
 | Privatemode glm-5.3, effort max, rep2 | 30 | 26 (86.7 %; 70.3-94.7) | 2 (6.7 %; 1.8-21.3) (1 exact, 1 wrong) | 2 (6.7 %; 1.8-21.3) | 0 (0.0 %; 0.0-11.4) |
 | Privatemode glm-5.3, effort max, rep3 | 30 | 28 (93.3 %; 78.7-98.2) | 1 (3.3 %; 0.6-16.7) (0 exact, 1 wrong) | 1 (3.3 %; 0.6-16.7) | 0 (0.0 %; 0.0-11.4) |
+| Privatemode glm-5.3, effort low, rep1 | 30 | 17 (56.7 %; 39.2-72.6) | 7 (23.3 %; 11.8-40.9) (4 exact, 3 wrong) | 5 (16.7 %; 7.3-33.6) | 1 (3.3 %; 0.6-16.7) |
+| Privatemode glm-5.3, effort low, rep2 | 30 | 18 (60.0 %; 42.3-75.4) | 11 (36.7 %; 21.9-54.5) (6 exact, 5 wrong) | 1 (3.3 %; 0.6-16.7) | 0 (0.0 %; 0.0-11.4) |
+| Privatemode glm-5.3, effort low, rep3 | 30 | 15 (50.0 %; 33.2-66.8) | 7 (23.3 %; 11.8-40.9) (2 exact, 5 wrong) | 8 (26.7 %; 14.2-44.4) | 0 (0.0 %; 0.0-11.4) |
 
 ### Critical cases (16 cases x 3 = 48 per system when complete)
 
 | Group | n | Correct (verified, no flag) | Flagged | Silently wrong | No answer |
 | --- | --- | --- | --- | --- | --- |
 | Tinfoil Fast: deepseek-v4-1-flash, thinking off | 48 | 25 (52.1 %; 38.3-65.5) | 19 (39.6 %; 27.0-53.7) (11 exact, 8 wrong) | 0 (0.0 %; 0.0-7.4) | 4 (8.3 %; 3.3-19.6) |
-| Tinfoil Thinking: glm-5-3, effort max | 26 | 21 (80.8 %; 62.1-91.5) | 5 (19.2 %; 8.5-37.9) (4 exact, 1 wrong) | 0 (0.0 %; 0.0-12.9) | 0 (0.0 %; 0.0-12.9) |
+| Tinfoil Thinking: glm-5-3, effort max | 48 | 39 (81.3 %; 68.1-89.8) | 8 (16.7 %; 8.7-29.6) (6 exact, 2 wrong) | 0 (0.0 %; 0.0-7.4) | 1 (2.1 %; 0.4-10.9) |
 | Privatemode glm-5.3-flash, effort low | 48 | 24 (50.0 %; 36.4-63.6) | 8 (16.7 %; 8.7-29.6) (1 exact, 7 wrong) | 16 (33.3 %; 21.7-47.5) | 0 (0.0 %; 0.0-7.4) |
 | Privatemode glm-5.3, effort max | 48 | 41 (85.4 %; 72.8-92.8) | 4 (8.3 %; 3.3-19.6) (2 exact, 2 wrong) | 3 (6.3 %; 2.1-16.8) | 0 (0.0 %; 0.0-7.4) |
+| Privatemode glm-5.3, effort low | 48 | 24 (50.0 %; 36.4-63.6) | 13 (27.1 %; 16.6-41.0) (9 exact, 4 wrong) | 11 (22.9 %; 13.3-36.5) | 0 (0.0 %; 0.0-7.4) |
 
 ### Per question kind (pooled over repetitions; n = cases x 3)
 
@@ -140,19 +162,19 @@ Brackets give the percentage and the Wilson 95 % bounds.
 
 | Group | n | Correct (verified, no flag) | Flagged | Silently wrong | No answer |
 | --- | --- | --- | --- | --- | --- |
-| compound-interest | 2 | 2 (100.0 %; 34.2-100.0) | 0 (0.0 %; 0.0-65.8) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-65.8) | 0 (0.0 %; 0.0-65.8) |
-| date-time | 2 | 2 (100.0 %; 34.2-100.0) | 0 (0.0 %; 0.0-65.8) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-65.8) | 0 (0.0 %; 0.0-65.8) |
-| instalments-simple-interest | 3 | 3 (100.0 %; 43.9-100.0) | 0 (0.0 %; 0.0-56.1) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-56.1) | 0 (0.0 %; 0.0-56.1) |
-| multi-step | 1 | 1 (100.0 %; 20.7-100.0) | 0 (0.0 %; 0.0-79.3) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-79.3) | 0 (0.0 %; 0.0-79.3) |
-| net-gross | 4 | 3 (75.0 %; 30.1-95.4) | 1 (25.0 %; 4.6-69.9) (0 exact, 1 wrong) | 0 (0.0 %; 0.0-49.0) | 0 (0.0 %; 0.0-49.0) |
-| overtime-rate | 5 | 4 (80.0 %; 37.6-96.4) | 1 (20.0 %; 3.6-62.4) (0 exact, 1 wrong) | 0 (0.0 %; 0.0-43.4) | 0 (0.0 %; 0.0-43.4) |
-| percent-change | 8 | 8 (100.0 %; 67.6-100.0) | 0 (0.0 %; 0.0-32.4) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-32.4) | 0 (0.0 %; 0.0-32.4) |
-| proration | 1 | 1 (100.0 %; 20.7-100.0) | 0 (0.0 %; 0.0-79.3) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-79.3) | 0 (0.0 %; 0.0-79.3) |
-| skonto | 1 | 0 (0.0 %; 0.0-79.3) | 1 (100.0 %; 20.7-100.0) (1 exact, 0 wrong) | 0 (0.0 %; 0.0-79.3) | 0 (0.0 %; 0.0-79.3) |
-| surcharge | 4 | 4 (100.0 %; 51.0-100.0) | 0 (0.0 %; 0.0-49.0) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-49.0) | 0 (0.0 %; 0.0-49.0) |
-| swiss-vat | 4 | 1 (25.0 %; 4.6-69.9) | 3 (75.0 %; 30.1-95.4) (3 exact, 0 wrong) | 0 (0.0 %; 0.0-49.0) | 0 (0.0 %; 0.0-49.0) |
-| table-sum | 1 | 1 (100.0 %; 20.7-100.0) | 0 (0.0 %; 0.0-79.3) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-79.3) | 0 (0.0 %; 0.0-79.3) |
-| vat | 4 | 3 (75.0 %; 30.1-95.4) | 1 (25.0 %; 4.6-69.9) (1 exact, 0 wrong) | 0 (0.0 %; 0.0-49.0) | 0 (0.0 %; 0.0-49.0) |
+| compound-interest | 6 | 5 (83.3 %; 43.6-97.0) | 1 (16.7 %; 3.0-56.4) (0 exact, 1 wrong) | 0 (0.0 %; 0.0-39.0) | 0 (0.0 %; 0.0-39.0) |
+| date-time | 12 | 11 (91.7 %; 64.6-98.5) | 0 (0.0 %; 0.0-24.2) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-24.2) | 1 (8.3 %; 1.5-35.4) |
+| instalments-simple-interest | 6 | 6 (100.0 %; 61.0-100.0) | 0 (0.0 %; 0.0-39.0) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-39.0) | 0 (0.0 %; 0.0-39.0) |
+| multi-step | 6 | 6 (100.0 %; 61.0-100.0) | 0 (0.0 %; 0.0-39.0) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-39.0) | 0 (0.0 %; 0.0-39.0) |
+| net-gross | 6 | 5 (83.3 %; 43.6-97.0) | 1 (16.7 %; 3.0-56.4) (0 exact, 1 wrong) | 0 (0.0 %; 0.0-39.0) | 0 (0.0 %; 0.0-39.0) |
+| overtime-rate | 9 | 6 (66.7 %; 35.4-87.9) | 3 (33.3 %; 12.1-64.6) (1 exact, 2 wrong) | 0 (0.0 %; -0.0-29.9) | 0 (0.0 %; -0.0-29.9) |
+| percent-change | 12 | 12 (100.0 %; 75.8-100.0) | 0 (0.0 %; 0.0-24.2) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-24.2) | 0 (0.0 %; 0.0-24.2) |
+| proration | 6 | 6 (100.0 %; 61.0-100.0) | 0 (0.0 %; 0.0-39.0) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-39.0) | 0 (0.0 %; 0.0-39.0) |
+| skonto | 3 | 2 (66.7 %; 20.8-93.9) | 1 (33.3 %; 6.1-79.2) (1 exact, 0 wrong) | 0 (0.0 %; 0.0-56.1) | 0 (0.0 %; 0.0-56.1) |
+| surcharge | 6 | 6 (100.0 %; 61.0-100.0) | 0 (0.0 %; 0.0-39.0) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-39.0) | 0 (0.0 %; 0.0-39.0) |
+| swiss-vat | 6 | 2 (33.3 %; 9.7-70.0) | 4 (66.7 %; 30.0-90.3) (4 exact, 0 wrong) | 0 (0.0 %; 0.0-39.0) | 0 (0.0 %; 0.0-39.0) |
+| table-sum | 6 | 6 (100.0 %; 61.0-100.0) | 0 (0.0 %; 0.0-39.0) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-39.0) | 0 (0.0 %; 0.0-39.0) |
+| vat | 6 | 5 (83.3 %; 43.6-97.0) | 1 (16.7 %; 3.0-56.4) (1 exact, 0 wrong) | 0 (0.0 %; 0.0-39.0) | 0 (0.0 %; 0.0-39.0) |
 
 **Privatemode glm-5.3-flash, effort low**
 
@@ -190,50 +212,71 @@ Brackets give the percentage and the Wilson 95 % bounds.
 | table-sum | 6 | 5 (83.3 %; 43.6-97.0) | 0 (0.0 %; 0.0-39.0) (0 exact, 0 wrong) | 1 (16.7 %; 3.0-56.4) | 0 (0.0 %; 0.0-39.0) |
 | vat | 6 | 5 (83.3 %; 43.6-97.0) | 0 (0.0 %; 0.0-39.0) (0 exact, 0 wrong) | 1 (16.7 %; 3.0-56.4) | 0 (0.0 %; 0.0-39.0) |
 
-**All four systems together, per kind**
+**Privatemode glm-5.3, effort low**
 
 | Group | n | Correct (verified, no flag) | Flagged | Silently wrong | No answer |
 | --- | --- | --- | --- | --- | --- |
-| compound-interest | 20 | 10 (50.0 %; 29.9-70.1) | 10 (50.0 %; 29.9-70.1) (8 exact, 2 wrong) | 0 (0.0 %; 0.0-16.1) | 0 (0.0 %; 0.0-16.1) |
-| date-time | 38 | 36 (94.7 %; 82.7-98.5) | 2 (5.3 %; 1.5-17.3) (1 exact, 1 wrong) | 0 (0.0 %; 0.0-9.2) | 0 (0.0 %; 0.0-9.2) |
-| instalments-simple-interest | 21 | 15 (71.4 %; 50.0-86.2) | 5 (23.8 %; 10.6-45.1) (1 exact, 4 wrong) | 1 (4.8 %; 0.8-22.7) | 0 (0.0 %; 0.0-15.5) |
-| multi-step | 19 | 16 (84.2 %; 62.4-94.5) | 0 (0.0 %; 0.0-16.8) (0 exact, 0 wrong) | 2 (10.5 %; 2.9-31.4) | 1 (5.3 %; 0.9-24.6) |
-| net-gross | 22 | 9 (40.9 %; 23.3-61.3) | 11 (50.0 %; 30.7-69.3) (4 exact, 7 wrong) | 1 (4.5 %; 0.8-21.8) | 1 (4.5 %; 0.8-21.8) |
-| overtime-rate | 32 | 12 (37.5 %; 22.9-54.7) | 16 (50.0 %; 33.6-66.4) (2 exact, 14 wrong) | 2 (6.3 %; 1.7-20.1) | 2 (6.3 %; 1.7-20.1) |
-| percent-change | 44 | 34 (77.3 %; 63.0-87.2) | 10 (22.7 %; 12.8-37.0) (7 exact, 3 wrong) | 0 (0.0 %; 0.0-8.0) | 0 (0.0 %; 0.0-8.0) |
-| proration | 19 | 8 (42.1 %; 23.1-63.7) | 10 (52.6 %; 31.7-72.7) (10 exact, 0 wrong) | 0 (0.0 %; 0.0-16.8) | 1 (5.3 %; 0.9-24.6) |
-| skonto | 10 | 5 (50.0 %; 23.7-76.3) | 2 (20.0 %; 5.7-51.0) (1 exact, 1 wrong) | 3 (30.0 %; 10.8-60.3) | 0 (0.0 %; 0.0-27.8) |
-| surcharge | 22 | 22 (100.0 %; 85.1-100.0) | 0 (0.0 %; 0.0-14.9) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-14.9) | 0 (0.0 %; 0.0-14.9) |
-| swiss-vat | 22 | 5 (22.7 %; 10.1-43.4) | 10 (45.5 %; 26.9-65.3) (7 exact, 3 wrong) | 5 (22.7 %; 10.1-43.4) | 2 (9.1 %; 2.5-27.8) |
-| table-sum | 19 | 14 (73.7 %; 51.2-88.2) | 0 (0.0 %; 0.0-16.8) (0 exact, 0 wrong) | 5 (26.3 %; 11.8-48.8) | 0 (0.0 %; 0.0-16.8) |
-| vat | 22 | 14 (63.6 %; 43.0-80.3) | 2 (9.1 %; 2.5-27.8) (2 exact, 0 wrong) | 6 (27.3 %; 13.2-48.2) | 0 (0.0 %; 0.0-14.9) |
+| compound-interest | 6 | 0 (0.0 %; 0.0-39.0) | 4 (66.7 %; 30.0-90.3) (1 exact, 3 wrong) | 1 (16.7 %; 3.0-56.4) | 1 (16.7 %; 3.0-56.4) |
+| date-time | 12 | 11 (91.7 %; 64.6-98.5) | 1 (8.3 %; 1.5-35.4) (1 exact, 0 wrong) | 0 (0.0 %; 0.0-24.2) | 0 (0.0 %; 0.0-24.2) |
+| instalments-simple-interest | 6 | 4 (66.7 %; 30.0-90.3) | 1 (16.7 %; 3.0-56.4) (0 exact, 1 wrong) | 1 (16.7 %; 3.0-56.4) | 0 (0.0 %; 0.0-39.0) |
+| multi-step | 6 | 6 (100.0 %; 61.0-100.0) | 0 (0.0 %; 0.0-39.0) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-39.0) | 0 (0.0 %; 0.0-39.0) |
+| net-gross | 6 | 3 (50.0 %; 18.8-81.2) | 2 (33.3 %; 9.7-70.0) (1 exact, 1 wrong) | 1 (16.7 %; 3.0-56.4) | 0 (0.0 %; 0.0-39.0) |
+| overtime-rate | 9 | 1 (11.1 %; 2.0-43.5) | 8 (88.9 %; 56.5-98.0) (2 exact, 6 wrong) | 0 (0.0 %; -0.0-29.9) | 0 (0.0 %; -0.0-29.9) |
+| percent-change | 12 | 10 (83.3 %; 55.2-95.3) | 2 (16.7 %; 4.7-44.8) (1 exact, 1 wrong) | 0 (0.0 %; 0.0-24.2) | 0 (0.0 %; 0.0-24.2) |
+| proration | 6 | 4 (66.7 %; 30.0-90.3) | 2 (33.3 %; 9.7-70.0) (1 exact, 1 wrong) | 0 (0.0 %; 0.0-39.0) | 0 (0.0 %; 0.0-39.0) |
+| skonto | 3 | 2 (66.7 %; 20.8-93.9) | 0 (0.0 %; 0.0-56.1) (0 exact, 0 wrong) | 1 (33.3 %; 6.1-79.2) | 0 (0.0 %; 0.0-56.1) |
+| surcharge | 6 | 6 (100.0 %; 61.0-100.0) | 0 (0.0 %; 0.0-39.0) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-39.0) | 0 (0.0 %; 0.0-39.0) |
+| swiss-vat | 6 | 0 (0.0 %; 0.0-39.0) | 4 (66.7 %; 30.0-90.3) (4 exact, 0 wrong) | 2 (33.3 %; 9.7-70.0) | 0 (0.0 %; 0.0-39.0) |
+| table-sum | 6 | 1 (16.7 %; 3.0-56.4) | 1 (16.7 %; 3.0-56.4) (1 exact, 0 wrong) | 4 (66.7 %; 30.0-90.3) | 0 (0.0 %; 0.0-39.0) |
+| vat | 6 | 2 (33.3 %; 9.7-70.0) | 0 (0.0 %; 0.0-39.0) (0 exact, 0 wrong) | 4 (66.7 %; 30.0-90.3) | 0 (0.0 %; 0.0-39.0) |
+
+**All 5 systems together, per kind**
+
+| Group | n | Correct (verified, no flag) | Flagged | Silently wrong | No answer |
+| --- | --- | --- | --- | --- | --- |
+| compound-interest | 30 | 13 (43.3 %; 27.4-60.8) | 15 (50.0 %; 33.2-66.8) (9 exact, 6 wrong) | 1 (3.3 %; 0.6-16.7) | 1 (3.3 %; 0.6-16.7) |
+| date-time | 60 | 56 (93.3 %; 84.1-97.4) | 3 (5.0 %; 1.7-13.7) (2 exact, 1 wrong) | 0 (0.0 %; 0.0-6.0) | 1 (1.7 %; 0.3-8.9) |
+| instalments-simple-interest | 30 | 22 (73.3 %; 55.6-85.8) | 6 (20.0 %; 9.5-37.3) (1 exact, 5 wrong) | 2 (6.7 %; 1.8-21.3) | 0 (0.0 %; 0.0-11.4) |
+| multi-step | 30 | 27 (90.0 %; 74.4-96.5) | 0 (0.0 %; 0.0-11.4) (0 exact, 0 wrong) | 2 (6.7 %; 1.8-21.3) | 1 (3.3 %; 0.6-16.7) |
+| net-gross | 30 | 14 (46.7 %; 30.2-63.9) | 13 (43.3 %; 27.4-60.8) (5 exact, 8 wrong) | 2 (6.7 %; 1.8-21.3) | 1 (3.3 %; 0.6-16.7) |
+| overtime-rate | 45 | 15 (33.3 %; 21.4-47.9) | 26 (57.8 %; 43.3-71.0) (5 exact, 21 wrong) | 2 (4.4 %; 1.2-14.8) | 2 (4.4 %; 1.2-14.8) |
+| percent-change | 60 | 48 (80.0 %; 68.2-88.2) | 12 (20.0 %; 11.8-31.8) (8 exact, 4 wrong) | 0 (0.0 %; 0.0-6.0) | 0 (0.0 %; 0.0-6.0) |
+| proration | 30 | 17 (56.7 %; 39.2-72.6) | 12 (40.0 %; 24.6-57.7) (11 exact, 1 wrong) | 0 (0.0 %; 0.0-11.4) | 1 (3.3 %; 0.6-16.7) |
+| skonto | 15 | 9 (60.0 %; 35.7-80.2) | 2 (13.3 %; 3.7-37.9) (1 exact, 1 wrong) | 4 (26.7 %; 10.9-52.0) | 0 (0.0 %; 0.0-20.4) |
+| surcharge | 30 | 30 (100.0 %; 88.6-100.0) | 0 (0.0 %; 0.0-11.4) (0 exact, 0 wrong) | 0 (0.0 %; 0.0-11.4) | 0 (0.0 %; 0.0-11.4) |
+| swiss-vat | 30 | 6 (20.0 %; 9.5-37.3) | 15 (50.0 %; 33.2-66.8) (12 exact, 3 wrong) | 7 (23.3 %; 11.8-40.9) | 2 (6.7 %; 1.8-21.3) |
+| table-sum | 30 | 20 (66.7 %; 48.8-80.8) | 1 (3.3 %; 0.6-16.7) (1 exact, 0 wrong) | 9 (30.0 %; 16.7-47.9) | 0 (0.0 %; 0.0-11.4) |
+| vat | 30 | 18 (60.0 %; 42.3-75.4) | 2 (6.7 %; 1.8-21.3) (2 exact, 0 wrong) | 10 (33.3 %; 19.2-51.2) | 0 (0.0 %; 0.0-11.4) |
 
 ### Repetition-to-repetition consistency (cases answered in all three repetitions)
 
 | System | Cases in 3 reps | Same outcome in all 3 | Same exact/wrong in all 3 | Same figures shown in all 3 (bold lines; method text ignored) | Correct in all 3 | Silently wrong in at least one |
 | --- | --- | --- | --- | --- | --- | --- |
 | Tinfoil Fast: deepseek-v4-1-flash, thinking off | 30 | 11 | 17 | 3 | 8 | 0 |
-| Tinfoil Thinking: glm-5-3, effort max | 8 | 7 | 7 | 1 | 6 | 0 |
+| Tinfoil Thinking: glm-5-3, effort max | 30 | 22 | 25 | 9 | 21 | 0 |
 | Privatemode glm-5.3-flash, effort low | 30 | 19 | 20 | 4 | 10 | 11 |
 | Privatemode glm-5.3, effort max | 30 | 24 | 25 | 12 | 24 | 3 |
+| Privatemode glm-5.3, effort low | 30 | 13 | 16 | 7 | 11 | 10 |
 
 ### Spend (from the results files; the same lines are in the cost log)
 
 | System | Requests | Input tokens | Output tokens | USD by usage x price | USD as logged by the harness | Note |
 | --- | --- | --- | --- | --- | --- | --- |
 | Tinfoil Fast: deepseek-v4-1-flash, thinking off | 494 | 528164 | 91673 | 0.4498 | 0.4498 | live catalog price; the logged figure counts each HTTP 402 refusal at the worst case |
-| Tinfoil Thinking: glm-5-3, effort max | 320 | 225764 | 216669 | 1.6522 | 6.7226 | live catalog price; the logged figure counts each HTTP 402 refusal at the worst case |
+| Tinfoil Thinking: glm-5-3, effort max | 528 | 469483 | 477592 | 3.5912 | 8.6616 | live catalog price; the logged figure counts each HTTP 402 refusal at the worst case |
 | Privatemode glm-5.3-flash, effort low | 386 | 456637 | 86809 | 0 (free quota) | 0.0000 | free token quota; list-price equivalent EUR 0.1478 |
 | Privatemode glm-5.3, effort max | 370 | 431988 | 353440 | 0 (free quota) | 0.0000 | free token quota; list-price equivalent EUR 2.6983 |
+| Privatemode glm-5.3, effort low | 410 | 487701 | 89186 | 0 (free quota) | 0.0000 | free token quota; list-price equivalent EUR 1.2679 |
 
 ### Flags that fired (conversations per flag class combination)
 
 | System | Flag classes on exact answers (false flags) | Flag classes on wrong answers (caught) | Validation failures (call:code, attempts) |
 | --- | --- | --- | --- |
 | Tinfoil Fast: deepseek-v4-1-flash, thinking off | cross-check-differs 15, cross-check-unavailable 5, cross-check-differs+cross-check-unavailable 3 | cross-check-differs 11, cross-check-differs+method 5, cross-check-differs+ledger+prose 1 | A:CANNOT_ANSWER 19, A:UNKNOWN_REFERENCE 18, B:CANNOT_ANSWER 16, A:EVALUATION 15, B:FORWARD_REFERENCE 6, B:EVALUATION 6, B:TRUNCATED 5, B:INVALID_SCHEMA 3, A:FORWARD_REFERENCE 2, A:INVALID_SCHEMA 1, B:RESULT_FORMAT 1, A:TRUNCATED 1 |
-| Tinfoil Thinking: glm-5-3, effort max | cross-check-differs 5 | cross-check-differs+method 1, cross-check-differs 1 | B:CANNOT_ANSWER 8, B:EMPTY 3, B:TRUNCATED 2, A:FORWARD_REFERENCE 1, A:EMPTY 1, A:EVALUATION 1, B:FORWARD_REFERENCE 1, A:UNKNOWN_REFERENCE 1 |
+| Tinfoil Thinking: glm-5-3, effort max | cross-check-differs 7 | cross-check-differs+method 2, cross-check-differs 2 | B:CANNOT_ANSWER 11, B:EMPTY 7, B:TRUNCATED 4, A:TRUNCATED 2, A:FORWARD_REFERENCE 1, A:EMPTY 1, A:EVALUATION 1, B:FORWARD_REFERENCE 1, A:UNKNOWN_REFERENCE 1, B:INVALID_SCHEMA 1 |
 | Privatemode glm-5.3-flash, effort low | cross-check-differs 12, cross-check-unavailable 1 | cross-check-differs 11, cross-check-differs+method 1 | A:CANNOT_ANSWER 11, B:FORWARD_REFERENCE 6, B:EVALUATION 4, B:CANNOT_ANSWER 3, A:EVALUATION 2, A:FORWARD_REFERENCE 1 |
 | Privatemode glm-5.3, effort max | cross-check-differs 2 | cross-check-differs+method 4 | B:EMPTY 8, B:CANNOT_ANSWER 2 |
+| Privatemode glm-5.3, effort low | cross-check-differs 10, cross-check-unavailable 1, ledger+prose 1 | cross-check-differs 6, cross-check-differs+method 6, method 1 | B:EMPTY 26, B:FORWARD_REFERENCE 21, A:EVALUATION 4, A:FORWARD_REFERENCE 1, B:CANNOT_ANSWER 1 |
 
 ### What the silent wrongs are
 
