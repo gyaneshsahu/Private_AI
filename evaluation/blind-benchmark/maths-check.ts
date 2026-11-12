@@ -104,7 +104,10 @@ export function checkMaths(text: string, expected: MathsExpected, locale: Number
       found = `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
       ok &&= t === h * 60 + m;
     } else {
-      const nums = numbersIn(segment, locale);
+      // A rate restated in the result line ("Ergebnis: inklusive 19 % MwSt.: 258,83 €") is not
+      // the result; skip percentages unless they are the only numbers (L7-03, 12 November).
+      const withoutRates = numbersIn(segment.replace(/\d+(?:[.,]\d+)?\s*%/g, " "), locale);
+      const nums = withoutRates.length ? withoutRates : numbersIn(segment, locale);
       const x = take === "first" ? nums[0] : nums.at(-1);
       if (x === undefined) return { verdict: "no-number", source, missing };
       found = x;

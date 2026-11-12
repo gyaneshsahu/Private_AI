@@ -96,3 +96,10 @@ describe("scoring", () => {
     expect(md).toContain("fast, level 3");
   });
 });
+
+it("maths check skips a restated rate in the result line but keeps a percentage answer", async () => {
+  const { checkMaths } = await import("../evaluation/blind-benchmark/maths-check");
+  expect(checkMaths("Ergebnis: Gesamtbetrag inklusive 19 % MwSt.: 258,83 €.", { final: 258.83, tolerance: 0.005 }, "de").verdict).toBe("correct");
+  expect(checkMaths("Final answer: 12.5 %", { final: 12.5, tolerance: 0.01 }).verdict).toBe("correct");
+  expect(checkMaths("Ergebnis: inklusive 19 % MwSt.: 285,83 €.", { final: 258.83, tolerance: 0.005 }, "de").verdict).toBe("silent-wrong");
+});

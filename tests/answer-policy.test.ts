@@ -66,6 +66,8 @@ it("product (default) policy answers health questions with safe emergency wordin
     "not in every reply and not for general knowledge questions",
     "Never claim to be a medical product",
     "emergency 112",
+    'not "your local emergency number"',
+    "also encourage talking to a doctor or therapist",
     "on-call doctor 116 117",
     "Telefonseelsorge crisis support 0800 111 0 111 or 0800 111 0 222",
     "Keep that urgent human connection in follow-ups",
