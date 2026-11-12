@@ -8,23 +8,82 @@
 // Key from Windows Credential Manager (scripts/WindowsSecrets.psm1), never printed:
 //   Invoke-WithPrivateAiSecret -Name TINFOIL_API_KEY -Action { npx tsx evaluation/live-failure-check.ts <routerDigest> }
 // Spend: gpt-oss-120b, at most 6 forwarded requests, worst case well under USD 0.01.
+//
+// Privatemode mode (Stage 3, 12 November): the same cases through the real app on Privatemode
+// (glm-5.3-flash, reasoning low), served over local TLS because the SDK always uses HTTPS. The
+// approved manifest is fetched once with the key (attestation only, no tokens); "attest" pins a
+// wrong digest and "attestOutdated" approves a manifest that no longer matches the deployment.
+//   Invoke-WithPrivateAiSecret -Name PRIVATEMODE_API_KEY -Action { npx tsx evaluation/live-failure-check.ts --privatemode }
+// Spend: free token allowance; at most 6 forwarded requests with small output limits.
 import express from "express";
+import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
+import { createServer as createHttpsServer } from "node:https";
 import { createServer } from "vite";
 import { chromium, type Page } from "@playwright/test";
 import { createApp } from "../server/app";
 import { checks } from "../shared/contracts";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
+import { localTLS } from "../tests/fixtures/local-tls";
+import { PRIVATEMODE_WASM_SHA256 } from "../src/providers/privatemode-client";
 
-const digest = process.argv[2];
-const apiKey = process.env.TINFOIL_API_KEY;
+const privatemode = process.argv.includes("--privatemode");
+const apiKey = privatemode ? process.env.PRIVATEMODE_API_KEY : process.env.TINFOIL_API_KEY;
+let manifest: Uint8Array | undefined;
+let digest = process.argv[2];
+if (privatemode && apiKey) {
+  const { PrivatemodeAI } = await import("privatemode-ai");
+  const probe = new PrivatemodeAI({ apiKey, enableWasmLogging: false });
+  await probe.verify();
+  manifest = probe.manifestBytes!;
+  probe.close();
+  digest = createHash("sha256").update(manifest).digest("hex");
+}
 if (!/^[a-f0-9]{64}$/.test(digest ?? "") || !apiKey)
-  throw Error("Usage: TINFOIL_API_KEY in the process env, router digest as the argument");
+  throw Error(
+    "Usage: TINFOIL_API_KEY in the process env and the router digest as the argument, or PRIVATEMODE_API_KEY and --privatemode",
+  );
 
-const PRICE = { input: 0.15, output: 0.6 }; // gpt-oss-120b, catalog of 26 October
+// gpt-oss-120b, catalog of 26 October; glm-5.3-flash EUR 0.20 / 0.65 taken 1:1 as USD for the bound.
+const PRICE = privatemode ? { input: 0.2, output: 0.65 } : { input: 0.15, output: 0.6 };
+const MODEL = privatemode ? "glm-5.3-flash" : "gpt-oss-120b";
 function report(maxOutputTokens: number, releaseDigest: string) {
   const now = Date.now();
   const evidence = ["LOCAL T6 FIXTURE on the agent machine only; not a qualification report"];
+  if (privatemode)
+    return {
+      provider: "privatemode",
+      model: MODEL,
+      origin: "https://api.privatemode.ai/",
+      repository: "edgelesssys/privatemode-public",
+      releaseDigests: [releaseDigest],
+      reviewedAt: new Date(now - 60_000).toISOString(),
+      validUntil: new Date(now + 3_600_000).toISOString(),
+      review: Object.fromEntries(checks.map((c) => [c, { status: "pass", evidence }])),
+      maxInputCharacters: 8000,
+      maxOutputTokens,
+      pricing: { inputPerMillion: PRICE.input, outputPerMillion: PRICE.output, currency: "USD" },
+      approvedSpendUSD: 0.05,
+      glmReasoningEffort: "low",
+      privatemode: {
+        sdkVersion: "1.63.0",
+        wasmSha256: PRIVATEMODE_WASM_SHA256,
+        manifestReferenceValues: ["snp", "tdx"],
+        nvidiaOCSPPolicy: "allowUnknown false, grace 0 (client)",
+        portalKeyLimit: {
+          source: "owner-reported",
+          setAt: new Date(now - 60_000).toISOString(),
+          expiresAt: new Date(now + 86_400_000).toISOString(),
+        },
+        priceConversion: {
+          inputPerMillionEUR: 0.2,
+          outputPerMillionEUR: 0.65,
+          vatRate: 0,
+          usdPerEUR: 1,
+          rateDate: "LOCAL T6 FIXTURE, no conversion",
+        },
+      },
+    };
   return {
     provider: "tinfoil",
     model: "gpt-oss-120b",
@@ -44,11 +103,16 @@ function report(maxOutputTokens: number, releaseDigest: string) {
 
 let forwarded = 0;
 let worstCaseUSD = 0;
-async function withApp(qualification: ReturnType<typeof report>, run: (page: Page, relayHits: () => number) => Promise<unknown>) {
+async function withApp(
+  qualification: ReturnType<typeof report>,
+  run: (page: Page, relayHits: () => number) => Promise<unknown>,
+  servedManifest = manifest,
+) {
   const outer = express();
   let hits = 0;
   outer.use((req, _res, next) => {
-    if (req.method === "POST" && req.path === "/api/inference/v1/chat/completions") {
+    // Privatemode's SDK posts chat at the site root; the app maps it under /api/inference.
+    if (req.method === "POST" && ["/api/inference/v1/chat/completions", "/v1/chat/completions"].includes(req.path)) {
       hits++;
       forwarded++;
       // Upper bound per request: the whole input limit (4 chars per token is generous) plus the output limit.
@@ -56,23 +120,27 @@ async function withApp(qualification: ReturnType<typeof report>, run: (page: Pag
     }
     next();
   });
-  const server0 = outer.listen(0, "127.0.0.1");
+  const tls = privatemode ? await localTLS() : undefined;
+  const server0 = tls ? createHttpsServer({ key: tls.key, cert: tls.cert }, outer) : outer.listen(0, "127.0.0.1");
+  if (tls) server0.listen(0, "127.0.0.1");
   await new Promise((ok) => server0.once("listening", ok));
   const port = (server0.address() as { port: number }).port;
-  const inner = createApp({ origin: `http://127.0.0.1:${port}`, dev: true, qualification, apiKey });
+  const appOrigin = tls ? `https://localhost:${port}` : `http://127.0.0.1:${port}`;
+  const inner = createApp({ origin: appOrigin, dev: true, qualification, apiKey, providerManifest: servedManifest });
   const vite = await createServer({ server: { middlewareMode: true, hmr: false }, appType: "spa", logLevel: "error" });
   inner.use(vite.middlewares);
   outer.use(inner);
   const browser = await chromium.launch(browserLaunchOptions());
   try {
-    const page = await browser.newPage();
-    await page.goto(`http://127.0.0.1:${port}`, { timeout: 60_000 });
+    const page = await (await browser.newContext({ ignoreHTTPSErrors: !!tls })).newPage();
+    await page.goto(appOrigin, { timeout: 60_000 });
     await page.getByRole("button", { name: "Send ↑", exact: true }).waitFor();
     return await run(page, () => hits);
   } finally {
     await browser.close();
     await vite.close();
     server0.close();
+    await tls?.dispose();
   }
 }
 
@@ -87,7 +155,12 @@ const pageText = (page: Page) => page.locator("main").innerText().catch(() => ""
 const settle = (page: Page) =>
   page.getByRole("button", { name: "Stop response" }).waitFor({ state: "detached", timeout: 120_000 });
 
-const results: Record<string, unknown> = { observedAt: new Date().toISOString(), routerDigest: digest, model: "gpt-oss-120b" };
+const results: Record<string, unknown> = {
+  observedAt: new Date().toISOString(),
+  provider: privatemode ? "privatemode" : "tinfoil",
+  [privatemode ? "manifestDigest" : "routerDigest"]: digest,
+  model: MODEL,
+};
 const verdict = (name: string, pass: boolean, detail: Record<string, unknown>) => {
   results[name] = { pass, ...detail };
   console.log(`${pass ? "PASS" : "FAIL"} ${name} ${JSON.stringify(detail).slice(0, 300)}`);
@@ -176,9 +249,30 @@ await withApp(report(512, "0".repeat(64)), async (page, hits) => {
   });
 });
 
+if (manifest) {
+  // An approved manifest that no longer matches the live deployment (an unannounced update).
+  const outdated = JSON.parse(new TextDecoder().decode(manifest));
+  outdated.ReferenceValues.snp[0].TrustedMeasurement = "00".repeat(48);
+  const served = new TextEncoder().encode(JSON.stringify(outdated));
+  await withApp(
+    report(512, createHash("sha256").update(served).digest("hex")),
+    async (page, hits) => {
+      await send(page, "Synthetic test. Reply with exactly the word: should-not-send");
+      await settle(page).catch(() => {});
+      await page.waitForTimeout(15_000);
+      const text = await pageText(page);
+      verdict("attestOutdated", hits() === 0, {
+        relayHits: hits(),
+        shownToUser: text.split("\n").filter((l) => /sent|match|verif|unavailable|differs/i.test(l)).slice(0, 3),
+      });
+    },
+    served,
+  );
+}
+
 results.forwardedRequests = forwarded;
 results.worstCaseUSD = Number(worstCaseUSD.toFixed(4));
 await mkdir(".local/live-failure-20261112", { recursive: true });
-await writeFile(`.local/live-failure-20261112/result-${Date.now()}.json`, JSON.stringify(results, null, 2));
+await writeFile(`.local/live-failure-20261112/result-${privatemode ? "privatemode-" : ""}${Date.now()}.json`, JSON.stringify(results, null, 2));
 console.log(`forwarded ${forwarded} request(s); worst-case spend USD ${worstCaseUSD.toFixed(4)}`);
 process.exit(Object.values(results).some((r) => typeof r === "object" && r && "pass" in r && !(r as { pass: boolean }).pass) ? 1 : 0);

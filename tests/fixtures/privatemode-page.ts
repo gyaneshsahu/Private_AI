@@ -1,42 +1,43 @@
-// Browser page for the Privatemode spike test: runs the real adapter as the app would
-// (verify, then one streamed request through the transport) and reports the outcome.
+// Browser page for the live Privatemode test: runs the real adapter as the app does, through the
+// real app's admission (status for CSRF and cache salt, verify, then one streamed request).
 import { inferenceClientFor } from "../../src/providers/inference-client";
 import "../../src/providers/privatemode-client";
+import { policyForTier, type AppStatus } from "../../shared/contracts";
 
 declare global {
   interface Window {
-    runPrivatemode(
-      releaseDigests: string[],
-      prompt: string,
-    ): Promise<{ ok: boolean; text?: string; error?: string }>;
+    runPrivatemode(prompt: string): Promise<{ ok: boolean; text?: string; error?: string; status?: number }>;
   }
 }
 
-window.runPrivatemode = async (releaseDigests, prompt) => {
-  const adapter = inferenceClientFor("privatemode");
-  const policy = {
-    provider: "privatemode" as const,
-    origin: "https://api.privatemode.ai",
-    repository: "edgelesssys/privatemode-public",
-    releaseDigests,
-    model: "glm-5.3-flash",
-    glmReasoningEffort: "low" as const,
-  };
+window.runPrivatemode = async (prompt) => {
   try {
+    const status: AppStatus = await (await fetch("/api/status")).json();
+    if (!status.inference.qualification) return { ok: false, error: status.inference.reason };
+    const adapter = inferenceClientFor("privatemode");
+    const policy = {
+      ...policyForTier(status.inference.qualification, "fast", "primary"),
+      csrf: status.csrf,
+      cacheSalt: status.inference.cacheSalt,
+    };
     const signal = new AbortController().signal;
     const destination = await adapter.verify(policy, signal, () => {});
     const transport = await destination.transport();
     const response = await transport.request("", {
       method: "POST",
+      headers: { "X-PrivateAI-CSRF": status.csrf, "X-PrivateAI-Mode": "fast" },
       body: JSON.stringify({
         model: policy.model,
         messages: [{ role: "user", content: prompt }],
-        max_completion_tokens: 64,
+        max_completion_tokens: 256,
         stream: true,
+        stream_options: { include_usage: true },
         ...adapter.modelOptions(policy),
+        ...adapter.cacheOptions(policy),
       }),
       signal,
     });
+    if (!response.ok) return { ok: false, status: response.status };
     const raw = await response.text();
     const text = raw
       .split("\n")
