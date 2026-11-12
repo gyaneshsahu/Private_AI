@@ -24,6 +24,8 @@ if (hosted && dev) throw new Error("Development middleware cannot be hosted.");
 const app = createApp({
   origin,
   accessKey: process.env.PRIVATEAI_ACCESS_KEY,
+  // Local review of the draft health-consent step only; the production composition never sets it.
+  healthConsentDraft: process.env.PRIVATEAI_HEALTH_CONSENT_DRAFT === "1",
   invites: process.env.PRIVATEAI_INVITES_FILE
     ? openInviteRegistry(process.env.PRIVATEAI_INVITES_FILE, hosted)
     : undefined,

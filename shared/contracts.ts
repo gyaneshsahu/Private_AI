@@ -245,6 +245,8 @@ export interface AppStatus {
   inference: { ready: boolean; reason: string; qualification?: Qualification };
   search: boolean;
   publicPageHosts?: string[] | null;
+  /** Draft health-consent step (shared/health-consent.ts); off unless the server enables it. */
+  healthConsentDraft?: boolean;
 }
 export type RequestAllowance =
   | { state: "unavailable" }

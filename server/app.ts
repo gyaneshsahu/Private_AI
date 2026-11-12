@@ -34,6 +34,8 @@ export interface Config {
   apiKey?: string;
   searchKey?: string;
   searchMode?: "web" | "llm-context";
+  /** Shows the draft health-consent step; never set by the production composition. */
+  healthConsentDraft?: boolean;
   /** Web search adapter; defaults to Brave from `searchKey`. Tests may inject one. */
   search?: SearchProvider;
   /** Relay adapter override for tests; production resolves it from the qualification's provider. */
@@ -220,6 +222,7 @@ export function createApp(config: Config) {
     res.json({
       csrf: res.locals.csrf,
       ...(config.consumer ? { consumerWorkspace: true } : {}),
+      ...(config.healthConsentDraft ? { healthConsentDraft: true } : {}),
       ...(config.consumer?.billingRouter ? { billingRehearsal: true } : {}),
       ...(res.locals.accountId
         ? {
