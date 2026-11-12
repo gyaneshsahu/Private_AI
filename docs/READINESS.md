@@ -1,4 +1,8 @@
 # PrivateAI readiness checklist
+## A15: canary test proves model output loads nothing remote - 12 November
+
+- **Verified.** `tests/remote-content-canary-ui.test.ts` drives the real app in Chromium with a stub reply carrying a markdown image, a reference-style image, raw HTML `img`, `iframe`, `link rel=stylesheet` and `video`, a markdown link, a bare URL and an angle-bracket autolink, all pointing at a canary host. Result: zero browser requests to the canary host; the answer contains no `img`, `iframe`, `video`, `audio`, `source`, `link`, `object`, `embed` or external `a href`; the image shows as "[Image omitted: pixel]". Mutation check: making the renderer emit real `<img>` tags makes the test fail; the change was reverted. Existing defences unchanged: images replaced, links shown as text, raw HTML escaped, CSP `img-src 'self' blob: data:`. Checklist A15 done.
+
 ## O5: week-one monitoring routine written (branch alpha-provider-neutral, local) - 12 November
 
 - `docs/week-one-monitoring.md`: a twice-daily owner routine for the first week of chat (readyz, Render events and log lines, purge failure line, spend against the cap, unmetered requests, use per account, supplier dashboard and status page, headers, certificate, friends' reports), each with normal value, trigger and action; three read-only SQL queries matching the spend guard's arithmetic, syntax-checked on a throwaway schema; known gaps (no refused-request counts by design, no alert until O2, Privatemode shows every request as unmetered).
