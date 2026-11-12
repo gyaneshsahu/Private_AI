@@ -486,6 +486,11 @@ h2 em {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+.search-suggestion pre {
+  margin: 6px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .approval {
   border: 1px solid #bacab0;
   background: #f1f5eb;

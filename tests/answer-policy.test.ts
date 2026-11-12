@@ -104,6 +104,9 @@ it("product prompt: no unasked counts, unsure German rules point to the official
   expect(product).toContain(
     "For German rules, fees and deadlines you are not sure of, say that you are not sure and point to the official source instead of giving a number.",
   );
+  expect(product).toContain(
+    "training data with an unpublished end date and may be out of date, and offer a web search",
+  );
   // Health and maths handling are unchanged.
   expect(product).toContain("Answer health questions helpfully and concretely");
   expect(product).toContain("Check quantities, units, time and dependencies");
@@ -115,6 +118,7 @@ it("product prompt: no unasked counts, unsure German rules point to the official
   ] as const) {
     const text = composeContext(c, 10000, now, variant)[0].content;
     expect(text).not.toContain("word or character counts");
+    expect(text).not.toContain("unpublished end date");
   }
   c.attachments.push({
     id: "a",
@@ -136,6 +140,7 @@ it("product prompt: no unasked counts, unsure German rules point to the official
     "Never say you cannot browse or have no browsing or search tools.",
   );
   expect(web).toContain("say exactly what is missing and offer another search");
+  expect(web).not.toContain("unpublished end date");
   expect(
     composeContext(c, 10000, now, "constraints-v1")[0].content,
   ).toContain("You have no external tools");

@@ -7,6 +7,7 @@ import {
   tierFor,
   verificationSummary,
   type AppStatus,
+  type Attachment,
   type Conversation,
   type Disclosure,
   type Source,
@@ -28,6 +29,12 @@ import {
 } from "./conversation";
 import { DOCUMENT_ACCEPT } from "./document-formats";
 import { describeKept, prepareSearchQuery } from "./identifier-masking";
+import {
+  readAutoSearch,
+  saveAutoSearch,
+  searchSuggestion,
+  WHEN_TO_SEARCH,
+} from "./when-to-search";
 import { HEALTH_CONSENT } from "../shared/health-consent";
 import {
   readHealthConsent,
@@ -199,6 +206,18 @@ export function App() {
   const [researchKind, setResearchKind] = useState<"search" | "page">("search");
   const [query, setQuery] = useState("");
   const [proposal, setProposal] = useState<Disclosure>();
+  // When to search (docs/when-to-search-20261112.md): device-only setting, and the
+  // exact text a suggestion tap or automatic search sent.
+  const [autoSearch, setAutoSearch] = useState(readAutoSearch);
+  const [searchSent, setSearchSent] = useState("");
+  useEffect(() => setSearchSent(""), [conversation.id]);
+  const suggestion = useMemo(
+    () =>
+      status?.search && status.inference.ready
+        ? searchSuggestion(input)
+        : undefined,
+    [status?.search, status?.inference.ready, input],
+  );
   const [proposalNote, setProposalNote] = useState<{
     note: string;
     warning: boolean;
@@ -755,16 +774,20 @@ export function App() {
       }
     }
   }
-  async function research() {
-    if (!proposal || busy) return;
+  // `how` is set when a suggestion tap or the automatic setting approved the search.
+  async function research(
+    approved = proposal,
+    how?: "tap" | "auto",
+  ): Promise<{ attachment?: Attachment; note: string } | "failed" | undefined> {
+    if (!approved || busy) return;
     if (conversation.attachments.length >= 5) {
       fail(
         "Remove an attachment before adding more research context (five-item limit).",
       );
-      return;
+      return "failed";
     }
-    const approved = proposal;
     setProposal(undefined);
+    setSearchSent("");
     setBusy("Retrieving the approved public information…");
     const current = epoch.current;
     const abort = new AbortController();
@@ -790,27 +813,32 @@ export function App() {
             attachment.sources.map((source) => source.id),
           ),
         );
-        if (sources.length)
+        const attachment: Attachment | undefined = sources.length
+          ? {
+              id: crypto.randomUUID(),
+              name:
+                approved.kind === "search"
+                  ? "Public search results"
+                  : "Public page",
+              selected: true,
+              kind: "research",
+              ...(approved.kind === "search"
+                ? { researchQuery: approved.value }
+                : {}),
+              sources,
+            }
+          : undefined;
+        if (attachment)
           setConversation((c) => ({
             ...c,
             temporarySearch: c.temporarySearch || approved.kind === "search",
-            attachments: [
-              ...c.attachments,
-              {
-                id: crypto.randomUUID(),
-                name:
-                  approved.kind === "search"
-                    ? "Public search results"
-                    : "Public page",
-                selected: true,
-                kind: "research",
-                ...(approved.kind === "search"
-                  ? { researchQuery: approved.value }
-                  : {}),
-                sources,
-              },
-            ],
+            attachments: [...c.attachments, attachment],
           }));
+        if (how)
+          return {
+            attachment,
+            note: `${how === "auto" ? WHEN_TO_SEARCH.searchedAutomatically(approved.value) : WHEN_TO_SEARCH.searched(approved.value)} ${topPageNote(result)}`.trim(),
+          };
         setNotice(
           sources.length
             ? approved.kind === "search"
@@ -820,14 +848,38 @@ export function App() {
         );
       }
     } catch (e) {
-      if (current === epoch.current)
+      if (current === epoch.current && !abort.signal.aborted) {
         fail(e instanceof Error ? e.message : "Research failed.");
+        return "failed";
+      }
     } finally {
       if (current === epoch.current) {
         controller.current = null;
         setBusy("");
       }
     }
+  }
+  // The tap (or the opt-in setting) approves exactly the shown text; then the draft is sent.
+  async function searchThenAnswer(value: string, how: "tap" | "auto") {
+    const text = input;
+    const outcome = await research({ kind: "search", value }, how);
+    if (!outcome || (outcome === "failed" && how === "tap")) return;
+    if (outcome === "failed") {
+      setSearchSent(WHEN_TO_SEARCH.automaticFailed);
+      void send(conversation, text);
+      return;
+    }
+    setSearchSent(outcome.note);
+    void send(
+      outcome.attachment
+        ? {
+            ...conversation,
+            temporarySearch: true,
+            attachments: [...conversation.attachments, outcome.attachment],
+          }
+        : conversation,
+      text,
+    );
   }
   async function unlockVault() {
     if (!status) {
@@ -1826,6 +1878,40 @@ export function App() {
               </div>
             )}
             <div className="composer-dock">
+              {suggestion && !autoSearch && !busy && (
+                <div
+                  className="notice composer-note search-suggestion"
+                  role="region"
+                  aria-label="Search suggestion"
+                >
+                  <p>
+                    <strong>{WHEN_TO_SEARCH.heading}</strong>{" "}
+                    {WHEN_TO_SEARCH.label}
+                  </p>
+                  <pre>{suggestion.value}</pre>
+                  {suggestion.note && (
+                    <p className="muted">{suggestion.note}</p>
+                  )}
+                  {suggestion.warning && (
+                    <p className="warning">{WHEN_TO_SEARCH.warning}</p>
+                  )}
+                  <p className="muted">{WHEN_TO_SEARCH.explanation}</p>
+                  <button
+                    type="button"
+                    className="primary"
+                    onClick={() =>
+                      void searchThenAnswer(suggestion.value, "tap")
+                    }
+                  >
+                    {WHEN_TO_SEARCH.button}
+                  </button>
+                </div>
+              )}
+              {searchSent && (
+                <p className="notice composer-note" role="status">
+                  {searchSent}
+                </p>
+              )}
               {status?.healthConsentDraft && consentPending && (
                 <HealthConsentPrompt
                   onChoose={(choice) => {
@@ -1852,7 +1938,9 @@ export function App() {
                 className="composer"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  void send();
+                  if (autoSearch && suggestion)
+                    void searchThenAnswer(suggestion.value, "auto");
+                  else void send();
                 }}
               >
                 <label className="sr-only" htmlFor="message-input">
@@ -2408,14 +2496,27 @@ export function App() {
               <em>Keep the choice yours.</em>
             </h2>
             <p className="intro">
-              Your conversation is never automatically added to a search. Review
-              the exact query or URL before sharing.
+              {WHEN_TO_SEARCH.researchIntro}
             </p>
             <p className="muted">
               Search results and source links are shown only during this session
               and are never saved. Saving keeps your written answers and the
               approved search text. Use public, non-sensitive queries only.
             </p>
+            <div className="panel">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={autoSearch}
+                  onChange={(e) => {
+                    setAutoSearch(e.target.checked);
+                    saveAutoSearch(e.target.checked);
+                  }}
+                />{" "}
+                {WHEN_TO_SEARCH.settingLabel}
+              </label>
+              <p className="muted">{WHEN_TO_SEARCH.settingHelp}</p>
+            </div>
             {conversation.attachments.some(
               (a) => a.kind === "research" && a.selected,
             ) && (
@@ -2550,10 +2651,7 @@ export function App() {
                 )}
                 {proposalNote?.warning && (
                   <p className="warning" role="alert">
-                    This search text may still contain personal details, such as
-                    a name or a long number, that cannot be recognised
-                    automatically. The search provider will see exactly this
-                    text. Approve only if that is fine.
+                    {WHEN_TO_SEARCH.warning}
                   </p>
                 )}
                 <p>
