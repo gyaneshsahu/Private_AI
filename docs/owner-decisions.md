@@ -23,7 +23,7 @@ Order = what unblocks the most other work first. Items from the pre-alpha checkl
 | 13 | **Device checks**: second Google account isolation (T1), Safari, Firefox and phone (T2) | Only you have the accounts and devices | Inviting anyone |
 | 14 | **Operations**: backup destination (O1), downtime alert provider (O2) | Recovery and noticing an outage | Inviting anyone |
 | 15 | **Branch policy and `main`** (O6 step 4): fast-forward `main` to the tested line; release from `main` or keep working on `codex/development-handoff` | The agent never touches `main` | Clean releases (not the alpha itself) |
-| — | **Not blocking the alpha:** D11, D12 (scan recall), D13, D17 (becomes rank 4 if Privatemode wins), L9/A14 release pinning, L11, L12, R1, R5 (web search, off), T7, O3, S3, D12 inactivity rule; **Exa tests** need an `EXA_API_KEY` in Credential Manager (not stored today) | | |
+| — | **Not blocking the alpha:** D11, D12 (scan recall), D13, D17 (becomes rank 4 if Privatemode wins), L9/A14 release pinning, L11, L12, R1, R5 (web search, off), T7, O3, S3, D12 inactivity rule; search stays on Brave; Exa tests skipped until Exa replies (owner, 12 November) | | |
 
 ## All decisions, by number
 
