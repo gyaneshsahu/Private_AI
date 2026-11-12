@@ -38,7 +38,7 @@ describe("blinding", () => {
   });
   it("keeps model and mode names out of the scoring sheet", () => {
     const answers = new Map(prompts.map((p) => [p.id, Object.fromEntries(CONTESTANTS.map((c) => [c, {
-      text: c === "chatgpt" ? "As ChatGPT by OpenAI, here is my answer." : c === "gemini" ? "I'm Gemini 3 Pro." : `Answer from our-model-x.`,
+      text: c === "chatgpt" ? "As ChatGPT by OpenAI, here is my answer." : `Answer from our-model-x.`,
       model: "our-model-x",
     }])) as Partial<Record<Contestant, Answer>>]));
     const sheet = scoringSheet(prompts, answers, makeKey(present, "s1"));
@@ -102,4 +102,7 @@ it("maths check skips a restated rate in the result line but keeps a percentage 
   expect(checkMaths("Ergebnis: Gesamtbetrag inklusive 19 % MwSt.: 258,83 €.", { final: 258.83, tolerance: 0.005 }, "de").verdict).toBe("correct");
   expect(checkMaths("Final answer: 12.5 %", { final: 12.5, tolerance: 0.01 }).verdict).toBe("correct");
   expect(checkMaths("Ergebnis: inklusive 19 % MwSt.: 285,83 €.", { final: 258.83, tolerance: 0.005 }, "de").verdict).toBe("silent-wrong");
+  // a count before the amount is not the result (L3-07)
+  expect(checkMaths("Final answer: Buy 3 packs and 2 individual notebooks for €42.60.", { final: 42.6, tolerance: 0.005 }).verdict).toBe("correct");
+  expect(checkMaths("Final answer: Buy 3 packs and 2 singles for €44.40.", { final: 42.6, tolerance: 0.005 }).verdict).toBe("silent-wrong");
 });

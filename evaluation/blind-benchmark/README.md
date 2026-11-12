@@ -4,6 +4,13 @@
 
 Mode mapping: the brief's "Balanced" is **Auto** and "Deep" is **Thinking**; Fast is Fast.
 
+## Change of 12 November 2026 (owner)
+
+- **Gemini dropped.** The owner compares against ChatGPT only (`OTHERS = ["chatgpt"]`); the bars are otherwise unchanged, and "either competitor" in `BARS.md` now means ChatGPT.
+- **ChatGPT answers** came as one Markdown file without timings; `answers/chatgpt/<id>.md` was split from it and converted to plain text (pandoc, no Markdown markers) so markup does not reveal the contestant next to our captured plain text. Multi-turn prompts (L2-05, L9-06) keep the final turn only, because our runner stored only the final turn. No ChatGPT timings, so the relative speed bars do not apply.
+- **Scoring:** the 1-5 scores and hallucination flags in `scoring-sheet.csv` are by blind model graders (fresh agents that saw only the shuffled sheet, never the key; level 4 verified live on the web), not by the owner. The owner may overwrite any row and rerun `score.ts`.
+- **Checker fix before scoring:** `maths-check.ts` read the pack count in ChatGPT's correct L3-07 line ("Buy 3 packs ... for €42.60") as the result; it now prefers amounts with a currency sign (test added). Our verdicts are unchanged.
+
 ## Files
 
 | File | What it is |

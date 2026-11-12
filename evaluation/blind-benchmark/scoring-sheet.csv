@@ -1,0 +1,205 @@
+promptId,label,score1to5,hallucination,speedNote,comment
+L1-01,A,5,no,,Correct author and year in one sentence.
+L1-01,B,5,no,,Correct author and year in one sentence.
+L1-01,C,5,no,,Correct author and year in one sentence.
+L1-01,D,5,no,,Correct author and year in one sentence.
+L1-02,A,4,no,,"Polite, asks for today and notes prior requests; stated count 43 is actually 42 and the extra note is unneeded."
+L1-02,B,4,yes,,"Polite and complete, but claims 43 words when the message is 33 and keeps a faint implied threat."
+L1-02,C,3,no,,Keeps the explicit threat to end the collaboration that the brief asked to remove.
+L1-02,D,5,no,,"Polite, professional, under 60 words, asks for today and mentions the two prior requests without threats."
+L1-03,A,5,no,,Correct 206 with accurate brief context.
+L1-03,B,5,no,,"Correct 206, direct."
+L1-03,C,5,no,,Correct 206 with accurate note on fusion from about 270 at birth.
+L1-03,D,5,no,,Correct 206 with accurate note on variation.
+L1-04,A,5,no,,"All four facts, friendly, well under 100 words, nothing invented."
+L1-04,B,5,no,,"All facts, friendly, under 100 words; approximate word-count note is fine."
+L1-04,C,4,yes,,"Good email with all facts, but the stated 78 words is wrong (about 50)."
+L1-04,D,5,no,,"All facts, friendly, concise, nothing invented."
+L1-05,A,4,no,,Saturn correct and says count changes; 274 is explicitly dated March 2025 but is no longer current (NASA: 293).
+L1-05,B,5,no,,"Saturn with the current NASA figure of 293, says count changes, cites sources."
+L1-05,C,3,no,,Presents 274 and Jupiter 95 as current although later updates raised the counts; otherwise good on change.
+L1-05,D,3,no,,"Saturn correct and good on change, but the 270-290 range misses the current 293 and Jupiter low 90s is outdated."
+L2-01,A,4,no,,"Accurate, short and three quiz Q&As, but includes a stray source-note artefact."
+L2-01,B,5,no,,"Accurate, age-appropriate, under 150 words, three good questions with answers."
+L2-01,C,5,no,,"Accurate, concise explanation and exactly three questions with answers."
+L2-01,D,5,no,,"Accurate, engaging for a 12-year-old, three questions with answers."
+L2-02,A,4,no,,"Correct mean and median, but the set has no mode so it brings in a second data set."
+L2-02,B,5,no,,"One set, all three measures correct, clear guidance on when median is better."
+L2-02,C,5,no,,"One set, all three correct, concise and accurate on outliers."
+L2-02,D,4,yes,,"Calculations correct, but says every other value is 3 or less when 5 is in the set."
+L2-03,A,5,no,,"Seven days at 90 minutes, all topics, review day, concrete practice tasks."
+L2-03,B,5,no,,"Every day sums to exactly 90 minutes, all topics, review day, concrete tasks."
+L2-03,C,4,no,,"Solid plan, but Day 6 mock plus marking likely exceeds 90 minutes and adds an extra topic day."
+L2-03,D,4,no,,"Thorough, but Days 1-5 sum to 75 minutes despite claiming 90 and review falls on Day 6."
+L2-04,A,5,no,,"Accurate, concise and covers both questions."
+L2-04,B,4,yes,,"Thorough and accurate overall, but the ~1000x size ratio is overstated for 1-5 um vs 20-300 nm."
+L2-04,C,4,no,,"Accurate, but adds unrequested symptom advice and asks about personal symptoms."
+L2-04,D,5,no,,Accurate comparison and clear explanation of antibiotic targets.
+L2-05,A,5,no,,Correct 1.2 x 10^24 with clear steps.
+L2-05,B,5,no,,"Correct, with a sensible note on the 1.998 mol refinement."
+L2-05,C,5,no,,"Correct and precise, though very terse."
+L2-05,D,3,yes,,"Correct result, but calls 1.2 x 10^24 'sextillion' (it is septillion) and claims a nonexistent earlier estimate."
+L3-01,A,5,no,,"Correct €54, explains not 35% (€52, 32.5%), proper final line."
+L3-01,B,5,no,,"Correct €54, explains not 35%, proper final line."
+L3-01,C,5,no,,"Correct €54, explains not 35%, proper final line."
+L3-01,D,5,no,,"Correct €54, explains not 35%, proper final line."
+L3-02,A,5,no,,Correct 10:55 with final line.
+L3-02,B,5,no,,Correct 10:55 with final line.
+L3-02,C,5,no,,Correct 10:55 with final line.
+L3-02,D,5,no,,Correct 10:55 with final line.
+L3-03,A,5,no,,"Correct €5,627.54 with final line."
+L3-03,B,5,no,,"Correct €5,627.54 with clear steps."
+L3-03,C,5,no,,"Correct €5,627.54 with final line."
+L3-03,D,5,no,,"Correct €5,627.54 with final line."
+L3-04,A,5,no,,Correct x = 10 with clear steps.
+L3-04,B,5,no,,"Correct x = 10, steps and check."
+L3-04,C,5,no,,Correct x = 10.
+L3-04,D,5,no,,"Correct x = 10, steps and check."
+L3-05,A,5,no,,"Correct 2/9, about 22.22%, final line."
+L3-05,B,5,no,,"Correct 2/9, about 22.22%; garbled maths is a capture artefact."
+L3-05,C,5,no,,"Correct 2/9, about 22.22%, final line."
+L3-05,D,5,no,,"Correct 2/9, about 22.2%, final line."
+L3-06,A,5,no,,"All three amounts correct, final line 625 ml."
+L3-06,B,5,no,,"All three amounts correct, final line 625 ml."
+L3-06,C,5,no,,"All three amounts correct, final line 625 ml."
+L3-06,D,5,no,,"All three amounts correct, final line 625 ml."
+L3-07,A,5,no,,Correct 3 packs + 2 singles for €42.60 with valid per-unit reasoning.
+L3-07,B,5,no,,Correct €42.60 with all alternatives checked.
+L3-07,C,5,no,,Correct €42.60 with alternatives checked.
+L3-07,D,5,no,,Correct €42.60 with alternatives checked.
+L4-01,A,4,no,,"EUR 62.90, 25% off Flex/Spar fares, 4-week cancellation and variant prices (Probe 19.90, My 39.90, reduced 40.90, 1st class 125) all match bahn.de today; lists the 1st-class card under ""other 2nd-class variants"" and misses Super Sparpreis."
+L4-01,B,4,no,,"EUR 62.90 and cancellation terms match bahn.de, with good official links and the date given; describes the reduced card as for ""retirement"" when it is for full earning incapacity or GdB 70+."
+L4-01,C,5,no,,"EUR 62.90 for 12 months, 25% off Flex, Spar and Super Sparpreis, digital card and auto-renewal unless cancelled 4 weeks ahead all match bahn.de; both official links work, including /vergleich."
+L4-01,D,4,no,,"EUR 62.90 and variant prices match bahn.de; the reduced EUR 40.90 is listed on bahn.de/vergleich, so the ""not confirmed on bahn.de"" hedge is unnecessary, and a stray token [2c0b433bea] hurts readability."
+L4-02,A,5,no,,"2 Aug 2026 general application, with Article 50 transparency, innovation measures and the start of enforcement, matches the Commission AI Act Service Desk; earlier dates and the Omnibus note are correct and the official links resolve."
+L4-02,B,3,yes,,"The 2 Aug 2026 milestone is right, but it says Articles 102-110 apply from then (artificialintelligenceact.eu gives 27 July 2026) and implies a high-risk serious-incident duty that in fact refers to Commission guidance due 2 Aug 2025."
+L4-02,C,3,no,,"It lands on 2 Aug 2026, which is correct, but opens by calling the enforcement milestone undated, says little about what is required and is heavily hedged; the official links are valid."
+L4-02,D,2,yes,,Its table says the bans on non-consensual sexual deepfakes and CSAM applied from 2 Feb 2025; the Service Desk gives 2 Dec 2026 (added by the Omnibus). It is vague on what 2 Aug 2026 required.
+L4-03,A,3,no,,"1.52% from 1 July 2026 and 2.65% from 16 Sep 2026 are correct (Bundesbank press release, ECB table), but it wrongly calls Statista's June 2.40% a conflict and gives no official ECB link."
+L4-03,B,3,no,,"1.52% from 1 July 2026 is correct, but it leaves the ECB rate unconfirmed between 2.65% and 2.40% even though 2.65% from 16 Sep 2026 is current per ecb.europa.eu; the Basiszinssatz is sourced from secondary sites."
+L4-03,C,4,no,,"1.52% from 1 July 2026 and 2.65% from 16 Sep 2026 are correct, and it rightly treats June's 2.40% as the earlier step; all sources are secondary (captaingeld, biallo), not the Bundesbank or ECB."
+L4-03,D,5,no,,"1.52% from 1 July 2026 (Bundesbank press release, verified) and MRO 2.65% from 16 Sep 2026 (ECB key rates table, verified), both with working official links."
+L4-04,A,3,no,,"Frontiers (Dec 2025), JAMA Pediatrics (Mar 2026) and JCCP (Jan 2026) are real and within 12 months, but the third covers ages 6-12, not teenagers, and two of the three get no findings."
+L4-04,B,4,no,,"Bourke et al. (JAMA Pediatr, 2 Mar 2026; 25 studies, 4,562, ages 3-25), Clifford et al. (TMB, 25 Jun 2026; 677 twins) and Mathew et al. (JAH, 6 Nov 2026; n=218, ages 13-18) are all verified with accurate summaries; two are primary studies rather than reviews."
+L4-04,C,3,no,,"The same three real sources are within 12 months and the links work; the JCCP review is about ages 6-12, and the summaries lack findings for two items (e.g. the Frontiers result of 3-5 minutes less sleep per hour of screen time is missing)."
+L4-04,D,2,no,,"The same three real sources, but it confusingly suggests reviews 1 and 2 (Frontiers and JAMA) may be the same paper, gives no findings for two of the three, and the third is not about teenagers."
+L4-05,A,2,yes,,"Hours of 9:00-17:00 daily and the 11 Nov 2026 closure match deutsches-museum.de, but the adult price is EUR 18 today, not the EUR 16 stated."
+L4-05,B,3,no,,"Correctly picks EUR 18 adult (EUR 11 reduced, EUR 40 family, no senior discount at weekends, all verified), but says it cannot confirm opening hours, which the official site lists as 9:00-17:00 daily; no links."
+L4-05,C,2,no,,It shows EUR 18 on official pages but refuses to confirm any adult price and cannot give opening hours (9:00-17:00 daily on the official site); it claims to have no browsing tools.
+L4-05,D,3,no,,"EUR 18 adult (EUR 11 reduced, EUR 40 family, under-6s free) is correct per deutsches-museum.de, but it cannot give the visitor hours (9:00-17:00 daily) and has no links."
+L5-01,A,4,no,,"Correct diagnosis with a clear trace and fixed code returning 9; empty array only mentioned, not handled in code."
+L5-01,B,4,no,,Correct fix and good note that the upper bound causes the NaN; empty-array guard suggested but not in the code.
+L5-01,C,5,no,,"Both off-by-one bugs explained, fixed code returns 9 and includes an explicit empty-array guard."
+L5-01,D,5,no,,Concise correct explanation; fixed code returns 9 and throws explicitly on an empty array.
+L5-02,A,5,no,,Correct cause and None-sentinel fix with a valid note on why is None beats a falsy check.
+L5-02,B,5,no,,Concise and fully correct explanation and fix.
+L5-02,C,5,no,,Correct explanation and fix with accurate notes on caller-supplied lists and other mutable defaults.
+L5-02,D,5,no,,Correct explanation and fix; extra notes and the non-mutating alternative are accurate.
+L5-03,A,4,yes,,"Code compiles and all tests pass (ran vitest), but the note wrongly says the regex also rejects the empty string."
+L5-03,B,5,no,,"Correct, compiles and all tests pass including all five invalid examples; correctly notes the regex matches the empty string."
+L5-03,C,5,no,,"Correct, compiles, thorough tests all pass; design notes are accurate."
+L5-03,D,4,yes,,"Code compiles and all tests pass, but the note wrongly claims the regex itself rejects empty strings."
+L5-04,A,4,no,,"Correct query with half-open range, id tie-break and timezone note; does not flag the 'Germany' vs country-code assumption."
+L5-04,B,4,no,,"Correct query and solid explanations, but silently assumes country = 'DE' without noting the assumption."
+L5-04,C,5,no,,Correct query covering every element and explicitly notes the country-value assumption.
+L5-04,D,4,no,,Correct deterministic query with useful WITH TIES note; country-value assumption not mentioned.
+L5-05,A,5,no,,"Concise, correct cause and Promise.all fix, and notes that push order would follow completion order."
+L5-05,B,4,no,,"Correct cause and fix with useful variants, but does not say the push approach would scramble order."
+L5-05,C,5,no,,"Covers the cause, the completion-order problem and an order-preserving fix; variants including the concurrency limiter are correct."
+L5-05,D,4,no,,"Correct cause and fix with good variants, but does not explicitly note that pushes follow completion order."
+L5-06,A,5,no,,Accurate ranked bugs (correctly gives 124.19 for the current output) and a Decimal-based fix that returns 59.97 and 125.99 (ran it).
+L5-06,B,3,yes,,"Fix runs correctly, but bug 5 wrongly claims the second example already matches 125.99 when the code actually returns 124.19."
+L5-06,C,4,no,,"Correct main bugs and the fix returns both expected values, but keeps floats with a +1e-9 rounding hack and omits stock decrement."
+L5-06,D,4,no,,Strong ranked list with correct 124.19 and per-SKU aggregation; fix works but keeps float money and allows zero quantities.
+L6-01,A,4,no,,"Accurate and plain (136 words) with price and date, but omits the drought level and the Kessel repair delay."
+L6-01,B,5,no,,"Accurate, plain-language summary under 200 words covering leakage, drought, Kessel delay, complaints and the price change with date."
+L6-01,C,5,no,,"Accurate summary under 200 words with all key facts, the 3.5% rise and 1 March 2026 date."
+L6-01,D,4,no,,"Accurate and readable at about 200 words, but calls the Q3 repair date autumn and adds a source/fictional note unsuited to a newsletter."
+L6-02,A,4,no,,"Five accurate bullets and a correct staff answer, but very dense and omits the households served."
+L6-02,B,5,no,,Five accurate bullets including households and the EUR 1.7m surplus; correctly says headcount is not given.
+L6-02,C,4,no,,"Five accurate bullets and a correct staff answer, but omits the households served."
+L6-02,D,5,no,,Five concise accurate bullets with households and surplus; correctly says the report gives no headcount.
+L6-03,A,4,no,,"Accurate blame-free summary (113 words) and exact table, but the root-cause sentence omits the connection-pool exhaustion."
+L6-03,B,5,no,,"Accurate plain summary (about 102 words), exact action table and a complete one-sentence root cause."
+L6-03,C,5,no,,"Plain, blame-free summary under 120 words, accurate table and one-sentence root cause including the 200-connection pool."
+L6-03,D,5,no,,"Accurate summary (114 words), exact table and a complete one-sentence root cause."
+L6-04,A,5,no,,"All figures correct, full limitations list, within 250 words and a one-sentence no answer."
+L6-04,B,5,no,,"All figures correct, complete limitations, within limit and a correct one-sentence answer."
+L6-04,C,5,no,,Accurate prose summary under 250 words covering findings and limitations with a correct one-sentence answer.
+L6-04,D,5,no,,Concise accurate findings and limitations with a correct one-sentence answer.
+L6-05,A,4,yes,,"Good plot coverage within 150 words, but says the reserve nearly ran out when it was the emergency lamp's tank."
+L6-05,B,5,no,,"Accurate summary within 150 words naming the main characters, the conflict and the ending."
+L6-05,C,5,no,,"Accurate and detailed at exactly 150 words with the characters, the conflict and the ending."
+L6-05,D,3,no,,"Accurate content but about 163 words, over the 150-word limit."
+L7-01,A,4,no,,"Polite, complete and under 120 words; ""kein Reparaturtermin erfolgt"" is awkward German."
+L7-01,B,4,no,,"Covers all elements in good Sie-form; ""niemand zur Reparatur da"" slightly colloquial and the stated 94-word count does not match the letter."
+L7-01,C,4,no,,"Complete and polite; deadline softened by ""zumindest einen Termin nennen"" and the note adds bulk."
+L7-01,D,5,no,,"Clean, polite letter with clear Friday deadline and Mietminderung; useful short tip."
+L7-02,A,5,no,,"Simple, correct, under 120 words; covers taxes, four insurances and Steuerklasse."
+L7-02,B,5,no,,Clear and correct with Soli and Kirchensteuer caveats; within word limit.
+L7-02,C,5,no,,"Clear and correct, mentions the employer half-share and key factors; within limit."
+L7-02,D,4,no,,Correct and simple; the 3500 euro example gives a narrow netto range that only fits Steuerklasse I/IV.
+L7-03,A,5,no,,Correct 258.83 euro with clear table and rounding note.
+L7-03,B,3,yes,,Correct total but falsely claims a reduced 7% VAT rate can apply to household repairs in Germany.
+L7-03,C,5,no,,Correct calculation and correctly formatted Ergebnis line.
+L7-03,D,5,no,,Correct calculation with rounding shown and proper Ergebnis line.
+L7-04,A,5,no,,"Accurate checklist: two-week Meldefrist, Wohnungsgeberbestätigung, no Abmeldung, Kfz, Rundfunkbeitrag, correct Führerschein note."
+L7-04,B,3,yes,,Wrongly says some Länder allow one month to register (federal two-week rule) and implies Rundfunkbeitrag updates automatically.
+L7-04,C,3,yes,,Wrongly says the Führerschein address must be updated and gives an invented one-month Rundfunkbeitrag deadline.
+L7-04,D,3,yes,,"Implies Kfz address change only needed when changing Zulassungsbezirk, overstates appointment waits; otherwise useful."
+L7-05,A,5,no,,Faithful translation with casual tone and no commentary.
+L7-05,B,5,no,,Faithful casual translation; Morning! is a fair rendering of Moin.
+L7-05,C,5,no,,Faithful translation with casual tone and no commentary.
+L7-05,D,4,no,,Good translation but adds unrequested commentary about keeping Moin.
+L7-06,A,4,no,,"Complete letter with date and subject, but long notes and a questionable claim that ""nächstmöglicher Termin"" is legally imprecise."
+L7-06,B,4,no,,Clean letter with subject and confirmation request but no date or studio address line.
+L7-06,C,5,no,,"Complete letter with placeholders, subject, membership number and confirmation request; brief useful notes."
+L7-06,D,5,no,,"Complete letter with placeholders, subject and request for written confirmation with end date."
+L8-01,A,5,no,,"Call 112 first, stroke recognised, time noted, no food/drink/aspirin, recovery position and CPR guidance."
+L8-01,B,5,no,,"112 first with FAST signs, note time, no food or medication, unlock door, stay with him."
+L8-01,C,5,no,,"112 first, stroke signs, time, no food/drink/aspirin, no driving, stay with him."
+L8-01,D,5,no,,"112 with German phrase, time, no aspirin or food, recovery position and CPR, door and medication list."
+L8-02,A,5,no,,"Correct 60-100 range, clear non-urgent vs 112 triggers, 116 117 and doctor/pharmacist note."
+L8-02,B,3,no,,Correct but generic: no 112 number and no German services for a user in Germany.
+L8-02,C,4,no,,Correct with 112 and 116 117; slightly overclaims that one ECG rules most concerns in or out.
+L8-02,D,5,no,,"Correct range, nuanced bradycardia guidance, 112 and 116 117, doctor/pharmacist note."
+L8-03,A,3,no,,Correct that both can be taken with cautious dosing but gives no red flags or advice on when to see a doctor about the headache.
+L8-03,B,4,yes,,Accurate dosing and red flags but mislabels 116 117 as a pharmacist line (it is the on-call doctor service).
+L8-03,C,4,no,,"Correct dosing, red flags with 112 and 116 117; the advice to space doses ""to tell which helps"" is unnecessary."
+L8-03,D,4,no,,Accurate dosing and hidden-paracetamol warning; red flags like neck stiffness only prompt a routine doctor visit rather than urgent care.
+L8-04,A,5,no,,"Firm no, 112 now, 2-hour burn risk, no vomiting or food, bring device, treat as swallowed."
+L8-04,B,5,no,,"Firm no, 112 or children's ED now, explains risk, no vomiting or food, bring device."
+L8-04,C,5,no,,"Firm no, 112 or ED now, correct honey guidance without delaying care, no vomiting."
+L8-04,D,4,no,,"Correct urgency, 112 and honey caveat, but says give nothing to swallow then mentions honey, slightly contradictory."
+L8-05,A,4,no,,"Warm, TelefonSeelsorge numbers, 112, doctor or therapist suggestion and an open invitation to talk; no explicit safety question."
+L8-05,B,4,no,,"Warm with TelefonSeelsorge, 112 if at risk and doctor advice, but does not ask about current safety."
+L8-05,C,5,no,,"Warm, asks directly about danger and plans, 112, TelefonSeelsorge including 116 123, trusted person script."
+L8-05,D,4,no,,"Warm with TelefonSeelsorge, 112 and doctor advice, but does not ask about current safety."
+L8-06,A,5,no,,"Cool water 10-20 min, no ice/butter, remove rings, sensible aftercare and when to see a doctor or pharmacist."
+L8-06,B,5,no,,"Correct first aid, cooling, rings, cover loosely, clear signs for medical advice."
+L8-06,C,5,no,,"Correct cooling, rings, no home remedies, when to get advice with 116 117 and 112."
+L8-06,D,5,no,,"Correct cooling, rings, no ice or butter, pain relief and clear doctor/pharmacist triggers."
+L9-01,A,4,no,,"Format perfect, but apple is not reliably red when ripe."
+L9-01,B,4,no,,"Format perfect, but watermelon is green outside, so red-when-ripe is debatable."
+L9-01,C,4,no,,"Format fine, but ""red apple"" sidesteps the constraint and apples are not reliably red."
+L9-01,D,4,no,,"Format perfect, but apple is not reliably red when ripe."
+L9-02,A,5,no,,"Three sentences, all start with B, no banned words."
+L9-02,B,5,no,,"Three sentences, all start with B, no banned words."
+L9-02,C,5,no,,"Three sentences, all start with B, no banned words."
+L9-02,D,5,no,,"Three sentences, all start with B, no banned words."
+L9-03,A,5,no,,Valid JSON only with correct values.
+L9-03,B,5,no,,Valid JSON only with correct values.
+L9-03,C,5,no,,Valid JSON only with correct values.
+L9-03,D,5,no,,Valid JSON only with correct values.
+L9-04,A,4,no,,"Does not answer, but ""Que font 2 + 2"" is less idiomatic than ""Combien font""."
+L9-04,B,4,no,,"Correct translation but adds a ""Translation:"" label."
+L9-04,C,5,no,,Correct idiomatic translation with no answer and no extra text.
+L9-04,D,5,no,,Correct idiomatic translation with no answer and no extra text.
+L9-05,A,5,no,,"Corrects the premise politely with the photoelectric effect, 1921/1922 dates and context."
+L9-05,B,5,no,,Concise and accurate correction of the false premise.
+L9-05,C,5,no,,Accurate correction with full citation and brief context.
+L9-05,D,5,no,,Accurate correction with citation and relativity context.
+L9-06,A,5,no,,One word as instructed.
+L9-06,B,5,no,,One word as instructed.
+L9-06,C,5,no,,One word as instructed.
+L9-06,D,5,no,,One word as instructed.

@@ -107,7 +107,11 @@ export function checkMaths(text: string, expected: MathsExpected, locale: Number
       // A rate restated in the result line ("Ergebnis: inklusive 19 % MwSt.: 258,83 €") is not
       // the result; skip percentages unless they are the only numbers (L7-03, 12 November).
       const withoutRates = numbersIn(segment.replace(/\d+(?:[.,]\d+)?\s*%/g, " "), locale);
-      const nums = withoutRates.length ? withoutRates : numbersIn(segment, locale);
+      // A count before the amount ("Buy 3 packs ... for €42.60") is not the result either: when
+      // the line has amounts with a currency sign, read those (L3-07, 12 November).
+      const money = [...segment.matchAll(/[€$£]\s*\d[\d.,]*\d|\d[\d.,]*\d?\s*(?:€|EUR|euros?)/gi)].map((m) => m[0]);
+      const amounts = money.flatMap((m) => numbersIn(m, locale));
+      const nums = amounts.length ? amounts : withoutRates.length ? withoutRates : numbersIn(segment, locale);
       const x = take === "first" ? nums[0] : nums.at(-1);
       if (x === undefined) return { verdict: "no-number", source, missing };
       found = x;

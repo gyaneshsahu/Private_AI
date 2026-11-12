@@ -183,7 +183,7 @@ export function report(prompts: Prompt[], answers: Map<string, Partial<Record<Co
     return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : undefined;
   };
   const all = [...OUR_MODES, ...OTHERS] as Contestant[];
-  const out: string[] = [`# Blind benchmark results, ${date}`, "", "Bars: `BARS.md` (frozen 12 November 2026). Scores are the owner's blind 1-5 scores; checks are deterministic (maths-check.ts, level-8 wording checks, level-4 link check).", ""];
+  const out: string[] = [`# Blind benchmark results, ${date}`, "", "Bars: `BARS.md` (frozen 12 November 2026). Scores are blind 1-5 scores (who scored: see README); checks are deterministic (maths-check.ts, level-8 wording checks, level-4 link check).", ""];
   const models = OUR_MODES.map((m) => `${m}: ${[...new Set(prompts.map((p) => answers.get(p.id)?.[m]?.model).filter(Boolean))].join(", ") || "n/a"}`);
   out.push(`Models reported by our runs: ${models.join("; ")}.`, "");
 

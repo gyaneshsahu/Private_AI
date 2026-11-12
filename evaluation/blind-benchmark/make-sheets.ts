@@ -12,7 +12,8 @@ export const HERE = dirname(fileURLToPath(import.meta.url));
 export const ROOT = resolve(HERE, "../..");
 export const LOCAL = join(ROOT, ".local", "blind-benchmark");
 export const OUR_MODES = ["auto", "fast", "thinking"] as const;
-export const OTHERS = ["chatgpt", "gemini"] as const;
+// Gemini dropped by the owner on 12 November 2026 (ChatGPT only); the bars are otherwise unchanged.
+export const OTHERS = ["chatgpt"] as const;
 export type Mode = (typeof OUR_MODES)[number];
 export type Other = (typeof OTHERS)[number];
 export type Contestant = Mode | Other;

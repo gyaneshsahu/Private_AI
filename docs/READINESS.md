@@ -1,4 +1,11 @@
 # PrivateAI readiness checklist
+## Blind benchmark against ChatGPT - 12 November (evening)
+
+- **Owner direction (12 Nov):** compare against ChatGPT only; Gemini dropped. The owner supplied ChatGPT's 51 answers as one file (no timings).
+- **Done (verified):** ChatGPT answers split into `evaluation/blind-benchmark/answers/chatgpt/` (plain text, final turn only for multi-turn, like ours); blind sheet built (204 answers); four fresh model graders scored blind (level 4 checked live on the web, level-5 code run, level 6 against the documents); `score.ts` applied the frozen bars. Checker fix before scoring: L3-07 read the pack count in ChatGPT's correct line as the result (test added; our verdicts unchanged). One conversion artefact (curly quotes in ChatGPT's L9-03 JSON) found by a grader, fixed, re-scored.
+- **Result (model-graded, not owner-graded):** mean Auto 4.43, Fast 4.43, Thinking 4.37, ChatGPT 4.69. Tie on maths (all correct, no silent errors) and instructions; we win or tie on health (German numbers, red flags); clear loss on research (2.8-3.4 vs 4.2); about half a point behind elsewhere, mostly small invented details (hallucination flags 7/5/4 vs 1). All three modes below bar under `BARS.md`; Thinking FAILs level 7 on one invented VAT claim. Details and recommendations: `evaluation/blind-benchmark/comparison-chatgpt-2026-11-12.md`.
+- **Spend:** none (grading made no Tinfoil or Brave calls).
+
 ## Modes, health behaviour, wide model screen, benchmark, privacy wording, Safe Browsing, breach plan - 12 November (afternoon)
 
 - **Owner direction (12 Nov):** provider limits with 90 % alerts are set, spend freely and report; implement modes Auto/Fast/Thinking (names only in the UI, on-device Auto rules, one labelled retry on the same-tier backup at the same provider, on by default, per-mode output limits and allowance cost); general-assistant health behaviour with safe wording and a see-a-doctor note, no health marketing; corrected wording for the overclaiming sentences; Safe Browsing cause; one-page breach plan with an optional deputy; no restrictions or later-gates unless they protect privacy, cost or safety; wider model screen and a blind comparison benchmark. Kimi K3 deprecated by Tinfoil (email), Kimi K3.1 Pro experimental and costly: not to be repeated.
