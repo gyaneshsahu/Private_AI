@@ -10,6 +10,29 @@ export const checks = [
   "negativeTests",
   "usageAndBudget",
 ] as const;
+/** Plain names for the review checks, used wherever the app says what is and is not checked. */
+export const checkLabels: Record<(typeof checks)[number], string> = {
+  browserVerification: "browser check of the secure server",
+  freshnessAndRevocation: "freshness and revocation checks",
+  protectedWorkerChain: "full hardware chain to the AI server",
+  retentionAndLogs: "supplier retention and logs",
+  noExternalTools: "no outside tools",
+  liveStreaming: "live streaming",
+  negativeTests: "failure tests",
+  usageAndBudget: "usage and budget limits",
+};
+const reviewEvidence = z.array(z.string().min(10)).min(1);
+// A check either passed with evidence, or the owner accepted its known gap for a
+// limited release with a dated, written reason. Acceptance is never shown as a pass.
+const reviewCheck = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("pass"), evidence: reviewEvidence }),
+  z.object({
+    status: z.literal("accepted-by-owner"),
+    evidence: reviewEvidence,
+    acceptedAt: z.string().datetime(),
+    reason: z.string().min(20),
+  }),
+]);
 export const qualificationSchema = z.object({
   provider: z.literal("tinfoil"),
   model: z
@@ -47,13 +70,7 @@ export const qualificationSchema = z.object({
   releaseDigests: z.array(z.string().regex(/^[a-f0-9]{64}$/)).min(1),
   reviewedAt: z.string().datetime(),
   validUntil: z.string().datetime(),
-  review: z.record(
-    z.enum(checks),
-    z.object({
-      status: z.literal("pass"),
-      evidence: z.array(z.string().min(10)).min(1),
-    }),
-  ),
+  review: z.record(z.enum(checks), reviewCheck),
   maxInputCharacters: z.number().int().positive().max(100000),
   maxOutputTokens: z.number().int().positive().max(4096),
   pricing: z.object({
@@ -80,7 +97,30 @@ export function validateQualification(
     Date.parse(report.validUntil) <= Date.parse(report.reviewedAt)
   )
     throw new Error("Provider review is expired or invalid.");
+  for (const check of checks) {
+    const entry = report.review[check];
+    if (
+      entry.status === "accepted-by-owner" &&
+      (Date.parse(entry.acceptedAt) > now ||
+        Date.parse(entry.acceptedAt) >= Date.parse(report.validUntil))
+    )
+      throw new Error("An owner acceptance is dated in the future or after the review expires.");
+  }
   return report;
+}
+
+/** Checks the owner accepted instead of passing, in review order. */
+export function acceptedChecks(report: Qualification) {
+  return checks.filter((check) => report.review?.[check]?.status === "accepted-by-owner");
+}
+
+/** What the connection banner may say: "verified" only when every check is present and passed. */
+export function verificationSummary(report: Qualification): string {
+  const accepted = acceptedChecks(report);
+  if (checks.every((check) => report.review?.[check]?.status === "pass"))
+    return "The destination is verified before each request.";
+  if (!accepted.length) return "The secure server is checked before each request.";
+  return `The secure server is checked before each request, but not every check has passed. Accepted by the owner for this limited release, not verified: ${accepted.map((c) => checkLabels[c]).join(", ")}.`;
 }
 
 export const disclosureSchema = z.discriminatedUnion("kind", [

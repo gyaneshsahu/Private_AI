@@ -1,4 +1,9 @@
 # PrivateAI readiness checklist
+## Owner-accepted status in the qualification report (branch alpha-provider-neutral, local) - 12 November
+
+- **Change (verified by tests).** A review check may be `pass` (evidence) or `accepted-by-owner` (evidence of what is known, `acceptedAt`, written `reason` of at least 20 characters). `validateQualification` refuses acceptances dated in the future or at or after `validUntil`, and any other status. `acceptedChecks()` lists them; `verificationSummary()` gives the connection banner text: "The destination is verified before each request." only when every check is present and `pass`; with accepted checks it names them as "accepted by the owner for this limited release, not verified"; with missing or unknown checks it says only that the secure server is checked. Provider-neutral; no report is issued, so chat stays off (owner decision D1 in `docs/owner-decisions.md`).
+- **Tests.** `tests/qualification-acceptance.test.ts` (4). The first version crashed the banner when a test fixture's report had no `review`; four UI tests caught it, fixed by the missing-checks rule above. Full suites: Vitest 854 passed, 164 skipped; Playwright 61 passed.
+
 ## Provider qualification stage 2: Privatemode adapter spike passes in a real browser (branch privatemode-eval, local) - 11 November
 
 - **Built on the branch (never pushed or deployed).** `src/providers/privatemode-client.ts` (placeholder key, approved manifest checked by SHA-256 against the report's `releaseDigests`, pinned Wasm hash, client closed when the SDK swaps the manifest), `server/providers/privatemode-relay.ts` (Privatemode's three paths at the site root because the browser SDK ignores the base URL path, real key injected, model allowlist by `privatemode-target-model`, only routing headers forwarded), `qualificationSchema.provider` now `tinfoil | privatemode`. Not wired into `server/app.ts` admission, allowances or CSRF (stage 3).

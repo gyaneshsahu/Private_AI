@@ -4,6 +4,7 @@ import { containDialogFocus } from "./dialog-focus";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   emptyConversation,
+  verificationSummary,
   type AppStatus,
   type Conversation,
   type Disclosure,
@@ -1450,8 +1451,8 @@ export function App() {
                 : "Private chat is not connected yet"}
             </strong>
             <p>
-              {status?.inference.ready
-                ? "The destination is verified before each request."
+              {status?.inference.ready && status.inference.qualification
+                ? verificationSummary(status.inference.qualification)
                 : "Local documents and your vault work here. Messages stay on this device until provider verification and access are complete."}
             </p>
           </div>
