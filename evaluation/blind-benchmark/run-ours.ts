@@ -8,7 +8,7 @@
 import express from "express";
 import { execFileSync } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { createServer } from "vite";
 import { chromium, type BrowserContext, type Page } from "@playwright/test";
 import { createApp } from "../../server/app";
@@ -22,8 +22,9 @@ const searchKey = process.env.BRAVE_SEARCH_API_KEY;
 if (!apiKey) throw Error("Load TINFOIL_API_KEY (and BRAVE_SEARCH_API_KEY for level 4) with scripts/WindowsSecrets.psm1");
 const MODES = (arg("modes") ?? "auto,fast,thinking").split(",") as ("auto" | "fast" | "thinking")[];
 const only = arg("only")?.split(",");
-const DIR = "evaluation/blind-benchmark";
-const OUT = ".local/blind-benchmark/ours";
+// BENCH_DIR runs another prompt set (e.g. evaluation/benchmark-fresh-20261112).
+const DIR = process.env.BENCH_DIR ?? "evaluation/blind-benchmark";
+const OUT = `.local/${basename(DIR)}/ours`;
 
 // What a user would type into the Research tab for each level-4 prompt (the product sends
 // only the exact query the user approves; the question itself is asked in the chat).
@@ -46,9 +47,12 @@ const NOTICES = [
   /^Not every number is recognised/,
   /^Incomplete · excluded from context/,
   /^Stopped by you/,
+  /^Searched the web/,
+  /^Our server also opened the top official result/,
+  /^The top result \(/,
 ];
 
-type Prompt = { id: string; level: number | string; prompt: string | string[]; attachments?: { path: string }[] };
+type Prompt = { id: string; level: number | string; prompt: string | string[]; attachments?: { path: string }[]; searchExpected?: boolean; searchQuery?: string };
 const prompts = (JSON.parse(await readFile(`${DIR}/prompts.json`, "utf8")).prompts as Prompt[]).filter((p) => !only || only.includes(p.id));
 
 // Router release digest of the day (attestation only, no key).
@@ -102,12 +106,20 @@ const answer = (page: Page) => page.locator("article.assistant").last();
 const answerText = async (page: Page) => (await answer(page).innerText().catch(() => "")).trim();
 const busy = (page: Page) => page.getByRole("button", { name: "Stop response" });
 
-async function sendTurn(page: Page, text: string) {
+// The when-to-search suggestion (src/when-to-search.ts) is decided on the device from the draft.
+const suggestionBox = (page: Page) => page.getByRole("region", { name: "Search suggestion" });
+
+async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolean } = {}) {
   const before = await page.locator("article.assistant").count();
   await page.getByLabel("Message CometRow").fill(text);
   await page.waitForFunction(() => !document.querySelector("button[aria-label='Send ↑']")?.hasAttribute("disabled"), null, { timeout: 60_000 });
+  await page.waitForTimeout(300);
+  const suggestionShown = await suggestionBox(page).isVisible().catch(() => false);
+  const suggestedQuery = suggestionShown ? ((await suggestionBox(page).locator("pre").innerText().catch(() => "")) || undefined) : undefined;
+  const tapped = !!(opts.tapSuggestion && suggestionShown);
   const started = Date.now();
-  await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+  if (tapped) await suggestionBox(page).getByRole("button", { name: "Search and answer" }).click();
+  else await page.getByRole("button", { name: "Send ↑", exact: true }).click();
   let ttftMs: number | undefined;
   let baseline = "";
   while (Date.now() - started < 300_000) {
@@ -118,7 +130,7 @@ async function sendTurn(page: Page, text: string) {
     if (count > before && !(await busy(page).isVisible().catch(() => false)) && Date.now() - started > 800) break;
     await page.waitForTimeout(100);
   }
-  return { ttftMs, totalMs: Date.now() - started, text: await answerText(page) };
+  return { ttftMs, totalMs: Date.now() - started, text: await answerText(page), suggestionShown, suggestedQuery, tapped };
 }
 
 // One browser context per mode keeps one app session: the local server allows 100 open
@@ -135,22 +147,39 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
       await page.getByRole("region", { name: "File import results" }).filter({ hasText: "added" }).waitFor({ timeout: 30_000 });
     }
     let searched = false;
-    if (SEARCH_QUERIES[p.id] && searchKey) {
+    const turns = Array.isArray(p.prompt) ? p.prompt : [p.prompt];
+    // Level-4/research prompts: tap the one-tap suggestion when it appears; otherwise approve the
+    // written query in the Research tab first (the old path).
+    const query = p.searchQuery ?? SEARCH_QUERIES[p.id];
+    let probe = { suggestionShown: false, suggestedQuery: undefined as string | undefined };
+    if (query && searchKey) {
+      await page.getByLabel("Message CometRow").fill(turns[0]);
+      await page.waitForTimeout(300);
+      probe = { suggestionShown: await suggestionBox(page).isVisible().catch(() => false), suggestedQuery: undefined };
+      await page.getByLabel("Message CometRow").fill("");
+    }
+    if (query && searchKey && !probe.suggestionShown) {
       await workspaceControl(page, "Research").click();
-      await page.getByLabel("Exact search query").fill(SEARCH_QUERIES[p.id]);
+      await page.getByLabel("Exact search query").fill(query);
       await page.getByRole("button", { name: "Review disclosure" }).click();
       await page.getByRole("button", { name: "Approve and retrieve" }).click();
       await page.getByRole("status").filter({ hasText: "Search results added" }).waitFor({ timeout: 60_000 });
       await workspaceControl(page, "Conversation").click();
       searched = true;
     }
-    const turns = Array.isArray(p.prompt) ? p.prompt : [p.prompt];
-    let last = { ttftMs: undefined as number | undefined, totalMs: 0, text: "" };
+    let last = { ttftMs: undefined as number | undefined, totalMs: 0, text: "", suggestionShown: false, suggestedQuery: undefined as string | undefined, tapped: false };
     const all: { ttftMs?: number; totalMs: number }[] = [];
+    let first: typeof last | undefined;
     for (const t of turns) {
-      last = await sendTurn(page, t);
+      last = await sendTurn(page, t, { tapSuggestion: !!(query && searchKey && probe.suggestionShown) && !first });
+      first ??= last;
       all.push({ ttftMs: last.ttftMs, totalMs: last.totalMs });
     }
+    if (first?.tapped) searched = true;
+    const mainText = await page.locator("main").innerText().catch(() => "");
+    const pageRead = /Our server also opened the top official result[^:]*: (https:\/\/\S+)/.exec(mainText)?.[1]?.replace(/[.,)]+$/, "");
+    const topPageNote = /(Our server also opened the top official result[^\n]*|The top result \([^)]*\)[^\n]*)/.exec(mainText)?.[1];
+    const searchedQuery = /Searched the web(?: automatically)? for: "([^"]*)"/.exec(mainText)?.[1] ?? (searched ? query : undefined);
     // Strip UI chrome: the "CometRow" heading line and the copy button text.
     const lines = last.text.split("\n").filter((l) => l.trim() && !/^(CometRow|Copy answer)$/.test(l.trim()));
     const label = lines.find((l) => /^(Auto|Fast|Thinking)( ·|$)/.test(l.trim())) ?? "";
@@ -165,7 +194,10 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
           .filter((l) => /incomplete|limit|unavailable|did not accept|timed out|refused|protocol|retry/i.test(l))
           .slice(0, 4)
       : undefined;
-    return { text, notices, failure, ttftMs: all[0].ttftMs, totalMs: all.reduce((n, t) => n + t.totalMs, 0), turnTimings: all, model: "(see tiers)", mode, label, searched };
+    return {
+      text, notices, failure, ttftMs: all[0].ttftMs, totalMs: all.reduce((n, t) => n + t.totalMs, 0), turnTimings: all, model: "(see tiers)", mode, label, searched,
+      suggestionShown: probe.suggestionShown || !!first?.suggestionShown, suggestedQuery: first?.suggestedQuery, tapped: !!first?.tapped, searchedQuery, pageRead, topPageNote,
+    };
   } finally {
     await page.close();
   }

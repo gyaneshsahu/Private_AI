@@ -4,13 +4,14 @@
 //        -> scoring-sheet.md + scoring-sheet.csv (blind) and .local/blind-benchmark/key.json
 import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { MathsExpected } from "./maths-check";
 
-export const HERE = dirname(fileURLToPath(import.meta.url));
+// BENCH_DIR points the same tooling at another prompt set (e.g. evaluation/benchmark-fresh-20261112).
+export const HERE = process.env.BENCH_DIR ? resolve(process.env.BENCH_DIR) : dirname(fileURLToPath(import.meta.url));
 export const ROOT = resolve(HERE, "../..");
-export const LOCAL = join(ROOT, ".local", "blind-benchmark");
+export const LOCAL = join(ROOT, ".local", basename(HERE));
 export const OUR_MODES = ["auto", "fast", "thinking"] as const;
 // Gemini dropped by the owner on 12 November 2026 (ChatGPT only); the bars are otherwise unchanged.
 export const OTHERS = ["chatgpt"] as const;

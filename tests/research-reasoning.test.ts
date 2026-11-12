@@ -41,11 +41,13 @@ it("independently checks arithmetic ground truth using decimal quantities and ex
   expect(D(80).plus(2).div(110).times(100).toFixed(2)).toBe("74.55");
 });
 
-it("does not raise the production output limit", () => {
+// The cap was raised on purpose from 4,096 to 16,384 on 12 November (2f51667): Thinking
+// arms were cut off at 4,096. It must not grow further without a new review.
+it("keeps the production output limit at the reviewed cap", () => {
   expect(
-    qualificationSchema.shape.maxOutputTokens.safeParse(8192).success,
+    qualificationSchema.shape.maxOutputTokens.safeParse(16385).success,
   ).toBe(false);
   expect(
-    qualificationSchema.shape.maxOutputTokens.safeParse(4096).success,
+    qualificationSchema.shape.maxOutputTokens.safeParse(16384).success,
   ).toBe(true);
 });
