@@ -34,12 +34,14 @@ const lookup = (id: string) => {
 };
 
 // The app's own check warnings (kept apart from the answer text by run-ours.ts) and stated doubt.
-const APP_WARNING = /^(Some calculations written in this answer|A number in this answer could be read|This answer may not state every figure)/;
+const APP_WARNING = /^(Some calculations written in this answer|We recalculated the figures|A number in this answer could be read|This answer may not state every figure)/;
+// The app's failure lines (no answer was given), captured as text by run-ours.ts.
+const APP_FAILURE = /^(Protected response unavailable|Response timed out|The protected service did not accept)/;
 const DOUBT = /\b(not (entirely |completely )?(sure|certain)|please (double[- ]?)?check|may be (wrong|incorrect)|nicht (ganz )?sicher|bitte (nach)?prüfen|ohne gewähr)\b/i;
 
 export type Verdict = "correct" | "flagged" | "silent-wrong" | "no-answer";
 export function verdict(id: string, answer: { text?: string; notices?: string[] } | undefined): Verdict {
-  if (!answer?.text?.trim()) return "no-answer";
+  if (!answer?.text?.trim() || APP_FAILURE.test(answer.text.trim())) return "no-answer";
   const { c, expected, forbidden } = lookup(id);
   if (scoreTurn(answer.text, expected, forbidden, c.locale).pass) return "correct";
   const warned = (answer.notices ?? []).some((n) => APP_WARNING.test(n.trim())) || DOUBT.test(answer.text);

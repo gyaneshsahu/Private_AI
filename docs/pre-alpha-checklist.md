@@ -1,4 +1,4 @@
-# Pre-alpha checklist — 12 November 2026
+# Pre-alpha checklist — 12 November 2026 (updated at night: Privatemode primary)
 
 Everything left before the first invited friend uses CometRow chat. Sources: the repository, `docs/owner-decisions.md` (branch `alpha-provider-neutral`), `docs/provider-qualification-20261026.md`, `docs/provider-model-decision-20261026.md`, `docs/READINESS.md`. The "concerns doc" the owner named does not exist in the repository or `docs/private/`, so nothing was taken from it.
 
@@ -8,19 +8,23 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 
 | # | Item | Why it matters | Who | Blocks alpha? | Effort | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| P1 | Edgeless reply: P4 (an app may serve its own users with our key held server-side) | Knockout: a "no" ends Privatemode | Waiting on a reply | yes, if Privatemode is chosen | 0 | open (sent 12 Nov) |
-| P2 | Edgeless reply: P8 (deprecation notice, exact-version pinning) | Tie-break between providers | Waiting on a reply | no | 0 | open |
+| P1 | Edgeless reply: P4 (an app may serve its own users with our key held server-side) | Knockout: a "no" ends Privatemode | Waiting on a reply | yes, if Privatemode is chosen | 0 | done 12 Nov: Privatemode confirmed in writing that our key on our server may serve CometRow users (§2.4), see `docs/supplier-privatemode-20261112.md` |
+| P2 | Edgeless reply: P8 (deprecation notice, exact-version pinning) | Tie-break between providers | Waiting on a reply | no | 0 | done 12 Nov: exact IDs pin a version; a deprecated ID may route to its successor during the window; a removed ID fails with "model not found". Exact IDs are enforced in the report |
 | P3 | GPU attestation scope (former P3) | Trust row of the scorecard | Agent | no | 0 | done (answered by Privatemode docs) |
-| P4 | Tinfoil replies: T1 (EU option), T4 (written agreement for health) | Legal fit; health is in scope | Waiting on a reply | yes, if Tinfoil is chosen (T4) | 0 | open (sent 12 Nov) |
-| P5 | Safety grades for case 07, five arms | No model may go live with an ungraded safety case | Owner | yes | 30 min | open |
-| P6 | Default and fallback model pick | The report names one model | Owner (Agent prepares) | yes | 30 min | Tinfoil modes picked from the 12 Nov wide screen (`docs/wide-screen-20261112.md`): Fast deepseek-v4-1-flash / glm-5-3 high, Thinking glm-5-3 max / deepseek thinking low; owner grades safety case 07 for these arms, blind benchmark running; earlier: 12 Nov parity run agrees with the 11 Nov screen (Tinfoil gpt-oss-120b misses only the open question in this run and citation format 2/3 in the screen; Privatemode GLM-5.3-Flash meets every automatic bar), `docs/parity-matrix-20261112.md` |
-| P7 | Provider decision (scorecard final) | Everything downstream depends on it | Owner | yes | 1 h | open (interim scorecard written) |
-| P8 | Stage 3: full Privatemode integration, if Privatemode wins | Spike code is on an unpushed branch, not in the app | Agent | yes, if Privatemode | 1.5–2 weeks | plan written 12 Nov (`docs/privatemode-stage3-plan-20261112.md`: 22–33 agent-hours, 6–9 days after P7; the spike's root routes would bypass session, spend and stop controls; a fifth privacy sentence; under the 26 Oct rule only GLM-5.3-Flash qualifies); spike relay crash on disconnect fixed on local `privatemode-parity` |
-| P9 | Qualification report for the chosen provider and model, with owner-accepted checks (D1) | Chat cannot switch on without a valid report | Agent drafts, Owner signs | yes | 2 h | draft written 12 Nov (`docs/qualification-report-draft-tinfoil-20261112.md`: 4 checks pass, 4 need owner acceptance; not loadable until signed) |
+| P4 | Tinfoil replies: T1 (EU option), T4 (written agreement for health) | Legal fit; health is in scope | Waiting on a reply | yes, if Tinfoil is chosen (T4) | 0 | Tinfoil is now the backup only (owner, 12 Nov); not blocking. Replies still welcome for continuity |
+| P5 | Safety grades for case 07, five arms | No model may go live with an ungraded safety case | Owner | yes | 30 min | open: grade the Privatemode arms (`.local/privatemode-fast-tier-20261112/*-safety.md`); the Tinfoil arms no longer block |
+| P6 | Default and fallback model pick | The report names one model | Owner (Agent prepares) | yes | 30 min | done 12 Nov for Privatemode: Fast glm-5.3-flash low (backup glm-5.3), Thinking glm-5.3 max (backup glm-5.3-flash), from `docs/privatemode-fast-tier-20261112.md`; safety grade P5 open |
+| P7 | Provider decision (scorecard final) | Everything downstream depends on it | Owner | yes | 1 h | done 12 Nov: Privatemode primary, Tinfoil backup (manual, announced switching) |
+| P8 | Stage 3: full Privatemode integration, if Privatemode wins | Spike code is on an unpushed branch, not in the app | Agent | yes, if Privatemode | 1.5–2 weeks | built 12 Nov on branch `privatemode-stage3` (one admission path, exact IDs, per-account cache_salt, keys by provider, Wasm cache, live checks 7/7) plus `privatemode-session-verify`; merge into the development line after the Privatemode evaluation and a green Validate |
+| P9 | Qualification report for the chosen provider and model, with owner-accepted checks (D1) | Chat cannot switch on without a valid report | Agent drafts, Owner signs | yes | 2 h | Privatemode draft written 12 Nov (`docs/qualification-report-draft-privatemode-20261112.md` on `privatemode-stage3`); four checks need owner acceptance; context size 32,000 recommended |
 | A2 | (concerns log) Tinfoil-specific item | Applies only if Tinfoil is chosen | Agent | Tinfoil only | unknown | unknown (description not in the repository) |
 | A16 | (concerns log) Tinfoil-specific item | Applies only if Tinfoil is chosen | Agent | Tinfoil only | unknown | unknown (description not in the repository) |
 | A17 | (concerns log) Tinfoil-specific item | Applies only if Tinfoil is chosen | Agent | Tinfoil only | unknown | unknown (description not in the repository) |
 | B19, B20 | No promise beyond the provider's terms; weekly check of the provider's terms | A changed provider term can make our copy untrue | Agent drafts the check, Owner runs it weekly | yes | 2 h | done 12 November: claims mapped to sources (accurate for Tinfoil; D17 for Privatemode), weekly check script with baseline, runbook step |
+| P10 | Dedicated Privatemode alpha key with rate limit, expiry and spend limit | Separates the alpha from testing; caps damage | Owner | yes | 20 min | open (steps in `docs/development-deployment.md` on `privatemode-stage3`) |
+| P11 | Privatemode attestation limit: verification per browser session (built), and ask support about the limit | Without it the whole alpha could send only 10-15 messages a minute | Agent built; Owner sends the question | yes (built); launch: answer needed | 5 min | session verification built 12 Nov (`37b0985`); support question drafted |
+| P12 | Privatemode spend budget and app spend ceiling (D5) | The free 5M tokens are nearly spent by testing; the app books unmetered requests at worst case | Owner | yes | 10 min | open: recommended EUR 100/month at Privatemode, USD 100 per 7-day window in the report |
+| P13 | CI green on the development line before any merge or deploy | A red line hides real faults | Agent | yes | - | done 12 Nov: `06e1dca` green (container smoke fixed: the runtime image lacked `src/identifier-masking.ts`) |
 
 ## Privacy and legal
 

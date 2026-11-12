@@ -74,6 +74,8 @@ COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/package.json ./package.json
 COPY --from=build --chown=node:node /app/server ./server
 COPY --from=build --chown=node:node /app/shared ./shared
+# Device code the server also runs (top-page address masking); tests/dockerfile-runtime-imports.test.ts
+COPY --from=build --chown=node:node /app/src/identifier-masking.ts ./src/identifier-masking.ts
 COPY --from=build --chown=node:node /app/deployment/legal-identity.json ./deployment/legal-identity.json
 COPY --from=build --chown=node:node /app/dist ./dist
 COPY --chown=node:node scripts/invites.ts ./scripts/invites.ts
