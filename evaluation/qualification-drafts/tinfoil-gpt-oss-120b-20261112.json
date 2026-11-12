@@ -1,0 +1,81 @@
+{
+  "status": "DRAFT_NEEDS_OWNER_SIGNATURE_NOT_LOADABLE",
+  "draftedAt": "2026-11-12",
+  "note": "Qualification report draft for Tinfoil (checklist P9), written by the agent from evidence of 12 November. It cannot be loaded: 'needs-owner-acceptance' is not a schema status, approvedSpendUSD is null, the dates are placeholders. To become a report the owner (1) picks the models (P6), (2) for each 'needs-owner-acceptance' check either accepts it in writing (status 'accepted-by-owner', acceptedAt, reason) or keeps chat off, (3) sets approvedSpendUSD (D5), (4) the agent fills reviewedAt/validUntil and re-verifies the router digest on the day. docs/qualification-report-draft-tinfoil-20261112.md explains each check.",
+  "provider": "tinfoil",
+  "model": "gpt-oss-120b",
+  "fallbackModel": "gemma4-31b",
+  "gptOssReasoningEffort": "low",
+  "gemmaThinking": true,
+  "origin": "https://inference.tinfoil.sh/",
+  "repository": "tinfoilsh/confidential-model-router",
+  "releaseDigests": ["44da5457cd18ef85d90ea722e92f30a233296389fdd38ba9e08d68104dea7f98"],
+  "reviewedAt": "REPLACE_ON_THE_DAY_OF_SIGNATURE",
+  "validUntil": "REPLACE_AT_MOST_SEVEN_DAYS_LATER",
+  "maxInputCharacters": 8000,
+  "maxOutputTokens": 4096,
+  "pricing": { "inputPerMillion": 0.15, "outputPerMillion": 0.6, "currency": "USD" },
+  "approvedSpendUSD": null,
+  "review": {
+    "browserVerification": {
+      "status": "needs-owner-acceptance",
+      "evidence": [
+        "12 November: scripts/probe-provider.mjs verified router digest 44da5457...7f98 with the pinned SDK (attestation only, no key).",
+        "12 November T6 live: a report pinned to a wrong digest sent nothing (0 relay requests); the app showed 'Protected response unavailable'."
+      ],
+      "reason": "Partial: the JavaScript verifier 1.2.2 checks repository, release digest and key binding only; freshness, revocation and TDX are not checked in the browser (supplier, 22 October: no date)."
+    },
+    "freshnessAndRevocation": {
+      "status": "needs-owner-acceptance",
+      "evidence": [
+        "Relay attestation audit, block-only, wired 22 October (server/attestation-audit.ts): refreshes every 6 hours, maximum age 24 hours, blocks on a failed verdict."
+      ],
+      "reason": "Cannot pass in the browser. The audit runs on the relay and only blocks; it is not deployed with an audit configuration on Render yet, and its V3 checks are beta. Accepting means a stale or revoked router could be used until the next audit or the report expires (at most seven days)."
+    },
+    "protectedWorkerChain": {
+      "status": "needs-owner-acceptance",
+      "evidence": [
+        "Router digest verified 12 November. Worker repositories for gpt-oss-120b and gemma4-31b were named by the supplier on 7 October (GPT-OSS worker v0.0.28, Gemma v0.0.25); not current."
+      ],
+      "reason": "No current binding from the router release to the worker and GPU that serve each model. Accepting means trusting the supplier's router to route to attested workers."
+    },
+    "retentionAndLogs": {
+      "status": "pass",
+      "evidence": [
+        "Tinfoil Terms section 2: prompts and responses not retained after the response is returned (read 12 November, baseline docs/provider-terms-baseline.json).",
+        "Tinfoil email of 22 October: metadata (time, model, token counts) kept 90 days, longer for accounting; prompt cache without a lifetime control. Disclosed in shared/privacy-copy.ts; mapped in docs/provider-promises-20261112.md."
+      ]
+    },
+    "noExternalTools": {
+      "status": "pass",
+      "evidence": [
+        "The chat request carries no tools, no web_search_options and no tool_choice unless the separate optional calculator is configured (src/verified-chat.ts); this report does not configure it.",
+        "src/reply-stream.ts fails a reply that contains tool calls (hasTools -> INCOMPLETE_ANSWER); tests/reply-stream.test.ts."
+      ]
+    },
+    "liveStreaming": {
+      "status": "pass",
+      "evidence": [
+        "12 November T6 live on gpt-oss-120b through the real app and relay: baseline reply, 200-word reply and a reply after a stop all completed; streaming visible from the first chunk (evaluation/live-failure-check.ts, 6 of 6 pass)."
+      ]
+    },
+    "negativeTests": {
+      "status": "pass",
+      "evidence": [
+        "12 November T6 live: stop before send (0 requests), stop mid-stream then next request admitted, output limit shown as incomplete, wrong digest refused (0 requests); rejected key shown as 'nothing was run or billed'.",
+        "Offline: reply-stream protocol tests, A15 remote-content canary, relay spend and stop tests (tests/relay-spend-stop.test.ts). The hosted part of T6 (on Render, chat on) is still open and must run before the first invitee."
+      ]
+    },
+    "usageAndBudget": {
+      "status": "needs-owner-acceptance",
+      "evidence": [
+        "server/spend-guard.ts counts metered cost plus worst case for unmetered and running requests against approvedSpendUSD; operator stop file; tests/spend-guard.test.ts, tests/relay-spend-stop.test.ts. One request per account, three per instance."
+      ],
+      "reason": "Needs the ceiling amount (D5) and a hosted stop-switch test (S5). Tinfoil's own spending limits are soft, so the guard is the only hard stop."
+    }
+  },
+  "modelEvidence": {
+    "stage1Screen": "11 November, 3 repetitions of 9 synthetic cases: gpt-oss-120b (low) passed arithmetic, open question, coding, placeholders and time to first token; citation format 2 of 3 (fail). gemma4-31b with thinking: open question 2 of 3, others pass, slower (median 2.7 s). Safety case 07 awaits the owner's grade (P5).",
+    "settingsFix": "Before 12 November the report schema dropped model settings; screened settings now apply (commit 335b6f7)."
+  }
+}

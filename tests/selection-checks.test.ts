@@ -110,3 +110,19 @@ describe("candidate qualification report draft (launch plan 8.5)", () => {
     }
   });
 });
+
+describe("Tinfoil qualification report draft of 12 November (P9)", () => {
+  const path = "evaluation/qualification-drafts/tinfoil-gpt-oss-120b-20261112.json";
+  it("marks every check pass with evidence or needs-owner-acceptance with a reason, and cannot be loaded", async () => {
+    const draft = JSON.parse(await readFile(path, "utf8"));
+    expect(draft.status).toContain("NOT_LOADABLE");
+    for (const check of checks) {
+      const entry = draft.review[check];
+      expect(["pass", "needs-owner-acceptance"], check).toContain(entry.status);
+      expect(entry.evidence.length, check).toBeGreaterThan(0);
+      if (entry.status === "needs-owner-acceptance") expect(entry.reason.length, check).toBeGreaterThan(20);
+    }
+    expect(draft.approvedSpendUSD).toBeNull();
+    expect(() => validateQualification(draft)).toThrow();
+  });
+});
