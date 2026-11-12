@@ -11,7 +11,7 @@ import {
   tierFor,
   validateQualification,
 } from "../shared/contracts";
-import { answerLabel, autoMode, shouldRetryOnBackup } from "../src/answer-modes";
+import { answerLabel, autoDecision, autoMode, shouldRetryOnBackup } from "../src/answer-modes";
 import { IncompleteReplyError } from "../src/reply-stream";
 import type { StreamFailureCode } from "../src/stream-failure";
 
@@ -175,13 +175,44 @@ describe("Auto", () => {
     expect(autoMode(ask(text))).toBe("thinking");
   });
 
-  it("uses Thinking for long messages and large included documents only", () => {
-    expect(autoMode(ask("Please summarise. ".repeat(80)))).toBe("thinking");
-    expect(autoMode(ask("Summarise the attached file.", 9000))).toBe("thinking");
-    expect(autoMode(ask("Summarise the attached file.", 2000))).toBe("fast");
-    const excluded = ask("Summarise the attached file.", 9000);
-    excluded.attachments[0].selected = false;
-    expect(autoMode(excluded)).toBe("fast");
+  // Routing of 12 November (docs/routing-and-search-20261112.md, evaluation/routing-sim.ts).
+  it.each([
+    ["Write a Python function merge_intervals(intervals) that merges overlapping intervals.", "code"],
+    ["We validate German postcodes with /^\\d{4,5}$/ in JavaScript. What's wrong with it?", "code"],
+    ["PostgreSQL: table events(user_id bigint). Write a query for daily active users.", "code"],
+    ["Schreib mir eine Funktion, die zwei Listen zusammenführt.", "code"],
+    ["A shop sells notebooks for €2.40 each, or packs of 6 for €12.60. What is the cheapest way to buy 20?", "maths"],
+    ["Ein Handwerker berechnet 45 € pro Stunde und arbeitet 3,5 Stunden. Was kostet das brutto?", "maths"],
+    ["Who is the current President of the European Commission?", "current"],
+    ["Was kostet das Deutschlandticket gerade im Monat?", "current"],
+  ])("sends %s to Thinking (%s)", (text, reason) => {
+    expect(autoDecision(ask(text))).toEqual({ mode: "thinking", reason });
+  });
+
+  it.each([
+    ["My dad suddenly has slurred speech and his face droops. What do I do?", "simple"],
+    ["My 2-year-old swallowed a button battery, why is that dangerous?", "urgent"],
+    ["Rewrite this so it sounds polite: I want the invoice today.", "rewrite"],
+    ["Übersetze ins Englische: Das Meeting heute fällt aus, warum auch immer.", "rewrite"],
+    ["Summarise the following annual report for 2026 in 200 words.", "rewrite"],
+    ["What is the latest stable release of Python?", "current"],
+  ])("keeps %s off the slow path unless needed (%s)", (text, reason) => {
+    const decision = autoDecision(ask(text));
+    expect(decision.reason).toBe(reason);
+    if (reason !== "current") expect(decision.mode).toBe("fast");
+  });
+
+  it("answers a time-sensitive question with web results on Fast, and long documents on Fast", () => {
+    const searched = ask("Who is the current President of the European Commission?");
+    searched.attachments.push({
+      id: "w",
+      name: "web",
+      selected: true,
+      sources: [{ id: "w1", title: "web", text: "result", url: "https://example.org/" }],
+    } as never);
+    expect(autoDecision(searched)).toEqual({ mode: "fast", reason: "simple" });
+    expect(autoMode(ask("Summarise the attached file.", 9000))).toBe("fast");
+    expect(autoMode(ask("Please summarise. ".repeat(80)))).toBe("fast");
   });
 });
 

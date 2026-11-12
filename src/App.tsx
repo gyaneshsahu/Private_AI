@@ -6,6 +6,7 @@ import {
   emptyConversation,
   tierFor,
   verificationSummary,
+  type AnswerMode,
   type AppStatus,
   type Attachment,
   type Conversation,
@@ -211,13 +212,28 @@ export function App() {
   const [autoSearch, setAutoSearch] = useState(readAutoSearch);
   const [searchSent, setSearchSent] = useState("");
   useEffect(() => setSearchSent(""), [conversation.id]);
-  const suggestion = useMemo(
-    () =>
-      status?.search && status.inference.ready
-        ? searchSuggestion(input)
-        : undefined,
-    [status?.search, status?.inference.ready, input],
-  );
+  const suggestion = useMemo(() => {
+    if (!status?.search || !status.inference.ready) return undefined;
+    if (input.trim()) {
+      const draft = searchSuggestion(input);
+      return draft && { ...draft, again: false };
+    }
+    // After an answer to a time-sensitive question given without web results: offer to check
+    // it with the same one-tap search (the exact text is shown, so the tap is the approval).
+    const last = conversation.messages.at(-1);
+    const question = [...conversation.messages]
+      .reverse()
+      .find((m) => m.role === "user");
+    if (
+      last?.role !== "assistant" ||
+      last.status !== "complete" ||
+      !question ||
+      selectedSources(conversation).some((source) => !!source.url)
+    )
+      return undefined;
+    const again = searchSuggestion(question.text);
+    return again && { ...again, again: true };
+  }, [status?.search, status?.inference.ready, input, conversation]);
   const [proposalNote, setProposalNote] = useState<{
     note: string;
     warning: boolean;
@@ -531,11 +547,37 @@ export function App() {
       );
     }
   }
+  // The last question and the conversation to ask it again from (as "Retry last response").
+  function lastQuestion() {
+    const last = [...conversation.messages]
+      .reverse()
+      .find((m) => m.role === "user");
+    if (!last) return undefined;
+    const index = conversation.messages.indexOf(last);
+    try {
+      const base =
+        index === conversation.messages.length - 1
+          ? { ...conversation, messages: conversation.messages.slice(0, index) }
+          : branchConversation(conversation, input, last.id);
+      return { base, text: last.text };
+    } catch (error) {
+      fail((error as Error).message);
+      return undefined;
+    }
+  }
+  // Ask the last question again, optionally in a chosen mode for this one request.
+  function askAgain(modeOverride?: AnswerMode) {
+    const retry = lastQuestion();
+    if (retry) void send(retry.base, retry.text, false, false, modeOverride);
+  }
+
   async function send(
     base = conversation,
     text = input,
     consumeDraft = true,
     consentChosen = false,
+    // The user's own one-off choice ("Answer again with Thinking"); it wins over Auto.
+    modeOverride?: AnswerMode,
   ) {
     if (busy || !status?.inference.ready || !text.trim()) return;
     if (status.healthConsentDraft && !healthConsent && !consentChosen) {
@@ -579,10 +621,11 @@ export function App() {
     controller.current = abort;
     const current = epoch.current;
     const qualified = status.inference.qualification;
+    const choiceForThis: ModeChoice = modeOverride ?? modeChoice;
     const mode = qualified?.modes
-      ? modeChoice === "auto"
+      ? choiceForThis === "auto"
         ? autoMode(next)
-        : modeChoice
+        : choiceForThis
       : undefined;
     const hasBackup = !!qualified && !!tierFor(qualified, mode).backupModel;
     let textArrived = false;
@@ -641,7 +684,7 @@ export function App() {
                       ? { arithmeticCheck: checkArithmetic(m.text) }
                       : {}),
                     answeredBy: answerLabel(
-                      modeChoice,
+                      choiceForThis,
                       mode,
                       choice === "backup",
                     ),
@@ -860,25 +903,35 @@ export function App() {
     }
   }
   // The tap (or the opt-in setting) approves exactly the shown text; then the draft is sent.
-  async function searchThenAnswer(value: string, how: "tap" | "auto") {
-    const text = input;
+  // `again`: search for the last question and answer it again (the old answer is replaced the
+  // same way "Retry last response" replaces it).
+  async function searchThenAnswer(
+    value: string,
+    how: "tap" | "auto",
+    again = false,
+  ) {
+    const retry = again ? lastQuestion() : undefined;
+    if (again && !retry) return;
+    const text = retry?.text ?? input;
+    const base = retry?.base ?? conversation;
     const outcome = await research({ kind: "search", value }, how);
     if (!outcome || (outcome === "failed" && how === "tap")) return;
     if (outcome === "failed") {
       setSearchSent(WHEN_TO_SEARCH.automaticFailed);
-      void send(conversation, text);
+      void send(base, text, !again);
       return;
     }
     setSearchSent(outcome.note);
     void send(
       outcome.attachment
         ? {
-            ...conversation,
+            ...base,
             temporarySearch: true,
-            attachments: [...conversation.attachments, outcome.attachment],
+            attachments: [...base.attachments, outcome.attachment],
           }
-        : conversation,
+        : base,
       text,
+      !again,
     );
   }
   async function unlockVault() {
@@ -1885,7 +1938,11 @@ export function App() {
                   aria-label="Search suggestion"
                 >
                   <p>
-                    <strong>{WHEN_TO_SEARCH.heading}</strong>{" "}
+                    <strong>
+                      {suggestion.again
+                        ? WHEN_TO_SEARCH.againHeading
+                        : WHEN_TO_SEARCH.heading}
+                    </strong>{" "}
                     {WHEN_TO_SEARCH.label}
                   </p>
                   <pre>{suggestion.value}</pre>
@@ -1895,15 +1952,25 @@ export function App() {
                   {suggestion.warning && (
                     <p className="warning">{WHEN_TO_SEARCH.warning}</p>
                   )}
-                  <p className="muted">{WHEN_TO_SEARCH.explanation}</p>
+                  <p className="muted">
+                    {suggestion.again
+                      ? WHEN_TO_SEARCH.againExplanation
+                      : WHEN_TO_SEARCH.explanation}
+                  </p>
                   <button
                     type="button"
                     className="primary"
                     onClick={() =>
-                      void searchThenAnswer(suggestion.value, "tap")
+                      void searchThenAnswer(
+                        suggestion.value,
+                        "tap",
+                        suggestion.again,
+                      )
                     }
                   >
-                    {WHEN_TO_SEARCH.button}
+                    {suggestion.again
+                      ? WHEN_TO_SEARCH.againButton
+                      : WHEN_TO_SEARCH.button}
                   </button>
                 </div>
               )}
@@ -2160,32 +2227,28 @@ export function App() {
                       : "Retry is unavailable while private chat is gated"
                   }
                   disabled={!!busy || !status?.inference.ready}
-                  onClick={() => {
-                    const last = [...conversation.messages]
-                      .reverse()
-                      .find((m) => m.role === "user");
-                    if (last) {
-                      const index = conversation.messages.indexOf(last);
-                      try {
-                        const base =
-                          index === conversation.messages.length - 1
-                            ? {
-                                ...conversation,
-                                messages: conversation.messages.slice(0, index),
-                              }
-                            : branchConversation(conversation, input, last.id);
-                        void send(base, last.text, false);
-                      } catch (error) {
-                        fail((error as Error).message);
-                      }
-                    }
-                  }}
+                  onClick={() => askAgain()}
                 >
                   {conversation.messages.at(-1)?.role === "user"
                     ? "Answer this question"
                     : "Retry last response"}
                 </button>
               )}
+              {/* One tap to the deeper mode after a Fast answer: user-chosen, labelled, same provider. */}
+              {status?.inference.qualification?.modes &&
+                conversation.messages.at(-1)?.role === "assistant" &&
+                /(^|· )Fast( ·|$)/.test(
+                  conversation.messages.at(-1)?.answeredBy ?? "",
+                ) && (
+                  <button
+                    className="text-button"
+                    title="Starts a new request and may incur another charge"
+                    disabled={!!busy || !status?.inference.ready}
+                    onClick={() => askAgain("thinking")}
+                  >
+                    Answer again with Thinking
+                  </button>
+                )}
               <p className="composer-caption">
                 {unlocked
                   ? "Local vault unlocked · Save explicitly to keep changes"

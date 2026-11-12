@@ -87,6 +87,24 @@ it("shows Auto, Fast and Thinking only, remembers the choice, and labels a backu
       { choice: "backup", mode: "thinking" },
     ]);
     await ui(page.getByRole("dialog")).toHaveCount(0);
+    // After a Thinking answer there is nothing deeper to offer.
+    await ui(page.getByRole("button", { name: "Answer again with Thinking" })).toHaveCount(0);
+
+    // A simple question goes to Fast; one tap asks it again on Thinking, labelled "Thinking".
+    await page.getByLabel("Message CometRow").fill("What is the capital of France?");
+    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await ui(page.locator("article.assistant").last().locator(".answered-by")).toHaveText(
+      "Auto · Fast · Answered by the backup model",
+    );
+    await page.getByRole("button", { name: "Answer again with Thinking" }).click();
+    await ui(page.locator("article.assistant").last().locator(".answered-by")).toHaveText(
+      "Thinking · Answered by the backup model",
+    );
+    expect(
+      (await page.evaluate(() => (window as unknown as { __calls: { mode: string }[] }).__calls)).map((c) => c.mode),
+    ).toEqual(["thinking", "thinking", "fast", "fast", "thinking", "thinking"]);
+    // The remembered choice is unchanged: the override was for one request.
+    await ui(page.getByRole("combobox", { name: "Answer mode" })).toHaveValue("auto");
 
     // No model name anywhere in the page.
     const html = await page.content();

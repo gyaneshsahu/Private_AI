@@ -76,6 +76,11 @@ export const WHEN_TO_SEARCH = {
   explanation:
     "One tap sends exactly this text to Brave Search through our server, and our server opens the top result page, preferring an official site. Nothing else from your conversation is sent. Press Send instead to answer without searching.",
   button: "Search and answer",
+  // After an answer given without web results (routing design of 12 November).
+  againHeading: "This answer did not use current information.",
+  againExplanation:
+    "One tap sends exactly this text to Brave Search through our server, our server opens the top result page, preferring an official site, and the question is answered again from the results. Nothing else from your conversation is sent.",
+  againButton: "Search and answer again",
   // Unchanged wording, shared with the Research tab's approval.
   warning:
     "This search text may still contain personal details, such as a name or a long number, that cannot be recognised automatically. The search provider will see exactly this text. Approve only if that is fine.",

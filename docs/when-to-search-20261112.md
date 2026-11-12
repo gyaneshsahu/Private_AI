@@ -97,3 +97,5 @@ Tinfoil's catalogue gives only a `created` timestamp, which is when the model wa
 - No server-side detection or logging of which questions were detected.
 - No suggestion under earlier answers; the suggestion follows the draft being written.
 - No per-mode dates (none are published).
+
+**Update, 12 November (evening):** after an answer to a time-sensitive question given without web results, the same box offers to check it ("This answer did not use current information." / "Search and answer again"); Auto now routes such questions to Thinking when there are no web results. See `docs/routing-and-search-20261112.md`.

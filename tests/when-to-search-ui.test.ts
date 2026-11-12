@@ -114,13 +114,33 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
     );
     expect(searches).toEqual([]);
 
+    // After that answer (no web results), the same text is offered to check it; nothing is
+    // sent until the tap. Typing a new question replaces the offer.
+    await ui(suggestion).toContainText("This answer did not use current information.");
+    await ui(suggestion.getByRole("button", { name: "Search and answer again" })).toBeVisible();
+    await ui(suggestion.locator("pre")).toHaveText(
+      "What is the current fee for transfers, mail [email address removed]",
+    );
+    expect(searches).toEqual([]);
+    const answers = await page.locator("article.assistant").count();
+    await suggestion.getByRole("button", { name: "Search and answer again" }).click();
+    await ui(page.locator("article.assistant").last()).toContainText(
+      "Synthetic answer from the results",
+    );
+    // The answer is replaced, not added; exactly the shown text was searched.
+    expect(await page.locator("article.assistant").count()).toBe(answers);
+    expect(searches).toEqual([
+      { kind: "search", value: "What is the current fee for transfers, mail [email address removed]" },
+    ]);
+
     // One tap runs exactly the shown text, then answers from the results.
     await message.fill("Wer ist Bundeskanzler?");
     await suggestion.getByRole("button", { name: "Search and answer" }).click();
     await ui(page.locator("article.assistant").last()).toContainText(
       "Synthetic answer from the results",
     );
-    expect(searches).toEqual([{ kind: "search", value: "Wer ist Bundeskanzler?" }]);
+    expect(searches.at(-1)).toEqual({ kind: "search", value: "Wer ist Bundeskanzler?" });
+    expect(searches).toHaveLength(2);
     await ui(
       page.getByRole("status").filter({ hasText: 'Searched the web for: "Wer ist Bundeskanzler?"' }),
     ).toContainText(
@@ -153,9 +173,11 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
       ),
     ).toEqual([
       ["What is the current fee for transfers, mail max.mustermann@example.com", 0],
-      ["Wer ist Bundeskanzler?", 1],
-      ["Wie hoch ist der Mindestlohn? Mail max.mustermann@example.com", 2],
-      ["Explain recursion", 2],
+      // Asked again after the one-tap check, now with the web result.
+      ["What is the current fee for transfers, mail max.mustermann@example.com", 1],
+      ["Wer ist Bundeskanzler?", 2],
+      ["Wie hoch ist der Mindestlohn? Mail max.mustermann@example.com", 3],
+      ["Explain recursion", 3],
     ]);
   } finally {
     await browser.close();
