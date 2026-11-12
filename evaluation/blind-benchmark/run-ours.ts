@@ -33,6 +33,8 @@ const OUT = `.local/${basename(DIR)}/ours${privatemode ? "-privatemode" : ""}`;
 // Each Privatemode message makes three POSTs (attest, secret, chat) against the 200-POST
 // session limit, so start a new browser context (a new session) every few prompts.
 const PROMPTS_PER_CONTEXT = privatemode ? 15 : Infinity;
+const PACE_MS = privatemode ? Number(process.env.PACE_MS ?? 6500) : 0;
+let lastSend = 0;
 
 // What a user would type into the Research tab for each level-4 prompt (the product sends
 // only the exact query the user approves; the question itself is asked in the chat).
@@ -145,6 +147,11 @@ async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolea
   const suggestionShown = await suggestionBox(page).isVisible().catch(() => false);
   const suggestedQuery = suggestionShown ? ((await suggestionBox(page).locator("pre").innerText().catch(() => "")) || undefined) : undefined;
   const tapped = !!(opts.tapSuggestion && suggestionShown);
+  // Privatemode limits attestations per organisation (12 Nov probe: 10/min passes, 20/min gets
+  // HTTP 429), and the app verifies before every message: space message starts out.
+  const wait = lastSend + PACE_MS - Date.now();
+  if (wait > 0) await page.waitForTimeout(wait);
+  lastSend = Date.now();
   const started = Date.now();
   if (tapped) await suggestionBox(page).getByRole("button", { name: "Search and answer" }).click();
   else await page.getByRole("button", { name: "Send ↑", exact: true }).click();
@@ -238,8 +245,12 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
 const browser = await chromium.launch(browserLaunchOptions());
 const startedAt = new Date().toISOString();
 try {
-  await Promise.all(
-    MODES.map(async (mode) => {
+  // Privatemode: one mode at a time, so the pacing above holds for the whole run.
+  const each = async <T,>(xs: readonly T[], f: (x: T) => Promise<void>) =>
+    privatemode ? xs.reduce((p, x) => p.then(() => f(x)), Promise.resolve()) : Promise.all(xs.map(f)).then(() => undefined);
+  await each(
+    MODES,
+    (async (mode) => {
       await mkdir(`${OUT}/${mode}`, { recursive: true });
       const fresh = () => browser.newContext({ viewport: { width: 1280, height: 900 }, ignoreHTTPSErrors: !!tls });
       let context = await fresh();
