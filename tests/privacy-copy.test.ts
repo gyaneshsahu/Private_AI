@@ -31,11 +31,18 @@ it("never overclaims: no absolute promises the product cannot keep", () => {
     "guarantee",
     "military",
     "unbreakable",
+    // copy audit 12 November, rows P1 to P3
+    "we never can",
+    "never see what you asked",
+    "never what",
+    "checked secure server",
   ])
     expect(everything, forbidden).not.toContain(forbidden);
   // The claims that must be present, stated honestly.
   expect(everything).toContain("names, addresses and other facts");
-  expect(everything).toContain("we never see what you asked");
+  expect(everything).toContain("we cannot read what you asked in chat");
+  expect(everything).toContain("pass through our server in readable form");
+  expect(everything).toContain("your browser does not check the graphics processor");
   expect(everything).toContain("clears on its own");
   expect(everything).toContain("spending limits on the secure server are soft");
   expect(everything).toContain("there is no anonymous mode");
