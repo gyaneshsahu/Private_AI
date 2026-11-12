@@ -41,3 +41,17 @@ it("makes no absolute promise", () => {
   for (const forbidden of ["guarantee", "never", "100%", "completely", "cannot be", "anonymous"])
     expect(text, forbidden).not.toContain(forbidden);
 });
+
+it("names the provider of the report in use whenever chat is ready (D10), otherwise only with the review flag", async () => {
+  const { disclosedProvider } = await import("../shared/provider-disclosure");
+  const ready = (provider: string) => ({ inference: { ready: true, qualification: { provider } } });
+  expect(disclosedProvider(ready("tinfoil"))).toBe("tinfoil");
+  expect(disclosedProvider(ready("privatemode"))).toBe("privatemode");
+  // The report wins over a review flag naming another provider.
+  expect(disclosedProvider({ ...ready("tinfoil"), providerDisclosureDraft: "privatemode" })).toBe("tinfoil");
+  // Chat off: no section unless the review flag asks for one.
+  expect(disclosedProvider({ inference: { ready: false } })).toBeUndefined();
+  expect(disclosedProvider({ inference: { ready: false }, providerDisclosureDraft: "privatemode" })).toBe("privatemode");
+  expect(disclosedProvider(undefined)).toBeUndefined();
+  expect(disclosedProvider(ready("unknown-provider"))).toBeUndefined();
+});

@@ -37,3 +37,20 @@ export function providerDisclosureSection(provider: DisclosedProvider) {
     text: PROVIDER_DISCLOSURE[provider].text,
   } as const;
 }
+
+/**
+ * Which provider the privacy policy must name (D10). While chat is ready, the policy
+ * names the provider of the qualification report in use, so chat can never be on with
+ * a policy that is silent about who processes messages. Otherwise only the review flag
+ * adds the section. The texts above stay drafts until the owner approves them.
+ */
+export function disclosedProvider(status?: {
+  providerDisclosureDraft?: DisclosedProvider;
+  inference?: { ready: boolean; qualification?: { provider: string } };
+}): DisclosedProvider | undefined {
+  const provider = status?.inference?.ready
+    ? status.inference.qualification?.provider
+    : undefined;
+  if (provider === "tinfoil" || provider === "privatemode") return provider;
+  return status?.providerDisclosureDraft;
+}

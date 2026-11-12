@@ -37,6 +37,7 @@ import {
 } from "./conversation";
 import { PRIVACY_SUMMARY, privacyText } from "../shared/privacy-copy";
 import { privacyPolicyText } from "../shared/privacy-policy";
+import { disclosedProvider } from "../shared/provider-disclosure";
 import { imprintText } from "../shared/legal-identity";
 import { importDocuments, type ImportOutcome } from "./document-import";
 import { PhotoCapture } from "./PhotoCapture";
@@ -1278,7 +1279,7 @@ export function App() {
                     setSource({
                       id: "privacy-policy",
                       title: "Privacy policy",
-                      text: privacyPolicyText(status?.providerDisclosureDraft),
+                      text: privacyPolicyText(disclosedProvider(status)),
                     });
                   }}
                 >
@@ -2704,7 +2705,7 @@ export function App() {
                       setSource({
                         id: "privacy-policy",
                         title: "Privacy policy",
-                        text: privacyPolicyText(status?.providerDisclosureDraft),
+                        text: privacyPolicyText(disclosedProvider(status)),
                       })
                     }
                   >

@@ -1,4 +1,9 @@
 # PrivateAI readiness checklist
+## L4 / D10: the in-app policy names the report's provider whenever chat is ready (branch alpha-provider-neutral, local) - 12 November
+
+- **Change (verified by tests).** `disclosedProvider(status)` in `shared/provider-disclosure.ts`: while chat is ready, the privacy policy in the app includes "Who processes your messages" for the provider of the qualification report in use (the report wins over the review flag); with chat off, only the review flag adds it. Prepared for both providers (Tinfoil: US with SCCs; Privatemode: EU only). Unit test in `tests/provider-disclosure.test.ts`; health-consent browser test and copy tests pass.
+- **Still open.** The section texts are drafts (D8). The published policy file `docs/privacy-policy-20261022.md` and the website are generated without a provider; regenerate them with the chosen provider in the switch-on step (O4).
+
 ## S1: expired sessions rejected server-side, proved by test (branch alpha-provider-neutral, local) - 12 November
 
 - **Verified.** Session cookie cache is disabled (`server/account-auth.ts`, `cookieCache: { enabled: false }`; sessions 1 hour, refreshed every 5 minutes), so every request reads the session row. New PostgreSQL test in `tests/production-account.test.ts`: sign in, export works (200); expire the session row in the database only; the same cookie then gets `get-session` null and the account export 401. Checklist item S1 done.
