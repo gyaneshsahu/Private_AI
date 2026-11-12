@@ -1,0 +1,20 @@
+# Record of processing activities (GDPR Art. 30) — DRAFT, needs owner approval (12 November 2026)
+
+**Status: draft, needs owner approval** (checklist F1). Written from what the repository records; anything not recorded there is marked *unknown*. The record must be kept up to date and shown to the authority on request; it is not published.
+
+**Controller:** Ganesh Sahu, individual (natural person), Germany; address as in the imprint (`deployment/legal-identity.json`). Privacy contact privacy@cometrow.com; incident contact security@cometrow.com. No data protection officer appointed. Competent authority: LDI NRW, Düsseldorf.
+
+| # | Activity | Purpose | Legal basis | Data subjects and data | Recipients and processors | Transfer outside the EU | Retention | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Account and sign-in | Provide the account; restrict the alpha to invited people | Art. 6(1)(b) (contract) | Users: email address, Google account identifier, sessions (no IP address or browser string stored), sign-in method records | Render (hosting, Frankfurt); Google (sign-in) | Google: unknown (Google's own terms) | Sessions 1 hour; account until closure, then deletion as in the policy | live |
+| 2 | Chat answers | Answer the user's question | Art. 6(1)(b); Art. 9(2)(a) explicit consent for health and other special categories (consent step drafted, D2) | Users and anyone they mention: message content after on-device masking of identifiers | AI provider: Tinfoil, Inc. (USA) or Edgeless Systems GmbH (Germany), depending on the decision | Tinfoil: USA, EU Standard Contractual Clauses (DPA section 10). Privatemode: none (EU/EEA only) | Provider: not kept after the answer, short-term enclave cache; provider metadata 90 days | not live (chat off) |
+| 3 | Request records | Allowances, spending ceiling, abuse limits, accounting | Art. 6(1)(b) and (f) (legitimate interest: cost control) | Users: account ID, time, request state, model, token counts, published cost; no content | Render (database) | none | 90 days, then deleted by the daily purge (live since 25 October) | live (empty while chat is off) |
+| 4 | Account data export and deletion | Users' rights (Art. 15, 17, 20) | Art. 6(1)(c) (legal obligation) | Users: account data as in activity 1 and 3 | Render | none | Export not stored; closure schedules deletion | export live; closure needs email (checklist R2) |
+| 5 | Security and operations logs | Keep the service running and secure | Art. 6(1)(f) | Content-free service log lines (startup, purge counts); hosting provider's access logs | Render; Render's network edge (responses carry `Server: cloudflare`, so Cloudflare acts for Render) | unknown (Render's sub-processors) | Render's log retention: unknown | live |
+| 6 | Backups | Recover after loss | Art. 6(1)(b) and (f) | Copies of activities 1, 3 and 4 | not chosen (checklist O1) | unknown | unknown | not set up |
+| 7 | Web search | Answer with current public information on request | Art. 6(1)(a) consent per search (approval shown) | The approved search text, with identifiers removed | Brave Search (USA) | USA: unknown basis | Brave's policy | off in production |
+| 8 | Support contact | Answer users' questions | Art. 6(1)(b) | Email and message the user sends | Email provider for support@cometrow.com: unknown | unknown | unknown | not set up (checklist R6) |
+
+**Technical and organisational measures (summary; details in `docs/hardening-20261024.md` and the private hardening record):** browser-side encryption to an attested server; on-device masking of identifiers; restricted database roles (`cometrow_runtime`); TLS everywhere with fixed security headers; content-free logs; allowlisted sign-in; per-account and global request limits; spending ceiling and stop switch (dormant); 90-day purge.
+
+**Gaps this record shows** (each also in the checklist): the privacy policy does not name Render or Google as recipients (owner decision D14); Render's and Google's transfer bases and log retention are unknown; backups and the support mailbox are not set up.

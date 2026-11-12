@@ -1,4 +1,11 @@
 # PrivateAI readiness checklist
+## F1: record of processing and breach plan drafted; AI-transparency line in the app - 12 November
+
+- **Drafts (need owner approval, D16).** `docs/art30-record-draft-20261112.md`: eight processing activities (account and sign-in, chat answers, request records, export and deletion, logs, backups, web search, support) with purpose, legal basis, data, recipients, transfers, retention and status, from repository facts only; unknowns marked. `docs/breach-plan-draft-20261112.md`: signals, contain (stop switch), preserve, rotate, assess, notify LDI NRW within 72 hours, tell people affected, document; named contact the owner (security@cometrow.com), no deputy (D15).
+- **App (verified).** The always-visible line under the composer now says "Answers come from an AI, not a person" (EU AI Act Art. 50 transparency); asserted in `tests/remote-content-canary-ui.test.ts`; Playwright 61 passed including phone-width overflow.
+- **Gaps found.** The privacy policy names neither Render nor Google sign-in as recipients (D14); Render's and Google's transfer bases and log retention are unknown.
+- **CI.** Validate run 43141003481 on the merge of `alpha-provider-neutral` (`8a26a30`): offline success, durable success.
+
 ## A18: three high production vulnerabilities fixed; supply-chain checks added to CI - 12 November
 
 - **Found (verified, `npm audit` 12 November).** 3 high and 1 moderate in production dependencies: `undici` 8.11.2 (relay client; denial of service in the EventSource parser), `zod` 4.6.5 (input validation; memory exhaustion on oversized constrained collections), `body-parser` 2.3.0 under Express (denial of service via trailing bytes after a compressed body), `qs` 6.16.0 (moderate). No exploitation observed; production runs without chat, but body parsing and validation are live.

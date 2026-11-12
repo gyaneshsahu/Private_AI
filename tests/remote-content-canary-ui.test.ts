@@ -73,6 +73,8 @@ it("renders model output without loading any remote image, embed, stylesheet or 
     const answer = page.locator("article.assistant").last();
     await ui(answer).toContainText("Synthetic answer with remote references.");
     await ui(answer).toContainText("[Image omitted: pixel]");
+    // AI transparency (F1, EU AI Act Art. 50): the composer says answers come from an AI.
+    await ui(page.locator(".composer-caption")).toContainText("Answers come from an AI, not a person");
     // Give any lazy loader a moment, then check the network and the DOM.
     await page.waitForTimeout(1000);
     expect(external.filter((url) => url.includes(CANARY))).toEqual([]);

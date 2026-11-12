@@ -2050,7 +2050,8 @@ export function App() {
                 {unlocked
                   ? "Local vault unlocked · Save explicitly to keep changes"
                   : "Temporary chat · Not saved"}{" "}
-                · Check important answers.
+                · Answers come from an AI, not a person · Check important
+                answers.
               </p>
             </div>
             <dialog
@@ -2115,8 +2116,9 @@ export function App() {
                 indefinite memory.
               </p>
               <p className="composer-note">
-                Only selected context is included. CometRow can make
-                mistakes—check important details.
+                Only selected context is included. CometRow is an AI
+                system, not a person, and can make mistakes—check important
+                details.
               </p>
             </dialog>
             {new URLSearchParams(location.search).has("developmentTools") && (
