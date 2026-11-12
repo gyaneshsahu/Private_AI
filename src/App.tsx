@@ -52,6 +52,7 @@ import {
   checkAnswerCompleteness,
   completenessWarning,
 } from "./arithmetic/completeness";
+import { checkUncheckedFigures, GERMAN_RULES } from "./german-rules";
 import {
   DISAPPEAR_LABELS,
   expireMessages,
@@ -692,6 +693,12 @@ export function App() {
                             c.messages,
                             m.id,
                             m.text,
+                          ),
+                          uncheckedFigures: checkUncheckedFigures(
+                            c.messages,
+                            m.id,
+                            m.text,
+                            selectedSources(c).some((source) => !!source.url),
                           ),
                         }
                       : {}),
@@ -1811,6 +1818,11 @@ export function App() {
                       {completenessWarning(message.completenessCheck.missing)}
                     </p>
                   )}
+                  {message.uncheckedFigures && (
+                    <p className="warning arithmetic-check" role="alert">
+                      {GERMAN_RULES.warning}
+                    </p>
+                  )}
                   {message.keptOnDevice && (
                     <p className="muted kept-on-device">
                       {message.keptOnDevice} Placeholders went to the secure
@@ -1959,7 +1971,9 @@ export function App() {
                     <strong>
                       {suggestion.again
                         ? WHEN_TO_SEARCH.againHeading
-                        : WHEN_TO_SEARCH.heading}
+                        : suggestion.rules
+                          ? GERMAN_RULES.heading
+                          : WHEN_TO_SEARCH.heading}
                     </strong>{" "}
                     {WHEN_TO_SEARCH.label}
                   </p>

@@ -1,6 +1,7 @@
 // Answer modes on this device: the remembered choice, Auto's rules, the one-retry rule and
 // the label. Only mode names reach the UI, never model names.
 import { selectedSources } from "./conversation";
+import { germanRulesQuestion } from "./german-rules";
 import { IncompleteReplyError } from "./reply-stream";
 import { needsCurrentInformation } from "./when-to-search";
 import type { AnswerMode, Conversation } from "../shared/contracts";
@@ -100,6 +101,7 @@ export type AutoReason =
   | "maths"
   | "rewrite"
   | "reasoning"
+  | "rules"
   | "current"
   | "simple";
 
@@ -122,6 +124,10 @@ export function autoDecision(conversation: Conversation): {
   )
     return { mode: "thinking", reason: "maths" };
   if (TRANSFORM.test(text)) return { mode: "fast", reason: "rewrite" };
+  // German rules, fees and deadlines (docs/german-rules-20261113.md): on Privatemode Thinking
+  // scored 3.0 against Fast's 1.8 without sources; with approved web results Fast suffices.
+  if (germanRulesQuestion(text))
+    return { mode: web ? "fast" : "thinking", reason: "rules" };
   if (CUES.some((cue) => cue.test(text)))
     return { mode: "thinking", reason: "reasoning" };
   // Without web results Thinking says more reliably what it cannot know; with them Fast

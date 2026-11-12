@@ -1,5 +1,6 @@
 // When to search (docs/when-to-search-20261112.md): on-device rules that spot a question
 // needing current information, the masked search text, and the opt-in automatic setting.
+import { germanRulesQuestion } from "./german-rules";
 import { prepareSearchQuery } from "./identifier-masking";
 
 // Always time-sensitive. \p{L} boundaries so German umlauts count as letters.
@@ -43,12 +44,16 @@ export function needsCurrentInformation(text: string, now = new Date()): boolean
   );
 }
 
-/** The exact search text to show, identifiers removed; undefined when not suggested. */
+/**
+ * The exact search text to show, identifiers removed; undefined when not suggested. Also for
+ * German rules, fees and deadlines (src/german-rules.ts), flagged `rules` for their heading.
+ */
 export function searchSuggestion(text: string, now = new Date()) {
-  if (!needsCurrentInformation(text, now)) return undefined;
+  const rules = germanRulesQuestion(text);
+  if (!rules && !needsCurrentInformation(text, now)) return undefined;
   const prepared = prepareSearchQuery(text);
   return prepared.value.length >= 2 && prepared.value.length <= 200
-    ? prepared
+    ? { ...prepared, rules }
     : undefined;
 }
 

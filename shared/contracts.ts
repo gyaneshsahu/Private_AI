@@ -368,6 +368,12 @@ export interface Message {
     requested: number;
     missing: string[];
   };
+  /**
+   * Local-only result of the German-rules check (src/german-rules.ts): the question was about
+   * German rules, no web result was in context, and the answer states figures or deadlines.
+   * Never model context, never sent or logged.
+   */
+  uncheckedFigures?: true;
 }
 export interface ConversationBranch {
   id: string;
