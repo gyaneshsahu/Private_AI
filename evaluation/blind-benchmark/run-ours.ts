@@ -15,16 +15,24 @@ import { createApp } from "../../server/app";
 import { checks } from "../../shared/contracts";
 import { browserLaunchOptions } from "../../scripts/browser-runtime.mjs";
 import { workspaceControl } from "../workspace-navigation";
+import { createServer as createHttpsServer } from "node:https";
+import { localTLS } from "../../tests/fixtures/local-tls";
 
 const arg = (name: string) => (process.argv.includes(`--${name}`) ? process.argv[process.argv.indexOf(`--${name}`) + 1] : undefined);
-const apiKey = process.env.TINFOIL_API_KEY;
+// --privatemode: the Stage 3 path (owner decision 12 Nov: Privatemode is primary). The report is
+// the local test report .local/qualification-privatemode.json with benchmark-only limits.
+const privatemode = process.argv.includes("--privatemode");
+const apiKey = privatemode ? process.env.PRIVATEMODE_API_KEY : process.env.TINFOIL_API_KEY;
 const searchKey = process.env.BRAVE_SEARCH_API_KEY;
-if (!apiKey) throw Error("Load TINFOIL_API_KEY (and BRAVE_SEARCH_API_KEY for level 4) with scripts/WindowsSecrets.psm1");
+if (!apiKey) throw Error("Load TINFOIL_API_KEY or PRIVATEMODE_API_KEY (and BRAVE_SEARCH_API_KEY for research) with scripts/WindowsSecrets.psm1");
 const MODES = (arg("modes") ?? "auto,fast,thinking").split(",") as ("auto" | "fast" | "thinking")[];
 const only = arg("only")?.split(",");
 // BENCH_DIR runs another prompt set (e.g. evaluation/benchmark-fresh-20261112).
 const DIR = process.env.BENCH_DIR ?? "evaluation/blind-benchmark";
-const OUT = `.local/${basename(DIR)}/ours`;
+const OUT = `.local/${basename(DIR)}/ours${privatemode ? "-privatemode" : ""}`;
+// Each Privatemode message makes three POSTs (attest, secret, chat) against the 200-POST
+// session limit, so start a new browser context (a new session) every few prompts.
+const PROMPTS_PER_CONTEXT = privatemode ? 15 : Infinity;
 
 // What a user would type into the Research tab for each level-4 prompt (the product sends
 // only the exact query the user approves; the question itself is asked in the chat).
@@ -56,19 +64,22 @@ const NOTICES = [
 type Prompt = { id: string; level: number | string; prompt: string | string[]; attachments?: { path: string }[]; searchExpected?: boolean; searchQuery?: string };
 const prompts = (JSON.parse(await readFile(`${DIR}/prompts.json`, "utf8")).prompts as Prompt[]).filter((p) => !only || only.includes(p.id));
 
-// Router release digest of the day (attestation only, no key).
-const probe = execFileSync(process.execPath, ["scripts/probe-provider.mjs"], { encoding: "utf8" });
-const digest = /"releaseDigest": "([a-f0-9]{64})"/.exec(probe)?.[1];
-if (!digest) throw Error("Router attestation probe failed");
+// Router release digest of the day (attestation only, no key). Tinfoil only.
+const digest = privatemode
+  ? undefined
+  : /"releaseDigest": "([a-f0-9]{64})"/.exec(execFileSync(process.execPath, ["scripts/probe-provider.mjs"], { encoding: "utf8" }))?.[1];
+if (!privatemode && !digest) throw Error("Router attestation probe failed");
 
 const draft = JSON.parse(await readFile("evaluation/qualification-drafts/tinfoil-gpt-oss-120b-20261112.json", "utf8"));
-const tiers = arg("tiers") ? JSON.parse(await readFile(arg("tiers")!, "utf8")) : draft.modes;
+// Privatemode: the local test report (approved manifest of the day), with benchmark limits.
+const pmReport = privatemode ? JSON.parse(await readFile(".local/qualification-privatemode.json", "utf8")) : undefined;
+const tiers = arg("tiers") ? JSON.parse(await readFile(arg("tiers")!, "utf8")) : (pmReport?.modes ?? draft.modes);
 const catalog = JSON.parse(await readFile("evaluation/results/model-catalog-20261026.json", "utf8")).data as { id: string; pricing?: { inputTokenPricePer1M: number; outputTokenPricePer1M: number } }[];
 const price = (m: string) => catalog.find((c) => c.id === m)?.pricing;
 const tierModels = Object.values(tiers as Record<string, { model: string; backupModel?: string }>).flatMap((t) => [t.model, t.backupModel].filter(Boolean) as string[]);
 const now = Date.now();
 const evidence = ["LOCAL BENCHMARK FIXTURE on the agent machine only; not a qualification report"];
-const qualification = {
+const tinfoilFixture = {
   provider: "tinfoil",
   model: tiers.fast.model,
   origin: "https://inference.tinfoil.sh/",
@@ -87,18 +98,34 @@ const qualification = {
   approvedSpendUSD: 50,
   modes: tiers,
 };
+// Benchmark-only limits: 32,000 input characters (as the Tinfoil runs) and a spend cap that the
+// worst-case booking of unmetered Privatemode requests does not exhaust mid-run.
+const qualification = pmReport
+  ? {
+      ...pmReport,
+      modes: tiers,
+      maxInputCharacters: 32000,
+      approvedSpendUSD: 200,
+      review: Object.fromEntries(Object.entries(pmReport.review as Record<string, { evidence: string[] }>).map(([k, v]) => [k, { ...v, status: "pass", evidence: [...evidence, ...v.evidence].slice(0, 8) }])),
+    }
+  : tinfoilFixture;
 
-// Server: the real app (dev middleware), with a counter of relay requests.
+// Server: the real app (dev middleware), with a counter of relay requests. Privatemode's SDK
+// always calls HTTPS, so it runs on an ephemeral local certificate.
 let relayRequests = 0;
 const outer = express();
 outer.use((req, _res, next) => {
-  if (req.method === "POST" && req.path === "/api/inference/v1/chat/completions") relayRequests++;
+  if (req.method === "POST" && /\/v1\/chat\/completions$/.test(req.path)) relayRequests++;
   next();
 });
-const listener = outer.listen(0, "127.0.0.1");
+const tls = privatemode ? await localTLS() : undefined;
+const listener = tls ? createHttpsServer({ key: tls.key, cert: tls.cert }, outer) : outer.listen(0, "127.0.0.1");
+if (tls) listener.listen(0, "127.0.0.1");
 await new Promise((ok) => listener.once("listening", ok));
-const origin = `http://127.0.0.1:${(listener.address() as { port: number }).port}`;
-const inner = createApp({ origin, dev: true, qualification, apiKey, searchKey });
+const port = (listener.address() as { port: number }).port;
+const origin = tls ? `https://localhost:${port}` : `http://127.0.0.1:${port}`;
+const providerManifest = privatemode ? new Uint8Array(await readFile(".local/privatemode-manifest.json")) : undefined;
+const inner = createApp({ origin, dev: true, qualification, apiKey, searchKey, providerManifest });
 const vite = await createServer({ server: { middlewareMode: true, hmr: false }, appType: "spa", logLevel: "error" });
 inner.use(vite.middlewares);
 outer.use(inner);
@@ -214,8 +241,15 @@ try {
   await Promise.all(
     MODES.map(async (mode) => {
       await mkdir(`${OUT}/${mode}`, { recursive: true });
-      const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+      const fresh = () => browser.newContext({ viewport: { width: 1280, height: 900 }, ignoreHTTPSErrors: !!tls });
+      let context = await fresh();
+      let used = 0;
       for (const p of prompts) {
+        if (used++ >= PROMPTS_PER_CONTEXT) {
+          await context.close();
+          context = await fresh();
+          used = 1;
+        }
         let result: Record<string, unknown>;
         try {
           result = await runOne(context, mode, p);
