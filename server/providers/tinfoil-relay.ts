@@ -1,7 +1,7 @@
 // Tinfoil adapter for the relay: every supplier-specific header, pin and
 // metering format lives here. server/app.ts never names the supplier.
 import type { IncomingHttpHeaders } from "node:http";
-import type { Qualification } from "../../shared/contracts";
+import { qualifiedModels } from "../../shared/contracts";
 import { parseUsageMetrics } from "../usage-metrics";
 import { attestationAuditGuard } from "../attestation-audit";
 import {
@@ -46,13 +46,10 @@ export function createTinfoilRelayAdapter(): InferenceRelayAdapter {
       // The relay names the qualified model itself and the enclave rejects a
       // body that disagrees; a client may not name a different model.
       const requested = headers["x-tinfoil-model"];
-      const allowed = new Set([
-        qualification.model,
-        ...(qualification.fallbackModel ? [qualification.fallbackModel] : []),
-      ]);
       if (
         requested !== undefined &&
-        (typeof requested !== "string" || !allowed.has(requested))
+        (typeof requested !== "string" ||
+          !qualifiedModels(qualification).has(requested))
       )
         return { ok: false, error: "Only the qualified model is accepted." };
       return {

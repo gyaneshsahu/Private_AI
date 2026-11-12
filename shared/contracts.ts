@@ -33,24 +33,45 @@ const reviewCheck = z.discriminatedUnion("status", [
     reason: z.string().min(20),
   }),
 ]);
+const modelName = z
+  .string()
+  .min(1)
+  .refine(
+    (value) => value !== "auto",
+    "Automatic model routing is not qualified.",
+  );
+const outputLimit = z.number().int().positive().max(4096);
+// Model-specific settings the review covered. Without them in the schema, parsing dropped
+// them and the model ran on the supplier's default (found by the T6 live run, 12 November).
+const modelSettings = {
+  gptOssReasoningEffort: z.enum(["low", "medium", "high"]).optional(),
+  gemmaThinking: z.boolean().optional(),
+  glmReasoningEffort: z.enum(["low", "high", "max"]).optional(),
+  deepSeekThinking: z.boolean().optional(),
+  deepSeekReasoningEffort: z.literal("low").optional(),
+};
+/** One answer mode: its model, an optional backup at the same provider, its own output limit and allowance cost. */
+const modeTierSchema = z.object({
+  model: modelName,
+  backupModel: modelName.optional(),
+  maxOutputTokens: outputLimit,
+  /** Units of the account's request allowance one request in this mode uses. */
+  allowanceCost: z.number().int().min(1).max(10),
+  ...modelSettings,
+});
+export type ModeTier = z.infer<typeof modeTierSchema>;
+export const answerModes = ["fast", "thinking"] as const;
+export type AnswerMode = (typeof answerModes)[number];
 export const qualificationSchema = z.object({
   provider: z.literal("tinfoil"),
-  model: z
-    .string()
-    .min(1)
-    .refine(
-      (value) => value !== "auto",
-      "Automatic model routing is not qualified.",
-    ),
-  /** Optional second qualified model for the same deployment; the user must confirm its use. */
-  fallbackModel: z
-    .string()
-    .min(1)
-    .refine(
-      (value) => value !== "auto",
-      "Automatic model routing is not qualified.",
-    )
-    .optional(),
+  model: modelName,
+  /** Optional backup model for the same deployment; tried once, automatically and labelled, when the model gives no answer. */
+  fallbackModel: modelName.optional(),
+  /**
+   * Answer modes. Every model here is at this report's one provider, so a retry never
+   * crosses providers. `pricing` must be the highest rate among all the report's models.
+   */
+  modes: z.object({ fast: modeTierSchema, thinking: modeTierSchema }).optional(),
   origin: z
     .string()
     .url()
@@ -72,20 +93,14 @@ export const qualificationSchema = z.object({
   validUntil: z.string().datetime(),
   review: z.record(z.enum(checks), reviewCheck),
   maxInputCharacters: z.number().int().positive().max(100000),
-  maxOutputTokens: z.number().int().positive().max(4096),
+  maxOutputTokens: outputLimit,
   pricing: z.object({
     inputPerMillion: z.number().nonnegative(),
     outputPerMillion: z.number().nonnegative(),
     currency: z.literal("USD"),
   }),
   approvedSpendUSD: z.number().positive(),
-  // Model-specific settings the review covered. Without them in the schema, parsing dropped
-  // them and the model ran on the supplier's default (found by the T6 live run, 12 November).
-  gptOssReasoningEffort: z.enum(["low", "medium", "high"]).optional(),
-  gemmaThinking: z.boolean().optional(),
-  glmReasoningEffort: z.enum(["low", "high", "max"]).optional(),
-  deepSeekThinking: z.boolean().optional(),
-  deepSeekReasoningEffort: z.literal("low").optional(),
+  ...modelSettings,
 });
 export type Qualification = z.infer<typeof qualificationSchema>;
 /** Which model each setting belongs to. */
@@ -96,12 +111,59 @@ export const MODEL_SETTINGS = {
   deepSeekThinking: "deepseek-v4-1-flash",
   deepSeekReasoningEffort: "deepseek-v4-1-flash",
 } as const;
+type Setting = keyof typeof MODEL_SETTINGS;
 /** The report as one model's policy: that model's settings kept, every other model's removed. */
 export function policyForModel(report: Qualification, model: string): Qualification {
   const policy: Qualification = { ...report, model };
   for (const [setting, owner] of Object.entries(MODEL_SETTINGS))
-    if (owner !== model) delete policy[setting as keyof typeof MODEL_SETTINGS];
+    if (owner !== model) delete policy[setting as Setting];
   return policy;
+}
+/** The tier a request runs in: one of the report's modes, or the report's own model when it has none. */
+export function tierFor(report: Qualification, mode?: AnswerMode): ModeTier {
+  if (mode && report.modes) return report.modes[mode];
+  return {
+    model: report.model,
+    ...(report.fallbackModel ? { backupModel: report.fallbackModel } : {}),
+    maxOutputTokens: report.maxOutputTokens,
+    allowanceCost: 1,
+  };
+}
+/** One request's policy: the tier's model or backup, the tier's output limit, and that model's settings only. */
+export function policyForTier(
+  report: Qualification,
+  mode: AnswerMode | undefined,
+  choice: "primary" | "backup",
+): Qualification {
+  const tier = tierFor(report, mode);
+  const model = choice === "backup" ? tier.backupModel : tier.model;
+  if (!model) throw Error("No backup model is qualified.");
+  const settings = Object.fromEntries(
+    Object.keys(MODEL_SETTINGS)
+      .filter((k) => tier[k as Setting] !== undefined)
+      .map((k) => [k, tier[k as Setting]]),
+  );
+  return policyForModel(
+    { ...report, ...settings, maxOutputTokens: tier.maxOutputTokens },
+    model,
+  );
+}
+/** Every model the report qualifies; the relay admits exactly these. */
+export function qualifiedModels(report: Qualification): Set<string> {
+  return new Set(
+    [
+      report.model,
+      report.fallbackModel,
+      ...Object.values(report.modes ?? {}).flatMap((t) => [t.model, t.backupModel]),
+    ].filter((m): m is string => !!m),
+  );
+}
+/** The largest output limit any request under this report may use. */
+export function largestOutputLimit(report: Qualification): number {
+  return Math.max(
+    report.maxOutputTokens,
+    ...Object.values(report.modes ?? {}).map((t) => t.maxOutputTokens),
+  );
 }
 export function validateQualification(
   input: unknown,
@@ -113,9 +175,17 @@ export function validateQualification(
     report.fallbackModel === report.model
   )
     throw Error("The fallback model must differ from the qualified model.");
+  const models = qualifiedModels(report);
   for (const [setting, owner] of Object.entries(MODEL_SETTINGS))
-    if (report[setting as keyof typeof MODEL_SETTINGS] !== undefined && owner !== report.model && owner !== report.fallbackModel)
+    if (report[setting as Setting] !== undefined && !models.has(owner))
       throw Error("A model setting names a model the report does not qualify.");
+  for (const tier of Object.values(report.modes ?? {})) {
+    if (tier.backupModel === tier.model)
+      throw Error("The backup model must differ from the mode's model.");
+    for (const [setting, owner] of Object.entries(MODEL_SETTINGS))
+      if (tier[setting as Setting] !== undefined && owner !== tier.model && owner !== tier.backupModel)
+        throw Error("A mode setting names a model that mode does not use.");
+  }
   if (
     Date.parse(report.reviewedAt) > now ||
     Date.parse(report.validUntil) <= now ||
@@ -200,7 +270,7 @@ export interface Message {
   keptOnDevice?: string;
   /** Creation time, ISO 8601; absent on messages saved before 22 October 2026. */
   at?: string;
-  /** Set when the user chose the fallback model after the usual model rejected the request. */
+  /** Which mode answered and whether the backup model did, e.g. "Auto · Thinking". Never a model name (older saves may hold one). */
   answeredBy?: string;
   /**
    * Local-only result of recalculating the arithmetic the reply writes out

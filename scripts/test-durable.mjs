@@ -12,6 +12,7 @@ const files = [
   "account-privileges",
   "account-usage-http",
   "usage-postgres",
+  "allowance-cost",
   "consumer-control",
   "security-notices",
   "production-account",

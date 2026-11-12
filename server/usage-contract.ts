@@ -17,12 +17,22 @@ export const usageAllowanceSchema = z
     "Invalid allowance period.",
   );
 export const usageOutcome = z.enum(["transport_complete", "uncertain"]);
+export const usageUnits = z.number().int().min(1).max(10);
+/**
+ * A request costing N units is one request row plus N-1 unit rows, so weighting needs no
+ * schema change. Unit rows are `<requestId>.<n>` ('.' never appears in a usage ID), inserted
+ * settled, and never metered, so spend and the unmetered count skip them.
+ */
+export const unitRowIds = (requestId: string, units: number) =>
+  Array.from({ length: units - 1 }, (_, i) => `${requestId}.${i + 2}`);
+export const NOT_UNIT_ROW = "r.request_id NOT LIKE '%.%'";
 type Result<T> = T | Promise<T>;
 export type { UsageMetrics } from "./usage-metrics";
 
 export interface UsageLedger {
   summary(accountId: string): Result<RequestAllowance>;
-  reserve(accountId: string, requestId: string): Result<boolean>;
+  /** Reserves `units` (default 1) of the allowance for one request, all or none. */
+  reserve(accountId: string, requestId: string, units?: number): Result<boolean>;
   dispatch(accountId: string, requestId: string): Result<void>;
   /** Completed-request metering for one of the account's own requests; another account's request ID reads as absent. */
   metrics(

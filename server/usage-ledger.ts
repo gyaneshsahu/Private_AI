@@ -4,6 +4,9 @@ import type { RequestAllowance } from "../shared/contracts";
 import {
   usageId as id,
   usageAllowanceSchema as allowance,
+  usageUnits,
+  unitRowIds,
+  NOT_UNIT_ROW,
   type UsageLedger,
 } from "./usage-contract";
 import { usageMetricsSchema, type UsageMetrics } from "./usage-metrics";
@@ -17,7 +20,7 @@ export class SqliteUsageLedger implements UsageLedger {
     const rows = this.db
       .prepare(
         `SELECT m.cost_usd FROM usage_requests r LEFT JOIN usage_metrics m ON m.request_id=r.request_id
-      WHERE r.created_at>=? AND r.created_at<?`,
+      WHERE r.created_at>=? AND r.created_at<? AND ${NOT_UNIT_ROW}`,
       )
       .all(since, until) as { cost_usd: string | null }[];
     const costs = rows.filter((row) => row.cost_usd != null).map((row) => String(row.cost_usd));
@@ -120,7 +123,7 @@ export class SqliteUsageLedger implements UsageLedger {
       COUNT(m.request_id) AS metered,
       COALESCE(SUM(m.prompt_tokens),0) AS prompt_tokens,
       COALESCE(SUM(m.completion_tokens),0) AS completion_tokens,
-      COALESCE(SUM(CASE WHEN r.state IN ('transport_complete','uncertain') AND m.request_id IS NULL THEN 1 ELSE 0 END),0) AS unmetered
+      COALESCE(SUM(CASE WHEN r.state IN ('transport_complete','uncertain') AND m.request_id IS NULL AND ${NOT_UNIT_ROW} THEN 1 ELSE 0 END),0) AS unmetered
       FROM usage_allowances a LEFT JOIN usage_requests r ON a.period_id=r.period_id
       LEFT JOIN usage_metrics m ON m.request_id=r.request_id
       WHERE a.account_id=? AND a.starts_at<=? AND a.ends_at>?
@@ -153,9 +156,10 @@ export class SqliteUsageLedger implements UsageLedger {
       unmeteredRequests: Number(row.unmetered),
     };
   }
-  reserve(accountId: string, requestId: string): boolean {
+  reserve(accountId: string, requestId: string, units = 1): boolean {
     id.parse(accountId);
     id.parse(requestId);
+    usageUnits.parse(units);
     return this.transaction(() => {
       // Replayed IDs never authorize a second forwarding, even across accounts.
       if (
@@ -169,13 +173,16 @@ export class SqliteUsageLedger implements UsageLedger {
         .prepare(
           `SELECT a.period_id FROM usage_allowances a
         WHERE account_id=? AND starts_at<=? AND ends_at>?
-        AND (SELECT COUNT(*) FROM usage_requests r WHERE r.period_id=a.period_id)<a.request_limit`,
+        AND (SELECT COUNT(*) FROM usage_requests r WHERE r.period_id=a.period_id)+?<=a.request_limit`,
         )
-        .get(accountId, now, now);
+        .get(accountId, now, now, units);
       if (!row) return false;
-      this.db
-        .prepare("INSERT INTO usage_requests VALUES(?,?,?,'reserved',?,?)")
-        .run(requestId, accountId, String(row.period_id), now, now);
+      const insert = this.db.prepare(
+        "INSERT INTO usage_requests VALUES(?,?,?,?,?,?)",
+      );
+      insert.run(requestId, accountId, String(row.period_id), "reserved", now, now);
+      for (const unit of unitRowIds(requestId, units))
+        insert.run(unit, accountId, String(row.period_id), "transport_complete", now, now);
       return true;
     });
   }

@@ -9,7 +9,9 @@ import { productionAccountTarget } from "../shared/account-design";
 import { once } from "node:events";
 import { z } from "zod";
 import {
+  answerModes,
   disclosureSchema,
+  tierFor,
   validateQualification,
   type Qualification,
 } from "../shared/contracts";
@@ -329,6 +331,18 @@ export function createApp(config: Config) {
         res.status(400).json({ error: admission.error });
         return;
       }
+      // The answer mode is client-declared (the body is encrypted to the enclave); it picks the
+      // tier whose models are admitted, whose output limit sizes the spend check, and its allowance cost.
+      const modeHeader = req.headers["x-privateai-mode"];
+      const mode = answerModes.find((m) => m === modeHeader);
+      const tier = tierFor(q, mode);
+      if (
+        (modeHeader !== undefined && (!mode || !q.modes)) ||
+        (admission.model !== tier.model && admission.model !== tier.backupModel)
+      ) {
+        res.status(400).json({ error: "Only a qualified answer mode and its models are accepted." });
+        return;
+      }
       if (active >= 3) {
         res.status(429).json({ error: "Three requests are already running." });
         return;
@@ -363,6 +377,7 @@ export function createApp(config: Config) {
               config.usage as Required<Pick<UsageLedger, "spend">>,
               q,
               active - 1,
+              tier.maxOutputTokens,
             );
           } catch {
             /* Unknown spend refuses, like unknown allowance. */
@@ -379,11 +394,17 @@ export function createApp(config: Config) {
           try {
             if (
               !accountId ||
-              !(await config.usage.reserve(accountId, requestId))
+              !(await config.usage.reserve(
+                accountId,
+                requestId,
+                tier.allowanceCost,
+              ))
             ) {
               res.status(429).json({
                 error:
-                  "No request allowance is available. No request was forwarded.",
+                  tier.allowanceCost > 1
+                    ? `Not enough request allowance: this mode counts as ${tier.allowanceCost} requests. No request was forwarded.`
+                    : "No request allowance is available. No request was forwarded.",
               });
               return;
             }
@@ -422,8 +443,8 @@ export function createApp(config: Config) {
         const accepted = relay.accept(reply);
         if (!accepted.ok) {
           await upstream.body.dump().catch(() => {});
-          // Only the class of failure is exposed: a rejection (nothing was run or
-          // billed) lets the client offer the fallback model; nothing else leaks.
+          // Only the class of failure is exposed, so the client can decide on its one
+          // retry with the mode's backup model; nothing else leaks.
           res.setHeader("X-PrivateAI-Upstream", relay.classifyFailure(reply));
           res.status(502).json({
             error:

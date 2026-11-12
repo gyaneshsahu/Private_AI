@@ -5,6 +5,9 @@ import {
   usageId,
   usageAllowanceSchema,
   usageOutcome,
+  usageUnits,
+  unitRowIds,
+  NOT_UNIT_ROW,
   type UsageLedger,
 } from "./usage-contract";
 import { usageMetricsSchema, type UsageMetrics } from "./usage-metrics";
@@ -108,7 +111,7 @@ export class PostgresUsageLedger implements UsageLedger {
       COALESCE(SUM(m.completion_tokens),0)::text AS completion_tokens,
       COUNT(m.cost_usd)::int AS costed,
       COALESCE(SUM(m.cost_usd),0)::text AS cost_usd,
-      COUNT(*) FILTER (WHERE r.state IN ('transport_complete','uncertain') AND m.request_id IS NULL)::int AS unmetered
+      COUNT(*) FILTER (WHERE r.state IN ('transport_complete','uncertain') AND m.request_id IS NULL AND ${NOT_UNIT_ROW})::int AS unmetered
       FROM usage_allowances a LEFT JOIN usage_requests r ON a.period_id=r.period_id
       LEFT JOIN usage_metrics m ON m.request_id=r.request_id
       WHERE a.account_id=$1 AND a.starts_at<=$2 AND a.ends_at>$2 GROUP BY a.period_id`,
@@ -133,9 +136,14 @@ export class PostgresUsageLedger implements UsageLedger {
       unmeteredRequests: row.unmetered,
     };
   }
-  async reserve(accountId: string, requestId: string): Promise<boolean> {
+  async reserve(
+    accountId: string,
+    requestId: string,
+    units = 1,
+  ): Promise<boolean> {
     usageId.parse(accountId);
     usageId.parse(requestId);
+    usageUnits.parse(units);
     return this.transaction(async (client) => {
       const account = await client.query(
         "SELECT account_id FROM usage_accounts WHERE account_id=$1 FOR UPDATE",
@@ -146,8 +154,8 @@ export class PostgresUsageLedger implements UsageLedger {
       const period = await client.query(
         `SELECT a.period_id FROM usage_allowances a
         WHERE account_id=$1 AND starts_at<=$2 AND ends_at>$2
-        AND (SELECT COUNT(*) FROM usage_requests r WHERE r.period_id=a.period_id)<a.request_limit`,
-        [accountId, now],
+        AND (SELECT COUNT(*) FROM usage_requests r WHERE r.period_id=a.period_id)+$3<=a.request_limit`,
+        [accountId, now, units],
       );
       if (!period.rowCount) return false;
       const inserted = await client.query(
@@ -155,7 +163,14 @@ export class PostgresUsageLedger implements UsageLedger {
         ON CONFLICT (request_id) DO NOTHING RETURNING request_id`,
         [requestId, accountId, period.rows[0].period_id, now],
       );
-      return inserted.rowCount === 1;
+      if (inserted.rowCount !== 1) return false;
+      const extra = unitRowIds(requestId, units);
+      if (extra.length)
+        await client.query(
+          `INSERT INTO usage_requests SELECT unnest($1::text[]),$2::text,$3::text,'transport_complete',$4::bigint,$4::bigint`,
+          [extra, accountId, period.rows[0].period_id, now],
+        );
+      return true;
     });
   }
   async dispatch(accountId: string, requestId: string): Promise<void> {
@@ -217,7 +232,7 @@ export class PostgresUsageLedger implements UsageLedger {
       `SELECT COALESCE(SUM(m.cost_usd),0)::text AS metered,
         COUNT(*) FILTER (WHERE m.cost_usd IS NULL)::int AS unmetered
       FROM usage_requests r LEFT JOIN usage_metrics m ON m.request_id=r.request_id
-      WHERE r.created_at>=$1 AND r.created_at<$2`,
+      WHERE r.created_at>=$1 AND r.created_at<$2 AND ${NOT_UNIT_ROW}`,
       [since, until],
     );
     return {

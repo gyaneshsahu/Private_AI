@@ -17,6 +17,7 @@ export const BRIDGE_REQUEST_HEADERS = [
   "sec-fetch-dest",
   "x-privateai-csrf",
   "x-privateai-continuation-approval",
+  "x-privateai-mode",
   "x-tinfoil-enclave-url",
   "x-tinfoil-model",
   "ehbp-encapsulated-key",
