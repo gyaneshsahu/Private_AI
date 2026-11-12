@@ -1,0 +1,426 @@
+{
+  "version": "arithmetic-app-20261112",
+  "note": "unseen-v3 questions asked standalone through the app; scored against the code key",
+  "prompts": [
+    {
+      "id": "unseen3-01a",
+      "level": "vat",
+      "levelName": "vat",
+      "language": "de",
+      "prompt": "Hallo, kurze Rückfrage zum Angebot: 6.420,00 EUR netto, darauf 19 % Umsatzsteuer. Wie hoch sind Steuer und Brutto?"
+    },
+    {
+      "id": "unseen3-01b",
+      "level": "vat",
+      "levelName": "vat",
+      "language": "de",
+      "prompt": "Angebot: 6.420,00 EUR netto, darauf 19 % Umsatzsteuer. Darin ist ein Anteil Bücher von 1.200,00 EUR netto, für den 7 % gelten. Wie hoch sind Steuer und Brutto nur für diesen Anteil?"
+    },
+    {
+      "id": "unseen3-02a",
+      "level": "net-gross",
+      "levelName": "net-gross",
+      "language": "de",
+      "prompt": "Taxiquittung 36,50 EUR brutto inkl. 7 % Umsatzsteuer. Netto und Steuer, auf Cent gerundet?"
+    },
+    {
+      "id": "unseen3-02b",
+      "level": "net-gross",
+      "levelName": "net-gross",
+      "language": "de",
+      "prompt": "Hotelrechnung 214,00 EUR brutto inkl. 7 % Umsatzsteuer. Netto und Steuer, auf Cent gerundet?"
+    },
+    {
+      "id": "unseen3-03a",
+      "level": "percent-change",
+      "levelName": "percent-change",
+      "language": "de",
+      "prompt": "Mein Beitrag ist von 42,50 EUR auf 46,75 EUR im Monat gestiegen. Um wie viel Prozent ist er gestiegen, mit zwei Nachkommastellen?"
+    },
+    {
+      "id": "unseen3-03b",
+      "level": "percent-change",
+      "levelName": "percent-change",
+      "language": "de",
+      "prompt": "Mein Beitrag ist von 46,75 EUR auf 44,00 EUR im Monat gesunken. Änderung in Prozent, negativ bei Rückgang, zwei Nachkommastellen?"
+    },
+    {
+      "id": "unseen3-04a",
+      "level": "percent-change",
+      "levelName": "percent-change",
+      "language": "de",
+      "prompt": "Die monatlichen Kosten sind von 1.280,00 EUR auf 1.472,00 EUR gestiegen. Prozentuale Veränderung, eine Nachkommastelle?"
+    },
+    {
+      "id": "unseen3-04b",
+      "level": "percent-change",
+      "levelName": "percent-change",
+      "language": "de",
+      "prompt": "Die monatlichen Kosten sind von 1.472,00 EUR auf 1.398,40 EUR gesunken. Prozentuale Änderung, negativ bei Rückgang, eine Nachkommastelle?"
+    },
+    {
+      "id": "unseen3-05a",
+      "level": "overtime-rate",
+      "levelName": "overtime-rate",
+      "language": "de",
+      "prompt": "Tarif 21,00 EUR pro Stunde. Sonntagsarbeit wird mit 150 % des normalen Satzes bezahlt. Lohn für 5 Sonntagsstunden?"
+    },
+    {
+      "id": "unseen3-05b",
+      "level": "overtime-rate",
+      "levelName": "overtime-rate",
+      "language": "de",
+      "prompt": "Tarif 21,00 EUR pro Stunde. Feiertagsarbeit wird mit 200 % des normalen Satzes bezahlt. Lohn für 5 Feiertagsstunden?"
+    },
+    {
+      "id": "unseen3-06a",
+      "level": "surcharge",
+      "levelName": "surcharge",
+      "language": "de",
+      "prompt": "Parkgebühr 12,00 EUR pro Tag, am Wochenende zzgl. 25 % Zuschlag. Preis am Wochenende?"
+    },
+    {
+      "id": "unseen3-06b",
+      "level": "surcharge",
+      "levelName": "surcharge",
+      "language": "de",
+      "prompt": "Parkgebühr 12,00 EUR pro Tag; ab Januar am Wochenende zzgl. 40 % Zuschlag. Preis am Wochenende ab Januar?"
+    },
+    {
+      "id": "unseen3-07a",
+      "level": "swiss-vat",
+      "levelName": "swiss-vat",
+      "language": "de",
+      "prompt": "Offerte aus Zürich: CHF 4'380.00 netto, 8.1 % MwSt. Steuer auf den Rappen, Total auf 5 Rappen gerundet?"
+    },
+    {
+      "id": "unseen3-07b",
+      "level": "swiss-vat",
+      "levelName": "swiss-vat",
+      "language": "de",
+      "prompt": "Offerte aus Zürich: CHF 4'380.00 netto, mit dem reduzierten MwSt-Satz von 2.6 %. Steuer auf den Rappen, Total auf 5 Rappen gerundet?"
+    },
+    {
+      "id": "unseen3-08a",
+      "level": "instalments-simple-interest",
+      "levelName": "instalments-simple-interest",
+      "language": "de",
+      "prompt": "Darlehen 15.000,00 EUR, 3,5 % einfache Zinsen pro Jahr, Laufzeit 20 Monate. Zinsen und Rückzahlungsbetrag?"
+    },
+    {
+      "id": "unseen3-08b",
+      "level": "instalments-simple-interest",
+      "levelName": "instalments-simple-interest",
+      "language": "de",
+      "prompt": "Darlehen 15.000,00 EUR, 3,5 % einfache Zinsen pro Jahr, Laufzeit 30 Monate. Zinsen und Rückzahlungsbetrag?"
+    },
+    {
+      "id": "unseen3-09a",
+      "level": "compound-interest",
+      "levelName": "compound-interest",
+      "language": "de",
+      "prompt": "3.500,00 EUR zu 1,5 % pro Jahr mit jährlichem Zinseszins, 4 Jahre. Endbetrag auf Cent gerundet?"
+    },
+    {
+      "id": "unseen3-09b",
+      "level": "compound-interest",
+      "levelName": "compound-interest",
+      "language": "de",
+      "prompt": "3.500,00 EUR zu 1,5 % pro Jahr mit jährlichem Zinseszins, 8 Jahre. Endbetrag auf Cent gerundet?"
+    },
+    {
+      "id": "unseen3-10a",
+      "level": "table-sum",
+      "levelName": "table-sum",
+      "language": "de",
+      "prompt": "Zeile 1: 230,00 EUR; Zeile 2: 1.045,50 EUR; Zeile 3: 78,25 EUR; Zeile 4: 612,00 EUR. Summe? Und Zeile 2 als Anteil an der Summe in Prozent, eine Nachkommastelle?"
+    },
+    {
+      "id": "unseen3-10b",
+      "level": "table-sum",
+      "levelName": "table-sum",
+      "language": "de",
+      "prompt": "Zeile 1: 230,00 EUR; Zeile 2: 1.045,50 EUR; Zeile 3: 78,25 EUR; Zeile 4: 162,00 EUR. Summe? Und Zeile 2 als Anteil an der Summe in Prozent, eine Nachkommastelle?"
+    },
+    {
+      "id": "unseen3-11a",
+      "level": "date-time",
+      "levelName": "date-time",
+      "language": "de",
+      "prompt": "Abflug 06:50 Uhr. Ich will 90 Minuten vorher am Flughafen sein; die Fahrt dauert 35 Minuten. Wann losfahren?"
+    },
+    {
+      "id": "unseen3-11b",
+      "level": "date-time",
+      "levelName": "date-time",
+      "language": "de",
+      "prompt": "Abflug 06:50 Uhr. Ich will 90 Minuten vorher am Flughafen sein; die Fahrt dauert 55 Minuten. Wann losfahren?"
+    },
+    {
+      "id": "unseen3-12a",
+      "level": "date-time",
+      "levelName": "date-time",
+      "language": "de",
+      "prompt": "Rückgaberecht 30 Tage ab Lieferung am 15.03.2026. Letzter Tag?"
+    },
+    {
+      "id": "unseen3-12b",
+      "level": "date-time",
+      "levelName": "date-time",
+      "language": "de",
+      "prompt": "Rückgaberecht 30 Tage ab Lieferung am 28.03.2026. Letzter Tag?"
+    },
+    {
+      "id": "unseen3-13a",
+      "level": "proration",
+      "levelName": "proration",
+      "language": "de",
+      "prompt": "Jahresabo 228,00 EUR für 12 Monate, gekündigt nach 4 Monaten. Erstattung für die restlichen Monate?"
+    },
+    {
+      "id": "unseen3-13b",
+      "level": "proration",
+      "levelName": "proration",
+      "language": "de",
+      "prompt": "Jahresabo 228,00 EUR für 12 Monate, gekündigt nach 9 Monaten. Erstattung für die restlichen Monate?"
+    },
+    {
+      "id": "unseen3-14a",
+      "level": "multi-step",
+      "levelName": "multi-step",
+      "language": "de",
+      "prompt": "Listenpreis 1.250,00 EUR netto, 12 % Rabatt, dann 19 % Umsatzsteuer auf den rabattierten Preis. Bruttobetrag?"
+    },
+    {
+      "id": "unseen3-14b",
+      "level": "multi-step",
+      "levelName": "multi-step",
+      "language": "de",
+      "prompt": "Listenpreis 1.250,00 EUR netto, 20 % Rabatt, dann 19 % Umsatzsteuer auf den rabattierten Preis. Bruttobetrag?"
+    },
+    {
+      "id": "unseen3-15a",
+      "level": "skonto",
+      "levelName": "skonto",
+      "language": "de",
+      "prompt": "Rechnung 5.236,00 EUR brutto, bei Zahlung innerhalb von 7 Tagen abzüglich 3 % Skonto. Skontobetrag und Zahlbetrag?"
+    },
+    {
+      "id": "unseen3-15b",
+      "level": "skonto",
+      "levelName": "skonto",
+      "language": "de",
+      "prompt": "Rechnung 5.236,00 EUR brutto, bei Zahlung innerhalb von 7 Tagen abzüglich 2 % Skonto. Skontobetrag und Zahlbetrag?"
+    },
+    {
+      "id": "unseen3-16a",
+      "level": "vat",
+      "levelName": "vat",
+      "language": "en",
+      "prompt": "Quote: 3,850.00 EUR net plus 19% VAT. What are the VAT and the total?"
+    },
+    {
+      "id": "unseen3-16b",
+      "level": "vat",
+      "levelName": "vat",
+      "language": "en",
+      "prompt": "Quote: 3,850.00 EUR net plus 7% VAT. What are the VAT and the total?"
+    },
+    {
+      "id": "unseen3-17a",
+      "level": "net-gross",
+      "levelName": "net-gross",
+      "language": "en",
+      "prompt": "A hotel bill of £264.00 includes 20% VAT. What are the net amount and the VAT?"
+    },
+    {
+      "id": "unseen3-17b",
+      "level": "net-gross",
+      "levelName": "net-gross",
+      "language": "en",
+      "prompt": "A taxi receipt of £18.00 includes 20% VAT. What are the net amount and the VAT?"
+    },
+    {
+      "id": "unseen3-18a",
+      "level": "percent-change",
+      "levelName": "percent-change",
+      "language": "en",
+      "prompt": "Our subscription went from 11.99 USD to 13.49 USD a month. By what percentage did it increase, to two decimals?"
+    },
+    {
+      "id": "unseen3-18b",
+      "level": "percent-change",
+      "levelName": "percent-change",
+      "language": "en",
+      "prompt": "Our subscription drops from 13.49 USD to 12.99 USD a month. What is the change in percent, negative for a decrease, to two decimals?"
+    },
+    {
+      "id": "unseen3-19a",
+      "level": "percent-change",
+      "levelName": "percent-change",
+      "language": "en",
+      "prompt": "Page views rose from 48,200.00 to 55,430.00. What is the percentage rise, to one decimal place?"
+    },
+    {
+      "id": "unseen3-19b",
+      "level": "percent-change",
+      "levelName": "percent-change",
+      "language": "en",
+      "prompt": "Page views fell from 55,430.00 to 52,658.50. What is the change in percent, negative for a fall, to one decimal place?"
+    },
+    {
+      "id": "unseen3-20a",
+      "level": "overtime-rate",
+      "levelName": "overtime-rate",
+      "language": "en",
+      "prompt": "My rate is 26.00 EUR an hour. Night shifts are paid at 125% of the normal rate. Pay for 8 night hours?"
+    },
+    {
+      "id": "unseen3-20b",
+      "level": "overtime-rate",
+      "levelName": "overtime-rate",
+      "language": "en",
+      "prompt": "My rate is 26.00 EUR an hour. Night shifts are paid at 175% of the normal rate. Pay for 8 night hours?"
+    },
+    {
+      "id": "unseen3-21a",
+      "level": "surcharge",
+      "levelName": "surcharge",
+      "language": "en",
+      "prompt": "Delivery costs 6.50 EUR plus a 30% express surcharge. What is the express delivery price?"
+    },
+    {
+      "id": "unseen3-21b",
+      "level": "surcharge",
+      "levelName": "surcharge",
+      "language": "en",
+      "prompt": "Delivery costs 6.50 EUR plus a 50% express surcharge. What is the express delivery price?"
+    },
+    {
+      "id": "unseen3-22a",
+      "level": "swiss-vat",
+      "levelName": "swiss-vat",
+      "language": "en",
+      "prompt": "Swiss bill: CHF 915.00 net plus 8.1% VAT. VAT to the centime, and the total rounded to 5 centimes?"
+    },
+    {
+      "id": "unseen3-22b",
+      "level": "swiss-vat",
+      "levelName": "swiss-vat",
+      "language": "en",
+      "prompt": "Swiss bill: CHF 915.00 net plus VAT at the 3.8% rate. VAT to the centime, and the total rounded to 5 centimes?"
+    },
+    {
+      "id": "unseen3-23a",
+      "level": "overtime-rate",
+      "levelName": "overtime-rate",
+      "language": "en",
+      "prompt": "I'm paid 21.50 EUR an hour; this week's timesheet shows 46 working hours, and anything over 40 is paid at 150% of the normal rate. Gross pay?"
+    },
+    {
+      "id": "unseen3-23b",
+      "level": "overtime-rate",
+      "levelName": "overtime-rate",
+      "language": "en",
+      "prompt": "I'm paid 21.50 EUR an hour; this week's timesheet shows 41 working hours, and anything over 40 is paid at 150% of the normal rate. Gross pay?"
+    },
+    {
+      "id": "unseen3-24a",
+      "level": "instalments-simple-interest",
+      "levelName": "instalments-simple-interest",
+      "language": "en",
+      "prompt": "2,800.00 EUR earns 4.2% simple interest a year for 75 days on a 365-day year. Interest to the cent?"
+    },
+    {
+      "id": "unseen3-24b",
+      "level": "instalments-simple-interest",
+      "levelName": "instalments-simple-interest",
+      "language": "en",
+      "prompt": "2,800.00 EUR earns 4.2% simple interest a year for 275 days on a 365-day year. Interest to the cent?"
+    },
+    {
+      "id": "unseen3-25a",
+      "level": "compound-interest",
+      "levelName": "compound-interest",
+      "language": "en",
+      "prompt": "6,500.00 EUR at 2.2% a year, compounded yearly, for 5 years. Final amount to the cent?"
+    },
+    {
+      "id": "unseen3-25b",
+      "level": "compound-interest",
+      "levelName": "compound-interest",
+      "language": "en",
+      "prompt": "6,500.00 EUR at 2.2% a year, compounded yearly, for 2 years. Final amount to the cent?"
+    },
+    {
+      "id": "unseen3-26a",
+      "level": "table-sum",
+      "levelName": "table-sum",
+      "language": "en",
+      "prompt": "Receipts: 12.40 EUR, 7.95 EUR, 23.10 EUR, 4.55 EUR and 31.00 EUR. What are the total and the average of the 5 receipts, to the cent?"
+    },
+    {
+      "id": "unseen3-26b",
+      "level": "table-sum",
+      "levelName": "table-sum",
+      "language": "en",
+      "prompt": "Receipts: 12.40 EUR, 7.95 EUR, 23.10 EUR and 4.55 EUR. What are the total and the average of the 4 receipts, to the cent?"
+    },
+    {
+      "id": "unseen3-27a",
+      "level": "date-time",
+      "levelName": "date-time",
+      "language": "en",
+      "prompt": "The meeting is at 15:10. The train takes 1 hour 25 minutes and the walk 10 minutes. Latest departure?"
+    },
+    {
+      "id": "unseen3-27b",
+      "level": "date-time",
+      "levelName": "date-time",
+      "language": "en",
+      "prompt": "The meeting is at 15:10. The train takes 1 hour 40 minutes and the walk 10 minutes. Latest departure?"
+    },
+    {
+      "id": "unseen3-28a",
+      "level": "date-time",
+      "levelName": "date-time",
+      "language": "en",
+      "prompt": "A 60-day trial starts on 2026-11-02 and ends 60 days after the start. On what date does it end?"
+    },
+    {
+      "id": "unseen3-28b",
+      "level": "date-time",
+      "levelName": "date-time",
+      "language": "en",
+      "prompt": "A 60-day trial starts on 2026-11-20 and ends 60 days after the start. On what date does it end?"
+    },
+    {
+      "id": "unseen3-29a",
+      "level": "proration",
+      "levelName": "proration",
+      "language": "en",
+      "prompt": "A gym membership costs 456.00 EUR for 12 months. I cancel after 5 months. Refund for the remaining months?"
+    },
+    {
+      "id": "unseen3-29b",
+      "level": "proration",
+      "levelName": "proration",
+      "language": "en",
+      "prompt": "A gym membership costs 456.00 EUR for 12 months. I cancel after 10 months. Refund for the remaining months?"
+    },
+    {
+      "id": "unseen3-30a",
+      "level": "multi-step",
+      "levelName": "multi-step",
+      "language": "en",
+      "prompt": "Ticket price 64.00 EUR, 15% student discount, then a 2.5% booking fee on the discounted price. Amount to pay, to the cent?"
+    },
+    {
+      "id": "unseen3-30b",
+      "level": "multi-step",
+      "levelName": "multi-step",
+      "language": "en",
+      "prompt": "Ticket price 64.00 EUR, 15% student discount, then a 4% booking fee on the discounted price. Amount to pay, to the cent?"
+    }
+  ]
+}
