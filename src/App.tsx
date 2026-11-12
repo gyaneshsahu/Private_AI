@@ -1657,7 +1657,8 @@ export function App() {
                   {message.keptOnDevice && (
                     <p className="muted kept-on-device">
                       {message.keptOnDevice} Placeholders went to the secure
-                      server instead; the values were put back here.
+                      server instead; the values were put back here. Not every
+                      number is recognised, least of all in photos and scans.
                     </p>
                   )}
                   {message.failure && (
@@ -2510,6 +2511,8 @@ export function App() {
                   , through CometRow’s research service. Their retention
                   policies apply. No private chat or attachment is included
                   automatically.
+                  {proposal.kind === "page" &&
+                    " The page address is sent exactly as shown; personal details in it are not removed."}
                 </p>
                 <button
                   className="primary"

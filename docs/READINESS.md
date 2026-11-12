@@ -1,4 +1,9 @@
 # PrivateAI readiness checklist
+## T3: masking limits stated where they apply in the app (branch alpha-provider-neutral, local) - 12 November
+
+- **Change (verified by tests).** The note under an answer that kept identifiers now adds "Not every number is recognised, least of all in photos and scans." (German held-out: scans 87.3 %, ID numbers 94.1 %). The page-fetch approval adds "The page address is sent exactly as shown; personal details in it are not removed." (search approvals unchanged; search text is masked). Asserted in `tests/health-consent-ui.test.ts`, `tests/browser/search-to-page.spec.ts` (shown for a page) and `tests/browser/research-workspace.spec.ts` (absent for a search).
+- **Owner decision D13.** The approved privacy statement is unchanged; a proposed sentence for it is in `docs/owner-decisions.md`.
+
 ## L4 / D10: the in-app policy names the report's provider whenever chat is ready (branch alpha-provider-neutral, local) - 12 November
 
 - **Change (verified by tests).** `disclosedProvider(status)` in `shared/provider-disclosure.ts`: while chat is ready, the privacy policy in the app includes "Who processes your messages" for the provider of the qualification report in use (the report wins over the review flag); with chat off, only the review flag adds it. Prepared for both providers (Tinfoil: US with SCCs; Privatemode: EU only). Unit test in `tests/provider-disclosure.test.ts`; health-consent browser test and copy tests pass.

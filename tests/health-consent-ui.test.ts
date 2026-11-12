@@ -18,8 +18,9 @@ it("asks once before the first message, holds the message until a choice, rememb
         enforce: "pre",
         load(id) {
           if (!id.replaceAll("\\", "/").endsWith("/src/inference.ts")) return;
-          return `export async function streamReply(c,q,csrf,signal,chunk){
+          return `export async function streamReply(c,q,csrf,signal,chunk,status,session,kept){
             window.__sent = (window.__sent ?? 0) + 1;
+            kept?.({ IBAN: 1 });
             chunk('SYNTHETIC REPLY ' + window.__sent);
             return {input:1,output:1,total:2,estimatedUSD:0};
           }`;
@@ -79,6 +80,8 @@ it("asks once before the first message, holds the message until a choice, rememb
     await ui(page.locator("article.assistant")).toHaveCount(0);
     await prompt(page).getByRole("button", { name: HEALTH_CONSENT.accept }).click();
     await ui(page.locator("article.assistant").last()).toContainText("SYNTHETIC REPLY 1");
+    // The kept-on-device note states the masking limit (T3).
+    await ui(page.locator(".kept-on-device").last()).toContainText("least of all in photos and scans");
     await ui(prompt(page)).toHaveCount(0);
 
     // Remembered on this device: no second prompt, also after a reload.
