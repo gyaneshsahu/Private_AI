@@ -15,8 +15,11 @@ it("keeps the default policy unchanged and adds the experimental policy only exp
   expect(candidate.slice(1)).toEqual(baseline.slice(1));
   const baselineSize = baseline.reduce((n, m) => n + m.content.length, 0);
   expect(() => composeContext(conversation, baselineSize, now)).not.toThrow();
+  // The product prompt is now longer than v1 (health policy, 12 November), so test v1 at
+  // one character below its own size: it must refuse rather than truncate silently.
+  const candidateSize = candidate.reduce((n, m) => n + m.content.length, 0);
   expect(() =>
-    composeContext(conversation, baselineSize, now, "constraints-v1"),
+    composeContext(conversation, candidateSize - 1, now, "constraints-v1"),
   ).toThrow("nothing has been silently truncated");
   expect(() =>
     composeContext(conversation, 8000, now, "unknown" as never),
@@ -49,4 +52,40 @@ it("replaces conflicting crisis instructions only in v2 and counts its full cont
   expect(() =>
     composeContext(conversation, size - 1, now, "constraints-v2"),
   ).toThrow("nothing has been silently truncated");
+});
+
+it("product (default) policy answers health questions with safe emergency wording; v1-v4 stay frozen", async () => {
+  const { createHash } = await import("node:crypto");
+  const c = emptyConversation();
+  const now = new Date("2026-10-08T00:00:00Z");
+  const product = composeContext(c, 10000, now)[0].content;
+  for (const phrase of [
+    "do not refuse or deflect harmless health questions",
+    "check the label or ask a pharmacist",
+    "own symptoms, medication or treatment decisions, add one short note to see a doctor or pharmacist",
+    "not in every reply and not for general knowledge questions",
+    "Never claim to be a medical product",
+    "emergency 112",
+    "on-call doctor 116 117",
+    "Telefonseelsorge crisis support 0800 111 0 111 or 0800 111 0 222",
+    "Keep that urgent human connection in follow-ups",
+  ])
+    expect(product).toContain(phrase);
+  expect(product).not.toContain("Do not diagnose or replace expert help");
+  // The helpline numbers look like phone numbers to the device masker; verified-chat
+  // skips the fixed policy prefix when masking (tests/browser-transport.test.ts covers it).
+  const { createMaskingSession } = await import("../src/identifier-masking");
+  expect(createMaskingSession().mask(product)).not.toBe(product);
+  // Evaluation records name v1-v4; their system prompts must not change.
+  const frozen = {
+    "constraints-v1": "2e1afb75e89dc41f414bbe53d2959db95e28b85ab2cf5d483708d6772e39bef7",
+    "constraints-v2": "cd575e4b04d4f9f611239649400bbb98eca80288ba2b8d718d39ed7b9379bffe",
+    "constraints-v3": "63236a52511fa273977cc88ef204d87eae1585638dd7939c8cd3edc4fe2bef2d",
+    "constraints-v4": "542e47ee1892f499bf6113f51ae58ab7fea6c0548ff9148e63a0c76c7d7c0e49",
+  } as const;
+  for (const [variant, sha] of Object.entries(frozen)) {
+    const text = composeContext(c, 10000, now, variant as keyof typeof frozen)[0].content;
+    expect(createHash("sha256").update(text).digest("hex")).toBe(sha);
+    expect(text).not.toContain("112");
+  }
 });
