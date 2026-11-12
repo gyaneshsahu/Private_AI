@@ -21,12 +21,16 @@ function serverImportsOfSrc(): Set<string> {
     const file = queue.pop()!;
     const text = readFileSync(file, "utf8");
     // Only runtime imports: `import type` is erased.
-    for (const m of text.matchAll(/(?:^|\n)\s*(?:import(?!\s+type\b)[^'"]*?from\s*|import\s*\(\s*|export\s+[^'"]*?from\s*)["'](\.{1,2}\/[^"']+)["']/g)) {
-      const target = resolve(dirname(file), m[1]).replace(/(\.ts)?$/, ".ts");
+    // Static imports at line start, and dynamic import("...") anywhere in a line.
+    for (const m of text.matchAll(/(?:(?:^|\n)\s*(?:import(?!\s+type\b)[^'"]*?from\s*|export\s+[^'"]*?from\s*)|\bimport\s*\(\s*)["'](\.{1,2}\/[^"']+)["']/g)) {
+      const raw = resolve(dirname(file), m[1]);
+      const target = /\.(json|mjs|js)$/.test(raw) ? raw : raw.replace(/(\.ts)?$/, ".ts");
       const rel = relative(ROOT, target).replace(/\\/g, "/");
-      if (!rel.startsWith("src/")) continue;
+      // server/ and shared/ are copied whole; anything else (src/, tests/, scripts/ ...) must be
+      // named in the runtime stage (13 Nov: server/index.ts imported tests/fixtures/local-tls).
+      if (rel.startsWith("server/") || rel.startsWith("shared/") || rel.startsWith("node_modules/")) continue;
       found.add(rel);
-      if (!seen.has(target)) {
+      if (target.endsWith(".ts") && !seen.has(target)) {
         seen.add(target);
         queue.push(target);
       }
@@ -35,7 +39,7 @@ function serverImportsOfSrc(): Set<string> {
   return found;
 }
 
-it("the runtime image contains every src/ file the server imports", () => {
+it("the runtime image contains every file outside server/ and shared/ that the server imports", () => {
   const dockerfile = readFileSync(join(ROOT, "Dockerfile"), "utf8");
   const runtime = dockerfile.slice(dockerfile.lastIndexOf("\nFROM "));
   const copied = (rel: string) =>
