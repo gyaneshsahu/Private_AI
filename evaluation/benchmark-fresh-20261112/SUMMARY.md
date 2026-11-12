@@ -67,7 +67,7 @@
 
 | | Auto | Fast | Thinking |
 | --- | --- | --- | --- |
-| Research (mean, hallucinations) | 4.14, 1 | 4.14, 1 | 4.14, 1 |
+| Research (mean, hallucinations) | 4.43, 0 | 4.43, 0 | 4.43, 0 (after the R-02 correction below) |
 | German rules, fees, deadlines | 3.50, 2 | 3.33, 2 | 3.83, 1 |
 | Time-sensitive facts | 4.00, 0 | 3.50, 1 | 4.50, 0 |
 | Coding (code fails) | 3.25 (2) | 3.75 (1) | 4.75 (0) |
@@ -75,7 +75,7 @@
 | Verdict | below bar | below bar | below bar (level 2 only) |
 
 - **Every deterministic check now passes in every mode:** page address shown 7/7, source links 7/7 (counted from the citation buttons), no raw codes, no "no web access" claims, no word counts, detector 6/6 and 0/2, health 2/2.
-- **The research hallucination in every mode is R-02:** the Neues Museum price of €14. It comes from the Berlin museums portal, which the server read; the museum's own site lists no stand-alone ticket. The grader's flag rested on a reference table I wrote, so it is disputed rather than clear. The real lesson: after reading one page, the models stated the price with more confidence than the evidence allowed.
+- **R-02 corrected after an official check (12 Nov):** smb.museum lists the Neues Museum at 14,00 EUR, concessions 7,00 (https://www.smb.museum/en/museums-institutions/neues-museum/plan-your-visit/prices-tickets/). All three answers were right. The grader's hallucination flags came from a reference table I wrote that wrongly said the official site lists no stand-alone ticket. The flags were removed and the scores set to 5 / 5 / 4 (Thinking added an odd device-clock caveat); the correction is noted in each row's comment. The routing check moves to 4.35 for the new rules (always-Thinking 4.30, always-Fast 4.17).
 - **German rules are weak in every mode and vary between runs.** Run 1: Thinking invented three rules, Auto and Fast none. Run 2: Auto 2, Fast 2, Thinking 1. Model choice does not fix this; the search suggestion, which fires on these questions, does.
 - **Coding confirms the routing gap:** Thinking 4.75, Auto 3.25. Auto sent all four coding prompts to Fast. Fixed in the routing change (`docs/routing-and-search-20261112.md`).
 - **One stuck reply:** Fast R-01 produced no text for 300 s in the first attempt of the research rerun. The rerun answered normally.

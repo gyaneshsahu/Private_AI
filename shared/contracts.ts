@@ -354,6 +354,15 @@ export interface Message {
     mismatches: number;
     ambiguous?: number;
   };
+  /**
+   * Local-only result of the completeness check (src/arithmetic/completeness.ts):
+   * how many figures the user's question asked for and which of them (fixed keys,
+   * never text) the answer seems to leave out. Never model context, never sent anywhere.
+   */
+  completenessCheck?: {
+    requested: number;
+    missing: string[];
+  };
 }
 export interface ConversationBranch {
   id: string;
