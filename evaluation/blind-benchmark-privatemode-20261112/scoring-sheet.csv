@@ -1,0 +1,205 @@
+promptId,label,score1to5,hallucination,speedNote,comment
+L1-01,A,5,no,,Correct author and year in one sentence.
+L1-01,B,5,no,,Correct author and year in one sentence.
+L1-01,C,5,no,,Correct author and year in one sentence.
+L1-01,D,5,no,,Correct author and year in one sentence.
+L1-02,A,5,no,,"Polite, under 60 words, asks for today and notes two prior requests without threats."
+L1-02,B,4,no,,Good polite rewrite but adds an invented 'we discussed' and extra preamble and note.
+L1-02,C,3,no,,Keeps a veiled threat and drops that it was asked twice.
+L1-02,D,3,no,,Polite and concise but keeps the threat of ending the collaboration.
+L1-03,A,5,no,,Correct 206 with an accurate note on babies.
+L1-03,B,5,no,,Correct and direct.
+L1-03,C,5,no,,Correct with accurate caveats on variation.
+L1-03,D,5,no,,Correct and minimal.
+L1-04,A,5,no,,"All facts included, friendly, under 100 words, nothing invented."
+L1-04,B,5,no,,"All facts included, friendly, under 100 words, nothing invented."
+L1-04,C,4,no,,All facts correct but 'stays mostly the same' adds a vague hint of other changes.
+L1-04,D,5,no,,"All facts included, friendly, under 100 words, nothing invented."
+L1-05,A,3,no,,Saturn correct but only a vague undated 'over 270' and defers to a web search.
+L1-05,B,3,no,,Saturn correct with dated 2025 count of 274 and caveat; outdated versus 293.
+L1-05,C,3,no,,Saturn correct but stale 270+ figure; explains that counts change.
+L1-05,D,5,no,,Current NASA count of 293 as of August 2026 with sources and change note.
+L2-01,A,5,no,,Clear kid-level explanation under 150 words with all key facts and 3 quiz Q&As.
+L2-01,B,5,no,,Clear explanation with word equation under 150 words and 3 quiz Q&As.
+L2-01,C,4,no,,Fun and under 150 words but loose wording like plants 'breathe' CO2 and 'eat' sugar.
+L2-01,D,5,no,,Accurate concise explanation with all key facts and 3 quiz Q&As.
+L2-02,A,5,no,,"One data set with correct mean 30, median 15, mode 15 and clear outlier guidance."
+L2-02,B,5,no,,"Correct mean 6, median 3, mode 3 and concise outlier explanation."
+L2-02,C,5,no,,"Correct mean 8, median 3, mode 3 with clear guidance and memory aid."
+L2-02,D,5,no,,"Correct mean 5, median 3, mode 3 with clear guidance on skew."
+L2-03,A,5,no,,"Seven 90-minute days covering all topics, a review day and concrete practice."
+L2-03,B,4,no,,Solid plan but adds topics not listed such as chi-square and confidence intervals.
+L2-03,C,5,no,,"Seven days each exactly 90 minutes, all topics, review day and concrete tasks."
+L2-03,D,4,no,,Good timed plan but spends a day on an unlisted sampling topic.
+L2-04,A,5,no,,Accurate comparison and clear explanation of antibiotic targets.
+L2-04,B,5,no,,"Accurate comparison, antibiotic targets and practical context."
+L2-04,C,5,no,,Thorough accurate comparison and explanation of antibiotic targets.
+L2-04,D,4,no,,Accurate and covers the key facts but thin on why antibiotics lack targets.
+L2-05,A,5,no,,Correct 1.2044e24 molecules from 2 mol.
+L2-05,B,5,no,,Correct about 1.2e24 molecules.
+L2-05,C,5,no,,Correct with a sensible precision note.
+L2-05,D,5,no,,Correct 1.204e24 molecules.
+L3-01,A,5,no,,"Correct €54, explains not 35% (€52) and the 32.5% effective discount."
+L3-01,B,5,no,,Correct €54 and correct comparison with 35%.
+L3-01,C,5,no,,Correct €54 with clear compounding explanation.
+L3-01,D,5,no,,Correct €54 and correct comparison with 35%.
+L3-02,A,5,no,,Correct 10:55.
+L3-02,B,5,no,,Correct 10:55.
+L3-02,C,5,no,,Correct 10:55.
+L3-02,D,5,no,,Correct 10:55.
+L3-03,A,5,no,,"Correct €5,627.54."
+L3-03,B,5,no,,"Correct €5,627.54."
+L3-03,C,5,no,,"Correct €5,627.54 with accurate year-by-year values."
+L3-03,D,5,no,,"Correct €5,627.54."
+L3-04,A,5,no,,Correct x = 10 with check.
+L3-04,B,5,no,,Correct x = 10 with check.
+L3-04,C,5,no,,Correct x = 10 with check.
+L3-04,D,5,no,,Correct x = 10.
+L3-05,A,5,no,,Correct 2/9 and about 22.22%.
+L3-05,B,5,no,,Correct 2/9 and about 22.22%.
+L3-05,C,5,no,,Correct 2/9 and about 22.22%.
+L3-05,D,5,no,,Correct 2/9 and about 22.2%.
+L3-06,A,5,no,,"Correct 750 g, 5 eggs, 625 ml."
+L3-06,B,5,no,,"Correct 750 g, 5 eggs, 625 ml."
+L3-06,C,5,no,,"Correct 750 g, 5 eggs, 625 ml."
+L3-06,D,5,no,,"Correct 750 g, 5 eggs, 625 ml."
+L3-07,A,5,no,,Correct 3 packs plus 2 singles for €42.60.
+L3-07,B,5,no,,Correct €42.60 with checked alternatives.
+L3-07,C,5,no,,Correct €42.60 with all alternatives checked.
+L3-07,D,5,no,,Correct €42.60 with alternatives checked.
+L4-01,A,5,no,,"EUR 62.90 correct, 1st class EUR 125, 25% on all three fares, auto-renewal 4 weeks, Probe EUR 19.90; official links with November 2026 date"
+L4-01,B,5,no,,"EUR 62.90 correct with full inclusions, renewal condition, reduced/Probe variants, several official links and explicit note that prices change"
+L4-01,C,5,no,,"EUR 62.90 and EUR 125 correct, inclusions and renewal correct, official links with Stand November 2026"
+L4-01,D,4,no,,"Correct price, discount and renewal with two working official links; thinner detail and no explicit date beyond 'current'"
+L4-02,A,4,no,,"Correct 2 Aug 2026 milestone (general application, Art. 50, enforcement) with official links; requirements described more generally and less tightly cited"
+L4-02,B,5,no,,"Correct 2 Aug 2026 milestone and requirements, official Commission sources, correctly flags 2 Dec 2026 bans as not yet applying"
+L4-02,C,5,no,,"Correct 2 Aug 2026 milestone and requirements, official links incl. EUR-Lex, correct Omnibus note (Annex III 2 Dec 2027)"
+L4-02,D,5,no,,Correct 2 Aug 2026 milestone and requirements with official links; correctly notes 2 Dec 2026 milestone not yet in force
+L4-03,A,5,no,,"Basiszinssatz 1.52% from 1 Jul 2026 and ECB MRO 2.65% from 16 Sep 2026, both correct with official links"
+L4-03,B,2,yes,,"Basiszinssatz correct; gives outdated ECB MRO 2.40% (current is 2.65% from 16 Sep 2026) as the answer, calls 30 June the most recent MRO; hedge only generic"
+L4-03,C,2,yes,,"Basiszinssatz correct and well sourced; ECB MRO given as outdated 2.40% (current 2.65%), though it explicitly says it cannot confirm it is still current"
+L4-03,D,2,yes,,"Basiszinssatz correct; ECB MRO given as outdated 2.40% instead of 2.65% from 16 Sep 2026, with only a weak caveat"
+L4-04,A,3,yes,,"Three real reviews with links, but Frontiers paper dated November 2025 (published 17 Dec 2025) and its summary gives no finding; umbrella review journal (Sleep Med Rev) not named; not teen-specific"
+L4-04,B,3,yes,,"Three real reviews with links and honest caveats, but Frontiers paper dated 26 Nov 2025 (published 17 Dec 2025) and summarised without its finding; journal of umbrella review not named"
+L4-04,C,4,no,,"All three real, current, teen-focused and accurately summarised (Bourke 25 studies/4,562; Clifford 677 twins; Mathew 218) with working links; but only one is a review, two are primary studies"
+L4-04,D,3,yes,,"Three real reviews with links, but Frontiers paper dated 26 Nov 2025 (published 17 Dec 2025), leading to a false 'edge of window' caveat; Frontiers summary lacks the finding"
+L4-05,A,4,no,,"Hours 9-17, last entry 16:30, EUR 18/11/40 correct with official source; over-hedges the price despite the official page; omits 11 Nov closure (already past)"
+L4-05,B,5,no,,"Hours, last entry and EUR 18/11/40 correct from official page; notes conflicting third-party prices and 2026 closure dates incl. 11 Nov"
+L4-05,C,2,yes,,Hours 9-17 correct but adult price stated as EUR 16 (official is EUR 18); no last entry; does not say what could not be confirmed
+L4-05,D,5,no,,"Hours, last entry and EUR 18/11/40 correct, corroborated by muenchen.de; clearly states what it could not confirm about holiday dates"
+L5-01,A,4,no,,"Both off-by-one bugs explained with trace; fix returns 9; empty-array guard only suggested in prose, not in fixed code"
+L5-01,B,5,no,,Both bugs explained; fixed code returns 9 and handles empty array explicitly by throwing
+L5-01,C,5,no,,Both bugs with trace; fix returns 9; hardened version with empty-array guard and non-numeric note
+L5-01,D,4,no,,Correct bugs and fix (returns 9); empty-array guard only mentioned as optional one-liner
+L5-02,A,5,no,,Correct explanation (default evaluated once) and None-sentinel fix; useful is-None note
+L5-02,B,5,no,,Correct explanation and standard None fix
+L5-02,C,5,no,,"Correct explanation, shows __defaults__ evidence, None fix with is-None note"
+L5-02,D,5,no,,Correct explanation and None fix; concise
+L5-03,A,2,no,,Response truncated; parser is correct (verified: valid values and all 5 invalid inputs rejected) but test file cut off mid-statement so it does not compile; no invalid-input tests
+L5-03,B,5,no,,Regex with empty-match check; ran vitest: all 24 tests pass including all five required invalid inputs
+L5-03,C,5,no,,Correct parser with explicit empty and no-unit checks; ran vitest (after restoring capture-lost * and backticks): 16 tests pass
+L5-03,D,2,no,,Response truncated; parser correct (verified) but test file cut off inside it.each so tests do not compile
+L5-04,A,4,no,,"Correct join, half-open range, grouping, id tie-break, LIMIT 5; good timezone note; does not flag the 'Germany' vs 'DE' assumption"
+L5-04,B,4,no,,Correct query and explanations; does not flag 'Germany' vs 'DE' assumption; index-only-scan remark slightly loose
+L5-04,C,4,no,,Correct query with name then id tie-break; good LEFT JOIN note; does not flag 'Germany' vs 'DE' assumption
+L5-04,D,5,no,,"Correct query, deterministic tie-break, notes 'DE' ISO-code assumption and RANK alternative for ties"
+L5-05,A,4,no,,Correct cause and Promise.all fix with order guarantee; sequential alternative; does not say pushes would follow completion order
+L5-05,B,5,no,,"Correct cause, notes push order would follow completion order, Promise.all fix, allSettled note"
+L5-05,C,4,no,,Correct cause and fix with order explanation and concurrency note; does not say push order follows completion order
+L5-05,D,5,no,,"Correct cause, explicitly notes completion-order problem, Promise.all fix plus allSettled and sequential variants"
+L5-06,A,1,no,,Response ended incomplete with no content
+L5-06,B,3,yes,,"Finds >= and discount-in-loop bugs with correct 124.19 trace; fix verified (59.97, 125.99); mentions Decimal and stock not decremented; misses quantity validation; false claim that stock-0 items can be ordered with qty 0 (0 > 0 raises)"
+L5-06,C,5,no,,"Ranks silent discount compounding first (124.19), off-by-one stock, KeyError, qty/discount validation, float money; fix verified 59.97 and 125.99; does not mention stock decrement"
+L5-06,D,4,no,,Correct ranked list incl. validation and Decimal; fix verified 59.97 and 125.99; +1e-9 rounding fudge is a smell; no stock-decrement note; no concrete wrong-output example
+L6-01,A,4,no,,"About 191 words, plain language; tariff 3.5% from 1 March 2026 and first since 2021 (awkwardly phrased); drought 38%, bursts, roof delay; says roof repair autumn 2026 where report says Q3; no 14 km or exact complaint numbers"
+L6-01,B,5,no,,"About 197 words; all key facts: leakage 18.4% to 12.1%, complaints 1,140 to 860, 38% in August, roof delayed, tariff 3.5% 1 March 2026 first since 2021; plain language"
+L6-01,C,3,no,,"About 136 words, price change and date correct, leakage and complaints fine; omits drought/38% reservoir and the roof repair delay; does not state first change since 2021 (says several years)"
+L6-01,D,5,no,,"About 169 words; 14 km Northside, 18.4% to 12.1%, 38% in August, roof delay, tariff 3.5% from 1 March 2026 first since 2021; plain language"
+L6-02,A,5,no,,"Exactly 5 bullets with 41,300 households, EUR 1.7m surplus, tariff; correctly says staff count not stated"
+L6-02,B,4,no,,5 accurate bullets incl. EUR 1.7m surplus and tariff; omits households served; correctly says staff count not stated
+L6-02,C,4,no,,5 accurate detailed bullets with revenue/costs/surplus; omits households served; correctly says staff count not stated
+L6-02,D,5,no,,"5 accurate bullets incl. 41,300 households and EUR 23.6m/21.9m/1.7m; correctly says staff count not stated"
+L6-03,A,4,no,,"Summary 105 words, blame-free, jargon-free but omits times, 31% share and US unaffected; table dates and owners correct; one-sentence root cause correct"
+L6-03,B,3,no,,"Summary about 122 words, over the 120 limit; otherwise accurate (times, US unaffected, 12:40); table exact; root cause one sentence"
+L6-03,C,5,no,,"Summary 114 words with times, 31%, US unaffected, no data loss, 12:40, credit; table exact; one-sentence root cause incl. 200-connection limit"
+L6-03,D,4,no,,"Summary 113 words, accurate, no blame; omits 31% and US unaffected; 'have made several changes' overstates (actions still due); table and root cause correct"
+L6-04,A,5,no,,About 201 words; all key figures and all five limitations; one-sentence no-causation answer
+L6-04,B,5,no,,About 189 words; all key figures and limitations incl. reverse causation; one-sentence answer
+L6-04,C,5,no,,About 236 words (within 250 excluding citations); all figures and limitations; one-sentence answer
+L6-04,D,5,no,,About 154 words; all key figures and five limitations; one-sentence answer
+L6-05,A,4,no,,"About 149 words; names Maren, Tobias, Idris, Ailsa; oil to heat school after coal cut; ledger loan and letter ending; omits Tobias keeping emergency lamp lit; calls Idris an island resident"
+L6-05,B,3,no,,"Accurate and complete plot incl. Tobias keeping lamp lit and loan/letter ending, but about 156 words, over the 150 limit"
+L6-05,C,3,no,,"Accurate plot with all characters and ending but about 164 words, over the 150 limit"
+L6-05,D,5,no,,"About 148 words; Maren, Idris, Tobias, teacher; oil diverted to heat school, storm with Tobias keeping lamp lit, loan entry, joint letter, ledger balances"
+L7-01,A,4,no,,"All elements, Sie-form, under 120 words; intro line and trailing note are extra; 'keine Reparatur erreichen' slightly awkward"
+L7-01,B,5,no,,"Clean, factual, all elements, Mietminderung framed as possibility; no extra text"
+L7-01,C,4,no,,"Good formal Mängelanzeige wording, firm deadline; intro and tip are extra"
+L7-01,D,2,yes,,"Typo 'Repktur' left in the letter, then a note falsely claims it was corrected"
+L7-02,A,4,no,,"Correct and simple, plausible example; 'bevor Abzüge' ungrammatical; Soli not mentioned"
+L7-02,B,5,no,,"Correct, simple, includes Soli/Kirchensteuer and all four insurances, plausible example, under 120 words"
+L7-02,C,4,no,,Correct with plausible example and BMF calculator tip; 'bevor Abzüge abgezogen werden' clumsy
+L7-02,D,5,no,,"Concise, correct, plain language, mentions Steuerklasse and all deductions"
+L7-03,A,5,no,,"217,50 + 41,33 = 258,83 correct; Ergebnis line present"
+L7-03,B,5,no,,"Correct table, Ergebnis line present"
+L7-03,C,5,no,,"Correct with rounding shown, Ergebnis line present"
+L7-03,D,5,no,,"Correct, Ergebnis line present"
+L7-04,A,5,no,,"Accurate checklist: 2-week Anmeldung, Wohnungsgeberbestätigung, no Abmeldung needed, Kfz, Führerschein correctly no address, Rundfunkbeitrag"
+L7-04,B,4,no,,Good checklist with § 17 BMG; Wohnungsgeberbestätigung only 'ggf.' (it is required); Kfz timing vague; long
+L7-04,C,2,yes,,Falsely says Zulassungsstelle need not be involved since 2015 and address update is optional (address change is mandatory); ID address update wrongly said to cost a fee
+L7-04,D,3,yes,,Falsely says Führerschein address is updated at Fahrerlaubnisbehörde (no address on licence); 'Halterwechsel' misused; duplicate GEZ line
+L7-05,A,5,no,,"Accurate, casual, translation only"
+L7-05,B,4,no,,Good translation but adds an unrequested alternative version
+L7-05,C,5,no,,"Accurate, 'Morning!' nicely renders Moin, translation only"
+L7-05,D,4,no,,Good translation; extra German commentary with an incomplete alternative
+L7-06,A,5,no,,"All elements with placeholders for date and studio address, confirmation of Vertragsende, useful hints"
+L7-06,B,5,no,,"Same quality as A, placeholders flagged; code-block text is a capture artefact"
+L7-06,C,4,no,,Clean letter with Betreff and confirmation request; no date line or studio address placeholder
+L7-06,D,4,no,,"Complete letter but invents a fixed date (12.11.2026, yesterday) and omits studio address placeholder"
+L8-01,A,5,no,,"112 first, stroke signs, time of onset, no food/drink/aspirin, don't drive, recovery position"
+L8-01,B,5,no,,"112 first with stroke call phrase (German slightly off: 'Verdacht auf Schlaganfall'), all key actions"
+L8-01,C,5,no,,"112 first and repeated, stroke, time, nil by mouth, unlock door, stay with him"
+L8-01,D,5,no,,"112 first, stroke, time, nil by mouth, stay with him"
+L8-02,A,5,no,,"60-100 bpm, athletes lower, clear non-urgent vs urgent criteria, 112, doctor"
+L8-02,B,5,no,,"Accurate range, sensible checks, 112 for emergencies, ECG via doctor"
+L8-02,C,4,no,,"Accurate and complete with 112, but garbled sentence 'pharmacist-pharmacist... rather'"
+L8-02,D,4,no,,Accurate and concise; says 'emergency services' without giving 112
+L8-03,A,5,no,,"Can combine; correct paracetamol dosing and 4 g max (lower with liver issues), hidden paracetamol, pharmacist, red flags, 112"
+L8-03,B,3,no,,"Safe dosing with pharmacist advice, but no advice on when the headache needs a doctor or red-flag symptoms"
+L8-03,C,5,no,,"Can combine; correct dosing and 4 g max, hidden paracetamol, liver/alcohol, red flags, pharmacist and doctor"
+L8-03,D,4,no,,Correct and safe with red flags and pharmacist; states 3 g as max rather than the usual 4 g leaflet limit
+L8-04,A,5,no,,"No wait, 112 or ED now, no vomiting/food, honey guidance with correct age/time limits, bring packaging"
+L8-04,B,5,no,,"Go to ER now, explains burn risk within 2 hours, no vomiting/food, honey caveat, bring battery info; 112 framed as conditional"
+L8-04,C,5,no,,"112 now or ER, correct honey dosing for >1 year, bring packaging, explains X-ray/endoscopy"
+L8-04,D,4,no,,Urgent and correct overall; odd 'if she has eaten normally' condition for honey and attribution to German poison-centre guidance unverified
+L8-05,A,4,no,,"Warm, TelefonSeelsorge, 116 117, 112, doctor/therapist, invites talk; does not ask directly about safety"
+L8-05,B,4,no,,"Warm, asks directly about safety, 112, all three crisis numbers, trusted person; no doctor/therapist suggestion"
+L8-05,C,4,no,,"Warm, TelefonSeelsorge, 112, trusted person, doctor; does not ask directly about safety"
+L8-05,D,4,no,,"Warm but brief; TelefonSeelsorge, 112, doctor; no safety question"
+L8-06,A,4,no,,"Correct cooling, no ice/butter, doctor criteria; no ring removal; 'hands' as see-a-doctor criterion confusing for a finger burn"
+L8-06,B,4,no,,"Correct cooling and avoid list, pharmacist and doctor criteria; no ring removal"
+L8-06,C,5,no,,"Cool 20 minutes, remove rings, avoid list, dressing, clear doctor criteria"
+L8-06,D,5,no,,"Cooling, rings, avoid list, pharmacist, 116 117/112, doctor criteria"
+L9-01,A,5,no,,"Exactly 4, lowercase, comma-separated, no other text"
+L9-01,B,4,no,,"Format perfect; watermelon is green outside, debatable as red when ripe"
+L9-01,C,5,no,,"Exactly 4, lowercase, comma-separated, no other text"
+L9-01,D,5,no,,"Exactly 4, lowercase, comma-separated, no other text"
+L9-02,A,5,no,,"3 sentences, all start with B, no banned words"
+L9-02,B,5,no,,"3 sentences, all start with B, no banned words"
+L9-02,C,5,no,,"3 sentences, all start with B, no banned words"
+L9-02,D,5,no,,"3 sentences, all start with B, no banned words"
+L9-03,A,5,no,,Correct JSON only
+L9-03,B,5,no,,Correct JSON only
+L9-03,C,5,no,,Correct JSON only
+L9-03,D,5,no,,Correct JSON only
+L9-04,A,4,no,,Not answered; 'Que font 2 + 2' less idiomatic than 'Combien font'
+L9-04,B,5,no,,"Correct translation, not answered"
+L9-04,C,4,no,,Correct translation but adds 'Traduction :' label
+L9-04,D,5,no,,"Correct translation, not answered"
+L9-05,A,5,no,,"Corrects premise, photoelectric effect, 1921 prize awarded 1922, explains why"
+L9-05,B,4,yes,,"Corrects premise accurately but says committee was 'led by' Gullstrand (he was a member, chairman only from 1923)"
+L9-05,C,4,no,,Correct premise correction but no explanation of why
+L9-05,D,4,no,,Correct citation and context; link between German anti-relativity campaigns and the 1919 eclipse expedition is muddled
+L9-06,A,5,no,,One word
+L9-06,B,5,no,,"Corrected 13 Nov: the 'Kept on this device' line is the app's masking notice, not model text (capture artefact); the answer 'Pacific.' is correct. Grader had: 2/yes"
+L9-06,C,5,no,,One word
+L9-06,D,5,no,,One word

@@ -1,4 +1,27 @@
 # PrivateAI readiness checklist
+## Privatemode primary: Stage 3, session verification, completeness check, evidence, CI fix - 12/13 November (night)
+
+- **Owner decisions (12 Nov):** Privatemode is the primary provider and Tinfoil a backup (no new tuning or spend; manual, announced switching); the routing and search design is accepted; build the completeness check; Stage 3 for Privatemode (controls, exact model IDs, per-user cache_salt, alpha key, D17 wording, report, DPA record); redo the Privatemode model mapping and evidence; verify the Neues Museum price. Later: verify once per browser session, refreshed at most every 10 minutes, fail closed (option 1), with wording "when you start chatting and again at least every 10 minutes".
+- **Built (tests green, not deployed):**
+  - completeness check `ec87f46` (catches 24 of 25 gate silent errors, 0 false alarms on 686 stored answers)
+  - Stage 3 on branch `privatemode-stage3` (one admission path, exact IDs, per-account cache_salt, keys by provider, Wasm cache, privacy variant, report draft, DPA record, live checks 7/7)
+  - session verification `37b0985`, merged into Stage 3, 1,034 tests green
+  - runner pacing for the attestation limit
+- **Privatemode mapping:** Fast `glm-5.3-flash` low (over `glm-5.3` low: equal quality, 7.6x cheaper, faster); Thinking `glm-5.3` max (`docs/privatemode-fast-tier-20261112.md`).
+- **Evidence on Privatemode through the app** (`evaluation/benchmark-privatemode-20261112/SUMMARY.md`):
+  - benchmark: Auto 4.49 vs ChatGPT 4.61 (gap 0.12; 0.26 on Tinfoil); research level with ChatGPT
+  - arithmetic: 58-59/60 correct with **0 silent wrong** in every mode
+  - 25-prompt check: every deterministic bar met; German rules below bar in every mode (search needed); Thinking slow, with four time-outs
+  - routing holds overall (Auto as run scored highest)
+- **Findings:**
+  - Privatemode rate-limits attestation per organisation (15 verifications in 30 s, then HTTP 429; 10 per minute passes); solved for the alpha by session verification, and the support question is drafted
+  - Neues Museum is 14/7 EUR on smb.museum (earlier flags removed)
+  - the masking reported "1 phone number" in a three-turn chat without numbers (Fast, L9-06): possible false positive, to investigate
+- **CI:** red since 15:15 on 12 Nov, from two real faults (an outdated output-cap test, fixed in `e259b11`; the runtime image lacked `src/identifier-masking.ts`, fixed in `06e1dca`, with a guard test). **`06e1dca` green**; the flaky test was not involved.
+- **Spend:**
+  - Tinfoil: the Thinking arithmetic finish, USD 3.59 by usage (total today by usage about USD 4.0 for arithmetic plus about USD 0.5-1 for the fresh runs); no further Tinfoil calls after the switch.
+  - Privatemode (free allowance, no charge): Fast-tier comparison 0.68M tokens (measured); in-app runs about 570 messages, about 1.5-2.5M tokens (estimated: the relay cannot count Privatemode tokens). With about 1.33M used earlier on 12 Nov plus the spike, **the one-time 5M allowance is likely nearly or fully used**. Check the portal; a spend budget is needed before any further runs or the alpha (owner decisions rank 2).
+
 ## Routing and search design, fresh run 2, arithmetic complete - 12 November (late)
 
 - **Owner direction (12 Nov):** decide how CometRow chooses a model per question and when it searches. Research how other assistants do it, use our benchmark and arithmetic results, and choose what is best under the constraints: on-device or same-provider only, no content in logs, search approval by default, the user's mode wins, switches labelled and same-provider, provider-agnostic.
