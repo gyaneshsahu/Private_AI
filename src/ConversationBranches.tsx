@@ -22,8 +22,8 @@ export function ConversationBranches({
       <p>
         Only selected context from the active branch is sent. Switching keeps
         each branch’s messages, references and draft; it makes no request. Save
-        an encrypted snapshot to keep all branches after reload. Temporary
-        research cannot be saved.
+        an encrypted snapshot to keep all branches after reload. Search results
+        and source links are never saved.
       </p>
       <p>
         Active: <strong>{branches.activeLabel}</strong>

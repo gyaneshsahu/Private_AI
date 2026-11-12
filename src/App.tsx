@@ -614,7 +614,7 @@ export function App() {
       try {
         await attempt("primary");
       } catch (error) {
-        // A rejection means nothing ran and nothing was billed. The fallback is
+        // A rejection means the model gave no answer. The fallback is
         // a different, explicitly confirmed request, never an automatic retry.
         if (
           error instanceof IncompleteReplyError &&
@@ -622,7 +622,7 @@ export function App() {
           qualified?.fallbackModel &&
           !abort.signal.aborted &&
           window.confirm(
-            `The usual model (${qualified.model}) did not accept this request and nothing was billed. Answer with the fallback model ${qualified.fallbackModel} instead? Cancel to leave it unanswered.`,
+            `The usual model (${qualified.model}) did not accept this request and gave no answer. Answer with the fallback model ${qualified.fallbackModel} instead? Cancel to leave it unanswered.`,
           )
         ) {
           abort.signal.throwIfAborted();
@@ -1486,7 +1486,7 @@ export function App() {
             <p>
               {status?.inference.ready && status.inference.qualification
                 ? verificationSummary(status.inference.qualification)
-                : "Local documents and your vault work here. Messages stay on this device until provider verification and access are complete."}
+                : "Local documents and your vault work here. Messages stay on this device until private chat is switched on."}
             </p>
           </div>
         </details>
@@ -2360,10 +2360,9 @@ export function App() {
               the exact query or URL before sharing.
             </p>
             <p className="muted">
-              Search conversations are temporary in this test version. You can
-              inspect sources and ask follow-up questions during this session,
-              but cannot save the conversation. Use public, non-sensitive
-              queries only.
+              Search results and source links are shown only during this session
+              and are never saved. Saving keeps your written answers and the
+              approved search text. Use public, non-sensitive queries only.
             </p>
             {conversation.attachments.some(
               (a) => a.kind === "research" && a.selected,

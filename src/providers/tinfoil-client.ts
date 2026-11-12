@@ -26,7 +26,7 @@ export function assertVerification(
     doc.enclaveHost !== new URL(report.origin).hostname
   )
     throw new Error(
-      "The verified deployment does not match the reviewed provider configuration. Nothing was sent.",
+      "The checked server does not match the reviewed provider configuration. Nothing was sent.",
     );
 }
 
@@ -52,7 +52,7 @@ export function createTinfoilClientAdapter(): InferenceClientAdapter {
         throw new Error(
           "Unexpected verification destination. Nothing was sent.",
         );
-      onStatus("Verifying the protected destination…");
+      onStatus("Checking the secure server…");
       const verifier = new Verifier({ configRepo: policy.repository });
       await abortable(verifier.verifyBundle(bundle), signal);
       const doc = verifier.getVerificationDocument();

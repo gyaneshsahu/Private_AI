@@ -20,8 +20,9 @@ export default function AccountExport() {
         keys or tokens), active sessions, security notices, request and usage
         records with their published cost, billing operations and any closure
         request. It contains no conversations, documents or search text, because
-        the service never holds them; use the encrypted backup under Saved for
-        those.
+        the service does not store them (search text you approve passes through
+        it on the way to the search provider); use the encrypted backup under
+        Saved for those.
       </p>
       <button
         disabled={busy}

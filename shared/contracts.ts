@@ -143,7 +143,7 @@ export function acceptedChecks(report: Qualification) {
 export function verificationSummary(report: Qualification): string {
   const accepted = acceptedChecks(report);
   if (checks.every((check) => report.review?.[check]?.status === "pass"))
-    return "The destination is verified before each request.";
+    return "The secure server is checked before each request, and every review check passed.";
   if (!accepted.length) return "The secure server is checked before each request.";
   return `The secure server is checked before each request, but not every check has passed. Accepted by the owner for this limited release, not verified: ${accepted.map((c) => checkLabels[c]).join(", ")}.`;
 }

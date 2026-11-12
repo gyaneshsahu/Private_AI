@@ -123,7 +123,7 @@ export async function consumeReply(
             ? "The protected service is unavailable. No answer was received."
             : error instanceof StreamProtocolError &&
                 error.code === "HTTP_UPSTREAM_REJECTED"
-              ? "The protected service did not accept this request; nothing was run or billed."
+              ? "The protected service did not accept this request and gave no answer."
               : "Response incomplete.";
     throw new IncompleteReplyError(
       `${reason} Partial answers are excluded from future context. No automatic retry was made.`,

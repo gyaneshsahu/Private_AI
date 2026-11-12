@@ -40,7 +40,7 @@ it("says verified only when every check passed", () => {
   const passed = validateQualification(report());
   expect(acceptedChecks(passed)).toEqual([]);
   expect(verificationSummary(passed)).toBe(
-    "The destination is verified before each request.",
+    "The secure server is checked before each request, and every review check passed.",
   );
 });
 

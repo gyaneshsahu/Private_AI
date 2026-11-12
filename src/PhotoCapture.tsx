@@ -419,7 +419,8 @@ export function PhotoCapture({
           <p className="muted">
             Only this cropped, re-encoded PNG is used for local text extraction.
             Camera metadata such as location, device and time is not kept.
-            Nothing leaves this device.
+            The photo itself stays on this device; text read from it is sent
+            with your question only if you include it.
           </p>
           <div className="photo-actions">
             <button
