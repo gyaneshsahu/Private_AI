@@ -2,28 +2,28 @@
 
 Running list kept while the owner is away (from 12 November 2026). Each entry names the decision, the safe default the agent applied, and where it matters. Nothing here is decided until the owner says so.
 
-## What needs you, ranked by what blocks the alpha (12 November)
+## What needs you, ranked by what blocks the alpha (updated 12 November, after the overnight run)
 
-Order = what unblocks the most other work first. Items from the pre-alpha checklist (`docs/pre-alpha-checklist.md`) and the D-list below. Everything not listed here is either done or work the agent can do alone.
+Order = what unblocks the most first. My recommended default is in each row. Details: `docs/overnight-log.md` and the files named.
 
-| Rank | What you decide or do | Why it is here | Unblocks |
+| Rank | What you decide or do | Recommended default | Why it is here |
 | --- | --- | --- | --- |
-| ~~1~~ | **Done 12 November.** ~~Store the new Tinfoil key~~: `.\scripts\windows-secret.ps1 -Action Set -Name TINFOIL_API_KEY` (masked prompt) | The entry `PrivateAI/Local/TINFOIL_API_KEY` was last written 5 October (`tk_4`...`X8GA`, 51 characters, no whitespace); Tinfoil answers 401 `invalid_api_key`. Compare with the new key in the dashboard, then save it with this command and check that `cmdkey`/the module shows today's date. Budget USD 5, USD 0 used (owner-reported) | All Tinfoil test runs (T6, model checks, web search tests) |
-| 2 | **Provider choice (P7)**: Tinfoil or Privatemode | Almost every legal and launch step depends on which one | D8, D10, D17, P6, P9, L5, L6, S6 |
-| 3 | **Safety grades for case 07 (P5)** and the **default and fallback model (P6)** | Inputs to P7 and to the qualification report | P7, P9 |
-| 4 | **Privacy policy provider section**: D10, D8, D14, D9 in one review | No user message may reach a provider while the live policy names no provider and no transfer outside the EU | Switching chat on |
-| 5 | **Health consent**: D2 (wording), D3 (where the choice is recorded), D4 ("Not now") | Health is the product's main use; Art. 9 needs explicit consent | Switching chat on |
-| 6 | **Supplier contract and legal basis**: L5 (accept the DPA as a business customer), L6 (Art. 9(2)(a) settled against the provider's terms), L10 (DPIA and terms drafts) | Required before personal data is processed | Switching chat on |
-| 7 | **Record of processing and breach plan** (D16), **breach deputy or accepted risk** (D15) | GDPR Art. 30 and 33 duties start with the first user | Inviting anyone |
-| 8 | **Qualification report sign-off**: which checks you accept and why (D1, P9) | Chat refuses to start without a report | Switching chat on |
-| 9 | **Spending ceiling** amount and window (D5, S6) | The guard needs a number | Switching chat on |
-| 10 | **Rotate the database password you called exposed (S2)** | No record of where it was exposed; status unknown | Inviting anyone |
-| 11 | **Switch chat on and test it live** (D7, O4), then the stop switch on Render (S5), rollback with chat on (T4), live failure cases (T6, owner part) | The agent guides each step; deploys are yours | Inviting anyone |
-| 12 | **Cohort**: Google-only or email (R2), invitee list (R3), cohort size (B17), support contact and pause rule (R6), Safe Browsing warning (R4) | Who gets in, and how they reach you | Inviting anyone |
-| 13 | **Device checks**: second Google account isolation (T1), Safari, Firefox and phone (T2) | Only you have the accounts and devices | Inviting anyone |
-| 14 | **Operations**: backup destination (O1), downtime alert provider (O2) | Recovery and noticing an outage | Inviting anyone |
-| 15 | **Branch policy and `main`** (O6 step 4): fast-forward `main` to the tested line; release from `main` or keep working on `codex/development-handoff` | The agent never touches `main` | Clean releases (not the alpha itself) |
-| — | **Not blocking the alpha:** D11, D12 (scan recall), D13, D17 (becomes rank 4 if Privatemode wins), L9/A14 release pinning, L11, L12, R1, R5 (web search, off), T7, O3, S3, D12 inactivity rule; search stays on Brave; Exa tests skipped until Exa replies (owner, 12 November) | | |
+| 1 | **Deploy `codex/development-handoff` to Render** (contains the Render bridge fix `09dcf74`) and, on the live site, one browser check that a signed-in workspace action works | Deploy after Validate is green; chat stays off (no `inference` section) | Without the fix every chat request through app.cometrow.com fails with 403 (T4 rehearsal). Everything new is dormant |
+| 2 | **Safety grades for case 07 (P5)**, then **provider (P7)** and **models (P6)** | Tinfoil, gpt-oss-120b low, fallback gemma4-31b thinking (draft report ready); Privatemode only if its Edgeless replies (P4, P8) arrive and you accept GLM-5.3-Flash as the qualifying arm | Gates the report, the policy text, the DPA and the spend cap. Parity run: same behaviour on both; GLM-5.3-Flash best quality; Tinfoil faster; Privatemode needs 6–9 days of Stage 3 |
+| 3 | **One text review of what we promise**: approved privacy statement rows P1–P4 and P5–P10 (`docs/copy-audit-20261112.md`), live policy rows #1–#2, provider section D8/D9/D10/D14 | Accept the proposed replacements in the audit | Four high rows say more than is true today ("we never see", "we never can", "checks pass", protected graphics processor). Must be true before the first message |
+| 4 | **Health consent** D2 (text), D3 (device only), D4 ("Not now" allows chat) | Approve the draft; add the short-term-memory sentence from audit #11 | Art. 9 consent |
+| 5 | **Supplier contract and legal texts**: L5 DPA, L6 legal basis, L10 DPIA and terms, acceptable use and 18+ rule (`docs/acceptable-use-draft-20261112.md`, `docs/age-rule-draft-20261112.md`) | Approve after a legal read; 18+ by self-declaration twice, no ID check | Needed before personal data is processed |
+| 6 | **Record of processing and breach plan** (D16), **breach deputy** (D15) | Approve both; accept no deputy for a 10-person alpha in writing | GDPR Art. 30 and 33 |
+| 7 | **Sign the qualification report** (P9, D1): four checks need your written acceptance (browser check partial, freshness, hardware chain, budget) | Accept the four for the invite-only alpha, report valid 7 days, renewed weekly | Chat refuses to start without a report |
+| 8 | **Spending ceiling** (D5, S6) | USD 10 per 7-day report window for the alpha | The guard needs a number |
+| 9 | **Rotate the database password you called exposed** (S2) | Rotate now | Status unknown |
+| 10 | **Switch chat on and run the hosted checks** (D7, O4, S5, T4 hosted, T6 hosted, a real browser chat through Render) | Owner only first, then friends | Rollback past `8a26a30` needs the `inference` key removed from the Render config first (T4 finding) |
+| 11 | **Cohort**: Google-only (R2), invitee list (R3), size (B17), support contact and pause rule (R6, also needed before the acceptable-use text can be published), Safe Browsing (R4) | Google-only, 2 friends first, then up to 10 | Who gets in and how they reach you |
+| 12 | **Device checks** T1 (second account), T2 (Safari, Firefox, phone) | — | Only you have the accounts and devices; the automated sweep is clean in all three engines |
+| 13 | **Operations**: backup destination (O1), downtime alerts (O2), hosted recovery run (O3) and what to do about sessions that survive a restore | Render point-in-time restore; invalidate all sessions after a restore (needs a small command, agent can build) | O3 local rehearsal passed with 4 run-sheet corrections |
+| 14 | **Inactivity rule** (checklist D12; not decision D12 below) | Option A: no code; delete accounts a set time after the alpha ends; set the end date | Wiring the existing file would delete nothing on the hosted service |
+| 15 | **Branch policy and `main`** (O6 step 4) | Fast-forward `main` to the tested line; release from `main` | The agent never touches `main` |
+| — | **Not blocking the alpha:** web search (R5: Brave stays default; Tinfoil enclave search only as a later opt-in after its written answers, `docs/search-comparison-20261112.md`), D11, D12 (scan recall), D13, D17 (becomes rank 3 if Privatemode wins), L9/A14 release pinning, L11, L12, R1, T7, S3, Exa (stopped until Exa replies) | | |
 
 ## All decisions, by number
 

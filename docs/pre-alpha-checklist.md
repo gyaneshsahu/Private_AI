@@ -13,10 +13,10 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | P3 | GPU attestation scope (former P3) | Trust row of the scorecard | Agent | no | 0 | done (answered by Privatemode docs) |
 | P4 | Tinfoil replies: T1 (EU option), T4 (written agreement for health) | Legal fit; health is in scope | Waiting on a reply | yes, if Tinfoil is chosen (T4) | 0 | open (sent 12 Nov) |
 | P5 | Safety grades for case 07, five arms | No model may go live with an ungraded safety case | Owner | yes | 30 min | open |
-| P6 | Default and fallback model pick | The report names one model | Owner (Agent prepares) | yes | 30 min | open (Privatemode GLM-5.3-Flash passed every automatic bar; no Tinfoil arm did) |
+| P6 | Default and fallback model pick | The report names one model | Owner (Agent prepares) | yes | 30 min | open; evidence ready: 12 Nov parity run agrees with the 11 Nov screen (Tinfoil gpt-oss-120b misses only the open question in this run and citation format 2/3 in the screen; Privatemode GLM-5.3-Flash meets every automatic bar), `docs/parity-matrix-20261112.md` |
 | P7 | Provider decision (scorecard final) | Everything downstream depends on it | Owner | yes | 1 h | open (interim scorecard written) |
-| P8 | Stage 3: full Privatemode integration, if Privatemode wins | Spike code is on an unpushed branch, not in the app | Agent | yes, if Privatemode | 1.5–2 weeks | open (stages 1–2 passed) |
-| P9 | Qualification report for the chosen provider and model, with owner-accepted checks (D1) | Chat cannot switch on without a valid report | Agent drafts, Owner signs | yes | 2 h | open (status `accepted-by-owner` built on the branch) |
+| P8 | Stage 3: full Privatemode integration, if Privatemode wins | Spike code is on an unpushed branch, not in the app | Agent | yes, if Privatemode | 1.5–2 weeks | plan written 12 Nov (`docs/privatemode-stage3-plan-20261112.md`: 22–33 agent-hours, 6–9 days after P7; the spike's root routes would bypass session, spend and stop controls; a fifth privacy sentence; under the 26 Oct rule only GLM-5.3-Flash qualifies); spike relay crash on disconnect fixed on local `privatemode-parity` |
+| P9 | Qualification report for the chosen provider and model, with owner-accepted checks (D1) | Chat cannot switch on without a valid report | Agent drafts, Owner signs | yes | 2 h | draft written 12 Nov (`docs/qualification-report-draft-tinfoil-20261112.md`: 4 checks pass, 4 need owner acceptance; not loadable until signed) |
 | A2 | (concerns log) Tinfoil-specific item | Applies only if Tinfoil is chosen | Agent | Tinfoil only | unknown | unknown (description not in the repository) |
 | A16 | (concerns log) Tinfoil-specific item | Applies only if Tinfoil is chosen | Agent | Tinfoil only | unknown | unknown (description not in the repository) |
 | A17 | (concerns log) Tinfoil-specific item | Applies only if Tinfoil is chosen | Agent | Tinfoil only | unknown | unknown (description not in the repository) |
@@ -38,9 +38,9 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | L10 | Review the DPIA and terms drafts | Required documents for a real user | Owner | yes | half a day | open |
 | L11 | Imprint: second fast contact channel (phone or form) | German imprint rules are often read as needing it | Owner | no | 30 min | open |
 | L12 | Google sign-in screen shows "CometRow" (Google console, Branding) | Users see the app name when signing in | Owner | no | 15 min | unknown |
-| A3, A7, C1 | No overclaiming in the app copy and on the website | Promises must match what is built | Agent (app), Owner (website) | yes | 2 h | app: done (copy tests forbid absolute claims); website: unknown (separate repository `PrivateAI-website`) |
-| B15, C6 | Own acceptable-use terms and the 18+ age rule | Users need the rules they agree to | Owner | yes | 1 h | open (the terms draft has both, not approved; the app shows 18+) |
-| D12 | Inactivity retention rule | Data of inactive accounts is kept without a rule | Owner decides, Agent wires | no (the policy promises no inactivity deletion) | 1 day if wired | open (`server/inactive-retention.ts` exists, not wired) |
+| A3, A7, C1 | No overclaiming in the app copy and on the website | Promises must match what is built | Agent (app), Owner (website) | yes | 2 h | app: 12 Nov copy audit (`docs/copy-audit-20261112.md`) found 33 overclaims; 9 non-owner ones fixed with a guard test; **open, needs the owner:** 4 high rows in the approved privacy statement ("we never see", "we never can", "checks pass", protected graphics processor) and 2 in the live policy (cache "few hours", 90 days); website: unknown (separate repository `PrivateAI-website`) |
+| B15, C6 | Own acceptable-use terms and the 18+ age rule | Users need the rules they agree to | Owner | yes | 1 h | drafts written 12 Nov (`docs/acceptable-use-draft-20261112.md`, `docs/age-rule-draft-20261112.md`), need approval and legal review; not publishable until the support mailbox (R6) exists |
+| D12 | Inactivity retention rule | Data of inactive accounts is kept without a rule | Owner decides, Agent wires | no (the policy promises no inactivity deletion) | 1 day if wired | proposal written 12 Nov (`docs/inactivity-retention-proposal-20261112.md`): wiring the existing file would delete nothing on the hosted service; recommended for the alpha: option A, no code, delete accounts a set time after the alpha ends (owner decision) |
 | F1 | Imprint, controller identity, Art. 30 record of processing, breach plan with a named contact, AI-transparency note | Legal duties of a controller; users must know they talk to an AI | Agent drafts, Owner approves | yes | 1 day | imprint, identity and AI note in the app: done; Art. 30 record and breach plan drafted 12 November, need approval (D14 to D16) |
 | C2, C3 | Website fixes, privacy policy page, deletion path | The public site and the promised deletion must work | Owner (website), Agent (app) | yes | 1 day | in-app policy page and "delete everything": done; account closure needs email (R2); website: unknown |
 | B13 | (concerns log) | Not needed for the alpha | Owner | no (public launch only) | — | deferred |
@@ -57,6 +57,7 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | S5 | Stop switch tested on Render | Must work under pressure, not only in tests | Owner (Agent guides) | yes | 30 min | open (unit-tested on the branch) |
 | S6 | Spend cap value (`approvedSpendUSD`, D5) | The ceiling is only as good as its number | Owner | yes | 15 min | open |
 | S7 | Live header check after the next deploy | Security headers on every response | Agent | no | 10 min | done for `ae439fa`; redo per deploy |
+| S8 | Render bridge forwards the CSRF and chat headers | Without it every chat request through app.cometrow.com fails with 403 | Agent (fix), Owner (deploy) | yes | 10 min | fixed 12 Nov in `09dcf74` with a header test; **needs deploy** and a browser check on the live site |
 | A15 | No automatic loading of remote images, links or embeds from model output; strict CSP; canary test | A model answer must not make the browser contact a third party | Agent | yes | 2 h | mostly done: images become "[Image omitted]", links are shown as text, CSP `img-src 'self' blob: data:`; canary test added 12 November (`tests/remote-content-canary-ui.test.ts`): done |
 | A1 | The browser stays the authority; a tampered relay or fingerprint is rejected | The relay must not be able to swap the destination | Agent | yes | 0 | done for the Tinfoil path (browser transport test: tampered, wrong host, wrong release); the Privatemode path exists only in the spike (Stage 3) |
 | A9 | Threat-model table | Shows what is defended and what is not | Agent | no | 2 h | done 12 November: 12-row update in `docs/threat-model-20261022.md` (22 October table already covered 13 threats); secret scan added to CI the same day; open: breach deputy (D15) |
@@ -74,7 +75,7 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | R2 | Email delivery, or Google-only for the alpha | Without email: no recovery, no self-service closure | Owner | yes (decision) | 15 min decide; 1–2 days if email | open |
 | R3 | Invitee list (at most 10 allowlisted emails) | Who gets in | Owner | yes | 15 min | open |
 | R4 | Safe Browsing "Dangerous site" warning explained (Search Console) | Could scare a friend away at sign-in | Owner | yes | 30 min plus Google's wait | open |
-| R5 | Web search on or off for the alpha | Brave unresponsive; no search key in production | Owner | no | 15 min | open (off today) |
+| R5 | Web search on or off for the alpha | Brave unresponsive; no search key in production | Owner | no | 15 min | open (off today); 12 Nov live comparison (`docs/search-comparison-20261112.md`): Brave stays default; Tinfoil enclave search about 10x the price, skipped search once silently, 12 written questions; owner decides on/off for the alpha |
 | R6 | Support contact and pause or revoke rule (plan 8.4) | Friends need someone to write to | Owner | yes | 30 min | open |
 
 ## Testing
@@ -84,8 +85,8 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | T1 | Isolation test with a second Google account on the live site | One user must never see another's data | Owner + Agent | yes | 1 h | open |
 | T2 | Safari, Firefox and phone checks of a real chat | Friends use different browsers | Owner | yes | 2 h | open |
 | T3 | Masking gaps known and stated: scans 87.3 %, ID numbers 94.1 %, page-fetch URLs unchecked (D11, D12) | Copy must not promise more than the detector does | Agent | no (stated as known limits) | 1 h | done in the app (note under answers, page-fetch approval, branch); privacy-statement sentence is owner decision D13 |
-| T4 | Rollback test with chat on | Rollback was drilled without chat | Owner (Agent guides) | yes | 1 h | open (drilled 25 Oct, chat off) |
-| T5 | Full suites green on the merged branch, CI green | Deploy only tested code | Agent | yes | 1 h | open (green on each branch separately) |
+| T4 | Rollback test with chat on | Rollback was drilled without chat | Owner (Agent guides) | yes | 1 h | local rehearsal done 12 Nov (`docs/rehearsals-t4-o3-20261112.md`): rollback, roll-forward, stop switch and spend cap pass on one database; found the bridge header blocker (fixed, S8); hosted run open; rolling back past `8a26a30` needs the `inference` key removed from the config first |
+| T5 | Full suites green on the merged branch, CI green | Deploy only tested code | Agent | yes | 1 h | done 12 Nov: `alpha-provider-neutral` merged (`8a26a30`), Validate green on the merged line and on later pushes; UI sweep 54/54 clean in Chromium, Firefox and WebKit |
 | T6 | Cancelled request, truncated reply and attestation failure on the live provider | Cost and error behaviour with real money | Agent + Owner | yes | 2 h | agent part done 12 November: 6 of 6 pass live (stop before send, stop mid-stream, long reply, output limit, wrong digest); found and fixed report settings being dropped; owner part on Render after chat is on |
 | T7 | TalkBack / phone accessibility session (plan 6.1) | Screen-reader users | Owner | no | 1 h | open |
 
@@ -95,20 +96,18 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | --- | --- | --- | --- | --- | --- | --- |
 | O1 | Backup destination (7.2) | A lost database means lost accounts | Owner | yes | 1 h | open |
 | O2 | Alert provider for downtime (7.3) | You need to know when the service is down | Owner | yes | 1 h | open |
-| O3 | Recovery rehearsal (7.1) | A backup is only real once restored | Owner + Agent | no | 2 h | open |
+| O3 | Recovery rehearsal (7.1) | A backup is only real once restored | Owner + Agent | no | 2 h | local rehearsal passed 12 Nov (restore 0.5 s); run sheet needs 4 corrections (DROP needs CASCADE, service only after restore, sessions survive a restore, no account-database reconciliation step); hosted run open |
 | O4 | Add the provider key and report on Render; switch chat on (runbook step) | The switch is dormant until then | Owner (Agent guides) | yes | 30 min | open (runbook section on the branch) |
 | O5 | Week-one monitoring list: readyz, spend vs cap, purge log line, refused requests, error rate | Spot problems before friends do | Agent writes, Owner watches | no | 1 h | done (`docs/week-one-monitoring.md` on the branch) |
 | O6 | Branch merge plan: merge `alpha-provider-neutral` into `codex/development-handoff`, CI, deploy; bring `main` (391 commits behind, last 4 Oct) up to date | Release one tested line, not three | Agent | yes | 2 h | steps 1 and 2 done: merged in `8a26a30`, pushed, Validate green; open: deploy (owner), `main` fast-forward and branch policy (owner, rank 15) |
 | O7 | `privatemode-eval` stays unmerged unless Privatemode wins; then it feeds Stage 3 | Keeps the spike out of production | Agent | no | 0 | open |
 
-## Fastest order to alpha (recomputed 12 November)
+## Fastest order to alpha (recomputed 12 November, after the overnight run)
 
-**Now, in parallel while the provider replies are pending** (none depends on the choice):
-1. **Owner:** P5 safety grades; L1, L3 text approval; L2, R2, R3, R5, R6, S6 and B17 cohort decisions; S2, S3 rotations; R4 Search Console; R1 device look; O1, O2 providers; L10 DPIA and terms review, including B15/C6; website check for A3/A7/C1 and C2; L11, L12.
-2. **Agent:** S1 expired sessions; O6 merge plan; T3 limits in the copy; O5 monitoring list; L4 policy fix for both providers; then the A15 canary test, A18 dependency review in CI, F1 drafts (Art. 30 record, breach plan, AI-transparency note), B19/B20 terms check and the A9 threat-model table.
+**The agent's pre-decision list is done** (S1, O6, T3, O5, L4, A15, A18, F1, B19/B20, A9, T5, T6 agent part, P9 draft, parity, UI sweep, copy audit, drafts, rehearsals, Stage 3 plan, search comparison). The critical path is now the owner's decisions and the supplier replies, in the order of `docs/owner-decisions.md`.
 
-**When the replies arrive:** P7 decision with the P6 model. Tinfoil: A2, A14, A16, A17 apply, no integration work. Privatemode: P8 Stage 3 (1.5 to 2 weeks), with A1 on the Privatemode path.
+**Next, owner (any order, all in parallel):** deploy the bridge fix (S8); P5 safety grades; one text review (copy audit high rows, D8/D10/D14, health consent D2–D4); L5, L6, L10, B15/C6; D15/D16; S2; cohort R2, R3, R6, B17; O1, O2.
 
-**Then, in sequence:** P9 report signed, L5 DPA accepted, O4 chat on for the owner only, T1, T2, T6, S5 and T4 live checks, then the first friend.
+**When the provider is chosen (P7 with P6):** Tinfoil: the agent finalises the report on the day (digest, dates), you sign the four acceptances and set D5, then O4 chat on for you only, the hosted checks (browser chat through Render, T6, S5, T4), T1, T2, then the first friend. Privatemode: Stage 3 first (6–9 days, `docs/privatemode-stage3-plan-20261112.md`), and D17 plus the fifth sentence in the privacy text.
 
-**Critical path.** The agent's parallel list is about 5 to 6 working days, longer than the owner's decisions, so it sets the pace if the replies arrive within a week. After the decision: Tinfoil about 3 to 4 working days (report, DPA, switch-on, live checks); Privatemode about 2 to 3 weeks (Stage 3 dominates). Earliest alpha: about 1.5 to 2 weeks from today with Tinfoil, about 3 to 4 weeks with Privatemode.
+**Critical path.** Tinfoil: about 3 to 4 working days after your decisions and text approvals (deploy, report, DPA, switch-on, hosted checks). Privatemode: about 2 to 3 weeks after P7 (Edgeless replies plus Stage 3). Earliest alpha: about 1 week from the day the owner items in ranks 1 to 9 are done, with Tinfoil.
