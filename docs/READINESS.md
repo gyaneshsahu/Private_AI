@@ -1,4 +1,9 @@
 # PrivateAI readiness checklist
+## A9: threat-model table brought up to date (12 new rows); two new open items - 12 November
+
+- **Done.** `docs/threat-model-20261022.md` gains an update section: 12 threats added or changed since 22 October, each with defence, gap, evidence and status. The checklist row was understated: the 22 October table already covered 13 threats beyond the attestation audit, and stays valid.
+- **Found:** no automated secret scan in CI (open, owner decision D18 with a safe default of not adding a new CI dependency without approval) and no breach deputy (open, D15). Mitigated: remote-content exfiltration, expired sessions, 90-day retention.
+
 ## B19/B20: provider promises mapped to sources; weekly terms check with a baseline - 12 November
 
 - **Verified.** `docs/provider-promises-20261112.md` maps every provider claim in the approved privacy statement and the drafts to its source (Terms, DPA, docs, the 22 October email). Finding: the statement is accurate for Tinfoil; four sentences would be wrong for Privatemode (cache wording, permanent per-key token counts, soft limits, browser-check gap), recorded as owner decision D17.
