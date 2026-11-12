@@ -14,6 +14,13 @@ beforeAll(async () => {
     req.on("data", (c) => (body += c));
     req.on("end", () => {
       received.push({ path: req.url!, headers: req.headers, body });
+      if (body === "slow") {
+        // A long streamed reply: one chunk now, the rest later.
+        res.setHeader("content-type", "text/event-stream");
+        res.write("data: first\n\n");
+        setTimeout(() => res.end("data: [DONE]\n\n"), 1500);
+        return;
+      }
       res.setHeader("content-type", "application/octet-stream");
       res.setHeader("privatemode-oae-response-header", "nonce");
       res.setHeader("set-cookie", "upstream=1");
@@ -88,4 +95,20 @@ it("forwards only Privatemode's three paths and serves the pinned assets", async
   const manifest = await fetch(`${base}/api/privatemode/manifest`);
   expect(manifest.headers.get("cache-control")).toBe("no-store");
   expect(await manifest.text()).toBe("{}");
+});
+
+it("survives a client that disconnects mid-reply and keeps serving (parity run finding)", async () => {
+  const controller = new AbortController();
+  const reply = await fetch(base + "/v1/chat/completions", {
+    method: "POST",
+    headers: { "privatemode-target-model": "glm-5.3-flash" },
+    body: "slow",
+    signal: controller.signal,
+  });
+  const reader = reply.body!.getReader();
+  await reader.read();
+  controller.abort();
+  await new Promise((r) => setTimeout(r, 2000));
+  // Before the fix the unhandled abort error ended the process here.
+  expect((await post("/privatemode/v1/attest", {})).status).toBe(200);
 });

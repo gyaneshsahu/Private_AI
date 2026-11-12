@@ -10,6 +10,7 @@
 // manifest and the pinned Wasm are served under /api/privatemode.
 // Not yet wired into server/app.ts admission and allowances (stage 3).
 import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
 import express, { type Router } from "express";
 
 const FORWARDED_PATHS = new Set([
@@ -56,7 +57,10 @@ export function privatemodeRelay(options: {
       const body = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
       options.observe?.(req.path, body);
       const abort = new AbortController();
-      res.on("close", () => abort.abort());
+      // Abort upstream only when the client left early, as the Tinfoil relay does.
+      res.on("close", () => {
+        if (!res.writableFinished) abort.abort();
+      });
       try {
         const reply = await fetch(`${upstream}${req.path}`, {
           method: "POST",
@@ -69,7 +73,9 @@ export function privatemodeRelay(options: {
           if (REPLY_HEADERS.test(name)) res.setHeader(name, value);
         });
         if (!reply.body) return res.end();
-        Readable.fromWeb(reply.body as never).pipe(res);
+        // pipeline handles the abort error; a bare pipe() crashed the process when a client
+        // disconnected mid-reply (parity run, 12 November).
+        await pipeline(Readable.fromWeb(reply.body as never), res).catch(() => res.destroy());
       } catch {
         if (!res.headersSent) res.status(502).json({ error: "Upstream unavailable." });
         else res.end();

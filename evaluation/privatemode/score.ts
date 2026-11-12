@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { citationForm, placeholdersCopiedExactly } from "../selection-checks";
 
-const dir = ".local/provider-screen-20261111";
+const dir = process.env.SCREEN_DIR ?? ".local/provider-screen-20261111";
 type Turn = { text: string; ttftMs?: number; error?: string };
 type Run = { id: string; rep: number; turns: Turn[] };
 
