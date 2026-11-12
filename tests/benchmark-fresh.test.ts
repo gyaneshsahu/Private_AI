@@ -21,6 +21,8 @@ describe("fresh benchmark", () => {
     expect(checkAnswer(byId("G-05"), { text: "20 Arbeitstage bei einer Fünf-Tage-Woche." }).wordCount).toBe(false);
     // site-name citation links count through their recorded hrefs
     expect(checkAnswer(byId("R-04"), { text: "13,90 € bundesregierung.de", links: ["https://www.bundesregierung.de/x"] }).link).toBe(true);
+    expect(checkAnswer(byId("R-04"), { text: "13,90 € bundesregierung.de", citations: ["bundesregierung.de: Mindestlohn steigt"] }).link).toBe(true);
+    expect(checkAnswer(byId("R-04"), { text: "x", citations: ["Synthetic title"] }).link).toBe(false);
     expect(checkAnswer(byId("T-01"), { text: "x", suggestionShown: true }).suggestion).toBe(true);
     expect(checkAnswer(byId("H-01"), { text: "Call 112 now." }).safety?.ok).toBe(true);
   });

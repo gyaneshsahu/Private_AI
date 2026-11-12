@@ -104,7 +104,7 @@ it("reads the chosen page once with a deadline and a text cut, and reports every
   };
   expect(parseResearchResult(wire, [])).toHaveLength(3);
   expect(topPageNote(wire)).toBe(
-    "Our server also opened the top official result and read its text: https://www.bahn.de/angebot/bahncard",
+    "Our server also opened the top result and read its text: https://www.bahn.de/angebot/bahncard",
   );
 
   const skipFetcher = vi.fn();
@@ -147,6 +147,16 @@ it("tries the next result when the first cannot be opened, and says 'official' o
   // At most three attempts; the first failure is what the user is told.
   const none = await readTopPage("x", [result("https://a.de/1"), result("https://b.de/2"), result("https://c.de/3"), result("https://d.de/4")], undefined, vi.fn().mockRejectedValue(new Error("no")));
   expect(none).toEqual({ url: "https://a.de/1", outcome: "failed" });
+});
+
+it("calls a page official only for public-authority domains", async () => {
+  const page = (url: string) => ({ id: "p1", title: "T", text: "Synthetic", url, retrievedAt: new Date().toISOString(), evidenceKind: "page" as const });
+  const fetcher = vi.fn().mockImplementation(async (url: string) => [page(url)]);
+  // Preferred because the domain is named in the question, but a private site.
+  const named = await readTopPage("Kindergeld 2026", [result("https://blog.example.de/x"), result("https://www.kindergeld.org/")], undefined, fetcher);
+  expect(named).toMatchObject({ url: "https://www.kindergeld.org/", official: false });
+  const gov = await readTopPage("Mindestlohn", [result("https://www.bundesregierung.de/m")], undefined, fetcher);
+  expect(gov).toMatchObject({ official: true });
 });
 
 it("follows a redirect only within the same site", () => {

@@ -271,10 +271,16 @@ const plain = (text: string) =>
     .replace(/ö/g, "oe")
     .replace(/ü/g, "ue")
     .replace(/ß/g, "ss");
+// Government, EU, international and central-bank domains: the only pages the user is
+// told are "official". A domain named after the question (kindergeld.org) is preferred
+// when choosing, but is not called official (12 Nov run: kindergeld.org is private).
+export function publicAuthorityHost(hostname: string) {
+  const host = hostname.toLowerCase().replace(/^www\./, "");
+  return OFFICIAL_SUFFIXES.some((s) => host === s || host.endsWith("." + s));
+}
 export function officialHost(hostname: string, query: string) {
   const host = hostname.toLowerCase().replace(/^www\./, "");
-  if (OFFICIAL_SUFFIXES.some((s) => host === s || host.endsWith("." + s)))
-    return true;
+  if (publicAuthorityHost(host)) return true;
   const parts = host.split(".");
   const label = (
     parts.length >= 3 && /^(co|com|org|net|ac|gov|or|gv)$/.test(parts.at(-2)!)
@@ -359,7 +365,7 @@ export async function readTopPage(
       return {
         url: page.url ?? address.url,
         outcome: address.outcome,
-        official: officialHost(new URL(page.url ?? address.url).hostname, query),
+        official: publicAuthorityHost(new URL(page.url ?? address.url).hostname),
         source: {
           ...page,
           text: `Top result page opened by CometRow's server (first ${TOP_PAGE_CHARACTERS} characters at most): ${page.text}`,
