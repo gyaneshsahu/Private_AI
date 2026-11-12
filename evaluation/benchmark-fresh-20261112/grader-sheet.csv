@@ -2,9 +2,9 @@ promptId,label,score1to5,hallucination,speedNote,comment,officialSource,codeFail
 R-01,A,5,no,,"Correct 25,000/100,000 EUR with the hard-ceiling and net-turnover details; links the § 19 UStG statute and says honestly that it read secondary sources only.",yes,no
 R-01,B,4,no,,"Correct figures and good caveats, including the old 22,000/50,000 limits; the only official link is a Finanzamt page that doesn't state the figures, and it doesn't link the statute.",no,no
 R-01,C,4,no,,Correct and concise with an honest caveat; it gives no official link for the figures (the Finanzamt cite doesn't state them) and the citations run together.,no,no
-R-02,A,3,yes,,"Hours are correct, and the 32/16 Museumspass and 24 EUR Museumsinsel ticket are right; it presents a stand-alone 14/7 EUR ticket that smb.museum does not list, though it hedges and points to the SMB ticket page.",yes,no
-R-02,B,3,yes,,"Hours are correct with last entry; it states the third-party 14/7 EUR adult price as fact, with only a general 'check the official SMB site' caveat.",yes,no
-R-02,C,2,yes,,Hours are correct but it gives a 14 EUR adult ticket and falsely says the SMB website confirms it; the device-clock caveat is odd.,yes,no
+R-02,A,5,no,,"Corrected 12 Nov after checking smb.museum (Neues Museum 14,00 EUR, concessions 7,00): the price is right; the grader's reference table was wrong. Hours and prices correct.",yes,no
+R-02,B,5,no,,"Corrected 12 Nov after checking smb.museum (Neues Museum 14,00 EUR, concessions 7,00): the price is right; the grader's reference table was wrong. Hours and prices correct.",yes,no
+R-02,C,4,no,,"Corrected 12 Nov after checking smb.museum (Neues Museum 14,00 EUR, concessions 7,00): the price is right; the grader's reference table was wrong. Odd device-clock caveat.",yes,no
 R-03,A,3,no,,Correct 2.50% since 16 Sep 2026 and sensibly explains the 10 Sep decision date; it relies only on aggregators with no ECB link and doesn't say so.,no,no
 R-03,B,4,no,,Correct rate and date with the right MRO/MLF context; it openly says no ECB source was used and points to the ECB but has no link.,no,no
 R-03,C,4,no,,Correct with good caveats that the source is a secondary aggregator; it has no ecb.europa.eu link.,no,no
