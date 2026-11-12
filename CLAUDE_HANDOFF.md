@@ -2,9 +2,19 @@
 
 > **Name change, 25 October 2026:** this product was called PrivateAI until 25 October 2026 and is now CometRow. Some technical identifiers keep the old name on purpose; the full record is in `docs/name-change-20261025.md`.
 
-Updated: 25 October 2026  
+Updated: 12 November 2026  
 Repository: `gyaneshsahu/Private_AI`  
 Branch: `codex/development-handoff`
+
+## Handoff note, 12 November 2026
+
+- **Where to look first:** `docs/pre-alpha-checklist.md` (everything left before the alpha, 67 items, owner or agent, status, critical path), `docs/owner-decisions.md` (D1 to D13, each with the safe default applied), `docs/provider-model-decision-20261026.md` (interim provider scorecard), `docs/provider-qualification-20261026.md` (plan, pass bars, stage 0 status), `docs/READINESS.md` (dated evidence, newest first).
+- **Code state:** `codex/development-handoff` = `8a26a30` plus docs, pushed 12 November (merge of `alpha-provider-neutral`: owner-accepted report status, health consent and provider privacy text behind flags, dormant production chat switch with spend cap and stop switch, A5 masking fix, German held-out set, expired-session test, in-app policy naming the provider, masking limits in the app, week-one routine). Validate run 43141003481 started; result goes in the ledger.
+- **Deploy state:** live on Render is `ae439fa` (25 October: CometRow rename, 90-day purge live). The merged code is dormant in production (no flags, no `inference` section), so deploying changes nothing users see; header check after any deploy.
+- **Provider:** Tinfoil stays the provider on this branch. Privatemode qualification: stage 1 (screen) and stage 2 (real-browser spike) passed on the local branch `privatemode-eval` (worktree `.claude/worktrees/privatemode-eval`; tests must run from a plain-path checkout, see the 11 November ledger note). Emails sent 12 November: Edgeless P4 (knockout) and P8, Tinfoil T1 and T4; replies pending. Owner safety grades for case 07 pending.
+- **Branches and worktrees:** `alpha-provider-neutral` is merged (worktree `C:\Gyanesh\Startups\Private_AI-alpha` can be removed); `privatemode-eval` stays unmerged unless Privatemode wins; `main` is 391 commits behind and untouched until the owner picks a branch policy (`docs/branch-merge-plan-20261112.md`).
+- **Agent next:** A15 canary test, A18 dependency review in CI, F1 drafts (Art. 30 record, breach plan, AI-transparency note), B19/B20 provider terms check, A9 threat-model table.
+- **Unpushed or private:** the owner's uncommitted `package.json`, `docs/search-provider-comparison.md`, `docs/privatemode-master-notes.md`, `docs/tinfoil-docs.md` and media scripts stay local on purpose. Keys live in Windows Credential Manager (`TINFOIL_API_KEY`, `PRIVATEMODE_API_KEY`), never in files.
 
 ## Handoff note, 25 October 2026
 
