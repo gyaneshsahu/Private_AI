@@ -1,4 +1,9 @@
 # PrivateAI readiness checklist
+## B19/B20: provider promises mapped to sources; weekly terms check with a baseline - 12 November
+
+- **Verified.** `docs/provider-promises-20261112.md` maps every provider claim in the approved privacy statement and the drafts to its source (Terms, DPA, docs, the 22 October email). Finding: the statement is accurate for Tinfoil; four sentences would be wrong for Privatemode (cache wording, permanent per-key token counts, soft limits, browser-check gap), recorded as owner decision D17.
+- **Weekly check (B20).** `scripts/provider-terms-check.mjs` fetches Tinfoil Terms, AUP, DPA, privacy and Privatemode Terms, DPA, privacy (read-only), compares date and text fingerprint with `docs/provider-terms-baseline.json` (recorded 12 November: Tinfoil Terms, AUP, DPA 12 October 2026; Privatemode Terms 24 April, DPA 24 July, privacy 6 August 2026), exits 1 on change. Two consecutive runs: no change (fingerprints stable). Runbook section added next to the weekly model check.
+
 ## F1: record of processing and breach plan drafted; AI-transparency line in the app - 12 November
 
 - **Drafts (need owner approval, D16).** `docs/art30-record-draft-20261112.md`: eight processing activities (account and sign-in, chat answers, request records, export and deletion, logs, backups, web search, support) with purpose, legal basis, data, recipients, transfers, retention and status, from repository facts only; unknowns marked. `docs/breach-plan-draft-20261112.md`: signals, contain (stop switch), preserve, rotate, assess, notify LDI NRW within 72 hours, tell people affected, document; named contact the owner (security@cometrow.com), no deputy (D15).

@@ -20,7 +20,7 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | A2 | (concerns log) Tinfoil-specific item | Applies only if Tinfoil is chosen | Agent | Tinfoil only | unknown | unknown (description not in the repository) |
 | A16 | (concerns log) Tinfoil-specific item | Applies only if Tinfoil is chosen | Agent | Tinfoil only | unknown | unknown (description not in the repository) |
 | A17 | (concerns log) Tinfoil-specific item | Applies only if Tinfoil is chosen | Agent | Tinfoil only | unknown | unknown (description not in the repository) |
-| B19, B20 | No promise beyond the provider's terms; weekly check of the provider's terms | A changed provider term can make our copy untrue | Agent drafts the check, Owner runs it weekly | yes | 2 h | open (a weekly model-catalog check exists in the runbook; no terms check) |
+| B19, B20 | No promise beyond the provider's terms; weekly check of the provider's terms | A changed provider term can make our copy untrue | Agent drafts the check, Owner runs it weekly | yes | 2 h | done 12 November: claims mapped to sources (accurate for Tinfoil; D17 for Privatemode), weekly check script with baseline, runbook step |
 
 ## Privacy and legal
 

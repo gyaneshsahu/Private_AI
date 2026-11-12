@@ -484,6 +484,10 @@ They do not prove host disaster recovery, power-loss durability or lost-password
 recovery. The packaged encrypted source-loss service drill now passes locally and
 in CI; actual hosted cutover and sustained recovery objectives remain open.
 
+## Provider terms: weekly check (B20) — 12 November
+
+Same weekday as the model check: run `node scripts/provider-terms-check.mjs`. It compares each supplier legal page (Terms, AUP, DPA, privacy) with `docs/provider-terms-baseline.json` and exits 1 on a changed date or text. On a change: read the page, compare `docs/provider-promises-20261112.md`, fix our copy before the next release if a claim no longer holds, then run it with `--record` and note the check in `docs/READINESS.md`.
+
 ## Model lifecycle: deprecation notice and weekly check — 22 October
 
 Supplier statement (22 October, verbatim in the git-ignored docs/private/ folder): every

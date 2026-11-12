@@ -1,0 +1,61 @@
+{
+  "recordedAt": "2026-11-12T02:37:23.050Z",
+  "pages": [
+    {
+      "provider": "tinfoil",
+      "page": "terms",
+      "url": "https://tinfoil.sh/terms",
+      "status": 200,
+      "lastUpdated": "October 12, 2026",
+      "sha256": "40f40be5f8e6f96fb66bf5e49781446d8d9a64f38b4d22bbe79485d3c477aa05"
+    },
+    {
+      "provider": "tinfoil",
+      "page": "acceptable-use",
+      "url": "https://tinfoil.sh/terms/aup",
+      "status": 200,
+      "lastUpdated": "October 12, 2026",
+      "sha256": "740b655747fc78f81be05004080b1f072d58351e5387804c9fc085ae43b48b29"
+    },
+    {
+      "provider": "tinfoil",
+      "page": "dpa",
+      "url": "https://tinfoil.sh/terms/dpa",
+      "status": 200,
+      "lastUpdated": "October 12, 2026",
+      "sha256": "b48334a07845dc804d805e7c071b72c54a54263cf31275b49e20234d9b646d1e"
+    },
+    {
+      "provider": "tinfoil",
+      "page": "privacy",
+      "url": "https://tinfoil.sh/privacy",
+      "status": 200,
+      "lastUpdated": null,
+      "sha256": "f8f0ab0aa37f2f8a3bb196caec3d59095cdc12cb9e22edee6d4ce0c15c04ad1b"
+    },
+    {
+      "provider": "privatemode",
+      "page": "terms",
+      "url": "https://www.privatemode.ai/terms-of-service",
+      "status": 200,
+      "lastUpdated": "April 24, 2026",
+      "sha256": "31dff67a357a5799eeae9e4e96fc8b0d361e2aabae8a47023beee7eff1e58d61"
+    },
+    {
+      "provider": "privatemode",
+      "page": "dpa",
+      "url": "https://www.privatemode.ai/dpa",
+      "status": 200,
+      "lastUpdated": "July 24, 2026",
+      "sha256": "5805022f80c07f02c27ef3ef64348b929852b35bfadb2afc8de83a4d5fe9db93"
+    },
+    {
+      "provider": "privatemode",
+      "page": "privacy",
+      "url": "https://www.privatemode.ai/privacy-policy",
+      "status": 200,
+      "lastUpdated": "Aug. 6, 2026",
+      "sha256": "e271d40d0b002b8fd353abfa92e4f3a844bfbd1c98a52f89b49c587233cc9ff2"
+    }
+  ]
+}
