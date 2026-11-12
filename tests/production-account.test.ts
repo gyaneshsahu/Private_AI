@@ -423,3 +423,20 @@ it.skipIf(!enabled)(
     }
   },
 );
+
+it.skipIf(!enabled)(
+  "rejects an expired session server-side even when the browser still sends its cookie",
+  async () => {
+    const { cookie } = await signIn("expired-session@example.test");
+    const before = await (await call("auth/get-session", undefined, cookie)).json();
+    expect(before?.user?.email).toBe("expired-session@example.test");
+    expect((await call("account/export", undefined, cookie)).status).toBe(200);
+    // Expire it in the database only; the cookie the browser holds is unchanged.
+    await db.pool.query(
+      `UPDATE "session" SET "expiresAt"=NOW() - interval '1 second' WHERE id=$1`,
+      [before.session.id],
+    );
+    expect(await (await call("auth/get-session", undefined, cookie)).json()).toBeNull();
+    expect((await call("account/export", undefined, cookie)).status).toBe(401);
+  },
+);

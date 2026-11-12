@@ -1,4 +1,8 @@
 # PrivateAI readiness checklist
+## S1: expired sessions rejected server-side, proved by test (branch alpha-provider-neutral, local) - 12 November
+
+- **Verified.** Session cookie cache is disabled (`server/account-auth.ts`, `cookieCache: { enabled: false }`; sessions 1 hour, refreshed every 5 minutes), so every request reads the session row. New PostgreSQL test in `tests/production-account.test.ts`: sign in, export works (200); expire the session row in the database only; the same cookie then gets `get-session` null and the account export 401. Checklist item S1 done.
+
 ## Masking slice: A5 attachment leak fixed, A4 confirmed, German held-out set measured once (branch alpha-provider-neutral, local) - 12 November
 
 - **A5 (verified, a real leak fixed).** Attachment and research text went into the request as JSON before masking; JSON escaping turns line breaks into the two characters `
