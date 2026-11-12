@@ -98,7 +98,7 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | O3 | Recovery rehearsal (7.1) | A backup is only real once restored | Owner + Agent | no | 2 h | open |
 | O4 | Add the provider key and report on Render; switch chat on (runbook step) | The switch is dormant until then | Owner (Agent guides) | yes | 30 min | open (runbook section on the branch) |
 | O5 | Week-one monitoring list: readyz, spend vs cap, purge log line, refused requests, error rate | Spot problems before friends do | Agent writes, Owner watches | no | 1 h | done (`docs/week-one-monitoring.md` on the branch) |
-| O6 | Branch merge plan: merge `alpha-provider-neutral` into `codex/development-handoff`, CI, deploy; bring `main` (391 commits behind, last 4 Oct) up to date | Release one tested line, not three | Agent | yes | 2 h | plan ready and trial-merged green (`docs/branch-merge-plan-20261112.md`); needs Owner approval to merge and push |
+| O6 | Branch merge plan: merge `alpha-provider-neutral` into `codex/development-handoff`, CI, deploy; bring `main` (391 commits behind, last 4 Oct) up to date | Release one tested line, not three | Agent | yes | 2 h | steps 1 and 2 done: merged in `8a26a30`, pushed, Validate green; open: deploy (owner), `main` fast-forward and branch policy (owner, rank 15) |
 | O7 | `privatemode-eval` stays unmerged unless Privatemode wins; then it feeds Stage 3 | Keeps the spike out of production | Agent | no | 0 | open |
 
 ## Fastest order to alpha (recomputed 12 November)

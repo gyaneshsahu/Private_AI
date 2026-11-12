@@ -2,6 +2,31 @@
 
 Running list kept while the owner is away (from 12 November 2026). Each entry names the decision, the safe default the agent applied, and where it matters. Nothing here is decided until the owner says so.
 
+## What needs you, ranked by what blocks the alpha (12 November)
+
+Order = what unblocks the most other work first. Items from the pre-alpha checklist (`docs/pre-alpha-checklist.md`) and the D-list below. Everything not listed here is either done or work the agent can do alone.
+
+| Rank | What you decide or do | Why it is here | Unblocks |
+| --- | --- | --- | --- |
+| 1 | **Sign in at dash.tinfoil.sh in the app's browser pane** so the agent can read today's usage | The new USD 5 budget starts from the figure on the usage page; the inference key cannot read billing (401, needs an admin key) | All Tinfoil test runs today (T6, model checks, search tests) |
+| 2 | **Provider choice (P7)**: Tinfoil or Privatemode | Almost every legal and launch step depends on which one | D8, D10, D17, P6, P9, L5, L6, S6 |
+| 3 | **Safety grades for case 07 (P5)** and the **default and fallback model (P6)** | Inputs to P7 and to the qualification report | P7, P9 |
+| 4 | **Privacy policy provider section**: D10, D8, D14, D9 in one review | No user message may reach a provider while the live policy names no provider and no transfer outside the EU | Switching chat on |
+| 5 | **Health consent**: D2 (wording), D3 (where the choice is recorded), D4 ("Not now") | Health is the product's main use; Art. 9 needs explicit consent | Switching chat on |
+| 6 | **Supplier contract and legal basis**: L5 (accept the DPA as a business customer), L6 (Art. 9(2)(a) settled against the provider's terms), L10 (DPIA and terms drafts) | Required before personal data is processed | Switching chat on |
+| 7 | **Record of processing and breach plan** (D16), **breach deputy or accepted risk** (D15) | GDPR Art. 30 and 33 duties start with the first user | Inviting anyone |
+| 8 | **Qualification report sign-off**: which checks you accept and why (D1, P9) | Chat refuses to start without a report | Switching chat on |
+| 9 | **Spending ceiling** amount and window (D5, S6) | The guard needs a number | Switching chat on |
+| 10 | **Rotate the database password you called exposed (S2)** | No record of where it was exposed; status unknown | Inviting anyone |
+| 11 | **Switch chat on and test it live** (D7, O4), then the stop switch on Render (S5), rollback with chat on (T4), live failure cases (T6, owner part) | The agent guides each step; deploys are yours | Inviting anyone |
+| 12 | **Cohort**: Google-only or email (R2), invitee list (R3), cohort size (B17), support contact and pause rule (R6), Safe Browsing warning (R4) | Who gets in, and how they reach you | Inviting anyone |
+| 13 | **Device checks**: second Google account isolation (T1), Safari, Firefox and phone (T2) | Only you have the accounts and devices | Inviting anyone |
+| 14 | **Operations**: backup destination (O1), downtime alert provider (O2) | Recovery and noticing an outage | Inviting anyone |
+| 15 | **Branch policy and `main`** (O6 step 4): fast-forward `main` to the tested line; release from `main` or keep working on `codex/development-handoff` | The agent never touches `main` | Clean releases (not the alpha itself) |
+| — | **Not blocking the alpha:** D11, D12 (scan recall), D13, D17 (becomes rank 4 if Privatemode wins), L9/A14 release pinning, L11, L12, R1, R5 (web search, off), T7, O3, S3, D12 inactivity rule; **Exa tests** need an `EXA_API_KEY` in Credential Manager (not stored today) | | |
+
+## All decisions, by number
+
 | # | Decision | Safe default applied | Where |
 | --- | --- | --- | --- |
 | D1 | Which review checks, if any, the owner accepts for the invite-only alpha instead of passing, and the written reason for each (the new `accepted-by-owner` status). | None accepted. No qualification report exists, so private chat stays off. | `shared/contracts.ts` (`accepted-by-owner`), step 2 |
