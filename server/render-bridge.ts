@@ -2,6 +2,26 @@ import { createServer, type IncomingHttpHeaders } from "node:http";
 import { request } from "node:https";
 
 /** Render's edge is a platform trust boundary, not an authenticated mTLS peer. */
+/** Request headers the bridge passes to the app. The app checks each one itself (CSRF against
+ * the session, model and enclave against the report, the EHBP key against the attested
+ * destination). Missing the chat headers made every chat request fail through Render with
+ * 403 (T4 rehearsal, 12 November). */
+export const BRIDGE_REQUEST_HEADERS = [
+  "cookie",
+  "origin",
+  "content-type",
+  "accept",
+  "accept-language",
+  "sec-fetch-site",
+  "sec-fetch-mode",
+  "sec-fetch-dest",
+  "x-privateai-csrf",
+  "x-privateai-continuation-approval",
+  "x-tinfoil-enclave-url",
+  "x-tinfoil-model",
+  "ehbp-encapsulated-key",
+] as const;
+
 export function createRenderBridge(config: {
   port: number;
   ca: Buffer;
@@ -50,16 +70,7 @@ export function createRenderBridge(config: {
     };
     // Positive list avoids both forwarded identity spoofing and hop-by-hop headers.
     if (!health)
-      for (const name of [
-        "cookie",
-        "origin",
-        "content-type",
-        "accept",
-        "accept-language",
-        "sec-fetch-site",
-        "sec-fetch-mode",
-        "sec-fetch-dest",
-      ])
+      for (const name of BRIDGE_REQUEST_HEADERS as readonly string[])
         if (req.headers[name] !== undefined) headers[name] = req.headers[name];
     let bytes = 0;
     let oversized = false;

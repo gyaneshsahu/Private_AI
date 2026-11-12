@@ -41,3 +41,11 @@ it("collects only read checks and builds a secret-free timed receipt", async () 
   expect(JSON.stringify(second)).not.toMatch(/postgres|password|@/);
   expect(STEPS.map(([name]) => name)).toContain("restored");
 });
+
+it("records a service that is down as status 0 instead of failing the entry", async () => {
+  const empty = { query: async () => ({ rows: [{ present: false, mode: "normal", n: 0 }] }) };
+  // Port 9 on loopback: nothing listens there (T4/O3 rehearsal, 12 November).
+  const checks = await collectChecks(empty, "http://127.0.0.1:9");
+  expect(checks.readyz?.status).toBe(0);
+  expect(checks.healthz?.status).toBe(0);
+});

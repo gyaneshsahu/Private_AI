@@ -71,8 +71,9 @@ export async function collectChecks(database: Database, origin?: string) {
   const probe = async (path: string) => {
     if (!origin) return null;
     const started = performance.now();
-    const response = await fetch(new URL(path, origin), { redirect: "manual" });
-    return { status: response.status, ms: Math.round(performance.now() - started) };
+    // A service that is down is a reading (status 0), not a reason to lose the entry.
+    const response = await fetch(new URL(path, origin), { redirect: "manual" }).catch(() => undefined);
+    return { status: response?.status ?? 0, ms: Math.round(performance.now() - started) };
   };
   return {
     migrations: await planAccountMigrations(guarded as unknown as Pool),
