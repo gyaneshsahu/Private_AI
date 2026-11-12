@@ -32,6 +32,8 @@ const schema = z
         apiKeyFile: path,
         qualificationFile: path,
         stopFile: path,
+        /** The approved Privatemode manifest; required exactly when the report names Privatemode. */
+        manifestFile: path.optional(),
       })
       .strict()
       .optional(),
@@ -166,17 +168,23 @@ export async function loadDeploymentConfig(file: string) {
           )
         : undefined,
       inference: config.inference?.enabled
-        ? {
-            apiKey: (await boundedFile(config.inference.apiKeyFile))
-              .toString("utf8")
-              .trim(),
-            qualification: JSON.parse(
-              (await boundedFile(config.inference.qualificationFile)).toString(
-                "utf8",
-              ),
-            ) as unknown,
-            stopFile: config.inference.stopFile,
-          }
+        ? await (async (inference) => {
+            const qualification = JSON.parse(
+              (await boundedFile(inference.qualificationFile)).toString("utf8"),
+            ) as { provider?: unknown } | undefined;
+            const privatemode = qualification?.provider === "privatemode";
+            // The manifest belongs to a Privatemode report only; the release audit to Tinfoil only.
+            if (privatemode !== !!inference.manifestFile || (privatemode && config.attestationAudit))
+              throw Error("Inference files do not match the report's provider.");
+            return {
+              apiKey: (await boundedFile(inference.apiKeyFile)).toString("utf8").trim(),
+              qualification: qualification as unknown,
+              stopFile: inference.stopFile,
+              ...(inference.manifestFile
+                ? { providerManifest: new Uint8Array(await boundedFile(inference.manifestFile)) }
+                : {}),
+            };
+          })(config.inference)
         : undefined,
       connectionString,
       databaseCa: config.databaseCaFile

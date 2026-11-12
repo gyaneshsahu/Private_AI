@@ -25,6 +25,7 @@ import {
 } from "./assisted-research";
 import { abortable, withDeadline } from "./abortable";
 import {
+  MODEL_SETTINGS,
   type AnswerMode,
   type Conversation,
   type Usage,
@@ -44,8 +45,10 @@ import {
   defaultInferenceProvider,
   inferenceClientFor,
 } from "./providers/inference-client";
-// Registers the only adapter built today; a second supplier registers its own.
+// Registers both adapters; the report's `provider` picks one. The Privatemode SDK itself is a
+// dynamic import inside its adapter, so the Tinfoil path never loads it.
 import "./providers/tinfoil-client";
+import "./providers/privatemode-client";
 export { assertVerification } from "./providers/tinfoil-client";
 import { consumeReply } from "./reply-stream";
 import {
@@ -75,6 +78,8 @@ export type VerifiedChatPolicy = Pick<
   gemmaThinking?: boolean;
   glmReasoningEffort?: "low" | "high" | "max";
   gptOssReasoningEffort?: "low" | "medium" | "high";
+  /** This account's prompt-cache salt (Privatemode); from /api/status. */
+  cacheSalt?: string;
   /** Declared to the relay so it admits this mode's models, limit and allowance cost. */
   answerMode?: AnswerMode;
   answerPolicyVariant?: AnswerPolicyVariant;
@@ -227,20 +232,12 @@ async function streamMaskedConversation(
     ].filter(Boolean).length > 1
   )
     throw new Error("Choose one response contract. Nothing was sent.");
-  if (
-    report.deepSeekThinking !== undefined &&
-    report.model !== "deepseek-v4-1-flash"
-  )
-    throw new Error("Unsupported model-specific inference setting.");
-  if (report.gemmaThinking !== undefined && report.model !== "gemma4-31b")
-    throw new Error("Unsupported model-specific inference setting.");
-  if (report.glmReasoningEffort !== undefined && report.model !== "glm-5-3")
-    throw new Error("Unsupported model-specific inference setting.");
-  if (
-    report.gptOssReasoningEffort !== undefined &&
-    report.model !== "gpt-oss-120b"
-  )
-    throw new Error("Unsupported model-specific inference setting.");
+  for (const [setting, owners] of Object.entries(MODEL_SETTINGS))
+    if (
+      report[setting as keyof typeof MODEL_SETTINGS] !== undefined &&
+      !owners.includes(report.model)
+    )
+      throw new Error("Unsupported model-specific inference setting.");
   return withDeadline(signal, 90000, async (signal) => {
     signal.throwIfAborted();
     const messages = composeContext(
@@ -329,6 +326,7 @@ async function streamMaskedConversation(
     const policy = {
       ...report,
       provider: report.provider ?? defaultInferenceProvider,
+      csrf,
     } as const;
     const routeHeaders = {
       ...adapter.requestHeaders(policy),
@@ -363,7 +361,7 @@ async function streamMaskedConversation(
       stream: true,
       stream_options: { include_usage: true },
       max_completion_tokens: report.maxOutputTokens,
-      user_cache_secret: crypto.randomUUID(),
+      ...adapter.cacheOptions(policy),
     };
     if (
       report.calculatorContinuation &&
@@ -462,7 +460,7 @@ async function streamMaskedConversation(
               body: JSON.stringify({
                 ...requestBody,
                 ...continuation,
-                user_cache_secret: crypto.randomUUID(),
+                ...adapter.cacheOptions(policy),
               }),
               signal,
               credentials: "same-origin",

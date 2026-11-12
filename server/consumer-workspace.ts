@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import { createHash } from "node:crypto";
 import express from "express";
 import {
   createSyntheticAccountAuth,
@@ -61,6 +62,8 @@ export interface ProductionInferenceConfig {
   qualification: unknown;
   /** While this file exists, chat is refused at once (operator stop switch). */
   stopFile: string;
+  /** The approved Privatemode manifest, when the report names Privatemode. */
+  providerManifest?: Uint8Array;
 }
 
 export function createProductionConsumerCandidate(
@@ -97,6 +100,9 @@ export function createProductionConsumerCandidate(
           apiKey: inference.apiKey,
           qualification: inference.qualification,
           inferenceStopped: () => existsSync(inference.stopFile),
+          providerManifest: inference.providerManifest,
+          // Per-account prompt-cache salts stay stable across restarts (derived, not the secret itself).
+          cacheSaltSecret: createHash("sha256").update(`cache-salt-key|${config.secret}`).digest("hex"),
         }
       : {}),
   });

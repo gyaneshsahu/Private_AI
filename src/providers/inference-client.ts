@@ -21,6 +21,10 @@ export type ClientPolicy = Pick<
   gemmaThinking?: boolean;
   glmReasoningEffort?: "low" | "high" | "max";
   gptOssReasoningEffort?: "low" | "medium" | "high";
+  /** The session's CSRF token, for an adapter whose SDK calls our relay itself (attestation). */
+  csrf?: string;
+  /** This account's prompt-cache salt from /api/status (Privatemode `cache_salt`). */
+  cacheSalt?: string;
 };
 
 export interface VerificationEvidence {
@@ -51,6 +55,8 @@ export interface InferenceClientAdapter {
   requestHeaders(policy: ClientPolicy): Record<string, string>;
   /** Supplier- and model-specific fields of the request body (reasoning switches). */
   modelOptions(policy: ClientPolicy): Record<string, unknown>;
+  /** Prompt-cache isolation fields of the request body; called once per request. */
+  cacheOptions(policy: ClientPolicy): Record<string, unknown>;
 }
 
 const adapters = new Map<InferenceProviderId, () => InferenceClientAdapter>();

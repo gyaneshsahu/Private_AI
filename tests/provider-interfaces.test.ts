@@ -46,8 +46,9 @@ const qualification = {
 };
 
 describe("relay adapter contract (server)", () => {
-  it("registers exactly one adapter today and resolves it by the qualification's provider", () => {
-    expect(registeredInferenceProviders()).toEqual(["tinfoil"]);
+  it("registers the Tinfoil and Privatemode adapters and resolves each by the qualification's provider", () => {
+    expect(registeredInferenceProviders().sort()).toEqual(["privatemode", "tinfoil"]);
+    expect(inferenceRelayFor("privatemode").id).toBe("privatemode");
     expect(inferenceRelayFor("tinfoil").id).toBe("tinfoil");
     expect(() => inferenceRelayFor("nobody" as unknown as "tinfoil")).toThrow(
       /No inference relay adapter/,
@@ -70,7 +71,7 @@ describe("relay adapter contract (server)", () => {
     expect(good).toEqual({
       ok: true,
       model: "gpt-oss-120b",
-      encapsulatedKey: key,
+      upstreamHeaders: { "Ehbp-Encapsulated-Key": key },
     });
     const defaulted = relay.admit(
       {
@@ -115,7 +116,7 @@ describe("relay adapter contract (server)", () => {
       qualification,
       apiKey: "TEST_ONLY",
       model: "gemma4-31b",
-      encapsulatedKey: key,
+      upstreamHeaders: { "Ehbp-Encapsulated-Key": key },
     });
     expect(plan.url.href).toBe(`${qualification.origin}/v1/chat/completions`);
     expect(plan.headers).toMatchObject({

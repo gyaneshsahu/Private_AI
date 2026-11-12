@@ -1,114 +1,381 @@
-// Offline rules of the Privatemode relay (spike): key injection, model allowlist,
-// forwarded headers. A local fake upstream stands in for api.privatemode.ai.
+// Privatemode through the one admission path (Stage 3, plan points 1, 2 and 6). The browser
+// SDK calls three paths at the site root; the app maps them under /api/inference, so session,
+// CSRF, invite gate, request limits, stop switch and, for chat, allowance, spend guard and one
+// request per account apply exactly as for Tinfoil. Upstream is a test double. Synthetic only.
+import { afterEach, expect, it, vi } from "vitest";
 import { createServer, type Server } from "node:http";
-import { afterAll, beforeAll, expect, it } from "vitest";
-import express from "express";
-import { privatemodeRelay } from "../server/providers/privatemode-relay";
+import { asUndiciRequestResult } from "./fixtures/undici-request";
+const upstream = vi.hoisted(() => vi.fn());
+vi.mock("undici", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("undici")>()),
+  request: (url: unknown, options: unknown) =>
+    Promise.resolve(upstream(url, options)).then(asUndiciRequestResult),
+}));
+import { createApp, type Config } from "../server/app";
+import { InviteRegistry } from "../server/invite-registry";
+import { SqliteUsageLedger } from "../server/usage-ledger";
+import { privatemodeKeyExpiryWarning } from "../server/providers/privatemode-relay";
+import { PRIVATEMODE_WASM_SHA256 } from "../src/providers/privatemode-client";
+import { fakeManifest, privatemodeReport } from "./fixtures/privatemode-report";
 
-const received: { path: string; headers: Record<string, unknown>; body: string }[] = [];
-let upstream: Server, app: Server, base: string;
-
-beforeAll(async () => {
-  upstream = createServer((req, res) => {
-    let body = "";
-    req.on("data", (c) => (body += c));
-    req.on("end", () => {
-      received.push({ path: req.url!, headers: req.headers, body });
-      if (body === "slow") {
-        // A long streamed reply: one chunk now, the rest later.
-        res.setHeader("content-type", "text/event-stream");
-        res.write("data: first\n\n");
-        setTimeout(() => res.end("data: [DONE]\n\n"), 1500);
-        return;
-      }
-      res.setHeader("content-type", "application/octet-stream");
-      res.setHeader("privatemode-oae-response-header", "nonce");
-      res.setHeader("set-cookie", "upstream=1");
-      res.end("ciphertext-reply");
-    });
+const servers: Server[] = [];
+afterEach(async () => {
+  upstream.mockReset();
+  for (const server of servers.splice(0)) {
+    server.closeAllConnections();
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+});
+const ok = (body = "ciphertext-reply") =>
+  new Response(body, {
+    headers: {
+      "content-type": "text/event-stream",
+      "privatemode-oae-response-header": "nonce",
+      "set-cookie": "upstream=1",
+    },
   });
-  await new Promise<void>((r) => upstream.listen(0, "127.0.0.1", r));
-  const relay = express();
-  relay.use(
-    privatemodeRelay({
-      apiKey: "real-key",
-      allowedModels: ["glm-5.3-flash"],
-      manifest: () => new TextEncoder().encode("{}"),
-      wasm: () => new Uint8Array([0, 97, 115, 109]),
-      upstream: `http://127.0.0.1:${(upstream.address() as { port: number }).port}`,
+const ROOT_PATHS = ["/v1/chat/completions", "/privatemode/v1/attest", "/privatemode/v1/secret"];
+
+async function listen(extra: Partial<Config> = {}) {
+  const server = createServer();
+  servers.push(server);
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const root = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  server.on(
+    "request",
+    createApp({
+      origin: root,
+      qualification: privatemodeReport(),
+      apiKey: "TEST_KEY_NOT_REAL",
+      providerManifest: fakeManifest,
+      ...extra,
     }),
   );
-  relay.use((_req, res) => res.status(404).end());
-  app = relay.listen(0, "127.0.0.1");
-  await new Promise((r) => app.once("listening", r));
-  base = `http://127.0.0.1:${(app.address() as { port: number }).port}`;
+  return root;
+}
+async function session(root: string, cookie?: string) {
+  const response = await fetch(root + "/api/status", cookie ? { headers: { Cookie: cookie } } : {});
+  const status = await response.json();
+  const sessionCookie = response.headers.get("set-cookie")!.split(";")[0];
+  return { status, cookie: cookie ? `${cookie}; ${sessionCookie}` : sessionCookie };
+}
+const post = (
+  root: string,
+  path: string,
+  headers: Record<string, string>,
+  body: BodyInit = new Uint8Array(32).fill(7),
+) => fetch(root + path, { method: "POST", headers: { Origin: root, ...headers }, body });
+const chatHeaders = (cookie: string, csrf: string, model = "glm-5.3-flash", mode?: string) => ({
+  Cookie: cookie,
+  "X-PrivateAI-CSRF": csrf,
+  authorization: "Bearer relay-injects-the-key",
+  "privatemode-target-model": model,
+  "privatemode-client": "SDK",
+  "Content-Type": "application/json",
+  ...(mode ? { "X-PrivateAI-Mode": mode } : {}),
 });
-
-afterAll(async () => {
-  await new Promise((r) => app.close(r));
-  await new Promise((r) => upstream.close(r));
-});
-
-const post = (path: string, headers: Record<string, string>) =>
-  fetch(base + path, { method: "POST", headers, body: "opaque-bytes" });
-
-it("replaces the placeholder with the real key and forwards only routing headers", async () => {
-  received.length = 0;
-  const reply = await post("/v1/chat/completions", {
-    authorization: "Bearer relay-injects-the-key",
-    "privatemode-target-model": "glm-5.3-flash",
-    cookie: "session=secret",
-    "x-privateai-csrf": "token",
-  });
-  expect(reply.status).toBe(200);
-  expect(await reply.text()).toBe("ciphertext-reply");
-  expect(reply.headers.get("privatemode-oae-response-header")).toBe("nonce");
-  expect(reply.headers.get("set-cookie")).toBeNull();
-  const [forwarded] = received;
-  expect(forwarded.headers.authorization).toBe("Bearer real-key");
-  expect(forwarded.headers.cookie).toBeUndefined();
-  expect(forwarded.headers["x-privateai-csrf"]).toBeUndefined();
-  expect(forwarded.body).toBe("opaque-bytes");
-});
-
-it("refuses a chat request for a model outside the allowlist without forwarding it", async () => {
-  received.length = 0;
-  for (const model of ["glm-5.3", ""]) {
-    const reply = await post("/v1/chat/completions", {
-      "privatemode-target-model": model,
+async function signedIn(extra: Partial<Config> = {}) {
+  const registry = new InviteRegistry(":memory:");
+  const usage = new SqliteUsageLedger(":memory:");
+  const root = await listen({ invites: registry, usage, ...extra });
+  const signIn = async () => {
+    const invite = registry.issue(Date.now() + 60000);
+    const registration = await fetch(root + "/auth/register", {
+      method: "POST",
+      redirect: "manual",
+      headers: { Origin: root, "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ id: invite.id, token: invite.token, password: "SYNTHETIC account password" }),
     });
-    expect(reply.status).toBe(403);
+    return { accountId: invite.id, cookie: registration.headers.get("set-cookie")!.split(";")[0] };
+  };
+  return { root, usage, signIn };
+}
+
+it("refuses every root path without a session or without the CSRF token, forwarding nothing", async () => {
+  const root = await listen();
+  for (const path of ROOT_PATHS) expect((await post(root, path, {})).status, path).toBe(401);
+  const { cookie } = await session(root);
+  for (const path of ROOT_PATHS) expect((await post(root, path, { Cookie: cookie })).status, path).toBe(403);
+  expect(upstream).not.toHaveBeenCalled();
+});
+
+it("invite gate: without a signed-in account the root paths are refused before any session", async () => {
+  const { root } = await signedIn();
+  for (const path of ROOT_PATHS) {
+    const refused = await post(root, path, {});
+    expect([302, 303, 401, 403], path).toContain(refused.status);
   }
-  expect(received).toEqual([]);
+  expect(upstream).not.toHaveBeenCalled();
 });
 
-it("forwards only Privatemode's three paths and serves the pinned assets", async () => {
-  received.length = 0;
-  expect((await post("/privatemode/v1/attest", {})).status).toBe(200);
-  expect((await post("/privatemode/v1/secret", {})).status).toBe(200);
-  expect((await post("/v1/models", {})).status).toBe(404);
-  expect((await post("/privatemode/v1/other", {})).status).toBe(404);
-  expect(received.map((r) => r.path)).toEqual([
-    "/privatemode/v1/attest",
-    "/privatemode/v1/secret",
+it("forwards chat, attestation and key exchange with the real key and routing headers only", async () => {
+  upstream.mockImplementation(async () => ok());
+  const root = await listen();
+  const { status, cookie } = await session(root);
+  const chat = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf));
+  expect(chat.status).toBe(200);
+  expect(await chat.text()).toBe("ciphertext-reply");
+  expect(chat.headers.get("privatemode-oae-response-header")).toBe("nonce");
+  expect(chat.headers.get("set-cookie")).toBeNull();
+  for (const path of ["/privatemode/v1/attest", "/privatemode/v1/secret"])
+    expect((await post(root, path, chatHeaders(cookie, status.csrf))).status, path).toBe(200);
+  expect(upstream.mock.calls.map(([url]) => String(url))).toEqual([
+    "https://api.privatemode.ai/v1/chat/completions",
+    "https://api.privatemode.ai/privatemode/v1/attest",
+    "https://api.privatemode.ai/privatemode/v1/secret",
   ]);
-  const manifest = await fetch(`${base}/api/privatemode/manifest`);
-  expect(manifest.headers.get("cache-control")).toBe("no-store");
-  expect(await manifest.text()).toBe("{}");
+  for (const [, options] of upstream.mock.calls) {
+    const headers = Object.fromEntries(
+      Object.entries(options.headers as Record<string, string>).map(([k, v]) => [k.toLowerCase(), v]),
+    );
+    expect(headers.authorization).toBe("Bearer TEST_KEY_NOT_REAL");
+    expect(headers["privatemode-target-model"]).toBe("glm-5.3-flash");
+    for (const dropped of ["cookie", "x-privateai-csrf", "x-privateai-mode", "origin"])
+      expect(headers[dropped], dropped).toBeUndefined();
+  }
 });
 
-it("survives a client that disconnects mid-reply and keeps serving (parity run finding)", async () => {
+it("admits only the report's exact models; a family alias or another model is refused", async () => {
+  upstream.mockImplementation(async () => ok());
+  const root = await listen();
+  const { status, cookie } = await session(root);
+  for (const model of ["glm-latest", "glm-flash-latest", "gpt-oss-120b", ""])
+    expect((await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf, model))).status, model).toBe(400);
+  // Another tier's model is admitted only in its own mode.
+  expect((await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf, "glm-5.3", "fast"))).status).toBe(400);
+  expect(upstream).not.toHaveBeenCalled();
+});
+
+it("stop switch: refuses chat, attestation, key exchange and the manifest, and reports paused", async () => {
+  let stopped = true;
+  upstream.mockImplementation(async () => ok());
+  const root = await listen({ inferenceStopped: () => stopped });
+  const { status, cookie } = await session(root);
+  expect(status.inference).toMatchObject({ ready: false, reason: "Private chat is paused by the operator." });
+  expect(status.inference.cacheSalt).toBeUndefined();
+  for (const path of ROOT_PATHS) {
+    const refused = await post(root, path, chatHeaders(cookie, status.csrf));
+    expect(refused.status, path).toBe(503);
+    expect((await refused.json()).error).toContain("paused by the operator");
+  }
+  expect((await fetch(root + "/api/inference/privatemode/manifest", { headers: { Cookie: cookie } })).status).toBe(503);
+  expect(upstream).not.toHaveBeenCalled();
+  stopped = false;
+  expect((await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf))).status).toBe(200);
+});
+
+it("spend guard: refuses Privatemode chat before allowance or upstream, counting every request at worst case", async () => {
+  const usage = {
+    // Privatemode never meters: every forwarded request is unmetered. Worst case here is
+    // (5000 + 4096) / 1e6 = USD 0.009096 each (largest tier); after 110 of them nothing fits in USD 1.
+    spend: vi.fn(async () => ({ meteredUSD: "0", unmetered: 110 })),
+    summary: vi.fn(),
+    reserve: vi.fn(async () => true),
+    dispatch: vi.fn(),
+    metrics: vi.fn(),
+    finish: vi.fn(),
+  };
+  const root = await listen({ usage });
+  const { status, cookie } = await session(root);
+  expect(status.inference).toMatchObject({ ready: false });
+  const refused = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf));
+  expect(refused.status).toBe(429);
+  expect((await refused.json()).error).toContain("approved spending limit");
+  expect(usage.reserve).not.toHaveBeenCalled();
+  expect(upstream).not.toHaveBeenCalled();
+});
+
+it("allowance and one request per account apply to Privatemode chat; usage settles unmetered", async () => {
+  let release!: () => void;
+  upstream.mockImplementation(
+    async () =>
+      new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode("data: first\n\n"));
+            release = () => controller.close();
+          },
+        }),
+        { headers: { "content-type": "text/event-stream" } },
+      ),
+  );
+  const { root, usage, signIn } = await signedIn();
+  const account = await signIn();
+  const { status, cookie } = await session(root, account.cookie);
+  // No allowance yet: refused before upstream.
+  const none = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf));
+  expect(none.status).toBe(429);
+  expect((await none.json()).error).toContain("No request allowance");
+  expect(upstream).not.toHaveBeenCalled();
+  usage.createAllowance({
+    accountId: account.accountId,
+    periodId: "synthetic-period",
+    startsAt: Date.now() - 1000,
+    endsAt: Date.now() + 60000,
+    requestLimit: 2,
+  });
+  const first = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf));
+  expect(first.status).toBe(200);
+  const reader = first.body!.getReader();
+  await reader.read();
+  // The first reply is still streaming: a second request on the same account is refused.
+  const second = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf));
+  expect(second.status).toBe(429);
+  expect((await second.json()).error).toContain("already running for this account");
+  release();
+  while (!(await reader.read()).done);
+  await vi.waitFor(() =>
+    expect(usage.summary(account.accountId)).toMatchObject({
+      used: 1,
+      pending: 0,
+      meteredRequests: 0,
+      unmeteredRequests: 1,
+    }),
+  );
+  // Thinking costs 3 units: refused with 1 left.
+  const thinking = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf, "glm-5.3", "thinking"));
+  expect(thinking.status).toBe(429);
+  expect((await thinking.json()).error).toContain("this mode counts as 3 requests");
+  expect(upstream).toHaveBeenCalledTimes(1);
+  usage.close();
+});
+
+it("a Privatemode failure stays at Privatemode: classified for the same-provider backup, never sent to Tinfoil", async () => {
+  upstream
+    .mockImplementationOnce(async () => new Response("model not found", { status: 404 }))
+    .mockImplementationOnce(async () => new Response("overloaded", { status: 503 }))
+    .mockImplementationOnce(async () => {
+      throw Error("connection reset");
+    });
+  const root = await listen();
+  const { status, cookie } = await session(root);
+  const rejected = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf, "glm-5.3", "thinking"));
+  expect(rejected.status).toBe(502);
+  expect(rejected.headers.get("x-privateai-upstream")).toBe("rejected");
+  expect(await rejected.text()).not.toContain("model not found");
+  // The client's one retry uses the mode's backup at the same provider.
+  const backup = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf, "glm-5.3-flash", "thinking"));
+  expect(backup.status).toBe(502);
+  expect(backup.headers.get("x-privateai-upstream")).toBe("unavailable");
+  const broken = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf, "glm-5.3-flash", "thinking"));
+  expect(broken.status).toBe(502);
+  expect(upstream).toHaveBeenCalledTimes(3);
+  for (const [url] of upstream.mock.calls) expect(new URL(url).origin).toBe("https://api.privatemode.ai");
+});
+
+it("serves the approved manifest only, and the pinned Wasm at its hash-named path with a one-year immutable cache", async () => {
+  const root = await listen();
+  const { cookie } = await session(root);
+  const manifest = await fetch(root + "/api/inference/privatemode/manifest", { headers: { Cookie: cookie } });
+  expect(manifest.status).toBe(200);
+  expect(manifest.headers.get("cache-control")).toBe("no-store");
+  expect(new Uint8Array(await manifest.arrayBuffer())).toEqual(fakeManifest);
+  const wasm = await fetch(root + `/api/inference/privatemode/privatemode-${PRIVATEMODE_WASM_SHA256}.wasm`, {
+    headers: { Cookie: cookie },
+  });
+  expect(wasm.status).toBe(200);
+  expect(wasm.headers.get("cache-control")).toBe("public, max-age=31536000, immutable");
+  expect(wasm.headers.get("content-type")).toBe("application/wasm");
+  expect((await wasm.arrayBuffer()).byteLength).toBeGreaterThan(1_000_000);
+  // Any other name is refused, and nothing else is cacheable.
+  const other = await fetch(root + `/api/inference/privatemode/privatemode-${"0".repeat(64)}.wasm`, {
+    headers: { Cookie: cookie },
+  });
+  expect(other.status).toBe(404);
+  expect(other.headers.get("cache-control")).toBe("no-store");
+  // A manifest the report does not approve is never served.
+  const unapproved = await listen({ providerManifest: new TextEncoder().encode("{}") });
+  const s = await session(unapproved);
+  expect(
+    (await fetch(unapproved + "/api/inference/privatemode/manifest", { headers: { Cookie: s.cookie } })).status,
+  ).toBe(503);
+});
+
+it("keeps connect-src same-origin: no Privatemode host in the content security policy", async () => {
+  const root = await listen();
+  const csp = (await fetch(root + "/api/status")).headers.get("content-security-policy") ?? "";
+  expect(csp).toContain("connect-src 'self';");
+  expect(csp).not.toContain("privatemode");
+});
+
+it("with a Tinfoil report, the root paths and Privatemode endpoints are not served", async () => {
+  upstream.mockImplementation(async () => ok());
+  const { privatemode: _drop, ...rest } = privatemodeReport();
+  const tinfoil = {
+    ...rest,
+    provider: "tinfoil",
+    origin: "https://test.tinfoil.sh/",
+    repository: "tinfoilsh/test-only",
+  };
+  const root = await listen({ qualification: tinfoil });
+  const { status, cookie } = await session(root);
+  expect(status.inference.ready).toBe(true);
+  for (const path of ROOT_PATHS)
+    expect((await post(root, path, chatHeaders(cookie, status.csrf))).status, path).not.toBe(200);
+  expect((await post(root, "/api/inference/privatemode/v1/attest", chatHeaders(cookie, status.csrf))).status).not.toBe(200);
+  expect(upstream).not.toHaveBeenCalled();
+});
+
+it("gives each account its own stable prompt-cache salt; two accounts never share one", async () => {
+  const { root, signIn } = await signedIn({ cacheSaltSecret: "SYNTHETIC cache salt secret for tests" });
+  const alice = await signIn();
+  const bob = await signIn();
+  const a1 = (await session(root, alice.cookie)).status.inference.cacheSalt;
+  const a2 = (await session(root, alice.cookie)).status.inference.cacheSalt; // a new session, same account
+  const b1 = (await session(root, bob.cookie)).status.inference.cacheSalt;
+  expect(a1).toMatch(/^[a-f0-9]{64}$/);
+  expect(a2).toBe(a1);
+  expect(b1).toMatch(/^[a-f0-9]{64}$/);
+  expect(b1).not.toBe(a1);
+  // Without accounts (local use), each browser session has its own.
+  const root2 = await listen();
+  const s1 = (await session(root2)).status.inference.cacheSalt;
+  const s2 = (await session(root2)).status.inference.cacheSalt;
+  expect(s1).toMatch(/^[a-f0-9]{64}$/);
+  expect(s2).not.toBe(s1);
+});
+
+it("survives a client that disconnects mid-reply on attestation and keeps serving (parity run finding)", async () => {
+  upstream.mockImplementation(
+    async () =>
+      new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode("first"));
+            setTimeout(() => {
+              try {
+                controller.close();
+              } catch {
+                /* already cancelled by the relay */
+              }
+            }, 1500);
+          },
+        }),
+      ),
+  );
+  const root = await listen();
+  const { status, cookie } = await session(root);
   const controller = new AbortController();
-  const reply = await fetch(base + "/v1/chat/completions", {
+  const reply = await fetch(root + "/privatemode/v1/attest", {
     method: "POST",
-    headers: { "privatemode-target-model": "glm-5.3-flash" },
-    body: "slow",
+    headers: { Origin: root, ...chatHeaders(cookie, status.csrf) },
+    body: "opaque",
     signal: controller.signal,
   });
-  const reader = reply.body!.getReader();
-  await reader.read();
+  await reply.body!.getReader().read();
   controller.abort();
   await new Promise((r) => setTimeout(r, 2000));
-  // Before the fix the unhandled abort error ended the process here.
-  expect((await post("/privatemode/v1/attest", {})).status).toBe(200);
+  expect((await post(root, "/privatemode/v1/secret", chatHeaders(cookie, status.csrf))).status).toBe(200);
+});
+
+it("warns ahead of the dedicated key's recorded expiry", () => {
+  const now = Date.parse("2026-11-12T00:00:00Z");
+  const at = (days: number) =>
+    ({
+      privatemode: { portalKeyLimit: { expiresAt: new Date(now + days * 86400000).toISOString() } },
+    }) as never;
+  expect(privatemodeKeyExpiryWarning(at(30), now)).toBeUndefined();
+  expect(privatemodeKeyExpiryWarning(at(10), now)).toContain("in 10 days");
+  expect(privatemodeKeyExpiryWarning(at(-1), now)).toContain("expired");
+  expect(privatemodeKeyExpiryWarning(undefined, now)).toBeUndefined();
 });

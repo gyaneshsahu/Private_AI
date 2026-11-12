@@ -11,8 +11,10 @@ export function deploymentAccess(
   const url = new URL(origin);
   if (url.origin !== origin || url.username || url.password)
     throw new Error("Configure an exact application origin without a path.");
+  // Loopback over plain HTTP, or over local TLS (the Privatemode SDK always calls its base URL
+  // over HTTPS). server/index.ts binds a loopback origin to 127.0.0.1 only.
   const local =
-    url.protocol === "http:" &&
+    (url.protocol === "http:" || url.protocol === "https:") &&
     ["127.0.0.1", "localhost"].includes(url.hostname);
   if (
     !local &&

@@ -60,4 +60,32 @@ it("loads production chat only when the inference section is present and enabled
       "Deployment configuration unavailable or invalid.",
     );
   }
+  // Privatemode: the approved manifest file is required, and only for a Privatemode report.
+  const manifestFile = await file("manifest.json", '{"synthetic":"manifest"}');
+  const privatemode = {
+    ...inference,
+    qualificationFile: await file("pm.json", JSON.stringify({ provider: "privatemode" })),
+  };
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...privatemode, manifestFile } }));
+  expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({
+    qualification: { provider: "privatemode" },
+    providerManifest: new TextEncoder().encode('{"synthetic":"manifest"}'),
+  });
+  for (const bad of [
+    { ...config, inference: privatemode }, // no manifest
+    { ...config, inference: { ...inference, manifestFile } }, // manifest with a Tinfoil report
+    {
+      ...config,
+      inference: { ...privatemode, manifestFile },
+      attestationAudit: {
+        enabled: true,
+        origin: "https://inference.tinfoil.sh/",
+        repository: "tinfoilsh/confidential-model-router",
+        releaseDigests: ["a".repeat(64)],
+      },
+    }, // Tinfoil's release audit with a Privatemode report
+  ]) {
+    await writeFile(configFile, JSON.stringify(bad));
+    await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+  }
 });

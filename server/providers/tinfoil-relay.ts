@@ -55,17 +55,17 @@ export function createTinfoilRelayAdapter(): InferenceRelayAdapter {
       return {
         ok: true,
         model: typeof requested === "string" ? requested : qualification.model,
-        encapsulatedKey,
+        upstreamHeaders: { "Ehbp-Encapsulated-Key": encapsulatedKey },
       };
     },
-    upstream({ qualification, apiKey, model, encapsulatedKey }) {
+    upstream({ qualification, apiKey, model, upstreamHeaders }) {
       return {
         url: new URL("/v1/chat/completions", qualification.origin),
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
           Accept: "text/event-stream",
-          "Ehbp-Encapsulated-Key": encapsulatedKey,
+          "Ehbp-Encapsulated-Key": upstreamHeaders["Ehbp-Encapsulated-Key"],
           // The enclave checks this against the encrypted body and rejects a mismatch.
           "X-Tinfoil-Model": model,
           // Completed-request metering arrives as a response header or stream trailer.

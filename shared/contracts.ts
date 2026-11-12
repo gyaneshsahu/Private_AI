@@ -39,6 +39,12 @@ const modelName = z
   .refine(
     (value) => value !== "auto",
     "Automatic model routing is not qualified.",
+  )
+  // A family alias (glm-latest, glm-flash-latest) moves to a new version by itself, so the
+  // reviewed model could change under the report (Privatemode email, 12 November). Exact IDs only.
+  .refine(
+    (value) => !/(^|-)latest$/i.test(value),
+    "Family aliases are not qualified; name an exact model ID.",
   );
 // Thinking models spend most of their output on hidden reasoning: at 4,096 the long-answer
 // probe was cut off on every thinking arm; 16,384 completed (wide screen, 12 November).
@@ -64,8 +70,49 @@ const modeTierSchema = z.object({
 export type ModeTier = z.infer<typeof modeTierSchema>;
 export const answerModes = ["fast", "thinking"] as const;
 export type AnswerMode = (typeof answerModes)[number];
+const hex64 = z.string().regex(/^[a-f0-9]{64}$/);
+/**
+ * Privatemode-only evidence (Stage 3 plan): what the browser checks and the limits set outside
+ * our code. Required exactly when the report names Privatemode.
+ */
+const privatemodeEvidence = z
+  .object({
+    /** Exact privatemode-ai version in package.json; its Wasm hash is below. */
+    sdkVersion: z.string().regex(/^\d+\.\d+\.\d+$/),
+    /** SHA-256 of privatemode.wasm; src/providers/privatemode-client.ts pins the same value (test). */
+    wasmSha256: hex64,
+    /** Reference-value kinds the approved manifest carries (for example snp, tdx). */
+    manifestReferenceValues: z.array(z.string().min(1)).min(1),
+    /** NVIDIA OCSP policy as the client sets it (today: unknown statuses refused, no grace period). */
+    nvidiaOCSPPolicy: z.string().min(3),
+    /** The dedicated alpha key's limits, set by the owner in the Privatemode portal. */
+    portalKeyLimit: z
+      .object({
+        source: z.literal("owner-reported"),
+        setAt: z.string().datetime(),
+        /** The key stops working at this time; the server warns ahead of it. */
+        expiresAt: z.string().datetime(),
+        requestsPerMinute: z.number().int().positive().optional(),
+        spendLimit: z
+          .object({ amount: z.number().positive(), currency: z.enum(["EUR", "USD"]) })
+          .strict()
+          .optional(),
+      })
+      .strict(),
+    /** Privatemode lists prices in EUR plus VAT; `pricing` stays USD, converted here. */
+    priceConversion: z
+      .object({
+        inputPerMillionEUR: z.number().nonnegative(),
+        outputPerMillionEUR: z.number().nonnegative(),
+        vatRate: z.number().min(0).max(1),
+        usdPerEUR: z.number().positive(),
+        rateDate: z.string().min(10),
+      })
+      .strict(),
+  })
+  .strict();
 export const qualificationSchema = z.object({
-  provider: z.literal("tinfoil"),
+  provider: z.enum(["tinfoil", "privatemode"]),
   model: modelName,
   /** Optional backup model for the same deployment; tried once, automatically and labelled, when the model gives no answer. */
   fallbackModel: modelName.optional(),
@@ -89,8 +136,10 @@ export const qualificationSchema = z.object({
         !u.hash
       );
     }),
-  repository: z.string().regex(/^tinfoilsh\/[a-zA-Z0-9_-]+$/),
-  releaseDigests: z.array(z.string().regex(/^[a-f0-9]{64}$/)).min(1),
+  /** The release source: tinfoilsh/* for Tinfoil, edgelesssys/* for Privatemode (checked per provider below). */
+  repository: z.string().regex(/^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+$/),
+  /** Tinfoil: router release digests. Privatemode: SHA-256 of the approved manifest bytes. */
+  releaseDigests: z.array(hex64).min(1),
   reviewedAt: z.string().datetime(),
   validUntil: z.string().datetime(),
   review: z.record(z.enum(checks), reviewCheck),
@@ -102,23 +151,32 @@ export const qualificationSchema = z.object({
     currency: z.literal("USD"),
   }),
   approvedSpendUSD: z.number().positive(),
+  privatemode: privatemodeEvidence.optional(),
   ...modelSettings,
 });
 export type Qualification = z.infer<typeof qualificationSchema>;
-/** Which model each setting belongs to. */
-export const MODEL_SETTINGS = {
-  gptOssReasoningEffort: "gpt-oss-120b",
-  gemmaThinking: "gemma4-31b",
-  glmReasoningEffort: "glm-5-3",
-  deepSeekThinking: "deepseek-v4-1-flash",
-  deepSeekReasoningEffort: "deepseek-v4-1-flash",
-} as const;
+/** Per-provider rules: where the provider is reached and where its releases come from. */
+export const PROVIDER_RULES: Record<
+  Qualification["provider"],
+  { repository: RegExp; origin?: string }
+> = {
+  tinfoil: { repository: /^tinfoilsh\// },
+  privatemode: { repository: /^edgelesssys\//, origin: "https://api.privatemode.ai/" },
+};
+/** Which models each setting belongs to (Tinfoil and Privatemode name GLM-5.3 differently). */
+export const MODEL_SETTINGS: Record<keyof typeof modelSettings, readonly string[]> = {
+  gptOssReasoningEffort: ["gpt-oss-120b"],
+  gemmaThinking: ["gemma4-31b"],
+  glmReasoningEffort: ["glm-5-3", "glm-5.3", "glm-5.3-flash"],
+  deepSeekThinking: ["deepseek-v4-1-flash"],
+  deepSeekReasoningEffort: ["deepseek-v4-1-flash"],
+};
 type Setting = keyof typeof MODEL_SETTINGS;
 /** The report as one model's policy: that model's settings kept, every other model's removed. */
 export function policyForModel(report: Qualification, model: string): Qualification {
   const policy: Qualification = { ...report, model };
-  for (const [setting, owner] of Object.entries(MODEL_SETTINGS))
-    if (owner !== model) delete policy[setting as Setting];
+  for (const [setting, owners] of Object.entries(MODEL_SETTINGS))
+    if (!owners.includes(model)) delete policy[setting as Setting];
   return policy;
 }
 /** The tier a request runs in: one of the report's modes, or the report's own model when it has none. */
@@ -177,15 +235,27 @@ export function validateQualification(
     report.fallbackModel === report.model
   )
     throw Error("The fallback model must differ from the qualified model.");
+  const rules = PROVIDER_RULES[report.provider];
+  if (
+    !rules.repository.test(report.repository) ||
+    (rules.origin !== undefined && report.origin !== rules.origin)
+  )
+    throw Error("The origin or repository does not belong to the report's provider.");
+  if ((report.provider === "privatemode") !== (report.privatemode !== undefined))
+    throw Error("The Privatemode evidence block is required for Privatemode and only for it.");
   const models = qualifiedModels(report);
-  for (const [setting, owner] of Object.entries(MODEL_SETTINGS))
-    if (report[setting as Setting] !== undefined && !models.has(owner))
+  for (const [setting, owners] of Object.entries(MODEL_SETTINGS))
+    if (report[setting as Setting] !== undefined && !owners.some((m) => models.has(m)))
       throw Error("A model setting names a model the report does not qualify.");
   for (const tier of Object.values(report.modes ?? {})) {
     if (tier.backupModel === tier.model)
       throw Error("The backup model must differ from the mode's model.");
-    for (const [setting, owner] of Object.entries(MODEL_SETTINGS))
-      if (tier[setting as Setting] !== undefined && owner !== tier.model && owner !== tier.backupModel)
+    for (const [setting, owners] of Object.entries(MODEL_SETTINGS))
+      if (
+        tier[setting as Setting] !== undefined &&
+        !owners.includes(tier.model) &&
+        !(tier.backupModel !== undefined && owners.includes(tier.backupModel))
+      )
         throw Error("A mode setting names a model that mode does not use.");
   }
   if (
@@ -339,7 +409,13 @@ export interface AppStatus {
   accountEmail?: string;
   accessEpoch?: string;
   csrf: string;
-  inference: { ready: boolean; reason: string; qualification?: Qualification };
+  inference: {
+    ready: boolean;
+    reason: string;
+    qualification?: Qualification;
+    /** This account's prompt-cache salt (stable per account, never shared); sent only when ready. */
+    cacheSalt?: string;
+  };
   search: boolean;
   publicPageHosts?: string[] | null;
   /** Draft health-consent step (shared/health-consent.ts); off unless the server enables it. */

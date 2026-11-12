@@ -12,7 +12,7 @@ import { build } from "esbuild";
 import express from "express";
 import { chromium } from "@playwright/test";
 import { PrivatemodeAI } from "privatemode-ai";
-import { privatemodeRelay } from "../../server/providers/privatemode-relay";
+import { privatemodeRelay } from "./spike-relay";
 import { localTLS } from "../../tests/fixtures/local-tls";
 import base from "../cases/model-selection-20261020.json";
 import checks from "../cases/model-selection-checks-20261022.json";

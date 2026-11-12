@@ -23,6 +23,8 @@ export async function streamReply(
   onKeptOnDevice?: (kept: Partial<Record<IdentifierKind, number>>) => void,
   modelChoice: "primary" | "backup" = "primary",
   mode?: AnswerMode,
+  /** This account's prompt-cache salt from /api/status; the Privatemode adapter requires it. */
+  cacheSalt?: string,
 ): Promise<Usage | undefined> {
   const report = validateQualification(qualification);
   if (mode && !report.modes) throw Error("No answer modes are qualified.");
@@ -31,6 +33,7 @@ export async function streamReply(
   const policy = {
     ...policyForTier(report, mode, modelChoice),
     answerMode: mode,
+    ...(cacheSalt ? { cacheSalt } : {}),
   };
   return streamVerifiedConversation(
     conversation,

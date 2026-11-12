@@ -2,7 +2,7 @@ import express, { type RequestHandler } from "express";
 import { deploymentAccess } from "./deployment";
 import { inviteAccess } from "./invite-access";
 import type { InviteRegistry } from "./invite-registry";
-import { randomBytes, randomUUID } from "node:crypto";
+import { createHmac, randomBytes, randomUUID } from "node:crypto";
 import type { UsageLedger } from "./usage-contract";
 import { spendAllows } from "./spend-guard";
 import { productionAccountTarget } from "../shared/account-design";
@@ -23,8 +23,10 @@ import {
   type InferenceRelayAdapter,
 } from "./providers/inference-relay";
 import { braveSearchProvider, type SearchProvider } from "./providers/search";
-// Registers the only adapter built today; a second supplier registers its own.
+// Registers both adapters; the qualification report's `provider` picks one. Switching is
+// manual (a new report is deployed), never automatic on failure.
 import "./providers/tinfoil-relay";
+import "./providers/privatemode-relay";
 import {
   serviceDispatcher,
   proxyConfigured,
@@ -52,6 +54,13 @@ export interface Config {
   search?: SearchProvider;
   /** Relay adapter override for tests; production resolves it from the qualification's provider. */
   inferenceRelay?: InferenceRelayAdapter;
+  /** Approved deployment manifest bytes, for a provider whose browser SDK verifies one (Privatemode). */
+  providerManifest?: Uint8Array;
+  /**
+   * Key for each account's prompt-cache salt. Without it a random key is used, so salts stay
+   * stable for this process only (a restart just means cache misses).
+   */
+  cacheSaltSecret?: string;
   dev?: boolean;
   accessKey?: string;
   invites?: InviteRegistry;
@@ -103,12 +112,17 @@ export function createApp(config: Config) {
     (config.searchKey
       ? braveSearchProvider(config.searchKey, config.searchMode)
       : undefined);
+  const cacheSaltKey = config.cacheSaltSecret ?? randomBytes(32).toString("hex");
+  /** Stable per account (per session without one), unguessable, never shared between users. */
+  const cacheSalt = (accountId: string | undefined, session: string) =>
+    createHmac("sha256", cacheSaltKey)
+      .update(`cometrow-cache-salt|${accountId ? `account:${accountId}` : `session:${session}`}`)
+      .digest("hex");
   // Fixed security headers go first, ahead of every access gate, so refused
   // responses (403 from the origin and transport checks, 401 from the invite
   // gate, 503 while paused) carry them too (launch plan 7.4).
-  const verificationHosts = qualification
-    ? " " + relayFor(qualification).verificationHosts(qualification).join(" ")
-    : "";
+  const hosts = qualification ? relayFor(qualification).verificationHosts(qualification) : [];
+  const verificationHosts = hosts.length ? " " + hosts.join(" ") : "";
   const contentSecurityPolicy = `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'${config.dev ? " 'unsafe-inline'" : ""}; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; worker-src 'self' blob:; connect-src 'self'${verificationHosts}${config.dev ? " ws://127.0.0.1:*" : ""}; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`;
   app.use((_req, res, next) => {
     res.set({
@@ -124,6 +138,15 @@ export function createApp(config: Config) {
     });
     next();
   });
+  // A provider SDK that calls fixed paths at the site root (Privatemode) is mapped under
+  // /api/inference here, before every gate, so the same session, CSRF, invite, limit, stop,
+  // allowance and spend controls apply. Nothing at the root is ever forwarded.
+  const rootPaths = qualification ? (relayFor(qualification).rootPaths ?? []) : [];
+  if (rootPaths.length)
+    app.use((req, _res, next) => {
+      if (rootPaths.includes(req.path)) req.url = "/api/inference" + req.url;
+      next();
+    });
   app.use(
     deploymentAccess(
       config.origin,
@@ -287,7 +310,12 @@ export function createApp(config: Config) {
             : capReached
               ? "The approved spending limit for this provider review is reached."
               : "Live chat is unavailable until provider qualification and service access are complete.",
-        ...(ready ? { qualification: q } : {}),
+        ...(ready
+          ? {
+              qualification: q,
+              cacheSalt: cacheSalt(res.locals.accountId, res.locals.session),
+            }
+          : {}),
       },
       search: !!config.searchKey,
       publicPageHosts: proxyConfigured ? publicFetchHosts : null,
@@ -307,6 +335,30 @@ export function createApp(config: Config) {
     }
     relayFor(q).guard()(req, res, next);
   });
+  // Supplier endpoints besides chat (Privatemode: attestation, key exchange, approved manifest,
+  // pinned Wasm), behind the same session, CSRF and stop switch.
+  const providerRoutes =
+    qualification && config.apiKey
+      ? relayFor(qualification).routes?.({
+          qualification: parseQualification,
+          apiKey: config.apiKey,
+          manifest: config.providerManifest,
+        })
+      : undefined;
+  if (providerRoutes)
+    app.use("/api/inference", (req, res, next) => {
+      if (req.path === "/v1/chat/completions") return next();
+      // The same refusals as the chat route below.
+      if (!parseQualification())
+        return void res.status(503).json({
+          error: "Protected inference is not qualified. No request was forwarded.",
+        });
+      if (config.inferenceStopped?.())
+        return void res.status(503).json({
+          error: "Private chat is paused by the operator. No request was forwarded.",
+        });
+      providerRoutes(req, res, next);
+    });
   app.post(
     "/api/inference/v1/chat/completions",
     express.raw({ type: "*/*", limit: "1mb" }),
@@ -425,7 +477,7 @@ export function createApp(config: Config) {
           qualification: q,
           apiKey: config.apiKey,
           model: admission.model,
-          encapsulatedKey: admission.encapsulatedKey,
+          upstreamHeaders: admission.upstreamHeaders,
         });
         const upstream = await upstreamRequest(plan.url, {
           dispatcher: serviceDispatcher,

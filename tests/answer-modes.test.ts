@@ -115,7 +115,9 @@ describe("report schema", () => {
           provider: "tinfoil",
           origin: "https://test.tinfoil.sh/",
         });
-    expect(qualificationSchema.shape.provider.safeParse("privatemode").success).toBe(false);
+    // Stage 3: a report may name Privatemode, but still exactly one provider for every tier.
+    expect(qualificationSchema.shape.provider.safeParse("privatemode").success).toBe(true);
+    expect(qualificationSchema.shape.provider.safeParse("both").success).toBe(false);
   });
 
   it("the draft report's modes block (wide screen picks) is a valid tier pair", async () => {

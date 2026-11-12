@@ -15,7 +15,7 @@ import type { UsageMetrics } from "../usage-metrics";
 export type InferenceProviderId = Qualification["provider"];
 
 export type RelayAdmission =
-  | { ok: true; model: string; encapsulatedKey: string }
+  | { ok: true; model: string; upstreamHeaders: Record<string, string> }
   | { ok: false; error: string };
 
 export interface UpstreamRequestPlan {
@@ -48,7 +48,8 @@ export interface InferenceRelayAdapter {
     qualification: Qualification;
     apiKey: string;
     model: string;
-    encapsulatedKey: string;
+    /** Supplier headers the adapter admitted from the client (for Tinfoil, the EHBP key). */
+    upstreamHeaders: Record<string, string>;
   }): UpstreamRequestPlan;
   /** Whether the upstream reply is an encrypted success, and the headers to pass back to the browser. */
   accept(reply: UpstreamReply): {
@@ -61,6 +62,24 @@ export interface InferenceRelayAdapter {
   usage(reply: UpstreamReply): UsageMetrics | undefined;
   /** Optional block-only guard mounted before the relay route (release audits). */
   guard(): RequestHandler;
+  /**
+   * Paths the supplier's browser SDK calls at the site root. The app maps each one under
+   * /api/inference before any gate, so session, CSRF, invite gate, request limits, the stop
+   * switch and (for chat) allowance and spend apply exactly as on our own paths.
+   */
+  readonly rootPaths?: readonly string[];
+  /**
+   * Extra supplier endpoints under /api/inference (attestation, key exchange, approved
+   * manifest, pinned Wasm). Mounted after session, CSRF and the stop switch.
+   */
+  routes?(context: ProviderRouteContext): RequestHandler;
+}
+
+export interface ProviderRouteContext {
+  qualification: () => Qualification | undefined;
+  apiKey: string;
+  /** The approved deployment manifest bytes, for suppliers whose browser SDK verifies one. */
+  manifest?: Uint8Array;
 }
 
 const adapters = new Map<InferenceProviderId, () => InferenceRelayAdapter>();

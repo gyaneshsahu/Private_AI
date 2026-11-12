@@ -104,6 +104,10 @@ export function createTinfoilClientAdapter(): InferenceClientAdapter {
               : {}),
       };
     },
+    // A fresh secret per request: Tinfoil's cache is never shared between two requests.
+    cacheOptions() {
+      return { user_cache_secret: crypto.randomUUID() };
+    },
   };
 }
 
