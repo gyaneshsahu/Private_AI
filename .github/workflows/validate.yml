@@ -22,6 +22,8 @@ jobs:
       # and no known high or critical vulnerability in production dependencies.
       - run: npm audit signatures
       - run: npm audit --omit=dev --audit-level=high
+      # Threat model A9 / D18: no credential-shaped string in any tracked file.
+      - run: node scripts/secret-scan.mjs
       - name: Install distribution age for encrypted recovery verification
         run: |
           sudo apt-get update

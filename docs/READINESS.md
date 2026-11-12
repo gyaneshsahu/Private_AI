@@ -1,4 +1,10 @@
 # PrivateAI readiness checklist
+## Secret scan in CI (A9 gap closed, D18 resolved) - 12 November
+
+- **Built.** `scripts/secret-scan.mjs` checks every tracked file for credential shapes (Tinfoil, OpenAI-style, private key blocks, Google OAuth and API keys, GitHub, AWS, Stripe live, database URLs with an inline password to a non-local host). Prints file and line, never the value. No dependency. Runs in Validate after the audit steps. `tests/secret-scan.test.ts` (3 tests) covers hits, allowed synthetic and local lines, and the CI step.
+- **Verified.** Working tree: 757 files, nothing found. Full history of every branch searched once with `git log --all -G` for the same shapes: no match (control pattern matched, so the search worked).
+- **Limit.** Only known shapes; a secret in an unusual format passes.
+
 ## A9: threat-model table brought up to date (12 new rows); two new open items - 12 November
 
 - **Done.** `docs/threat-model-20261022.md` gains an update section: 12 threats added or changed since 22 October, each with defence, gap, evidence and status. The checklist row was understated: the 22 October table already covered 13 threats beyond the attestation audit, and stays valid.
