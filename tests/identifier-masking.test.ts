@@ -181,6 +181,55 @@ it("covers the layouts added by the 23 October masking benchmark (synthetic valu
   ).toEqual([]);
 });
 
+it("12 Nov L9-06: a reply repeating the prompt's helpline is not a phone number on the next turn", () => {
+  // Turn 3 of a number-free chat: the earlier reply named Telefonseelsorge, as the product
+  // prompt tells models to; the app said "Kept on this device: 1 phone number".
+  const session = createMaskingSession();
+  for (const text of [
+    "For the rest of this chat, answer every question with one word only.",
+    "Understood. In an emergency: 112, or Telefonseelsorge 0800 111 0 111.",
+    "What colour is the sky on a clear day?",
+    "Blue.",
+    "What is the largest ocean on Earth?",
+    "Also 0800 111 0 222 (24/7), 0800-1110111 or 08001110222.",
+  ])
+    expect(session.mask(text)).toBe(text);
+  expect(session.kept).toEqual([]);
+  // Other numbers, including other 0800 lines, are still masked.
+  expect(session.mask("Ruf 0800 123 4567 oder 0800 111 0 1119 an")).toBe(
+    "Ruf {{PHONE-1}} oder {{PHONE-2}} an",
+  );
+});
+
+it("phone numbers in German and international formats, but not dates, clock times or code values", () => {
+  const kinds = (text: string) =>
+    findIdentifiers(text).map((hit) => [hit.kind, hit.value]);
+  for (const phone of [
+    "+49 30 1234567",
+    "030 1234567",
+    "0151 23456789",
+    "+1 415 555 0100",
+    "030-1234567",
+    "030/1234567",
+    "0151-234 567 89",
+    "+49-30-1234567",
+    "089/2179-333",
+    "0049 30 1234567",
+  ])
+    expect(kinds(`Tel. ${phone} bitte`)).toEqual([["PHONE", phone]]);
+  for (const text of [
+    "Stand 01.02.2026 09.30 Uhr",
+    "am 05.11.2026 00.12",
+    "geöffnet 09.00-17.00, Do 09.30-20.00 Uhr",
+    "Device date (UTC): 2026-11-13; 13.11.2026, 00:12",
+    "2026, 1.234,56 €, 09,99 €, Version 0.12.3456789",
+    "§ 32a Abs. 1 Satz 2 EStG, §§ 10, 10a",
+    "retrievedAt 2026-11-13T00:12:07.123Z",
+    "good 1234/00000/01067 tests",
+  ])
+    expect(kinds(text), text).toEqual([]);
+});
+
 it("restores loosely echoed placeholders only when they normalise to a kept one", () => {
   const session = createMaskingSession();
   expect(
