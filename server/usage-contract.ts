@@ -34,6 +34,15 @@ export interface UsageLedger {
    * metering (tokens, model, published cost) and is recorded only with a
    * `transport_complete` outcome; interrupted requests have none.
    */
+  /**
+   * Spend across all accounts for requests created in [since, until): the sum of
+   * metered cost (decimal string) and how many requests have no metered cost.
+   * Required wherever chat runs in production (server/app.ts refuses otherwise).
+   */
+  spend?(
+    since: number,
+    until: number,
+  ): Result<{ meteredUSD: string; unmetered: number }>;
   finish(
     accountId: string,
     requestId: string,

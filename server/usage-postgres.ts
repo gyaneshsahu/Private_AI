@@ -212,6 +212,19 @@ export class PostgresUsageLedger implements UsageLedger {
     });
   }
   /** Completed-request metering for one request, or undefined when none was recorded. */
+  async spend(since: number, until: number) {
+    const result = await this.database.query(
+      `SELECT COALESCE(SUM(m.cost_usd),0)::text AS metered,
+        COUNT(*) FILTER (WHERE m.cost_usd IS NULL)::int AS unmetered
+      FROM usage_requests r LEFT JOIN usage_metrics m ON m.request_id=r.request_id
+      WHERE r.created_at>=$1 AND r.created_at<$2`,
+      [since, until],
+    );
+    return {
+      meteredUSD: normalizeDecimalString(String(result.rows[0].metered)),
+      unmetered: Number(result.rows[0].unmetered),
+    };
+  }
   async metrics(
     accountId: string,
     requestId: string,

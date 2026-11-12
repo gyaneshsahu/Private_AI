@@ -3,10 +3,14 @@ import { X509Certificate, createPrivateKey } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { isAbsolute, resolve } from "node:path";
 import express from "express";
-import { createProductionConsumerCandidate } from "./consumer-workspace";
+import {
+  createProductionConsumerCandidate,
+  type ProductionInferenceConfig,
+} from "./consumer-workspace";
 import type { ProductionAccountCandidateConfig } from "./account-auth";
 
 export interface ProductionRuntimeConfig extends ProductionAccountCandidateConfig {
+  inference?: ProductionInferenceConfig;
   ingress: {
     peerCertificateSha256: readonly string[];
     admission?: "client-ip" | "shared";
