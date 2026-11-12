@@ -47,6 +47,7 @@ const NOTICES = [
   /^Not every number is recognised/,
   /^Incomplete · excluded from context/,
   /^Stopped by you/,
+  /^This answer may not state every figure/,
   /^Searched the web/,
   /^Our server also opened the top (official )?result/,
   /^The top result \(/,

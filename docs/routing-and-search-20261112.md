@@ -107,7 +107,7 @@ The old rules beat neither single model, which is the failure the routing resear
 - Each provider's qualification report defines its own Fast and Thinking tiers (model, backup, settings, output limit, allowance cost).
 - Nothing in the routing names Tinfoil or Privatemode.
 
-**For Privatemode:** if its Fast tier is glm-5.3-flash, the user's own choice of Fast keeps its 24 % silent-error rate on word problems. Auto avoids that by sending them to Thinking. A user who forces Fast is not protected until the completeness check exists. This is an owner decision for the Privatemode report.
+**For Privatemode:** if its Fast tier is glm-5.3-flash, the user's own choice of Fast keeps its 24 % silent-error rate on word problems. Auto avoids that by sending them to Thinking. A user who forces Fast now gets the completeness warning when a requested figure is missing (built 12 November; it caught 24 of the 25 silent errors of the gate with no false alarms). It does not catch a wrong value under the right label. The Privatemode Fast model is chosen from the Fast-tier evidence (`docs/privatemode-fast-tier-20261112.md`).
 
 ### 6. Privacy and logs
 
