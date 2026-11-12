@@ -141,3 +141,8 @@
     transition: none;
   }
 }
+
+/* UI sweep 12 November: expandable sections meet the 24 px minimum touch target (WCAG 2.5.8). */
+.account-shell summary {
+  min-height: 24px;
+}

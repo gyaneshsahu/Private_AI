@@ -120,7 +120,7 @@ input[type="checkbox"] {
   font-size: 0.66rem;
   font-weight: 650;
   letter-spacing: 0.15em;
-  color: #7a8579;
+  color: var(--muted, #5d6858);
 }
 .sidebar > .eyebrow {
   margin: 43px 0 13px;
@@ -163,7 +163,7 @@ input[type="checkbox"] {
   font-size: 0.8rem;
 }
 .sidebar-note p {
-  color: #7a8275;
+  color: var(--muted, #5d6858);
   line-height: 1.7;
 }
 .workspace-help {
@@ -184,7 +184,7 @@ input[type="checkbox"] {
   letter-spacing: 0.12em;
   border-top: 1px solid #dce1d5;
   padding-top: 18px;
-  color: #829079;
+  color: var(--muted, #5d6858);
   display: flex;
   justify-content: space-between;
 }
@@ -260,7 +260,7 @@ h2 em {
 }
 .welcome > p:not(.eyebrow) {
   font-size: 0.91rem;
-  color: #7e857b;
+  color: var(--muted, #5d6858);
   line-height: 1.9;
 }
 .starter-grid {
@@ -281,7 +281,7 @@ h2 em {
 }
 .starter-grid p {
   font-size: 0.76rem;
-  color: #83907d;
+  color: var(--muted, #5d6858);
   margin-bottom: 0;
 }
 .composer {
@@ -314,7 +314,7 @@ h2 em {
 }
 .composer-footer span {
   font-size: 0.72rem;
-  color: #8d9587;
+  color: var(--muted, #5d6858);
   margin-left: 10px;
 }
 .text-button {
@@ -335,7 +335,7 @@ h2 em {
 .composer-note {
   text-align: center;
   font-size: 0.68rem;
-  color: #959c8d;
+  color: var(--muted, #5d6858);
   margin: 11px 0 25px;
 }
 .content-view {
@@ -343,7 +343,7 @@ h2 em {
   margin: 40px auto;
 }
 .intro {
-  color: #7b8775;
+  color: var(--muted, #5d6858);
   max-width: 620px;
   margin: 20px 0 28px;
 }
@@ -385,7 +385,7 @@ h2 em {
 .muted,
 .empty-note {
   font-size: 0.8rem;
-  color: #7c8776;
+  color: var(--muted, #5d6858);
 }
 .empty-note {
   text-align: center;
@@ -409,7 +409,7 @@ h2 em {
   display: block;
   font-size: 0.75rem;
   font-weight: 400;
-  color: #7a8970;
+  color: var(--muted, #5d6858);
 }
 .notice,
 .progress {
@@ -458,7 +458,7 @@ h2 em {
 }
 .message-heading span {
   font-size: 0.7rem;
-  color: #93876b;
+  color: var(--muted, #5d6858);
 }
 .message-text {
   white-space: normal;
@@ -470,7 +470,7 @@ h2 em {
   align-items: center;
   gap: 15px;
   margin-top: 13px;
-  color: #8b9384;
+  color: var(--muted, #5d6858);
 }
 .message-actions label {
   font-size: 0.7rem;
@@ -546,7 +546,7 @@ footer {
   border-top: 1px solid #e5e9df;
   padding-top: 16px;
   font-size: 0.65rem;
-  color: #8d9984;
+  color: var(--muted, #5d6858);
 }
 .sr-only {
   position: absolute;
