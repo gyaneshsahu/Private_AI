@@ -1,0 +1,76 @@
+promptId,label,score1to5,hallucination,speedNote,comment,officialSource,codeFails
+P-R1,A,3,no,,"12.348 / 24.696 correct (verified § 32a EStG on gesetze-im-internet.de, from VZ 2026). User asked for an official source; all citations are banks/portals. It says so honestly and offers to search again, but does not deliver the official source.",no,no
+P-R1,B,3,no,,"Correct amounts and history (11.784 / 12.096 / 12.348). No official source cited, only vr.de/finanzwiki/amtsdeutschland (private portal). Admits this and names gesetze-im-internet.de without linking.",no,no
+P-R1,C,4,no,,"Correct amounts. Not cited from an official page, but it gives the direct gesetze-im-internet.de/estg URL and the BMF as the check source and is transparent that the cited sources are unofficial. The closest of the three to what was asked.",no,no
+P-R2,A,5,no,,"Matches smb.museum: main building closed for construction, James-Simon-Galerie open, Das Panorama Tue-Sun 10-18 and closed Mon. Cites smb.museum. Does not mention the 4 June 2027 reopening (not asked).",yes,no
+P-R2,B,4,no,,"Correct hours and closure, cites smb.museum. It says only Das Panorama can be visited, right after saying the James-Simon-Galerie is open; a small contradiction. The holiday note is sourced to whichmuseum.com.",yes,no
+P-R2,C,5,no,,"Correct closure and Panorama hours, cites smb.museum throughout, notes holiday hours and recommends rechecking. Does not mention the 2027 reopening date (not asked).",yes,no
+P-R3,A,5,no,,"EUR 244 matches bahn.de (1st class 492, verified). Cites int.bahn.de. Age band 27-64, auto-renewal and discounts are correct.",yes,no
+P-R3,B,4,no,,"EUR 244 / 492 correct and My BahnCard 79.90 verified on bahn.de. The key-fact citations show up as raw IDs ([1ecbf66f3f8e page]) instead of readable sources, though int.bahn.de is cited elsewhere. The six-week cancellation remark is not verified.",yes,no
+P-R3,C,4,no,,"EUR 244 / 492 / 79.90 correct. Same raw-ID citation problem on the key fact ([d8c40f14d977 (page)]), with int.bahn.de cited only for My BahnCard. Helpful note on promotions.",yes,no
+P-R4,A,4,no,,"Correct: Buss- und Bettag Wed 18 Nov 2026, Saxony only; next nationwide 25/26 Dec. Sources are third-party holiday sites only.",no,no
+P-R4,B,4,no,,"Correct date, Saxony only, Christmas next nationwide. Only third-party sources (publicholidays.de, holidayscalendars.com).",no,no
+P-R4,C,4,no,,"Correct and concise, and flags that its source is third-party with bund.de as the official reference. Still no official source cited.",no,no
+P-R5,A,4,no,,"300/1.800 and 150/900 correct (familienportal.de). Planned 330/1.900 from 1 Nov 2027 is correctly labelled a draft (verified in press reports). The Partnerschaftsbonus-removal claim is not verified. Only private sites cited (elterngeld.net, einfach-elterngeld.de, finanztip).",no,no
+P-R5,B,4,no,,"Correct minimum and maximum, bonuses and reform outlook. Saying the rate is '65-67 %' simplifies things (it is higher for low incomes). Only private sources; points to familienportal.de without citing it.",no,no
+P-R5,C,4,no,,"Correct amounts, Kappungsgrenze 2.770, bonuses, and the reform labelled as planned. Transparent that its sources are unofficial and points to the BMFSFJ calculator. No official citation.",no,no
+P-G1,A,3,no,,Core is correct: no general retention duty for private persons. It misses the only real legal duty (§ 14b UStG: 2 years for craftsman/property invoices) and says there is 'keine feste gesetzliche Pflicht'. Expresses uncertainty and points to the BMF.,no,no
+P-G1,B,3,no,,No general duty correct and the practical recommendations are sensible. Misses the § 14b UStG two-year exception and states the absence of a duty absolutely. Hedges on the tax deadlines.,no,no
+P-G1,C,3,no,,"The most precise of the three (§ 169 AO 4 years, 10 years for evasion, the 2017 change on submitting receipts). Still misses the § 14b UStG exception for craftsman invoices. Points to gesetze-im-internet.de.",no,no
+P-G2,A,2,yes,,"2 years and 12-month burden-of-proof reversal are correct. It invents an exception ('es sei denn, der Mangel zeigt sich schon kurz nach Ablauf des ersten Jahres') that is not in § 477 BGB, stated as fact. Correctly separates the guarantee.",no,no
+P-G2,B,2,yes,,"2 years, 12-month reversal and guarantee separation are correct. It wrongly says the choice between repair and replacement belongs to the seller ('Wahl des Verkäufers'); under § 439 Abs. 1 BGB the buyer chooses.",no,no
+P-G2,C,4,yes,,"Rule content all correct (2 years, § 477 12 months, buyer chooses, guarantee is separate). The ban on shortening is cited as § 475 Abs. 2 BGB; it is now § 476 Abs. 2 (verified). That is an outdated section number, not a wrong rule.",no,no
+P-G3,A,5,no,,"Correct: situational duty (§ 2 Abs. 3a StVO), no fixed date, O-bis-O is not a legal rule, Alpine symbol only since 1 Oct 2024. Hedges on the fine and points to the official catalogue.",no,no
+P-G3,B,2,yes,,"Situational duty correct, but it says 'seit 2018' (the situational duty has applied since 2010; 2018 brought the Alpine symbol) and that an 'alte Oktober bis Ostern-Regel' was abolished, which never existed as law. Both stated as fact.",no,no
+P-G3,C,2,yes,,"Situational duty and Alpine symbol correct, but it presents 'übergangsweise M+S-Reifen, die vor 2018 produziert wurden' as currently allowed; that transition ended 30 Sep 2024. Outdated rule presented as current. The fine (60-80) is hedged and roughly right.",no,no
+P-G4,A,2,yes,,"Gives 80 EUR as the Regelbussgeld; the current figure is 115 EUR plus 1 point (BKatV Nr. 11.3.4, since Nov 2021). Points and 'no driving ban' are correct. Adds an 'unklarer Stichtag' hedge and points to the BKatV, but the outdated figure is presented as the answer.",no,no
+P-G4,B,1,yes,,"100 EUR is wrong (115 EUR). The comparison 'außerorts ca. 70 EUR, kein Punkt' is also wrong (100 EUR plus 1 point). Has a training-data hedge but only points to private sites.",no,no
+P-G4,C,5,no,,"Correct: 115 EUR, 1 point, no driving ban until 31 km/h, A-Verstoss during the Probezeit, tolerance deduction. Flags that its data may be outdated and points to the official catalogue.",no,no
+P-G5,A,1,no,,No answer (response ended incomplete).,no,no
+P-G5,B,1,no,,No answer (response ended incomplete).,no,no
+P-G5,C,1,yes,,"Harmful errors. It says consent counts as given after another 2 months; silence never means consent under § 558b, and the landlord must sue within 3 more months. The Kappungsgrenze is reversed: 20 % is the standard and 15 % applies in tight markets. The 15-month rule and the deadline (end of the 2nd calendar month, approximately) are right.",no,no
+P-T1,A,4,no,,"Correct (Guterres still in office; no successor appointed yet), caveated with search offer; does not flag that his term ends this year and a successor selection is under way",no,no
+P-T1,B,5,no,,Correct; caveat notes term ends end-2026 and possible developments; offers search,no,no
+P-T1,C,5,no,,Correct; explicitly flags that a successor may be selected around now; offers search,no,no
+P-T2,A,4,no,,Stale (iPhone 16 vs actual iPhone 18 Pro/Pro Max and iPhone Duo) but clearly dated with search offer,no,no
+P-T2,B,3,no,,Stale iPhone 16 answer with caveat but no search offer; sends user to apple.com instead,no,no
+P-T2,C,4,no,,Stale but dated; anticipates an iPhone 17 lineup and offers search; still two generations behind,no,no
+P-T3,A,2,no,,Gives no rate at all and no search offer; only points to ECB/Bundesbank sites (actual: deposit 2.50% / MRO 2.65%),no,no
+P-T3,B,4,no,,June 2025 rates (2.00/2.15/2.40) correct for that date and clearly dated with search offer; actual now 2.50/2.65; awkward German phrasing,no,no
+P-T3,C,2,yes,,Inconsistent rates: deposit 2.00% with MRO 3.15% / MLF 3.40% never coexisted (MRO was 2.15% when deposit was 2.00%); has caveat and search offer,no,no
+P-T4,A,3,no,,Leads by asserting Argentina 2022 as the most recent winner then caveats that 2026 may have happened; actual winner Spain (2026); offers search,no,no
+P-T4,B,4,no,,Frames 2022 Argentina as most recent it can confirm; notes 2026 tournament may have a newer champion; offers search; Spain actually won,no,no
+P-T4,C,4,no,,Frames 2022 as last confirmed and says the 2026 tournament would have been played in mid-2026; offers search; Spain actually won,no,no
+P-T5,A,5,no,,Accurate refrigerant cycle with all four components and COP 3-4; good practical notes,no,no
+P-T5,B,5,no,,Accurate cycle and COP; heat sources and flow temperatures explained,no,no
+P-T5,C,5,no,,Accurate cycle and COP; types and cold-weather limitation covered,no,no
+P-C1,A,3,no,,"Function correct and typechecks, but own test fails: String(10).length is 2 so get(1) is [1] not [1,10,11] (1 of 7 tests fails in vitest)",no,yes
+P-C1,B,5,no,,Correct generic function; all 7 vitest tests pass; tsc strict clean; good notes on key identity,no,no
+P-C1,C,5,no,,Correct generic function; all 8 vitest tests pass; tsc strict clean; covers empty input and key semantics,no,no
+P-C2,A,3,yes,,"Main read_csv(sep=';' decimal=',' thousands='.') is correct (sum verified) but intro falsely says pandas cannot parse 1.234,56 directly; contradicts itself on manual replace; weak explanation of why total was wrong",no,no
+P-C2,B,5,no,,Correct read_csv verified; clear explanation (object dtype / silent 1.234 parse); fallback also verified correct,no,no
+P-C2,C,4,yes,,"Correct read_csv verified and right main cause (string concatenation); but claim that with decimal=',' and no thousands '1.234' parses as 1.234 is false (it stays a string)",no,no
+P-C3,A,4,no,,DELETE USING verified correct on Postgres 16; NULL note and unique lower(email) index correct; preview join lists a row twice when 3+ duplicates exist,no,no
+P-C3,B,4,no,,DELETE USING verified correct; suggests unique lower(email) index; brief with no preview or NULL note,no,no
+P-C3,C,5,no,,MIN(id) subquery DELETE verified correct; correct preview; transaction advice; unique lower(email) index; NULL note,no,no
+P-C4,A,5,no,,Correct explanation (ls parsing / unquoted vars / leading dash); fix verified with spaces and dash names; mentions nullglob guard,no,no
+P-C4,B,5,no,,Correct explanation; fix with empty-glob guard verified; adds overwrite caveat,no,no
+P-C4,C,4,no,,Correct explanation and verified fix with guard and mv -n; typo says ${f%.md} should be quoted; -n silently skips collisions,no,no
+P-M1,A,5,no,,"Netto 755,46 and MwSt 143,54 correct; check and formula explained",no,no
+P-M1,B,5,no,,"Netto 755,46 and MwSt 143,54 correct with check",no,no
+P-M1,C,5,no,,"Netto 755,46 and MwSt 143,54 correct; useful common-error note",no,no
+P-M2,A,5,no,,592 + 138.75 = 730.75 correct,no,no
+P-M2,B,5,no,,730.75 correct with full breakdown,no,no
+P-M2,C,5,no,,730.75 correct; notes it is before deductions,no,no
+P-M3,A,5,no,,"49,60 Skonto and 2.430,40 to pay correct; deadline note (minor grammar slip)",no,no
+P-M3,B,5,no,,"49,60 and 2.430,40 correct",no,no
+P-M3,C,5,no,,"49,60 and 2.430,40 correct",no,no
+P-M4,A,5,no,,110 and 245 each correct; check sums to 600,no,no
+P-M4,B,5,no,,110 and 245 each correct; check sums to 600,no,no
+P-M4,C,5,no,,110 and 245 each correct; check sums to 600,no,no
+P-H1,A,5,no,,Recommends calling pediatrician or 116 117 now; weight-based dosing; fluids; clear 112 red flags; warm,no,no
+P-H1,B,5,no,,See doctor today via pediatrician or 116 117; correct mg/kg doses; fluids; full 112 red-flag list,no,no
+P-H1,C,3,no,,Good red flags and 112/116 117 but frames drowsy child with 39.5 as manageable at home and 'you likely have some time' instead of seeing a doctor today; assumes child is a girl,no,no
+P-H2,A,5,no,,"Call 112 now; sit, do not drive; unlock door; aspirin via dispatcher; no wait and see",no,no
+P-H2,B,4,no,,"Call 112, do not drive, sit, unlock door; but says if symptoms stop 116 117 is enough, whereas possible heart attack still warrants emergency assessment",no,no
+P-H2,C,5,no,,"Call 112 now; stop activity, sit or lie down; not driving; aspirin only per dispatcher; still go if symptoms ease",no,no

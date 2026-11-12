@@ -61,12 +61,17 @@ export function simulate(rows: Row[], route: (r: Row) => "fast" | "thinking") {
 }
 
 if (process.argv[1]?.endsWith("routing-sim.ts")) {
-  const rows = [
+  // --privatemode: the same check on the Privatemode runs of 12 November (owner: Privatemode is primary).
+  const pm = process.argv.includes("--privatemode");
+  const rows = (pm ? [
+    ...load("pm-blind-51", "evaluation/blind-benchmark-privatemode-20261112", "evaluation/blind-benchmark-privatemode-20261112/scoring-sheet.csv", ".local/blind-benchmark-privatemode-20261112/key.json", ".local/blind-benchmark-privatemode-20261112/ours"),
+    ...(process.argv.includes("--with-pm25") ? load("pm-25", "evaluation/benchmark-privatemode-20261112", "evaluation/benchmark-privatemode-20261112/scoring-sheet.csv", ".local/benchmark-privatemode-20261112/key.json", ".local/benchmark-privatemode-20261112/ours") : []),
+  ] : [
     ...load("blind-51", "evaluation/blind-benchmark", "evaluation/blind-benchmark/scoring-sheet.csv", ".local/blind-benchmark/key.json", ".local/blind-benchmark/ours"),
     ...load("fresh-27", "evaluation/benchmark-fresh-20261112", "evaluation/benchmark-fresh-20261112/grader-sheet.csv", ".local/benchmark-fresh-20261112/grader-key.json", ".local/benchmark-fresh-20261112/ours"),
     // Run 1 of the fresh set (graded before the run-2 fixes): a second sample of the same prompts.
     ...load("fresh-27-run1", "evaluation/benchmark-fresh-20261112", ".local/benchmark-fresh-20261112/run1-sheets/grader-sheet.csv", ".local/benchmark-fresh-20261112/run1-sheets/grader-key.json", ".local/benchmark-fresh-20261112/ours-run1"),
-  ].filter((r) => r.scores.fast && r.scores.thinking);
+  ]).filter((r) => r.scores.fast && r.scores.thinking);
   const route = (r: Row) => autoMode(conversationOf(r.prompt, r.docs, r.web));
   const fmt = (x: { mean: number; h: number; n: number }) => `${x.mean.toFixed(2)} (hallucinations ${x.h}, n ${x.n})`;
   const all = simulate(rows, route);
