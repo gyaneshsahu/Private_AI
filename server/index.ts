@@ -74,7 +74,7 @@ if (dev) {
     res.sendFile(resolve("dist/index.html"));
   });
 }
-const tls = localTLS ? await (await import("../tests/fixtures/local-tls")).localTLS() : undefined;
+const tls = localTLS ? await (await import("./local-tls")).localTLS() : undefined;
 const listener = tls ? createHttpsServer({ key: tls.key, cert: tls.cert }, app) : app;
 const server = listener.listen(port, hosted ? "0.0.0.0" : "127.0.0.1", () => {
   console.log(
