@@ -10,7 +10,7 @@ import { execFileSync } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createServer } from "vite";
-import { chromium, type Browser, type Page } from "@playwright/test";
+import { chromium, type BrowserContext, type Page } from "@playwright/test";
 import { createApp } from "../../server/app";
 import { checks } from "../../shared/contracts";
 import { browserLaunchOptions } from "../../scripts/browser-runtime.mjs";
@@ -121,8 +121,10 @@ async function sendTurn(page: Page, text: string) {
   return { ttftMs, totalMs: Date.now() - started, text: await answerText(page) };
 }
 
-async function runOne(browser: Browser, mode: string, p: Prompt) {
-  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+// One browser context per mode keeps one app session: the local server allows 100 open
+// sessions, and a fresh context per prompt hit that limit after about 100 prompts. A new
+// page (reload) still starts an empty temporary conversation.
+async function runOne(context: BrowserContext, mode: string, p: Prompt) {
   const page = await context.newPage();
   try {
     await page.goto(origin, { timeout: 60_000 });
@@ -156,9 +158,16 @@ async function runOne(browser: Browser, mode: string, p: Prompt) {
     const notice = (l: string) => NOTICES.some((n) => n.test(l.trim()));
     const notices = lines.filter((l) => l !== label && notice(l));
     const text = lines.filter((l) => l !== label && !notice(l)).join("\n");
-    return { text, notices, ttftMs: all[0].ttftMs, totalMs: all.reduce((n, t) => n + t.totalMs, 0), turnTimings: all, model: "(see tiers)", mode, label, searched };
+    // The app's own failure line (why a reply is incomplete), for diagnosis only.
+    const failure = /Response ended incomplete|Incomplete/.test(last.text)
+      ? (await page.locator("main").innerText().catch(() => ""))
+          .split("\n")
+          .filter((l) => /incomplete|limit|unavailable|did not accept|timed out|refused|protocol|retry/i.test(l))
+          .slice(0, 4)
+      : undefined;
+    return { text, notices, failure, ttftMs: all[0].ttftMs, totalMs: all.reduce((n, t) => n + t.totalMs, 0), turnTimings: all, model: "(see tiers)", mode, label, searched };
   } finally {
-    await context.close();
+    await page.close();
   }
 }
 
@@ -168,16 +177,18 @@ try {
   await Promise.all(
     MODES.map(async (mode) => {
       await mkdir(`${OUT}/${mode}`, { recursive: true });
+      const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
       for (const p of prompts) {
         let result: Record<string, unknown>;
         try {
-          result = await runOne(browser, mode, p);
+          result = await runOne(context, mode, p);
         } catch (error) {
           result = { text: "", error: String((error as Error).message).slice(0, 300), mode, model: "(see tiers)" };
         }
         await writeFile(`${OUT}/${mode}/${p.id}.json`, JSON.stringify(result, null, 2));
-        console.log(`${mode.padEnd(8)} ${p.id} ${result.error ? "ERROR " + result.error : `ttft ${result.ttftMs ?? "-"} ms, total ${result.totalMs} ms, ${String(result.text).length} chars ${result.label ?? ""}`}`);
+        console.log(`${mode.padEnd(8)} ${p.id} ${result.error ? "ERROR " + result.error : `ttft ${result.ttftMs ?? "-"} ms, total ${result.totalMs} ms, ${String(result.text).length} chars ${result.label ?? ""}${result.failure ? " FAILURE " + JSON.stringify(result.failure) : ""}`}`);
       }
+      await context.close();
     }),
   );
 } finally {
