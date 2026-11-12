@@ -25,6 +25,16 @@ const schema = z
       .strict()
       .optional(),
     databaseUrlFile: path,
+    // Production chat (step 4, 12 November): absent or disabled means no chat, as before.
+    inference: z
+      .object({
+        enabled: z.boolean(),
+        apiKeyFile: path,
+        qualificationFile: path,
+        stopFile: path,
+      })
+      .strict()
+      .optional(),
     databaseCaFile: path.optional(),
     tlsKeyFile: path,
     tlsCertFile: path,
@@ -154,6 +164,19 @@ export async function loadDeploymentConfig(file: string) {
               ),
             ),
           )
+        : undefined,
+      inference: config.inference?.enabled
+        ? {
+            apiKey: (await boundedFile(config.inference.apiKeyFile))
+              .toString("utf8")
+              .trim(),
+            qualification: JSON.parse(
+              (await boundedFile(config.inference.qualificationFile)).toString(
+                "utf8",
+              ),
+            ) as unknown,
+            stopFile: config.inference.stopFile,
+          }
         : undefined,
       connectionString,
       databaseCa: config.databaseCaFile

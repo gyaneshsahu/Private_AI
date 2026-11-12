@@ -37,6 +37,10 @@ test("search excerpts lead to separately approved pages without sharing the draf
   expect(executions).toBe(1);
   await page.getByRole("button", { name: "Review disclosure" }).click();
   await expect(page.getByRole("region", { name: "Confirm external disclosure" })).toContainText(url);
+  // Page addresses are sent as written: the approval says so (masking limit, T3).
+  await expect(page.getByRole("region", { name: "Confirm external disclosure" })).toContainText(
+    "personal details in it are not removed",
+  );
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
   expect(executions).toBe(1);
   expect(disclosures).toEqual([{ kind: "search", value: "synthetic library hours" }]);

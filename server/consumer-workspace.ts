@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import express from "express";
 import {
   createSyntheticAccountAuth,
@@ -54,8 +55,18 @@ export function createSyntheticConsumerWorkspace(
 }
 
 /** Inactive composition; no inference/search credentials, provider activation or migration. */
+/** Chat in production: only with the owner's explicit deployment setting (deployment-config `inference`). */
+export interface ProductionInferenceConfig {
+  apiKey: string;
+  qualification: unknown;
+  /** While this file exists, chat is refused at once (operator stop switch). */
+  stopFile: string;
+}
+
 export function createProductionConsumerCandidate(
-  config: ProductionAccountCandidateConfig,
+  config: ProductionAccountCandidateConfig & {
+    inference?: ProductionInferenceConfig;
+  },
 ) {
   const account = createProductionAccountCandidate({
     ...config,
@@ -75,10 +86,19 @@ export function createProductionConsumerCandidate(
   app.use(operations.middleware);
   // This boundary also scopes getSession calls from workspace APIs to the current request.
   app.use(account.router);
+  const inference = config.inference;
   const workspace = createApp({
     origin: productionAccountTarget.origin,
     consumer: { ...control, mode: "production-candidate" },
     usage,
+    ...(inference
+      ? {
+          productionInference: true,
+          apiKey: inference.apiKey,
+          qualification: inference.qualification,
+          inferenceStopped: () => existsSync(inference.stopFile),
+        }
+      : {}),
   });
   app.use(workspace);
   app.get("/auth", (_req, res) => res.redirect(303, "/account"));

@@ -30,6 +30,8 @@ test("search is explicitly approved and remains temporary after source removal",
   await tab("Research").click();
   await page.getByLabel("Exact search query").fill("synthetic library hours");
   await page.getByRole("button", { name: "Review disclosure" }).click();
+  // A search query is not a page address; the URL note does not appear.
+  await expect(page.getByText("personal details in it are not removed")).toHaveCount(0);
   expect(calls).toBe(0);
   await page.getByRole("button", { name: "Approve and retrieve" }).click();
   await expect(

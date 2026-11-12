@@ -306,3 +306,30 @@ it.skipIf(!enabled)(
     }
   },
 );
+
+it.skipIf(!enabled)(
+  "reports spend across accounts for a window: metered cost summed, unmetered requests counted",
+  async () => {
+    const db = await usageDatabase();
+    try {
+      const ledger = new PostgresUsageLedger(db.pool, () => 100);
+      for (const account of ["alice", "bob"])
+        await ledger.createAllowance({ accountId: account, periodId: `p-${account}`, startsAt: 0, endsAt: 1000, requestLimit: 10 });
+      const metered = (cost: string) => ({ promptTokens: 1, completionTokens: 1, model: "TEST_ONLY", costUsd: cost });
+      for (const [account, id, cost] of [
+        ["alice", "a1", "0.25"],
+        ["bob", "b1", "0.125"],
+        ["bob", "b2", undefined],
+      ] as const) {
+        await ledger.reserve(account, id);
+        await ledger.dispatch(account, id);
+        await ledger.finish(account, id, cost ? "transport_complete" : "uncertain", cost ? metered(cost) : undefined);
+      }
+      await ledger.reserve("alice", "a2");
+      expect(await ledger.spend(0, 1000)).toEqual({ meteredUSD: "0.375", unmetered: 2 });
+      expect(await ledger.spend(101, 1000)).toEqual({ meteredUSD: "0", unmetered: 0 });
+    } finally {
+      await db.dispose();
+    }
+  },
+);

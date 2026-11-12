@@ -9,7 +9,7 @@
  * misses of a promised kind.
  */
 import type { IdentifierKind } from "../../src/identifier-masking";
-import { Doc, type NotCoveredKind, type Part } from "./doc";
+import { Doc, type Lang, type NotCoveredKind, type Part } from "./doc";
 import {
   type BaseCategory,
   CATEGORIES,
@@ -50,7 +50,7 @@ export interface Sample {
 }
 export interface Corpus {
   schemaVersion: number;
-  split: "dev" | "heldout";
+  split: "dev" | "heldout" | "heldout-de";
   seed: number;
   perCategory: number;
   /** Scans get twice the documents: they reuse every other layout under noise. */
@@ -207,9 +207,11 @@ function build(layout: Layout, rng: Rng, ocr: boolean): Doc {
 }
 
 export function generateSplit(
-  split: "dev" | "heldout",
+  split: "dev" | "heldout" | "heldout-de",
   seed: number,
   perCategory: number,
+  /** Restricts layouts to these languages; omitted, the split is unchanged (dev is pinned byte for byte). */
+  languages?: readonly Lang[],
 ): Corpus {
   const rng = new Rng(seed);
   const samples: Sample[] = [];
@@ -218,11 +220,13 @@ export function generateSplit(
       category === "scan-ocr"
         ? [...LAYOUTS, ...SCAN_ONLY_LAYOUTS, ...SCAN_ONLY_LAYOUTS]
         : LAYOUTS.filter((layout) => layout.category === (category as BaseCategory));
+    const usable = languages ? pool.filter((layout) => languages.includes(layout.lang)) : pool;
+    if (!usable.length) continue;
     let round: Layout[] = [];
     const count = category === "scan-ocr" ? perCategory * 2 : perCategory;
     for (let i = 0; i < count; i++) {
       // Cycle through layouts so each one is represented, in shuffled order per round.
-      if (round.length === 0) round = rng.shuffle([...pool]);
+      if (round.length === 0) round = rng.shuffle([...usable]);
       const layout = round.pop()!;
       const ocr = category === "scan-ocr";
       const doc = build(layout, rng, ocr);

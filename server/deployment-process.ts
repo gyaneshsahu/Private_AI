@@ -70,6 +70,7 @@ export async function startDeployment(render = false) {
       secret: config.secret,
       social: config.social,
       allowedEmails: config.allowedEmails,
+      inference: config.inference,
       assets: config.assets,
       tls: config.tls,
       ingress: {
@@ -105,7 +106,9 @@ export async function startDeployment(render = false) {
       });
     }
     process.stdout.write(
-      "CometRow restricted deployment listening; email and inference disabled.\n",
+      config.inference
+        ? "CometRow restricted deployment listening; email disabled, chat enabled for allowlisted accounts.\n"
+        : "CometRow restricted deployment listening; email and inference disabled.\n",
     );
     // Privacy policy: request records are deleted after 90 days (server/request-retention.ts).
     stopPurge = scheduleRequestPurge(database, (line) =>

@@ -4,6 +4,7 @@ import { inviteAccess } from "./invite-access";
 import type { InviteRegistry } from "./invite-registry";
 import { randomBytes, randomUUID } from "node:crypto";
 import type { UsageLedger } from "./usage-contract";
+import { spendAllows } from "./spend-guard";
 import { productionAccountTarget } from "../shared/account-design";
 import { once } from "node:events";
 import { z } from "zod";
@@ -34,6 +35,17 @@ export interface Config {
   apiKey?: string;
   searchKey?: string;
   searchMode?: "web" | "llm-context";
+  /**
+   * Allows the production candidate to relay chat (owner's explicit deployment setting).
+   * Requires an API key, a qualification report and a usage ledger that reports spend.
+   */
+  productionInference?: boolean;
+  /** Operator stop switch, checked on every request; true refuses chat at once. */
+  inferenceStopped?: () => boolean;
+  /** Shows the draft health-consent step; never set by the production composition. */
+  healthConsentDraft?: boolean;
+  /** Adds the draft provider section to the privacy policy; never set by the production composition. */
+  providerDisclosureDraft?: "tinfoil" | "privatemode";
   /** Web search adapter; defaults to Brave from `searchKey`. Tests may inject one. */
   search?: SearchProvider;
   /** Relay adapter override for tests; production resolves it from the qualification's provider. */
@@ -59,9 +71,14 @@ export function createApp(config: Config) {
     (config.invites ||
       (productionCandidate
         ? config.origin !== productionAccountTarget.origin ||
-          !!config.apiKey ||
+          ((!!config.apiKey || config.qualification !== undefined) &&
+            !(
+              config.productionInference &&
+              !!config.apiKey &&
+              config.qualification !== undefined &&
+              typeof config.usage?.spend === "function"
+            )) ||
           !!config.searchKey ||
-          config.qualification !== undefined ||
           !!config.dev ||
           !!config.consumer.billingRouter
         : new URL(config.origin).hostname !== "localhost"))
@@ -216,10 +233,15 @@ export function createApp(config: Config) {
   );
   app.get("/api/status", async (_req, res) => {
     const q = parseQualification();
-    const ready = !!q && !!config.apiKey;
+    const stopped = !!config.inferenceStopped?.();
+    const ready = !!q && !!config.apiKey && !stopped;
     res.json({
       csrf: res.locals.csrf,
       ...(config.consumer ? { consumerWorkspace: true } : {}),
+      ...(config.healthConsentDraft ? { healthConsentDraft: true } : {}),
+      ...(config.providerDisclosureDraft
+        ? { providerDisclosureDraft: config.providerDisclosureDraft }
+        : {}),
       ...(config.consumer?.billingRouter ? { billingRehearsal: true } : {}),
       ...(res.locals.accountId
         ? {
@@ -249,7 +271,9 @@ export function createApp(config: Config) {
         ready,
         reason: ready
           ? "Provider qualification recorded; each request still requires browser verification."
-          : "Live chat is unavailable until provider qualification and service access are complete.",
+          : stopped
+            ? "Private chat is paused by the operator."
+            : "Live chat is unavailable until provider qualification and service access are complete.",
         ...(ready ? { qualification: q } : {}),
       },
       search: !!config.searchKey,
@@ -279,6 +303,12 @@ export function createApp(config: Config) {
         res.status(503).json({
           error:
             "Protected inference is not qualified. No request was forwarded.",
+        });
+        return;
+      }
+      if (config.inferenceStopped?.()) {
+        res.status(503).json({
+          error: "Private chat is paused by the operator. No request was forwarded.",
         });
         return;
       }
@@ -314,6 +344,26 @@ export function createApp(config: Config) {
         if (!res.writableFinished) abort.abort();
       });
       try {
+        // Checked after this request claimed its slot, so concurrent requests count.
+        if (config.usage?.spend) {
+          let allowed = false;
+          try {
+            allowed = await spendAllows(
+              config.usage as Required<Pick<UsageLedger, "spend">>,
+              q,
+              active - 1,
+            );
+          } catch {
+            /* Unknown spend refuses, like unknown allowance. */
+          }
+          if (!allowed) {
+            res.status(429).json({
+              error:
+                "The approved spending limit for this provider review is reached. No request was forwarded.",
+            });
+            return;
+          }
+        }
         if (config.usage) {
           try {
             if (

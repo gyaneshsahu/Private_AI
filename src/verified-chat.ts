@@ -5,6 +5,7 @@ import {
 import { IncompleteReplyError } from "./reply-stream";
 import {
   createMaskingSession,
+  maskAttachmentSources,
   MASKING_INSTRUCTION,
   type IdentifierKind,
   type MaskingSession,
@@ -240,7 +241,7 @@ async function streamMaskedConversation(
   return withDeadline(signal, 90000, async (signal) => {
     signal.throwIfAborted();
     const messages = composeContext(
-      conversation,
+      maskAttachmentSources(conversation, masking),
       report.maxInputCharacters,
       new Date(),
       report.answerPolicyVariant,

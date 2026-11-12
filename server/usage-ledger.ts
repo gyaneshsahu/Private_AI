@@ -13,6 +13,19 @@ export type { UsageLedger } from "./usage-contract";
 /** Durable request counts, not token billing or proof of completed answers. */
 export class SqliteUsageLedger implements UsageLedger {
   private db: DatabaseSync;
+  spend(since: number, until: number) {
+    const rows = this.db
+      .prepare(
+        `SELECT m.cost_usd FROM usage_requests r LEFT JOIN usage_metrics m ON m.request_id=r.request_id
+      WHERE r.created_at>=? AND r.created_at<?`,
+      )
+      .all(since, until) as { cost_usd: string | null }[];
+    const costs = rows.filter((row) => row.cost_usd != null).map((row) => String(row.cost_usd));
+    return {
+      meteredUSD: costs.length ? sumDecimalStrings(costs) : "0",
+      unmetered: rows.length - costs.length,
+    };
+  }
   constructor(
     path: string,
     private now = Date.now,

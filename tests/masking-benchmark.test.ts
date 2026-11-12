@@ -97,4 +97,25 @@ describe("masking benchmark, development split", () => {
     for (const dir of ["src", "tests", "evaluation", "scripts", "server", "shared"]) walk(dir);
     expect(offenders).toEqual([]);
   });
+
+  it("lets only the German held-out scripts refer to the German held-out split", () => {
+    const lockedFile = new RegExp("held" + "out-de[/\\\\]held" + "out-de\\.json");
+    const allowed = new Set([
+      "evaluation/masking/evaluate-held" + "out-de.ts",
+      "evaluation/masking/write-held" + "out-de.ts",
+    ]);
+    const offenders: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(join(root, dir), { withFileTypes: true })) {
+        const path = `${dir}/${entry.name}`;
+        if (entry.isDirectory()) {
+          if (!["node_modules", "results", "dev"].includes(entry.name)) walk(path);
+        } else if (/\.(ts|tsx|mjs|js)$/.test(entry.name) && !allowed.has(path)) {
+          if (lockedFile.test(readFileSync(join(root, path), "utf8"))) offenders.push(path);
+        }
+      }
+    };
+    for (const dir of ["src", "tests", "evaluation", "scripts", "server", "shared"]) walk(dir);
+    expect(offenders).toEqual([]);
+  });
 });

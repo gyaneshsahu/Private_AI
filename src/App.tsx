@@ -4,6 +4,7 @@ import { containDialogFocus } from "./dialog-focus";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   emptyConversation,
+  verificationSummary,
   type AppStatus,
   type Conversation,
   type Disclosure,
@@ -17,6 +18,13 @@ import {
 } from "./conversation";
 import { DOCUMENT_ACCEPT } from "./document-formats";
 import { describeKept, prepareSearchQuery } from "./identifier-masking";
+import { HEALTH_CONSENT } from "../shared/health-consent";
+import {
+  readHealthConsent,
+  writeHealthConsent,
+  type HealthConsentChoice,
+} from "./health-consent";
+import { HealthConsentPrompt, HealthConsentSetting } from "./HealthConsent";
 import {
   AMBIGUOUS_NUMBER_WARNING,
   ARITHMETIC_WARNING,
@@ -29,6 +37,7 @@ import {
 } from "./conversation";
 import { PRIVACY_SUMMARY, privacyText } from "../shared/privacy-copy";
 import { privacyPolicyText } from "../shared/privacy-policy";
+import { disclosedProvider } from "../shared/provider-disclosure";
 import { imprintText } from "../shared/legal-identity";
 import { importDocuments, type ImportOutcome } from "./document-import";
 import { PhotoCapture } from "./PhotoCapture";
@@ -150,6 +159,15 @@ export function App() {
   useEffect(() => () => calculationSession.clear(), [calculationSession]);
   const [status, setStatus] = useState<AppStatus>();
   const [input, setInput] = useState("");
+  // Draft health consent (shared/health-consent.ts): only while the server enables it.
+  const [healthConsent, setHealthConsent] = useState(readHealthConsent);
+  const [consentPending, setConsentPending] = useState<{
+    base: Conversation;
+    text: string;
+    consumeDraft: boolean;
+  }>();
+  const chooseHealthConsent = (choice: HealthConsentChoice) =>
+    setHealthConsent(writeHealthConsent(choice));
   const [notice, setNotice] = useState("");
   const savedBase = useRef<Conversation | null>(null);
   const [saveConflict, setSaveConflict] = useState(false);
@@ -478,8 +496,18 @@ export function App() {
       );
     }
   }
-  async function send(base = conversation, text = input, consumeDraft = true) {
+  async function send(
+    base = conversation,
+    text = input,
+    consumeDraft = true,
+    consentChosen = false,
+  ) {
     if (busy || !status?.inference.ready || !text.trim()) return;
+    if (status.healthConsentDraft && !healthConsent && !consentChosen) {
+      // Ask once before the first message; the message waits and is not sent yet.
+      setConsentPending({ base, text, consumeDraft });
+      return;
+    }
     const next = {
       ...base,
       title:
@@ -1238,6 +1266,12 @@ export function App() {
               <>
                 <h3>Privacy &amp; data</h3>
                 <p>{PRIVACY_SUMMARY}</p>
+                {status?.healthConsentDraft && (
+                  <HealthConsentSetting
+                    record={healthConsent}
+                    onChoose={chooseHealthConsent}
+                  />
+                )}
                 <button
                   className="text-button"
                   onClick={() => {
@@ -1245,7 +1279,7 @@ export function App() {
                     setSource({
                       id: "privacy-policy",
                       title: "Privacy policy",
-                      text: privacyPolicyText(),
+                      text: privacyPolicyText(disclosedProvider(status)),
                     });
                   }}
                 >
@@ -1450,8 +1484,8 @@ export function App() {
                 : "Private chat is not connected yet"}
             </strong>
             <p>
-              {status?.inference.ready
-                ? "The destination is verified before each request."
+              {status?.inference.ready && status.inference.qualification
+                ? verificationSummary(status.inference.qualification)
                 : "Local documents and your vault work here. Messages stay on this device until provider verification and access are complete."}
             </p>
           </div>
@@ -1623,7 +1657,8 @@ export function App() {
                   {message.keptOnDevice && (
                     <p className="muted kept-on-device">
                       {message.keptOnDevice} Placeholders went to the secure
-                      server instead; the values were put back here.
+                      server instead; the values were put back here. Not every
+                      number is recognised, least of all in photos and scans.
                     </p>
                   )}
                   {message.failure && (
@@ -1757,6 +1792,28 @@ export function App() {
               </div>
             )}
             <div className="composer-dock">
+              {status?.healthConsentDraft && consentPending && (
+                <HealthConsentPrompt
+                  onChoose={(choice) => {
+                    const pending = consentPending;
+                    chooseHealthConsent(choice);
+                    setConsentPending(undefined);
+                    if (pending)
+                      void send(
+                        pending.base,
+                        pending.text,
+                        pending.consumeDraft,
+                        true,
+                      );
+                  }}
+                />
+              )}
+              {status?.healthConsentDraft &&
+                healthConsent?.choice === "declined" && (
+                  <p className="notice composer-note" role="note">
+                    {HEALTH_CONSENT.declinedNote}
+                  </p>
+                )}
               <form
                 className="composer"
                 onSubmit={(e) => {
@@ -2454,6 +2511,8 @@ export function App() {
                   , through CometRow’s research service. Their retention
                   policies apply. No private chat or attachment is included
                   automatically.
+                  {proposal.kind === "page" &&
+                    " The page address is sent exactly as shown; personal details in it are not removed."}
                 </p>
                 <button
                   className="primary"
@@ -2649,7 +2708,7 @@ export function App() {
                       setSource({
                         id: "privacy-policy",
                         title: "Privacy policy",
-                        text: privacyPolicyText(),
+                        text: privacyPolicyText(disclosedProvider(status)),
                       })
                     }
                   >
