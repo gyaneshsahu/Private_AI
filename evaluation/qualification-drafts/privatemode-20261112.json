@@ -1,0 +1,148 @@
+{
+  "status": "DRAFT_NEEDS_OWNER_SIGNATURE_NOT_LOADABLE",
+  "draftedAt": "2026-11-12",
+  "note": "Qualification report draft for Privatemode, the primary provider for the alpha (owner decision of 12 November), written by the agent from evidence of 11 and 12 November. It cannot be loaded: 'modes' is PENDING_MODEL_MAPPING, three statuses are not schema statuses, pricing and approvedSpendUSD are null, the dates and the portal key limit are placeholders. To become a report: (1) the parent session fills 'modes' from the model-mapping evidence (pick one Fast candidate and one Thinking candidate) and sets 'model' to the Fast model; (2) the owner accepts each 'needs-owner-acceptance' check in writing (status 'accepted-by-owner', acceptedAt, reason) or keeps chat off; (3) the owner approves the privacy wording (D17, docs/privacy-wording-privatemode-20261112.md), which closes retentionAndLogs; (4) the owner creates the dedicated alpha key and records its limits and expiry in privatemode.portalKeyLimit; (5) the owner sets the EUR to USD rate, pricing and approvedSpendUSD (D5); (6) on the day the agent re-runs scripts/privatemode-manifest.ts, puts the digest in releaseDigests and fills reviewedAt/validUntil. docs/qualification-report-draft-privatemode-20261112.md explains each check.",
+  "provider": "privatemode",
+  "model": "PENDING_MODEL_MAPPING (the Fast model of the chosen mapping)",
+  "modesStatus": "PENDING_MODEL_MAPPING: filled by the parent session from the model-mapping evidence. Fast is GLM-5.3 at low reasoning or GLM-5.3-Flash at low; Thinking is GLM-5.3 at high or max. Each candidate below already has the schema's tier shape. A tier's reasoning setting applies to its backup model too (policyForTier), so a backup runs at the same effort. Every model is at Privatemode; a retry never crosses to Tinfoil.",
+  "modes": {
+    "status": "PENDING_MODEL_MAPPING",
+    "fastCandidates": [
+      {
+        "model": "glm-5.3",
+        "glmReasoningEffort": "low",
+        "backupModel": "glm-5.3-flash",
+        "maxOutputTokens": 2048,
+        "allowanceCost": 1
+      },
+      {
+        "model": "glm-5.3-flash",
+        "glmReasoningEffort": "low",
+        "backupModel": "glm-5.3",
+        "maxOutputTokens": 2048,
+        "allowanceCost": 1
+      }
+    ],
+    "thinkingCandidates": [
+      {
+        "model": "glm-5.3",
+        "glmReasoningEffort": "max",
+        "backupModel": "glm-5.3-flash",
+        "maxOutputTokens": 16384,
+        "allowanceCost": 3
+      },
+      {
+        "model": "glm-5.3",
+        "glmReasoningEffort": "high",
+        "backupModel": "glm-5.3-flash",
+        "maxOutputTokens": 16384,
+        "allowanceCost": 3
+      }
+    ]
+  },
+  "origin": "https://api.privatemode.ai/",
+  "repository": "edgelesssys/privatemode-public",
+  "repositoryNote": "The schema requires an edgelesssys/* repository. The exact repository the manifest is built from is not confirmed by Edgeless in writing (unknown); confirm before signature.",
+  "releaseDigests": [
+    "5fa927e3b864738da35d427c10ba8e49ebeeb1531e49618899cf95f654d240c1"
+  ],
+  "releaseDigestsNote": "SHA-256 of the live manifest bytes read with scripts/privatemode-manifest.ts on 12 November 2026 (5,992 bytes; reference values snp and tdx). Re-read on the day of signature: a rotated manifest needs a new digest.",
+  "reviewedAt": "REPLACE_ON_THE_DAY_OF_SIGNATURE",
+  "validUntil": "REPLACE_AT_MOST_SEVEN_DAYS_LATER",
+  "maxInputCharacters": 8000,
+  "maxOutputTokens": 16384,
+  "pricing": {
+    "inputPerMillion": null,
+    "outputPerMillion": null,
+    "currency": "USD",
+    "note": "Highest rate among the report's models is GLM-5.3: EUR 1.55 input and EUR 5.74 output per 1M tokens, plus VAT (docs/privatemode-master-notes.md section 6). Owner sets the USD values from privatemode.priceConversion, with a margin for the rate."
+  },
+  "approvedSpendUSD": null,
+  "privatemode": {
+    "sdkVersion": "1.63.0",
+    "wasmSha256": "71b9bf76fc48cfd892c16c74bf1526661bd4a4e377a01c28c3e0bbaa02cf7bd2",
+    "manifestReferenceValues": ["snp", "tdx"],
+    "nvidiaOCSPPolicy": "allowUnknown false, revokedGracePeriodHours 0 (set explicitly in src/providers/privatemode-client.ts; equals the SDK 1.63.0 default, which the SDK sends with each encrypted request; the Privatemode proxy documents a looser default, which does not apply here)",
+    "portalKeyLimit": {
+      "source": "owner-reported",
+      "setAt": "REPLACE_WHEN_THE_OWNER_CREATES_THE_ALPHA_KEY",
+      "expiresAt": "REPLACE_WITH_THE_KEY_EXPIRY",
+      "requestsPerMinute": "REPLACE_WITH_THE_KEY_RATE_LIMIT",
+      "spendLimit": "REPLACE_IF_A_PER-KEY_SPEND_LIMIT_IS_SET (amount, currency)"
+    },
+    "priceConversion": {
+      "inputPerMillionEUR": 1.55,
+      "outputPerMillionEUR": 5.74,
+      "vatRate": 0.19,
+      "usdPerEUR": "OWNER_SETS_ON_THE_DAY",
+      "rateDate": "OWNER_SETS_ON_THE_DAY"
+    }
+  },
+  "review": {
+    "browserVerification": {
+      "status": "needs-owner-acceptance",
+      "evidence": [
+        "12 November, tests/privatemode-browser.test.ts live through the real app (createApp, local TLS, Chromium): the SDK Wasm verified the deployment against the approved manifest (digest 5fa927e3...40c1), every SDK call carried the session's CSRF token, the browser held only a placeholder key, no request body contained the plaintext canary, no CSP violation with connect-src 'self'.",
+        "12 November, evaluation/live-failure-check.ts --privatemode: a report pinned to a wrong digest and a report approving an outdated manifest both sent nothing (0 chat requests at the relay)."
+      ],
+      "reason": "Partial: the browser checks the AMD SEV-SNP and Intel TDX reports against the approved manifest; the NVIDIA GPU is not in the client's reference values (live manifest has snp and tdx only). Accepting means trusting Privatemode's server-side GPU check."
+    },
+    "freshnessAndRevocation": {
+      "status": "needs-owner-acceptance",
+      "evidence": [
+        "Manifest digest pinned in the report and checked in the browser before the SDK runs (src/providers/privatemode-client.ts; tests/privatemode-client.test.ts); a manifest the SDK swaps in by itself closes the client (onManifestUpdate) and the CSP blocks the SDK's own manifest refetch (spike, 11 November).",
+        "NVIDIA OCSP policy set explicitly by the client: unknown statuses refused, no grace period for revoked certificates (tests/privatemode-client.test.ts)."
+      ],
+      "reason": "Whether the Wasm checks AMD and Intel revocation and the age of the evidence is unknown (not in the SDK documentation read). No relay-side audit exists for Privatemode. Accepting means a revoked or stale platform could be accepted until the report expires (at most seven days)."
+    },
+    "protectedWorkerChain": {
+      "status": "needs-owner-acceptance",
+      "evidence": [
+        "Privatemode documentation (attestation overview, as summarised in docs/privatemode-stage3-plan-20261112.md): the GPU attestation is checked by Privatemode's own service before keys are released; not observable from the browser."
+      ],
+      "reason": "The browser cannot confirm the GPU part of the chain. Accepting means trusting Privatemode's server-side check."
+    },
+    "retentionAndLogs": {
+      "status": "open-pending-owner-approval-D17",
+      "evidence": [
+        "Privatemode FAQ Q5 (read 11 November, docs/privatemode-master-notes.md section 7): prompts and responses not stored; metadata (IP address, timestamp, API key, token usage) up to 90 days; token usage per API key stored permanently for billing.",
+        "Privatemode FAQ Q7: prompt cache keyed by a secret salt; requests with different salts cannot reuse entries or detect hits. Implemented as a per-account cache_salt (server/app.ts, tests/privatemode-relay.test.ts).",
+        "Disclosure drafted in privacyCopy('privatemode') (shared/privacy-copy.ts) and the provider section (shared/provider-disclosure.ts); both drafts await the owner (D17, D8)."
+      ],
+      "reason": "Passes only once the owner approves the Privatemode privacy wording (D17) and provider section (D8), so the statement shown matches the supplier's terms."
+    },
+    "noExternalTools": {
+      "status": "pass",
+      "evidence": [
+        "The chat request carries no tools, web_search_options or tool_choice unless the optional calculator is configured (src/verified-chat.ts, provider-neutral); this report does not configure it.",
+        "src/reply-stream.ts fails a reply that contains tool calls; tests/reply-stream.test.ts."
+      ]
+    },
+    "liveStreaming": {
+      "status": "pass",
+      "evidence": [
+        "12 November, evaluation/live-failure-check.ts --privatemode through the real app (Vite dev, Chromium, local TLS) on glm-5.3-flash low: baseline reply completed, a 200-word reply completed (933 tokens reported in the browser), streaming visible before Stop (354 characters)."
+      ]
+    },
+    "negativeTests": {
+      "status": "pass",
+      "evidence": [
+        "12 November, evaluation/live-failure-check.ts --privatemode, 7 of 7: stop during verification (no chat request), stop mid-stream then the next request admitted, output limit shown as incomplete, wrong manifest digest (0 chat requests), outdated manifest (0 chat requests).",
+        "Offline: tests/privatemode-relay.test.ts (root paths behind session, CSRF, invite gate, stop switch, spend guard, allowance, one request per account; failures stay at Privatemode), tests/privatemode-client.test.ts. The hosted part (on Render, chat on) must still run before the first invitee."
+      ]
+    },
+    "usageAndBudget": {
+      "status": "needs-owner-acceptance",
+      "evidence": [
+        "server/spend-guard.ts counts every Privatemode request at its worst case (token usage reaches the relay encrypted); tests/privatemode-relay.test.ts refuses at the limit before allowance or upstream. Operator stop file; one request per account, three per instance."
+      ],
+      "reason": "No per-request metering: cost is visible only in the Privatemode portal. Needs the ceiling amount (D5), the dedicated alpha key's rate limit, spend limit and expiry set by the owner (privatemode.portalKeyLimit), and a hosted stop-switch test."
+    }
+  },
+  "modelEvidence": {
+    "stage1Screen": "11 November, 9 synthetic cases x 3: glm-5.3-flash (low) passed every automatic bar; gpt-oss-120b failed open question, citation format and time to first token (not a candidate). Safety case 07 awaits the owner's grade.",
+    "wideScreen": "12 November (docs/wide-screen-20261112.md): glm-5.3 max is the only Privatemode setting that reasons at length, but slow (median first text 5.5 s; a 13,989-token answer took 6.6 minutes); glm at high barely reasons.",
+    "arithmeticV3": "12 November, unseen v3: glm-5.3 max 81/90 correct, 3 silent; glm-5.3-flash 43/90, 22 silent (every silent error omits a requested figure).",
+    "exactIds": "Privatemode email of 12 November: exact IDs (glm-5.3, glm-5.3-flash) pin one version; aliases (glm-latest, glm-flash-latest) move and are refused by the schema."
+  }
+}

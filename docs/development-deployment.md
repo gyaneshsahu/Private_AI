@@ -1,5 +1,37 @@
 # Restricted development deployment
 
+## Privatemode as the provider: keys, manifest, local run (Stage 3, branch `privatemode-stage3`) — 12 November
+
+Owner decision of 12 November: Privatemode is the primary provider for the alpha; Tinfoil stays working behind the same interface as the business-continuity backup. The provider is chosen only by the deployed qualification report's `provider`; switching is manual and announced (`docs/provider-switch-20261112.md`), never an automatic fallback.
+
+**Which key is read.** `server/index.ts` reads `PRIVATEMODE_API_KEY` when the report's `provider` is `privatemode`, otherwise `TINFOIL_API_KEY`; the other provider's key is never read. In production the deployment config's `inference.apiKeyFile` holds the key of the report's provider.
+
+**Dedicated alpha key (owner action; the agent cannot create keys).** Privatemode confirmed on 12 November that individual API keys can have their own rate limit and expiry date, and that rate limits and quotas otherwise apply to the whole organisation.
+1. Sign in to the Privatemode portal (portal.privatemode.ai), select the CometRow organisation, open API keys and create a new key named for the alpha (for example `cometrow-alpha-202611`). The exact labels of the portal form were not read by the agent.
+2. Set a **rate limit** on the key (suggested: 20 requests per minute, below the organisation's limit, so a runaway client cannot use the whole organisation's quota) and an **expiry date** (suggested: the end of the alpha phase, at most 90 days). If the portal offers a per-key spend limit, set it at or below the report's `approvedSpendUSD` converted to EUR (plan option (c): the relay stops first, the portal is the second wall).
+3. Store it locally: `powershell -File scripts/windows-secret.ps1 -Action Set -Name PRIVATEMODE_API_KEY` (Credential Manager entry `PrivateAI/Local/PRIVATEMODE_API_KEY`; the script prompts and never prints it). This replaces the development key in that entry; keep the development key in the portal only if still needed.
+4. For Render: a secret file (for example `privatemode-api-key`) referenced by `inference.apiKeyFile`. Never paste it into chat, logs or the repository.
+5. Record the limits in the report's `privatemode.portalKeyLimit` (`source: "owner-reported"`, `setAt`, `expiresAt`, `requestsPerMinute`, `spendLimit`).
+
+**Key expiry warning.** Whether the Privatemode API exposes a key's expiry to the key itself is unknown (not in the documentation read), so the server does not query it. Instead the report records `privatemode.portalKeyLimit.expiresAt`, and `server/index.ts` prints a warning at startup when the key expires within 14 days or has expired (`privatemodeKeyExpiryWarning`, tested in `tests/privatemode-relay.test.ts`). The production composition prints nothing yet, so the **manual reminder** applies: put a calendar entry 14 days before `expiresAt` to create the next key, update the Render secret and the report, and redeploy. An expired key makes every chat request fail upstream; users see "Protected response unavailable", nothing is charged.
+
+**Approved manifest.** The browser verifies Privatemode against a manifest the report approves (`releaseDigests` = SHA-256 of the manifest bytes). Read it with `Invoke-WithPrivateAiSecret -Name PRIVATEMODE_API_KEY -Action { npx tsx scripts/privatemode-manifest.ts --write .local/privatemode-manifest.json }` (attestation only, no tokens; prints the digest). Weekly check: `... scripts/privatemode-manifest.ts --check <report.json>` exits 1 when Privatemode rotated the manifest; chat then refuses until the owner approves the new digest. Locally the server reads `PRIVATEAI_PROVIDER_MANIFEST_FILE` (default `.local/privatemode-manifest.json`). In production: `inference.manifestFile` (a Render secret file), **required exactly when the report names Privatemode**; `attestationAudit` (Tinfoil's release audit) is refused with a Privatemode report (`server/deployment-config.ts`, `tests/deployment-inference-config.test.ts`).
+
+**Local run on Privatemode.** The Privatemode SDK always calls its base URL over HTTPS, so the local server must use TLS. `PRIVATEAI_LOCAL_TLS=1` serves `https://localhost:<port>` with an ephemeral self-signed certificate (never added to the trust store), bound to 127.0.0.1 only; a loopback origin never counts as hosted.
+
+```powershell
+Import-Module .\scripts\WindowsSecrets.psm1
+Invoke-WithPrivateAiSecret -Name PRIVATEMODE_API_KEY -Action {
+  $env:PRIVATEAI_QUALIFICATION_FILE = '.local/qualification-privatemode.json'   # a local test report, never a signed one
+  $env:PRIVATEAI_LOCAL_TLS = '1'
+  npx tsx server/index.ts --dev
+}
+```
+
+The browser must accept the self-signed certificate (Playwright: `ignoreHTTPSErrors: true`). Per message the SDK makes three POSTs (attestation, key exchange, chat), all behind session, CSRF and the stop switch; they count toward the session's 200-POST limit, so a local session allows about 66 messages per hour.
+
+**Wasm.** The 28.8 MB `privatemode.wasm` is served at `/api/inference/privatemode/privatemode-<sha256>.wasm` with `Cache-Control: public, max-age=31536000, immutable`, only when the name, the installed file and the report's `privatemode.wasmSha256` agree; every other response stays `no-store`.
+
 ## Attestation audit configuration: keep absent until the pinning policy is decided — 22 October
 
 Candidates from 22 October contain the block-only attestation audit (`server/attestation-audit.ts`). It is active only when the deployment config carries an `attestationAudit` block; `deployment/render-config.example.json` and the mounted hosted config have none, so the guard passes through. Owner instruction of 22 October: do **not** add that block to any deployment until the release pinning policy in `docs/threat-model-20261022.md` is decided; with the router rotating several times a week, a pin to a recorded digest would refuse all private inference. Startup never enables it by itself.
