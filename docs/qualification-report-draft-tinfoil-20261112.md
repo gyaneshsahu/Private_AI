@@ -4,6 +4,8 @@
 
 Candidate models: **gpt-oss-120b, low reasoning** (best Tinfoil arm on 11 November: every bar except citation format 2 of 3), fallback **gemma4-31b with thinking** (open question 2 of 3, slower). The model pick is P6; the safety grades for case 07 are P5.
 
+Answer modes (added 12 November, branch `modes-20261112`): the JSON has a `modes` block with **interim placeholders** until the wide model screen picks each tier. Fast: gpt-oss-120b low, backup gemma4-31b thinking off, 2,048 output tokens, allowance cost 1. Thinking: gpt-oss-120b high, backup gemma4-31b thinking on, 4,096 output tokens, allowance cost 3. Every model is at Tinfoil; `pricing` must be the highest rate among them before signature.
+
 | Check | Draft status | Evidence | What accepting means |
 | --- | --- | --- | --- |
 | Browser check of the secure server | **needs owner acceptance** | Router digest verified 12 Nov; wrong digest refused live, nothing sent | The browser checks repository, digest and key binding only; freshness, revocation and TDX are not checked there |

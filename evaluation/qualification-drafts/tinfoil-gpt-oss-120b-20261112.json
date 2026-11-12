@@ -7,6 +7,25 @@
   "fallbackModel": "gemma4-31b",
   "gptOssReasoningEffort": "low",
   "gemmaThinking": true,
+  "modesStatus": "INTERIM_PLACEHOLDERS_12_NOVEMBER: the models, settings, output limits and allowance costs in 'modes' are placeholders until the wide model screen (running 12 November) picks each tier; replace them from its result before signature. All models stay at this one provider (Tinfoil). 'pricing' must then be the highest rate among every model named in this report.",
+  "modes": {
+    "fast": {
+      "model": "gpt-oss-120b",
+      "gptOssReasoningEffort": "low",
+      "backupModel": "gemma4-31b",
+      "gemmaThinking": false,
+      "maxOutputTokens": 2048,
+      "allowanceCost": 1
+    },
+    "thinking": {
+      "model": "gpt-oss-120b",
+      "gptOssReasoningEffort": "high",
+      "backupModel": "gemma4-31b",
+      "gemmaThinking": true,
+      "maxOutputTokens": 4096,
+      "allowanceCost": 3
+    }
+  },
   "origin": "https://inference.tinfoil.sh/",
   "repository": "tinfoilsh/confidential-model-router",
   "releaseDigests": ["44da5457cd18ef85d90ea722e92f30a233296389fdd38ba9e08d68104dea7f98"],
