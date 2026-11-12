@@ -74,7 +74,7 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | R1 | /account loading fix checked on a real device | First screen a friend sees | Owner | no | 10 min | unknown (deployed in `ae439fa`, not looked at) |
 | R2 | Email delivery, or Google-only for the alpha | Without email: no recovery, no self-service closure | Owner | yes (decision) | 15 min decide; 1–2 days if email | open |
 | R3 | Invitee list (at most 10 allowlisted emails) | Who gets in | Owner | yes | 15 min | open |
-| R4 | Safe Browsing "Dangerous site" warning explained (Search Console) | Could scare a friend away at sign-in | Owner | yes | 30 min plus Google's wait | open |
+| R4 | Safe Browsing "Dangerous site" warning explained (Search Console) | Could scare a friend away at sign-in | Owner | yes | 30 min plus Google's wait | cause narrowed 12 Nov (`docs/safe-browsing-20261112.md`): `cometrow.com` flagged for deceptive pages; nothing is live at the root domain (404) while `app.` asks for Google sign-in; Search Console steps written; owner: verify the domain, read the sample URLs, put the website live, request review |
 | R5 | Web search on or off for the alpha | Brave unresponsive; no search key in production | Owner | no | 15 min | open (off today); 12 Nov live comparison (`docs/search-comparison-20261112.md`): Brave stays default; Tinfoil enclave search about 10x the price, skipped search once silently, 12 written questions; owner decides on/off for the alpha |
 | R6 | Support contact and pause or revoke rule (plan 8.4) | Friends need someone to write to | Owner | yes | 30 min | open |
 
