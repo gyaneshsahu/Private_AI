@@ -4,12 +4,22 @@ import { containDialogFocus } from "./dialog-focus";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   emptyConversation,
+  tierFor,
   verificationSummary,
   type AppStatus,
   type Conversation,
   type Disclosure,
   type Source,
 } from "../shared/contracts";
+import {
+  answerLabel,
+  autoMode,
+  MODE_NAMES,
+  readModeChoice,
+  saveModeChoice,
+  shouldRetryOnBackup,
+  type ModeChoice,
+} from "./answer-modes";
 import {
   composeContext,
   measureContext,
@@ -159,6 +169,7 @@ export function App() {
   useEffect(() => () => calculationSession.clear(), [calculationSession]);
   const [status, setStatus] = useState<AppStatus>();
   const [input, setInput] = useState("");
+  const [modeChoice, setModeChoice] = useState(readModeChoice);
   // Draft health consent (shared/health-consent.ts): only while the server enables it.
   const [healthConsent, setHealthConsent] = useState(readHealthConsent);
   const [consentPending, setConsentPending] = useState<{
@@ -544,8 +555,16 @@ export function App() {
     controller.current = abort;
     const current = epoch.current;
     const qualified = status.inference.qualification;
+    const mode = qualified?.modes
+      ? modeChoice === "auto"
+        ? autoMode(next)
+        : modeChoice
+      : undefined;
+    const hasBackup = !!qualified && !!tierFor(qualified, mode).backupModel;
+    let textArrived = false;
+    let retried = false;
     try {
-      const attempt = async (choice: "primary" | "fallback") => {
+      const attempt = async (choice: "primary" | "backup") => {
         const { streamReply } = await abortable(
           import("./inference"),
           abort.signal,
@@ -557,6 +576,7 @@ export function App() {
           status.csrf,
           abort.signal,
           (chunk) => {
+            textArrived ||= !!chunk;
             if (epoch.current === current && !abort.signal.aborted)
               setConversation((c) => ({
                 ...c,
@@ -581,6 +601,7 @@ export function App() {
               }));
           },
           choice,
+          mode,
         );
         abort.signal.throwIfAborted();
         if (epoch.current === current) {
@@ -595,11 +616,11 @@ export function App() {
                     ...(m.text
                       ? { arithmeticCheck: checkArithmetic(m.text) }
                       : {}),
-                    ...(choice === "fallback" && qualified?.fallbackModel
-                      ? {
-                          answeredBy: `Answered by the fallback model ${qualified.fallbackModel} after the usual model did not accept the request.`,
-                        }
-                      : {}),
+                    answeredBy: answerLabel(
+                      modeChoice,
+                      mode,
+                      choice === "backup",
+                    ),
                   }
                 : m,
             ),
@@ -614,20 +635,22 @@ export function App() {
       try {
         await attempt("primary");
       } catch (error) {
-        // A rejection means the model gave no answer. The fallback is
-        // a different, explicitly confirmed request, never an automatic retry.
+        // Owner, 12 November: one automatic, labelled retry on the same mode's backup
+        // model at the same provider, only when no answer text arrived.
         if (
+          !hasBackup ||
+          !shouldRetryOnBackup(error, abort.signal.aborted, textArrived)
+        )
+          throw error;
+        retried = true;
+        if (
+          epoch.current === current &&
           error instanceof IncompleteReplyError &&
-          error.diagnostic?.code === "HTTP_UPSTREAM_REJECTED" &&
-          qualified?.fallbackModel &&
-          !abort.signal.aborted &&
-          window.confirm(
-            `The usual model (${qualified.model}) did not accept this request and gave no answer. Answer with the fallback model ${qualified.fallbackModel} instead? Cancel to leave it unanswered.`,
-          )
-        ) {
-          abort.signal.throwIfAborted();
-          await attempt("fallback");
-        } else throw error;
+          error.usage
+        )
+          setConversation((c) => ({ ...c, usage: [...c.usage, error.usage!] }));
+        setBusy("Trying the backup model…");
+        await attempt("backup");
       }
     } catch (error) {
       calculationSession.clear();
@@ -659,14 +682,20 @@ export function App() {
               ? [...c.usage, error.usage]
               : c.usage,
         }));
+        const said = abort.signal.aborted
+          ? "Response stopped. Partial answers are excluded from future context."
+          : error instanceof IncompleteReplyError
+            ? `${error.message} ${error.usage ? "Reported usage was retained." : "This request’s cost remains unknown."}`
+            : error instanceof Error && error.name === "TimeoutError"
+              ? "Response timed out. Partial answers are excluded from future context. This request’s cost remains unknown. No automatic retry was made."
+              : "Protected response unavailable. No weaker fallback or automatic retry was used. Check provider verification and service access.";
         setNotice(
-          abort.signal.aborted
-            ? "Response stopped. Partial answers are excluded from future context."
-            : error instanceof IncompleteReplyError
-              ? `${error.message} ${error.usage ? "Reported usage was retained." : "This request’s cost remains unknown."}`
-              : error instanceof Error && error.name === "TimeoutError"
-                ? "Response timed out. Partial answers are excluded from future context. This request’s cost remains unknown. No automatic retry was made."
-                : "Protected response unavailable. No weaker fallback or automatic retry was used. Check provider verification and service access.",
+          retried
+            ? said.replace(
+                /No (weaker fallback or )?automatic retry was (made|used)\./,
+                "One automatic retry with the backup model was made.",
+              )
+            : said,
         );
       }
     } finally {
@@ -1939,6 +1968,24 @@ export function App() {
                       </p>
                     </div>
                   </details>
+                  {status?.inference.qualification?.modes && (
+                    <select
+                      className="mode-select"
+                      aria-label="Answer mode"
+                      value={modeChoice}
+                      onChange={(event) => {
+                        const value = event.target.value as ModeChoice;
+                        setModeChoice(value);
+                        saveModeChoice(value);
+                      }}
+                    >
+                      {(["auto", "fast", "thinking"] as const).map((value) => (
+                        <option key={value} value={value}>
+                          {MODE_NAMES[value]}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                   <button
                     type="button"
                     className="context-count"

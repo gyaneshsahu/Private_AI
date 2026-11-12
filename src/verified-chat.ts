@@ -25,6 +25,7 @@ import {
 } from "./assisted-research";
 import { abortable, withDeadline } from "./abortable";
 import {
+  type AnswerMode,
   type Conversation,
   type Usage,
   type Qualification,
@@ -74,6 +75,8 @@ export type VerifiedChatPolicy = Pick<
   gemmaThinking?: boolean;
   glmReasoningEffort?: "low" | "high" | "max";
   gptOssReasoningEffort?: "low" | "medium" | "high";
+  /** Declared to the relay so it admits this mode's models, limit and allowance cost. */
+  answerMode?: AnswerMode;
   answerPolicyVariant?: AnswerPolicyVariant;
   researchEvidenceContract?: boolean;
   checkedResponseContract?: boolean;
@@ -324,6 +327,10 @@ async function streamMaskedConversation(
       ...report,
       provider: report.provider ?? defaultInferenceProvider,
     } as const;
+    const routeHeaders = {
+      ...adapter.requestHeaders(policy),
+      ...(report.answerMode ? { "X-PrivateAI-Mode": report.answerMode } : {}),
+    };
     const destination = await adapter.verify(policy, signal, onStatus);
     onVerified?.(destination.evidence);
     signal.throwIfAborted();
@@ -367,7 +374,7 @@ async function streamMaskedConversation(
           "Content-Type": "application/json",
           Accept: "text/event-stream",
           "X-PrivateAI-CSRF": csrf,
-          ...adapter.requestHeaders(policy),
+          ...routeHeaders,
         },
         body: JSON.stringify(requestBody),
         signal,
@@ -441,7 +448,7 @@ async function streamMaskedConversation(
                 "Content-Type": "application/json",
                 Accept: "text/event-stream",
                 "X-PrivateAI-CSRF": csrf,
-                ...adapter.requestHeaders(policy),
+                ...routeHeaders,
                 "X-PrivateAI-Continuation-Approval":
                   continuationApproval.approvalId,
               },

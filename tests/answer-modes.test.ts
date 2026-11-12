@@ -1,0 +1,232 @@
+// Answer modes (owner, 12 November): schema, Auto's on-device rules, the one-retry rule and labels.
+import { readFile } from "node:fs/promises";
+import { describe, expect, it } from "vitest";
+import {
+  checks,
+  emptyConversation,
+  largestOutputLimit,
+  policyForTier,
+  qualifiedModels,
+  qualificationSchema,
+  tierFor,
+  validateQualification,
+} from "../shared/contracts";
+import { answerLabel, autoMode, shouldRetryOnBackup } from "../src/answer-modes";
+import { IncompleteReplyError } from "../src/reply-stream";
+import type { StreamFailureCode } from "../src/stream-failure";
+
+const base = () => ({
+  provider: "tinfoil",
+  model: "gpt-oss-120b",
+  origin: "https://test.tinfoil.sh/",
+  repository: "tinfoilsh/test-only",
+  releaseDigests: ["a".repeat(64)],
+  reviewedAt: new Date(Date.now() - 1000).toISOString(),
+  validUntil: new Date(Date.now() + 60000).toISOString(),
+  review: Object.fromEntries(
+    checks.map((key) => [key, { status: "pass", evidence: ["TEST ONLY not provider evidence"] }]),
+  ),
+  maxInputCharacters: 5000,
+  maxOutputTokens: 1000,
+  pricing: { inputPerMillion: 1, outputPerMillion: 1, currency: "USD" },
+  approvedSpendUSD: 1,
+});
+const modes = () => ({
+  fast: {
+    model: "gpt-oss-120b",
+    gptOssReasoningEffort: "low",
+    backupModel: "gemma4-31b",
+    gemmaThinking: false,
+    maxOutputTokens: 1024,
+    allowanceCost: 1,
+  },
+  thinking: {
+    model: "gpt-oss-120b",
+    gptOssReasoningEffort: "high",
+    backupModel: "gemma4-31b",
+    gemmaThinking: true,
+    maxOutputTokens: 4096,
+    allowanceCost: 3,
+  },
+});
+
+describe("report schema", () => {
+  it("accepts modes and gives each request only its tier's model, backup, settings and limit", () => {
+    const report = validateQualification({ ...base(), modes: modes() });
+    expect(qualifiedModels(report)).toEqual(new Set(["gpt-oss-120b", "gemma4-31b"]));
+    expect(largestOutputLimit(report)).toBe(4096);
+    expect(policyForTier(report, "thinking", "primary")).toMatchObject({
+      model: "gpt-oss-120b",
+      gptOssReasoningEffort: "high",
+      maxOutputTokens: 4096,
+    });
+    const backup = policyForTier(report, "fast", "backup");
+    expect(backup).toMatchObject({ model: "gemma4-31b", gemmaThinking: false, maxOutputTokens: 1024 });
+    expect(backup.gptOssReasoningEffort).toBeUndefined();
+    expect(policyForTier(report, "thinking", "backup").gemmaThinking).toBe(true);
+  });
+
+  it("keeps a report without modes as today: one model, its optional fallback as backup, cost 1", () => {
+    const report = validateQualification({ ...base(), fallbackModel: "gemma4-31b" });
+    expect(tierFor(report, "thinking")).toEqual({
+      model: "gpt-oss-120b",
+      backupModel: "gemma4-31b",
+      maxOutputTokens: 1000,
+      allowanceCost: 1,
+    });
+    expect(() => policyForTier(validateQualification(base()), undefined, "backup")).toThrow("No backup");
+  });
+
+  it("refuses invalid tiers", () => {
+    const bad = (change: (m: ReturnType<typeof modes>) => void) => {
+      const m = modes();
+      change(m);
+      return () => validateQualification({ ...base(), modes: m });
+    };
+    expect(bad((m) => (m.fast.backupModel = "gpt-oss-120b"))).toThrow("must differ");
+    expect(bad((m) => (m.fast.maxOutputTokens = 4097))).toThrow();
+    expect(bad((m) => (m.thinking.allowanceCost = 0))).toThrow();
+    expect(bad((m) => (m.thinking.allowanceCost = 1.5))).toThrow();
+    expect(bad((m) => (m.fast.model = "auto"))).toThrow();
+    // A setting must belong to a model its tier uses.
+    expect(
+      bad((m) => Object.assign(m.fast, { glmReasoningEffort: "low" })),
+    ).toThrow("mode does not use");
+    expect(() => validateQualification({ ...base(), modes: { fast: modes().fast } })).toThrow();
+  });
+
+  it("accepts a report-level setting for a model only a tier qualifies", () => {
+    expect(
+      validateQualification({ ...base(), modes: modes(), gemmaThinking: true }).gemmaThinking,
+    ).toBe(true);
+    expect(() => validateQualification({ ...base(), gemmaThinking: true })).toThrow("does not qualify");
+  });
+
+  it("never crosses providers: a report has one provider and a tier cannot name another", () => {
+    const m = modes();
+    Object.assign(m.fast, { provider: "privatemode", origin: "https://elsewhere.example/" });
+    const report = validateQualification({ ...base(), modes: m });
+    expect(report.modes!.fast).not.toHaveProperty("provider");
+    expect(report.modes!.fast).not.toHaveProperty("origin");
+    for (const mode of ["fast", "thinking"] as const)
+      for (const choice of ["primary", "backup"] as const)
+        expect(policyForTier(report, mode, choice)).toMatchObject({
+          provider: "tinfoil",
+          origin: "https://test.tinfoil.sh/",
+        });
+    expect(qualificationSchema.shape.provider.safeParse("privatemode").success).toBe(false);
+  });
+
+  it("the draft report's interim modes block is a valid tier pair", async () => {
+    const draft = JSON.parse(
+      await readFile("evaluation/qualification-drafts/tinfoil-gpt-oss-120b-20261112.json", "utf8"),
+    );
+    expect(draft.modesStatus).toContain("INTERIM");
+    const report = validateQualification({ ...base(), modes: draft.modes });
+    expect(report.modes!.thinking.allowanceCost).toBeGreaterThan(report.modes!.fast.allowanceCost);
+  });
+});
+
+const ask = (text: string, documents = 0) => {
+  const c = emptyConversation();
+  c.messages.push({ id: "u", role: "user", text, status: "complete", included: true });
+  if (documents)
+    c.attachments.push({
+      id: "a",
+      name: "synthetic.txt",
+      selected: true,
+      sources: [{ id: "s", title: "synthetic", text: "x".repeat(documents) }],
+    });
+  return c;
+};
+
+describe("Auto", () => {
+  it.each([
+    "What is the capital of France?",
+    "Write a short thank-you note to my neighbour.",
+    "Translate 'good morning' into Spanish.",
+    "Wie spät ist es in Tokio?",
+    "Schreib mir eine kurze Einladung zum Grillen.",
+    "Meeting at 3 pm, room 2.",
+  ])("answers simple requests with Fast: %s", (text) => {
+    expect(autoMode(ask(text))).toBe("fast");
+  });
+
+  it.each([
+    "Explain step by step how compound interest works.",
+    "Explain why the sky is blue.",
+    "Why does my bread not rise?",
+    "Prove that the square root of 2 is irrational.",
+    "Can you debug this function for me?",
+    "Compare a fixed and a variable mortgage.",
+    "Calculate 1250 * 12 + 300 - 45.",
+    "Solve the equation x^2 - 4 = 0",
+    "Erkläre Schritt für Schritt, wie eine Steuererklärung funktioniert.",
+    "Warum ist der Himmel blau?",
+    "Berechne die monatliche Rate für 20.000 Euro.",
+    "Vergleiche diese zwei Angebote.",
+    "Beweise, dass es unendlich viele Primzahlen gibt.",
+    "Was sind die Vor- und Nachteile von Solarstrom?",
+    "Here is my code:\n```js\nconst a = 1;\n```",
+    "TypeError: Cannot read properties of undefined\n    at render (app.js:10:5)",
+    'Traceback (most recent call last):\n  File "main.py", line 3, in <module>',
+  ])("answers demanding requests with Thinking: %s", (text) => {
+    expect(autoMode(ask(text))).toBe("thinking");
+  });
+
+  it("uses Thinking for long messages and large included documents only", () => {
+    expect(autoMode(ask("Please summarise. ".repeat(80)))).toBe("thinking");
+    expect(autoMode(ask("Summarise the attached file.", 9000))).toBe("thinking");
+    expect(autoMode(ask("Summarise the attached file.", 2000))).toBe("fast");
+    const excluded = ask("Summarise the attached file.", 9000);
+    excluded.attachments[0].selected = false;
+    expect(autoMode(excluded)).toBe("fast");
+  });
+});
+
+const failure = (code: StreamFailureCode, textCharacters = 0) =>
+  new IncompleteReplyError("synthetic", undefined, {
+    code,
+    events: 0,
+    usageEvents: 0,
+    textCharacters,
+    finish: "NONE",
+  });
+
+describe("one retry on the backup model", () => {
+  it.each(["HTTP_UPSTREAM_REJECTED", "HTTP_SERVICE_UNAVAILABLE", "TIMED_OUT"] as const)(
+    "retries %s before any answer text",
+    (code) => {
+      expect(shouldRetryOnBackup(failure(code), false, false)).toBe(true);
+    },
+  );
+
+  it("retries a timeout before the response started", () => {
+    expect(
+      shouldRetryOnBackup(new DOMException("Operation timed out.", "TimeoutError"), false, false),
+    ).toBe(true);
+  });
+
+  it("never retries after partial text, a stop, the relay's own limits or a broken answer", () => {
+    expect(shouldRetryOnBackup(failure("HTTP_UPSTREAM_REJECTED"), false, true)).toBe(false);
+    expect(shouldRetryOnBackup(failure("TIMED_OUT", 12), false, false)).toBe(false);
+    expect(shouldRetryOnBackup(failure("HTTP_UPSTREAM_REJECTED"), true, false)).toBe(false);
+    for (const code of [
+      "HTTP_RATE_LIMITED",
+      "HTTP_RESPONSE_INVALID",
+      "OUTPUT_LIMIT_REACHED",
+      "INCOMPLETE_ANSWER",
+      "ABORTED",
+      "TRANSPORT_OR_DECRYPTION",
+    ] as const)
+      expect(shouldRetryOnBackup(failure(code), false, false), code).toBe(false);
+    expect(shouldRetryOnBackup(Error("The checked server does not match"), false, false)).toBe(false);
+  });
+});
+
+it("labels replies by mode name only", () => {
+  expect(answerLabel("auto", "thinking", false)).toBe("Auto · Thinking");
+  expect(answerLabel("fast", "fast", true)).toBe("Fast · Answered by the backup model");
+  expect(answerLabel("auto", undefined, true)).toBe("Answered by the backup model");
+  expect(answerLabel("auto", undefined, false)).toBeUndefined();
+});

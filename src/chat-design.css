@@ -723,6 +723,18 @@
   left: 0;
   right: auto;
 }
+.chat-design .mode-select {
+  width: auto;
+  flex-shrink: 0;
+  font-size: 13px;
+  padding: 4px 8px;
+  min-height: 40px;
+}
+@media (max-width: 760px) {
+  .chat-design .mode-select {
+    min-height: 44px;
+  }
+}
 .chat-design .context-count {
   font-size: 12px;
   border: 0;

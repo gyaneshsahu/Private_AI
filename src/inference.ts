@@ -1,6 +1,7 @@
 import {
   validateQualification,
-  policyForModel,
+  policyForTier,
+  type AnswerMode,
   type Conversation,
   type Usage,
 } from "../shared/contracts";
@@ -20,17 +21,17 @@ export async function streamReply(
   onStatus: (text: string) => void,
   _calculationSession?: CalculationSession,
   onKeptOnDevice?: (kept: Partial<Record<IdentifierKind, number>>) => void,
-  modelChoice: "primary" | "fallback" = "primary",
+  modelChoice: "primary" | "backup" = "primary",
+  mode?: AnswerMode,
 ): Promise<Usage | undefined> {
   const report = validateQualification(qualification);
-  if (modelChoice === "fallback" && !report.fallbackModel)
-    throw Error("No fallback model is qualified.");
-  // The fallback is the same qualified deployment with a different catalog
-  // name; each model gets only its own reviewed settings.
-  const policy = policyForModel(
-    report,
-    modelChoice === "fallback" ? report.fallbackModel! : report.model,
-  );
+  if (mode && !report.modes) throw Error("No answer modes are qualified.");
+  // The backup is the same qualified deployment with a different catalog name; each
+  // model gets only its own reviewed settings and the mode's own output limit.
+  const policy = {
+    ...policyForTier(report, mode, modelChoice),
+    answerMode: mode,
+  };
   return streamVerifiedConversation(
     conversation,
     policy,
