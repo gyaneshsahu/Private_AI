@@ -2,14 +2,15 @@
 // phone, tablet and desktop widths. Checks page overflow, elements outside the viewport,
 // text contrast (WCAG AA, computed in the page), keyboard focus visibility and small touch
 // targets on phones. Chat is off (no report, no key), as in production today. No network
-// beyond 127.0.0.1. Run after `npm run build`:
+// beyond localhost. Run after `npm run build`:
 //   npx tsx evaluation/ui-sweep.ts [--browsers chromium,firefox,webkit]
 import { spawn } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import { chromium, firefox, webkit, type Page } from "@playwright/test";
 import { workspaceControl } from "./workspace-navigation";
 
-const PORT = 4190;
+// Not 4190: it is on the Fetch "bad ports" list (ManageSieve), so Firefox and WebKit refuse it.
+const PORT = 4192;
 const ORIGIN = `http://localhost:${PORT}`;
 const VIEWPORTS = { phone: { width: 375, height: 812 }, tablet: { width: 768, height: 1024 }, desktop: { width: 1280, height: 800 } };
 // /account is served only by the hosted composition; the local server shows the same screens in the account lab.
@@ -19,7 +20,8 @@ const chosen = (process.argv.includes("--browsers") ? process.argv[process.argv.
 
 const server = spawn(process.execPath, ["--import", "tsx", "server/index.ts"], {
   env: { ...process.env, PORT: String(PORT), PRIVATEAI_ORIGIN: ORIGIN, PRIVATEAI_QUALIFICATION_FILE: "", TINFOIL_API_KEY: "", BRAVE_SEARCH_API_KEY: "", PRIVATEAI_INVITES_FILE: "", PRIVATEAI_ACCESS_KEY: "" },
-  stdio: ["ignore", "pipe", "pipe"],
+  // stderr is inherited so a full, unread pipe can never block the server.
+  stdio: ["ignore", "pipe", "inherit"],
 });
 await new Promise<void>((ok, fail) => {
   const timer = setTimeout(() => fail(Error("server did not start")), 60_000);
@@ -115,6 +117,8 @@ async function focusCheck(page: Page) {
   await page.locator("body").click({ position: { x: 1, y: 1 } }).catch(() => {});
   for (let i = 0; i < 20; i++) {
     await page.keyboard.press("Tab");
+    // WebKit scrolls keyboard focus into view a frame later; measuring at once reports it off screen.
+    await page.evaluate("new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))");
     const r = (await page.evaluate(`(() => { const __name = (f) => f; return (${focusProbe.toString()})(); })()`)) as ReturnType<typeof focusProbe>;
     if (r && !r.indicator) problems.push(`no focus indicator: ${r.label}`);
     if (r && !r.onScreen) problems.push(`focus off screen: ${r.label}`);
