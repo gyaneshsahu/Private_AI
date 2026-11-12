@@ -2,7 +2,52 @@
 
 Running list kept while the owner is away (from 12 November 2026). Each entry names the decision, the safe default the agent applied, and where it matters. Nothing here is decided until the owner says so.
 
-## What needs you, ranked by what blocks the alpha (updated 12 November, after the overnight run)
+## What needs you, ranked by what blocks the alpha (updated 12 November, night: Privatemode primary)
+
+**Decided on 12 November:**
+- Privatemode is the primary provider. Tinfoil is a tested backup with no new tuning or spend. Switching is manual and announced.
+- The routing and search design is accepted.
+- The completeness check is accepted and built.
+- Attestation runs once per browser session and is refreshed at most every 10 minutes (option 1): accepted and built.
+- Mode models on Privatemode, from evidence (`docs/privatemode-fast-tier-20261112.md`): **Fast `glm-5.3-flash` low** (backup `glm-5.3`) and **Thinking `glm-5.3` max** (backup `glm-5.3-flash`).
+
+Earlier rows that these settle are listed after the table.
+
+| Rank | What you decide or do | Recommended default | Why it is here |
+| --- | --- | --- | --- |
+| 1 | **Privatemode alpha key:** create a dedicated key in the portal with a rate limit, an expiry date and a spend limit. Store it in Credential Manager (`PrivateAI/Local/PRIVATEMODE_API_KEY`) and as a Render secret. Tell me the limit and the expiry for the report (`portalKeyLimit`) | Expiry at the planned alpha end plus 2 weeks; spend limit as in rank 2 | Chat cannot run on Privatemode in production without it. Steps are in `docs/development-deployment.md` on `privatemode-stage3` |
+| 2 | **Money for Privatemode:** (a) the provider spend budget and (b) the app's spend ceiling `approvedSpendUSD` (D5) | (a) Set an org/key budget of **EUR 100 per month** with an alert, **before inviting anyone**. (b) **USD 100 per 7-day report window**: unmetered Privatemode requests are booked at worst case, about USD 0.10 per Thinking request against about EUR 0.015 real | The one-time 5M free tokens are nearly spent by testing (spend section in `docs/READINESS.md`). Real alpha use is roughly EUR 50-70 per month for 10 active users, mostly Thinking. If (b) is too low, the guard stops chat for everyone |
+| 3 | **Attestation limit:** send the two-line question to Privatemode support (draft in `docs/privatemode-attestation-limit-20261112.md` on `privatemode-stage3`) | Send now. Plan for the Standard tier, not Enterprise (you expect Enterprise to need a EUR 15-25k deal) | Even with per-session verification, the limit caps about 100-150 users chatting in the same 10 minutes. Fine for the alpha, not for the launch |
+| 4 | **Privatemode privacy wording** (D17 and the fifth sentence, now with the 10-minute check): approve `docs/privacy-wording-privatemode-20261112.md` (on `privatemode-stage3`), and decide whether to keep "does not use them to train any AI" | Approve; keep the training sentence only with the DPA reference | Users must be told the truth for the provider in use. Closes the report's retention check |
+| 5 | **Privatemode qualification report:** accept or refuse in writing the four checks marked for acceptance (GPU checked only on Privatemode's side; AMD/Intel revocation in the Wasm unknown; no per-request metering; attestation freshness of up to 10 minutes). Confirm the repository name `edgelesssys/privatemode-public`, then sign | Accept for the invite-only alpha; report valid 7 days, renewed weekly | Chat refuses to start without a valid report |
+| 6 | **Contracts with Edgeless/Privatemode:** confirm how the DPA of 24 July 2026 was concluded and file it; file the 12 Nov email (summary in `docs/supplier-privatemode-20261112.md`); review `docs/dpa-record-privatemode-20261112.md` | File both; no Enterprise call before you have usage numbers | GDPR Art. 28 and 30 |
+| 7 | **Grade safety case 07** for the Privatemode arms: `.local/privatemode-fast-tier-20261112/privatemode-glmflash-low-safety.md` and `privatemode-glm-low-safety.md` | Grade; keep the mapping unless a grade fails | The safety gate is the one bar a model must pass by your judgement |
+| 8 | **Context size with the top page** (2e): the reports allow 8,000 input characters; prompt plus search excerpts plus up to 6,000 characters of page text often exceed that | 32,000 in the Privatemode report, as the benchmarks used | Search answers fail without it |
+| 9 | **Deploy after merge:** merge `privatemode-stage3` and `privatemode-session-verify` into the development line once the Privatemode evaluation is in and Validate is green. Then deploy to Render with chat off, and switch chat on only after ranks 1, 2, 4 and 5 | As stated | The Render bridge fix and all of today's work are not live yet |
+| 10 | **Score samples** (optional but useful): `evaluation/benchmark-fresh-20261112/owner-sample.md` (30 answers) and the arithmetic paste batches in ChatGPT and Claude | Score; the model graders count as trusted only within 1 point on average | Validates the blind model graders |
+| 11 | **One text review of what we promise** (old rank 3): approved statement rows and live policy rows in `docs/copy-audit-20261112.md`, and provider section D8/D9/D10/D14 | Accept the proposed replacements | Several rows still describe Tinfoil |
+| 12 | **Health consent:** D2, D3, D4 | Approve the draft | Art. 9 consent |
+| 13 | **Legal texts:** L6 legal basis, L10 DPIA (now for Privatemode) and terms, acceptable use and the 18+ rule | Approve after a legal read | Required before strangers use it |
+| 14 | **Record of processing and breach plan** (D16) and **breach deputy** (D15) | Approve; no deputy for a 10-person alpha, in writing | GDPR Art. 30 and 33 |
+| 15 | **Rotate the database password you called exposed** (S2) | Rotate now | Status unknown |
+| 16 | **Cohort** (R2, R3, B17, R6) and **Safe Browsing** (R4; Search Console steps in `docs/safe-browsing-20261112.md`) | Google-only, 2 friends first, then up to 10 | Who gets in. The domain warning scares invitees |
+| 17 | **Device checks:** T1 (second account), T2 (Safari, Firefox, phone; the Privatemode Wasm is 29 MB, cached after the first load) | - | Only you have the accounts and devices |
+| 18 | **Operations** (O1, O2, O3), **inactivity rule**, **branch policy and `main`** (O6) | As in the earlier list | Not blocking the first invitees |
+| - | **Not blocking the alpha:** Exa (stopped), Tinfoil enclave search, the Enterprise plan, Tinfoil modes (frozen as backup) | | |
+
+**Settled today and removed from the list:**
+- Old rank 2 and 2a (provider and models): Privatemode with the models above. Only the safety grade is left (rank 7).
+- 2d: the Tinfoil limit was raised.
+- 2h: the routing design is accepted.
+- 2i: the Privatemode Fast model was chosen from evidence.
+- 2j: the completeness check is built.
+- 2b (the Tinfoil privacy wording branch) stays open, but it now matters only for the Tinfoil backup.
+
+### Earlier version of this list (kept for the record)
+
+<details><summary>Ranked list before the Privatemode decision</summary>
+
+Ranked list (updated 12 November, after the overnight run)
 
 Order = what unblocks the most first. My recommended default is in each row. Details: `docs/overnight-log.md` and the files named.
 
@@ -34,6 +79,8 @@ Order = what unblocks the most first. My recommended default is in each row. Det
 | 14 | **Inactivity rule** (checklist D12; not decision D12 below) | Option A: no code; delete accounts a set time after the alpha ends; set the end date | Wiring the existing file would delete nothing on the hosted service |
 | 15 | **Branch policy and `main`** (O6 step 4) | Fast-forward `main` to the tested line; release from `main` | The agent never touches `main` |
 | — | **Not blocking the alpha:** web search (R5: Brave stays default; Tinfoil enclave search only as a later opt-in after its written answers, `docs/search-comparison-20261112.md`), D11, D12 (scan recall), D13, D17 (becomes rank 3 if Privatemode wins), L9/A14 release pinning, L11, L12, R1, T7, S3, Exa (stopped until Exa replies) | | |
+
+</details>
 
 ## All decisions, by number
 
