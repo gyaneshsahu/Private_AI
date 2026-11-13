@@ -61,6 +61,57 @@ export function statesUncheckedFigures(answer: string): boolean {
   return FIGURE.some((rule) => rule.test(answer));
 }
 
+// Answer-side check (13 November, docs/german-rules-20261113.md): signals that an ANSWER states a
+// German rule, fee, deadline or legal consequence, whatever the question looked like. Calibrated
+// on the older stored answers only (never on the frozen 40-question set).
+// A § counts as a law reference when a number and a word follow ("§ 17 BMG", "§ 5 Abs. 1"), not
+// in a document citation like "[d5ef4c4c, §4]".
+const LAW =
+  /§§?\s?\d+[a-z]?\s+(Abs\.?|Absatz|Satz|Nr\.?|S\.|[A-ZÄÖÜ]\p{L}*)|\b(BGB|StVO|StVG|BKatV|UStG|EStG|AO|HGB|SGB|BUrlG|KSchG|StGB|ZPO|BetrVG|ArbZG|MuSchG|BEEG|BKGG|FeV|FZV|PAuswG|PassG|BMG|AufenthG|EntgFG|EFZG|MiLoG|TzBfG|NachwG|WoGG|BAföG|LStR|GewO|RBStV)\b|gesetze-im-internet/gu;
+const PENALTY =
+  /(?<!\p{L})(\p{L}*bu(ß|ss)geld\p{L}*|verwarn(ungs)?geld\p{L}*|fahrverbot\p{L}*|punkte?n? in flensburg|flensburg|penalty points?)(?!\p{L})/iu;
+// Money next to a fee, fine, tax, allowance or authority word, in the same sentence.
+const MONEY = /(€|\bEUR\b|\beuro\b)\s?(\d[\d.,]*)|(\d[\d.,]*)\s?(€|EUR\b|euro\b)/giu;
+const MONEY_CONTEXT =
+  /(?<!\p{L})(\p{L}*gebühr\p{L}*|\p{L}*steuer\p{L}*|\p{L}*freibetrag\p{L}*|\p{L}*pauschale\p{L}*|\p{L}*beitrag\p{L}*|\p{L}*geld|\p{L}*strafe\p{L}*|\p{L}*zuschlag\p{L}*|bußgeld\p{L}*|\p{L}*grenze|behörde\p{L}*|\p{L}*amt|finanzamt|zoll\p{L}*|anspruch|gesetzlich\p{L}*|fees?|fines?|penalt(y|ies)|tax(es|-free)?|allowance|levy|duty|benefits?|authorit(y|ies)|statutory|legal(ly)?|threshold|exemption)(?!\p{L})/iu;
+// A period or deadline next to legal or authority vocabulary, in the same sentence. "Frist" alone
+// is vocabulary, not a figure: "fristgerecht zum nächstmöglichen Termin" states nothing to check.
+const PERIOD = new RegExp(
+  String.raw`(?<!\p{L})(${NUMBER})[\s-]+(werk|arbeits|kalender)?(tage?n?|wochen?|monate?n?|jahre?n?|days?|weeks?|months?|years?|working days?|business days?)(?!\p{L})|(?<!\p{L})(bis zum|bis spätestens)(?!\p{L})`,
+  "giu",
+);
+const LEGAL_CONTEXT =
+  /(?<!\p{L})(\p{L}*frist\p{L}*|kündig\p{L}*|widerruf\p{L}*|gewährleistung\p{L}*|gesetz\p{L}*|rechtlich\p{L}*|anspruch\p{L}*|pflicht\p{L}*|verpflichtet|behörde\p{L}*|\p{L}*amt|antrag|beantrag\p{L}*|anmeld\p{L}*|ummeld\p{L}*|vermieter\p{L}*|mieter\p{L}*|arbeitgeber\p{L}*|finanzamt|verjähr\p{L}*|aufbewahr\p{L}*|statutory|legal(ly)?|entitled|notice period|withdrawal|warranty|landlord|tenant|employer|authorit(y|ies)|register|limitation period)(?!\p{L})/iu;
+const numbersIn = (text: string) =>
+  new Set((text.match(/\d[\d.,]*\d|\d/g) ?? []).map((n) => n.replace(/[.,]/g, "")));
+
+/**
+ * True when the answer states a German rule, fee, deadline or legal consequence as fact.
+ * Ignored: code, and figures the user gave in the question (so arithmetic on the user's own
+ * amounts, e.g. VAT on their invoice, does not count).
+ */
+export function answerStatesRules(answer: string, question = ""): boolean {
+  const text = answer.replace(/```[\s\S]*?(```|$)|~~~[\s\S]*?(~~~|$)|`[^`\n]*`/g, " ");
+  const given = numbersIn(question);
+  // shortcut: a calculation question with money in it is treated as arithmetic, so its EUR
+  // results never count; a rule figure in such an answer is missed. Revisit if seen.
+  const arithmetic = /\d\s?(€|EUR\b|euro\b)|(€|\bEUR\b)\s?\d/iu.test(question);
+  const fresh = (n: string) => !given.has(n.replace(/[.,]/g, ""));
+  // A law the user named in the question (a text to translate, say) is theirs, not the answer's.
+  if ([...text.matchAll(LAW)].some((m) => !question.includes(m[0])) || PENALTY.test(text))
+    return true;
+  return text.split(/(?<=[.!?:;])\s+|\n+/).some((sentence) => {
+    const money =
+      !arithmetic &&
+      [...sentence.matchAll(MONEY)].some((m) => fresh(m[2] ?? m[3])) &&
+      MONEY_CONTEXT.test(sentence);
+    const period =
+      [...sentence.matchAll(PERIOD)].some((m) => !m[1] || !/\d/.test(m[1]) || fresh(m[1])) &&
+      LEGAL_CONTEXT.test(sentence);
+    return money || period;
+  });
+}
+
 /**
  * The after-answer check: a German-rules question answered without web results whose answer
  * states figures. Device-only; the flag is never model context and never sent or logged.
@@ -76,9 +127,10 @@ export function checkUncheckedFigures(
     .slice(0, messages.findIndex((m) => m.id === answerId))
     .filter((m) => m.role === "user")
     .at(-1)?.text;
-  return question &&
-    germanRulesQuestion(question) &&
-    statesUncheckedFigures(answer)
+  if (!question) return undefined;
+  // The question detector, or the answer-side check, which does not depend on the question's wording.
+  return (germanRulesQuestion(question) && statesUncheckedFigures(answer)) ||
+    answerStatesRules(answer, question)
     ? true
     : undefined;
 }

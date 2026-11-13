@@ -47,9 +47,11 @@ export function needsCurrentInformation(text: string, now = new Date()): boolean
 /**
  * The exact search text to show, identifiers removed; undefined when not suggested. Also for
  * German rules, fees and deadlines (src/german-rules.ts), flagged `rules` for their heading.
+ * `rulesAnswer`: the answer to this question stated unchecked rules (the answer-side check), so
+ * the search-again box is offered even when the question itself was not recognised.
  */
-export function searchSuggestion(text: string, now = new Date()) {
-  const rules = germanRulesQuestion(text);
+export function searchSuggestion(text: string, now = new Date(), rulesAnswer = false) {
+  const rules = rulesAnswer || germanRulesQuestion(text);
   if (!rules && !needsCurrentInformation(text, now)) return undefined;
   const prepared = prepareSearchQuery(text);
   return prepared.value.length >= 2 && prepared.value.length <= 200

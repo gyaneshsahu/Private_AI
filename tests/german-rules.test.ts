@@ -6,6 +6,7 @@ import { emptyConversation, type Conversation } from "../shared/contracts";
 import { autoDecision } from "../src/answer-modes";
 import { composeContext, newMessage } from "../src/conversation";
 import {
+  answerStatesRules,
   asksBeforeSending,
   checkNoOfficialSource,
   checkUncheckedFigures,
@@ -181,12 +182,62 @@ describe("after the answer", () => {
     expect(checkUncheckedFigures(c.messages, answer.id, answer.text, true)).toBeUndefined();
     expect(checkUncheckedFigures(c.messages, answer.id, "Das hängt vom Vertrag ab.", false)).toBeUndefined();
     const other = ask("How many moons does Jupiter have?");
-    other.messages.push(answer);
-    expect(checkUncheckedFigures(other.messages, answer.id, answer.text, false)).toBeUndefined();
+    const moons = newMessage("assistant", "Jupiter has 95 known moons, and the count rose over the last years.");
+    other.messages.push(moons);
+    expect(checkUncheckedFigures(other.messages, moons.id, moons.text, false)).toBeUndefined();
     // Stored on the device with the conversation, never model context.
     c.messages[1] = { ...answer, uncheckedFigures: true };
     expect(savedConversationSchema.parse(c).messages[1].uncheckedFigures).toBe(true);
     expect(JSON.stringify(composeContext(c, 10000))).not.toContain("uncheckedFigures");
+  });
+});
+
+describe("answer-side check", () => {
+  // Calibrated on the older stored answers (not the frozen 40-question set): it fired on all 32
+  // unsearched graded confident errors, and on 3 of 441 unsearched non-rules answers.
+  it.each([
+    ["Die Kündigungsfrist für Mieter beträgt drei Monate (§ 573c BGB).", "Wie lange vorher muss ich kündigen?"],
+    ["Wer innerorts 21 km/h zu schnell fährt, zahlt 115 € Bußgeld und bekommt einen Punkt.", "Was passiert, wenn ich 21 km/h zu schnell bin?"],
+    ["Ein Führungszeugnis kostet 13 Euro Gebühr beim Bürgeramt.", "Was kostet ein Führungszeugnis?"],
+    ["Sachgeschenke bis 50 € im Monat sind steuerfrei.", "Was darf mein Chef mir schenken?"],
+    ["Der Arbeitgeber darf die Bescheinigung ab dem ersten Tag verlangen, spätestens aber nach 3 Tagen ist sie Pflicht.", "Ab wann brauche ich einen gelben Schein?"],
+    ["You have 14 days to withdraw from an online purchase under the statutory right.", "Can I send back shoes I bought online?"],
+    ["Cash of 10,000 EUR or more must be declared to customs (Zoll) when you enter.", "How much cash can I bring?"],
+    ["Das kostet in der Regel ein Verwarnungsgeld.", "Ich habe falsch geparkt."],
+  ])("warns on %s", (answer, question) => {
+    expect(answerStatesRules(answer, question)).toBe(true);
+    // Independent of the question detector.
+    const c = ask(question);
+    const reply = newMessage("assistant", answer);
+    c.messages.push(reply);
+    expect(checkUncheckedFigures(c.messages, reply.id, reply.text, false)).toBe(true);
+    expect(checkUncheckedFigures(c.messages, reply.id, reply.text, true)).toBeUndefined();
+  });
+
+  it.each([
+    // Arithmetic on the user's own amounts (VAT on their invoice).
+    ["Netto 1.000 € plus 19 % Umsatzsteuer = 190 € Steuer, brutto 1.190 €.", "Rechne 19 % MwSt auf 1.000 €."],
+    ["The total with tax is EUR 238.", "What is 200 EUR plus 19 % VAT?"],
+    // Figures the user gave.
+    ["Bei Ihren 3 Monaten Kündigungsfrist ist das Ihr Vertrag.", "Mein Vertrag hat 3 Monate Kündigungsfrist. Ist das normal?"],
+    // Code blocks.
+    ["Use this:\n```js\nconst fee = 115; // EUR fine, § 3 StVO\n```", "Write a function that returns a fee."],
+    // Plain everyday, health, study and writing answers.
+    ["Take ibuprofen for up to 3 days; see a doctor if the fever lasts longer.", "Can I take ibuprofen for a cold?"],
+    ["The study plan has 7 days with 1.5 hours each.", "Make me a 7-day study plan."],
+    ["hiermit kündige ich meinen Vertrag fristgerecht zum nächstmöglichen Termin.", "Schreib mir eine kurze Kündigung."],
+    ["(c) Root cause [d5ef4c4c, §4]", "Summarise the document."],
+    ["Jupiter has 95 known moons.", "How many moons does Jupiter have?"],
+    // A law the user quoted, translated back.
+    ["Notice must be given in writing (§ 568 BGB).", "Translate: Die Kündigung bedarf der Schriftform (§ 568 BGB)."],
+  ])("stays quiet on %s", (answer, question) => expect(answerStatesRules(answer, question)).toBe(false));
+
+  it("offers the search-again box for an unrecognised question when the answer stated rules", () => {
+    const now = new Date("2026-11-13T00:00:00Z");
+    const question = "Was darf mein Chef mir schenken?";
+    expect(germanRulesQuestion(question)).toBe(false);
+    expect(searchSuggestion(question, now)).toBeUndefined();
+    expect(searchSuggestion(question, now, true)).toMatchObject({ value: question, rules: true });
   });
 });
 

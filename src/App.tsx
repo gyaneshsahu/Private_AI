@@ -243,7 +243,12 @@ export function App() {
       selectedSources(conversation).some((source) => !!source.url)
     )
       return undefined;
-    const again = searchSuggestion(question.text);
+    // Also when the answer-side check flagged unchecked rules the question detector missed.
+    const again = searchSuggestion(
+      question.text,
+      undefined,
+      !!last.uncheckedFigures,
+    );
     return again && { ...again, again: true };
   }, [status?.search, status?.inference.ready, input, conversation]);
   // Search first for German rules (docs/german-rules-20261113.md): Send shows the choice for

@@ -1,6 +1,48 @@
 # German rules, fees and deadlines (13 November 2026)
 
-## Official-source preference — 13 November 2026 (latest)
+## Answer-side check — 13 November 2026 (latest)
+
+### Decision
+
+The owner's instruction (13 November): build the answer-side check first. The question detector missed 4 of 13 fresh questions, and those unsearched answers held most of the confident wrong figures. A check on the answer text does not depend on how the question was worded.
+
+### What changed
+
+1. **The check** (`answerStatesRules` in `src/german-rules.ts`). It is deterministic and runs on the device: no model call, nothing sent. It fires when the answer text contains any of these:
+   - a law reference: a § with a number and a word after it ("§ 17 BMG", "§ 5 Abs. 1"), or a German law abbreviation (BGB, StVO, StVG, BKatV, UStG, EStG, AO, SGB, BUrlG, KSchG, ArbZG, EFZG, FZV, BMG, PassG, MiLoG and others), or gesetze-im-internet;
+   - a fine or points word: Bußgeld, Verwarnungsgeld, Fahrverbot, Punkte in Flensburg, penalty points;
+   - in one sentence, a EUR amount together with a fee, fine, tax, allowance, benefit or authority word (Gebühr, Steuer, Freibetrag, Pauschale, Beitrag, Strafe, Amt, Behörde, Zoll, fee, fine, tax, allowance, authority…);
+   - in one sentence, a period or deadline ("3 Monate", "14 days", "bis zum", "bis spätestens") together with legal or authority vocabulary (Frist, Kündigung, Widerruf, gesetzlich, Anspruch, Pflicht, Behörde, Antrag, Vermieter, Arbeitgeber, statutory, entitled, landlord, employer…).
+2. **Exclusions.**
+   - Code blocks and inline code.
+   - Figures that appear in the user's question.
+   - A calculation question that contains a money amount counts as arithmetic: its EUR results never count (a VAT calculation on the user's invoice does not warn).
+   - A law the user named in the question (a text to translate, say).
+   - "Frist" on its own is vocabulary, not a figure: "fristgerecht zum nächstmöglichen Termin" in a cancellation letter does not warn.
+   - A § inside a document citation ("[d5ef4c4c, §4]") does not count.
+3. **When it fires.** An answer given without web results gets the existing warning ("This answer gives figures or deadlines that were not checked against an official source.") and the "Search and answer again" box, even when the question detector did not fire. `checkUncheckedFigures` is now "question detector and figures, or the answer-side check". The flag is the existing device-only `uncheckedFigures`: never model context, never sent. The search-again box takes the flag into account (`searchSuggestion(text, now, rulesAnswer)`), so it appears for a question that is neither time-sensitive nor recognised.
+
+### Calibration (older stored answers only)
+
+Measured on 784 stored answers from `.local/` (german-rules-20261113, german-rules-official-20261113, benchmark-fresh-20261112, benchmark-privatemode-20261112, blind-benchmark-privatemode-20261112, blind-benchmark). `arithmetic-app-20261112` has no stored answers under `.local/`. The frozen 40-question set was not opened.
+
+| Measure | Result |
+| --- | --- |
+| Graded confident errors on German-rules prompts (our answers, older sheets, unique) | fires on 48 of 48 |
+| … of these, answered without web results | fires on 32 of 32; the question detector warned on 28 of 32 |
+| All unsearched answers to German-rules prompts | fires on 105 of 112 |
+| **False alarms: non-rules answers** (maths, health, coding, everyday, research, instruction-following) | **3 of 501 (0.6 %)**; 3 of 441 unsearched (0.7 %). Bar: at most 3 % |
+
+- The 3 false alarms are all L7-02 ("Erkläre … Brutto- und Nettogehalt in Deutschland"): the answer gives a net pay example "je nach Steuerklasse". It is close to a rules answer.
+- Two changes during calibration removed 14 false alarms: a § must be followed by a number and a word (document citations "[id, §4]" had fired), and "Frist" alone no longer counts as a deadline (cancellation letters had fired).
+- "Non-rules" excludes the German-rules levels and eight rules prompts in other levels (R-01, R-04, R-05, R-07, P-R1, P-R5, L7-04, L4-03), labelled from the prompt text.
+
+### Tests
+
+- `tests/german-rules.test.ts`: fires on law references, fines, fees, allowances, deadlines, English answers and a Verwarnungsgeld, independent of the question detector and never with web results; stays quiet on VAT arithmetic on the user's amounts, given figures, code blocks, health, study and letter answers, document citations and a law the user quoted; the search-again suggestion for an unrecognised question.
+- `tests/german-rules-ui.test.ts`: a rules question the detector misses is sent directly, and the answer with a law reference gets the warning and the search-again box, at phone width.
+
+## Official-source preference — 13 November 2026
 
 ### Decision
 

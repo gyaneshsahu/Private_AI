@@ -93,6 +93,22 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     await expect.poll(sent).toEqual([["Explain recursion", 0]]);
     await page.reload();
 
+    // Answer-side check: a rules question the detector misses is sent directly, and an answer
+    // that states a law reference still gets the warning and the search-again box.
+    const missed = "Was darf mein Chef mir schenken?";
+    await message.fill(missed);
+    await ui(suggestion).toHaveCount(0);
+    await send.click();
+    await ui(page.locator("article.assistant").last()).toContainText("Synthetic: drei Monate (§ 573c BGB).");
+    await ui(page.locator("article.assistant").last().locator(".arithmetic-check")).toHaveText(
+      "This answer gives figures or deadlines that were not checked against an official source.",
+    );
+    await ui(suggestion).toContainText("This answer did not use current information.");
+    await ui(suggestion.locator("pre")).toHaveText(missed);
+    await ui(suggestion.getByRole("button", { name: "Search and answer again" })).toBeVisible();
+    expect(searches).toEqual([]);
+    await page.reload();
+
     // Not time-sensitive, but about German rules: the suggestion shows with its own heading.
     await message.fill(question);
     await ui(suggestion).toContainText(
