@@ -33,6 +33,7 @@ All of these must be done before the chat-on deploy (section 5). The code-only d
 | 12 | Safe Browsing review requested and cleared; a real website live at `cometrow.com` | row 11, R4, `safe-browsing-20261112.md` | [ ] |
 | 13 | Support mailbox working; first invitees chosen; pause rule decided | row 12, R3, R6 | [ ] |
 | 14 | Attestation question sent to Privatemode support (does not block the deploy, but decides capacity) | row 1, P11 | [ ] |
+| 14a | **Daily cap** (test account B, only if `dailyLimit` is set): set it low for one deploy (for example `"dailyLimit": 6`), send one Thinking and one Fast message, then one more Fast | The third is refused: "The daily request limit is reached. It frees up within 24 hours. No request was forwarded." The account page still shows requests left for the week. Set `dailyLimit` back | |
 
 Not needed for this deploy: email delivery, Tinfoil, the attestation audit (keep `attestationAudit` out of the config), payments.
 
@@ -218,7 +219,7 @@ Never click **Deploy latest commit**. It takes whatever is newest on the branch,
 
 ### 4.2 Part A: new code, chat off
 
-1. Ask the agent for the full 40-character SHA of the commit to deploy. It must be pushed and its Validate run green. (Local HEAD `4492903` is not on GitHub yet, and the allowance fix is still to come.)
+1. Ask the agent for the full 40-character SHA of the commit to deploy. It must be pushed and its Validate run green.
 2. **Events** page: write down the live SHA. Expected: `ae439faf2bd4ae2e7d0cb68d433cf4e10eef5209` (the release named in the 12 November handoff) **(unverified: read it on the page)**.
 3. Baseline from your laptop (PowerShell):
    - `curl.exe -sS -o NUL -w "%{http_code}\n" https://app.cometrow.com/readyz` gives `200`.
@@ -318,6 +319,7 @@ Do these on the live site after section 5. Use your account (A) and the test acc
 | 23 | **Stop switch off**: `rm /tmp/cometrow-chat-stop`, then send | Works again, no restart needed | |
 | 24 | **Notice file**: Shell `echo "Test notice: maintenance tonight at 22:00." > /tmp/cometrow-notice.txt`, wait 30 s, reload the app | "Notice from CometRow: Test notice: maintenance tonight at 22:00." for A and B. Text over 500 characters is cut | |
 | 25 | Clear the notice: `: > /tmp/cometrow-notice.txt`, wait 30 s, reload | Notice gone | |
+| 25a | **Model check**: Render **Logs**, search for `CometRow model` after the service started with chat on | One line `CometRow model check: ... listed and unchanged`. A line starting `CometRow model alert:` means follow `docs/model-deprecation-runbook.md` | |
 | 26 | **Rollback and roll forward**, see 6.5 | as described there | |
 | 27 | **Spend cap** (optional, quiet hour): the agent prepares a copy of the report with `approvedSpendUSD` just above today's committed spend; deploy it; send once | Refused: "The approved spending limit for this provider review is reached. No request was forwarded." `/api/status` gives the same reason. Then deploy the real report again. Locally proven in the T4 rehearsal; the cap is computed from the database, so it survives restarts | |
 | 28 | **Erase procedure on test account B** (`invited-trial-runbook.md`, "Suspend or erase one account"): `show`, `suspend`, wait 5 minutes, `erase`, `show`. Command: `node --import tsx scripts/account-operator.ts show --email <B address> \| psql "<owner connection>" -v ON_ERROR_STOP=1` | `accounts_matched` 1 before. After `erase`: every count 0 except `account_closure` (0 or 1). Final `show`: `accounts_matched` 0. B can sign in again as a new, empty account while still on the allowlist | |
@@ -336,7 +338,8 @@ Do these on the live site after section 5. Use your account (A) and the test acc
 | 36 | Phone width (360 to 390 px): compose, mode picker, account page, settings | No text cut off, no sideways scrolling, buttons easy to tap | |
 | 37 | **First load of the 29 MB Privatemode file** on a phone with mobile data, cache empty. Time from opening the app to "ready to send" | At most 30 s (alpha plan M11). On a computer, DevTools, Network, filter `wasm`: about 5 MB transferred, `content-encoding: br`, `cache-control: public, max-age=31536000, immutable` | |
 | 38 | Second visit on the same phone | At most 5 s. DevTools shows the file from disk cache | |
-| 39 | **German and English interface**: once deployed. Browser language German gives German; the DE/EN switch changes it and is remembered in this browser only | Not testable yet: the language layer is in the code, but the DE/EN switch is not on any screen yet (`LanguageSwitch` in `src/i18n.tsx` is not used) | |
+| 39 | **German off-switch** (default, `VITE_GERMAN_UI` absent): set the browser language to German and open the sign-in page and the app | Everything is English, the sign-in page too. No DE/EN switch in the header, in Settings or on the account page. The German legal drafts are not reachable | |
+| 39a | Only after the German legal texts are approved: add the Render environment variable `VITE_GERMAN_UI` = `1`, deploy, repeat row 39 | German browser gets German; the DE/EN switch shows and is remembered in this browser only **(unverified: that Render passes the variable into the Docker build)** | |
 | 40 | Accessibility: keyboard only (Tab, Shift+Tab, Enter, Esc) through sign-in, compose, send, mode picker, settings | Every control reachable; focus always visible | |
 | 41 | Screen reader: VoiceOver on iPhone, TalkBack on Android (`galaxy-a52-talkback-checks.md`) | Buttons have names; answers are read out | |
 | 42 | Browser zoom 200 % on a computer | Nothing overlaps or disappears | |
