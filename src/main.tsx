@@ -2,6 +2,7 @@ import { AccountTheme } from "./AccountTheme";
 import React, { lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
+import { LangProvider } from "./i18n";
 import { AccountPreview } from "./AccountPreview";
 import { isAccountPreview } from "../shared/account-design";
 import "./styles.css";
@@ -14,6 +15,7 @@ const lab =
   pageUrl.searchParams.get("account-lab") === "1";
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
+    <LangProvider>
     {lab || pageUrl.pathname === "/account" ? (
       <AccountTheme>
         <Suspense
@@ -41,5 +43,6 @@ createRoot(document.getElementById("root")!).render(
     ) : (
       <App />
     )}
+    </LangProvider>
   </React.StrictMode>,
 );

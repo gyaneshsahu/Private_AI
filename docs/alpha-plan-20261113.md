@@ -10,7 +10,7 @@ Sources checked for this plan: `docs/owner-decisions.md`, `docs/pre-alpha-checkl
 
 | Source | What it holds | What it never holds |
 | --- | --- | --- |
-| Usage ledger in PostgreSQL (queries in `docs/week-one-monitoring.md`) | One row per chat request: account ID, time, state (`transport_complete` or `uncertain`). A Thinking request has 2 extra "unit" rows (it costs 3), so the mode can be counted | Messages, answers, search text, model replies |
+| Usage ledger in PostgreSQL (queries in `docs/week-one-monitoring.md`) | One row per chat request: account ID, time, state (`transport_complete` or `uncertain`). A Thinking request has 4 extra "unit" rows (it costs 5), so the mode can be counted | Messages, answers, search text, model replies |
 | `"user"` table | How many invitees signed in at least once | Anything about use |
 | Render log | Startup line, purge line, the `Privatemode attestation queue: {...}` counts | Bodies, paths, headers, account data (by design) |
 | Privatemode portal | Tokens and spend per key, free-token balance | Content (encrypted end to end) |

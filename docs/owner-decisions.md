@@ -4,6 +4,15 @@ Running list kept while the owner is away (from 12 November 2026). Each entry na
 
 ## What needs you before the alpha, in order (updated 13 November)
 
+**Owner decisions of 13 November (after the overnight report):**
+- **Chat allowance:** 150 requests per 7 days per invitee. **Thinking counts 5** (was 3; set in the report's `modes.thinking.allowanceCost`). Config: `"allowance": { "requestLimit": 150, "days": 7 }`.
+- **Web search:** on for the alpha, Brave (`inference.searchKeyFile`). Needs a Brave production key and the search sentences in the privacy wording.
+- **Free for the alpha,** invite-only, one server.
+- **Erase deletes request records too.**
+- **Concurrent chats stay at 3** per server for now.
+- **Privatemode free balance:** nearly 500k tokens left (owner, portal, 13 November).
+- **New requirement: German and English interface,** default from the browser language (de gives German, otherwise English), a visible DE/EN switch saved on the device, never IP or email. All user-facing text translated, including server messages, refusals, emergency and health cards. German drafts of the privacy policy, health consent and acceptable use with the 18+ rule; **German is the binding text**.
+
 **Settled since 12 November:**
 - Privatemode is the primary provider; Tinfoil is the backup.
 - Stage 3 is merged into the development line, with session verification refreshed at most every 10 minutes.
@@ -19,7 +28,7 @@ All of this is on `codex/development-handoff` with CI green, and none of it is l
 | --- | --- | --- | --- |
 | 1 | **Send the attestation question to Privatemode support** (draft in `docs/privatemode-attestation-limit-20261112.md`) | Send today. Ask whether the limit is per organisation, key or IP; what it is on the Standard tier; and whether it can be raised without Enterprise | The queue keeps the alpha safe, but it caps how many people can start chatting at the same moment. This decides launch capacity, and the answer takes time |
 | 2 | **Create the alpha key** in the Privatemode portal, with a rate limit, an expiry date and a spend limit. Store it **only on Render** (secret file `inference.apiKeyFile`). Keep the free development key in Credential Manager for local work. Tell me the limit and the expiry | Expiry: alpha end plus 2 weeks | Chat cannot run in production without it. Keeping it off the laptop stops tests from eating its limits |
-| 3 | **Money:** a Privatemode spend budget, the app's ceiling `approvedSpendUSD` (D5), and the **chat allowance per invitee** (`inference.allowance`, new 13 Nov: without it nobody can chat) | EUR 100 per month at Privatemode, with an alert; allowance 150 requests per 7 days (Thinking counts 3); USD 100 per 7-day report window in the app (unmetered requests are booked at worst case, about USD 0.10 per Thinking request) | Without a budget the alpha stops when the free tokens run out. If the app ceiling is too low, chat stops for everyone |
+| 3 | **Money:** a Privatemode spend budget, the app's ceiling `approvedSpendUSD` (D5), and the **chat allowance per invitee** (`inference.allowance`, new 13 Nov: without it nobody can chat) | EUR 100 per month at Privatemode, with an alert; allowance 150 requests per 7 days (Thinking counts 5; decided 13 Nov); USD 100 per 7-day report window in the app (unmetered requests are booked at worst case, about USD 0.10 per Thinking request) | Without a budget the alpha stops when the free tokens run out. If the app ceiling is too low, chat stops for everyone |
 | 4 | **Approve the Privatemode privacy wording** (`docs/privacy-wording-privatemode-20261112.md`: the D17 sentences, the 10-minute check, automatic search covering rules, fees and deadlines, and the new sentence for "Always search for rules, fees and deadlines" in `shared/privacy-copy.ts`), and decide on the sentence "does not use them to train any AI" | Approve; keep the training sentence with the DPA reference | Users must be told the truth for the provider in use |
 | 4b | **Web search on or off for the alpha** (R5). Production can now take a Brave key file (`inference.searchKeyFile`, 13 Nov) | **On.** The German-rules safety (search-first, always-search, official sources) only works with search, and with no beta it must be tried by real people now. Needs a Brave production key and its terms, and the search sentences in step 4 | Without search, the biggest trust risk found in testing stays unprotected |
 | 5 | **Accept the four open report checks in writing** (GPU checked only on Privatemode's side; AMD/Intel revocation in the Wasm unknown; no per-request metering; attestation freshness up to 10 minutes) and **confirm the repository name** `edgelesssys/privatemode-public` | Accept for the invite-only alpha | I then finalise the report with the key limits from step 2, and you sign it (valid 7 days, renewed weekly) |

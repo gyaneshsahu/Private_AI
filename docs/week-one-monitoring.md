@@ -74,7 +74,7 @@ Privatemode attestation queue: {"sent":12,"waited":3,"waitedMs":4100,"limited429
 | --- | --- | --- | --- |
 | 3 chats at once per server instance | "Three requests are already running." | `server/app.ts` (`active >= 3`) | Still 3. Your open decision: raise to 10 for the alpha (owner list, 13 November). Each refusal also throws away the browser's verified session, so the next message needs a new attestation check |
 | 1 chat at once per account | "A request is already running for this account." | `server/app.ts` | The slot is freed as soon as the browser hangs up, so the automatic retry after a time-out is not refused |
-| Allowance used up | "No request allowance is available. No request was forwarded." or "Not enough request allowance: this mode counts as 3 requests." | `server/app.ts` | See "Automatic allowance" |
+| Allowance used up | "No request allowance is available. No request was forwarded." or "Not enough request allowance: this mode counts as 5 requests." | `server/app.ts` | See "Automatic allowance" |
 | Spend cap | "The approved spending limit for this provider review is reached. No request was forwarded." | `server/app.ts` | Chat stops for everyone; `/api/status` shows it |
 
 The browser shows the first two as "The protected service is limiting requests. No answer was received." None of these four is counted or logged (by design, content-free logs). Counting them is a planned counter (`docs/alpha-plan-20261113.md`, section 9).
@@ -106,9 +106,9 @@ The browser shows the first two as "The protected service is limiting requests. 
 
 - Set in the deployment config: `inference.allowance` with `requestLimit` (1 to 10,000) and `days` (1 to 31) (`server/deployment-config.ts`).
 - **If it is missing, every invitee is refused** with "No request allowance is available." Check it at switch-on.
-- How it works (`ensureAllowance` in `server/app.ts`): when an account has no current period, a new one starts on its first `/api/status` call or its first chat. Fast costs 1 request; Thinking costs 3 (the report's `allowanceCost`).
+- How it works (`ensureAllowance` in `server/app.ts`): when an account has no current period, a new one starts on its first `/api/status` call or its first chat. Fast costs 1 request; Thinking costs 5 (the report's `allowanceCost`; owner decision 13 November, was 3).
 - A used-up period stays used up until it ends. A higher `requestLimit` in the config applies only to new periods, not to a period already running.
-- Rough size check: Privatemode requests are booked at worst case (about USD 0.10 per Thinking request, which costs 3 units). So invitees x `requestLimit` / 3 x USD 0.10 should stay under `approvedSpendUSD` per 7-day window. Example: 10 invitees, 300 per 7 days, cap USD 100.
+- Rough size check: Privatemode requests are booked at worst case (about USD 0.10 per Thinking request, which costs 5 units). So invitees x `requestLimit` / 5 x USD 0.10 is the worst case if everyone used only Thinking; it should stay under `approvedSpendUSD` per 7-day window. Owner decision: 150 per 7 days, so 10 invitees give at most 300 Thinking requests, about USD 30 at worst case.
 - Daily: query C. Every invitee who has signed in should have a row.
 
 ### 90-day purge
@@ -128,7 +128,7 @@ Queries A, B and C are in the Tinfoil-era section below and still apply. Query C
 SELECT COUNT(*) AS older_than_90_days FROM usage_requests
 WHERE created_at < (extract(epoch FROM now() - interval '90 days') * 1000);
 
--- E: messages by mode and state, last 7 days. Thinking = a request with a ".2" unit row (it costs 3).
+-- E: messages by mode and state, last 7 days. Thinking = a request with a ".2" unit row (it costs 5).
 -- uncertain = not finished: user Stop, time-out, upstream refusal or broken stream. Refused requests have no row.
 SELECT CASE WHEN EXISTS (SELECT 1 FROM usage_requests u WHERE u.request_id = r.request_id || '.2')
             THEN 'thinking' ELSE 'fast' END AS mode,
@@ -146,7 +146,7 @@ WHERE created_at >= (extract(epoch FROM now() - interval '7 days') * 1000);
 SELECT COUNT(*) AS signed_in_once FROM "user";
 ```
 
-Query E's mode split depends on today's costs (Fast 1, Thinking 3). If the report changes `allowanceCost`, change the query.
+Query E's mode split depends on today's costs (Fast 1, Thinking 5). If the report changes `allowanceCost`, change the query.
 
 ### Known gaps (Privatemode)
 

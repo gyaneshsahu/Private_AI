@@ -42,7 +42,7 @@ Three optional fields in the deployment config's `inference` section. Each is ab
 
 | Field | What it does | Owner decides |
 | --- | --- | --- |
-| `allowance: { "requestLimit": N, "days": D }` | Every signed-in invitee gets N requests per D days (1 to 31). A new period starts automatically when the last one ends. Without it, nobody can chat: production had no other way to give an allowance. Fast counts 1 request, Thinking 3 | N and D (recommendation for the alpha: 150 requests per 7 days) |
+| `allowance: { "requestLimit": N, "days": D }` | Every signed-in invitee gets N requests per D days (1 to 31). A new period starts automatically when the last one ends. Without it, nobody can chat: production had no other way to give an allowance. Fast counts 1 request, Thinking 5 (the report's `allowanceCost`) | Decided 13 November: `"requestLimit": 150, "days": 7` |
 | `searchKeyFile` | Absolute path to a Render secret file holding the Brave Search key. Turns on web search, which the user approves. Goggles always stay off in production | Search on or off for the alpha (R5) |
 | `noticeFile` | Absolute path to a text file. While it holds text (up to 500 characters), every user sees it as "Notice from CometRow: …". Re-read every 30 seconds, so `echo "…" > <noticeFile>` in the Render shell shows it, and an empty file hides it | When to use it, for example to announce a provider switch or an outage |
 
