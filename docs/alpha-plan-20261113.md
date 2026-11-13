@@ -131,6 +131,8 @@ Stop chat with the stop file: from the Render service shell, `touch <stopFile>` 
 
 ## 9. Counters that would need building
 
+**Update, 13 November night:** a first set is built (not deployed): an hourly log line `CometRow counts (last hour)` with outcomes per mode (completed, interrupted), refusals by class (allowance, 1 per account, 3 per server, spend cap), Privatemode failures by class, attestation checks verified and busy (queue full, or the per-account share), and searches run and failed. It now covers M3 and M4, and M1 and M2 roughly ("interrupted" mixes the user's Stop, time-outs and dropped connections). Still not built: first-word time, failed sign-ins by reason, the thumbs up or down.
+
 From the metrics marked "not measured yet" or "partly". All content-free: daily counts with enum fields only (reason, mode, outcome, time bucket), no account ID, no text.
 
 | Counter | For | Notes |

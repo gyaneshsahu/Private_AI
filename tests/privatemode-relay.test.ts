@@ -16,6 +16,7 @@ vi.mock("undici", async (importOriginal) => ({
     Promise.resolve(upstream(url, options)).then(asUndiciRequestResult),
 }));
 import { createApp, expiryWarnings, type Config } from "../server/app";
+import { takeCounts } from "../server/counters";
 import { InviteRegistry } from "../server/invite-registry";
 import { SqliteUsageLedger } from "../server/usage-ledger";
 import { privatemodeKeyExpiryWarning } from "../server/providers/privatemode-relay";
@@ -268,6 +269,22 @@ it("an owner-set automatic allowance: a signed-in invitee can chat at once, is c
     },
     { timeout: 8000, interval: 500 },
   );
+  usage.close();
+});
+
+it("counts outcomes per mode and refusals by class, with fixed names and nothing that identifies anyone", async () => {
+  upstream.mockImplementation(async () => ok());
+  const { root, usage, signIn } = await signedIn({ autoAllowance: { requestLimit: 1, days: 7 } });
+  const account = await signIn();
+  const { status, cookie } = await session(root, account.cookie);
+  takeCounts();
+  const first = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf, "glm-5.3-flash", "fast"));
+  await first.text();
+  await vi.waitFor(() => expect(usage.summary(account.accountId)).toMatchObject({ pending: 0 }));
+  await (await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf, "glm-5.3-flash", "fast"))).text();
+  await vi.waitFor(() => expect(takeCounts()).toEqual({ "chat.fast.completed": 1, "chat.fast.refused_allowance": 1 }));
+  // Taking the counts resets them.
+  expect(takeCounts()).toEqual({});
   usage.close();
 });
 

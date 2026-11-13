@@ -22,6 +22,7 @@ import { request as upstreamRequest } from "undici";
 import { qualifiedModels, type Qualification } from "../../shared/contracts";
 import { serviceDispatcher } from "../network";
 import { createAttestQueue } from "./privatemode-attest-queue";
+import { count } from "../counters";
 import {
   registerInferenceRelay,
   type InferenceRelayAdapter,
@@ -210,6 +211,7 @@ export function createPrivatemodeRelayAdapter(): InferenceRelayAdapter {
             const attest = req.path === KEY_PATHS[0];
             const who = String(res.locals.accountId ?? res.locals.session);
             if (attest && !attestAllowed(who, Date.now())) {
+              count("attest.busy_account_share");
               res.status(503).json(ATTESTATION_BUSY);
               return;
             }
@@ -222,9 +224,11 @@ export function createPrivatemodeRelayAdapter(): InferenceRelayAdapter {
                 })
               : await send();
             if (reply === "busy") {
+              count("attest.busy_queue");
               res.status(503).json(ATTESTATION_BUSY);
               return;
             }
+            if (attest) count(reply.statusCode === 200 ? "attest.verified" : `attest.status_${reply.statusCode}`);
             res.status(reply.statusCode);
             for (const [name, value] of Object.entries(reply.headers)) {
               const v = single(value);

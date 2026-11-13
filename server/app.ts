@@ -8,6 +8,7 @@ import { spendAllows } from "./spend-guard";
 import { productionAccountTarget } from "../shared/account-design";
 import { once } from "node:events";
 import { readFile } from "node:fs/promises";
+import { count } from "./counters";
 import { z } from "zod";
 import {
   answerModes,
@@ -434,6 +435,13 @@ export function createApp(config: Config) {
     "/api/inference/v1/chat/completions",
     express.raw({ type: "*/*", limit: "1mb" }),
     async (req, res) => {
+      // One count per request, by mode and outcome (fixed names only: docs/alpha-plan-20261113.md).
+      res.on("close", () => {
+        const outcome =
+          res.locals.outcome ??
+          (res.statusCode === 200 ? (res.writableFinished ? "completed" : "interrupted") : `status_${res.statusCode}`);
+        count(`chat.${res.locals.mode ?? "none"}.${outcome}`);
+      });
       const q = parseQualification();
       if (!q || !config.apiKey) {
         res.status(503).json({
@@ -459,6 +467,7 @@ export function createApp(config: Config) {
       const modeHeader = req.headers["x-privateai-mode"];
       const mode = answerModes.find((m) => m === modeHeader);
       const tier = tierFor(q, mode);
+      res.locals.mode = mode ?? "none";
       if (
         (modeHeader !== undefined && (!mode || !q.modes)) ||
         (admission.model !== tier.model && admission.model !== tier.backupModel)
@@ -467,6 +476,7 @@ export function createApp(config: Config) {
         return;
       }
       if (active >= 3) {
+        res.locals.outcome = "refused_instance_busy";
         res.status(429).json({ error: "Three requests are already running." });
         return;
       }
@@ -474,6 +484,7 @@ export function createApp(config: Config) {
       // One request in flight per signed-in account: the supplier's own advice
       // for a hard ceiling is to bound concurrency, since spending caps are soft.
       if (accountId && (inFlight.get(accountId) ?? 0) >= 1) {
+        res.locals.outcome = "refused_account_busy";
         res.status(429).json({
           error: "A request is already running for this account.",
         });
@@ -522,6 +533,7 @@ export function createApp(config: Config) {
             /* Unknown spend refuses, like unknown allowance. */
           }
           if (!allowed) {
+            res.locals.outcome = "refused_spend";
             res.status(429).json({
               error:
                 "The approved spending limit for this provider review is reached. No request was forwarded.",
@@ -540,6 +552,7 @@ export function createApp(config: Config) {
                 tier.allowanceCost,
               ))
             ) {
+              res.locals.outcome = "refused_allowance";
               res.status(429).json({
                 error:
                   tier.allowanceCost > 1
@@ -590,6 +603,7 @@ export function createApp(config: Config) {
           // Only the class of failure is exposed, so the client can decide on its one
           // retry with the mode's backup model; nothing else leaks.
           res.setHeader("X-PrivateAI-Upstream", relay.classifyFailure(reply));
+          res.locals.outcome = `upstream_${relay.classifyFailure(reply)}`;
           res.status(502).json({
             error:
               "Encrypted provider response unavailable. No automatic retry was made.",
@@ -679,6 +693,7 @@ export function createApp(config: Config) {
         res.json({ sources: await fetchPage(request.value, abort.signal) });
         return;
       }
+      count("search.executed");
       const sources = await search!.search(request.value, abort.signal);
       const top = await search!.readTopPage?.(
         request.value,
@@ -690,6 +705,7 @@ export function createApp(config: Config) {
         ...(top ? { topPage: { url: top.url, outcome: top.outcome, ...(top.official ? { official: true } : {}), ...(top.tier ? { tier: top.tier } : {}) } } : {}),
       });
     } catch {
+      count("search.failed");
       res.status(400).json({
         error:
           "Research could not complete. Approval may have expired, or the destination is unavailable, redirects, or exceeds safety limits. No automatic retry was made.",
