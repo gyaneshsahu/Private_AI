@@ -1,6 +1,7 @@
 // When to search (docs/when-to-search-20261112.md): on-device rules that spot a question
 // needing current information, the masked search text, and the opt-in automatic setting.
-import { germanRulesQuestion } from "./german-rules";
+import { germanRulesQuestion, liveText } from "./german-rules";
+import { defineText } from "./i18n";
 import { prepareSearchQuery } from "./identifier-masking";
 
 // Always time-sensitive. \p{L} boundaries so German umlauts count as letters.
@@ -80,33 +81,64 @@ export function saveAutoSearch(on: boolean, name = key): void {
   }
 }
 
-export const WHEN_TO_SEARCH = {
-  heading: "This question may need current information.",
-  label: "Search the web for:",
-  explanation:
-    "One tap sends exactly this text to Brave Search through our server, and our server opens the top result page, preferring an official site. Nothing else from your conversation is sent. Press Send instead to answer without searching.",
-  button: "Search and answer",
-  // After an answer given without web results (routing design of 12 November).
-  againHeading: "This answer did not use current information.",
-  againExplanation:
-    "One tap sends exactly this text to Brave Search through our server, our server opens the top result page, preferring an official site, and the question is answered again from the results. Nothing else from your conversation is sent.",
-  againButton: "Search and answer again",
-  // Unchanged wording, shared with the Research tab's approval.
-  warning:
-    "This search text may still contain personal details, such as a name or a long number, that cannot be recognised automatically. The search provider will see exactly this text. Approve only if that is fine.",
-  researchIntro:
-    "Nothing from your conversation goes into a search unless you approve the exact text here, tap a search suggestion that shows it, or switch on automatic search below.",
-  settingLabel: "Search automatically when a question needs current information",
-  settingHelp:
-    "Off unless you switch it on. When it is on, a question that looks time-sensitive or is about rules, fees or deadlines is searched before it is answered, without asking each time. Recognised personal details are removed from the search text on this device first, and the exact text sent is shown under the message box. This setting is kept only on this device.",
-  // The narrower setting, in the search-first choice and in the Research tab.
-  rulesSettingLabel: "Always search for rules, fees and deadlines",
-  rulesSettingNote: "Kept only on this device. You can switch it off in Research.",
-  rulesSettingHelp:
-    "Off unless you switch it on. When it is on, a question about rules, fees or deadlines is searched before it is answered, without asking each time; other questions still ask. Recognised personal details are removed from the search text on this device first, and the exact text sent is shown under the message box. This setting is kept only on this device.",
-  searched: (query: string) => `Searched the web for: "${query}"`,
-  searchedAutomatically: (query: string) =>
-    `Searched the web automatically for: "${query}"`,
-  automaticFailed:
-    "The automatic search did not complete, so this answer does not use web results.",
-} as const;
+export const WHEN_TO_SEARCH_TEXT = defineText({
+  en: {
+    heading: "This question may need current information.",
+    label: "Search the web for:",
+    explanation:
+      "One tap sends exactly this text to Brave Search through our server, and our server opens the top result page, preferring an official site. Nothing else from your conversation is sent. Press Send instead to answer without searching.",
+    button: "Search and answer",
+    // After an answer given without web results (routing design of 12 November).
+    againHeading: "This answer did not use current information.",
+    againExplanation:
+      "One tap sends exactly this text to Brave Search through our server, our server opens the top result page, preferring an official site, and the question is answered again from the results. Nothing else from your conversation is sent.",
+    againButton: "Search and answer again",
+    // Unchanged wording, shared with the Research tab's approval.
+    warning:
+      "This search text may still contain personal details, such as a name or a long number, that cannot be recognised automatically. The search provider will see exactly this text. Approve only if that is fine.",
+    researchIntro:
+      "Nothing from your conversation goes into a search unless you approve the exact text here, tap a search suggestion that shows it, or switch on automatic search below.",
+    settingLabel: "Search automatically when a question needs current information",
+    settingHelp:
+      "Off unless you switch it on. When it is on, a question that looks time-sensitive or is about rules, fees or deadlines is searched before it is answered, without asking each time. Recognised personal details are removed from the search text on this device first, and the exact text sent is shown under the message box. This setting is kept only on this device.",
+    // The narrower setting, in the search-first choice and in the Research tab.
+    rulesSettingLabel: "Always search for rules, fees and deadlines",
+    rulesSettingNote: "Kept only on this device. You can switch it off in Research.",
+    rulesSettingHelp:
+      "Off unless you switch it on. When it is on, a question about rules, fees or deadlines is searched before it is answered, without asking each time; other questions still ask. Recognised personal details are removed from the search text on this device first, and the exact text sent is shown under the message box. This setting is kept only on this device.",
+    searched: (query: string) => `Searched the web for: "${query}"`,
+    searchedAutomatically: (query: string) =>
+      `Searched the web automatically for: "${query}"`,
+    automaticFailed:
+      "The automatic search did not complete, so this answer does not use web results.",
+  },
+  de: {
+    heading: "Diese Frage braucht möglicherweise aktuelle Informationen.",
+    label: "Im Web suchen nach:",
+    explanation:
+      "Ein Tippen sendet genau diesen Text über unseren Server an Brave Search, und unser Server öffnet die oberste Ergebnisseite, bevorzugt eine offizielle Website. Sonst wird nichts aus Ihrer Unterhaltung gesendet. Tippen Sie stattdessen auf Senden, um ohne Websuche eine Antwort zu erhalten.",
+    button: "Suchen und antworten",
+    againHeading: "Diese Antwort hat keine aktuellen Informationen verwendet.",
+    againExplanation:
+      "Ein Tippen sendet genau diesen Text über unseren Server an Brave Search, unser Server öffnet die oberste Ergebnisseite, bevorzugt eine offizielle Website, und die Frage wird anhand der Ergebnisse neu beantwortet. Sonst wird nichts aus Ihrer Unterhaltung gesendet.",
+    againButton: "Suchen und neu antworten",
+    warning:
+      "Dieser Suchtext kann noch persönliche Angaben enthalten, etwa einen Namen oder eine lange Nummer, die nicht automatisch erkannt werden. Der Suchanbieter sieht genau diesen Text. Geben Sie ihn nur frei, wenn das für Sie in Ordnung ist.",
+    researchIntro:
+      "Aus Ihrer Unterhaltung geht nichts in eine Suche, außer Sie geben hier den genauen Text frei, tippen auf einen Suchvorschlag, der ihn zeigt, oder schalten unten die automatische Suche ein.",
+    settingLabel: "Automatisch suchen, wenn eine Frage aktuelle Informationen braucht",
+    settingHelp:
+      "Aus, bis Sie es einschalten. Wenn es eingeschaltet ist, wird eine Frage, die zeitabhängig wirkt oder Regeln, Gebühren oder Fristen betrifft, vor der Antwort gesucht, ohne jedes Mal zu fragen. Erkannte persönliche Angaben werden zuerst auf diesem Gerät aus dem Suchtext entfernt, und der genau gesendete Text wird unter dem Eingabefeld angezeigt. Diese Einstellung wird nur auf diesem Gerät gespeichert.",
+    rulesSettingLabel: "Bei Regeln, Gebühren und Fristen immer suchen",
+    rulesSettingNote: "Nur auf diesem Gerät gespeichert. Sie können es unter Recherche ausschalten.",
+    rulesSettingHelp:
+      "Aus, bis Sie es einschalten. Wenn es eingeschaltet ist, wird eine Frage zu Regeln, Gebühren oder Fristen vor der Antwort gesucht, ohne jedes Mal zu fragen; bei anderen Fragen wird weiterhin gefragt. Erkannte persönliche Angaben werden zuerst auf diesem Gerät aus dem Suchtext entfernt, und der genau gesendete Text wird unter dem Eingabefeld angezeigt. Diese Einstellung wird nur auf diesem Gerät gespeichert.",
+    searched: (query: string) => `Im Web gesucht nach: „${query}“`,
+    searchedAutomatically: (query: string) =>
+      `Automatisch im Web gesucht nach: „${query}“`,
+    automaticFailed:
+      "Die automatische Suche wurde nicht abgeschlossen, daher nutzt diese Antwort keine Ergebnisse aus der Websuche.",
+  },
+});
+/** The block in the current interface language (`uiLang()`), read at each use. */
+export const WHEN_TO_SEARCH = liveText(WHEN_TO_SEARCH_TEXT);

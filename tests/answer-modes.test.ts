@@ -1,6 +1,6 @@
 // Answer modes (owner, 12 November): schema, Auto's on-device rules, the one-retry rule and labels.
 import { readFile } from "node:fs/promises";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   checks,
   emptyConversation,
@@ -17,6 +17,7 @@ import {
   answerLabel,
   autoDecision,
   autoMode,
+  MODE_NAMES,
   shouldRetryOnBackup,
   stillThinkingStatus,
 } from "../src/answer-modes";
@@ -250,10 +251,13 @@ describe("reply time limits per mode", () => {
 
   it("states the mode's limit in the waiting status", () => {
     const minutes = Math.ceil(REPLY_LIMITS.thinking.totalMs / 60_000);
-    expect(stillThinkingStatus("thinking")).toBe(
+    expect(stillThinkingStatus("thinking", "en")).toBe(
       `Still thinking… (this can take up to ${minutes} minutes in Thinking mode)`,
     );
-    expect(stillThinkingStatus(undefined)).not.toContain("mode)");
+    expect(stillThinkingStatus(undefined, "en")).not.toContain("mode)");
+    expect(stillThinkingStatus("thinking", "de")).toBe(
+      `Denkt noch nach … (das kann bis zu ${minutes} Minuten dauern im Modus Gründlich)`,
+    );
   });
 });
 
@@ -304,9 +308,23 @@ describe("one retry on the backup model", () => {
   });
 });
 
-it("labels replies by mode name only", () => {
-  expect(answerLabel("auto", "thinking", false)).toBe("Auto · Thinking");
-  expect(answerLabel("fast", "fast", true)).toBe("Fast · Answered by the backup model");
-  expect(answerLabel("auto", undefined, true)).toBe("Answered by the backup model");
-  expect(answerLabel("auto", undefined, false)).toBeUndefined();
+it("labels replies by mode name only, in the interface language", () => {
+  expect(answerLabel("auto", "thinking", false, "en")).toBe("Auto · Thinking");
+  expect(answerLabel("fast", "fast", true, "en")).toBe("Fast · Answered by the backup model");
+  expect(answerLabel("auto", undefined, true, "en")).toBe("Answered by the backup model");
+  expect(answerLabel("auto", undefined, false, "en")).toBeUndefined();
+  expect(answerLabel("auto", "thinking", false, "de")).toBe("Auto · Gründlich");
+  expect(answerLabel("fast", "fast", true, "de")).toBe("Schnell · Vom Ersatzmodell beantwortet");
+});
+
+it("follows the interface language when the caller passes none", () => {
+  try {
+    vi.stubGlobal("navigator", { languages: ["de-DE"], language: "de-DE" });
+    expect(MODE_NAMES.thinking).toBe("Gründlich");
+    expect(answerLabel("auto", "fast", false)).toBe("Auto · Schnell");
+    vi.stubGlobal("navigator", { languages: ["en-GB"], language: "en-GB" });
+    expect(MODE_NAMES.thinking).toBe("Thinking");
+  } finally {
+    vi.unstubAllGlobals();
+  }
 });

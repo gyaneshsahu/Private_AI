@@ -1,7 +1,7 @@
 // German rules, fees and deadlines (docs/german-rules-20261113.md): the on-device detector on the
 // real benchmark prompts, the scoped prompt rule, the after-answer check and Auto's routing.
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { emptyConversation, type Conversation } from "../shared/contracts";
 import { autoDecision } from "../src/answer-modes";
 import { composeContext, newMessage } from "../src/conversation";
@@ -11,6 +11,7 @@ import {
   checkNoOfficialSource,
   checkUncheckedFigures,
   GERMAN_RULES,
+  GERMAN_RULES_TEXT,
   germanRulesQuestion,
   rankByTier,
   sourceTier,
@@ -85,7 +86,7 @@ describe("before sending", () => {
     expect(searchSuggestion(prompts["T-04"], now)).toMatchObject({ rules: false });
     expect(searchSuggestion("Explain recursion", now)).toBeUndefined();
     // Ends with a full stop: the box goes on with "Search the web for:".
-    expect(GERMAN_RULES.heading).toBe("Rules, fees and deadlines change. Check the official source first.");
+    expect(GERMAN_RULES_TEXT.en.heading).toBe("Rules, fees and deadlines change. Check the official source first.");
   });
 
   it("asks before sending only for a German-rules question without web results or automatic search", () => {
@@ -302,6 +303,22 @@ describe("official-source preference", () => {
     c.messages[1] = { ...answer, noOfficialSource: true };
     expect(savedConversationSchema.parse(c).messages[1].noOfficialSource).toBe(true);
     expect(JSON.stringify(composeContext(c, 10000))).not.toContain("noOfficialSource");
-    expect(GERMAN_RULES.noOfficial).toBe("No official source was found in the search results. Check the responsible authority before relying on these figures.");
+    expect(GERMAN_RULES_TEXT.en.noOfficial).toBe("No official source was found in the search results. Check the responsible authority before relying on these figures.");
   });
+});
+
+it("shows the user-facing texts in the interface language; the model instructions stay English", () => {
+  try {
+    vi.stubGlobal("navigator", { languages: ["de-DE"], language: "de-DE" });
+    expect(GERMAN_RULES.warning).toBe(
+      "Diese Antwort nennt Zahlen oder Fristen, die nicht anhand einer offiziellen Quelle geprüft wurden.",
+    );
+    expect(GERMAN_RULES.without).toBe("Ohne Prüfung antworten");
+    expect(GERMAN_RULES.policy).toBe(GERMAN_RULES_TEXT.en.policy);
+    expect(GERMAN_RULES.sourcedPolicy).toBe(GERMAN_RULES_TEXT.en.sourcedPolicy);
+    vi.stubGlobal("navigator", { languages: ["en-US"], language: "en-US" });
+    expect(GERMAN_RULES.without).toBe("Answer without checking");
+  } finally {
+    vi.unstubAllGlobals();
+  }
 });

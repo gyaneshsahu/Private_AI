@@ -1,6 +1,7 @@
 // German rules, fees and deadlines (docs/german-rules-20261113.md): on-device rules that spot a
 // question about German law or administration, and the after-answer check for figures that no
 // official source backed. No model call; the text never leaves the device for this.
+import { defineText, textFor } from "./i18n";
 
 // A topic word alone is enough. \p{L} boundaries so umlauts count as letters; \p{L}* lets
 // German compounds through (Kündigungsfrist, Vergleichsmiete, Grundfreibetrag).
@@ -223,26 +224,56 @@ export function checkNoOfficialSource(
   return question && germanRulesQuestion(question) ? true : undefined;
 }
 
-export const GERMAN_RULES = {
-  // Heading of the pre-send search suggestion when the question is about German rules.
-  heading: "Rules, fees and deadlines change. Check the official source first.",
-  // After Send: the inline choice (search first by default).
-  choiceHeading:
-    "This is about rules, fees or deadlines, which change. Search the official source first?",
-  // Replaces WHEN_TO_SEARCH.explanation where Send asks first ("Press Send instead…" is not true).
-  explanation:
-    "One tap sends exactly this text to Brave Search through our server, and our server opens the top result page, preferring an official site. Nothing else from your conversation is sent.",
-  without: "Answer without checking",
-  // Added to the default product prompt for that turn only, when web results are in context.
-  sourcedPolicy:
-    " For this question about German rules, fees or deadlines, state figures, deadlines and legal consequences only if they appear in the web results; for anything they do not cover, say so instead of filling it in. Prefer official sources; if they disagree with other sources, follow the official one. If no source is official, say that no official source was found, that the figures may be wrong, and name the authority to check.",
-  // Under an answer to a German-rules question whose web results hold no official source.
-  noOfficial:
-    "No official source was found in the search results. Check the responsible authority before relying on these figures.",
-  // Warning under an answer that gives unchecked figures.
-  warning:
-    "This answer gives figures or deadlines that were not checked against an official source.",
-  // Added to the default product prompt for that turn only, when no web result is in context.
-  policy:
-    " This question is about German rules, fees, deadlines or legal consequences, and no official source is in this conversation. Do not state specific amounts, deadlines, point values or legal consequences as facts. Explain the general rule and what it depends on, name the official place to check (the law on gesetze-im-internet.de or the responsible authority), and offer a web search. If you mention a figure, say that it is unchecked.",
-} as const;
+/**
+ * A text block that follows the interface language each time it is read, so callers that pass no
+ * language (`GERMAN_RULES.warning`) keep working and show the current language.
+ */
+export function liveText<T extends object>(text: { en: T; de: T }): T {
+  return new Proxy(text.en, { get: (_, key) => textFor(text as never)[key as never] });
+}
+
+// Model instructions stay English in both languages: only the user sees the blocks below.
+const sourcedPolicy =
+  " For this question about German rules, fees or deadlines, state figures, deadlines and legal consequences only if they appear in the web results; for anything they do not cover, say so instead of filling it in. Prefer official sources; if they disagree with other sources, follow the official one. If no source is official, say that no official source was found, that the figures may be wrong, and name the authority to check.";
+const policy =
+  " This question is about German rules, fees, deadlines or legal consequences, and no official source is in this conversation. Do not state specific amounts, deadlines, point values or legal consequences as facts. Explain the general rule and what it depends on, name the official place to check (the law on gesetze-im-internet.de or the responsible authority), and offer a web search. If you mention a figure, say that it is unchecked.";
+
+export const GERMAN_RULES_TEXT = defineText({
+  en: {
+    // Heading of the pre-send search suggestion when the question is about German rules.
+    heading: "Rules, fees and deadlines change. Check the official source first.",
+    // After Send: the inline choice (search first by default).
+    choiceHeading:
+      "This is about rules, fees or deadlines, which change. Search the official source first?",
+    // Replaces WHEN_TO_SEARCH.explanation where Send asks first ("Press Send instead…" is not true).
+    explanation:
+      "One tap sends exactly this text to Brave Search through our server, and our server opens the top result page, preferring an official site. Nothing else from your conversation is sent.",
+    without: "Answer without checking",
+    // Added to the default product prompt for that turn only, when web results are in context.
+    sourcedPolicy,
+    // Under an answer to a German-rules question whose web results hold no official source.
+    noOfficial:
+      "No official source was found in the search results. Check the responsible authority before relying on these figures.",
+    // Warning under an answer that gives unchecked figures.
+    warning:
+      "This answer gives figures or deadlines that were not checked against an official source.",
+    // Added to the default product prompt for that turn only, when no web result is in context.
+    policy,
+  },
+  de: {
+    heading: "Regeln, Gebühren und Fristen ändern sich. Prüfen Sie zuerst die offizielle Quelle.",
+    choiceHeading:
+      "Hier geht es um Regeln, Gebühren oder Fristen, und die ändern sich. Zuerst die offizielle Quelle suchen?",
+    explanation:
+      "Ein Tippen sendet genau diesen Text über unseren Server an Brave Search, und unser Server öffnet die oberste Ergebnisseite, bevorzugt eine offizielle Website. Sonst wird nichts aus Ihrer Unterhaltung gesendet.",
+    without: "Ohne Prüfung antworten",
+    sourcedPolicy,
+    noOfficial:
+      "In den Suchergebnissen wurde keine offizielle Quelle gefunden. Fragen Sie bei der zuständigen Behörde nach, bevor Sie sich auf diese Zahlen verlassen.",
+    warning:
+      "Diese Antwort nennt Zahlen oder Fristen, die nicht anhand einer offiziellen Quelle geprüft wurden.",
+    policy,
+  },
+});
+/** The block in the current interface language (`uiLang()`), read at each use. */
+export const GERMAN_RULES = liveText(GERMAN_RULES_TEXT);

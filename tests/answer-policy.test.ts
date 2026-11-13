@@ -90,7 +90,8 @@ it("product (default) policy answers health questions with safe emergency wordin
   for (const date of ["2026-01-01T00:00:00Z", "2026-11-13T00:12:00Z", "2027-09-30T23:59:59Z"])
     for (const variant of [undefined, "constraints-v1", "constraints-v2", "constraints-v3", "constraints-v4"] as const)
       for (const conversation of [c, web])
-        expect(findIdentifiers(composeContext(conversation, 1e6, new Date(date), variant)[0].content)).toEqual([]);
+        for (const lang of ["de", "en"] as const)
+          expect(findIdentifiers(composeContext(conversation, 1e6, new Date(date), variant, lang)[0].content)).toEqual([]);
   // Evaluation records name v1-v4; their system prompts must not change.
   const frozen = {
     "constraints-v1": "2e1afb75e89dc41f414bbe53d2959db95e28b85ab2cf5d483708d6772e39bef7",
@@ -159,4 +160,25 @@ it("product prompt: no unasked counts, unsure German rules point to the official
   expect(
     composeContext(c, 10000, now, "constraints-v1")[0].content,
   ).toContain("You have no external tools");
+});
+
+it("product prompt: answer in the user's language, else the interface language; v1-v4 unchanged", () => {
+  const c = emptyConversation();
+  c.messages.push(newMessage("user", "Wie spät ist es in Tokio?"));
+  const now = new Date("2026-11-13T00:00:00Z");
+  const rule = "Reply in the language of the user's latest message unless they ask for another language.";
+  const de = composeContext(c, 8000, now, undefined, "de")[0].content;
+  const en = composeContext(c, 8000, now, undefined, "en")[0].content;
+  expect(de).toContain(rule);
+  expect(de).toContain("If that is unclear (only code, numbers or a name), reply in German, the interface language.");
+  expect(en).toContain("reply in English, the interface language.");
+  expect(en.replace("English", "German")).toBe(de);
+  // With web results too, and the masking finds nothing in our own text.
+  const web = {
+    ...c,
+    attachments: [{ id: "a", selected: true, sources: [{ id: "s1", title: "T", text: "x", url: "https://example.test/" }] }],
+  } as unknown as typeof c;
+  expect(composeContext(web, 10000, now, undefined, "de")[0].content).toContain(rule);
+  for (const variant of ["constraints-v1", "constraints-v2", "constraints-v3", "constraints-v4"] as const)
+    expect(composeContext(c, 10000, now, variant, "de")[0].content).not.toContain("interface language");
 });

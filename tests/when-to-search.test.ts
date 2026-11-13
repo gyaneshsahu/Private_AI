@@ -7,6 +7,7 @@ import {
   RULES_KEY,
   saveAutoSearch,
   searchSuggestion,
+  WHEN_TO_SEARCH,
 } from "../src/when-to-search";
 
 const now = new Date("2026-11-12T12:00:00Z");
@@ -111,4 +112,12 @@ it("keeps automatic search off by default, on only after the user switches it on
   });
   expect(readAutoSearch()).toBe(false);
   expect(readAutoSearch(RULES_KEY)).toBe(false);
+});
+
+it("shows the search texts in the interface language", () => {
+  vi.stubGlobal("navigator", { languages: ["de-DE"], language: "de-DE" });
+  expect(WHEN_TO_SEARCH.button).toBe("Suchen und antworten");
+  expect(WHEN_TO_SEARCH.searched("Kindergeld 2026")).toBe("Im Web gesucht nach: „Kindergeld 2026“");
+  vi.stubGlobal("navigator", { languages: ["en-US"], language: "en-US" });
+  expect(WHEN_TO_SEARCH.againButton).toBe("Search and answer again");
 });

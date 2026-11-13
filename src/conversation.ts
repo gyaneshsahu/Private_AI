@@ -1,5 +1,21 @@
 import type { Conversation, Message, Source } from "../shared/contracts";
-import { GERMAN_RULES, germanRulesQuestion, tierLabel } from "./german-rules";
+import { GERMAN_RULES, germanRulesQuestion, liveText, tierLabel } from "./german-rules";
+import { defineText, textFor, uiLang, type Lang } from "./i18n";
+
+const text = defineText({
+  en: {
+    chooseMessage: "Choose a user message and enter its replacement.",
+    edited: (title: string) => `${title} (edited)`,
+    tooLarge:
+      "Selected context is too large. Remove messages or attachments from context; nothing has been silently truncated.",
+  },
+  de: {
+    chooseMessage: "Wählen Sie eine eigene Nachricht und geben Sie den neuen Text ein.",
+    edited: (title: string) => `${title} (bearbeitet)`,
+    tooLarge:
+      "Der ausgewählte Kontext ist zu groß. Nehmen Sie Nachrichten oder Anhänge aus dem Kontext; es wurde nichts stillschweigend gekürzt.",
+  },
+});
 
 export type AnswerPolicyVariant =
   "constraints-v1" | "constraints-v2" | "constraints-v3" | "constraints-v4";
@@ -24,6 +40,10 @@ const knowledgeDatePolicy =
   " When an answer may depend on recent or changing information, such as prices, office holders or current events, say that your knowledge comes from training data with an unpublished end date and may be out of date, and offer a web search. Never claim you lack web access.";
 const productWebPolicy =
   " The web results below come from a search the user approved; CometRow's server ran it and may have opened the top result page. Build the answer from them. Never say you cannot browse or have no browsing or search tools. If something asked is missing from the results, say exactly what is missing and offer another search.";
+// Product (default) path only, added 13 November with the German interface. No digits: the
+// whole system message goes through identifier masking.
+const answerLanguagePolicy = (lang: Lang) =>
+  ` Reply in the language of the user's latest message unless they ask for another language. If that is unclear (only code, numbers or a name), reply in ${lang === "de" ? "German" : "English"}, the interface language.`;
 const revisionPolicy =
   " For rewriting and shortening, preserve each required action with its object, recipient, timing, condition and degree of certainty. Keep precise operational verbs when a shorter synonym could weaken the instruction. Before returning a revision, check each requirement against the original and later corrections; repair omissions in the answer without printing a checklist or internal reasoning. If the requested length cannot hold the requirements, preserve them and briefly explain the conflict. Add warmth only when requested and within the requested format, using neutral phrasing without invented personal facts, reasons or plans.";
 
@@ -36,11 +56,11 @@ export function forkAt(
     (m) => m.id === id && m.role === "user",
   );
   if (index < 0 || !replacement.trim())
-    throw new Error("Choose a user message and enter its replacement.");
+    throw new Error(textFor(text).chooseMessage);
   return {
     ...conversation,
     id: crypto.randomUUID(),
-    title: `${conversation.title} (edited)`,
+    title: textFor(text).edited(conversation.title),
     messages: [
       ...conversation.messages.slice(0, index),
       {
@@ -62,6 +82,7 @@ export function composeContext(
   maxCharacters: number,
   now = new Date(),
   variant?: AnswerPolicyVariant,
+  lang: Lang = uiLang(),
 ) {
   if (
     variant !== undefined &&
@@ -100,10 +121,10 @@ export function composeContext(
   ];
   const web = sources.some((source) => source.url);
   if (variant === undefined)
-    messages[0].content = web
+    messages[0].content = (web
       ? messages[0].content.replace(" You have no external tools.", "") +
         productWebPolicy
-      : messages[0].content + knowledgeDatePolicy;
+      : messages[0].content + knowledgeDatePolicy) + answerLanguagePolicy(lang);
   // German rules, for this turn only: without an official source, hedge; with web results,
   // state figures only from them.
   const question = [...conversation.messages].reverse().find((m) => m.role === "user");
@@ -122,9 +143,7 @@ export function composeContext(
     if (m.included && m.status === "complete")
       messages.push({ role: m.role, content: m.text });
   if (messages.reduce((n, m) => n + m.content.length, 0) > maxCharacters)
-    throw new Error(
-      "Selected context is too large. Remove messages or attachments from context; nothing has been silently truncated.",
-    );
+    throw new Error(textFor(text).tooLarge);
   return messages;
 }
 export function newMessage(role: Message["role"], text: string): Message {
@@ -144,11 +163,13 @@ export const DISAPPEAR_WINDOWS = {
   week: 604_800_000,
 } as const;
 export type DisappearAfter = keyof typeof DISAPPEAR_WINDOWS;
-export const DISAPPEAR_LABELS: Record<DisappearAfter, string> = {
-  hour: "1 hour",
-  day: "1 day",
-  week: "1 week",
-};
+/** In the current interface language (`uiLang()`), read at each use. */
+export const DISAPPEAR_LABELS: Record<DisappearAfter, string> = liveText(
+  defineText({
+    en: { hour: "1 hour", day: "1 day", week: "1 week" },
+    de: { hour: "1 Stunde", day: "1 Tag", week: "1 Woche" },
+  }),
+);
 
 /**
  * Removes messages older than the conversation's disappearing window from the
