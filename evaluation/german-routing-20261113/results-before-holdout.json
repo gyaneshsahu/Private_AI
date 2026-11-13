@@ -1,0 +1,450 @@
+{
+  "file": "holdout.json",
+  "label": "before",
+  "summary": {
+    "de": {
+      "routing": {
+        "hit": 11,
+        "of": 20,
+        "pct": 55
+      },
+      "rulesRecall": {
+        "hit": 3,
+        "of": 12,
+        "pct": 25
+      },
+      "rulesFalseAlarms": {
+        "hit": 0,
+        "of": 8,
+        "pct": 0
+      },
+      "current": {
+        "hit": 8,
+        "of": 8,
+        "pct": 100
+      },
+      "routingByCategory": {
+        "rules": {
+          "hit": 3,
+          "of": 12,
+          "pct": 25
+        },
+        "health": {
+          "hit": 2,
+          "of": 2,
+          "pct": 100
+        },
+        "everyday": {
+          "hit": 3,
+          "of": 3,
+          "pct": 100
+        },
+        "rewrite": {
+          "hit": 1,
+          "of": 1,
+          "pct": 100
+        },
+        "current": {
+          "hit": 1,
+          "of": 1,
+          "pct": 100
+        },
+        "reasoning": {
+          "hit": 1,
+          "of": 1,
+          "pct": 100
+        }
+      }
+    },
+    "en": {
+      "routing": {
+        "hit": 0,
+        "of": 0,
+        "pct": null
+      },
+      "rulesRecall": {
+        "hit": 0,
+        "of": 0,
+        "pct": null
+      },
+      "rulesFalseAlarms": {
+        "hit": 0,
+        "of": 0,
+        "pct": null
+      },
+      "current": {
+        "hit": 0,
+        "of": 0,
+        "pct": null
+      },
+      "routingByCategory": {}
+    }
+  },
+  "misses": [
+    {
+      "id": "HD-01",
+      "category": "rules",
+      "expected": "thinking rules",
+      "got": "fast/simple",
+      "prompt": "Mein Flug hatte fünf Stunden Verspätung. Bekomme ich da Geld zurück?"
+    },
+    {
+      "id": "HD-02",
+      "category": "rules",
+      "expected": "thinking rules",
+      "got": "fast/simple",
+      "prompt": "Wie lange vorher muss ich meinem Fitnessstudio Bescheid geben, wenn ich aufhören will?"
+    },
+    {
+      "id": "HD-03",
+      "category": "rules",
+      "expected": "thinking rules",
+      "got": "fast/simple",
+      "prompt": "Ich arbeite in Teilzeit. Habe ich trotzdem Anspruch auf Weihnachtsgeld?"
+    },
+    {
+      "id": "HD-05",
+      "category": "rules",
+      "expected": "thinking rules",
+      "got": "fast/simple",
+      "prompt": "Wie viel Geld darf ich mit meinem Nebenjob als Student verdienen, ohne Steuern zu zahlen?"
+    },
+    {
+      "id": "HD-06",
+      "category": "rules",
+      "expected": "thinking rules",
+      "got": "fast/simple",
+      "prompt": "Wann muss ich meinen Hund bei der Stadt anmelden?"
+    },
+    {
+      "id": "HD-07",
+      "category": "rules",
+      "expected": "thinking rules",
+      "got": "fast/simple",
+      "prompt": "Mein Handy ist nach drei Monaten kaputtgegangen. Muss der Laden es reparieren?"
+    },
+    {
+      "id": "HD-09",
+      "category": "rules",
+      "expected": "thinking rules",
+      "got": "fast/simple",
+      "prompt": "Darf ich auf meinem Balkon grillen?"
+    },
+    {
+      "id": "HD-10",
+      "category": "rules",
+      "expected": "thinking rules",
+      "got": "fast/simple",
+      "prompt": "Ab wann darf mein Kind allein mit dem Fahrrad auf der Straße fahren?"
+    },
+    {
+      "id": "HD-11",
+      "category": "rules",
+      "expected": "thinking rules",
+      "got": "fast/simple",
+      "prompt": "Ich möchte mich selbstständig machen. Muss ich ein Gewerbe anmelden?"
+    }
+  ],
+  "rows": [
+    {
+      "id": "HD-01",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Mein Flug hatte fünf Stunden Verspätung. Bekomme ich da Geld zurück?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null,
+      "got": {
+        "mode": "fast",
+        "reason": "simple",
+        "rules": false,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-02",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Wie lange vorher muss ich meinem Fitnessstudio Bescheid geben, wenn ich aufhören will?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null,
+      "got": {
+        "mode": "fast",
+        "reason": "simple",
+        "rules": false,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-03",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Ich arbeite in Teilzeit. Habe ich trotzdem Anspruch auf Weihnachtsgeld?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null,
+      "got": {
+        "mode": "fast",
+        "reason": "simple",
+        "rules": false,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-04",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Darf mein Arbeitgeber mich während der Krankschreibung anrufen?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null,
+      "got": {
+        "mode": "thinking",
+        "reason": "rules",
+        "rules": true,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-05",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Wie viel Geld darf ich mit meinem Nebenjob als Student verdienen, ohne Steuern zu zahlen?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null,
+      "got": {
+        "mode": "fast",
+        "reason": "simple",
+        "rules": false,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-06",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Wann muss ich meinen Hund bei der Stadt anmelden?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null,
+      "got": {
+        "mode": "fast",
+        "reason": "simple",
+        "rules": false,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-07",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Mein Handy ist nach drei Monaten kaputtgegangen. Muss der Laden es reparieren?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null,
+      "got": {
+        "mode": "fast",
+        "reason": "simple",
+        "rules": false,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-08",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Ich habe einen Bescheid vom Jobcenter bekommen, der falsch ist. Wie lange habe ich Zeit für einen Widerspruch?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null,
+      "got": {
+        "mode": "thinking",
+        "reason": "rules",
+        "rules": true,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-09",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Darf ich auf meinem Balkon grillen?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null,
+      "got": {
+        "mode": "fast",
+        "reason": "simple",
+        "rules": false,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-10",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Ab wann darf mein Kind allein mit dem Fahrrad auf der Straße fahren?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null,
+      "got": {
+        "mode": "fast",
+        "reason": "simple",
+        "rules": false,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-11",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Ich möchte mich selbstständig machen. Muss ich ein Gewerbe anmelden?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null,
+      "got": {
+        "mode": "fast",
+        "reason": "simple",
+        "rules": false,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-12",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Bekomme ich Wohngeld, wenn ich in der Ausbildung bin?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null,
+      "got": {
+        "mode": "thinking",
+        "reason": "rules",
+        "rules": true,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-13",
+      "lang": "de",
+      "category": "health",
+      "prompt": "Darf ich nach einer Erkältung gleich wieder joggen gehen?",
+      "mode": "fast",
+      "rules": false,
+      "current": false,
+      "got": {
+        "mode": "fast",
+        "reason": "simple",
+        "rules": false,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-14",
+      "lang": "de",
+      "category": "everyday",
+      "prompt": "Mein Chef hat Geburtstag. Was kann ich ihm schenken?",
+      "mode": "fast",
+      "rules": false,
+      "current": false,
+      "got": {
+        "mode": "fast",
+        "reason": "simple",
+        "rules": false,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-15",
+      "lang": "de",
+      "category": "everyday",
+      "prompt": "Wie melde ich mich bei Instagram ab?",
+      "mode": "fast",
+      "rules": false,
+      "current": false,
+      "got": {
+        "mode": "fast",
+        "reason": "simple",
+        "rules": false,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-16",
+      "lang": "de",
+      "category": "everyday",
+      "prompt": "Wir ziehen am Samstag um. Wie viele Umzugskartons brauche ich für drei Zimmer?",
+      "mode": "fast",
+      "rules": false,
+      "current": false,
+      "got": {
+        "mode": "fast",
+        "reason": "simple",
+        "rules": false,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-17",
+      "lang": "de",
+      "category": "health",
+      "prompt": "Was ist der Unterschied zwischen einer Erkältung und einer Grippe?",
+      "mode": "fast",
+      "rules": false,
+      "current": false,
+      "got": {
+        "mode": "fast",
+        "reason": "simple",
+        "rules": false,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-18",
+      "lang": "de",
+      "category": "rewrite",
+      "prompt": "Schreib eine kurze Nachricht an meinen Nachbarn, dass wir am Samstag feiern.",
+      "mode": "fast",
+      "rules": false,
+      "current": false,
+      "got": {
+        "mode": "fast",
+        "reason": "simple",
+        "rules": false,
+        "current": false
+      }
+    },
+    {
+      "id": "HD-19",
+      "lang": "de",
+      "category": "current",
+      "prompt": "Wie viel kostet ungefähr ein neues Fahrrad für ein Kind?",
+      "mode": "thinking",
+      "rules": false,
+      "current": true,
+      "got": {
+        "mode": "thinking",
+        "reason": "current",
+        "rules": false,
+        "current": true
+      }
+    },
+    {
+      "id": "HD-20",
+      "lang": "de",
+      "category": "reasoning",
+      "prompt": "Warum sind die Spritpreise am Wochenende oft höher?",
+      "mode": "thinking",
+      "rules": false,
+      "current": false,
+      "got": {
+        "mode": "thinking",
+        "reason": "reasoning",
+        "rules": false,
+        "current": false
+      }
+    }
+  ]
+}
