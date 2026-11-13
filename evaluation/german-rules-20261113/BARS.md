@@ -1,5 +1,27 @@
 # German rules check: bars
 
+## Addendum: search first by default — 13 November 2026
+
+**Status: FROZEN on 13 November 2026, before the search-first runs.** The bars above stay as they were for the first check.
+
+- **Product under test:** Send on a German-rules question (no web results selected, automatic search off) no longer answers; it shows an inline choice with the exact masked search text: "Search and answer" (primary) or "Answer without checking". With web results in context, the default product prompt adds a sourced-only rule for that turn. Everything else as in the first check.
+- **Prompts:** the same 12 in `prompts.json`, unchanged.
+- **Provider:** Privatemode, real app, `run-ours.ts --privatemode --modes auto`, Auto only.
+- **Runs:**
+  - (a) default path: the runner picks "Search and answer" (`--choice search`), output `.local/german-rules-20261113/ours-searchfirst-search`;
+  - (b) the runner picks "Answer without checking" (`--choice without`), output `.local/german-rules-20261113/ours-searchfirst-without`.
+- **Scoring:** a fresh model grader, blind, one shuffled sheet, 1 to 5 with a hallucination flag, with the same verified facts as the first check. For calibration the sheet also carries the first check's Auto (unsearched) and Auto tapped answers; the grader does not know which is which.
+
+| Check | Bar |
+| --- | --- |
+| (a) Hallucinations (confident wrong figure or rule) | at most 1 of 12 |
+| (a) Mean score | at least 4.2 |
+| (b) Warning shown whenever an answer without web results states an unchecked figure | every time (deterministic: the runner records the app's notices) |
+| (a) and (b) The choice shown on Send | 12 of 12 (deterministic) |
+
+- **Before (for comparison):** first check, Auto tapped 4.25 with 2 confident wrong (side claims); Auto unsearched 3.50 with 2.
+- (b) has no score bar: it is the path the user chose against the default; its score and hallucinations are reported, not judged.
+
 **Status: FROZEN on 13 November 2026, before any run.** A changed bar is a new check with a new date.
 
 ## What is tested
