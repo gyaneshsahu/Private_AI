@@ -40,6 +40,8 @@ export interface Config {
   apiKey?: string;
   searchKey?: string;
   searchMode?: "web" | "llm-context";
+  /** Brave Goggle boosting official sites on German-rules searches (off unless set). */
+  searchGoggles?: boolean;
   /**
    * Allows the production candidate to relay chat (owner's explicit deployment setting).
    * Requires an API key, a qualification report and a usage ledger that reports spend.
@@ -111,7 +113,7 @@ export function createApp(config: Config) {
   const search =
     config.search ??
     (config.searchKey
-      ? braveSearchProvider(config.searchKey, config.searchMode)
+      ? braveSearchProvider(config.searchKey, config.searchMode, config.searchGoggles)
       : undefined);
   const cacheSaltKey = config.cacheSaltSecret ?? randomBytes(32).toString("hex");
   /** Stable per account (per session without one), unguessable, never shared between users. */

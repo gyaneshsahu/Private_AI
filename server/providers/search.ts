@@ -22,11 +22,12 @@ export interface SearchProvider {
 export function braveSearchProvider(
   key: string,
   mode: "web" | "llm-context" = "web",
+  goggles = false,
 ): SearchProvider {
   return {
     id: "brave",
     recipientLabel: "Brave Search API",
-    search: (query, signal) => searchWeb(query, key, signal, mode),
+    search: (query, signal) => searchWeb(query, key, signal, mode, goggles),
     readTopPage: (query, sources, signal) =>
       readTopPage(query, sources, signal),
   };

@@ -1,6 +1,34 @@
 # German rules, fees and deadlines (13 November 2026)
 
-## Answer-side check — 13 November 2026 (latest)
+## Brave Goggles — 13 November 2026 (latest)
+
+### Finding
+
+- **Supported, inline.** Brave's Web Search API takes a `goggles` query parameter. It accepts a hosted Goggle URL or an inline definition; inline rules need no registration and no public file. Syntax: one rule per line, for example `$boost=3,site=example.de` ([Goggles documentation](https://api-dashboard.search.brave.com/documentation/resources/goggles)). The documentation names no plan restriction.
+- **Our plan accepts it.** One probe with our key on 13 November (an older prompt, F-07 "Was kostet die Ummeldung in München und in Stuttgart?", 10 results), 2 Brave searches:
+  - without the Goggle: 0 official results (was-kostet.org, stadtverwaltungen.net, umzug1.de, ummelden.de …);
+  - with the inline Goggle: HTTP 200, 9 of 10 results on stuttgart.de or stadt.muenchen.de. The request address was about 2,800 characters.
+
+### What changed
+
+1. **The Goggle** (`RULES_GOGGLE` in `server/research.ts`): `$boost=4` for every official domain and `$boost=2` for every public-interest domain in `RULES_SOURCE_DOMAINS`. It is built from the documented list only; nothing from the user is in it.
+2. **Only for German-rules searches, behind a server flag.** `searchGoggles` in the server config, set by `PRIVATEAI_SEARCH_GOGGLES=1`; **off by default**. Turning it on or off needs no client change.
+3. **The search text is unchanged:** `q` is exactly the approved text, and `count` is 10 as before; only the `goggles` parameter is added. Our own tier re-ranking and the page choice still run on what Brave returns.
+4. **Runner:** `run-ours.ts --goggles` sets the flag; `run.json` records it. The runner now also records `uncheckedWarning` per answer.
+
+### Privacy copy (proposed; needs the owner)
+
+Brave now receives one more thing with a rules search: the fixed list of official sites. Only the Privatemode draft variant of "When you search the web" changes. After "your own address is not sent." it adds:
+
+> For a question about rules, fees or deadlines, our server may also ask the search provider to rank official sites first, by sending a fixed list of those sites; nothing from you is added.
+
+"May" keeps the sentence true while the flag is off. The approved Tinfoil text is unchanged. The mirror `docs/privacy-copy-privatemode-20261112.md` is regenerated.
+
+### Tests
+
+`tests/search-provider.test.ts`: with the flag, a rules search sends exactly the approved text, `count=10` and the Goggle, which holds only `$boost` rules for the documented domains; with the flag off, or for a non-rules search, no Goggle is sent.
+
+## Answer-side check — 13 November 2026
 
 ### Decision
 

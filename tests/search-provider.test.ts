@@ -3,7 +3,7 @@ const upstream = vi.hoisted(() => vi.fn());
 vi.mock("undici", async (importOriginal) => ({
   ...(await importOriginal<typeof import("undici")>()), fetch: upstream,
 }));
-import { searchWeb } from "../server/research";
+import { RULES_GOGGLE, searchWeb } from "../server/research";
 import { parseResearchResult } from "../src/research-result";
 afterEach(() => upstream.mockReset());
 const result = { title: "<b>Library</b>", url: "https://example.com/library", description: "Saturday: <b>10–14</b>." };
@@ -86,4 +86,21 @@ it("on a German-rules question asks for 10 results with the exact text, ranks of
   // No official result: nothing is dropped, the others stay in rank order.
   upstream.mockResolvedValue(new Response(JSON.stringify({ web: { results: ten.slice(6, 9) } })));
   expect((await searchWeb(question, "TEST_ONLY")).map((s) => s.url)).toEqual(ten.slice(6, 9).map((r) => r.url));
+});
+
+it("with the Goggles flag adds the inline Goggle to German-rules searches only, text unchanged", async () => {
+  const question = "Was kostet es, nach einem Umzug meinen Wohnsitz beim Bürgeramt umzumelden?";
+  upstream.mockImplementation(async () => new Response(JSON.stringify({ web: { results: [result] } })));
+  await searchWeb(question, "TEST_ONLY", undefined, "web", true);
+  const params = [...upstream.mock.calls[0][0].searchParams];
+  expect(params).toEqual([["q", question], ["count", "10"], ["goggles", RULES_GOGGLE]]);
+  expect(RULES_GOGGLE.split("\n")).toContain("$boost=4,site=gesetze-im-internet.de");
+  expect(RULES_GOGGLE.split("\n")).toContain("$boost=2,site=verbraucherzentrale.de");
+  // Only domains from the documented list; nothing from the user.
+  expect(RULES_GOGGLE.split("\n").every((rule) => /^\$boost=[24],site=[a-z0-9.-]+$/.test(rule))).toBe(true);
+  // Flag off, or not a rules search: no Goggle.
+  await searchWeb(question, "TEST_ONLY");
+  expect(upstream.mock.calls[1][0].searchParams.has("goggles")).toBe(false);
+  await searchWeb("synthetic library hours", "TEST_ONLY", undefined, "web", true);
+  expect(upstream.mock.calls[2][0].searchParams.has("goggles")).toBe(false);
 });

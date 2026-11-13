@@ -71,10 +71,17 @@ const PRIVATEMODE_SECTIONS: Readonly<Record<string, string>> = {
     "Your plan allows a set number of requests, and only one request runs at a time per account. We also set limits on our key at the secure server; the company states that it enforces them there, so new requests are refused once a limit is reached.",
   // 13 November: automatic search also covers German rules, fees and deadlines. The approved
   // Tinfoil text is left unchanged for the owner to approve (docs/german-rules-20261113.md).
-  research: PRIVACY_COPY.find((s) => s.id === "research")!.text.replace(
-    "a question that looks time-sensitive is searched",
-    "a question that looks time-sensitive or is about rules, fees or deadlines is searched",
-  ),
+  // Brave Goggles (13 November): the ranking hint is a fixed list of sites, sent only when the
+  // server flag is on, hence "may". Proposed for the owner; the Tinfoil text is unchanged.
+  research: PRIVACY_COPY.find((s) => s.id === "research")!
+    .text.replace(
+      "a question that looks time-sensitive is searched",
+      "a question that looks time-sensitive or is about rules, fees or deadlines is searched",
+    )
+    .replace(
+      "your own address is not sent.",
+      "your own address is not sent. For a question about rules, fees or deadlines, our server may also ask the search provider to rank official sites first, by sending a fixed list of those sites; nothing from you is added.",
+    ),
 };
 
 /** The statement for the provider in use; Tinfoil's is the approved text, unchanged. */

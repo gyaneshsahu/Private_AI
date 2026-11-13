@@ -16,7 +16,13 @@ import {
   type Source,
 } from "../shared/contracts";
 import { findIdentifiers } from "../src/identifier-masking";
-import { germanRulesQuestion, rankByTier, sourceTier, type SourceTier } from "../src/german-rules";
+import {
+  germanRulesQuestion,
+  rankByTier,
+  RULES_SOURCE_DOMAINS,
+  sourceTier,
+  type SourceTier,
+} from "../src/german-rules";
 
 export function publicAddress(address: string) {
   try {
@@ -390,11 +396,19 @@ export async function readTopPage(
   return first;
 }
 export const RULES_RESULTS = 6;
+// Brave Goggle (inline definition, no hosted file): boosts the official and public-interest
+// domains inside Brave's own ranking, for German-rules searches only and only when the server
+// flag is on. The search text is unchanged; Brave also receives this fixed list, nothing else.
+export const RULES_GOGGLE = [
+  ...RULES_SOURCE_DOMAINS.official.map((domain) => `$boost=4,site=${domain}`),
+  ...RULES_SOURCE_DOMAINS.publicInterest.map((domain) => `$boost=2,site=${domain}`),
+].join("\n");
 export async function searchWeb(
   query: string,
   key: string,
   signal?: AbortSignal,
   mode: "web" | "llm-context" = "web",
+  goggles = false,
 ): Promise<Source[]> {
   const url = new URL(
     mode === "llm-context"
@@ -407,6 +421,7 @@ export async function searchWeb(
   const count = rules ? 10 : 5;
   url.searchParams.set("q", query);
   url.searchParams.set("count", String(count));
+  if (rules && goggles) url.searchParams.set("goggles", RULES_GOGGLE);
   if (mode === "llm-context") {
     url.searchParams.set("maximum_number_of_urls", "5");
     url.searchParams.set("maximum_number_of_tokens", "4096");

@@ -60,6 +60,8 @@ const app = createApp({
   providerManifest,
   cacheSaltSecret: process.env.PRIVATEAI_CACHE_SALT_SECRET,
   searchKey: process.env.BRAVE_SEARCH_API_KEY,
+  // Brave Goggle for German-rules searches (docs/german-rules-20261113.md); off unless "1".
+  searchGoggles: process.env.PRIVATEAI_SEARCH_GOGGLES === "1",
 });
 if (dev) {
   const { createServer } = await import("vite");

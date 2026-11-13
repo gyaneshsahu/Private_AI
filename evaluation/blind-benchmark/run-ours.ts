@@ -34,6 +34,8 @@ const tapAll = process.argv.includes("--tap-suggestion-all");
 // which is what Send did before, so older prompt sets keep their meaning.
 const choice = arg("choice") ?? "without";
 if (choice !== "search" && choice !== "without") throw Error("--choice must be search or without");
+// --goggles: the server flag for the Brave Goggle on German-rules searches (default off).
+const goggles = process.argv.includes("--goggles");
 // BENCH_DIR runs another prompt set (e.g. evaluation/benchmark-fresh-20261112).
 const DIR = process.env.BENCH_DIR ?? "evaluation/blind-benchmark";
 // BENCH_OUT writes elsewhere, so a measurement run does not overwrite earlier evidence.
@@ -150,7 +152,7 @@ await new Promise((ok) => listener.once("listening", ok));
 const port = (listener.address() as { port: number }).port;
 const origin = tls ? `https://localhost:${port}` : `http://127.0.0.1:${port}`;
 const providerManifest = privatemode ? new Uint8Array(await readFile(".local/privatemode-manifest.json")) : undefined;
-const inner = createApp({ origin, dev: true, qualification, apiKey, searchKey, providerManifest });
+const inner = createApp({ origin, dev: true, qualification, apiKey, searchKey, providerManifest, searchGoggles: goggles });
 const vite = await createServer({ server: { middlewareMode: true, hmr: false }, appType: "spa", logLevel: "error" });
 inner.use(vite.middlewares);
 outer.use(inner);
@@ -280,6 +282,7 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
     const pageRead = new RegExp(String.raw`${opened}[^:]*: (https:\/\/\S+)`).exec(mainText)?.[1]?.replace(/[.,)]+$/, "");
     const topPageNote = new RegExp(String.raw`(${opened}[^\n]*|The top result \([^)]*\)[^\n]*)`).exec(mainText)?.[1];
     const noOfficialNote = /No official source was found in the search results\. Check the responsible authority/.test(last.text);
+    const uncheckedWarning = /This answer gives figures or deadlines that were not checked/.test(last.text);
     const searchedQuery = /Searched the web(?: automatically)? for: "([^"]*)"/.exec(mainText)?.[1] ?? (searched ? query : undefined);
     // Strip UI chrome: the "CometRow" heading line and the copy button text.
     const lines = last.text.split("\n").filter((l) => l.trim() && !/^(CometRow|Copy answer)$/.test(l.trim()));
@@ -297,7 +300,7 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
       : undefined;
     return {
       text, notices, failure, ...(httpErrors.length ? { httpErrors } : {}), ttftMs: all[0].ttftMs, totalMs: all.reduce((n, t) => n + t.totalMs, 0), turnTimings: all, model: "(see tiers)", mode, label, searched,
-      suggestionShown: probe.suggestionShown || !!first?.suggestionShown, suggestedQuery: first?.suggestedQuery, suggestionHeading: first?.suggestionHeading, tapped: !!first?.tapped, choiceShown: !!first?.choiceShown, choiceHeading: first?.choiceHeading, choiceQuery: first?.choiceQuery, chose: first?.chose, againShown: last.againShown, searchedQuery, pageRead, topPageNote, noOfficialNote, links, citations, research: await research,
+      suggestionShown: probe.suggestionShown || !!first?.suggestionShown, suggestedQuery: first?.suggestedQuery, suggestionHeading: first?.suggestionHeading, tapped: !!first?.tapped, choiceShown: !!first?.choiceShown, choiceHeading: first?.choiceHeading, choiceQuery: first?.choiceQuery, chose: first?.chose, againShown: last.againShown, searchedQuery, pageRead, topPageNote, noOfficialNote, uncheckedWarning, links, citations, research: await research,
     };
   } finally {
     await page.close();
@@ -340,5 +343,5 @@ try {
   await vite.close();
   listener.close();
 }
-await writeFile(`${OUT}/run.json`, JSON.stringify({ startedAt, finishedAt: new Date().toISOString(), digest, tiers, relayRequests, prompts: prompts.length, modes: MODES, choice }, null, 2));
+await writeFile(`${OUT}/run.json`, JSON.stringify({ startedAt, finishedAt: new Date().toISOString(), digest, tiers, relayRequests, prompts: prompts.length, modes: MODES, choice, goggles }, null, 2));
 console.log(`done: ${relayRequests} relay requests`);
