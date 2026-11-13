@@ -328,3 +328,25 @@ it("masks attachment text before it is serialised, so wrapped and label-line ide
   expect(leaks(wire)).toEqual([]);
   expect(early.restore("{{IBAN-1}}")).toBe("DE89 3704 0044 0532 0130 00");
 });
+
+it("does not take a rule's cut-off or effective date for a birth date because 'Geburtstag' or 'born' appears earlier in the sentence", () => {
+  const kinds = (text: string) =>
+    findIdentifiers(text).map((hit) => [hit.kind, hit.value]);
+  // Web text read for a parental-leave question (run S, Q05, 13 November 2026).
+  const web =
+    "Elternzeit vor dem 3. Geburtstag (Geburten ab 1.7.2015): 7 Wochen Frist\n" +
+    "Für Kinder, die geboren werden, gilt seit 01.04.2024 eine neue Regel.\n" +
+    "Children born after the reform took effect on 1 April 2024 qualify.\n" +
+    "Kinder, die bis zum 31.12.2024 geboren sind, Stand: 15.03.2025";
+  expect(kinds(web)).toEqual([]);
+  // Birth dates with their label still count, in prose too.
+  expect(kinds("Mein Sohn ist geboren am 03.05.2019, die Elternzeit beginnt ab 01.06.2019.")).toEqual([
+    ["BIRTH-DATE", "03.05.2019"],
+  ]);
+  expect(kinds("Wann hat Papa geburtstag? Anna meinte 12.03.1958")).toEqual([
+    ["BIRTH-DATE", "12.03.1958"],
+  ]);
+  expect(kinds("I was born on 4 March 1975 in Leeds.")).toEqual([
+    ["BIRTH-DATE", "4 March 1975"],
+  ]);
+});

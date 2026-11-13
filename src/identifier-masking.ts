@@ -296,10 +296,12 @@ function unicodeWords(pattern: RegExp): RegExp {
     pattern.flags + "u",
   );
 }
-function label(keywords: string, window: number): Label {
+/** `notAfter`: words that, between a same-line label and the value, show the value is something else. */
+function label(keywords: string, window: number, notAfter?: string): Label {
+  const gap = notAfter ? `(?:(?!\\b(?:${notAfter})\\b)[^\\n])` : "[^\\n]";
   return {
     sameLine: unicodeWords(
-      new RegExp(`(?:${keywords})[^\\n]{0,${window}}$`, "i"),
+      new RegExp(`(?:${keywords})${gap}{0,${window}}$`, "i"),
     ),
     lineEnd: unicodeWords(
       new RegExp(`(?:${keywords})[^\\d\\n]{0,16}$`, "i"),
@@ -315,6 +317,8 @@ const ID_LABEL = label(
 const BIRTH_LABEL = label(
   "geboren|\\bgeb\\b\\.?|geb\\.|born|birth|\\bdob\\b|d\\.o\\.b|geburtsdatum|geburtstag|tag der geburt|birthday|date de naissance",
   40,
+  // Rules text names births, then a cut-off or effective date: "3. Geburtstag (Geburten ab 1.7.2015)", "born after the reform took effect on 1 April 2024".
+  "ab|seit|bis|vor|nach|stand|from|since|until|till|before|after|effect|effective",
 );
 const TAX_NUMBER_LABEL = label(
   "steuernummer|steuer-nr|st\\.?-?nr|tax number|tax no|tax ref",
