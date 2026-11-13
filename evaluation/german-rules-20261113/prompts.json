@@ -1,0 +1,184 @@
+{
+  "version": "german-rules-20261113",
+  "frozen": "2026-11-13",
+  "note": "The 12 German rules, fees and deadlines prompts, copied unchanged from evaluation/benchmark-fresh-20261112 (G-01..G-06), evaluation/benchmark-privatemode-20261112 (P-G1..P-G5) and evaluation/blind-benchmark (L7-04). Bars in BARS.md, written before the run.",
+  "prompts": [
+    {
+      "id": "G-01",
+      "level": 2,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "prompt": "Ich bin umgezogen. Bis wann muss ich mein Auto ummelden, und was kostet das ungefähr?",
+      "expected": {
+        "facts": [
+          "Adressänderung bei der Zulassungsstelle unverzüglich (FZV), keine feste Wochenfrist bundesweit",
+          "Kosten je nach Zulassungsstelle; wer eine Zahl nennt, muss sie als ungefähr kennzeichnen"
+        ],
+        "elements": [
+          "says where unsure",
+          "points to the official source (Zulassungsstelle / Stadt)"
+        ]
+      },
+      "notes": "A precise invented deadline (e.g. 'zwei Wochen') or fee presented as certain is a hallucination."
+    },
+    {
+      "id": "G-02",
+      "level": 2,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "prompt": "Ich bin Arbeitnehmerin, zur Abgabe einer Steuererklärung verpflichtet und habe keinen Steuerberater. Bis wann muss die Steuererklärung für 2025 beim Finanzamt sein?",
+      "expected": {
+        "facts": [
+          "31. Juli 2026 (ohne Steuerberater); mit Steuerberater später"
+        ]
+      }
+    },
+    {
+      "id": "G-03",
+      "level": 2,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "prompt": "Wie hoch ist der Rundfunkbeitrag im Moment pro Monat?",
+      "expected": {
+        "facts": [
+          "amount as listed on rundfunkbeitrag.de on the run day"
+        ],
+        "elements": [
+          "if not certain: says so and points to rundfunkbeitrag.de"
+        ]
+      },
+      "notes": "Changes to the fee were under dispute; stating an out-of-date amount as current is a hallucination."
+    },
+    {
+      "id": "G-04",
+      "level": 2,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "prompt": "Welche Kündigungsfrist habe ich als Mieter bei einem normalen unbefristeten Mietvertrag?",
+      "expected": {
+        "facts": [
+          "drei Monate (§ 573c BGB), Kündigung spätestens am dritten Werktag eines Monats zum Ablauf des übernächsten Monats",
+          "schriftlich"
+        ]
+      }
+    },
+    {
+      "id": "G-05",
+      "level": 2,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "prompt": "Wie viele Tage gesetzlichen Mindesturlaub habe ich bei einer Fünf-Tage-Woche?",
+      "expected": {
+        "facts": [
+          "20 Arbeitstage (24 Werktage bei Sechs-Tage-Woche, BUrlG)"
+        ]
+      }
+    },
+    {
+      "id": "G-06",
+      "level": 2,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "prompt": "Ich habe meinen Personalausweis verloren. Was muss ich tun, und was kostet ein neuer?",
+      "expected": {
+        "facts": [
+          "Verlust beim Bürgeramt (oder Polizei) melden",
+          "neuen Ausweis beim Bürgeramt beantragen",
+          "Gebühr wie vom BMI/Bürgeramt am Testtag angegeben; wer unsicher ist, sagt es und verweist auf die offizielle Quelle"
+        ]
+      }
+    },
+    {
+      "id": "P-G1",
+      "level": 2,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "prompt": "Wie lange muss ich als Privatperson Kontoauszüge und Rechnungen aufbewahren?",
+      "expected": {
+        "facts": [
+          "Privatpersonen haben grundsätzlich keine allgemeine Aufbewahrungspflicht",
+          "Ausnahme: Rechnungen über Handwerker- oder Bauleistungen am Grundstück 2 Jahre (§ 14b UStG)",
+          "Empfehlung, Unterlagen für Steuer und Gewährleistung länger zu behalten, ist keine Pflicht"
+        ]
+      }
+    },
+    {
+      "id": "P-G2",
+      "level": 2,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "prompt": "Wie lange gilt die gesetzliche Gewährleistung, wenn ich im Laden einen neuen Fernseher kaufe?",
+      "expected": {
+        "facts": [
+          "2 Jahre gesetzliche Gewährleistung beim Verbrauchsgüterkauf",
+          "Beweislastumkehr in den ersten 12 Monaten (seit 2022)",
+          "Garantie ist freiwillig und etwas anderes"
+        ]
+      }
+    },
+    {
+      "id": "P-G3",
+      "level": 2,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "prompt": "Bis wann muss ich in Deutschland Winterreifen aufziehen?",
+      "expected": {
+        "facts": [
+          "situative Winterreifenpflicht bei Glätte, Schnee, Eis oder Matsch, keine feste Frist",
+          "Faustregel 'von O bis O' ist keine gesetzliche Frist",
+          "Alpine-Symbol (Schneeflocke) erforderlich"
+        ]
+      }
+    },
+    {
+      "id": "P-G4",
+      "level": 2,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "prompt": "Was kostet es, wenn ich innerorts mit dem Auto 25 km/h zu schnell geblitzt werde?",
+      "expected": {
+        "facts": [
+          "amount and points per the Bußgeldkatalog on the run day (21-25 km/h innerorts)"
+        ],
+        "elements": [
+          "if unsure: says so and points to the official Bußgeldkatalog"
+        ]
+      },
+      "notes": "A wrong amount presented as certain is a hallucination."
+    },
+    {
+      "id": "P-G5",
+      "level": 2,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "prompt": "Mein Vermieter will die Miete auf die ortsübliche Vergleichsmiete erhöhen. Wie viel Zeit habe ich für die Zustimmung, und wie oft darf er erhöhen?",
+      "expected": {
+        "facts": [
+          "Zustimmungsfrist bis zum Ende des zweiten Kalendermonats nach Zugang (§ 558b BGB)",
+          "frühestens 15 Monate nach der letzten Erhöhung wirksam, Verlangen frühestens nach 12 Monaten (§ 558 BGB)",
+          "Kappungsgrenze 20 % in drei Jahren, in manchen Gebieten 15 %"
+        ]
+      }
+    },
+    {
+      "id": "L7-04",
+      "level": 7,
+      "levelName": "German prompts",
+      "prompt": "Ich ziehe innerhalb Deutschlands um. Gib mir eine Checkliste mit den wichtigsten Behördengängen und Fristen.",
+      "language": "de",
+      "expected": {
+        "facts": [
+          "Anmeldung beim Bürgeramt innerhalb von zwei Wochen nach Einzug",
+          "Wohnungsgeberbestätigung vom Vermieter",
+          "Adressänderung im Fahrzeugschein bei der Zulassungsstelle (für Fahrzeughalter)",
+          "Rundfunkbeitrag, Bank, Versicherungen, Arbeitgeber informieren"
+        ],
+        "elements": [
+          "Checkliste",
+          "Fristen genannt"
+        ]
+      },
+      "notes": "Practical German admin knowledge; a wrong deadline is a hallucination."
+    }
+  ]
+}

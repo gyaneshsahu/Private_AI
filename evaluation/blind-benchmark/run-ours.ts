@@ -182,6 +182,11 @@ async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolea
 // page (reload) still starts an empty temporary conversation.
 async function runOne(context: BrowserContext, mode: string, p: Prompt) {
   const page = await context.newPage();
+  // Failed requests (status and path only, never bodies or headers), for diagnosing failures.
+  const httpErrors: string[] = [];
+  page.on("response", (r) => {
+    if (r.status() >= 400) httpErrors.push(`${r.status()} ${new URL(r.url()).pathname}`);
+  });
   try {
     await page.goto(origin, { timeout: 60_000 });
     await page.getByRole("combobox", { name: "Answer mode" }).selectOption(mode, { timeout: 60_000 });
@@ -243,7 +248,7 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
           .slice(0, 4)
       : undefined;
     return {
-      text, notices, failure, ttftMs: all[0].ttftMs, totalMs: all.reduce((n, t) => n + t.totalMs, 0), turnTimings: all, model: "(see tiers)", mode, label, searched,
+      text, notices, failure, ...(httpErrors.length ? { httpErrors } : {}), ttftMs: all[0].ttftMs, totalMs: all.reduce((n, t) => n + t.totalMs, 0), turnTimings: all, model: "(see tiers)", mode, label, searched,
       suggestionShown: probe.suggestionShown || !!first?.suggestionShown, suggestedQuery: first?.suggestedQuery, suggestionHeading: first?.suggestionHeading, tapped: !!first?.tapped, againShown: last.againShown, searchedQuery, pageRead, topPageNote, links, citations,
     };
   } finally {
