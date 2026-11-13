@@ -33,6 +33,7 @@ This is a map of `docs/` for new sessions and for Graphify. Files dated 11 to 13
 - `privatemode-attestation-limit-20261112.md`: the attestation limit, and the draft question for support.
 - `privatemode-fast-tier-20261112.md`, `privatemode-stage3-plan-20261112.md`, `parity-matrix-20261112.md`, `wide-screen-20261112.md`: model choice and integration.
 - `thinking-timeouts-20261113.md`: Thinking time limits and effort (known issue 1).
+- `thinking-slow-20261113.md`: why the live runs were slow (test setting at max effort, not load); known issue 1 closed.
 - `provider-promises-20261112.md`, `provider-terms-baseline.json`: our claims mapped to the provider's terms, and the weekly terms check.
 
 ## Answer quality, routing and search

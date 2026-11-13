@@ -96,6 +96,16 @@ if (!privatemode && !digest) throw Error("Router attestation probe failed");
 const draft = JSON.parse(await readFile("evaluation/qualification-drafts/tinfoil-gpt-oss-120b-20261112.json", "utf8"));
 // Privatemode: the local test report (approved manifest of the day), with benchmark limits.
 const pmReport = privatemode ? JSON.parse(await readFile(".local/qualification-privatemode.json", "utf8")) : undefined;
+// The local report is git-ignored and differs per checkout. On 13 November this checkout still had
+// Thinking at max after the time-out work chose high in another checkout, and every live run here
+// was slow (docs/thinking-slow-20261113.md). Refuse to measure anything but the committed draft's
+// Thinking setting unless --tiers says so on purpose.
+if (pmReport && !arg("tiers")) {
+  const want = JSON.parse(await readFile("evaluation/qualification-drafts/privatemode-20261112.json", "utf8")).modes.thinkingCandidates[0];
+  const have = pmReport.modes?.thinking;
+  if (have?.model !== want.model || have?.glmReasoningEffort !== want.glmReasoningEffort)
+    throw Error(`.local/qualification-privatemode.json has Thinking at ${have?.model} ${have?.glmReasoningEffort}; the committed draft says ${want.model} ${want.glmReasoningEffort}. Fix the local file or pass --tiers.`);
+}
 const tiers = arg("tiers") ? JSON.parse(await readFile(arg("tiers")!, "utf8")) : (pmReport?.modes ?? draft.modes);
 const catalog = JSON.parse(await readFile("evaluation/results/model-catalog-20261026.json", "utf8")).data as { id: string; pricing?: { inputTokenPricePer1M: number; outputTokenPricePer1M: number } }[];
 const price = (m: string) => catalog.find((c) => c.id === m)?.pricing;

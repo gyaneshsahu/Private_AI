@@ -1,4 +1,12 @@
 # PrivateAI readiness checklist
+## 13 November 2026, night: slow Thinking explained (agent)
+
+Verified: every slow live run recorded Thinking at effort max (their `run.json`); stream silence never above 1.0 s in 116 recorded Thinking replies; the two smoke prompts re-run at high through the same path: first word 6.2 s and 6.6 s (were 97.8 s and 57.9 s). Cause: the git-ignored local test report in this checkout was never changed to high. Fixed locally; the runner now refuses a mismatch with the committed draft. Not verified: speed with several users at once; Render. Owner-reported (not verified): Privatemode limit of 20,000 completion tokens per minute. Spend: 5,868 Privatemode tokens, at most 1 Brave search. Details: `docs/thinking-slow-20261113.md`.
+
+## 13 November 2026, night: German off-switch (agent)
+
+Verified: `tests/german-off.test.ts` (off for unset, `0` and `true`; on only for `1`); the German browser tests still pass with the setting on (12 of 12); two production builds inspected, one without the setting (compiles to English only) and one with it; the server reads English. Built: `VITE_GERMAN_UI` build setting, default off in `Dockerfile` and `Dockerfile.render`; DE/EN switch and its Settings row hidden when off. Not verified: that Render passes the variable into the Docker build (only matters when switching German on). Nothing deployed. Spend: none.
+
 ## 13 November 2026, early morning: alpha = launch readiness (agent, owner asleep)
 
 Verified: unit suite green (two known load-only UI time-outs pass alone); durable suite 137 of 137 locally on the synthetic database, including the new account erase and suspend SQL; CI green on `2c69e48`, now including the Render bridge tests (6 of 6); live smoke through the app on Privatemode (Fast, Thinking, search with the official page read; compressed Wasm verified in a real browser). Built: automatic allowance, production search key file, operator notice, expiry warnings, Wasm caching and Brotli, suspend and erase procedure, content-free counts, three code-review fixes, masking date-of-birth fix, safety case 07 replies for glm-5.3 high. Nothing deployed. Owner-reported: none. Spend: about 25,100 Privatemode tokens, 2 Brave searches. Details: `docs/overnight-report-20261113.md`.
