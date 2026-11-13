@@ -1,5 +1,7 @@
 import type { Conversation } from "../shared/contracts";
 import { useRef } from "react";
+import { useText } from "./i18n";
+import { branchesText } from "./text/conversation-ui";
 
 export function ConversationBranches({
   conversation,
@@ -11,22 +13,17 @@ export function ConversationBranches({
   open: (id: string) => void;
 }) {
   const summary = useRef<HTMLElement>(null);
+  const t = useText(branchesText);
   const branches = conversation.branches;
   if (!branches) return null;
   return (
     <details className="panel">
       <summary ref={summary}>
-        Conversation branches · {branches.archived.length + 1} ·{" "}
-        {branches.activeLabel}
+        {t.summary(branches.archived.length + 1, branches.activeLabel)}
       </summary>
+      <p>{t.intro}</p>
       <p>
-        Only selected context from the active branch is sent. Switching keeps
-        each branch’s messages, references and draft; it makes no request. Save
-        an encrypted snapshot to keep all branches after reload. Search results
-        and source links are never saved.
-      </p>
-      <p>
-        Active: <strong>{branches.activeLabel}</strong>
+        {t.active} <strong>{branches.activeLabel}</strong>
       </p>
       <ul>
         {branches.archived.map((branch) => (
@@ -38,19 +35,17 @@ export function ConversationBranches({
                 summary.current?.focus();
               }}
             >
-              Open {branch.label} branch
+              {t.open(branch.label)}
             </button>
             {" · "}
-            {branch.messages.length} messages
+            {t.messages(branch.messages.length)}
             {branch.messages.some((message) => message.status !== "complete")
-              ? " · includes an incomplete attempt"
+              ? t.incomplete
               : ""}
           </li>
         ))}
       </ul>
-      <p>
-        Up to 20 branches per conversation. No branches are silently discarded.
-      </p>
+      <p>{t.limit}</p>
     </details>
   );
 }

@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { accountRequest } from "./account-request";
+import { useLang } from "./i18n";
+import { accountExportText } from "./text/account";
+import { serverMessage } from "./server-messages";
 
 /**
  * Downloads everything the service holds about the signed-in account as one
@@ -11,19 +14,12 @@ import { accountRequest } from "./account-request";
 export default function AccountExport() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const { lang } = useLang();
+  const t = accountExportText[lang];
   return (
-    <section aria-label="Download your account data">
-      <h2>Download your account data</h2>
-      <p>
-        One file with the records this service holds about your account: your
-        account identity and contact email, sign-in methods (never their secret
-        keys or tokens), active sessions, security notices, request and usage
-        records with their published cost, billing operations and any closure
-        request. It contains no conversations, documents or search text, because
-        the service does not store them (search text you approve passes through
-        it on the way to the search provider); use the encrypted backup under
-        Saved for those.
-      </p>
+    <section aria-label={t.heading}>
+      <h2>{t.heading}</h2>
+      <p>{t.body}</p>
       <button
         disabled={busy}
         onClick={() => {
@@ -37,7 +33,9 @@ export default function AccountExport() {
                 const body = (await response.json().catch(() => ({}))) as {
                   error?: string;
                 };
-                throw new Error(body.error ?? "Export is unavailable.");
+                throw new Error(
+                  body.error ? serverMessage(body.error, lang) : t.unavailable,
+                );
               }
               const text = await response.text();
               const blob = new Blob([text], { type: "application/json" });
@@ -52,18 +50,16 @@ export default function AccountExport() {
               return undefined;
             },
           )
-            .then(() => setMessage("Your account data file was downloaded."))
+            .then(() => setMessage(t.downloaded))
             .catch((error: unknown) =>
               setMessage(
-                error instanceof Error
-                  ? error.message
-                  : "Export could not be completed.",
+                error instanceof Error ? error.message : t.failed,
               ),
             )
             .finally(() => setBusy(false));
         }}
       >
-        Download account data
+        {t.button}
       </button>
       {message && <p role="status">{message}</p>}
     </section>

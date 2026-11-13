@@ -4,8 +4,6 @@ import { Icon } from "./Icon";
 import {
   NO_CROP,
   PHOTO_ACCEPT,
-  PHOTO_CANVAS_ERROR,
-  PHOTO_DECODE_ERROR,
   cropRect,
   decodePhoto,
   outputSize,
@@ -20,26 +18,28 @@ import {
   type Rotation,
   type Size,
 } from "./photo-capture";
+import { useText } from "./i18n";
+import { photoText, photoUiText } from "./text/photo";
 
 type Stage = "choose" | "camera" | "edit" | "preparing";
 const PREVIEW_BOX: Size = { width: 560, height: 340 };
 const EDGES = ["left", "top", "right", "bottom"] as const;
 let photoSequence = 0;
 
-function cameraFailure(cause: unknown): string {
+function cameraFailure(cause: unknown, t: (typeof photoUiText)["en"]): string {
   const name =
     typeof cause === "object" && cause && "name" in cause
       ? String(cause.name)
       : "";
   if (name === "NotAllowedError" || name === "SecurityError")
-    return "Camera access was not granted or is blocked by this site's policy. Choose a photo instead.";
+    return t.camDenied;
   if (name === "NotSupportedError" || name === "TypeError")
-    return "Camera capture is not supported in this browser or is blocked by this site's policy. Choose a photo instead.";
+    return t.camUnsupported;
   if (name === "NotFoundError" || name === "OverconstrainedError")
-    return "No camera was found on this device. Choose a photo instead.";
+    return t.camNotFound;
   if (name === "NotReadableError")
-    return "The camera is in use by another app. Close it and try again, or choose a photo.";
-  return "The camera could not be started. Choose a photo instead.";
+    return t.camInUse;
+  return t.camFailed;
 }
 
 /**
@@ -68,6 +68,8 @@ export function PhotoCapture({
   const [rotation, setRotation] = useState<Rotation>(0);
   const [inset, setInset] = useState<CropInset>(NO_CROP);
   const [error, setError] = useState("");
+  const t = useText(photoUiText);
+  const photoErrors = useText(photoText);
 
   const stopCamera = () => {
     stream.current?.getTracks().forEach((track) => track.stop());
@@ -157,9 +159,7 @@ export function PhotoCapture({
     setError("");
     const media = navigator.mediaDevices;
     if (typeof media?.getUserMedia !== "function") {
-      setError(
-        "Camera access is not available in this browser. Choose a photo instead.",
-      );
+      setError(t.camUnavailable);
       return;
     }
     setStarting(true);
@@ -175,7 +175,7 @@ export function PhotoCapture({
       stream.current = next;
       setStage("camera");
     } catch (cause) {
-      if (mounted.current) setError(cameraFailure(cause));
+      if (mounted.current) setError(cameraFailure(cause, t));
     } finally {
       if (mounted.current) setStarting(false);
     }
@@ -184,7 +184,7 @@ export function PhotoCapture({
   function takePhoto() {
     const element = video.current;
     if (!element || !element.videoWidth || !element.videoHeight) {
-      setError("The camera preview is not ready yet.");
+      setError(t.notReady);
       return;
     }
     const canvas = document.createElement("canvas");
@@ -192,7 +192,7 @@ export function PhotoCapture({
     canvas.height = element.videoHeight;
     const context = canvas.getContext("2d");
     if (!context) {
-      setError(PHOTO_CANVAS_ERROR);
+      setError(photoErrors.canvas);
       return;
     }
     context.drawImage(element, 0, 0, canvas.width, canvas.height);
@@ -231,7 +231,7 @@ export function PhotoCapture({
       setStage("edit");
     } catch (cause) {
       if (mounted.current)
-        setError(cause instanceof Error ? cause.message : PHOTO_DECODE_ERROR);
+        setError(cause instanceof Error ? cause.message : photoErrors.decode);
     }
   }
 
@@ -253,7 +253,7 @@ export function PhotoCapture({
     } catch (cause) {
       if (!mounted.current) return;
       setError(
-        cause instanceof Error ? cause.message : "The photo could not be prepared.",
+        cause instanceof Error ? cause.message : t.prepareFailed,
       );
       setStage("edit");
     }
@@ -267,26 +267,22 @@ export function PhotoCapture({
     <dialog
       ref={dialog}
       className="photo-dialog"
-      aria-label="Photo to text"
+      aria-label={t.title}
       onKeyDown={containDialogFocus}
       onCancel={onClose}
       onClose={onClose}
     >
       <div className="row">
-        <h2>Photo to text</h2>
+        <h2>{t.title}</h2>
         <button
           type="button"
-          aria-label="Close photo to text"
+          aria-label={t.close}
           onClick={onClose}
         >
           ×
         </button>
       </div>
-      <p className="muted">
-        Reads printed text from a photo on this device, exactly like an attached
-        PNG screenshot. Handwriting, objects and scenes are not understood.
-        Nothing is uploaded.
-      </p>
+      <p className="muted">{t.intro}</p>
       {error && (
         <p className="photo-error" role="alert">
           {error}
@@ -301,26 +297,23 @@ export function PhotoCapture({
               onClick={() => void startCamera()}
             >
               <Icon name="camera" />
-              {starting ? "Starting camera…" : "Use camera"}
+              {starting ? t.starting : t.useCamera}
             </button>
-            <small>
-              Asks for camera permission only now. Rear camera preferred on
-              phones.
-            </small>
+            <small>{t.cameraHint}</small>
           </div>
           <div className="photo-path">
             <button type="button" onClick={() => fileInput.current?.click()}>
               <Icon name="image" />
-              Choose photo
+              {t.choose}
             </button>
-            <small>PNG or JPEG from this device, up to 10 MB.</small>
+            <small>{t.chooseHint}</small>
           </div>
           <input
             ref={fileInput}
             type="file"
             hidden
             accept={PHOTO_ACCEPT}
-            aria-label="Choose a PNG or JPEG photo"
+            aria-label={t.chooseLabel}
             onChange={(event) => {
               void choose(event.target.files?.[0]);
               event.target.value = "";
@@ -336,7 +329,7 @@ export function PhotoCapture({
             autoPlay
             playsInline
             muted
-            aria-label="Camera preview"
+            aria-label={t.preview}
             onLoadedMetadata={(event) =>
               setCameraReady(event.currentTarget.videoWidth > 0)
             }
@@ -344,10 +337,7 @@ export function PhotoCapture({
               setCameraReady(event.currentTarget.videoWidth > 0)
             }
           />
-          <p className="muted">
-            The camera stays on only while this preview is open. Nothing is kept
-            until you press Take photo.
-          </p>
+          <p className="muted">{t.cameraNote}</p>
           <div className="photo-actions">
             <button
               type="button"
@@ -355,10 +345,10 @@ export function PhotoCapture({
               disabled={!cameraReady}
               onClick={takePhoto}
             >
-              Take photo
+              {t.take}
             </button>
             <button type="button" onClick={discard}>
-              Cancel camera
+              {t.cancelCamera}
             </button>
           </div>
         </div>
@@ -369,7 +359,7 @@ export function PhotoCapture({
             ref={preview}
             className="photo-preview"
             role="img"
-            aria-label={`Photo preview, ${rotated.width} by ${rotated.height} pixels, rotated ${rotation} degrees`}
+            aria-label={t.previewLabel(rotated.width, rotated.height, rotation)}
           />
           <div className="photo-actions">
             <button
@@ -377,21 +367,21 @@ export function PhotoCapture({
               disabled={preparing}
               onClick={() => setRotation((r) => turnRotation(r, "left"))}
             >
-              Rotate left
+              {t.rotateLeft}
             </button>
             <button
               type="button"
               disabled={preparing}
               onClick={() => setRotation((r) => turnRotation(r, "right"))}
             >
-              Rotate right
+              {t.rotateRight}
             </button>
           </div>
           <fieldset className="photo-crop">
-            <legend>Crop: percent removed from each edge</legend>
+            <legend>{t.cropLegend}</legend>
             {EDGES.map((edge) => (
               <label key={edge}>
-                Crop from {edge} (%)
+                {t.cropFrom(edge)}
                 <input
                   type="number"
                   min={0}
@@ -412,16 +402,16 @@ export function PhotoCapture({
             ))}
           </fieldset>
           <p className="muted" aria-live="polite">
-            Keeps {crop.width} × {crop.height} of {rotated.width} ×{" "}
-            {rotated.height} pixels; saved as a {output.width} × {output.height}{" "}
-            PNG.
+            {t.keeps(
+              crop.width,
+              crop.height,
+              rotated.width,
+              rotated.height,
+              output.width,
+              output.height,
+            )}
           </p>
-          <p className="muted">
-            Only this cropped, re-encoded PNG is used for local text extraction.
-            Camera metadata such as location, device and time is not kept.
-            The photo itself stays on this device; text read from it is sent
-            with your question only if you include it.
-          </p>
+          <p className="muted">{t.extraction}</p>
           <div className="photo-actions">
             <button
               type="button"
@@ -429,10 +419,10 @@ export function PhotoCapture({
               disabled={preparing}
               onClick={() => void usePhoto()}
             >
-              {preparing ? "Preparing photo…" : "Use this photo"}
+              {preparing ? t.preparing : t.use}
             </button>
             <button type="button" disabled={preparing} onClick={discard}>
-              Discard
+              {t.discard}
             </button>
           </div>
         </div>

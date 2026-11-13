@@ -1,3 +1,4 @@
+import { documentText } from "./text/documents";
 import { Uint8ArrayReader, ZipReader, type FileEntry } from "@zip.js/zip.js";
 import { SaxesParser } from "saxes";
 import { checkTextSize } from "./document-formats";
@@ -35,10 +36,10 @@ export function docxBodyText(xml: string): string {
     text += value;
   };
   parser.on("doctype", () => {
-    throw Error("DOCX does not support DTD declarations.");
+    throw Error(documentText.en.docxDtd);
   });
   parser.on("opentag", (tag) => {
-    if (++depth > 128) throw Error("DOCX XML exceeds the nesting limit.");
+    if (++depth > 128) throw Error(documentText.en.docxNesting);
     const word = wordNamespaces.has(tag.uri);
     if (
       tag.uri ===
@@ -49,16 +50,16 @@ export function docxBodyText(xml: string): string {
         tag.local === "AlternateContent")
     )
       throw Error(
-        "DOCX equations and alternate representations are not supported. Export a reviewed text PDF first.",
+        documentText.en.docxEquations,
       );
     if (depth === 1) {
       if (!word || tag.local !== "document")
-        throw Error("Invalid DOCX document root.");
+        throw Error(documentText.en.docxRoot);
       root = true;
     }
     if (word && unsupported.has(tag.local))
       throw Error(
-        "DOCX contains revisions, fields or embedded content that is not supported. Accept revisions and export a text PDF first.",
+        documentText.en.docxRevisions,
       );
     if (word && tag.local === "body") {
       if (body || depth !== 2) throw Error("Invalid DOCX body.");
@@ -93,13 +94,13 @@ export function docxBodyText(xml: string): string {
   });
   parser.write(xml).close();
   if (!root || !body || !text.trim())
-    throw Error("DOCX has no supported readable body text.");
+    throw Error(documentText.en.docxNoBody);
   return text.trim();
 }
 
 async function readPart(entry: FileEntry): Promise<string> {
   if (entry.uncompressedSize > MAX_PART_BYTES)
-    throw Error("DOCX part exceeds the 4 MB limit.");
+    throw Error(documentText.en.docxPart);
   let size = 0;
   const chunks: Uint8Array[] = [];
   await entry.getData(
@@ -107,7 +108,7 @@ async function readPart(entry: FileEntry): Promise<string> {
       write(chunk) {
         size += chunk.byteLength;
         if (size > MAX_PART_BYTES)
-          throw Error("DOCX expanded part exceeds the 4 MB limit.");
+          throw Error(documentText.en.docxExpandedPart);
         chunks.push(chunk.slice());
       },
     }),
@@ -123,7 +124,7 @@ async function readPart(entry: FileEntry): Promise<string> {
 
 export async function extractDocx(bytes: Uint8Array): Promise<string> {
   if (!bytes.length || bytes.length > 10 * 1024 * 1024)
-    throw Error("DOCX exceeds the 10 MB limit.");
+    throw Error(documentText.en.docxSize);
   const reader = new ZipReader(new Uint8ArrayReader(bytes), {
     useWebWorkers: false,
     strictness: "strict",
@@ -135,14 +136,14 @@ export async function extractDocx(bytes: Uint8Array): Promise<string> {
     let count = 0,
       expanded = 0;
     for await (const entry of reader.getEntriesGenerator()) {
-      if (++count > 512) throw Error("DOCX exceeds the 512-entry limit.");
+      if (++count > 512) throw Error(documentText.en.docxEntries);
       expanded += entry.uncompressedSize;
       if (!Number.isSafeInteger(expanded) || expanded > MAX_EXPANDED_BYTES)
-        throw Error("DOCX exceeds the 20 MB expanded-size limit.");
+        throw Error(documentText.en.docxExpanded);
       if (entry.encrypted || /(?:^|\/)\.\.(?:\/|$)|\\|^\//.test(entry.filename))
         throw Error("Unsupported DOCX archive.");
       if (/vbaProject|word\/embeddings\//i.test(entry.filename))
-        throw Error("DOCX macros and embedded files are not supported.");
+        throw Error(documentText.en.docxMacrosEmbedded);
       if (!entry.directory) {
         if (parts.has(entry.filename)) throw Error("Ambiguous DOCX archive.");
         parts.set(entry.filename, entry);
@@ -160,14 +161,14 @@ export async function extractDocx(bytes: Uint8Array): Promise<string> {
     });
     parser.on("opentag", (tag) => {
       if (++typeDepth > 128)
-        throw Error("DOCX content types exceed the nesting limit.");
+        throw Error(documentText.en.docxTypesNesting);
       if (
         typeDepth === 1 &&
         (tag.local !== "Types" ||
           tag.uri !==
             "http://schemas.openxmlformats.org/package/2006/content-types")
       )
-        throw Error("Invalid DOCX content-types root.");
+        throw Error(documentText.en.docxTypesRoot);
       if (
         tag.uri ===
           "http://schemas.openxmlformats.org/package/2006/content-types" &&
@@ -177,7 +178,7 @@ export async function extractDocx(bytes: Uint8Array): Promise<string> {
         const part = values.find((a) => a.name === "PartName")?.value;
         const type = values.find((a) => a.name === "ContentType")?.value;
         if (part === "/word/document.xml" && ++mainDeclarations > 1)
-          throw Error("Ambiguous DOCX main document declarations.");
+          throw Error(documentText.en.docxAmbiguousMain);
         if (
           part === "/word/document.xml" &&
           type ===
@@ -185,14 +186,14 @@ export async function extractDocx(bytes: Uint8Array): Promise<string> {
         )
           valid = true;
         if (type?.toLowerCase().includes("macroenabled"))
-          throw Error("DOCX macros are not supported.");
+          throw Error(documentText.en.docxMacros);
       }
     });
     parser.on("closetag", () => {
       typeDepth--;
     });
     parser.write(await readPart(types)).close();
-    if (!valid) throw Error("Unsupported DOCX content type.");
+    if (!valid) throw Error(documentText.en.docxContentType);
     return docxBodyText(await readPart(document));
   } finally {
     await reader.close();
@@ -200,4 +201,4 @@ export async function extractDocx(bytes: Uint8Array): Promise<string> {
 }
 
 export const DOCX_WARNING =
-  "Word body text only; no reliable page numbers. Headers, footers, notes, comments, images, formatting and automatic list numbers are not included. Review table relationships, amounts and missing context before use.";
+  documentText.en.docxWarning;

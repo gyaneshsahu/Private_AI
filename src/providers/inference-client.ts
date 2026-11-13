@@ -4,6 +4,8 @@
 // (verification library, encrypted transport, routing headers, model-specific
 // request options) lives behind this interface in one adapter, selected by the
 // qualification report's `provider`.
+import { textFor } from "../text/core";
+import { chatErrorText } from "../text/chat-errors";
 import type { Qualification } from "../../shared/contracts";
 
 export type InferenceProviderId = Qualification["provider"];
@@ -15,7 +17,7 @@ export type InferenceProviderId = Qualification["provider"];
 export class AttestationBusyError extends Error {
   constructor() {
     super(
-      "CometRow is busy checking the secure server. Please try again in a minute. Nothing was sent.",
+      textFor(chatErrorText).busy,
     );
     this.name = "AttestationBusyError";
   }

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { accountRequest } from "./account-request";
+import { useLang, useText } from "./i18n";
+import { accountAccessText } from "./text/account";
 
 const accessSchema = z.object({
   sessions: z.array(
@@ -43,6 +45,8 @@ export default function AccountAccess({
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [needsRefresh, setNeedsRefresh] = useState(false);
+  const t = useText(accountAccessText);
+  const locale = useLang().lang === "de" ? "de-DE" : undefined;
   useEffect(() => {
     const abort = new AbortController();
     setLoading(true);
@@ -64,9 +68,7 @@ export default function AccountAccess({
       .catch(() => {
         if (!abort.signal.aborted) {
           setAccess(undefined);
-          setMessage(
-            "Account access is unavailable. Refresh before changing access.",
-          );
+          setMessage(t.unavailable);
         }
       })
       .finally(() => {
@@ -92,41 +94,28 @@ export default function AccountAccess({
         },
       );
       if (response.status === 403 && path === "remove") {
-        setMessage(
-          "Verify your email again before removing a method. Each verification permits one removal for five minutes.",
-        );
+        setMessage(t.verifyAgain);
         return;
       }
       if (response.status === 409) {
         setNeedsRefresh(true);
-        setMessage(
-          "Another sign-in method change is in progress. Wait for it to finish, then refresh before retrying.",
-        );
+        setMessage(t.inProgress);
         return;
       }
       if (!response.ok) throw Error("not confirmed");
-      setMessage(
-        path === "remove"
-          ? "Sign-in method removed and other sessions signed out. Email sign-in remains available; a security notice is queued. Your vault is unchanged."
-          : "Session signed out. This cannot erase copies already on another device.",
-      );
+      setMessage(path === "remove" ? t.removed : t.revoked);
       await changed();
     } catch {
       setNeedsRefresh(true);
-      setMessage(
-        "The result could not be confirmed. Refresh account access before retrying; no automatic retry was made.",
-      );
+      setMessage(t.unconfirmed);
     } finally {
       setBusy(false);
     }
   }
   return (
-    <section aria-label="Account access">
-      <h2>Account access</h2>
-      <p className="account-preview-small">
-        Sessions show sign-in times, not verified device names. We do not retain
-        device fingerprints or location. Activity times are approximate.
-      </p>
+    <section aria-label={t.heading}>
+      <h2>{t.heading}</h2>
+      <p className="account-preview-small">{t.sessionsNote}</p>
       <button
         disabled={busy || loading}
         onClick={() => {
@@ -135,68 +124,57 @@ export default function AccountAccess({
           void changed()
             .catch(() => {
               setNeedsRefresh(true);
-              setMessage(
-                "Refresh failed. Account changes remain unavailable until status can be checked.",
-              );
+              setMessage(t.refreshFailed);
             })
             .finally(() => setBusy(false));
         }}
       >
-        Refresh account access
+        {t.refresh}
       </button>
       {access && (
         <>
-          <h3>Active sessions</h3>
+          <h3>{t.activeSessions}</h3>
           <ul>
             {access.sessions.map((session) => (
               <li key={session.id}>
-                {session.current ? "This session" : "Other session"} ·{" "}
-                {new Date(session.createdAt).toLocaleString()} ·{" "}
+                {session.current ? t.thisSession : t.otherSession} ·{" "}
+                {new Date(session.createdAt).toLocaleString(locale)} ·{" "}
                 {session.id.slice(0, 8)}
                 <button
                   disabled={busy || loading || needsRefresh}
                   onClick={() => {
                     if (
                       window.confirm(
-                        session.current
-                          ? "Sign out this session?"
-                          : "Sign out this other session?",
+                        session.current ? t.confirmThis : t.confirmOther,
                       )
                     )
                       void update("revoke", { id: session.id });
                   }}
                 >
                   {session.current
-                    ? "Sign out this session"
-                    : `Sign out session ${session.id.slice(0, 8)}`}
+                    ? t.signOutThis
+                    : t.signOutSession(session.id.slice(0, 8))}
                 </button>
               </li>
             ))}
           </ul>
-          <h3>Sign-in methods</h3>
+          <h3>{t.methods}</h3>
           {!emailEnabled && (
-            <p>
-              Email delivery is disabled. Recovery and sign-in method removal
-              are unavailable.
-            </p>
+            <p>{t.emailDisabled}</p>
           )}
-          <p>
-            Removal requires working email delivery and a new email-code sign-in
-            and signs out other sessions. Removing a provider here does not
-            revoke its permissions on the provider's website.
-          </p>
+          <p>{t.removalNote}</p>
           <button
             disabled={!emailEnabled || busy || loading || needsRefresh}
             onClick={verifyEmail}
           >
-            Verify email for removal
+            {t.verifyForRemoval}
           </button>
           <ul>
             {[
               ...access.passkeys.map((key) => ({
                 id: key.id,
                 kind: "passkey",
-                label: key.name || "Unnamed passkey",
+                label: key.name || t.unnamedPasskey,
               })),
               ...access.providers.map((provider) => ({
                 id: provider.id,
@@ -208,12 +186,10 @@ export default function AccountAccess({
                 {method.label}
                 <button
                   disabled={!emailEnabled || busy || loading || needsRefresh}
-                  aria-label={`Remove ${method.label}`}
+                  aria-label={t.removeLabel(method.label)}
                   onClick={() => {
                     if (
-                      window.confirm(
-                        `Remove ${method.label} from CometRow and sign out other sessions? Your email sign-in and encrypted vault stay unchanged.`,
-                      )
+                      window.confirm(t.confirmRemove(method.label))
                     )
                       void update("remove", {
                         kind: method.kind,
@@ -221,7 +197,7 @@ export default function AccountAccess({
                       });
                   }}
                 >
-                  Remove
+                  {t.remove}
                 </button>
               </li>
             ))}
@@ -229,11 +205,7 @@ export default function AccountAccess({
         </>
       )}
       <p aria-live="polite">
-        {busy
-          ? "Updating account access…"
-          : loading
-            ? "Checking account access…"
-            : message}
+        {busy ? t.updating : loading ? t.checking : message}
       </p>
     </section>
   );

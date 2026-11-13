@@ -4,6 +4,8 @@ import type { AppStatus, Conversation } from "../shared/contracts";
 import { conversationTitle, findConversations } from "./conversation-library";
 import type { Project } from "./projects";
 import { Icon } from "./Icon";
+import { useText } from "./i18n";
+import { workspaceText } from "./text/workspace";
 
 export function WorkspaceNavigation(props: {
   open: boolean;
@@ -54,6 +56,7 @@ export function WorkspaceNavigation(props: {
     onEditProject,
     onOrganize,
   } = props;
+  const t = useText(workspaceText);
   const dialog = useRef<HTMLDialogElement>(null);
   const [narrow, setNarrow] = useState(
     () => matchMedia("(max-width: 760px)").matches,
@@ -96,17 +99,17 @@ export function WorkspaceNavigation(props: {
   const identity =
     status?.accountEmail ??
     (status?.accountId
-      ? `Account ${status.accountId.slice(0, 8)}`
-      : "Local development session");
+      ? t.account(status.accountId.slice(0, 8))
+      : t.localSession);
   const allowance = status?.requestAllowance;
   const usage =
     allowance && allowance.state !== "unavailable"
-      ? `${allowance.remaining} of ${allowance.limit} requests remaining`
-      : "Usage unavailable · No active plan shown";
+      ? t.usage(allowance.remaining, allowance.limit)
+      : t.usageUnavailable;
   const body = (
-    <aside className="sidebar" aria-label="Chat navigation">
+    <aside className="sidebar" aria-label={t.chatNavigation}>
       <div className="sidebar-heading">
-        <a className="brand" href="/" aria-label="CometRow home">
+        <a className="brand" href="/" aria-label={t.home}>
           <span className="brand-mark" aria-hidden="true">
             P
           </span>
@@ -114,7 +117,7 @@ export function WorkspaceNavigation(props: {
         </a>
         <button
           className="icon-button"
-          aria-label={drawer ? "Close navigation" : "Collapse navigation"}
+          aria-label={drawer ? t.closeNavigation : t.collapseNavigation}
           onClick={drawer ? onClose : onCollapse}
         >
           <Icon name={drawer ? "close" : "sidebar"} />
@@ -123,7 +126,7 @@ export function WorkspaceNavigation(props: {
       {collapsed && !narrow && (
         <button onClick={onExpand}>
           <Icon name="sidebar" />
-          Keep sidebar open
+          {t.keepOpen}
         </button>
       )}
       <div className="new-chat-row">
@@ -133,20 +136,20 @@ export function WorkspaceNavigation(props: {
             onNew(projects.some((p) => p.id === filter) ? filter : undefined)
           }
           disabled={newDisabled}
-          aria-label="New conversation"
+          aria-label={t.newConversation}
         >
           <Icon name="plus" />
-          New chat
+          {t.newChat}
         </button>
         <button
           className="new-chat new-incognito"
           onClick={onNewIncognito}
           disabled={newDisabled}
-          aria-label="New incognito chat"
-          title="Never saved on this device; gone when you close, lock or sign out"
+          aria-label={t.newIncognito}
+          title={t.incognitoTitle}
         >
           <Icon name="shield" />
-          Incognito
+          {t.incognito}
         </button>
       </div>
       {unlocked ? (
@@ -154,21 +157,21 @@ export function WorkspaceNavigation(props: {
           <label className="history-search">
             <span>
               <Icon name="search" />
-              Search chats
+              {t.searchChats}
             </span>
             <input
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search this vault"
+              placeholder={t.searchPlaceholder}
             />
           </label>
           <div className="navigation-history">
             <div className="section-heading">
-              <h2>Projects</h2>
+              <h2>{t.projects}</h2>
               <button
                 className="icon-button"
-                aria-label="Create project"
+                aria-label={t.createProject}
                 disabled={busy}
                 onClick={() => {
                   setEditingProject(undefined);
@@ -198,7 +201,7 @@ export function WorkspaceNavigation(props: {
                 }}
               >
                 <label>
-                  Project name
+                  {t.projectName}
                   <input
                     autoFocus
                     value={projectName}
@@ -208,10 +211,10 @@ export function WorkspaceNavigation(props: {
                 </label>
                 <div className="row">
                   <button type="submit" disabled={busy || !projectName.trim()}>
-                    {editingProject ? "Save project name" : "Create"}
+                    {editingProject ? t.saveProjectName : t.create}
                   </button>
                   <button type="button" onClick={() => setCreating(false)}>
-                    Cancel
+                    {t.cancel}
                   </button>
                 </div>
               </form>
@@ -235,7 +238,7 @@ export function WorkspaceNavigation(props: {
                     </small>
                   </button>
                   <details className="project-actions">
-                    <summary aria-label={`Actions for project ${p.name}`}>
+                    <summary aria-label={t.projectActions(p.name)}>
                       <Icon name="more" />
                     </summary>
                     <div>
@@ -247,15 +250,13 @@ export function WorkspaceNavigation(props: {
                           setCreating(true);
                         }}
                       >
-                        Rename project
+                        {t.renameProject}
                       </button>
                       <button
                         disabled={busy}
                         onClick={async () => {
                           if (
-                            confirm(
-                              `Remove project “${p.name}”? Its chats will be kept without a project, including archived chats.`,
-                            ) &&
+                            confirm(t.confirmRemoveProject(p.name)) &&
                             (await onEditProject(p.id))
                           ) {
                             setFilter("recent");
@@ -263,7 +264,7 @@ export function WorkspaceNavigation(props: {
                           }
                         }}
                       >
-                        Remove project
+                        {t.removeProject}
                       </button>
                     </div>
                   </details>
@@ -271,7 +272,7 @@ export function WorkspaceNavigation(props: {
               ))}
             </div>
             {!projects.length && (
-              <p className="sidebar-hint">Group saved chats by project.</p>
+              <p className="sidebar-hint">{t.groupHint}</p>
             )}
             <div className="history-filters">
               <button
@@ -279,30 +280,28 @@ export function WorkspaceNavigation(props: {
                 onClick={() => setFilter("recent")}
               >
                 <Icon name="chat" />
-                Recent
+                {t.recent}
               </button>
               <button
                 aria-pressed={filter === "archived"}
                 onClick={() => setFilter("archived")}
               >
                 <Icon name="archive" />
-                Archived
+                {t.archived}
               </button>
             </div>
             <div className="recent-chats">
               <h2>
                 {query
-                  ? "Search results"
+                  ? t.searchResults
                   : (projects.find((p) => p.id === filter)?.name ??
                     (filter === "archived"
-                      ? "Archived chats"
-                      : "Recent conversations"))}
+                      ? t.archivedChats
+                      : t.recentConversations))}
               </h2>
               {!visible.length && (
                 <p className="sidebar-hint">
-                  {query
-                    ? "No matching conversations."
-                    : "No saved chats here yet. Save a conversation to keep it."}
+                  {query ? t.noMatch : t.noSaved}
                 </p>
               )}
               {visible.map((c) => (
@@ -318,7 +317,7 @@ export function WorkspaceNavigation(props: {
                     </button>
                     <details className="chat-item-menu">
                       <summary
-                        aria-label={`Actions for ${conversationTitle(c)}`}
+                        aria-label={t.chatActions(conversationTitle(c))}
                       >
                         <Icon name="more" />
                       </summary>
@@ -330,7 +329,7 @@ export function WorkspaceNavigation(props: {
                           }
                         >
                           <Icon name="pin" />
-                          {c.pinned ? "Unpin" : "Pin"}
+                          {c.pinned ? t.unpin : t.pin}
                         </button>
                         <button
                           disabled={busy}
@@ -342,12 +341,12 @@ export function WorkspaceNavigation(props: {
                           }
                         >
                           <Icon name="archive" />
-                          {c.archived ? "Restore chat" : "Archive"}
+                          {c.archived ? t.restoreChat : t.archive}
                         </button>
                         <label>
-                          Move to project
+                          {t.moveToProject}
                           <select
-                            aria-label={`Project for ${conversationTitle(c)}`}
+                            aria-label={t.projectFor(conversationTitle(c))}
                             disabled={busy}
                             value={c.projectId ?? ""}
                             onChange={(e) =>
@@ -357,7 +356,7 @@ export function WorkspaceNavigation(props: {
                               })
                             }
                           >
-                            <option value="">No project</option>
+                            <option value="">{t.noProject}</option>
                             {projects.map((p) => (
                               <option key={p.id} value={p.id}>
                                 {p.name}
@@ -373,7 +372,7 @@ export function WorkspaceNavigation(props: {
                           }}
                         >
                           <Icon name="edit" />
-                          Rename &amp; manage
+                          {t.renameManage}
                         </button>
                       </div>
                     </details>
@@ -385,20 +384,17 @@ export function WorkspaceNavigation(props: {
         </>
       ) : (
         <div className="history-locked">
-          <h2>Your conversations</h2>
-          <p>
-            Unlock your local vault to search and organize saved chats and
-            projects.
-          </p>
+          <h2>{t.yourConversations}</h2>
+          <p>{t.unlockNote}</p>
           <button onClick={() => onNavigate("Saved")}>
             <Icon name="shield" />
-            Unlock history
+            {t.unlockHistory}
           </button>
         </div>
       )}
-      <nav aria-label="Workspace" className="sidebar-bottom">
+      <nav aria-label={t.workspace} className="sidebar-bottom">
         <details className="account-menu">
-          <summary aria-label="Account menu">
+          <summary aria-label={t.accountMenu}>
             <span className="account-avatar">
               <Icon name="user" />
             </span>
@@ -413,31 +409,30 @@ export function WorkspaceNavigation(props: {
             <p className="muted">{usage}</p>
             <button onClick={() => onNavigate("Account")}>
               <Icon name="usage" />
-              Account &amp; usage
+              {t.accountUsage}
             </button>
             <button onClick={onSettings}>
               <Icon name="settings" />
-              Settings
+              {t.settings}
             </button>
             <button onClick={() => onNavigate("Saved")}>
               <Icon name="archive" />
-              Saved · Data controls
+              {t.savedData}
             </button>
             <button onClick={() => onNavigate("Help")}>
               <Icon name="help" />
-              Help
+              {t.help}
             </button>
             {status?.accountId && (
               <button disabled={busy} onClick={onSignOut}>
                 <Icon name="logout" />
-                Sign out
+                {t.signOut}
               </button>
             )}
           </div>
         </details>
         <p>
-          {unlocked ? "Local vault unlocked" : "Temporary session"} · This
-          device
+          {unlocked ? t.vaultUnlocked : t.temporarySession} · {t.thisDevice}
         </p>
       </nav>
     </aside>
@@ -447,7 +442,7 @@ export function WorkspaceNavigation(props: {
       ref={dialog}
       onKeyDown={containDialogFocus}
       className="navigation-drawer"
-      aria-label="Navigation"
+      aria-label={t.navigation}
       onCancel={onClose}
       onClose={onClose}
     >

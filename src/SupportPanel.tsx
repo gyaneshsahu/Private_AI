@@ -1,8 +1,8 @@
 import { useId, useState } from "react";
+import { useLang } from "./i18n";
+import { supportText } from "./text/support";
 import {
-  supportAreas,
-  supportSymptoms,
-  supportGuidance,
+  supportCopy,
   supportReport,
   type SupportArea,
   type SupportSymptom,
@@ -17,15 +17,15 @@ export function SupportPanel({
   const [symptom, setSymptom] = useState<SupportSymptom>("unavailable");
   const [notice, setNotice] = useState("");
   const id = useId();
-  const report = supportReport({ area, symptom });
+  const { lang } = useLang();
+  const t = supportText[lang];
+  const copy = supportCopy(lang);
+  const report = supportReport({ area, symptom }, lang);
   return (
-    <section className="content-view" aria-label="Help and problem reporting">
-      <h2>Help and problem reporting</h2>
-      <p>
-        Find a recovery step or prepare a note to share. Nothing here sends a
-        report or attaches your workspace.
-      </p>
-      <label htmlFor={`${id}-area`}>Problem area</label>
+    <section className="content-view" aria-label={t.heading}>
+      <h2>{t.heading}</h2>
+      <p>{t.intro}</p>
+      <label htmlFor={`${id}-area`}>{t.area}</label>
       <select
         id={`${id}-area`}
         value={area}
@@ -34,19 +34,19 @@ export function SupportPanel({
           setNotice("");
         }}
       >
-        {Object.entries(supportAreas).map(([value, label]) => (
+        {Object.entries(copy.areas).map(([value, label]) => (
           <option key={value} value={value}>
             {label}
           </option>
         ))}
       </select>
       <div className="panel">
-        <h3>What you can do</h3>
-        {supportGuidance[area].map((text) => (
+        <h3>{t.whatYouCanDo}</h3>
+        {copy.guidance[area].map((text) => (
           <p key={text}>{text}</p>
         ))}
       </div>
-      <label htmlFor={`${id}-symptom`}>What happened</label>
+      <label htmlFor={`${id}-symptom`}>{t.whatHappened}</label>
       <select
         id={`${id}-symptom`}
         value={symptom}
@@ -55,39 +55,30 @@ export function SupportPanel({
           setNotice("");
         }}
       >
-        {Object.entries(supportSymptoms).map(([value, label]) => (
+        {Object.entries(copy.symptoms).map(([value, label]) => (
           <option key={value} value={value}>
             {label}
           </option>
         ))}
       </select>
-      <label htmlFor={`${id}-report`}>Review your support note</label>
+      <label htmlFor={`${id}-report`}>{t.review}</label>
       <textarea id={`${id}-report`} readOnly rows={10} value={report} />
       <button
         onClick={async () => {
           try {
             await navigator.clipboard.writeText(report);
-            setNotice(
-              "Support note copied. Nothing was submitted. Your clipboard is controlled by your device.",
-            );
+            setNotice(t.copied);
           } catch {
-            setNotice(
-              "Copy was unavailable. Select the note above and copy it manually. Nothing was submitted.",
-            );
+            setNotice(t.copyFailed);
           }
         }}
       >
-        Copy support note
+        {t.copy}
       </button>
       <p role="status" aria-live="polite">
         {notice}
       </p>
-      <p>
-        A staffed support contact and response times have not been published.
-        During this restricted evaluation, share the reviewed note with the
-        person coordinating your access. This is not an emergency or monitored
-        reporting service.
-      </p>
+      <p>{t.contact}</p>
     </section>
   );
 }

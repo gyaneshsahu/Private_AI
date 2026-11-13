@@ -1,4 +1,5 @@
 /// <reference lib="webworker" />
+import { documentText } from "./text/documents";
 import { getDocument, PDFWorker } from "pdfjs-dist";
 import { createWorker } from "tesseract.js";
 import { extractDocx, DOCX_WARNING } from "./docx";
@@ -13,7 +14,7 @@ self.onmessage = async (event: MessageEvent<File>) => {
     const bytes = new Uint8Array(await file.arrayBuffer());
     const magic = new TextDecoder().decode(bytes.slice(0, 5));
     if (/\.docx$/i.test(file.name)) {
-      self.postMessage({ progress: "Reading Word body text locally…" });
+      self.postMessage({ progress: documentText.en.readingWord });
       self.postMessage({
         pages: [{ text: await extractDocx(bytes) }],
         warning: DOCX_WARNING,
@@ -36,12 +37,12 @@ self.onmessage = async (event: MessageEvent<File>) => {
       try {
         const pdf = await task.promise;
         if (pdf.numPages > 20)
-          throw new Error("PDF exceeds the 20-page limit.");
+          throw new Error(documentText.en.pdfPages);
         const pages = [];
         let extractedLength = 0;
         for (let number = 1; number <= pdf.numPages; number++) {
           self.postMessage({
-            progress: `Reading page ${number} of ${pdf.numPages} locally…`,
+            progress: documentText.en.readingPage(number, pdf.numPages),
           });
           const content = await (await pdf.getPage(number)).getTextContent();
           pages.push({
@@ -59,7 +60,7 @@ self.onmessage = async (event: MessageEvent<File>) => {
         self.postMessage({
           pages,
           warning:
-            "Review extracted numbers and table relationships. PDF reading order may differ from the visual layout.",
+            documentText.en.pdfWarning,
         });
       } finally {
         await task.destroy();
@@ -71,7 +72,7 @@ self.onmessage = async (event: MessageEvent<File>) => {
       if (bitmap.width * bitmap.height > 12000000) {
         bitmap.close();
         throw new Error(
-          "Screenshot exceeds 12 megapixels. Resize it before importing.",
+          documentText.en.screenshotTooLarge,
         );
       }
       bitmap.close();
@@ -83,7 +84,7 @@ self.onmessage = async (event: MessageEvent<File>) => {
         workerBlobURL: false,
         logger: (info) =>
           self.postMessage({
-            progress: `Reading screenshot locally: ${Math.round(info.progress * 100)}%`,
+            progress: documentText.en.readingScreenshot(Math.round(info.progress * 100)),
           }),
       });
       try {
@@ -91,7 +92,7 @@ self.onmessage = async (event: MessageEvent<File>) => {
         checkTextSize(data.text);
         self.postMessage({
           pages: [{ page: 1, text: data.text }],
-          warning: `OCR is imperfect (reported confidence ${Math.round(data.confidence)}%). Check names, amounts and dates before using this text.`,
+          warning: documentText.en.ocrWarning(Math.round(data.confidence)),
         });
       } finally {
         await worker.terminate();
@@ -101,11 +102,11 @@ self.onmessage = async (event: MessageEvent<File>) => {
       self.postMessage({
         pages: [{ text }],
         warning:
-          "Imported as text only. Code is not executed; data is not recalculated. Review structure and units before use.",
+          documentText.en.textOnly,
       });
     } else
       throw new Error(
-        "Supported formats: DOCX body text, text PDF, UTF-8 text/Markdown/data/source-code files, PNG and JPEG screenshots. Legacy Word, macro-enabled Word and spreadsheet workbooks are not supported; export them as PDF or UTF-8 text.",
+        documentText.en.formats,
       );
   } catch (error) {
     self.postMessage({
@@ -115,7 +116,7 @@ self.onmessage = async (event: MessageEvent<File>) => {
           error.message,
         )
           ? error.message
-          : "Extraction failed. The file may be encrypted, malformed, unsupported or unreadable.",
+          : documentText.en.extractionFailed,
     });
   }
 };

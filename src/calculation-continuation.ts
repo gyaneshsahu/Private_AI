@@ -1,3 +1,5 @@
+import { textFor } from "./text/core";
+import { chatErrorText } from "./text/chat-errors";
 import type {
   ChatCompletionChunk,
   ChatCompletionMessageParam,
@@ -56,7 +58,7 @@ export function prepareCalculationContinuation(
   ]);
   if (JSON.stringify(next).length > maxInputCharacters)
     throw new IncompleteReplyError(
-      "Calculation continuation exceeds context budget; no continuation sent.",
+      textFor(chatErrorText).continuationBudget,
       turn.usage,
     );
   return { messages: next, tool_choice: "none" };
@@ -97,7 +99,7 @@ export async function consumeCalculationExplanation(
     };
   } catch (error) {
     throw new IncompleteReplyError(
-      "Calculation explanation incomplete; no automatic retry was made.",
+      textFor(chatErrorText).explanationIncomplete,
       sumUsage(
         calculation.usage,
         second ??

@@ -1,10 +1,10 @@
 import type { RequestAllowance } from "../shared/contracts";
 import { AccountBilling } from "./AccountBilling";
+import { useLang } from "./i18n";
+import { usageText } from "./text/account";
 import {
-  costBasisSentence,
   isActiveAllowance,
   meteredTokensSentence,
-  noActivePlanMessage,
   periodEndLabel,
   publishedCostSentence,
   requestsRemainingHeading,
@@ -16,49 +16,46 @@ import {
 
 /** Request counts for the current period: the admission unit, not a bill. */
 function PlanAllowance({ allowance }: { allowance: ActiveAllowance }) {
+  const { lang } = useLang();
+  const t = usageText[lang];
   return (
-    <div className="panel" aria-label="Plan and requests">
-      <h3>{requestsRemainingHeading(allowance)}</h3>
-      <p>{requestsUsedSentence(allowance)}</p>
+    <div className="panel" aria-label={t.planLabel}>
+      <h3>{requestsRemainingHeading(allowance, lang)}</h3>
+      <p>{requestsUsedSentence(allowance, lang)}</p>
       <p>
-        Period ends:{" "}
-        <time dateTime={allowance.resetsAt}>{periodEndLabel(allowance)}</time>.
-        A new allowance is not guaranteed.
+        {t.periodEnds}{" "}
+        <time dateTime={allowance.resetsAt}>
+          {periodEndLabel(allowance, lang === "de" ? "de-DE" : undefined, lang)}
+        </time>
+        . {t.newAllowance}
       </p>
-      <p>{settlementSentence(allowance)}</p>
-      {allowance.state === "exhausted" && (
-        <p role="status">
-          Request allowance exhausted. Another request will not be forwarded
-          under this allowance.
-        </p>
-      )}
-      <p className="muted">
-        Request counts are the admission unit, not token charges or
-        completed-answer counts. Interrupted attempts remain counted. Account
-        information refreshes when you return to this window and every 30
-        seconds.
-      </p>
+      <p>{settlementSentence(allowance, lang)}</p>
+      {allowance.state === "exhausted" && <p role="status">{t.exhausted}</p>}
+      <p className="muted">{t.countsNote}</p>
     </div>
   );
 }
 
 /** Provider metering recorded for completed requests only. */
 function MeteredUsage({ allowance }: { allowance: ActiveAllowance }) {
+  const { lang } = useLang();
+  const t = usageText[lang];
   return (
-    <div className="panel" aria-label="Tokens and cost">
-      <h3>Tokens and cost this period</h3>
-      <p>{meteredTokensSentence(allowance)}</p>
-      <p>{publishedCostSentence(allowance)}</p>
-      <p>{unmeteredSentence(allowance)}</p>
-      <p className="muted">{costBasisSentence}</p>
+    <div className="panel" aria-label={t.tokensLabel}>
+      <h3>{t.tokensHeading}</h3>
+      <p>{meteredTokensSentence(allowance, lang)}</p>
+      <p>{publishedCostSentence(allowance, lang)}</p>
+      <p>{unmeteredSentence(allowance, lang)}</p>
+      <p className="muted">{t.costBasis}</p>
     </div>
   );
 }
 
 function NoActivePlan() {
+  const t = usageText[useLang().lang];
   return (
     <p role="status">
-      {noActivePlanMessage} Paid subscriptions are not enabled.
+      {t.noActivePlan} {t.paidNotEnabled}
     </p>
   );
 }
@@ -76,9 +73,10 @@ export function AccountUsagePage({
   onManage?: () => void;
   billing?: { csrf: string; onNavigate: (url: string) => void };
 }) {
+  const t = usageText[useLang().lang];
   return (
-    <section className="content-view" aria-label="Account and usage">
-      <h2>Account and usage</h2>
+    <section className="content-view" aria-label={t.heading}>
+      <h2>{t.heading}</h2>
       {billing && (
         <AccountBilling
           csrf={billing.csrf}
@@ -88,12 +86,9 @@ export function AccountUsagePage({
       )}
       {consumer && (
         <div className="panel">
-          <p>
-            Manage your sign-in methods and account access. Paid subscriptions
-            are not enabled.
-          </p>
+          <p>{t.manageNote}</p>
           <button disabled={busy} onClick={onManage}>
-            Manage sign-in methods
+            {t.manage}
           </button>
         </div>
       )}
@@ -105,16 +100,8 @@ export function AccountUsagePage({
       ) : (
         <NoActivePlan />
       )}
-      <p>
-        Saved conversation encryption is separate from sign-in. Your vault
-        passphrase cannot currently be recovered; saved history stays in this
-        browser.
-      </p>
-      <p className="muted">
-        Provider qualification is still required before private chat is
-        available. An allowance does not approve a provider or guarantee an
-        answer.
-      </p>
+      <p>{t.vaultNote}</p>
+      <p className="muted">{t.providerNote}</p>
     </section>
   );
 }

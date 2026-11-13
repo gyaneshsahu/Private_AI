@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import type { Conversation } from "../shared/contracts";
 import { conversationTitle, findConversations } from "./conversation-library";
+import { useLang } from "./i18n";
+import { libraryText } from "./text/conversation-ui";
 
 export function ConversationLibrary({
   conversations,
@@ -13,6 +15,8 @@ export function ConversationLibrary({
   onOpen: (conversation: Conversation) => void;
   onDelete: (conversation: Conversation) => void;
 }) {
+  const { lang } = useLang();
+  const t = libraryText[lang];
   const [query, setQuery] = useState("");
   const [order, setOrder] = useState<"newest" | "oldest" | "title">("newest");
   const visible = useMemo(
@@ -20,38 +24,35 @@ export function ConversationLibrary({
     [conversations, query, order],
   );
   return (
-    <section aria-label="Saved conversation library">
+    <section aria-label={t.label}>
       <div className="panel">
         <label>
-          Search saved conversations
+          {t.search}
           <input
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
-        <p className="muted">
-          Search titles, messages, drafts and file names, including other
-          branches, in this unlocked browser. Nothing is sent to a server.
-        </p>
+        <p className="muted">{t.searchNote}</p>
         <label>
-          Sort conversations
+          {t.sort}
           <select
             value={order}
             onChange={(event) => setOrder(event.target.value as typeof order)}
           >
-            <option value="newest">Newest created first</option>
-            <option value="oldest">Oldest created first</option>
-            <option value="title">Title A–Z</option>
+            <option value="newest">{t.newest}</option>
+            <option value="oldest">{t.oldest}</option>
+            <option value="title">{t.title}</option>
           </select>
         </label>
         <p role="status">
-          {visible.length} of {conversations.length} saved conversations
+          {t.count(visible.length, conversations.length)}
         </p>
-        {query && <button onClick={() => setQuery("")}>Clear search</button>}
+        {query && <button onClick={() => setQuery("")}>{t.clear}</button>}
       </div>
       {!visible.length && conversations.length > 0 && (
-        <p>No matching conversations. Try another word or clear the search.</p>
+        <p>{t.noMatch}</p>
       )}
       {visible.map((conversation) => (
         <article
@@ -62,22 +63,24 @@ export function ConversationLibrary({
           <div>
             <strong>{conversationTitle(conversation)}</strong>
             <p className="muted">
-              {new Date(conversation.createdAt).toLocaleDateString()} ·{" "}
-              {conversation.messages.length} messages ·{" "}
-              {conversation.attachments.length} attachments
-              {conversation.draft ? " · Unsent draft" : ""}
-              {conversation.pinned ? " · Pinned" : ""}
-              {conversation.archived ? " · Archived" : ""}
+              {new Date(conversation.createdAt).toLocaleDateString(
+                lang === "de" ? "de-DE" : undefined,
+              )}{" "}
+              ·{" "}
+              {t.meta(conversation.messages.length, conversation.attachments.length)}
+              {conversation.draft ? t.draft : ""}
+              {conversation.pinned ? t.pinned : ""}
+              {conversation.archived ? t.archived : ""}
               {conversation.branches
-                ? ` · ${conversation.branches.archived.length + 1} branches`
+                ? t.branches(conversation.branches.archived.length + 1)
                 : ""}
             </p>
           </div>
           <button disabled={busy} onClick={() => onOpen(conversation)}>
-            Open
+            {t.open}
           </button>
           <button disabled={busy} onClick={() => onDelete(conversation)}>
-            Delete
+            {t.delete}
           </button>
         </article>
       ))}

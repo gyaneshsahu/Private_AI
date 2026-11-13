@@ -1,3 +1,5 @@
+import { textFor } from "./text/core";
+import { chatErrorText } from "./text/chat-errors";
 import type { Conversation, ConversationBranch } from "../shared/contracts";
 import { newMessage } from "./conversation";
 import { containsTemporaryResearch } from "./saved-conversation";
@@ -26,11 +28,11 @@ export function branchConversation(
     (message) => message.id === userId && message.role === "user",
   );
   if (index < 0 || (replacement !== undefined && !replacement.trim()))
-    throw Error("Choose a user message and enter its replacement.");
+    throw Error(textFor(chatErrorText).branchChoose);
   const archived = conversation.branches?.archived ?? [];
   if (archived.length >= MAX_BRANCHES - 1)
     throw Error(
-      "This conversation has 20 branches. Start a new conversation to continue; existing branches were kept.",
+      textFor(chatErrorText).branchLimit,
     );
   const original = snapshot(conversation, draft);
   const next = structuredClone(conversation);
@@ -59,7 +61,7 @@ export function switchBranch(
 ): Conversation {
   if (id === c.branches?.activeId) return c;
   const chosen = c.branches?.archived.find((branch) => branch.id === id);
-  if (!chosen) throw Error("That branch is no longer available.");
+  if (!chosen) throw Error(textFor(chatErrorText).branchGone);
   const selected = structuredClone(chosen);
   return {
     ...c,

@@ -1,3 +1,5 @@
+import { textFor } from "./text/core";
+import { vaultText } from "./text/vault";
 import { projectsSchema, type Project } from "./projects";
 import { deleteDB, openDB } from "idb";
 import type { Conversation } from "../shared/contracts";
@@ -26,7 +28,7 @@ function random(length: number): Uint8Array<ArrayBuffer> {
 export class VaultConflictError extends Error {
   constructor() {
     super(
-      "This saved conversation changed in another tab. Save your work as a new conversation to keep both versions.",
+      textFor(vaultText).savedChangedElsewhere,
     );
   }
 }
@@ -48,7 +50,7 @@ function requireVaultIdentity(
     meta.salt.some((value, index) => value !== salt[index])
   )
     throw Error(
-      "Vault changed in another tab. Lock and unlock before continuing.",
+      textFor(vaultText).changedInTab,
     );
 }
 export class Vault {
@@ -57,9 +59,9 @@ export class Vault {
   private databaseName = "privateai-vault";
   selectAccount(id?: string) {
     if (this.unlocked)
-      throw new Error("Lock the vault before switching accounts.");
+      throw new Error(textFor(vaultText).lockBeforeSwitch);
     if (id !== undefined && !/^[a-f0-9-]{36}$/.test(id))
-      throw new Error("Invalid account scope.");
+      throw new Error(textFor(vaultText).invalidScope);
     this.lock(false);
     this.databaseName = id ? `privateai-vault-${id}` : "privateai-vault";
     this.connectChannel();
@@ -107,7 +109,7 @@ export class Vault {
     this.salt = undefined;
     if (passphrase.length < 12)
       throw new Error(
-        "Use a passphrase of at least 12 characters. There is no recovery service.",
+        textFor(vaultText).shortPassphrase,
       );
     const database = await db(this.databaseName);
     try {
@@ -120,13 +122,13 @@ export class Vault {
           (await unseal(key, existing.check, "vault-check-v1")) !==
           "privateai-v1"
         )
-          throw new Error("Vault unlock failed.");
+          throw new Error(textFor(vaultText).unlockFailed);
       } else {
         const check = await seal(key, "privateai-v1", "vault-check-v1");
         // add, not put: two simultaneous first-time unlocks must not overwrite each other.
         await database.add("meta", { salt, check }, "vault");
       }
-      if (generation !== this.generation) throw new Error("Unlock cancelled.");
+      if (generation !== this.generation) throw new Error(textFor(vaultText).unlockCancelled);
       this.key = key;
       this.salt = salt.slice();
     } finally {
@@ -145,7 +147,7 @@ export class Vault {
     if (containsTemporaryResearch(conversation))
       return Promise.reject(
         new Error(
-          "Temporary research could not be removed from this conversation, so it was not saved.",
+          textFor(vaultText).temporaryNotRemoved,
         ),
       );
     const key = this.key,
@@ -153,7 +155,7 @@ export class Vault {
       generation = this.generation,
       databaseName = this.databaseName;
     if (!key)
-      return Promise.reject(new Error("Unlock your vault before saving."));
+      return Promise.reject(new Error(textFor(vaultText).unlockBeforeSaving));
     const snapshot = structuredClone(conversation);
     return this.enqueue(async () => {
       const expected =
@@ -179,7 +181,7 @@ export class Vault {
           : [];
         if (!projects.some((p) => p.id === snapshot.projectId))
           throw Error(
-            "Project no longer exists. Remove its assignment before saving.",
+            textFor(vaultText).projectGone,
           );
       }
       const dataKey = await crypto.subtle.generateKey(
@@ -201,11 +203,11 @@ export class Vault {
         `conversation:${snapshot.id}`,
       );
       if (generation !== this.generation || !this.key)
-        throw new Error("Vault locked before save completed.");
+        throw new Error(textFor(vaultText).lockedBeforeSave);
       const database = await db(databaseName);
       try {
         if (generation !== this.generation || !this.key)
-          throw new Error("Vault locked before save completed.");
+          throw new Error(textFor(vaultText).lockedBeforeSave);
         const tx = database.transaction(["meta", "conversations"], "readwrite");
         requireVaultIdentity(await tx.objectStore("meta").get("vault"), salt);
         if (snapshot.projectId) {
@@ -225,7 +227,7 @@ export class Vault {
         if (await tx.objectStore("meta").get(`deleted:${snapshot.id}`)) {
           await tx.done;
           throw new Error(
-            "This conversation was deleted. Create a new conversation instead.",
+            textFor(vaultText).conversationDeleted,
           );
         }
         const existing = await tx.objectStore("conversations").get(snapshot.id);
@@ -236,7 +238,7 @@ export class Vault {
         if (generation !== this.generation || !this.key) {
           tx.abort();
           await tx.done.catch(() => {});
-          throw new Error("Vault locked before save completed.");
+          throw new Error(textFor(vaultText).lockedBeforeSave);
         }
         await tx
           .objectStore("conversations")
@@ -256,7 +258,7 @@ export class Vault {
   async list(): Promise<Conversation[]> {
     const result = await this.readAvailable();
     if (result.unreadable)
-      throw new Error("Some saved snapshots could not be read.");
+      throw new Error(textFor(vaultText).unreadableSnapshots);
     return result.conversations;
   }
   async readAvailable(maximum = Number.POSITIVE_INFINITY): Promise<{
@@ -267,9 +269,9 @@ export class Vault {
       salt = this.salt,
       generation = this.generation,
       databaseName = this.databaseName;
-    if (!key) throw new Error("Vault is locked.");
+    if (!key) throw new Error(textFor(vaultText).locked);
     await this.queue;
-    if (generation !== this.generation) throw new Error("Vault was locked.");
+    if (generation !== this.generation) throw new Error(textFor(vaultText).wasLocked);
     const database = await db(databaseName);
     try {
       const tx = database.transaction(["meta", "conversations"], "readonly");
@@ -277,7 +279,7 @@ export class Vault {
       const store = tx.objectStore("conversations");
       if ((await store.count()) > maximum) {
         await tx.done;
-        throw Error(`Backup supports at most ${maximum} saved conversations.`);
+        throw Error(textFor(vaultText).backupMaximum(maximum));
       }
       const [ids, records] = await Promise.all([
         store.getAllKeys(),
@@ -307,9 +309,9 @@ export class Vault {
           // Validate without rewriting snapshots or dropping fields from older writers.
           const conversation = decoded as Conversation;
           if (containsTemporaryResearch(conversation))
-            throw new Error("Temporary research snapshot cannot be reopened.");
+            throw new Error(textFor(vaultText).temporaryReopen);
           if (conversation.id !== id)
-            throw new Error("Snapshot identity mismatch.");
+            throw new Error(textFor(vaultText).identityMismatch);
           output.push(conversation);
           const version = recordVersion(record);
           if (generation === this.generation) {
@@ -320,9 +322,9 @@ export class Vault {
           unreadable++;
         }
         if (generation !== this.generation)
-          throw new Error("Vault was locked.");
+          throw new Error(textFor(vaultText).wasLocked);
       }
-      if (generation !== this.generation) throw new Error("Vault was locked.");
+      if (generation !== this.generation) throw new Error(textFor(vaultText).wasLocked);
       return { conversations: output, unreadable };
     } finally {
       database.close();
@@ -331,9 +333,9 @@ export class Vault {
   async readProjects(): Promise<Project[]> {
     const key = this.key,
       generation = this.generation;
-    if (!key) throw Error("Unlock your vault first.");
+    if (!key) throw Error(textFor(vaultText).unlockFirst);
     await this.queue;
-    if (generation !== this.generation) throw Error("Vault changed.");
+    if (generation !== this.generation) throw Error(textFor(vaultText).changed);
     const database = await db(this.databaseName);
     try {
       requireVaultIdentity(await database.get("meta", "vault"), this.salt);
@@ -344,7 +346,7 @@ export class Vault {
             JSON.parse(await unseal(key, record, "projects-v1")),
           )
         : [];
-      if (generation !== this.generation) throw Error("Vault changed.");
+      if (generation !== this.generation) throw Error(textFor(vaultText).changed);
       return projects;
     } finally {
       database.close();
@@ -355,7 +357,7 @@ export class Vault {
       salt = this.salt,
       generation = this.generation,
       databaseName = this.databaseName;
-    if (!key) return Promise.reject(Error("Unlock your vault first."));
+    if (!key) return Promise.reject(Error(textFor(vaultText).unlockFirst));
     return this.enqueue(async () => {
       const database = await db(databaseName);
       try {
@@ -383,7 +385,7 @@ export class Vault {
           tx.abort();
           await tx.done.catch(() => {});
           throw Error(
-            "Projects changed in another tab. Unlock again and retry.",
+            textFor(vaultText).projectsChangedRetry,
           );
         }
         await tx.store.put(encrypted, "projects");
@@ -399,12 +401,12 @@ export class Vault {
       salt = this.salt,
       generation = this.generation,
       databaseName = this.databaseName;
-    if (!key) return Promise.reject(Error("Unlock your vault first."));
+    if (!key) return Promise.reject(Error(textFor(vaultText).unlockFirst));
     return this.enqueue(async () => {
       const database = await db(databaseName);
       const unchanged = () => {
         if (generation !== this.generation || !this.key)
-          throw Error("Vault changed during project update.");
+          throw Error(textFor(vaultText).changedDuringProject);
       };
       try {
         unchanged();
@@ -424,7 +426,7 @@ export class Vault {
             )
           : [];
         if (!projects.some((p) => p.id === id))
-          throw Error("Project no longer exists. Unlock again to refresh.");
+          throw Error(textFor(vaultText).projectGoneRefresh);
         const next = projectsSchema.parse(
           name === undefined
             ? projects.filter((p) => p.id !== id)
@@ -458,7 +460,7 @@ export class Vault {
             ) as Conversation;
             savedConversationSchema.parse(decoded);
             if (decoded.id !== recordId || containsTemporaryResearch(decoded))
-              throw Error("Unreadable history prevents safe project removal.");
+              throw Error(textFor(vaultText).unreadableHistoryRemoval);
             if (decoded.projectId === id) {
               delete decoded.projectId;
               replacements.push({
@@ -483,18 +485,18 @@ export class Vault {
             JSON.stringify(current && Array.from(current.iv)) !==
             JSON.stringify(previous && Array.from(previous.iv))
           )
-            throw Error("Projects changed in another tab.");
+            throw Error(textFor(vaultText).projectsChanged);
           const store = tx.objectStore("conversations");
           if (name === undefined) {
             if ((await store.count()) !== records.length)
-              throw Error("History changed during removal. Try again.");
+              throw Error(textFor(vaultText).historyChangedRemoval);
             for (const [index, recordId] of ids.entries()) {
               const existing = await store.get(recordId);
               if (
                 !existing ||
                 recordVersion(existing) !== recordVersion(records[index])
               )
-                throw Error("History changed during removal. Try again.");
+                throw Error(textFor(vaultText).historyChangedRemoval);
             }
           }
           for (const {
@@ -526,11 +528,11 @@ export class Vault {
       salt = this.salt,
       generation = this.generation;
     if (!key || !salt)
-      throw Error("Unlock your vault before creating a backup.");
+      throw Error(textFor(vaultText).unlockBeforeBackup);
     const available = await this.readAvailable(BACKUP_MAX_CONVERSATIONS);
     if (available.unreadable)
       throw Error(
-        "Unreadable snapshots prevent a complete backup. Existing data was not changed.",
+        textFor(vaultText).unreadableBackup,
       );
     const text = await encodeVaultBackup(
       key,
@@ -539,7 +541,7 @@ export class Vault {
       await this.readProjects(),
     );
     if (generation !== this.generation || !this.key)
-      throw Error("Backup cancelled because the vault changed.");
+      throw Error(textFor(vaultText).backupCancelled);
     return text;
   }
   restoreBackup(text: string, passphrase: string): Promise<number> {
@@ -549,7 +551,7 @@ export class Vault {
       databaseName = this.databaseName;
     if (!key)
       return Promise.reject(
-        Error("Unlock the destination vault before restoring."),
+        Error(textFor(vaultText).unlockDestination),
       );
     return this.enqueue(async () => {
       const { conversations, projects } = await decodeVaultBackupContent(
@@ -583,7 +585,7 @@ export class Vault {
       const encrypted = [];
       for (const original of conversations) {
         if (generation !== this.generation || !this.key)
-          throw Error("Restore cancelled because the vault changed.");
+          throw Error(textFor(vaultText).restoreCancelled);
         const snapshot = {
           ...original,
           id: crypto.randomUUID(),
@@ -610,11 +612,11 @@ export class Vault {
         });
       }
       if (generation !== this.generation || !this.key)
-        throw Error("Restore cancelled because the vault changed.");
+        throw Error(textFor(vaultText).restoreCancelled);
       const database = await db(databaseName);
       try {
         if (generation !== this.generation || !this.key)
-          throw Error("Restore cancelled because the vault changed.");
+          throw Error(textFor(vaultText).restoreCancelled);
         const tx = database.transaction(["meta", "conversations"], "readwrite");
         try {
           requireVaultIdentity(await tx.objectStore("meta").get("vault"), salt);
@@ -626,7 +628,7 @@ export class Vault {
               currentProjects && Array.from(currentProjects.iv),
             ) !== JSON.stringify(projectRecord && Array.from(projectRecord.iv))
           )
-            throw Error("Projects changed during restore.");
+            throw Error(textFor(vaultText).projectsChangedRestore);
           await tx.objectStore("meta").put(nextProjects, "projects");
           for (const { id, ...record } of encrypted) {
             if (
@@ -634,11 +636,11 @@ export class Vault {
               !this.key ||
               (await tx.objectStore("meta").get(`deleted:${id}`))
             )
-              throw Error("Restore cancelled because the vault changed.");
+              throw Error(textFor(vaultText).restoreCancelled);
             await tx.objectStore("conversations").add(record, id);
           }
           if (generation !== this.generation || !this.key)
-            throw Error("Restore cancelled because the vault changed.");
+            throw Error(textFor(vaultText).restoreCancelled);
           await tx.done;
         } catch (error) {
           try {
@@ -663,15 +665,15 @@ export class Vault {
       generation = this.generation,
       databaseName = this.databaseName;
     if (!this.key || !salt)
-      return Promise.reject(Error("Unlock the vault first."));
+      return Promise.reject(Error(textFor(vaultText).unlockTheVault));
     if (nextPassphrase.length < 12 || nextPassphrase === currentPassphrase)
       return Promise.reject(
-        Error("Choose a different passphrase of at least 12 characters."),
+        Error(textFor(vaultText).differentPassphrase),
       );
     return this.enqueue(async () => {
       const unchanged = () => {
         if (generation !== this.generation || !this.key)
-          throw Error("Passphrase change cancelled because the vault changed.");
+          throw Error(textFor(vaultText).passphraseCancelled);
       };
       unchanged();
       const database = await db(databaseName);
@@ -699,7 +701,7 @@ export class Vault {
           (await unseal(currentKey, meta.check, "vault-check-v1")) !==
           "privateai-v1"
         )
-          throw Error("Current passphrase is incorrect.");
+          throw Error(textFor(vaultText).wrongPassphrase);
         const nextSalt = random(16);
         const nextKey = await derive(nextPassphrase, nextSalt);
         const check = await seal(nextKey, "privateai-v1", "vault-check-v1");
@@ -752,14 +754,14 @@ export class Vault {
           const store = tx.objectStore("conversations");
           if ((await store.count()) !== replacements.length)
             throw Error(
-              "Saved history changed. Review it before changing the passphrase.",
+              textFor(vaultText).historyChangedPassphrase,
             );
           for (const replacement of replacements) {
             unchanged();
             const current = await store.get(replacement.id);
             if (!current || recordVersion(current) !== replacement.version)
               throw Error(
-                "Saved history changed. Review it before changing the passphrase.",
+                textFor(vaultText).historyChangedPassphrase,
               );
             await store.put(
               { ...current, wrapped: replacement.wrapped },
@@ -775,7 +777,7 @@ export class Vault {
               currentProjects && Array.from(currentProjects.iv),
             ) !== JSON.stringify(projectRecord && Array.from(projectRecord.iv))
           )
-            throw Error("Projects changed during passphrase update.");
+            throw Error(textFor(vaultText).projectsChangedPassphrase);
           if (nextProjects)
             await tx.objectStore("meta").put(nextProjects, "projects");
           await tx.objectStore("meta").put({ salt: nextSalt, check }, "vault");
@@ -801,21 +803,21 @@ export class Vault {
       salt = this.salt,
       databaseName = this.databaseName;
     if (!this.key)
-      return Promise.reject(new Error("Unlock your vault before deleting."));
+      return Promise.reject(new Error(textFor(vaultText).unlockBeforeDeleting));
     return this.enqueue(async () => {
       if (generation !== this.generation || !this.key)
-        throw new Error("Deletion cancelled because the vault changed.");
+        throw new Error(textFor(vaultText).deletionCancelled);
       const database = await db(databaseName);
       try {
         if (generation !== this.generation || !this.key)
-          throw new Error("Deletion cancelled because the vault changed.");
+          throw new Error(textFor(vaultText).deletionCancelled);
         const tx = database.transaction(["meta", "conversations"], "readwrite");
         requireVaultIdentity(await tx.objectStore("meta").get("vault"), salt);
         await tx.objectStore("meta").put(true, `deleted:${id}`);
         if (generation !== this.generation || !this.key) {
           tx.abort();
           await tx.done.catch(() => {});
-          throw new Error("Deletion cancelled because the vault changed.");
+          throw new Error(textFor(vaultText).deletionCancelled);
         }
         await tx.objectStore("conversations").delete(id);
         await tx.done;

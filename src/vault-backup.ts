@@ -1,3 +1,5 @@
+import { textFor } from "./text/core";
+import { vaultText } from "./text/vault";
 import { projectsSchema, type Project } from "./projects";
 import { z } from "zod";
 import { derive, seal, unseal } from "./vault-crypto";
@@ -41,11 +43,11 @@ function encode(bytes: Uint8Array<ArrayBuffer>): string {
 }
 function decode(value: string): Uint8Array<ArrayBuffer> {
   if (!/^[A-Za-z0-9+/]+={0,2}$/.test(value))
-    throw Error("Invalid encrypted backup.");
+    throw Error(textFor(vaultText).invalidBackup);
   const bytes = Uint8Array.from(atob(value), (character) =>
     character.charCodeAt(0),
   );
-  if (encode(bytes) !== value) throw Error("Invalid encrypted backup.");
+  if (encode(bytes) !== value) throw Error(textFor(vaultText).invalidBackup);
   return bytes;
 }
 function validate(value: unknown): {
@@ -62,7 +64,7 @@ function validate(value: unknown): {
     )
   )
     throw Error(
-      "Backup contains duplicate identities, an unknown project or temporary research.",
+      textFor(vaultText).backupContents,
     );
   // Preserve historical fields after validation, as with existing saved snapshots.
   return {
@@ -83,7 +85,7 @@ export async function encodeVaultBackup(
     salt.length !== 16 ||
     new TextEncoder().encode(text).byteLength > payloadLimit
   )
-    throw Error("Backup exceeds the 10 MiB conversation limit.");
+    throw Error(textFor(vaultText).backupTooLarge);
   const encrypted = await seal(key, text, aad);
   return JSON.stringify({
     format: "privateai-encrypted-backup",
@@ -104,14 +106,14 @@ export async function decodeVaultBackupContent(
     text.length > BACKUP_MAX_BYTES ||
     new TextEncoder().encode(text).byteLength > BACKUP_MAX_BYTES
   )
-    throw Error("Backup file exceeds 16 MiB.");
-  if (passphrase.length < 12) throw Error("Invalid backup passphrase.");
+    throw Error(textFor(vaultText).backupFileTooLarge);
+  if (passphrase.length < 12) throw Error(textFor(vaultText).invalidBackupPassphrase);
   const metadata = envelope.parse(JSON.parse(text));
   const salt = decode(metadata.salt),
     iv = decode(metadata.iv),
     data = decode(metadata.data);
   if (salt.length !== 16 || iv.length !== 12 || data.length > payloadLimit + 16)
-    throw Error("Invalid encrypted backup bounds.");
+    throw Error(textFor(vaultText).invalidBackupBounds);
   const key = await derive(passphrase, salt);
   const decoded = await unseal(key, { iv, data: data.buffer }, aad);
   return validate(JSON.parse(decoded));

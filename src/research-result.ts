@@ -1,3 +1,6 @@
+import { textFor, uiLang, type Lang } from "./text/core";
+import { chatErrorText } from "./text/chat-errors";
+import { researchText } from "./text/research";
 import { z } from "zod";
 import type { Source } from "../shared/contracts";
 import { GERMAN_RULES, sourceTier } from "./german-rules";
@@ -32,12 +35,12 @@ const resultSchema = z.object({
   }).strict().optional(),
 }).strict();
 
-/** Added to every search approval: the same approval also opens one page. */
-export const TOP_PAGE_APPROVAL =
-  "Our server will also open the top result page, preferring an official site, and read its text for this answer. That site sees our server's address, not yours.";
+/** Added to every search approval: the same approval also opens one page. English; the screen uses researchText.approval. */
+export const TOP_PAGE_APPROVAL = researchText.en.approval;
 
 /** What happened to the top result page, in the words shown to the user. */
-export function topPageNote(input: unknown): string {
+export function topPageNote(input: unknown, lang: Lang = uiLang()): string {
+  const t = textFor(researchText, lang);
   const data = resultSchema.safeParse(input).data;
   const top = data?.topPage;
   if (!top) return "";
@@ -46,29 +49,29 @@ export function topPageNote(input: unknown): string {
   // A German-rules search (tier set) names the tier of the page read.
   const which = top.tier
     ? {
-        official: "an official source",
-        "public-interest": "a public-interest page (not an official source)",
-        other: "a non-official page",
+        official: t.official,
+        "public-interest": t.publicInterest,
+        other: t.other,
       }[top.tier]
-    : top.official ? "the top official result" : "the top result";
+    : top.official ? t.topOfficial : t.top;
   const none = top.tier && !data.sources.some((s) => sourceTier(s.url) === "official")
     ? ` ${GERMAN_RULES.noOfficial}` : "";
   return {
-    read: `Our server also opened ${which} and read its text: ${top.url}`,
-    "read-without-query": `Our server also opened ${which} without the part of its address after "?", because that part contained a personal detail: ${top.url}`,
-    skipped: `The top result (${host}) was not opened, because its address contained a personal detail. The answer uses the search excerpts only.`,
-    failed: `The top result (${host}) could not be opened. The answer uses the search excerpts only.`,
+    read: t.read(which, top.url),
+    "read-without-query": t.readWithoutQuery(which, top.url),
+    skipped: t.skipped(host),
+    failed: t.failed(host),
   }[top.outcome] + none;
 }
 
 export function parseResearchResult(input: unknown, existingIds: Iterable<string>): Source[] {
   const result = resultSchema.safeParse(input);
   if (!result.success)
-    throw new Error("Research returned invalid source information. Nothing was added; no automatic retry was made.");
+    throw new Error(textFor(chatErrorText).researchInvalid);
   const ids = new Set(existingIds);
   for (const source of result.data.sources) {
     if (ids.has(source.id))
-      throw new Error("Research returned conflicting source identifiers. Nothing was added; no automatic retry was made.");
+      throw new Error(textFor(chatErrorText).researchConflict);
     ids.add(source.id);
   }
   return result.data.sources;

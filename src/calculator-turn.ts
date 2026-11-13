@@ -1,3 +1,5 @@
+import { textFor } from "./text/core";
+import { chatErrorText } from "./text/chat-errors";
 import { z } from "zod";
 import type { ChatCompletionChunk } from "openai/resources/chat/completions";
 import type {
@@ -70,7 +72,7 @@ export class CalculatorValidationError extends IncompleteReplyError {
     readonly validationDetail?: CheckedFailure,
   ) {
     super(
-      "Calculation could not be validated. No automatic retry was made.",
+      textFor(chatErrorText).calculationNotValidated,
       usage,
     );
   }
@@ -189,7 +191,7 @@ export async function consumeCalculatorTurn(
   const usage = await consumeReply(normalize(), pricing, signal, () => {});
   if (!usage)
     throw new IncompleteReplyError(
-      "Calculator prototype requires final usage; no retry was made.",
+      textFor(chatErrorText).calculatorNeedsUsage,
     );
   if (!sawTool) return { text, usage };
   const originalArguments = argumentsText;

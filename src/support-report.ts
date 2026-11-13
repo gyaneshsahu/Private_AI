@@ -1,3 +1,11 @@
+import type { Lang } from "./i18n";
+import {
+  supportAreasDe,
+  supportGuidanceDe,
+  supportSymptomsDe,
+  supportText,
+} from "./text/support";
+
 export const supportAreas = {
   conversation: "Chat or an answer",
   research: "Web research or citations",
@@ -21,20 +29,36 @@ export type SupportArea = keyof typeof supportAreas;
 export type SupportSymptom = keyof typeof supportSymptoms;
 
 /** Explicit allowlist: never serialize status objects, errors, URLs or workspace content. */
-export function supportReport(input: {
-  area: unknown;
-  symptom: unknown;
-}): string {
+export function supportReport(
+  input: {
+    area: unknown;
+    symptom: unknown;
+  },
+  lang: Lang = "en",
+): string {
+  const copy = supportCopy(lang);
+  const t = supportText[lang];
   const area =
     typeof input.area === "string" && Object.hasOwn(supportAreas, input.area)
-      ? supportAreas[input.area as SupportArea]
-      : "Not selected";
+      ? copy.areas[input.area as SupportArea]
+      : t.notSelected;
   const symptom =
     typeof input.symptom === "string" &&
     Object.hasOwn(supportSymptoms, input.symptom)
-      ? supportSymptoms[input.symptom as SupportSymptom]
-      : "Not selected";
-  return `CometRow support note (format 1)\nArea: ${area}\nProblem: ${symptom}\n\nThis note contains selected categories only. No conversation, source, document, account identifier, credential or device details are attached. It has not been submitted.\n\nWhen contacting the evaluation coordinator, describe the steps using a synthetic example. Do not include passwords, verification codes, payment details, private transcripts or temporary search content.`;
+      ? copy.symptoms[input.symptom as SupportSymptom]
+      : t.notSelected;
+  return t.note(area, symptom);
+}
+
+/** Areas, symptoms and guidance in the interface language. */
+export function supportCopy(lang: Lang): {
+  areas: Record<SupportArea, string>;
+  symptoms: Record<SupportSymptom, string>;
+  guidance: Record<SupportArea, readonly string[]>;
+} {
+  return lang === "de"
+    ? { areas: supportAreasDe, symptoms: supportSymptomsDe, guidance: supportGuidanceDe }
+    : { areas: supportAreas, symptoms: supportSymptoms, guidance: supportGuidance };
 }
 
 export const supportGuidance: Record<SupportArea, readonly string[]> = {

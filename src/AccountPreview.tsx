@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import "./account-preview.css";
+import { useText } from "./i18n";
+import { accountPreviewText } from "./text/account";
 
 export function AccountPreview() {
   const [step, setStep] = useState<"choose" | "email" | "code">("choose");
   const [notice, setNotice] = useState("");
+  const t = useText(accountPreviewText);
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     heading.current?.focus();
@@ -17,13 +20,12 @@ export function AccountPreview() {
       <a
         className="account-preview-brand"
         href="/"
-        aria-label="CometRow workspace"
+        aria-label={t.brandLabel}
       >
         Comet<span>Row</span>
       </a>
-      <aside className="account-preview-banner" aria-label="Preview status">
-        Design preview · Sign-in is not connected. No account is created and no
-        email is sent.
+      <aside className="account-preview-banner" aria-label={t.previewStatus}>
+        {t.banner}
       </aside>
       <section
         className="account-preview-card account-entry"
@@ -31,44 +33,40 @@ export function AccountPreview() {
       >
         <h1 id="account-heading" ref={heading} tabIndex={-1}>
           {step === "choose"
-            ? "Welcome to CometRow"
+            ? t.welcome
             : step === "email"
-              ? "Continue with email"
-              : "Check your email"}
+              ? t.continueEmail
+              : t.checkEmail}
         </h1>
         <p className="account-preview-intro">
           {step === "choose"
-            ? "A space to think, explore and create."
+            ? t.introChoose
             : step === "email"
-              ? "Sign in or create an account with a one-time code."
-              : "This is the planned verification step. No code has been sent."}
+              ? t.introEmail
+              : t.introCode}
         </p>
         {step === "choose" ? (
           <div className="account-preview-actions">
             <button
               type="button"
-              onClick={() =>
-                setNotice(
-                  "Google sign-in is not connected in this preview. The live flow will ask you to choose a Google account and approve the requested identity information.",
-                )
-              }
+              onClick={() => setNotice(t.googleNotice)}
             >
-              Continue with Google
+              {t.continueGoogle}
             </button>
             <div className="account-preview-divider">
-              <span>or</span>
+              <span>{t.or}</span>
             </div>
             <button
               className="account-preview-primary"
               type="button"
               onClick={() => changeStep("email")}
             >
-              Continue with email
+              {t.continueEmail}
             </button>
           </div>
         ) : step === "email" ? (
           <div className="account-preview-actions">
-            <label htmlFor="preview-email">Email address</label>
+            <label htmlFor="preview-email">{t.emailAddress}</label>
             <input
               id="preview-email"
               type="email"
@@ -78,34 +76,28 @@ export function AccountPreview() {
               aria-describedby="preview-email-help"
             />
             <p id="preview-email-help" className="account-preview-small">
-              Synthetic example only. This preview does not collect an address.
+              {t.emailHelp}
             </p>
             <button
               className="account-preview-primary"
               type="button"
               onClick={() => changeStep("code")}
             >
-              Preview verification step
+              {t.previewStep}
             </button>
             <button type="button" onClick={() => changeStep("choose")}>
-              Other sign-in options
+              {t.otherOptions}
             </button>
           </div>
         ) : (
           <div className="account-preview-actions">
-            <p>
-              A short-lived, one-use code will verify your email before you can
-              access an account. You can add a passkey after signing in.
-            </p>
-            <p className="account-preview-small">
-              Verification, resend limits and account recovery are not active in
-              this preview.
-            </p>
+            <p>{t.codeNote}</p>
+            <p className="account-preview-small">{t.codeSmall}</p>
             <button type="button" onClick={() => changeStep("email")}>
-              Back to email
+              {t.backToEmail}
             </button>
             <button type="button" onClick={() => changeStep("choose")}>
-              Other sign-in options
+              {t.otherOptions}
             </button>
           </div>
         )}
@@ -113,36 +105,16 @@ export function AccountPreview() {
           {notice}
         </p>
         <details className="account-preview-privacy">
-          <summary>How sign-in affects your privacy</summary>
-          <p>
-            Planned account data: your email address, linked sign-in
-            identifiers, passkey public credentials and session/security
-            records. Google or Apple learns that you sign in to CometRow. The
-            email-delivery provider processes your address and sign-in messages.
-          </p>
-          <p>
-            Sign-in providers will not receive your conversations through this
-            sign-in flow. We will not request access to your mail, contacts or
-            files. Apple’s Hide My Email can supply a relay address.
-          </p>
-          <p>
-            Passkeys use your device or credential manager. CometRow does not
-            receive your fingerprint or face scan.
-          </p>
-          <p>
-            Account recovery restores sign-in access. It cannot recover a lost
-            vault passphrase or local encrypted history. Accounts with matching
-            emails will not be silently merged.
-          </p>
-          <p>
-            These are design commitments. Provider configuration, retention
-            terms and the final privacy notice still need review before
-            activation. Private-data chat remains gated separately.
-          </p>
+          <summary>{t.privacySummary}</summary>
+          <p>{t.privacy1}</p>
+          <p>{t.privacy2}</p>
+          <p>{t.privacy3}</p>
+          <p>{t.privacy4}</p>
+          <p>{t.privacy5}</p>
         </details>
       </section>
       <p className="account-preview-footer">
-        Existing accounts and saved conversations are unchanged.
+        {t.footer}
       </p>
     </main>
   );

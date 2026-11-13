@@ -1,6 +1,8 @@
 // Tinfoil adapter for the browser: the maintained verifier and the EHBP
 // transport own attestation and cryptography; this file only wires them and
 // holds the supplier's routing headers and per-model request switches.
+import { textFor } from "../text/core";
+import { chatErrorText } from "../text/chat-errors";
 import { abortable } from "../abortable";
 import {
   registerInferenceClient,
@@ -26,7 +28,7 @@ export function assertVerification(
     doc.enclaveHost !== new URL(report.origin).hostname
   )
     throw new Error(
-      "The checked server does not match the reviewed provider configuration. Nothing was sent.",
+      textFor(chatErrorText).serverMismatch,
     );
 }
 
@@ -34,13 +36,13 @@ export function createTinfoilClientAdapter(): InferenceClientAdapter {
   return {
     id: "tinfoil",
     async verify(policy, signal, onStatus) {
-      onStatus("Loading inference libraries…");
+      onStatus(textFor(chatErrorText).loadingLibraries);
       const [{ Verifier, fetchAttestationBundle }, { Identity, Transport }] =
         await abortable(
           Promise.all([import("tinfoil"), import("ehbp")]),
           signal,
         );
-      onStatus("Fetching attestation…");
+      onStatus(textFor(chatErrorText).fetchingAttestation);
       const bundle = await abortable(
         fetchAttestationBundle({
           enclaveURL: policy.origin,
@@ -50,13 +52,13 @@ export function createTinfoilClientAdapter(): InferenceClientAdapter {
       );
       if (bundle.domain !== new URL(policy.origin).hostname)
         throw new Error(
-          "Unexpected verification destination. Nothing was sent.",
+          textFor(chatErrorText).unexpectedDestination,
         );
-      onStatus("Checking the secure server…");
+      onStatus(textFor(chatErrorText).checkingServer);
       const verifier = new Verifier({ configRepo: policy.repository });
       await abortable(verifier.verifyBundle(bundle), signal);
       const doc = verifier.getVerificationDocument();
-      if (!doc) throw new Error("Verification evidence unavailable.");
+      if (!doc) throw new Error(textFor(chatErrorText).evidenceUnavailable);
       assertVerification(doc, policy);
       return {
         evidence: { host: doc.enclaveHost, releaseDigest: doc.releaseDigest },

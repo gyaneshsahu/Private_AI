@@ -1,3 +1,5 @@
+import { textFor } from "./text/core";
+import { documentText } from "./text/documents";
 import type { Attachment } from "../shared/contracts";
 import { extract } from "./documents";
 
@@ -37,7 +39,7 @@ export async function importDocuments(
       if (signal.aborted) break;
       outcomes[index].status = "failed";
       outcomes[index].detail =
-        error instanceof Error ? error.message : "Extraction failed.";
+        error instanceof Error ? error.message : textFor(documentText).failed;
     }
     publish();
   }

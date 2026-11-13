@@ -1,3 +1,5 @@
+import { textFor } from "./text/core";
+import { chatErrorText } from "./text/chat-errors";
 export const billingDeadlineMs = 10_000;
 
 /** A browser timeout cannot prove whether a submitted operation reached the server. */
@@ -18,7 +20,7 @@ export async function billingRequest<T>(
   } catch (error) {
     if (controller.signal.aborted)
       throw Error(
-        "Billing response timed out. The outcome is unconfirmed; refresh status before continuing. No automatic retry was made.",
+        textFor(chatErrorText).billingTimeout,
       );
     throw error;
   } finally {

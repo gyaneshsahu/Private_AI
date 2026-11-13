@@ -1,3 +1,5 @@
+import { textFor } from "./text/core";
+import { chatErrorText } from "./text/chat-errors";
 import type { ChatCompletionChunk } from "openai/resources/chat/completions";
 import type { Qualification, Usage } from "../shared/contracts";
 import { StreamProtocolError, type StreamFailureCode } from "./stream-failure";
@@ -111,22 +113,22 @@ export async function consumeReply(
   } catch (error) {
     const timedOut = signal.aborted && signal.reason?.name === "TimeoutError";
     const reason = timedOut
-      ? "Response timed out."
+      ? textFor(chatErrorText).timedOut
       : error instanceof StreamProtocolError &&
           error.code === "OUTPUT_LIMIT_REACHED"
-        ? "The response reached its output limit before completing."
+        ? textFor(chatErrorText).outputLimit
         : error instanceof StreamProtocolError &&
             error.code === "HTTP_RATE_LIMITED"
-          ? "The protected service is limiting requests. No answer was received."
+          ? textFor(chatErrorText).rateLimited
           : error instanceof StreamProtocolError &&
               error.code === "HTTP_SERVICE_UNAVAILABLE"
-            ? "The protected service is unavailable. No answer was received."
+            ? textFor(chatErrorText).unavailable
             : error instanceof StreamProtocolError &&
                 error.code === "HTTP_UPSTREAM_REJECTED"
-              ? "The protected service did not accept this request and gave no answer."
-              : "Response incomplete.";
+              ? textFor(chatErrorText).rejected
+              : textFor(chatErrorText).incomplete;
     throw new IncompleteReplyError(
-      `${reason} Partial answers are excluded from future context. No automatic retry was made.`,
+      textFor(chatErrorText).partialExcluded(reason),
       usage,
       {
         code:

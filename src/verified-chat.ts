@@ -1,3 +1,5 @@
+import { textFor } from "./text/core";
+import { chatErrorText } from "./text/chat-errors";
 import {
   prepareCalculationContinuation,
   consumeCalculationExplanation,
@@ -233,7 +235,7 @@ async function streamMaskedConversation(
       report.assistedResearchContract,
     ].filter(Boolean).length > 1
   )
-    throw new Error("Choose one response contract. Nothing was sent.");
+    throw new Error(textFor(chatErrorText).oneContract);
   for (const [setting, owners] of Object.entries(MODEL_SETTINGS))
     if (
       report[setting as keyof typeof MODEL_SETTINGS] !== undefined &&
@@ -249,7 +251,7 @@ async function streamMaskedConversation(
     const answerStarted = () => {
       started();
       clearTimeout(waiting);
-      if (stillThinking) onStatus("Receiving a protected response…");
+      if (stillThinking) onStatus(textFor(chatErrorText).receiving);
       stillThinking = false;
     };
     const messages = composeContext(
@@ -277,7 +279,7 @@ async function streamMaskedConversation(
         report.maxInputCharacters
       )
         throw new Error(
-          "Selected context including calculator tools is too large. Nothing was sent.",
+          textFor(chatErrorText).tooLargeCalculator,
         );
     }
     if (
@@ -303,13 +305,13 @@ async function streamMaskedConversation(
         report.maxInputCharacters
       )
         throw new Error(
-          "Selected context including the checked response contract is too large. Nothing was sent.",
+          textFor(chatErrorText).tooLargeChecked,
         );
     }
     if (report.researchEvidenceContract) {
       if (!evidenceSources.some((source) => source.url))
         throw new Error(
-          "The research evidence experiment requires retrieved sources.",
+          textFor(chatErrorText).needsSources,
         );
       messages[0].content += ` ${researchContractInstruction}`;
       if (
@@ -317,7 +319,7 @@ async function streamMaskedConversation(
         report.maxInputCharacters
       )
         throw new Error(
-          "Selected context including the research contract is too large. Nothing was sent.",
+          textFor(chatErrorText).tooLargeResearch,
         );
     }
     if (
@@ -327,7 +329,7 @@ async function streamMaskedConversation(
         report.maxInputCharacters
     )
       throw new Error(
-        "Selected context including the response schema is too large. Nothing was sent.",
+        textFor(chatErrorText).tooLargeSchema,
       );
     const adapter = inferenceClientFor(
       report.provider ?? defaultInferenceProvider,
@@ -344,9 +346,9 @@ async function streamMaskedConversation(
     const destination = await adapter.verify(policy, signal, onStatus);
     onVerified?.(destination.evidence);
     signal.throwIfAborted();
-    onStatus("Preparing encrypted transport…");
+    onStatus(textFor(chatErrorText).preparingTransport);
     const transport = await destination.transport();
-    onStatus("Receiving a protected response…");
+    onStatus(textFor(chatErrorText).receiving);
     waiting = setTimeout(() => {
       stillThinking = true;
       onStatus(stillThinkingStatus(report.answerMode));
@@ -378,7 +380,7 @@ async function streamMaskedConversation(
         report.maxInputCharacters
     )
       throw Error(
-        "Selected context including calculator protocol is too large. Nothing was sent.",
+        textFor(chatErrorText).tooLargeProtocol,
       );
     const response = await transport.request(
       `${location.origin}/api/inference/v1/chat/completions`,
@@ -422,7 +424,7 @@ async function streamMaskedConversation(
         },
       );
       if (signal.aborted)
-        throw new IncompleteReplyError("Calculation stopped.", turn.usage);
+        throw new IncompleteReplyError(textFor(chatErrorText).calculationStopped, turn.usage);
       let answer = renderCalculatorTurn(turn);
       let usage = turn.usage;
       if (report.calculatorContinuation && turn.toolCall) {
@@ -444,7 +446,7 @@ async function streamMaskedConversation(
             nextDestination.evidence.releaseDigest !==
             destination.evidence.releaseDigest
           )
-            throw Error("Deployment changed during calculation.");
+            throw Error(textFor(chatErrorText).deploymentChangedCalculation);
           onVerified?.(nextDestination.evidence);
           signal.throwIfAborted();
           authorize();
@@ -455,7 +457,7 @@ async function streamMaskedConversation(
           if (!/^[a-zA-Z0-9_-]{8,80}$/.test(continuationApproval.approvalId))
             throw Error("Invalid continuation approval");
           signal.throwIfAborted();
-          onStatus("Explaining the calculated result…");
+          onStatus(textFor(chatErrorText).explaining);
           const nextTransport = await nextDestination.transport();
           const nextResponse = await nextTransport.request(
             location.origin + "/api/inference/v1/chat/completions",
@@ -488,13 +490,13 @@ async function streamMaskedConversation(
         } catch (error) {
           if (error instanceof IncompleteReplyError && error.usage) throw error;
           throw new IncompleteReplyError(
-            "Calculation continuation stopped. No automatic retry was made.",
+            textFor(chatErrorText).continuationStopped,
             turn.usage,
           );
         }
         if (signal.aborted)
           throw new IncompleteReplyError(
-            "Explanation stopped.",
+            textFor(chatErrorText).explanationStopped,
             explained.usage,
           );
         answer =

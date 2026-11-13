@@ -1,3 +1,4 @@
+import { documentText } from "./text/documents";
 export const MAX_DOCUMENT_CHARACTERS = 60000;
 export const TEXT_EXTENSIONS = [
   "txt",
@@ -50,7 +51,7 @@ export function isTextDocument(name: string): boolean {
 export function checkTextSize(text: string, previousLength = 0): void {
   if (text.length + previousLength > MAX_DOCUMENT_CHARACTERS)
     throw new Error(
-      "Extracted text exceeds 60,000 characters. Choose a smaller document.",
+      documentText.en.tooMuchText,
     );
 }
 
@@ -60,11 +61,11 @@ export function decodeTextDocument(bytes: Uint8Array): string {
     text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
   } catch {
     throw new Error(
-      "This file is not UTF-8 text. Export it as UTF-8 and try again.",
+      documentText.en.notUtf8,
     );
   }
   if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/u.test(text))
-    throw new Error("This file is not plain text.");
+    throw new Error(documentText.en.notPlain);
   checkTextSize(text);
   return text;
 }

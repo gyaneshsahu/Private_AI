@@ -8,6 +8,8 @@ import { displayMath, sourceCitations } from "./answer-format";
 import { auditResearchAnswer } from "./research-audit";
 import { isValidElement, type ReactNode } from "react";
 import { CodeBlock } from "./CodeBlock";
+import { useText } from "./i18n";
+import { answerText } from "./text/conversation-ui";
 
 export function Answer({
   text,
@@ -20,6 +22,7 @@ export function Answer({
   open: (source: Source) => void;
   complete?: boolean;
 }) {
+  const t = useText(answerText);
   const audit = sources.some((source) => source.url)
     ? auditResearchAnswer(text, sources)
     : undefined;
@@ -31,15 +34,12 @@ export function Answer({
           audit.quotesNotFoundVerbatim > 0 ||
           audit.quotesNotFoundInCitedSources > 0) && (
           <p className="muted">
-            Evidence needs review: {audit.unknownSourceReferences} unknown
-            source references, {audit.unsupportedLineReferences} unverified line
-            references, {audit.quotesNotFoundVerbatim} quoted passages not
-            matched verbatim to selected sources.
-            {audit.quotesNotFoundInCitedSources > 0 &&
-              ` ${audit.quotesNotFoundInCitedSources} quoted passages not found in their adjacent cited sources.`}{" "}
-            This check compares quotations only with selected sources, not your
-            messages or proposed drafts. A mismatch alone does not establish an
-            invented quotation. These checks do not establish factual accuracy.
+            {t.evidence(
+              audit.unknownSourceReferences,
+              audit.unsupportedLineReferences,
+              audit.quotesNotFoundVerbatim,
+              audit.quotesNotFoundInCitedSources,
+            )}
           </p>
         )}
       <Markdown
@@ -105,12 +105,12 @@ export function Answer({
                 aria-label={host && `${host}: ${source.title}`}
               >
                 {host ?? source.title}
-                {source.page ? ` · p${source.page}` : ""}
+                {source.page ? t.page(source.page) : ""}
                 {citedPage && citedPage !== source.page
-                  ? ` · cited p${citedPage}`
+                  ? t.citedPage(citedPage)
                   : ""}
                 {typeof children === "string" && /†L\d/i.test(children)
-                  ? " · line reference unverified"
+                  ? t.lineUnverified
                   : ""}
               </button>
             ) : (
@@ -124,7 +124,7 @@ export function Answer({
           },
           img: ({ alt }) => (
             <span className="muted">
-              [Image omitted{alt ? `: ${alt}` : ""}]
+              {t.imageOmitted(alt ?? "")}
             </span>
           ),
           table: ({ children }) => (
@@ -132,7 +132,7 @@ export function Answer({
               className="answer-table"
               tabIndex={0}
               role="region"
-              aria-label="Answer table"
+              aria-label={t.table}
             >
               <table>{children}</table>
             </div>

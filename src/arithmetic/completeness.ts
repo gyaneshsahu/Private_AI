@@ -11,6 +11,8 @@
 import { extractMentions, type Mention, type NumberLocale } from "./numbers";
 import { PERCENT_CHANGE_CUES } from "./method-checks";
 import { replyLocale } from "./check";
+import { textFor, uiLang, type Lang } from "../text/core";
+import { arithmeticText } from "../text/arithmetic";
 
 export const QUANTITY_KEYS = [
   "tax", "gross", "net", "total", "discount", "payable", "pay", "perPerson", "percentChange",
@@ -254,9 +256,13 @@ export function checkAnswerCompleteness(
   return result.status === "checked" ? { requested: result.quantities.length, missing: result.missing } : undefined;
 }
 
-/** Owner-accepted wording pattern (12 November 2026); English only, like the other arithmetic warnings. */
-export function completenessWarning(missing: readonly string[]): string {
-  const names = missing.flatMap((key) => RULE[key as QuantityKey]?.name ?? []);
-  const list = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names.at(-1)}` : (names[0] ?? "a figure");
-  return `This answer may not state every figure you asked for: missing ${list}. Please check before you rely on it.`;
+/** Owner-accepted wording pattern (12 November 2026), in the interface language. */
+export function completenessWarning(missing: readonly string[], lang: Lang = uiLang()): string {
+  const t = textFor(arithmeticText, lang);
+  const names = missing.flatMap((key) => {
+    const rule = RULE[key as QuantityKey];
+    return rule ? t.quantity(key, rule.name) : [];
+  });
+  const list = names.length > 1 ? `${names.slice(0, -1).join(", ")} ${t.and} ${names.at(-1)}` : (names[0] ?? t.aFigure);
+  return t.missing(list);
 }

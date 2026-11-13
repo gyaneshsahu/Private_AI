@@ -1,3 +1,5 @@
+import { textFor } from "./text/core";
+import { documentMessage, documentText } from "./text/documents";
 import type { Attachment, Source } from "../shared/contracts";
 import { z } from "zod";
 import { MAX_DOCUMENT_CHARACTERS } from "./document-formats";
@@ -26,9 +28,9 @@ export async function extract(
   signal: AbortSignal,
   progress: (value: string) => void,
 ): Promise<Attachment> {
-  if (signal.aborted) throw new Error("Extraction cancelled.");
+  if (signal.aborted) throw new Error(textFor(documentText).cancelled);
   if (file.size > 10 * 1024 * 1024 || file.size === 0)
-    throw new Error("Choose a nonempty document of at most 10 MB.");
+    throw new Error(textFor(documentText).size);
   const worker = new Worker(
     new URL("./extraction.worker.ts", import.meta.url),
     { type: "module" },
@@ -39,7 +41,7 @@ export async function extract(
       if (!finish()) return;
       reject(
         new Error(
-          "Document processing took too long. Try a smaller file or a clearer screenshot.",
+          textFor(documentText).slow,
         ),
       );
     }, 90000);
@@ -53,7 +55,7 @@ export async function extract(
     };
     const abort = () => {
       if (!finish()) return;
-      reject(new Error("Extraction cancelled."));
+      reject(new Error(textFor(documentText).cancelled));
     };
     if (signal.aborted) {
       abort();
@@ -62,7 +64,7 @@ export async function extract(
     signal.addEventListener("abort", abort, { once: true });
     worker.onerror = () => {
       if (!finish()) return;
-      reject(new Error("Document could not be processed locally."));
+      reject(new Error(textFor(documentText).notLocal));
     };
     worker.onmessage = (event: MessageEvent<unknown>) => {
       if (settled) return;
@@ -71,19 +73,19 @@ export async function extract(
         if (finish())
           reject(
             new Error(
-              "Document processing returned an invalid result. Try another file.",
+              textFor(documentText).invalidResult,
             ),
           );
         return;
       }
       const data = parsed.data;
       if ("progress" in data) {
-        progress(data.progress);
+        progress(documentMessage(data.progress));
         return;
       }
       if (!finish()) return;
       if ("error" in data) {
-        reject(new Error(data.error));
+        reject(new Error(documentMessage(data.error)));
         return;
       }
       const sources: Source[] = data.pages.map((page) => ({
@@ -94,7 +96,7 @@ export async function extract(
       if (!sources.length || sources.every((s) => !s.text.trim())) {
         reject(
           new Error(
-            "No readable text found. Scanned PDFs and handwriting are not supported; try a clear screenshot.",
+            textFor(documentText).noText,
           ),
         );
         return;
@@ -102,7 +104,7 @@ export async function extract(
       if (sources.reduce((n, s) => n + s.text.length, 0) > 60000) {
         reject(
           new Error(
-            "Extracted text exceeds 60,000 characters. Choose a smaller document.",
+            textFor(documentText).tooMuchText,
           ),
         );
         return;
@@ -112,7 +114,7 @@ export async function extract(
         name: file.name,
         selected: true,
         sources,
-        warning: data.warning,
+        warning: data.warning && documentMessage(data.warning),
         kind: file.type.startsWith("image/") ? "screenshot" : "document",
       });
     };
@@ -120,7 +122,7 @@ export async function extract(
       worker.postMessage(file);
     } catch {
       if (finish())
-        reject(new Error("Document could not be processed locally."));
+        reject(new Error(textFor(documentText).notLocal));
     }
   });
 }

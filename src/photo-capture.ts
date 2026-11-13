@@ -1,3 +1,5 @@
+import { textFor } from "./text/core";
+import { photoText } from "./text/photo";
 /**
  * Photo-to-text preparation: pure geometry for rotation, crop and downscale,
  * plus an on-device re-encode that hands the existing local OCR a plain PNG.
@@ -15,11 +17,11 @@ export const PHOTO_MAX_SOURCE_PIXELS = 60_000_000;
 export const PHOTO_MIN_CROP = 16;
 export const PHOTO_ACCEPT = "image/png,image/jpeg";
 export const PHOTO_DECODE_ERROR =
-  "This image could not be decoded. Choose a PNG or JPEG photo of printed text.";
+  photoText.en.decode;
 export const PHOTO_ENCODE_ERROR =
-  "The photo could not be encoded. Try again or choose another photo.";
+  photoText.en.encode;
 export const PHOTO_CANVAS_ERROR =
-  "Canvas drawing is unavailable in this browser, so photos cannot be prepared.";
+  photoText.en.canvas;
 
 export type Rotation = 0 | 90 | 180 | 270;
 export type Size = { width: number; height: number };
@@ -218,13 +220,13 @@ export function validatePhotoFile(
   file: { type: string; size: number },
   header: Uint8Array,
 ): string | undefined {
-  if (file.size === 0) return "The chosen file is empty.";
-  if (file.size > PHOTO_MAX_BYTES) return "Choose a photo of at most 10 MB.";
+  if (file.size === 0) return textFor(photoText).empty;
+  if (file.size > PHOTO_MAX_BYTES) return textFor(photoText).tooLarge;
   const sniffed = sniffImageType(header);
   if (!sniffed)
-    return "Choose a PNG or JPEG photo. Other image formats are not supported.";
+    return textFor(photoText).format;
   if (file.type && file.type !== sniffed)
-    return "This file's contents do not match its PNG or JPEG type.";
+    return textFor(photoText).typeMismatch;
   return undefined;
 }
 
@@ -274,11 +276,11 @@ export async function decodePhoto(
   try {
     bitmap = await decode(file);
   } catch {
-    throw new Error(PHOTO_DECODE_ERROR);
+    throw new Error(textFor(photoText).decode);
   }
   if (!bitmap.width || !bitmap.height) {
     bitmap.close();
-    throw new Error(PHOTO_DECODE_ERROR);
+    throw new Error(textFor(photoText).decode);
   }
   if (
     Math.max(bitmap.width, bitmap.height) > PHOTO_MAX_SOURCE_EDGE ||
@@ -286,7 +288,7 @@ export async function decodePhoto(
   ) {
     bitmap.close();
     throw new Error(
-      "Photo exceeds 60 megapixels or 12,000 pixels per side. Resize it before importing.",
+      textFor(photoText).sourceTooLarge,
     );
   }
   return {
@@ -320,7 +322,7 @@ export async function renderPhoto(
   const scale = boundedScale(crop);
   const canvas = (options.createCanvas ?? defaultCanvas)(size.width, size.height);
   const context = canvas.getContext("2d");
-  if (!context) throw new Error(PHOTO_CANVAS_ERROR);
+  if (!context) throw new Error(textFor(photoText).canvas);
   context.setTransform(1, 0, 0, 1, 0, 0);
   context.fillStyle = "#fff";
   context.fillRect(0, 0, size.width, size.height);
@@ -336,7 +338,7 @@ export async function renderPhoto(
       resolve(null);
     }
   });
-  if (!blob || !blob.size) throw new Error(PHOTO_ENCODE_ERROR);
+  if (!blob || !blob.size) throw new Error(textFor(photoText).encode);
   return {
     file: new File([blob], options.name, { type: "image/png" }),
     size,

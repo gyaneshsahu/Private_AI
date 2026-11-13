@@ -10,6 +10,8 @@ import AccountExport from "./AccountExport";
 import { SupportPanel } from "./SupportPanel";
 import { accountRequest } from "./account-request";
 import { createPasskeyTransport } from "./passkey-transport";
+import { useLang, useText } from "./i18n";
+import { accountLabText } from "./text/account";
 
 const sessionSchema = z
   .object({ user: z.object({ id: z.string(), email: z.string() }) })
@@ -42,14 +44,14 @@ const noticesSchema = z.object({
     }),
   ),
 });
-const noticeLabels = {
-  pending: "Queued; not submitted",
-  dispatching: "Submission started; result not confirmed",
-  accepted: "Submission accepted; inbox delivery not verified",
-  uncertain: "Submission uncertain; review required before any resend",
-  blocked: "Submission blocked; review required",
-  sent: "Historical sent marker; inbox delivery not verified",
-};
+const noticeKeys = {
+  pending: "noticePending",
+  dispatching: "noticeDispatching",
+  accepted: "noticeAccepted",
+  uncertain: "noticeUncertain",
+  blocked: "noticeBlocked",
+  sent: "noticeSent",
+} as const;
 const passkeyTransport = createPasskeyTransport(window.location.origin);
 const client = createAuthClient({
   baseURL: window.location.origin,
@@ -80,6 +82,8 @@ export default function AccountLab({
     z.infer<typeof noticesSchema>["notices"]
   >([]);
   const codeInput = useRef<HTMLInputElement>(null);
+  const t = useText(accountLabText);
+  const locale = useLang().lang === "de" ? "de-DE" : undefined;
   async function refresh() {
     try {
       const current = await accountRequest(
@@ -123,9 +127,7 @@ export default function AccountLab({
   useEffect(() => {
     const url = new URL(window.location.href);
     if (url.searchParams.has("error")) {
-      setNotice(
-        "Provider sign-in or linking did not complete. Your existing sign-in methods are unchanged.",
-      );
+      setNotice(t.providerFailed);
       url.searchParams.delete("error");
       url.searchParams.delete("error_description");
       window.history.replaceState(null, "", url);
@@ -146,11 +148,7 @@ export default function AccountLab({
       .catch(() => {
         setReady(false);
         setProviders([]);
-        setNotice(
-          synthetic
-            ? "The synthetic account service is not running here."
-            : "Account sign-in is not available here yet. No information has been submitted.",
-        );
+        setNotice(synthetic ? t.syntheticNotRunning : t.signInUnavailable);
       });
   }, [synthetic]);
   useEffect(() => {
@@ -166,23 +164,21 @@ export default function AccountLab({
       if (error instanceof Error && error.message === "outcome-unconfirmed") {
         setUncertain(true);
         setCode("");
-        setNotice(
-          "The sign-in or account-change result is unconfirmed. Check sign-in status before trying another action. No automatic retry was made.",
-        );
+        setNotice(t.unconfirmed);
         return;
       }
       setNotice(
         error instanceof Error && error.message === "service-not-admitted"
-          ? "Account service is temporarily unavailable. This action was not started. Try again later; no automatic retry was made."
+          ? t.notAdmitted
           : error instanceof Error && error.message === "delivery-unconfirmed"
-            ? "Code delivery could not be confirmed. If a delayed code arrives, enter it below. Wait before requesting another code; no automatic retry was made."
+            ? t.deliveryUnconfirmed
             : error instanceof Error &&
                 error.message === "passkey-options-unavailable"
-              ? "Passkey preparation is unavailable. No verification was submitted. Try again later or use email."
+              ? t.passkeyOptions
               : error instanceof Error &&
                   error.message === "passkey-not-completed"
-                ? "Passkey verification did not complete. You can try again or use email. No automatic retry was made."
-                : "This action could not complete. Check the code or use another sign-in method. No automatic retry was made.",
+                ? t.passkeyNotCompleted
+                : t.actionFailed,
       );
     } finally {
       setBusy(false);
@@ -279,9 +275,7 @@ export default function AccountLab({
         Comet<span>Row</span>
       </a>
       <aside className="account-preview-banner">
-        {synthetic
-          ? "Synthetic account lab · .test addresses only. No real email, provider login or private chat."
-          : "Early access preparation · Private chat is not available."}
+        {synthetic ? t.bannerSynthetic : t.bannerEarly}
       </aside>
       <section
         className={`account-preview-card ${!session ? "account-entry" : ""}`}
@@ -290,7 +284,7 @@ export default function AccountLab({
           <a
             href="/"
             className="account-entry-close"
-            aria-label="Close sign-in"
+            aria-label={t.closeSignIn}
           >
             ×
           </a>
@@ -298,25 +292,23 @@ export default function AccountLab({
         <h1>
           {session
             ? synthetic
-              ? "Your test account"
-              : "Your account"
+              ? t.headingTestAccount
+              : t.headingAccount
             : synthetic
-              ? "Sign in to the account lab"
-              : "Log in or sign up"}
+              ? t.headingLab
+              : t.headingLogin}
         </h1>
         <p className="account-preview-intro">
-          {session
-            ? "Sign-in access is separate from your encrypted vault."
-            : "Chat, explore ideas and work with your files."}
+          {session ? t.introSession : t.introLogin}
         </p>
         {session ? (
           <div className="account-preview-actions">
             <p>
-              Signed in as <strong>{session.user.email}</strong>
+              {t.signedInAs} <strong>{session.user.email}</strong>
             </p>
             {workspaceEnabled && (
               <a href="/">
-                {synthetic ? "Open test workspace" : "Open workspace"}
+                {synthetic ? t.openTestWorkspace : t.openWorkspace}
               </a>
             )}
             {providers.map((provider) => (
@@ -325,8 +317,10 @@ export default function AccountLab({
                 disabled={busy || uncertain || linked.includes(provider)}
                 onClick={() => action(() => social(provider, true))}
               >
-                {linked.includes(provider) ? "Connected to" : "Connect"}{" "}
-                {provider === "google" ? "Google" : "Apple"}
+                {t.connect(
+                  linked.includes(provider),
+                  provider === "google" ? "Google" : "Apple",
+                )}
               </button>
             ))}
             <button
@@ -346,40 +340,33 @@ export default function AccountLab({
                   if (!response.ok) {
                     if (response.status >= 500)
                       throw Error("outcome-unconfirmed");
-                    setNotice(
-                      "Recovery was not confirmed. Sign in again and retry this step; do not assume other sessions were revoked.",
-                    );
+                    setNotice(t.recoveryNotConfirmed);
                     return;
                   }
-                  setNotice(
-                    `Sign-in recovery complete. Other sessions were signed out. Check the security-notice status below${synthetic ? "; this lab sends no real email" : ""}. Linked credentials and vault encryption are unchanged.`,
-                  );
+                  setNotice(t.recoveryComplete(synthetic));
                   await refresh();
                 })
               }
             >
-              Finish sign-in recovery
+              {t.finishRecovery}
             </button>
             <p className="account-preview-small">
-              Recovery requires working email delivery. After signing in again
-              with email, finish recovery to close other sessions. Use Account
-              access below to remove a lost passkey or linked provider after
-              verifying email.
+              {t.recoveryNote}
             </p>
             {notices.length > 0 && (
-              <section aria-label="Security notices">
-                <h2>Security notices</h2>
+              <section aria-label={t.securityNotices}>
+                <h2>{t.securityNotices}</h2>
                 <ul>
                   {notices.map((item) => (
                     <li key={item.id}>
                       {item.kind === "credential_removed"
-                        ? "Sign-in method removed"
-                        : "Sign-in recovery"}{" "}
+                        ? t.methodRemoved
+                        : t.signInRecovery}{" "}
                       ·{" "}
                       <time dateTime={item.createdAt}>
-                        {new Date(item.createdAt).toLocaleString()}
+                        {new Date(item.createdAt).toLocaleString(locale)}
                       </time>
-                      : {noticeLabels[item.deliveryState]}
+                      : {t[noticeKeys[item.deliveryState]]}
                     </li>
                   ))}
                 </ul>
@@ -397,13 +384,13 @@ export default function AccountLab({
                     }),
                   );
                   setNotice(
-                    synthetic ? "Test passkey added." : "Passkey added.",
+                    synthetic ? t.testPasskeyAdded : t.passkeyAdded,
                   );
                   await refresh();
                 })
               }
             >
-              {synthetic ? "Add test passkey" : "Add passkey"}
+              {synthetic ? t.addTestPasskey : t.addPasskey}
             </button>
             {synthetic && (
               <button
@@ -411,12 +398,12 @@ export default function AccountLab({
                 onClick={() =>
                   action(async () => {
                     await post("revoke-other-sessions", {});
-                    setNotice("Other test sessions revoked.");
+                    setNotice(t.otherTestSessionsRevoked);
                     await refresh();
                   })
                 }
               >
-                Sign out other test sessions
+                {t.signOutOtherTest}
               </button>
             )}
             <button
@@ -427,11 +414,11 @@ export default function AccountLab({
                   setSession(null);
                   setCode("");
                   setSent(false);
-                  setNotice("Signed out.");
+                  setNotice(t.signedOut);
                 })
               }
             >
-              Sign out
+              {t.signOut}
             </button>
             <AccountExport />
             <AccountDeletion
@@ -441,9 +428,7 @@ export default function AccountLab({
                 await refresh();
                 setCode("");
                 setSent(false);
-                setNotice(
-                  `${synthetic ? "Test account" : "Account"} closed; all sessions were signed out. Credential purge is not scheduled. Local saved history and retained usage records were not erased.`,
-                );
+                setNotice(t.accountClosed(synthetic));
               }}
             />
             <AccountAccess
@@ -457,9 +442,7 @@ export default function AccountLab({
                   setSession(null);
                   setSent(false);
                   setCode("");
-                  setNotice(
-                    "Sign in with an email code, then remove the affected method under Account access.",
-                  );
+                  setNotice(t.verifyEmailNotice);
                 })
               }
             />
@@ -472,7 +455,7 @@ export default function AccountLab({
               void action(async () => {
                 if (!sent) {
                   if (synthetic && !/^[^\s@]+@[^\s@]+\.test$/i.test(email)) {
-                    setNotice("Use a synthetic .test email address.");
+                    setNotice(t.useTestEmail);
                     return;
                   }
                   await post("email-otp/send-verification-otp", {
@@ -481,9 +464,7 @@ export default function AccountLab({
                   });
                   setSent(true);
                   setNotice(
-                    synthetic
-                      ? "A test code is available in the test harness. No email was sent."
-                      : "Code request accepted. Check your email; delivery may take a moment.",
+                    synthetic ? t.testCodeAvailable : t.codeAccepted,
                   );
                 } else {
                   await post("sign-in/email-otp", { email, otp: code });
@@ -507,17 +488,17 @@ export default function AccountLab({
                 onClick={() => action(() => social(provider))}
               >
                 <SignInIcon provider={provider} />
-                Continue with {provider === "google" ? "Google" : "Apple"}
-                {!providers.includes(provider) && <small>Coming soon</small>}
+                {t.continueWith(provider === "google" ? "Google" : "Apple")}
+                {!providers.includes(provider) && <small>{t.comingSoon}</small>}
               </button>
             ))}
-            <div className="account-preview-divider">OR</div>
+            <div className="account-preview-divider">{t.or}</div>
             <label className="sr-only" htmlFor="lab-email">
-              {synthetic ? "Test email address" : "Email address"}
+              {synthetic ? t.testEmailAddress : t.emailAddress}
             </label>
             <input
               id="lab-email"
-              placeholder="Email address"
+              placeholder={t.emailAddress}
               type="email"
               required
               readOnly={sent}
@@ -528,7 +509,7 @@ export default function AccountLab({
             />
             {sent && (
               <>
-                <label htmlFor="lab-code">Verification code</label>
+                <label htmlFor="lab-code">{t.verificationCode}</label>
                 <input
                   id="lab-code"
                   ref={codeInput}
@@ -549,16 +530,15 @@ export default function AccountLab({
             >
               {sent
                 ? synthetic
-                  ? "Verify test code"
-                  : "Verify code"
+                  ? t.verifyTestCode
+                  : t.verifyCode
                 : synthetic
-                  ? "Send test code"
-                  : "Continue with email"}
+                  ? t.sendTestCode
+                  : t.continueEmail}
             </button>
             {!emailEnabled && ready && (
               <p role="status">
-                Email sign-in and recovery are not available yet. Use Google to
-                sign in.
+                {t.emailUnavailable}
               </p>
             )}
             {sent && (
@@ -571,7 +551,7 @@ export default function AccountLab({
                   setNotice("");
                 }}
               >
-                Use another email
+                {t.useAnotherEmail}
               </button>
             )}
           </form>
@@ -584,29 +564,25 @@ export default function AccountLab({
               try {
                 await refresh();
                 setUncertain(false);
-                setNotice(
-                  "Sign-in status checked. Review the account shown before continuing; this check does not prove whether an email was delivered or a provider change completed.",
-                );
+                setNotice(t.statusChecked);
               } catch {
-                setNotice(
-                  "Sign-in status is still unavailable. Keep this page open and check again later; no action was replayed.",
-                );
+                setNotice(t.statusUnavailable);
               } finally {
                 setBusy(false);
               }
             }}
           >
-            Check sign-in status
+            {t.checkStatus}
           </button>
         )}
         <p role="status" className="account-preview-notice">
-          {busy ? "Working…" : notice}
+          {busy ? t.working : notice}
         </p>
       </section>
       <div className="account-entry-extras">
         {!session && synthetic && (
           <details open={synthetic}>
-            <summary>Use a passkey</summary>{" "}
+            <summary>{t.usePasskey}</summary>{" "}
             <button
               disabled={busy || uncertain || !ready}
               type="button"
@@ -617,29 +593,19 @@ export default function AccountLab({
                 })
               }
             >
-              {synthetic
-                ? "Sign in with a test passkey"
-                : "Sign in with a passkey"}
+              {synthetic ? t.signInTestPasskey : t.signInPasskey}
             </button>
           </details>
         )}
         <details className="account-preview-privacy">
-          <summary>Privacy and account recovery</summary>
+          <summary>{t.privacySummary}</summary>
           <p className="account-preview-small">
-            {synthetic
-              ? "Social buttons, when available, use synthetic provider fixtures only. "
-              : ""}
-            CometRow stores your email address, provider identifiers, passkey
-            public credentials and session records. Email sign-in requires an
-            email-delivery provider. Social sign-in, when enabled, shares your
-            verified email and provider identity with CometRow; the provider
-            learns that you signed in here. No chat content is part of sign-in.
-            Recovering sign-in cannot recover a lost vault passphrase.
-            Private-data chat remains unavailable.
+            {synthetic ? t.privacySynthetic : ""}
+            {t.privacyBody}
           </p>
         </details>
         <details>
-          <summary>Help with sign-in or reporting a problem</summary>
+          <summary>{t.helpSummary}</summary>
           <SupportPanel initialArea="account" />
         </details>
       </div>

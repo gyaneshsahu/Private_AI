@@ -21,6 +21,17 @@ export const checkLabels: Record<(typeof checks)[number], string> = {
   negativeTests: "failure tests",
   usageAndBudget: "usage and budget limits",
 };
+/** German names for the same checks (German interface). */
+export const checkLabelsDe: Record<(typeof checks)[number], string> = {
+  browserVerification: "Browserprüfung des sicheren Servers",
+  freshnessAndRevocation: "Prüfungen auf Aktualität und Widerruf",
+  protectedWorkerChain: "vollständige Hardware-Kette bis zum KI-Server",
+  retentionAndLogs: "Aufbewahrung und Protokolle beim Anbieter",
+  noExternalTools: "keine externen Werkzeuge",
+  liveStreaming: "Live-Übertragung",
+  negativeTests: "Fehlertests",
+  usageAndBudget: "Nutzungs- und Budgetgrenzen",
+};
 const reviewEvidence = z.array(z.string().min(10)).min(1);
 // A check either passed with evidence, or the owner accepted its known gap for a
 // limited release with a dated, written reason. Acceptance is never shown as a pass.
@@ -299,15 +310,23 @@ export function acceptedChecks(report: Qualification) {
 }
 
 /** What the connection banner may say: "verified" only when every check is present and passed. */
-export function verificationSummary(report: Qualification): string {
+export function verificationSummary(report: Qualification, lang: "de" | "en" = "en"): string {
   const accepted = acceptedChecks(report);
   // Privatemode reuses one verified client per session (src/providers/privatemode-client.ts).
-  const when =
-    report.provider === "privatemode"
-      ? "when you start chatting and again at least every 10 minutes"
-      : "before each request";
-  if (checks.every((check) => report.review?.[check]?.status === "pass"))
-    return `The secure server is checked ${when}, and every review check passed.`;
+  const privatemode = report.provider === "privatemode";
+  const passed = checks.every((check) => report.review?.[check]?.status === "pass");
+  if (lang === "de") {
+    const when = privatemode
+      ? "beim Start des Chats und danach mindestens alle 10 Minuten"
+      : "vor jeder Anfrage";
+    if (passed) return `Der sichere Server wird ${when} geprüft, und alle Prüfpunkte wurden bestanden.`;
+    if (!accepted.length) return `Der sichere Server wird ${when} geprüft.`;
+    return `Der sichere Server wird ${when} geprüft, aber nicht alle Prüfpunkte wurden bestanden. Vom Betreiber für diese eingeschränkte Freigabe akzeptiert, nicht überprüft: ${accepted.map((c) => checkLabelsDe[c]).join(", ")}.`;
+  }
+  const when = privatemode
+    ? "when you start chatting and again at least every 10 minutes"
+    : "before each request";
+  if (passed) return `The secure server is checked ${when}, and every review check passed.`;
   if (!accepted.length) return `The secure server is checked ${when}.`;
   return `The secure server is checked ${when}, but not every check has passed. Accepted by the owner for this limited release, not verified: ${accepted.map((c) => checkLabels[c]).join(", ")}.`;
 }

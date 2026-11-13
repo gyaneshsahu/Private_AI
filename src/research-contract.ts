@@ -1,3 +1,5 @@
+import { textFor } from "./text/core";
+import { chatErrorText } from "./text/chat-errors";
 import { z } from "zod";
 import type { ChatCompletionChunk } from "openai/resources/chat/completions";
 import type { Qualification, Source, Usage } from "../shared/contracts";
@@ -62,7 +64,7 @@ export class ResearchEvidenceError extends IncompleteReplyError {
     usage?: Usage,
   ) {
     super(
-      "Research answer withheld: its required evidence format could not be validated. No automatic retry was made.",
+      textFor(chatErrorText).researchWithheld,
       usage,
     );
   }

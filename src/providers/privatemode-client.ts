@@ -7,6 +7,8 @@
 // Privatemode limits attestation per organisation, so one verified client serves the browser
 // session (memory only): verified afresh after PRIVATEMODE_VERIFY_MAX_AGE_MS, after any failed
 // request, and whenever the approved digests or the session's CSRF token change (owner, 12 Nov).
+import { textFor } from "../text/core";
+import { chatErrorText } from "../text/chat-errors";
 import { abortable } from "../abortable";
 import {
   AttestationBusyError,
@@ -24,8 +26,6 @@ export const PRIVATEMODE_WASM_SHA256 =
 const PLACEHOLDER_KEY = "relay-injects-the-key";
 /** A verified client is reused for less than this long after its last successful verification. */
 export const PRIVATEMODE_VERIFY_MAX_AGE_MS = 10 * 60 * 1000;
-const DEPLOYMENT_CHANGED =
-  "The provider's deployment differs from the reviewed one. Nothing was sent.";
 
 interface VerifiedSession {
   /** Origin, approved digests and CSRF token the client was verified under. */
@@ -108,20 +108,20 @@ async function verifySession(
   signal: AbortSignal,
   onStatus: (text: string) => void,
 ): Promise<VerifiedSession> {
-  onStatus("Loading inference libraries…");
+  onStatus(textFor(chatErrorText).loadingLibraries);
   const { PrivatemodeAI } = await abortable(import("privatemode-ai"), signal);
-  onStatus("Fetching the approved deployment manifest…");
+  onStatus(textFor(chatErrorText).fetchingManifest);
   const response = await fetch(`${PRIVATEMODE_RELAY_PATH}/manifest`, {
     signal,
     credentials: "same-origin",
     redirect: "error",
   });
-  if (!response.ok) throw new Error("Deployment manifest unavailable.");
+  if (!response.ok) throw new Error(textFor(chatErrorText).manifestUnavailable);
   const manifestBytes = new Uint8Array(await response.arrayBuffer());
   const digest = await sha256Hex(manifestBytes);
   if (!policy.releaseDigests.includes(digest))
     throw new Error(
-      "The deployment manifest does not match the reviewed provider configuration. Nothing was sent.",
+      textFor(chatErrorText).manifestMismatch,
     );
   let changed = false;
   let closed = false;
@@ -162,7 +162,7 @@ async function verifySession(
       throw new Error("manifest changed");
     },
   });
-  onStatus("Verifying the protected destination…");
+  onStatus(textFor(chatErrorText).verifyingDestination);
   let refusal: unknown;
   try {
     await abortable(
@@ -181,7 +181,7 @@ async function verifySession(
     signal.throwIfAborted();
   } catch (error) {
     close();
-    if (changed) throw new Error(DEPLOYMENT_CHANGED);
+    if (changed) throw new Error(textFor(chatErrorText).deploymentDiffers);
     throw attestationBusy(refusal) && !signal.aborted ? new AttestationBusyError() : error;
   }
   const verified: VerifiedSession = {
@@ -196,10 +196,10 @@ async function verifySession(
       async transport() {
         return {
           async request(_url, init) {
-            if (changed) throw new Error(DEPLOYMENT_CHANGED);
+            if (changed) throw new Error(textFor(chatErrorText).deploymentDiffers);
             if (closed)
               throw new Error(
-                "The verified connection was closed. Nothing was sent.",
+                textFor(chatErrorText).connectionClosed,
               );
             const body = JSON.parse(String(init.body));
             try {
@@ -279,7 +279,7 @@ export function createPrivatemodeClientAdapter(): InferenceClientAdapter {
     cacheOptions(policy) {
       if (!policy.cacheSalt || policy.cacheSalt.length < 32)
         throw new Error(
-          "No prompt-cache salt for this account. Nothing was sent.",
+          textFor(chatErrorText).noCacheSalt,
         );
       return { cache_salt: policy.cacheSalt };
     },

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useText } from "./i18n";
+import { vaultSecurityText } from "./text/vault-ui";
 
 export function VaultSecurity({
   busy,
@@ -14,27 +16,14 @@ export function VaultSecurity({
   const [confirmation, setConfirmation] = useState("");
   const [acknowledged, setAcknowledged] = useState(false);
   const disabled = busy || blocked;
+  const t = useText(vaultSecurityText);
   return (
-    <section className="panel" aria-label="Vault passphrase security">
-      <h3>Change vault passphrase</h3>
-      <p>Choose a different passphrase of at least 12 characters.</p>
-      {blocked && (
-        <p role="status">
-          Some saved snapshots could not be read. Passphrase changes are
-          unavailable so those records stay untouched. Keep your existing
-          backups.
-        </p>
-      )}
-      <p>
-        Updates all saved conversations in this browser together, then locks
-        this vault and clears this workspace. Other open tabs receive a lock
-        notification. Save work in every tab first. Account sign-in is separate.
-      </p>
-      <p>
-        Older downloaded backups still need their original passphrase. This
-        cannot revoke those copies or recover a forgotten passphrase. Make a
-        fresh encrypted backup after changing it.
-      </p>
+    <section className="panel" aria-label={t.label}>
+      <h3>{t.heading}</h3>
+      <p>{t.intro}</p>
+      {blocked && <p role="status">{t.blocked}</p>}
+      <p>{t.updates}</p>
+      <p>{t.older}</p>
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -57,7 +46,7 @@ export function VaultSecurity({
         }}
       >
         <label>
-          Current vault passphrase
+          {t.current}
           <input
             type="password"
             autoComplete="off"
@@ -68,7 +57,7 @@ export function VaultSecurity({
           />
         </label>
         <label>
-          New vault passphrase
+          {t.next}
           <input
             type="password"
             autoComplete="new-password"
@@ -80,7 +69,7 @@ export function VaultSecurity({
           />
         </label>
         <label>
-          Confirm new vault passphrase
+          {t.confirm}
           <input
             type="password"
             autoComplete="new-password"
@@ -92,7 +81,7 @@ export function VaultSecurity({
           />
         </label>
         {confirmation && confirmation !== next && (
-          <p role="status">The new passphrases do not match.</p>
+          <p role="status">{t.mismatch}</p>
         )}
         <label className="row">
           <input
@@ -101,8 +90,7 @@ export function VaultSecurity({
             onChange={(e) => setAcknowledged(e.target.checked)}
             disabled={disabled}
           />
-          I have saved work I need in every open tab; older backups keep their
-          original passphrase.
+          {t.acknowledge}
         </label>
         <button
           disabled={
@@ -114,7 +102,7 @@ export function VaultSecurity({
             next !== confirmation
           }
         >
-          Change passphrase and lock
+          {t.submit}
         </button>
       </form>
     </section>

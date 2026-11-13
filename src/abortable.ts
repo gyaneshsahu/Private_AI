@@ -1,3 +1,5 @@
+import { textFor } from "./text/core";
+import { chatErrorText } from "./text/chat-errors";
 export async function withDeadline<T>(
   parent: AbortSignal,
   /** A total, or a total plus a shorter first-text limit that `started()` clears. */
@@ -8,7 +10,7 @@ export async function withDeadline<T>(
     typeof limit === "number" ? { totalMs: limit, firstTextMs: limit } : limit;
   const deadline = new AbortController();
   const expire = () =>
-    deadline.abort(new DOMException("Operation timed out.", "TimeoutError"));
+    deadline.abort(new DOMException(textFor(chatErrorText).operationTimedOut, "TimeoutError"));
   const timer = setTimeout(expire, totalMs);
   const first = setTimeout(expire, firstTextMs);
   try {
@@ -42,8 +44,8 @@ export function abortable<T>(
       reject(
         new DOMException(
           signal.reason?.name === "TimeoutError"
-            ? "Operation timed out."
-            : "Operation stopped.",
+            ? textFor(chatErrorText).operationTimedOut
+            : textFor(chatErrorText).operationStopped,
           signal.reason?.name === "TimeoutError"
             ? "TimeoutError"
             : "AbortError",
@@ -59,7 +61,7 @@ export function abortable<T>(
       },
       () => {
         cleanup();
-        reject(new Error("Protected operation failed."));
+        reject(new Error(textFor(chatErrorText).operationFailed));
       },
     );
     if (signal.aborted) {

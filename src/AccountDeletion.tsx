@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { accountRequest } from "./account-request";
+import { useText } from "./i18n";
+import { accountDeletionText } from "./text/account";
 
 export default function AccountDeletion({
   emailEnabled,
@@ -11,7 +13,8 @@ export default function AccountDeletion({
   synthetic?: boolean;
 }) {
   const phrase = synthetic ? "DELETE TEST ACCOUNT" : "DELETE ACCOUNT";
-  const title = synthetic ? "Delete test account" : "Close account";
+  const t = useText(accountDeletionText);
+  const title = synthetic ? t.titleTest : t.titleClose;
   const [confirmation, setConfirmation] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -19,18 +22,8 @@ export default function AccountDeletion({
   return (
     <section aria-label={title}>
       <h2>{title}</h2>
-      <p>
-        This closes account access and signs out every session. Verify your
-        email again first. Account reopening is not available.
-      </p>
-      <p className="account-preview-small">
-        Credential deletion is prepared for a seven-day retention period, but no
-        automatic purge or backup deletion is active. Usage records remain for
-        reconciliation. Saved conversations in this browser, other devices,
-        exports and provider records are not erased here. Delete local snapshots
-        in Saved before closing the account. No real subscription is connected
-        here yet.
-      </p>
+      <p>{t.intro}</p>
+      <p className="account-preview-small">{t.retention}</p>
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -53,25 +46,19 @@ export default function AccountDeletion({
                 },
               );
               if (response.status === 403) {
-                setMessage(
-                  "Sign out and sign in with a new email code before closing the account.",
-                );
+                setMessage(t.reauth);
                 return;
               }
               if (response.status === 409) {
                 setUncertain(true);
-                setMessage(
-                  "Another account change is in progress. Refresh before retrying.",
-                );
+                setMessage(t.inProgress);
                 return;
               }
               if (!response.ok) throw Error("unconfirmed");
               await closed();
             } catch {
               setUncertain(true);
-              setMessage(
-                "Closure could not be confirmed. Check account access before retrying. No automatic retry was made.",
-              );
+              setMessage(t.unconfirmed);
             } finally {
               setBusy(false);
             }
@@ -79,7 +66,7 @@ export default function AccountDeletion({
         }}
       >
         <label htmlFor="close-account-confirmation">
-          Type {phrase} to confirm
+          {t.typeToConfirm(phrase)}
         </label>
         <input
           id="close-account-confirmation"
@@ -94,15 +81,15 @@ export default function AccountDeletion({
             !emailEnabled || busy || uncertain || confirmation !== phrase
           }
         >
-          {synthetic ? "Close test account" : "Close account"}
+          {synthetic ? t.closeTest : t.close}
         </button>
       </form>
       {uncertain && (
         <button onClick={() => window.location.reload()}>
-          Reload account status
+          {t.reload}
         </button>
       )}
-      <p aria-live="polite">{busy ? "Closing account…" : message}</p>
+      <p aria-live="polite">{busy ? t.closing : message}</p>
     </section>
   );
 }

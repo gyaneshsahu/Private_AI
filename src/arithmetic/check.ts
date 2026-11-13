@@ -4,14 +4,13 @@
 // retries and never runs on streaming partials.
 import { postcheck } from "./postcheck";
 import type { NumberLocale } from "./numbers";
+import { arithmeticText } from "../text/arithmetic";
 
-/** Owner wording, 23 October 2026. */
-export const ARITHMETIC_WARNING =
-  "We recalculated the figures in this answer and some did not match. Please check these numbers before you rely on them.";
+/** Owner wording, 23 October 2026. English; the screen shows arithmeticText in its language. */
+export const ARITHMETIC_WARNING = arithmeticText.en.mismatch;
 
 /** Shown when a number's thousands and decimal marks could be read two ways; never a silent guess. */
-export const AMBIGUOUS_NUMBER_WARNING =
-  "A number in this answer could be read two ways (for example 1.234 as one thousand two hundred thirty-four or as one point two three four). Please check the separators before you rely on it.";
+export const AMBIGUOUS_NUMBER_WARNING = arithmeticText.en.ambiguous;
 
 /** A coarse locale hint from the reply's own words; the parser re-judges from its numbers. */
 export function replyLocale(text: string): NumberLocale {

@@ -1,5 +1,8 @@
 import { billingRequest } from "./billing-request";
 import { useEffect, useState } from "react";
+import { useLang } from "./i18n";
+import { billingText } from "./text/account";
+import { serverMessage } from "./server-messages";
 import {
   billingOverviewSchema,
   hostedBillingUrl,
@@ -18,13 +21,15 @@ export function AccountBilling({
   const [overview, setOverview] = useState<BillingOverview>();
   const [notice, setNotice] = useState("");
   const [working, setWorking] = useState(false);
+  const { lang } = useLang();
+  const t = billingText[lang];
   async function refresh(signal?: AbortSignal) {
     const next = await billingRequest(
       "/api/billing/overview",
       { signal },
       async (response) => {
         if (!response.ok)
-          throw Error("Billing status unavailable. Refresh before continuing.");
+          throw Error(t.statusUnavailableRefresh);
         return billingOverviewSchema.parse(await response.json());
       },
     );
@@ -34,7 +39,7 @@ export function AccountBilling({
     const controller = new AbortController();
     void refresh(controller.signal).catch(() => {
       if (!controller.signal.aborted)
-        setNotice("Billing status unavailable. Refresh before continuing.");
+        setNotice(t.statusUnavailableRefresh);
     });
     return () => controller.abort();
   }, [csrf]);
@@ -58,23 +63,21 @@ export function AccountBilling({
           if (!response.ok)
             throw Error(
               typeof result.error === "string"
-                ? result.error
-                : "Billing could not be confirmed.",
+                ? serverMessage(result.error, lang)
+                : t.notConfirmed,
             );
           if (result.url) onNavigate(hostedBillingUrl(result.url, kind));
           else
             setNotice(
               typeof result.message === "string"
-                ? result.message
-                : "Refresh status to check the result.",
+                ? serverMessage(result.message, lang)
+                : t.refreshToCheck,
             );
         },
       );
     } catch (error) {
       setNotice(
-        error instanceof Error
-          ? error.message
-          : "Billing could not complete. No automatic retry was made.",
+        error instanceof Error ? serverMessage(error.message, lang) : t.notComplete,
       );
     } finally {
       await refresh().catch(() => setOverview(undefined));
@@ -90,48 +93,37 @@ export function AccountBilling({
       ));
   const returned = new URLSearchParams(location.search).get("billing");
   return (
-    <section className="panel" aria-label="Subscription rehearsal">
-      <h3>Subscription rehearsal</h3>
-      <p>
-        This is a synthetic billing test. No real payment is collected and no
-        chat access is granted.
-      </p>
+    <section className="panel" aria-label={t.heading}>
+      <h3>{t.heading}</h3>
+      <p>{t.intro}</p>
       {returned && (
         <p role="status">
-          {returned === "cancel"
-            ? "You returned without completing checkout. An existing checkout may still be open."
-            : "You returned from billing. A return link does not confirm payment or activate access."}
+          {returned === "cancel" ? t.returnedCancel : t.returned}
         </p>
       )}
-      <p>
-        Opening checkout or billing management sends you to Stripe. CometRow
-        does not receive card details or send conversation content to billing.
-      </p>
+      <p>{t.stripe}</p>
       {overview?.plans.map((plan) => (
         <div key={plan.id}>
           <h4>{plan.name}</h4>
           <p>
-            {new Intl.NumberFormat(undefined, {
-              style: "currency",
-              currency: plan.currency,
-            }).format(plan.amountMinor / 100)}{" "}
-            / {plan.interval} — synthetic price only; not a launch offer.
+            {t.price(
+              new Intl.NumberFormat(lang === "de" ? "de-DE" : undefined, {
+                style: "currency",
+                currency: plan.currency,
+              }).format(plan.amountMinor / 100),
+              plan.interval,
+            )}
           </p>
           <button
             disabled={blocked || !!hold}
             onClick={() => void act("checkout", plan.id)}
           >
-            {overview.checkout === "ready"
-              ? "Continue or check checkout"
-              : "Open test checkout"}
+            {overview.checkout === "ready" ? t.continueCheckout : t.openCheckout}
           </button>
         </div>
       ))}
       {hold && (
-        <p role="status">
-          A billing operation needs verification. Another checkout will not be
-          sent. Contact support before trying again.
-        </p>
+        <p role="status">{t.hold}</p>
       )}
       <button
         disabled={
@@ -142,7 +134,7 @@ export function AccountBilling({
         }
         onClick={() => void act("portal")}
       >
-        Manage test billing
+        {t.manage}
       </button>
       <button
         disabled={busy || working}
@@ -150,24 +142,20 @@ export function AccountBilling({
           setWorking(true);
           void refresh()
             .then(() =>
-              setNotice("Status refreshed. Paid access remains disabled."),
+              setNotice(t.refreshed),
             )
             .catch(() => {
               setOverview(undefined);
-              setNotice("Billing status unavailable.");
+              setNotice(t.unavailable);
             })
             .finally(() => setWorking(false));
         }}
       >
-        Refresh billing status
+        {t.refresh}
       </button>
       {notice && <p role="status">{notice}</p>}
-      {working && <p role="status">Checking billing…</p>}
-      <p>
-        Request allowance and provider privacy approval are separate from
-        billing. Cancellation and refunds follow the reviewed provider
-        configuration; no such policy is active here.
-      </p>
+      {working && <p role="status">{t.checking}</p>}
+      <p>{t.separate}</p>
     </section>
   );
 }

@@ -11,6 +11,9 @@
  * copy must never claim more than this list. Measured accuracy, including
  * what is still missed, is in evaluation/masking (synthetic documents only).
  */
+// The server imports this file and the runtime image carries only it (Dockerfile), so it has no
+// runtime imports: the note's German text lives here and the language comes from <html lang>.
+import type { Lang } from "./i18n";
 
 export const IDENTIFIER_KINDS = [
   "IBAN",
@@ -819,16 +822,48 @@ export const KIND_LABELS: Record<IdentifierKind, string> = {
   "BIRTH-DATE": "date of birth",
 };
 
+const germanKinds: Record<string, [one: string, many: string]> = {
+  IBAN: ["Bankkonto", "Bankkonten"],
+  CARD: ["Kartennummer", "Kartennummern"],
+  "TAX-ID": ["Steuernummer", "Steuernummern"],
+  INSURANCE: ["Versicherungsnummer", "Versicherungsnummern"],
+  "ID-NUMBER": ["Ausweis- oder Passnummer", "Ausweis- oder Passnummern"],
+  EMAIL: ["E-Mail-Adresse", "E-Mail-Adressen"],
+  PHONE: ["Telefonnummer", "Telefonnummern"],
+  "BIRTH-DATE": ["Geburtsdatum", "Geburtsdaten"],
+};
+
+/** The note under a reply or a search approval; kind labels in the search text itself stay English. */
+export const maskingText = {
+  en: {
+    kept: (list: string) => `Kept on this device: ${list}.`,
+    removed: (list: string) => `Removed from the search text before approval: ${list}.`,
+    item: (_kind: string, count: number, label: string) =>
+      `${count} ${count === 1 ? label : label.replace(/(ess|y)$/, (m) => (m === "y" ? "ies" : "esses")).replace(/(?<!s)$/, "s")}`,
+  },
+  de: {
+    kept: (list: string) => `Auf diesem Gerät behalten: ${list}.`,
+    removed: (list: string) => `Vor der Freigabe aus dem Suchtext entfernt: ${list}.`,
+    item: (kind: string, count: number, label: string) =>
+      `${count} ${germanKinds[kind]?.[count === 1 ? 0 : 1] ?? label}`,
+  },
+};
+
+/** LangProvider (src/i18n.tsx) keeps <html lang> on the interface language; Node has no page. */
+const pageLang = (): Lang =>
+  typeof document !== "undefined" && document.documentElement.lang === "de" ? "de" : "en";
+
 /** Plain-language note for the reply, e.g. "Kept on this device: 1 bank account, 2 phone numbers". */
 export function describeKept(
   summary: Partial<Record<IdentifierKind, number>>,
+  lang: Lang = pageLang(),
+  how: "kept" | "removed" = "kept",
 ): string {
-  const parts = IDENTIFIER_KINDS.filter((kind) => summary[kind]).map((kind) => {
-    const count = summary[kind]!;
-    const label = KIND_LABELS[kind];
-    return `${count} ${count === 1 ? label : label.replace(/(ess|y)$/, (m) => (m === "y" ? "ies" : "esses")).replace(/(?<!s)$/, "s")}`;
-  });
-  return parts.length ? `Kept on this device: ${parts.join(", ")}.` : "";
+  const t = maskingText[lang];
+  const parts = IDENTIFIER_KINDS.filter((kind) => summary[kind]).map((kind) =>
+    t.item(kind, summary[kind]!, KIND_LABELS[kind]),
+  );
+  return parts.length ? t[how](parts.join(", ")) : "";
 }
 
 /** Instruction appended to the system prompt so the model preserves placeholders verbatim. */
@@ -845,7 +880,7 @@ const POSSIBLY_PERSONAL = unicodeWords(
  * are removed (not placeholdered, since the search provider must not receive
  * them at all) and the user is warned when the rest may still name a person.
  */
-export function prepareSearchQuery(query: string): {
+export function prepareSearchQuery(query: string, lang: Lang = pageLang()): {
   value: string;
   removed: Partial<Record<IdentifierKind, number>>;
   note: string;
@@ -862,10 +897,8 @@ export function prepareSearchQuery(query: string): {
     cursor = hit.end;
   }
   value = (value + text.slice(cursor)).replace(/\s{2,}/g, " ").trim();
-  const summary = describeKept(removed).replace(
-    "Kept on this device",
-    "Removed from the search text before approval",
-  );
+  // The value above goes to the search provider and keeps English labels; only the note is translated.
+  const summary = describeKept(removed, lang, "removed");
   return {
     value,
     removed,

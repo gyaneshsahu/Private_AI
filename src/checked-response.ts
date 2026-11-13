@@ -1,3 +1,5 @@
+import { textFor } from "./text/core";
+import { chatErrorText } from "./text/chat-errors";
 import { evidenceNumberTokens } from "./number-evidence";
 import Decimal from "decimal.js";
 import { z } from "zod";
@@ -123,7 +125,7 @@ export class CheckedResponseError extends IncompleteReplyError {
     usage?: Usage,
   ) {
     super(
-      "Answer withheld because its calculation or source record could not be validated. No automatic retry was made.",
+      textFor(chatErrorText).checkedWithheld,
       usage,
     );
   }

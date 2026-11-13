@@ -1,3 +1,5 @@
+import { textFor } from "./text/core";
+import { chatErrorText } from "./text/chat-errors";
 import { z } from "zod";
 import { assistedResearchSchema } from "./assisted-research";
 
@@ -10,7 +12,7 @@ export function assistedResponseFormat(policy: {
   if (!policy.assistedStructuredOutput) return {};
   if (!policy.assistedResearchContract)
     throw new Error(
-      "Structured assisted output requires the assisted contract. Nothing was sent.",
+      textFor(chatErrorText).structuredNeedsContract,
     );
   return {
     response_format: {
