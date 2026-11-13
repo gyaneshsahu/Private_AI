@@ -1,5 +1,23 @@
 {
-  "recordedAt": null,
-  "source": "not recorded yet: run scripts/privatemode-models-check.ts --record (docs/model-deprecation-runbook.md)",
-  "models": {}
+  "recordedAt": "2026-11-13T23:05:44.530Z",
+  "source": "https://api.privatemode.ai/v1/models (plain HTTPS)",
+  "models": {
+    "glm-5.3": {
+      "id": "glm-5.3",
+      "object": "model",
+      "tasks": [
+        "generate",
+        "tool_calling"
+      ]
+    },
+    "glm-5.3-flash": {
+      "id": "glm-5.3-flash",
+      "object": "model",
+      "tasks": [
+        "generate",
+        "tool_calling",
+        "vision"
+      ]
+    }
+  }
 }
