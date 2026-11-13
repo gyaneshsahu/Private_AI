@@ -34,6 +34,14 @@ const schema = z
         stopFile: path,
         /** The approved Privatemode manifest; required exactly when the report names Privatemode. */
         manifestFile: path.optional(),
+        /** Requests each signed-in account gets per period, renewed when a period ends (owner sets it). */
+        allowance: z
+          .object({
+            requestLimit: z.number().int().min(1).max(10_000),
+            days: z.number().int().min(1).max(31),
+          })
+          .strict()
+          .optional(),
       })
       .strict()
       .optional(),
@@ -180,6 +188,7 @@ export async function loadDeploymentConfig(file: string) {
               apiKey: (await boundedFile(inference.apiKeyFile)).toString("utf8").trim(),
               qualification: qualification as unknown,
               stopFile: inference.stopFile,
+              ...(inference.allowance ? { allowance: inference.allowance } : {}),
               ...(inference.manifestFile
                 ? { providerManifest: new Uint8Array(await boundedFile(inference.manifestFile)) }
                 : {}),

@@ -68,6 +68,11 @@ export interface Config {
   accessKey?: string;
   invites?: InviteRegistry;
   usage?: UsageLedger;
+  /**
+   * Owner-set allowance each signed-in account gets automatically: a new period of `days`
+   * starts whenever the account has no current one. Absent means none is created (as before).
+   */
+  autoAllowance?: { requestLimit: number; days: number };
   /** Unmounted consumer composition. Candidate mode never accepts upstream credentials. */
   consumer?: {
     session: RequestHandler;
@@ -78,6 +83,23 @@ export interface Config {
 }
 export function createApp(config: Config) {
   const app = express();
+  const ensureAllowance = async (accountId: string | undefined) => {
+    const auto = config.autoAllowance;
+    if (!auto || !accountId || !config.usage?.createAllowance) return;
+    try {
+      if ((await config.usage.summary(accountId)).state !== "unavailable") return;
+      const startsAt = Date.now();
+      await config.usage.createAllowance({
+        accountId,
+        periodId: `auto-${accountId}-${startsAt}`,
+        startsAt,
+        endsAt: startsAt + auto.days * 86_400_000,
+        requestLimit: auto.requestLimit,
+      });
+    } catch {
+      /* A concurrent request created it, or the ledger is down: the reserve decides. */
+    }
+  };
   app.disable("x-powered-by");
   const productionCandidate = config.consumer?.mode === "production-candidate";
   if (
@@ -284,6 +306,7 @@ export function createApp(config: Config) {
         ? {
             requestAllowance: await (async () => {
               try {
+                await ensureAllowance(res.locals.accountId);
                 return (
                   (await config.usage?.summary(res.locals.accountId)) ?? {
                     state: "unavailable",
@@ -422,8 +445,24 @@ export function createApp(config: Config) {
       let transportComplete = false;
       let metrics: UsageMetrics | undefined;
       const abort = new AbortController();
+      // The slots are freed once, as soon as the browser hangs up: its automatic retry after
+      // a time-out must not meet "already running" while the aborted upstream call settles.
+      let released = false;
+      const release = () => {
+        if (released) return;
+        released = true;
+        active--;
+        if (accountId) {
+          const remaining = (inFlight.get(accountId) ?? 1) - 1;
+          if (remaining > 0) inFlight.set(accountId, remaining);
+          else inFlight.delete(accountId);
+        }
+      };
       res.on("close", () => {
-        if (!res.writableFinished) abort.abort();
+        if (!res.writableFinished) {
+          abort.abort();
+          release();
+        }
       });
       try {
         // Checked after this request claimed its slot, so concurrent requests count.
@@ -448,6 +487,7 @@ export function createApp(config: Config) {
           }
         }
         if (config.usage) {
+          await ensureAllowance(accountId);
           try {
             if (
               !accountId ||
@@ -535,12 +575,7 @@ export function createApp(config: Config) {
           });
         else res.destroy();
       } finally {
-        active--;
-        if (accountId) {
-          const remaining = (inFlight.get(accountId) ?? 1) - 1;
-          if (remaining > 0) inFlight.set(accountId, remaining);
-          else inFlight.delete(accountId);
-        }
+        release();
         if (config.usage && accountId && dispatched) {
           try {
             await config.usage.finish(

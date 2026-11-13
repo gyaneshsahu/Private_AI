@@ -126,6 +126,21 @@ export function createPrivatemodeRelayAdapter(): InferenceRelayAdapter {
       const attestQueue = createAttestQueue(undefined, (stats) =>
         console.warn(`Privatemode attestation queue: ${JSON.stringify(stats)}`),
       );
+      // The queue is shared by everyone, so one account (or session) may hold only a small share:
+      // at most 2 attestation calls at once and 10 per 10 minutes. A normal browser session needs
+      // one per 10 minutes, plus one after a failure or a release change.
+      const attestStarts = new Map<string, number[]>();
+      const attestRunning = new Map<string, number>();
+      const attestAllowed = (who: string, now: number) => {
+        if (attestStarts.size > 5000)
+          for (const [key, times] of attestStarts)
+            if (times.every((t) => now - t >= 600_000) && !attestRunning.get(key)) attestStarts.delete(key);
+        const recent = (attestStarts.get(who) ?? []).filter((t) => now - t < 600_000);
+        attestStarts.set(who, recent);
+        if (recent.length >= 10 || (attestRunning.get(who) ?? 0) >= 2) return false;
+        recent.push(now);
+        return true;
+      };
       router.get("/privatemode/manifest", (_req, res) => {
         const q = qualification();
         const digest = manifest && createHash("sha256").update(manifest).digest("hex");
@@ -176,8 +191,20 @@ export function createPrivatemodeRelayAdapter(): InferenceRelayAdapter {
                 signal: AbortSignal.any([abort.signal, AbortSignal.timeout(30000)]),
               });
             // Only attestation is rate-limited upstream; key exchange goes straight through.
-            const reply =
-              req.path === KEY_PATHS[0] ? await attestQueue.run(send, abort.signal) : await send();
+            const attest = req.path === KEY_PATHS[0];
+            const who = String(res.locals.accountId ?? res.locals.session);
+            if (attest && !attestAllowed(who, Date.now())) {
+              res.status(503).json(ATTESTATION_BUSY);
+              return;
+            }
+            if (attest) attestRunning.set(who, (attestRunning.get(who) ?? 0) + 1);
+            const reply = attest
+              ? await attestQueue.run(send, abort.signal).finally(() => {
+                  const left = (attestRunning.get(who) ?? 1) - 1;
+                  if (left > 0) attestRunning.set(who, left);
+                  else attestRunning.delete(who);
+                })
+              : await send();
             if (reply === "busy") {
               res.status(503).json(ATTESTATION_BUSY);
               return;

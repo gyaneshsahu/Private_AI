@@ -64,6 +64,8 @@ export interface ProductionInferenceConfig {
   stopFile: string;
   /** The approved Privatemode manifest, when the report names Privatemode. */
   providerManifest?: Uint8Array;
+  /** Automatic allowance per signed-in account (owner-set); absent means none. */
+  allowance?: { requestLimit: number; days: number };
 }
 
 export function createProductionConsumerCandidate(
@@ -101,6 +103,7 @@ export function createProductionConsumerCandidate(
           qualification: inference.qualification,
           inferenceStopped: () => existsSync(inference.stopFile),
           providerManifest: inference.providerManifest,
+          ...(inference.allowance ? { autoAllowance: inference.allowance } : {}),
           // Per-account prompt-cache salts stay stable across restarts (derived, not the secret itself).
           cacheSaltSecret: createHash("sha256").update(`cache-salt-key|${config.secret}`).digest("hex"),
         }

@@ -49,10 +49,16 @@ it("loads production chat only when the inference section is present and enabled
     qualification: { provider: "tinfoil" },
     stopFile: inference.stopFile,
   });
-  // Relative paths, unknown fields and an unreadable report refuse the whole configuration.
+  // The owner-set automatic allowance is passed on as given.
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, allowance: { requestLimit: 100, days: 7 } } }));
+  expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ allowance: { requestLimit: 100, days: 7 } });
+  // Relative paths, unknown fields, a bad allowance and an unreadable report refuse the whole configuration.
   for (const bad of [
     { ...inference, stopFile: "chat-stopped" },
     { ...inference, extra: true },
+    { ...inference, allowance: { requestLimit: 0, days: 7 } },
+    { ...inference, allowance: { requestLimit: 100, days: 90 } },
+    { ...inference, allowance: { requestLimit: 100 } },
     { ...inference, qualificationFile: await file("broken.json", "{not json") },
   ]) {
     await writeFile(configFile, JSON.stringify({ ...config, inference: bad }));

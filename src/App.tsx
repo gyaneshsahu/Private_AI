@@ -202,6 +202,7 @@ export function App() {
     base: Conversation;
     text: string;
     consumeDraft: boolean;
+    modeOverride?: AnswerMode;
   }>();
   const chooseHealthConsent = (choice: HealthConsentChoice) =>
     setHealthConsent(writeHealthConsent(choice));
@@ -622,7 +623,7 @@ export function App() {
     if (busy || !status?.inference.ready || !text.trim()) return;
     if (status.healthConsentDraft && !healthConsent && !consentChosen) {
       // Ask once before the first message; the message waits and is not sent yet.
-      setConsentPending({ base, text, consumeDraft });
+      setConsentPending({ base, text, consumeDraft, modeOverride });
       return;
     }
     const next = {
@@ -2117,6 +2118,7 @@ export function App() {
                         pending.text,
                         pending.consumeDraft,
                         true,
+                        pending.modeOverride,
                       );
                   }}
                 />

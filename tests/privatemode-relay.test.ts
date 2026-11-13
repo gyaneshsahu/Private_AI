@@ -240,6 +240,83 @@ it("allowance and one request per account apply to Privatemode chat; usage settl
   usage.close();
 });
 
+it("an owner-set automatic allowance: a signed-in invitee can chat at once, is capped, and gets a new period after it ends", async () => {
+  upstream.mockImplementation(async () => ok());
+  const { root, usage, signIn } = await signedIn({ autoAllowance: { requestLimit: 2, days: 4 / 86_400 } }); // a 4-second period
+  const account = await signIn();
+  const { status, cookie } = await session(root, account.cookie);
+  expect(status.requestAllowance).toMatchObject({ state: "active", limit: 2, used: 0 });
+  for (let i = 0; i < 2; i++) {
+    const chat = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf));
+    expect(chat.status).toBe(200);
+    await chat.text();
+  }
+  await vi.waitFor(() => expect(usage.summary(account.accountId)).toMatchObject({ used: 2, pending: 0 }));
+  const capped = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf));
+  expect(capped.status).toBe(429);
+  expect(upstream).toHaveBeenCalledTimes(2);
+  // Once the period has ended, a new one starts with the next request.
+  await vi.waitFor(
+    async () => {
+      const renewed = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf));
+      expect(renewed.status).toBe(200);
+      await renewed.text();
+    },
+    { timeout: 8000, interval: 500 },
+  );
+  usage.close();
+});
+
+it("without an automatic allowance nothing is created: an invitee without one is refused", async () => {
+  const { root, usage, signIn } = await signedIn();
+  const account = await signIn();
+  const { status, cookie } = await session(root, account.cookie);
+  expect(status.requestAllowance).toEqual({ state: "unavailable" });
+  expect((await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf))).status).toBe(429);
+  expect(upstream).not.toHaveBeenCalled();
+  usage.close();
+});
+
+it("a browser that hangs up frees its account slot at once, so the automatic retry is not refused", async () => {
+  // The upstream reply never ends and ignores the abort, like a slow provider still settling.
+  upstream.mockImplementation(
+    async () =>
+      new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode("data: first\n\n"));
+          },
+        }),
+        { headers: { "content-type": "text/event-stream" } },
+      ),
+  );
+  const { root, usage, signIn } = await signedIn();
+  const account = await signIn();
+  const { status, cookie } = await session(root, account.cookie);
+  usage.createAllowance({
+    accountId: account.accountId,
+    periodId: "synthetic-period",
+    startsAt: Date.now() - 1000,
+    endsAt: Date.now() + 60000,
+    requestLimit: 5,
+  });
+  const hangUp = new AbortController();
+  const first = await fetch(root + "/v1/chat/completions", {
+    method: "POST",
+    headers: { Origin: root, ...chatHeaders(cookie, status.csrf) },
+    body: new Uint8Array(32).fill(7),
+    signal: hangUp.signal,
+  });
+  await first.body!.getReader().read();
+  hangUp.abort();
+  await vi.waitFor(async () => {
+    const retry = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf));
+    expect(retry.status).toBe(200);
+    await retry.body?.cancel();
+  });
+  usage.close();
+});
+
 it("a Privatemode failure stays at Privatemode: classified for the same-provider backup, never sent to Tinfoil", async () => {
   upstream
     .mockImplementationOnce(async () => new Response("model not found", { status: 404 }))
@@ -376,12 +453,14 @@ it("attestation goes through one queue: a full queue answers 503 attestation_bus
   );
   const root = await listen();
   const { status, cookie } = await session(root);
+  // 14 different browser sessions, one attest call each (one session alone is capped first).
+  const others = await Promise.all(Array.from({ length: 14 }, () => session(root)));
   const controller = new AbortController();
   const answered: Response[] = [];
-  for (let i = 0; i < 14; i++)
+  for (const other of others)
     void fetch(root + "/privatemode/v1/attest", {
       method: "POST",
-      headers: { Origin: root, ...chatHeaders(cookie, status.csrf) },
+      headers: { Origin: root, ...chatHeaders(other.cookie, other.status.csrf) },
       body: new Uint8Array(32).fill(7),
       signal: controller.signal,
     }).then((r) => answered.push(r), () => {});
@@ -405,6 +484,40 @@ it("attestation goes through one queue: a full queue answers 503 attestation_bus
   expect(warn.mock.calls.flat().join(" ")).not.toMatch(/csrf|cookie|Bearer|TEST_KEY/i);
   controller.abort();
   warn.mockRestore();
+});
+
+it("one session cannot fill the shared attestation queue: 2 calls at once, 10 per 10 minutes", async () => {
+  let release: (() => void)[] = [];
+  upstream.mockImplementation(async (url: URL) =>
+    String(url).endsWith("/attest") ? new Promise<Response>((done) => release.push(() => done(ok()))) : ok(),
+  );
+  const root = await listen();
+  const mine = await session(root);
+  const theirs = await session(root);
+  const attest = (who: typeof mine) => post(root, "/privatemode/v1/attest", chatHeaders(who.cookie, who.status.csrf));
+  const running = [attest(mine), attest(mine)];
+  await vi.waitFor(() => expect(release).toHaveLength(2));
+  const third = await attest(mine);
+  expect(third.status).toBe(503);
+  expect((await third.json()).reason).toBe("attestation_busy");
+  // Another user is not affected.
+  const other = attest(theirs);
+  await vi.waitFor(() => expect(release).toHaveLength(3));
+  for (const done of release.splice(0)) done();
+  for (const reply of [...(await Promise.all(running)), await other]) expect(reply.status).toBe(200);
+  // 2 used; 8 more pass a minute apart (so the shared queue has refilled), the 11th within
+  // 10 minutes is refused (the window itself is a plain time filter; a later clock would expire the test report).
+  upstream.mockImplementation(async () => ok());
+  let clock = Date.now();
+  const now = vi.spyOn(Date, "now").mockImplementation(() => clock);
+  for (let i = 0; i < 8; i++) {
+    clock += 61_000;
+    expect((await attest(mine)).status).toBe(200);
+  }
+  expect((await attest(mine)).status).toBe(503);
+  expect((await attest(theirs)).status).toBe(200);
+  now.mockRestore();
+  expect((await post(root, "/privatemode/v1/secret", chatHeaders(mine.cookie, mine.status.csrf))).status).toBe(200);
 });
 
 it("warns ahead of the dedicated key's recorded expiry", () => {
