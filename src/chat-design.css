@@ -1776,3 +1776,25 @@
 .chat-design .panel.danger h3 {
   margin-top: 0;
 }
+
+/* DE/EN switch in the conversation header; stays visible at phone width. */
+.chat-design .language-switch {
+  display: flex;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.chat-design .language-switch button {
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 12px;
+}
+.chat-design .language-switch button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--canvas);
+}

@@ -60,11 +60,10 @@ import {
   checkNoOfficialSource,
   GERMAN_RULES,
 } from "./german-rules";
-import {
-  DISAPPEAR_LABELS,
-  expireMessages,
-  type DisappearAfter,
-} from "./conversation";
+import { expireMessages, type DisappearAfter } from "./conversation";
+import { LanguageSwitch, textFor, useLang } from "./i18n";
+import { serverMessage } from "./server-messages";
+import { appText } from "./text/app";
 import { PRIVACY_SUMMARY, privacyText } from "../shared/privacy-copy";
 import { privacyPolicyText } from "../shared/privacy-policy";
 import { disclosedProvider } from "../shared/provider-disclosure";
@@ -103,6 +102,16 @@ const Answer = lazy(() =>
   import("./Answer").then((module) => ({ default: module.Answer })),
 );
 export function App() {
+  const { lang } = useLang();
+  const t = appText[lang];
+  const tabName: Record<Tab, string> = {
+    Conversation: t.tabConversation,
+    Context: t.tabContext,
+    Research: t.tabResearch,
+    Saved: t.tabSaved,
+    Account: t.tabAccount,
+    Help: t.tabHelp,
+  };
   const [appearance, setAppearance] = useState<"system" | "light" | "dark">(
     readAppearance,
   );
@@ -333,9 +342,7 @@ export function App() {
   }, [unsaved]);
   const allowReplace = () =>
     !unsaved ||
-    window.confirm(
-      "Discard unsaved workspace changes? Cancel to keep working or save an encrypted snapshot first.",
-    );
+    window.confirm(t.discardConfirm);
   useEffect(() => {
     if (!source) return;
     const previous = document.activeElement as HTMLElement;
@@ -393,7 +400,7 @@ export function App() {
       })
       .catch(() => {
         if (active)
-          setNotice("Local service unavailable. Reload after it is running.");
+          setNotice(textFor(appText).localServiceUnavailable);
       });
     const store = new Vault();
     vault.current = store;
@@ -420,9 +427,7 @@ export function App() {
       setOperandB("");
       setCalculation("");
       setPassphrase("");
-      setNotice(
-        "Vault changed or locked in another tab. Private content cleared here.",
-      );
+      setNotice(textFor(appText).vaultChangedElsewhere);
     };
     let timer: ReturnType<typeof setTimeout>;
     const resetTimer = () => {
@@ -479,9 +484,7 @@ export function App() {
     setOperandB("");
     setCalculation("");
     setPassphrase("");
-    setNotice(
-      "New temporary conversation. Previous unsaved content has been cleared.",
-    );
+    setNotice(t.newTemporary);
   };
   const fail = (message: string) => setNotice(message);
   async function copyAnswer(text: string) {
@@ -489,10 +492,9 @@ export function App() {
     try {
       await navigator.clipboard.writeText(text);
       if (current === epoch.current)
-        setNotice("Answer copied to your clipboard.");
+        setNotice(t.copied);
     } catch {
-      if (current === epoch.current)
-        fail("Could not copy. Select the answer text and copy it manually.");
+      if (current === epoch.current) fail(t.copyFailed);
     }
   }
   useEffect(() => {
@@ -552,7 +554,7 @@ export function App() {
     };
   }, [status?.accountId, status?.accessEpoch]);
   async function api(path: string, data: unknown, signal?: AbortSignal) {
-    if (!status) throw new Error("Service is unavailable.");
+    if (!status) throw new Error(t.serviceUnavailable);
     const response = await fetch(path, {
       method: "POST",
       headers: {
@@ -569,12 +571,15 @@ export function App() {
       accessNavigation.current = true;
       window.location.assign("/auth");
     }
-    if (!response.ok) throw new Error(result.error ?? "Request failed.");
+    if (!response.ok)
+      throw new Error(
+        result.error ? serverMessage(result.error, lang) : t.requestFailed,
+      );
     return result;
   }
   async function signOutConsumer() {
     if (!status?.consumerWorkspace || busy || !allowReplace()) return;
-    setBusy("Signing out…");
+    setBusy(t.signingOut);
     try {
       await api("/api/auth/sign-out", {});
       vault.current?.lock();
@@ -583,9 +588,7 @@ export function App() {
       window.location.assign("/auth");
     } catch {
       setBusy("");
-      fail(
-        "Sign-out could not be confirmed. Your workspace is still here; try again when the service is available.",
-      );
+      fail(t.signOutUnconfirmed);
     }
   }
   // The last question and the conversation to ask it again from (as "Retry last response").
@@ -641,9 +644,7 @@ export function App() {
         status.inference.qualification?.maxInputCharacters ?? 100000,
       );
     } catch {
-      fail(
-        "Selected context is too large. Reduce included messages or attachments, or shorten your question. Your draft and conversation are unchanged.",
-      );
+      fail(t.contextTooLarge);
       return;
     }
     const answer = {
@@ -654,7 +655,7 @@ export function App() {
     setConversation({ ...next, messages: [...next.messages, answer] });
     if (consumeDraft) setInput("");
     setNotice("");
-    setBusy("Preparing private context…");
+    setBusy(t.preparing);
     const abort = new AbortController();
     abort.signal.addEventListener("abort", () => calculationSession.clear(), {
       once: true,
@@ -700,7 +701,7 @@ export function App() {
           },
           calculationSession,
           (kept) => {
-            const note = describeKept(kept);
+            const note = describeKept(kept); // i18n-wire: pass lang
             if (epoch.current === current && !abort.signal.aborted && note)
               setConversation((c) => ({
                 ...c,
@@ -744,6 +745,7 @@ export function App() {
                           ),
                         }
                       : {}),
+                    // i18n-wire: pass lang
                     answeredBy: answerLabel(
                       choiceForThis,
                       mode,
@@ -755,9 +757,7 @@ export function App() {
             usage: usage ? [...c.usage, usage] : c.usage,
           }));
           if (!usage)
-            setNotice(
-              "Provider usage was not reported. This request’s cost remains unknown.",
-            );
+            setNotice(t.usageNotReported);
         }
       };
       try {
@@ -785,7 +785,7 @@ export function App() {
           error.usage
         )
           setConversation((c) => ({ ...c, usage: [...c.usage, error.usage!] }));
-        setBusy("Trying the backup model…");
+        setBusy(t.tryingBackup);
         await withDeadline(abort.signal, msLeft, (signal) =>
           attempt("backup", signal),
         );
@@ -820,22 +820,27 @@ export function App() {
               ? [...c.usage, error.usage]
               : c.usage,
         }));
-        const said = abort.signal.aborted
-          ? "Response stopped. Partial answers are excluded from future context."
-          : error instanceof AttestationBusyError
-            ? error.message
-          : error instanceof IncompleteReplyError
-            ? `${error.message} ${error.usage ? "Reported usage was retained." : "This request’s cost remains unknown."}`
-            : error instanceof Error && error.name === "TimeoutError"
-              ? "Response timed out. Partial answers are excluded from future context. This request’s cost remains unknown. No automatic retry was made."
-              : "Protected response unavailable. No weaker fallback or automatic retry was used. Check provider verification and service access.";
+        // Client-module error texts are English; serverMessage shows unknown text as sent.
+        const passed = (message: string) =>
+          serverMessage(
+            retried
+              ? message.replace(
+                  /No (weaker fallback or )?automatic retry was (made|used)\./,
+                  t.retriedOnce,
+                )
+              : message,
+            lang,
+          );
         setNotice(
-          retried
-            ? said.replace(
-                /No (weaker fallback or )?automatic retry was (made|used)\./,
-                "One automatic retry with the backup model was made.",
-              )
-            : said,
+          abort.signal.aborted
+            ? t.responseStopped
+            : error instanceof AttestationBusyError
+              ? passed(error.message)
+              : error instanceof IncompleteReplyError
+                ? `${passed(error.message)} ${error.usage ? t.usageRetained : t.costUnknown}`
+                : error instanceof Error && error.name === "TimeoutError"
+                  ? t.timedOut(retried)
+                  : t.protectedUnavailable(retried),
         );
       }
     } finally {
@@ -853,15 +858,13 @@ export function App() {
         conversation.attachments.filter((a) => a.kind === "screenshot").length >
         3
     ) {
-      fail(
-        "Use at most five attachments, including three screenshots, per conversation.",
-      );
+      fail(t.tooManyAttachments);
       return;
     }
     const abort = new AbortController();
     controller.current = abort;
     const current = epoch.current;
-    setBusy("Reading on your device…");
+    setBusy(t.readingOnDevice);
     setNotice("");
     try {
       await importDocuments(Array.from(files), abort.signal, {
@@ -882,7 +885,7 @@ export function App() {
       });
     } catch (e) {
       if (current === epoch.current)
-        fail(e instanceof Error ? e.message : "Extraction failed.");
+        fail(e instanceof Error ? e.message : t.extractionFailed);
     } finally {
       if (current === epoch.current) {
         controller.current = null;
@@ -897,14 +900,12 @@ export function App() {
   ): Promise<{ attachment?: Attachment; note: string } | "failed" | undefined> {
     if (!approved || busy) return;
     if (conversation.attachments.length >= 5) {
-      fail(
-        "Remove an attachment before adding more research context (five-item limit).",
-      );
+      fail(t.researchLimit);
       return "failed";
     }
     setProposal(undefined);
     setSearchSent("");
-    setBusy("Retrieving the approved public information…");
+    setBusy(t.retrieving);
     const current = epoch.current;
     const abort = new AbortController();
     controller.current = abort;
@@ -934,8 +935,8 @@ export function App() {
               id: crypto.randomUUID(),
               name:
                 approved.kind === "search"
-                  ? "Public search results"
-                  : "Public page",
+                  ? t.searchResultsName
+                  : t.publicPageName,
               selected: true,
               kind: "research",
               ...(approved.kind === "search"
@@ -950,6 +951,7 @@ export function App() {
             temporarySearch: c.temporarySearch || approved.kind === "search",
             attachments: [...c.attachments, attachment],
           }));
+        // i18n-wire: pass lang (WHEN_TO_SEARCH, topPageNote)
         if (how)
           return {
             attachment,
@@ -958,14 +960,14 @@ export function App() {
         setNotice(
           sources.length
             ? approved.kind === "search"
-              ? `Search results added to context. Return to Conversation to ask about them. Search results and source links are never saved; if you save this conversation, only your written answers and the approved query are kept, and you can search again later. ${topPageNote(result)}`.trim()
-              : "Public sources added to your selected context. Search excerpts are labelled; pages are fetched only with approval."
-            : "The search returned no sources.",
+              ? t.searchAdded(topPageNote(result)) // i18n-wire: pass lang
+              : t.pageAdded
+            : t.noSources,
         );
       }
     } catch (e) {
       if (current === epoch.current && !abort.signal.aborted) {
-        fail(e instanceof Error ? e.message : "Research failed.");
+        fail(e instanceof Error ? e.message : t.researchFailed);
         return "failed";
       }
     } finally {
@@ -990,7 +992,7 @@ export function App() {
     const outcome = await research({ kind: "search", value }, how);
     if (!outcome || (outcome === "failed" && how === "tap")) return;
     if (outcome === "failed") {
-      setSearchSent(WHEN_TO_SEARCH.automaticFailed);
+      setSearchSent(WHEN_TO_SEARCH.automaticFailed); // i18n-wire: pass lang
       void send(base, text, !again);
       return;
     }
@@ -1009,13 +1011,13 @@ export function App() {
   }
   async function unlockVault() {
     if (!status) {
-      fail("Wait for service access before opening saved history.");
+      fail(t.waitForAccess);
       return;
     }
     const current = epoch.current;
     const secret = passphrase;
     setPassphrase("");
-    setBusy("Unlocking encrypted history…");
+    setBusy(t.unlocking);
     try {
       await vault.current!.unlock(secret);
       const snapshots = await vault.current!.readAvailable();
@@ -1025,27 +1027,18 @@ export function App() {
       setSaved(snapshots.conversations);
       setProjects(projectList);
       setUnreadableSnapshots(snapshots.unreadable);
-      setNotice(
-        "Vault unlocked on this device. Saving is explicit; temporary chats are not saved automatically.",
-      );
+      setNotice(t.vaultUnlocked);
     } catch {
       if (current !== epoch.current) return;
-      fail(
-        "Could not unlock the vault. Check the passphrase (at least 12 characters).",
-      );
+      fail(t.unlockFailed);
     } finally {
       if (current === epoch.current) setBusy("");
     }
   }
   async function eraseEverything() {
-    if (
-      !window.confirm(
-        "Delete every saved conversation and project on this device and lock the vault? This cannot be undone. Downloaded backup files, the secure server's short-term memory and our request records are not affected.",
-      )
-    )
-      return;
+    if (!window.confirm(t.eraseConfirm)) return;
     const current = epoch.current;
-    setBusy("Deleting everything saved on this device…");
+    setBusy(t.erasing);
     try {
       controller.current?.abort();
       await vault.current!.eraseEverything();
@@ -1058,27 +1051,21 @@ export function App() {
       setPassphrase("");
       setConversation(emptyConversation());
       setInput("");
-      setNotice(
-        "Everything saved on this device was deleted and the vault is locked. Downloaded backups, the secure server's short-term memory and our request records were not affected.",
-      );
+      setNotice(t.erased);
     } catch {
       if (current === epoch.current)
-        fail(
-          "Deletion did not complete. Close other tabs of this app and try again; nothing was partly deleted.",
-        );
+        fail(t.eraseFailed);
     } finally {
       if (current === epoch.current) setBusy("");
     }
   }
   async function save(asCopy = false) {
     if (conversation.incognito) {
-      fail(
-        "Incognito chats are never saved. Start a normal chat to keep history.",
-      );
+      fail(t.incognitoNotSaved);
       return;
     }
     const current = epoch.current;
-    setBusy("Encrypting your conversation…");
+    setBusy(t.encrypting);
     try {
       const snapshot = await vault.current!.save(
         {
@@ -1087,7 +1074,7 @@ export function App() {
             ? {
                 id: crypto.randomUUID(),
                 createdAt: new Date().toISOString(),
-                title: `${conversation.title} (copy)`,
+                title: t.copyTitle(conversation.title),
               }
             : {}),
           draft: input,
@@ -1104,20 +1091,18 @@ export function App() {
       setSaved(snapshots.conversations);
       setProjects(projectList);
       setUnreadableSnapshots(snapshots.unreadable);
-      setNotice(
-        "Encrypted snapshot saved on this browser. Later changes require saving again.",
-      );
+      setNotice(t.snapshotSaved);
     } catch (error) {
       if (current !== epoch.current) return;
       if (error instanceof VaultConflictError) {
         setSaveConflict(true);
-        fail(error.message);
+        fail(error.message); // i18n-wire: pass lang (vault.ts conflict text)
         return;
       }
       fail(
         error instanceof DOMException && error.name === "QuotaExceededError"
-          ? "Browser storage is full. Your current work is still open but was not saved. Keep this tab open; free device storage without clearing this site's data, then save again."
-          : "Save failed. Your current work is still open. Keep this tab open and check that the vault is unlocked before trying again.",
+          ? t.storageFull
+          : t.saveFailed,
       );
     } finally {
       if (current === epoch.current) setBusy("");
@@ -1125,7 +1110,7 @@ export function App() {
   }
   async function exportVaultBackup() {
     const current = epoch.current;
-    setBusy("Encrypting saved backup…");
+    setBusy(t.encryptingBackup);
     let url: string | undefined;
     try {
       const text = await vault.current!.exportBackup();
@@ -1137,14 +1122,10 @@ export function App() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      setNotice(
-        "Encrypted backup download requested. Check your downloads before relying on it. It needs this vault’s original passphrase; later changes are not included.",
-      );
+      setNotice(t.backupRequested);
     } catch {
       if (current === epoch.current)
-        fail(
-          "Backup could not be created. Keep this browser’s data. Unlock the vault, check for unreadable snapshots and the 100-conversation / 10 MiB limits, then try again.",
-        );
+        fail(t.backupFailed);
     } finally {
       if (url) {
         const expired = url;
@@ -1159,26 +1140,22 @@ export function App() {
   ) {
     if (!allowReplace()) return;
     const current = epoch.current;
-    setBusy("Updating encrypted vault protection…");
+    setBusy(t.updatingProtection);
     try {
       await vault.current!.changePassphrase(currentSecret, nextSecret);
       if (current !== epoch.current) return;
       vault.current!.onInvalidate?.();
-      setNotice(
-        "Vault passphrase changed. Unlock with the new passphrase. Saved history was preserved; older downloaded backups still need their original passphrase.",
-      );
+      setNotice(t.passphraseChanged);
     } catch {
       if (current === epoch.current)
-        fail(
-          "Passphrase change could not complete. No partial update was applied. Check the current passphrase, unreadable records or changes in another tab. Keep your browser data and existing backups.",
-        );
+        fail(t.passphraseFailed);
     } finally {
       if (current === epoch.current) setBusy("");
     }
   }
   async function restoreVaultBackup(file: File, secret: string) {
     const current = epoch.current;
-    setBusy("Verifying and restoring encrypted backup…");
+    setBusy(t.restoring);
     try {
       if (!file.size || file.size > BACKUP_MAX_BYTES)
         throw Error("Invalid file size");
@@ -1192,14 +1169,10 @@ export function App() {
       setSaved(snapshots.conversations);
       setProjects(projectList);
       setUnreadableSnapshots(snapshots.unreadable);
-      setNotice(
-        `Restored ${count} saved ${count === 1 ? "conversation" : "conversations"} as new copies. Your open workspace was not changed. The copies use this vault’s passphrase.`,
-      );
+      setNotice(t.restored(count));
     } catch {
       if (current === epoch.current)
-        fail(
-          "Restore could not complete. Check the original backup passphrase, file integrity and available browser storage. Temporary research and unsupported backups are rejected. Existing snapshots were not overwritten; inspect Saved before trying again.",
-        );
+        fail(t.restoreFailed);
     } finally {
       if (current === epoch.current) setBusy("");
     }
@@ -1222,26 +1195,24 @@ export function App() {
       accessNavigation.current = true;
       window.location.assign("/auth");
     } catch {
-      fail("Workspace locked. Sign out failed; try again.");
+      fail(t.signOutFailed);
     }
   }
   async function createProject(name: string): Promise<string | undefined> {
     const current = epoch.current;
-    setBusy("Creating encrypted project…");
+    setBusy(t.creatingProject);
     try {
       const next = await vault.current!.createProject(name);
       if (current !== epoch.current) return;
       setProjects(next);
-      setNotice(
-        "Project created in this device’s encrypted vault. Project chats are not automatically included in model context.",
-      );
+      setNotice(t.projectCreated);
       return next.at(-1)?.id;
     } catch (error) {
       if (current === epoch.current)
         fail(
           error instanceof Error
             ? error.message
-            : "Project could not be created.",
+            : t.projectCreateFailed,
         );
     } finally {
       if (current === epoch.current) setBusy("");
@@ -1249,7 +1220,7 @@ export function App() {
   }
   async function editProject(id: string, name?: string): Promise<boolean> {
     const current = epoch.current;
-    setBusy("Updating encrypted project…");
+    setBusy(t.updatingProject);
     try {
       await vault.current!.editProject(id, name);
       const available = await vault.current!.readAvailable();
@@ -1263,14 +1234,12 @@ export function App() {
           available.conversations.find((c) => c.id === conversation.id) ?? null;
       }
       setNotice(
-        name === undefined
-          ? "Project removed. Its chats were kept without a project; archived chats remain archived."
-          : "Project renamed.",
+        name === undefined ? t.projectRemoved : t.projectRenamed,
       );
       return true;
     } catch (error) {
       if (current === epoch.current)
-        fail(error instanceof Error ? error.message : "Project update failed.");
+        fail(error instanceof Error ? error.message : t.projectUpdateFailed);
       return false;
     } finally {
       if (current === epoch.current) setBusy("");
@@ -1281,7 +1250,7 @@ export function App() {
     change: Pick<Conversation, "pinned" | "archived" | "projectId" | "title">,
   ) {
     const current = epoch.current;
-    setBusy("Updating encrypted organization…");
+    setBusy(t.updatingOrganization);
     try {
       const snapshot = await vault.current!.save({ ...c, ...change }, c);
       if (current !== epoch.current) return;
@@ -1298,15 +1267,13 @@ export function App() {
       if (current !== epoch.current) return;
       setSaved(available.conversations);
       setUnreadableSnapshots(available.unreadable);
-      setNotice(
-        "Saved chat organization updated. Open drafts still require saving explicitly.",
-      );
+      setNotice(t.organized);
     } catch (error) {
       if (current === epoch.current)
         fail(
           error instanceof Error
             ? error.message
-            : "Organization could not be saved.",
+            : t.organizeFailed,
         );
     } finally {
       if (current === epoch.current) setBusy("");
@@ -1323,7 +1290,7 @@ export function App() {
     setNavigationOpen(false);
     if (expired.removed) {
       setNotice(
-        `Opened a saved snapshot. ${expired.removed} message${expired.removed === 1 ? "" : "s"} older than ${DISAPPEAR_LABELS[c.disappearAfter!]} disappeared from this device.`,
+        t.openedPruned(expired.removed, t.disappearLabel(c.disappearAfter!)),
       );
       // Persist the pruned copy so the deleted messages do not survive in the vault.
       void vault.current
@@ -1333,7 +1300,7 @@ export function App() {
         })
         .catch(() => {});
     } else
-      setNotice("Opened a saved snapshot. Save again to keep later changes.");
+      setNotice(t.opened);
   };
 
   const sources = conversation.attachments.flatMap((a) => a.sources);
@@ -1379,7 +1346,7 @@ export function App() {
           setConversation({
             ...emptyConversation(),
             incognito: true,
-            title: "Incognito chat",
+            title: t.incognitoTitle,
           });
           setTab("Conversation");
           setNavigationOpen(false);
@@ -1397,27 +1364,27 @@ export function App() {
         ref={settingsDialog}
         onKeyDown={containDialogFocus}
         className="settings-dialog"
-        aria-label="Settings"
+        aria-label={t.settings}
         onCancel={() => setSettingsOpen(false)}
         onClose={() => setSettingsOpen(false)}
       >
         <div className="row">
-          <h2>Settings</h2>
+          <h2>{t.settings}</h2>
           <button
             onClick={() => setSettingsOpen(false)}
-            aria-label="Close settings"
+            aria-label={t.closeSettings}
           >
             ×
           </button>
         </div>
         <div className="settings-layout">
-          <nav aria-label="Settings sections">
+          <nav aria-label={t.settingsSections}>
             {(
               [
-                ["appearance", "sun", "Appearance"],
-                ["account", "user", "Account & security"],
-                ["privacy", "shield", "Privacy & data"],
-                ["usage", "usage", "Plan & usage"],
+                ["appearance", "sun", t.sectionAppearance],
+                ["account", "user", t.sectionAccount],
+                ["privacy", "shield", t.sectionPrivacy],
+                ["usage", "usage", t.sectionUsage],
               ] as const
             ).map(([id, icon, label]) => (
               <button
@@ -1433,7 +1400,7 @@ export function App() {
           <section className="settings-content">
             {settingsSection === "appearance" && (
               <>
-                <label htmlFor="chat-appearance">Appearance</label>
+                <label htmlFor="chat-appearance">{t.sectionAppearance}</label>
                 <select
                   id="chat-appearance"
                   value={appearance}
@@ -1441,42 +1408,37 @@ export function App() {
                     setAppearance(event.target.value as typeof appearance)
                   }
                 >
-                  <option value="system">System theme</option>
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
+                  <option value="system">{t.themeSystem}</option>
+                  <option value="light">{t.themeLight}</option>
+                  <option value="dark">{t.themeDark}</option>
                 </select>
-                <p className="muted">
-                  Only this appearance preference is saved outside your
-                  encrypted vault. Conversation contents are not included.
-                </p>
+                <p className="muted">{t.appearanceNote}</p>
               </>
             )}
             {settingsSection === "account" && (
               <>
-                <h3>Account &amp; security</h3>
+                <h3>{t.sectionAccount}</h3>
                 <p>
                   {status?.accountEmail ??
                     (status?.accountId
-                      ? `Signed-in account ${status.accountId}`
-                      : "Local development session. No account is signed in.")}
+                      ? t.signedInAccount(status.accountId)
+                      : t.localSession)}
                 </p>
-                <p>
-                  Sign-in recovery and your local vault passphrase are separate.
-                  Recovering sign-in does not decrypt a lost vault.
-                </p>
+                <p>{t.recoverySeparate}</p>
                 <button
                   onClick={() => {
                     setSettingsOpen(false);
                     setTab("Account");
                   }}
                 >
-                  Account &amp; usage
+                  {t.accountAndUsage}
                 </button>
               </>
             )}
             {settingsSection === "privacy" && (
               <>
-                <h3>Privacy &amp; data</h3>
+                <h3>{t.sectionPrivacy}</h3>
+                {/* i18n-wire: pass lang */}
                 <p>{PRIVACY_SUMMARY}</p>
                 {status?.healthConsentDraft && (
                   <HealthConsentSetting
@@ -1490,12 +1452,13 @@ export function App() {
                     setSettingsOpen(false);
                     setSource({
                       id: "privacy-policy",
-                      title: "Privacy policy",
+                      title: t.privacyPolicy,
+                      // i18n-wire: pass lang
                       text: privacyPolicyText(disclosedProvider(status)),
                     });
                   }}
                 >
-                  Privacy policy ↗
+                  {t.privacyPolicyLink}
                 </button>
                 <button
                   className="text-button"
@@ -1503,29 +1466,22 @@ export function App() {
                     setSettingsOpen(false);
                     setSource({
                       id: "imprint",
-                      title: "Imprint",
-                      text: imprintText(),
+                      title: t.imprint,
+                      text: imprintText(), // i18n-wire: pass lang
                     });
                   }}
                 >
-                  Imprint ↗
+                  {t.imprintLink}
                 </button>
-                <p>
-                  Private chat remains unavailable until provider verification
-                  passes. Search results are shown only during a conversation;
-                  the written answer is saved with your history.
-                </p>
-                <p>
-                  Projects organize local saved chats. They do not automatically
-                  send other chats or files to a model.
-                </p>
+                <p>{t.privateChatGated}</p>
+                <p>{t.projectsNote}</p>
                 <button
                   onClick={() => {
                     setSettingsOpen(false);
                     setTab("Saved");
                   }}
                 >
-                  History &amp; data controls
+                  {t.historyControls}
                 </button>
               </>
             )}
@@ -1540,37 +1496,38 @@ export function App() {
             onClick={() => {
               setSource({
                 id: "workspace-guide",
-                title: "Using CometRow",
-                text: "Start in Conversation. Write a message or use a starter to prepare an editable draft. Nothing sends until you choose Send. This evaluation is for synthetic examples; private chat remains unavailable until its privacy checks pass.\n\nAdd context when you need it. In Context, import DOCX body text, a text PDF, UTF-8 text, Markdown, data or source-code file, PNG or JPEG. Code is read as text, never executed; spreadsheets must be exported as CSV or PDF. Files are read on your device. Limits: five files (up to three screenshots), 10 MB each, 20 PDF pages; printed English text. Review extracted numbers, tables and wording before using them. Scanned PDFs and handwriting are not supported. Select only the context you want included.\n\nSave deliberately. Temporary work disappears on reload. In Saved, create or unlock a vault, then choose Save encrypted snapshot. Save again after changes. Your passphrase cannot be recovered. History stays in this browser unless you explicitly download an encrypted backup in Saved; there is no cloud sync. Restore needs the backup and its original passphrase and adds copies to an unlocked vault. Backups include saved snapshots only, never current unsaved work or temporary research. Deleting browser history does not delete downloaded copies. Locking clears unsaved work. Removing an attachment does not remove its earlier messages or saved snapshots.\n\nResearch is your choice. Review the exact query or public URL before approving it. The research service and recipient can see it; your chat is not added automatically.\n\nStay in control. Stop ends an active response; an incomplete reply is excluded from later context. Retry is a separate request. Copy answer places completed text on your device clipboard; locking the vault does not clear that clipboard. Edit an earlier message to start a new branch. To remove a saved conversation, delete its snapshot in Saved. A new conversation clears the current workspace but does not delete saved snapshots.",
+                title: t.guideTitle,
+                text: t.guideText,
               });
             }}
           >
-            Getting started
+            {t.gettingStarted}
           </button>
           <button
             className="text-button"
             onClick={() => {
               setSource({
                 id: "trial-safety",
-                title: "Trial scope and safety",
-                text: "This initial trial is for adults aged 18 and over. Explicit sexual generation is outside its scope; non-graphic sexual-health, consent and relationship advice are supported. The assistant should refuse help enabling serious harm and respond supportively to distress. These instructions are being evaluated, not a guarantee that every unsafe answer will be prevented. Check important advice; CometRow is not an emergency service and cannot contact help for you. If you are in immediate danger, contact local emergency services or someone you trust. No separate moderation service receives your messages. Private-data chat remains gated until provider privacy qualification passes.",
+                title: t.safetyTitle,
+                text: t.safetyText,
               });
             }}
           >
-            Trial scope and safety
+            {t.safetyTitle}
           </button>
           <button
             className="text-button"
             onClick={() => {
               setSource({
                 id: "privacy",
-                title: "Your privacy boundaries",
+                title: t.privacyBoundariesTitle,
                 // The statement for the provider in use (Privatemode's is a D17 draft).
+                // i18n-wire: pass lang
                 text: privacyText(disclosedProvider(status)),
               });
             }}
           >
-            Privacy boundaries ↗
+            {t.privacyBoundariesLink}
           </button>
         </div>
       </dialog>
@@ -1578,7 +1535,7 @@ export function App() {
         <header className="conversation-header">
           <button
             className="navigation-toggle"
-            aria-label="Open navigation"
+            aria-label={t.openNavigation}
             onClick={() => {
               setNavigationOpen(true);
             }}
@@ -1590,7 +1547,7 @@ export function App() {
               {tab === "Conversation" &&
               conversation.title !== "New conversation"
                 ? conversation.title
-                : tab}
+                : tabName[tab]}
             </h1>
             {tab === "Conversation" &&
               projects.some((p) => p.id === conversation.projectId) && (
@@ -1601,7 +1558,7 @@ export function App() {
               )}
             {tab === "Conversation" && conversation.messages.length > 0 && (
               <p className="conversation-meta">
-                {conversation.messages.length} messages ·{" "}
+                {t.messageCount(conversation.messages.length)}{" "}
                 <button
                   className="text-button"
                   onClick={() =>
@@ -1611,49 +1568,50 @@ export function App() {
                     })
                   }
                 >
-                  Jump to latest ↓
+                  {t.jumpLatest}
                 </button>
               </p>
             )}
           </div>
+          <LanguageSwitch />
           <button
             className="share-preview"
             disabled
-            title="Explicit chat sharing — Coming later"
+            title={t.shareTitle}
           >
             <Icon name="share" />
             <span>
-              Share <small>Coming later</small>
+              {t.share} <small>{t.comingLater}</small>
             </span>
           </button>
           <details className="conversation-menu">
-            <summary aria-label="Conversation actions">
+            <summary aria-label={t.conversationActions}>
               <Icon name="more" />
             </summary>
             <div className="menu-surface">
               <button onClick={() => setTab("Conversation")}>
                 <Icon name="chat" />
-                Conversation
+                {t.tabConversation}
               </button>
               <button disabled>
                 <Icon name="share" />
-                Share chat · Coming later
+                {t.shareChatLater}
               </button>
               <button onClick={() => setTab("Saved")}>
-                Rename, save &amp; manage history
+                {t.renameSave}
               </button>
               {tab === "Conversation" && (
                 <button onClick={() => setContextOpen(true)}>
-                  Included context
+                  {t.includedContext}
                 </button>
               )}
               <button onClick={() => setTab("Context")}>
-                Conversation files
+                {t.conversationFiles}
               </button>
               <label className="menu-select">
-                Disappearing messages
+                {t.disappearing}
                 <select
-                  aria-label="Disappearing messages"
+                  aria-label={t.disappearing}
                   value={conversation.disappearAfter ?? "off"}
                   disabled={!!busy}
                   onChange={(event) => {
@@ -1672,63 +1630,57 @@ export function App() {
                     });
                   }}
                 >
-                  <option value="off">Off</option>
-                  <option value="hour">After 1 hour</option>
-                  <option value="day">After 1 day</option>
-                  <option value="week">After 1 week</option>
+                  <option value="off">{t.disappearOff}</option>
+                  <option value="hour">{t.disappearHour}</option>
+                  <option value="day">{t.disappearDay}</option>
+                  <option value="week">{t.disappearWeek}</option>
                 </select>
               </label>
-              <button onClick={() => setSettingsOpen(true)}>Settings</button>
+              <button onClick={() => setSettingsOpen(true)}>{t.settings}</button>
             </div>
           </details>
         </header>
         <details className="connection-banner">
           <summary>
-            {status?.inference.ready
-              ? "Protected connection available"
-              : "Private chat isn’t available yet"}{" "}
-            <span>Privacy details</span>
+            {status?.inference.ready ? t.protectedAvailable : t.privateNotYet}{" "}
+            <span>{t.privacyDetails}</span>
           </summary>
           <span className="status-icon">◇</span>
           <div>
             <strong>
               {status?.inference.ready
-                ? "Protected connection available"
-                : "Private chat is not connected yet"}
+                ? t.protectedAvailable
+                : t.privateNotConnected}
             </strong>
             <p>
               {status?.inference.ready && status.inference.qualification
-                ? verificationSummary(status.inference.qualification)
-                : "Local documents and your vault work here. Messages stay on this device until private chat is switched on."}
+                ? // i18n-wire: pass lang
+                  verificationSummary(status.inference.qualification)
+                : t.localOnly}
             </p>
           </div>
         </details>
         {conversation.incognito && (
           <div role="status" className="notice incognito-banner">
-            <strong>Incognito chat.</strong> Nothing from this chat is saved on
-            this device; it is gone when you start another chat, lock, reload or
-            sign out. This does not change what the secure server keeps for a
-            short time or the request records we hold.
+            <strong>{t.incognitoBannerTitle}</strong> {t.incognitoBanner}
           </div>
         )}
         {conversation.disappearAfter && (
           <div role="status" className="notice disappearing-banner">
-            <strong>Disappearing messages.</strong> Messages older than{" "}
-            {DISAPPEAR_LABELS[conversation.disappearAfter]} are deleted from
-            this device while the chat is open or when you open it again,
-            including from its saved copy. This does not change what the secure
-            server keeps for a short time or the request records we hold.
+            <strong>{t.disappearingBannerTitle}</strong>{" "}
+            {t.disappearingBanner(t.disappearLabel(conversation.disappearAfter))}
           </div>
         )}
         {status?.operatorNotice && (
           <div role="status" className="notice operator-notice">
-            <strong>Notice from CometRow:</strong> {status.operatorNotice}
+            {/* The operator's own words are shown as written. */}
+            <strong>{t.operatorNoticeTitle}</strong> {status.operatorNotice}
           </div>
         )}
         {notice && (
           <div role="status" className="notice">
             {notice}
-            <button aria-label="Dismiss notice" onClick={() => setNotice("")}>
+            <button aria-label={t.dismissNotice} onClick={() => setNotice("")}>
               ×
             </button>
           </div>
@@ -1738,16 +1690,17 @@ export function App() {
             <span className="spinner" />
             {busy}
             {controller.current && (
-              <button onClick={() => controller.current?.abort()}>Stop</button>
+              <button onClick={() => controller.current?.abort()}>{t.stop}</button>
             )}
           </div>
         )}
         {!!imports.length && (
-          <section className="import-results" aria-label="File import results">
-            <strong>File import results</strong>
+          <section className="import-results" aria-label={t.importResults}>
+            <strong>{t.importResults}</strong>
             <ul role="status" aria-live="polite" aria-relevant="text additions">
               {imports.map((item, index) => (
                 <li key={index}>
+                  {/* i18n-wire: pass lang (document-import status and detail) */}
                   <span>
                     {item.name} — {item.status}
                   </span>
@@ -1757,7 +1710,7 @@ export function App() {
             </ul>
             {!busy && (
               <button onClick={() => setImports([])}>
-                Dismiss import results
+                {t.dismissImports}
               </button>
             )}
           </section>
@@ -1767,39 +1720,27 @@ export function App() {
             {!conversation.messages.length && (
               <div className="welcome">
                 <div className="welcome-mark">✳</div>
-                <p className="eyebrow">A LITTLE CLARITY, ON YOUR TERMS</p>
+                <p className="eyebrow">{t.eyebrow}</p>
                 <h2>
-                  Make room for
+                  {t.welcomeA}
                   <br />
-                  <em>what’s on your mind.</em>
+                  <em>{t.welcomeB}</em>
                 </h2>
                 <p>
-                  Think through a decision. Understand a document.
+                  {t.welcomeLine1}
                   <br />
-                  Find the words you’ve been looking for.
+                  {t.welcomeLine2}
                 </p>
                 <div className="starter-grid">
                   {[
-                    [
-                      "Write or revise",
-                      "Find clear words for what you want to say.",
-                      "Help me write a clear, friendly message. Here’s what I want to say: ",
-                    ],
-                    [
-                      "Plan something",
-                      "Turn a goal and constraints into next steps.",
-                      "Help me make a practical plan. My goal and constraints are: ",
-                    ],
-                    [
-                      "Understand a document",
-                      "Bring a bill, a letter or a few notes.",
-                      "Context",
-                    ],
+                    [t.writeTitle, t.writeDescription, t.writeDraft],
+                    [t.planTitle, t.planDescription, t.planDraft],
+                    [t.documentTitle, t.documentDescription, ""],
                   ].map(([title, description, target]) => (
                     <button
                       key={title}
                       onClick={() => {
-                        if (target === "Context") setTab("Context");
+                        if (!target) setTab("Context");
                         else {
                           if (input.trim()) {
                             document.getElementById("message-input")?.focus();
@@ -1830,9 +1771,7 @@ export function App() {
                   setEditId(undefined);
                   setEditText("");
                   setSource(undefined);
-                  setNotice(
-                    "Branch opened locally. No request was sent. Save again to keep these changes.",
-                  );
+                  setNotice(t.branchOpened);
                 } catch (error) {
                   fail((error as Error).message);
                 }
@@ -1843,20 +1782,21 @@ export function App() {
                 <article
                   key={message.id}
                   className={`message ${message.role}`}
-                  aria-label={`${message.role === "user" ? "Your message" : "CometRow reply"} ${index + 1}`}
+                  aria-label={t.messageLabel(message.role === "user", index + 1)}
                 >
                   <div className="message-heading">
                     <strong>
-                      {message.role === "user" ? "You" : "CometRow"}
+                      {message.role === "user" ? t.you : "CometRow"}
                     </strong>
                     {message.status !== "complete" && (
                       <span>
                         {message.status === "partial"
-                          ? "Incomplete · excluded from context"
-                          : "No answer received"}
+                          ? t.incompleteExcluded
+                          : t.noAnswer}
                       </span>
                     )}
                   </div>
+                  {/* i18n-wire: pass lang (answer-modes label, checks below) */}
                   {message.answeredBy && (
                     <p className="muted answered-by">{message.answeredBy}</p>
                   )}
@@ -1889,25 +1829,11 @@ export function App() {
                   )}
                   {message.keptOnDevice && (
                     <p className="muted kept-on-device">
-                      {message.keptOnDevice} Placeholders went to the secure
-                      server instead; the values were put back here. Not every
-                      number is recognised, least of all in photos and scans.
+                      {message.keptOnDevice} {t.keptNote}
                     </p>
                   )}
                   {message.failure && (
-                    <p className="muted">
-                      {
-                        {
-                          stopped: "Stopped by you",
-                          timeout: "Response timed out",
-                          incomplete: "Response ended incomplete",
-                          unavailable: "Protected response unavailable",
-                          empty: "No answer received",
-                        }[message.failure]
-                      }
-                      . This attempt is not a completed answer and is excluded
-                      from future context.
-                    </p>
+                    <p className="muted">{t.failure(message.failure)}</p>
                   )}
                   <Suspense
                     fallback={
@@ -1924,33 +1850,23 @@ export function App() {
                   {sourceHistoryStatus(message, sourceHistory) ===
                     "changed" && (
                     <details className="source-history-note">
-                      <summary>Sources changed since this answer</summary>
-                      <p>
-                        Reference material changed or was removed after this
-                        answer. Its citations open the earlier captured version.
-                        Review this answer before using it in a follow-up;
-                        deselect the message in Included context to exclude it
-                        without deleting it.
-                      </p>
+                      <summary>{t.sourcesChanged}</summary>
+                      <p>{t.sourcesChangedText}</p>
                     </details>
                   )}
                   {!!message.text &&
                     sourceHistoryStatus(message, sourceHistory) ===
                       "unrecorded" && (
                       <details className="source-history-note">
-                        <summary>Original sources unavailable</summary>
-                        <p>
-                          This older answer has no recorded source snapshot. Its
-                          citations cannot be matched to the evidence used at
-                          the time; current attachments are not substituted.
-                        </p>
+                        <summary>{t.sourcesUnrecorded}</summary>
+                        <p>{t.sourcesUnrecordedText}</p>
                       </details>
                     )}
                   <div className="message-actions">
                     {message.role === "user" && (
                       <button
                         disabled={!!busy}
-                        aria-label="Edit into a new branch"
+                        aria-label={t.editIntoBranch}
                         id={`edit-message-${message.id}`}
                         onClick={() => {
                           setEditId(message.id);
@@ -1958,7 +1874,7 @@ export function App() {
                         }}
                       >
                         <Icon name="edit" />
-                        Edit
+                        {t.edit}
                       </button>
                     )}
                     {message.role === "assistant" && (
@@ -1969,7 +1885,7 @@ export function App() {
                         onClick={() => void copyAnswer(message.text)}
                       >
                         <Icon name="copy" />
-                        Copy answer
+                        {t.copyAnswer}
                       </button>
                     )}
                   </div>
@@ -1980,7 +1896,7 @@ export function App() {
             {editId && (
               <div className="panel">
                 <label>
-                  Edited message
+                  {t.editedMessage}
                   <textarea
                     id="edited-message"
                     value={editText}
@@ -2003,15 +1919,13 @@ export function App() {
                       setEditId(undefined);
                       setEditText("");
                       document.getElementById("message-input")?.focus();
-                      setNotice(
-                        "New branch created; the original is available in Conversation branches. Choose Answer this question to request a reply. Your draft is unchanged.",
-                      );
+                      setNotice(t.branchCreated);
                     } catch (error) {
                       fail((error as Error).message);
                     }
                   }}
                 >
-                  Create branch
+                  {t.createBranch}
                 </button>
                 <button
                   onClick={() => {
@@ -2020,7 +1934,7 @@ export function App() {
                     setEditText("");
                   }}
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
               </div>
             )}
@@ -2029,7 +1943,7 @@ export function App() {
                 <div
                   className="notice composer-note search-suggestion"
                   role="region"
-                  aria-label="Search suggestion"
+                  aria-label={t.searchSuggestion}
                   onKeyDown={(event) => {
                     if (!choosing || event.key !== "Escape") return;
                     event.preventDefault();
@@ -2037,6 +1951,7 @@ export function App() {
                     document.getElementById("message-input")?.focus();
                   }}
                 >
+                  {/* i18n-wire: pass lang (WHEN_TO_SEARCH, GERMAN_RULES in this block) */}
                   <p>
                     <strong>
                       {suggestion.again
@@ -2131,6 +2046,7 @@ export function App() {
               {status?.healthConsentDraft &&
                 healthConsent?.choice === "declined" && (
                   <p className="notice composer-note" role="note">
+                    {/* i18n-wire: pass lang */}
                     {HEALTH_CONSENT.declinedNote}
                   </p>
                 )}
@@ -2145,11 +2061,11 @@ export function App() {
                 }}
               >
                 <label className="sr-only" htmlFor="message-input">
-                  Message CometRow
+                  {t.messageInput}
                 </label>
                 <textarea
                   id="message-input"
-                  placeholder="What would you like to work through?"
+                  placeholder={t.placeholder}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   maxLength={20000}
@@ -2165,7 +2081,7 @@ export function App() {
                     ref={chatFileInput}
                     type="file"
                     hidden
-                    aria-label="Attach files to this conversation"
+                    aria-label={t.attachFiles}
                     multiple
                     accept={DOCUMENT_ACCEPT}
                     disabled={!!busy}
@@ -2175,7 +2091,7 @@ export function App() {
                     }}
                   />
                   <details className="tools-menu">
-                    <summary aria-label="Attachments and tools">
+                    <summary aria-label={t.tools}>
                       <Icon name="plus" />
                     </summary>
                     <div className="menu-surface">
@@ -2188,7 +2104,7 @@ export function App() {
                         onClick={() => chatFileInput.current?.click()}
                       >
                         <Icon name="file" />
-                        Attach file
+                        {t.attachFile}
                       </button>
                       <button
                         type="button"
@@ -2203,20 +2119,19 @@ export function App() {
                         onClick={() => setPhotoOpen(true)}
                       >
                         <Icon name="camera" />
-                        Photo to text
+                        {t.photoToText}
                       </button>
                       <button
                         type="button"
                         className="text-button"
                         onClick={() => setContextOpen(true)}
                       >
-                        Review context{" "}
+                        {t.reviewContext}{" "}
                         <span>
-                          {
+                          {t.selectedCount(
                             conversation.attachments.filter((a) => a.selected)
-                              .length
-                          }{" "}
-                          selected
+                              .length,
+                          )}
                         </span>
                       </button>
                       <button
@@ -2225,47 +2140,38 @@ export function App() {
                         onClick={() => setTab("Research")}
                       >
                         <Icon name="globe" />
-                        Research
+                        {t.tabResearch}
                       </button>
                       <button type="button" onClick={() => setTab("Context")}>
                         <Icon name="folder" />
-                        Conversation files
+                        {t.conversationFiles}
                       </button>
                       <div
                         className="coming-later-list"
-                        aria-label="Planned capabilities"
+                        aria-label={t.planned}
                       >
                         {(
                           [
-                            ["image", "Create image"],
-                            ["mic", "Microphone dictation"],
-                            ["voice", "Live voice conversation"],
+                            ["image", t.createImage],
+                            ["mic", t.dictation],
+                            ["voice", t.liveVoice],
                           ] as const
                         ).map(([icon, label]) => (
                           <button key={icon} type="button" disabled>
                             <Icon name={icon} />
                             <span>{label}</span>
-                            <small>Coming later</small>
+                            <small>{t.comingLater}</small>
                           </button>
                         ))}
                       </div>
-                      <p className="muted">
-                        Photo to text reads printed text on this device and asks
-                        for the camera only when you press Use camera; it is not
-                        general image understanding. Dictation, live voice,
-                        image creation and sharing are not connected: no
-                        permissions or media are collected for them.
-                      </p>
-                      <p className="muted">
-                        Files are read on this device. Review extracted text
-                        before sending.
-                      </p>
+                      <p className="muted">{t.photoNote}</p>
+                      <p className="muted">{t.filesNote}</p>
                     </div>
                   </details>
                   {status?.inference.qualification?.modes && (
                     <select
                       className="mode-select"
-                      aria-label="Answer mode"
+                      aria-label={t.answerMode}
                       value={modeChoice}
                       onChange={(event) => {
                         const value = event.target.value as ModeChoice;
@@ -2275,7 +2181,7 @@ export function App() {
                     >
                       {(["auto", "fast", "thinking"] as const).map((value) => (
                         <option key={value} value={value}>
-                          {MODE_NAMES[value]}
+                          {MODE_NAMES[value] /* i18n-wire: pass lang */}
                         </option>
                       ))}
                     </select>
@@ -2285,26 +2191,27 @@ export function App() {
                     className="context-count"
                     onClick={() => setContextOpen(true)}
                   >
-                    {selectedContextSize.includedMessages} messages included ·{" "}
-                    {conversation.attachments.filter((a) => a.selected).length}{" "}
-                    files
+                    {t.contextCount(
+                      selectedContextSize.includedMessages,
+                      conversation.attachments.filter((a) => a.selected).length,
+                    )}
                   </button>
                   <button
                     type="button"
                     className="future-voice"
                     disabled
-                    aria-label="Microphone dictation — Coming later"
-                    title="Microphone dictation — Coming later"
+                    aria-label={t.dictationLater}
+                    title={t.dictationLater}
                   >
                     <Icon name="mic" />
-                    <small>Coming later</small>
+                    <small>{t.comingLater}</small>
                   </button>
                   <button
                     type="button"
                     className="future-voice"
                     disabled
-                    aria-label="Live voice — Coming later"
-                    title="Live voice — Coming later"
+                    aria-label={t.liveVoiceLater}
+                    title={t.liveVoiceLater}
                   >
                     <Icon name="voice" />
                   </button>
@@ -2314,7 +2221,7 @@ export function App() {
                       className="primary"
                       onClick={() => controller.current?.abort()}
                     >
-                      Stop response
+                      {t.stopResponse}
                     </button>
                   ) : (
                     <button
@@ -2323,9 +2230,9 @@ export function App() {
                         !!busy || !input.trim() || !status?.inference.ready
                       }
                       type="submit"
-                      aria-label="Send ↑"
+                      aria-label={t.sendLabel}
                     >
-                      Send <Icon name="send" />
+                      {t.send} <Icon name="send" />
                     </button>
                   )}
                 </div>
@@ -2333,20 +2240,20 @@ export function App() {
               {conversation.attachments.length > 0 && (
                 <ul
                   className="composer-attachments"
-                  aria-label="Conversation attachments"
+                  aria-label={t.attachments}
                 >
                   {conversation.attachments.map((attachment) => (
                     <li key={attachment.id}>
                       <span>{attachment.name}</span>
                       <small>
-                        {attachment.selected ? "Included" : "Excluded"}
+                        {attachment.selected ? t.included : t.excluded}
                       </small>
                       <button
                         type="button"
                         onClick={() => setTab("Context")}
-                        aria-label={`Review ${attachment.name}`}
+                        aria-label={t.reviewNamed(attachment.name)}
                       >
-                        Review
+                        {t.review}
                       </button>
                     </li>
                   ))}
@@ -2356,53 +2263,48 @@ export function App() {
                 <button
                   className="text-button"
                   title={
-                    status?.inference.ready
-                      ? "Starts a new request and may incur another charge"
-                      : "Retry is unavailable while private chat is gated"
+                    status?.inference.ready ? t.newCharge : t.retryGated
                   }
                   disabled={!!busy || !status?.inference.ready}
                   onClick={() => askAgain()}
                 >
                   {conversation.messages.at(-1)?.role === "user"
-                    ? "Answer this question"
-                    : "Retry last response"}
+                    ? t.answerThis
+                    : t.retryLast}
                 </button>
               )}
               {/* One tap to the deeper mode after a Fast answer: user-chosen, labelled, same provider. */}
               {status?.inference.qualification?.modes &&
                 conversation.messages.at(-1)?.role === "assistant" &&
-                /(^|· )Fast( ·|$)/.test(
+                // German label once answer-modes passes the language.
+                /(^|· )(Fast|Schnell)( ·|$)/.test(
                   conversation.messages.at(-1)?.answeredBy ?? "",
                 ) && (
                   <button
                     className="text-button"
-                    title="Starts a new request and may incur another charge"
+                    title={t.newCharge}
                     disabled={!!busy || !status?.inference.ready}
                     onClick={() => askAgain("thinking")}
                   >
-                    Answer again with Thinking
+                    {t.answerThinking}
                   </button>
                 )}
               <p className="composer-caption">
-                {unlocked
-                  ? "Local vault unlocked · Save explicitly to keep changes"
-                  : "Temporary chat · Not saved"}{" "}
-                · Answers come from an AI, not a person · Check important
-                answers.
+                {unlocked ? t.captionVault : t.captionTemporary} {t.captionAi}
               </p>
             </div>
             <dialog
               ref={contextDialog}
               onKeyDown={containDialogFocus}
               className="context-dialog"
-              aria-label="Included context"
+              aria-label={t.includedContext}
               onCancel={() => setContextOpen(false)}
               onClose={() => setContextOpen(false)}
             >
               <div className="row">
-                <h2>Included context</h2>
+                <h2>{t.includedContext}</h2>
                 <button
-                  aria-label="Close context"
+                  aria-label={t.closeContext}
                   onClick={() => setContextOpen(false)}
                 >
                   ×
@@ -2433,46 +2335,29 @@ export function App() {
                   }))
                 }
               />
-              <p className="composer-note">
-                Attachments are read on this device. Review extracted text
-                before sending. DOCX body text, text PDF, UTF-8 text, Markdown,
-                data, source code, PNG and JPEG; five files, including up to
-                three screenshots, 10 MB each, 60,000 extracted characters per
-                file and 20 PDF pages. Images use text extraction, not general
-                image understanding.
-              </p>
+              <p className="composer-note">{t.attachmentsNote}</p>
               <p className="composer-note" data-testid="context-size">
-                Selected input:{" "}
-                {selectedContextSize.characters.toLocaleString()} characters
-                {status?.inference.qualification
-                  ? ` of ${status.inference.qualification.maxInputCharacters.toLocaleString()}`
-                  : " · sending limit unavailable until chat is qualified"}
-                . Includes instructions, selected messages, documents and your
-                draft. This is not a token count. Oversized requests are
-                blocked; history is not silently shortened. There is no
-                indefinite memory.
+                {t.contextSize(
+                  selectedContextSize.characters.toLocaleString(lang),
+                  status?.inference.qualification?.maxInputCharacters.toLocaleString(
+                    lang,
+                  ),
+                )}
               </p>
-              <p className="composer-note">
-                Only selected context is included. CometRow is an AI
-                system, not a person, and can make mistakes—check important
-                details.
-              </p>
+              <p className="composer-note">{t.onlySelected}</p>
             </dialog>
             {new URLSearchParams(location.search).has("developmentTools") && (
               <details className="panel">
-                <summary>Exact decimal calculator</summary>
-                <p>
-                  Enter source numbers explicitly. This calculator runs locally;
-                  it does not execute model-generated code.
-                </p>
+                <summary>{t.calculator}</summary>
+                <p>{t.calculatorNote}</p>
                 <div className="calculator">
                   <input
-                    aria-label="First number"
+                    aria-label={t.firstNumber}
                     value={operandA}
                     onChange={(e) => setOperandA(e.target.value)}
                   />
                   <select
-                    aria-label="Operation"
+                    aria-label={t.operation}
                     value={operation}
                     onChange={(e) => setOperation(e.target.value)}
                   >
@@ -2480,10 +2365,10 @@ export function App() {
                     <option value="-">−</option>
                     <option value="*">×</option>
                     <option value="/">÷</option>
-                    <option value="change">% change</option>
+                    <option value="change">{t.percentChange}</option>
                   </select>
                   <input
-                    aria-label="Second number"
+                    aria-label={t.secondNumber}
                     value={operandB}
                     onChange={(e) => setOperandB(e.target.value)}
                   />
@@ -2498,7 +2383,7 @@ export function App() {
                       }
                     }}
                   >
-                    Calculate
+                    {t.calculate}
                   </button>
                 </div>
                 <output>{calculation}</output>
@@ -2506,15 +2391,15 @@ export function App() {
             )}
             {conversation.usage.length > 0 && (
               <p className="muted">
-                Reported inference:{" "}
-                {conversation.usage.reduce((n, u) => n + u.total, 0)} tokens ·
-                estimated $
-                {conversation.usage
-                  .reduce((n, u) => n + u.estimatedUSD, 0)
-                  .toFixed(4)}
-                . Includes reported usage across all branches. Excludes
-                unreported usage and search charges; incomplete requests may
-                still cost money.
+                {t.usage(
+                  conversation.usage.reduce((n, u) => n + u.total, 0),
+                  conversation.usage
+                    .reduce((n, u) => n + u.estimatedUSD, 0)
+                    .toLocaleString(lang, {
+                      minimumFractionDigits: 4,
+                      maximumFractionDigits: 4,
+                    }),
+                )}
               </p>
             )}
           </section>
@@ -2522,18 +2407,15 @@ export function App() {
         {tab === "Context" && (
           <section className="content-view">
             <h2>
-              A clearer picture.
+              {t.contextHeadA}
               <br />
-              <em>Only what you choose.</em>
+              <em>{t.contextHeadB}</em>
             </h2>
-            <p className="intro">
-              Import documents locally, review their text, then choose what to
-              include in your next conversation.
-            </p>
+            <p className="intro">{t.contextIntro}</p>
             <label className="upload-zone">
-              ＋ Add documents or screenshots
+              ＋ {t.addDocuments}
               <input
-                aria-label="Add documents or screenshots"
+                aria-label={t.addDocuments}
                 type="file"
                 multiple
                 accept={DOCUMENT_ACCEPT}
@@ -2544,18 +2426,13 @@ export function App() {
                 }}
               />
               <small>
-                DOCX body · Text PDF · Text / Markdown / Code · CSV / JSON · PNG
-                / JPEG
+                {t.formats}
                 <br />
-                Up to 10 MB, 60,000 extracted characters and 20 PDF pages per
-                file. Screenshot OCR supports printed English text. Legacy Word
-                and spreadsheet workbooks: export as PDF or UTF-8 text first.
+                {t.limits}
               </small>
             </label>
             {conversation.attachments.length === 0 && (
-              <p className="empty-note">
-                Your context is empty. Files are read on your device.
-              </p>
+              <p className="empty-note">{t.contextEmpty}</p>
             )}
             {conversation.attachments.map((attachment) => (
               <div className="panel" key={attachment.id}>
@@ -2582,15 +2459,14 @@ export function App() {
                     <div
                       className="live-search-note"
                       role="region"
-                      aria-label="From a live search"
+                      aria-label={t.fromLiveSearch}
                     >
                       <p className="muted">
-                        From a live search on{" "}
-                        {new Date(
-                          attachment.liveSearch.strippedAt,
-                        ).toLocaleDateString()}
-                        . Results and links were not kept; search again to see
-                        current sources. The search needs your approval again.
+                        {t.liveSearchNote(
+                          new Date(
+                            attachment.liveSearch.strippedAt,
+                          ).toLocaleDateString(lang, { dateStyle: "long" }),
+                        )}
                       </p>
                       <button
                         type="button"
@@ -2611,7 +2487,7 @@ export function App() {
                           setTab("Research");
                         }}
                       >
-                        Search again
+                        {t.searchAgain}
                       </button>
                     </div>
                   )}
@@ -2627,9 +2503,10 @@ export function App() {
                       setSource(undefined);
                     }}
                   >
-                    Remove
+                    {t.remove}
                   </button>
                 </div>
+                {/* i18n-wire: pass lang (document-import warning) */}
                 {attachment.warning && (
                   <p className="muted">{attachment.warning}</p>
                 )}
@@ -2637,10 +2514,10 @@ export function App() {
                   <details key={s.id}>
                     <summary>
                       {s.title}
-                      {s.page ? ` · page ${s.page}` : ""} · [{s.id}]
+                      {s.page ? t.pageSuffix(s.page) : ""} · [{s.id}]
                     </summary>
                     <button onClick={() => setSource({ ...s })}>
-                      Inspect source
+                      {t.inspectSource}
                     </button>
                     {s.url && (
                       <button
@@ -2652,19 +2529,18 @@ export function App() {
                           setTab("Research");
                         }}
                       >
-                        Review page retrieval
+                        {t.reviewPage}
                       </button>
                     )}
                     <label>
-                      Review or correct extracted text
+                      {t.correctText}
                       {s.userEdited && (
                         <span className="source-history-note">
-                          User-edited text. This is not an unmodified extraction
-                          or verified quotation from the original source.
+                          {t.userEditedShort}
                         </span>
                       )}
                       <textarea
-                        aria-label={`Text for ${s.title}${s.page ? ` page ${s.page}` : ""}`}
+                        aria-label={t.textFor(s.title, s.page)}
                         value={s.text}
                         disabled={!!busy}
                         rows={7}
@@ -2679,27 +2555,21 @@ export function App() {
                 ))}
               </div>
             ))}
-            <p className="muted">
-              Removing context affects future requests. It cannot retract prior
-              processing or information already present in earlier messages.
-            </p>
+            <p className="muted">{t.removeNote}</p>
           </section>
         )}
         {tab === "Research" && (
           <section className="content-view">
             <h2>
-              Explore the public web.
+              {t.researchHeadA}
               <br />
-              <em>Keep the choice yours.</em>
+              <em>{t.researchHeadB}</em>
             </h2>
+            {/* i18n-wire: pass lang (WHEN_TO_SEARCH on this tab) */}
             <p className="intro">
               {WHEN_TO_SEARCH.researchIntro}
             </p>
-            <p className="muted">
-              Search results and source links are shown only during this session
-              and are never saved. Saving keeps your written answers and the
-              approved search text. Use public, non-sensitive queries only.
-            </p>
+            <p className="muted">{t.researchNote}</p>
             <div className="panel">
               <label>
                 <input
@@ -2735,26 +2605,22 @@ export function App() {
                         .find(
                           (a) => a.selected && a.researchQuery,
                         )?.researchQuery;
-                      setInput(
-                        `Using the selected web sources, answer: ${question ?? "What do these sources establish?"} Cite evidence beside each factual claim and explain missing or conflicting evidence.`,
-                      );
+                      setInput(t.sourcesQuestion(question));
                     }
                     setTab("Conversation");
                   }}
                 >
-                  Prepare a question about these sources
+                  {t.prepareQuestion}
                 </button>
                 <p className="muted">
-                  Opens your existing draft, or prepares an editable question.
-                  Nothing is sent automatically.
-                  {!status?.inference.ready &&
-                    " AI answers are currently unavailable while provider verification is incomplete."}
+                  {t.prepareNote}
+                  {!status?.inference.ready && t.answersUnavailable}
                 </p>
               </div>
             )}
             <div className="panel">
               <label>
-                Research method
+                {t.researchMethod}
                 <select
                   value={researchKind}
                   onChange={(e) => {
@@ -2762,14 +2628,12 @@ export function App() {
                     setProposal(undefined);
                   }}
                 >
-                  <option value="search">Public search</option>
-                  <option value="page">Read a public page</option>
+                  <option value="search">{t.publicSearch}</option>
+                  <option value="page">{t.readPage}</option>
                 </select>
               </label>
               <label>
-                {researchKind === "search"
-                  ? "Exact search query"
-                  : "Exact HTTPS URL"}
+                {researchKind === "search" ? t.exactQuery : t.exactUrl}
                 <textarea
                   value={query}
                   maxLength={researchKind === "search" ? 400 : 2000}
@@ -2781,18 +2645,15 @@ export function App() {
                 />
               </label>
               {researchKind === "search" && !status?.search && (
-                <p className="muted">
-                  Search needs service access. No search request can be sent
-                  yet.
-                </p>
+                <p className="muted">{t.searchNeedsAccess}</p>
               )}
               {researchKind === "page" && status?.publicPageHosts && (
                 <p className="muted">
-                  Available page domains in this workspace:{" "}
-                  {status.publicPageHosts.length
-                    ? status.publicPageHosts.join(", ")
-                    : "none configured yet"}
-                  . Other domains remain blocked.
+                  {t.pageDomains(
+                    status.publicPageHosts.length
+                      ? status.publicPageHosts.join(", ")
+                      : t.noneConfigured,
+                  )}
                 </p>
               )}
               <button
@@ -2812,9 +2673,7 @@ export function App() {
                     if (researchKind === "search") {
                       const prepared = prepareSearchQuery(query.trim());
                       if (!prepared.value) {
-                        fail(
-                          "Nothing is left of the search text after removing personal details.",
-                        );
+                        fail(t.nothingLeft);
                         return;
                       }
                       setProposalNote({
@@ -2830,29 +2689,26 @@ export function App() {
                       setProposal({ kind: researchKind, value: query.trim() });
                     }
                   } catch {
-                    fail("Enter a public HTTPS URL.");
+                    fail(t.enterHttps);
                   }
                 }}
               >
-                Review disclosure
+                {t.reviewDisclosure}
               </button>
             </div>
             {proposal && (
               <div
                 className="approval"
                 role="region"
-                aria-label="Confirm external disclosure"
+                aria-label={t.confirmDisclosure}
               >
-                <p className="eyebrow">YOUR APPROVAL IS REQUIRED</p>
-                <h3>
-                  Share only this {proposal.kind === "search" ? "query" : "URL"}
-                  ?
-                </h3>
+                <p className="eyebrow">{t.approvalEyebrow}</p>
+                <h3>{t.shareOnly(proposal.kind === "search")}</h3>
                 <pre>{proposal.value}</pre>
                 {proposalNote?.note && (
                   <p className="muted kept-on-device">
-                    {proposalNote.note} Edit the search text above if you need
-                    something else searched.
+                    {/* i18n-wire: pass lang (identifier-masking note) */}
+                    {proposalNote.note} {t.editAbove}
                   </p>
                 )}
                 {proposalNote?.warning && (
@@ -2861,25 +2717,23 @@ export function App() {
                   </p>
                 )}
                 <p>
-                  Recipient:{" "}
-                  {proposal.kind === "search"
-                    ? "Brave Search API"
-                    : new URL(proposal.value).hostname}
-                  , through CometRow’s research service. Their retention
-                  policies apply. No private chat or attachment is included
-                  automatically.
+                  {t.recipient(
+                    proposal.kind === "search"
+                      ? "Brave Search API"
+                      : new URL(proposal.value).hostname,
+                  )}
+                  {/* i18n-wire: pass lang */}
                   {proposal.kind === "search" && ` ${TOP_PAGE_APPROVAL}`}
-                  {proposal.kind === "page" &&
-                    " The page address is sent exactly as shown; personal details in it are not removed."}
+                  {proposal.kind === "page" && t.pageExact}
                 </p>
                 <button
                   className="primary"
                   disabled={!!busy}
                   onClick={() => void research()}
                 >
-                  Approve and retrieve
+                  {t.approve}
                 </button>
-                <button onClick={() => setProposal(undefined)}>Cancel</button>
+                <button onClick={() => setProposal(undefined)}>{t.cancel}</button>
               </div>
             )}
           </section>
@@ -2897,12 +2751,12 @@ export function App() {
                   window.location.assign("/auth/password");
                 }}
               >
-                Change sign-in password
+                {t.changePassword}
               </button>
             )}
             {status?.accountId && (
               <button disabled={!!busy} onClick={() => void signOut()}>
-                Sign out
+                {t.signOut}
               </button>
             )}
             <AccountUsage
@@ -2932,17 +2786,13 @@ export function App() {
         {tab === "Saved" && (
           <section className="content-view">
             <h2>
-              A place for things
+              {t.savedHeadA}
               <br />
-              <em>worth coming back to.</em>
+              <em>{t.savedHeadB}</em>
             </h2>
-            <p className="intro">
-              Optional encrypted snapshots, stored only in this browser. No
-              cloud sync and no password recovery. You can download an encrypted
-              backup.
-            </p>
+            <p className="intro">{t.savedIntro}</p>
             <label>
-              Conversation title
+              {t.titleLabel}
               <input
                 value={conversation.title}
                 maxLength={120}
@@ -2955,16 +2805,9 @@ export function App() {
                 }
               />
             </label>
-            <p className="muted">
-              Name the current conversation, then save explicitly. Titles are
-              encrypted with the saved conversation.
-            </p>
+            <p className="muted">{t.titleNote}</p>
             <p role="status">
-              {unsaved
-                ? "Unsaved workspace changes. Save explicitly to keep your draft and documents."
-                : "No unsaved workspace changes."}{" "}
-              Reloading clears temporary work. Locking clears the workspace even
-              when changes are unsaved.
+              {unsaved ? t.unsavedChanges : t.noUnsavedChanges} {t.reloadClears}
             </p>
             {!unlocked ? (
               <form
@@ -2975,7 +2818,7 @@ export function App() {
                 }}
               >
                 <label>
-                  Vault passphrase
+                  {t.passphrase}
                   <input
                     type="password"
                     autoComplete="off"
@@ -2985,14 +2828,9 @@ export function App() {
                     required
                   />
                 </label>
-                <p className="muted">
-                  Use at least 12 characters. Your first unlock creates the
-                  vault. Losing the passphrase loses access. Clearing browser
-                  storage loses history unless you have an encrypted backup and
-                  its original passphrase.
-                </p>
+                <p className="muted">{t.passphraseNote}</p>
                 <button className="primary" disabled={!!busy}>
-                  Create or unlock vault
+                  {t.createOrUnlock}
                 </button>
               </form>
             ) : (
@@ -3010,20 +2848,15 @@ export function App() {
                     }
                     onClick={() => void save()}
                   >
-                    Save encrypted snapshot
+                    {t.saveSnapshot}
                   </button>
                   {saveConflict && (
                     <button disabled={!!busy} onClick={() => void save(true)}>
-                      Save as new conversation
+                      {t.saveAsNew}
                     </button>
                   )}
                   {containsTemporaryResearch(conversation) && (
-                    <p role="status">
-                      Search results and source links are never saved. Saving
-                      keeps your written answers and the approved search text;
-                      the reopened conversation says it came from a live search
-                      and offers to search again for current sources.
-                    </p>
+                    <p role="status">{t.researchNotSaved}</p>
                   )}
                   <button
                     onClick={() => {
@@ -3036,59 +2869,42 @@ export function App() {
                       setPassphrase("");
                     }}
                   >
-                    Lock and clear workspace
+                    {t.lockAndClear}
                   </button>
                 </div>
                 <section
                   className="panel danger"
                   role="region"
-                  aria-label="Delete everything on this device"
+                  aria-label={t.deleteAll}
                 >
-                  <h3>Delete everything on this device</h3>
-                  <p>
-                    Removes every saved conversation and project in this browser
-                    and locks the vault. It cannot be undone, and it does not
-                    reach encrypted backup files you downloaded. It cannot
-                    delete the secure server's short-term working memory, which
-                    clears on its own, or our request records (which account
-                    asked, when, how many times, model, published cost). To
-                    close your account as well, use the account page.
-                  </p>
+                  <h3>{t.deleteAll}</h3>
+                  <p>{t.deleteAllText}</p>
                   <button
                     disabled={!!busy}
                     onClick={() => void eraseEverything()}
                   >
-                    Delete everything on this device
+                    {t.deleteAll}
                   </button>
                   <button
                     className="text-button"
                     onClick={() =>
                       setSource({
                         id: "privacy-policy",
-                        title: "Privacy policy",
+                        title: t.privacyPolicy,
+                        // i18n-wire: pass lang
                         text: privacyPolicyText(disclosedProvider(status)),
                       })
                     }
                   >
-                    What you can and cannot delete ↗
+                    {t.whatDelete}
                   </button>
                 </section>
                 <div className="row"></div>
                 {unreadableSnapshots > 0 && (
-                  <p role="alert">
-                    {unreadableSnapshots} saved{" "}
-                    {unreadableSnapshots === 1
-                      ? "snapshot could"
-                      : "snapshots could"}{" "}
-                    not be read. Unreadable records remain stored unchanged.
-                    Other snapshots are available. Do not clear this browser's
-                    storage if you want to preserve them.
-                  </p>
+                  <p role="alert">{t.unreadable(unreadableSnapshots)}</p>
                 )}
                 {!saved.length && !unreadableSnapshots && (
-                  <p className="empty-note">
-                    No saved conversations yet. Saving is always your choice.
-                  </p>
+                  <p className="empty-note">{t.noSaved}</p>
                 )}
                 <ConversationLibrary
                   conversations={saved}
@@ -3097,7 +2913,7 @@ export function App() {
                   onOpen={openSaved}
                   onDelete={async (c) => {
                     const current = epoch.current;
-                    setBusy("Deleting encrypted snapshot…");
+                    setBusy(t.deletingSnapshot);
                     try {
                       await vault.current!.delete(c.id);
                       const snapshots = await vault.current!.readAvailable();
@@ -3107,12 +2923,10 @@ export function App() {
                       setProjects(projectList);
                       setUnreadableSnapshots(snapshots.unreadable);
                       if (conversation.id === c.id) reset();
-                      setNotice(
-                        "Encrypted records and wrapped key deleted. Device backups and exported copies are outside this deletion.",
-                      );
+                      setNotice(t.snapshotDeleted);
                     } catch {
                       if (current === epoch.current)
-                        fail("Deletion failed. Try again after unlocking.");
+                        fail(t.deleteFailed);
                     } finally {
                       if (current === epoch.current) setBusy("");
                     }
@@ -3138,8 +2952,8 @@ export function App() {
         )}
         {tab !== "Conversation" && (
           <footer>
-            Personal help. Sharing under your control.
-            <span>Built for a bounded evaluation.</span>
+            {t.footer}
+            <span>{t.footerNote}</span>
           </footer>
         )}
       </main>
@@ -3162,14 +2976,14 @@ export function App() {
             <h2>{source.title}</h2>
             <button
               onClick={() => setSource(undefined)}
-              aria-label="Close source"
+              aria-label={t.closeSource}
             >
               ×
             </button>
           </div>
           {source.url && (
             <p className="muted">
-              Source URL:{" "}
+              {t.sourceUrl}{" "}
               <a
                 href={researchSourceUrl(source.url)}
                 target="_blank"
@@ -3178,29 +2992,20 @@ export function App() {
               >
                 {source.url}
               </a>{" "}
-              · Retrieved: {source.retrievedAt}
+              {t.retrieved(source.retrievedAt)}
             </p>
           )}
           {source.providerDate && (
-            <p>
-              Provider-reported page date: {source.providerDate} (not verified
-              as publication or event date).
-            </p>
+            <p>{t.providerDate(source.providerDate)}</p>
           )}
           {source.evidenceKind && (
-            <p>
-              Evidence: {source.evidenceKind}. Retrieved material may be
-              incomplete.
-            </p>
+            <p>{t.evidence(source.evidenceKind)}</p>
           )}
           {source.userEdited && (
-            <p className="source-history-note">
-              User-edited text; not an unmodified extraction or verified
-              quotation from the original source.
-            </p>
+            <p className="source-history-note">{t.userEditedLong}</p>
           )}
           <pre>{source.text}</pre>
-          <button onClick={() => setSource(undefined)}>Close</button>
+          <button onClick={() => setSource(undefined)}>{t.close}</button>
         </dialog>
       )}
     </div>
