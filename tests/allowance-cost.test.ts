@@ -44,6 +44,10 @@ for (const backend of ["sqlite", "postgres"] as const)
           unmeteredRequests: 1,
           costUsd: "0.25",
         });
+        // The daily cap counts units in a time window, whatever their outcome (the clock stands at 5).
+        expect(await ledger.usedInLast("alice", 10)).toBe(5);
+        expect(await ledger.usedInLast("alice", 0)).toBe(0);
+        expect(await ledger.usedInLast("bob", 10)).toBe(0);
         // Three requests: one metered, two without metering (thinking1 settled, fast2 still reserved).
         expect(await ledger.spend(0, 10)).toEqual({ meteredUSD: "0.25", unmetered: 2 });
       } finally {
