@@ -46,8 +46,6 @@ import {
 } from "./health-consent";
 import { HealthConsentPrompt, HealthConsentSetting } from "./HealthConsent";
 import {
-  AMBIGUOUS_NUMBER_WARNING,
-  ARITHMETIC_WARNING,
   checkArithmetic,
 } from "./arithmetic/check";
 import {
@@ -62,6 +60,8 @@ import {
 } from "./german-rules";
 import { expireMessages, type DisappearAfter } from "./conversation";
 import { LanguageSwitch, textFor, useLang } from "./i18n";
+import { arithmeticText } from "./text/arithmetic";
+import { researchText } from "./text/research";
 import { serverMessage } from "./server-messages";
 import { appText } from "./text/app";
 import { privacySummary, privacyText } from "../shared/privacy-copy";
@@ -93,7 +93,6 @@ import {
   parseResearchResult,
   researchSourceUrl,
   topPageNote,
-  TOP_PAGE_APPROVAL,
 } from "./research-result";
 
 type Tab =
@@ -701,8 +700,7 @@ export function App() {
           },
           calculationSession,
           (kept) => {
-            const note = describeKept(kept); // i18n-wire: pass lang
-            if (epoch.current === current && !abort.signal.aborted && note)
+            const note = describeKept(kept);            if (epoch.current === current && !abort.signal.aborted && note)
               setConversation((c) => ({
                 ...c,
                 messages: c.messages.map((m) =>
@@ -745,7 +743,6 @@ export function App() {
                           ),
                         }
                       : {}),
-                    // i18n-wire: pass lang
                     answeredBy: answerLabel(
                       choiceForThis,
                       mode,
@@ -951,7 +948,6 @@ export function App() {
             temporarySearch: c.temporarySearch || approved.kind === "search",
             attachments: [...c.attachments, attachment],
           }));
-        // i18n-wire: pass lang (WHEN_TO_SEARCH, topPageNote)
         if (how)
           return {
             attachment,
@@ -960,8 +956,7 @@ export function App() {
         setNotice(
           sources.length
             ? approved.kind === "search"
-              ? t.searchAdded(topPageNote(result)) // i18n-wire: pass lang
-              : t.pageAdded
+              ? t.searchAdded(topPageNote(result))              : t.pageAdded
             : t.noSources,
         );
       }
@@ -992,8 +987,7 @@ export function App() {
     const outcome = await research({ kind: "search", value }, how);
     if (!outcome || (outcome === "failed" && how === "tap")) return;
     if (outcome === "failed") {
-      setSearchSent(WHEN_TO_SEARCH.automaticFailed); // i18n-wire: pass lang
-      void send(base, text, !again);
+      setSearchSent(WHEN_TO_SEARCH.automaticFailed);      void send(base, text, !again);
       return;
     }
     setSearchSent(outcome.note);
@@ -1096,8 +1090,7 @@ export function App() {
       if (current !== epoch.current) return;
       if (error instanceof VaultConflictError) {
         setSaveConflict(true);
-        fail(error.message); // i18n-wire: pass lang (vault.ts conflict text)
-        return;
+        fail(error.message);        return;
       }
       fail(
         error instanceof DOMException && error.name === "QuotaExceededError"
@@ -1651,8 +1644,7 @@ export function App() {
             </strong>
             <p>
               {status?.inference.ready && status.inference.qualification
-                ? // i18n-wire: pass lang
-                  verificationSummary(status.inference.qualification)
+                ? verificationSummary(status.inference.qualification, lang)
                 : t.localOnly}
             </p>
           </div>
@@ -1697,7 +1689,6 @@ export function App() {
             <ul role="status" aria-live="polite" aria-relevant="text additions">
               {imports.map((item, index) => (
                 <li key={index}>
-                  {/* i18n-wire: pass lang (document-import status and detail) */}
                   <span>
                     {item.name} — {item.status}
                   </span>
@@ -1793,20 +1784,19 @@ export function App() {
                       </span>
                     )}
                   </div>
-                  {/* i18n-wire: pass lang (answer-modes label, checks below) */}
                   {message.answeredBy && (
                     <p className="muted answered-by">{message.answeredBy}</p>
                   )}
                   {message.arithmeticCheck &&
                     message.arithmeticCheck.mismatches > 0 && (
                       <p className="warning arithmetic-check" role="alert">
-                        {ARITHMETIC_WARNING}
+                        {arithmeticText[lang].mismatch}
                       </p>
                     )}
                   {message.arithmeticCheck &&
                     (message.arithmeticCheck.ambiguous ?? 0) > 0 && (
                       <p className="warning arithmetic-check" role="alert">
-                        {AMBIGUOUS_NUMBER_WARNING}
+                        {arithmeticText[lang].ambiguous}
                       </p>
                     )}
                   {!!message.completenessCheck?.missing.length && (
@@ -1948,7 +1938,6 @@ export function App() {
                     document.getElementById("message-input")?.focus();
                   }}
                 >
-                  {/* i18n-wire: pass lang (WHEN_TO_SEARCH, GERMAN_RULES in this block) */}
                   <p>
                     <strong>
                       {suggestion.again
@@ -2177,7 +2166,7 @@ export function App() {
                     >
                       {(["auto", "fast", "thinking"] as const).map((value) => (
                         <option key={value} value={value}>
-                          {MODE_NAMES[value] /* i18n-wire: pass lang */}
+                          {MODE_NAMES[value]}
                         </option>
                       ))}
                     </select>
@@ -2502,7 +2491,6 @@ export function App() {
                     {t.remove}
                   </button>
                 </div>
-                {/* i18n-wire: pass lang (document-import warning) */}
                 {attachment.warning && (
                   <p className="muted">{attachment.warning}</p>
                 )}
@@ -2561,7 +2549,6 @@ export function App() {
               <br />
               <em>{t.researchHeadB}</em>
             </h2>
-            {/* i18n-wire: pass lang (WHEN_TO_SEARCH on this tab) */}
             <p className="intro">
               {WHEN_TO_SEARCH.researchIntro}
             </p>
@@ -2703,7 +2690,6 @@ export function App() {
                 <pre>{proposal.value}</pre>
                 {proposalNote?.note && (
                   <p className="muted kept-on-device">
-                    {/* i18n-wire: pass lang (identifier-masking note) */}
                     {proposalNote.note} {t.editAbove}
                   </p>
                 )}
@@ -2718,8 +2704,7 @@ export function App() {
                       ? "Brave Search API"
                       : new URL(proposal.value).hostname,
                   )}
-                  {/* i18n-wire: pass lang */}
-                  {proposal.kind === "search" && ` ${TOP_PAGE_APPROVAL}`}
+                  {proposal.kind === "search" && ` ${researchText[lang].approval}`}
                   {proposal.kind === "page" && t.pageExact}
                 </p>
                 <button

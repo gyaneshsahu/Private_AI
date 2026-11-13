@@ -68,7 +68,12 @@ const LangContext = createContext<{ lang: Lang; setLang: (lang: Lang) => void }>
 });
 
 export function LangProvider({ children, initial }: { children: ReactNode; initial?: Lang }) {
-  const [lang, setLangState] = useState<Lang>(() => initial ?? readLang());
+  const [lang, setLangState] = useState<Lang>(() => {
+    const first = initial ?? readLang();
+    // src/text/core.ts and the server-safe modules read <html lang>: set it before the first render.
+    if (typeof document !== "undefined") document.documentElement.lang = first;
+    return first;
+  });
   current = lang;
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -76,6 +81,7 @@ export function LangProvider({ children, initial }: { children: ReactNode; initi
   const setLang = (next: Lang) => {
     saveLang(next);
     current = next;
+    document.documentElement.lang = next;
     setLangState(next);
   };
   return <LangContext.Provider value={{ lang, setLang }}>{children}</LangContext.Provider>;
