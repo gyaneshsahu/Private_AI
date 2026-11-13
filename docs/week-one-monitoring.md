@@ -98,9 +98,26 @@ The browser shows the first two as "The protected service is limiting requests. 
 ### Portal: free tokens and spend
 
 - The relay cannot read Privatemode token use (the reply is encrypted), so query A shows every Privatemode request as unmetered. The portal is the only real cost figure.
-- Free tokens: about 0.69M after the German-rules run of 13 November (app-reported, portal not checked). At about 2,500 tokens per answer (that run's average, with search), that is roughly 275 answers. **Set the spend budget before the first invitee** (owner list step 3), or chat stops when the free tokens run out.
+- Free tokens: 1.579M of 5M (owner-reported from the portal, 13 November evening; the app had estimated 0.69M). At about 2,500 tokens per answer (that run's average, with search), that is roughly 275 answers. **Set the spend budget before the first invitee** (owner list step 3), or chat stops when the free tokens run out.
 - Daily in week one, then weekly: note the portal's spend and tokens for the alpha key, and the message count from query E. EUR per message should stay roughly stable.
 - Act when: spend above EUR 25 in one week, or above 50 % of the monthly budget before the 15th.
+
+### Weekly reconciliation with the portal (checklist K5, added 14 November)
+
+The app counts requests, the portal counts tokens. Once a week, on the same weekday and outside alpha hours:
+
+1. Portal: write down the token total used for the alpha key since last week's reading (owner; this is the only exact figure).
+2. Query E below: write down the Fast and Thinking message counts for the same 7 days (all states).
+3. Tokens per message = portal tokens divided by all messages. Planning figure so far: about 2,500 with search (13 November runs at the old max effort, so expect less at high).
+4. Compare with the worst case the allowance is planned on: Fast 13,000 tokens, Thinking 27,000 tokens per message (32,000 characters in, full output). If the real average is above a third of the worst case, lower `dailyLimit` first, then `requestLimit`.
+5. Free balance: the portal figure. Tell the agent when it is below 0.5M (K6). Weeks left = balance divided by this week's tokens.
+6. If the portal shows clearly more tokens than messages times the worst case, someone is sending requests the app does not count (a modified browser, or the development key in use): check the key's usage in the portal and rotate the alpha key.
+
+Record each week in one line: date, portal tokens, Fast messages, Thinking messages, tokens per message, free balance.
+
+| Week ending | Portal tokens | Fast | Thinking | Tokens per message | Free balance |
+| --- | --- | --- | --- | --- | --- |
+| (first week of the alpha) | | | | | |
 
 ### Automatic allowance
 

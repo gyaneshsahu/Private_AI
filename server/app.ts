@@ -404,6 +404,12 @@ export function createApp(config: Config) {
   });
   let active = 0;
   const inFlight = new Map<string, number>();
+  // A message the provider refused before any reply cost nothing but used allowance. The same
+  // account's next request in the same mode within a minute (the automatic backup retry, or the
+  // user sending again) runs on that reservation instead of a second one. One credit per refusal.
+  // shortcut: in this process's memory, so a restart in that minute counts the retry twice;
+  // move to the ledger together with the other single-server limits.
+  const retryCredit = new Map<string, { mode: string | undefined; expires: number }>();
   // Block-only attestation audit: can refuse forwarding, never supplies a key.
   // Pass-through until a deployment installs an audit configuration.
   // Block-only guard of the configured adapter (for Tinfoil, the release audit;
@@ -557,7 +563,11 @@ export function createApp(config: Config) {
             return;
           }
         }
-        if (config.usage) {
+        const credit = accountId ? retryCredit.get(accountId) : undefined;
+        if (accountId && credit) retryCredit.delete(accountId);
+        if (config.usage && credit && credit.mode === mode && credit.expires > Date.now())
+          count(`chat.${mode ?? "none"}.retry_not_counted`);
+        else if (config.usage) {
           await ensureAllowance(accountId);
           try {
             // Daily cap beside the period allowance (owner, 13 November): a rolling 24 hours, so
@@ -637,6 +647,7 @@ export function createApp(config: Config) {
             ? "model-not-found"
             : relay.classifyFailure(reply);
           if (failure === "model-not-found") alertModelNotFound(admission.model, reply.statusCode);
+          if (accountId && dispatched) retryCredit.set(accountId, { mode, expires: Date.now() + 60_000 });
           res.setHeader("X-PrivateAI-Upstream", failure);
           res.locals.outcome = `upstream_${failure}`;
           res.status(502).json({

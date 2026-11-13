@@ -297,6 +297,29 @@ it("a daily cap beside the period allowance: Thinking's cost counts, the refusal
   usage.close();
 });
 
+it("a message the provider refused is not counted twice: the next request in the same mode runs on its reservation, once", async () => {
+  const { root, usage, signIn } = await signedIn({ autoAllowance: { requestLimit: 10, days: 7 } });
+  const account = await signIn();
+  const { status, cookie } = await session(root, account.cookie);
+  const send = async () => {
+    const chat = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf, "glm-5.3-flash", "fast"));
+    await chat.text();
+    await vi.waitFor(() => expect(usage.summary(account.accountId)).toMatchObject({ pending: 0 }));
+    return chat.status;
+  };
+  upstream.mockImplementation(async () => new Response("overloaded", { status: 503 }));
+  expect(await send()).toBe(502);
+  expect(usage.summary(account.accountId)).toMatchObject({ used: 1 });
+  upstream.mockImplementation(async () => ok());
+  // The retry is forwarded and answered, and the allowance still shows one request.
+  expect(await send()).toBe(200);
+  expect(usage.summary(account.accountId)).toMatchObject({ used: 1 });
+  // The credit is used up: the next request counts.
+  expect(await send()).toBe(200);
+  expect(usage.summary(account.accountId)).toMatchObject({ used: 2 });
+  usage.close();
+});
+
 it("refuses an encrypted body far larger than the allowed input could be, before any allowance is used", async () => {
   const root = await listen();
   const { status, cookie } = await session(root);
