@@ -1,121 +1,121 @@
-promptId,label,score1to5,hallucination,speedNote,comment
-Q01,A,,,,
-Q01,B,,,,
-Q01,C,,,,
-Q02,A,,,,
-Q02,B,,,,
-Q02,C,,,,
-Q03,A,,,,
-Q03,B,,,,
-Q03,C,,,,
-Q04,A,,,,
-Q04,B,,,,
-Q04,C,,,,
-Q05,A,,,,
-Q05,B,,,,
-Q05,C,,,,
-Q06,A,,,,
-Q06,B,,,,
-Q06,C,,,,
-Q07,A,,,,
-Q07,B,,,,
-Q07,C,,,,
-Q08,A,,,,
-Q08,B,,,,
-Q08,C,,,,
-Q09,A,,,,
-Q09,B,,,,
-Q09,C,,,,
-Q10,A,,,,
-Q10,B,,,,
-Q10,C,,,,
-Q11,A,,,,
-Q11,B,,,,
-Q11,C,,,,
-Q12,A,,,,
-Q12,B,,,,
-Q12,C,,,,
-Q13,A,,,,
-Q13,B,,,,
-Q13,C,,,,
-Q14,A,,,,
-Q14,B,,,,
-Q14,C,,,,
-Q15,A,,,,
-Q15,B,,,,
-Q15,C,,,,
-Q16,A,,,,
-Q16,B,,,,
-Q16,C,,,,
-Q17,A,,,,
-Q17,B,,,,
-Q17,C,,,,
-Q18,A,,,,
-Q18,B,,,,
-Q18,C,,,,
-Q19,A,,,,
-Q19,B,,,,
-Q19,C,,,,
-Q20,A,,,,
-Q20,B,,,,
-Q20,C,,,,
-Q21,A,,,,
-Q21,B,,,,
-Q21,C,,,,
-Q22,A,,,,
-Q22,B,,,,
-Q22,C,,,,
-Q23,A,,,,
-Q23,B,,,,
-Q23,C,,,,
-Q24,A,,,,
-Q24,B,,,,
-Q24,C,,,,
-Q25,A,,,,
-Q25,B,,,,
-Q25,C,,,,
-Q26,A,,,,
-Q26,B,,,,
-Q26,C,,,,
-Q27,A,,,,
-Q27,B,,,,
-Q27,C,,,,
-Q28,A,,,,
-Q28,B,,,,
-Q28,C,,,,
-Q29,A,,,,
-Q29,B,,,,
-Q29,C,,,,
-Q30,A,,,,
-Q30,B,,,,
-Q30,C,,,,
-Q31,A,,,,
-Q31,B,,,,
-Q31,C,,,,
-Q32,A,,,,
-Q32,B,,,,
-Q32,C,,,,
-Q33,A,,,,
-Q33,B,,,,
-Q33,C,,,,
-Q34,A,,,,
-Q34,B,,,,
-Q34,C,,,,
-Q35,A,,,,
-Q35,B,,,,
-Q35,C,,,,
-Q36,A,,,,
-Q36,B,,,,
-Q36,C,,,,
-Q37,A,,,,
-Q37,B,,,,
-Q37,C,,,,
-Q38,A,,,,
-Q38,B,,,,
-Q38,C,,,,
-Q39,A,,,,
-Q39,B,,,,
-Q39,C,,,,
-Q40,A,,,,
-Q40,B,,,,
-Q40,C,,,,
+promptId,label,score1to5,confidentWrong,officialSource,comment
+Q01,A,1,yes,no,"States 55 EUR as the typical amount, but BKat Nr. 52 says 25 EUR (40 EUR with obstruction or over 1 h, 50 EUR for both); the per-hour surcharges and points it describes do not exist."
+Q01,B,3,yes,no,"25 EUR base is correct (BKat Nr. 52), but 35 EUR with obstruction is wrong (that is the Halten rate; parking is 40 EUR), and the points claim and lower Zeichen-286 rate are also wrong."
+Q01,C,3,no,no,"Roughly right at 25 EUR but attaches it to ab 1 Stunde, where BKat Nr. 52.2 says 40 EUR (hedged wrong); gives no figure for obstruction and refers to a nonexistent Bundesschatzmeister."
+Q02,A,5,no,yes,One month notice at any time after the minimum term matches § 56 Abs. 3 TKG and covers pre-December-2021 contracts.
+Q02,B,4,no,no,One month notice at any time after the 24-month term is correct (§ 56 TKG) but sourced only to advice sites.
+Q02,C,3,no,no,"One month is right but hedged and framed as zum Monatsende, and it points to § 95 TKG, which covers satellite orbits; the rule is in § 56 TKG."
+Q03,A,5,no,yes,Three net cold rents and three equal monthly instalments match § 551 BGB.
+Q03,B,5,no,yes,"Three net cold rents, three instalments, separate interest-bearing investment and the bar on contrary clauses all match § 551 BGB."
+Q03,C,4,no,yes,Correct per § 551 BGB but labelled unchecked; tying the first instalment to handover is looser than the statute's zu Beginn des Mietverhältnisses.
+Q04,A,3,yes,yes,"Three years per parent is right, but it says 12 months can move to age 3-8; § 15 Abs. 2 BEEG allows up to 24 months."
+Q04,B,2,yes,no,Three years is hedged but correct; it wrongly says the later share needs employer consent (§ 15 BEEG requires none) and that a written request is needed (Textform for births from 1 May 2025).
+Q04,C,4,no,yes,"Three years, a share usable from age 3 to 8 and 32 hours are correct per § 15 BEEG; the 24-month figure is missing and the twins figure of 6 years is hedged and overstated."
+Q05,A,3,yes,yes,"7 and 13 weeks in Textform are correct (§ 16 BEEG), but it says the employer can refuse leave before age 3; the law allows refusing only a third section between ages 3 and 8, within 8 weeks."
+Q05,B,2,yes,yes,"Says email is not enough and a signed letter is required, but § 16 BEEG has required only Textform since 1 May 2025; the 7 weeks is hedged and the 13-week rule is missing."
+Q05,C,4,no,yes,7 and 13 weeks in Textform match § 16 BEEG; it does not say Textform applies only to births from 1 May 2025.
+Q06,A,2,yes,no,"Wrongly says each municipality sets the fee by its own statute (it is a federal GebOSt Nr. 207 range of about 11-16 EUR), cites the repealed IntVO, and its hedged 15-25 EUR range runs too high."
+Q06,B,5,no,yes,"12.20-16.30 EUR from service-bw.de matches the official range, with a correct caveat that the local authority sets the exact fee."
+Q06,C,4,no,yes,The BW range of 12.20-16.30 EUR is correct; the Frankfurt figures could not be verified and its total of 46.60 EUR does not add up (16.30 + 32.80).
+Q07,A,3,no,no,"Never confirms the 8 years now in § 147 Abs. 3 AO for Buchungsbelege and recommends 10 years to be safe; honest, but no answer."
+Q07,B,4,no,yes,"8 years for receipts, 10 for books and annual accounts and 6 for business letters match § 147 Abs. 3 AO, but all are labelled unchecked."
+Q07,C,3,no,no,Leans toward the correct 8/10-year split but leaves it unresolved and found no official source; the 2-year rule it cites applies to private recipients only.
+Q08,A,4,no,no,297 EUR is correct for 2026 (unchanged since 1 Jan 2025); the Rundfunkbeitrag exemption claim could not be verified.
+Q08,B,4,no,no,297 EUR is correct for 2026; saying it is applied for together with Wohngeld or BuT is imprecise.
+Q08,C,3,yes,no,"297 EUR is the right current maximum, but it says seit 2024; the 2024 amount was 292 EUR and 297 EUR applies from 2025."
+Q09,A,5,no,yes,Exemption for a secondary home on application with proof of registration (since 1 June 2020) is correct; 18.36 EUR is still the monthly fee.
+Q09,B,5,no,yes,"Correct: liable in principle, but exempt on application when the fee is paid for the main home (BVerfG 2018, RÄStV in force since 1 June 2020)."
+Q09,C,1,yes,no,Says a separate fee is due for the second home and never mentions the exemption for secondary homes on application; it also places the RBStV on gesetze-im-internet.de.
+Q10,A,3,yes,yes,"3 years from year end (§§ 195, 199 BGB) is correct, but the 4 years for builders under § 650k and the claim that a reminder letter restarts the period are wrong."
+Q10,B,2,yes,yes,"3 years is correct, but the 2 years between merchants under § 196 HGB is wrong (repealed in 2002), and a reminder letter does not restart limitation."
+Q10,C,2,yes,yes,"3 years is correct, but 2 years for craftsmen, 30 years for maintenance arrears and the claim that a reminder letter suspends limitation are all wrong."
+Q11,A,4,no,yes,"Correct 3-week rule labelled unchecked and pointed to § 4 KSchG; § 5 KSchG is wrongly cited for small businesses (that is § 23), minor."
+Q11,B,4,no,yes,"Correct 3 weeks from receipt with § 4 details (works council statement, authority consent) and gesetze-im-internet; leaves out late admission under § 5."
+Q11,C,4,no,yes,"Correct and thorough, including § 5 late admission (2 weeks); the end-of-period rule is tied to the day of receipt rather than the end day (§ 193 BGB), imprecise for public holidays."
+Q12,A,3,no,yes,"Right amount of 1,230 EUR, labelled unchecked, but says 'since 2022' (hedged wrong: 2022 was 1,200 EUR); points to § 9a EStG."
+Q12,B,4,no,no,"Correct 1,230 EUR for 2025/2026 and the earlier 1,200 EUR, with useful details; only commercial guide sources."
+Q12,C,5,no,yes,"Correct 1,230 EUR since 2023 with the correct history, sourced from Finanzamt NRW and LStN Niedersachsen."
+Q13,A,4,no,yes,Correct quarterly dates and the 30 Sept application deadline for annual payment; misses the 1 July due date and the 15 EUR small-amount rule.
+Q13,B,4,no,yes,Correct quarterly dates and annual payment on 1 July on request; small-amount rule only hinted at and the 30 Sept deadline missing.
+Q13,C,3,yes,yes,"Quarterly dates correct (labelled unchecked, § 28 GrStG), but says municipalities can set monthly or half-yearly dates by statute; § 28 allows only the small-amount options."
+Q14,A,3,yes,yes,"Correct 603 EUR/month from 1 Jan 2026 via the Minijob link, but states 6,672 EUR per 12 months as fact, which is the outdated 2025 figure (now 7,236 EUR)."
+Q14,B,4,no,no,"Correct 603 EUR/month and 7,236 EUR/year for 2026 with sensible extras; only guide-site sources."
+Q14,C,2,yes,yes,"Hedged wrong amount (about 6,660 EUR/555 EUR, now 603 EUR/month) and states as fact that the excess reduces BAföG by half, which is wrong."
+Q15,A,1,yes,no,States 10 days per child and 25 maximum (2026: 15 and 35 under § 45 Abs. 2a SGB V) and a wrong 45-day cap for single parents.
+Q15,B,2,yes,no,"Gives the standard 10/25 and 20/50 days, but for 2026 § 45 Abs. 2a SGB V allows 15/35 and 30/70; only a generic caveat."
+Q15,C,1,yes,yes,Cites § 45 SGB V but gives 10/25 days (2026: 15/35) and a wrong 45-day cap for single parents; only a generic training-data caveat.
+Q16,A,3,yes,no,"Core answer right (no general leash rule, municipal ordinances) but wrongly says hunting law requires a leash on farmland; no mention of fighting-dog rules."
+Q16,B,2,yes,no,Wrongly claims a year-round leash rule in all Bavarian forests under the forest law and a general leash rule inside towns; Bavaria has neither.
+Q16,C,3,no,no,"Core answer right, but cites a non-existent 'Bayerisches Hundegesetz' and a 1 March-15 Oct rule (hedged wrong, with an explicit uncertainty note)."
+Q17,A,3,no,yes,"Says it cannot confirm 2026 and gives 19% from its data (hedged wrong), but correctly flags the coalition plan to cut to 7% and points to the BMF."
+Q17,B,2,no,yes,"Hedged, but its history is wrong (7% permanent since 2020) and it misstates the coalition plan as a rise to 19%; actually 7% on food since 1 Jan 2026."
+Q17,C,3,yes,yes,"Bottom line of 7% on food and 19% on drinks is right for 2026, but it wrongly states this has applied since 1 Jan 2024 (2024-2025 was 19%)."
+Q18,A,5,no,yes,"Correct: no fixed number of days, report without undue delay under § 536c BGB, with the consequences (loss of rent reduction, liability) and practical steps."
+Q18,B,4,no,no,"Correct (no fixed deadline, report immediately, risk of damages) with practical steps; does not cite § 536c or the loss of rent-reduction rights."
+Q18,C,4,no,no,"Correct: report without undue delay, damages risk, and rent reduction depends on proper notice; no statutory citation."
+Q19,A,1,yes,no,"Wrong: says a statutory prescription is valid for 3 months (28 days for the insurer to pay) and misdescribes T-prescriptions as fentanyl/tilidine, 7 days, green."
+Q19,B,2,no,no,"Gives 3 months instead of 28 days with an invented quarter rule; carries a stated uncertainty note, so hedged wrong."
+Q19,C,3,yes,no,"Correct 28 days, but wrongly says narcotic prescriptions can only be filled on the day of issue or the next day and muddles repeat prescriptions."
+Q20,A,4,yes,yes,"Correct (no statutory notice period, contract or works agreement, § 7 BUrlG), but wrongly says the employer must give reasons and offer an alternative."
+Q20,B,4,no,no,Correct core with practical guidance; deemed-approval remark is hedged and largely not the law.
+Q20,C,4,no,no,"Correct core (no statutory period, contract or collective agreement binding, operational reasons); vague remark that leave can 'arise' despite refusal."
+Q21,A,1,yes,yes,"States 20,000 EUR per parent (law: 400,000 EUR per child), grandparents 20,000 (law: 200,000) and an invented 400 EUR occasion allowance; only a generic tip to check BMF."
+Q21,B,1,no,yes,"Hedged wrong: 20,000 EUR instead of 400,000 EUR per parent and grandparents 20,000 instead of 200,000; muddled class II/III passage; marks knowledge as possibly outdated."
+Q21,C,1,no,yes,"Hedged wrong: 20,000 EUR instead of 400,000 EUR and grandparents 20,000 instead of 200,000; spouse 500,000 and 7 % entry rate correct; says it cannot guarantee the amounts."
+Q22,A,5,no,yes,"Correct 1,000/2,000 EUR since 2023 citing § 20 EStG; Abgeltungsteuer and Freistellungsauftrag advice right."
+Q22,B,4,no,no,"Correct 1,000/2,000 EUR; minor error calling 801/1,602 EUR the former Sparer-Freibetrag (it was already the Pauschbetrag); no source cited."
+Q22,C,4,no,yes,"Correct 1,000/2,000 EUR and former 801/1,602 EUR; points to bmf.bund.de but also to a dubious 'IZV (izv.de)'."
+Q23,A,4,no,no,Correct 36 months then 24 months; extras mostly right but sentence on early HU is self-contradictory; ADAC only.
+Q23,B,5,no,yes,Correct 36/24 months citing Anlage VIII StVZO; Saisonkennzeichen rule (first month of next period) verified.
+Q23,C,4,no,yes,"Correct three years then two, explicitly marked unchecked; points to § 29 StVZO and Anlage VIII."
+Q24,A,3,no,yes,Gives the correct 8 points but labels it unchecked and stays vague; names § 4 StVG and KBA.
+Q24,B,4,no,no,"Correct 8 points with brief context; key fact cited to commercial and test sites, kba.de only for a side fact."
+Q24,C,5,no,no,"Correct 8 points plus correct 4-5/6-7 stages, seminar once in five years, six-month bar and MPU; commercial sources only."
+Q25,A,3,no,yes,Correct two years but marked unverified; extension rule only vague; names StVG/FeV.
+Q25,B,5,no,no,"Correct two years, start, AM/L/T exception and extension to four years; ADAC as source."
+Q25,C,5,no,yes,"Correct two years, two-year extension (§ 2a Abs. 2a), crediting, suspension and remaining-term rule all match § 2a StVG."
+Q26,A,4,no,yes,Correct 0.0 in probation and under 21 per § 24c StVG; says probation runs from passing the test rather than issue; commercial sources.
+Q26,B,3,no,yes,Correct 0.0 and § 24c StVG but labelled unchecked; consequences vague.
+Q26,C,5,no,yes,Correct 0.0 for probation and under 21 with § 24c StVG; 250 EUR and 1 point plus two-year extension and seminar verified.
+Q27,A,2,no,no,Hedged wrong: endangerment given as 150 EUR and 1 point (actual 2 points and 1-month ban); invented 240 EUR tier; no driving ban mentioned.
+Q27,B,4,no,yes,100 EUR/1 point and 200 EUR/2 points/1-month ban correct; endangerment 150 EUR/2 points omits the 1-month driving ban.
+Q27,C,3,no,yes,Base 100 EUR and 1 point correct and probation consequence right; omits the endangerment and accident tiers; ministry name outdated.
+Q28,A,3,yes,no,Core message fair (pay or time off; limited flat-rate clauses) but misstates ArbZG as 'average up to 10 hours a day'; no minimum wage point.
+Q28,B,4,yes,no,"Thorough and balanced (§ 87 BetrVG, flat-rate limits, documentation) but repeats the wrong 'average up to 10 hours' ArbZG phrasing."
+Q28,C,4,no,no,Solid on § 106 GewO and limited flat-rate clauses; claimed BAG 20-25 % cap not verifiable (BAG asks for a stated number of hours); no ArbZG limits.
+Q29,A,4,yes,yes,Core 8/10 hours and averaging period correct; wrong side claim that night workers get cut to 8 hours (§ 6 Abs. 4 ArbZG gives transfer to day work).
+Q29,B,4,yes,yes,Core 8/10 hours and 48-hour average correct; wrongly says Sunday work always needs an Ausnahmegenehmigung (§ 10 ArbZG has statutory exceptions).
+Q29,C,5,no,yes,"Correct 8 hours extendable to 10 with 6-month/24-week average, 11-hour rest; only a slightly loose youth remark."
+Q30,A,2,yes,yes,11 hours correct but wrongly implies a general cut to 10 hours and says sectors may cut by up to 2 hours (§ 5 Abs. 2: 1 hour).
+Q30,B,4,no,yes,Correct 11 hours uninterrupted per § 5 ArbZG with correct sector exceptions and 12 hours for youths; one garbled sentence.
+Q30,C,3,yes,yes,"11 hours correct but exception wrong: cites § 5 Abs. 3 and a 2-hour cut with a 12-hour average (law: § 5 Abs. 2, 1 hour, one 12-hour rest)."
+Q31,A,5,no,no,"Correct 90/180 rule, passport rules and correctly says ETIAS is not yet in force (verified: still not operating, no start date)."
+Q31,B,5,no,no,Correct 90/180 rolling rule with passport and long-stay options; no ETIAS mention but nothing wrong.
+Q31,C,4,no,no,Correct 90/180 rule but thinner: no passport validity or ETIAS status.
+Q32,A,5,no,yes,"Correct membership rule and 8 % BY/BW, 9 % elsewhere, cited to verwaltung.bund.de."
+Q32,B,5,no,no,"Correct who pays and 8/9 % of income tax with a worked example; third-party sources only, flagged as such."
+Q32,C,4,no,no,Correct liability rule but rate given only as a hedged rough 8-9 % without the state split.
+Q33,A,5,no,no,"Correct: two weeks to any day during probation of up to six months, both directions."
+Q33,B,5,no,yes,Correct two-week notice to any day and six-month cap; names § 622 BGB.
+Q33,C,4,no,yes,Correct but hedged two-week figure as unchecked; links § 622 BGB and adds the § 623 written-form rule.
+Q34,A,5,no,no,"Correct: municipal tax, not everywhere, hedged plausible ranges, points to the local Hundesteuersatzung."
+Q34,B,5,no,no,"Correct: almost everywhere, set locally, some abolished; plausible ranges labelled as orientation."
+Q34,C,4,no,no,Correct structure but 'low hundreds' for a first dog overstates typical rates (hedged); office named is often the tax office.
+Q35,A,5,no,no,"Correct: no general limit, 130 km/h advisory, posted limits and 80 km/h for trailers."
+Q35,B,5,no,no,"Correct: no general limit, 130 advisory, posted limits, 80 km/h for heavy trucks."
+Q35,C,5,no,no,"Correct incl. § 18 StVO details (over 60 km/h design speed, 3.5 t trucks 80, buses 80-100) and rural/urban limits."
+Q36,A,2,no,no,"Hedged wrong: says EUR 18, but KV 1100 is 0.5 fee with a EUR 38 minimum, so EUR 38 for a EUR 500 claim."
+Q36,B,2,no,no,Hedged wrong: EUR 18 instead of EUR 38 and wrongly adds a second EUR 18 for the Vollstreckungsbescheid (no court fee for it).
+Q36,C,1,no,no,Hedged wrong: EUR 58.50 under a wrong KV number plus a non-existent second fee; actual fee is EUR 38.
+Q37,A,4,no,yes,Correct 6 weeks EFZG then Krankengeld (72+6=78 weeks); wrongly suggests part-timers and mini-jobbers have different sick-pay rules.
+Q37,B,4,no,no,Correct 6 weeks and Krankengeld 70 %/90 % net; omits the 12-month rule and the 78 weeks include the employer weeks.
+Q37,C,3,yes,yes,"Correct 6 weeks but states Krankengeld requires 4 weeks of insurance and employment (that is the EFZG waiting rule), and omits the 12-month rule."
+Q38,A,4,no,yes,Correct 16 for beer and 18 for spirits (JuSchG); accompanied-drinking note omits the minimum age of 14.
+Q38,B,4,no,no,Correct 16/18; accompanied drinking omits the age-14 floor and JuSchG does not govern drinking at home.
+Q38,C,4,no,yes,Correct 16/18 under JuSchG; omits the age-14 floor and the event-requires-18 claim is unverified.
+Q39,A,4,no,no,"Correct 3-month notice, 8 % (11 % before 2019) and rent payable after about two months; cites wrong § 554 and omits the per-m2 caps."
+Q39,B,3,yes,no,Correct 3 months and 8 % but wrongly applies the consent/court-within-3-months procedure of § 558 to a modernisation increase.
+Q39,C,2,yes,yes,"States the increase cannot exceed the local comparable rent (false under § 559), cites § 559a for termination (it is § 561), and hedged wrong one-month accessibility period."
+Q40,A,5,no,yes,"Correct EUR 60 with bvg.de/rmv.de and EUR 7 for a later shown ticket; statute says one week, operators may allow 14 days."
+Q40,B,3,no,yes,Hedged correct EUR 60 and correct § 265a StGB; claims amount is set individually per network although federal rules cap it at EUR 60.
+Q40,C,5,no,yes,"Correct EUR 60, prosecution for repeat offenders and Berlin AB single at EUR 4.00, cited to berlin.de/bvg.de."
