@@ -5,6 +5,7 @@ import { createRenderBridge } from "./render-bridge";
 import { scheduleRequestPurge } from "./request-retention";
 import { scheduleExpiryWarnings } from "./app";
 import { scheduleCountsLog } from "./counters";
+import { scheduleModelCheck } from "./model-watch";
 import {
   createDeploymentAttestationAudit,
   installAttestationAudit,
@@ -121,6 +122,11 @@ export async function startDeployment(render = false) {
     // The weekly report and the key stop chat for everyone when they expire: warn hourly ahead.
     if (config.inference)
       scheduleExpiryWarnings(config.inference.qualification, (line) => process.stdout.write(`${line}\n`));
+    // A model the report uses may be retired or rerouted at short notice: check the provider's list daily.
+    if (config.inference)
+      scheduleModelCheck(config.inference.qualification, config.inference.apiKey, (line) =>
+        process.stdout.write(`${line}\n`),
+      );
   } catch {
     process.stderr.write("CometRow restricted deployment startup failed.\n");
     await stop(1);
