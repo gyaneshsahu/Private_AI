@@ -54,7 +54,7 @@ The old rules beat neither single model, which is the failure the routing resear
 
 **Caveat:** the rules were adjusted on the same prompts they are scored on, so 4.33 is optimistic. The next fresh prompt set is the real test.
 
-**Cost:** in these benchmarks the new rules send 42 % of prompts to Thinking, which counts 3 against the allowance. The benchmarks are weighted towards hard prompts; everyday chat should send far fewer.
+**Cost:** in these benchmarks the new rules send 42 % of prompts to Thinking, which counted 3 against the allowance when this was written (5 since 13 November). The benchmarks are weighted towards hard prompts; everyday chat should send far fewer.
 
 ### 2. The user's choice always wins, and switching up is one tap
 

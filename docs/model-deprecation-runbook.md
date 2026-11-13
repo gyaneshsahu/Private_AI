@@ -83,3 +83,7 @@ Signs: a "changed" alert, a deprecation entry dated in the past, or answers that
 1. The affected mode fails for everyone with the message above. The other mode still works if its own model is listed.
 2. Put a notice in the notice file at once. Tell users which mode works.
 3. Go through steps 3 to 9 as fast as the tests allow. Do not skip the tests to restore the mode sooner.
+
+## Checked live, 14 November 2026
+
+One request with a model ID that does not exist (`cometrow-no-such-model`, one-word synthetic prompt, no tokens charged as far as the reply shows). Privatemode answered **HTTP 404**, `application/json`, plain (not encrypted): `{"error":{"message":"model \"cometrow-no-such-model\" not found","type":""}}`. The relay's check (`modelNotFound` in `server/providers/inference-relay.ts`) classes exactly this as model not found, on the status and on the text. Not checked: what a model that was retired (rather than never existed) returns, and whether a retired ID is first routed to a successor without any error. The daily list check is the signal for that case.
