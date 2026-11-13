@@ -2,7 +2,7 @@ Status: DRAFT, needs owner approval (12 November 2026)
 
 # CometRow personal-data breach plan (one page)
 
-Invite-only alpha, up to 10 friends. Controller: Ganesh Sahu, Germany, security@cometrow.com. Authority: LDI NRW, Düsseldorf. Suppliers: Tinfoil (AI; tells us within 72 hours under its DPA), Render (hosting), Google (sign-in), Brave (search, if on). Not legal advice: get a legal read before relying on it. Longer draft: `docs/breach-plan-draft-20261112.md`.
+Invite-only alpha, up to 10 friends. Controller: Ganesh Sahu, Germany, security@cometrow.com. Authority: LDI NRW, Düsseldorf. Suppliers: Privatemode by Edgeless Systems (AI, primary; tells us within 48 hours under its DPA), Tinfoil (AI backup only, not in use; 72 hours), Render (hosting), Google (sign-in), Brave (search, if on). Not legal advice: get a legal read before relying on it. Longer draft: `docs/breach-plan-draft-20261112.md`.
 
 > **First 15 minutes**
 > - **Contain.** Render shell: `touch <stopFile>` (chat stops on the next request). Then set `"enabled": false` in the deployment config and redeploy, because a restart clears the stop file. If sign-in is affected, remove the email from the allowlist or suspend the service. Do not roll back past `8a26a30` without first removing the `inference` key.
@@ -24,7 +24,8 @@ If the risk to them is high, email them without undue delay from security@cometr
 
 ## Rotate secrets (if exposed)
 
-- Tinfoil API key: new key in the dashboard, update the Render secret file, revoke the old one.
+- Privatemode API key: new key in the Privatemode portal (with rate limit, expiry and spend limit), update the Render secret file and `privatemode.portalKeyLimit` in the report, restart, then revoke the old key.
+- Tinfoil API key (only if Tinfoil is ever switched on): new key in the dashboard, update the Render secret file, revoke the old one.
 - Database password: change the owner role, then the `database-url` secret file.
 - Auth secret: replace and redeploy (signs everyone out).
 - Google OAuth client secret: rotate in Google Cloud, update the secret file.

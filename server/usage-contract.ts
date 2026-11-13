@@ -33,6 +33,8 @@ export interface UsageLedger {
   summary(accountId: string): Result<RequestAllowance>;
   /** A new allowance period; throws on an overlapping period. */
   createAllowance?(input: z.input<typeof usageAllowanceSchema>): Result<void>;
+  /** Starts the owner-set automatic allowance when the account has no current or later period. */
+  startAutoAllowance?(accountId: string, days: number, requestLimit: number): Result<boolean>;
   /** Reserves `units` (default 1) of the allowance for one request, all or none. */
   reserve(accountId: string, requestId: string, units?: number): Result<boolean>;
   dispatch(accountId: string, requestId: string): Result<void>;

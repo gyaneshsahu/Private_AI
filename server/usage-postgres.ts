@@ -14,6 +14,32 @@ import { usageMetricsSchema, type UsageMetrics } from "./usage-metrics";
 import { normalizeDecimalString } from "./usage-cost";
 
 /** Shared request counts only. Injected pool/migrations; never auto-activated. */
+/**
+ * Operator SQL (schema owner, listed in accountPrivilegePlan), like the purge function: the runtime
+ * role may only read allowances, so the owner-set automatic allowance is started through this
+ * function. It fixes the bounds (1 to 31 days, 1 to 10,000 requests), reads the database clock and
+ * starts a period only when the account has none now or later. Not a migration (older releases).
+ */
+export function autoAllowanceFunctionSql(schema: string): string {
+  return `CREATE OR REPLACE FUNCTION ${schema}.start_auto_allowance(p_account text, p_days integer, p_limit integer)
+RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path = ${schema}, pg_temp AS $fn$
+DECLARE
+  now_ms bigint := (extract(epoch FROM clock_timestamp()) * 1000)::bigint;
+BEGIN
+  IF p_account IS NULL OR p_account !~ '^[A-Za-z0-9_-]{1,80}$' OR p_days NOT BETWEEN 1 AND 31 OR p_limit NOT BETWEEN 1 AND 10000 THEN
+    RAISE EXCEPTION 'invalid automatic allowance';
+  END IF;
+  INSERT INTO usage_accounts VALUES (p_account) ON CONFLICT DO NOTHING;
+  PERFORM 1 FROM usage_accounts WHERE account_id = p_account FOR UPDATE;
+  IF EXISTS (SELECT 1 FROM usage_allowances WHERE account_id = p_account AND ends_at > now_ms) THEN
+    RETURN false;
+  END IF;
+  INSERT INTO usage_allowances VALUES (p_account, 'auto-' || p_account || '-' || now_ms, now_ms, now_ms + p_days::bigint * 86400000, p_limit);
+  RETURN true;
+END
+$fn$`;
+}
+
 export class PostgresUsageLedger implements UsageLedger {
   constructor(
     private database: Pool,
@@ -76,6 +102,33 @@ export class PostgresUsageLedger implements UsageLedger {
         ],
       );
     });
+  }
+  /**
+   * Starts the owner-set automatic allowance through the operator function. Where the function is
+   * not installed (local and owner-role databases), it falls back to a direct insert; on the hosted
+   * restricted role that insert is refused, so the operator function must be installed.
+   */
+  async startAutoAllowance(accountId: string, days: number, requestLimit: number): Promise<boolean> {
+    usageId.parse(accountId);
+    try {
+      const result = await this.database.query("SELECT start_auto_allowance($1,$2,$3) AS created", [
+        accountId,
+        days,
+        requestLimit,
+      ]);
+      return result.rows[0]?.created === true;
+    } catch (error) {
+      if ((error as { code?: string }).code !== "42883") throw error; // 42883: function not installed
+      const startsAt = Date.now();
+      await this.createAllowance({
+        accountId,
+        periodId: `auto-${accountId}-${startsAt}`,
+        startsAt,
+        endsAt: startsAt + days * 86_400_000,
+        requestLimit,
+      });
+      return true;
+    }
   }
   /** True when an allowance with this period ID exists, whatever its account or dates. */
   async hasAllowance(periodId: string): Promise<boolean> {

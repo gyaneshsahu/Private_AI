@@ -333,3 +333,18 @@ it.skipIf(!enabled)(
     }
   },
 );
+
+it.skipIf(!enabled)(
+  "automatic allowance on an owner-role database without the operator function: direct insert, then nothing while a period runs",
+  async () => {
+    const db = await usageDatabase();
+    try {
+      const ledger = new PostgresUsageLedger(db.pool);
+      expect(await ledger.startAutoAllowance("auto-fallback", 7, 150)).toBe(true);
+      expect(await ledger.summary("auto-fallback")).toMatchObject({ state: "active", limit: 150 });
+      await expect(ledger.startAutoAllowance("auto-fallback", 7, 150)).rejects.toThrow("Overlapping allowance");
+    } finally {
+      await db.dispose();
+    }
+  },
+);

@@ -126,19 +126,26 @@ export function createApp(config: Config) {
   };
   const ensureAllowance = async (accountId: string | undefined) => {
     const auto = config.autoAllowance;
-    if (!auto || !accountId || !config.usage?.createAllowance) return;
+    const usage = config.usage;
+    if (!auto || !accountId || !(usage?.startAutoAllowance || usage?.createAllowance)) return;
     try {
-      if ((await config.usage.summary(accountId)).state !== "unavailable") return;
-      const startsAt = Date.now();
-      await config.usage.createAllowance({
-        accountId,
-        periodId: `auto-${accountId}-${startsAt}`,
-        startsAt,
-        endsAt: startsAt + auto.days * 86_400_000,
-        requestLimit: auto.requestLimit,
-      });
-    } catch {
-      /* A concurrent request created it, or the ledger is down: the reserve decides. */
+      if ((await usage.summary(accountId)).state !== "unavailable") return;
+      if (usage.startAutoAllowance) await usage.startAutoAllowance(accountId, auto.days, auto.requestLimit);
+      else {
+        const startsAt = Date.now();
+        await usage.createAllowance!({
+          accountId,
+          periodId: `auto-${accountId}-${startsAt}`,
+          startsAt,
+          endsAt: startsAt + auto.days * 86_400_000,
+          requestLimit: auto.requestLimit,
+        });
+      }
+    } catch (error) {
+      // An overlap from a concurrent request is harmless; a refused insert means the operator
+      // function is missing on the hosted database, so it is counted (and the reserve refuses).
+      if ((error as { code?: string }).code === "42501") count("allowance.not_permitted");
+      else if (!/Overlapping allowance/.test(String((error as Error).message))) count("allowance.failed");
     }
   };
   app.disable("x-powered-by");

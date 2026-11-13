@@ -252,6 +252,18 @@ it.skipIf(!process.env.PRIVATEAI_SYNTHETIC_PG)(
           requestLimit: 999,
         }),
       ).rejects.toMatchObject({ code: "42501" });
+      // The owner-set automatic allowance goes through the operator function: a fresh account
+      // gets one bounded period, a second call while it runs changes nothing, bad bounds refuse.
+      const fresh = "auto-allowance-account";
+      expect(await runtimeUsage.startAutoAllowance(fresh, 7, 150)).toBe(true);
+      expect(await runtimeUsage.startAutoAllowance(fresh, 7, 150)).toBe(false);
+      expect(await runtimeUsage.summary(fresh)).toMatchObject({ state: "active", limit: 150, used: 0 });
+      expect(await runtimeUsage.startAutoAllowance(status.accountId, 7, 150)).toBe(false); // has a later period
+      for (const [days, limit] of [[0, 150], [32, 150], [7, 0], [7, 10001]])
+        await expect(runtimeUsage.startAutoAllowance("bounds-account", days, limit)).rejects.toThrow();
+      await expect(
+        runtime.pool.query("INSERT INTO usage_allowances VALUES ('x','y',0,1,1)"),
+      ).rejects.toMatchObject({ code: "42501" });
     } finally {
       if (listening)
         await new Promise<void>((resolve) => server.close(() => resolve()));

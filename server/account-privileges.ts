@@ -1,4 +1,5 @@
 import { requestPurgeFunctionSql } from "./request-retention";
+import { autoAllowanceFunctionSql } from "./usage-postgres";
 
 /** SQL for operator review only. Does not create roles, passwords, databases or execute grants. */
 export function accountPrivilegePlan(input: {
@@ -40,6 +41,10 @@ export function accountPrivilegePlan(input: {
     requestPurgeFunctionSql(schema),
     `REVOKE ALL ON FUNCTION ${schema}.purge_expired_requests() FROM PUBLIC`,
     `GRANT EXECUTE ON FUNCTION ${schema}.purge_expired_requests() TO ${runtime}`,
+    // Owner-set automatic allowance (13 November): the runtime may start a bounded period, never insert rows itself.
+    autoAllowanceFunctionSql(schema),
+    `REVOKE ALL ON FUNCTION ${schema}.start_auto_allowance(text, integer, integer) FROM PUBLIC`,
+    `GRANT EXECUTE ON FUNCTION ${schema}.start_auto_allowance(text, integer, integer) TO ${runtime}`,
   ];
 }
 

@@ -108,7 +108,7 @@ The browser shows the first two as "The protected service is limiting requests. 
 - **If it is missing, every invitee is refused** with "No request allowance is available." Check it at switch-on.
 - How it works (`ensureAllowance` in `server/app.ts`): when an account has no current period, a new one starts on its first `/api/status` call or its first chat. Fast costs 1 request; Thinking costs 5 (the report's `allowanceCost`; owner decision 13 November, was 3).
 - A used-up period stays used up until it ends. A higher `requestLimit` in the config applies only to new periods, not to a period already running.
-- Rough size check: Privatemode requests are booked at worst case (about USD 0.10 per Thinking request, which costs 5 units). So invitees x `requestLimit` / 5 x USD 0.10 is the worst case if everyone used only Thinking; it should stay under `approvedSpendUSD` per 7-day window. Owner decision: 150 per 7 days, so 10 invitees give at most 300 Thinking requests, about USD 30 at worst case.
+- Rough size check (corrected 13 November): the spend guard books **every** Privatemode request, Fast or Thinking, at the worst case of the largest mode (about EUR 0.11 at 8,000 characters, EUR 0.14 at 32,000; `server/spend-guard.ts`). So `approvedSpendUSD` must cover all requests in a 7-day window at that rate: 10 invitees at 150 requests is up to 1,500 requests, about USD 250. With USD 100, chat stops for everyone after about 530 to 850 requests.
 - Daily: query C. Every invitee who has signed in should have a row.
 
 ### 90-day purge
