@@ -49,6 +49,10 @@ const FIGURE = [
   /(?<!\p{L})\d{1,2}\.?\s(januar|februar|märz|april|mai|juni|juli|august|september|oktober|november|dezember|january|february|march|may|june|july|october|december)(?!\p{L})/iu,
   /\b(january|february|march|april|may|june|july|august|september|october|november|december) \d{1,2}\b/i,
   /\d\s?(punkte?|points?)\b/iu,
+  // Written in words (13 November search-first run, P-G4: "einem Punkt und … einem einmonatigen
+  // Fahrverbot"). shortcut: also flags prose like "ein Punkt ist wichtig"; that only adds a warning.
+  new RegExp(String.raw`(?<!\p{L})${NUMBER}[\s-]+(punkte?n?|points?)(?!\p{L})`, "iu"),
+  /(?<!\p{L})(ein|zwei|drei|vier|sechs|zwölf|\d+)[\s-]?(wöchig|monatig|jährig)\p{L}*/iu,
   /§/,
 ];
 

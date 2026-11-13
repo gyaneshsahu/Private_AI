@@ -159,6 +159,8 @@ describe("after the answer", () => {
     "The deadline is 31 July 2026.",
     "You get 20 working days.",
     "Siehe § 558b BGB.",
+    "Dafür gibt es einen Punkt und oft ein einmonatiges Fahrverbot.",
+    "Das bringt zwei Punkte in Flensburg.",
     "It costs EUR 46.",
   ])("finds the unchecked figure in %s", (answer) => expect(statesUncheckedFigures(answer)).toBe(true));
 
