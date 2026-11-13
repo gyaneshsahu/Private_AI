@@ -419,6 +419,17 @@ function phoneAccepted(value: string, layout: Layout, index: number): boolean {
   const digits = digitsOf(value);
   // A dotted or slashed calendar date is never a phone number.
   if (/^\d{1,2}[./]\d{1,2}[./]\d{2,4}$/.test(value.trim())) return false;
+  // Nor are dotted clock times after a date or in a range: "01.02.2026 09.30", "09.00-17.00".
+  const pieces = value.trim().split(/[ \n-]+/);
+  const clock = (piece: string) => /^(?:[01]?\d|2[0-4])\.[0-5]\d$/.test(piece);
+  if (pieces.every(clock)) return false;
+  const date = /^(\d{1,2})\.(\d{1,2})\.(?:19|20)\d{2}$/.exec(pieces[0]);
+  if (
+    date &&
+    plausibleDayMonth(date[1], date[2]) &&
+    pieces.slice(1).every((piece) => clock(piece) || /^(?:[01]?\d|2[0-4])$/.test(piece))
+  )
+    return false;
   if (digits.length < 8 || digits.length > 15) return false;
   return phoneLabelled(layout, index);
 }
@@ -544,7 +555,8 @@ const detectors: Detector[] = [
   {
     kind: "TAX-ID",
     // Steuernummer with separators, e.g. 12/345/67890, 123/4567/8901, 12345/67890.
-    pattern: /\b(?:\d{2,3}[/|lI]\d{3,4}[/|lI]\d{4,5}|\d{5}\/\d{5})\b/g,
+    // Not a piece of a longer slash chain such as a code value "1234/00000/01067".
+    pattern: /(?<![\d/])\b(?:\d{2,3}[/|lI]\d{3,4}[/|lI]\d{4,5}|\d{5}\/\d{5})\b(?!\/\d)/g,
   },
   {
     kind: "TAX-ID",
@@ -621,6 +633,12 @@ const detectors: Detector[] = [
 for (const detector of detectors)
   detector.pattern = unicodeWords(detector.pattern);
 
+/**
+ * Public helplines the product prompt names (src/conversation.ts). They are not personal,
+ * and models repeat them in replies that come back as history on the next turn.
+ */
+const PUBLIC_NUMBERS = /(?<!\d)0800[ ./-]?111[ ./-]?0[ ./-]?(?:111|222)(?!\d)/g;
+
 /** Invisible characters that split identifiers when text is copied from HTML or PDFs. */
 export const INVISIBLE = /[​‌‍﻿­]/g;
 
@@ -642,7 +660,9 @@ export function findIdentifiers(
     end: number;
     value: string;
   }[] = [];
-  const taken: [number, number][] = [];
+  const taken: [number, number][] = [...text.matchAll(PUBLIC_NUMBERS)].map(
+    (match) => [match.index, match.index + match[0].length],
+  );
   for (const detector of detectors) {
     detector.pattern.lastIndex = 0;
     let match: RegExpExecArray | null;

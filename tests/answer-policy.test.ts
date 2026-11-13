@@ -74,10 +74,23 @@ it("product (default) policy answers health questions with safe emergency wordin
   ])
     expect(product).toContain(phrase);
   expect(product).not.toContain("Do not diagnose or replace expert help");
-  // The helpline numbers look like phone numbers to the device masker; verified-chat
-  // skips the fixed policy prefix when masking (tests/browser-transport.test.ts covers it).
-  const { createMaskingSession } = await import("../src/identifier-masking");
-  expect(createMaskingSession().mask(product)).not.toBe(product);
+  // Our own fixed text never counts as a personal identifier, whatever the date or variant:
+  // verified-chat masks the whole system message, and models repeat the helplines.
+  const { findIdentifiers } = await import("../src/identifier-masking");
+  const web = {
+    ...c,
+    attachments: [
+      {
+        id: "a",
+        selected: true,
+        sources: [{ id: "s1", title: "T", text: "x", url: "https://example.test/" }],
+      },
+    ],
+  } as unknown as typeof c;
+  for (const date of ["2026-01-01T00:00:00Z", "2026-11-13T00:12:00Z", "2027-09-30T23:59:59Z"])
+    for (const variant of [undefined, "constraints-v1", "constraints-v2", "constraints-v3", "constraints-v4"] as const)
+      for (const conversation of [c, web])
+        expect(findIdentifiers(composeContext(conversation, 1e6, new Date(date), variant)[0].content)).toEqual([]);
   // Evaluation records name v1-v4; their system prompts must not change.
   const frozen = {
     "constraints-v1": "2e1afb75e89dc41f414bbe53d2959db95e28b85ab2cf5d483708d6772e39bef7",
