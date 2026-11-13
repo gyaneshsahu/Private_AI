@@ -1,7 +1,6 @@
 // When to search (docs/when-to-search-20261112.md): on-device rules that spot a question
 // needing current information, the masked search text, and the opt-in automatic setting.
-import { germanRulesQuestion, liveText } from "./german-rules";
-import { defineText } from "./i18n";
+import { germanRulesQuestion, liveText, textBlock } from "./german-rules";
 import { prepareSearchQuery } from "./identifier-masking";
 
 // Always time-sensitive. \p{L} boundaries so German umlauts count as letters.
@@ -84,7 +83,7 @@ export function saveAutoSearch(on: boolean, name = key): void {
   }
 }
 
-export const WHEN_TO_SEARCH_TEXT = defineText({
+export const WHEN_TO_SEARCH_TEXT = textBlock({
   en: {
     heading: "This question may need current information.",
     label: "Search the web for:",
@@ -143,5 +142,5 @@ export const WHEN_TO_SEARCH_TEXT = defineText({
       "Die automatische Suche wurde nicht abgeschlossen, daher nutzt diese Antwort keine Ergebnisse aus der Websuche.",
   },
 });
-/** The block in the current interface language (`uiLang()`), read at each use. */
+/** The block in the current interface language, read at each use. */
 export const WHEN_TO_SEARCH = liveText(WHEN_TO_SEARCH_TEXT);

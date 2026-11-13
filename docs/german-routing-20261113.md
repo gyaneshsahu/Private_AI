@@ -49,7 +49,7 @@ On the 168 prompts of the older sets, only five decisions changed, all German-ru
 
 ### 1. Interface texts in German and English (`351a6e9`)
 
-`defineText` blocks with formal "Sie" and the glossary terms: the reply labels (Auto / Schnell / Gründlich, "Vom Ersatzmodell beantwortet"), the waiting status, the unchecked-figures warning, the "no official source" note, the search-first choice ("Ohne Prüfung antworten"), the search and search-again texts and settings, the disappearing-message labels and two context errors. `GERMAN_RULES`, `WHEN_TO_SEARCH`, `MODE_NAMES` and `DISAPPEAR_LABELS` keep their shape and read the interface language (`uiLang()`) at each use, so callers in other files need no change; `answerLabel` and `stillThinkingStatus` take an optional language. The English text is unchanged. The model instructions (`GERMAN_RULES.policy`, `sourcedPolicy`) stay English in both blocks.
+`defineText` blocks with formal "Sie" and the glossary terms: the reply labels (Auto / Schnell / Gründlich, "Vom Ersatzmodell beantwortet"), the waiting status, the unchecked-figures warning, the "no official source" note, the search-first choice ("Ohne Prüfung antworten"), the search and search-again texts and settings, the disappearing-message labels and two context errors. `GERMAN_RULES`, `WHEN_TO_SEARCH`, `MODE_NAMES` and `DISAPPEAR_LABELS` keep their shape and read the interface language at each use, so callers in other files need no change; `answerLabel`, `stillThinkingStatus` and `composeContext` take an optional language. The four files do not import `src/i18n.tsx` at run time: the server runs `src/german-rules.ts` on its own (the Dockerfile copies it alone) and the evaluation browser page loads these files without React. So `src/german-rules.ts` reads the language by the same rule as `readLang()` (the saved pick, else the browser's first language). The English text is unchanged. The model instructions (`GERMAN_RULES.policy`, `sourcedPolicy`) stay English in both blocks.
 
 ### 2. The answer-language rule (product prompt only)
 
@@ -88,7 +88,7 @@ About 10 requests on Privatemode, Auto, German interface: 3 German questions, 2 
 
 - **The hold-out shows the question detector still misses about half of everyday German rules questions.** The answer-side check (unchanged, false alarms 3 of 501) remains the real safety net. A broader rule (any "darf ich" or "habe ich Anspruch" question) would catch more but needs its own false-alarm measurement first; health questions ("Darf ich Ibuprofen ...") are the main risk.
 - **"heute Abend" in an everyday question** (what to cook tonight) still counts as time-sensitive and sends it to Thinking.
-- `liveText` lives in `src/german-rules.ts` because that file is shared by the other three; it could move to `src/i18n.tsx`.
+- **One line for whoever owns `src/i18n.tsx`:** call `setTextLanguage(uiLang)` (from `src/german-rules.ts`) once, so these texts also follow a language pick kept only in memory when storage is blocked. Until then they follow the saved pick and the browser language, which covers every case with working storage.
 - "Recherche" is assumed as the German name of the Research tab in "Sie können es unter Recherche ausschalten."; it must match the tab's German label.
 
 ## How to rerun

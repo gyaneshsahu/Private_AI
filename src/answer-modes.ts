@@ -1,8 +1,8 @@
 // Answer modes on this device: the remembered choice, Auto's rules, the one-retry rule and
 // the label. Only mode names reach the UI, never model names.
 import { selectedSources } from "./conversation";
-import { germanRulesQuestion, liveText } from "./german-rules";
-import { defineText, textFor, uiLang, type Lang } from "./i18n";
+import { germanRulesQuestion, interfaceLanguage, liveText, textBlock } from "./german-rules";
+import type { Lang } from "./i18n";
 import { AttestationBusyError } from "./providers/inference-client";
 import { IncompleteReplyError } from "./reply-stream";
 import { needsCurrentInformation } from "./when-to-search";
@@ -13,11 +13,11 @@ import {
 } from "../shared/contracts";
 
 export type ModeChoice = "auto" | AnswerMode;
-const names = defineText({
+const names = textBlock({
   en: { auto: "Auto", fast: "Fast", thinking: "Thinking" },
   de: { auto: "Auto", fast: "Schnell", thinking: "Gründlich" },
 });
-const modeText = defineText({
+const modeText = textBlock({
   en: {
     ...names.en,
     backup: "Answered by the backup model",
@@ -31,7 +31,7 @@ const modeText = defineText({
       `Denkt noch nach … (das kann bis zu ${minutes} Minuten dauern${mode ? ` im Modus ${mode}` : ""})`,
   },
 });
-/** Mode names in the current interface language (`uiLang()`), read at each use. */
+/** Mode names in the current interface language, read at each use. */
 export const MODE_NAMES: Record<ModeChoice, string> = liveText(names);
 const key = "privateai.answerMode";
 
@@ -211,8 +211,8 @@ export function shouldRetryOnBackup(
 
 /** Show the waiting status after this long without answer text. */
 export const STILL_THINKING_AFTER_MS = 15_000;
-export function stillThinkingStatus(mode: AnswerMode | undefined, lang: Lang = uiLang()): string {
-  const t = textFor(modeText, lang);
+export function stillThinkingStatus(mode: AnswerMode | undefined, lang: Lang = interfaceLanguage()): string {
+  const t = modeText[lang];
   return t.still(Math.ceil(replyLimits(mode).totalMs / 60_000), mode && t[mode]);
 }
 
@@ -221,9 +221,9 @@ export function answerLabel(
   choice: ModeChoice | undefined,
   mode: AnswerMode | undefined,
   backup: boolean,
-  lang: Lang = uiLang(),
+  lang: Lang = interfaceLanguage(),
 ): string | undefined {
-  const t = textFor(modeText, lang);
+  const t = modeText[lang];
   const parts = [
     ...(mode && choice === "auto" ? [t.auto] : []),
     ...(mode ? [t[mode]] : []),

@@ -96,7 +96,8 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
 
     // Answer-side check: a rules question the detector misses is sent directly, and an answer
     // that states a law reference still gets the warning and the search-again box.
-    const missed = "Was darf mein Chef mir schenken?";
+    // "Was darf mein Chef mir schenken?" is recognised since the German cues of 13 November.
+    const missed = "Was ist bei Geschenken vom Chef zu beachten?";
     await message.fill(missed);
     await ui(suggestion).toHaveCount(0);
     await send.click();

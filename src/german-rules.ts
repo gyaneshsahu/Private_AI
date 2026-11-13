@@ -1,7 +1,7 @@
 // German rules, fees and deadlines (docs/german-rules-20261113.md): on-device rules that spot a
 // question about German law or administration, and the after-answer check for figures that no
 // official source backed. No model call; the text never leaves the device for this.
-import { defineText, textFor } from "./i18n";
+import type { Lang } from "./i18n";
 
 // A topic word alone is enough. \p{L} boundaries so umlauts count as letters; \p{L}* lets
 // German compounds through (Kündigungsfrist, Vergleichsmiete, Grundfreibetrag).
@@ -243,12 +243,41 @@ export function checkNoOfficialSource(
   return question && germanRulesQuestion(question) ? true : undefined;
 }
 
+// The interface language for texts read outside React. Not imported from ./i18n at run time: the
+// server runs this file on its own (Dockerfile copies it alone) and evaluation pages load it
+// without React. Same rule as readLang() in src/i18n.tsx: the saved pick, else German when the
+// browser's first language is German. src/i18n.tsx can hand over its own state with
+// setTextLanguage(uiLang), so a pick kept only in memory (blocked storage) is followed too.
+let textLanguage = (): Lang => {
+  try {
+    const saved = localStorage.getItem("cometrow.language");
+    if (saved === "de" || saved === "en") return saved;
+  } catch {
+    /* storage blocked or absent: browser language */
+  }
+  const first =
+    typeof navigator === "undefined"
+      ? undefined
+      : navigator.languages?.length
+        ? navigator.languages[0]
+        : navigator.language;
+  return /^de\b/i.test(first ?? "") ? "de" : "en";
+};
+export function setTextLanguage(get: () => Lang) {
+  textLanguage = get;
+}
+/** The current interface language, for callers that pass none. */
+export const interfaceLanguage = (): Lang => textLanguage();
+/** Like defineText in src/i18n.tsx: the German block must have exactly the English keys and shapes. */
+export function textBlock<T extends object>(text: { en: T; de: { [K in keyof T]: T[K] } }) {
+  return text as { en: T; de: T };
+}
 /**
  * A text block that follows the interface language each time it is read, so callers that pass no
  * language (`GERMAN_RULES.warning`) keep working and show the current language.
  */
 export function liveText<T extends object>(text: { en: T; de: T }): T {
-  return new Proxy(text.en, { get: (_, key) => textFor(text as never)[key as never] });
+  return new Proxy(text.en, { get: (_, key) => text[textLanguage()][key as keyof T] });
 }
 
 // Model instructions stay English in both languages: only the user sees the blocks below.
@@ -257,7 +286,7 @@ const sourcedPolicy =
 const policy =
   " This question is about German rules, fees, deadlines or legal consequences, and no official source is in this conversation. Do not state specific amounts, deadlines, point values or legal consequences as facts. Explain the general rule and what it depends on, name the official place to check (the law on gesetze-im-internet.de or the responsible authority), and offer a web search. If you mention a figure, say that it is unchecked.";
 
-export const GERMAN_RULES_TEXT = defineText({
+export const GERMAN_RULES_TEXT = textBlock({
   en: {
     // Heading of the pre-send search suggestion when the question is about German rules.
     heading: "Rules, fees and deadlines change. Check the official source first.",
@@ -294,5 +323,5 @@ export const GERMAN_RULES_TEXT = defineText({
     policy,
   },
 });
-/** The block in the current interface language (`uiLang()`), read at each use. */
+/** The block in the current interface language, read at each use. */
 export const GERMAN_RULES = liveText(GERMAN_RULES_TEXT);

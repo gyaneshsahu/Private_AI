@@ -1,8 +1,15 @@
 import type { Conversation, Message, Source } from "../shared/contracts";
-import { GERMAN_RULES, germanRulesQuestion, liveText, tierLabel } from "./german-rules";
-import { defineText, textFor, uiLang, type Lang } from "./i18n";
+import {
+  GERMAN_RULES,
+  germanRulesQuestion,
+  interfaceLanguage,
+  liveText,
+  textBlock,
+  tierLabel,
+} from "./german-rules";
+import type { Lang } from "./i18n";
 
-const text = defineText({
+const text = liveText(textBlock({
   en: {
     chooseMessage: "Choose a user message and enter its replacement.",
     edited: (title: string) => `${title} (edited)`,
@@ -15,7 +22,7 @@ const text = defineText({
     tooLarge:
       "Der ausgewählte Kontext ist zu groß. Nehmen Sie Nachrichten oder Anhänge aus dem Kontext; es wurde nichts stillschweigend gekürzt.",
   },
-});
+}));
 
 export type AnswerPolicyVariant =
   "constraints-v1" | "constraints-v2" | "constraints-v3" | "constraints-v4";
@@ -56,11 +63,11 @@ export function forkAt(
     (m) => m.id === id && m.role === "user",
   );
   if (index < 0 || !replacement.trim())
-    throw new Error(textFor(text).chooseMessage);
+    throw new Error(text.chooseMessage);
   return {
     ...conversation,
     id: crypto.randomUUID(),
-    title: textFor(text).edited(conversation.title),
+    title: text.edited(conversation.title),
     messages: [
       ...conversation.messages.slice(0, index),
       {
@@ -82,7 +89,7 @@ export function composeContext(
   maxCharacters: number,
   now = new Date(),
   variant?: AnswerPolicyVariant,
-  lang: Lang = uiLang(),
+  lang: Lang = interfaceLanguage(),
 ) {
   if (
     variant !== undefined &&
@@ -143,7 +150,7 @@ export function composeContext(
     if (m.included && m.status === "complete")
       messages.push({ role: m.role, content: m.text });
   if (messages.reduce((n, m) => n + m.content.length, 0) > maxCharacters)
-    throw new Error(textFor(text).tooLarge);
+    throw new Error(text.tooLarge);
   return messages;
 }
 export function newMessage(role: Message["role"], text: string): Message {
@@ -163,9 +170,9 @@ export const DISAPPEAR_WINDOWS = {
   week: 604_800_000,
 } as const;
 export type DisappearAfter = keyof typeof DISAPPEAR_WINDOWS;
-/** In the current interface language (`uiLang()`), read at each use. */
+/** In the current interface language, read at each use. */
 export const DISAPPEAR_LABELS: Record<DisappearAfter, string> = liveText(
-  defineText({
+  textBlock({
     en: { hour: "1 hour", day: "1 day", week: "1 week" },
     de: { hour: "1 Stunde", day: "1 Tag", week: "1 Woche" },
   }),

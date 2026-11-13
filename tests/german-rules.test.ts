@@ -330,6 +330,9 @@ it("shows the user-facing texts in the interface language; the model instruction
     expect(GERMAN_RULES.sourcedPolicy).toBe(GERMAN_RULES_TEXT.en.sourcedPolicy);
     vi.stubGlobal("navigator", { languages: ["en-US"], language: "en-US" });
     expect(GERMAN_RULES.without).toBe("Answer without checking");
+    // The user's saved pick wins over the browser, as in src/i18n.tsx.
+    vi.stubGlobal("localStorage", { getItem: (k: string) => (k === "cometrow.language" ? "de" : null) });
+    expect(GERMAN_RULES.without).toBe("Ohne Prüfung antworten");
   } finally {
     vi.unstubAllGlobals();
   }
