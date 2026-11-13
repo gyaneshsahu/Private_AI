@@ -1,4 +1,8 @@
 # PrivateAI readiness checklist
+## 13 November 2026, early morning: alpha = launch readiness (agent, owner asleep)
+
+Verified: unit suite green (two known load-only UI time-outs pass alone); durable suite 137 of 137 locally on the synthetic database, including the new account erase and suspend SQL; CI green on `2c69e48`, now including the Render bridge tests (6 of 6); live smoke through the app on Privatemode (Fast, Thinking, search with the official page read; compressed Wasm verified in a real browser). Built: automatic allowance, production search key file, operator notice, expiry warnings, Wasm caching and Brotli, suspend and erase procedure, content-free counts, three code-review fixes, masking date-of-birth fix, safety case 07 replies for glm-5.3 high. Nothing deployed. Owner-reported: none. Spend: about 25,100 Privatemode tokens, 2 Brave searches. Details: `docs/overnight-report-20261113.md`.
+
 ## German rules, Thinking time-outs, masking, attestation queue - 13 November
 
 - **Owner direction (13 Nov):**
