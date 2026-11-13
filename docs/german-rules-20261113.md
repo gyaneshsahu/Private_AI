@@ -1,5 +1,88 @@
 # German rules, fees and deadlines (13 November 2026)
 
+## Official-source preference — 13 November 2026 (latest)
+
+### Decision
+
+On the search path, answers still scored about 3.8, with several confident wrong figures. The cause was source quality: for example, the server read a moving company's page about re-registering a car. The owner decided to prefer official sources when ranking and choosing the page, **without a hard filter**.
+
+### What changed
+
+1. **More results, same text.**
+   - When the search text is a German-rules question (`germanRulesQuestion`, checked on the server), the server asks Brave for 10 results instead of 5.
+   - The search text is exactly the approved text, with no added operators.
+   - The results are re-ranked in three tiers, official, then public-interest, then other, keeping Brave's order within each tier. The top 6 are kept (`RULES_RESULTS`, `searchWeb` in `server/research.ts`).
+   - No tier is dropped and nothing is filtered: without an official result, the others stay.
+   - Other searches are unchanged (5 results, Brave's order).
+2. **One documented domain list:** `RULES_SOURCE_DOMAINS` in `src/german-rules.ts`, shared by the server and the device.
+   - **Official:** federal laws, the government, ministries and agencies (`gesetze-im-internet.de`, `*.bund.de`, `bmj.de`, `bmas.de`, `zoll.de`, `bundesjustizamt.de`, `familienportal.de`, `deutsche-rentenversicherung.de`, `minijob-zentrale.de`, `auswaertiges-amt.de` …), the Länder and city service portals (`berlin.de`, `bayern.de`, `nrw.de`, `muenchen.de` …), and EU law (`eur-lex.europa.eu`, `europa.eu`).
+   - **Public-interest:** the consumer centres (`verbraucherzentrale.de`, `vzbv.de`, `evz.de`), `test.de`, the federal courts and `justiz.de`, and the social associations (`sovd.de`, `vdk.de`).
+   - A host counts when it is the domain or a subdomain of it.
+   - These are authorities, not facts, so the list stays stable when the rules change.
+   - Foreign authorities (`gv.at`, `gov`) are deliberately "other" here. On 13 November the old code read Austria's `bmi.gv.at` as "official" for a German passport question.
+   - For a rules search, a private site named after the topic (`kindergeld.org`) is no longer preferred.
+3. **Page choice.**
+   - The page read is the first official result. Without one, it is the first public-interest result. Without either, it is the top result.
+   - The next candidates are still tried when a page cannot be opened, three at most.
+   - The redirect, identifier-masking and size checks are unchanged.
+   - The server returns the tier with the page record (`topPage.tier`).
+4. **The page note names the tier.** This applies to rules searches only; other searches keep the old wording (`topPageNote` in `src/research-result.ts`):
+   - "Our server also opened an official source and read its text: <address>"
+   - "Our server also opened a public-interest page (not an official source) and read its text: <address>"
+   - "Our server also opened a non-official page and read its text: <address>"
+   - Without an official result among the kept results, this is added: "No official source was found in the search results. Check the responsible authority before relying on these figures."
+5. **The model sees each source's type.** For a German-rules question with web results (default product prompt only), each web source's text given to the model starts with "[official source]", "[public-interest source]" or "[other source]" (`composeContext`). The sourced-only rule ends with:
+   > Prefer official sources; if they disagree with other sources, follow the official one. If no source is official, say that no official source was found, that the figures may be wrong, and name the authority to check.
+6. **The note under the answer.**
+   - It appears when a German-rules question is answered from web results that hold no official source. It uses the existing warning style:
+     > No official source was found in the search results. Check the responsible authority before relying on these figures.
+   - The flag `noOfficialSource` is stored on the message on the device only, like `uncheckedFigures`. It is never model context and never sent.
+7. **Copy unchanged.** The approval and suggestion texts already say "preferring an official site". The client accepts 7 sources from a search (6 results and the page).
+
+### Why this design
+
+- **Re-ranking, not filtering,** keeps an answer possible when no authority ranks.
+- **Page choice is the cheapest lever:** the server reads only one page, so it should be the most authoritative one.
+- **The type labels and the rule** let the model weigh the sources it already has.
+- **The note** tells the user when nothing official backed the figures.
+
+### Tests
+
+- `tests/search-provider.test.ts`: exactly the approved text with `count=10`; tiers with order kept and the top 6; without an official result nothing is dropped.
+- `tests/research-top-page.test.ts`:
+  - page choice by tier;
+  - a foreign authority counts as "other";
+  - the note's wording per tier, with and without an official result;
+  - other searches carry no tier.
+- `tests/german-rules.test.ts`:
+  - ranking and tiers;
+  - the labels and the rule, only for rules questions with web results, not for v1-v4, within the 8,000 limit;
+  - the device-only flag.
+- `tests/german-rules-ui.test.ts`: the official page note and no note under the answer; then a non-official result with the page note and the note under the answer, at phone width.
+
+### Measured (fresh prompts, before and after; `evaluation/german-rules-official-20261113/SUMMARY.md`)
+
+| Measure (13 prompts, Auto, search path) | Bar | Before | After |
+| --- | --- | --- | --- |
+| Confident wrong | at most 1 | 2 | 5 |
+| Mean | at least 4.2 | 3.92 | 3.69 |
+| Official source cited | at least 10 | 4 | 4 |
+| Page read official | at least 9 | 3 | 4 |
+| No official source, and the answer says so | every time | 0 of 5 | 4 of 5 (the note 5 of 5) |
+
+**Every bar is missed.** The page choice works: the official page was read every time one was in the results, 4 of 4 against 3 of 4 before. The answer now says when no official source was found.
+
+The answers did not improve, for two reasons outside the page choice:
+
+1. **4 of 13 questions were not searched at all,** because the detector misses them: Führungszeugnis, Sachgeschenke steuerfrei, Arbeitsunfähigkeitsbescheinigung, and cash brought into Germany.
+   - Their code path is identical in both runs. They account for 3 of the 5 confident wrong answers after, against 1 before: run-to-run variation.
+   - The detector was not widened on frozen test prompts.
+2. **For 5 of the 9 searched questions, no official source was among the 10 results.**
+
+On the 9 searched questions, the mean is 4.22 in both runs.
+
+**Next lever: the search side** (a second query the user sees, or an official-site hint in the shown text) **and detector coverage.** Both need the owner.
+
 ## Search first by default — 13 November 2026 (later)
 
 ### Decision
