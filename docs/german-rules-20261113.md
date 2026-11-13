@@ -1,6 +1,20 @@
 # German rules, fees and deadlines (13 November 2026)
 
-## "Always search for rules, fees and deadlines" — 13 November 2026 (latest)
+## Measured on 40 fresh questions, decisions — 13 November 2026 (latest)
+
+Full result in `evaluation/german-rules-40-20261113/SUMMARY.md`; bars frozen before the run in `BARS.md`. Privatemode, Auto, 120 answers graded blind.
+
+| Change | Confident errors without | With | Decision |
+| --- | --- | --- | --- |
+| Answer-side check | 8 of 40 reach the user unwarned | 1 of 40 (false alarms 0.6 %) | **Kept** |
+| Brave Goggles (20 searched questions) | 0 | 4 (official page read 18/20 instead of 5/20) | **Off** (`PRIVATEAI_SEARCH_GOGGLES` unset) |
+| "Always search" | 15 of 40 | 8 of 40 | **Shipped, off by default** |
+
+- **With always-search on and the answer-side check,** 1 of 40 confident errors reaches a user without a warning.
+- **The question detector caught only 20 of the 40 fresh questions.** The answer-side check is now the real safety net. The detector is not tuned on these 40 questions.
+- **Next:** a masking false positive, "1 date of birth" on a parental-leave answer (a date in the web results).
+
+## "Always search for rules, fees and deadlines" — 13 November 2026
 
 ### What changed
 

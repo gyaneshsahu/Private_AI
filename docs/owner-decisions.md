@@ -10,17 +10,17 @@ Running list kept while the owner is away (from 12 November 2026). Each entry na
 - Thinking runs at high effort, not max.
 - Per-mode time limits.
 - The masking false positive is fixed.
-- German rules have a detector, a search suggestion, a scoped prompt rule and an unchecked-figures warning. Search-first and sourced-only are being built.
-- The attestation queue is being built.
+- German rules: the search-first choice, sourced-only rules, official-source preference, the answer-side check and an "Always search for rules, fees and deadlines" setting (off by default) are built. On 40 fresh questions, confident errors that reach a user unwarned fell from 8 to 1 with the answer-side check. Brave Goggles made searched answers worse (0 to 4 errors on 20 questions), so they stay off (`evaluation/german-rules-40-20261113/SUMMARY.md`).
+- The attestation queue is built.
 
-The agent finishes those two builds, merges them, gets CI green and then asks you to deploy. Your steps in order:
+All of this is on `codex/development-handoff` with CI green, and none of it is live. Your steps in order:
 
 | # | What you do | My recommendation | Why it is in this place |
 | --- | --- | --- | --- |
 | 1 | **Send the attestation question to Privatemode support** (draft in `docs/privatemode-attestation-limit-20261112.md`) | Send today. Ask whether the limit is per organisation, key or IP; what it is on the Standard tier; and whether it can be raised without Enterprise | The queue keeps the alpha safe, but it caps how many people can start chatting at the same moment. This decides launch capacity, and the answer takes time |
 | 2 | **Create the alpha key** in the Privatemode portal, with a rate limit, an expiry date and a spend limit. Store it **only on Render** (secret file `inference.apiKeyFile`). Keep the free development key in Credential Manager for local work. Tell me the limit and the expiry | Expiry: alpha end plus 2 weeks | Chat cannot run in production without it. Keeping it off the laptop stops tests from eating its limits |
 | 3 | **Money:** a Privatemode spend budget, and the app's ceiling `approvedSpendUSD` (D5) | EUR 100 per month at Privatemode, with an alert; USD 100 per 7-day report window in the app (unmetered requests are booked at worst case, about USD 0.10 per Thinking request) | Without a budget the alpha stops when the free tokens run out. If the app ceiling is too low, chat stops for everyone |
-| 4 | **Approve the Privatemode privacy wording** (`docs/privacy-wording-privatemode-20261112.md`: the D17 sentences, the 10-minute check, automatic search covering rules, fees and deadlines), and decide on the sentence "does not use them to train any AI" | Approve; keep the training sentence with the DPA reference | Users must be told the truth for the provider in use |
+| 4 | **Approve the Privatemode privacy wording** (`docs/privacy-wording-privatemode-20261112.md`: the D17 sentences, the 10-minute check, automatic search covering rules, fees and deadlines, and the new sentence for "Always search for rules, fees and deadlines" in `shared/privacy-copy.ts`), and decide on the sentence "does not use them to train any AI" | Approve; keep the training sentence with the DPA reference | Users must be told the truth for the provider in use |
 | 5 | **Accept the four open report checks in writing** (GPU checked only on Privatemode's side; AMD/Intel revocation in the Wasm unknown; no per-request metering; attestation freshness up to 10 minutes) and **confirm the repository name** `edgelesssys/privatemode-public` | Accept for the invite-only alpha | I then finalise the report with the key limits from step 2, and you sign it (valid 7 days, renewed weekly) |
 | 6 | **Contracts:** file the Edgeless DPA of 24 July 2026 and the 12 Nov email; review `docs/dpa-record-privatemode-20261112.md` | File both | GDPR Art. 28 and 30 |
 | 7 | **Grade safety case 07** for the models now in use (Fast `glm-5.3-flash` low; Thinking `glm-5.3` **high**). Files are in `.local/privatemode-fast-tier-20261112/`; I will add a GLM-5.3-high answer before you grade | Grade; keep the mapping unless a grade fails | The safety gate is your call |
@@ -37,7 +37,7 @@ The agent finishes those two builds, merges them, gets CI green and then asks yo
 
 | Decision | My recommendation | Why |
 | --- | --- | --- |
-| **German rules: source quality.** With search, the remaining wrong answers come from weak pages (a moving company's site on re-registering a car). | Prefer official German sources for these questions. Either (a) rank results from authority domains first and read those pages (gesetze-im-internet.de, bund.de, the Länder, BMJ, Bundesregierung; a stable list of public authorities, not facts), or (b) add an official-site filter to the search text, which the user then sees. I recommend (a). | It is the next real lever: the model now follows the sources; the sources must be better |
+| **German rules: next step (decided by your rule "if the gain is small, ship the warnings and move on").** Official-source preference (a) is built; Goggles were tested and are off. | Stop tuning German rules for the alpha. Watch real use, and revisit Goggles only with a page reader that finds the right section of a long official page | The warnings now cover 14 of 15 confident errors on fresh questions; more ranking work did not help |
 | **Our relay's limit of 3 chats at once per server instance** | Raise to 10 for the alpha, keep the per-account limit of 1. Cost is still capped by the allowance and the spend ceiling | At 5 users starting together, 2 of 20 answers were refused by our own limit, not Privatemode |
 | **Tinfoil privacy text: automatic search sentence** | Leave it until Tinfoil is used again (backup only); it still says "time-sensitive" only, while the Privatemode text now includes rules, fees and deadlines | The approved Tinfoil text changes only with your approval |
 | **Privatemode attestation allowance** | Ask support (rank 1 above); plan the launch around the Standard-tier figure they give | It is now the ceiling for how many people can start chatting at the same moment |
