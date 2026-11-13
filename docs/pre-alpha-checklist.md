@@ -1,5 +1,34 @@
 # Pre-alpha checklist — 12 November 2026 (updated at night: Privatemode primary)
 
+## Night of 13 November: the alpha is the only test before launch (no beta)
+
+The owner decided on 13 November that the invite-only alpha is the last test before public launch. So everything launch needs must be built and used by real invitees during the alpha. A launch-gap audit (24 gaps) and an independent code review were run that night. Built and committed on `codex/development-handoff` the same night (not deployed):
+
+| # | Item | Status |
+| --- | --- | --- |
+| N1 | **Chat allowance for invitees** (audit G1: production had no way to give one, so no invitee could chat) | built: `inference.allowance` in the deployment config, renewed per period; **owner sets the size** |
+| N2 | **Web search in production** (audit G3: production refused a search key) | built: `inference.searchKeyFile`, absent means off; Goggles never in production; **owner decides on or off (R5)** |
+| N3 | **Operator notice to all users** (audit G10: no way to announce a provider switch or outage) | built: `inference.noticeFile` |
+| N4 | **Warning before the weekly report or the key expires** (audit G9) | built: hourly log line, 48 h before the report ends, 14 days before the key expires; needs the alert (O2) to reach you |
+| N5 | **Wasm download**: the bridge sent no-store on everything, so the 29 MB Wasm downloaded on every visit (audit G11 plus own finding) | built: cached a year under its hash name and sent Brotli-compressed (about 5 MB) |
+| N6 | **Account suspend and erase procedure** (audit G6: Google-only users cannot close their account) | being built (operator script that prints SQL for you to run) |
+| N7 | **One user could fill the shared attestation queue** (review A) | fixed: at most 2 at once and 10 per 10 minutes per account |
+| N8 | **Retry after a time-out refused by our own relay** (review D) | fixed |
+| N9 | **"Answer again with Thinking" lost its mode behind the health-consent prompt** (review E) | fixed |
+| N10 | **A retried message is charged twice** (review C) and **the client can claim Fast while asking for Thinking-level effort** (review B: the encrypted body cannot be checked) | known, not changed: the portal spend limit is the backstop; recorded in owner decisions |
+| N11 | Masking "1 date of birth" on rules text (side finding of the 40-question test) | fixed (`14ef2dd`); dev and independent masking sets unchanged |
+| N12 | Alpha plan with metrics, survey and stop rules (audit G15) | written: `docs/alpha-plan-20261113.md`; monitoring updated for Privatemode: `docs/week-one-monitoring.md` |
+
+**Status corrections from the audit:**
+- **P6:** Thinking runs at high since 13 November, not max (corrected in the row).
+- **L8:** Privatemode's resale clause was confirmed in writing on 12 November (corrected in the row).
+- **C2, C3:** "deletion path done" covers the in-app "delete everything" only. Account closure needs email, which is off, so a Google-only user cannot close the account (N6).
+- **O5:** the monitoring list was written for Tinfoil; replaced by the Privatemode version on 13 November.
+- **B17:** the limits hold only while one server instance runs (they live in memory).
+- **Must now happen during the alpha, not later:** R5 (search), O1 to O3 (backups, alert, hosted restore), T7 (screen reader on a phone), and launch answers for D12 (inactive accounts), D15 (breach deputy) and L2 (consent record).
+
+**Still open for launch (owner decisions, in `docs/owner-decisions.md`):** free or paid at launch (G2), German UI (G8: the app is English only), public sign-up and capacity beyond one instance (G5), privacy policy fixes (G7: the contact section says an account can be closed, the deletion section says it cannot; no legal basis per purpose, no rights section).
+
 Everything left before the first invited friend uses CometRow chat. Sources: the repository, `docs/owner-decisions.md` (branch `alpha-provider-neutral`), `docs/provider-qualification-20261026.md`, `docs/provider-model-decision-20261026.md`, `docs/READINESS.md`. The "concerns doc" the owner named does not exist in the repository or `docs/private/`, so nothing was taken from it.
 
 Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier). Items with IDs such as A15 or B17 come from the owner's concerns log; that log is not in the repository, so their descriptions come from the owner's message of 12 November. Status: done, open, unknown (cannot be verified from here; never counted as done). Effort is working time, not waiting time.
@@ -13,7 +42,7 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | P3 | GPU attestation scope (former P3) | Trust row of the scorecard | Agent | no | 0 | done (answered by Privatemode docs) |
 | P4 | Tinfoil replies: T1 (EU option), T4 (written agreement for health) | Legal fit; health is in scope | Waiting on a reply | yes, if Tinfoil is chosen (T4) | 0 | Tinfoil is now the backup only (owner, 12 Nov); not blocking. Replies still welcome for continuity |
 | P5 | Safety grades for case 07, five arms | No model may go live with an ungraded safety case | Owner | yes | 30 min | open: grade safety case 07 for Fast glm-5.3-flash low and Thinking glm-5.3 high (Thinking moved from max to high on 13 Nov); both reply files ready in `.local/privatemode-fast-tier-20261112/` (Thinking-high added 13 Nov, 4,489 tokens) |
-| P6 | Default and fallback model pick | The report names one model | Owner (Agent prepares) | yes | 30 min | done 12 Nov for Privatemode: Fast glm-5.3-flash low (backup glm-5.3), Thinking glm-5.3 max (backup glm-5.3-flash), from `docs/privatemode-fast-tier-20261112.md`; safety grade P5 open |
+| P6 | Default and fallback model pick | The report names one model | Owner (Agent prepares) | yes | 30 min | done 12 Nov for Privatemode: Fast glm-5.3-flash low (backup glm-5.3), Thinking glm-5.3 max (backup glm-5.3-flash), from `docs/privatemode-fast-tier-20261112.md`; Thinking moved to **high** on 13 Nov; safety grade P5 open |
 | P7 | Provider decision (scorecard final) | Everything downstream depends on it | Owner | yes | 1 h | done 12 Nov: Privatemode primary, Tinfoil backup (manual, announced switching) |
 | P8 | Stage 3: full Privatemode integration, if Privatemode wins | Spike code is on an unpushed branch, not in the app | Agent | yes, if Privatemode | 1.5–2 weeks | done 13 Nov: Stage 3 and session verification merged into `codex/development-handoff` (`3172d25`, then `0eecec7`), CI green; Tinfoil stays a tested backup |
 | P9 | Qualification report for the chosen provider and model, with owner-accepted checks (D1) | Chat cannot switch on without a valid report | Agent drafts, Owner signs | yes | 2 h | Privatemode draft written 12 Nov (`docs/qualification-report-draft-privatemode-20261112.md` on `privatemode-stage3`); four checks need owner acceptance; context size 32,000 recommended |
@@ -40,7 +69,7 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | L5 | Accept the chosen provider's DPA as a business customer; note the transfer assessment in the DPIA | Processor contract (Art. 28) | Owner | yes | 1 h | open |
 | L6 | Health legal basis (Art. 9(2)(a) explicit consent) settled with the provider's terms | Both providers put the basis on us; Tinfoil limits health to incidental without a written agreement | Owner | yes | depends on T4 | open |
 | L7 | Retention rule: 90-day request purge | The policy promises it | Agent | yes | 0 | done (live on Render, function installed 25 Oct) |
-| L8 | Resale / end-user clause: Tinfoil §10, Privatemode §2.4 | Using the API for our users must be allowed | Waiting on a reply | yes | 0 | Tinfoil: answered by its docs; Privatemode: open (P4) |
+| L8 | Resale / end-user clause: Tinfoil §10, Privatemode §2.4 | Using the API for our users must be allowed | Waiting on a reply | yes | 0 | Tinfoil: answered by its docs; Privatemode: done 12 Nov, confirmed in writing (§2.4, see P1) |
 | L9 | Router release pinning policy (A14) for the block-only attestation audit | Without it the audit stays off; the DPIA draft wanted it on | Owner | no (alpha runs on owner acceptance) | 1 h decide | open |
 | L10 | Review the DPIA and terms drafts | Required documents for a real user | Owner | yes | half a day | open |
 | L11 | Imprint: second fast contact channel (phone or form) | German imprint rules are often read as needing it | Owner | no | 30 min | open |

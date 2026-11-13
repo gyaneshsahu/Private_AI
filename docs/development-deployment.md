@@ -36,6 +36,18 @@ The browser must accept the self-signed certificate (Playwright: `ignoreHTTPSErr
 
 Candidates from 22 October contain the block-only attestation audit (`server/attestation-audit.ts`). It is active only when the deployment config carries an `attestationAudit` block; `deployment/render-config.example.json` and the mounted hosted config have none, so the guard passes through. Owner instruction of 22 October: do **not** add that block to any deployment until the release pinning policy in `docs/threat-model-20261022.md` is decided; with the router rotating several times a week, a pin to a recorded digest would refuse all private inference. Startup never enables it by itself.
 
+## Production chat: optional settings added 13 November
+
+Three optional fields in the deployment config's `inference` section. Each is absent by default, and then the service behaves as before.
+
+| Field | What it does | Owner decides |
+| --- | --- | --- |
+| `allowance: { "requestLimit": N, "days": D }` | Every signed-in invitee gets N requests per D days (1 to 31). A new period starts automatically when the last one ends. Without it, nobody can chat: production had no other way to give an allowance. Fast counts 1 request, Thinking 3 | N and D (recommendation for the alpha: 150 requests per 7 days) |
+| `searchKeyFile` | Absolute path to a Render secret file holding the Brave Search key. Turns on web search, which the user approves. Goggles always stay off in production | Search on or off for the alpha (R5) |
+| `noticeFile` | Absolute path to a text file. While it holds text (up to 500 characters), every user sees it as "Notice from CometRow: …". Re-read every 30 seconds, so `echo "…" > <noticeFile>` in the Render shell shows it, and an empty file hides it | When to use it, for example to announce a provider switch or an outage |
+
+The service also logs a warning every hour from 48 hours before the provider review's `validUntil` ends ("The provider review expires at …"), and when the Privatemode key is within 14 days of its recorded expiry. When the review ends, chat stops for everyone until a renewed report is deployed.
+
 ## Production chat switch (dormant) — 12 November, branch alpha-provider-neutral
 
 Production refuses chat unless the deployment config has an `inference` section with `"enabled": true`, `apiKeyFile`, `qualificationFile` and `stopFile` (absolute paths, Render secret files for the first two). Without it the service is exactly as before, and its log line still reads "email and inference disabled". With it, the relay also refuses any request whose worst case would take committed spend for the report's review window past `approvedSpendUSD` (metered cost, plus a worst case for every unmetered or running request). **Instant stop:** from the service shell, `touch <stopFile>` refuses chat on the next request and the app shows "paused by the operator"; `rm <stopFile>` resumes. A restart clears `/tmp`, so for a durable stop also set `"enabled": false` and redeploy. Nothing here is deployed; owner decisions D5 to D7 in `docs/owner-decisions.md`.

@@ -1,8 +1,166 @@
-# Week-one monitoring after chat goes on — 12 November 2026 (checklist O5)
+# Week-one monitoring after chat goes on (checklist O5)
+
+## Privatemode version: 13 November 2026 (current)
+
+**Status: written from the code on `codex/development-handoff` (`b495c16`); nothing here is live yet, and no step was run on Render. The Tinfoil-era version of 12 November is kept below for the record.**
+
+Same idea as before: a ten-minute routine, morning and evening, for the first seven days after chat is switched on, then the 15-minute weekly review in `docs/alpha-plan-20261113.md`. Nothing here reads or sends content. Until an alert provider exists (O2), this routine is the only alarm.
+
+**Added on 13 November (committed after `b495c16`, not deployed yet):** the app logs a warning at start and every hour when the report ends within 48 hours ("The provider review expires at ... Renew and deploy the report before then, or chat stops for everyone.") or the key within 14 days, in every entry including production. Also new: an operator notice file (`inference.noticeFile`, shown to every user) and a production search key file (`inference.searchKeyFile`), see `docs/development-deployment.md`. Add both warning texts ("provider review expires", "Privatemode API key expires") to the daily log search.
+
+What changed with Privatemode:
+- Privatemode limits **attestation checks per organisation** (about 6 to 10, then a 60-second pause, measured 13 November). Our server queues the checks and logs a count line when something goes wrong.
+- The relay **cannot meter** Privatemode tokens. The ledger books every request at its worst case. The Privatemode portal is the only real cost figure.
+- The qualification report is valid for **7 days**. When it expires, chat stops for everyone.
+- Every invitee gets an **automatic allowance** from the deployment config.
+
+### Rule: no live tests on the shared Privatemode organisation during alpha hours
+
+Development tests and real users share **one** attestation limit, because Privatemode counts it per organisation, not per key. One test run on 13 November caused a 60-second pause for everyone. The free-token balance is also shared by the whole organisation.
+
+- **Alpha hours: 07:00 to 24:00 German time, every day.** No live call to Privatemode in those hours from your PC, the agent or a script, with any key of the organisation. This covers the benchmark runner (`run-ours.ts --privatemode`), `evaluation/privatemode/*` probes, `session-verify-live.ts` and manual chats on a local server.
+- Outside alpha hours, a live test needs your go-ahead for that run. Afterwards, check the Render log for a `Privatemode attestation queue:` line with a new `limited429`.
+- Chatting yourself on app.cometrow.com is real use, not a test, and is fine.
+- If tests must run during the day, the fix is a separate Privatemode organisation for development (ask Privatemode), not a second key.
+
+### Daily routine (morning and evening)
+
+Rows marked "new" are Privatemode checks. The other rows still apply from the Tinfoil-era table below (deploy state, startup line, headers, certificate).
+
+| What | Where | Normal | Act when | What to do |
+| --- | --- | --- | --- | --- |
+| Service up | `curl -sS -o /dev/null -w "%{http_code}\n" https://app.cometrow.com/readyz` | `200` (body "ready") | anything else | Read the Render log; if the database or role is the cause, stop chat and use the runbook |
+| Chat ready (new) | In a signed-in browser tab: `https://app.cometrow.com/api/status` | `"inference":{"ready":true,...}` | `"ready":false` | The `reason` says why: "paused by the operator" (stop file), "spending limit ... is reached" (spend cap), or "unavailable until provider qualification ..." (report expired or invalid, key or manifest missing) |
+| Attestation queue (new) | Render, Logs, search `Privatemode attestation queue:` | no line at all | any line | See "Attestation queue line" below |
+| Busy answers (new) | Same log line (`busy`), and friends' reports | `busy` not rising | `busy` rising, or a friend saw "CometRow is busy checking the secure server" | Check that nobody ran a live test (rule above). If it happens with real use only, note the time and the count for the Privatemode support question (owner list step 1) |
+| Our own 429s (new) | Friends' reports only (not logged) | none | "Three requests are already running" or "A request is already running for this account" | See "Our own limits" below |
+| Report renewal (new) | `/api/status` (signed in): `inference.qualification.validUntil`; your calendar | more than 2 days left | 2 days or less | Renew now. See "Weekly report renewal" below |
+| Key expiry (new) | Your calendar and the Privatemode portal (key list) | more than 14 days left | 14 days or less | Create the new key and swap it (owner list, "Key swap"). In the committed code there is **no log warning on Render** (see below) |
+| Portal spend and free tokens (new) | Privatemode portal: usage per key, spend, free-token balance | spend in line with the number of messages (query E) | spend above EUR 25 in a week, or free tokens close to zero without a budget | Pause new invitees; set or raise the budget; check nothing else uses the alpha key |
+| App spend against the cap | query A | committed spend clearly under `approvedSpendUSD` | above 50 % of the cap | All Privatemode requests are booked at worst case (about USD 0.10 per Thinking request). Raise the cap on purpose (D5) or stop chat; the relay refuses on its own at 100 % |
+| Allowance (new) | query C | each invitee has a current period and is within it | an invitee with no period, or one near the limit on day one | See "Automatic allowance" below |
+| Purge job | Render, Logs | no "Request record purge failed." line | that line appears | Reinstall the purge function per `docs/development-deployment.md`. See "90-day purge" below |
+| Supplier status | Privatemode status page and changelog | no incident, no model deprecation | incident or deprecation | Follow "Model lifecycle" in `docs/invited-trial-runbook.md`; a move to Tinfoil is manual and announced (`docs/provider-switch-20261112.md`) |
+| Friends' reports | the support contact (R6) | quiet | someone saw another person's data, a wrong answer that hurt, or a page that would not load | Stop chat first, then investigate (stop rules in `docs/alpha-plan-20261113.md`) |
+
+### Attestation queue line
+
+The relay writes this line to the Render log (`server/providers/privatemode-relay.ts`), only when Privatemode answers 429 and each time the queue refuses a check:
+
+```
+Privatemode attestation queue: {"sent":12,"waited":3,"waitedMs":4100,"limited429":1,"busy":4,"perMinute":3,"lastPauseMs":60000}
+```
+
+| Field | Meaning | Worry when |
+| --- | --- | --- |
+| `sent` | checks sent to Privatemode since the last start | (context only) |
+| `waited`, `waitedMs` | checks that waited in our queue, and the total wait | `waitedMs` large: people wait up to 20 s before the first word |
+| `limited429` | 429 answers from Privatemode | any new one: everyone got "busy" for about 60 s |
+| `busy` | checks we refused with HTTP 503 `attestation_busy` | rising during the day |
+| `perMinute` | the queue's current rate (start 6, halves on each 429, floor 2, grows back by 1 after 10 good checks) | stuck at 2 |
+| `lastPauseMs` | the last pause Privatemode asked for | (60000 is normal) |
+
+- All counts are **totals since the last start**. A deploy, a restart or a report renewal sets them back to 0.
+- **No line means no trouble.** Successful checks write nothing.
+- **Not in the line:** our per-account cap. One account (or session) may run at most 2 checks at once and 10 per 10 minutes. Above that, the relay answers the same 503 `attestation_busy` **without writing a log line**. Only a friend's report shows it.
+- What the user sees: "CometRow is busy checking the secure server. Please try again in a minute. Nothing was sent."
+- Normal use needs 1 check per person per 10 minutes, plus 1 after a failure or a release change.
+
+### Our own limits (HTTP 429, not logged)
+
+| Limit | Message | Where | Note |
+| --- | --- | --- | --- |
+| 3 chats at once per server instance | "Three requests are already running." | `server/app.ts` (`active >= 3`) | Still 3. Your open decision: raise to 10 for the alpha (owner list, 13 November). Each refusal also throws away the browser's verified session, so the next message needs a new attestation check |
+| 1 chat at once per account | "A request is already running for this account." | `server/app.ts` | The slot is freed as soon as the browser hangs up, so the automatic retry after a time-out is not refused |
+| Allowance used up | "No request allowance is available. No request was forwarded." or "Not enough request allowance: this mode counts as 3 requests." | `server/app.ts` | See "Automatic allowance" |
+| Spend cap | "The approved spending limit for this provider review is reached. No request was forwarded." | `server/app.ts` | Chat stops for everyone; `/api/status` shows it |
+
+The browser shows the first two as "The protected service is limiting requests. No answer was received." None of these four is counted or logged (by design, content-free logs). Counting them is a planned counter (`docs/alpha-plan-20261113.md`, section 9).
+
+### Weekly report renewal (chat stops for everyone when it expires)
+
+- The signed report is valid for 7 days (`validUntil`). Once it passes, the report is invalid and chat is refused for **every** user. `/api/status` then says "Live chat is unavailable until provider qualification and service access are complete."
+- **Warning:** from 13 November the log warns every hour from 48 hours before `validUntil` (launch-gap audit G9). There is still no warning inside the app.
+- Routine: renew **2 days before** `validUntil`, at a quiet hour (late evening). Steps: the agent prepares the new report, you sign it, replace the report secret file on Render, restart.
+- After the restart: `/readyz` gives 200, `/api/status` gives `"ready":true` with the new `validUntil`, and send one message yourself.
+- A restart also resets the queue counts, the in-memory limits and the 10-minute attestation cache, and may cut a running answer. Tell invitees if a renewal falls in alpha hours.
+- The spend cap counts per report window (`reviewedAt` to `validUntil`), so query A needs the new window after each renewal.
+
+### API key expiry
+
+- The key's expiry date is in the report (`privatemode.portalKeyLimit.expiresAt`).
+- The warning (14 days ahead) now runs in `server/app.ts`, so the Render log shows it every hour (13 November; before that it ran only in the local entry).
+- Keep a calendar reminder 14 days before the expiry anyway, and look at the key in the portal weekly.
+- Key swap: replace the key file on Render, update `portalKeyLimit` in the report, restart (owner list, "Key swap").
+
+### Portal: free tokens and spend
+
+- The relay cannot read Privatemode token use (the reply is encrypted), so query A shows every Privatemode request as unmetered. The portal is the only real cost figure.
+- Free tokens: about 0.69M after the German-rules run of 13 November (app-reported, portal not checked). At about 2,500 tokens per answer (that run's average, with search), that is roughly 275 answers. **Set the spend budget before the first invitee** (owner list step 3), or chat stops when the free tokens run out.
+- Daily in week one, then weekly: note the portal's spend and tokens for the alpha key, and the message count from query E. EUR per message should stay roughly stable.
+- Act when: spend above EUR 25 in one week, or above 50 % of the monthly budget before the 15th.
+
+### Automatic allowance
+
+- Set in the deployment config: `inference.allowance` with `requestLimit` (1 to 10,000) and `days` (1 to 31) (`server/deployment-config.ts`).
+- **If it is missing, every invitee is refused** with "No request allowance is available." Check it at switch-on.
+- How it works (`ensureAllowance` in `server/app.ts`): when an account has no current period, a new one starts on its first `/api/status` call or its first chat. Fast costs 1 request; Thinking costs 3 (the report's `allowanceCost`).
+- A used-up period stays used up until it ends. A higher `requestLimit` in the config applies only to new periods, not to a period already running.
+- Rough size check: Privatemode requests are booked at worst case (about USD 0.10 per Thinking request, which costs 3 units). So invitees x `requestLimit` / 3 x USD 0.10 should stay under `approvedSpendUSD` per 7-day window. Example: 10 invitees, 300 per 7 days, cap USD 100.
+- Daily: query C. Every invitee who has signed in should have a row.
+
+### 90-day purge
+
+- The service runs the purge at start and then once a day (`server/request-retention.ts`).
+- Log lines: "Request records purged: N deleted, M past 90 days held in an open allowance period." (only when N or M is above 0), or "Request record purge failed." when the function or its grant is missing.
+- The first real deletions come 90 days after the first alpha request (about mid-February 2027 if the alpha starts in November). Until then, no "purged" line is normal.
+- `M` (held) should be 0, because automatic periods last at most 31 days.
+- Monthly: query D should return 0.
+
+### Extra read-only queries (psql as the owner role)
+
+Queries A, B and C are in the Tinfoil-era section below and still apply. Query C counts Thinking as 3, the same as the allowance.
+
+```sql
+-- D: request records older than 90 days (should be 0 once the purge runs)
+SELECT COUNT(*) AS older_than_90_days FROM usage_requests
+WHERE created_at < (extract(epoch FROM now() - interval '90 days') * 1000);
+
+-- E: messages by mode and state, last 7 days. Thinking = a request with a ".2" unit row (it costs 3).
+-- uncertain = not finished: user Stop, time-out, upstream refusal or broken stream. Refused requests have no row.
+SELECT CASE WHEN EXISTS (SELECT 1 FROM usage_requests u WHERE u.request_id = r.request_id || '.2')
+            THEN 'thinking' ELSE 'fast' END AS mode,
+       r.state, COUNT(*)
+FROM usage_requests r
+WHERE r.request_id NOT LIKE '%.%'
+  AND r.created_at >= (extract(epoch FROM now() - interval '7 days') * 1000)
+GROUP BY 1, 2 ORDER BY 1, 2;
+
+-- F: active accounts, last 7 days (a count only)
+SELECT COUNT(DISTINCT account_id) AS active_accounts FROM usage_requests
+WHERE created_at >= (extract(epoch FROM now() - interval '7 days') * 1000);
+
+-- G: invitees who have signed in at least once
+SELECT COUNT(*) AS signed_in_once FROM "user";
+```
+
+Query E's mode split depends on today's costs (Fast 1, Thinking 3). If the report changes `allowanceCost`, change the query.
+
+### Known gaps (Privatemode)
+
+- **Refused requests are not counted:** allowance, spend cap, 3 per server, 1 per account, paused, and busy from the per-account attestation cap. Friends' reports are the only signal.
+- **Time-outs are not counted.** The browser decides them; the ledger shows them only inside `uncertain`.
+- **The report and key warnings are log lines only:** nobody sees them unless the log is read or an alert (O2) watches for them.
+- **The queue and our limits live in one server's memory.** With two instances, or a live test from another machine, each paces on its own and together they can pass Privatemode's limit.
+- **No automatic alert** until O2 is set up.
+
+---
+
+## Tinfoil-era version: 12 November 2026 (superseded, kept for the record)
 
 A ten-minute routine for the owner, once in the morning and once in the evening, for the first seven days after chat is switched on. Everything below uses what exists today; nothing sends content anywhere. Until an alert provider exists (checklist O2), this routine is the only alarm.
 
-## Daily routine
+### Daily routine
 
 | What | Where | Normal | Act when | What to do |
 | --- | --- | --- | --- | --- |
@@ -19,7 +177,7 @@ A ten-minute routine for the owner, once in the morning and once in the evening,
 | Certificate | `node --import tsx scripts/certificate-expiry.ts app.cometrow.com` (weekly; not from the owner's PC because of the antivirus) | more than 14 days left | 14 days or less | Check the custom domain in Render |
 | Friends' reports | the support contact (checklist R6) | quiet | any report of seeing someone else's data, a wrong answer that hurt, or a page that would not load | Stop chat first, then investigate |
 
-## Read-only queries (psql as the owner role)
+### Read-only queries (psql as the owner role)
 
 Replace `<from_ms>` and `<to_ms>` with the report's `reviewedAt` and `validUntil` in milliseconds (the window the spend guard uses).
 
@@ -44,7 +202,7 @@ GROUP BY r.account_id, a.request_limit;
 
 Committed spend, as the relay computes it: `metered_usd + unmetered x worst case per request`, where the worst case is `(maxInputCharacters x input price + maxOutputTokens x output price) / 1,000,000` from the report.
 
-## Known gaps in week one
+### Known gaps in week one
 
 - **No refused-request counts.** The relay answers 429 (allowance or spend) and 503 (paused) without logging them, by design (content-free logs). Friends' reports are the only signal; a privacy-safe counter is a later item.
 - **No automatic alert** until the alert provider (O2) is set up.
