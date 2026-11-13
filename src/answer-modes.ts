@@ -4,7 +4,11 @@ import { selectedSources } from "./conversation";
 import { germanRulesQuestion } from "./german-rules";
 import { IncompleteReplyError } from "./reply-stream";
 import { needsCurrentInformation } from "./when-to-search";
-import type { AnswerMode, Conversation } from "../shared/contracts";
+import {
+  replyLimits,
+  type AnswerMode,
+  type Conversation,
+} from "../shared/contracts";
 
 export type ModeChoice = "auto" | AnswerMode;
 export const MODE_NAMES: Record<ModeChoice, string> = {
@@ -151,14 +155,19 @@ const RETRY_CODES = new Set([
 /**
  * One retry with the backup model only when no answer text arrived and the failure means the
  * model was unavailable. Never after a stop by the user or partial text. HTTP 429 is the relay's
- * own limit (allowance, spend, one request at a time) and is never retried.
+ * own limit (allowance, spend, one request at a time) and is never retried. Nor is a retry
+ * started with less of the message's time left than the mode allows for a first word: it
+ * could not finish, so the time-out is reported instead.
  */
 export function shouldRetryOnBackup(
   error: unknown,
   stoppedByUser: boolean,
   textArrived: boolean,
+  msLeft: number,
+  mode: AnswerMode | undefined,
 ): boolean {
   if (stoppedByUser || textArrived) return false;
+  if (msLeft < replyLimits(mode).firstTextMs) return false;
   if (error instanceof IncompleteReplyError)
     return (
       !!error.diagnostic &&
@@ -166,6 +175,13 @@ export function shouldRetryOnBackup(
       error.diagnostic.textCharacters === 0
     );
   return error instanceof Error && error.name === "TimeoutError";
+}
+
+/** Show the waiting status after this long without answer text. */
+export const STILL_THINKING_AFTER_MS = 15_000;
+export function stillThinkingStatus(mode: AnswerMode | undefined): string {
+  const minutes = Math.ceil(replyLimits(mode).totalMs / 60_000);
+  return `Still thinking… (this can take up to ${minutes} minutes${mode ? ` in ${MODE_NAMES[mode]} mode` : ""})`;
 }
 
 /** The reply label, e.g. "Auto · Thinking" or "Fast · Answered by the backup model"; undefined when there is nothing to say. */

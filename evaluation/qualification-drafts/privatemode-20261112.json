@@ -4,7 +4,7 @@
   "note": "Qualification report draft for Privatemode, the primary provider for the alpha (owner decision of 12 November), written by the agent from evidence of 11 and 12 November. It cannot be loaded: 'modes' is PENDING_MODEL_MAPPING, three statuses are not schema statuses, pricing and approvedSpendUSD are null, the dates and the portal key limit are placeholders. To become a report: (1) the parent session fills 'modes' from the model-mapping evidence (pick one Fast candidate and one Thinking candidate) and sets 'model' to the Fast model; (2) the owner accepts each 'needs-owner-acceptance' check in writing (status 'accepted-by-owner', acceptedAt, reason) or keeps chat off; (3) the owner approves the privacy wording (D17, docs/privacy-wording-privatemode-20261112.md), which closes retentionAndLogs; (4) the owner creates the dedicated alpha key and records its limits and expiry in privatemode.portalKeyLimit; (5) the owner sets the EUR to USD rate, pricing and approvedSpendUSD (D5); (6) on the day the agent re-runs scripts/privatemode-manifest.ts, puts the digest in releaseDigests and fills reviewedAt/validUntil. docs/qualification-report-draft-privatemode-20261112.md explains each check.",
   "provider": "privatemode",
   "model": "PENDING_MODEL_MAPPING (the Fast model of the chosen mapping)",
-  "modesStatus": "PENDING_MODEL_MAPPING: filled by the parent session from the model-mapping evidence. Fast is GLM-5.3 at low reasoning or GLM-5.3-Flash at low; Thinking is GLM-5.3 at high or max. Each candidate below already has the schema's tier shape. A tier's reasoning setting applies to its backup model too (policyForTier), so a backup runs at the same effort. Every model is at Privatemode; a retry never crosses to Tinfoil.",
+  "modesStatus": "PENDING_MODEL_MAPPING: filled by the parent session from the model-mapping evidence. Fast is GLM-5.3 at low reasoning or GLM-5.3-Flash at low; Thinking is GLM-5.3 at high: max was dropped on 13 November (docs/thinking-timeouts-20261113.md: on the prompts that timed out, max took up to 172 s to the first word or spent the whole output limit reasoning; high answered all of them within 26 s). Each candidate below already has the schema's tier shape. A tier's reasoning setting applies to its backup model too (policyForTier), so a backup runs at the same effort. Every model is at Privatemode; a retry never crosses to Tinfoil.",
   "modes": {
     "status": "PENDING_MODEL_MAPPING",
     "fastCandidates": [
@@ -24,13 +24,6 @@
       }
     ],
     "thinkingCandidates": [
-      {
-        "model": "glm-5.3",
-        "glmReasoningEffort": "max",
-        "backupModel": "glm-5.3-flash",
-        "maxOutputTokens": 16384,
-        "allowanceCost": 3
-      },
       {
         "model": "glm-5.3",
         "glmReasoningEffort": "high",

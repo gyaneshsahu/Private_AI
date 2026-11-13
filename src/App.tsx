@@ -5,6 +5,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   emptyConversation,
   tierFor,
+  replyLimits,
   verificationSummary,
   type AnswerMode,
   type AppStatus,
@@ -80,7 +81,7 @@ import { AccountUsage } from "./AccountUsage";
 import { SupportPanel } from "./SupportPanel";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
-import { abortable } from "./abortable";
+import { abortable, withDeadline } from "./abortable";
 import { createCalculationSession } from "./calculation-session";
 import {
   parseResearchResult,
@@ -635,18 +636,19 @@ export function App() {
     const hasBackup = !!qualified && !!tierFor(qualified, mode).backupModel;
     let textArrived = false;
     let retried = false;
+    const startedAt = Date.now();
     try {
-      const attempt = async (choice: "primary" | "backup") => {
-        const { streamReply } = await abortable(
-          import("./inference"),
-          abort.signal,
-        );
-        abort.signal.throwIfAborted();
+      const attempt = async (
+        choice: "primary" | "backup",
+        signal = abort.signal,
+      ) => {
+        const { streamReply } = await abortable(import("./inference"), signal);
+        signal.throwIfAborted();
         const usage = await streamReply(
           next,
           status.inference.qualification,
           status.csrf,
-          abort.signal,
+          signal,
           (chunk) => {
             textArrived ||= !!chunk;
             if (epoch.current === current && !abort.signal.aborted)
@@ -722,10 +724,18 @@ export function App() {
         await attempt("primary");
       } catch (error) {
         // Owner, 12 November: one automatic, labelled retry on the same mode's backup
-        // model at the same provider, only when no answer text arrived.
+        // model at the same provider, only when no answer text arrived, within the time
+        // the mode allows for the whole message.
+        const msLeft = replyLimits(mode).totalMs - (Date.now() - startedAt);
         if (
           !hasBackup ||
-          !shouldRetryOnBackup(error, abort.signal.aborted, textArrived)
+          !shouldRetryOnBackup(
+            error,
+            abort.signal.aborted,
+            textArrived,
+            msLeft,
+            mode,
+          )
         )
           throw error;
         retried = true;
@@ -736,7 +746,9 @@ export function App() {
         )
           setConversation((c) => ({ ...c, usage: [...c.usage, error.usage!] }));
         setBusy("Trying the backup model…");
-        await attempt("backup");
+        await withDeadline(abort.signal, msLeft, (signal) =>
+          attempt("backup", signal),
+        );
       }
     } catch (error) {
       calculationSession.clear();

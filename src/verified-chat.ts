@@ -26,6 +26,7 @@ import {
 import { abortable, withDeadline } from "./abortable";
 import {
   MODEL_SETTINGS,
+  replyLimits,
   type AnswerMode,
   type Conversation,
   type Usage,
@@ -41,6 +42,7 @@ import {
   researchContractInstruction,
 } from "./research-contract";
 import { completionEvents } from "./completion-events";
+import { STILL_THINKING_AFTER_MS, stillThinkingStatus } from "./answer-modes";
 import {
   defaultInferenceProvider,
   inferenceClientFor,
@@ -238,17 +240,24 @@ async function streamMaskedConversation(
       !owners.includes(report.model)
     )
       throw new Error("Unsupported model-specific inference setting.");
-  return withDeadline(signal, 90000, async (signal) => {
+  const limits = replyLimits(report.answerMode);
+  let waiting: ReturnType<typeof setTimeout> | undefined;
+  const reply = withDeadline(signal, limits, async (signal, started) => {
     signal.throwIfAborted();
+    let stillThinking = false;
+    // First answer text (or a tool call): the first-text limit and the waiting status end.
+    const answerStarted = () => {
+      started();
+      clearTimeout(waiting);
+      if (stillThinking) onStatus("Receiving a protected response…");
+      stillThinking = false;
+    };
     const messages = composeContext(
       maskAttachmentSources(conversation, masking),
       report.maxInputCharacters,
       new Date(),
       report.answerPolicyVariant,
     );
-    // The fixed policy holds no user content; masking it would turn its helpline numbers
-    // into placeholders on every request. Text appended later is still masked.
-    const policyLength = messages[0].content.length;
     const evidenceSources = selectedSources(conversation);
     if (report.optionalCalculator) {
       if (report.calculatorReplay)
@@ -338,18 +347,18 @@ async function streamMaskedConversation(
     onStatus("Preparing encrypted transport…");
     const transport = await destination.transport();
     onStatus("Receiving a protected response…");
+    waiting = setTimeout(() => {
+      stillThinking = true;
+      onStatus(stillThinkingStatus(report.answerMode));
+    }, STILL_THINKING_AFTER_MS);
     authorize();
     signal.throwIfAborted();
     // One fixed encrypted route; optional continuation is separately authorized. The
     // maintained verifier and EHBP SDK still own attestation and cryptography.
     // Parse SSE locally to avoid SDK error paths logging decrypted provider data.
     // Last step before encryption: identifiers leave this device only as placeholders.
-    for (const [index, message] of messages.entries())
-      message.content =
-        index === 0
-          ? message.content.slice(0, policyLength) +
-            masking.mask(message.content.slice(policyLength))
-          : masking.mask(message.content);
+    // The policy's helpline numbers are public (PUBLIC_NUMBERS), so every message is masked whole.
+    for (const message of messages) message.content = masking.mask(message.content);
     if (masking.kept.length) messages[0].content += MASKING_INSTRUCTION;
     onKeptOnDevice?.(masking.summary());
     const requestBody = {
@@ -389,6 +398,9 @@ async function streamMaskedConversation(
     );
     async function* observedEvents(input = response, round: 1 | 2 = 1) {
       for await (const event of completionEvents(input, signal)) {
+        const delta = event.choices?.[0]?.delta;
+        if (delta?.content || delta?.refusal || delta?.tool_calls?.length)
+          answerStarted();
         onModelEvent?.(event, round);
         yield event;
       }
@@ -525,4 +537,5 @@ async function streamMaskedConversation(
       );
     return consumeReply(observedEvents(), report.pricing, signal, onChunk);
   });
+  return reply.finally(() => clearTimeout(waiting));
 }

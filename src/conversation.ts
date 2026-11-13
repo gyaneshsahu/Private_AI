@@ -10,7 +10,8 @@ const originalUrgentPolicy =
 const revisedUrgentPolicy =
   "In imminent danger, acknowledge distress briefly and prioritize immediate human help. If the user can process only one action, make that action contacting the trusted person they identify as available, or local emergency help if no available trusted person is identified. Do not prepend another task or offer a menu in that reply. If that contact proves unavailable, adapt in the next turn. Never advise approaching an unsafe person or imply that other urgent needs can wait.";
 // Product (default) path only; v1-v4 keep the original text because evaluation records name them.
-// No 8+ digit numbers here: device masking would replace them as phone numbers on every request.
+// No new 8+ digit numbers here unless they are added to PUBLIC_NUMBERS in identifier-masking.ts:
+// device masking would replace them as phone numbers on every request (tests/answer-policy.test.ts).
 const originalHealthPolicy =
   "Do not diagnose or replace expert help. " + originalUrgentPolicy;
 const productHealthPolicy =

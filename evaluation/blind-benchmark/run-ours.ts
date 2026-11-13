@@ -31,7 +31,8 @@ const only = arg("only")?.split(",");
 const tapAll = process.argv.includes("--tap-suggestion-all");
 // BENCH_DIR runs another prompt set (e.g. evaluation/benchmark-fresh-20261112).
 const DIR = process.env.BENCH_DIR ?? "evaluation/blind-benchmark";
-const OUT = `.local/${basename(DIR)}/ours${privatemode ? "-privatemode" : ""}${tapAll ? "-tapped" : ""}`;
+// BENCH_OUT writes elsewhere, so a measurement run does not overwrite earlier evidence.
+const OUT = process.env.BENCH_OUT ?? `.local/${basename(DIR)}/ours${privatemode ? "-privatemode" : ""}${tapAll ? "-tapped" : ""}`;
 // Each Privatemode message makes three POSTs (attest, secret, chat) against the 200-POST
 // session limit, so start a new browser context (a new session) every few prompts.
 const PROMPTS_PER_CONTEXT = privatemode ? 15 : Infinity;
@@ -118,9 +119,22 @@ const qualification = pmReport
 // Server: the real app (dev middleware), with a counter of relay requests. Privatemode's SDK
 // always calls HTTPS, so it runs on an ephemeral local certificate.
 let relayRequests = 0;
+// Longest silence on a chat reply (request start to first byte, between writes, to the end):
+// a proxy with an idle limit (the Render bridge's is 15 s) would cut a reply at that point.
+let maxGapMs = 0;
 const outer = express();
-outer.use((req, _res, next) => {
-  if (req.method === "POST" && /\/v1\/chat\/completions$/.test(req.path)) relayRequests++;
+outer.use((req, res, next) => {
+  if (req.method === "POST" && /\/v1\/chat\/completions$/.test(req.path)) {
+    relayRequests++;
+    let last = Date.now();
+    const tick = () => {
+      maxGapMs = Math.max(maxGapMs, Date.now() - last);
+      last = Date.now();
+    };
+    const write = res.write.bind(res);
+    res.write = ((...args: Parameters<typeof res.write>) => (tick(), write(...args))) as typeof res.write;
+    res.on("finish", tick);
+  }
   next();
 });
 const tls = privatemode ? await localTLS() : undefined;
@@ -157,6 +171,7 @@ async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolea
   const wait = lastSend + PACE_MS - Date.now();
   if (wait > 0) await page.waitForTimeout(wait);
   lastSend = Date.now();
+  maxGapMs = 0;
   const started = Date.now();
   if (tapped) await suggestionBox(page).getByRole("button", { name: "Search and answer" }).click();
   else await page.getByRole("button", { name: "Send ↑", exact: true }).click();
@@ -171,10 +186,11 @@ async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolea
     await page.waitForTimeout(100);
   }
   const totalMs = Date.now() - started;
+  const tokens = Number(/Reported inference: (\d+) tokens/.exec(await page.locator("main").innerText().catch(() => ""))?.[1]) || undefined;
   // The after-answer "Search and answer again" box (shown when the answer used no web results).
   await page.waitForTimeout(300);
   const againShown = await suggestionBox(page).getByRole("button", { name: "Search and answer again" }).isVisible().catch(() => false);
-  return { ttftMs, totalMs, text: await answerText(page), suggestionShown, suggestedQuery, suggestionHeading, tapped, againShown };
+  return { ttftMs, totalMs, text: await answerText(page), suggestionShown, suggestedQuery, suggestionHeading, tapped, againShown, maxGapMs, tokens };
 }
 
 // One browser context per mode keeps one app session: the local server allows 100 open
@@ -216,13 +232,13 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
       await workspaceControl(page, "Conversation").click();
       searched = true;
     }
-    let last = { ttftMs: undefined as number | undefined, totalMs: 0, text: "", suggestionShown: false, suggestedQuery: undefined as string | undefined, suggestionHeading: undefined as string | undefined, tapped: false, againShown: false };
-    const all: { ttftMs?: number; totalMs: number }[] = [];
+    let last = { ttftMs: undefined as number | undefined, totalMs: 0, text: "", suggestionShown: false, suggestedQuery: undefined as string | undefined, suggestionHeading: undefined as string | undefined, tapped: false, againShown: false, maxGapMs: 0, tokens: undefined as number | undefined };
+    const all: { ttftMs?: number; totalMs: number; maxGapMs: number; tokens?: number }[] = [];
     let first: typeof last | undefined;
     for (const t of turns) {
       last = await sendTurn(page, t, { tapSuggestion: (tapAll || !!(query && searchKey && probe.suggestionShown)) && !first });
       first ??= last;
-      all.push({ ttftMs: last.ttftMs, totalMs: last.totalMs });
+      all.push({ ttftMs: last.ttftMs, totalMs: last.totalMs, maxGapMs: last.maxGapMs, tokens: last.tokens });
     }
     if (first?.tapped) searched = true;
     const mainText = await page.locator("main").innerText().catch(() => "");
@@ -282,7 +298,7 @@ try {
           result = { text: "", error: String((error as Error).message).slice(0, 300), mode, model: "(see tiers)" };
         }
         await writeFile(`${OUT}/${mode}/${p.id}.json`, JSON.stringify(result, null, 2));
-        console.log(`${mode.padEnd(8)} ${p.id} ${result.error ? "ERROR " + result.error : `ttft ${result.ttftMs ?? "-"} ms, total ${result.totalMs} ms, ${String(result.text).length} chars ${result.label ?? ""}${result.failure ? " FAILURE " + JSON.stringify(result.failure) : ""}`}`);
+        console.log(`${mode.padEnd(8)} ${p.id} ${result.error ? "ERROR " + result.error : `ttft ${result.ttftMs ?? "-"} ms, total ${result.totalMs} ms, ${String(result.text).length} chars, gap ${(result.turnTimings as { maxGapMs: number }[])[0]?.maxGapMs} ms, ${(result.turnTimings as { tokens?: number }[])[0]?.tokens ?? "-"} tokens ${result.label ?? ""}${result.failure ? " FAILURE " + JSON.stringify(result.failure) : ""}`}`);
       }
       await context.close();
     }),

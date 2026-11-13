@@ -8,10 +8,18 @@ import {
   policyForTier,
   qualifiedModels,
   qualificationSchema,
+  REPLY_LIMITS,
+  replyLimits,
   tierFor,
   validateQualification,
 } from "../shared/contracts";
-import { answerLabel, autoDecision, autoMode, shouldRetryOnBackup } from "../src/answer-modes";
+import {
+  answerLabel,
+  autoDecision,
+  autoMode,
+  shouldRetryOnBackup,
+  stillThinkingStatus,
+} from "../src/answer-modes";
 import { IncompleteReplyError } from "../src/reply-stream";
 import type { StreamFailureCode } from "../src/stream-failure";
 
@@ -227,24 +235,56 @@ const failure = (code: StreamFailureCode, textCharacters = 0) =>
     finish: "NONE",
   });
 
+const FULL = REPLY_LIMITS.thinking.totalMs;
+
+describe("reply time limits per mode", () => {
+  it("gives Thinking a longer first-text and total limit than Fast; no mode keeps the earlier timing", () => {
+    expect(replyLimits("thinking").firstTextMs).toBeGreaterThan(replyLimits("fast").firstTextMs);
+    expect(replyLimits("thinking").totalMs).toBeGreaterThan(replyLimits("fast").totalMs);
+    expect(replyLimits().firstTextMs).toBe(90_000);
+    // A first-text time-out, after up to 10 s of setup, still leaves the backup its own first-text time.
+    for (const limits of Object.values(REPLY_LIMITS))
+      expect(limits.totalMs - limits.firstTextMs - 10_000).toBeGreaterThanOrEqual(limits.firstTextMs);
+  });
+
+  it("states the mode's limit in the waiting status", () => {
+    const minutes = Math.ceil(REPLY_LIMITS.thinking.totalMs / 60_000);
+    expect(stillThinkingStatus("thinking")).toBe(
+      `Still thinking… (this can take up to ${minutes} minutes in Thinking mode)`,
+    );
+    expect(stillThinkingStatus(undefined)).not.toContain("mode)");
+  });
+});
+
 describe("one retry on the backup model", () => {
+  it("does not start a retry that could not finish in the time left", () => {
+    const timedOut = failure("TIMED_OUT");
+    for (const mode of ["fast", "thinking"] as const) {
+      const { firstTextMs } = replyLimits(mode);
+      expect(shouldRetryOnBackup(timedOut, false, false, firstTextMs - 1, mode)).toBe(false);
+      expect(shouldRetryOnBackup(timedOut, false, false, firstTextMs, mode)).toBe(true);
+    }
+    // Primary ran into the total limit: nothing is left, so the time-out is reported as is.
+    expect(shouldRetryOnBackup(timedOut, false, false, 0, "thinking")).toBe(false);
+  });
+
   it.each(["HTTP_UPSTREAM_REJECTED", "HTTP_SERVICE_UNAVAILABLE", "TIMED_OUT"] as const)(
     "retries %s before any answer text",
     (code) => {
-      expect(shouldRetryOnBackup(failure(code), false, false)).toBe(true);
+      expect(shouldRetryOnBackup(failure(code), false, false, FULL, "thinking")).toBe(true);
     },
   );
 
   it("retries a timeout before the response started", () => {
     expect(
-      shouldRetryOnBackup(new DOMException("Operation timed out.", "TimeoutError"), false, false),
+      shouldRetryOnBackup(new DOMException("Operation timed out.", "TimeoutError"), false, false, FULL, "thinking"),
     ).toBe(true);
   });
 
   it("never retries after partial text, a stop, the relay's own limits or a broken answer", () => {
-    expect(shouldRetryOnBackup(failure("HTTP_UPSTREAM_REJECTED"), false, true)).toBe(false);
-    expect(shouldRetryOnBackup(failure("TIMED_OUT", 12), false, false)).toBe(false);
-    expect(shouldRetryOnBackup(failure("HTTP_UPSTREAM_REJECTED"), true, false)).toBe(false);
+    expect(shouldRetryOnBackup(failure("HTTP_UPSTREAM_REJECTED"), false, true, FULL, "thinking")).toBe(false);
+    expect(shouldRetryOnBackup(failure("TIMED_OUT", 12), false, false, FULL, "thinking")).toBe(false);
+    expect(shouldRetryOnBackup(failure("HTTP_UPSTREAM_REJECTED"), true, false, FULL, "thinking")).toBe(false);
     for (const code of [
       "HTTP_RATE_LIMITED",
       "HTTP_RESPONSE_INVALID",
@@ -253,8 +293,8 @@ describe("one retry on the backup model", () => {
       "ABORTED",
       "TRANSPORT_OR_DECRYPTION",
     ] as const)
-      expect(shouldRetryOnBackup(failure(code), false, false), code).toBe(false);
-    expect(shouldRetryOnBackup(Error("The checked server does not match"), false, false)).toBe(false);
+      expect(shouldRetryOnBackup(failure(code), false, false, FULL, "thinking"), code).toBe(false);
+    expect(shouldRetryOnBackup(Error("The checked server does not match"), false, false, FULL, "thinking")).toBe(false);
   });
 });
 
