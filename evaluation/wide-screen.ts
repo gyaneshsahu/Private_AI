@@ -6,6 +6,7 @@
 //
 //   node --import tsx evaluation/wide-screen.ts run --provider tinfoil [--reps 3] [--cap 2]
 //   node --import tsx evaluation/wide-screen.ts run --arms tinfoil-llama,tinfoil-kimi-k3
+//   node --import tsx evaluation/wide-screen.ts run --arms privatemode-glm-high --cases selection-07 (one case only)
 //   node --import tsx evaluation/wide-screen.ts score
 //
 // Arms in one call run concurrently (one arm per model setting, each arm sequential).
@@ -180,7 +181,8 @@ async function runArm(armName: string, reps: number, cap: number) {
   const save = () => writeFile(`${dir}/${armName}.json`, JSON.stringify(out, null, 2));
   // Worst case per request (4 characters per token is generous); only Tinfoil spends money.
   const worst = (tokens: number) => (arm.provider === "tinfoil" ? ((LIMITS.maxInputCharacters / 4) * p.input + tokens * p.output) / 1e6 : 0);
-  const fixtures = [...base, ...checks] as (typeof base)[number][];
+  const only = arg("cases")?.split(",");
+  const fixtures = ([...base, ...checks] as (typeof base)[number][]).filter((f) => !only || only.includes(f.id));
   let halted = false;
   stop: for (let rep = 1; rep <= reps; rep++)
     for (const fixture of fixtures) {
@@ -212,7 +214,7 @@ async function runArm(armName: string, reps: number, cap: number) {
     }
   // Long-answer probe at the screen's output limit; if it is cut off, once more with room to see what it needs.
   for (const maxTokens of [LIMITS.maxOutputTokens, PROBE_RETRY_TOKENS]) {
-    if (halted || out.spent + worst(maxTokens) > cap) break;
+    if (halted || only || out.spent + worst(maxTokens) > cap) break; // no probe on a --cases run
     const conversation = { ...emptyConversation(), messages: [newMessage("user", PROBE)] } as Conversation;
     const turn = await call(arm, out, composeContext(conversation, LIMITS.maxInputCharacters, new Date(), "constraints-v4"), maxTokens);
     const probe = { ...turn, maxTokens, words: turn.text.split(/\s+/).filter(Boolean).length };
