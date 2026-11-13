@@ -31,7 +31,7 @@ export const ATTEST_LIMITS = {
   pauseAfter429Ms: 60_000,
   /**
    * Longest a call may wait to be sent (owner: about 20 s). Fast mode allows 30 s for the whole
-   * verification plus the first word, so a verification whose both calls wait long can still time out.
+   * verification plus the first word, so a full wait leaves about 10 s for the rest.
    */
   maxWaitMs: 20_000,
 };
