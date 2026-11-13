@@ -166,12 +166,12 @@ it("product prompt: answer in the user's language, else the interface language; 
   const c = emptyConversation();
   c.messages.push(newMessage("user", "Wie spät ist es in Tokio?"));
   const now = new Date("2026-11-13T00:00:00Z");
-  const rule = "Reply in the language of the user's latest message unless they ask for another language.";
+  const rule = "Reply in the language of the user's own sentences in their latest message unless they ask for another language.";
   const de = composeContext(c, 8000, now, undefined, "de")[0].content;
   const en = composeContext(c, 8000, now, undefined, "en")[0].content;
   expect(de).toContain(rule);
-  expect(de).toContain("If that is unclear (only code, numbers or a name), reply in German, the interface language.");
-  expect(en).toContain("reply in English, the interface language.");
+  expect(de).toContain("Code, numbers, names and quoted text do not set the language: if the message has no sentence of the user's own, reply in German, the interface language, including any explanation of code.");
+  expect(en).toContain("reply in English, the interface language, including any explanation of code.");
   expect(en.replace("English", "German")).toBe(de);
   // With web results too, and the masking finds nothing in our own text.
   const web = {

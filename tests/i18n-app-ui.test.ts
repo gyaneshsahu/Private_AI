@@ -2,6 +2,7 @@
 import { it } from "vitest";
 import { chromium, expect as ui, type Page } from "@playwright/test";
 import { createServer } from "vite";
+import { workspaceControl } from "../evaluation/workspace-navigation";
 import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { appText } from "../src/text/app";
@@ -112,6 +113,14 @@ it("a German browser gets the German main screen at phone and desktop width; the
       await german(page);
       await page.reload();
       await german(page);
+
+      // The language can also be changed in Settings (not only in the conversation header).
+      await page.getByRole("group", { name: "Sprache" }).getByRole("button", { name: "English" }).click();
+      await workspaceControl(page, "Settings").click();
+      const settings = page.getByRole("dialog", { name: "Settings" });
+      await settings.getByRole("group", { name: "Language" }).getByRole("button", { name: "Deutsch" }).click();
+      await ui(page.getByRole("dialog", { name: "Einstellungen" })).toBeVisible();
+      await ui(page.getByRole("dialog", { name: "Einstellungen" }).getByText("Ihre Sprachwahl wird nur in diesem Browser gespeichert.")).toBeVisible();
       await context.close();
     }
   } finally {

@@ -11,7 +11,7 @@ Running list kept while the owner is away (from 12 November 2026). Each entry na
 - **Erase deletes request records too.**
 - **Concurrent chats stay at 3** per server for now.
 - **Privatemode free balance:** nearly 500k tokens left (owner, portal, 13 November).
-- **New requirement: German and English interface,** default from the browser language (de gives German, otherwise English), a visible DE/EN switch saved on the device, never IP or email. All user-facing text translated, including server messages, refusals, emergency and health cards. German drafts of the privacy policy, health consent and acceptable use with the 18+ rule; **German is the binding text**.
+- **New requirement: German and English interface,** default from the browser language (de gives German, otherwise English), a visible DE/EN switch saved on the device, never IP or email. All user-facing text translated, including server messages, refusals, emergency and health cards. German drafts of the privacy policy, health consent and acceptable use with the 18+ rule; **German is the binding text**. **Built 13 Nov** (`docs/i18n-20261113.md`). Your part: approve the German legal texts with a legal read before the German interface goes live (questions in `docs/legal-texts-de-20261113.md`: a 'German prevails' sentence; 'ausdrückliche Einwilligung'; § 5 DDG imprint heading; 'per account' vs 'per key'; Tinfoil in the acceptable-use draft). The interface uses the formal 'Sie': tell me if you prefer 'du'.
 
 **Settled since 12 November:**
 - Privatemode is the primary provider; Tinfoil is the backup.

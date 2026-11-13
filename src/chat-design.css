@@ -1794,6 +1794,10 @@
   background: transparent;
   font-size: 12px;
 }
+.chat-design .settings-language {
+  width: fit-content;
+  margin: 8px 0;
+}
 .chat-design .language-switch button[aria-pressed="true"] {
   background: var(--ink);
   color: var(--canvas);

@@ -1,0 +1,15 @@
+{
+  "version": "answer-language-20261113",
+  "frozen": "13 November 2026",
+  "note": "Live check of the answer-language rule (src/conversation.ts): reply in the language of the user's message; when that is unclear (only code, numbers or a name), reply in the interface language. Run once with --locale de-DE and once with --locale en-US. Expected language per interface in 'expected'.",
+  "prompts": [
+    { "id": "A1", "level": "code only", "prompt": "```js\nconst xs = [3, 1, 2];\nxs.sort();\nconsole.log(xs.map((x) => x * 10));\n```", "expected": { "de": "de", "en": "en" } },
+    { "id": "A2", "level": "numbers only", "prompt": "17 * 23 + 4", "expected": { "de": "de", "en": "en" } },
+    { "id": "A3", "level": "name only", "prompt": "Ada Lovelace", "expected": { "de": "de", "en": "en" } },
+    { "id": "A4", "level": "English question", "prompt": "What is the difference between a list and a tuple in Python?", "expected": { "de": "en", "en": "en" } },
+    { "id": "A5", "level": "German question", "prompt": "Was ist der Unterschied zwischen einer Liste und einem Tupel in Python?", "expected": { "de": "de", "en": "de" } },
+    { "id": "A6", "level": "asks for another language", "prompt": "Erkläre mir auf Englisch, was eine Primzahl ist.", "expected": { "de": "en", "en": "en" } },
+    { "id": "A7", "level": "mixed, German sentence with English terms", "prompt": "Wie richte ich ein Git-Repository mit einem Remote auf GitHub ein?", "expected": { "de": "de", "en": "de" } },
+    { "id": "A8", "level": "code plus English question", "prompt": "Why does this print undefined?\n```js\nfunction f() { return\n  42; }\nconsole.log(f());\n```", "expected": { "de": "en", "en": "en" } }
+  ]
+}

@@ -1406,6 +1406,9 @@ export function App() {
                   <option value="dark">{t.themeDark}</option>
                 </select>
                 <p className="muted">{t.appearanceNote}</p>
+                <h3>{t.languageLabel}</h3>
+                <LanguageSwitch className="language-switch settings-language" />
+                <p className="muted">{t.languageNote}</p>
               </>
             )}
             {settingsSection === "account" && (

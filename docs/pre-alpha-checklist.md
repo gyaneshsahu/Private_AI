@@ -21,6 +21,8 @@ The owner decided on 13 November that the invite-only alpha is the last test bef
 | N12 | Alpha plan with metrics, survey and stop rules (audit G15) | written: `docs/alpha-plan-20261113.md`; monitoring updated for Privatemode: `docs/week-one-monitoring.md` |
 | N14 | **German legal texts, binding once approved** (audit G8, owner decision DE/EN) | drafted on `claude/i18n-legal`: German policy, statement, health consent, provider disclosure and imprint in code, acceptable use and 18+ rule as docs (`docs/legal-texts-de-20261113.md`). Change-pair check: `tests/legal-text-pairs.test.ts` fails when the English or German text changes, naming which; check the other language, then re-record with `node --import tsx scripts/record-legal-pairs.ts`. **Owner approves, lawyer reads the German** |
 
+**German and English interface (owner requirement, 13 November):** built, merged, CI green, not deployed (`docs/i18n-20261113.md`). German sweep 54/54 in Chromium, Firefox and WebKit; English sweep 54/54. Open: owner approves the German legal texts with a legal read **before the German interface goes live** (German is binding); a native reader skims the interface; real iPhone Safari and Android in the device check (T2).
+
 **Status corrections from the audit:**
 - **P6:** Thinking runs at high since 13 November, not max (corrected in the row).
 - **L8:** Privatemode's resale clause was confirmed in writing on 12 November (corrected in the row).

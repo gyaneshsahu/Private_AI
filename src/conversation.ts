@@ -50,7 +50,7 @@ const productWebPolicy =
 // Product (default) path only, added 13 November with the German interface. No digits: the
 // whole system message goes through identifier masking.
 const answerLanguagePolicy = (lang: Lang) =>
-  ` Reply in the language of the user's latest message unless they ask for another language. If that is unclear (only code, numbers or a name), reply in ${lang === "de" ? "German" : "English"}, the interface language.`;
+  ` Reply in the language of the user's own sentences in their latest message unless they ask for another language. Code, numbers, names and quoted text do not set the language: if the message has no sentence of the user's own, reply in ${lang === "de" ? "German" : "English"}, the interface language, including any explanation of code.`;
 const revisionPolicy =
   " For rewriting and shortening, preserve each required action with its object, recipient, timing, condition and degree of certainty. Keep precise operational verbs when a shorter synonym could weaken the instruction. Before returning a revision, check each requirement against the original and later corrections; repair omissions in the answer without printing a checklist or internal reasoning. If the requested length cannot hold the requirements, preserve them and briefly explain the conflict. Add warmth only when requested and within the requested format, using neutral phrasing without invented personal facts, reasons or plans.";
 

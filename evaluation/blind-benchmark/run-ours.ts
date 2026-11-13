@@ -5,6 +5,9 @@
 // tiers file), never a qualification report. Keys from Windows Credential Manager:
 //   Invoke-WithPrivateAiSecret -Name TINFOIL_API_KEY -Action { Invoke-WithPrivateAiSecret -Name BRAVE_SEARCH_API_KEY -Action {
 //     npx tsx evaluation/blind-benchmark/run-ours.ts [--tiers tiers.json] [--only L3-01,L6-02] [--modes auto,fast] } }
+import { appText } from "../../src/text/app";
+import { WHEN_TO_SEARCH_TEXT } from "../../src/when-to-search";
+import { GERMAN_RULES_TEXT } from "../../src/german-rules";
 import express from "express";
 import { execFileSync } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -75,6 +78,12 @@ const NOTICES = [
   /^The top result \(/,
 ];
 
+// Controls are found by the app's own English and German labels, so --locale de-DE works too.
+const either = (en: string, de: string) => new RegExp(`^(${[en, de].map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})$`);
+const uiLabel = (key: keyof typeof appText.en) => either(appText.en[key] as string, appText.de[key] as string);
+const searchName = either(WHEN_TO_SEARCH_TEXT.en.button, WHEN_TO_SEARCH_TEXT.de.button);
+const searchAgainName = either(WHEN_TO_SEARCH_TEXT.en.againButton, WHEN_TO_SEARCH_TEXT.de.againButton);
+const withoutName = either(GERMAN_RULES_TEXT.en.without, GERMAN_RULES_TEXT.de.without);
 type Prompt = { id: string; level: number | string; prompt: string | string[]; attachments?: { path: string }[]; searchExpected?: boolean; searchQuery?: string };
 const prompts = (JSON.parse(await readFile(`${DIR}/prompts.json`, "utf8")).prompts as Prompt[]).filter((p) => !only || only.includes(p.id));
 
@@ -159,14 +168,14 @@ outer.use(inner);
 
 const answer = (page: Page) => page.locator("article.assistant").last();
 const answerText = async (page: Page) => (await answer(page).innerText().catch(() => "")).trim();
-const busy = (page: Page) => page.getByRole("button", { name: "Stop response" });
+const busy = (page: Page) => page.getByRole("button", { name: uiLabel("stopResponse") });
 
 // The when-to-search suggestion (src/when-to-search.ts) is decided on the device from the draft.
-const suggestionBox = (page: Page) => page.getByRole("region", { name: "Search suggestion" });
+const suggestionBox = (page: Page) => page.getByRole("region", { name: uiLabel("searchSuggestion") });
 
 async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolean } = {}) {
   const before = await page.locator("article.assistant").count();
-  await page.getByLabel("Message CometRow").fill(text);
+  await page.getByLabel(uiLabel("messageInput")).fill(text);
   await page.waitForFunction(() => !document.querySelector("button[aria-label='Send ↑']")?.hasAttribute("disabled"), null, { timeout: 60_000 });
   await page.waitForTimeout(300);
   const suggestionShown = await suggestionBox(page).isVisible().catch(() => false);
@@ -181,10 +190,10 @@ async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolea
   lastSend = Date.now();
   maxGapMs = 0;
   let started = Date.now();
-  if (tapped) await suggestionBox(page).getByRole("button", { name: "Search and answer" }).click();
-  else await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+  if (tapped) await suggestionBox(page).getByRole("button", { name: searchName }).click();
+  else await page.getByRole("button", { name: uiLabel("sendLabel") }).click();
   // Search first: Send on a German-rules question shows the choice instead of answering.
-  const withoutButton = suggestionBox(page).getByRole("button", { name: "Answer without checking" });
+  const withoutButton = suggestionBox(page).getByRole("button", { name: withoutName });
   const choiceShown =
     !tapped &&
     (await Promise.race([
@@ -196,7 +205,7 @@ async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolea
   if (choiceShown) {
     // Timed from the choice, like a tapped suggestion.
     started = Date.now();
-    await (choice === "search" ? suggestionBox(page).getByRole("button", { name: "Search and answer", exact: true }) : withoutButton).click();
+    await (choice === "search" ? suggestionBox(page).getByRole("button", { name: searchName }) : withoutButton).click();
   }
   let ttftMs: number | undefined;
   let baseline = "";
@@ -212,7 +221,7 @@ async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolea
   const tokens = Number(/Reported inference: (\d+) tokens/.exec(await page.locator("main").innerText().catch(() => ""))?.[1]) || undefined;
   // The after-answer "Search and answer again" box (shown when the answer used no web results).
   await page.waitForTimeout(300);
-  const againShown = await suggestionBox(page).getByRole("button", { name: "Search and answer again" }).isVisible().catch(() => false);
+  const againShown = await suggestionBox(page).getByRole("button", { name: searchAgainName }).isVisible().catch(() => false);
   return { ttftMs, totalMs, text: await answerText(page), suggestionShown, suggestedQuery, suggestionHeading, tapped, choiceShown, choiceHeading, choiceQuery, chose: choiceShown ? choice : undefined, againShown, maxGapMs, tokens };
 }
 
@@ -236,11 +245,11 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
   });
   try {
     await page.goto(origin, { timeout: 60_000 });
-    await page.getByRole("combobox", { name: "Answer mode" }).selectOption(mode, { timeout: 60_000 });
+    await page.getByRole("combobox", { name: uiLabel("answerMode") }).selectOption(mode, { timeout: 60_000 });
     for (const a of p.attachments ?? []) {
       const body = await readFile(join(DIR, a.path));
-      await page.getByLabel("Attach files to this conversation").setInputFiles({ name: a.path.split("/").pop()!, mimeType: "text/markdown", buffer: body });
-      await page.getByRole("region", { name: "File import results" }).filter({ hasText: "added" }).waitFor({ timeout: 30_000 });
+      await page.getByLabel(uiLabel("attachFiles")).setInputFiles({ name: a.path.split("/").pop()!, mimeType: "text/markdown", buffer: body });
+      await page.getByRole("region", { name: uiLabel("importResults") }).filter({ hasText: "added" }).waitFor({ timeout: 30_000 });
     }
     let searched = false;
     const turns = Array.isArray(p.prompt) ? p.prompt : [p.prompt];
@@ -249,16 +258,16 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
     const query = p.searchQuery ?? SEARCH_QUERIES[p.id];
     let probe = { suggestionShown: false, suggestedQuery: undefined as string | undefined };
     if (query && searchKey) {
-      await page.getByLabel("Message CometRow").fill(turns[0]);
+      await page.getByLabel(uiLabel("messageInput")).fill(turns[0]);
       await page.waitForTimeout(300);
       probe = { suggestionShown: await suggestionBox(page).isVisible().catch(() => false), suggestedQuery: undefined };
-      await page.getByLabel("Message CometRow").fill("");
+      await page.getByLabel(uiLabel("messageInput")).fill("");
     }
     if (query && searchKey && !probe.suggestionShown) {
       await workspaceControl(page, "Research").click();
-      await page.getByLabel("Exact search query").fill(query);
-      await page.getByRole("button", { name: "Review disclosure" }).click();
-      await page.getByRole("button", { name: "Approve and retrieve" }).click();
+      await page.getByLabel(uiLabel("exactQuery")).fill(query);
+      await page.getByRole("button", { name: uiLabel("reviewDisclosure") }).click();
+      await page.getByRole("button", { name: uiLabel("approve") }).click();
       await page.getByRole("status").filter({ hasText: "Search results added" }).waitFor({ timeout: 60_000 });
       await workspaceControl(page, "Conversation").click();
       searched = true;
@@ -317,7 +326,8 @@ try {
     MODES,
     (async (mode) => {
       await mkdir(`${OUT}/${mode}`, { recursive: true });
-      const fresh = () => browser.newContext({ viewport: { width: 1280, height: 900 }, ignoreHTTPSErrors: !!tls });
+      // --locale de-DE: the browser language, which picks the interface language (13 November).
+      const fresh = () => browser.newContext({ viewport: { width: 1280, height: 900 }, ignoreHTTPSErrors: !!tls, ...(arg("locale") ? { locale: arg("locale") } : {}) });
       let context = await fresh();
       let used = 0;
       for (const p of prompts) {

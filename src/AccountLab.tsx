@@ -10,7 +10,7 @@ import AccountExport from "./AccountExport";
 import { SupportPanel } from "./SupportPanel";
 import { accountRequest } from "./account-request";
 import { createPasskeyTransport } from "./passkey-transport";
-import { useLang, useText } from "./i18n";
+import { LanguageSwitch, useLang, useText } from "./i18n";
 import { accountLabText } from "./text/account";
 
 const sessionSchema = z
@@ -274,6 +274,7 @@ export default function AccountLab({
       <a className="account-preview-brand" href="/">
         Comet<span>Row</span>
       </a>
+      <LanguageSwitch className="language-switch account-language" />
       <aside className="account-preview-banner">
         {synthetic ? t.bannerSynthetic : t.bannerEarly}
       </aside>

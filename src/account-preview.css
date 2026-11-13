@@ -146,3 +146,28 @@
 .account-shell summary {
   min-height: 24px;
 }
+
+/* DE/EN switch on the account and sign-in page (13 November). */
+.account-language {
+  display: flex;
+  width: fit-content;
+  margin: -12px auto 18px;
+  border: 1px solid #c9d2cb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.account-language button {
+  min-width: 44px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.account-language button[aria-pressed="true"] {
+  background: #243a32;
+  color: #f7f8f5;
+}

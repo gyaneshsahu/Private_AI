@@ -153,6 +153,8 @@ export const appText = defineText({
     themeSystem: "System theme",
     themeLight: "Light",
     themeDark: "Dark",
+    languageLabel: "Language",
+    languageNote: "Your language choice is kept only in this browser.",
     appearanceNote:
       "Only this appearance preference is saved outside your encrypted vault. Conversation contents are not included.",
     signedInAccount: (id: string) => `Signed-in account ${id}`,
@@ -561,6 +563,8 @@ export const appText = defineText({
     themeSystem: "Wie im System",
     themeLight: "Hell",
     themeDark: "Dunkel",
+    languageLabel: "Sprache",
+    languageNote: "Ihre Sprachwahl wird nur in diesem Browser gespeichert.",
     appearanceNote:
       "Nur diese Einstellung zur Darstellung wird außerhalb Ihres verschlüsselten Tresors gespeichert. Inhalte von Unterhaltungen gehören nicht dazu.",
     signedInAccount: (id: string) => `Angemeldetes Konto ${id}`,
