@@ -1,4 +1,45 @@
 # PrivateAI readiness checklist
+## German rules, Thinking time-outs, masking, attestation queue - 13 November
+
+- **Owner direction (13 Nov):**
+  - Merge Stage 3 into the development line (done, `3172d25`), with no deploy and `main` untouched.
+  - Solve, deciding the approach:
+    - German rules, fees and deadlines: confident wrong answers
+    - Thinking time-outs
+    - the masking false positive
+    - a live test of session verification against the real limit
+  - Use the free development key; the owner creates the alpha key and budget before inviting anyone.
+  - No hard-coded rules that cause problems after launch.
+- **Built (all merged into `codex/development-handoff` at `7da9602`, not deployed):**
+  - **German rules** (`docs/german-rules-20261113.md`):
+    - an on-device detector
+    - search first by default: Send asks "Search and answer" / "Answer without checking", with the exact masked text shown
+    - a scoped prompt rule without sources
+    - a sourced-only rule with sources
+    - an unchecked-figures warning, including figures in words, with the one-tap search-again box
+    - Auto to Thinking without sources
+  - **Thinking time-outs** (`docs/thinking-timeouts-20261113.md`):
+    - Thinking at high effort (16/16 complete vs 14/16 at max; median first word 4 s vs 10 s; a third of the tokens)
+    - per-mode limits: Fast 30 s / 90 s, Thinking 120 s / 300 s
+    - no doomed backup retry
+    - a "Still thinking" status
+  - **Masking:** our own helpline numbers allowlisted on every turn (the false "1 phone number" came from a reply repeating 0800 111 0 111); dotted date-times and slash chains no longer read as identifiers.
+  - **Attestation queue** (`docs/privatemode-attestation-limit-20261112.md`):
+    - an adaptive server-side queue for attest calls (starts at 6/min, halves on 429, honours Retry-After, grows after successes)
+    - a busy message instead of a 429
+    - no backup retry after busy
+    - one attest call per verification
+    - the race fixed
+    - the verified session kept when our own relay refuses a chat
+- **Live results (Privatemode):**
+  - **Session verification:** one session, 20 messages: 0 errors and 1 verification; refresh after 10.5 min and re-check after Stop work.
+  - **5 sessions at once:** at best 18/20 answered with 0 attestation failures. In other runs, Privatemode's allowance paused us for 60 s after about 10 calls; no 429 reached a browser and no retry storm followed.
+  - **German rules:**
+    - confident wrong answers on the Privatemode set 8/15 -> 1/15 without search
+    - search path 3.83 with 4-5 confident wrong (stricter grader; the errors now come from weak sources, e.g. a moving company's page)
+    - the bar is still missed
+- **Spend:** Privatemode free allowance only. About 0.25M tokens today (time-outs about 0.12M, German rules about 0.15M, live tests small). Owner reports about 2.5M left before these runs. No Tinfoil calls.
+
 ## Privatemode primary: Stage 3, session verification, completeness check, evidence, CI fix - 12/13 November (night)
 
 - **Owner decisions (12 Nov):** Privatemode is the primary provider and Tinfoil a backup (no new tuning or spend; manual, announced switching); the routing and search design is accepted; build the completeness check; Stage 3 for Privatemode (controls, exact model IDs, per-user cache_salt, alpha key, D17 wording, report, DPA record); redo the Privatemode model mapping and evidence; verify the Neues Museum price. Later: verify once per browser session, refreshed at most every 10 minutes, fail closed (option 1), with wording "when you start chatting and again at least every 10 minutes".

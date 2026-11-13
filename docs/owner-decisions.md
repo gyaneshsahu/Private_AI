@@ -33,6 +33,14 @@ The agent finishes those two builds, merges them, gets CI green and then asks yo
 | 14 | **Device checks** T1 (second account) and T2 (Safari, Firefox, phone; the 29 MB Privatemode Wasm is cached after the first load) | - | Only you have the accounts and devices |
 | 15 | **Later, not blocking the first invitees:** operations (O1-O3), the inactivity rule, branch policy and `main` (O6), the Enterprise plan, the owner sample scores and the paste batches | - | - |
 
+**New decisions from 13 November (not blocking the first invitees, but before growth):**
+
+| Decision | My recommendation | Why |
+| --- | --- | --- |
+| **German rules: source quality.** With search, the remaining wrong answers come from weak pages (a moving company's site on re-registering a car). | Prefer official German sources for these questions. Either (a) rank results from authority domains first and read those pages (gesetze-im-internet.de, bund.de, the Länder, BMJ, Bundesregierung; a stable list of public authorities, not facts), or (b) add an official-site filter to the search text, which the user then sees. I recommend (a). | It is the next real lever: the model now follows the sources; the sources must be better |
+| **Our relay's limit of 3 chats at once per server instance** | Raise to 10 for the alpha, keep the per-account limit of 1. Cost is still capped by the allowance and the spend ceiling | At 5 users starting together, 2 of 20 answers were refused by our own limit, not Privatemode |
+| **Tinfoil privacy text: automatic search sentence** | Leave it until Tinfoil is used again (backup only); it still says "time-sensitive" only, while the Privatemode text now includes rules, fees and deadlines | The approved Tinfoil text changes only with your approval |
+| **Privatemode attestation allowance** | Ask support (rank 1 above); plan the launch around the Standard-tier figure they give | It is now the ceiling for how many people can start chatting at the same moment |
 **Key swap (your question of 13 Nov):** swapping the key is mostly just the secret. On Render, replace the key file and restart (the key is read at start). Record the new limits and expiry in the report (`privatemode.portalKeyLimit`); the startup warning reads the expiry from there. Set a calendar reminder 14 days before expiry. The approved manifest, the users' cache salts (they come from the deployment secret, not the key) and the free-token balance (it belongs to the organisation) are not affected.
 
 ### Earlier version of this list (kept for the record)
