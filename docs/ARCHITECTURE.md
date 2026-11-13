@@ -2,6 +2,70 @@
 
 > **Name change, 25 October 2026:** this product was called PrivateAI until 25 October 2026 and is now CometRow. Some technical identifiers keep the old name on purpose; the full record is in `name-change-20261025.md`.
 
+## Current system, 13 November 2026
+
+This section describes the system as it stands on `codex/development-handoff` (`e880318`). The dated sections below it are history, newest first. Some of them describe the Tinfoil-only design that this section replaces.
+
+**What CometRow is:** a privacy-first AI assistant. Messages are encrypted in the browser to a verified confidential-computing provider, so our server relays ciphertext it cannot read. Saved conversations live in an encrypted vault in the browser. The alpha is invite-only, free, on one Render server, and it is the last test before launch (no beta).
+
+### Request path
+
+1. **Browser (React, Vite).**
+   - `src/App.tsx` is the main screen.
+   - `src/providers/privatemode-client.ts` is the primary provider client and `src/providers/tinfoil-client.ts` the backup, both behind `inference-client.ts`.
+   - The browser verifies the provider's attestation itself, using the pinned 29 MB Privatemode Wasm. Verification is reused per browser session and refreshed at most every 10 minutes.
+2. **Our server** (Express, TypeScript): it never sees plaintext messages.
+   - Production entry: `server/render-entry.ts`, then `deployment-process.ts`, then the Render bridge (`render-bridge.ts`: headers, CSRF, caching), then the production runtime (`production-runtime.ts`), then the app (`app.ts`).
+   - Inference relays: `server/providers/privatemode-relay.ts`, plus `privatemode-attest-queue.ts`, a shared attestation queue of about 6 per minute, with at most 2 at once and 10 per 10 minutes per account. The backup relay is `tinfoil-relay.ts`, and `inference-relay.ts` is shared.
+3. **Providers.**
+   - Privatemode (primary): Fast `glm-5.3-flash` low, Thinking `glm-5.3` high.
+   - Tinfoil (backup only).
+   - Switching is manual and announced. There is no automatic fallback.
+4. **Search:** Brave through `server/providers/search.ts`, only after the user approves. Search text is masked on the device (`src/identifier-masking.ts`). In production it is on only when `inference.searchKeyFile` is set. Goggles are never used in production.
+
+### Guards on every chat request (server)
+
+- **Qualification report.** Chat refuses to start without a valid, signed report. It holds the model IDs, limits and owner-accepted checks, and is renewed weekly.
+- **Allowance.** `inference.allowance` gives 150 requests per 7 days, and Thinking counts 5. Periods are created by the operator SQL function `start_auto_allowance` (SECURITY DEFINER), printed by `privileges-plan` and installed once by the owner.
+- **Spend ceiling.** `server/spend-guard.ts` uses the report's `approvedSpendUSD`. Every request is booked at Thinking's worst case, because Privatemode tokens cannot be counted.
+- **Concurrency.** At most 3 chats at once per server and 1 per account, held in memory: one instance only.
+- **Stop switch.** A stop file, or `enabled: false` in the config.
+- **Operator notice.** `inference.noticeFile` is shown to every user.
+- **Expiry warnings.** An hourly log line 48 hours before the report expires and 14 days before the key expires.
+- **Content-free counts.** `server/counters.ts` logs `CometRow counts (last hour)`: outcomes per mode, refusals by class, attestation busy, searches. No account and no text.
+
+### On-device logic (browser)
+
+- **Auto routing.** `src/answer-modes.ts` picks Fast or Thinking from on-device cues (English and German).
+- **Search cues.** `src/when-to-search.ts` detects time-sensitive questions. `src/german-rules.ts` detects German rules, fees and deadlines, offers search first, and adds the unchecked-figures warning.
+- **Answer checks.** `src/arithmetic/` holds the arithmetic post-check and the completeness check: every figure the question asks for must appear in the answer.
+- **Model instructions.** `src/conversation.ts` builds the product prompt, including the answer-language rule.
+
+### Interface languages (13 November)
+
+- `src/i18n.tsx` sets the language: from the browser language on the first visit, then from the DE/EN switch, stored on the device only. `src/text/*.ts` holds the text blocks, and `src/text/core.ts` is a React-free twin.
+- `src/server-messages.ts` translates the server's fixed English messages in the browser.
+- The legal texts in `shared/*.ts` exist in English and German, and German is binding. `shared/legal-text-pairs.json` and its test flag a change to one language.
+- **Decided but not built: a server flag, default off, that hides German until the legal read** (`docs/handoff-20261113.md`).
+
+### Accounts and data
+
+- Sign-in: Google only, because email delivery is off in production. Adding email is open decision R2.
+- Postgres migrations are in `server/migrations/`. The app runs as the restricted role `cometrow_runtime`.
+- Request records are purged after 90 days (`request-retention.ts`).
+- Operator suspend and erase: `scripts/account-operator.ts` prints SQL for the owner to review and run. Erase deletes request records too.
+- Conversations never reach our database. They stay in the browser vault (`src/vault*.ts`), with encrypted backups (`src/vault-backup.ts`).
+
+### Where to look
+
+| Question | Start here |
+| --- | --- |
+| Deploying, config fields, live checks | `docs/render-deploy-and-live-checks-20261113.md`, `docs/development-deployment.md`, `deployment/render-config.example.json` |
+| What is decided or open | `docs/owner-decisions.md`, `docs/pre-alpha-checklist.md`, `docs/handoff-20261113.md` |
+| Evidence and test results | `docs/READINESS.md` (newest first), `evaluation/*/SUMMARY.md` |
+| All docs by topic | `docs/INDEX.md` |
+| Tests | `tests/` (vitest, with UI tests through Playwright), `scripts/test-durable.mjs` (Postgres suite), `.github/workflows/validate.yml` |
+
 ### Encrypted workspace organization — 20 October
 
 Projects are an AES-GCM encrypted registry in the existing account-scoped IndexedDB meta store, authenticated with `projects-v1`; names are not a plaintext navigation index. Creation compares the prior cipher IV inside the write transaction to reject concurrent overwrite. Pin/archive/project IDs are optional validated conversation fields inside existing encrypted snapshots; organization uses existing snapshot-version checks and preserves unsaved drafts. No organization fields are composed into model context. Lock/account changes clear in-memory projects and searches.

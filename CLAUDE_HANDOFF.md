@@ -2,9 +2,14 @@
 
 > **Name change, 25 October 2026:** this product was called PrivateAI until 25 October 2026 and is now CometRow. Some technical identifiers keep the old name on purpose; the full record is in `docs/name-change-20261025.md`.
 
-Updated: 12 November 2026  
+Updated: 13 November 2026  
 Repository: `gyaneshsahu/Private_AI`  
 Branch: `codex/development-handoff`
+
+## Handoff note, 13 November 2026
+
+- **Read first:** `docs/handoff-20261113.md` (state, decisions, open items, known issues, reading order), then `docs/INDEX.md`. The notes below are history.
+- **Code state:** `codex/development-handoff` at `e880318` plus docs, CI green, nothing deployed since 25 October. Privatemode primary, Tinfoil backup. German and English interface built; the German flag (default off) is decided but not built yet.
 
 ## Handoff note, 12 November 2026
 

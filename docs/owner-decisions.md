@@ -4,13 +4,18 @@ Running list kept while the owner is away (from 12 November 2026). Each entry na
 
 ## What needs you before the alpha, in order (updated 13 November)
 
+**Scope rule (owner, 13 November): alpha = beta, with the new feature scope.** There is no beta. Nothing is "later" any more. Every item is either **before the first invitee** or **during the alpha, before launch** (real invitees must use it before launch). An item leaves the scope only by an explicit owner decision. Handoff for the next session: `docs/handoff-20261113.md`.
+
+
 **Owner decisions of 13 November (after the overnight report):**
 - **Chat allowance:** 150 requests per 7 days per invitee. **Thinking counts 5** (was 3; set in the report's `modes.thinking.allowanceCost`). Config: `"allowance": { "requestLimit": 150, "days": 7 }`.
 - **Web search:** on for the alpha, Brave (`inference.searchKeyFile`). Needs a Brave production key and the search sentences in the privacy wording.
 - **Free for the alpha,** invite-only, one server.
 - **Erase deletes request records too.**
 - **Concurrent chats stay at 3** per server for now.
-- **Privatemode free balance:** nearly 500k tokens left (owner, portal, 13 November).
+- **German interface flag: default off** (owner, 13 November evening). German is shown only once the flag is on, after the legal read. **Not built yet:** today a German browser gets German, drafts included. It must be built before the first deploy (`docs/handoff-20261113.md`).
+- **Alpha = beta, with the new feature scope** (see the scope rule above).
+- **Privatemode free balance:** 1.579M of 5M tokens left (owner, portal, 13 November evening). Earlier the same day: "nearly 500k left"; check which counter each reading came from.
 - **New requirement: German and English interface,** default from the browser language (de gives German, otherwise English), a visible DE/EN switch saved on the device, never IP or email. All user-facing text translated, including server messages, refusals, emergency and health cards. German drafts of the privacy policy, health consent and acceptable use with the 18+ rule; **German is the binding text**. **Built 13 Nov** (`docs/i18n-20261113.md`). Your part: approve the German legal texts with a legal read before the German interface goes live (questions in `docs/legal-texts-de-20261113.md`: a 'German prevails' sentence; 'ausdrückliche Einwilligung'; § 5 DDG imprint heading; 'per account' vs 'per key'; Tinfoil in the acceptable-use draft). The interface uses the formal 'Sie': tell me if you prefer 'du'.
 
 **Settled since 12 November:**
@@ -41,25 +46,25 @@ All of this is on `codex/development-handoff` with CI green, and none of it is l
 | 12 | **Cohort and support:** Google-only sign-in, first invitees, a support contact and the pause rule (R2, R3, B17, R6) | 2 friends first, then up to 10 | Who gets in, and how they reach you |
 | 13 | **Deploy and switch on** once I report CI green: deploy to Render with chat off; set the Render secrets (key file, manifest file, deployment secret); I then run the hosted checks; switch chat on only after steps 2-5 | As stated | Nothing from 12-13 November is live yet |
 | 14 | **Device checks** T1 (second account) and T2 (Safari, Firefox, phone; the 29 MB Privatemode Wasm is cached after the first load) | - | Only you have the accounts and devices |
-| 15 | **Later, not blocking the first invitees:** operations (O1-O3), the inactivity rule, branch policy and `main` (O6), the Enterprise plan, the owner sample scores and the paste batches | - | - |
+| 15 | **During the alpha, before launch** (no longer "later"): operations O1-O3 (backups, downtime alert, hosted restore), the inactivity rule (D12), branch policy and `main` (O6), the Privatemode plan for launch capacity (Standard or Enterprise, after support answers), the owner sample scores and the paste batches | O1 and O2 in the first alpha week; the rest before launch | Real invitees' data needs backups and an alert from day one; the launch must run on what the alpha used |
 
 **Launch decisions that now fall inside the alpha (no beta; launch-gap audit of 13 November night, `docs/pre-alpha-checklist.md` top section):**
 
 | Decision | My recommendation | Why now |
 | --- | --- | --- |
 | **Free or paid at launch** (audit G2: billing exists only as a Stripe test-mode rehearsal, and production refuses it) | Decide in the first alpha week. If paid, live payments (VAT, withdrawal consent, cancellation button) must run with invitees before launch | Payments are the riskiest launch path and cannot be tried for the first time at launch |
-| **German interface** (audit G8: the app, consent, terms and policy are English only) | Yes, German for launch, with a native-speaker review. About 5 to 8 agent days; I can start once you say yes | The market is Germany; health consent and legal texts in German matter most |
-| **Open sign-up and capacity** (audit G5: allowlist of at most 10, one 0.5 CPU instance, limits held in memory) | Plan a waitlist for launch; keep one instance for the alpha; raise our limit of 3 chats at once to 10 | Capacity beyond one instance needs shared limits (a redesign), so it must be planned now |
+| **German interface** (audit G8) | **Decided and built 13 Nov** (`docs/i18n-20261113.md`). **Flag default off** (owner): switch it on after the legal read of the German texts. The flag itself is still to be built | The market is Germany; invitees must use German during the alpha, before launch |
+| **Open sign-up and capacity** (audit G5: allowlist of at most 10, one 0.5 CPU instance, limits held in memory) | **Decided for the alpha:** invite-only, one server, 3 chats at once. **Open for launch:** a waitlist or open sign-up, and shared limits in the database, built and tried during the alpha | Capacity beyond one instance needs shared limits (a redesign), so it must be planned now |
 | **Privacy policy fixes** (audit G7: the contact section says an account can be closed there, the deletion section says it cannot; no legal basis per purpose; no rights section; browser storage not described) | Let me draft the corrected text for your legal read | The policy must be true on day one of the alpha |
-| **Erasure requests** (audit G6: Google-only users cannot close their account) | Use the operator procedure (built 13 Nov: `scripts/account-operator.ts` prints SQL, you review and run it; steps in `docs/invited-trial-runbook.md`). It erases request records too, although they are otherwise kept 90 days: no legal duty to keep them while there is no billing. Confirm that, and revisit when paid billing starts (tax records) | A person can ask for erasure at any time (GDPR Art. 17) |
+| **Erasure requests** (audit G6: Google-only users cannot close their account) | **Decided 13 Nov: erase deletes request records too.** Use the operator procedure (built 13 Nov: `scripts/account-operator.ts` prints SQL, you review and run it; steps in `docs/invited-trial-runbook.md`). It erases request records too, although they are otherwise kept 90 days: no legal duty to keep them while there is no billing. Confirm that, and revisit when paid billing starts (tax records) | A person can ask for erasure at any time (GDPR Art. 17) |
 | **Two known limits from the code review** (accept for the alpha): a message retried after a provider refusal counts twice against the allowance; a modified browser could claim Fast while asking for Thinking-level effort, because the message body is encrypted | Accept; the Privatemode portal spend limit is the real backstop | You should know them before you set the budget |
 
-**New decisions from 13 November (not blocking the first invitees, but before growth):**
+**New decisions from 13 November (during the alpha, before launch):**
 
 | Decision | My recommendation | Why |
 | --- | --- | --- |
 | **German rules: next step (decided by your rule "if the gain is small, ship the warnings and move on").** Official-source preference (a) is built; Goggles were tested and are off. | Stop tuning German rules for the alpha. Watch real use, and revisit Goggles only with a page reader that finds the right section of a long official page | The warnings now cover 14 of 15 confident errors on fresh questions; more ranking work did not help |
-| **Our relay's limit of 3 chats at once per server instance** | Raise to 10 for the alpha, keep the per-account limit of 1. Cost is still capped by the allowance and the spend ceiling | At 5 users starting together, 2 of 20 answers were refused by our own limit, not Privatemode |
+| **Our relay's limit of 3 chats at once per server instance** | **Decided 13 Nov: stays at 3** (per-account limit 1). Revisit with the week-one counts (`attest.busy_*`, refusals) | At 5 users starting together, 2 of 20 answers were refused by our own limit, not Privatemode |
 | **Tinfoil privacy text: automatic search sentence** | Leave it until Tinfoil is used again (backup only); it still says "time-sensitive" only, while the Privatemode text now includes rules, fees and deadlines | The approved Tinfoil text changes only with your approval |
 | **Privatemode attestation allowance** | Ask support (rank 1 above); plan the launch around the Standard-tier figure they give | It is now the ceiling for how many people can start chatting at the same moment |
 **Key swap (your question of 13 Nov):** swapping the key is mostly just the secret. On Render, replace the key file and restart (the key is read at start). Record the new limits and expiry in the report (`privatemode.portalKeyLimit`); the startup warning reads the expiry from there. Set a calendar reminder 14 days before expiry. The approved manifest, the users' cache salts (they come from the deployment secret, not the key) and the free-token balance (it belongs to the organisation) are not affected.
