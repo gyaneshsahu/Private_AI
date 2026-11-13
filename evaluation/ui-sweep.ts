@@ -3,7 +3,10 @@
 // text contrast (WCAG AA, computed in the page), keyboard focus visibility and small touch
 // targets on phones. Chat is off (no report, no key), as in production today. No network
 // beyond localhost. Run after `npm run build`:
-//   npx tsx evaluation/ui-sweep.ts [--browsers chromium,firefox,webkit]
+//   npx tsx evaluation/ui-sweep.ts [--browsers chromium,firefox,webkit] [--german]
+// --german (13 November): the browser runs with locale de-DE; each view is opened through the
+// English controls, then the visible DE switch is clicked and the German view is measured, with
+// a count of English words left on screen.
 import { spawn } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import { chromium, firefox, webkit, type Page } from "@playwright/test";
@@ -16,6 +19,7 @@ const VIEWPORTS = { phone: { width: 375, height: 812 }, tablet: { width: 768, he
 // /account is served only by the hosted composition; the local server shows the same screens in the account lab.
 const VIEWS = ["Conversation", "Context", "Research", "Saved", "Settings", "Account lab"] as const;
 const engines = { chromium, firefox, webkit };
+const german = process.argv.includes("--german");
 const chosen = (process.argv.includes("--browsers") ? process.argv[process.argv.indexOf("--browsers") + 1].split(",") : Object.keys(engines)) as (keyof typeof engines)[];
 
 const server = spawn(process.execPath, ["--import", "tsx", "server/index.ts"], {
@@ -91,7 +95,17 @@ function measure(isPhone: boolean) {
         .filter((el) => !(el.tagName === "A" && getComputedStyle(el).display === "inline")) // inline text links are exempt
         .map(name)
     : [];
+  // English words that should not appear on a German screen (brand names excluded).
+  const englishWords = /\b(the|and|your|you|this|with|from|Send|Search|Settings|Delete|Cancel|Sign in|Loading|Conversation|Saved|Attach|Open|Close|New|Copy|Back|Save|Start|Answer)\b/;
+  const english = document.documentElement.lang === "de"
+    ? [...document.querySelectorAll("body *")]
+        .filter((el) => visible(el))
+        .flatMap((el) => [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent!.trim()))
+        .concat([...document.querySelectorAll("[aria-label], [placeholder], [title]")].filter(visible).flatMap((el) => ["aria-label", "placeholder", "title"].map((a) => el.getAttribute(a) ?? "")))
+        .filter((t) => t && englishWords.test(t))
+    : [];
   return {
+    englishLeft: [...new Set(english)].slice(0, 12),
     pageOverflowPx: document.documentElement.scrollWidth - vw,
     outside: [...new Set(outside)].slice(0, 8),
     lowContrast: [...new Set(lowContrast)].slice(0, 12),
@@ -141,19 +155,22 @@ try {
     try {
       for (const [vpName, viewport] of Object.entries(VIEWPORTS)) {
         for (const view of VIEWS) {
-          const context = await browser.newContext({ viewport, hasTouch: vpName === "phone" && engine !== "firefox" });
+          const context = await browser.newContext({ viewport, hasTouch: vpName === "phone" && engine !== "firefox", ...(german ? { locale: "de-DE" } : {}) });
+          // Navigate with the English controls first; the DE switch is clicked after opening the view.
+          if (german) await context.addInitScript(() => localStorage.setItem("cometrow.language", "en"));
           const page = await context.newPage();
           const errors: string[] = [];
           page.on("pageerror", (e) => errors.push(String(e.message).slice(0, 120)));
           try {
             await open(page, view);
+            if (german) await page.getByRole("button", { name: "Deutsch", exact: true }).first().click();
             await page.waitForTimeout(600);
             // tsx adds a __name helper the page lacks; define it inside the evaluated script.
             const m = (await page.evaluate(`(() => { const __name = (f) => f; return (${measure.toString()})(${vpName === "phone"}); })()`)) as ReturnType<typeof measure>;
             const focus = view === "Conversation" || view === "Account lab" ? await focusCheck(page) : [];
             const row = { engine, viewport: vpName, view, ...m, focus, errors };
             report.push(row);
-            const issues = [m.pageOverflowPx > 0 && `overflow ${m.pageOverflowPx}px`, m.outside.length && `${m.outside.length} outside`, m.lowContrast.length && `${m.lowContrast.length} low contrast`, m.smallTargets.length && `${m.smallTargets.length} small targets`, focus.length && `${focus.length} focus`, errors.length && `${errors.length} errors`].filter(Boolean);
+            const issues = [m.englishLeft.length && `${m.englishLeft.length} English`, m.pageOverflowPx > 0 && `overflow ${m.pageOverflowPx}px`, m.outside.length && `${m.outside.length} outside`, m.lowContrast.length && `${m.lowContrast.length} low contrast`, m.smallTargets.length && `${m.smallTargets.length} small targets`, focus.length && `${focus.length} focus`, errors.length && `${errors.length} errors`].filter(Boolean);
             console.log(`${engine.padEnd(8)} ${vpName.padEnd(7)} ${view.padEnd(13)} ${issues.join(", ") || "ok"}`);
           } catch (error) {
             report.push({ engine, viewport: vpName, view, failed: String((error as Error).message).slice(0, 200) });
@@ -171,6 +188,6 @@ try {
   server.kill();
 }
 await mkdir(".local/ui-sweep", { recursive: true });
-const file = `.local/ui-sweep/sweep-${Date.now()}.json`;
+const file = `.local/ui-sweep/sweep-${german ? "de-" : ""}${Date.now()}.json`;
 await writeFile(file, JSON.stringify(report, null, 2));
 console.log(`written ${file}`);
