@@ -2,46 +2,38 @@
 
 Running list kept while the owner is away (from 12 November 2026). Each entry names the decision, the safe default the agent applied, and where it matters. Nothing here is decided until the owner says so.
 
-## What needs you, ranked by what blocks the alpha (updated 12 November, night: Privatemode primary)
+## What needs you before the alpha, in order (updated 13 November)
 
-**Decided on 12 November:**
-- Privatemode is the primary provider. Tinfoil is a tested backup with no new tuning or spend. Switching is manual and announced.
-- The routing and search design is accepted.
-- The completeness check is accepted and built.
-- Attestation runs once per browser session and is refreshed at most every 10 minutes (option 1): accepted and built.
-- Mode models on Privatemode, from evidence (`docs/privatemode-fast-tier-20261112.md`): **Fast `glm-5.3-flash` low** (backup `glm-5.3`) and **Thinking `glm-5.3` max** (backup `glm-5.3-flash`).
+**Settled since 12 November:**
+- Privatemode is the primary provider; Tinfoil is the backup.
+- Stage 3 is merged into the development line, with session verification refreshed at most every 10 minutes.
+- Thinking runs at high effort, not max.
+- Per-mode time limits.
+- The masking false positive is fixed.
+- German rules have a detector, a search suggestion, a scoped prompt rule and an unchecked-figures warning. Search-first and sourced-only are being built.
+- The attestation queue is being built.
 
-Earlier rows that these settle are listed after the table.
+The agent finishes those two builds, merges them, gets CI green and then asks you to deploy. Your steps in order:
 
-| Rank | What you decide or do | Recommended default | Why it is here |
+| # | What you do | My recommendation | Why it is in this place |
 | --- | --- | --- | --- |
-| 1 | **Privatemode alpha key:** create a dedicated key in the portal with a rate limit, an expiry date and a spend limit. Store it in Credential Manager (`PrivateAI/Local/PRIVATEMODE_API_KEY`) and as a Render secret. Tell me the limit and the expiry for the report (`portalKeyLimit`) | Expiry at the planned alpha end plus 2 weeks; spend limit as in rank 2 | Chat cannot run on Privatemode in production without it. Steps are in `docs/development-deployment.md` on `privatemode-stage3` |
-| 2 | **Money for Privatemode:** (a) the provider spend budget and (b) the app's spend ceiling `approvedSpendUSD` (D5) | (a) Set an org/key budget of **EUR 100 per month** with an alert, **before inviting anyone**. (b) **USD 100 per 7-day report window**: unmetered Privatemode requests are booked at worst case, about USD 0.10 per Thinking request against about EUR 0.015 real | The one-time 5M free tokens are nearly spent by testing (spend section in `docs/READINESS.md`). Real alpha use is roughly EUR 50-70 per month for 10 active users, mostly Thinking. If (b) is too low, the guard stops chat for everyone |
-| 3 | **Attestation limit:** send the two-line question to Privatemode support (draft in `docs/privatemode-attestation-limit-20261112.md` on `privatemode-stage3`) | Send now. Plan for the Standard tier, not Enterprise (you expect Enterprise to need a EUR 15-25k deal) | Even with per-session verification, the limit caps about 100-150 users chatting in the same 10 minutes. Fine for the alpha, not for the launch |
-| 4 | **Privatemode privacy wording** (D17 and the fifth sentence, now with the 10-minute check): approve `docs/privacy-wording-privatemode-20261112.md` (on `privatemode-stage3`), and decide whether to keep "does not use them to train any AI" | Approve; keep the training sentence only with the DPA reference | Users must be told the truth for the provider in use. Closes the report's retention check |
-| 5 | **Privatemode qualification report:** accept or refuse in writing the four checks marked for acceptance (GPU checked only on Privatemode's side; AMD/Intel revocation in the Wasm unknown; no per-request metering; attestation freshness of up to 10 minutes). Confirm the repository name `edgelesssys/privatemode-public`, then sign | Accept for the invite-only alpha; report valid 7 days, renewed weekly | Chat refuses to start without a valid report |
-| 6 | **Contracts with Edgeless/Privatemode:** confirm how the DPA of 24 July 2026 was concluded and file it; file the 12 Nov email (summary in `docs/supplier-privatemode-20261112.md`); review `docs/dpa-record-privatemode-20261112.md` | File both; no Enterprise call before you have usage numbers | GDPR Art. 28 and 30 |
-| 7 | **Grade safety case 07** for the Privatemode arms: `.local/privatemode-fast-tier-20261112/privatemode-glmflash-low-safety.md` and `privatemode-glm-low-safety.md` | Grade; keep the mapping unless a grade fails | The safety gate is the one bar a model must pass by your judgement |
-| 8 | **Context size with the top page** (2e): the reports allow 8,000 input characters; prompt plus search excerpts plus up to 6,000 characters of page text often exceed that | 32,000 in the Privatemode report, as the benchmarks used | Search answers fail without it |
-| 9 | **Deploy after merge:** merge `privatemode-stage3` and `privatemode-session-verify` into the development line once the Privatemode evaluation is in and Validate is green. Then deploy to Render with chat off, and switch chat on only after ranks 1, 2, 4 and 5 | As stated | The Render bridge fix and all of today's work are not live yet |
-| 10 | **Score samples** (optional but useful): `evaluation/benchmark-fresh-20261112/owner-sample.md` (30 answers) and the arithmetic paste batches in ChatGPT and Claude | Score; the model graders count as trusted only within 1 point on average | Validates the blind model graders |
-| 11 | **One text review of what we promise** (old rank 3): approved statement rows and live policy rows in `docs/copy-audit-20261112.md`, and provider section D8/D9/D10/D14 | Accept the proposed replacements | Several rows still describe Tinfoil |
-| 12 | **Health consent:** D2, D3, D4 | Approve the draft | Art. 9 consent |
-| 13 | **Legal texts:** L6 legal basis, L10 DPIA (now for Privatemode) and terms, acceptable use and the 18+ rule | Approve after a legal read | Required before strangers use it |
-| 14 | **Record of processing and breach plan** (D16) and **breach deputy** (D15) | Approve; no deputy for a 10-person alpha, in writing | GDPR Art. 30 and 33 |
-| 15 | **Rotate the database password you called exposed** (S2) | Rotate now | Status unknown |
-| 16 | **Cohort** (R2, R3, B17, R6) and **Safe Browsing** (R4; Search Console steps in `docs/safe-browsing-20261112.md`) | Google-only, 2 friends first, then up to 10 | Who gets in. The domain warning scares invitees |
-| 17 | **Device checks:** T1 (second account), T2 (Safari, Firefox, phone; the Privatemode Wasm is 29 MB, cached after the first load) | - | Only you have the accounts and devices |
-| 18 | **Operations** (O1, O2, O3), **inactivity rule**, **branch policy and `main`** (O6) | As in the earlier list | Not blocking the first invitees |
-| - | **Not blocking the alpha:** Exa (stopped), Tinfoil enclave search, the Enterprise plan, Tinfoil modes (frozen as backup) | | |
+| 1 | **Send the attestation question to Privatemode support** (draft in `docs/privatemode-attestation-limit-20261112.md`) | Send today. Ask whether the limit is per organisation, key or IP; what it is on the Standard tier; and whether it can be raised without Enterprise | The queue keeps the alpha safe, but it caps how many people can start chatting at the same moment. This decides launch capacity, and the answer takes time |
+| 2 | **Create the alpha key** in the Privatemode portal, with a rate limit, an expiry date and a spend limit. Store it **only on Render** (secret file `inference.apiKeyFile`). Keep the free development key in Credential Manager for local work. Tell me the limit and the expiry | Expiry: alpha end plus 2 weeks | Chat cannot run in production without it. Keeping it off the laptop stops tests from eating its limits |
+| 3 | **Money:** a Privatemode spend budget, and the app's ceiling `approvedSpendUSD` (D5) | EUR 100 per month at Privatemode, with an alert; USD 100 per 7-day report window in the app (unmetered requests are booked at worst case, about USD 0.10 per Thinking request) | Without a budget the alpha stops when the free tokens run out. If the app ceiling is too low, chat stops for everyone |
+| 4 | **Approve the Privatemode privacy wording** (`docs/privacy-wording-privatemode-20261112.md`: the D17 sentences, the 10-minute check, automatic search covering rules, fees and deadlines), and decide on the sentence "does not use them to train any AI" | Approve; keep the training sentence with the DPA reference | Users must be told the truth for the provider in use |
+| 5 | **Accept the four open report checks in writing** (GPU checked only on Privatemode's side; AMD/Intel revocation in the Wasm unknown; no per-request metering; attestation freshness up to 10 minutes) and **confirm the repository name** `edgelesssys/privatemode-public` | Accept for the invite-only alpha | I then finalise the report with the key limits from step 2, and you sign it (valid 7 days, renewed weekly) |
+| 6 | **Contracts:** file the Edgeless DPA of 24 July 2026 and the 12 Nov email; review `docs/dpa-record-privatemode-20261112.md` | File both | GDPR Art. 28 and 30 |
+| 7 | **Grade safety case 07** for the models now in use (Fast `glm-5.3-flash` low; Thinking `glm-5.3` **high**). Files are in `.local/privatemode-fast-tier-20261112/`; I will add a GLM-5.3-high answer before you grade | Grade; keep the mapping unless a grade fails | The safety gate is your call |
+| 8 | **Context size:** raise the report's `maxInputCharacters` from 8,000 to 32,000 | 32,000 | Search answers with the opened page fail above 8,000 |
+| 9 | **Rotate the database password you called exposed** (S2) | Rotate now | Status unknown |
+| 10 | **Legal texts:** health consent D2-D4; L6 legal basis; DPIA L10 (now for Privatemode); terms; acceptable use and the 18+ rule; record of processing and breach plan D16 (no deputy for a 10-person alpha, D15) | Approve after a legal read | Needed before people outside your circle use it |
+| 11 | **Safe Browsing:** the Search Console steps in `docs/safe-browsing-20261112.md` | Do it before sending invites | The domain warning scares invitees away |
+| 12 | **Cohort and support:** Google-only sign-in, first invitees, a support contact and the pause rule (R2, R3, B17, R6) | 2 friends first, then up to 10 | Who gets in, and how they reach you |
+| 13 | **Deploy and switch on** once I report CI green: deploy to Render with chat off; set the Render secrets (key file, manifest file, deployment secret); I then run the hosted checks; switch chat on only after steps 2-5 | As stated | Nothing from 12-13 November is live yet |
+| 14 | **Device checks** T1 (second account) and T2 (Safari, Firefox, phone; the 29 MB Privatemode Wasm is cached after the first load) | - | Only you have the accounts and devices |
+| 15 | **Later, not blocking the first invitees:** operations (O1-O3), the inactivity rule, branch policy and `main` (O6), the Enterprise plan, the owner sample scores and the paste batches | - | - |
 
-**Settled today and removed from the list:**
-- Old rank 2 and 2a (provider and models): Privatemode with the models above. Only the safety grade is left (rank 7).
-- 2d: the Tinfoil limit was raised.
-- 2h: the routing design is accepted.
-- 2i: the Privatemode Fast model was chosen from evidence.
-- 2j: the completeness check is built.
-- 2b (the Tinfoil privacy wording branch) stays open, but it now matters only for the Tinfoil backup.
+**Key swap (your question of 13 Nov):** swapping the key is mostly just the secret. On Render, replace the key file and restart (the key is read at start). Record the new limits and expiry in the report (`privatemode.portalKeyLimit`); the startup warning reads the expiry from there. Set a calendar reminder 14 days before expiry. The approved manifest, the users' cache salts (they come from the deployment secret, not the key) and the free-token balance (it belongs to the organisation) are not affected.
 
 ### Earlier version of this list (kept for the record)
 
