@@ -38,7 +38,7 @@ import {
   searchSuggestion,
   WHEN_TO_SEARCH,
 } from "./when-to-search";
-import { HEALTH_CONSENT } from "../shared/health-consent";
+import { healthConsentCopy } from "../shared/health-consent";
 import {
   readHealthConsent,
   writeHealthConsent,
@@ -64,7 +64,7 @@ import { expireMessages, type DisappearAfter } from "./conversation";
 import { LanguageSwitch, textFor, useLang } from "./i18n";
 import { serverMessage } from "./server-messages";
 import { appText } from "./text/app";
-import { PRIVACY_SUMMARY, privacyText } from "../shared/privacy-copy";
+import { privacySummary, privacyText } from "../shared/privacy-copy";
 import { privacyPolicyText } from "../shared/privacy-policy";
 import { disclosedProvider } from "../shared/provider-disclosure";
 import { imprintText } from "../shared/legal-identity";
@@ -1438,8 +1438,7 @@ export function App() {
             {settingsSection === "privacy" && (
               <>
                 <h3>{t.sectionPrivacy}</h3>
-                {/* i18n-wire: pass lang */}
-                <p>{PRIVACY_SUMMARY}</p>
+                <p>{privacySummary(lang)}</p>
                 {status?.healthConsentDraft && (
                   <HealthConsentSetting
                     record={healthConsent}
@@ -1453,8 +1452,7 @@ export function App() {
                     setSource({
                       id: "privacy-policy",
                       title: t.privacyPolicy,
-                      // i18n-wire: pass lang
-                      text: privacyPolicyText(disclosedProvider(status)),
+                      text: privacyPolicyText(disclosedProvider(status), lang),
                     });
                   }}
                 >
@@ -1467,7 +1465,7 @@ export function App() {
                     setSource({
                       id: "imprint",
                       title: t.imprint,
-                      text: imprintText(), // i18n-wire: pass lang
+                      text: imprintText(undefined, lang),
                     });
                   }}
                 >
@@ -1522,8 +1520,7 @@ export function App() {
                 id: "privacy",
                 title: t.privacyBoundariesTitle,
                 // The statement for the provider in use (Privatemode's is a D17 draft).
-                // i18n-wire: pass lang
-                text: privacyText(disclosedProvider(status)),
+                text: privacyText(disclosedProvider(status), lang),
               });
             }}
           >
@@ -2046,8 +2043,7 @@ export function App() {
               {status?.healthConsentDraft &&
                 healthConsent?.choice === "declined" && (
                   <p className="notice composer-note" role="note">
-                    {/* i18n-wire: pass lang */}
-                    {HEALTH_CONSENT.declinedNote}
+                    {healthConsentCopy(lang).declinedNote}
                   </p>
                 )}
               <form
@@ -2891,8 +2887,7 @@ export function App() {
                       setSource({
                         id: "privacy-policy",
                         title: t.privacyPolicy,
-                        // i18n-wire: pass lang
-                        text: privacyPolicyText(disclosedProvider(status)),
+                        text: privacyPolicyText(disclosedProvider(status), lang),
                       })
                     }
                   >
