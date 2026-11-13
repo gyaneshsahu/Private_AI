@@ -236,6 +236,26 @@ it.each([
   expect(sdk.verify).toHaveBeenCalledTimes(2);
 });
 
+const thrown429 = (headers: Headers) => (): Response => {
+  throw Object.assign(Error("429"), { status: 429, headers });
+};
+it.each([
+  ["thrown by the SDK", thrown429(new Headers())],
+  ["returned as a reply", () => new Response(null, { status: 429 })],
+])("our own relay's 429 (%s) keeps the verified client; Privatemode's own 429 does not", async (_name, refusal) => {
+  await send();
+  const refused = await send(policy, refusal);
+  expect(refused.status).toBe(429);
+  expect(sdk.close).not.toHaveBeenCalled();
+  await send();
+  expect(verifications()).toBe(1);
+  // The same status from Privatemode (marked by the relay) still ends the client.
+  await send(policy, thrown429(new Headers({ "x-privateai-upstream": "rejected" })));
+  expect(sdk.close).toHaveBeenCalledTimes(1);
+  await send();
+  expect(verifications()).toBe(2);
+});
+
 it("(c) a failed verification caches nothing; the next message verifies again", async () => {
   sdk.verify.mockRejectedValueOnce(Object.assign(Error("attest 429"), { status: 429 }));
   await expect(send()).rejects.toThrow("Protected operation failed.");

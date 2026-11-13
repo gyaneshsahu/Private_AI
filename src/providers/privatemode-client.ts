@@ -52,10 +52,20 @@ function attestationBusy(error: unknown) {
   return /attest request: unexpected status code:? (429|503)\b/.test(`${message} ${cause?.message}`);
 }
 
+/**
+ * Our own relay's refusal (429: allowance, spend, one request at a time, three per instance) never
+ * reached Privatemode and says nothing about the verified deployment, so the client is kept.
+ * Privatemode's own refusals carry X-PrivateAI-Upstream. Live check of 13 Nov: discarding on these
+ * refusals added verifications and pushed the attestation allowance over its limit.
+ */
+function ownRelayRefusal(status: unknown, headers: unknown) {
+  return status === 429 && headers instanceof Headers && !headers.has("x-privateai-upstream");
+}
+
 /** Passes the reply through; a read error or an early cancel (stop, refused reply) discards the client. */
 function watchReply(response: Response, onFailure: () => void) {
   if (!response.ok || !response.body) {
-    onFailure();
+    if (!ownRelayRefusal(response.status, response.headers)) onFailure();
     return response;
   }
   const reader = response.body.getReader();
@@ -203,14 +213,15 @@ async function verifySession(
                 .asResponse();
               return watchReply(response, discard);
             } catch (error) {
-              // Any failure (transport, key exchange, refused reply) ends this client.
-              discard();
               // The SDK turns a refused reply into an error; hand the app's stream parser the
               // status and the relay's failure class, as the Tinfoil transport does.
               const { status, headers } = error as {
                 status?: unknown;
                 headers?: unknown;
               };
+              // Any failure (transport, key exchange, refused reply) ends this client, except a
+              // refusal by our own relay before anything reached Privatemode.
+              if (!ownRelayRefusal(status, headers)) discard();
               if (typeof status === "number" && status >= 400 && status <= 599)
                 return new Response(null, {
                   status,
