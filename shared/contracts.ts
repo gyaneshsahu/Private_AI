@@ -70,6 +70,23 @@ const modeTierSchema = z.object({
 export type ModeTier = z.infer<typeof modeTierSchema>;
 export const answerModes = ["fast", "thinking"] as const;
 export type AnswerMode = (typeof answerModes)[number];
+/**
+ * How long one message may take, per answer mode: `firstTextMs` until the first answer text
+ * (thinking models reason silently first) and `totalMs` for the whole message, the one
+ * backup retry included. A report without modes keeps the earlier timing: 90 s for the
+ * model, then 90 s for its backup (plus 10 s for setup, so the retry still fits). Measured 13 November: docs/thinking-timeouts-20261113.md.
+ */
+export const REPLY_LIMITS: Record<
+  AnswerMode | "default",
+  { firstTextMs: number; totalMs: number }
+> = {
+  fast: { firstTextMs: 30_000, totalMs: 90_000 },
+  thinking: { firstTextMs: 120_000, totalMs: 300_000 },
+  default: { firstTextMs: 90_000, totalMs: 190_000 },
+};
+export function replyLimits(mode?: AnswerMode) {
+  return REPLY_LIMITS[mode ?? "default"];
+}
 const hex64 = z.string().regex(/^[a-f0-9]{64}$/);
 /**
  * Privatemode-only evidence (Stage 3 plan): what the browser checks and the limits set outside

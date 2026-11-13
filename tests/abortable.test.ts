@@ -55,3 +55,63 @@ it("preserves deadline classification without exposing the SDK or abort reason",
     ),
   ).rejects.toThrow("Protected operation failed.");
 });
+
+it("ends a reply without answer text at the first-text limit, and only then", async () => {
+  vi.useFakeTimers();
+  try {
+    const limits = { firstTextMs: 1000, totalMs: 5000 };
+    const silent = withDeadline(new AbortController().signal, limits, (signal) =>
+      abortable(new Promise<void>(() => {}), signal),
+    );
+    const timedOut = expect(silent).rejects.toMatchObject({ name: "TimeoutError" });
+    await vi.advanceTimersByTimeAsync(1000);
+    await timedOut;
+    let seen: AbortSignal | undefined;
+    const writing = withDeadline(new AbortController().signal, limits, (signal, started) => {
+      seen = signal;
+      started();
+      return abortable(new Promise<void>(() => {}), signal);
+    });
+    const ended = expect(writing).rejects.toMatchObject({ name: "TimeoutError" });
+    await vi.advanceTimersByTimeAsync(4999);
+    expect(seen?.aborted).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    await ended;
+    expect(vi.getTimerCount()).toBe(0);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("Stop still ends a long silent wait at once, as a stop and not a time-out", async () => {
+  vi.useFakeTimers();
+  try {
+    const stop = new AbortController();
+    const pending = withDeadline(stop.signal, { firstTextMs: 300_000, totalMs: 600_000 }, (signal) =>
+      abortable(new Promise<void>(() => {}), signal),
+    );
+    const stopped = expect(pending).rejects.toMatchObject({ name: "AbortError" });
+    await vi.advanceTimersByTimeAsync(200_000);
+    stop.abort();
+    await stopped;
+    expect(vi.getTimerCount()).toBe(0);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("reports an SDK's own abort error after the deadline as the time-out", async () => {
+  vi.useFakeTimers();
+  try {
+    const pending = withDeadline(new AbortController().signal, 1000, (signal) =>
+      new Promise<void>((_, reject) =>
+        signal.addEventListener("abort", () => reject(Error("Request was aborted."))),
+      ),
+    );
+    const rejected = expect(pending).rejects.toMatchObject({ name: "TimeoutError" });
+    await vi.advanceTimersByTimeAsync(1000);
+    await rejected;
+  } finally {
+    vi.useRealTimers();
+  }
+});

@@ -12,6 +12,7 @@ import {
   answerModes,
   disclosureSchema,
   tierFor,
+  replyLimits,
   validateQualification,
   type Qualification,
 } from "../shared/contracts";
@@ -485,7 +486,11 @@ export function createApp(config: Config) {
           dispatcher: serviceDispatcher,
           method: "POST",
           body: new Uint8Array(req.body),
-          signal: AbortSignal.any([abort.signal, AbortSignal.timeout(90000)]),
+          // The browser's limit for this mode ends the reply first and says so; this is the backstop.
+          signal: AbortSignal.any([
+            abort.signal,
+            AbortSignal.timeout(replyLimits(mode).totalMs + 5000),
+          ]),
           headers: plan.headers,
         });
         const reply = {

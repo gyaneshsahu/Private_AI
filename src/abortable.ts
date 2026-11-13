@@ -1,18 +1,32 @@
 export async function withDeadline<T>(
   parent: AbortSignal,
-  milliseconds: number,
-  operation: (signal: AbortSignal) => Promise<T>,
+  /** A total, or a total plus a shorter first-text limit that `started()` clears. */
+  limit: number | { totalMs: number; firstTextMs: number },
+  operation: (signal: AbortSignal, started: () => void) => Promise<T>,
 ): Promise<T> {
+  const { totalMs, firstTextMs } =
+    typeof limit === "number" ? { totalMs: limit, firstTextMs: limit } : limit;
   const deadline = new AbortController();
-  const timer = setTimeout(
-    () =>
-      deadline.abort(new DOMException("Operation timed out.", "TimeoutError")),
-    milliseconds,
-  );
+  const expire = () =>
+    deadline.abort(new DOMException("Operation timed out.", "TimeoutError"));
+  const timer = setTimeout(expire, totalMs);
+  const first = setTimeout(expire, firstTextMs);
   try {
-    return await operation(AbortSignal.any([parent, deadline.signal]));
+    return await operation(AbortSignal.any([parent, deadline.signal]), () =>
+      clearTimeout(first),
+    );
+  } catch (error) {
+    // An SDK may turn our deadline into its own abort error: report it as the time-out it is.
+    if (
+      deadline.signal.aborted &&
+      !parent.aborted &&
+      !(error instanceof Error && error.name === "IncompleteReplyError")
+    )
+      throw deadline.signal.reason;
+    throw error;
   } finally {
     clearTimeout(timer);
+    clearTimeout(first);
   }
 }
 
