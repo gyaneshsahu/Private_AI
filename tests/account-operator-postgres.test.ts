@@ -177,6 +177,9 @@ describe.runIf(!!process.env.PRIVATEAI_SYNTHETIC_PG)(
       await run("suspend", a.email);
 
       await run("unsuspend", a.email);
+      // The test has used the sign-in code limits (3 per minute, and per address per hour); a real person waits.
+      await db.pool.query("DELETE FROM signin_delivery");
+      await db.pool.query('DELETE FROM "rateLimit"');
       const again = await signIn(a.email);
       expect((await call("account/access", again.cookie)).status).toBe(200);
       expect((await call("account/access", b.cookie)).status).toBe(200);
