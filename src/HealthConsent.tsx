@@ -1,5 +1,23 @@
-import { HEALTH_CONSENT } from "../shared/health-consent";
+import { healthConsentCopy } from "../shared/health-consent";
 import type { HealthConsentChoice, HealthConsentRecord } from "./health-consent";
+import { defineText, useLang, useText } from "./i18n";
+
+const settingText = defineText({
+  en: {
+    allowed: "You allowed health and other sensitive details in your messages.",
+    declined: "You chose not to allow health and other sensitive details.",
+    notChosen: "You have not chosen yet; you will be asked before your first message.",
+    withdraw: "Withdraw permission",
+    allow: "Allow health and sensitive details",
+  },
+  de: {
+    allowed: "Sie haben Gesundheitsangaben und andere sensible Angaben in Ihren Nachrichten erlaubt.",
+    declined: "Sie haben sich entschieden, Gesundheitsangaben und andere sensible Angaben nicht zu erlauben.",
+    notChosen: "Sie haben noch nicht gewählt; Sie werden vor Ihrer ersten Nachricht gefragt.",
+    withdraw: "Erlaubnis widerrufen",
+    allow: "Gesundheitsangaben und sensible Angaben erlauben",
+  },
+});
 
 /** Asked once before the first message while the draft flag is on. */
 export function HealthConsentPrompt({
@@ -7,22 +25,23 @@ export function HealthConsentPrompt({
 }: {
   onChoose: (choice: HealthConsentChoice) => void;
 }) {
+  const consent = healthConsentCopy(useLang().lang);
   return (
     <section
       className="notice health-consent"
       role="region"
-      aria-label={HEALTH_CONSENT.title}
-      data-draft={HEALTH_CONSENT.status}
+      aria-label={consent.title}
+      data-draft={consent.status}
     >
-      <h3>{HEALTH_CONSENT.title}</h3>
-      {HEALTH_CONSENT.paragraphs.map((text) => (
+      <h3>{consent.title}</h3>
+      {consent.paragraphs.map((text) => (
         <p key={text}>{text}</p>
       ))}
       <div className="row">
         <button className="primary" onClick={() => onChoose("accepted")}>
-          {HEALTH_CONSENT.accept}
+          {consent.accept}
         </button>
-        <button onClick={() => onChoose("declined")}>{HEALTH_CONSENT.decline}</button>
+        <button onClick={() => onChoose("declined")}>{consent.decline}</button>
       </div>
     </section>
   );
@@ -36,22 +55,18 @@ export function HealthConsentSetting({
   record: HealthConsentRecord | undefined;
   onChoose: (choice: HealthConsentChoice) => void;
 }) {
+  const consent = healthConsentCopy(useLang().lang);
+  const t = useText(settingText);
   const accepted = record?.choice === "accepted";
   return (
-    <div className="health-consent-setting" data-draft={HEALTH_CONSENT.status}>
-      <h4>{HEALTH_CONSENT.title}</h4>
-      <p>
-        {accepted
-          ? "You allowed health and other sensitive details in your messages."
-          : record
-            ? "You chose not to allow health and other sensitive details."
-            : "You have not chosen yet; you will be asked before your first message."}
-      </p>
+    <div className="health-consent-setting" data-draft={consent.status}>
+      <h4>{consent.title}</h4>
+      <p>{accepted ? t.allowed : record ? t.declined : t.notChosen}</p>
       <button
         className="text-button"
         onClick={() => onChoose(accepted ? "declined" : "accepted")}
       >
-        {accepted ? "Withdraw permission" : "Allow health and sensitive details"}
+        {accepted ? t.withdraw : t.allow}
       </button>
     </div>
   );

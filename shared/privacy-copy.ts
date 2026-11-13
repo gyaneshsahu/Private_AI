@@ -1,3 +1,5 @@
+import type { Lang } from "../src/i18n";
+
 /**
  * The one plain-language statement of what CometRow does with your data.
  * The app's privacy panel renders it and the website copies it verbatim
@@ -89,19 +91,105 @@ const PRIVATEMODE_SECTIONS: Readonly<Record<string, string>> = {
     ),
 };
 
-/** The statement for the provider in use; Tinfoil's is the approved text, unchanged. */
-export function privacyCopy(provider: PrivacyProvider = "tinfoil"): readonly PrivacySection[] {
-  if (provider === "tinfoil") return PRIVACY_COPY;
-  return PRIVACY_COPY.map((section) =>
-    PRIVATEMODE_SECTIONS[section.id]
-      ? { ...section, text: PRIVATEMODE_SECTIONS[section.id] }
-      : section,
+/**
+ * DRAFT, NEEDS OWNER APPROVAL, LEGAL READ REQUIRED (13 November 2026). The German statement,
+ * binding once approved. It must say exactly what the English says, sentence for sentence;
+ * tests/legal-text-pairs.test.ts flags a change to either language until the other is checked.
+ * UI labels in quotes must match the German interface.
+ */
+export const PRIVACY_COPY_DE_STATUS = "draft-needs-owner-approval; legal read required";
+export const PRIVACY_COPY_DE: readonly PrivacySection[] = [
+  {
+    id: "device",
+    heading: "Was auf Ihrem Gerät bleibt",
+    text: "Bevor etwas gesendet wird, sucht CometRow nach Identifikationsnummern, Bankkonto- und Kartennummern, Steuer- und Versicherungsnummern, Pass- oder Personalausweisnummern neben ihrer Bezeichnung, Telefonnummern, E-Mail-Adressen und Geburtsdaten neben ihrer Bezeichnung. Es ersetzt jede davon durch einen Platzhalter wie {{IBAN-1}} und behält den echten Wert auf Ihrem Gerät. Die Antwort kommt mit den wieder eingesetzten echten Werten zurück, und ein Hinweis unter der Antwort sagt Ihnen, was behalten wurde. Namen, Adressen und andere Angaben in Ihren eigenen Worten werden nicht erkannt; betrachten Sie sie als Teil der unten beschriebenen versiegelten Frage. Ein Inkognito-Chat wird nie auf diesem Gerät gespeichert, und selbstlöschende Nachrichten werden nach der von Ihnen gewählten Zeit von diesem Gerät gelöscht; beides ändert nichts daran, was der sichere Server oder unsere Aufzeichnungen enthalten.",
+  },
+  {
+    id: "sealed",
+    heading: "Was versiegelt und gesendet wird",
+    text: "Der Rest Ihrer Frage, Ihre ausgewählten Dateien und die früheren Nachrichten, die Sie einbezogen haben, werden in Ihrem Browser so verschlossen, dass nur ein einziger sicherer Server sie öffnen kann. Der Server ist ein versiegelter Computer mit einem geschützten Grafikprozessor. Vor jeder Anfrage prüft Ihr Browser, dass er mit einer freigegebenen versiegelten Version spricht; diese Prüfung ist heute unvollständig: Sie kann nicht erkennen, ob die Freigabe später zurückgezogen wurde oder wie alt die Nachweise sind, und das Unternehmen hat kein Datum für eine umfassendere Prüfung im Browser genannt. Unsere eigenen Systeme reichen das verschlossene Paket weiter und können es nicht öffnen.",
+  },
+  {
+    id: "ours",
+    heading: "Was wir sehen können",
+    text: "Wir können sehen, dass Ihr Konto etwas gefragt hat, wann, wie oft, welches Modell geantwortet hat und danach, wie lang Frage und Antwort waren und was sie zu veröffentlichten Preisen gekostet haben. Wir sehen nie, was Sie gefragt haben oder was geantwortet wurde. Es gibt keinen anonymen Modus: Jede Anfrage kommt von einem angemeldeten Konto, auch bei Inkognito-Chats, daher wissen wir immer nur, dass Ihr Konto gefragt hat, nie was. Wir behalten keine Kopie Ihrer Unterhaltungen; der gespeicherte Verlauf liegt nur auf Ihrem Gerät, verschlossen mit einem Passwort, das wir nicht haben.",
+  },
+  {
+    id: "provider",
+    heading: "Was der sichere Server behält",
+    text: "Das Unternehmen, das den sicheren Server betreibt, erklärt, dass es Ihre Frage oder Antwort nicht behält, nachdem die Antwort gesendet wurde, und sie nicht zum Training einer KI verwendet. Es hält im versiegelten Server einen Kurzzeitspeicher, der Teile kürzlich gestellter Fragen enthalten kann, bis er sich von selbst leert, meist innerhalb von Minuten, manchmal Stunden; es gibt keine Schaltfläche, die ihn leert, keine zugesagte Höchstdauer, und das Unternehmen hat erklärt, dass es nicht plant, so etwas einzuführen. Es führt Aufzeichnungen wie Zeitpunkt, Modell und Tokenzahlen, ohne Inhalt; nach Angaben des Unternehmens bewahrt es diese 90 Tage auf, Buchhaltungsunterlagen länger.",
+  },
+  {
+    id: "limits",
+    heading: "Ausgaben und Grenzen",
+    text: "Ihr Tarif erlaubt eine festgelegte Zahl von Anfragen, und pro Konto läuft immer nur eine Anfrage gleichzeitig. Ausgabengrenzen am sicheren Server sind weich: Eine Anfrage, die bereits läuft, wird zu Ende geführt und abgerechnet, auch wenn während ihrer Laufzeit eine Grenze erreicht wird.",
+  },
+  {
+    id: "research",
+    heading: "Wenn Sie im Web suchen",
+    text: "Eine Websuche findet nur statt, wenn Sie den genauen Suchtext freigeben, der Ihnen angezeigt wird, in der Recherche oder durch Tippen auf einen Suchvorschlag, oder wenn Sie die automatische Suche eingeschaltet haben. Erkannte Kennungen werden zuerst auf Ihrem Gerät aus diesem Text entfernt, und Sie werden gewarnt, wenn er noch einen Namen oder eine andere persönliche Angabe enthalten könnte. Dieser Text wird von unserem Server an den Suchanbieter gesendet, der ihn lesen kann und bis zu 90 Tage aufbewahren kann; Ihre eigene Adresse wird nicht gesendet. Mit derselben Freigabe öffnet unser Server außerdem die oberste Ergebnisseite, bevorzugt eine offizielle Website, und liest ihren Text. Diese Website sieht die Adresse unseres Servers, nicht Ihre. Enthält die Adresse der Seite eine erkannte persönliche Angabe, wird die Seite ohne den Teil geöffnet, der sie enthält, oder gar nicht. Der Seitentext wird nur für Antworten in dieser Unterhaltung verwendet und nie gespeichert. Wenn Sie die automatische Suche einschalten, wird für eine Frage, die zeitabhängig wirkt, gesucht, ohne jedes Mal nachzufragen: Erkannte Kennungen werden zuerst auf Ihrem Gerät entfernt, und der genaue gesendete Text wird Ihnen angezeigt. Die Einstellung ist ausgeschaltet, bis Sie sie einschalten, und wird nur auf diesem Gerät gespeichert. Suchergebnisse und ihre Links werden nur während der Unterhaltung angezeigt und nie gespeichert. Die geschriebene Antwort, die darauf beruht, wird in Ihrem gespeicherten Verlauf auf diesem Gerät behalten; eine wieder geöffnete Unterhaltung sagt, dass sie aus einer Live-Suche stammt, und bietet an, erneut nach aktuellen Quellen zu suchen, wofür wieder Ihre Freigabe nötig ist.",
+  },
+  {
+    id: "notyet",
+    heading: "Was wir noch nicht versprechen können",
+    text: "Der private Chat wird erst eingeschaltet, nachdem unsere Prüfungen des sicheren Servers bestanden sind. Ihr Browser, Ihr Gerät und alle, die Ihren Bildschirm lesen können, können Ihre Unterhaltungen sehen. Wenn Sie Ihr Passwort verlieren, kann niemand Ihren gespeicherten Verlauf wiederherstellen. Es gibt keinen anonymen Modus: Wir wissen, welches Konto gefragt hat, nie was gefragt wurde. Ein fehlerhaftes oder bösartiges Update dieser App könnte Inhalte lesen, bevor sie versiegelt werden; deshalb werden Updates mit ihrer genauen Version veröffentlicht.",
+  },
+];
+
+/** The German counterparts of PRIVATEMODE_SECTIONS (draft, legal read required, like both). */
+const PRIVATEMODE_SECTIONS_DE: Readonly<Record<string, string>> = {
+  sealed:
+    "Der Rest Ihrer Frage, Ihre ausgewählten Dateien und die früheren Nachrichten, die Sie einbezogen haben, werden in Ihrem Browser so verschlossen, dass nur ein einziger sicherer Server sie öffnen kann. Der Server ist ein versiegelter Computer mit einem geschützten Grafikprozessor. Wenn Sie zu chatten beginnen und danach mindestens alle 10 Minuten erneut, prüft Ihr Browser den versiegelten Computer anhand einer Version, die wir freigegeben haben; diese Prüfung ist unvollständig: Sie umfasst nicht den Grafikprozessor, den das Unternehmen nach eigenen Angaben auf seiner Seite prüft, bevor Ihre Frage geöffnet werden kann, und wir haben noch nicht bestätigt, ob die Prüfung im Browser eine später zurückgezogene Freigabe bemerkt. Unsere eigenen Systeme reichen das verschlossene Paket weiter und können es nicht öffnen.",
+  ours:
+    "Wir können sehen, dass Ihr Konto etwas gefragt hat, wann, wie oft und welches Modell geantwortet hat. Wir sehen nicht, wie lang Frage und Antwort waren oder was sie jeweils gekostet haben: Ihr Browser zeigt Ihnen diese Zahlen, aber sie erreichen unsere Systeme verschlossen. Wir sehen nie, was Sie gefragt haben oder was geantwortet wurde. Es gibt keinen anonymen Modus: Jede Anfrage kommt von einem angemeldeten Konto, auch bei Inkognito-Chats, daher wissen wir immer nur, dass Ihr Konto gefragt hat, nie was. Wir behalten keine Kopie Ihrer Unterhaltungen; der gespeicherte Verlauf liegt nur auf Ihrem Gerät, verschlossen mit einem Passwort, das wir nicht haben.",
+  provider:
+    "Das Unternehmen, das den sicheren Server betreibt, erklärt, dass es Ihre Frage oder Antwort nicht behält, nachdem die Antwort gesendet wurde, und sie nicht zum Training einer KI verwendet. Es hält im versiegelten Server einen Kurzzeitspeicher, der Teile kürzlich gestellter Fragen enthalten kann; der Speicher jedes Kontos wird mit einem eigenen Geheimnis getrennt gehalten, sodass ein anderes Konto ihn nicht wiederverwenden und nicht erkennen kann, was er enthält. Es gibt keine Schaltfläche, die ihn leert, und keine zugesagte Höchstdauer. Es führt Aufzeichnungen wie Zeitpunkt und Tokenzahlen, ohne Inhalt; nach Angaben des Unternehmens bewahrt es diese bis zu 90 Tage auf und bewahrt Tokenzahlen pro Schlüssel dauerhaft für die Abrechnung auf. Wir verwenden einen Schlüssel für alle Konten, daher sind diese dauerhaften Zahlen nicht mit Ihrem Konto verknüpft.",
+  limits:
+    "Ihr Tarif erlaubt eine festgelegte Zahl von Anfragen, und pro Konto läuft immer nur eine Anfrage gleichzeitig. Wir setzen außerdem Grenzen für unseren Schlüssel am sicheren Server; nach Angaben des Unternehmens setzt es diese dort durch, sodass neue Anfragen abgelehnt werden, sobald eine Grenze erreicht ist.",
+  research: replaceEach(PRIVACY_COPY_DE.find((s) => s.id === "research")!.text, [
+    [
+      "wird für eine Frage, die zeitabhängig wirkt, gesucht, ohne jedes Mal nachzufragen:",
+      "wird für eine Frage, die zeitabhängig wirkt oder Regeln, Gebühren oder Fristen betrifft, gesucht, ohne jedes Mal nachzufragen; wenn Sie nur „Bei Regeln, Gebühren und Fristen immer suchen“ einschalten, gilt das nur für diese Fragen:",
+    ],
+    [
+      "Die Einstellung ist ausgeschaltet, bis Sie sie einschalten, und wird nur",
+      "Diese Einstellungen sind ausgeschaltet, bis Sie sie einschalten, und werden nur",
+    ],
+    [
+      "Ihre eigene Adresse wird nicht gesendet.",
+      "Ihre eigene Adresse wird nicht gesendet. Bei einer Frage zu Regeln, Gebühren oder Fristen kann unser Server den Suchanbieter außerdem bitten, offizielle Websites zuerst einzuordnen, indem er eine feste Liste dieser Websites sendet; nichts von Ihnen wird hinzugefügt.",
+    ],
+  ]),
+};
+
+/** Each replacement must find its text, so an edit to the base text cannot silently drop one. */
+function replaceEach(text: string, pairs: readonly [string, string][]): string {
+  for (const [from, to] of pairs) {
+    if (!text.includes(from)) throw Error(`privacy-copy: German Privatemode text lost "${from}"`);
+    text = text.replace(from, to);
+  }
+  return text;
+}
+
+/**
+ * The statement for the provider in use; Tinfoil's English is the approved text, unchanged.
+ * German (`lang` "de") is a draft for the owner and a legal read (PRIVACY_COPY_DE_STATUS).
+ */
+export function privacyCopy(
+  provider: PrivacyProvider = "tinfoil",
+  lang: Lang = "en",
+): readonly PrivacySection[] {
+  const base = lang === "de" ? PRIVACY_COPY_DE : PRIVACY_COPY;
+  if (provider === "tinfoil") return base;
+  const replaced = lang === "de" ? PRIVATEMODE_SECTIONS_DE : PRIVATEMODE_SECTIONS;
+  return base.map((section) =>
+    replaced[section.id] ? { ...section, text: replaced[section.id] } : section,
   );
 }
 
 /** Full statement as plain text, headings included, for in-app display and export. */
-export function privacyText(provider: PrivacyProvider = "tinfoil"): string {
-  return privacyCopy(provider)
+export function privacyText(provider: PrivacyProvider = "tinfoil", lang: Lang = "en"): string {
+  return privacyCopy(provider, lang)
     .map((section) => `${section.heading}\n${section.text}`)
     .join("\n\n");
 }
@@ -109,3 +197,9 @@ export function privacyText(provider: PrivacyProvider = "tinfoil"): string {
 /** One sentence for the settings panel. */
 export const PRIVACY_SUMMARY =
   "ID, bank and contact details stay on your device; everything else is sealed so only one checked secure server can read it, and we never can.";
+/** DRAFT, NEEDS OWNER APPROVAL, LEGAL READ REQUIRED: the German summary. */
+export const PRIVACY_SUMMARY_DE =
+  "Identifikations-, Bank- und Kontaktangaben bleiben auf Ihrem Gerät; alles andere wird versiegelt, sodass nur ein einziger geprüfter sicherer Server es lesen kann und wir nie.";
+export function privacySummary(lang: Lang = "en"): string {
+  return lang === "de" ? PRIVACY_SUMMARY_DE : PRIVACY_SUMMARY;
+}

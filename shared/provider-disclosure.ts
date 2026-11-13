@@ -5,6 +5,8 @@
  * `providerDisclosureDraft` flag (off in production); without it the policy text is
  * unchanged. Mirrored in docs/provider-disclosure-draft-20261112.md; a test keeps them equal.
  */
+import type { Lang } from "../src/i18n";
+
 export type DisclosedProvider = "tinfoil" | "privatemode";
 
 export const PROVIDER_DISCLOSURE_STATUS = "draft-needs-owner-approval";
@@ -30,11 +32,24 @@ export const PROVIDER_DISCLOSURE: Record<
   },
 };
 
-export function providerDisclosureSection(provider: DisclosedProvider) {
+/**
+ * DRAFT, NEEDS OWNER APPROVAL, LEGAL READ REQUIRED (13 November 2026): the German entries,
+ * each saying exactly what its English entry says. The sources stay as listed above.
+ */
+export const PROVIDER_DISCLOSURE_DE_STATUS = "draft-needs-owner-approval; legal read required";
+export const PROVIDER_DISCLOSURE_HEADING_DE = "Wer Ihre Nachrichten verarbeitet";
+export const PROVIDER_DISCLOSURE_DE: Record<DisclosedProvider, string> = {
+  tinfoil:
+    "Ihre Nachrichten werden von unserem KI-Anbieter Tinfoil, Inc., San Francisco, USA, auf dessen sicheren Servern beantwortet. Tinfoil verarbeitet sie in den Vereinigten Staaten. Das ist eine Übermittlung außerhalb der EU, die durch die EU-Standardvertragsklauseln im Auftragsverarbeitungsvertrag zwischen Tinfoil und uns abgedeckt ist. Tinfoil erklärt, dass es Aufzeichnungen wie Zeitpunkt, Modell und Tokenzahlen, ohne den Inhalt Ihrer Nachrichten, 90 Tage aufbewahrt, Buchhaltungsunterlagen länger.",
+  privatemode:
+    "Ihre Nachrichten werden von unserem KI-Anbieter Edgeless Systems GmbH, Bochum, Deutschland (Privatemode), auf sicheren Servern in der EU beantwortet, die von Scaleway (Frankreich) und Lyceum (Deutschland) betrieben werden. Ihre Nachrichten werden nur in der EU und im Europäischen Wirtschaftsraum verarbeitet. Edgeless erklärt, dass es Aufzeichnungen wie Zeitpunkt und Tokenzahlen, ohne den Inhalt Ihrer Nachrichten, bis zu 90 Tage aufbewahrt und Tokenzahlen pro Konto dauerhaft für die Abrechnung aufbewahrt.",
+};
+
+export function providerDisclosureSection(provider: DisclosedProvider, lang: Lang = "en") {
   return {
     id: "processor",
-    heading: PROVIDER_DISCLOSURE_HEADING,
-    text: PROVIDER_DISCLOSURE[provider].text,
+    heading: lang === "de" ? PROVIDER_DISCLOSURE_HEADING_DE : PROVIDER_DISCLOSURE_HEADING,
+    text: lang === "de" ? PROVIDER_DISCLOSURE_DE[provider] : PROVIDER_DISCLOSURE[provider].text,
   } as const;
 }
 

@@ -5,6 +5,7 @@
 // while any placeholder remains (scripts/policy-placeholders.ts).
 import { z } from "zod";
 import raw from "../deployment/legal-identity.json";
+import type { Lang } from "../src/i18n";
 
 export const PLACEHOLDER = "not yet named";
 
@@ -51,10 +52,74 @@ export interface LegalSection {
   text: string;
 }
 
+/**
+ * German for the identity's free-text fields, looked up by their exact English value.
+ * shortcut: a value with no entry here stays English in the German texts; the legal-text pair
+ * check flags the English change, so add the German entry then.
+ */
+const IDENTITY_DE: Readonly<Record<string, string>> = {
+  "individual (natural person), Germany": "Einzelperson (natürliche Person), Deutschland",
+  Germany: "Deutschland",
+  "none appointed": "nicht benannt",
+  "The competent data protection authority is the Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen (LDI NRW), Düsseldorf.":
+    "Zuständige Datenschutzaufsichtsbehörde ist die Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen (LDI NRW), Düsseldorf.",
+};
+
+/** The identity with its free-text fields in German (names, addresses and emails unchanged). */
+export function identityDe(identity: LegalIdentity = LEGAL_IDENTITY): LegalIdentity {
+  const de = (value: string) => IDENTITY_DE[value] ?? value;
+  return {
+    ...identity,
+    legalForm: de(identity.legalForm),
+    country: de(identity.country),
+    dataProtectionOfficer: de(identity.dataProtectionOfficer),
+    supervisoryAuthorityNote: de(identity.supervisoryAuthorityNote),
+  };
+}
+
+/** DRAFT, NEEDS OWNER APPROVAL, LEGAL READ REQUIRED (13 November 2026): the German imprint. */
+export const IMPRINT_DE_STATUS = "draft-needs-owner-approval; legal read required";
+function imprintSectionsDe(identity: LegalIdentity): LegalSection[] {
+  const id = identityDe(identity);
+  return [
+    {
+      id: "operator",
+      heading: "Diensteanbieter",
+      text: `${id.operatorName}, ${id.legalForm}. ${id.addressLines.join(", ")}, ${id.country}.`,
+    },
+    {
+      id: "contact",
+      heading: "Kontakt",
+      text: `Support: ${id.supportContactEmail}. Datenschutzanfragen: ${id.privacyContactEmail}. Sicherheitsvorfälle: ${id.incidentContactEmail}.${
+        id.vatId
+          ? ` Umsatzsteuer-Identifikationsnummer: ${id.vatId}.`
+          : " Es besteht keine Umsatzsteuer-Identifikationsnummer; der Betreiber ist zum Zeitpunkt der Erstellung nicht für die Umsatzsteuer registriert."
+      }`,
+    },
+    {
+      id: "responsible",
+      heading: "Verantwortlich für den Inhalt",
+      text: `${id.responsibleForContent}, Anschrift wie oben.`,
+    },
+    {
+      id: "dispute",
+      heading: "Streitbeilegung",
+      text: "Der Betreiber ist weder bereit noch verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen. Die Plattform der Europäischen Kommission zur Online-Streitbeilegung ist nicht mehr in Betrieb.",
+    },
+    {
+      id: "names",
+      heading: "Namen",
+      text: "CometRow ist der Name des Dienstes. Bis zum 25. Oktober 2026 hieß er PrivateAI, und einige technische Bezeichner im Quellcode verwenden noch diesen Namen. Beide Namen bezeichnen denselben Dienst und denselben Betreiber.",
+    },
+  ];
+}
+
 /** The imprint (Impressum) as shown in the app and generated into docs/. */
 export function imprintSections(
   identity: LegalIdentity = LEGAL_IDENTITY,
+  lang: Lang = "en",
 ): LegalSection[] {
+  if (lang === "de") return imprintSectionsDe(identity);
   return [
     {
       id: "operator",
@@ -88,8 +153,8 @@ export function imprintSections(
   ];
 }
 
-export function imprintText(identity: LegalIdentity = LEGAL_IDENTITY): string {
-  return imprintSections(identity)
+export function imprintText(identity: LegalIdentity = LEGAL_IDENTITY, lang: Lang = "en"): string {
+  return imprintSections(identity, lang)
     .map((section) => `${section.heading}\n${section.text}`)
     .join("\n\n");
 }

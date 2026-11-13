@@ -19,6 +19,7 @@ The owner decided on 13 November that the invite-only alpha is the last test bef
 | N11 | Masking "1 date of birth" on rules text (side finding of the 40-question test) | fixed (`14ef2dd`); dev and independent masking sets unchanged |
 | N13 | Content-free counts for the alpha (audit G4, part) | built: hourly `CometRow counts` log line (outcomes per mode, refusals by class, attestation busy, searches); no account or text |
 | N12 | Alpha plan with metrics, survey and stop rules (audit G15) | written: `docs/alpha-plan-20261113.md`; monitoring updated for Privatemode: `docs/week-one-monitoring.md` |
+| N14 | **German legal texts, binding once approved** (audit G8, owner decision DE/EN) | drafted on `claude/i18n-legal`: German policy, statement, health consent, provider disclosure and imprint in code, acceptable use and 18+ rule as docs (`docs/legal-texts-de-20261113.md`). Change-pair check: `tests/legal-text-pairs.test.ts` fails when the English or German text changes, naming which; check the other language, then re-record with `node --import tsx scripts/record-legal-pairs.ts`. **Owner approves, lawyer reads the German** |
 
 **Status corrections from the audit:**
 - **P6:** Thinking runs at high since 13 November, not max (corrected in the row).

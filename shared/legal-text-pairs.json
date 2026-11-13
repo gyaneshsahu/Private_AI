@@ -1,0 +1,54 @@
+{
+  "note": "SHA-256 of each English and German legal text. tests/legal-text-pairs.test.ts fails when a text no longer matches; check the other language, then re-record with node --import tsx scripts/record-legal-pairs.ts.",
+  "healthConsentVersion": "draft-2026-11-13",
+  "texts": {
+    "policy": {
+      "en": "c59917f99a740c91d3dfd7191e589339444c9937116443491e0dc8e070df2d25",
+      "de": "e4b90119e11232cb39091e57c467f165b85b6873a9df98ea531206cc09337bb0"
+    },
+    "policy.tinfoil": {
+      "en": "a270fd67fbd7c8faf2e353b42d1fee773046e043a83d7e3b1931150130c704a8",
+      "de": "2b9175d801b981e05a842e9bb392717430e5e9d6e7cb35bf10ff65620fc3f5f9"
+    },
+    "policy.privatemode": {
+      "en": "284cb9c56c00ebecd3b14793c7bda6e7c5b993f0dc0529ba5addad6de8beac9f",
+      "de": "3344bad97028ddab618b1ec125956deeb5f565b14729401bd79540c5e4616754"
+    },
+    "privacyCopy.tinfoil": {
+      "en": "5125ab1c1d598a59dbed22fba15b96b4edc0ddbe0766673d5274cc4036d7bd25",
+      "de": "80600cd2ebb9c2464da0c08d362ac5c6339011b4093d9ce109fd4600941a652a"
+    },
+    "privacyCopy.privatemode": {
+      "en": "4f96e2664e469d54f305ea27859384febfc9811f7bfa35e8df00450eea155b87",
+      "de": "d4b162e320c87c6972c0b161e4d8d8f73a2c25b4b61d27a550b4d56dd4bb5ddb"
+    },
+    "privacySummary": {
+      "en": "8861d0ba275149cd9c656424afea896f102b94c4672ad2ba0efe7d6d6af90414",
+      "de": "fb493e08bbee0d4faf464aa7b93bc50c0867ed36e3ce3c657f7ce228fc91488b"
+    },
+    "healthConsent": {
+      "en": "b596ac252bc8237da979dab8a1dec1106b2c56303fa76c8860ff250cfddc24c5",
+      "de": "df22b3bc2cc9ca7282b9ea4c1f4638e6a90a0647b404ba2547b2561b2b978680"
+    },
+    "providerDisclosure.tinfoil": {
+      "en": "0af47204f467337d7d63e66ffd1ff37a309e08bad16dd18a92fdb31eecb1f8f8",
+      "de": "f0708f9ff3def1f18dbe0e6d6987a08150b87c4a3530e06cd19b244bc583db93"
+    },
+    "providerDisclosure.privatemode": {
+      "en": "c6bc1df54c0e9ce6b7b58d0c3c80e6dfbcc5f61f91e1a621852179aa758a6e35",
+      "de": "0961aa6b55f8fb93aea11a6e99367c922f5a896251cfea369bb2c9d6c3397e38"
+    },
+    "imprint": {
+      "en": "cc7212413d7df969b03ae65b212c8a28ed682e5765384b1fd1cb61584eee7af7",
+      "de": "c2069b32c43fdd4896fe21946215c5d5e5ddac4069c117aba192724ac855b5bb"
+    },
+    "acceptableUse": {
+      "en": "0d07ea137655f022409b962ba62ff32870557e3416a717bd523292c2bc5a7f27",
+      "de": "c6aafaed76d71d7f5d7261aa314c1801429cd921a8ae375e7cd50aec3bf03715"
+    },
+    "ageRule": {
+      "en": "b852f2b5df278fbb32739396d714f3ddd1c742095fbf69aa57c87c1a09e7120d",
+      "de": "3aef2202260bafb2d6733d486ac225a837af5a7351a398342281ce84e3e02a0d"
+    }
+  }
+}
