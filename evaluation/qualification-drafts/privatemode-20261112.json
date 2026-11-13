@@ -29,7 +29,7 @@
         "glmReasoningEffort": "high",
         "backupModel": "glm-5.3-flash",
         "maxOutputTokens": 16384,
-        "allowanceCost": 3
+        "allowanceCost": 5
       }
     ]
   },

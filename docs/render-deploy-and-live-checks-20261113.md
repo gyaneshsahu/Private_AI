@@ -25,7 +25,7 @@ All of these must be done before the chat-on deploy (section 5). The code-only d
 | 4 | Privatemode privacy wording approved, including the "Always search" sentence and the Brave search sentences | rows 4 and 4b | [ ] |
 | 5 | Brave production key and its terms in hand (search is on) | row 4b, R5 | [ ] |
 | 6 | Four open report checks accepted in writing; repository name `edgelesssys/privatemode-public` confirmed | row 5, P9, D1 | [ ] |
-| 7 | Report finalised and signed by you. It must contain: `modes.thinking.allowanceCost: 5` (the draft JSON still says 3), `maxInputCharacters: 32000` (row 8), `pricing`, `approvedSpendUSD`, `privatemode.portalKeyLimit` (with `expiresAt`), the manifest digest in `releaseDigests`, `reviewedAt` and `validUntil` (at most 7 days later) | rows 5 and 8 | [ ] |
+| 7 | Report finalised and signed by you. It must contain: `modes.thinking.allowanceCost: 5`, `maxInputCharacters: 32000` (row 8), `pricing`, `approvedSpendUSD`, `privatemode.portalKeyLimit` (with `expiresAt`), the manifest digest in `releaseDigests`, `reviewedAt` and `validUntil` (at most 7 days later) | rows 5 and 8 | [ ] |
 | 8 | Edgeless DPA of 24 July 2026 and the 12 November email filed | row 6, L5 | [ ] |
 | 9 | Safety case 07 graded for Fast `glm-5.3-flash` low and Thinking `glm-5.3` high | row 7, P5 | [ ] |
 | 10 | Database password rotated (the one you called exposed) | row 9, S2 | [ ] |

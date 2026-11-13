@@ -46,7 +46,7 @@ Rules for every row (owner):
 | K5 | Weekly reconciliation against the Privatemode portal | The server cannot count Privatemode tokens, so the portal is the only exact figure | Agent writes the procedure, Owner reads the portal | before first invitee | not estimated | **not built.** The weekly review in `docs/alpha-plan-20261113.md` section 6 reads the portal, but no written step compares it with the ledger |
 | K6 | Tell the owner when the free-token balance drops below 0.5M | Pay-as-you-go cannot be switched on yet (P12) | Agent, from the owner's portal readings | before first invitee | not estimated | **not built.** The server cannot read the balance. Owner-reported 13 November: 1.579M of 5M left |
 
-**Open, not decided here:** whether a Thinking request counts 3 or 5 against the allowance. The docs and the draft report say 5 (decision of 13 November). The owner's update of 13 November night says 3. See D19 in `docs/owner-decisions.md`.
+**Decided 14 November: Thinking counts 5** (owner confirmed after the update of 13 November night had said 3).
 
 **Later, not in this phase (owner, 13 November, night):**
 - connectors (Gmail, Drive, Calendar)

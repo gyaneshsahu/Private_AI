@@ -23,7 +23,7 @@ Recorded from the owner's update. Nothing in this section is built or verified b
 
 | Source | What it holds | What it never holds |
 | --- | --- | --- |
-| Usage ledger in PostgreSQL (queries in `docs/week-one-monitoring.md`) | One row per chat request: account ID, time, state (`transport_complete` or `uncertain`). A Thinking request has 4 extra "unit" rows (it costs 5), so the mode can be counted. Open: the owner's update of 13 November night says 3, not 5; not decided (`docs/owner-decisions.md` D19) | Messages, answers, search text, model replies |
+| Usage ledger in PostgreSQL (queries in `docs/week-one-monitoring.md`) | One row per chat request: account ID, time, state (`transport_complete` or `uncertain`). A Thinking request has 4 extra "unit" rows (it costs 5), so the mode can be counted. (confirmed 14 November, D19) | Messages, answers, search text, model replies |
 | `"user"` table | How many invitees signed in at least once | Anything about use |
 | Render log | Startup line, purge line, the `Privatemode attestation queue: {...}` counts | Bodies, paths, headers, account data (by design) |
 | Privatemode portal | Tokens and spend per key, free-token balance | Content (encrypted end to end) |
