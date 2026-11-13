@@ -23,6 +23,8 @@ import { request as upstreamRequest } from "undici";
 import type { UsageMetrics } from "./usage-metrics";
 import {
   inferenceRelayFor,
+  MODEL_ALERT,
+  modelNotFound,
   type InferenceRelayAdapter,
 } from "./providers/inference-relay";
 import { braveSearchProvider, type SearchProvider } from "./providers/search";
@@ -628,11 +630,18 @@ export function createApp(config: Config) {
         // Never reflect upstream errors: they may contain sensitive content or diagnostics.
         const accepted = relay.accept(reply);
         if (!accepted.ok) {
-          await upstream.body.dump().catch(() => {});
           // Only the class of failure is exposed, so the client can decide on its one
-          // retry with the mode's backup model; nothing else leaks.
-          res.setHeader("X-PrivateAI-Upstream", relay.classifyFailure(reply));
-          res.locals.outcome = `upstream_${relay.classifyFailure(reply)}`;
+          // retry with the mode's backup model; nothing else leaks. A retired or unknown model
+          // is its own class: the client fails closed (no backup retry) and the owner is alerted.
+          const failure = (await modelNotFound(reply.statusCode, upstream.body))
+            ? "model-not-found"
+            : relay.classifyFailure(reply);
+          if (failure === "model-not-found")
+            console.warn(
+              `${MODEL_ALERT} the provider answered "model not found" for ${admission.model} (HTTP ${reply.statusCode}). Chat fails for this model; nothing was switched. See docs/model-deprecation-runbook.md.`,
+            );
+          res.setHeader("X-PrivateAI-Upstream", failure);
+          res.locals.outcome = `upstream_${failure}`;
           res.status(502).json({
             error:
               "Encrypted provider response unavailable. No automatic retry was made.",

@@ -126,7 +126,10 @@ export async function consumeReply(
             : error instanceof StreamProtocolError &&
                 error.code === "HTTP_UPSTREAM_REJECTED"
               ? textFor(chatErrorText).rejected
-              : textFor(chatErrorText).incomplete;
+              : error instanceof StreamProtocolError &&
+                  error.code === "HTTP_MODEL_NOT_FOUND"
+                ? textFor(chatErrorText).modelNotFound
+                : textFor(chatErrorText).incomplete;
     throw new IncompleteReplyError(
       textFor(chatErrorText).partialExcluded(reason),
       usage,

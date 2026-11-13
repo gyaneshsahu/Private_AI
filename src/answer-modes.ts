@@ -177,6 +177,8 @@ export function autoMode(conversation: Conversation): AnswerMode {
 }
 
 // Unavailable, refused or overloaded at the provider (it arrives as the relay's 502), or no first token in time.
+// Not HTTP_MODEL_NOT_FOUND: a retired model is not an outage. Covering it with the backup on every
+// message would be an unannounced model change, so it fails closed (docs/model-deprecation-runbook.md).
 const RETRY_CODES = new Set([
   "HTTP_UPSTREAM_REJECTED",
   "HTTP_SERVICE_UNAVAILABLE",

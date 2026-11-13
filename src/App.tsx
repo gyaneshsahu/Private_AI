@@ -803,6 +803,7 @@ export function App() {
                       ? [
                           "HTTP_RATE_LIMITED",
                           "HTTP_SERVICE_UNAVAILABLE",
+                          "HTTP_MODEL_NOT_FOUND",
                         ].includes(error.diagnostic?.code ?? "")
                         ? "unavailable"
                         : "incomplete"

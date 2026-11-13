@@ -34,6 +34,8 @@ export const chatErrorText = defineText({
     unavailable: "The protected service is unavailable. No answer was received.",
     rejected:
       "The protected service did not accept this request and gave no answer.",
+    modelNotFound:
+      "The AI model for this answer mode is not available on the secure server. No answer was received, and no other model was used in its place.",
     incomplete: "Response incomplete.",
     partialExcluded: (reason: string) =>
       `${reason} Partial answers are excluded from future context. No automatic retry was made.`,
@@ -107,6 +109,8 @@ export const chatErrorText = defineText({
     unavailable: "Der geschützte Dienst ist nicht erreichbar. Es kam keine Antwort.",
     rejected:
       "Der geschützte Dienst hat diese Anfrage nicht angenommen und keine Antwort gegeben.",
+    modelNotFound:
+      "Das KI-Modell für diesen Antwortmodus ist auf dem sicheren Server nicht verfügbar. Es kam keine Antwort, und es wurde kein anderes Modell an seiner Stelle verwendet.",
     incomplete: "Antwort unvollständig.",
     partialExcluded: (reason: string) =>
       `${reason} Teilantworten werden nicht als Kontext weiterverwendet. ${noRetry}`,

@@ -82,6 +82,33 @@ export interface ProviderRouteContext {
   manifest?: Uint8Array;
 }
 
+/** The log prefix the owner greps for: a model is gone, deprecated or changed (docs/model-deprecation-runbook.md). */
+export const MODEL_ALERT = "CometRow model alert:";
+
+/**
+ * Whether a refused reply means the model is unknown or retired: HTTP 404, or another 4xx whose
+ * text says so. Drains the body like dump(); at most 4 KB is kept, matched and then dropped,
+ * never logged or reflected. An encrypted error body simply does not match.
+ */
+export async function modelNotFound(
+  statusCode: number,
+  body: AsyncIterable<Uint8Array>,
+): Promise<boolean> {
+  let text = "";
+  try {
+    for await (const chunk of body)
+      if (text.length < 4096) text += Buffer.from(chunk).toString("latin1");
+  } catch {
+    /* an unreadable body is judged by its status alone */
+  }
+  return (
+    statusCode === 404 ||
+    (statusCode >= 400 &&
+      statusCode < 500 &&
+      /model.{0,80}(not[ _]found|does not exist)|unknown model/i.test(text))
+  );
+}
+
 const adapters = new Map<InferenceProviderId, () => InferenceRelayAdapter>();
 
 export function registerInferenceRelay(

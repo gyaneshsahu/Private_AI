@@ -238,8 +238,8 @@ it("production relay forwards a qualified fallback model and exposes only the cl
   expect((await send("THIRD_MODEL")).status).toBe(400);
   upstream.mockImplementationOnce(
     async () =>
-      new Response("SYNTHETIC_UPSTREAM_SECRET model not found", {
-        status: 404,
+      new Response("SYNTHETIC_UPSTREAM_SECRET refused", {
+        status: 422,
       }),
   );
   const rejected = await send();

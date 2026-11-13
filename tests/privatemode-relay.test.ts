@@ -375,7 +375,7 @@ it("a browser that hangs up frees its account slot at once, so the automatic ret
 
 it("a Privatemode failure stays at Privatemode: classified for the same-provider backup, never sent to Tinfoil", async () => {
   upstream
-    .mockImplementationOnce(async () => new Response("model not found", { status: 404 }))
+    .mockImplementationOnce(async () => new Response("quota", { status: 403 }))
     .mockImplementationOnce(async () => new Response("overloaded", { status: 503 }))
     .mockImplementationOnce(async () => {
       throw Error("connection reset");
@@ -385,7 +385,7 @@ it("a Privatemode failure stays at Privatemode: classified for the same-provider
   const rejected = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf, "glm-5.3", "thinking"));
   expect(rejected.status).toBe(502);
   expect(rejected.headers.get("x-privateai-upstream")).toBe("rejected");
-  expect(await rejected.text()).not.toContain("model not found");
+  expect(await rejected.text()).not.toContain("quota");
   // The client's one retry uses the mode's backup at the same provider.
   const backup = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf, "glm-5.3-flash", "thinking"));
   expect(backup.status).toBe(502);
@@ -394,6 +394,32 @@ it("a Privatemode failure stays at Privatemode: classified for the same-provider
   expect(broken.status).toBe(502);
   expect(upstream).toHaveBeenCalledTimes(3);
   for (const [url] of upstream.mock.calls) expect(new URL(url).origin).toBe("https://api.privatemode.ai");
+});
+
+it("a retired or unknown model is its own failure class with a log alert, and the provider's text never reaches the browser or the log", async () => {
+  const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+  upstream
+    .mockImplementationOnce(async () => new Response("SYNTHETIC_SECRET", { status: 404 }))
+    .mockImplementationOnce(
+      async () => new Response('{"error":{"code":"model_not_found","message":"SYNTHETIC_SECRET"}}', { status: 400 }),
+    );
+  const root = await listen();
+  const { status, cookie } = await session(root);
+  takeCounts();
+  for (const upstreamStatus of [404, 400]) {
+    const gone = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf, "glm-5.3", "thinking"));
+    expect(gone.status).toBe(502);
+    expect(gone.headers.get("x-privateai-upstream")).toBe("model-not-found");
+    expect(await gone.text()).not.toContain("SYNTHETIC_SECRET");
+    expect(warn).toHaveBeenLastCalledWith(
+      expect.stringMatching(new RegExp(`^CometRow model alert: .*"model not found" for glm-5\\.3 \\(HTTP ${upstreamStatus}\\)`)),
+    );
+  }
+  expect(warn.mock.calls.flat().join()).not.toContain("SYNTHETIC_SECRET");
+  // Nothing was sent to another model by the relay; the hourly counts name the class.
+  expect(upstream).toHaveBeenCalledTimes(2);
+  await vi.waitFor(() => expect(takeCounts()).toEqual({ "chat.thinking.upstream_model-not-found": 2 }));
+  warn.mockRestore();
 });
 
 it("serves the approved manifest only, and the pinned Wasm at its hash-named path with a one-year immutable cache", async () => {
