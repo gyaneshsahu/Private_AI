@@ -28,7 +28,8 @@ This is a map of `docs/` for new sessions and for Graphify. Files dated 11 to 13
 ## Provider (Privatemode primary, Tinfoil backup)
 
 - `provider-switch-20261112.md`, `provider-model-decision-20261026.md`, `provider-qualification-20261026.md`: the provider decision and qualification.
-- `supplier-privatemode-20261112.md`, `dpa-record-privatemode-20261112.md`: what Privatemode confirmed, and the DPA record.
+- `supplier-privatemode-20261112.md`, `dpa-record-privatemode-20261112.md`: what Privatemode confirmed (with the 13 November update on deprecation notice and pinning), and the DPA record.
+- `model-deprecation-runbook.md`: what to do on a deprecation notice or a `CometRow model alert:` log line. The daily model list check is `server/model-watch.ts` with its baseline `server/privatemode-models-baseline.json`; the manual check is `scripts/privatemode-models-check.ts`.
 - `qualification-report-draft-privatemode-20261112.md`: the report to sign at switch-on (Thinking costs 5). `qualification-report-draft-tinfoil-20261112.md` is the backup.
 - `privatemode-attestation-limit-20261112.md`: the attestation limit, and the draft question for support.
 - `privatemode-fast-tier-20261112.md`, `privatemode-stage3-plan-20261112.md`, `parity-matrix-20261112.md`, `wide-screen-20261112.md`: model choice and integration.

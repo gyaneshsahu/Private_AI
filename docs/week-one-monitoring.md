@@ -42,7 +42,7 @@ Rows marked "new" are Privatemode checks. The other rows still apply from the Ti
 | App spend against the cap | query A | committed spend clearly under `approvedSpendUSD` | above 50 % of the cap | All Privatemode requests are booked at worst case (about USD 0.10 per Thinking request). Raise the cap on purpose (D5) or stop chat; the relay refuses on its own at 100 % |
 | Allowance (new) | query C | each invitee has a current period and is within it | an invitee with no period, or one near the limit on day one | See "Automatic allowance" below |
 | Purge job | Render, Logs | no "Request record purge failed." line | that line appears | Reinstall the purge function per `docs/development-deployment.md`. See "90-day purge" below |
-| Supplier status | Privatemode status page and changelog | no incident, no model deprecation | incident or deprecation | Follow "Model lifecycle" in `docs/invited-trial-runbook.md`; a move to Tinfoil is manual and announced (`docs/provider-switch-20261112.md`) |
+| Supplier status | Privatemode status page and changelog | no incident, no model deprecation | incident or deprecation, or a `CometRow model alert:` log line (daily model list check) | Follow `docs/model-deprecation-runbook.md`; a move to Tinfoil is manual and announced (`docs/provider-switch-20261112.md`) |
 | Friends' reports | the support contact (R6) | quiet | someone saw another person's data, a wrong answer that hurt, or a page that would not load | Stop chat first, then investigate (stop rules in `docs/alpha-plan-20261113.md`) |
 
 ### Attestation queue line
