@@ -65,10 +65,13 @@ it("keeps the approved Tinfoil statement as the default and mirrors the Privatem
   const published = await readFile("docs/privacy-copy-privatemode-20261112.md", "utf8");
   expect(published.replace(/\r\n/g, "\n")).toBe(renderPrivatemodePrivacyMarkdown().replace(/\r\n/g, "\n"));
   const pm = privacyCopy("privatemode");
-  // Exactly the five provider sentences change (four sections); every other section is shared.
+  // The five provider sentences (four sections) and, since 13 November, the automatic-search
+  // sentence change; every other section is shared.
   const changed = pm.filter((s, i) => s.text !== PRIVACY_COPY[i].text).map((s) => s.id);
-  expect(changed).toEqual(["sealed", "ours", "provider", "limits"]);
+  expect(changed).toEqual(["sealed", "ours", "provider", "limits", "research"]);
   const text = privacyText("privatemode").toLowerCase();
+  expect(text).toContain("a question that looks time-sensitive or is about rules, fees or deadlines is searched");
+  expect(privacyText("tinfoil")).toContain("a question that looks time-sensitive is searched");
   for (const tinfoilOnly of [
     "spending limits on the secure server are soft",
     "does not plan to add one",

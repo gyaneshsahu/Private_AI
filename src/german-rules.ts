@@ -79,9 +79,33 @@ export function checkUncheckedFigures(
     : undefined;
 }
 
+/**
+ * Search first (decided 13 November): Send on a German-rules question asks "Search and answer"
+ * or "Answer without checking" instead of answering, unless web results are already selected or
+ * automatic search is on. Needs a suggestion, so the exact masked text can be shown; nothing is
+ * remembered, it asks each time.
+ */
+export function asksBeforeSending(
+  suggestion: { rules: boolean; again?: boolean } | undefined,
+  autoSearch: boolean,
+  web: boolean,
+): boolean {
+  return !!suggestion?.rules && !suggestion.again && !autoSearch && !web;
+}
+
 export const GERMAN_RULES = {
   // Heading of the pre-send search suggestion when the question is about German rules.
-  heading: "Rules, fees and deadlines change. Check the official source first:",
+  heading: "Rules, fees and deadlines change. Check the official source first.",
+  // After Send: the inline choice (search first by default).
+  choiceHeading:
+    "This is about rules, fees or deadlines, which change. Search the official source first?",
+  // Replaces WHEN_TO_SEARCH.explanation where Send asks first ("Press Send instead…" is not true).
+  explanation:
+    "One tap sends exactly this text to Brave Search through our server, and our server opens the top result page, preferring an official site. Nothing else from your conversation is sent.",
+  without: "Answer without checking",
+  // Added to the default product prompt for that turn only, when web results are in context.
+  sourcedPolicy:
+    " For this question about German rules, fees or deadlines, state figures, deadlines and legal consequences only if they appear in the web results; for anything they do not cover, say so instead of filling it in.",
   // Warning under an answer that gives unchecked figures.
   warning:
     "This answer gives figures or deadlines that were not checked against an official source.",

@@ -93,7 +93,7 @@ export const WHEN_TO_SEARCH = {
     "Nothing from your conversation goes into a search unless you approve the exact text here, tap a search suggestion that shows it, or switch on automatic search below.",
   settingLabel: "Search automatically when a question needs current information",
   settingHelp:
-    "Off unless you switch it on. When it is on, a question that looks time-sensitive is searched before it is answered, without asking each time. Recognised personal details are removed from the search text on this device first, and the exact text sent is shown under the message box. This setting is kept only on this device.",
+    "Off unless you switch it on. When it is on, a question that looks time-sensitive or is about rules, fees or deadlines is searched before it is answered, without asking each time. Recognised personal details are removed from the search text on this device first, and the exact text sent is shown under the message box. This setting is kept only on this device.",
   searched: (query: string) => `Searched the web for: "${query}"`,
   searchedAutomatically: (query: string) =>
     `Searched the web automatically for: "${query}"`,

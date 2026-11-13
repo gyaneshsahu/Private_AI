@@ -56,7 +56,8 @@ export type PrivacyProvider = "tinfoil" | "privatemode";
  * Privatemode: D17's four sentences (cache, metadata retention, spending limits, browser
  * check) plus the fifth from the Stage 3 plan ("What we can see": token counts reach us
  * locked). Sources per claim: docs/provider-promises-20261112.md; old and new side by
- * side in docs/privacy-wording-privatemode-20261112.md. Every other section is shared.
+ * side in docs/privacy-wording-privatemode-20261112.md. Every other section is shared,
+ * except one automatic-search sentence in "When you search the web" (13 November).
  */
 export const PRIVATEMODE_PRIVACY_STATUS = "draft-needs-owner-approval";
 const PRIVATEMODE_SECTIONS: Readonly<Record<string, string>> = {
@@ -68,6 +69,12 @@ const PRIVATEMODE_SECTIONS: Readonly<Record<string, string>> = {
     "The company that runs the secure server states that it does not keep your question or answer after the reply is sent and does not use them to train any AI. It keeps a short-term working memory inside the sealed server that can hold parts of recent questions; each account's memory is kept apart with its own secret, so another account cannot reuse it or tell what it holds. There is no button that empties it and no promised maximum time. It keeps records such as time and token counts, without content; the company states it keeps these for up to 90 days, and keeps token counts per key permanently for billing. We use one key for all accounts, so those permanent counts are not linked to your account.",
   limits:
     "Your plan allows a set number of requests, and only one request runs at a time per account. We also set limits on our key at the secure server; the company states that it enforces them there, so new requests are refused once a limit is reached.",
+  // 13 November: automatic search also covers German rules, fees and deadlines. The approved
+  // Tinfoil text is left unchanged for the owner to approve (docs/german-rules-20261113.md).
+  research: PRIVACY_COPY.find((s) => s.id === "research")!.text.replace(
+    "a question that looks time-sensitive is searched",
+    "a question that looks time-sensitive or is about rules, fees or deadlines is searched",
+  ),
 };
 
 /** The statement for the provider in use; Tinfoil's is the approved text, unchanged. */

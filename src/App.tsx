@@ -53,7 +53,11 @@ import {
   checkAnswerCompleteness,
   completenessWarning,
 } from "./arithmetic/completeness";
-import { checkUncheckedFigures, GERMAN_RULES } from "./german-rules";
+import {
+  asksBeforeSending,
+  checkUncheckedFigures,
+  GERMAN_RULES,
+} from "./german-rules";
 import {
   DISAPPEAR_LABELS,
   expireMessages,
@@ -240,6 +244,19 @@ export function App() {
     const again = searchSuggestion(question.text);
     return again && { ...again, again: true };
   }, [status?.search, status?.inference.ready, input, conversation]);
+  // Search first for German rules (docs/german-rules-20261113.md): Send shows the choice for
+  // exactly this draft; editing the draft or Escape drops it, and nothing is remembered.
+  const askFirst = asksBeforeSending(
+    suggestion,
+    autoSearch,
+    selectedSources(conversation).some((source) => !!source.url),
+  );
+  const [choiceFor, setChoiceFor] = useState<string>();
+  const choosing = askFirst && choiceFor === input;
+  const choiceButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (choosing) choiceButton.current?.focus();
+  }, [choosing]);
   const [proposalNote, setProposalNote] = useState<{
     note: string;
     warning: boolean;
@@ -1978,14 +1995,22 @@ export function App() {
                   className="notice composer-note search-suggestion"
                   role="region"
                   aria-label="Search suggestion"
+                  onKeyDown={(event) => {
+                    if (!choosing || event.key !== "Escape") return;
+                    event.preventDefault();
+                    setChoiceFor(undefined);
+                    document.getElementById("message-input")?.focus();
+                  }}
                 >
                   <p>
                     <strong>
                       {suggestion.again
                         ? WHEN_TO_SEARCH.againHeading
-                        : suggestion.rules
-                          ? GERMAN_RULES.heading
-                          : WHEN_TO_SEARCH.heading}
+                        : choosing
+                          ? GERMAN_RULES.choiceHeading
+                          : suggestion.rules
+                            ? GERMAN_RULES.heading
+                            : WHEN_TO_SEARCH.heading}
                     </strong>{" "}
                     {WHEN_TO_SEARCH.label}
                   </p>
@@ -1999,23 +2024,40 @@ export function App() {
                   <p className="muted">
                     {suggestion.again
                       ? WHEN_TO_SEARCH.againExplanation
-                      : WHEN_TO_SEARCH.explanation}
+                      : askFirst
+                        ? GERMAN_RULES.explanation
+                        : WHEN_TO_SEARCH.explanation}
                   </p>
-                  <button
-                    type="button"
-                    className="primary"
-                    onClick={() =>
-                      void searchThenAnswer(
-                        suggestion.value,
-                        "tap",
-                        suggestion.again,
-                      )
-                    }
-                  >
-                    {suggestion.again
-                      ? WHEN_TO_SEARCH.againButton
-                      : WHEN_TO_SEARCH.button}
-                  </button>
+                  <div className="row">
+                    <button
+                      ref={choiceButton}
+                      type="button"
+                      className="primary"
+                      onClick={() => {
+                        setChoiceFor(undefined);
+                        void searchThenAnswer(
+                          suggestion.value,
+                          "tap",
+                          suggestion.again,
+                        );
+                      }}
+                    >
+                      {suggestion.again
+                        ? WHEN_TO_SEARCH.againButton
+                        : WHEN_TO_SEARCH.button}
+                    </button>
+                    {choosing && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setChoiceFor(undefined);
+                          void send();
+                        }}
+                      >
+                        {GERMAN_RULES.without}
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
               {searchSent && (
@@ -2051,6 +2093,7 @@ export function App() {
                   e.preventDefault();
                   if (autoSearch && suggestion)
                     void searchThenAnswer(suggestion.value, "auto");
+                  else if (askFirst) setChoiceFor(input);
                   else void send();
                 }}
               >

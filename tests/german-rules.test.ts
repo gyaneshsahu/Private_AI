@@ -6,6 +6,7 @@ import { emptyConversation, type Conversation } from "../shared/contracts";
 import { autoDecision } from "../src/answer-modes";
 import { composeContext, newMessage } from "../src/conversation";
 import {
+  asksBeforeSending,
   checkUncheckedFigures,
   GERMAN_RULES,
   germanRulesQuestion,
@@ -79,7 +80,24 @@ describe("before sending", () => {
     expect(searchSuggestion(prompts["G-04"], now)).toMatchObject({ value: prompts["G-04"], rules: true });
     expect(searchSuggestion(prompts["T-04"], now)).toMatchObject({ rules: false });
     expect(searchSuggestion("Explain recursion", now)).toBeUndefined();
-    expect(GERMAN_RULES.heading).toBe("Rules, fees and deadlines change. Check the official source first:");
+    // Ends with a full stop: the box goes on with "Search the web for:".
+    expect(GERMAN_RULES.heading).toBe("Rules, fees and deadlines change. Check the official source first.");
+  });
+
+  it("asks before sending only for a German-rules question without web results or automatic search", () => {
+    const now = new Date("2026-11-13T00:00:00Z");
+    const rules = searchSuggestion(prompts["G-04"], now);
+    expect(asksBeforeSending(rules, false, false)).toBe(true);
+    // Automatic search on: searched without asking. Web results selected: answered from them.
+    expect(asksBeforeSending(rules, true, false)).toBe(false);
+    expect(asksBeforeSending(rules, false, true)).toBe(false);
+    // The after-answer box is not a Send.
+    expect(asksBeforeSending(rules && { ...rules, again: true }, false, false)).toBe(false);
+    // Time-sensitive but not German rules, and a timeless question: Send answers directly.
+    expect(asksBeforeSending(searchSuggestion(prompts["T-04"], now), false, false)).toBe(false);
+    expect(asksBeforeSending(searchSuggestion("Explain recursion", now), false, false)).toBe(false);
+    // No showable search text (over 200 characters): nothing to approve, so no choice.
+    expect(asksBeforeSending(searchSuggestion(`Welche Kündigungsfrist gilt? ${"x".repeat(200)}`, now), false, false)).toBe(false);
   });
 });
 
@@ -116,6 +134,19 @@ describe("scoped prompt rule", () => {
     expect(composeContext(later, 8000, now)[0].content).not.toContain(rule);
     for (const variant of ["constraints-v1", "constraints-v2", "constraints-v3", "constraints-v4"] as const)
       expect(composeContext(ask(prompts["P-G4"]), 10000, now, variant)[0].content).not.toContain(rule);
+  });
+
+  it("with web results, states figures only from them (product prompt, German-rules question only)", () => {
+    const sourced = "state figures, deadlines and legal consequences only if they appear in the web results";
+    const product = composeContext(withWeb(ask(prompts["P-G4"])), 8000, now)[0].content;
+    expect(product).toContain(GERMAN_RULES.sourcedPolicy);
+    expect(product).not.toContain(rule);
+    // The web product prompt with the rule and the question fits the 8,000 limit.
+    expect(product.length + prompts["P-G4"].length).toBeLessThan(8000);
+    expect(composeContext(ask(prompts["P-G4"]), 8000, now)[0].content).not.toContain(sourced);
+    expect(composeContext(withWeb(ask("Wer ist Bundeskanzler?")), 8000, now)[0].content).not.toContain(sourced);
+    for (const variant of ["constraints-v1", "constraints-v2", "constraints-v3", "constraints-v4"] as const)
+      expect(composeContext(withWeb(ask(prompts["P-G4"])), 10000, now, variant)[0].content).not.toContain(sourced);
   });
 });
 

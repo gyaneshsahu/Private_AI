@@ -29,10 +29,15 @@ const MODES = (arg("modes") ?? "auto,fast,thinking").split(",") as ("auto" | "fa
 const only = arg("only")?.split(",");
 // --tap-suggestion-all: tap the one-tap search suggestion on the first turn whenever it appears.
 const tapAll = process.argv.includes("--tap-suggestion-all");
+// --choice search|without: what to pick when Send on a German-rules question asks first
+// ("Search and answer" or "Answer without checking", decided 13 November). Default: without,
+// which is what Send did before, so older prompt sets keep their meaning.
+const choice = arg("choice") ?? "without";
+if (choice !== "search" && choice !== "without") throw Error("--choice must be search or without");
 // BENCH_DIR runs another prompt set (e.g. evaluation/benchmark-fresh-20261112).
 const DIR = process.env.BENCH_DIR ?? "evaluation/blind-benchmark";
 // BENCH_OUT writes elsewhere, so a measurement run does not overwrite earlier evidence.
-const OUT = process.env.BENCH_OUT ?? `.local/${basename(DIR)}/ours${privatemode ? "-privatemode" : ""}${tapAll ? "-tapped" : ""}`;
+const OUT = process.env.BENCH_OUT ?? `.local/${basename(DIR)}/ours${privatemode ? "-privatemode" : ""}${tapAll ? "-tapped" : ""}${arg("choice") ? `-choice-${choice}` : ""}`;
 // Each Privatemode message makes three POSTs (attest, secret, chat) against the 200-POST
 // session limit, so start a new browser context (a new session) every few prompts.
 const PROMPTS_PER_CONTEXT = privatemode ? 15 : Infinity;
@@ -172,9 +177,24 @@ async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolea
   if (wait > 0) await page.waitForTimeout(wait);
   lastSend = Date.now();
   maxGapMs = 0;
-  const started = Date.now();
+  let started = Date.now();
   if (tapped) await suggestionBox(page).getByRole("button", { name: "Search and answer" }).click();
   else await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+  // Search first: Send on a German-rules question shows the choice instead of answering.
+  const withoutButton = suggestionBox(page).getByRole("button", { name: "Answer without checking" });
+  const choiceShown =
+    !tapped &&
+    (await Promise.race([
+      withoutButton.waitFor({ timeout: 5000 }).then(() => true),
+      page.locator("article.assistant").nth(before).waitFor({ timeout: 5000 }).then(() => false),
+    ]).catch(() => false));
+  const choiceHeading = choiceShown ? ((await suggestionBox(page).locator("strong").innerText().catch(() => "")) || undefined) : undefined;
+  const choiceQuery = choiceShown ? ((await suggestionBox(page).locator("pre").innerText().catch(() => "")) || undefined) : undefined;
+  if (choiceShown) {
+    // Timed from the choice, like a tapped suggestion.
+    started = Date.now();
+    await (choice === "search" ? suggestionBox(page).getByRole("button", { name: "Search and answer", exact: true }) : withoutButton).click();
+  }
   let ttftMs: number | undefined;
   let baseline = "";
   while (Date.now() - started < 300_000) {
@@ -190,7 +210,7 @@ async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolea
   // The after-answer "Search and answer again" box (shown when the answer used no web results).
   await page.waitForTimeout(300);
   const againShown = await suggestionBox(page).getByRole("button", { name: "Search and answer again" }).isVisible().catch(() => false);
-  return { ttftMs, totalMs, text: await answerText(page), suggestionShown, suggestedQuery, suggestionHeading, tapped, againShown, maxGapMs, tokens };
+  return { ttftMs, totalMs, text: await answerText(page), suggestionShown, suggestedQuery, suggestionHeading, tapped, choiceShown, choiceHeading, choiceQuery, chose: choiceShown ? choice : undefined, againShown, maxGapMs, tokens };
 }
 
 // One browser context per mode keeps one app session: the local server allows 100 open
@@ -232,7 +252,7 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
       await workspaceControl(page, "Conversation").click();
       searched = true;
     }
-    let last = { ttftMs: undefined as number | undefined, totalMs: 0, text: "", suggestionShown: false, suggestedQuery: undefined as string | undefined, suggestionHeading: undefined as string | undefined, tapped: false, againShown: false, maxGapMs: 0, tokens: undefined as number | undefined };
+    let last = { ttftMs: undefined as number | undefined, totalMs: 0, text: "", suggestionShown: false, suggestedQuery: undefined as string | undefined, suggestionHeading: undefined as string | undefined, tapped: false, choiceShown: false, choiceHeading: undefined as string | undefined, choiceQuery: undefined as string | undefined, chose: undefined as string | undefined, againShown: false, maxGapMs: 0, tokens: undefined as number | undefined };
     const all: { ttftMs?: number; totalMs: number; maxGapMs: number; tokens?: number }[] = [];
     let first: typeof last | undefined;
     for (const t of turns) {
@@ -240,7 +260,7 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
       first ??= last;
       all.push({ ttftMs: last.ttftMs, totalMs: last.totalMs, maxGapMs: last.maxGapMs, tokens: last.tokens });
     }
-    if (first?.tapped) searched = true;
+    if (first?.tapped || first?.chose === "search") searched = true;
     const mainText = await page.locator("main").innerText().catch(() => "");
     // Citations render as site-name links, so innerText hides the address: keep the hrefs.
     const links = await answer(page).locator("a[href^='http']").evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).href)).catch(() => [] as string[]);
@@ -265,7 +285,7 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
       : undefined;
     return {
       text, notices, failure, ...(httpErrors.length ? { httpErrors } : {}), ttftMs: all[0].ttftMs, totalMs: all.reduce((n, t) => n + t.totalMs, 0), turnTimings: all, model: "(see tiers)", mode, label, searched,
-      suggestionShown: probe.suggestionShown || !!first?.suggestionShown, suggestedQuery: first?.suggestedQuery, suggestionHeading: first?.suggestionHeading, tapped: !!first?.tapped, againShown: last.againShown, searchedQuery, pageRead, topPageNote, links, citations,
+      suggestionShown: probe.suggestionShown || !!first?.suggestionShown, suggestedQuery: first?.suggestedQuery, suggestionHeading: first?.suggestionHeading, tapped: !!first?.tapped, choiceShown: !!first?.choiceShown, choiceHeading: first?.choiceHeading, choiceQuery: first?.choiceQuery, chose: first?.chose, againShown: last.againShown, searchedQuery, pageRead, topPageNote, links, citations,
     };
   } finally {
     await page.close();
@@ -308,5 +328,5 @@ try {
   await vite.close();
   listener.close();
 }
-await writeFile(`${OUT}/run.json`, JSON.stringify({ startedAt, finishedAt: new Date().toISOString(), digest, tiers, relayRequests, prompts: prompts.length, modes: MODES }, null, 2));
+await writeFile(`${OUT}/run.json`, JSON.stringify({ startedAt, finishedAt: new Date().toISOString(), digest, tiers, relayRequests, prompts: prompts.length, modes: MODES, choice }, null, 2));
 console.log(`done: ${relayRequests} relay requests`);
