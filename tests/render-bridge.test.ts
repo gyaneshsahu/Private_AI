@@ -155,6 +155,10 @@ describe.runIf(!!process.env.PRIVATEAI_SYNTHETIC_PG)(
           address: req.headers["x-privateai-edge-client-ip"] ?? null,
         }),
       );
+      // An upstream route that wrongly marks itself immutable must still leave the bridge as no-store.
+      runtime.app.get("/synthetic-immutable", (_req, res) =>
+        res.set("Cache-Control", "public, max-age=31536000, immutable").json({}),
+      );
       upstreamPort = await runtime.listen(0);
       bridge = createRenderBridge({
         port: upstreamPort,
@@ -193,6 +197,16 @@ describe.runIf(!!process.env.PRIVATEAI_SYNTHETIC_PG)(
       ])
         expect(data.headers[key]).toBeUndefined();
       expect(result.headers["cache-control"]).toBe("no-store");
+    });
+    it("lets browsers keep only hash-named build files; pages and other routes stay no-store", async () => {
+      const page = await call("/account");
+      expect(page.headers["cache-control"]).toBe("no-store");
+      const asset = /\/assets\/[^"']+-[\w-]{8}\.js/.exec(page.body)![0];
+      const file = await call(asset);
+      expect(file.status).toBe(200);
+      expect(file.headers["cache-control"]).toBe("public, max-age=31536000, immutable");
+      expect((await call("/synthetic-immutable")).headers["cache-control"]).toBe("no-store");
+      expect((await call("/assets/missing-AAAAAAAA.js")).headers["cache-control"]).toBe("no-store");
     });
     it("rejects wrong hosts/origins and direct upstream TLS without a client certificate", async () => {
       expect(

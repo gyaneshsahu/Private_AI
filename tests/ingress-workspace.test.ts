@@ -318,6 +318,9 @@ describe.runIf(
     const screen = await call("/account");
     expect(screen.status).toBe(200);
     expect(screen.body).toContain("/assets/");
+    expect(screen.cache).toBe("no-store");
+    const asset = /\/assets\/[^"']+-[\w-]{8}\.js/.exec(screen.body)![0];
+    expect((await call(asset)).cache).toBe("public, max-age=31536000, immutable");
     expect((await call("/api/status")).status).toBe(401);
     const email = "ingress@example.test";
     expect(

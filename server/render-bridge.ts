@@ -23,6 +23,10 @@ export const BRIDGE_REQUEST_HEADERS = [
   "ehbp-encapsulated-key",
 ] as const;
 
+const IMMUTABLE = "public, max-age=31536000, immutable";
+const IMMUTABLE_PATH =
+  /^\/(?:assets\/[^/?#]+-[\w-]{8}\.(?:js|css|wasm|woff2?|svg|png)|api\/inference\/privatemode\/privatemode-[0-9a-f]{64}\.wasm)$/;
+
 export function createRenderBridge(config: {
   port: number;
   ca: Buffer;
@@ -134,6 +138,14 @@ export function createRenderBridge(config: {
               ].includes(name)
             )
               res.setHeader(name, value);
+          // no-store stays the rule; only hash-named files the app itself marked immutable
+          // may be kept by browsers (Vite build files, the hash-pinned 29 MB Privatemode Wasm).
+          if (
+            answer.statusCode === 200 &&
+            answer.headers["cache-control"] === IMMUTABLE &&
+            IMMUTABLE_PATH.test(req.url ?? "")
+          )
+            res.setHeader("Cache-Control", IMMUTABLE);
           res.writeHead(answer.statusCode ?? 502);
           answer.on("error", () => res.destroy());
           answer.pipe(res);

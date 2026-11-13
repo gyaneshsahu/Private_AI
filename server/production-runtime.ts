@@ -60,7 +60,16 @@ export async function prepareProductionRuntime(
   });
   const candidate = createProductionConsumerCandidate(config);
   candidate.app.use(
-    express.static(config.assets, { index: false, dotfiles: "deny" }),
+    express.static(config.assets, {
+      index: false,
+      dotfiles: "deny",
+      // Vite's hash-named build files never change at their path, so browsers may keep them;
+      // everything else (index.html, API answers) keeps the global no-store.
+      setHeaders: (res, path) => {
+        if (/[\\/]assets[\\/][^\\/]+-[\w-]{8}\.(?:js|css|wasm|woff2?|svg|png)$/.test(path))
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      },
+    }),
   );
   candidate.app.get(["/", "/account"], (_req, res) =>
     res.sendFile(resolve(config.assets, "index.html")),
