@@ -2,9 +2,10 @@
 // first preferred language (de... gives German, anything else English) until the user picks one
 // with the DE/EN switch; the pick is kept only in this browser. Never from IP, email or account.
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { setTextLanguage } from "./german-rules";
+import { germanEnabled, setTextLanguage } from "./german-rules";
 
 export type Lang = "de" | "en";
+export { germanEnabled };
 export const LANGS: readonly Lang[] = ["de", "en"];
 const KEY = "cometrow.language";
 
@@ -21,6 +22,7 @@ export function browserLang(
 
 /** The user's saved pick, else the browser's language. Blocked storage falls back to the browser. */
 export function readLang(): Lang {
+  if (!germanEnabled()) return "en";
   try {
     const saved = localStorage.getItem(KEY);
     if (saved === "de" || saved === "en") return saved;
@@ -68,17 +70,20 @@ const LangContext = createContext<{ lang: Lang; setLang: (lang: Lang) => void }>
 });
 
 export function LangProvider({ children, initial }: { children: ReactNode; initial?: Lang }) {
-  const [lang, setLangState] = useState<Lang>(() => {
-    const first = initial ?? readLang();
+  const [picked, setLangState] = useState<Lang>(() => {
+    const first = germanEnabled() ? (initial ?? readLang()) : "en";
     // src/text/core.ts and the server-safe modules read <html lang>: set it before the first render.
     if (typeof document !== "undefined") document.documentElement.lang = first;
     return first;
   });
+  // German switched off (germanEnabled): English whatever was saved, passed in or picked.
+  const lang: Lang = germanEnabled() ? picked : "en";
   current = lang;
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);
   const setLang = (next: Lang) => {
+    if (!germanEnabled()) return;
     saveLang(next);
     current = next;
     document.documentElement.lang = next;
@@ -105,6 +110,7 @@ const switchText = defineText({
 export function LanguageSwitch({ className = "language-switch" }: { className?: string }) {
   const { lang, setLang } = useLang();
   const t = switchText[lang];
+  if (!germanEnabled()) return null;
   return (
     <div className={className} role="group" aria-label={t.label}>
       {LANGS.map((option) => (

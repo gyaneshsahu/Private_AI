@@ -266,8 +266,20 @@ let textLanguage = (): Lang => {
 export function setTextLanguage(get: () => Lang) {
   textLanguage = get;
 }
+/**
+ * The German off-switch (owner, 13 November 2026). German exists only in a build made with
+ * VITE_GERMAN_UI=1; any other build is English everywhere, whatever the browser language or a saved
+ * pick, and shows no DE/EN switch. Off until the owner approves the German legal texts. A build
+ * setting, not /api/status: the sign-in page shows legal text before any status is readable.
+ * Node (the server, evaluation scripts) has no import.meta.env, so it is English there too.
+ */
+export function germanEnabled(): boolean {
+  // Read in two steps: Vite and Vitest only fill the plain `import.meta.env` form.
+  const env: ImportMetaEnv | undefined = import.meta.env;
+  return env?.VITE_GERMAN_UI === "1";
+}
 /** The current interface language, for callers that pass none. */
-export const interfaceLanguage = (): Lang => textLanguage();
+export const interfaceLanguage = (): Lang => (germanEnabled() ? textLanguage() : "en");
 /** Like defineText in src/i18n.tsx: the German block must have exactly the English keys and shapes. */
 export function textBlock<T extends object>(text: { en: T; de: { [K in keyof T]: T[K] } }) {
   return text as { en: T; de: T };
@@ -277,7 +289,7 @@ export function textBlock<T extends object>(text: { en: T; de: { [K in keyof T]:
  * language (`GERMAN_RULES.warning`) keep working and show the current language.
  */
 export function liveText<T extends object>(text: { en: T; de: T }): T {
-  return new Proxy(text.en, { get: (_, key) => text[textLanguage()][key as keyof T] });
+  return new Proxy(text.en, { get: (_, key) => text[interfaceLanguage()][key as keyof T] });
 }
 
 // Model instructions stay English in both languages: only the user sees the blocks below.

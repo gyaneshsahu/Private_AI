@@ -1,6 +1,7 @@
 // React-free twin of the helpers in src/i18n.tsx for text blocks and modules outside React.
 // Modules loaded by workers, the evaluation entry or Node must not pull React in through i18n.tsx.
 import type { Lang } from "../i18n";
+import { germanEnabled } from "../german-rules";
 export type { Lang } from "../i18n";
 
 type Text = Record<string, string | ((...args: never[]) => string)>;
@@ -14,6 +15,7 @@ export function defineText<T extends Text>(text: { en: T; de: { [K in keyof T]: 
  * so that wins; before it mounts (or without a page) this repeats readLang() in src/i18n.tsx.
  */
 export function uiLang(): Lang {
+  if (!germanEnabled()) return "en";
   const page = typeof document === "undefined" ? "" : document.documentElement.lang;
   if (page === "de" || page === "en") return page;
   try {

@@ -212,6 +212,7 @@ Render dashboard, service **private-ai-deployment**, **Settings** **(unverified:
 | Pre-Deploy Command | empty |
 | Health Check Path | `/healthz` |
 | Auto-Deploy | Off |
+| Environment variable `VITE_GERMAN_UI` | **absent** (German off). Set it to `1` and redeploy only after the German legal texts are approved. `Dockerfile.render` takes it as a build argument **(unverified: that Render hands environment variables to the Docker build; if German does not appear after setting it, tell the agent)** |
 
 Never click **Deploy latest commit**. It takes whatever is newest on the branch, which may not be the tested commit.
 
