@@ -11,12 +11,13 @@ The owner decided on 13 November that the invite-only alpha is the last test bef
 | N3 | **Operator notice to all users** (audit G10: no way to announce a provider switch or outage) | built: `inference.noticeFile` |
 | N4 | **Warning before the weekly report or the key expires** (audit G9) | built: hourly log line, 48 h before the report ends, 14 days before the key expires; needs the alert (O2) to reach you |
 | N5 | **Wasm download**: the bridge sent no-store on everything, so the 29 MB Wasm downloaded on every visit (audit G11 plus own finding) | built: cached a year under its hash name and sent Brotli-compressed (about 5 MB) |
-| N6 | **Account suspend and erase procedure** (audit G6: Google-only users cannot close their account) | being built (operator script that prints SQL for you to run) |
+| N6 | **Account suspend and erase procedure** (audit G6: Google-only users cannot close their account) | built: `scripts/account-operator.ts` prints one SQL transaction (show, suspend, unsuspend, erase) for you to review and run as the schema owner; ran against Postgres in the durable suite; runbook section with an 8-step erasure procedure in `docs/invited-trial-runbook.md` |
 | N7 | **One user could fill the shared attestation queue** (review A) | fixed: at most 2 at once and 10 per 10 minutes per account |
 | N8 | **Retry after a time-out refused by our own relay** (review D) | fixed |
 | N9 | **"Answer again with Thinking" lost its mode behind the health-consent prompt** (review E) | fixed |
 | N10 | **A retried message is charged twice** (review C) and **the client can claim Fast while asking for Thinking-level effort** (review B: the encrypted body cannot be checked) | known, not changed: the portal spend limit is the backstop; recorded in owner decisions |
 | N11 | Masking "1 date of birth" on rules text (side finding of the 40-question test) | fixed (`14ef2dd`); dev and independent masking sets unchanged |
+| N13 | Content-free counts for the alpha (audit G4, part) | built: hourly `CometRow counts` log line (outcomes per mode, refusals by class, attestation busy, searches); no account or text |
 | N12 | Alpha plan with metrics, survey and stop rules (audit G15) | written: `docs/alpha-plan-20261113.md`; monitoring updated for Privatemode: `docs/week-one-monitoring.md` |
 
 **Status corrections from the audit:**
