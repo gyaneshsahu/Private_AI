@@ -35,6 +35,7 @@ export const TEXT_EXTENSIONS = [
 export const DOCUMENT_ACCEPT = [
   "pdf",
   "docx",
+  "xlsx",
   "png",
   "jpg",
   "jpeg",

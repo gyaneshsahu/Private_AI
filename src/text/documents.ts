@@ -11,7 +11,7 @@ export const documentText = defineText({
     notLocal: "Document could not be processed locally.",
     invalidResult: "Document processing returned an invalid result. Try another file.",
     noText:
-      "No readable text found. Scanned PDFs and handwriting are not supported; try a clear screenshot.",
+      "No readable text found. Handwriting is not supported. For a scanned page, try the Photo to text tool or a clear screenshot.",
     tooMuchText: "Extracted text exceeds 60,000 characters. Choose a smaller document.",
     failed: "Extraction failed.",
     notUtf8: "This file is not UTF-8 text. Export it as UTF-8 and try again.",
@@ -28,7 +28,21 @@ export const documentText = defineText({
     textOnly:
       "Imported as text only. Code is not executed; data is not recalculated. Review structure and units before use.",
     formats:
-      "Supported formats: DOCX body text, text PDF, UTF-8 text/Markdown/data/source-code files, PNG and JPEG screenshots. Legacy Word, macro-enabled Word and spreadsheet workbooks are not supported; export them as PDF or UTF-8 text.",
+      "Supported formats: Word .docx body text, Excel .xlsx cell values, PDF, UTF-8 text/Markdown/data/source-code files, PNG and JPEG screenshots. Macro-enabled files are not supported; save them as .docx, .xlsx or PDF.",
+    legacy:
+      "Older .doc and .xls files cannot be read. Open the file, save it as .docx, .xlsx or PDF, and add it again.",
+    readingScan: (page: number, pages: number) =>
+      `Reading scanned page ${page} of ${pages} by OCR locally…`,
+    pdfOcrWarning: (read: number, pages: number) =>
+      `This PDF has no text layer. The text of ${read} of ${pages} pages was read by OCR on this device and may contain errors. OCR knows printed English only; German umlauts and ß are often wrong. Check names, amounts and dates in the extracted text before sending.`,
+    readingSheet: "Reading spreadsheet cells locally…",
+    xlsxWarning:
+      "Spreadsheet cell values only, one tab-separated block per sheet. Formulas are not recalculated; the last saved results are shown. Dates can appear as serial numbers. Number formats, charts, images and comments are not included. Review before use.",
+    xlsxLimits:
+      "XLSX exceeds a safety limit (10 MB file, 512 parts, 4 MB per part, 20 MB unpacked). Save a smaller workbook or export the sheet as CSV.",
+    xlsxInvalid:
+      "This XLSX file cannot be read. It may be damaged, password-protected or macro-enabled. Save it again as a plain .xlsx workbook.",
+    xlsxEmpty: "XLSX has no readable cell values.",
     extractionFailed:
       "Extraction failed. The file may be encrypted, malformed, unsupported or unreadable.",
     docxWarning:
@@ -61,7 +75,7 @@ export const documentText = defineText({
     invalidResult:
       "Die Verarbeitung des Dokuments lieferte ein ungültiges Ergebnis. Versuchen Sie eine andere Datei.",
     noText:
-      "Kein lesbarer Text gefunden. Gescannte PDFs und Handschrift werden nicht unterstützt; versuchen Sie einen deutlichen Screenshot.",
+      "Kein lesbarer Text gefunden. Handschrift wird nicht unterstützt. Versuchen Sie bei einer gescannten Seite das Werkzeug Foto zu Text oder einen deutlichen Screenshot.",
     tooMuchText:
       "Der ausgelesene Text ist länger als 60.000 Zeichen. Wählen Sie ein kleineres Dokument.",
     failed: "Auslesen fehlgeschlagen.",
@@ -83,7 +97,21 @@ export const documentText = defineText({
     textOnly:
       "Nur als Text importiert. Code wird nicht ausgeführt; Daten werden nicht neu berechnet. Prüfen Sie Aufbau und Einheiten vor der Verwendung.",
     formats:
-      "Unterstützte Formate: Haupttext aus DOCX, Text-PDF, UTF-8-Text-, Markdown-, Daten- und Quellcodedateien, PNG- und JPEG-Screenshots. Ältere Word-Dateien, Word-Dateien mit Makros und Tabellenarbeitsmappen werden nicht unterstützt; exportieren Sie sie als PDF oder UTF-8-Text.",
+      "Unterstützte Formate: Haupttext aus Word (.docx), Zellwerte aus Excel (.xlsx), PDF, UTF-8-Text-, Markdown-, Daten- und Quellcodedateien, PNG- und JPEG-Screenshots. Dateien mit Makros werden nicht unterstützt; speichern Sie sie als .docx, .xlsx oder PDF.",
+    legacy:
+      "Ältere .doc- und .xls-Dateien können nicht gelesen werden. Öffnen Sie die Datei, speichern Sie sie als .docx, .xlsx oder PDF und fügen Sie sie erneut hinzu.",
+    readingScan: (page: number, pages: number) =>
+      `Gescannte Seite ${page} von ${pages} wird auf diesem Gerät per Texterkennung gelesen…`,
+    pdfOcrWarning: (read: number, pages: number) =>
+      `Dieses PDF enthält keinen Text. Der Text von ${read} von ${pages} Seiten wurde auf diesem Gerät per Texterkennung gelesen und kann Fehler enthalten. Die Texterkennung kennt nur gedrucktes Englisch; Umlaute und ß sind oft falsch. Prüfen Sie Namen, Beträge und Daten im ausgelesenen Text vor dem Senden.`,
+    readingSheet: "Die Zellen der Tabelle werden auf diesem Gerät gelesen…",
+    xlsxWarning:
+      "Nur Zellwerte der Tabelle, je Blatt ein Block mit Tabulatoren. Formeln werden nicht neu berechnet; gezeigt werden die zuletzt gespeicherten Ergebnisse. Datumsangaben können als fortlaufende Zahlen erscheinen. Zahlenformate, Diagramme, Bilder und Kommentare sind nicht enthalten. Vor der Verwendung prüfen.",
+    xlsxLimits:
+      "Die XLSX-Datei überschreitet eine Sicherheitsgrenze (10 MB Datei, 512 Teile, 4 MB pro Teil, 20 MB entpackt). Speichern Sie eine kleinere Arbeitsmappe oder exportieren Sie das Blatt als CSV.",
+    xlsxInvalid:
+      "Diese XLSX-Datei kann nicht gelesen werden. Sie ist möglicherweise beschädigt, mit einem Kennwort geschützt oder enthält Makros. Speichern Sie sie erneut als einfache .xlsx-Arbeitsmappe.",
+    xlsxEmpty: "Die XLSX-Datei enthält keine lesbaren Zellwerte.",
     extractionFailed:
       "Auslesen fehlgeschlagen. Die Datei ist möglicherweise verschlüsselt, beschädigt, nicht unterstützt oder unlesbar.",
     docxWarning:
@@ -123,5 +151,10 @@ export function documentMessage(text: string, lang: Lang = uiLang()): string {
   if (m) return de.readingScreenshot(Number(m[1]));
   m = /^OCR is imperfect \(reported confidence (\d+)%\)/.exec(text);
   if (m && text === en.ocrWarning(Number(m[1]))) return de.ocrWarning(Number(m[1]));
+  m = /^Reading scanned page (\d+) of (\d+) by OCR locally…$/.exec(text);
+  if (m) return de.readingScan(Number(m[1]), Number(m[2]));
+  m = /^This PDF has no text layer\. The text of (\d+) of (\d+) pages /.exec(text);
+  if (m && text === en.pdfOcrWarning(Number(m[1]), Number(m[2])))
+    return de.pdfOcrWarning(Number(m[1]), Number(m[2]));
   return text;
 }

@@ -98,9 +98,12 @@ export function docxBodyText(xml: string): string {
   return text.trim();
 }
 
-async function readPart(entry: FileEntry): Promise<string> {
-  if (entry.uncompressedSize > MAX_PART_BYTES)
-    throw Error(documentText.en.docxPart);
+export async function readPart(
+  entry: FileEntry,
+  tooLarge = documentText.en.docxPart,
+  expandedTooLarge = documentText.en.docxExpandedPart,
+): Promise<string> {
+  if (entry.uncompressedSize > MAX_PART_BYTES) throw Error(tooLarge);
   let size = 0;
   const chunks: Uint8Array[] = [];
   await entry.getData(
@@ -108,7 +111,7 @@ async function readPart(entry: FileEntry): Promise<string> {
       write(chunk) {
         size += chunk.byteLength;
         if (size > MAX_PART_BYTES)
-          throw Error(documentText.en.docxExpandedPart);
+          throw Error(expandedTooLarge);
         chunks.push(chunk.slice());
       },
     }),
