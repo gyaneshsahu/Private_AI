@@ -394,6 +394,43 @@ prospective-user observation before opening the trial.
 
 The step-by-step procedures (operator commands `privileges-plan`, `privileges-check`, `check`, `apply-pending`, the secret-file swap, the verification query and rollback) are kept outside the public repository in `docs/private/runbook-operational-20261024.md` (git-ignored). The commands themselves are in `server/deployment-database-entry.ts`; `tests/account-privileges.test.ts` proves the grant plan and the role check against a synthetic database.
 
+## Suspend or erase one account — 13 November 2026
+
+`scripts/account-operator.ts` prints one SQL transaction for you to read and run. It never connects to a database and needs no new credentials. Run it from a checkout of the deployed commit, read what it prints, then pipe the same command into psql as the schema owner role (the role that applied the migrations), with the app schema on the search path:
+
+```
+node --import tsx scripts/account-operator.ts show --email person@example.com
+node --import tsx scripts/account-operator.ts show --email person@example.com | psql "<owner connection>" -v ON_ERROR_STOP=1
+```
+
+The email is lowercased and quoted safely; anything the sign-in would not accept is refused. Do not save the output to a file: it contains the address. Every command prints `accounts_matched` (1 means the address has an account) and ends with a row count per table. If any statement fails, psql stops and nothing is changed; fix the cause and run it again. Each command is safe to rerun.
+
+| Command | When | What it does |
+| --- | --- | --- |
+| `show` | Before and after every other command; to answer "what do you hold about me?" with counts | Counts per table, no content. Read-only (ends with `ROLLBACK`). |
+| `suspend` | Access must stop now: abuse, suspected takeover, a minor, a spending spike, or the person asks to pause | Ends every session at once and blocks new sign-ins (Google and email codes). Stored as an `account_closure` row with hold `infinity`, which the purge never touches. A chat request already running may still finish. |
+| `unsuspend` | The reason for a suspension is resolved | Removes only an operator suspension. A closure the person requested stays. |
+| `erase` | An erasure request, or a minor's account | Deletes the user row and, through it, sign-in methods, passkeys, sessions, security notices, email proofs, counters and consent rows; pending sign-in codes and sign-in state; allowances, request records and their metrics; test-mode billing binding, operations and assessments. |
+
+Removing an address from `allowedEmails` only stops new sign-ins; use `suspend` as well when access must end now. After `erase` the address can sign in again as a new, empty account if it is still on the allowlist.
+
+**What `erase` keeps, and why:**
+- The `account_closure` receipt, if there is one: an opaque account ID and dates, no contact data, stamped as purged. The existing design keeps it as the record that a closure or erasure happened (ARCHITECTURE "Account closure and deletion boundary").
+- `signin_delivery` rows: a keyed hash of the address that only the running app can compute; they are deleted after one day on their own.
+- `rateLimit` (IP address and route, no account) and `billing_event_inbox` (test-mode provider events, not tied to an account; live billing is impossible in the schema).
+- Request records are erased, although they are otherwise kept for 90 days: the alpha has no billing, so no law requires keeping them. Revisit this when paid billing starts (tax records).
+- Outside the database: the platform's backups until they expire (see `docs/development-deployment.md`), the person's browser data, and the AI provider's content-free records, which are not linked to the account.
+
+**Answering an erasure request (GDPR Art. 17):**
+1. Accept the request from the account's own address or the invitation channel you used with that person. Do not ask for identity documents. Note the date received; answer without undue delay and within one month (Art. 12(3)).
+2. Run `show` and keep the counts.
+3. Run `suspend`, then wait five minutes so no request still running writes a record after the erase.
+4. Run `erase`. Check `accounts_matched` is 1 and the final counts are 0 everywhere except `account_closure` (0 or 1).
+5. Run `show` again: `accounts_matched` 0 and every count 0.
+6. Remove the address from `allowedEmails` and redeploy, unless the person may come back.
+7. Reply to the person: their account and the records listed above are deleted; backup copies expire within the platform's backup window; saved conversations live only on their device, so ask them to use "Delete everything on this device" in Saved on each device.
+8. Record in the private log the date, the command and the counts, without name or email.
+
 ## Operator stop and recovery
 
 For the current single-instance service, stop the service to prevent

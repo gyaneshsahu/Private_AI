@@ -23,6 +23,7 @@ const files = [
   "billing-reconciliation",
   "billing-workflow",
   "request-retention",
+  "account-operator-postgres",
 ].map((name) => `tests/${name}.test.ts`);
 
 async function main() {
