@@ -88,6 +88,33 @@ describe("detector", () => {
     "Mein Chef hat mich gelobt. Wie reagiere ich am besten?",
     "Ein Fahrrad kostet 500 € inklusive 19 % Mehrwertsteuer. Wie viel Steuer ist darin?",
   ])("leaves %s alone", (text) => expect(germanRulesQuestion(text)).toBe(false));
+
+  // Question shapes (14 November, docs/german-routing-20261113.md): a permission, duty, amount or
+  // entitlement frame with an official or everyday-law word, whatever the topic is called.
+  it.each([
+    "Darf ich im Treppenhaus mein Fahrrad abstellen?",
+    "muss der haendler die kaputte waschmaschine zuruecknehmen",
+    "Wie hoch ist das Krankengeld nach sechs Wochen?",
+    "Habe ich Anspruch auf einen Kitaplatz?",
+    "bis wann muss ich die grundsteuererklaerung abgeben",
+    "Was kostet die Vignette in Österreich",
+    "Kann ich die Schuhe ohne Kassenzettel umtauschen?",
+    "How long can I stay in Austria without registering?",
+  ])("recognises the shape of %s", (text) => expect(germanRulesQuestion(text)).toBe(true));
+
+  it.each([
+    // A practical "must I", a custom, a market price, a question to the assistant.
+    "Wie oft muss ich mein Fahrrad ölen?",
+    "Wie viel Trinkgeld gibt man beim Friseur?",
+    "Was kostet ein Fahrrad für Kinder?",
+    "Darf ich dich etwas zu meiner Arbeit fragen?",
+    // The user's own figures, software, a code identifier, an organisation's own rule.
+    "Ich habe zwei Rechnungen über 300 € und 150 €. Wie viel muss ich insgesamt zahlen?",
+    "Wie rechne ich in Excel die Steuer aus?",
+    "Meine Variable max_miete ist undefined. Woran liegt das?",
+    "Bis wann muss ich bei uns im Verein den Mitgliedsbeitrag überweisen?",
+    "Can I pay by card in Germany?",
+  ])("leaves the near-miss %s alone", (text) => expect(germanRulesQuestion(text)).toBe(false));
 });
 
 describe("before sending", () => {

@@ -3,57 +3,157 @@
 // official source backed. No model call; the text never leaves the device for this.
 import type { Lang } from "./i18n";
 
+// People often type without umlauts ("kuendigung", "gebuehr", "strasse"). The text and every cue
+// are compared in one folded spelling, so each cue is written once, with its umlauts.
+const fold = (s: string) =>
+  s.replace(/[äÄ]/g, "ae").replace(/[öÖ]/g, "oe").replace(/[üÜ]/g, "ue").replace(/ß/g, "ss");
+const cue = (rule: RegExp) => new RegExp(fold(rule.source), rule.flags);
+/** Whole words from a few named families, folded like every cue. */
+const words = (...families: string[]) =>
+  cue(new RegExp(String.raw`(?<!\p{L})(${families.join("|")})(?!\p{L})`, "iu"));
+
 // A topic word alone is enough. \p{L} boundaries so umlauts count as letters; \p{L}* lets
 // German compounds through (Kündigungsfrist, Vergleichsmiete, Grundfreibetrag).
-const TOPIC_DE =
-  /(?<!\p{L})(\p{L}*bu(ß|ss)geld\p{L}*|flensburg|geblitzt|blitzer\p{L}*|fahrverbot|innerorts|außerorts|winterreifen|hauptuntersuchung|rote\p{L}* ampel|rotlicht\p{L}*|(handy|alkohol) am steuer|promille\p{L}*|falschpark\p{L}*|parkverstoß|\p{L}*frist\p{L}*|(?!an)\p{L}*kündig\p{L}*|\p{L}*miet\p{L}*|vermieter\p{L}*|nebenkosten\p{L}*|mietkaution|mindesturlaub|urlaubsanspruch|resturlaub|urlaubstage|elternzeit|mutterschutz|probezeit|arbeitsvertrag|krankschreibung|lohnfortzahlung|abmahnung|abfindung|mindestlohn|kurzarbeit\p{L}*|gewährleistung\p{L}*|widerruf\p{L}*|rückgaberecht|umtauschrecht|steuererklärung|steuerklasse|\p{L}*freibetrag|einkommensteuer\p{L}*|finanzamt|kirchensteuer|grundsteuer|hundesteuer|kfz-steuer|kleinunternehmer\p{L}*|werbungskosten|pendlerpauschale|aufbewahr\p{L}*|steuer-id|steuernummer|kindergeld|elterngeld|bürgergeld|wohngeld|bafög|arbeitslosengeld|pflegegeld|\p{L}*rente(n\p{L}*)?|bürgeramt|einwohnermeldeamt|\p{L}*behörde\p{L}*|ausländerbehörde|standesamt|jobcenter|ummeld\p{L}*|wohnsitz\p{L}*|meldebescheinigung|wohnungsgeber\p{L}*|personalausweis|reisepass|\p{L}*ausweis|führerschein\p{L}*|fahrerlaubnis|zulassungsstelle|kfz-zulassung|\p{L}*zulassung|aufenthaltstitel|aufenthaltserlaubnis|einbürgerung|rundfunkbeitrag|krankenkasse\p{L}*|krankenversicherung\p{L}*|zusatzbeitrag|pflegeversicherung|sozialversicherung\p{L}*)(?!\p{L})/iu;
+const TOPIC_DE = cue(
+  /(?<!\p{L})(\p{L}*bu(ß|ss)geld\p{L}*|flensburg|geblitzt|blitzer\p{L}*|fahrverbot|innerorts|außerorts|winterreifen|hauptuntersuchung|rote\p{L}* ampel|rotlicht\p{L}*|(handy|alkohol) am steuer|promille\p{L}*|falschpark\p{L}*|parkverstoß|\p{L}*frist\p{L}*|(?!an)\p{L}*kündig\p{L}*|\p{L}*miet\p{L}*|vermieter\p{L}*|nebenkosten\p{L}*|\p{L}*kaution|mindesturlaub|urlaubsanspruch|resturlaub|urlaubstage|elternzeit|mutterschutz|probezeit|arbeitsvertrag|krankschreibung|lohnfortzahlung|abmahnung|abfindung|mindestlohn|kurzarbeit\p{L}*|gewährleistung\p{L}*|widerruf\p{L}*|rückgaberecht|umtauschrecht|steuererklärung|steuerklasse|\p{L}*freibetrag|einkommensteuer\p{L}*|finanzamt|kirchensteuer|grundsteuer|hundesteuer|kfz-steuer|kleinunternehmer\p{L}*|werbungskosten|pendlerpauschale|aufbewahr\p{L}*|steuer-id|steuernummer|kindergeld|elterngeld|bürgergeld|wohngeld|bafög|arbeitslosengeld|pflegegeld|\p{L}*rente(n\p{L}*)?|bürgeramt|einwohnermeldeamt|\p{L}*behörde\p{L}*|ausländerbehörde|standesamt|jobcenter|ummeld\p{L}*|wohnsitz\p{L}*|meldebescheinigung|wohnungsgeber\p{L}*|personalausweis|reisepass|\p{L}*ausweis|führerschein\p{L}*|fahrerlaubnis|zulassungsstelle|kfz-zulassung|\p{L}*zulassung|aufenthaltstitel|aufenthaltserlaubnis|einbürgerung|rundfunkbeitrag|krankenkasse\p{L}*|krankenversicherung\p{L}*|zusatzbeitrag|pflegeversicherung|sozialversicherung\p{L}*)(?!\p{L})/iu,
+);
 const TOPIC_EN =
   /\b(speeding( tickets?| fines?)?|traffic fines?|penalty points|red lights?|drink[- ]driving|parking tickets?|notice period|landlords?|tenants?|tenancy|rent (increase|rise|reduction)|security deposit|minimum (annual )?(leave|holiday|vacation)|holiday entitlement|probation(ary)? period|statutory warranty|right of withdrawal|tax returns?|tax allowance|tax-free allowance|income tax|tax class|child benefit|parental (allowance|benefit|leave)|citizen'?s income|unemployment benefits?|pensions?|registration office|register (my )?address|deregister|ID card|identity card|passports?|driving licen[cs]e|driver'?s license|vehicle registration|licen[cs]e plates?|TV licen[cs]e|broadcasting fee|health insurance|residence permit|minimum wage|winter (tyres|tires)|retention period)\b/i;
 // Everyday words for the same topics (13 November, evaluation/german-routing-20261113): what
 // people say instead of the official term (GEZ, Knöllchen, über Rot), and further legal topics.
 // Tax counts as something done (absetzen, zahlen, zurückbekommen), not as an amount: "Netto und
 // Steuer" of the user's own invoice is a sum, and so is "Mehrwertsteuer", which stays out.
-const EVERYDAY_DE =
-  /(?<!\p{L})(gez|rundfunkgebühr\p{L}*|fernsehgebühr\p{L}*|knöllchen|strafzettel\p{L}*|parkknolle|abgeschleppt|radarfalle|(über|bei) rot|parkverbot\p{L}*|tüv|versicherungskennzeichen|steuern? (absetz\p{L}*|zahl\p{L}*|spar\p{L}*|zurück\p{L}*)|steuererstattung|steuerlich\p{L}*|steuerfrei\p{L}*|steuerbescheid\p{L}*|steuerberater\p{L}*|lohnsteuer\p{L}*|erbschaft\p{L}*|schenkungsteuer|grunderwerbsteuer|kapitalertragsteuer|abgeltungsteuer|gewerbesteuer|zweitwohnungsteuer|minijob\p{L}*|midijob\p{L}*|arbeitszeugnis|nachtruhe|mittagsruhe|sonntagsruhe|ruhestörung|mahnung|mahnbescheid|inkasso\p{L}*|schufa|pfändung\p{L}*|erben|unterhalt(s\p{L}*)?|sorgerecht|scheidung|\p{L}+pflicht(en|ig\p{L}*)?|welche rechte|meine rechte|recht auf)(?!\p{L})/iu;
+const EVERYDAY_DE = cue(
+  /(?<!\p{L})(gez|rundfunkgebühr\p{L}*|fernsehgebühr\p{L}*|knöllchen|strafzettel\p{L}*|parkknolle|abgeschleppt|radarfalle|(über|bei) rot|parkverbot\p{L}*|tüv|versicherungskennzeichen|steuern? (absetz\p{L}*|zahl\p{L}*|spar\p{L}*|zurück\p{L}*)|steuererstattung|steuerlich\p{L}*|steuerfrei\p{L}*|steuerbescheid\p{L}*|steuerberater\p{L}*|lohnsteuer\p{L}*|erbschaft\p{L}*|schenkungsteuer|grunderwerbsteuer|kapitalertragsteuer|abgeltungsteuer|gewerbesteuer|zweitwohnungsteuer|minijob\p{L}*|midijob\p{L}*|arbeitszeugnis|nachtruhe|mittagsruhe|sonntagsruhe|ruhestörung|mahnung|mahnbescheid|inkasso\p{L}*|schufa|pfändung\p{L}*|erben|unterhalt(s\p{L}*)?|sorgerecht|scheidung|\p{L}+pflicht(en|ig\p{L}*)?|welche rechte|meine rechte|recht auf)(?!\p{L})/iu,
+);
 // Registering, deregistering or re-registering a car, a dog, a business or a home after a move.
 const REGISTER = /(?<!\p{L})(an|ab|um)(zu|ge)?meld\p{L}*/iu;
-const REGISTER_WHAT =
-  /(?<!\p{L})(auto|wagen|fahrzeug|kfz|pkw|motorrad|roller|anhänger|wohnmobil|gewerbe|hund|wohnung|wohnort|wohnsitz|umzug|umzieh\p{L}*|umgezogen|ziehe|ziehen|zieht)(?!\p{L})/iu;
+const REGISTER_WHAT = cue(
+  /(?<!\p{L})(auto|wagen|fahrzeug|kfz|pkw|motorrad|roller|anhänger|wohnmobil|gewerbe|hund|wohnung|wohnort|wohnsitz|umzug|umzieh\p{L}*|umgezogen|ziehe|ziehen|zieht)(?!\p{L})/iu,
+);
 // A German permission, duty, deadline or rights question about someone with legal standing
 // ("Darf mein Nachbar …", "Bis wann muss ich … mein Chef", "Brauche ich … eine Versicherung").
-const FRAME_DE =
-  /(?<!\p{L})(darf|dürfen|muss (ich|man|er|sie|mein\p{L}*)|müssen (wir|sie)|brauche ich|braucht man|bis wann|wie viel zeit|wie lange (habe|hat|haben|muss|darf)|zusteh\p{L}*|was kostet (mich|uns)|was droht|droht mir|was blüht|erlaubt|verboten|zulässig|rechtens|legal|illegal|verpflichtet|anspruch)(?!\p{L})/iu;
-const PARTY_DE =
-  /(?<!\p{L})(arbeitgeber\p{L}*|chef(in)?|vorgesetzte\p{L}*|firma|händler\p{L}*|verkäufer\p{L}*|onlineshop|nachbar\p{L}*|polizei\p{L}*|amt|ordnungsamt|jugendamt|sozialamt|gesundheitsamt|zoll|gericht\p{L}*|anwalt|hausverwaltung|eigentümer\p{L}*|versicherung|staat|gemeinde)(?!\p{L})/iu;
+const FRAME_DE = cue(
+  /(?<!\p{L})(darf|dürfen|kann (mein\p{L}*|mir|mich|man (mir|mich))|können (meine|mir|mich)|muss (ich|man|er|sie|mein\p{L}*)|müssen (wir|sie)|brauche ich|braucht man|bis wann|wie viel zeit|wie lange (habe|hat|haben|muss|darf)|zusteh\p{L}*|was kostet (mich|uns)|was droht|droht mir|was blüht|erlaubt|verboten|zulässig|rechtens|legal|illegal|verpflichtet|anspruch)(?!\p{L})/iu,
+);
+const PARTY_DE = cue(
+  /(?<!\p{L})(arbeitgeber\p{L}*|chef(in)?|vorgesetzte\p{L}*|firma|händler\p{L}*|verkäufer\p{L}*|onlineshop|nachbar\p{L}*|polizei\p{L}*|amt|ordnungsamt|jugendamt|sozialamt|gesundheitsamt|zoll|gericht\p{L}*|anwalt|hausverwaltung|eigentümer\p{L}*|versicherung|bank|\p{L}*anbieter|staat|gemeinde)(?!\p{L})/iu,
+);
+
+// Question frames and domains (14 November, docs/german-routing-20261113.md). The lists above name
+// topics; these catch a rules question by its shape, whatever the topic is called.
+// What is allowed or punished, what follows from not doing something, and what someone else owes
+// ("Muss der Laden …", "Müssen Überstunden …"): a rules question about any of the everyday
+// things below. "Darf ich dich etwas fragen" is addressed to the assistant and stays out.
+const ALLOWED = cue(
+  /(?<!\p{L})(darf(?! ich [^.?!]*(?<!\p{L})(dich|dir|euch)(?!\p{L}))|dürfen|dürfte|erlaubt|verboten|zulässig|was droht|droht mir|was passiert,? wenn (ich|man|wir)(?!\p{L})[^.?!]*(?<!\p{L})(nicht|kein\p{L}*|ohne|zu spät)|muss (er|sie|es|der|die|das|mein\p{L}*|unser\p{L}*)|müssen (sie|die|meine|unsere))(?!\p{L})|(?<=^\s*|[.?!,:]\s*)(muss|müssen) (?!(ich|man|wir)(?!\p{L}))/iu,
+);
+// The user's own duty. "Muss ich" is as often practical as legal ("Wann muss ich die Tomaten im
+// Garten gießen"), so it counts only where there is a counterparty: DEALINGS or OFFICIAL.
+const OWN_DUTY = words(String.raw`muss (ich|man)|müssen wir|verpflichtet|pflicht`);
+// An amount, a date, a need, a possibility or a payment to the user. Counts only with OFFICIAL.
+const ASKING = words(
+  String.raw`wie ?(viel|viele|hoch|lange?|oft|teuer)|was koste[tn]|bis wann|ab wann|ab (welche[mnr]|wie ?viel)|wann muss`,
+  String.raw`brauche? ich|braucht man|(bekomme|kriege?) ich|(bekommt|kriegt) man|kann (ich|man)`,
+);
+// Entitlement and legality wording is a rules question on its own ("Habe ich Anspruch auf …",
+// "Steht mir … zu", "Ist das rechtens").
+const ENTITLED = words(
+  String.raw`anspruch auf|steh(t|en) (mir|uns|dir|ihm|ihr|einem)(?!\p{L})[^.?!]*(?<!\p{L})zu|zusteh\p{L}*`,
+  String.raw`gesetzlich\p{L}*|rechtlich\p{L}*|rechtens|rechtswidrig|strafbar|ordnungswidrig\p{L}*|verjähr\p{L}*`,
+);
+// Official vocabulary is built on a few heads, so any compound on one counts, named above or not
+// (Grundsicherung, Familienbeihilfe, Spitzensteuersatz, Aufenthaltsbewilligung, a misspelt
+// "Mindeslohn"). Everyday compounds on the same heads are kept out (Trinkgeld, insgesamt).
+const OFFICIAL = words(
+  // Taxes, benefits, contributions, fees and pay set by law. Not steering: Steuerung, gesteuert.
+  String.raw`\p{L}*steuer(?!ung|bar|t(?!\p{L})|e(?!\p{L}))\p{L}*|\p{L}{3,}(?<!trink|taschen|klein|bar|wechsel|spiel|preis|löse)geld(er|es)?`,
+  String.raw`\p{L}*(beitrag|beiträge|gebühr(en)?|pauschale|zuschlag|zulage|zuschuss|beihilfe|sozialhilfe|lohn|maut|vignette)`,
+  String.raw`\p{L}{3,}(sicherung|grenze)`,
+  // Offices, applications, permits and decisions.
+  String.raw`\p{L}{3,}(?<!ges|mits|alles)amt|\p{L}{3,}bescheid|\p{L}*(antrag|veranlagung|bescheinigung|genehmigung|bewilligung|erlaubnis)|beantrag\p{L}*`,
+  // Bans and penalties.
+  String.raw`\p{L}{3,}verbot|\p{L}*strafe|erwischt|schwarzfahr\p{L}*`,
+  // Claims against a seller or carrier.
+  String.raw`geld zurück|\p{L}*erstatt\p{L}*|entschädig\p{L}*|schadensersatz|garantie\p{L}*|reklamier\p{L}*|reklamation\p{L}*|umtausch\p{L}*|zurückgeben`,
+);
+// Everyday places and roles the law attaches to. They count only with an ALLOWED frame: "Darf ich
+// auf dem Balkon grillen" is a rules question, "Was kostet ein Fahrrad" is not.
+const PLACES = words(
+  // Home and neighbours.
+  String.raw`\p{L}*wohnung\p{L}*|balkon\p{L}*|\p{L}*garten\p{L}*|\p{L}*haus|hausflur|keller|grundstück\p{L}*|nachbar\p{L}*`,
+  // School, childcare and age limits for the young.
+  String.raw`\p{L}*schule|schul\p{L}*|kita\p{L}*|wie alt muss|ab welchem alter|ab wie ?viel jahren|mit 1\d( jahren)?|minderjährig\p{L}*|volljährig\p{L}*|jugendliche\p{L}*`,
+  // Road and travel.
+  String.raw`\p{L}*straße\p{L}*|gehweg|radweg|bürgersteig|autobahn|auto|fahrrad|rad|e-?scooter|roller|moped|mofa|motorrad|park(e|en|t|platz)|bahn|bus|zug|flug\p{L}*|ticket|fahrschein`,
+  // Work and training.
+  String.raw`arbeit\p{L}*|chef(in)?|job|nebenjob\p{L}*|überstunden|\p{L}*urlaub\p{L}*|teilzeit|vollzeit|krankgeschrieben|krankmeld\p{L}*|azubi\p{L}*|ausbildung|praktik\p{L}*|student\p{L}*|schüler\p{L}*|rentner\p{L}*|gehalt|verdien\p{L}*|dazuverdien\p{L}*`,
+);
+// Buying, contracts and records: dealings with a counterparty.
+const DEALINGS = words(
+  String.raw`\p{L}*vertrag\p{L}*|abo\p{L}*|mitgliedschaft|fitnessstudio|geschäft|shop|händler\p{L}*|verkäufer\p{L}*|käufer\p{L}*|bestell\p{L}*|paket\p{L}*|liefer\p{L}*`,
+  String.raw`reparier\p{L}*|reparatur|kaputt\p{L}*|defekt\p{L}*|rechnung\p{L}*|quittung\p{L}*|kontoauszüge?|unterlagen|belege?`,
+);
+// The user's own figures: with two or more money or percent amounts the question is a sum, so an
+// amount question alone is not enough ("500 € inklusive 19 % Mehrwertsteuer. Wie viel Steuer …").
+const OWN_FIGURE = /\d[\d.,]*\s?(€|eur\b|euro\b|%|prozent\b)|(€|\bEUR)\s?\d/gi;
+const SUM_OF_THEM = cue(
+  /(?<!\p{L})(wie ?viel (ist|sind|macht|wäre|wären) das|was macht das|how much is that|what percentage)(?!\p{L})/iu,
+);
+// An organisation's own rule (a company, a club) is not an official one.
+const INTERNAL = cue(
+  /(?<!\p{L})(intranet|bei uns (in der|im) (firma|abteilung|schule|betrieb|büro|unternehmen|verein|team))(?!\p{L})/iu,
+);
+// A question about software is not a rules question, whatever the software computes.
+const SOFTWARE =
+  /(?<!\p{L})(python|javascript|typescript|java|sql|excel|regex|html|css|json|csv|datetime)(?!\p{L})/iu;
+// Code identifiers are not words: `checkFrist`, max_miete, getGebuehr().
+const IDENTIFIER = /`[^`\n]*`|[\p{L}\d]+_[\p{L}\d_]+|\p{Ll}+\p{Lu}[\p{L}\d]*|[\p{L}\d]+\(\)/gu;
 // Statute names are case-sensitive: "AO" or "GG" would match ordinary words.
 const STATUTE =
   /§|\b(BGB|StVO|StVG|UStG|EStG|HGB|SGB|BUrlG|KSchG|StGB|ZPO|BetrVG|ArbZG|MuSchG|BEEG|BKGG|FeV|PAuswG|BMG|AufenthG)\b|gesetze-im-internet/;
-// "In Germany" plus a rule or fee word.
-const GERMANY =
-  /\b(in|under|within|across) germany\b|\bgerman (law|rules?|authorities|courts?)\b|(?<!\p{L})((in|innerhalb) deutschlands?|deutsche\p{L}* recht\p{L}*|deutschem recht|hierzulande)(?!\p{L})/iu;
-const RULE =
-  /\b(laws?|legal|illegal|allowed|permitted|forbidden|required|mandatory|obliged|must (i|you|we)|do (i|you|we) have to|deadline|fees?|fines?|penalt(y|ies)|entitled|rules?|regulations?)\b|(?<!\p{L})(gesetz\p{L}*|erlaubt|verboten|pflicht\p{L}*|verpflichtet|vorschrift\p{L}*|darf|dürfen|muss (ich|man)|müssen (wir|sie)|gebühr\p{L}*|strafe\p{L}*|anspruch|regel\p{L}*|rechtlich)(?!\p{L})/iu;
+// "In Germany" (or Austria, Switzerland) plus a rule or fee word.
+const GERMANY = cue(
+  /\b(in|under|within|across) (germany|austria|switzerland)\b|\b(german|austrian|swiss) (law|rules?|authorities|courts?)\b|(?<!\p{L})((in|innerhalb) deutschlands?|in österreich|in der schweiz|(deutsche|österreichische|schweizer)\p{L}* recht\p{L}*|deutschem recht|hierzulande)(?!\p{L})/iu,
+);
+// English rule wording: a duty, a permission, a limit on a stay or a job, a permit, tax or insurance.
+const RULE = cue(
+  /\b(laws?|legal|illegal|allowed|permitted|forbidden|required|mandatory|obliged|must (i|you|we)|do (i|you|we) (have|need) to|do (i|you|we) need an?|can my|how long (can|may|do|must) (i|you|we)|eligible|deadline|fees?|fines?|fined|penalt(y|ies)|entitled|rules?|regulations?|visa|permits?|tax(es)?|insurance|fired?|evict\w*|sick (leave|pay|note))\b|(?<!\p{L})(gesetz\p{L}*|erlaubt|verboten|pflicht\p{L}*|verpflichtet|vorschrift\p{L}*|darf|dürfen|muss (ich|man)|müssen (wir|sie)|gebühr\p{L}*|strafe\p{L}*|anspruch|regel\p{L}*|rechtlich)(?!\p{L})/iu,
+);
 // A general explanation counts only with a concrete rule ask (how much, how long, by when...).
-const EXPLAIN =
-  /\b(explain|define|definition|what is an?\b|what are\b|difference between|how does\b.*\bwork)|(?<!\p{L})(erkläre|erklär|definiere|was ist (ein|eine)|was sind|was bedeutet|wie funktioniert|unterschied)(?!\p{L})/iu;
-const ASK =
-  /\b(how (much|many|long|often)|by when|until when|deadline|notice period|costs?|fees?|fines?|penalt(y|ies)|must i|do i (have|need) to|am i allowed|entitled)\b|(?<!\p{L})(wie (viel|viele|hoch|lange|oft)|bis wann|ab wann|wann muss|muss ich|darf ich|\p{L}*frist\p{L}*|kostet|kosten|gebühr\p{L}*|beitrag|strafe|anspruch)(?!\p{L})/iu;
+const EXPLAIN = cue(
+  /\b(explain|define|definition|what is an?\b|what are\b|difference between|how does\b.*\bwork)|(?<!\p{L})(erkläre|erklär|definiere|was ist (ein|eine)|was sind|was bedeutet|wie funktioniert|unterschied)(?!\p{L})/iu,
+);
+const ASK = cue(
+  /\b(how (much|many|long|often)|by when|until when|deadline|notice period|costs?|fees?|fines?|penalt(y|ies)|must i|do i (have|need) to|am i allowed|entitled)\b|(?<!\p{L})(wie ?(viel|viele|hoch|lange?|oft)|bis wann|ab wann|wann muss|muss ich|darf ich|\p{L}*frist\p{L}*|kostet|kosten|gebühr\p{L}*|beitrag|strafe|anspruch)(?!\p{L})/iu,
+);
 // Rewriting, translating, summarising or writing given text: the rule words belong to the text,
 // not to a question. shortcut: "Write me what my notice period is" is missed; widen if seen.
-const TRANSFORM =
-  /^\s*(please\s+|bitte\s+)?(rewrite|rephrase|reword|translate|summari[sz]e|shorten|proofread|write|draft|compose|turn (this|these)|make (this|these)\b)|(?<!\p{L})(formulier\p{L}*|übersetze|übersetz|fasse\p{L}*|zusammenfass\p{L}*|kürze|korrigiere den text|(kürzer|freundlicher|höflicher|förmlicher|lockerer) (machen|formulieren|schreiben|fassen))(?!\p{L})|^\s*(bitte\s+)?(schreib\p{L}*|entwirf|verfasse)(?!\p{L})/iu;
+const TRANSFORM = cue(
+  /^\s*(please\s+|bitte\s+)?(rewrite|rephrase|reword|translate|summari[sz]e|shorten|proofread|write|draft|compose|turn (this|these)|make (this|these)\b)|(?<!\p{L})(formulier\p{L}*|übersetze|übersetz|fasse\p{L}*|zusammenfass\p{L}*|kürze|korrigiere den text|(kürzer|freundlicher|höflicher|förmlicher|lockerer) (machen|formulieren|schreiben|fassen))(?!\p{L})|^\s*(bitte\s+)?(schreib\p{L}*|entwirf|verfasse)(?!\p{L})/iu,
+);
 
 /** True when the text asks about German rules, fees, deadlines or administration. */
-export function germanRulesQuestion(text: string): boolean {
-  if (TRANSFORM.test(text)) return false;
+export function germanRulesQuestion(question: string): boolean {
+  const text = fold(question.replace(IDENTIFIER, " "));
+  if (TRANSFORM.test(text) || INTERNAL.test(text) || SOFTWARE.test(text)) return false;
+  const ownFigures = (text.match(OWN_FIGURE)?.length ?? 0) >= 2;
+  if (ownFigures && SUM_OF_THEM.test(text)) return false;
+  const allowed = ALLOWED.test(text);
+  const official = OFFICIAL.test(text);
+  const dealings = DEALINGS.test(text);
   const topic =
     TOPIC_DE.test(text) ||
     EVERYDAY_DE.test(text) ||
     (REGISTER.test(text) && REGISTER_WHAT.test(text)) ||
     (FRAME_DE.test(text) && PARTY_DE.test(text)) ||
     TOPIC_EN.test(text) ||
-    STATUTE.test(text) ||
-    (GERMANY.test(text) && RULE.test(text));
+    STATUTE.test(question) ||
+    (GERMANY.test(text) && RULE.test(text)) ||
+    ENTITLED.test(text) ||
+    (allowed && (official || dealings || PLACES.test(text))) ||
+    (!ownFigures && OWN_DUTY.test(text) && (official || dealings)) ||
+    (!ownFigures && ASKING.test(text) && official);
   return topic && (!EXPLAIN.test(text) || ASK.test(text));
 }
 
