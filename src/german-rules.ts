@@ -97,6 +97,80 @@ export function asksBeforeSending(
   return !!suggestion?.rules && !suggestion.again && !autoSearch && !web;
 }
 
+/**
+ * Official-source preference (13 November, docs/german-rules-20261113.md). Who publishes a page,
+ * for searches on German rules, fees and deadlines. These are authorities and public-interest
+ * bodies, not facts, so the lists stay stable when the rules change. A host counts when it is the
+ * domain or a subdomain of it. Foreign authorities (gv.at, gov) are deliberately not "official"
+ * here: for a German rule they are the wrong jurisdiction.
+ */
+export const RULES_SOURCE_DOMAINS = {
+  official: [
+    // Federal laws, government, ministries and federal agencies.
+    "gesetze-im-internet.de", "bund.de", "bundesregierung.de", "bundestag.de", "bundesrat.de",
+    "bmj.de", "bmas.de", "bmfsfj.de", "bundesfinanzministerium.de", "bundesgesundheitsministerium.de",
+    "auswaertiges-amt.de", "germany.info", "bzst.de", "zoll.de", "bundesjustizamt.de", "elster.de",
+    "arbeitsagentur.de", "familienportal.de", "elterngeld-digital.de", "deutsche-rentenversicherung.de",
+    "minijob-zentrale.de", "rundfunkbeitrag.de", "kba.de", "bamf.de", "bundesbank.de", "bafin.de",
+    "destatis.de", "bundesnetzagentur.de",
+    // Länder and city service portals.
+    "berlin.de", "bayern.de", "nrw.de", "hamburg.de", "bremen.de", "niedersachsen.de", "hessen.de",
+    "sachsen.de", "sachsen-anhalt.de", "thueringen.de", "brandenburg.de", "regierung-mv.de",
+    "schleswig-holstein.de", "rlp.de", "saarland.de", "baden-wuerttemberg.de", "service-bw.de",
+    "muenchen.de", "stadt-koeln.de", "frankfurt.de", "stuttgart.de", "duesseldorf.de", "dresden.de",
+    "leipzig.de", "hannover.de", "nuernberg.de",
+    // EU law.
+    "eur-lex.europa.eu", "europa.eu",
+  ],
+  publicInterest: [
+    "verbraucherzentrale.de", "vzbv.de", "evz.de", "test.de",
+    "bundesgerichtshof.de", "bundesverfassungsgericht.de", "bundesarbeitsgericht.de",
+    "bundessozialgericht.de", "bundesfinanzhof.de", "bverwg.de", "justiz.de",
+    "sovd.de", "vdk.de", "sozialverband.de",
+  ],
+} as const;
+export type SourceTier = "official" | "public-interest" | "other";
+const under = (host: string, domains: readonly string[]) =>
+  domains.some((d) => host === d || host.endsWith("." + d));
+/** The tier of a page address for a German-rules search. */
+export function sourceTier(url: string): SourceTier {
+  let host: string;
+  try {
+    host = new URL(url).hostname.toLowerCase().replace(/^www\./, "");
+  } catch {
+    return "other";
+  }
+  return under(host, RULES_SOURCE_DOMAINS.official)
+    ? "official"
+    : under(host, RULES_SOURCE_DOMAINS.publicInterest)
+      ? "public-interest"
+      : "other";
+}
+const TIER_ORDER: SourceTier[] = ["official", "public-interest", "other"];
+/** Official, then public-interest, then the rest, keeping rank order within each; drops nothing. */
+export function rankByTier<T extends { url?: string }>(sources: T[]): T[] {
+  return TIER_ORDER.flatMap((tier) => sources.filter((s) => sourceTier(s.url ?? "") === tier));
+}
+/** The label put before each web source's text for the model on a German-rules question. */
+export const tierLabel = (url: string) => `[${sourceTier(url)} source]`;
+
+/**
+ * The after-answer note: a German-rules question answered from web results of which none is
+ * official. Device-only, like uncheckedFigures: never model context, never sent or logged.
+ */
+export function checkNoOfficialSource(
+  messages: { id: string; role: string; text: string }[],
+  answerId: string,
+  urls: string[],
+): true | undefined {
+  if (!urls.length || urls.some((u) => sourceTier(u) === "official")) return undefined;
+  const question = messages
+    .slice(0, messages.findIndex((m) => m.id === answerId))
+    .filter((m) => m.role === "user")
+    .at(-1)?.text;
+  return question && germanRulesQuestion(question) ? true : undefined;
+}
+
 export const GERMAN_RULES = {
   // Heading of the pre-send search suggestion when the question is about German rules.
   heading: "Rules, fees and deadlines change. Check the official source first.",
@@ -109,7 +183,10 @@ export const GERMAN_RULES = {
   without: "Answer without checking",
   // Added to the default product prompt for that turn only, when web results are in context.
   sourcedPolicy:
-    " For this question about German rules, fees or deadlines, state figures, deadlines and legal consequences only if they appear in the web results; for anything they do not cover, say so instead of filling it in.",
+    " For this question about German rules, fees or deadlines, state figures, deadlines and legal consequences only if they appear in the web results; for anything they do not cover, say so instead of filling it in. Prefer official sources; if they disagree with other sources, follow the official one. If no source is official, say that no official source was found, that the figures may be wrong, and name the authority to check.",
+  // Under an answer to a German-rules question whose web results hold no official source.
+  noOfficial:
+    "No official source was found in the search results. Check the responsible authority before relying on these figures.",
   // Warning under an answer that gives unchecked figures.
   warning:
     "This answer gives figures or deadlines that were not checked against an official source.",

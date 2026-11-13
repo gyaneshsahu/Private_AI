@@ -2,7 +2,8 @@
 // one-tap search with its own heading; Send asks first ("Search and answer" or "Answer without
 // checking") and sends nothing until a choice; Escape goes back to editing; an answer without web
 // results that states figures gets the warning and the "Search and answer again" box; other
-// questions and automatic search send directly. Offline: a Vite plugin replaces src/inference.ts.
+// questions and automatic search send directly. With web results of which none is official, the
+// page note and a note under the answer say so (official-source preference). Offline: a Vite plugin replaces src/inference.ts.
 import { it, expect } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
@@ -41,6 +42,8 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
   try {
     const page = await browser.newPage({ viewport: { width: 375, height: 812 } });
     const searches: unknown[] = [];
+    // The result the synthetic search returns: an official page first, a non-official one later.
+    let result = { url: "https://www.gesetze-im-internet.de/bgb/__573c.html", tier: "official" };
     await page.route("**/*", (route) => {
       const url = new URL(route.request().url());
       if (url.origin !== origin) return route.abort();
@@ -64,12 +67,12 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
                 id: "synthetic-01",
                 title: "Synthetic official page",
                 text: "Search excerpt only (full page not fetched): synthetic rule.",
-                url: "https://www.example.gov/rule",
+                url: result.url,
                 retrievedAt: new Date().toISOString(),
                 evidenceKind: "search-excerpt",
               },
             ],
-            topPage: { url: "https://www.example.gov/rule", outcome: "read", official: true },
+            topPage: { url: result.url, outcome: "read", official: result.tier === "official", tier: result.tier },
           },
         });
       return route.continue();
@@ -135,7 +138,7 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     await suggestion.getByRole("button", { name: "Search and answer again" }).click();
 
     // The answer from the approved results replaces it, without the warning.
-    await ui(page.locator("article.assistant").last()).toContainText("Synthetic: drei Monate example.gov");
+    await ui(page.locator("article.assistant").last()).toContainText("Synthetic: drei Monate gesetze-im-internet.de");
     await ui(page.locator("article.assistant").last().locator(".arithmetic-check")).toHaveCount(0);
     expect(await page.locator("article.assistant").count()).toBe(1);
     expect(searches).toEqual([{ kind: "search", value: question }]);
@@ -155,7 +158,7 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     const shown = await suggestion.locator("pre").innerText();
     expect(shown).toBe("Wie hoch ist das Bußgeld innerorts bei 21 km/h zu schnell? Mail [email address removed]");
     await page.keyboard.press("Enter");
-    await ui(page.locator("article.assistant").last()).toContainText("Synthetic: drei Monate example.gov");
+    await ui(page.locator("article.assistant").last()).toContainText("Synthetic: drei Monate gesetze-im-internet.de");
     expect(searches.at(-1)).toEqual({ kind: "search", value: shown });
     expect(searches).toHaveLength(2);
     await expect.poll(async () => (await sent()).at(-1)).toEqual([masked, 1]);
@@ -172,6 +175,24 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     await ui(without).toHaveCount(0);
     expect(searches.at(-1)).toEqual({ kind: "search", value: question });
     expect(searches).toHaveLength(3);
+    // An official source in the results: the page note says so, and no note under the answer.
+    await ui(page.getByRole("status").filter({ hasText: "Searched the web automatically for:" })).toContainText(
+      "Our server also opened an official source and read its text: https://www.gesetze-im-internet.de/bgb/__573c.html",
+    );
+    await ui(page.locator("article.assistant").last().locator(".arithmetic-check")).toHaveCount(0);
+
+    // No official source in the results: the page note and a note under the answer say so.
+    result = { url: "https://www.example-umzug.de/ratgeber", tier: "other" };
+    await page.reload();
+    await message.fill(question);
+    await send.click();
+    await ui(page.getByRole("status").filter({ hasText: "Searched the web automatically for:" })).toContainText(
+      "Our server also opened a non-official page and read its text: https://www.example-umzug.de/ratgeber No official source was found in the search results.",
+    );
+    await ui(page.locator("article.assistant").last().locator(".arithmetic-check")).toHaveText(
+      "No official source was found in the search results. Check the responsible authority before relying on these figures.",
+    );
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
   } finally {
     await browser.close();
     await vite.close();

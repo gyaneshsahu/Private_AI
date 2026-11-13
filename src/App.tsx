@@ -56,6 +56,7 @@ import {
 import {
   asksBeforeSending,
   checkUncheckedFigures,
+  checkNoOfficialSource,
   GERMAN_RULES,
 } from "./german-rules";
 import {
@@ -719,6 +720,11 @@ export function App() {
                             m.id,
                             m.text,
                             selectedSources(c).some((source) => !!source.url),
+                          ),
+                          noOfficialSource: checkNoOfficialSource(
+                            c.messages,
+                            m.id,
+                            selectedSources(c).flatMap((source) => source.url ?? []),
                           ),
                         }
                       : {}),
@@ -1853,6 +1859,11 @@ export function App() {
                   {message.uncheckedFigures && (
                     <p className="warning arithmetic-check" role="alert">
                       {GERMAN_RULES.warning}
+                    </p>
+                  )}
+                  {message.noOfficialSource && (
+                    <p className="warning arithmetic-check" role="alert">
+                      {GERMAN_RULES.noOfficial}
                     </p>
                   )}
                   {message.keptOnDevice && (

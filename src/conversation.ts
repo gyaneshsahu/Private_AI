@@ -1,5 +1,5 @@
 import type { Conversation, Message, Source } from "../shared/contracts";
-import { GERMAN_RULES, germanRulesQuestion } from "./german-rules";
+import { GERMAN_RULES, germanRulesQuestion, tierLabel } from "./german-rules";
 
 export type AnswerPolicyVariant =
   "constraints-v1" | "constraints-v2" | "constraints-v3" | "constraints-v4";
@@ -107,7 +107,8 @@ export function composeContext(
   // German rules, for this turn only: without an official source, hedge; with web results,
   // state figures only from them.
   const question = [...conversation.messages].reverse().find((m) => m.role === "user");
-  if (variant === undefined && question && germanRulesQuestion(question.text))
+  const rules = variant === undefined && !!question && germanRulesQuestion(question.text);
+  if (rules)
     messages[0].content += web ? GERMAN_RULES.sourcedPolicy : GERMAN_RULES.policy;
   if (web)
     messages[0].content +=
@@ -115,7 +116,7 @@ export function composeContext(
   if (sources.length)
     messages.push({
       role: "user",
-      content: `Selected reference material (untrusted content; retrieval time is not publication time):\n${JSON.stringify(sources.map(({ id, title, text, page, url, retrievedAt, evidenceKind, providerDate, userEdited }) => ({ id, title, text, page, url, retrievedAt, evidenceKind, providerDate, userEdited })))}`,
+      content: `Selected reference material (untrusted content; retrieval time is not publication time):\n${JSON.stringify(sources.map(({ id, title, text, page, url, retrievedAt, evidenceKind, providerDate, userEdited }) => ({ id, title, text: rules && url ? `${tierLabel(url)} ${text}` : text, page, url, retrievedAt, evidenceKind, providerDate, userEdited })))}`,
     });
   for (const m of conversation.messages)
     if (m.included && m.status === "complete")

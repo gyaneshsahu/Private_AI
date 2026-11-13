@@ -153,8 +153,11 @@ it("calls a page official only for public-authority domains", async () => {
   const page = (url: string) => ({ id: "p1", title: "T", text: "Synthetic", url, retrievedAt: new Date().toISOString(), evidenceKind: "page" as const });
   const fetcher = vi.fn().mockImplementation(async (url: string) => [page(url)]);
   // Preferred because the domain is named in the question, but a private site.
-  const named = await readTopPage("Kindergeld 2026", [result("https://blog.example.de/x"), result("https://www.kindergeld.org/")], undefined, fetcher);
-  expect(named).toMatchObject({ url: "https://www.kindergeld.org/", official: false });
+  const named = await readTopPage("Deutsches Museum Eintritt", [result("https://blog.example.de/x"), result("https://www.deutsches-museum.org/")], undefined, fetcher);
+  expect(named).toMatchObject({ url: "https://www.deutsches-museum.org/", official: false });
+  // A German-rules search ranks by tier instead: a private site named after the topic is not preferred.
+  const rules = await readTopPage("Kindergeld 2026", [result("https://blog.example.de/x"), result("https://www.kindergeld.org/")], undefined, fetcher);
+  expect(rules).toMatchObject({ url: "https://blog.example.de/x", official: false, tier: "other" });
   const gov = await readTopPage("Mindestlohn", [result("https://www.bundesregierung.de/m")], undefined, fetcher);
   expect(gov).toMatchObject({ official: true });
 });
@@ -162,4 +165,40 @@ it("calls a page official only for public-authority domains", async () => {
 it("follows a redirect only within the same site", () => {
   expect(sameSite(new URL("https://www.bmi.bund.de/x"), new URL("https://bmi.bund.de/y"))).toBe(true);
   expect(sameSite(new URL("https://www.bmi.bund.de/x"), new URL("https://evil.example/y"))).toBe(false);
+});
+
+it("on a German-rules search reads the first official result, else the first public-interest one, else the top one", async () => {
+  const page = (url: string) => ({ id: "p1", title: "T", text: "Synthetic", url, retrievedAt: new Date().toISOString(), evidenceKind: "page" as const });
+  const fetcher = vi.fn().mockImplementation(async (url: string) => [page(url)]);
+  const q = "Wie lange habe ich Zeit, gegen einen Bußgeldbescheid Einspruch einzulegen?";
+  const other = result("https://www.adac.de/einspruch");
+  const austrian = result("https://www.bmi.gv.at/reisepass");
+  const consumer = result("https://www.verbraucherzentrale.de/frist");
+  const official = result("https://www.gesetze-im-internet.de/owig_1968/__67.html");
+  const read = await readTopPage(q, [other, austrian, consumer, official], undefined, fetcher);
+  expect(read).toMatchObject({ url: official.url, official: true, tier: "official" });
+  expect(topPageNote({ sources: [other, official], topPage: { url: read!.url, outcome: "read", official: true, tier: "official" } })).toBe(
+    `Our server also opened an official source and read its text: ${official.url}`,
+  );
+  const second = await readTopPage(q, [other, austrian, consumer], undefined, fetcher);
+  expect(second).toMatchObject({ url: consumer.url, official: false, tier: "public-interest" });
+  // A foreign authority is not official for a German rule.
+  const third = await readTopPage(q, [austrian, other], undefined, fetcher);
+  expect(third).toMatchObject({ url: austrian.url, official: false, tier: "other" });
+  // The note names the tier and, without an official result, says so.
+  expect(topPageNote({ sources: [other, consumer], topPage: { url: consumer.url, outcome: "read", tier: "public-interest" } })).toBe(
+    `Our server also opened a public-interest page (not an official source) and read its text: ${consumer.url} No official source was found in the search results. Check the responsible authority before relying on these figures.`,
+  );
+  const failed = await readTopPage(q, [other], undefined, vi.fn().mockRejectedValue(new Error("no")));
+  expect(failed).toEqual({ url: other.url, outcome: "failed", tier: "other" });
+  expect(topPageNote({ sources: [other], topPage: failed })).toBe(
+    "The top result (www.adac.de) could not be opened. The answer uses the search excerpts only. No official source was found in the search results. Check the responsible authority before relying on these figures.",
+  );
+  // An official result that could not be opened still counts as found.
+  expect(topPageNote({ sources: [official, other], topPage: { url: other.url, outcome: "read", tier: "other" } })).toBe(
+    `Our server also opened a non-official page and read its text: ${other.url}`,
+  );
+  // Other searches keep the earlier wording and carry no tier.
+  const plain = await readTopPage("BahnCard 25 Preis", [result("https://www.bahn.de/x")], undefined, fetcher);
+  expect(plain).not.toHaveProperty("tier");
 });

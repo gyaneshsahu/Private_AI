@@ -7,9 +7,12 @@ import { autoDecision } from "../src/answer-modes";
 import { composeContext, newMessage } from "../src/conversation";
 import {
   asksBeforeSending,
+  checkNoOfficialSource,
   checkUncheckedFigures,
   GERMAN_RULES,
   germanRulesQuestion,
+  rankByTier,
+  sourceTier,
   statesUncheckedFigures,
 } from "../src/german-rules";
 import { savedConversationSchema } from "../src/saved-conversation";
@@ -194,5 +197,60 @@ describe("Auto routing", () => {
     expect(autoDecision(withWeb(ask(prompts["G-03"])))).toEqual({ mode: "fast", reason: "rules" });
     // Rewriting a letter to the landlord stays a rewrite on Fast.
     expect(autoDecision(ask(prompts["L7-01"]))).toEqual({ mode: "fast", reason: "rewrite" });
+  });
+});
+
+describe("official-source preference", () => {
+  const now = new Date("2026-11-13T00:00:00Z");
+  const web = (c: Conversation, urls: string[]) => {
+    c.attachments.push({
+      id: "w", name: "Public search results", selected: true, kind: "research",
+      sources: urls.map((url, i) => ({ id: `w${i}`, title: "Synthetic", text: "Synthetic excerpt", url })),
+    });
+    return c;
+  };
+  const urls = ["https://www.berlin.de/a", "https://www.verbraucherzentrale.de/b", "https://www.blog.example/c"];
+
+  it("ranks by tier, keeps order within each tier and drops nothing", () => {
+    const s = ["https://x.example/1", "https://www.zoll.de/2", "https://test.de/3", "https://y.example/4", "https://www.bmj.de/5"].map((url) => ({ url }));
+    expect(rankByTier(s).map((x) => x.url)).toEqual(["https://www.zoll.de/2", "https://www.bmj.de/5", "https://test.de/3", "https://x.example/1", "https://y.example/4"]);
+    expect(rankByTier(s.slice(0, 1))).toEqual(s.slice(0, 1));
+    expect(["https://service.berlin.de/x", "https://eur-lex.europa.eu/y", "https://www.bundesjustizamt.de/z"].map(sourceTier)).toEqual(["official", "official", "official"]);
+    expect(["https://www.bundesgerichtshof.de/x", "https://www.vdk.de/y"].map(sourceTier)).toEqual(["public-interest", "public-interest"]);
+    expect(["https://www.bmi.gv.at/x", "https://notberlin.de/y", "not a url"].map(sourceTier)).toEqual(["other", "other", "other"]);
+  });
+
+  it("labels each web source by type and adds the preference rule, for German-rules questions with web results only", () => {
+    const rule = "Prefer official sources; if they disagree with other sources, follow the official one. If no source is official, say that no official source was found, that the figures may be wrong, and name the authority to check.";
+    const [system, refs] = composeContext(web(ask(prompts["P-G4"]), urls), 10000, now);
+    expect(system.content).toContain(rule);
+    expect(JSON.parse(refs.content.slice(refs.content.indexOf("\n") + 1)).map((s: { text: string }) => s.text)).toEqual([
+      "[official source] Synthetic excerpt", "[public-interest source] Synthetic excerpt", "[other source] Synthetic excerpt",
+    ]);
+    expect(system.content.length + prompts["P-G4"].length).toBeLessThan(8000);
+    // Not for other questions, not without web results, not for the frozen variants.
+    const otherQ = composeContext(web(ask("Wer ist Bundeskanzler?"), urls), 10000, now);
+    expect(otherQ[0].content).not.toContain(rule);
+    expect(otherQ[1].content).not.toContain("[official source]");
+    expect(composeContext(ask(prompts["P-G4"]), 10000, now)[0].content).not.toContain(rule);
+    const v1 = composeContext(web(ask(prompts["P-G4"]), urls), 10000, now, "constraints-v1");
+    expect(v1[0].content).not.toContain(rule);
+    expect(v1[1].content).not.toContain("[official source]");
+  });
+
+  it("flags the no-official note on the device only, for a German-rules question whose web results hold no official source", () => {
+    const c = ask(prompts["G-04"]);
+    const answer = newMessage("assistant", "Synthetic.");
+    c.messages.push(answer);
+    expect(checkNoOfficialSource(c.messages, answer.id, urls.slice(1))).toBe(true);
+    expect(checkNoOfficialSource(c.messages, answer.id, urls)).toBeUndefined();
+    expect(checkNoOfficialSource(c.messages, answer.id, [])).toBeUndefined();
+    const other = ask("How many moons does Jupiter have?");
+    other.messages.push(answer);
+    expect(checkNoOfficialSource(other.messages, answer.id, urls.slice(1))).toBeUndefined();
+    c.messages[1] = { ...answer, noOfficialSource: true };
+    expect(savedConversationSchema.parse(c).messages[1].noOfficialSource).toBe(true);
+    expect(JSON.stringify(composeContext(c, 10000))).not.toContain("noOfficialSource");
+    expect(GERMAN_RULES.noOfficial).toBe("No official source was found in the search results. Check the responsible authority before relying on these figures.");
   });
 });

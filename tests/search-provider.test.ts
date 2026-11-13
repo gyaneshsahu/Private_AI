@@ -64,3 +64,26 @@ it("keeps provider page dates separate from retrieval timestamps", async () => {
   expect(sources[0].providerDate).toBe("2026-10-05T09:00:00");
   expect(sources[0].retrievedAt).not.toBe(sources[0].providerDate);
 });
+
+it("on a German-rules question asks for 10 results with the exact text, ranks official first and keeps 6", async () => {
+  const at = (url: string) => ({ ...result, url });
+  const ten = [
+    at("https://www.umzug-blog.de/1"), at("https://www.verbraucherzentrale.de/2"), at("https://www.ratgeber.de/3"),
+    at("https://www.berlin.de/4"), at("https://www.anwalt.example/5"), at("https://www.gesetze-im-internet.de/6"),
+    at("https://www.blog.example/7"), at("https://www.forum.example/8"), at("https://www.portal.example/9"),
+    at("https://www.zoll.de/10"),
+  ];
+  upstream.mockResolvedValue(new Response(JSON.stringify({ web: { results: ten } })));
+  const question = "Was kostet es, nach einem Umzug meinen Wohnsitz beim Bürgeramt umzumelden?";
+  const sources = await searchWeb(question, "TEST_ONLY");
+  // Exactly the approved text, no added operators; only the count changes.
+  expect([...upstream.mock.calls[0][0].searchParams]).toEqual([["q", question], ["count", "10"]]);
+  expect(sources.map((s) => s.url)).toEqual([
+    "https://www.berlin.de/4", "https://www.gesetze-im-internet.de/6", "https://www.zoll.de/10",
+    "https://www.verbraucherzentrale.de/2", "https://www.umzug-blog.de/1", "https://www.ratgeber.de/3",
+  ]);
+  expect(parseResearchResult({ sources }, [])).toEqual(sources);
+  // No official result: nothing is dropped, the others stay in rank order.
+  upstream.mockResolvedValue(new Response(JSON.stringify({ web: { results: ten.slice(6, 9) } })));
+  expect((await searchWeb(question, "TEST_ONLY")).map((s) => s.url)).toEqual(ten.slice(6, 9).map((r) => r.url));
+});

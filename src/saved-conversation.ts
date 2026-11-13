@@ -55,6 +55,7 @@ const conversationBody = z.object({
         .strict()
         .optional(),
       uncheckedFigures: z.literal(true).optional(),
+      noOfficialSource: z.literal(true).optional(),
     }),
   ),
   attachments: z.array(

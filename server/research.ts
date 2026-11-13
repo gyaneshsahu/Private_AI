@@ -16,6 +16,7 @@ import {
   type Source,
 } from "../shared/contracts";
 import { findIdentifiers } from "../src/identifier-masking";
+import { germanRulesQuestion, rankByTier, sourceTier, type SourceTier } from "../src/german-rules";
 
 export function publicAddress(address: string) {
   try {
@@ -298,9 +299,11 @@ export function officialHost(hostname: string, query: string) {
 export function officialResult(query: string, sources: Source[]) {
   return topPageCandidates(query, sources)[0];
 }
-// Official results first (in rank order), then the rest; the reader tries a few.
+// Official results first (in rank order), then the rest; the reader tries a few. On a
+// German-rules search: official, then public-interest, then the rest (src/german-rules.ts).
 export function topPageCandidates(query: string, sources: Source[]) {
   const web = sources.filter((source) => source.url);
+  if (germanRulesQuestion(query)) return rankByTier(web);
   const official = web.filter((source) => officialHost(new URL(source.url!).hostname, query));
   return [...official, ...web.filter((source) => !official.includes(source))];
 }
@@ -332,6 +335,8 @@ export interface TopPage {
   url: string;
   outcome: "read" | "read-without-query" | "skipped" | "failed";
   official?: boolean;
+  // German-rules searches only: the tier of the page read (official-source preference).
+  tier?: SourceTier;
   source?: Source;
 }
 // Under the same search approval: open the top official result once, with the
@@ -347,11 +352,14 @@ export async function readTopPage(
   if (!candidates.length) return undefined;
   // A redirect target must not carry a recognised identifier either.
   const clean = (u: URL) => pageAddressForReading(u.href).outcome === "read";
+  const rules = germanRulesQuestion(query);
+  // On a German-rules search every record carries the tier, so the note can name it.
+  const tierOf = (url: string) => (rules ? { tier: sourceTier(url) } : {});
   let first: TopPage | undefined;
   for (const top of candidates) {
     const address = pageAddressForReading(top.url!);
     if (address.outcome === "skipped") {
-      first ??= { url: new URL(top.url!).origin, outcome: "skipped" };
+      first ??= { url: new URL(top.url!).origin, outcome: "skipped", ...tierOf(top.url!) };
       continue;
     }
     try {
@@ -362,10 +370,13 @@ export async function readTopPage(
         3,
         clean,
       );
+      const url = page.url ?? address.url;
+      const tier = tierOf(url);
       return {
-        url: page.url ?? address.url,
+        url,
         outcome: address.outcome,
-        official: publicAuthorityHost(new URL(page.url ?? address.url).hostname),
+        official: tier.tier ? tier.tier === "official" : publicAuthorityHost(new URL(url).hostname),
+        ...tier,
         source: {
           ...page,
           text: `Top result page opened by CometRow's server (first ${TOP_PAGE_CHARACTERS} characters at most): ${page.text}`,
@@ -373,11 +384,12 @@ export async function readTopPage(
       };
     } catch {
       signal?.throwIfAborted();
-      first ??= { url: address.url, outcome: "failed" };
+      first ??= { url: address.url, outcome: "failed", ...tierOf(address.url) };
     }
   }
   return first;
 }
+export const RULES_RESULTS = 6;
 export async function searchWeb(
   query: string,
   key: string,
@@ -389,8 +401,12 @@ export async function searchWeb(
       ? "https://api.search.brave.com/res/v1/llm/context"
       : "https://api.search.brave.com/res/v1/web/search",
   );
+  // German rules: 10 results for the same approved text (no added operators), re-ranked by
+  // tier and cut to RULES_RESULTS; nothing is filtered out by tier.
+  const rules = mode === "web" && germanRulesQuestion(query);
+  const count = rules ? 10 : 5;
   url.searchParams.set("q", query);
-  url.searchParams.set("count", "5");
+  url.searchParams.set("count", String(count));
   if (mode === "llm-context") {
     url.searchParams.set("maximum_number_of_urls", "5");
     url.searchParams.set("maximum_number_of_tokens", "4096");
@@ -433,7 +449,7 @@ export async function searchWeb(
         }),
       })
       .parse(raw);
-    return data.web.results.slice(0, 5).map((result) => {
+    const results = data.web.results.slice(0, count).map((result): Source => {
       const title = load(result.title).text().trim();
       const excerpt = load(result.description).text().trim();
       if (!title || title.length > 2000 || !excerpt || excerpt.length > 59900)
@@ -448,6 +464,7 @@ export async function searchWeb(
         retrievedAt: new Date().toISOString(),
       };
     });
+    return rules ? rankByTier(results).slice(0, RULES_RESULTS) : results;
   } catch {
     throw new Error(
       "Search returned invalid source information. No automatic retry was made.",

@@ -20,7 +20,8 @@ it("rejects malformed or oversized research before any source is added", () => {
       { url: "javascript:alert(1)" }, { url: "https://user:password@example.com/" },
       { retrievedAt: "yesterday" }, { toolCall: "upload" },
     ].map((change) => ({ sources: [{ ...source, ...change }] })),
-    { sources: Array.from({ length: 7 }, (_, i) => ({ ...source, id: `source-${i}` })) },
+    // Six results on a German-rules search plus the top page is the most a search returns.
+    { sources: Array.from({ length: 8 }, (_, i) => ({ ...source, id: `source-${i}` })) },
   ]) expect(() => parseResearchResult(input, [])).toThrow(/Nothing was added/);
 });
 

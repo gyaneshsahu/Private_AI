@@ -391,6 +391,11 @@ export interface Message {
    * Never model context, never sent or logged.
    */
   uncheckedFigures?: true;
+  /**
+   * Local-only (src/german-rules.ts): a German-rules question answered from web results of which
+   * none is official. Never model context, never sent or logged.
+   */
+  noOfficialSource?: true;
 }
 export interface ConversationBranch {
   id: string;
