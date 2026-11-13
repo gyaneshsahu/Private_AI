@@ -8,6 +8,19 @@ import type { Qualification } from "../../shared/contracts";
 
 export type InferenceProviderId = Qualification["provider"];
 
+/**
+ * The provider's verification is rate-limited or our relay's queue for it is full. Nothing was
+ * sent; the backup model would need the same verification, so it is never tried after this.
+ */
+export class AttestationBusyError extends Error {
+  constructor() {
+    super(
+      "CometRow is busy checking the secure server. Please try again in a minute. Nothing was sent.",
+    );
+    this.name = "AttestationBusyError";
+  }
+}
+
 /** Used only when a policy object carries no provider (older test fixtures); reports always name one. */
 export const defaultInferenceProvider: InferenceProviderId = "tinfoil";
 

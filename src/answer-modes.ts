@@ -2,6 +2,7 @@
 // the label. Only mode names reach the UI, never model names.
 import { selectedSources } from "./conversation";
 import { germanRulesQuestion } from "./german-rules";
+import { AttestationBusyError } from "./providers/inference-client";
 import { IncompleteReplyError } from "./reply-stream";
 import { needsCurrentInformation } from "./when-to-search";
 import {
@@ -155,7 +156,9 @@ const RETRY_CODES = new Set([
 /**
  * One retry with the backup model only when no answer text arrived and the failure means the
  * model was unavailable. Never after a stop by the user or partial text. HTTP 429 is the relay's
- * own limit (allowance, spend, one request at a time) and is never retried. Nor is a retry
+ * own limit (allowance, spend, one request at a time) and is never retried. Nor is a refused or
+ * queued-out verification (AttestationBusyError): the backup must verify too, and retrying at
+ * once turned a burst into a storm (live test, 13 November). Nor is a retry
  * started with less of the message's time left than the mode allows for a first word: it
  * could not finish, so the time-out is reported instead.
  */
@@ -166,7 +169,7 @@ export function shouldRetryOnBackup(
   msLeft: number,
   mode: AnswerMode | undefined,
 ): boolean {
-  if (stoppedByUser || textArrived) return false;
+  if (stoppedByUser || textArrived || error instanceof AttestationBusyError) return false;
   if (msLeft < replyLimits(mode).firstTextMs) return false;
   if (error instanceof IncompleteReplyError)
     return (

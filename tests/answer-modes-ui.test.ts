@@ -30,8 +30,11 @@ it("shows Auto, Fast and Thinking only, remembers the choice, and labels a backu
           if (!id.replaceAll("\\", "/").endsWith("/src/inference.ts")) return;
           // The primary model rejects every request; the backup answers.
           return `import { IncompleteReplyError } from "./reply-stream";
+          import { AttestationBusyError } from "./providers/inference-client";
           export async function streamReply(c,q,csrf,signal,chunk,status,calc,kept,choice,mode){
             (window.__calls ??= []).push({ choice, mode });
+            // The verification was refused for load (attestation queue, 13 November).
+            if (c.messages.at(-1).text.includes("SYNTHETIC_BUSY")) throw new AttestationBusyError();
             if (choice !== "backup")
               throw new IncompleteReplyError("The protected service did not accept this request and gave no answer. No automatic retry was made.", undefined,
                 { code: "HTTP_UPSTREAM_REJECTED", events: 0, usageEvents: 0, textCharacters: 0, finish: "NONE" });
@@ -105,6 +108,14 @@ it("shows Auto, Fast and Thinking only, remembers the choice, and labels a backu
     ).toEqual(["thinking", "thinking", "fast", "fast", "thinking", "thinking"]);
     // The remembered choice is unchanged: the override was for one request.
     await ui(page.getByRole("combobox", { name: "Answer mode" })).toHaveValue("auto");
+
+    // A verification refused for load: no backup retry (it would verify too), a plain message.
+    await page.getByLabel("Message CometRow").fill("SYNTHETIC_BUSY: what is the capital of France?");
+    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await ui(page.getByText("CometRow is busy checking the secure server. Please try again in a minute.")).toBeVisible();
+    expect(
+      (await page.evaluate(() => (window as unknown as { __calls: { choice: string }[] }).__calls)).slice(6),
+    ).toEqual([{ choice: "primary", mode: "fast" }]);
 
     // No model name anywhere in the page.
     const html = await page.content();

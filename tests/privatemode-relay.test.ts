@@ -368,6 +368,45 @@ it("survives a client that disconnects mid-reply on attestation and keeps servin
   expect((await post(root, "/privatemode/v1/secret", chatHeaders(cookie, status.csrf))).status).toBe(200);
 });
 
+it("attestation goes through one queue: a full queue answers 503 attestation_busy at once, while key exchange and chat are never queued", async () => {
+  const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+  // Attest calls hang upstream, so the burst is used up and the queue fills.
+  upstream.mockImplementation(async (url: URL) =>
+    String(url).endsWith("/attest") ? new Promise<Response>(() => {}) : ok(),
+  );
+  const root = await listen();
+  const { status, cookie } = await session(root);
+  const controller = new AbortController();
+  const answered: Response[] = [];
+  for (let i = 0; i < 14; i++)
+    void fetch(root + "/privatemode/v1/attest", {
+      method: "POST",
+      headers: { Origin: root, ...chatHeaders(cookie, status.csrf) },
+      body: new Uint8Array(32).fill(7),
+      signal: controller.signal,
+    }).then((r) => answered.push(r), () => {});
+  // 6 sent at once, 1 or 2 waiting; the rest cannot be sent within 20 s and are refused at once.
+  await vi.waitFor(() => expect(answered.length).toBeGreaterThanOrEqual(2), { timeout: 3000 });
+  expect(upstream.mock.calls.filter(([url]) => String(url).endsWith("/attest"))).toHaveLength(6);
+  for (const refused of answered) {
+    expect(refused.status).toBe(503);
+    expect(await refused.json()).toEqual({
+      error: "CometRow is busy checking the secure server. Please try again in a minute.",
+      reason: "attestation_busy",
+    });
+  }
+  const started = Date.now();
+  expect((await post(root, "/privatemode/v1/secret", chatHeaders(cookie, status.csrf))).status).toBe(200);
+  expect((await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf))).status).toBe(200);
+  expect(Date.now() - started).toBeLessThan(1000);
+  expect(upstream.mock.calls.filter(([url]) => String(url).endsWith("/attest"))).toHaveLength(6);
+  // The log line carries counts only.
+  expect(warn.mock.calls.flat().join(" ")).toMatch(/^Privatemode attestation queue: \{"sent":6,"waited":[12],"waitedMs":0,"limited429":0,"busy":\d+,"perMinute":6,"lastPauseMs":0\}/);
+  expect(warn.mock.calls.flat().join(" ")).not.toMatch(/csrf|cookie|Bearer|TEST_KEY/i);
+  controller.abort();
+  warn.mockRestore();
+});
+
 it("warns ahead of the dedicated key's recorded expiry", () => {
   const now = Date.parse("2026-11-12T00:00:00Z");
   const at = (days: number) =>

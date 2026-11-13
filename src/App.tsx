@@ -81,6 +81,7 @@ import { AccountUsage } from "./AccountUsage";
 import { SupportPanel } from "./SupportPanel";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
+import { AttestationBusyError } from "./providers/inference-client";
 import { abortable, withDeadline } from "./abortable";
 import { createCalculationSession } from "./calculation-session";
 import {
@@ -782,6 +783,8 @@ export function App() {
         }));
         const said = abort.signal.aborted
           ? "Response stopped. Partial answers are excluded from future context."
+          : error instanceof AttestationBusyError
+            ? error.message
           : error instanceof IncompleteReplyError
             ? `${error.message} ${error.usage ? "Reported usage was retained." : "This request’s cost remains unknown."}`
             : error instanceof Error && error.name === "TimeoutError"
