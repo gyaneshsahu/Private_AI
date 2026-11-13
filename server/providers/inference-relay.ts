@@ -109,6 +109,13 @@ export async function modelNotFound(
   );
 }
 
+/** The operator alert for a refused request: the report's model ID and the status only, no content or account. */
+export function alertModelNotFound(model: string, statusCode: number) {
+  console.warn(
+    `${MODEL_ALERT} the provider answered "model not found" for ${model} (HTTP ${statusCode}). Chat fails for this model; nothing was switched. See docs/model-deprecation-runbook.md.`,
+  );
+}
+
 const adapters = new Map<InferenceProviderId, () => InferenceRelayAdapter>();
 
 export function registerInferenceRelay(

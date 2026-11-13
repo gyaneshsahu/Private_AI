@@ -22,8 +22,8 @@ import { Approvals, fetchPage, type ResearchApprovals } from "./research";
 import { request as upstreamRequest } from "undici";
 import type { UsageMetrics } from "./usage-metrics";
 import {
+  alertModelNotFound,
   inferenceRelayFor,
-  MODEL_ALERT,
   modelNotFound,
   type InferenceRelayAdapter,
 } from "./providers/inference-relay";
@@ -636,10 +636,7 @@ export function createApp(config: Config) {
           const failure = (await modelNotFound(reply.statusCode, upstream.body))
             ? "model-not-found"
             : relay.classifyFailure(reply);
-          if (failure === "model-not-found")
-            console.warn(
-              `${MODEL_ALERT} the provider answered "model not found" for ${admission.model} (HTTP ${reply.statusCode}). Chat fails for this model; nothing was switched. See docs/model-deprecation-runbook.md.`,
-            );
+          if (failure === "model-not-found") alertModelNotFound(admission.model, reply.statusCode);
           res.setHeader("X-PrivateAI-Upstream", failure);
           res.locals.outcome = `upstream_${failure}`;
           res.status(502).json({
