@@ -9,6 +9,7 @@
 // request, and whenever the approved digests or the session's CSRF token change (owner, 12 Nov).
 import { abortable } from "../abortable";
 import {
+  AttestationBusyError,
   registerInferenceClient,
   type ClientPolicy,
   type InferenceClientAdapter,
@@ -41,10 +42,30 @@ export function discardPrivatemodeSession() {
   session?.discard();
 }
 
+/**
+ * The SDK's error when an attest call was refused for load: our relay's busy reply (503) or
+ * Privatemode's own limit (429). The Wasm reports it as plain text, e.g. "updating mesh CA: doing
+ * attest request: unexpected status code: 503", directly or as the cause of a connection error.
+ */
+function attestationBusy(error: unknown) {
+  const { message, cause } = (error ?? {}) as { message?: unknown; cause?: { message?: unknown } };
+  return /attest request: unexpected status code:? (429|503)\b/.test(`${message} ${cause?.message}`);
+}
+
+/**
+ * Our own relay's refusal (429: allowance, spend, one request at a time, three per instance) never
+ * reached Privatemode and says nothing about the verified deployment, so the client is kept.
+ * Privatemode's own refusals carry X-PrivateAI-Upstream. Live check of 13 Nov: discarding on these
+ * refusals added verifications and pushed the attestation allowance over its limit.
+ */
+function ownRelayRefusal(status: unknown, headers: unknown) {
+  return status === 429 && headers instanceof Headers && !headers.has("x-privateai-upstream");
+}
+
 /** Passes the reply through; a read error or an early cancel (stop, refused reply) discards the client. */
 function watchReply(response: Response, onFailure: () => void) {
   if (!response.ok || !response.body) {
-    onFailure();
+    if (!ownRelayRefusal(response.status, response.headers)) onFailure();
     return response;
   }
   const reader = response.body.getReader();
@@ -142,13 +163,26 @@ async function verifySession(
     },
   });
   onStatus("Verifying the protected destination…");
+  let refusal: unknown;
   try {
-    await abortable(client.verify(), signal);
+    await abortable(
+      (async () => {
+        await client.verify();
+        // Without the secret now, the SDK's first chat verifies a second time by itself: two
+        // attest calls per verification instead of one (live check, 13 November).
+        await client.refreshSecret();
+      })().catch((error: unknown) => {
+        refusal = error; // abortable hides the SDK's error; keep it to tell a busy refusal apart
+        throw error;
+      }),
+      signal,
+    );
     // A stop that lands as verification ends still caches nothing.
     signal.throwIfAborted();
   } catch (error) {
     close();
-    throw changed ? new Error(DEPLOYMENT_CHANGED) : error;
+    if (changed) throw new Error(DEPLOYMENT_CHANGED);
+    throw attestationBusy(refusal) && !signal.aborted ? new AttestationBusyError() : error;
   }
   const verified: VerifiedSession = {
     key,
@@ -179,20 +213,22 @@ async function verifySession(
                 .asResponse();
               return watchReply(response, discard);
             } catch (error) {
-              // Any failure (transport, key exchange, refused reply) ends this client.
-              discard();
               // The SDK turns a refused reply into an error; hand the app's stream parser the
               // status and the relay's failure class, as the Tinfoil transport does.
               const { status, headers } = error as {
                 status?: unknown;
                 headers?: unknown;
               };
+              // Any failure (transport, key exchange, refused reply) ends this client, except a
+              // refusal by our own relay before anything reached Privatemode.
+              if (!ownRelayRefusal(status, headers)) discard();
               if (typeof status === "number" && status >= 400 && status <= 599)
                 return new Response(null, {
                   status,
                   headers: headers instanceof Headers ? headers : undefined,
                 });
-              throw error;
+              // The SDK verifies again by itself when its secret lapses; that can be refused too.
+              throw attestationBusy(error) ? new AttestationBusyError() : error;
             }
           },
         };
@@ -220,7 +256,14 @@ export function createPrivatemodeClientAdapter(): InferenceClientAdapter {
         session.discard();
       if (session) return session.destination;
       const fresh = await verifySession(policy, key, signal, onStatus);
-      discardPrivatemodeSession(); // a concurrent verification may have cached one meanwhile
+      // A verification that ran alongside may have cached a client meanwhile, and a request may
+      // be using it: keep that one and close ours. Only a client under another key is replaced.
+      const meanwhile = session as VerifiedSession | undefined; // set during the await
+      if (meanwhile?.key === key) {
+        fresh.discard();
+        return meanwhile.destination;
+      }
+      discardPrivatemodeSession();
       session = fresh;
       return fresh.destination;
     },

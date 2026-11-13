@@ -20,6 +20,7 @@ import {
   shouldRetryOnBackup,
   stillThinkingStatus,
 } from "../src/answer-modes";
+import { AttestationBusyError } from "../src/providers/inference-client";
 import { IncompleteReplyError } from "../src/reply-stream";
 import type { StreamFailureCode } from "../src/stream-failure";
 
@@ -279,6 +280,11 @@ describe("one retry on the backup model", () => {
     expect(
       shouldRetryOnBackup(new DOMException("Operation timed out.", "TimeoutError"), false, false, FULL, "thinking"),
     ).toBe(true);
+  });
+
+  it("never retries a verification refused for load (429 on attest or attestation_busy): the backup must verify too", () => {
+    for (const mode of ["fast", "thinking"] as const)
+      expect(shouldRetryOnBackup(new AttestationBusyError(), false, false, FULL, mode)).toBe(false);
   });
 
   it("never retries after partial text, a stop, the relay's own limits or a broken answer", () => {

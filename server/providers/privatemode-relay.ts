@@ -19,6 +19,7 @@ import express from "express";
 import { request as upstreamRequest } from "undici";
 import { qualifiedModels, type Qualification } from "../../shared/contracts";
 import { serviceDispatcher } from "../network";
+import { createAttestQueue } from "./privatemode-attest-queue";
 import {
   registerInferenceRelay,
   type InferenceRelayAdapter,
@@ -31,6 +32,11 @@ const single = (value: string | string[] | undefined) =>
 const REQUEST_HEADERS = /^(content-type|accept|privatemode-[a-z-]+)$/;
 const REPLY_HEADERS = /^(content-type|privatemode-oae-response-header|x-request-id)$/;
 const KEY_PATHS = ["/privatemode/v1/attest", "/privatemode/v1/secret"];
+/** The relay's reply when an attest call cannot be sent in time; the browser shows a plain message. */
+export const ATTESTATION_BUSY = {
+  error: "CometRow is busy checking the secure server. Please try again in a minute.",
+  reason: "attestation_busy",
+};
 
 function forwardedHeaders(headers: IncomingHttpHeaders) {
   const out: Record<string, string> = {};
@@ -116,6 +122,10 @@ export function createPrivatemodeRelayAdapter(): InferenceRelayAdapter {
     rootPaths: ["/v1/chat/completions", ...KEY_PATHS],
     routes({ qualification, apiKey, manifest }) {
       const router = express.Router();
+      // Counts only: no bodies, paths or account data.
+      const attestQueue = createAttestQueue(undefined, (stats) =>
+        console.warn(`Privatemode attestation queue: ${JSON.stringify(stats)}`),
+      );
       router.get("/privatemode/manifest", (_req, res) => {
         const q = qualification();
         const digest = manifest && createHash("sha256").update(manifest).digest("hex");
@@ -157,13 +167,21 @@ export function createPrivatemodeRelayAdapter(): InferenceRelayAdapter {
             if (!res.writableFinished) abort.abort();
           });
           try {
-            const reply = await upstreamRequest(new URL(req.path, q.origin), {
-              dispatcher: serviceDispatcher,
-              method: "POST",
-              headers: { ...forwardedHeaders(req.headers), authorization: `Bearer ${apiKey}` },
-              body: Buffer.isBuffer(req.body) ? new Uint8Array(req.body) : new Uint8Array(),
-              signal: AbortSignal.any([abort.signal, AbortSignal.timeout(30000)]),
-            });
+            const send = () =>
+              upstreamRequest(new URL(req.path, q.origin), {
+                dispatcher: serviceDispatcher,
+                method: "POST",
+                headers: { ...forwardedHeaders(req.headers), authorization: `Bearer ${apiKey}` },
+                body: Buffer.isBuffer(req.body) ? new Uint8Array(req.body) : new Uint8Array(),
+                signal: AbortSignal.any([abort.signal, AbortSignal.timeout(30000)]),
+              });
+            // Only attestation is rate-limited upstream; key exchange goes straight through.
+            const reply =
+              req.path === KEY_PATHS[0] ? await attestQueue.run(send, abort.signal) : await send();
+            if (reply === "busy") {
+              res.status(503).json(ATTESTATION_BUSY);
+              return;
+            }
             res.status(reply.statusCode);
             for (const [name, value] of Object.entries(reply.headers)) {
               const v = single(value);

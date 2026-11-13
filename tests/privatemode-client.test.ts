@@ -5,8 +5,10 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 const sdk = vi.hoisted(() => ({
   options: [] as Record<string, any>[],
+  instances: [] as unknown[],
   create: vi.fn(),
   verify: vi.fn(async () => undefined),
+  refreshSecret: vi.fn(async () => undefined),
   close: vi.fn(),
 }));
 vi.mock("privatemode-ai", () => ({
@@ -14,12 +16,14 @@ vi.mock("privatemode-ai", () => ({
     chat = { completions: { create: (body: unknown, options: unknown) => ({ asResponse: () => sdk.create(body, options) }) } };
     constructor(options: Record<string, any>) {
       sdk.options.push(options);
+      sdk.instances.push(this);
     }
     verify = sdk.verify;
+    refreshSecret = sdk.refreshSecret;
     close = sdk.close;
   },
 }));
-import { inferenceClientFor } from "../src/providers/inference-client";
+import { AttestationBusyError, inferenceClientFor } from "../src/providers/inference-client";
 import "../src/providers/privatemode-client";
 import "../src/providers/tinfoil-client";
 import {
@@ -55,8 +59,10 @@ afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
   sdk.options.length = 0;
+  sdk.instances.length = 0;
   sdk.create.mockReset();
   sdk.verify.mockReset().mockImplementation(async () => undefined);
+  sdk.refreshSecret.mockReset().mockImplementation(async () => undefined);
   sdk.close.mockReset();
   fetched.length = 0;
 });
@@ -161,6 +167,10 @@ it("(a) two messages within 10 minutes share one verification", async () => {
   await send();
   expect(verifications()).toBe(1);
   expect(sdk.verify).toHaveBeenCalledTimes(1);
+  // The secret is set during verification, so the SDK's first chat does not attest again.
+  expect(sdk.refreshSecret).toHaveBeenCalledTimes(1);
+  expect(sdk.refreshSecret.mock.invocationCallOrder[0]).toBeGreaterThan(sdk.verify.mock.invocationCallOrder[0]);
+  expect(sdk.refreshSecret.mock.invocationCallOrder[0]).toBeLessThan(sdk.create.mock.invocationCallOrder[0]);
   expect(fetched).toEqual(["/api/inference/privatemode/manifest"]);
   expect(sdk.create).toHaveBeenCalledTimes(2);
   expect(sdk.close).not.toHaveBeenCalled();
@@ -224,6 +234,26 @@ it.each([
   await send();
   expect(verifications()).toBe(2);
   expect(sdk.verify).toHaveBeenCalledTimes(2);
+});
+
+const thrown429 = (headers: Headers) => (): Response => {
+  throw Object.assign(Error("429"), { status: 429, headers });
+};
+it.each([
+  ["thrown by the SDK", thrown429(new Headers())],
+  ["returned as a reply", () => new Response(null, { status: 429 })],
+])("our own relay's 429 (%s) keeps the verified client; Privatemode's own 429 does not", async (_name, refusal) => {
+  await send();
+  const refused = await send(policy, refusal);
+  expect(refused.status).toBe(429);
+  expect(sdk.close).not.toHaveBeenCalled();
+  await send();
+  expect(verifications()).toBe(1);
+  // The same status from Privatemode (marked by the relay) still ends the client.
+  await send(policy, thrown429(new Headers({ "x-privateai-upstream": "rejected" })));
+  expect(sdk.close).toHaveBeenCalledTimes(1);
+  await send();
+  expect(verifications()).toBe(2);
 });
 
 it("(c) a failed verification caches nothing; the next message verifies again", async () => {
@@ -315,4 +345,67 @@ it("(g) a stop during verification closes the client and caches nothing", async 
   await send();
   expect(verifications()).toBe(2);
   expect(sdk.create).toHaveBeenCalledTimes(1);
+});
+
+// Attestation queue (owner, 13 November): the SDK reports a refused attest call as plain text.
+const BUSY_TEXT = (status: number) =>
+  `initializing client: offering credential to secret manager: setting secrets: All attempts fail:\n#1: updating mesh CA: doing attest request: unexpected status code: ${status}`;
+
+it.each([429, 503])("a verification refused with %s on attest becomes the plain busy message; nothing is cached or sent", async (code) => {
+  sdk.verify.mockRejectedValueOnce(Error(BUSY_TEXT(code)));
+  const failure = await send().catch((error: unknown) => error);
+  expect(failure).toBeInstanceOf(AttestationBusyError);
+  expect((failure as Error).message).toBe(
+    "CometRow is busy checking the secure server. Please try again in a minute. Nothing was sent.",
+  );
+  expect(sdk.create).not.toHaveBeenCalled();
+  expect(sdk.close).toHaveBeenCalledTimes(1);
+  // Other refusals keep their old handling.
+  sdk.verify.mockRejectedValueOnce(Error("updating mesh CA: doing attest request: unexpected status code: 500"));
+  await expect(send()).rejects.toThrow("Protected operation failed.");
+});
+
+it("the SDK's own re-verification refused on attest (a connection error with the busy cause) is the busy message too", async () => {
+  const destination = await inferenceClientFor("privatemode").verify(policy, new AbortController().signal, () => {});
+  sdk.create.mockRejectedValueOnce(Object.assign(Error("Connection error."), { cause: Error(BUSY_TEXT(503)) }));
+  await expect((await destination.transport()).request("", { method: "POST", body: "{}" })).rejects.toBeInstanceOf(
+    AttestationBusyError,
+  );
+});
+
+it("race fix: a slower verification that ends later keeps the newer cached client and closes only its own", async () => {
+  let releaseSlow!: () => void;
+  sdk.verify.mockImplementationOnce(() => new Promise<undefined>((resolve) => (releaseSlow = () => resolve(undefined))));
+  const adapter = inferenceClientFor("privatemode");
+  const slow = adapter.verify(policy, new AbortController().signal, () => {});
+  await vi.waitFor(() => expect(sdk.verify).toHaveBeenCalledTimes(1));
+  // Meanwhile another request verifies and starts streaming on the newer client.
+  const newer = await adapter.verify(policy, new AbortController().signal, () => {});
+  sdk.create.mockResolvedValueOnce(new Response("data: {}\n\n"));
+  const streaming = await (await newer.transport()).request("", { method: "POST", body: "{}" });
+  releaseSlow();
+  expect(await slow).toBe(newer);
+  expect(sdk.close.mock.contexts).toEqual([sdk.instances[0]]);
+  expect(await streaming.text()).toBe("data: {}\n\n");
+  await send();
+  expect(verifications()).toBe(2);
+});
+
+it("race fix: a stopped request whose cleanup lands after a newer client was cached closes only its own client", async () => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  const start = Date.now();
+  const adapter = inferenceClientFor("privatemode");
+  const old = await adapter.verify(policy, new AbortController().signal, () => {});
+  sdk.create.mockResolvedValueOnce(new Response("data: {}\n\n"));
+  const stopped = await (await old.transport()).request("", { method: "POST", body: "{}" });
+  const reader = stopped.body!.getReader();
+  await reader.read();
+  // The next message verifies a new client (here: the old one expired) before the stop's cleanup runs.
+  vi.setSystemTime(start + PRIVATEMODE_VERIFY_MAX_AGE_MS);
+  const newer = await adapter.verify(policy, new AbortController().signal, () => {});
+  expect(newer).not.toBe(old);
+  await reader.cancel(); // the stopped request's cleanup
+  expect(sdk.close.mock.contexts).toEqual([sdk.instances[0]]);
+  await send();
+  expect(verifications()).toBe(2);
 });
