@@ -1,6 +1,63 @@
-# Pre-alpha checklist — 12 November 2026 (updated at night: Privatemode primary; 13 November evening: alpha = beta scope)
+# Pre-alpha checklist — 12 November 2026 (updated at night: Privatemode primary; 13 November evening: alpha = beta scope; 13 November night: feature scope and cost controls)
 
 **Scope rule (owner, 13 November): alpha = beta, with the new feature scope.** There is no beta and nothing is "later". The column "When" says **before first invitee** or **during alpha, before launch** (real invitees use it before launch). Items for the Tinfoil backup say **only if Tinfoil is used**. An item leaves the scope only by an explicit owner decision. Handoff: `docs/handoff-20261113.md`.
+
+**Update, 13 November, night (owner):** the scope rule stands, with one explicit owner decision on top. The owner named the features that are in this phase and a short list that is later. Both are in the next section.
+
+## 13 November, night: feature scope and cost controls (owner update)
+
+Recorded from the owner's project update of 13 November (night). This is a docs change. Nothing in this section was built or tested by it. "Partly exists" was checked by reading the code under `src/`, `server/` and `shared/` on `codex/development-handoff`. Nothing was run.
+
+- There is one real invite-only test phase (alpha = beta). There is no separate beta.
+- Each feature goes live for invitees behind its own switch. **No per-feature switch exists in the code yet.**
+- The first batch is invited when core chat and file upload (U1) are ready. The rest is added as it lands.
+- Rows U1 to U12 are in the owner's priority order.
+
+Rules for every row (owner):
+- Anything that leaves the device goes only to Privatemode's confidential models (EU).
+- No browser built-in dictation.
+- Browser on-device speech synthesis is allowed for text-to-speech.
+- Images are never stored after the answer.
+- Memory is stored on the device. The server stores no profile.
+
+| # | Item | Why it matters | Who | When (alpha = beta) | Effort | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| U1 | **File upload** (PDF, doc, spreadsheet, code), own switch | Priority 1. The first batch is invited at core chat plus files | Agent | before first invitee | not estimated | **partly exists, switch not built.** Exists, all on the device: text from PDFs with a text layer, up to 20 pages (`src/extraction.worker.ts`); Word `.docx` (`src/docx.ts`); plain text, code, `.csv` and `.tsv` files (`src/document-formats.ts`); limits of 10 MB per file and 60,000 characters (`src/documents.ts`). Missing: Excel `.xlsx` and old `.doc` files are not accepted; a scanned PDF with no text layer is refused; no own switch; not tried on the hosted path |
+| U2 | **Voice-to-text**, own switch | Priority 2 | Agent | during alpha, before launch | not estimated | **not built.** `src/App.tsx` shows a disabled "coming later" button only. Must not use the browser's built-in dictation; audio may go only to a Privatemode confidential model. Not checked: whether Privatemode offers a speech-to-text model |
+| U3 | **Text-to-speech / voice replies**, own switch | Priority 3 | Agent | during alpha, before launch | not estimated | **not built.** No speech synthesis call in `src/`. Browser on-device synthesis is allowed |
+| U4 | **PDF export**, own switch | Priority 3 | Agent | during alpha, before launch | not estimated | **not built.** No PDF writer in the code or in the dependencies |
+| U5 | **Image upload and understanding**, own switch | Priority 4 | Agent | during alpha, before launch | not estimated | **partly exists, switch not built.** Exists, on the device: text is read from a PNG or JPEG (OCR in `src/extraction.worker.ts`, English language data only) and from a camera photo with rotate and crop (`src/photo-capture.ts`, `src/PhotoCapture.tsx`), up to 12 megapixels. Only the recognised text is used; the image does not leave the device. Missing: understanding the image itself (no image is sent to any model today); German OCR language data; the "never stored after the answer" rule for images that are sent; no own switch. Not checked: whether Privatemode offers a model that reads images |
+| U6 | **Projects** (grouped chats, files, instructions), own switch | Priority 5 | Agent | during alpha, before launch | not estimated | **partly exists, switch not built.** Exists: a project is a name only (`src/projects.ts`); create, rename, remove, move a chat into a project and filter chats by project (`src/WorkspaceNavigation.tsx`), saved in the device vault (`src/vault.ts`). Missing: project files, project instructions, no own switch |
+| U7 | **Canvas / artifacts** (editable side panel: documents, tables, small pages, export to PDF), own switch | Priority 5 | Agent | during alpha, before launch | not estimated | **not built.** Needs PDF export (U4) |
+| U8 | **Memory across chats**, own switch | Priority 6 | Agent | during alpha, before launch | not estimated | **not built.** Must be stored on the device; no profile on the server |
+| U9 | **Code execution and data analysis**, own switch | Priority 7 | Agent | during alpha, before launch | not estimated | **not built.** Only exact arithmetic on the device exists (`src/calculator.ts`, `src/arithmetic/`). That is not code execution |
+| U10 | **Deep research** (premium, strict caps), own switch | Priority 8 | Agent | during alpha, before launch | not estimated | **not built.** Exists: a web search and an approved page fetch (`/api/research/*` in `server/app.ts`, `server/research.ts`, `src/assisted-research.ts`). Missing: multi-step research, its caps and its cost weight (K3), no own switch |
+| U11 | **Scheduled tasks and reminders**, own switch | Priority 9 | Agent | during alpha, before launch | not estimated | **not built.** Open design question: where a task runs while the browser is closed, given that the server cannot read content |
+| U12 | **Live voice conversation**, own switch | Priority 10 | Agent | during alpha, before launch | not estimated | **not built.** `src/App.tsx` shows a disabled "coming later" button only. Needs U2 and U3 |
+
+**Cost controls the owner wants before anyone is invited (13 November, night):**
+
+| # | Item | Why it matters | Who | When (alpha = beta) | Effort | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| K1 | Maximum input size and maximum output tokens confirmed | Bounds the cost of one request | Agent (Owner confirms the numbers) | before first invitee | not estimated | **not built** as confirmed values. The report fields exist (`maxInputCharacters`, at most 100,000; `maxOutputTokens`, at most 16,384, per mode; `shared/contracts.ts`). The numbers are not confirmed (owner list step 8 recommends 32,000 input characters), and no limits are set for files, images or voice |
+| K2 | A daily request cap beside the weekly one | One heavy day cannot use the whole week | Agent | before first invitee | not estimated | **not built.** `inference.allowance` has only `requestLimit` and `days` (`server/deployment-config.ts`) |
+| K3 | A cost weight or a cap per feature | Deep research, files, images and voice cost more than a short chat | Agent | before first invitee | not estimated | **not built.** Only the per-mode weight exists (`allowanceCost`, 1 to 10, `shared/contracts.ts`) |
+| K4 | Retries not counted twice where avoidable | Fairness and correct counts | Agent | before first invitee | not estimated | **not built.** Today a message retried after a provider refusal counts twice (N10) |
+| K5 | Weekly reconciliation against the Privatemode portal | The server cannot count Privatemode tokens, so the portal is the only exact figure | Agent writes the procedure, Owner reads the portal | before first invitee | not estimated | **not built.** The weekly review in `docs/alpha-plan-20261113.md` section 6 reads the portal, but no written step compares it with the ledger |
+| K6 | Tell the owner when the free-token balance drops below 0.5M | Pay-as-you-go cannot be switched on yet (P12) | Agent, from the owner's portal readings | before first invitee | not estimated | **not built.** The server cannot read the balance. Owner-reported 13 November: 1.579M of 5M left |
+
+**Open, not decided here:** whether a Thinking request counts 3 or 5 against the allowance. The docs and the draft report say 5 (decision of 13 November). The owner's update of 13 November night says 3. See D19 in `docs/owner-decisions.md`.
+
+**Later, not in this phase (owner, 13 November, night):**
+- connectors (Gmail, Drive, Calendar)
+- browsing and click agents
+- custom assistants
+- image generation
+- video
+- podcast-style audio
+- Word, Excel and PowerPoint creation
+- daily brief
+- live camera and screen sharing
 
 ## Night of 13 November: the alpha is the only test before launch (no beta)
 
@@ -58,8 +115,8 @@ Who: **Owner** (Gyanesh), **Agent** (Claude), **Waiting on a reply** (a supplier
 | A17 | (concerns log) Tinfoil-specific item | Applies only if Tinfoil is chosen | Agent | only if Tinfoil is used | unknown | unknown (description not in the repository) |
 | B19, B20 | No promise beyond the provider's terms; weekly check of the provider's terms | A changed provider term can make our copy untrue | Agent drafts the check, Owner runs it weekly | before first invitee | 2 h | done 12 November: claims mapped to sources (accurate for Tinfoil; D17 for Privatemode), weekly check script with baseline, runbook step |
 | P10 | Dedicated Privatemode alpha key with rate limit, expiry and spend limit | Separates the alpha from testing; caps damage | Owner | before first invitee | 20 min | open: create in the portal; store only on Render (`inference.apiKeyFile`), keep the free development key local; key swap is the secret plus the report's `portalKeyLimit` and a restart |
-| P11 | Privatemode attestation limit: verification per browser session (built), and ask support about the limit | Without it the whole alpha could send only 10-15 messages a minute | Agent built; Owner sends the question | before first invitee (built); the support answer during the alpha | 5 min | session verification live-tested 13 Nov: a single session is fine (20 messages, 0 errors); 3 sessions starting at once got 22 HTTP 429. Adaptive server-side attestation queue and no retry on 429 being built (`attest-queue`); support question still to send |
-| P12 | Privatemode spend budget and app spend ceiling (D5) | The free 5M tokens are nearly spent by testing; the app books unmetered requests at worst case | Owner | before first invitee | 10 min | open: recommended (corrected 13 Nov) EUR 200 per month at Privatemode with a 90 % alert, and about USD 250 per 7-day window in the report for 10 invitees, because every request is booked at Thinking's worst case (`docs/owner-decisions.md` step 3) |
+| P11 | Privatemode attestation limit: verification per browser session (built), and ask support about the limit | Without it the whole alpha could send only 10-15 messages a minute | Agent built; Owner sends the question | before first invitee (built); the support answer during the alpha | 5 min | session verification live-tested 13 Nov: a single session is fine (20 messages, 0 errors); 3 sessions starting at once got 22 HTTP 429. Adaptive server-side attestation queue and no retry on 429 being built (`attest-queue`); support question still to send. **Owner-reported 13 Nov night, not verified:** the question was asked in the same email as the billing question; no answer yet |
+| P12 | Privatemode spend budget and app spend ceiling (D5) | The free 5M tokens are nearly spent by testing; the app books unmetered requests at worst case | Owner | before first invitee | 10 min | open: recommended (corrected 13 Nov) EUR 200 per month at Privatemode with a 90 % alert, and about USD 250 per 7-day window in the report for 10 invitees, because every request is booked at Thinking's worst case (`docs/owner-decisions.md` step 3). **Owner-reported 13 Nov night, not verified:** 1.579M of 5M free tokens left; pay-as-you-go cannot be enabled yet because the billing form needs a VAT ID and there is no registered company; support was asked, no answer yet |
 | P13 | CI green on the development line before any merge or deploy | A red line hides real faults | Agent | before first invitee | - | done 12 Nov: `06e1dca` green (container smoke fixed: the runtime image lacked `src/identifier-masking.ts`) |
 | P14 | Thinking time-outs on long answers | Answers never arrived (90 s limit, a doomed retry) | Agent | before first invitee | - | done 13 Nov: Thinking at high effort (16/16 complete vs 14/16 at max, median first word 4 s), per-mode limits (Fast 30 s / 90 s, Thinking 120 s / 300 s), no doomed retry, "Still thinking" status (`docs/thinking-timeouts-20261113.md`) |
 | P15 | Masking false positive ("1 phone number" with no number) | A wrong privacy notice erodes trust | Agent | during alpha, before launch | - | done 13 Nov: our own helpline numbers were masked once a reply repeated them; allowlist for our public helplines on every turn; dotted date-times and slash chains no longer taken as numbers (`44ec682`) |

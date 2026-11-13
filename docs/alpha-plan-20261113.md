@@ -6,11 +6,24 @@ The owner decided (13 November) that the invite-only alpha is the only test befo
 
 Sources checked for this plan: `docs/owner-decisions.md`, `docs/pre-alpha-checklist.md`, `docs/week-one-monitoring.md`, `docs/privatemode-attestation-limit-20261112.md`, `docs/thinking-timeouts-20261113.md`, `docs/german-rules-20261113.md`, `evaluation/german-rules-40-20261113/SUMMARY.md`, the launch-gap audit of 13 November, and the code in `server/`, `src/` and `shared/` on `codex/development-handoff` (`b495c16`). Nothing was run live.
 
+## Scope of this phase: staged rollout behind switches (owner update, 13 November, night)
+
+Recorded from the owner's update. Nothing in this section is built or verified by it. Feature status, row by row: `docs/pre-alpha-checklist.md` rows U1 to U12 and K1 to K6.
+
+- **One phase.** This invite-only alpha is the only real test (alpha = beta). There is no separate beta.
+- **First batch.** The first invitees come in as soon as core chat and file upload (U1) are ready, and the cost controls K1 to K6 are in place.
+- **Staged rollout.** Every other feature goes live for invitees behind its own switch, as it lands. No per-feature switch exists in the code yet.
+- **Order** (owner's priority): files and PDF, then voice-to-text, then text-to-speech and PDF export, then images, then Projects and canvas, then memory, then code execution, then deep research (premium, strict caps), then scheduled tasks and reminders, then live voice.
+- **Constraints.** Anything that leaves the device goes only to Privatemode's confidential models (EU). No browser built-in dictation. Browser on-device speech synthesis is fine for text-to-speech. Images are never stored after the answer. Memory is stored on the device; the server stores no profile.
+- **Later, not in this phase:** connectors (Gmail, Drive, Calendar), browsing and click agents, custom assistants, image generation, video, podcast-style audio, Word, Excel and PowerPoint creation, daily brief, live camera and screen sharing.
+- **Proposed, for the owner to approve:** a feature is switched on for the owner's account first, then for invitees. A feature counts as tested for launch only after real invitees used it (section 8).
+- **Budget (owner-reported, not verified):** 1.579M of 5M free Privatemode tokens left. Pay-as-you-go cannot be enabled yet (the billing form needs a VAT ID). The agent tells the owner when the balance drops below 0.5M (K6).
+
 ## 1. How the owner sees the alpha without reading content
 
 | Source | What it holds | What it never holds |
 | --- | --- | --- |
-| Usage ledger in PostgreSQL (queries in `docs/week-one-monitoring.md`) | One row per chat request: account ID, time, state (`transport_complete` or `uncertain`). A Thinking request has 4 extra "unit" rows (it costs 5), so the mode can be counted | Messages, answers, search text, model replies |
+| Usage ledger in PostgreSQL (queries in `docs/week-one-monitoring.md`) | One row per chat request: account ID, time, state (`transport_complete` or `uncertain`). A Thinking request has 4 extra "unit" rows (it costs 5), so the mode can be counted. Open: the owner's update of 13 November night says 3, not 5; not decided (`docs/owner-decisions.md` D19) | Messages, answers, search text, model replies |
 | `"user"` table | How many invitees signed in at least once | Anything about use |
 | Render log | Startup line, purge line, the `Privatemode attestation queue: {...}` counts | Bodies, paths, headers, account data (by design) |
 | Privatemode portal | Tokens and spend per key, free-token balance | Content (encrypted end to end) |
@@ -24,7 +37,7 @@ The allowlist holds at most 10 addresses (`server/deployment-config.ts`). Your o
 
 | Phase | Who | Length | Entry criteria (all must be true) | Exit criteria (all must be true) |
 | --- | --- | --- | --- | --- |
-| 0. Ready | Only you | 2 days with chat on | Owner list steps 1 to 13 done (`docs/owner-decisions.md`); a Privatemode spend budget exists; `inference.allowance` is set in the deployment config; T1 (second account) and T2 (Safari, Firefox, phone) passed; the support contact exists (R6); calendar reminders set for the weekly report renewal and the key expiry; the Privatemode monitoring routine is ready (`docs/week-one-monitoring.md`, 13 November section) | You sent at least 20 messages in each mode on the live site; 0 errors you cannot explain; the morning and evening routine worked twice |
+| 0. Ready | Only you | 2 days with chat on | File upload (U1) ready and the cost controls K1 to K6 in place (owner update, 13 November night; `docs/pre-alpha-checklist.md`); Owner list steps 1 to 13 done (`docs/owner-decisions.md`); a Privatemode spend budget exists; `inference.allowance` is set in the deployment config; T1 (second account) and T2 (Safari, Firefox, phone) passed; the support contact exists (R6); calendar reminders set for the weekly report renewal and the key expiry; the Privatemode monitoring routine is ready (`docs/week-one-monitoring.md`, 13 November section) | You sent at least 20 messages in each mode on the live site; 0 errors you cannot explain; the morning and evening routine worked twice |
 | 1. Two friends | 2 invitees | at least 7 days | Phase 0 exit met; both invitees got the short guide (what is private, the 1-hour sign-out, saved history lives in one browser, how to reach you) | At least 100 messages in total (roadmap bar I2); chat success at least 97 % per mode; 0 privacy incidents; every report answered within 24 hours; one weekly report renewal done with no outage; a 20-minute interview with each friend |
 | 2. Up to 10 | Add invitees in groups of 2 to 4, one group a week | at least 4 weeks | Phase 1 exit met; you decided whether to raise our limit of 3 chats at once per server (today still 3, `server/app.ts`); Privatemode answered the attestation question (owner list step 1), or you accept today's limit; free tokens plus budget cover the next 4 weeks | All launch targets in section 3 met over the **last 2 weeks**; every launch-scope path in section 7 used by real invitees; survey done by at least 7 of the invitees; interviews with at least 5 |
 
@@ -106,6 +119,7 @@ Stop chat with the stop file: from the Render service shell, `touch <stopFile>` 
 | **Privacy incident:** anyone sees another person's data, content appears in a log, or a wrong person got access | Stop chat at once. Remove the address from the allowlist (this blocks only new sign-ins; a session already open keeps working until 1 hour after its last use, so keep chat stopped until then). Follow the breach plan (D16): you have 72 hours to decide whether to report to the authority | Cause found and fixed, a test added, T1 repeated, your written approval |
 | **Wrong-answer pattern:** 2 reports of a confident wrong answer **without a warning** on the same kind of task, or 1 that caused real harm (missed deadline, lost money, health) | Tell invitees not to rely on that kind of answer. Pause chat if health or real harm is involved. Review the answer-side check for that topic | A fix tested on fresh questions, or a clear warning that covers the case |
 | **Cost overrun:** portal spend above EUR 25 in one week, above 50 % of the monthly budget before the 15th, or free tokens gone with no budget | Pause new invitees. Stop chat if the budget would be passed before the month ends | Budget raised by you, or the cause found (for example a test run on the alpha key) |
+| **Free tokens low:** the Privatemode free balance drops below 0.5M (owner's rule, 13 November night; owner-reported balance then: 1.579M) | The agent tells the owner at once. No new invitees while pay-as-you-go cannot be enabled | Paid billing is active, or the owner decides to go on |
 | **Provider outage:** a Privatemode incident, or the attestation pause repeats for more than 15 minutes, or fewer than 8 of 10 messages complete over an hour | Stop chat and tell invitees. No automatic switch: a move to Tinfoil is manual and announced (`docs/provider-switch-20261112.md`) | Privatemode recovered and 10 test messages pass at a quiet hour |
 | **Report or key expired:** chat stops for everyone by itself | Renew the report or the key, restart | `/api/status` shows `"ready":true` |
 | **Serious safety output** (for example self-harm handled badly) | Pause chat, keep only content-free notes, review | Safety case re-graded by you |
@@ -121,7 +135,8 @@ Stop chat with the stop file: from the Render service shell, `touch <stopFile>` 
 - Real cost per user unknown, or above what the price or free plan can carry.
 - A launch-scope path that real invitees never used in the alpha. With no beta, each one must be used here first:
   - web search in production (possible since 13 November with `inference.searchKeyFile`; on or off is your decision R5);
-  - the launch language (the app is English only today);
+  - the launch language (German and English are built; German is off by default until the legal read, build setting `VITE_GERMAN_UI=1`);
+  - each in-scope feature, switched on for invitees (`docs/pre-alpha-checklist.md` rows U1 to U12);
   - an open or waitlist sign-up (today: allowlist of at most 10);
   - payments, if launch is paid;
   - self-service account closure (today it needs email, which is off);

@@ -4,11 +4,50 @@ Running list kept while the owner is away (from 12 November 2026). Each entry na
 
 ## What needs you before the alpha, in order (updated 13 November)
 
-**Scope rule (owner, 13 November): alpha = beta, with the new feature scope.** There is no beta. Nothing is "later" any more. Every item is either **before the first invitee** or **during the alpha, before launch** (real invitees must use it before launch). An item leaves the scope only by an explicit owner decision. Handoff for the next session: `docs/handoff-20261113.md`.
+**Scope rule (owner, 13 November): alpha = beta, with the new feature scope.** There is no beta. Nothing is "later" any more. Every item is either **before the first invitee** or **during the alpha, before launch** (real invitees must use it before launch). An item leaves the scope only by an explicit owner decision. Handoff for the next session: `docs/handoff-20261113.md`. **Update, 13 November, night:** the owner named the features in this phase and an explicit "later" list (next block).
 
+
+**Owner update of 13 November, night (recorded by the agent; nothing was built or verified by this entry):**
+- **One real invite-only test phase, alpha = beta.** There is no separate beta. Features that were "later" are in scope now. Each one goes live for invitees behind its own switch. The first batch is invited as soon as core chat and file upload are ready. The rest is added as it lands.
+- **In scope now, in priority order:**
+  1. file upload (PDF, doc, spreadsheet, code)
+  2. voice-to-text
+  3. text-to-speech / voice replies, and PDF export
+  4. image upload and understanding
+  5. Projects (grouped chats, files, instructions), and canvas / artifacts (editable side panel: documents, tables, small pages, export to PDF)
+  6. memory across chats
+  7. code execution and data analysis
+  8. deep research (premium, strict caps)
+  9. scheduled tasks and reminders
+  10. live voice conversation
+- **Later, not in this phase:** connectors (Gmail, Drive, Calendar); browsing and click agents; custom assistants; image generation; video; podcast-style audio; Word, Excel and PowerPoint creation; daily brief; live camera and screen sharing. This list is the explicit owner decision that the scope rule above asks for.
+- **Constraints:** anything that leaves the device goes only to Privatemode's confidential models (EU). No browser built-in dictation. Browser on-device speech synthesis is fine for text-to-speech. Images are never stored after the answer. Memory is stored on the device; the server stores no profile.
+- **Confirmed:** allowance 150 requests per 7 days. Production search on (Brave); direct Exa stays stopped. Free, invite-only, one server. Erase deletes request records. Concurrency stays 3. Privatemode primary, Tinfoil backup only, switching manual and announced. German and English interface with a German off-switch, default off (built, `VITE_GERMAN_UI=1`, `docs/i18n-20261113.md`). German legal text is binding.
+- **OPEN: does a Thinking request count 3 or 5 against the allowance?** The docs and the draft report say 5 (your decision of 13 November). Your update of 13 November night says 3. Not decided here; the docs keep 5 until you say which (D19).
+- **Cost controls you want before anyone is invited** (`docs/pre-alpha-checklist.md` rows K1 to K6, all not built): maximum input size and maximum output tokens confirmed; a daily request cap beside the weekly one; a cost weight or cap per feature; retries not counted twice where avoidable; weekly reconciliation against the Privatemode portal; a notice to you when the free-token balance drops below 0.5M.
+- **Privatemode budget (owner-reported, not verified):** 1.579M of 5M free tokens left. Pay-as-you-go cannot be enabled yet: the billing form needs a VAT ID and there is no registered company. Support was asked; waiting. The attestation-limit question went in the same email and is still unanswered.
+- **Known issue 1 (slow Thinking) is explained and closed:** `docs/thinking-slow-20261113.md`.
+- Feature status, row by row (what exists in the code and what is missing): `docs/pre-alpha-checklist.md` rows U1 to U12.
+
+**Owner-only list, in order (owner, 13 November, night).** Only you can do these. The right column points to the step or row with the details.
+
+| Order | What only you can do | Details |
+| --- | --- | --- |
+| 1 | Read the German texts with a native speaker or a lawyer | Step 10; N14; `docs/legal-texts-side-by-side.md`. German is binding, and the German switch stays off until this is done |
+| 2 | Approve the privacy wording and the health consent | Step 4; D2 to D4; L1, L3 |
+| 3 | Business and tax registration | New. Privatemode's billing form needs a VAT ID |
+| 4 | Privatemode billing and the alpha key (rate limit and expiry, separate from the development key) | Steps 2 and 3; P10. Billing waits on item 3 or on support's answer |
+| 5 | Spend budget with a 90 % alert | Step 3; P12, S6 |
+| 6 | Rotate the exposed database password | Step 9; S2 |
+| 7 | Name a breach deputy | D15. The earlier default was no deputy for a 10-person alpha; your update asks for a name |
+| 8 | Safe Browsing review | Step 11; R4; `docs/safe-browsing-20261112.md` |
+| 9 | Device checks | Step 14; T1, T2 |
+| 10 | Score the 30-answer owner sample | Step 15; `evaluation/benchmark-fresh-20261112/owner-sample.md` |
+| 11 | Paste the arithmetic batches into ChatGPT and Claude | Step 15 |
+| 12 | Invitee list and support contact | Step 12; R3, R6 |
 
 **Owner decisions of 13 November (after the overnight report):**
-- **Chat allowance:** 150 requests per 7 days per invitee. **Thinking counts 5** (was 3; set in the report's `modes.thinking.allowanceCost`). Config: `"allowance": { "requestLimit": 150, "days": 7 }`.
+- **Chat allowance:** 150 requests per 7 days per invitee. **Thinking counts 5** (was 3; set in the report's `modes.thinking.allowanceCost`). **Open:** the owner's update of 13 November night says 3; not decided (D19). Config: `"allowance": { "requestLimit": 150, "days": 7 }`.
 - **Web search:** on for the alpha, Brave (`inference.searchKeyFile`). Needs a Brave production key and the search sentences in the privacy wording.
 - **Free for the alpha,** invite-only, one server.
 - **Erase deletes request records too.**
@@ -31,9 +70,9 @@ All of this is on `codex/development-handoff` with CI green, and none of it is l
 
 | # | What you do | My recommendation | Why it is in this place |
 | --- | --- | --- | --- |
-| 1 | **Send the attestation question to Privatemode support** (draft in `docs/privatemode-attestation-limit-20261112.md`) | Send today. Ask whether the limit is per organisation, key or IP; what it is on the Standard tier; and whether it can be raised without Enterprise | The queue keeps the alpha safe, but it caps how many people can start chatting at the same moment. This decides launch capacity, and the answer takes time |
+| 1 | **Send the attestation question to Privatemode support** (draft in `docs/privatemode-attestation-limit-20261112.md`) | **Owner-reported 13 Nov night (not verified): asked in the same email as the billing question; no answer yet.** Earlier text: Send today. Ask whether the limit is per organisation, key or IP; what it is on the Standard tier; and whether it can be raised without Enterprise | The queue keeps the alpha safe, but it caps how many people can start chatting at the same moment. This decides launch capacity, and the answer takes time |
 | 2 | **Create the alpha key** in the Privatemode portal, with a rate limit, an expiry date and a spend limit. Store it **only on Render** (secret file `inference.apiKeyFile`). Keep the free development key in Credential Manager for local work. Tell me the limit and the expiry | Expiry: alpha end plus 2 weeks | Chat cannot run in production without it. Keeping it off the laptop stops tests from eating its limits |
-| 3 | **Money:** a Privatemode spend budget, the app's ceiling `approvedSpendUSD` (D5), and the **chat allowance per invitee** (`inference.allowance`, new 13 Nov: without it nobody can chat) | **Corrected 13 Nov:** EUR 200 per month at Privatemode with an alert at 90 % (worst case for 10 invitees using all 150 requests is about EUR 180 net per month; normal use is far less); allowance 150 requests per 7 days (Thinking counts 5; decided 13 Nov); `approvedSpendUSD` about USD 250 per 7-day report window for 10 invitees (about USD 100 for the first 2 to 4). The app books **every** request, Fast too, at Thinking's worst case (about EUR 0.11 to 0.14), so USD 100 would stop chat for everyone after about 530 to 850 requests in total. The free ~500k tokens last about 200 answers, so the paid budget must exist before the first invitee | Without a budget the alpha stops when the free tokens run out. If the app ceiling is too low, chat stops for everyone |
+| 3 | **Money:** a Privatemode spend budget, the app's ceiling `approvedSpendUSD` (D5), and the **chat allowance per invitee** (`inference.allowance`, new 13 Nov: without it nobody can chat) | **Corrected 13 Nov:** EUR 200 per month at Privatemode with an alert at 90 % (worst case for 10 invitees using all 150 requests is about EUR 180 net per month; normal use is far less); allowance 150 requests per 7 days (Thinking counts 5; decided 13 Nov; **open:** the owner's update of 13 Nov night says 3, see D19); `approvedSpendUSD` about USD 250 per 7-day report window for 10 invitees (about USD 100 for the first 2 to 4). The app books **every** request, Fast too, at Thinking's worst case (about EUR 0.11 to 0.14), so USD 100 would stop chat for everyone after about 530 to 850 requests in total. The free ~500k tokens last about 200 answers, so the paid budget must exist before the first invitee | Without a budget the alpha stops when the free tokens run out. If the app ceiling is too low, chat stops for everyone |
 | 4 | **Approve the Privatemode privacy wording** (`docs/privacy-wording-privatemode-20261112.md`: the D17 sentences, the 10-minute check, automatic search covering rules, fees and deadlines, and the new sentence for "Always search for rules, fees and deadlines" in `shared/privacy-copy.ts`), and decide on the sentence "does not use them to train any AI" | Approve; keep the training sentence with the DPA reference | Users must be told the truth for the provider in use |
 | 4b | **Web search on or off for the alpha** (R5). Production can now take a Brave key file (`inference.searchKeyFile`, 13 Nov) | **On.** The German-rules safety (search-first, always-search, official sources) only works with search, and with no beta it must be tried by real people now. Needs a Brave production key and its terms, and the search sentences in step 4 | Without search, the biggest trust risk found in testing stays unprotected |
 | 5 | **Accept the four open report checks in writing** (GPU checked only on Privatemode's side; AMD/Intel revocation in the Wasm unknown; no per-request metering; attestation freshness up to 10 minutes) and **confirm the repository name** `edgelesssys/privatemode-public` | Accept for the invite-only alpha | I then finalise the report with the key limits from step 2, and you sign it (valid 7 days, renewed weekly) |
@@ -53,7 +92,7 @@ All of this is on `codex/development-handoff` with CI green, and none of it is l
 | Decision | My recommendation | Why now |
 | --- | --- | --- |
 | **Free or paid at launch** (audit G2: billing exists only as a Stripe test-mode rehearsal, and production refuses it) | Decide in the first alpha week. If paid, live payments (VAT, withdrawal consent, cancellation button) must run with invitees before launch | Payments are the riskiest launch path and cannot be tried for the first time at launch |
-| **German interface** (audit G8) | **Decided and built 13 Nov** (`docs/i18n-20261113.md`). **Flag default off** (owner): switch it on after the legal read of the German texts. The flag itself is still to be built | The market is Germany; invitees must use German during the alpha, before launch |
+| **German interface** (audit G8) | **Decided and built 13 Nov** (`docs/i18n-20261113.md`). **Flag default off** (owner): switch it on after the legal read of the German texts. The flag is built (13 Nov night): build setting `VITE_GERMAN_UI=1` | The market is Germany; invitees must use German during the alpha, before launch |
 | **Open sign-up and capacity** (audit G5: allowlist of at most 10, one 0.5 CPU instance, limits held in memory) | **Decided for the alpha:** invite-only, one server, 3 chats at once. **Open for launch:** a waitlist or open sign-up, and shared limits in the database, built and tried during the alpha | Capacity beyond one instance needs shared limits (a redesign), so it must be planned now |
 | **Privacy policy fixes** (audit G7: the contact section says an account can be closed there, the deletion section says it cannot; no legal basis per purpose; no rights section; browser storage not described) | Let me draft the corrected text for your legal read | The policy must be true on day one of the alpha |
 | **Erasure requests** (audit G6: Google-only users cannot close their account) | **Decided 13 Nov: erase deletes request records too.** Use the operator procedure (built 13 Nov: `scripts/account-operator.ts` prints SQL, you review and run it; steps in `docs/invited-trial-runbook.md`). It erases request records too, although they are otherwise kept 90 days: no legal duty to keep them while there is no billing. Confirm that, and revisit when paid billing starts (tax records) | A person can ask for erasure at any time (GDPR Art. 17) |
@@ -130,3 +169,4 @@ Order = what unblocks the most first. My recommended default is in each row. Det
 | D16 | Approve the record of processing (`docs/art30-record-draft-20261112.md`) and the breach plan (`docs/breach-plan-draft-20261112.md`), both drafts. | Drafts in `docs/`, not acted on. | F1 |
 | D17 | If Privatemode is chosen, four sentences of the approved privacy statement must change (cache wording, metadata retention including permanent per-key token counts, soft spending limits, the browser-check gap), listed in `docs/provider-promises-20261112.md`. | The statement stays as approved; it is accurate for Tinfoil. | B19 |
 | D18 | Secret scan in CI. | **Resolved 12 November, no decision needed:** built as a small in-house script (`scripts/secret-scan.mjs`), no new dependency; history of all branches searched once, nothing found. | A9 |
+| D19 | **Open (13 November, night):** does a Thinking request count 3 or 5 against the allowance? The decision of 13 November says 5. The owner's update of 13 November night says 3. | 5 stays in the docs and in the draft report (`modes.thinking.allowanceCost`) until the owner says which. | `docs/qualification-report-draft-privatemode-20261112.md`, step 3 |
