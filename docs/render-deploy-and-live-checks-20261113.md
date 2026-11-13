@@ -111,7 +111,7 @@ Copy the values for `peerCertificateSha256` and `allowedEmails` from your **curr
     "manifestFile": "/etc/secrets/privatemode-manifest.json",
     "searchKeyFile": "/etc/secrets/brave-search.key",
     "noticeFile": "/tmp/cometrow-notice.txt",
-    "allowance": { "requestLimit": 150, "days": 7 }
+    "allowance": { "requestLimit": 150, "days": 7, "dailyLimit": 40 }
   }
 }
 ```

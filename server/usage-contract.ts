@@ -37,6 +37,8 @@ export interface UsageLedger {
   startAutoAllowance?(accountId: string, days: number, requestLimit: number): Result<boolean>;
   /** Reserves `units` (default 1) of the allowance for one request, all or none. */
   reserve(accountId: string, requestId: string, units?: number): Result<boolean>;
+  /** Allowance units this account reserved in the last `windowMs`, whatever their outcome (daily cap). */
+  usedInLast?(accountId: string, windowMs: number): Result<number>;
   dispatch(accountId: string, requestId: string): Result<void>;
   /** Completed-request metering for one of the account's own requests; another account's request ID reads as absent. */
   metrics(

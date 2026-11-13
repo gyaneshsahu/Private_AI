@@ -272,6 +272,41 @@ it("an owner-set automatic allowance: a signed-in invitee can chat at once, is c
   usage.close();
 });
 
+it("a daily cap beside the period allowance: Thinking's cost counts, the refusal says so and nothing is forwarded", async () => {
+  upstream.mockImplementation(async () => ok());
+  const { root, usage, signIn } = await signedIn({ autoAllowance: { requestLimit: 50, days: 7, dailyLimit: 4 } });
+  const account = await signIn();
+  const { status, cookie } = await session(root, account.cookie);
+  const send = async (model: string, mode: string) => {
+    const chat = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf, model, mode));
+    const body = await chat.text();
+    await vi.waitFor(() => expect(usage.summary(account.accountId)).toMatchObject({ pending: 0 }));
+    return { status: chat.status, body };
+  };
+  const cost = privatemodeReport().modes!.thinking.allowanceCost;
+  expect((await send("glm-5.3", "thinking")).status).toBe(200);
+  // Fast requests fill the day up to the cap of 4.
+  for (let used = cost; used < 4; used++) expect((await send("glm-5.3-flash", "fast")).status).toBe(200);
+  const sent = upstream.mock.calls.length;
+  const capped = await send("glm-5.3-flash", "fast");
+  expect(capped.status).toBe(429);
+  expect(capped.body).toContain("daily request limit");
+  expect(upstream).toHaveBeenCalledTimes(sent);
+  // The period allowance is far from used up: only the day is full.
+  expect(usage.summary(account.accountId)).toMatchObject({ state: "active", used: 4 });
+  usage.close();
+});
+
+it("refuses an encrypted body far larger than the allowed input could be, before any allowance is used", async () => {
+  const root = await listen();
+  const { status, cookie } = await session(root);
+  const limit = Math.max(65_536, privatemodeReport().maxInputCharacters * 8);
+  const big = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf), new Uint8Array(limit + 1).fill(7));
+  expect(big.status).toBe(413);
+  expect((await big.json()).error).toContain("too large");
+  expect(upstream).not.toHaveBeenCalled();
+});
+
 it("counts outcomes per mode and refusals by class, with fixed names and nothing that identifies anyone", async () => {
   upstream.mockImplementation(async () => ok());
   const { root, usage, signIn } = await signedIn({ autoAllowance: { requestLimit: 1, days: 7 } });

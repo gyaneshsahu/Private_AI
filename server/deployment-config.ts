@@ -43,6 +43,8 @@ const schema = z
           .object({
             requestLimit: z.number().int().min(1).max(10_000),
             days: z.number().int().min(1).max(31),
+            /** Most allowance units in any rolling 24 hours; absent means only the period limit. */
+            dailyLimit: z.number().int().min(1).max(10_000).optional(),
           })
           .strict()
           .optional(),

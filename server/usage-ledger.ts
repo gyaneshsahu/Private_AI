@@ -156,6 +156,14 @@ export class SqliteUsageLedger implements UsageLedger {
       unmeteredRequests: Number(row.unmetered),
     };
   }
+  usedInLast(accountId: string, windowMs: number): number {
+    id.parse(accountId);
+    return Number(
+      this.db
+        .prepare("SELECT COUNT(*) AS used FROM usage_requests WHERE account_id=? AND created_at>?")
+        .get(accountId, this.now() - windowMs)!.used,
+    );
+  }
   reserve(accountId: string, requestId: string, units = 1): boolean {
     id.parse(accountId);
     id.parse(requestId);

@@ -74,7 +74,7 @@ export interface Config {
    * Owner-set allowance each signed-in account gets automatically: a new period of `days`
    * starts whenever the account has no current one. Absent means none is created (as before).
    */
-  autoAllowance?: { requestLimit: number; days: number };
+  autoAllowance?: { requestLimit: number; days: number; dailyLimit?: number };
   /** File whose text is shown to every user as a notice; missing or empty means none. Re-read every 30 s. */
   noticeFile?: string;
   /** Unmounted consumer composition. Candidate mode never accepts upstream credentials. */
@@ -463,6 +463,13 @@ export function createApp(config: Config) {
         });
         return;
       }
+      // The body is encrypted, so its size is the only input bound the server can enforce: 8 bytes
+      // per allowed character covers UTF-8, JSON escaping and the encryption overhead, and stops a
+      // modified browser from sending many times the allowed input on one allowance unit.
+      if (req.body.length > Math.max(65_536, q.maxInputCharacters * 8)) {
+        res.status(413).json({ error: "This message is too large. No request was forwarded." });
+        return;
+      }
       const relay = relayFor(q);
       const admission = relay.admit(req.headers, req.body, q);
       if (!admission.ok) {
@@ -551,6 +558,21 @@ export function createApp(config: Config) {
         if (config.usage) {
           await ensureAllowance(accountId);
           try {
+            // Daily cap beside the period allowance (owner, 13 November): a rolling 24 hours, so
+            // no time zone is involved. An unknown count refuses, like unknown allowance.
+            const daily = config.autoAllowance?.dailyLimit;
+            if (
+              daily &&
+              accountId &&
+              (!config.usage.usedInLast ||
+                (await config.usage.usedInLast(accountId, 86_400_000)) + tier.allowanceCost > daily)
+            ) {
+              res.locals.outcome = "refused_daily";
+              res.status(429).json({
+                error: "The daily request limit is reached. It frees up within 24 hours. No request was forwarded.",
+              });
+              return;
+            }
             if (
               !accountId ||
               !(await config.usage.reserve(

@@ -13,6 +13,8 @@ const GERMAN: Record<string, string> = {
     "Für dieses Konto läuft bereits eine Anfrage.",
   "Three requests are already running.": "Es laufen bereits drei Anfragen.",
   "No request allowance is available. No request was forwarded.": `Ihr Kontingent ist aufgebraucht. ${NOTHING_SENT}`,
+  "The daily request limit is reached. It frees up within 24 hours. No request was forwarded.": `Das Tageslimit für Anfragen ist erreicht. Es wird innerhalb von 24 Stunden wieder frei. ${NOTHING_SENT}`,
+  "This message is too large. No request was forwarded.": `Diese Nachricht ist zu groß. ${NOTHING_SENT}`,
   "The approved spending limit for this provider review is reached. No request was forwarded.": `Das freigegebene Ausgabenlimit für diese Anbieterprüfung ist erreicht. ${NOTHING_SENT}`,
   "Usage controls unavailable. No request was forwarded.": `Die Nutzungskontrolle ist nicht verfügbar. ${NOTHING_SENT}`,
   "Private chat is paused by the operator. No request was forwarded.": `Der private Chat ist vom Betreiber pausiert. ${NOTHING_SENT}`,

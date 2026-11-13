@@ -65,7 +65,7 @@ export interface ProductionInferenceConfig {
   /** The approved Privatemode manifest, when the report names Privatemode. */
   providerManifest?: Uint8Array;
   /** Automatic allowance per signed-in account (owner-set); absent means none. */
-  allowance?: { requestLimit: number; days: number };
+  allowance?: { requestLimit: number; days: number; dailyLimit?: number };
   /** Brave Search key; absent means no web search. Goggles stay off in production. */
   searchKey?: string;
   /** Text file shown to every user as a notice while it is non-empty. */

@@ -189,6 +189,14 @@ export class PostgresUsageLedger implements UsageLedger {
       unmeteredRequests: row.unmetered,
     };
   }
+  async usedInLast(accountId: string, windowMs: number): Promise<number> {
+    usageId.parse(accountId);
+    const result = await this.database.query(
+      "SELECT COUNT(*)::int AS used FROM usage_requests WHERE account_id=$1 AND created_at>$2",
+      [accountId, (await this.now(this.database)) - windowMs],
+    );
+    return result.rows[0].used;
+  }
   async reserve(
     accountId: string,
     requestId: string,
