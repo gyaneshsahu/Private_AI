@@ -60,18 +60,21 @@ export function searchSuggestion(text: string, now = new Date(), rulesAnswer = f
 }
 
 const key = "privateai.autoSearch";
+// The narrower setting (13 November): only German rules, fees and deadlines are searched without
+// asking. Same storage rules: this browser only, off unless switched on.
+export const RULES_KEY = "privateai.autoSearchRules";
 /** Off unless the user switched it on on this device. */
-export function readAutoSearch(): boolean {
+export function readAutoSearch(name = key): boolean {
   try {
-    return localStorage.getItem(key) === "on";
+    return localStorage.getItem(name) === "on";
   } catch {
     return false;
   }
 }
-export function saveAutoSearch(on: boolean): void {
+export function saveAutoSearch(on: boolean, name = key): void {
   try {
-    if (on) localStorage.setItem(key, "on");
-    else localStorage.removeItem(key);
+    if (on) localStorage.setItem(name, "on");
+    else localStorage.removeItem(name);
   } catch {
     // Restricted storage still allows the choice for this session.
   }
@@ -96,6 +99,11 @@ export const WHEN_TO_SEARCH = {
   settingLabel: "Search automatically when a question needs current information",
   settingHelp:
     "Off unless you switch it on. When it is on, a question that looks time-sensitive or is about rules, fees or deadlines is searched before it is answered, without asking each time. Recognised personal details are removed from the search text on this device first, and the exact text sent is shown under the message box. This setting is kept only on this device.",
+  // The narrower setting, in the search-first choice and in the Research tab.
+  rulesSettingLabel: "Always search for rules, fees and deadlines",
+  rulesSettingNote: "Kept only on this device. You can switch it off in Research.",
+  rulesSettingHelp:
+    "Off unless you switch it on. When it is on, a question about rules, fees or deadlines is searched before it is answered, without asking each time; other questions still ask. Recognised personal details are removed from the search text on this device first, and the exact text sent is shown under the message box. This setting is kept only on this device.",
   searched: (query: string) => `Searched the web for: "${query}"`,
   searchedAutomatically: (query: string) =>
     `Searched the web automatically for: "${query}"`,

@@ -33,6 +33,7 @@ import { DOCUMENT_ACCEPT } from "./document-formats";
 import { describeKept, prepareSearchQuery } from "./identifier-masking";
 import {
   readAutoSearch,
+  RULES_KEY,
   saveAutoSearch,
   searchSuggestion,
   WHEN_TO_SEARCH,
@@ -222,6 +223,13 @@ export function App() {
   // When to search (docs/when-to-search-20261112.md): device-only setting, and the
   // exact text a suggestion tap or automatic search sent.
   const [autoSearch, setAutoSearch] = useState(readAutoSearch);
+  const [autoSearchRules, setAutoSearchRules] = useState(() =>
+    readAutoSearch(RULES_KEY),
+  );
+  const chooseAutoSearchRules = (on: boolean) => {
+    setAutoSearchRules(on);
+    saveAutoSearch(on, RULES_KEY);
+  };
   const [searchSent, setSearchSent] = useState("");
   useEffect(() => setSearchSent(""), [conversation.id]);
   const suggestion = useMemo(() => {
@@ -258,6 +266,8 @@ export function App() {
     autoSearch,
     selectedSources(conversation).some((source) => !!source.url),
   );
+  // "Always search for rules, fees and deadlines": where Send would ask, it searches instead.
+  const autoRules = autoSearchRules && askFirst;
   const [choiceFor, setChoiceFor] = useState<string>();
   const choosing = askFirst && choiceFor === input;
   const choiceButton = useRef<HTMLButtonElement>(null);
@@ -2009,7 +2019,7 @@ export function App() {
               </div>
             )}
             <div className="composer-dock">
-              {suggestion && !autoSearch && !busy && (
+              {suggestion && !autoSearch && !(autoRules && !choosing) && !busy && (
                 <div
                   className="notice composer-note search-suggestion"
                   role="region"
@@ -2077,6 +2087,17 @@ export function App() {
                       </button>
                     )}
                   </div>
+                  {choosing && (
+                    <label className="muted">
+                      <input
+                        type="checkbox"
+                        checked={autoSearchRules}
+                        onChange={(e) => chooseAutoSearchRules(e.target.checked)}
+                      />{" "}
+                      {WHEN_TO_SEARCH.rulesSettingLabel}.{" "}
+                      {WHEN_TO_SEARCH.rulesSettingNote}
+                    </label>
+                  )}
                 </div>
               )}
               {searchSent && (
@@ -2110,7 +2131,7 @@ export function App() {
                 className="composer"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (autoSearch && suggestion)
+                  if ((autoSearch || autoRules) && suggestion)
                     void searchThenAnswer(suggestion.value, "auto");
                   else if (askFirst) setChoiceFor(input);
                   else void send();
@@ -2685,6 +2706,15 @@ export function App() {
                 {WHEN_TO_SEARCH.settingLabel}
               </label>
               <p className="muted">{WHEN_TO_SEARCH.settingHelp}</p>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={autoSearchRules}
+                  onChange={(e) => chooseAutoSearchRules(e.target.checked)}
+                />{" "}
+                {WHEN_TO_SEARCH.rulesSettingLabel}
+              </label>
+              <p className="muted">{WHEN_TO_SEARCH.rulesSettingHelp}</p>
             </div>
             {conversation.attachments.some(
               (a) => a.kind === "research" && a.selected,

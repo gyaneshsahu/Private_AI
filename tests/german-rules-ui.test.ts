@@ -9,6 +9,7 @@ import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
 import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
+import { workspaceControl } from "../evaluation/workspace-navigation";
 
 it("asks to search first on Send, warns about unchecked figures, and offers the search again", async () => {
   const vite = await createServer({
@@ -209,6 +210,43 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
       "No official source was found in the search results. Check the responsible authority before relying on these figures.",
     );
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+
+    // "Always search for rules, fees and deadlines": a checkbox in the choice, off by default,
+    // kept only in this browser; ticking it keeps the choice open for this question.
+    await page.evaluate(() => localStorage.removeItem("privateai.autoSearch"));
+    await page.reload();
+    const always = page.getByLabel("Always search for rules, fees and deadlines");
+    await message.fill(question);
+    await send.click();
+    await ui(always).not.toBeChecked();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+    await always.check();
+    expect(await page.evaluate(() => localStorage.getItem("privateai.autoSearchRules"))).toBe("on");
+    await ui(without).toBeVisible();
+    await searchFirst.click();
+    await ui(page.locator("article.assistant")).toHaveCount(1);
+    expect(searches).toHaveLength(5);
+    // Next rules question: searched with its masked text without the choice, and shown.
+    await page.reload();
+    const next = "Wie viele Tage Mindesturlaub habe ich? Mail max.mustermann@example.com";
+    await message.fill(next);
+    await send.click();
+    await ui(page.getByRole("status").filter({ hasText: "Searched the web automatically for:" })).toContainText(
+      "Wie viele Tage Mindesturlaub habe ich? Mail [email address removed]",
+    );
+    await ui(without).toHaveCount(0);
+    expect(searches.at(-1)).toEqual({ kind: "search", value: "Wie viele Tage Mindesturlaub habe ich? Mail [email address removed]" });
+    // Other time-sensitive questions are not covered: Send answers without a search.
+    await page.reload();
+    await message.fill("Wer ist aktuell Bundeskanzler?");
+    await send.click();
+    await ui(page.locator("article.assistant")).toHaveCount(1);
+    expect(searches).toHaveLength(6);
+    // The matching setting in the Research tab, switched off again there.
+    await workspaceControl(page, "Research").click();
+    await ui(always).toBeChecked();
+    await always.uncheck();
+    expect(await page.evaluate(() => localStorage.getItem("privateai.autoSearchRules"))).toBeNull();
   } finally {
     await browser.close();
     await vite.close();

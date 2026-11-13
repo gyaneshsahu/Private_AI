@@ -4,6 +4,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import {
   needsCurrentInformation,
   readAutoSearch,
+  RULES_KEY,
   saveAutoSearch,
   searchSuggestion,
 } from "../src/when-to-search";
@@ -95,10 +96,19 @@ it("keeps automatic search off by default, on only after the user switches it on
   saveAutoSearch(false);
   expect(store.size).toBe(0);
   expect(readAutoSearch()).toBe(false);
+  // "Always search for rules, fees and deadlines": its own key, off by default, this browser only.
+  expect(readAutoSearch(RULES_KEY)).toBe(false);
+  saveAutoSearch(true, RULES_KEY);
+  expect([...store]).toEqual([["privateai.autoSearchRules", "on"]]);
+  expect(readAutoSearch(RULES_KEY)).toBe(true);
+  expect(readAutoSearch()).toBe(false);
+  saveAutoSearch(false, RULES_KEY);
+  expect(store.size).toBe(0);
   vi.stubGlobal("localStorage", {
     getItem: () => {
       throw new Error("blocked");
     },
   });
   expect(readAutoSearch()).toBe(false);
+  expect(readAutoSearch(RULES_KEY)).toBe(false);
 });

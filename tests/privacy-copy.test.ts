@@ -71,6 +71,11 @@ it("keeps the approved Tinfoil statement as the default and mirrors the Privatem
   expect(changed).toEqual(["sealed", "ours", "provider", "limits", "research"]);
   const text = privacyText("privatemode").toLowerCase();
   expect(text).toContain("a question that looks time-sensitive or is about rules, fees or deadlines is searched");
+  // The narrower "always search" setting and the Goggles ranking hint (13 November, proposed).
+  expect(text).toContain("if you switch on only “always search for rules, fees and deadlines”, just those questions are");
+  expect(text).toContain("these settings are off until you switch them on");
+  expect(text).toContain("rank official sites first, by sending a fixed list of those sites; nothing from you is added");
+  expect(privacyText("tinfoil")).not.toContain("rank official sites first");
   expect(privacyText("tinfoil")).toContain("a question that looks time-sensitive is searched");
   for (const tinfoilOnly of [
     "spending limits on the secure server are soft",

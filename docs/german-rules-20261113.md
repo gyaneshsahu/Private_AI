@@ -1,6 +1,24 @@
 # German rules, fees and deadlines (13 November 2026)
 
-## Brave Goggles — 13 November 2026 (latest)
+## "Always search for rules, fees and deadlines" — 13 November 2026 (latest)
+
+### What changed
+
+1. **A checkbox in the search-first choice:** "Always search for rules, fees and deadlines. Kept only on this device. You can switch it off in Research." It is off by default. Ticking it keeps the choice open for the current question, so the user still picks "Search and answer" or "Answer without checking" this time.
+2. **The matching setting in the Research tab,** under automatic search, with this help text:
+   > Off unless you switch it on. When it is on, a question about rules, fees or deadlines is searched before it is answered, without asking each time; other questions still ask. Recognised personal details are removed from the search text on this device first, and the exact text sent is shown under the message box. This setting is kept only on this device.
+3. **Storage:** `privateai.autoSearchRules` in this browser's storage only, like `privateai.autoSearch` (`readAutoSearch(RULES_KEY)` / `saveAutoSearch(on, RULES_KEY)` in `src/when-to-search.ts`). Never sent.
+4. **Behaviour:** where Send would show the choice (a German-rules question, no web results selected, automatic search off), it instead searches the masked text that the choice would have shown, then answers. The status line shows "Searched the web automatically for: …", as automatic search does. Other time-sensitive questions are not covered. The search-again box after an unsearched answer is unchanged.
+5. **Privacy copy (Privatemode draft variant only; the approved Tinfoil text is unchanged):**
+   > If you switch on automatic search, a question that looks time-sensitive or is about rules, fees or deadlines is searched without asking each time; if you switch on only "Always search for rules, fees and deadlines", just those questions are: recognised identifiers are removed on your device first and the exact text sent is shown to you. These settings are off until you switch them on and are kept only on this device.
+
+### Tests
+
+- `tests/when-to-search.test.ts`: the setting's own key, off by default, on and off again, blocked storage.
+- `tests/german-rules-ui.test.ts`, at phone width: the checkbox in the choice is off; ticking it stores the setting and keeps the choice; the next rules question is searched with its masked text without the choice and shown; a time-sensitive question that is not about rules is answered without a search; the Research tab shows the setting and switches it off.
+- `tests/privacy-copy.test.ts`: the Privatemode sentence changed; Tinfoil unchanged.
+
+## Brave Goggles — 13 November 2026
 
 ### Finding
 
