@@ -15,6 +15,8 @@ import { readFileSync } from "node:fs";
 import type { IncomingHttpHeaders } from "node:http";
 import { resolve } from "node:path";
 import { pipeline } from "node:stream/promises";
+import { promisify } from "node:util";
+import { brotliCompress, constants as zlib } from "node:zlib";
 import express from "express";
 import { request as upstreamRequest } from "undici";
 import { qualifiedModels, type Qualification } from "../../shared/contracts";
@@ -53,6 +55,14 @@ function installedWasm() {
     wasm = { bytes, sha256: createHash("sha256").update(bytes).digest("hex") };
   }
   return wasm;
+}
+let wasmBrotli: Promise<Buffer> | undefined;
+/** The same bytes, Brotli-compressed once (29 MB to about 5 MB, under a second); the browser decodes before the SDK checks the hash. */
+function compressedWasm(bytes: Buffer) {
+  wasmBrotli ??= promisify(brotliCompress)(bytes, {
+    params: { [zlib.BROTLI_PARAM_QUALITY]: 5, [zlib.BROTLI_PARAM_SIZE_HINT]: bytes.length },
+  });
+  return wasmBrotli;
 }
 
 /** A warning when the report's dedicated key expires within `days` (the API does not expose expiry). */
@@ -151,7 +161,7 @@ export function createPrivatemodeRelayAdapter(): InferenceRelayAdapter {
         }
         res.type("application/json").send(Buffer.from(manifest));
       });
-      router.get("/privatemode/privatemode-:hash.wasm", (req, res) => {
+      router.get("/privatemode/privatemode-:hash.wasm", async (req, res) => {
         const q = qualification();
         let file: ReturnType<typeof installedWasm> | undefined;
         try {
@@ -165,7 +175,13 @@ export function createPrivatemodeRelayAdapter(): InferenceRelayAdapter {
         }
         // Hash-named, so the content at this path never changes (plan point 6).
         res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-        res.type("application/wasm").send(file.bytes);
+        res.setHeader("Vary", "Accept-Encoding");
+        res.type("application/wasm");
+        if (req.acceptsEncodings("br") === "br") {
+          const brotli = await compressedWasm(file.bytes).catch(() => undefined);
+          if (brotli) return void res.setHeader("Content-Encoding", "br").send(brotli);
+        }
+        res.send(file.bytes);
       });
       router.post(
         KEY_PATHS,

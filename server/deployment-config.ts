@@ -34,6 +34,10 @@ const schema = z
         stopFile: path,
         /** The approved Privatemode manifest; required exactly when the report names Privatemode. */
         manifestFile: path.optional(),
+        /** Brave Search key: web search the user approves (owner decision R5). Absent means no search. */
+        searchKeyFile: path.optional(),
+        /** A text file shown to every user while it holds text (outage, announced provider switch). */
+        noticeFile: path.optional(),
         /** Requests each signed-in account gets per period, renewed when a period ends (owner sets it). */
         allowance: z
           .object({
@@ -189,6 +193,10 @@ export async function loadDeploymentConfig(file: string) {
               qualification: qualification as unknown,
               stopFile: inference.stopFile,
               ...(inference.allowance ? { allowance: inference.allowance } : {}),
+              ...(inference.noticeFile ? { noticeFile: inference.noticeFile } : {}),
+              ...(inference.searchKeyFile
+                ? { searchKey: (await boundedFile(inference.searchKeyFile)).toString("utf8").trim() }
+                : {}),
               ...(inference.manifestFile
                 ? { providerManifest: new Uint8Array(await boundedFile(inference.manifestFile)) }
                 : {}),

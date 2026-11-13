@@ -460,6 +460,8 @@ export interface AppStatus {
   };
   search: boolean;
   publicPageHosts?: string[] | null;
+  /** Plain-text notice the operator shows to everyone (outage, announced provider switch). */
+  operatorNotice?: string;
   /** Draft health-consent step (shared/health-consent.ts); off unless the server enables it. */
   healthConsentDraft?: boolean;
   /** Draft provider section for the privacy policy (shared/provider-disclosure.ts); off unless set. */

@@ -7,6 +7,7 @@ import type { UsageLedger } from "./usage-contract";
 import { spendAllows } from "./spend-guard";
 import { productionAccountTarget } from "../shared/account-design";
 import { once } from "node:events";
+import { readFile } from "node:fs/promises";
 import { z } from "zod";
 import {
   answerModes,
@@ -27,7 +28,7 @@ import { braveSearchProvider, type SearchProvider } from "./providers/search";
 // Registers both adapters; the qualification report's `provider` picks one. Switching is
 // manual (a new report is deployed), never automatic on failure.
 import "./providers/tinfoil-relay";
-import "./providers/privatemode-relay";
+import { privatemodeKeyExpiryWarning } from "./providers/privatemode-relay";
 import {
   serviceDispatcher,
   proxyConfigured,
@@ -73,6 +74,8 @@ export interface Config {
    * starts whenever the account has no current one. Absent means none is created (as before).
    */
   autoAllowance?: { requestLimit: number; days: number };
+  /** File whose text is shown to every user as a notice; missing or empty means none. Re-read every 30 s. */
+  noticeFile?: string;
   /** Unmounted consumer composition. Candidate mode never accepts upstream credentials. */
   consumer?: {
     session: RequestHandler;
@@ -81,8 +84,45 @@ export interface Config {
     billingRouter?: RequestHandler;
   };
 }
+/** Operator warnings about dates that stop chat for everyone: the report's end (48 hours ahead) and the key's expiry. The entry files log them hourly (scheduleExpiryWarnings). */
+export function expiryWarnings(qualification: unknown, now = Date.now()): string[] {
+  const q = qualification as { validUntil?: string; privatemode?: Qualification["privatemode"] } | undefined;
+  const until = Date.parse(q?.validUntil ?? "");
+  const warnings: string[] = [];
+  if (Number.isFinite(until) && until - now < 48 * 3_600_000)
+    warnings.push(
+      until <= now
+        ? `The provider review expired at ${q!.validUntil}. Chat is refused for everyone until a renewed report is deployed.`
+        : `The provider review expires at ${q!.validUntil} (in ${Math.ceil((until - now) / 3_600_000)} hours). Renew and deploy the report before then, or chat stops for everyone.`,
+    );
+  const key = privatemodeKeyExpiryWarning(q, now);
+  if (key) warnings.push(key);
+  return warnings;
+}
+
+/** Logs the expiry warnings now and every hour; returns the stop function. */
+export function scheduleExpiryWarnings(qualification: unknown, log: (line: string) => void): () => void {
+  const run = () => expiryWarnings(qualification).forEach(log);
+  run();
+  const timer = setInterval(run, 3_600_000);
+  timer.unref();
+  return () => clearInterval(timer);
+}
+
 export function createApp(config: Config) {
   const app = express();
+  let notice = { text: "", readAt: 0 };
+  const operatorNotice = async () => {
+    if (!config.noticeFile) return "";
+    if (Date.now() - notice.readAt > 30_000)
+      notice = {
+        readAt: Date.now(),
+        text: await readFile(config.noticeFile, "utf8")
+          .then((text) => text.replace(/[\u0000-\u001f\u007f]+/g, " ").trim().slice(0, 500))
+          .catch(() => ""),
+      };
+    return notice.text;
+  };
   const ensureAllowance = async (accountId: string | undefined) => {
     const auto = config.autoAllowance;
     if (!auto || !accountId || !config.usage?.createAllowance) return;
@@ -114,7 +154,9 @@ export function createApp(config: Config) {
               config.qualification !== undefined &&
               typeof config.usage?.spend === "function"
             )) ||
-          !!config.searchKey ||
+          // Search comes only with qualified production chat, and never with Goggles.
+          (!!config.searchKey && !config.productionInference) ||
+          !!config.searchGoggles ||
           !!config.dev ||
           !!config.consumer.billingRouter
         : new URL(config.origin).hostname !== "localhost"))
@@ -346,6 +388,7 @@ export function createApp(config: Config) {
           : {}),
       },
       search: !!config.searchKey,
+      ...(await operatorNotice().then((text) => (text ? { operatorNotice: text } : {}))),
       publicPageHosts: proxyConfigured ? publicFetchHosts : null,
     });
   });

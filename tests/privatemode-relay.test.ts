@@ -3,7 +3,11 @@
 // CSRF, invite gate, request limits, stop switch and, for chat, allowance, spend guard and one
 // request per account apply exactly as for Tinfoil. Upstream is a test double. Synthetic only.
 import { afterEach, expect, it, vi } from "vitest";
-import { createServer, type Server } from "node:http";
+import { createHash } from "node:crypto";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { createServer, get as httpGet, type Server } from "node:http";
 import { asUndiciRequestResult } from "./fixtures/undici-request";
 const upstream = vi.hoisted(() => vi.fn());
 vi.mock("undici", async (importOriginal) => ({
@@ -11,7 +15,7 @@ vi.mock("undici", async (importOriginal) => ({
   request: (url: unknown, options: unknown) =>
     Promise.resolve(upstream(url, options)).then(asUndiciRequestResult),
 }));
-import { createApp, type Config } from "../server/app";
+import { createApp, expiryWarnings, type Config } from "../server/app";
 import { InviteRegistry } from "../server/invite-registry";
 import { SqliteUsageLedger } from "../server/usage-ledger";
 import { privatemodeKeyExpiryWarning } from "../server/providers/privatemode-relay";
@@ -353,7 +357,26 @@ it("serves the approved manifest only, and the pinned Wasm at its hash-named pat
   expect(wasm.status).toBe(200);
   expect(wasm.headers.get("cache-control")).toBe("public, max-age=31536000, immutable");
   expect(wasm.headers.get("content-type")).toBe("application/wasm");
-  expect((await wasm.arrayBuffer()).byteLength).toBeGreaterThan(1_000_000);
+  // Whatever encoding was used, the decoded bytes the SDK hashes are the pinned file.
+  const decoded = Buffer.from(await wasm.arrayBuffer());
+  expect(createHash("sha256").update(decoded).digest("hex")).toBe(PRIVATEMODE_WASM_SHA256);
+  // On the wire it is about 5 MB instead of 29 MB; a client without Brotli gets the plain file.
+  const wire = (encoding: string) =>
+    new Promise<{ length: number; encoding?: string }>((done, fail) =>
+      httpGet(
+        `${root}/api/inference/privatemode/privatemode-${PRIVATEMODE_WASM_SHA256}.wasm`,
+        { headers: { Cookie: cookie, "Accept-Encoding": encoding } },
+        (res) => {
+          let length = 0;
+          res.on("data", (chunk: Buffer) => (length += chunk.length));
+          res.on("end", () => done({ length, encoding: res.headers["content-encoding"] }));
+        },
+      ).on("error", fail),
+    );
+  const brotli = await wire("br");
+  expect(brotli.encoding).toBe("br");
+  expect(brotli.length).toBeLessThan(decoded.length / 3);
+  expect(await wire("identity")).toEqual({ length: decoded.length, encoding: undefined });
   // Any other name is refused, and nothing else is cacheable.
   const other = await fetch(root + `/api/inference/privatemode/privatemode-${"0".repeat(64)}.wasm`, {
     headers: { Cookie: cookie },
@@ -480,7 +503,7 @@ it("attestation goes through one queue: a full queue answers 503 attestation_bus
   expect(Date.now() - started).toBeLessThan(1000);
   expect(upstream.mock.calls.filter(([url]) => String(url).endsWith("/attest"))).toHaveLength(6);
   // The log line carries counts only.
-  expect(warn.mock.calls.flat().join(" ")).toMatch(/^Privatemode attestation queue: \{"sent":6,"waited":[12],"waitedMs":0,"limited429":0,"busy":\d+,"perMinute":6,"lastPauseMs":0\}/);
+  expect(warn.mock.calls.flat().filter((line) => String(line).startsWith("Privatemode attestation")).join(" ")).toMatch(/^Privatemode attestation queue: \{"sent":6,"waited":[12],"waitedMs":0,"limited429":0,"busy":\d+,"perMinute":6,"lastPauseMs":0\}/);
   expect(warn.mock.calls.flat().join(" ")).not.toMatch(/csrf|cookie|Bearer|TEST_KEY/i);
   controller.abort();
   warn.mockRestore();
@@ -518,6 +541,34 @@ it("one session cannot fill the shared attestation queue: 2 calls at once, 10 pe
   expect((await attest(theirs)).status).toBe(200);
   now.mockRestore();
   expect((await post(root, "/privatemode/v1/secret", chatHeaders(mine.cookie, mine.status.csrf))).status).toBe(200);
+});
+
+it("shows the operator's notice file to everyone as plain text, and nothing when it is missing or empty", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "privateai-notice-"));
+  const noticeFile = join(dir, "notice.txt");
+  try {
+    const missing = await listen({ noticeFile });
+    expect((await session(missing)).status.operatorNotice).toBeUndefined();
+    await writeFile(noticeFile, "  Chat moves to our backup provider on 20 November.\u0007\n<b>x</b>  ");
+    const shown = await listen({ noticeFile });
+    expect((await session(shown)).status.operatorNotice).toBe("Chat moves to our backup provider on 20 November. <b>x</b>");
+    await writeFile(noticeFile, "\n");
+    expect((await session(await listen({ noticeFile }))).status.operatorNotice).toBeUndefined();
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+it("warns the operator 48 hours before the provider review ends, and once it has ended", () => {
+  const now = Date.parse("2026-11-12T00:00:00Z");
+  const report = (hours: number) => ({ validUntil: new Date(now + hours * 3_600_000).toISOString() });
+  expect(expiryWarnings(report(49), now)).toEqual([]);
+  expect(expiryWarnings(report(47), now)[0]).toContain("(in 47 hours)");
+  expect(expiryWarnings(report(-1), now)[0]).toContain("Chat is refused for everyone");
+  expect(expiryWarnings(undefined, now)).toEqual([]);
+  // The key's own expiry is reported alongside.
+  const both = { ...report(10), privatemode: { portalKeyLimit: { expiresAt: new Date(now + 3 * 86400000).toISOString() } } };
+  expect(expiryWarnings(both, now)).toHaveLength(2);
 });
 
 it("warns ahead of the dedicated key's recorded expiry", () => {

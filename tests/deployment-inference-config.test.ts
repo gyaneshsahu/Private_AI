@@ -52,6 +52,14 @@ it("loads production chat only when the inference section is present and enabled
   // The owner-set automatic allowance is passed on as given.
   await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, allowance: { requestLimit: 100, days: 7 } } }));
   expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ allowance: { requestLimit: 100, days: 7 } });
+  // The optional search key is read and trimmed like the API key; absent means no search.
+  const searchKeyFile = await file("search-key", "SYNTHETIC_SEARCH_KEY\n");
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, searchKeyFile } }));
+  expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ searchKey: "SYNTHETIC_SEARCH_KEY" });
+  // The notice file is passed on as a path (re-read while running), so it may not exist yet.
+  const noticeFile = join(root, "notice.txt");
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, noticeFile } }));
+  expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ noticeFile });
   // Relative paths, unknown fields, a bad allowance and an unreadable report refuse the whole configuration.
   for (const bad of [
     { ...inference, stopFile: "chat-stopped" },

@@ -66,6 +66,10 @@ export interface ProductionInferenceConfig {
   providerManifest?: Uint8Array;
   /** Automatic allowance per signed-in account (owner-set); absent means none. */
   allowance?: { requestLimit: number; days: number };
+  /** Brave Search key; absent means no web search. Goggles stay off in production. */
+  searchKey?: string;
+  /** Text file shown to every user as a notice while it is non-empty. */
+  noticeFile?: string;
 }
 
 export function createProductionConsumerCandidate(
@@ -104,6 +108,8 @@ export function createProductionConsumerCandidate(
           inferenceStopped: () => existsSync(inference.stopFile),
           providerManifest: inference.providerManifest,
           ...(inference.allowance ? { autoAllowance: inference.allowance } : {}),
+          ...(inference.searchKey ? { searchKey: inference.searchKey } : {}),
+          ...(inference.noticeFile ? { noticeFile: inference.noticeFile } : {}),
           // Per-account prompt-cache salts stay stable across restarts (derived, not the secret itself).
           cacheSaltSecret: createHash("sha256").update(`cache-salt-key|${config.secret}`).digest("hex"),
         }

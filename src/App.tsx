@@ -1720,6 +1720,11 @@ export function App() {
             server keeps for a short time or the request records we hold.
           </div>
         )}
+        {status?.operatorNotice && (
+          <div role="status" className="notice operator-notice">
+            <strong>Notice from CometRow:</strong> {status.operatorNotice}
+          </div>
+        )}
         {notice && (
           <div role="status" className="notice">
             {notice}

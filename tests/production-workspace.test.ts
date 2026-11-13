@@ -646,6 +646,7 @@ it.skipIf(!enabled)(
     for (const extra of [
       { apiKey: "SYNTHETIC" },
       { searchKey: "SYNTHETIC" },
+      { searchGoggles: true },
       { qualification: {} },
       { dev: true },
     ])

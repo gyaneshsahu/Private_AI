@@ -140,6 +140,17 @@ it("production candidate admits credentials only with the explicit setting and a
     message = (error as Error).message;
   }
   expect(message).not.toContain("without upstream credentials");
+  // A search key is accepted only together with qualified production chat; Goggles never.
+  const guarded = (extra: Partial<Config>) => {
+    try {
+      createApp({ ...base, productionInference: true, usage: ledger("0"), ...extra });
+      return "";
+    } catch (error) {
+      return (error as Error).message;
+    }
+  };
+  expect(guarded({ searchKey: "SYNTHETIC" })).not.toContain("without upstream credentials");
+  expect(guarded({ searchKey: "SYNTHETIC", searchGoggles: true })).toContain("without upstream credentials");
 });
 
 it("reports chat as not ready while the approved spend is reached (T4 rehearsal finding)", async () => {

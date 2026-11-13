@@ -85,6 +85,8 @@ jobs:
         run: node --input-type=module -e 'import { chromium } from "@playwright/test"; console.log("CHROMIUM_PATH=" + chromium.executablePath())' >> "$GITHUB_ENV"
       - run: npm run build
       - run: npm run test:durable
+      # The Render bridge in front of the production runtime (synthetic TLS made by openssl, real Postgres).
+      - run: npx vitest run tests/render-bridge.test.ts
 # This job uses only a disposable service database and synthetic identity/payment
 # fixtures. Hosted ingress, Docker restore, real email and provider acceptance
 # remain separate checks; test:durable rejects missing or skipped selected tests.

@@ -3,6 +3,7 @@ import { loadDeploymentConfig } from "./deployment-config";
 import { prepareProductionRuntime } from "./production-runtime";
 import { createRenderBridge } from "./render-bridge";
 import { scheduleRequestPurge } from "./request-retention";
+import { scheduleExpiryWarnings } from "./app";
 import {
   createDeploymentAttestationAudit,
   installAttestationAudit,
@@ -114,6 +115,9 @@ export async function startDeployment(render = false) {
     stopPurge = scheduleRequestPurge(database, (line) =>
       process.stdout.write(line),
     );
+    // The weekly report and the key stop chat for everyone when they expire: warn hourly ahead.
+    if (config.inference)
+      scheduleExpiryWarnings(config.inference.qualification, (line) => process.stdout.write(`${line}\n`));
   } catch {
     process.stderr.write("CometRow restricted deployment startup failed.\n");
     await stop(1);

@@ -2,9 +2,8 @@ import { readFile } from "node:fs/promises";
 import { createServer as createHttpsServer } from "node:https";
 import { resolve } from "node:path";
 import express from "express";
-import { createApp } from "./app";
+import { createApp, scheduleExpiryWarnings } from "./app";
 import { openInviteRegistry } from "./registry-storage";
-import { privatemodeKeyExpiryWarning } from "./providers/privatemode-relay";
 const port = Number(process.env.PORT ?? "4173");
 if (!Number.isInteger(port) || port < 1024 || port > 65535)
   throw new Error("Invalid PORT");
@@ -30,10 +29,6 @@ if (privatemode)
   providerManifest = await readFile(
     process.env.PRIVATEAI_PROVIDER_MANIFEST_FILE ?? ".local/privatemode-manifest.json",
   ).catch(() => undefined);
-const expiry = privatemodeKeyExpiryWarning(
-  privatemode ? (qualification as Parameters<typeof privatemodeKeyExpiryWarning>[0]) : undefined,
-);
-if (expiry) console.warn(expiry);
 const dev = process.argv.includes("--dev");
 // Local TLS on loopback only: the Privatemode SDK always calls its base URL over HTTPS.
 const localTLS = process.env.PRIVATEAI_LOCAL_TLS === "1";
@@ -43,6 +38,7 @@ const loopback = ["127.0.0.1", "localhost"].includes(new URL(origin).hostname);
 if (localTLS && !loopback) throw new Error("Local TLS is for a loopback origin only.");
 const hosted = origin.startsWith("https:") && !loopback;
 if (hosted && dev) throw new Error("Development middleware cannot be hosted.");
+if (qualification !== undefined) scheduleExpiryWarnings(qualification, (line) => console.warn(line));
 const app = createApp({
   origin,
   accessKey: process.env.PRIVATEAI_ACCESS_KEY,
