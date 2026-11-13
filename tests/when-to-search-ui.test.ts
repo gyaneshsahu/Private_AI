@@ -166,6 +166,8 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
     await message.fill("Explain recursion");
     await send.click();
     await ui(page.locator("article.assistant")).toHaveCount(4);
+    // The reply placeholder can appear before the send is recorded; wait for the fifth send.
+    await ui.poll(() => page.evaluate(() => (window as unknown as { __sent: unknown[] }).__sent.length)).toBe(5);
     expect(searches.length).toBe(before);
     expect(
       (await page.evaluate(() => (window as unknown as { __sent: { question: string; sources: number }[] }).__sent)).map(

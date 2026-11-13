@@ -2,6 +2,7 @@
 // first preferred language (de... gives German, anything else English) until the user picks one
 // with the DE/EN switch; the pick is kept only in this browser. Never from IP, email or account.
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { setTextLanguage } from "./german-rules";
 
 export type Lang = "de" | "en";
 export const LANGS: readonly Lang[] = ["de", "en"];
@@ -45,6 +46,8 @@ let current: Lang | undefined;
 export function uiLang(): Lang {
   return current ?? readLang();
 }
+// The server-safe text modules (german-rules and friends) cannot import this file; they follow it here.
+setTextLanguage(uiLang);
 
 type Text = Record<string, string | ((...args: never[]) => string)>;
 /**
