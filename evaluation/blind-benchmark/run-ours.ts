@@ -68,7 +68,8 @@ const NOTICES = [
   /^This answer may not state every figure/,
   /^This answer gives figures or deadlines/,
   /^Searched the web/,
-  /^Our server also opened the top (official )?result/,
+  /^Our server also opened (the top (official )?result|an official source|a public-interest page|a non-official page)/,
+  /^No official source was found/,
   /^The top result \(/,
 ];
 
@@ -220,8 +221,16 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
   const page = await context.newPage();
   // Failed requests (status and path only, never bodies or headers), for diagnosing failures.
   const httpErrors: string[] = [];
+  let research: Promise<unknown> | undefined;
   page.on("response", (r) => {
     if (r.status() >= 400) httpErrors.push(`${r.status()} ${new URL(r.url()).pathname}`);
+    // The search result list (addresses and the top-page record only, no text), to tell
+    // afterwards whether an official source was among the results.
+    if (r.ok() && new URL(r.url()).pathname === "/api/research/execute")
+      research = r.json().then((b: { sources: { url?: string; evidenceKind?: string }[]; topPage?: unknown }) => ({
+        results: b.sources.filter((s) => s.evidenceKind !== "page").map((s) => s.url),
+        topPage: b.topPage,
+      })).catch(() => undefined);
   });
   try {
     await page.goto(origin, { timeout: 60_000 });
@@ -266,8 +275,11 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
     const links = await answer(page).locator("a[href^='http']").evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).href)).catch(() => [] as string[]);
     // Web citations are buttons that open the source; their accessible name is "<site>: <title>".
     const citations = await answer(page).locator("button.citation").evaluateAll((bs) => bs.map((b) => b.getAttribute("aria-label") ?? "")).catch(() => [] as string[]);
-    const pageRead = /Our server also opened the top (?:official )?result[^:]*: (https:\/\/\S+)/.exec(mainText)?.[1]?.replace(/[.,)]+$/, "");
-    const topPageNote = /(Our server also opened the top (?:official )?result[^\n]*|The top result \([^)]*\)[^\n]*)/.exec(mainText)?.[1];
+    // The page note's wording before and after the official-source preference (13 November).
+    const opened = String.raw`Our server also opened (?:the top (?:official )?result|an official source|a public-interest page|a non-official page)`;
+    const pageRead = new RegExp(String.raw`${opened}[^:]*: (https:\/\/\S+)`).exec(mainText)?.[1]?.replace(/[.,)]+$/, "");
+    const topPageNote = new RegExp(String.raw`(${opened}[^\n]*|The top result \([^)]*\)[^\n]*)`).exec(mainText)?.[1];
+    const noOfficialNote = /No official source was found in the search results\. Check the responsible authority/.test(last.text);
     const searchedQuery = /Searched the web(?: automatically)? for: "([^"]*)"/.exec(mainText)?.[1] ?? (searched ? query : undefined);
     // Strip UI chrome: the "CometRow" heading line and the copy button text.
     const lines = last.text.split("\n").filter((l) => l.trim() && !/^(CometRow|Copy answer)$/.test(l.trim()));
@@ -285,7 +297,7 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
       : undefined;
     return {
       text, notices, failure, ...(httpErrors.length ? { httpErrors } : {}), ttftMs: all[0].ttftMs, totalMs: all.reduce((n, t) => n + t.totalMs, 0), turnTimings: all, model: "(see tiers)", mode, label, searched,
-      suggestionShown: probe.suggestionShown || !!first?.suggestionShown, suggestedQuery: first?.suggestedQuery, suggestionHeading: first?.suggestionHeading, tapped: !!first?.tapped, choiceShown: !!first?.choiceShown, choiceHeading: first?.choiceHeading, choiceQuery: first?.choiceQuery, chose: first?.chose, againShown: last.againShown, searchedQuery, pageRead, topPageNote, links, citations,
+      suggestionShown: probe.suggestionShown || !!first?.suggestionShown, suggestedQuery: first?.suggestedQuery, suggestionHeading: first?.suggestionHeading, tapped: !!first?.tapped, choiceShown: !!first?.choiceShown, choiceHeading: first?.choiceHeading, choiceQuery: first?.choiceQuery, chose: first?.chose, againShown: last.againShown, searchedQuery, pageRead, topPageNote, noOfficialNote, links, citations, research: await research,
     };
   } finally {
     await page.close();
