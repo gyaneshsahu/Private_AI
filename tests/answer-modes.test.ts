@@ -214,6 +214,29 @@ describe("Auto", () => {
     if (reason !== "current") expect(decision.mode).toBe("fast");
   });
 
+  // German and general cues of 13 November (evaluation/german-routing-20261113); synthetic prompts.
+  it.each([
+    ["How do I reverse a list in Python?", "code"],
+    ["Wie lese ich in JavaScript eine Datei ein, ohne dass ein Fehler kommt?", "code"],
+    ["Was sind 20 % von 350?", "maths"],
+    ["Wie groß ist das Volumen eines Würfels mit 4 cm Kantenlänge?", "maths"],
+    ["Wir sind 5 Leute und haben 3 Pizzen. Wie viel bekommt jeder?", "maths"],
+    ["Lohnt sich ein E-Auto für Pendler?", "reasoning"],
+    ["Was spricht bei kleinen Kindern für einen Hund?", "reasoning"],
+    ["Wann muss ich mein Gewerbe abmelden?", "rules"],
+  ])("sends %s to Thinking (%s)", (text, reason) => {
+    expect(autoDecision(ask(text))).toEqual({ mode: "thinking", reason });
+  });
+
+  it.each([
+    ["Meine Mutter ist zusammengebrochen und nicht ansprechbar.", "urgent"],
+    ["He is not responding and his lips are blue, what do I do right now?", "urgent"],
+    ["Formulier das freundlicher: Ich brauche die Rechnung heute.", "rewrite"],
+    ["Kannst du das kürzer machen? Wir treffen uns morgen um zehn.", "rewrite"],
+  ])("answers %s with Fast (%s)", (text, reason) => {
+    expect(autoDecision(ask(text))).toEqual({ mode: "fast", reason });
+  });
+
   it("answers a time-sensitive question with web results on Fast, and long documents on Fast", () => {
     const searched = ask("Who is the current President of the European Commission?");
     searched.attachments.push({

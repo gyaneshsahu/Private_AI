@@ -9,6 +9,22 @@ const TOPIC_DE =
   /(?<!\p{L})(\p{L}*bu(ß|ss)geld\p{L}*|flensburg|geblitzt|blitzer\p{L}*|fahrverbot|innerorts|außerorts|winterreifen|hauptuntersuchung|rote\p{L}* ampel|rotlicht\p{L}*|(handy|alkohol) am steuer|promille\p{L}*|falschpark\p{L}*|parkverstoß|\p{L}*frist\p{L}*|(?!an)\p{L}*kündig\p{L}*|\p{L}*miet\p{L}*|vermieter\p{L}*|nebenkosten\p{L}*|mietkaution|mindesturlaub|urlaubsanspruch|resturlaub|urlaubstage|elternzeit|mutterschutz|probezeit|arbeitsvertrag|krankschreibung|lohnfortzahlung|abmahnung|abfindung|mindestlohn|kurzarbeit\p{L}*|gewährleistung\p{L}*|widerruf\p{L}*|rückgaberecht|umtauschrecht|steuererklärung|steuerklasse|\p{L}*freibetrag|einkommensteuer\p{L}*|finanzamt|kirchensteuer|grundsteuer|hundesteuer|kfz-steuer|kleinunternehmer\p{L}*|werbungskosten|pendlerpauschale|aufbewahr\p{L}*|steuer-id|steuernummer|kindergeld|elterngeld|bürgergeld|wohngeld|bafög|arbeitslosengeld|pflegegeld|\p{L}*rente(n\p{L}*)?|bürgeramt|einwohnermeldeamt|\p{L}*behörde\p{L}*|ausländerbehörde|standesamt|jobcenter|ummeld\p{L}*|wohnsitz\p{L}*|meldebescheinigung|wohnungsgeber\p{L}*|personalausweis|reisepass|\p{L}*ausweis|führerschein\p{L}*|fahrerlaubnis|zulassungsstelle|kfz-zulassung|\p{L}*zulassung|aufenthaltstitel|aufenthaltserlaubnis|einbürgerung|rundfunkbeitrag|krankenkasse\p{L}*|krankenversicherung\p{L}*|zusatzbeitrag|pflegeversicherung|sozialversicherung\p{L}*)(?!\p{L})/iu;
 const TOPIC_EN =
   /\b(speeding( tickets?| fines?)?|traffic fines?|penalty points|red lights?|drink[- ]driving|parking tickets?|notice period|landlords?|tenants?|tenancy|rent (increase|rise|reduction)|security deposit|minimum (annual )?(leave|holiday|vacation)|holiday entitlement|probation(ary)? period|statutory warranty|right of withdrawal|tax returns?|tax allowance|tax-free allowance|income tax|tax class|child benefit|parental (allowance|benefit|leave)|citizen'?s income|unemployment benefits?|pensions?|registration office|register (my )?address|deregister|ID card|identity card|passports?|driving licen[cs]e|driver'?s license|vehicle registration|licen[cs]e plates?|TV licen[cs]e|broadcasting fee|health insurance|residence permit|minimum wage|winter (tyres|tires)|retention period)\b/i;
+// Everyday words for the same topics (13 November, evaluation/german-routing-20261113): what
+// people say instead of the official term (GEZ, Knöllchen, über Rot), and further legal topics.
+// Tax counts as something done (absetzen, zahlen, zurückbekommen), not as an amount: "Netto und
+// Steuer" of the user's own invoice is a sum, and so is "Mehrwertsteuer", which stays out.
+const EVERYDAY_DE =
+  /(?<!\p{L})(gez|rundfunkgebühr\p{L}*|fernsehgebühr\p{L}*|knöllchen|strafzettel\p{L}*|parkknolle|abgeschleppt|radarfalle|(über|bei) rot|parkverbot\p{L}*|tüv|versicherungskennzeichen|steuern? (absetz\p{L}*|zahl\p{L}*|spar\p{L}*|zurück\p{L}*)|steuererstattung|steuerlich\p{L}*|steuerfrei\p{L}*|steuerbescheid\p{L}*|steuerberater\p{L}*|lohnsteuer\p{L}*|erbschaft\p{L}*|schenkungsteuer|grunderwerbsteuer|kapitalertragsteuer|abgeltungsteuer|gewerbesteuer|zweitwohnungsteuer|minijob\p{L}*|midijob\p{L}*|arbeitszeugnis|nachtruhe|mittagsruhe|sonntagsruhe|ruhestörung|mahnung|mahnbescheid|inkasso\p{L}*|schufa|pfändung\p{L}*|erben|unterhalt(s\p{L}*)?|sorgerecht|scheidung|\p{L}+pflicht(en|ig\p{L}*)?|welche rechte|meine rechte|recht auf)(?!\p{L})/iu;
+// Registering, deregistering or re-registering a car, a dog, a business or a home after a move.
+const REGISTER = /(?<!\p{L})(an|ab|um)(zu|ge)?meld\p{L}*/iu;
+const REGISTER_WHAT =
+  /(?<!\p{L})(auto|wagen|fahrzeug|kfz|pkw|motorrad|roller|anhänger|wohnmobil|gewerbe|hund|wohnung|wohnort|wohnsitz|umzug|umzieh\p{L}*|umgezogen|ziehe|ziehen|zieht)(?!\p{L})/iu;
+// A German permission, duty, deadline or rights question about someone with legal standing
+// ("Darf mein Nachbar …", "Bis wann muss ich … mein Chef", "Brauche ich … eine Versicherung").
+const FRAME_DE =
+  /(?<!\p{L})(darf|dürfen|muss (ich|man|er|sie|mein\p{L}*)|müssen (wir|sie)|brauche ich|braucht man|bis wann|wie viel zeit|wie lange (habe|hat|haben|muss|darf)|zusteh\p{L}*|was kostet (mich|uns)|was droht|droht mir|was blüht|erlaubt|verboten|zulässig|rechtens|legal|illegal|verpflichtet|anspruch)(?!\p{L})/iu;
+const PARTY_DE =
+  /(?<!\p{L})(arbeitgeber\p{L}*|chef(in)?|vorgesetzte\p{L}*|firma|händler\p{L}*|verkäufer\p{L}*|onlineshop|nachbar\p{L}*|polizei\p{L}*|amt|ordnungsamt|jugendamt|sozialamt|gesundheitsamt|zoll|gericht\p{L}*|anwalt|hausverwaltung|eigentümer\p{L}*|versicherung|staat|gemeinde)(?!\p{L})/iu;
 // Statute names are case-sensitive: "AO" or "GG" would match ordinary words.
 const STATUTE =
   /§|\b(BGB|StVO|StVG|UStG|EStG|HGB|SGB|BUrlG|KSchG|StGB|ZPO|BetrVG|ArbZG|MuSchG|BEEG|BKGG|FeV|PAuswG|BMG|AufenthG)\b|gesetze-im-internet/;
@@ -25,13 +41,16 @@ const ASK =
 // Rewriting, translating, summarising or writing given text: the rule words belong to the text,
 // not to a question. shortcut: "Write me what my notice period is" is missed; widen if seen.
 const TRANSFORM =
-  /^\s*(please\s+|bitte\s+)?(rewrite|rephrase|reword|translate|summari[sz]e|shorten|proofread|write|draft|compose|turn (this|these)|make (this|these)\b)|(?<!\p{L})(formuliere|übersetze|übersetz|fasse\p{L}*|zusammenfass\p{L}*|kürze|korrigiere den text)(?!\p{L})|^\s*(bitte\s+)?(schreib\p{L}*|entwirf|verfasse)(?!\p{L})/iu;
+  /^\s*(please\s+|bitte\s+)?(rewrite|rephrase|reword|translate|summari[sz]e|shorten|proofread|write|draft|compose|turn (this|these)|make (this|these)\b)|(?<!\p{L})(formulier\p{L}*|übersetze|übersetz|fasse\p{L}*|zusammenfass\p{L}*|kürze|korrigiere den text|(kürzer|freundlicher|höflicher|förmlicher|lockerer) (machen|formulieren|schreiben|fassen))(?!\p{L})|^\s*(bitte\s+)?(schreib\p{L}*|entwirf|verfasse)(?!\p{L})/iu;
 
 /** True when the text asks about German rules, fees, deadlines or administration. */
 export function germanRulesQuestion(text: string): boolean {
   if (TRANSFORM.test(text)) return false;
   const topic =
     TOPIC_DE.test(text) ||
+    EVERYDAY_DE.test(text) ||
+    (REGISTER.test(text) && REGISTER_WHAT.test(text)) ||
+    (FRAME_DE.test(text) && PARTY_DE.test(text)) ||
     TOPIC_EN.test(text) ||
     STATUTE.test(text) ||
     (GERMANY.test(text) && RULE.test(text));

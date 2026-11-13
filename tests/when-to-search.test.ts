@@ -34,6 +34,9 @@ it("detects time-sensitive questions in English and German", () => {
     "Wie hoch ist der aktuelle Leitzins?",
     "Wer ist die Bürgermeisterin von Köln?",
     "Wie viele Monde hat Jupiter?",
+    "Wie wird das Wetter am Wochenende in Köln?",
+    "Is the pharmacy on Main Street still open?",
+    "Ist das Freibad noch geöffnet?",
   ])
     expect(needsCurrentInformation(text, now), text).toBe(true);
 });
@@ -55,6 +58,7 @@ it("leaves timeless questions alone", () => {
     "Why is the sky blue?",
     "Who wrote Faust?",
     "What happened in 1989 in Berlin?",
+    "Warum bekomme ich bei Wetterwechsel Kopfschmerzen?",
   ])
     expect(needsCurrentInformation(text, now), text).toBe(false);
 });

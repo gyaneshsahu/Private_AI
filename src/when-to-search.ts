@@ -10,6 +10,9 @@ const TIME = [
   /\b(right now|as of now|at the moment|these days|this (week|month|year)|last week|still valid|in force|who won|election results?)\b/i,
   /(?<!\p{L})(aktuell\p{L}*|derzeit|zurzeit|momentan|im moment|heute|heutige\p{L}*|neueste\p{L}*|neuste\p{L}*|gestern|wahlergebnis\p{L}*)(?!\p{L})/iu,
   /(?<!\p{L})(diese woche|diesen monat|dieses jahr|in diesem jahr|letzte woche|noch gültig|in kraft|wer hat gewonnen)(?!\p{L})/iu,
+  // Coming days, weather and a state that changes (13 November, evaluation/german-routing-20261113).
+  /\b(tomorrow|this weekend|next week|weather|forecast|still (open|closed|available|in stock))\b/i,
+  /(?<!\p{L})(übermorgen|am wochenende|dieses wochenende|nächste woche|wetter|wettervorhersage|noch (gesperrt|geöffnet|offen|geschlossen|verfügbar|lieferbar))(?!\p{L})/iu,
   // Office holders.
   /\bwho (is|are) (the )?(current )?(ceo|president|prime minister|chancellor|minister|mayor|head|leader|chair|chairman|chairwoman)\b/i,
   /\bwho runs\b/i,

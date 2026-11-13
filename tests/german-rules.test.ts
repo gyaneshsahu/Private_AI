@@ -62,6 +62,12 @@ describe("detector", () => {
     "Wie lange ist die Probezeit im Arbeitsvertrag höchstens?",
     "Wie hoch ist der Zusatzbeitrag meiner Krankenkasse?",
     "Was ist die Kündigungsfrist?",
+    // Everyday German wording (13 November, evaluation/german-routing-20261113).
+    "Ich habe einen Strafzettel bekommen. Kann ich Einspruch einlegen?",
+    "Wann muss ich mein Gewerbe abmelden?",
+    "Darf die Polizei mein Handy durchsuchen?",
+    "Kann ich die neue Brille von der Steuer absetzen?",
+    "Welche Rechte habe ich, wenn die Bahn ausfällt?",
   ])("recognises %s", (text) => expect(germanRulesQuestion(text)).toBe(true));
 
   it.each([
@@ -76,6 +82,11 @@ describe("detector", () => {
     "How much does a coffee cost in Germany?",
     "Ich habe eine Ankündigung für das Sommerfest geschrieben.",
     "What is the capital of France?",
+    // A sign-up, a dose, a boss without a rule, and tax as an amount in the user's own sum.
+    "Wie melde ich mich für den Newsletter an?",
+    "Darf ich Ibuprofen mit Paracetamol nehmen?",
+    "Mein Chef hat mich gelobt. Wie reagiere ich am besten?",
+    "Ein Fahrrad kostet 500 € inklusive 19 % Mehrwertsteuer. Wie viel Steuer ist darin?",
   ])("leaves %s alone", (text) => expect(germanRulesQuestion(text)).toBe(false));
 });
 
@@ -235,7 +246,8 @@ describe("answer-side check", () => {
 
   it("offers the search-again box for an unrecognised question when the answer stated rules", () => {
     const now = new Date("2026-11-13T00:00:00Z");
-    const question = "Was darf mein Chef mir schenken?";
+    // "Was darf mein Chef mir schenken?" is recognised since the German cues of 13 November.
+    const question = "Was ist bei Geschenken vom Chef zu beachten?";
     expect(germanRulesQuestion(question)).toBe(false);
     expect(searchSuggestion(question, now)).toBeUndefined();
     expect(searchSuggestion(question, now, true)).toMatchObject({ value: question, rules: true });

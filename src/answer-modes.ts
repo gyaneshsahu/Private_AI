@@ -80,6 +80,9 @@ const CUES = [
   /\banalysiere/i,
   /\blöse\b/i,
   /vor- und nachteile/i,
+  // Weighing options without the word "compare" (13 November, evaluation/german-routing-20261113).
+  /(?<!\p{L})(was spricht[^.?!\n]{0,40}(?<!\p{L})(für|gegen)|vorteile|nachteile|was ist besser|lohnt sich)(?!\p{L})/iu,
+  /\b(versus|vs\.?|which is better|what's better|worth it)(?!\w)/i,
   /\bthink (hard|carefully|it through)\b/i,
   /\bdenk (gründlich|genau) nach\b/i,
 ];
@@ -92,13 +95,19 @@ const CODE = [
   // A request to write, fix or review code, or code pasted inline.
   /\b(write|fix|refactor|implement|review|optimi[sz]e|port)\b[^.?!\n]{0,60}\b(function|method|class|script|program|code|query|regex|regexp|tests?|component|endpoint|algorithm|sql)\b/i,
   // A language name counts only with a code word ("latest Python release" is not code).
-  /\b(python|typescript|javascript|kotlin|swift|rust|golang|c\+\+|php|ruby|bash|powershell|sql|postgres(ql)?|mysql|sqlite|regex|regexp|node\.js)\b[^.?!\n]{0,80}\b(function|method|class|script|code|query|table|bug|error|tests?|loop|array|list|dict|regex)\b/i,
+  /(?<!\p{L})(python|typescript|javascript|java|kotlin|swift|rust|golang|c\+\+|c#|php|ruby|bash|powershell|sql|postgres(ql)?|mysql|sqlite|regex|regexp|node\.js|react|html|css)(?!\p{L})[^.?!\n]{0,80}(?<!\p{L})(function|method|class|script|code|query|table|bug|error|tests?|loop|array|list|dict|regex|component|useeffect|usestate|hook|props|undefined|null|nan|fetch|promise|async|await|exception|variable|string|object|funktion|methode|klasse|skript|liste|wörterb\p{L}*|schleife|fehler\p{L}*|abfrage|tabelle|objekt|komponente)(?!\p{L})/iu,
+  // The same with the code word first ("duplicates from a list in Python"); German code words too.
+  /(?<!\p{L})(function|method|class|script|code|query|table|bug|error|tests?|loop|array|list|dict|component|undefined|fetch|exception|variable|funktion|methode|klasse|skript|liste|schleife|fehler\p{L}*|abfrage|tabelle|komponente)(?!\p{L})[^.?!\n]{0,80}(?<!\p{L})(python|typescript|javascript|kotlin|swift|rust|golang|c\+\+|c#|php|ruby|bash|powershell|sql|postgres(ql)?|mysql|sqlite|node\.js|react)(?!\p{L})/iu,
   /`[^`\n]+`/,
   /\b(def|function|const|let|var|class|import|return|SELECT|INSERT|UPDATE)\b[^\n]*[(){};=]/,
   /\/\^.+\$\//,
   /(?<!\p{L})(schreib\p{L}*|programmier\p{L}*|korrigier\p{L}*)(?!\p{L})[^.?!\n]{0,60}(?<!\p{L})(funktion|methode|klasse|skript|programm|code|abfrage|regex)(?!\p{L})/iu,
 ];
 const MATHS = /[∫∑√∂]|\b(integral|derivative|equation|Gleichung|Ableitung|Integral)\b/i;
+// A percentage of a number, or geometry with a figure (13 November, evaluation/german-routing-20261113).
+const PERCENT_OF = /\d\s?%\s*(of|von|aus)\s*\d/i;
+const GEOMETRY =
+  /(?<!\p{L})(fläche|umfang|volumen|radius|durchmesser|hypotenuse|winkel|area|circumference|volume|diameter|angle)(?!\p{L})/iu;
 const ARITHMETIC = /\d\s*[-+*/×÷^=]\s*\(?\d/g;
 // A word problem: two or more quantities and something to work out. The arithmetic gate showed
 // Thinking right far more often (82 % vs 48 % on Tinfoil; 90 % vs 48 % on Privatemode).
@@ -109,12 +118,12 @@ const WORK_OUT =
 // Emergencies: speed first. Fast answered the emergency prompts as well as Thinking, without
 // the delay.
 const URGENT =
-  /\b(emergency|unconscious|not breathing|stroke|heart attack|chest pain|overdose|swallowed|seizure|severe bleeding|suicid\w*|kill myself|worst headache)\b|(?<![\d])112(?![\d])|(?<!\p{L})(notfall|bewusstlos|atmet nicht|schlaganfall|herzinfarkt|brustschmerz\p{L}*|verschluckt|krampfanfall|suizid\p{L}*)(?!\p{L})/iu;
+  /\b(emergency|unconscious|not breathing|stroke|heart attack|chest pain|overdose|swallowed|seizure|severe bleeding|suicid\w*|kill myself|worst headache)\b|\b(collapsed|unresponsive|(is not|isn't|not) responding|can't breathe|cannot breathe|choking|anaphyla\w*|poison(ed|ing)?|drank (some )?(bleach|detergent|cleaner|antifreeze))\b|(?<![\d])112(?![\d])|(?<!\p{L})(notfall|bewusstlos|atmet nicht|schlaganfall|herzinfarkt|brustschmerz\p{L}*|schmerzen in der brust|verschluckt|geschluckt|krampfanfall|suizid\p{L}*|umgekippt|zusammengebrochen|reagiert nicht( mehr)?|nicht ansprechbar|keine luft|atemnot|vergiftet|vergiftung|erstickt|allergischer schock)(?!\p{L})/iu;
 
 // Rewriting, translating and summarising given text: the words in that text ("today", "why",
 // a year) are not the user's question. Fast was as good or better on these.
 const TRANSFORM =
-  /^\s*(please\s+)?(rewrite|rephrase|reword|translate|summari[sz]e|shorten|proofread|turn (this|these)|make (this|these)\b[^.?!\n]{0,30}\b(polite|shorter|formal|friendly))\b|(?<!\p{L})(formuliere|übersetze|übersetz|fasse\p{L}*|zusammenfass\p{L}*|kürze|korrigiere den text)(?!\p{L})/iu;
+  /^\s*(please\s+)?(rewrite|rephrase|reword|translate|summari[sz]e|shorten|proofread|turn (this|these)|make (this|these)\b[^.?!\n]{0,30}\b(polite|shorter|formal|friendly))\b|(?<!\p{L})(formulier\p{L}*|übersetze|übersetz|fasse\p{L}*|zusammenfass\p{L}*|kürze|korrigiere den text|(kürzer|freundlicher|höflicher|förmlicher|lockerer) (machen|formulieren|schreiben|fassen))(?!\p{L})/iu;
 
 export type AutoReason =
   | "urgent"
@@ -141,7 +150,11 @@ export function autoDecision(conversation: Conversation): {
   if (
     MATHS.test(text) ||
     (text.match(ARITHMETIC)?.length ?? 0) >= 2 ||
-    ((text.match(QUANTITY)?.length ?? 0) >= 2 && WORK_OUT.test(text))
+    PERCENT_OF.test(text) ||
+    (GEOMETRY.test(text) && /\d/.test(text)) ||
+    // Two figures and something to work out; a figure need not carry a unit ("18 Stücke für 7 Kinder").
+    (Math.max(text.match(QUANTITY)?.length ?? 0, text.match(/\d+([.,]\d+)*/g)?.length ?? 0) >= 2 &&
+      WORK_OUT.test(text))
   )
     return { mode: "thinking", reason: "maths" };
   if (TRANSFORM.test(text)) return { mode: "fast", reason: "rewrite" };
