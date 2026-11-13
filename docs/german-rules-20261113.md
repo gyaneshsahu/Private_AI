@@ -1,5 +1,61 @@
 # German rules, fees and deadlines (13 November 2026)
 
+## Search first by default — 13 November 2026 (later)
+
+### Decision
+
+The owner decided to build search first by default, after the first check: the one-tap search scored 4.25, and answers without it still had 2-3 confident wrong figures in 12.
+
+### What changed (`822a35e`)
+
+1. **Send asks first.** This applies when the detector fires, no web results are selected, automatic search is off, and the masked search text can be shown. Pressing Send then does not answer. The suggestion box turns into an inline choice that shows the exact masked search text, and the primary button gets the focus:
+   - heading: "This is about rules, fees or deadlines, which change. Search the official source first?" followed by "Search the web for:" and the text;
+   - explanation: "One tap sends exactly this text to Brave Search through our server, and our server opens the top result page, preferring an official site. Nothing else from your conversation is sent.";
+   - primary button "Search and answer": this tap is the approval, as before;
+   - secondary button "Answer without checking";
+   - Enter or Space on the focused button chooses. Escape goes back to editing with the draft kept. Editing the draft drops the choice. Nothing is remembered, and nothing new is stored on the server.
+   - Code: `asksBeforeSending` in `src/german-rules.ts`; the box in `src/App.tsx`.
+2. **The box before Send** now has the heading "Rules, fees and deadlines change. Check the official source first." The full stop fixes the double colon before "Search the web for:". Where Send asks first, the box drops "Press Send instead to answer without searching", which is no longer true.
+3. **Sourced-only rule.** It is added to the default product prompt for that turn when the question is a German-rules question and web results are in context:
+   > For this question about German rules, fees or deadlines, state figures, deadlines and legal consequences only if they appear in the web results; for anything they do not cover, say so instead of filling it in.
+
+   This changes the suggested text: "above" was dropped, because the web results come after the system prompt. The variants v1-v4 are unchanged (sha256 test). The web product prompt with the rule fits the 8,000 limit (test).
+4. **Automatic search help** (`src/when-to-search.ts`): "…a question that looks time-sensitive or is about rules, fees or deadlines is searched before it is answered…". The behaviour itself was already in place.
+5. **Privacy copy.**
+   - The automatic-search sentence is in the shared "When you search the web" section, so the approved Tinfoil text mentions it too.
+   - **The Tinfoil text is unchanged and now incomplete. Updating it needs the owner's approval.**
+   - Only the Privatemode draft variant says "a question that looks time-sensitive or is about rules, fees or deadlines is searched without asking each time". Its mirror `docs/privacy-copy-privatemode-20261112.md` is regenerated.
+6. **Runner:** `run-ours.ts --choice search|without`. The default is `without`, which is what Send did before.
+
+### Tests
+
+- `tests/german-rules.test.ts`:
+  - the choice logic (asks only without web results and without automatic search, not for the after-answer box, not without showable text);
+  - the sourced-only rule (with web results only, product prompt only, size limit);
+  - figures written in words.
+- `tests/german-rules-ui.test.ts`, at phone width with the Vite stub:
+  - a non-rules question sends directly;
+  - Send on a rules question shows the choice, focuses "Search and answer" and sends nothing;
+  - Escape goes back to editing;
+  - "Answer without checking" answers without a search, with the warning and the search-again box;
+  - with web results selected, a follow-up is answered directly;
+  - Enter on "Search and answer" searches exactly the shown masked text, then answers;
+  - with automatic search on, no choice is shown.
+- `tests/privacy-copy.test.ts`: Tinfoil unchanged; the Privatemode research sentence changed.
+
+### Measured (Privatemode, Auto, blind-graded; `evaluation/german-rules-20261113/SUMMARY.md`)
+
+| Run | Mean | Confident wrong | Bar |
+| --- | --- | --- | --- |
+| (a) Search first, "Search and answer" | 3.83 | 5 | at least 4.2, at most 1: **missed** |
+| (b) "Answer without checking" | 3.33 | 1 (+4 labelled unchecked) | warning every time: **missed once** (P-G4, figures in words; fixed after the run) |
+| First-check tapped, same grader | 3.83 | 5 | |
+| First-check tapped, first grader | 4.25 | 2 | |
+
+- The choice appeared on 12 of 12 in both runs.
+- This grader was stricter than the first. On the same grader, search first equals the earlier tapped path: the sourced-only rule did not measurably cut side-claim errors.
+- **What remains on the search path is mainly source quality.** The server read official pages for some prompts only. L7-04's "meist vier Wochen" is now cited to a moving-company page. The next lever is the sources, not the prompt.
+
 ## Why
 
 Blind-graded runs on 12-13 November showed that answers on German rules, fees and deadlines are confidently wrong in every mode, on every model and on both providers:
