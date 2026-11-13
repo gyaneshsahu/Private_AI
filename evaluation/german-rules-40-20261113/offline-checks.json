@@ -1,0 +1,415 @@
+{
+  "note": "Offline checks on the U answers (Privatemode, Auto, 'Answer without checking'). detectorWarns: question detector fires and the answer states figures (the warning before the answer-side check). answerSideWarns: answerStatesRules on the answer text. Code at the commit that ran them; no grades here.",
+  "summary": {
+    "answers": 40,
+    "questionDetected": 20,
+    "detectorWarns": 19,
+    "answerSideWarns": 30,
+    "eitherWarns": 30,
+    "answerSideOnly": 11,
+    "appWarningShown": 30,
+    "appMatchesOffline": 40
+  },
+  "byPrompt": {
+    "Q01": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q02": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q03": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q04": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q05": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q06": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q07": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q08": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q09": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q10": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q11": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q12": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q13": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q14": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q15": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q16": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": false,
+      "eitherWarns": false,
+      "appWarningShown": false,
+      "againShown": false
+    },
+    "Q17": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": false,
+      "eitherWarns": false,
+      "appWarningShown": false,
+      "againShown": true
+    },
+    "Q18": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q19": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": false,
+      "eitherWarns": false,
+      "appWarningShown": false,
+      "againShown": false
+    },
+    "Q20": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q21": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q22": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": false,
+      "eitherWarns": false,
+      "appWarningShown": false,
+      "againShown": false
+    },
+    "Q23": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q24": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q25": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q26": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q27": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q28": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": false,
+      "eitherWarns": false,
+      "appWarningShown": false,
+      "againShown": false
+    },
+    "Q29": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q30": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q31": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": false,
+      "eitherWarns": false,
+      "appWarningShown": false,
+      "againShown": false
+    },
+    "Q32": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": false,
+      "answerSideWarns": false,
+      "eitherWarns": false,
+      "appWarningShown": false,
+      "againShown": true
+    },
+    "Q33": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q34": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": false,
+      "eitherWarns": false,
+      "appWarningShown": false,
+      "againShown": true
+    },
+    "Q35": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": false,
+      "eitherWarns": false,
+      "appWarningShown": false,
+      "againShown": false
+    },
+    "Q36": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q37": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q38": {
+      "questionDetected": false,
+      "searched": false,
+      "choiceShown": false,
+      "detectorWarns": false,
+      "answerSideWarns": false,
+      "eitherWarns": false,
+      "appWarningShown": false,
+      "againShown": false
+    },
+    "Q39": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    },
+    "Q40": {
+      "questionDetected": true,
+      "searched": false,
+      "choiceShown": true,
+      "detectorWarns": true,
+      "answerSideWarns": true,
+      "eitherWarns": true,
+      "appWarningShown": true,
+      "againShown": true
+    }
+  }
+}
