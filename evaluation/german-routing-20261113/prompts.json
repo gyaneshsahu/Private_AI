@@ -1,0 +1,545 @@
+{
+  "note": "German routing and detection check, 13 November 2026. Written and frozen before any run (BARS.md). New prompts, none taken or paraphrased from evaluation/german-rules-40-20261113 or the earlier benchmark sets. mode: the mode Auto should choose without web results, by the documented order (docs/routing-and-search-20261112.md). rules: should germanRulesQuestion fire. current: should needsCurrentInformation fire (null on rules prompts: search is suggested there anyway, so it is not scored).",
+  "prompts": [
+    {
+      "id": "DE-01",
+      "lang": "de",
+      "category": "urgent",
+      "prompt": "Mein Mann ist gerade umgekippt und reagiert nicht mehr. Was soll ich tun?",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-02",
+      "lang": "de",
+      "category": "urgent",
+      "prompt": "Mein Sohn hat aus Versehen einen Spülmaschinentab gegessen. Was jetzt?",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-03",
+      "lang": "de",
+      "category": "urgent",
+      "prompt": "Ich habe seit zwanzig Minuten starke Schmerzen in der Brust und mir ist übel.",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-04",
+      "lang": "de",
+      "category": "coding",
+      "prompt": "Wie kann ich in Python eine Liste von Wörterbüchern nach einem Schlüssel sortieren?",
+      "mode": "thinking",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-05",
+      "lang": "de",
+      "category": "coding",
+      "prompt": "Mein JavaScript gibt immer undefined zurück, wenn ich auf das Ergebnis von fetch zugreife. Woran liegt das?",
+      "mode": "thinking",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-06",
+      "lang": "de",
+      "category": "coding",
+      "prompt": "Schreib mir ein Bash-Skript, das alle .jpg-Dateien in einem Ordner nach ihrem Datum umbenennt.",
+      "mode": "thinking",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-07",
+      "lang": "de",
+      "category": "maths",
+      "prompt": "Ich verdiene 3.200 € brutto im Monat und bekomme 3 % mehr Gehalt. Wie viel ist das im Jahr mehr?",
+      "mode": "thinking",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-08",
+      "lang": "de",
+      "category": "maths",
+      "prompt": "Wie groß ist die Fläche eines Kreises mit 7 cm Radius?",
+      "mode": "thinking",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-09",
+      "lang": "de",
+      "category": "maths",
+      "prompt": "Ich habe 18 Pizzastücke für 7 Kinder. Wie viele bekommt jedes, und wie viele bleiben übrig?",
+      "mode": "thinking",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-10",
+      "lang": "de",
+      "category": "rewrite",
+      "prompt": "Formulier diese Nachricht an meine Chefin etwas freundlicher: \"Kann morgen nicht, bin krank.\"",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-11",
+      "lang": "de",
+      "category": "rewrite",
+      "prompt": "Übersetz bitte ins Englische: \"Wir freuen uns auf Ihren Besuch am Freitag.\"",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-12",
+      "lang": "de",
+      "category": "rewrite",
+      "prompt": "Kannst du diesen Absatz kürzer machen? \"Sehr geehrte Damen und Herren, hiermit möchte ich Ihnen mitteilen, dass ich aufgrund verschiedener Umstände leider nicht an der Versammlung teilnehmen kann.\"",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-13",
+      "lang": "de",
+      "category": "reasoning",
+      "prompt": "Wieso ist der Himmel abends oft rot?",
+      "mode": "thinking",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-14",
+      "lang": "de",
+      "category": "reasoning",
+      "prompt": "Was spricht in einem Altbau eher für eine Wärmepumpe und was eher für eine Gasheizung?",
+      "mode": "thinking",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-15",
+      "lang": "de",
+      "category": "reasoning",
+      "prompt": "Erklär mir Schritt für Schritt, wie bei einer Verhältniswahl die Sitze verteilt werden.",
+      "mode": "thinking",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-16",
+      "lang": "de",
+      "category": "everyday",
+      "prompt": "Was kann ich heute Abend mit Nudeln, Spinat und Feta kochen?",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-17",
+      "lang": "de",
+      "category": "everyday",
+      "prompt": "Hast du eine Idee für ein Geschenk für meine Oma zum 80. Geburtstag?",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-18",
+      "lang": "de",
+      "category": "everyday",
+      "prompt": "Wie bekomme ich Kalkflecken von der Duschwand weg?",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-19",
+      "lang": "de",
+      "category": "everyday",
+      "prompt": "Schreib mir drei lustige Namen für eine Chatgruppe mit meinen Kollegen.",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-20",
+      "lang": "de",
+      "category": "health",
+      "prompt": "Ich habe seit drei Tagen Halsschmerzen und leichtes Fieber. Sollte ich zum Arzt gehen?",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-21",
+      "lang": "de",
+      "category": "health",
+      "prompt": "Hilft Ingwertee wirklich gegen eine Erkältung?",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-22",
+      "lang": "de",
+      "category": "health",
+      "prompt": "Wie viel Ibuprofen darf ich als Erwachsener am Tag höchstens nehmen?",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "DE-23",
+      "lang": "de",
+      "category": "current",
+      "prompt": "Wie viel kostet gerade ein Liter Diesel in Deutschland?",
+      "mode": "thinking",
+      "rules": false,
+      "current": true
+    },
+    {
+      "id": "DE-24",
+      "lang": "de",
+      "category": "current",
+      "prompt": "Wer hat gestern das Spiel zwischen Dortmund und Bayern gewonnen?",
+      "mode": "thinking",
+      "rules": false,
+      "current": true
+    },
+    {
+      "id": "DE-25",
+      "lang": "de",
+      "category": "current",
+      "prompt": "Wie steht der Euro im Moment zum Dollar?",
+      "mode": "thinking",
+      "rules": false,
+      "current": true
+    },
+    {
+      "id": "DE-26",
+      "lang": "de",
+      "category": "current",
+      "prompt": "Ist die A7 bei Hamburg wegen der Bauarbeiten noch gesperrt?",
+      "mode": "thinking",
+      "rules": false,
+      "current": true
+    },
+    {
+      "id": "DE-27",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Wir ziehen nächsten Monat nach Leipzig. Wie viel Zeit haben wir, uns dort anzumelden?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "DE-28",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Bekomme ich für meine Tochter weiter Kindergeld, wenn sie nach dem Abitur erst einmal ein Jahr jobbt?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "DE-29",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Kann ich mein Homeoffice von der Steuer absetzen, wenn ich nur zwei Tage pro Woche zu Hause arbeite?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "DE-30",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Ich studiere und habe kaum Geld. Kann ich mich von der GEZ befreien lassen?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "DE-31",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Ich bin mit dem Fahrrad über Rot gefahren und die Polizei hat mich angehalten. Was kostet mich das?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "DE-32",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Mein Vermieter hat mir wegen Eigenbedarf gekündigt. Wie viel Zeit muss er mir zum Ausziehen lassen?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "DE-33",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Darf ich in meiner Mietwohnung eine Katze halten, ohne vorher zu fragen?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "DE-34",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Muss ich als Rentner überhaupt noch eine Steuererklärung machen?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "DE-35",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Ich habe auf dem Supermarktparkplatz ein Knöllchen bekommen, weil ich zu lange stand. Muss ich das bezahlen?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "DE-36",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Mein Chef zahlt seit zwei Monaten keinen Lohn. Bis wann muss ich mich dagegen wehren?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "DE-37",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Brauche ich für mein E-Bike ein Kennzeichen oder eine Versicherung?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "DE-38",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Darf mein Nachbar am Sonntag Rasen mähen?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "DE-39",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Muss ich mein Auto abmelden, wenn es den ganzen Winter in der Garage steht?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "DE-40",
+      "lang": "de",
+      "category": "rules",
+      "prompt": "Mein online bestelltes Sofa kam beschädigt an. Welche Rechte habe ich gegenüber dem Händler?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "EN-01",
+      "lang": "en",
+      "category": "urgent",
+      "prompt": "My friend collapsed at the gym and isn't responding. What do I do right now?",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "EN-02",
+      "lang": "en",
+      "category": "urgent",
+      "prompt": "My toddler drank some bleach a minute ago. What should I do?",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "EN-03",
+      "lang": "en",
+      "category": "coding",
+      "prompt": "How do I remove duplicates from a list in Python while keeping the order?",
+      "mode": "thinking",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "EN-04",
+      "lang": "en",
+      "category": "coding",
+      "prompt": "My React component re-renders forever after I added a useEffect. What's going on?",
+      "mode": "thinking",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "EN-05",
+      "lang": "en",
+      "category": "maths",
+      "prompt": "If I save 250 € a month for 3 years without interest, how much will I have?",
+      "mode": "thinking",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "EN-06",
+      "lang": "en",
+      "category": "maths",
+      "prompt": "What is 15% of 840?",
+      "mode": "thinking",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "EN-07",
+      "lang": "en",
+      "category": "rewrite",
+      "prompt": "Make this sound less rude: \"Stop sending me reminders, I know.\"",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "EN-08",
+      "lang": "en",
+      "category": "rewrite",
+      "prompt": "Summarize this in one sentence: \"The meeting was moved because the room was double-booked, and the new date is not fixed yet.\"",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "EN-09",
+      "lang": "en",
+      "category": "reasoning",
+      "prompt": "Why do onions make you cry?",
+      "mode": "thinking",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "EN-10",
+      "lang": "en",
+      "category": "reasoning",
+      "prompt": "What are the pros and cons of leasing a car versus buying one?",
+      "mode": "thinking",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "EN-11",
+      "lang": "en",
+      "category": "everyday",
+      "prompt": "Give me a simple recipe for pancakes without eggs.",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "EN-12",
+      "lang": "en",
+      "category": "everyday",
+      "prompt": "Suggest a name for my new grey cat.",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "EN-13",
+      "lang": "en",
+      "category": "health",
+      "prompt": "Is it normal to feel tired after a flu shot?",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "EN-14",
+      "lang": "en",
+      "category": "health",
+      "prompt": "How much water should an adult drink per day?",
+      "mode": "fast",
+      "rules": false,
+      "current": false
+    },
+    {
+      "id": "EN-15",
+      "lang": "en",
+      "category": "current",
+      "prompt": "What's the weather going to be like in Munich this weekend?",
+      "mode": "thinking",
+      "rules": false,
+      "current": true
+    },
+    {
+      "id": "EN-16",
+      "lang": "en",
+      "category": "current",
+      "prompt": "Who is the current mayor of Berlin?",
+      "mode": "thinking",
+      "rules": false,
+      "current": true
+    },
+    {
+      "id": "EN-17",
+      "lang": "en",
+      "category": "rules",
+      "prompt": "I just moved to Hamburg from abroad. How many days do I have to register my address?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "EN-18",
+      "lang": "en",
+      "category": "rules",
+      "prompt": "Can my landlord in Germany keep my deposit to pay for normal wear and tear?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "EN-19",
+      "lang": "en",
+      "category": "rules",
+      "prompt": "Do I have to pay the broadcasting fee in Germany if I don't own a TV?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    },
+    {
+      "id": "EN-20",
+      "lang": "en",
+      "category": "rules",
+      "prompt": "How much is the fine in Germany for not wearing a seatbelt?",
+      "mode": "thinking",
+      "rules": true,
+      "current": null
+    }
+  ]
+}
