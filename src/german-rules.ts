@@ -200,8 +200,13 @@ const TRANSFORM = cue(
 );
 
 /** True when the text asks about German rules, fees, deadlines or administration. */
+// The rules below run on every change of the draft. Some are slow on one very long unbroken run of
+// letters (31 s at 19,500 identical letters froze the page, 14 November). No word is that long, so
+// such runs are cut to 40 characters, and only the first 6,000 characters are read: a rules
+// question that starts later than that is left to the answer-side check.
+const bounded = (s: string) => s.slice(0, 6000).replace(/(\S{40})\S+/gu, "$1");
 export function germanRulesQuestion(question: string): boolean {
-  const text = fold(question.replace(IDENTIFIER, " "));
+  const text = fold(bounded(question).replace(IDENTIFIER, " "));
   if (TRANSFORM.test(text) || INTERNAL.test(text) || SOFTWARE.test(text) || GAME.test(text)) return false;
   if (ABROAD.some((rule) => rule.test(text)) && !AT_HOME.test(text)) return false;
   const ownFigures = (text.match(OWN_FIGURE)?.length ?? 0) >= 2;
@@ -250,7 +255,7 @@ const NAMED_ELSEWHERE = en(ELSEWHERE, ELSEWHERE_PEOPLE);
  */
 export function namesCountry(question: string): boolean {
   // "here" keeps a foreign rule at home for the detector, but names no country for a search.
-  const text = fold(question.replace(IDENTIFIER, " ")).replace(/\bhere\b/gi, " ");
+  const text = fold(bounded(question).replace(IDENTIFIER, " ")).replace(/\bhere\b/gi, " ");
   return (
     AT_HOME.test(text) ||
     PLACE_AT_HOME.test(text) ||

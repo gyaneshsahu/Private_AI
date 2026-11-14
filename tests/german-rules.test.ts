@@ -399,3 +399,10 @@ it("shows the user-facing texts in the interface language; the model instruction
     vi.unstubAllGlobals();
   }
 });
+
+it("stays fast on a very long unbroken run of letters (it runs on every change of the draft)", () => {
+  const started = performance.now();
+  expect(germanRulesQuestion("a".repeat(19500))).toBe(false);
+  expect(germanRulesQuestion("Wie hoch ist die Gebühr für einen neuen Personalausweis? " + "x".repeat(19000))).toBe(true);
+  expect(performance.now() - started).toBeLessThan(500);
+});
