@@ -104,7 +104,7 @@ const SUM_OF_THEM = cue(
 );
 // An organisation's own rule (a company, a club) is not an official one.
 const INTERNAL = cue(
-  /(?<!\p{L})(intranet|bei uns (in der|im) (firma|abteilung|schule|betrieb|büro|unternehmen|verein|team)|(company|office|team|club|house) (policy|rules?|guidelines?|handbook)|(at|in) (our|my) (company|office|firm|club|team|department)|(my|our) team)(?!\p{L})/iu,
+  /(?<!\p{L})(intranet|bei uns (in der|im) (firma|abteilung|schule|betrieb|büro|unternehmen|verein|team)|(company|office|team|club|house) (policy|rules?|guidelines?|handbook)|(at|in) (our|my) (company|office|firm|club|team|department|school|university|college|library|gym)|(my|our) team)(?!\p{L})/iu,
 );
 // The rules of a game or a sport are not official ones either.
 const GAME =
@@ -115,15 +115,15 @@ const GAME =
 // (permission, duty, amount or deadline, entitlement) counts with a domain, never a word alone.
 const en = (...families: string[]) => new RegExp(String.raw`\b(${families.join("|")})\b`, "i");
 // Whoever has legal duties towards the user.
-const PARTY_WORDS = String.raw`landlord|landlady|tenants?|employers?|boss|manager|company|insurer|insurance|bank|seller|shop|store|retailer|airline|neighbou?rs?|police|authorit(y|ies)|court|school|kindergarten|daycare|council|government|provider|agency|gym`;
+const PARTY_WORDS = String.raw`landlords?|landlady|tenants?|employers?|boss|manager|company|insurers?|insurance|banks?|sellers?|shops?|stores?|retailers?|airlines?|neighbou?rs?|police|authorit(y|ies)|court|schools?|kindergarten|daycare|council|government|providers?|agency|gyms?`;
 // "Can my boss …", "Can the landlord …", "Must the shop …": a rules question as it stands.
 const PARTY_EN = en(PARTY_WORDS);
 const THEIR_EN = en(String.raw`(can|could|may|must|shall) (my|our|your|the|a|an) (\w+ )?(${PARTY_WORDS})`);
 const ALLOWED_EN = en(
   String.raw`allowed|permitted|legal|illegal|lawful|forbidden|prohibited|banned`,
-  String.raw`what happens if (i|we|you|my)|what if (i|we) (do not|don't|miss)`,
+  String.raw`what happens if (i|we|you|my)|what if (i|we) (do not|don't|miss)|(at|from) what age|old enough|how old (do|does|must) \w+ (have|need) to be`,
 );
-const OWN_DUTY_EN = en(String.raw`(have|has|need|needs|required|obliged|obligated|supposed) to|must (i|we|you)|mandatory|compulsory|obligatory`);
+const OWN_DUTY_EN = en(String.raw`(have|has|need|needs|required|obliged|obligated|supposed) to|must(?!-)|mandatory|compulsory|obligatory`);
 const ASKING_EN = en(
   String.raw`how (much|many|long|often|high|old|soon)|by when|until when|from when|when (is|are|do|does|must|should|can|will)`,
   String.raw`what(['’]s| is| are) (the|my)|what does|do (i|we|you) (need|get|qualify)|(can|could|may|will|would) (i|we|you)|is there an?|are there|eligible`,
@@ -140,13 +140,13 @@ const OFFICIAL_EN = en(
   String.raw`(tax|immigration|registration|foreigners['’]?|citizens['’]?|employment|welfare) office`,
   String.raw`deadlines?|limits?(?! (of|as))|minimum (wage|age)|fired|dismiss\w*|evict\w*|deport\w*|laid off|severance`,
   String.raw`sick (leave|pay|notes?|days?)|(maternity|paternity|parental|annual|paid|unpaid) leave|(vacation|holiday|leave) (days|entitlement|pay)|overtime|probation\w*`,
-  String.raw`refunds?|compensation|warranty|anmeldung|ummeldung|abmeldung`,
+  String.raw`refunds?|money back|compensation|warranty|anmeldung|ummeldung|abmeldung`,
 );
 // Everyday places and roles the law attaches to; they count only with a permission frame.
 const PLACES_EN = en(
   PARTY_WORDS,
   String.raw`flat|apartment|house|balcony|garden|yard|basement|stairwell|hallway|rent(ed|ing|al)?|sublet\w*|lease|noise|quiet hours`,
-  String.raw`school|children|child|kids?|minors?|under ?1[0-8]|at 1[0-8]|teenagers?`,
+  String.raw`school|children|child|kids?|daughter|son|minors?|under ?1[0-8]|at 1[0-8]|teenagers?`,
   String.raw`roads?|streets?|pavement|sidewalk|cycle path|bike lane|motorway|autobahn|highway|cars?|driv(e|ing)|park(ed|ing)?|bikes?|bicycle|cycl(e|ing)|e-?scooter|moped|motor(bike|cycle)|trains?|bus|tram|flights?|tickets?`,
   String.raw`work(s|ed|ing|place)?|jobs?|employ\w+|shifts?|part-time|full-time|freelanc\w+|self-employed|intern(ship)?|apprentice\w*|students?|salary|wages?|holidays?|vacation|sundays?`,
 );
@@ -166,9 +166,9 @@ const ABROAD = [
   en(
     String.raw`(us|${ELSEWHERE}|american|british|english|irish|french|spanish|italian|dutch|polish|turkish|indian|chinese|japanese|canadian|australian) (law|laws|tax|taxes|visa|rules|regulations|minimum wage|citizenship|courts?)`,
   ),
-  /\b(IRS|HMRC|NHS)\b/,
+  /\b(IRS|HMRC|NHS)\b|\bvisa (for|to enter) (the )?[A-Z]/,
 ];
-const AT_HOME = cue(/\b(germany|german|austrian?|swiss|switzerland|here)\b|deutsch|österreich|schweiz/iu);
+const AT_HOME = cue(/\b(germany|german|austrian?|swiss|switzerland|schengen|eu|here)\b|deutsch|österreich|schweiz/iu);
 // A question about software is not a rules question, whatever the software computes.
 const SOFTWARE =
   /(?<!\p{L})(python|javascript|typescript|java|sql|excel|regex|html|css|json|csv|datetime)(?!\p{L})/iu;
@@ -187,7 +187,7 @@ const RULE = cue(
 );
 // A general explanation counts only with a concrete rule ask (how much, how long, by when...).
 const EXPLAIN = cue(
-  /\b(explain|define|definition|what is an?\b|what are\b|difference between|how does\b.*\bwork)|(?<!\p{L})(erkläre|erklär|definiere|was ist (ein|eine)|was sind|was bedeutet|wie funktioniert|unterschied)(?!\p{L})/iu,
+  /\b(explain|define|definition|what is an?\b|what are\b(?! my)|difference between|how does\b.*\bwork)|(?<!\p{L})(erkläre|erklär|definiere|was ist (ein|eine)|was sind|was bedeutet|wie funktioniert|unterschied)(?!\p{L})/iu,
 );
 const ASK = cue(
   /\b(how (much|many|long|often)|by when|until when|deadline|notice period|costs?|fees?|fines?|penalt(y|ies)|must i|do i (have|need) to|am i allowed|entitled)\b|(?<!\p{L})(wie ?(viel|viele|hoch|lange?|oft)|bis wann|ab wann|wann muss|muss ich|darf ich|\p{L}*frist\p{L}*|kostet|kosten|gebühr\p{L}*|beitrag|strafe|anspruch)(?!\p{L})/iu,

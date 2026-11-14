@@ -6,9 +6,9 @@ import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
 import { germanRulesQuestion } from "../src/german-rules";
 
-type Prompt = { id: string; prompt: string; rules: boolean };
-const measure = (file: string) => {
-  const prompts = (JSON.parse(readFileSync(file, "utf8")) as { prompts: Prompt[] }).prompts;
+type Prompt = { id: string; prompt: string; rules: boolean; near?: boolean };
+const measure = (file: string, only: (p: Prompt) => boolean = () => true) => {
+  const prompts = (JSON.parse(readFileSync(file, "utf8")) as { prompts: Prompt[] }).prompts.filter(only);
   const rules = prompts.filter((p) => p.rules);
   const other = prompts.filter((p) => !p.rules);
   const missed = rules.filter((p) => !germanRulesQuestion(p.prompt));
@@ -33,6 +33,23 @@ it("second development round: recall at least 85 %, false alarms at most 5 %", (
   expect(round2.alarms).toBeLessThanOrEqual(0.05);
 });
 
+// English without a country ("English coverage", 14 November). Before: 22 of 36 and 4 false alarms.
+// Near-misses share vocabulary on purpose; the ordinary others must stay clean.
+it("English development set: recall at least 85 %, no ordinary false alarm, near-misses at most 10 %", () => {
+  const file = "evaluation/english-rules-dev-20261114/prompts.json";
+  expect(measure(file).recall).toBeGreaterThanOrEqual(0.85);
+  expect(measure(file, (p) => !p.near).alarms).toBe(0);
+  expect(measure(file, (p) => p.rules || !!p.near).alarms).toBeLessThanOrEqual(0.1);
+});
+
+// First run: 11 of 16 and 3 false alarms of 18. The numbers held here are after the fixes it led to.
+it("second English round: recall at least 85 %, no ordinary false alarm, near-misses at most 10 %", () => {
+  const file = "evaluation/english-rules-dev-20261114/round2.json";
+  expect(measure(file).recall).toBeGreaterThanOrEqual(0.85);
+  expect(measure(file, (p) => !p.near).alarms).toBe(0);
+  expect(measure(file, (p) => p.rules || !!p.near).alarms).toBeLessThanOrEqual(0.1);
+});
+
 it("frozen set of 13 November: every rules prompt, no false alarm", () => {
   expect(measure("evaluation/german-routing-20261113/prompts.json")).toEqual({ recall: 1, alarms: 0 });
 });
@@ -44,7 +61,7 @@ it("40-question set of 13 November (all rules questions; measured, never tuned o
   const missed = prompts.filter((p) => !germanRulesQuestion(p.prompt)).map((p) => p.id);
   // Ids only: the texts stay unread so the set stays usable as a check.
   console.log(`40-question set: ${40 - missed.length} of 40 recognised; missed ${missed.join(" ")}`);
-  expect(40 - missed.length).toBeGreaterThanOrEqual(23);
+  expect(40 - missed.length).toBeGreaterThanOrEqual(32);
 });
 
 it("first hold-out of 13 November: at least 10 of 12, no false alarm", () => {

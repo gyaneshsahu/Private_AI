@@ -118,6 +118,38 @@ describe("detector", () => {
     // Steering, not tax.
     "Wie kann ich die Heizung per App steuern?",
   ])("leaves the near-miss %s alone", (text) => expect(germanRulesQuestion(text)).toBe(false));
+
+  // English without a country (14 November, "English coverage"): users live in Germany, Austria
+  // or Switzerland, so a frame with an official word or a counterparty is enough.
+  it.each([
+    "Can my boss make me work Sundays?",
+    "How much is the TV licence?",
+    "Do I have to pay church tax if I never go to church?",
+    "What is the blood alcohol limit for driving?",
+    "Am I allowed to sublet a room in my rented flat?",
+    "How long do I have to return something I bought online?",
+    "What happens if I miss the deadline to appeal a parking fine?",
+    "How many hours can I legally work per week?",
+    "Do I have to do the Anmeldung within 14 days?",
+    "My employer hasn't paid me for two months, what are my rights?",
+    "I am from India. Do I need a work permit?",
+  ])("recognises the English question %s", (text) => expect(germanRulesQuestion(text)).toBe(true));
+
+  it.each([
+    // Another country's rule, a game, an organisation's own rule, writing help.
+    "When is the US tax deadline this year?",
+    "How much is the UK visa fee for a skilled worker?",
+    "In Monopoly, do I have to pay rent if the owner is in jail?",
+    "Am I allowed to use the office printer for private stuff at our company?",
+    "Help me write a complaint to my health insurance about a rejected claim.",
+    // A market price, a custom, a practical duty, the user's own figures.
+    "How much does a one-bedroom flat cost to rent in Leipzig?",
+    "Do I have to tip the delivery driver?",
+    "How long do I have to wait before swimming after eating?",
+    "If the fee is 3 % and I transfer 2,500 €, how much is the fee?",
+    // A cost split on the user's own figures, although it says "mieten".
+    "Drei Freunde mieten eine Ferienwohnung für 4 Nächte zu 135 € pro Nacht plus 60 € Reinigung. Wie viel zahlt jede Person?",
+  ])("leaves the English near-miss %s alone", (text) => expect(germanRulesQuestion(text)).toBe(false));
 });
 
 describe("before sending", () => {
