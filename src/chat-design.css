@@ -2194,3 +2194,90 @@
     padding: 12px 0;
   }
 }
+/* Deep research (src/DeepResearch.tsx): the panel under Research, its approval and step list. */
+.chat-design .deep-research {
+  margin-top: -23px;
+}
+.chat-design .deep-research[hidden] {
+  display: none;
+}
+.chat-design .deep-research h3,
+.chat-design .deep-research h4 {
+  margin: 0 0 8px;
+}
+.chat-design .deep-research textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+.chat-design .deep-research .research-question {
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+.chat-design .research-steps {
+  list-style: none;
+  margin: 12px 0;
+  padding: 0;
+}
+.chat-design .research-steps li {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  padding: 6px 0 6px 28px;
+  overflow-wrap: anywhere;
+}
+.chat-design .research-steps li::before {
+  content: "\25CB";
+  position: absolute;
+  left: 4px;
+  color: var(--muted, #5d6858);
+}
+.chat-design .research-steps li[data-state="running"]::before {
+  content: "\25CF";
+  animation: research-pulse 1.2s ease-in-out infinite;
+}
+.chat-design .research-steps li[data-state="running"] .research-step-name {
+  font-weight: 600;
+}
+.chat-design .research-steps li[data-state="done"]::before {
+  content: "\2713";
+}
+.chat-design .research-steps li[data-state="failed"]::before {
+  content: "\2715";
+}
+.chat-design .research-steps li[data-state="stopped"]::before {
+  content: "\25A0";
+}
+@keyframes research-pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-design .research-steps li[data-state="running"]::before {
+    animation: none;
+  }
+}
+.chat-design .deep-research .approval {
+  margin-top: 12px;
+  padding: 16px;
+}
+.chat-design .deep-research .research-query {
+  margin: 10px 0 14px;
+}
+.chat-design .deep-research .approval > button,
+.chat-design .deep-research .research-result > button {
+  margin: 6px 10px 0 0;
+}
+.chat-design .deep-research .approval h4:focus-visible,
+.chat-design .deep-research .research-result h4:focus-visible {
+  outline: 3px solid #7c9c74;
+  outline-offset: 3px;
+}
+@media (max-width: 760px) {
+  .chat-design .deep-research button {
+    min-height: 44px;
+  }
+}

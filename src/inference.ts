@@ -8,6 +8,7 @@ import {
 import { streamVerifiedConversation, type CodeRuntime } from "./verified-chat";
 import type { CalculationSession } from "./calculation-session";
 import type { IdentifierKind } from "./identifier-masking";
+import type { ResearchStep } from "../shared/deep-research";
 export { assertVerification } from "./verified-chat";
 
 // The product path always requires complete qualification. Isolated synthetic
@@ -29,10 +30,18 @@ export async function streamReply(
   image?: string,
   /** Code execution on this device; only the tested primary models get the tool. */
   code?: CodeRuntime,
+  /** A deep research run's plan or answer request: declared to the relay, which charges its weight. */
+  research?: ResearchStep,
 ): Promise<Usage | undefined> {
   const report = validateQualification(qualification);
   if (mode && !report.modes) throw Error("No answer modes are qualified.");
   // Only the report's vision model reads pictures: the Fast mode, never its backup.
+  // A research request is a plain text request in its own mode: no picture, no code tool, no backup.
+  if (
+    research &&
+    (image || code || modelChoice !== "primary" || mode !== (report.modes ? (research === "plan" ? "fast" : "thinking") : undefined))
+  )
+    throw Error("A deep research request is a plain request in its own mode.");
   if (
     image &&
     (!report.vision || modelChoice !== "primary" || mode !== (report.modes ? "fast" : undefined))
@@ -45,6 +54,7 @@ export async function streamReply(
     answerMode: mode,
     ...(cacheSalt ? { cacheSalt } : {}),
     ...(image ? { image } : {}),
+    ...(research ? { research } : {}),
     ...(code && modelChoice === "primary" ? { codeTool: true } : {}),
   };
   return streamVerifiedConversation(

@@ -62,6 +62,8 @@ const app = createApp({
   ...(process.env.PRIVATEAI_IMAGES === "1" ? { images: { maxBytes: 280_000, dailyImages: 10 } } : {}),
   // Code execution on the device, on the development server: off unless "1".
   ...(process.env.PRIVATEAI_CODE === "1" ? { code: true } : {}),
+  // Deep research on the development server: off unless "1" (it also needs the search key).
+  ...(process.env.PRIVATEAI_RESEARCH === "1" ? { research: { cost: 15, dailyRuns: 3, dailySearches: 24 } } : {}),
   // Brave Goggle for German-rules searches (docs/german-rules-20261113.md); off unless "1".
   searchGoggles: process.env.PRIVATEAI_SEARCH_GOGGLES === "1",
 });

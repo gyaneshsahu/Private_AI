@@ -80,6 +80,23 @@ const schema = z
          * (docs/code-execution-20261114.md). The server must know: it grants the follow-up credit.
          */
         code: z.object({ enabled: z.boolean() }).strict().optional(),
+        /**
+         * Deep research, its own switch, off unless enabled (docs/deep-research-20261114.md). It
+         * also needs the search key. `cost`: allowance units one run uses. `dailyRuns` and
+         * `dailySearches`: per account in any 24 hours; the search count includes ordinary
+         * approved searches. `allowedEmails`: "premium only" without billing; when present, only
+         * these accounts see and can use the feature.
+         */
+        research: z
+          .object({
+            enabled: z.boolean(),
+            cost: z.number().int().min(2).max(20),
+            dailyRuns: z.number().int().min(1).max(20),
+            dailySearches: z.number().int().min(1).max(500),
+            allowedEmails: z.array(z.email().max(254)).min(1).max(200).optional(),
+          })
+          .strict()
+          .optional(),
       })
       .strict()
       .optional(),
@@ -235,6 +252,18 @@ export async function loadDeploymentConfig(file: string) {
                 ? { images: { maxBytes: inference.images.maxBytes, dailyImages: inference.images.dailyImages } }
                 : {}),
               ...(inference.code?.enabled ? { code: true } : {}),
+              ...(inference.research?.enabled
+                ? {
+                    research: {
+                      cost: inference.research.cost,
+                      dailyRuns: inference.research.dailyRuns,
+                      dailySearches: inference.research.dailySearches,
+                      ...(inference.research.allowedEmails
+                        ? { allowedEmails: inference.research.allowedEmails }
+                        : {}),
+                    },
+                  }
+                : {}),
               ...(inference.searchKeyFile
                 ? { searchKey: (await boundedFile(inference.searchKeyFile)).toString("utf8").trim() }
                 : {}),

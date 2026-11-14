@@ -8,6 +8,8 @@
 import { appText } from "../../src/text/app";
 import { WHEN_TO_SEARCH_TEXT } from "../../src/when-to-search";
 import { GERMAN_RULES_TEXT } from "../../src/german-rules";
+import { deepResearchText } from "../../src/text/deep-research";
+import { RESEARCH_LIMITS } from "../../shared/deep-research";
 import express from "express";
 import { execFileSync } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -45,10 +47,15 @@ const code = process.argv.includes("--code");
 // --cases <file>: an arithmetic-gate case file ({cases: [{id, turns}]}) instead of prompts.json,
 // e.g. evaluation/arithmetic-gate/unseen-v3-20261023.json. Every turn's answer is in `turnTexts`.
 const casesFile = arg("cases");
+// --research: deep research switched on (docs/deep-research-20261114.md), as `inference.research`
+// does on the server, and every prompt is run as one deep research run: plan, approve the proposed
+// texts unchanged, wait for the end. Use with BENCH_DIR=evaluation/deep-research and --modes auto.
+// Each run makes up to 4 Brave searches and 2 model requests.
+const deepResearch = process.argv.includes("--research");
 // BENCH_DIR runs another prompt set (e.g. evaluation/benchmark-fresh-20261112).
 const DIR = process.env.BENCH_DIR ?? "evaluation/blind-benchmark";
 // BENCH_OUT writes elsewhere, so a measurement run does not overwrite earlier evidence.
-const OUT = process.env.BENCH_OUT ?? `.local/${basename(DIR)}/ours${privatemode ? "-privatemode" : ""}${tapAll ? "-tapped" : ""}${arg("choice") ? `-choice-${choice}` : ""}${code ? "-code" : ""}`;
+const OUT = process.env.BENCH_OUT ?? `.local/${basename(DIR)}/ours${privatemode ? "-privatemode" : ""}${tapAll ? "-tapped" : ""}${arg("choice") ? `-choice-${choice}` : ""}${code ? "-code" : ""}${deepResearch ? "-research" : ""}`;
 // Each Privatemode message makes three POSTs (attest, secret, chat) against the 200-POST
 // session limit, so start a new browser context (a new session) every few prompts.
 // Each prompt also opens a fresh page, so it verifies again, and the relay gives one session 10
@@ -189,7 +196,7 @@ await new Promise((ok) => listener.once("listening", ok));
 const port = (listener.address() as { port: number }).port;
 const origin = tls ? `https://localhost:${port}` : `http://127.0.0.1:${port}`;
 const providerManifest = privatemode ? new Uint8Array(await readFile(".local/privatemode-manifest.json")) : undefined;
-const inner = createApp({ origin, dev: true, qualification, apiKey, searchKey, providerManifest, searchGoggles: goggles, ...(code ? { code: true } : {}) });
+const inner = createApp({ origin, dev: true, qualification, apiKey, searchKey, providerManifest, searchGoggles: goggles, ...(code ? { code: true } : {}), ...(deepResearch ? { research: { cost: 15, dailyRuns: 20, dailySearches: 100 } } : {}) });
 const vite = await createServer({ server: { middlewareMode: true, hmr: false }, appType: "spa", logLevel: "error" });
 inner.use(vite.middlewares);
 outer.use(inner);
@@ -253,6 +260,48 @@ async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolea
   return { ttftMs, totalMs, text: await answerText(page), suggestionShown, suggestedQuery, suggestionHeading, tapped, choiceShown, choiceHeading, choiceQuery, chose: choiceShown ? choice : undefined, againShown, maxGapMs, tokens };
 }
 
+// One deep research run through the panel in Research. The proposed search texts are approved as
+// they are. Records what was planned, searched and read, the step outcomes and the answer.
+const researchLabel = (key: "question" | "plan" | "approveHeading") => either(deepResearchText.en[key], deepResearchText.de[key]);
+async function runResearchCase(page: Page, question: string) {
+  const sent: { kind: string; value: string }[] = [];
+  page.on("request", (r) => {
+    if (r.method() === "POST" && new URL(r.url()).pathname === "/api/research/prepare") sent.push(r.postDataJSON());
+  });
+  await workspaceControl(page, "Research").click();
+  const wait = lastSend + PACE_MS - Date.now();
+  if (wait > 0) await page.waitForTimeout(wait);
+  const started = (lastSend = Date.now());
+  await page.getByLabel(researchLabel("question")).fill(question);
+  await page.getByRole("button", { name: researchLabel("plan") }).click();
+  const approval = page.getByRole("group", { name: researchLabel("approveHeading") });
+  const ended = page.locator(".research-result h4");
+  await approval.or(ended).first().waitFor({ timeout: 120_000 });
+  const planMs = Date.now() - started;
+  let planned: string[] = [];
+  if (await approval.isVisible()) {
+    planned = await approval.getByRole("textbox").evaluateAll((fields) => fields.map((field) => (field as HTMLTextAreaElement).value));
+    lastSend = Date.now();
+    await approval.locator("button.primary").click();
+    await ended.waitFor({ timeout: RESEARCH_LIMITS.wallClockMs + 60_000 });
+  }
+  const totalMs = Date.now() - started;
+  const outcome = await ended.innerText();
+  const steps = await page.locator(".research-steps li").allInnerTexts();
+  const counted = await page.locator(".research-result p").first().innerText().catch(() => "");
+  const show = page.locator(".research-result button.primary");
+  if (await show.isVisible().catch(() => false)) await show.click();
+  const text = await answerText(page);
+  const citations = await answer(page).locator("button.citation").evaluateAll((bs) => bs.map((b) => b.getAttribute("aria-label") ?? "")).catch(() => [] as string[]);
+  const tokens = Number(/Reported inference: (\d+) tokens/.exec(await page.locator("main").innerText().catch(() => ""))?.[1]) || undefined;
+  return {
+    text, mode: "research", model: "(see tiers)", label: "", outcome, steps, counted, planned,
+    searched: sent.filter((s) => s.kind === "search").map((s) => s.value),
+    pagesOpened: sent.filter((s) => s.kind === "page").map((s) => s.value),
+    citations, planMs, ttftMs: undefined, totalMs, turnTimings: [{ totalMs, maxGapMs, tokens }],
+  };
+}
+
 // One browser context per mode keeps one app session: the local server allows 100 open
 // sessions, and a fresh context per prompt hit that limit after about 100 prompts. A new
 // page (reload) still starts an empty temporary conversation.
@@ -274,6 +323,8 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
   try {
     await page.goto(origin, { timeout: 60_000 });
     await page.getByRole("combobox", { name: uiLabel("answerMode") }).selectOption(mode, { timeout: 60_000 });
+    if (deepResearch)
+      return { ...(await runResearchCase(page, Array.isArray(p.prompt) ? p.prompt[0] : p.prompt)), ...(httpErrors.length ? { httpErrors } : {}) };
     for (const a of p.attachments ?? []) {
       const body = await readFile(join(DIR, a.path));
       await page.getByLabel(uiLabel("attachFiles")).setInputFiles({ name: a.path.split("/").pop()!, mimeType: "text/markdown", buffer: body });
@@ -393,6 +444,6 @@ try {
   await vite.close();
   listener.close();
 }
-await writeFile(`${OUT}/run.json`, JSON.stringify({ startedAt, finishedAt: new Date().toISOString(), digest, tiers, relayRequests, prompts: prompts.length, modes: MODES, choice, goggles, code }, null, 2));
+await writeFile(`${OUT}/run.json`, JSON.stringify({ startedAt, finishedAt: new Date().toISOString(), digest, tiers, relayRequests, prompts: prompts.length, modes: MODES, choice, goggles, code, deepResearch }, null, 2));
 // The relay's own content-free counts (chat outcomes, attestation calls): shows a run that verified too often.
 console.log(`done: ${relayRequests} relay requests; counts ${JSON.stringify((await import("../../server/counters")).takeCounts())}`);

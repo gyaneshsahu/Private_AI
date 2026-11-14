@@ -35,6 +35,8 @@ import { privatemodeKeyExpiryWarning } from "./providers/privatemode-relay";
 import { VOICE_PATH, voiceRoute, type VoiceSettings } from "./providers/privatemode-voice";
 import { declaredImage, imageDayCount, imageModelAdmitted, type ImageSettings } from "./image-admission";
 import { CONTINUATION_HEADER, ContinuationCredits } from "./continuation-credit";
+import { declaredResearch, researchAllowed, ResearchTickets, type ResearchSettings } from "./research-admission";
+import { RESEARCH_KINDS } from "../shared/deep-research";
 import {
   serviceDispatcher,
   proxyConfigured,
@@ -86,6 +88,8 @@ export interface Config {
   images?: ImageSettings;
   /** Code execution on the user's device: the status says so and follow-up requests get their credit; absent means off. */
   code?: boolean;
+  /** Deep research (docs/deep-research-20261114.md); absent means off. It also needs search. */
+  research?: ResearchSettings;
   /** File whose text is shown to every user as a notice; missing or empty means none. Re-read every 30 s. */
   noticeFile?: string;
   /** Unmounted consumer composition. Candidate mode never accepts upstream credentials. */
@@ -412,6 +416,10 @@ export function createApp(config: Config) {
       ...(config.voice && ready && q?.speech ? { voice: { maxSeconds: config.voice.maxSeconds } } : {}),
       ...(config.images && ready && q?.vision ? { images: { maxBytes: config.images.maxBytes } } : {}),
       ...(config.code && ready ? { code: true } : {}),
+      // Only for an account that may use it ("premium only"), so nobody else sees the feature.
+      ...(ready && search && researchAllowed(config.research, res.locals.accountEmail)
+        ? { research: { cost: config.research.cost, dailyRuns: config.research.dailyRuns } }
+        : {}),
       ...(await operatorNotice().then((text) => (text ? { operatorNotice: text } : {}))),
       publicPageHosts: proxyConfigured ? publicFetchHosts : null,
     });
@@ -491,6 +499,10 @@ export function createApp(config: Config) {
       }),
     );
   const imageDay = imageDayCount(config.images?.dailyImages ?? 0);
+  // Deep research: runs and searches per account in any 24 hours (the same in-memory day count).
+  const researchDay = imageDayCount(config.research?.dailyRuns ?? 0);
+  const searchDay = imageDayCount(config.research?.dailySearches ?? 0);
+  const researchTickets = new ResearchTickets();
   app.post(
     "/api/inference/v1/chat/completions",
     express.raw({ type: "*/*", limit: "1mb" }),
@@ -504,6 +516,7 @@ export function createApp(config: Config) {
           (res.statusCode === 200 ? (res.writableFinished ? "completed" : "interrupted") : `status_${res.statusCode}`);
         count(`chat.${res.locals.mode ?? "none"}.${outcome}`);
         if (res.locals.image) count(`image.${outcome}`);
+        if (res.locals.research) count(`research.${res.locals.research}.${outcome}`);
       });
       const q = parseQualification();
       if (!q || !config.apiKey) {
@@ -524,7 +537,17 @@ export function createApp(config: Config) {
       // modified browser from sending many times the allowed input on one allowance unit.
       // A declared image request gets a larger bound, and pays for it below (image-admission.ts).
       const textLimit = Math.max(65_536, q.maxInputCharacters * 8);
-      const declared = declaredImage(req.headers, q, config.images, textLimit);
+      // A deep research request declares itself with the same header; it keeps the text bound.
+      const research = declaredResearch(req.headers, config.research, res.locals.accountEmail);
+      if ("refused" in research) {
+        count("research.refused_off");
+        res.status(400).json({ error: "Deep research is not switched on for this account. No request was forwarded." });
+        return;
+      }
+      res.locals.research = research.step;
+      const declared = research.step
+        ? ({ image: false } as const)
+        : declaredImage(req.headers, q, config.images, textLimit);
       if ("refused" in declared) {
         count(`image.refused_${declared.refused}`);
         res.status(400).json({ error: "Picture questions are not switched on. No request was forwarded." });
@@ -551,7 +574,9 @@ export function createApp(config: Config) {
       if (
         (modeHeader !== undefined && (!mode || !q.modes)) ||
         (admission.model !== tier.model && admission.model !== tier.backupModel) ||
-        (declared.image && !imageModelAdmitted(q, mode, admission.model))
+        (declared.image && !imageModelAdmitted(q, mode, admission.model)) ||
+        // The plan runs in Fast and the answer in Thinking, each at its declared weight.
+        (research.step && mode !== (q.modes ? (research.step === "plan" ? "fast" : "thinking") : undefined))
       ) {
         res.status(400).json({ error: "Only a qualified answer mode and its models are accepted." });
         return;
@@ -572,8 +597,8 @@ export function createApp(config: Config) {
         return;
       }
       // An image question costs the report's image price, never the mode's text price.
-      const cost = declared.image ? declared.cost : tier.allowanceCost;
-      const creditKind = declared.image ? "image" : mode;
+      const cost = research.step ? research.cost : declared.image ? declared.cost : tier.allowanceCost;
+      const creditKind = research.step ? RESEARCH_KINDS[research.step] : declared.image ? "image" : mode;
       const who = String(accountId ?? res.locals.session);
       if (declared.image && !imageDay.take(who)) {
         res.locals.outcome = "refused_image_daily";
@@ -582,6 +607,26 @@ export function createApp(config: Config) {
         });
         return;
       }
+      // A plan request opens a run and counts toward the day; an answer needs an open run.
+      if (research.step === "plan" && !researchDay.take(who)) {
+        res.locals.outcome = "refused_daily_runs";
+        res.status(429).json({
+          error: "The daily deep research limit is reached. It frees up within 24 hours. No request was forwarded.",
+        });
+        return;
+      }
+      if (research.step === "answer" && !researchTickets.claim(who)) {
+        res.locals.outcome = "refused_no_run";
+        res.status(400).json({
+          error: "This deep research run is no longer open. Start a new one. No request was forwarded.",
+        });
+        return;
+      }
+      // Taken back when nothing was answered: the run does not count, the answer may be sent again.
+      const researchBack = () => {
+        if (research.step === "plan") researchDay.giveBack(who);
+        else if (research.step === "answer") researchTickets.grant(who);
+      };
       const requestId = randomUUID();
       // Claim the local slots before awaiting shared admission.
       active++;
@@ -645,6 +690,7 @@ export function createApp(config: Config) {
         const credit = accountId ? retryCredit.get(accountId) : undefined;
         if (accountId && credit) retryCredit.delete(accountId);
         const toolCredit =
+          !research.step &&
           !!config.code &&
           !!accountId &&
           req.headers[CONTINUATION_HEADER] === "tool" &&
@@ -662,7 +708,10 @@ export function createApp(config: Config) {
               daily &&
               accountId &&
               (!config.usage.usedInLast ||
-                (await config.usage.usedInLast(accountId, 86_400_000)) + cost > daily)
+                // A plan is admitted only when the whole run still fits the day.
+                (await config.usage.usedInLast(accountId, 86_400_000)) +
+                  (research.step === "plan" ? research.total : cost) >
+                  daily)
             ) {
               res.locals.outcome = "refused_daily";
               res.status(429).json({
@@ -670,8 +719,19 @@ export function createApp(config: Config) {
               });
               return;
             }
+            // A run cannot start without allowance for all of it: the plan is refused unless the
+            // plan and the answer both fit. Only the plan's units are reserved now; the answer
+            // reserves its own, so a run stopped after the plan costs the plan only.
+            const wholeRun =
+              research.step !== "plan" ||
+              (!!accountId &&
+                (await (async () => {
+                  const left = await config.usage!.summary(accountId);
+                  return left.state === "active" && left.remaining >= research.total;
+                })()));
             if (
               !accountId ||
+              !wholeRun ||
               !(await config.usage.reserve(
                 accountId,
                 requestId,
@@ -681,7 +741,9 @@ export function createApp(config: Config) {
               res.locals.outcome = "refused_allowance";
               res.status(429).json({
                 error:
-                  declared.image && cost > 1
+                  research.step
+                    ? `Not enough request allowance: deep research counts as ${research.total} requests. No request was forwarded.`
+                    : declared.image && cost > 1
                     ? `Not enough request allowance: a picture question counts as ${cost} requests. No request was forwarded.`
                     : cost > 1
                     ? `Not enough request allowance: this mode counts as ${cost} requests. No request was forwarded.`
@@ -738,6 +800,7 @@ export function createApp(config: Config) {
           if (accountId && dispatched) retryCredit.set(accountId, { mode: creditKind, expires: Date.now() + 60_000 });
           // Nothing was answered: the image does not count toward the day.
           if (declared.image) imageDay.giveBack(who);
+          researchBack();
           res.setHeader("X-PrivateAI-Upstream", failure);
           res.locals.outcome = `upstream_${failure}`;
           res.status(502).json({
@@ -752,6 +815,7 @@ export function createApp(config: Config) {
         // Granted when the provider accepts the paid request, not when it ends: the browser sends
         // its follow-up the moment it has read the reply. A follow-up on credit grants nothing.
         if (config.code && accountId && !toolCredit) continuationCredits.grant(accountId, mode);
+        if (research.step === "plan") researchTickets.grant(who);
         for await (const chunk of upstream.body) {
           if (hungUp) abort.abort();
           if (abort.signal.aborted) break;
@@ -776,6 +840,7 @@ export function createApp(config: Config) {
         release();
         // Refused here before anything was sent: the image does not count toward the day.
         if (declared.image && !forwarded) imageDay.giveBack(who);
+        if (!forwarded) researchBack();
         if (hungUp) {
           count(`chat.${res.locals.mode ?? "none"}.${transportComplete ? "completed" : "interrupted"}`);
           if (declared.image) count(`image.${transportComplete ? "completed" : "interrupted"}`);
@@ -840,8 +905,22 @@ export function createApp(config: Config) {
         res.json({ sources: await fetchPage(request.value, abort.signal) });
         return;
       }
+      // Each search costs money at the search provider: with deep research on, every account has
+      // a number of searches per 24 hours (ordinary approved searches count too).
+      const who = String(res.locals.accountId ?? res.locals.session);
+      if (config.research && !searchDay.take(who)) {
+        count("search.refused_daily");
+        res.status(429).json({
+          error: "The daily search limit is reached. It frees up within 24 hours. No query was sent.",
+        });
+        return;
+      }
       count("search.executed");
-      const sources = await search!.search(request.value, abort.signal);
+      const sources = await search!.search(request.value, abort.signal).catch((error) => {
+        // The provider gave no results: the search does not count toward the day.
+        if (config.research) searchDay.giveBack(who);
+        throw error;
+      });
       const top = await search!.readTopPage?.(
         request.value,
         sources,

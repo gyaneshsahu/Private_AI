@@ -79,8 +79,23 @@ it("loads production chat only when the inference section is present and enabled
   expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("code");
   await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, code: { enabled: true } } }));
   expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ code: true });
+  // Deep research has its own switch too: absent or disabled means off; enabled passes its cost, caps and optional account list on.
+  const research = { enabled: true, cost: 15, dailyRuns: 3, dailySearches: 24 };
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, research: { ...research, enabled: false } } }));
+  expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("research");
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, research } }));
+  expect((await loadDeploymentConfig(configFile)).inference?.research).toEqual({ cost: 15, dailyRuns: 3, dailySearches: 24 });
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, research: { ...research, allowedEmails: ["premium@example.test"] } } }));
+  expect((await loadDeploymentConfig(configFile)).inference?.research).toMatchObject({ allowedEmails: ["premium@example.test"] });
   // Relative paths, unknown fields, a bad allowance, bad voice limits and an unreadable report refuse the whole configuration.
   for (const bad of [
+    { ...inference, research: { enabled: true } },
+    // A run is two charges of 1 to 10 units: 21 cannot be split.
+    { ...inference, research: { ...research, cost: 21 } },
+    { ...inference, research: { ...research, cost: 1 } },
+    { ...inference, research: { ...research, dailyRuns: 0 } },
+    { ...inference, research: { ...research, allowedEmails: [] } },
+    { ...inference, research: { ...research, pages: 50 } },
     { ...inference, images: { enabled: true } },
     // Above 290,000 bytes the encrypted body could pass the bridge's 1 MiB limit.
     { ...inference, images: { ...images, maxBytes: 290001 } },

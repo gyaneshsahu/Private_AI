@@ -13,7 +13,10 @@ export function SearchSuggestionField(props: {
   onChange: (text: string) => void;
   /** Enter does what the search button does; it never sends the chat message. */
   onEnter: () => void;
+  /** id of the "will be sent" note; set it when several fields are on one page (deep research). */
+  sentId?: string;
 }) {
+  const sentId = props.sentId ?? "search-text-sent";
   const field = useRef<HTMLTextAreaElement>(null);
   // Grows with the text so the whole search text stays visible at phone width.
   useEffect(() => {
@@ -28,7 +31,7 @@ export function SearchSuggestionField(props: {
         ref={field}
         rows={1}
         aria-labelledby={props.labelledBy}
-        aria-describedby="search-text-sent"
+        aria-describedby={sentId}
         aria-invalid={!!props.problem}
         // The server limit; masking can still lengthen the text, which `problem` reports.
         maxLength={400}
@@ -42,7 +45,7 @@ export function SearchSuggestionField(props: {
           props.onEnter();
         }}
       />
-      <div id="search-text-sent" role="status">
+      <div id={sentId} role="status">
         {props.problem ? (
           <p className="warning">
             {props.problem === "long" ? WHEN_TO_SEARCH.tooLong : WHEN_TO_SEARCH.tooShort}

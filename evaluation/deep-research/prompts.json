@@ -1,0 +1,20 @@
+{
+  "note": "Three synthetic research questions for the live check of deep research (docs/deep-research-20261114.md). No personal details. Run: BENCH_DIR=evaluation/deep-research npx tsx evaluation/blind-benchmark/run-ours.ts --privatemode --research --modes auto",
+  "prompts": [
+    {
+      "id": "DR-01",
+      "level": "research",
+      "prompt": "Welche Kündigungsfristen gelten für einen unbefristeten Wohnraummietvertrag in Deutschland, für Mieter und für Vermieter, und wo steht das im Gesetz?"
+    },
+    {
+      "id": "DR-02",
+      "level": "research",
+      "prompt": "What does the EU AI Act require from providers of general-purpose AI models, and from which dates do these obligations apply?"
+    },
+    {
+      "id": "DR-03",
+      "level": "research",
+      "prompt": "Wie hoch ist der Rundfunkbeitrag derzeit, wer kann sich davon befreien lassen, und wie stellt man den Antrag?"
+    }
+  ]
+}

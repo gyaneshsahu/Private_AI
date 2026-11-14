@@ -37,6 +37,10 @@ const GERMAN: Record<string, string> = {
     "Die Aufnahme konnte nicht in Text umgewandelt werden. Es wurde nicht automatisch erneut versucht.",
   // Picture questions
   "Picture questions are not switched on. No request was forwarded.": `Fragen zu Bildern sind nicht eingeschaltet. ${NOTHING_SENT}`,
+  "The daily deep research limit is reached. It frees up within 24 hours. No request was forwarded.": `Das Tageslimit für die Tiefenrecherche ist erreicht. Es wird innerhalb von 24 Stunden wieder frei. ${NOTHING_SENT}`,
+  "This deep research run is no longer open. Start a new one. No request was forwarded.": `Diese Tiefenrecherche ist nicht mehr offen. Starten Sie eine neue. ${NOTHING_SENT}`,
+  "Deep research is not switched on for this account. No request was forwarded.": `Die Tiefenrecherche ist für dieses Konto nicht eingeschaltet. ${NOTHING_SENT}`,
+  "The daily search limit is reached. It frees up within 24 hours. No query was sent.": "Das Tageslimit für Websuchen ist erreicht. Es wird innerhalb von 24 Stunden wieder frei. Es wurde keine Suchanfrage gesendet.",
   "The daily picture limit is reached. It frees up within 24 hours. No request was forwarded.": `Das Tageslimit für Bilder ist erreicht. Es wird innerhalb von 24 Stunden wieder frei. ${NOTHING_SENT}`,
   "Only encrypted requests to the qualified destination are accepted.":
     "Nur verschlüsselte Anfragen an das freigegebene Ziel werden angenommen.",
@@ -198,6 +202,10 @@ const PATTERNS: [RegExp, (...groups: string[]) => string][] = [
   [
     /^Not enough request allowance: a picture question counts as (\d+) requests\. No request was forwarded\.$/,
     (n) => `Ihr Kontingent reicht nicht aus: Eine Frage zu einem Bild zählt als ${n} Anfragen. ${NOTHING_SENT}`,
+  ],
+  [
+    /^Not enough request allowance: deep research counts as (\d+) requests\. No request was forwarded\.$/,
+    (n) => `Ihr Kontingent reicht nicht aus: Eine Tiefenrecherche zählt als ${n} Anfragen. ${NOTHING_SENT}`,
   ],
 ];
 

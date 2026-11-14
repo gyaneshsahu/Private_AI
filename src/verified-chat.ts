@@ -66,6 +66,7 @@ import {
 } from "./code-tool";
 import { runToolLoop } from "./tool-loop";
 import { codeText } from "./text/code";
+import { RESEARCH_KINDS, type ResearchStep } from "../shared/deep-research";
 
 /** What the code tool needs from the caller: how to run code, and where the runs go. */
 export type CodeRuntime = {
@@ -108,6 +109,8 @@ export type VerifiedChatPolicy = Pick<
    * declared to the relay as an image request. Never part of the conversation.
    */
   image?: string;
+  /** A deep research run's plan or answer request (shared/deep-research.ts), declared to the relay. */
+  research?: ResearchStep;
   answerPolicyVariant?: AnswerPolicyVariant;
   researchEvidenceContract?: boolean;
   checkedResponseContract?: boolean;
@@ -384,6 +387,7 @@ async function streamMaskedConversation(
       ...(report.answerMode ? { "X-PrivateAI-Mode": report.answerMode } : {}),
       // The relay cannot see the encrypted body: this buys the larger size bound at the image price.
       ...(report.image ? { "X-PrivateAI-Kind": "image" } : {}),
+      ...(report.research ? { "X-PrivateAI-Kind": RESEARCH_KINDS[report.research] } : {}),
     };
     const destination = await adapter.verify(policy, signal, onStatus);
     onVerified?.(destination.evidence);

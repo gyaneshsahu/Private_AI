@@ -544,6 +544,8 @@ export interface AppStatus {
   images?: { maxBytes: number };
   /** Code execution on the device is switched on for this deployment (docs/code-execution-20261114.md). */
   code?: true;
+  /** Deep research is switched on for this account (docs/deep-research-20261114.md): a run's allowance cost and the runs per 24 hours. */
+  research?: { cost: number; dailyRuns: number };
   publicPageHosts?: string[] | null;
   /** Plain-text notice the operator shows to everyone (outage, announced provider switch). */
   operatorNotice?: string;

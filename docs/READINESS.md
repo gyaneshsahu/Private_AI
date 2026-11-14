@@ -1,4 +1,15 @@
 # PrivateAI readiness checklist
+## 14 November 2026: deep research built, switched off, nothing verified live (agent)
+
+Before: one approved search and one page per question. Now, with `inference.research.enabled` in the deployment config (absent by default), the Research tab has a deep research panel: one Fast request proposes at most 4 search texts; the user sees, edits, removes and approves them (each masked on the device, again after every edit); the browser runs the searches and up to 6 page reads through the existing approved routes; one Thinking request writes the answer from passages chosen on the device, with the existing citations, source list and answer checks. A step list shows progress; Stop ends the run at once. Design, caps, cost and live checks: `docs/deep-research-20261114.md`.
+
+Verified by `tests/deep-research.test.ts` (19 tests; search and model are doubles): every cap, a stop at each step with nothing sent afterwards, a failure at each step with no retry, both time limits, re-masking of the plan, request bodies with only approved masked texts, official pages first, source numbering, citations and the exported note.
+
+Verified by `tests/deep-research-relay.test.ts` (13 tests; upstream and search are doubles): a run costs 15 units as plan 5 plus answer 10; a plan is refused when fewer than 15 units are left or the day's limit would be passed; one answer per plan; runs per day; searches per day; refused with the switch off or for an account not on the list.
+
+Verified by `tests/deep-research-ui.test.ts` (9 tests; real headless Chromium, model and research routes faked): the approval step and the progress list at 375, 768 and 1280 px in English and German, stop while searching, cancel at approval, hidden without the switch.
+
+Not verified: anything against Privatemode or Brave (whether the model writes usable search texts, answer quality, timings, real token counts and cost), the account list with a real signed-in account, a real phone, a screen reader. The cost figures in the doc are estimates. Deep research cannot run with the local test report's input limit of 8,000 characters; it needs about 32,000. Limit stated in the doc: the 15 units are a price for the honest app, not a wall against a modified browser; the walls are the daily caps.
 ## 14 November 2026: memory across chats built, on the device, switched off, nothing verified live (agent)
 
 Before: every chat started from nothing. Now, with the build setting `VITE_MEMORY=1` (off by default), the user can ask CometRow to remember a fact; the app asks before saving, stores it in the encrypted vault in the browser, and for each question picks the fitting memories on the device (at most 8 and 1,200 characters) and puts them in front of the question. No server file was changed: the server has no memory code and stores no profile. Design, limits, vault rules, cost and live checks: `docs/memory-20261114.md`. Privacy wording draft: `docs/memory-privacy-wording-draft-20261114.md`.

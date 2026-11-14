@@ -13,6 +13,7 @@ import {
   type Conversation,
   type Disclosure,
   type Source,
+  type Usage,
 } from "../shared/contracts";
 import { codeToolOn, runPython } from "./code-tool";
 import { calculatedWithCode } from "./CodeRuns";
@@ -64,6 +65,9 @@ import {
 import { expireMessages, type DisappearAfter } from "./conversation";
 import { germanEnabled, LanguageSwitch, textFor, useLang } from "./i18n";
 import { researchText } from "./text/research";
+import { DeepResearch } from "./DeepResearch";
+import { deepResearchText } from "./text/deep-research";
+import { RESEARCH_MIN_SOURCE_CHARACTERS, researchSourceRoom } from "../shared/deep-research";
 import { serverMessage } from "./server-messages";
 import { appText } from "./text/app";
 import { privacySummary, privacyText } from "../shared/privacy-copy";
@@ -227,6 +231,9 @@ export function App() {
   );
   const [conversation, setConversation] =
     useState<Conversation>(emptyConversation);
+  // The conversation as it is now, for a deep research run that outlives the render it started in.
+  const conversationNow = useRef(conversation);
+  conversationNow.current = conversation;
   const [calculationSession] = useState(createCalculationSession);
   useEffect(() => {
     calculationSession.synchronize(conversation);
@@ -748,7 +755,9 @@ export function App() {
     consentChosen = false,
     // The user's own one-off choice ("Answer again with Thinking"); it wins over Auto.
     modeOverride?: AnswerMode,
-  ) {
+    // Deep research's answer request: the note kept on the answer and the run's own stop.
+    research?: { note: string; abort: AbortController },
+  ): Promise<boolean | void> {
     // A picture goes with a message typed in the composer only, never with "ask again".
     const image = consumeDraft && status?.images ? attachedImage : undefined;
     if (image && !text.trim()) return fail(imageText[lang].needQuestion);
@@ -781,9 +790,10 @@ export function App() {
       status: "partial" as const,
       sourceSnapshot: structuredClone(selectedSources(next)),
       // Large documents: which passages this answer was given, and that the rest was not sent.
-      passagesUsed: passageNotes(next, true).join(" ") || undefined,
       // Memory: the ids of the notes that go with this question (the same choice composeContext makes).
       ...(memoriesFor(next).length ? { memoriesUsed: memoriesFor(next).map((m) => m.id) } : {}),
+      // A deep research answer: what was searched and read comes first (shown and exported the same way).
+      passagesUsed: [research?.note, ...passageNotes(next, true)].filter(Boolean).join(" ") || undefined,
     };
     setConversation({ ...next, messages: [...next.messages, answer] });
     if (consumeDraft) setInput("");
@@ -791,7 +801,7 @@ export function App() {
     if (image) setAttachedImage(undefined);
     setNotice("");
     setBusy(t.preparing);
-    const abort = new AbortController();
+    const abort = research?.abort ?? new AbortController();
     abort.signal.addEventListener("abort", () => calculationSession.clear(), {
       once: true,
     });
@@ -801,7 +811,8 @@ export function App() {
     const choiceForThis: ModeChoice = modeOverride ?? modeChoice;
     // Only the Fast model reads pictures, whatever mode is chosen; the answer label says so.
     // Code execution on this device (docs/code-execution-20261114.md): with it, Auto keeps maths in Fast.
-    const codeOn = codeToolOn(status);
+    // A deep research answer is one plain request: no code tool, no backup retry.
+    const codeOn = !research && codeToolOn(status);
     const mode = qualified?.modes
       ? image
         ? "fast"
@@ -809,8 +820,9 @@ export function App() {
           ? autoMode(next, codeOn)
           : choiceForThis
       : undefined;
-    const hasBackup = !image && !!qualified && !!tierFor(qualified, mode).backupModel;
+    const hasBackup = !image && !research && !!qualified && !!tierFor(qualified, mode).backupModel;
     let textArrived = false;
+    let completed = false;
     let retried = false;
     const startedAt = Date.now();
     try {
@@ -875,8 +887,10 @@ export function App() {
                 },
               }
             : undefined,
+          research ? "answer" : undefined,
         );
         abort.signal.throwIfAborted();
+        completed = textArrived;
         if (epoch.current === current) {
           setConversation((c) => ({
             ...c,
@@ -1023,6 +1037,70 @@ export function App() {
         setBusy("");
       }
     }
+    return completed;
+  }
+  // Deep research (docs/deep-research-20261114.md): the plan request. One message to the Fast
+  // model through the ordinary send path (masking, verification, allowance, stop switch),
+  // declared to the relay as a research plan. Its text is not shown; the search texts are.
+  async function planResearch(prompt: string, signal: AbortSignal) {
+    if (!status) throw Error(t.serviceUnavailable);
+    const { streamReply } = await abortable(import("./inference"), signal);
+    const counted = (usage?: Usage) => {
+      if (usage) setConversation((c) => ({ ...c, usage: [...c.usage, usage] }));
+    };
+    let text = "";
+    try {
+      counted(
+        await streamReply(
+          { ...emptyConversation(), messages: [newMessage("user", prompt)] },
+          status.inference.qualification,
+          status.csrf,
+          signal,
+          (chunk) => {
+            text += chunk;
+          },
+          () => {},
+          undefined,
+          undefined,
+          "primary",
+          status.inference.qualification?.modes ? "fast" : undefined,
+          status.inference.cacheSalt,
+          undefined,
+          undefined,
+          "plan",
+        ),
+      );
+    } catch (error) {
+      if (error instanceof IncompleteReplyError) counted(error.usage);
+      throw error;
+    }
+    return text;
+  }
+  // Results of a deep research run as one search attachment: on save its results and links are
+  // removed like any search's (src/saved-conversation.ts); the first search text remains.
+  const researchAttachment = (sources: Source[], queries: string[]): Attachment => ({
+    id: crypto.randomUUID(),
+    name: deepResearchText[lang].attachment,
+    selected: true,
+    kind: "research",
+    researchQuery: queries[0],
+    sources,
+  });
+  // Source characters a run may send: what the report's input limit leaves beside this conversation.
+  const researchRoom = (question: string) =>
+    researchSourceRoom(
+      status?.inference.qualification?.maxInputCharacters ?? 100000,
+      measureContext(conversationNow.current, question).characters,
+    );
+  // Checked before the plan request, so a run that cannot finish costs nothing.
+  function researchBlocked(question: string) {
+    const allowance = status?.requestAllowance;
+    const cost = status?.research?.cost ?? 0;
+    if (allowance && allowance.state !== "unavailable" && allowance.remaining < cost)
+      return deepResearchText[lang].notEnough(cost, allowance.remaining);
+    if (conversation.attachments.length >= 5) return t.researchLimit;
+    if (researchRoom(question) < RESEARCH_MIN_SOURCE_CHARACTERS) return deepResearchText[lang].tooLong;
+    return undefined;
   }
   async function importFiles(files: FileList | readonly File[] | null) {
     if (!files || busy) return;
@@ -2868,6 +2946,44 @@ export function App() {
           </section>
         )}
         {tab === "Help" && <SupportPanel initialSymptom={reporting ? "incorrect" : undefined} />}
+        {status?.research && status.search && status.inference.ready && !(status.healthConsentDraft && !healthConsent) && (
+          <DeepResearch
+            hidden={tab !== "Research"}
+            limits={status.research}
+            busy={!!busy}
+            conversationId={conversation.id}
+            blocked={researchBlocked}
+            sourceRoom={researchRoom}
+            hold={(label, abort) => {
+              controller.current = label && abort ? abort : null;
+              setBusy(label);
+            }}
+            plan={planResearch}
+            api={api}
+            answer={async (question, queries, sources, note, abort) =>
+              !!(await send(
+                {
+                  ...conversationNow.current,
+                  temporarySearch: true,
+                  attachments: [...conversationNow.current.attachments, researchAttachment(sources, queries)],
+                },
+                question,
+                false,
+                false,
+                "thinking",
+                { note, abort },
+              ))
+            }
+            keep={(sources, queries) =>
+              setConversation((c) => ({
+                ...c,
+                temporarySearch: true,
+                attachments: [...c.attachments, researchAttachment(sources, queries)],
+              }))
+            }
+            showAnswer={() => setTab("Conversation")}
+          />
+        )}
         {tab === "Account" && (
           <>
             {status?.accountId && !status.consumerWorkspace && (
