@@ -2100,6 +2100,7 @@
   .chat-design .message-edit-actions button {
     min-height: 44px;
   }
+}
 /* Memory across chats: the Settings screen, the note under an answer, the chat switch (src/MemoryPanel.tsx). */
 .chat-design .memory-settings textarea,
 .chat-design .memory-settings input[type="search"],
