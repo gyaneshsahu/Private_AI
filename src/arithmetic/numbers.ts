@@ -179,7 +179,8 @@ const germanWords =
 const englishWords =
   /\b(the|and|is|are|for|with|not|of|to|will|total|amount|invoice|interest|days|you|your)\b/gi;
 
-function languageOf(text: string): NumberLocale | undefined {
+/** German or English by counting common words; undefined on a tie. Also picks the read-aloud voice. */
+export function languageOf(text: string): NumberLocale | undefined {
   const de = (text.match(germanWords) ?? []).length;
   const en = (text.match(englishWords) ?? []).length;
   if (de > en) return "de";
