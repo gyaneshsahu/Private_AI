@@ -17,6 +17,8 @@ export const BRIDGE_REQUEST_HEADERS = [
   "sec-fetch-dest",
   "x-privateai-csrf",
   "x-privateai-continuation-approval",
+  // Follow-up request of a code-execution answer (server/continuation-credit.ts).
+  "x-privateai-continuation",
   "x-privateai-mode",
   // Declares an image question; without it the relay refuses the larger body (docs/images-20261114.md).
   "x-privateai-kind",
@@ -39,8 +41,8 @@ export const BRIDGE_REQUEST_HEADERS = [
 ] as const;
 
 const IMMUTABLE = "public, max-age=31536000, immutable";
-const IMMUTABLE_PATH =
-  /^\/(?:assets\/[^/?#]+-[\w-]{8}\.(?:js|css|wasm|woff2?|svg|png)|api\/inference\/privatemode\/privatemode-[0-9a-f]{64}\.wasm)$/;
+export const IMMUTABLE_PATH =
+  /^\/(?:assets\/[^/?#]+-[\w-]{8}\.(?:js|css|wasm|woff2?|svg|png)|api\/inference\/privatemode\/privatemode-[0-9a-f]{64}\.wasm|vendor\/pyodide\/\d+\.\d+\.\d+\/[\w.-]+\.(?:mjs|wasm|zip|json))$/;
 
 export function createRenderBridge(config: {
   port: number;

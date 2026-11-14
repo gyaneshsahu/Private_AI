@@ -60,6 +60,8 @@ const app = createApp({
   ...(process.env.PRIVATEAI_VOICE === "1" ? { voice: { maxSeconds: 120, dailyMinutes: 10 } } : {}),
   // Image questions on the development server: off unless "1" (they also need `vision` in the report).
   ...(process.env.PRIVATEAI_IMAGES === "1" ? { images: { maxBytes: 280_000, dailyImages: 10 } } : {}),
+  // Code execution on the device, on the development server: off unless "1".
+  ...(process.env.PRIVATEAI_CODE === "1" ? { code: true } : {}),
   // Brave Goggle for German-rules searches (docs/german-rules-20261113.md); off unless "1".
   searchGoggles: process.env.PRIVATEAI_SEARCH_GOGGLES === "1",
 });

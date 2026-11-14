@@ -34,6 +34,7 @@ import "./providers/tinfoil-relay";
 import { privatemodeKeyExpiryWarning } from "./providers/privatemode-relay";
 import { VOICE_PATH, voiceRoute, type VoiceSettings } from "./providers/privatemode-voice";
 import { declaredImage, imageDayCount, imageModelAdmitted, type ImageSettings } from "./image-admission";
+import { CONTINUATION_HEADER, ContinuationCredits } from "./continuation-credit";
 import {
   serviceDispatcher,
   proxyConfigured,
@@ -83,6 +84,8 @@ export interface Config {
   voice?: VoiceSettings;
   /** Image questions; absent means off. It also needs the report's `vision` model. */
   images?: ImageSettings;
+  /** Code execution on the user's device: the status says so and follow-up requests get their credit; absent means off. */
+  code?: boolean;
   /** File whose text is shown to every user as a notice; missing or empty means none. Re-read every 30 s. */
   noticeFile?: string;
   /** Unmounted consumer composition. Candidate mode never accepts upstream credentials. */
@@ -408,6 +411,7 @@ export function createApp(config: Config) {
       search: !!config.searchKey,
       ...(config.voice && ready && q?.speech ? { voice: { maxSeconds: config.voice.maxSeconds } } : {}),
       ...(config.images && ready && q?.vision ? { images: { maxBytes: config.images.maxBytes } } : {}),
+      ...(config.code && ready ? { code: true } : {}),
       ...(await operatorNotice().then((text) => (text ? { operatorNotice: text } : {}))),
       publicPageHosts: proxyConfigured ? publicFetchHosts : null,
     });
@@ -420,6 +424,8 @@ export function createApp(config: Config) {
   // shortcut: in this process's memory, so a restart in that minute counts the retry twice;
   // move to the ledger together with the other single-server limits.
   const retryCredit = new Map<string, { mode: string | undefined; expires: number }>();
+  // Code execution: up to two follow-up requests ride on one paid message (server/continuation-credit.ts).
+  const continuationCredits = new ContinuationCredits();
   // Block-only attestation audit: can refuse forwarding, never supplies a key.
   // Pass-through until a deployment installs an audit configuration.
   // Block-only guard of the configured adapter (for Tinfoil, the release audit;
@@ -639,6 +645,13 @@ export function createApp(config: Config) {
         const credit = accountId ? retryCredit.get(accountId) : undefined;
         if (accountId && credit) retryCredit.delete(accountId);
         if (config.usage && credit && credit.mode === creditKind && credit.expires > Date.now())
+        const toolCredit =
+          !!config.code &&
+          !!accountId &&
+          req.headers[CONTINUATION_HEADER] === "tool" &&
+          continuationCredits.claim(accountId, mode);
+        if (toolCredit) count(`chat.${mode ?? "none"}.tool_continuation`);
+        else if (config.usage && credit && credit.mode === mode && credit.expires > Date.now())
           count(`chat.${mode ?? "none"}.retry_not_counted`);
         else if (config.usage) {
           await ensureAllowance(accountId);
@@ -737,6 +750,9 @@ export function createApp(config: Config) {
         for (const [name, value] of Object.entries(accepted.passthrough))
           res.setHeader(name, value);
         res.locals.streaming = true;
+        // Granted when the provider accepts the paid request, not when it ends: the browser sends
+        // its follow-up the moment it has read the reply. A follow-up on credit grants nothing.
+        if (config.code && accountId && !toolCredit) continuationCredits.grant(accountId, mode);
         for await (const chunk of upstream.body) {
           if (hungUp) abort.abort();
           if (abort.signal.aborted) break;

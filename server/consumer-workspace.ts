@@ -74,6 +74,8 @@ export interface ProductionInferenceConfig {
   voice?: { maxSeconds: number; dailyMinutes: number };
   /** Image question limits; absent means image upload is off. */
   images?: { maxBytes: number; dailyImages: number };
+  /** Code execution on the user's device; absent means off. */
+  code?: boolean;
 }
 
 export function createProductionConsumerCandidate(
@@ -116,6 +118,7 @@ export function createProductionConsumerCandidate(
           ...(inference.noticeFile ? { noticeFile: inference.noticeFile } : {}),
           ...(inference.voice ? { voice: inference.voice } : {}),
           ...(inference.images ? { images: inference.images } : {}),
+          ...(inference.code ? { code: true } : {}),
           // Per-account prompt-cache salts stay stable across restarts (derived, not the secret itself).
           cacheSaltSecret: createHash("sha256").update(`cache-salt-key|${config.secret}`).digest("hex"),
         }

@@ -79,6 +79,16 @@ it("loads production chat only when the inference section is present and enabled
     { ...inference, images: { ...images, maxBytes: 290001 } },
     { ...inference, images: { ...images, dailyImages: 0 } },
     { ...inference, images: { ...images, model: "glm-5.3-flash" } },
+  // Code execution has its own switch too: absent or disabled means off.
+  expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("code");
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, code: { enabled: false } } }));
+  expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("code");
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, code: { enabled: true } } }));
+  expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ code: true });
+  // Relative paths, unknown fields, a bad allowance, bad voice limits and an unreadable report refuse the whole configuration.
+  for (const bad of [
+    { ...inference, code: true },
+    { ...inference, code: { enabled: true, rounds: 5 } },
     { ...inference, voice: { enabled: true } },
     { ...inference, voice: { ...voice, maxSeconds: 3600 } },
     { ...inference, voice: { ...voice, dailyMinutes: 0 } },
