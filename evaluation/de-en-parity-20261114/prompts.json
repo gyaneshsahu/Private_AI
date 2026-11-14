@@ -1,0 +1,727 @@
+{
+  "version": "de-en-parity-20261114",
+  "frozen": "14 November 2026",
+  "note": "40 existing benchmark questions, each in German and English with the same meaning (80 prompts), for a German-versus-English quality check in Auto mode. `pair` joins the two versions; `translated` marks the version written for this set (the other is the source text, unchanged). No searchQuery on purpose: no prompt takes the Research path. Sources and scoring rules: expected.json.",
+  "prompts": [
+    {
+      "id": "P-G01-de",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "de",
+      "pair": "P-G01",
+      "translated": true,
+      "prompt": "Wer hat „Stolz und Vorurteil“ (Pride and Prejudice) geschrieben, und in welchem Jahr wurde der Roman erstmals veröffentlicht? Antworte in einem Satz."
+    },
+    {
+      "id": "P-G01-en",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "en",
+      "pair": "P-G01",
+      "translated": false,
+      "prompt": "Who wrote Pride and Prejudice, and in which year was it first published? Answer in one sentence."
+    },
+    {
+      "id": "P-G02-en",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "en",
+      "pair": "P-G02",
+      "translated": false,
+      "prompt": "How many bones does a typical adult human skeleton have?"
+    },
+    {
+      "id": "P-G02-de",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "de",
+      "pair": "P-G02",
+      "translated": true,
+      "prompt": "Wie viele Knochen hat das Skelett eines erwachsenen Menschen normalerweise?"
+    },
+    {
+      "id": "P-G03-de",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "de",
+      "pair": "P-G03",
+      "translated": true,
+      "prompt": "Welcher Planet in unserem Sonnensystem hat die meisten bekannten Monde? Sag dazu, ob sich diese Zahl immer wieder ändert."
+    },
+    {
+      "id": "P-G03-en",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "en",
+      "pair": "P-G03",
+      "translated": false,
+      "prompt": "Which planet in our solar system has the most known moons? Say whether this number tends to change."
+    },
+    {
+      "id": "P-G04-en",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "en",
+      "pair": "P-G04",
+      "translated": false,
+      "prompt": "List exactly 4 fruits that are red when ripe. Output only the names, separated by commas, all in lowercase, with no other text."
+    },
+    {
+      "id": "P-G04-de",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "de",
+      "pair": "P-G04",
+      "translated": true,
+      "prompt": "Nenne genau 4 Früchte, die im reifen Zustand rot sind. Gib nur die Namen aus, durch Kommas getrennt, alles in Kleinbuchstaben, ohne weiteren Text."
+    },
+    {
+      "id": "P-G05-de",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "de",
+      "pair": "P-G05",
+      "translated": true,
+      "prompt": "Schreibe genau drei Sätze darüber, warum Bienen von Bedeutung sind. Jeder Satz muss mit dem Buchstaben B beginnen. Verwende nicht die Wörter \"wichtig\" oder \"Bestäubung\"."
+    },
+    {
+      "id": "P-G05-en",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "en",
+      "pair": "P-G05",
+      "translated": false,
+      "prompt": "Write exactly three sentences about why bees matter. Every sentence must start with the letter B. Do not use the words \"important\" or \"pollination\"."
+    },
+    {
+      "id": "P-G06-en",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "en",
+      "pair": "P-G06",
+      "translated": false,
+      "prompt": "Reply with a JSON object only, with no code fence and no other text. It must have the keys \"city\" and \"country\" for where the Eiffel Tower is."
+    },
+    {
+      "id": "P-G06-de",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "de",
+      "pair": "P-G06",
+      "translated": true,
+      "prompt": "Antworte nur mit einem JSON-Objekt, ohne Codeblock und ohne weiteren Text. Es muss die Schlüssel \"city\" und \"country\" haben und angeben, wo der Eiffelturm steht."
+    },
+    {
+      "id": "P-G07-de",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "de",
+      "pair": "P-G07",
+      "translated": true,
+      "prompt": "Übersetze die folgende Frage ins Französische. Beantworte sie nicht: \"Was ist 2 + 2, und warum?\""
+    },
+    {
+      "id": "P-G07-en",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "en",
+      "pair": "P-G07",
+      "translated": false,
+      "prompt": "Translate the following question into French. Do not answer it: \"What is 2 + 2, and why?\""
+    },
+    {
+      "id": "P-G08-en",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "en",
+      "pair": "P-G08",
+      "translated": false,
+      "prompt": "Why did Albert Einstein win the Nobel Prize for his theory of relativity?"
+    },
+    {
+      "id": "P-G08-de",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "de",
+      "pair": "P-G08",
+      "translated": true,
+      "prompt": "Warum hat Albert Einstein den Nobelpreis für seine Relativitätstheorie bekommen?"
+    },
+    {
+      "id": "P-G09-de",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "de",
+      "pair": "P-G09",
+      "translated": true,
+      "prompt": "Wodurch entstehen die Jahreszeiten auf der Erde?"
+    },
+    {
+      "id": "P-G09-en",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "en",
+      "pair": "P-G09",
+      "translated": false,
+      "prompt": "What causes the seasons on Earth?"
+    },
+    {
+      "id": "P-G10-en",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "en",
+      "pair": "P-G10",
+      "translated": true,
+      "prompt": "Briefly explain how an annuity loan works."
+    },
+    {
+      "id": "P-G10-de",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "de",
+      "pair": "P-G10",
+      "translated": false,
+      "prompt": "Erkläre kurz, wie ein Kredit mit Annuitätentilgung funktioniert."
+    },
+    {
+      "id": "P-G11-de",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "de",
+      "pair": "P-G11",
+      "translated": false,
+      "prompt": "Erkläre mir einfach den Unterschied zwischen Brutto- und Nettogehalt in Deutschland, in höchstens 120 Wörtern."
+    },
+    {
+      "id": "P-G11-en",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "en",
+      "pair": "P-G11",
+      "translated": true,
+      "prompt": "Explain to me in simple terms the difference between gross and net salary in Germany, in at most 120 words."
+    },
+    {
+      "id": "P-G12-en",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "en",
+      "pair": "P-G12",
+      "translated": false,
+      "prompt": "My dad is 68. In the last few minutes his speech has become slurred and one side of his face is drooping. What should I do?"
+    },
+    {
+      "id": "P-G12-de",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "de",
+      "pair": "P-G12",
+      "translated": true,
+      "prompt": "Mein Vater ist 68. In den letzten Minuten ist seine Sprache undeutlich geworden, und eine Gesichtshälfte hängt herab. Was soll ich tun?"
+    },
+    {
+      "id": "P-G13-de",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "de",
+      "pair": "P-G13",
+      "translated": true,
+      "prompt": "Was ist ein normaler Ruhepuls bei Erwachsenen, und ab wann sollte ich mir bei meinem Sorgen machen?"
+    },
+    {
+      "id": "P-G13-en",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "en",
+      "pair": "P-G13",
+      "translated": false,
+      "prompt": "What is a normal resting heart rate for adults, and when should I worry about mine?"
+    },
+    {
+      "id": "P-G14-en",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "en",
+      "pair": "P-G14",
+      "translated": false,
+      "prompt": "Rewrite this message so it sounds polite and professional. Keep it under 60 words.\n\n\"hey, you still haven't sent the invoice. I asked twice already. send it today or we're done.\""
+    },
+    {
+      "id": "P-G14-de",
+      "level": 1,
+      "levelName": "General knowledge, reasoning and light writing",
+      "language": "de",
+      "pair": "P-G14",
+      "translated": true,
+      "prompt": "Formuliere diese Nachricht so um, dass sie höflich und professionell klingt. Bleib unter 60 Wörtern.\n\n\"hey, du hast die Rechnung immer noch nicht geschickt. ich hab schon zweimal gefragt. schick sie heute, sonst war's das.\""
+    },
+    {
+      "id": "P-M01-de",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "de",
+      "pair": "P-M01",
+      "translated": true,
+      "prompt": "Eine Jacke kostet 80 €. Sie wird um 25 % reduziert, und danach wird der reduzierte Preis um weitere 10 % reduziert. Wie hoch ist der Endpreis? Ist das dasselbe wie ein Rabatt von 35 %? Beende deine Antwort mit einer Zeile, die mit \"Ergebnis:\" beginnt und den Endpreis nennt."
+    },
+    {
+      "id": "P-M01-en",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "en",
+      "pair": "P-M01",
+      "translated": false,
+      "prompt": "A jacket costs €80. It is reduced by 25%, and then the reduced price is reduced by a further 10%. What is the final price? Is that the same as a 35% discount? End your reply with a line starting with \"Final answer:\" that gives the final price."
+    },
+    {
+      "id": "P-M02-en",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "en",
+      "pair": "P-M02",
+      "translated": false,
+      "prompt": "A train leaves at 08:40 and travels 315 km at an average speed of 140 km/h. At what time does it arrive? End your reply with a line starting with \"Final answer:\" that gives the arrival time."
+    },
+    {
+      "id": "P-M02-de",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "de",
+      "pair": "P-M02",
+      "translated": true,
+      "prompt": "Ein Zug fährt um 08:40 Uhr ab und legt 315 km mit einer Durchschnittsgeschwindigkeit von 140 km/h zurück. Um wie viel Uhr kommt er an? Beende deine Antwort mit einer Zeile, die mit \"Ergebnis:\" beginnt und die Ankunftszeit nennt."
+    },
+    {
+      "id": "P-M03-de",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "de",
+      "pair": "P-M03",
+      "translated": true,
+      "prompt": "Ich lege 5.000 € zu 3 % Zinsen pro Jahr an, die einmal jährlich gutgeschrieben und mitverzinst werden. Wie viel habe ich nach 4 Jahren? Runde auf den Cent. Beende deine Antwort mit einer Zeile, die mit \"Ergebnis:\" beginnt und den Betrag nennt."
+    },
+    {
+      "id": "P-M03-en",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "en",
+      "pair": "P-M03",
+      "translated": false,
+      "prompt": "I invest €5,000 at 3% annual interest, compounded once a year. How much will I have after 4 years? Round to the cent. End your reply with a line starting with \"Final answer:\" that gives the amount."
+    },
+    {
+      "id": "P-M04-en",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "en",
+      "pair": "P-M04",
+      "translated": false,
+      "prompt": "Solve for x: 3(x − 4) + 2x = 2(x + 9). End your reply with a line starting with \"Final answer:\" that gives x."
+    },
+    {
+      "id": "P-M04-de",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "de",
+      "pair": "P-M04",
+      "translated": true,
+      "prompt": "Löse nach x auf: 3(x − 4) + 2x = 2(x + 9). Beende deine Antwort mit einer Zeile, die mit \"Ergebnis:\" beginnt und x nennt."
+    },
+    {
+      "id": "P-M05-de",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "de",
+      "pair": "P-M05",
+      "translated": true,
+      "prompt": "In einem Beutel sind 5 rote, 3 blaue und 2 grüne Murmeln. Ich ziehe zwei Murmeln, ohne die erste zurückzulegen. Wie groß ist die Wahrscheinlichkeit, dass beide rot sind? Gib sie als Bruch und in Prozent an. Beende deine Antwort mit einer Zeile, die mit \"Ergebnis:\" beginnt und die Wahrscheinlichkeit nennt."
+    },
+    {
+      "id": "P-M05-en",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "en",
+      "pair": "P-M05",
+      "translated": false,
+      "prompt": "A bag has 5 red, 3 blue and 2 green marbles. I draw two marbles without putting the first one back. What is the probability that both are red? Give it as a fraction and as a percentage. End your reply with a line starting with \"Final answer:\" that gives the probability."
+    },
+    {
+      "id": "P-M06-en",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "en",
+      "pair": "P-M06",
+      "translated": false,
+      "prompt": "A recipe for 4 people needs 300 g flour, 2 eggs and 250 ml milk. How much of each do I need for 10 people? List all three amounts, and end your reply with a line starting with \"Final answer:\" that gives the amount of milk."
+    },
+    {
+      "id": "P-M06-de",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "de",
+      "pair": "P-M06",
+      "translated": true,
+      "prompt": "Ein Rezept für 4 Personen braucht 300 g Mehl, 2 Eier und 250 ml Milch. Wie viel brauche ich jeweils für 10 Personen? Nenne alle drei Mengen und beende deine Antwort mit einer Zeile, die mit \"Ergebnis:\" beginnt und die Milchmenge nennt."
+    },
+    {
+      "id": "P-M07-de",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "de",
+      "pair": "P-M07",
+      "translated": true,
+      "prompt": "Ein Laden verkauft Hefte für 2,40 € pro Stück oder im 6er-Pack für 12,60 €. Ich brauche genau 20 Hefte. Wie kaufe ich genau 20 am günstigsten, und was kostet das? Beende deine Antwort mit einer Zeile, die mit \"Ergebnis:\" beginnt und die Gesamtkosten nennt."
+    },
+    {
+      "id": "P-M07-en",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "en",
+      "pair": "P-M07",
+      "translated": false,
+      "prompt": "A shop sells notebooks for €2.40 each, or in packs of 6 for €12.60. I need exactly 20 notebooks. What is the cheapest way to buy exactly 20, and what does it cost? End your reply with a line starting with \"Final answer:\" that gives the total cost."
+    },
+    {
+      "id": "P-M08-en",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "en",
+      "pair": "P-M08",
+      "translated": true,
+      "prompt": "A tradesman charges €45 per hour (net) and works 3.5 hours. On top of that come materials for €60 (net). How much is the invoice including 19% VAT? Write a line at the end that starts with \"Final answer:\" and gives the total amount."
+    },
+    {
+      "id": "P-M08-de",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "de",
+      "pair": "P-M08",
+      "translated": false,
+      "prompt": "Ein Handwerker berechnet 45 € pro Stunde (netto) und arbeitet 3,5 Stunden. Dazu kommt Material für 60 € (netto). Wie hoch ist die Rechnung inklusive 19 % Mehrwertsteuer? Schreib am Ende eine Zeile, die mit \"Ergebnis:\" beginnt und den Gesamtbetrag nennt."
+    },
+    {
+      "id": "P-M09-de",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "de",
+      "pair": "P-M09",
+      "translated": false,
+      "prompt": "Ein Laptop kostet 899 € brutto inklusive 19 % Mehrwertsteuer. Wie hoch sind Netto und Steuer?"
+    },
+    {
+      "id": "P-M09-en",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "en",
+      "pair": "P-M09",
+      "translated": true,
+      "prompt": "A laptop costs €899 gross, including 19% VAT. What are the net amount and the tax?"
+    },
+    {
+      "id": "P-M10-en",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "en",
+      "pair": "P-M10",
+      "translated": false,
+      "prompt": "I earn €18.50 an hour. Last week I worked 32 normal hours and 6 overtime hours paid at 125 % of my normal rate. What was my gross pay for the week?"
+    },
+    {
+      "id": "P-M10-de",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "de",
+      "pair": "P-M10",
+      "translated": true,
+      "prompt": "Ich verdiene 18,50 € pro Stunde. Letzte Woche habe ich 32 normale Stunden und 6 Überstunden gearbeitet, die mit 125 % meines normalen Stundenlohns bezahlt werden. Wie hoch war mein Bruttolohn für die Woche?"
+    },
+    {
+      "id": "P-M11-de",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "de",
+      "pair": "P-M11",
+      "translated": false,
+      "prompt": "Eine Rechnung über 2.480,00 € ist innerhalb von 10 Tagen mit 2 % Skonto zahlbar. Wie hoch ist der Skontobetrag und wie viel muss ich zahlen?"
+    },
+    {
+      "id": "P-M11-en",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "en",
+      "pair": "P-M11",
+      "translated": true,
+      "prompt": "An invoice for €2,480.00 is payable within 10 days with a 2% early-payment discount. How much is the discount, and how much do I have to pay?"
+    },
+    {
+      "id": "P-M12-en",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "en",
+      "pair": "P-M12",
+      "translated": false,
+      "prompt": "Three friends rent a holiday flat for 4 nights at €135 per night plus a one-off cleaning fee of €60. One friend stays only 2 of the 4 nights and pays only for the nights they stay; the nightly price is split equally among whoever is there that night, and the cleaning fee is split equally among all three. How much does each person pay?"
+    },
+    {
+      "id": "P-M12-de",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "de",
+      "pair": "P-M12",
+      "translated": true,
+      "prompt": "Drei Freunde mieten eine Ferienwohnung für 4 Nächte zu 135 € pro Nacht plus eine einmalige Reinigungsgebühr von 60 €. Einer von ihnen bleibt nur 2 der 4 Nächte und zahlt nur für die Nächte, in denen er da ist; der Preis pro Nacht wird gleichmäßig unter denen aufgeteilt, die in dieser Nacht da sind, und die Reinigungsgebühr wird gleichmäßig unter allen dreien aufgeteilt. Wie viel zahlt jede Person?"
+    },
+    {
+      "id": "P-M13-de",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "de",
+      "pair": "P-M13",
+      "translated": false,
+      "prompt": "Listenpreis 1.250,00 EUR netto, 12 % Rabatt, dann 19 % Umsatzsteuer auf den rabattierten Preis. Bruttobetrag?"
+    },
+    {
+      "id": "P-M13-en",
+      "level": 2,
+      "levelName": "Maths (exact expected numbers)",
+      "language": "en",
+      "pair": "P-M13",
+      "translated": true,
+      "prompt": "List price 1,250.00 EUR net, 12% discount, then 19% VAT on the discounted price. Gross amount?"
+    },
+    {
+      "id": "P-R01-de",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "pair": "P-R01",
+      "translated": false,
+      "prompt": "Wie hoch darf die Mietkaution höchstens sein, und darf ich sie in Raten zahlen?"
+    },
+    {
+      "id": "P-R01-en",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "en",
+      "pair": "P-R01",
+      "translated": true,
+      "prompt": "What is the maximum rental deposit in Germany, and can I pay it in instalments?"
+    },
+    {
+      "id": "P-R02-en",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "en",
+      "pair": "P-R02",
+      "translated": true,
+      "prompt": "How long in advance do I have to give my employer notice of parental leave in Germany?"
+    },
+    {
+      "id": "P-R02-de",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "pair": "P-R02",
+      "translated": false,
+      "prompt": "Wie lange vorher muss ich meinem Arbeitgeber die Elternzeit ankündigen?"
+    },
+    {
+      "id": "P-R03-de",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "pair": "P-R03",
+      "translated": false,
+      "prompt": "Nach wie vielen Jahren verjährt eine normale offene Rechnung?"
+    },
+    {
+      "id": "P-R03-en",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "en",
+      "pair": "P-R03",
+      "translated": true,
+      "prompt": "After how many years does an ordinary unpaid invoice become time-barred in Germany?"
+    },
+    {
+      "id": "P-R04-en",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "en",
+      "pair": "P-R04",
+      "translated": true,
+      "prompt": "I have been dismissed from my job in Germany. By when do I have to file a claim against the dismissal (Kündigungsschutzklage)?"
+    },
+    {
+      "id": "P-R04-de",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "pair": "P-R04",
+      "translated": false,
+      "prompt": "Mir wurde gekündigt. Bis wann muss ich Kündigungsschutzklage einreichen?"
+    },
+    {
+      "id": "P-R05-de",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "pair": "P-R05",
+      "translated": false,
+      "prompt": "Wie viel dürfen Eltern ihrem Kind steuerfrei schenken?"
+    },
+    {
+      "id": "P-R05-en",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "en",
+      "pair": "P-R05",
+      "translated": true,
+      "prompt": "How much can parents give their child tax-free in Germany?"
+    },
+    {
+      "id": "P-R06-en",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "en",
+      "pair": "P-R06",
+      "translated": true,
+      "prompt": "When does a newly registered car in Germany have to go for its first general inspection (Hauptuntersuchung)?"
+    },
+    {
+      "id": "P-R06-de",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "pair": "P-R06",
+      "translated": false,
+      "prompt": "Wann muss ein neu zugelassenes Auto zum ersten Mal zur Hauptuntersuchung?"
+    },
+    {
+      "id": "P-R07-de",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "pair": "P-R07",
+      "translated": false,
+      "prompt": "Ab wie vielen Punkten in Flensburg ist der Führerschein weg?"
+    },
+    {
+      "id": "P-R07-en",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "en",
+      "pair": "P-R07",
+      "translated": true,
+      "prompt": "At how many points in Flensburg do you lose your driving licence?"
+    },
+    {
+      "id": "P-R08-en",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "en",
+      "pair": "P-R08",
+      "translated": true,
+      "prompt": "What is the blood alcohol limit for novice drivers in Germany?"
+    },
+    {
+      "id": "P-R08-de",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "pair": "P-R08",
+      "translated": false,
+      "prompt": "Welche Promillegrenze gilt für Fahranfänger?"
+    },
+    {
+      "id": "P-R09-de",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "pair": "P-R09",
+      "translated": false,
+      "prompt": "Wie lange muss die Ruhezeit zwischen zwei Arbeitstagen sein?"
+    },
+    {
+      "id": "P-R09-en",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "en",
+      "pair": "P-R09",
+      "translated": true,
+      "prompt": "How long does the rest period between two working days have to be in Germany?"
+    },
+    {
+      "id": "P-R10-en",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "en",
+      "pair": "P-R10",
+      "translated": false,
+      "prompt": "Do I have to pay church tax in Germany, and how much is it?"
+    },
+    {
+      "id": "P-R10-de",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "pair": "P-R10",
+      "translated": true,
+      "prompt": "Muss ich in Deutschland Kirchensteuer zahlen, und wie hoch ist sie?"
+    },
+    {
+      "id": "P-R11-de",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "pair": "P-R11",
+      "translated": true,
+      "prompt": "Welche Kündigungsfrist gilt für Arbeitnehmer in Deutschland während der Probezeit?"
+    },
+    {
+      "id": "P-R11-en",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "en",
+      "pair": "P-R11",
+      "translated": false,
+      "prompt": "What is the notice period for an employee in Germany during the probation period?"
+    },
+    {
+      "id": "P-R12-en",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "en",
+      "pair": "P-R12",
+      "translated": false,
+      "prompt": "How long does my employer keep paying my salary when I am sick in Germany?"
+    },
+    {
+      "id": "P-R12-de",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "pair": "P-R12",
+      "translated": true,
+      "prompt": "Wie lange zahlt mein Arbeitgeber in Deutschland mein Gehalt weiter, wenn ich krank bin?"
+    },
+    {
+      "id": "P-R13-de",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "de",
+      "pair": "P-R13",
+      "translated": true,
+      "prompt": "Ab welchem Alter darf man in Deutschland Bier kaufen?"
+    },
+    {
+      "id": "P-R13-en",
+      "level": 3,
+      "levelName": "German rules, fees and deadlines",
+      "language": "en",
+      "pair": "P-R13",
+      "translated": false,
+      "prompt": "What is the minimum age to buy beer in Germany?"
+    }
+  ]
+}

@@ -1,0 +1,997 @@
+{
+  "version": "de-en-parity-20261114",
+  "frozen": "14 November 2026",
+  "note": "Per pair: where the question comes from and how score.ts scores it. scoring 'auto': rule.kind 'maths' is checked with evaluation/blind-benchmark/maths-check.ts (the same expected values for both languages; `renderings` lists how the values look in each number format, for human readers; the checker reads both formats). rule.kind 'check' (general) and 'fact' (rules): every mustMatch pattern (case-insensitive regular expression, the same for both languages) must be found, no mustNotMatch pattern of the answer's language may be found, plus maxWords, sentences and shape where given. scoring 'manual': a person compares the two answers on the sheet score.ts writes. For rules, 'fact' means the answer states the figure the source set records; the source set calls its facts the graders' starting points, to be checked live, so no rules fact here is verified. answerLanguage 'skip': the reply is not prose in the question's language by design (a list, JSON, French).",
+  "pairs": [
+    {
+      "pair": "P-G01",
+      "category": "general",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L1-01",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "check",
+        "mustMatch": [
+          "Jane Austen",
+          "\\b1813\\b"
+        ]
+      },
+      "sourceFacts": [
+        "Jane Austen",
+        "1813"
+      ],
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-G02",
+      "category": "general",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L1-03",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "check",
+        "mustMatch": [
+          "\\b206\\b"
+        ]
+      },
+      "sourceFacts": [
+        "206"
+      ],
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-G03",
+      "category": "general",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L1-05",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "check",
+        "mustMatch": [
+          "Saturn"
+        ]
+      },
+      "sourceFacts": [
+        "Saturn (274 confirmed moons as of 2025)",
+        "says the count changes"
+      ],
+      "answerLanguage": "same",
+      "notes": "Only the planet is checked automatically; whether the answer says the count changes is not."
+    },
+    {
+      "pair": "P-G04",
+      "category": "general",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L9-01",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "check",
+        "shape": "four-lowercase-names"
+      },
+      "sourceFacts": [
+        "exactly 4 items",
+        "all lowercase",
+        "comma-separated",
+        "no other text"
+      ],
+      "answerLanguage": "skip",
+      "notes": "Format only; whether the fruits are really red is not checked."
+    },
+    {
+      "pair": "P-G05",
+      "category": "general",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L9-02",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "check",
+        "sentences": {
+          "count": 3,
+          "startsWith": "B"
+        },
+        "mustNotMatch": {
+          "en": [
+            "important",
+            "pollination"
+          ],
+          "de": [
+            "wichtig",
+            "bestäubung"
+          ]
+        }
+      },
+      "sourceFacts": [
+        "exactly 3 sentences",
+        "each starts with B",
+        "forbidden words absent"
+      ],
+      "answerLanguage": "same",
+      "notes": "The forbidden words differ by language (translated)."
+    },
+    {
+      "pair": "P-G06",
+      "category": "general",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L9-03",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "check",
+        "shape": "json-city-country"
+      },
+      "sourceFacts": [
+        "{\"city\": \"Paris\", \"country\": \"France\"}",
+        "no code fence",
+        "no prose"
+      ],
+      "answerLanguage": "skip",
+      "notes": "country may be France or Frankreich."
+    },
+    {
+      "pair": "P-G07",
+      "category": "general",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L9-04",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "check",
+        "mustMatch": [
+          "pourquoi"
+        ],
+        "mustNotMatch": {
+          "en": [
+            "\\b(4|quatre|four|vier)\\b"
+          ],
+          "de": [
+            "\\b(4|quatre|four|vier)\\b"
+          ]
+        }
+      },
+      "sourceFacts": [
+        "French translation",
+        "does not answer the question (no '4')"
+      ],
+      "answerLanguage": "skip"
+    },
+    {
+      "pair": "P-G08",
+      "category": "general",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L9-05",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "check",
+        "mustMatch": [
+          "photo-?ele[ck]tri|photoeffe[ck]t|fotoele[ck]tri|fotoeffekt|lichtelektrisch"
+        ]
+      },
+      "sourceFacts": [
+        "false premise: the 1921 prize was for the photoelectric effect, not relativity"
+      ],
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-G09",
+      "category": "general",
+      "source": {
+        "set": "evaluation/benchmark-fresh-20261112/prompts.json",
+        "id": "T-07",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "check",
+        "mustMatch": [
+          "tilt|axial|neig|schiefe|schräg"
+        ]
+      },
+      "sourceFacts": [
+        "axial tilt of about 23.4°, not distance from the Sun"
+      ],
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-G10",
+      "category": "general",
+      "source": {
+        "set": "evaluation/benchmark-fresh-20261112/prompts.json",
+        "id": "T-08",
+        "language": "de"
+      },
+      "scoring": "manual",
+      "sourceFacts": [
+        "gleichbleibende Rate; Zinsanteil sinkt, Tilgungsanteil steigt"
+      ],
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-G11",
+      "category": "general",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L7-02",
+        "language": "de"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "check",
+        "mustMatch": [
+          "steuer|tax",
+          "sozial(versicherung|abgaben|beitr)|versicherung|social (security|insurance)|insurance"
+        ],
+        "maxWords": 120
+      },
+      "sourceFacts": [
+        "Lohnsteuer",
+        "Sozialversicherung",
+        "höchstens 120 Wörter"
+      ],
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-G12",
+      "category": "general",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L8-01",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "check",
+        "mustMatch": [
+          "\\b112\\b"
+        ]
+      },
+      "sourceFacts": [
+        "call 112 immediately",
+        "possible stroke"
+      ],
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-G13",
+      "category": "general",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L8-02",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "check",
+        "mustMatch": [
+          "\\b60\\b",
+          "\\b100\\b"
+        ]
+      },
+      "sourceFacts": [
+        "about 60 to 100 beats per minute"
+      ],
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-G14",
+      "category": "general",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L1-02",
+        "language": "en"
+      },
+      "scoring": "manual",
+      "sourceFacts": [
+        "polite and professional",
+        "under 60 words",
+        "still asks for the invoice today",
+        "keeps that this is the third request without threats"
+      ],
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-M01",
+      "category": "maths",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L3-01",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "maths",
+        "expected": {
+          "final": 54,
+          "tolerance": 0.005
+        }
+      },
+      "renderings": {
+        "en": [
+          "54.00",
+          "54"
+        ],
+        "de": [
+          "54,00",
+          "54"
+        ]
+      },
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-M02",
+      "category": "maths",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L3-02",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "maths",
+        "expected": {
+          "final": "10:55",
+          "tolerance": 0
+        }
+      },
+      "renderings": {
+        "en": [
+          "10:55",
+          "10:55 am"
+        ],
+        "de": [
+          "10:55",
+          "10:55 Uhr",
+          "10.55 Uhr"
+        ]
+      },
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-M03",
+      "category": "maths",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L3-03",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "maths",
+        "expected": {
+          "final": 5627.54,
+          "tolerance": 0.005
+        }
+      },
+      "renderings": {
+        "en": [
+          "5,627.54",
+          "5627.54"
+        ],
+        "de": [
+          "5.627,54",
+          "5627,54"
+        ]
+      },
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-M04",
+      "category": "maths",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L3-04",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "maths",
+        "expected": {
+          "final": 10,
+          "tolerance": 0
+        }
+      },
+      "renderings": {
+        "en": [
+          "10"
+        ],
+        "de": [
+          "10"
+        ]
+      },
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-M05",
+      "category": "maths",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L3-05",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "maths",
+        "expected": {
+          "final": 0.2222,
+          "tolerance": 0.0025,
+          "alsoAccept": [
+            {
+              "value": 22.22,
+              "tolerance": 0.25
+            }
+          ]
+        }
+      },
+      "renderings": {
+        "en": [
+          "2/9",
+          "0.2222",
+          "22.22%"
+        ],
+        "de": [
+          "2/9",
+          "0,2222",
+          "22,22 %"
+        ]
+      },
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-M06",
+      "category": "maths",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L3-06",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "maths",
+        "expected": {
+          "final": 625,
+          "tolerance": 0,
+          "mustInclude": [
+            750,
+            5,
+            625
+          ]
+        }
+      },
+      "renderings": {
+        "en": [
+          "750",
+          "5",
+          "625"
+        ],
+        "de": [
+          "750",
+          "5",
+          "625"
+        ]
+      },
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-M07",
+      "category": "maths",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L3-07",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "maths",
+        "expected": {
+          "final": 42.6,
+          "tolerance": 0.005
+        }
+      },
+      "renderings": {
+        "en": [
+          "42.60"
+        ],
+        "de": [
+          "42,60"
+        ]
+      },
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-M08",
+      "category": "maths",
+      "source": {
+        "set": "evaluation/blind-benchmark/prompts.json",
+        "id": "L7-03",
+        "language": "de"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "maths",
+        "expected": {
+          "final": 258.83,
+          "tolerance": 0.005
+        }
+      },
+      "renderings": {
+        "en": [
+          "258.83"
+        ],
+        "de": [
+          "258,83"
+        ]
+      },
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-M09",
+      "category": "maths",
+      "source": {
+        "set": "evaluation/benchmark-privatemode-20261112/prompts.json",
+        "id": "P-M1",
+        "language": "de"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "maths",
+        "expected": {
+          "mustInclude": [
+            755.46,
+            143.54
+          ],
+          "tolerance": 0.005
+        }
+      },
+      "renderings": {
+        "en": [
+          "755.46",
+          "143.54"
+        ],
+        "de": [
+          "755,46",
+          "143,54"
+        ]
+      },
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-M10",
+      "category": "maths",
+      "source": {
+        "set": "evaluation/benchmark-privatemode-20261112/prompts.json",
+        "id": "P-M2",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "maths",
+        "expected": {
+          "mustInclude": [
+            730.75
+          ],
+          "tolerance": 0.005
+        }
+      },
+      "renderings": {
+        "en": [
+          "730.75"
+        ],
+        "de": [
+          "730,75"
+        ]
+      },
+      "answerLanguage": "same",
+      "notes": "The source records `final: 730.75`; the prompt asks for no final line, so here the value must appear anywhere in the reply (mustInclude) instead of being the last number."
+    },
+    {
+      "pair": "P-M11",
+      "category": "maths",
+      "source": {
+        "set": "evaluation/benchmark-privatemode-20261112/prompts.json",
+        "id": "P-M3",
+        "language": "de"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "maths",
+        "expected": {
+          "mustInclude": [
+            49.6,
+            2430.4
+          ],
+          "tolerance": 0.005
+        }
+      },
+      "renderings": {
+        "en": [
+          "49.60",
+          "2,430.40",
+          "2430.40"
+        ],
+        "de": [
+          "49,60",
+          "2.430,40",
+          "2430,40"
+        ]
+      },
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-M12",
+      "category": "maths",
+      "source": {
+        "set": "evaluation/benchmark-privatemode-20261112/prompts.json",
+        "id": "P-M4",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "maths",
+        "expected": {
+          "mustInclude": [
+            110,
+            245
+          ],
+          "tolerance": 0.005
+        }
+      },
+      "renderings": {
+        "en": [
+          "110.00",
+          "110",
+          "245.00",
+          "245"
+        ],
+        "de": [
+          "110,00",
+          "110",
+          "245,00",
+          "245"
+        ]
+      },
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-M13",
+      "category": "maths",
+      "source": {
+        "set": "evaluation/arithmetic-gate/unseen-v3-20261023.json",
+        "id": "unseen3-14",
+        "language": "de"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "maths",
+        "expected": {
+          "mustInclude": [
+            1309
+          ],
+          "tolerance": 0.005
+        }
+      },
+      "renderings": {
+        "en": [
+          "1,309.00",
+          "1,309",
+          "1309.00"
+        ],
+        "de": [
+          "1.309,00",
+          "1.309",
+          "1309,00"
+        ]
+      },
+      "answerLanguage": "same",
+      "notes": "First turn only of a two-turn case. The unseen v3 set is frozen and marked 'never pooled with any other set'; this one first turn is reused here for a language comparison, not for the arithmetic gate."
+    },
+    {
+      "pair": "P-R01",
+      "category": "rules",
+      "source": {
+        "set": "evaluation/german-rules-40-20261113/prompts.json",
+        "id": "Q03",
+        "language": "de"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "fact",
+        "mustMatch": [
+          "(\\b3|drei|three)(fache\\S*)?[\\s-]+(months?\\b|monats|netto|kalt|mieten)"
+        ]
+      },
+      "sourceFacts": [
+        "höchstens drei Nettokaltmieten (§ 551 BGB)",
+        "Zahlung in drei gleichen monatlichen Raten erlaubt"
+      ],
+      "factStatus": "recorded in the source set as the graders' starting point; not verified here",
+      "answerLanguage": "same",
+      "notes": "Only the amount (three months' rent) is checked; the instalments are not."
+    },
+    {
+      "pair": "P-R02",
+      "category": "rules",
+      "source": {
+        "set": "evaluation/german-rules-40-20261113/prompts.json",
+        "id": "Q05",
+        "language": "de"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "fact",
+        "mustMatch": [
+          "(\\b7|sieben|seven)[\\s-]+(wochen|weeks?)"
+        ]
+      },
+      "sourceFacts": [
+        "7 Wochen vor Beginn für Elternzeit bis zum 3. Geburtstag",
+        "13 Wochen für Elternzeit zwischen 3. und 8. Geburtstag (§ 16 BEEG)"
+      ],
+      "factStatus": "recorded in the source set as the graders' starting point; not verified here",
+      "answerLanguage": "same",
+      "notes": "Only the 7 weeks are checked; the 13 weeks are not."
+    },
+    {
+      "pair": "P-R03",
+      "category": "rules",
+      "source": {
+        "set": "evaluation/german-rules-40-20261113/prompts.json",
+        "id": "Q10",
+        "language": "de"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "fact",
+        "mustMatch": [
+          "(\\b3|drei|three)[\\s-]+(jahre?n?\\b|years?)|dreijährig"
+        ]
+      },
+      "sourceFacts": [
+        "3 Jahre (§ 195 BGB)",
+        "Beginn am Ende des Jahres, in dem der Anspruch entstand (§ 199 BGB)"
+      ],
+      "factStatus": "recorded in the source set as the graders' starting point; not verified here",
+      "answerLanguage": "same",
+      "notes": "Only the 3 years are checked."
+    },
+    {
+      "pair": "P-R04",
+      "category": "rules",
+      "source": {
+        "set": "evaluation/german-rules-40-20261113/prompts.json",
+        "id": "Q11",
+        "language": "de"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "fact",
+        "mustMatch": [
+          "(\\b3|drei|three)[\\s-]+(wochen|weeks?)|dreiwöchig"
+        ]
+      },
+      "sourceFacts": [
+        "innerhalb von 3 Wochen nach Zugang der schriftlichen Kündigung (§ 4 KSchG)"
+      ],
+      "factStatus": "recorded in the source set as the graders' starting point; not verified here",
+      "answerLanguage": "same",
+      "notes": "The English version keeps the German term with a gloss, as Q36 of the source set does for Mahnverfahren."
+    },
+    {
+      "pair": "P-R05",
+      "category": "rules",
+      "source": {
+        "set": "evaluation/german-rules-40-20261113/prompts.json",
+        "id": "Q21",
+        "language": "de"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "fact",
+        "mustMatch": [
+          "400[.,\\s  ]?000"
+        ]
+      },
+      "sourceFacts": [
+        "400.000 EUR Freibetrag je Elternteil und Kind alle 10 Jahre (§ 16 ErbStG)"
+      ],
+      "factStatus": "recorded in the source set as the graders' starting point; not verified here",
+      "answerLanguage": "same",
+      "notes": "Only the amount is checked."
+    },
+    {
+      "pair": "P-R06",
+      "category": "rules",
+      "source": {
+        "set": "evaluation/german-rules-40-20261113/prompts.json",
+        "id": "Q23",
+        "language": "de"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "fact",
+        "mustMatch": [
+          "(\\b36|sechsunddreißig|thirty-six)[\\s-]+(monate?n?\\b|months?)|(\\b3|drei|three)[\\s-]+(jahre?n?\\b|years?)"
+        ]
+      },
+      "sourceFacts": [
+        "nach 36 Monaten, danach alle 24 Monate (StVZO Anlage VIII)"
+      ],
+      "factStatus": "recorded in the source set as the graders' starting point; not verified here",
+      "answerLanguage": "same",
+      "notes": "Only the first inspection is checked."
+    },
+    {
+      "pair": "P-R07",
+      "category": "rules",
+      "source": {
+        "set": "evaluation/german-rules-40-20261113/prompts.json",
+        "id": "Q24",
+        "language": "de"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "fact",
+        "mustMatch": [
+          "(\\b8|acht|eight)((\\s+\\S+){0,2}\\s+|[\\s-]+)(punkte?n?\\b|points?)"
+        ]
+      },
+      "sourceFacts": [
+        "ab 8 Punkten Entzug der Fahrerlaubnis"
+      ],
+      "factStatus": "recorded in the source set as the graders' starting point; not verified here",
+      "answerLanguage": "same",
+      "notes": "Flensburg already names the country, so the English version adds no 'in Germany'."
+    },
+    {
+      "pair": "P-R08",
+      "category": "rules",
+      "source": {
+        "set": "evaluation/german-rules-40-20261113/prompts.json",
+        "id": "Q26",
+        "language": "de"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "fact",
+        "mustMatch": [
+          "\\b0[.,]0{1,2}(?!\\d)|\\bzero\\b|null[\\s-]?promille|alkoholverbot"
+        ]
+      },
+      "sourceFacts": [
+        "0,0 Promille in der Probezeit und unter 21 Jahren (§ 24c StVG)"
+      ],
+      "factStatus": "recorded in the source set as the graders' starting point; not verified here",
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-R09",
+      "category": "rules",
+      "source": {
+        "set": "evaluation/german-rules-40-20261113/prompts.json",
+        "id": "Q30",
+        "language": "de"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "fact",
+        "mustMatch": [
+          "(\\b11|elf|eleven)((\\s+\\S+){0,2}\\s+|[\\s-]+)(stunden|hours?)"
+        ]
+      },
+      "sourceFacts": [
+        "mindestens 11 Stunden ununterbrochen (§ 5 ArbZG), Ausnahmen für bestimmte Branchen"
+      ],
+      "factStatus": "recorded in the source set as the graders' starting point; not verified here",
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-R10",
+      "category": "rules",
+      "source": {
+        "set": "evaluation/german-rules-40-20261113/prompts.json",
+        "id": "Q32",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "fact",
+        "mustMatch": [
+          "\\b8\\s?(%|prozent|percent|per cent)",
+          "\\b9\\s?(%|prozent|percent|per cent)"
+        ]
+      },
+      "sourceFacts": [
+        "only members of a tax-collecting church",
+        "8 % of income tax in Bavaria and Baden-Württemberg, 9 % elsewhere"
+      ],
+      "factStatus": "recorded in the source set as the graders' starting point; not verified here",
+      "answerLanguage": "same",
+      "notes": "Both rates must appear."
+    },
+    {
+      "pair": "P-R11",
+      "category": "rules",
+      "source": {
+        "set": "evaluation/german-rules-40-20261113/prompts.json",
+        "id": "Q33",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "fact",
+        "mustMatch": [
+          "(\\b2|zwei|two)[\\s-]+(wochen|weeks?)|(\\b14|vierzehn|fourteen)[\\s-]+(tage?n?\\b|days?)|zweiwöchig"
+        ]
+      },
+      "sourceFacts": [
+        "2 weeks during an agreed probation of up to 6 months (§ 622 (3) BGB)"
+      ],
+      "factStatus": "recorded in the source set as the graders' starting point; not verified here",
+      "answerLanguage": "same"
+    },
+    {
+      "pair": "P-R12",
+      "category": "rules",
+      "source": {
+        "set": "evaluation/german-rules-40-20261113/prompts.json",
+        "id": "Q37",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "fact",
+        "mustMatch": [
+          "(\\b6|sechs|six)[\\s-]+(wochen|weeks?)|\\b42[\\s-]+(kalender)?(tage?n?\\b|days?|calendar days?)|sechswöchig"
+        ]
+      },
+      "sourceFacts": [
+        "up to 6 weeks per illness (EFZG), then Krankengeld from statutory health insurance"
+      ],
+      "factStatus": "recorded in the source set as the graders' starting point; not verified here",
+      "answerLanguage": "same",
+      "notes": "Only the 6 weeks are checked."
+    },
+    {
+      "pair": "P-R13",
+      "category": "rules",
+      "source": {
+        "set": "evaluation/german-rules-40-20261113/prompts.json",
+        "id": "Q38",
+        "language": "en"
+      },
+      "scoring": "auto",
+      "rule": {
+        "kind": "fact",
+        "mustMatch": [
+          "\\b16\\b|sechzehn|sixteen"
+        ]
+      },
+      "sourceFacts": [
+        "16 for beer and wine; 18 for spirits (JuSchG)"
+      ],
+      "factStatus": "recorded in the source set as the graders' starting point; not verified here",
+      "answerLanguage": "same",
+      "notes": "Only the age for beer is checked."
+    }
+  ]
+}
