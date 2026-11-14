@@ -398,9 +398,25 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
   Expect: a banner says the device has no connection and nothing can be sent. The draft stays. The banner goes away when the connection is back. It never says the server is down.
   Tell the agent: device, browser, and how long the banner took to appear and to go.
 
+- [ ] **T-86 Long own message: "Show more" on a phone.**
+  Do: paste a long text (a page or more) as your message and send it. Tap "Show more", then "Show less". Turn the phone sideways and back. Try it once while an answer is still streaming.
+  Expect: the message is cut after about 12 lines with a soft fade. The button opens and closes it. The page does not jump away from the message, and nothing can be scrolled sideways. Headings, stars and numbers in your text look exactly as you typed them.
+  Tell the agent: phone, browser, and a screenshot if the fade looks wrong or the view jumps. Safari and Firefox were not checked.
+
+- [ ] **T-87 Edit a message and send it.**
+  Do: tap "Edit" on an earlier message, change the text, read the cost on the Send button, send. Then open "Conversation branches" and switch back to the old version. Also open "Edit" and press Cancel.
+  Expect: the box opens at the message. Send shows "uses 1 request" for Fast and "uses 5 requests" for Thinking. One answer arrives. The old version and its answer are still there as a branch. Cancel changes nothing and sends nothing. The request count in the sidebar goes down by the number on the button.
+  Tell the agent: whether the number on the button matched what the sidebar counted.
+
+- [ ] **T-88 Retry with the cost in the label, and "Report a problem".**
+  Do: after a Fast answer, read the buttons under it. Press "Retry last response", then "Answer again with Thinking". Then press "Report a problem".
+  Expect: both retry buttons show their cost in the label, also on a phone (no hover needed). Each press makes one new answer. "Report a problem" opens Help with "An answer was incorrect or misleading" already chosen. The note holds no text from your chat.
+  Tell the agent: any label that is cut off or wraps badly on your phone, in German and English.
+
 ---
 
 ## Changes
 
 - 14 November 2026: first version. 81 items. Sources: handoff, decisions doc, checklist, deploy doc, alpha plan, week-one monitoring, and the feature docs of 13 and 14 November. Where docs disagreed, the newest was used (decisions doc and `docs/READINESS.md` of 14 November).
 - 14 November 2026: added T-82 to T-85 (Enter key, drag and drop, jump to latest, offline banner) under "Needs a real device" for chat packages A, B and F.
+- 14 November 2026: added T-86 to T-88 (long own message, edit and send, retry cost and report a problem) for chat packages C and D.

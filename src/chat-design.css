@@ -2085,8 +2085,10 @@
   margin: 0;
   font-size: 12px;
 }
-.chat-design .message-edit .message-actions {
-  margin-top: 0;
+.chat-design .message-edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 .chat-design .message-actions button {
   max-width: 100%;
@@ -2094,7 +2096,8 @@
   text-align: left;
 }
 @media (max-width: 760px) {
-  .chat-design .show-more {
+  .chat-design .show-more,
+  .chat-design .message-edit-actions button {
     min-height: 44px;
   }
 }

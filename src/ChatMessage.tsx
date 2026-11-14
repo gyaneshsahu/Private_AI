@@ -251,7 +251,7 @@ export function ChatMessage({
             }}
           />
           <p className="muted">{mt.editNote}</p>
-          <div className="message-actions">
+          <div className="message-edit-actions">
             <button type="submit" className="primary" disabled={blocked}>
               {withCost(mt.sendEdit, draftCost)}
             </button>

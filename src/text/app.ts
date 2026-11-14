@@ -132,8 +132,6 @@ export const appText = defineText({
     incognitoTitle: "Incognito chat",
     branchOpened:
       "Branch opened locally. No request was sent. Save again to keep these changes.",
-    branchCreated:
-      "New branch created; the original is available in Conversation branches. Choose Answer this question to request a reply. Your draft is unchanged.",
     nothingLeft:
       "Nothing is left of the search text after removing personal details.",
     enterHttps: "Enter a public HTTPS URL.",
@@ -250,7 +248,6 @@ export const appText = defineText({
     edit: "Edit",
     copyAnswer: "Copy answer",
     editedMessage: "Edited message",
-    createBranch: "Create branch",
     cancel: "Cancel",
 
     // Composer
@@ -286,7 +283,6 @@ export const appText = defineText({
     excluded: "Excluded",
     reviewNamed: (name: string) => `Review ${name}`,
     review: "Review",
-    newCharge: "Starts a new request and may incur another charge",
     retryGated: "Retry is unavailable while private chat is gated",
     answerThis: "Answer this question",
     retryLast: "Retry last response",
@@ -540,8 +536,6 @@ export const appText = defineText({
     incognitoTitle: "Inkognito-Chat",
     branchOpened:
       "Zweig lokal geöffnet. Es wurde keine Anfrage gesendet. Speichern Sie erneut, um diese Änderungen zu behalten.",
-    branchCreated:
-      "Neuer Zweig erstellt; das Original finden Sie bei den Zweigen der Unterhaltung. Wählen Sie „Diese Frage beantworten“, um eine Antwort anzufordern. Ihr Entwurf bleibt unverändert.",
     nothingLeft:
       "Nach dem Entfernen persönlicher Angaben bleibt vom Suchtext nichts übrig.",
     enterHttps: "Geben Sie eine öffentliche HTTPS-Adresse ein.",
@@ -656,7 +650,6 @@ export const appText = defineText({
     edit: "Bearbeiten",
     copyAnswer: "Antwort kopieren",
     editedMessage: "Bearbeitete Nachricht",
-    createBranch: "Zweig erstellen",
     cancel: "Abbrechen",
 
     searchSuggestion: "Suchvorschlag",
@@ -691,7 +684,6 @@ export const appText = defineText({
     excluded: "Ausgeschlossen",
     reviewNamed: (name: string) => `${name} prüfen`,
     review: "Prüfen",
-    newCharge: "Startet eine neue Anfrage und kann weitere Kosten verursachen",
     retryGated:
       "Erneutes Anfragen ist nicht möglich, solange der private Chat gesperrt ist",
     answerThis: "Diese Frage beantworten",
