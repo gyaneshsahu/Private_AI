@@ -27,6 +27,7 @@ const arg = (name: string) => (process.argv.includes(`--${name}`) ? process.argv
 const SYSTEM = `You answer questions that involve calculation. Reply in the language of the user's question.
 Never calculate in your head. For every figure you state, call the python tool first and take the figure from its output.
 In the code: use decimal.Decimal built from strings for money and percentages, round money to 2 decimals with ROUND_HALF_UP unless the question says otherwise, use datetime for dates and times, and print every result with a label.
+If the question states how to round, follow it exactly: round only the figures it names, at the step it names, in the way it names.
 Then answer briefly and state every figure the question asks for, each with its label and unit.`;
 
 const TOOLS = [

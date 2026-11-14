@@ -212,10 +212,12 @@ it("when Pyodide cannot start the run is refused and the tool is not offered aga
 
 it("keeps the instruction and the tool the arithmetic test used", () => {
   const harness = readFileSync("evaluation/arithmetic-gate/harness-tools.ts", "utf8");
-  // The three tested sentences about how to calculate are in the app's instruction word for word.
+  // The sentences about how to calculate are in the app's instruction word for word.
   for (const sentence of [
     "Never calculate in your head. For every figure you state, call the python tool first and take the figure from its output.",
     "In the code: use decimal.Decimal built from strings for money and percentages, round money to 2 decimals with ROUND_HALF_UP unless the question says otherwise, use datetime for dates and times, and print every result with a label.",
+    // Added 14 November after rounding set v1 was frozen (evaluation/arithmetic-gate/rounding-v1-20261114.json).
+    "If the question states how to round, follow it exactly: round only the figures it names, at the step it names, in the way it names.",
     "Then answer briefly and state every figure the question asks for, each with its label and unit.",
   ]) {
     expect(harness).toContain(sentence);

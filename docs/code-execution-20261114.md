@@ -63,7 +63,7 @@ Each follow-up verifies the destination again through the adapter (Privatemode r
 
 ## The instruction and the tool
 
-They are the ones the test used, adapted to sit beside the app's own instructions (`CODE_INSTRUCTION` and `PYTHON_TOOL` in `src/code-tool.ts`). The three sentences about how to calculate are word for word those of the harness; a test compares them. Added: one sentence in front ("You have one tool ... When a question involves calculation:") and one at the end ("For questions without calculation, answer as usual and do not call the tool.").
+They are the ones the test used, adapted to sit beside the app's own instructions (`CODE_INSTRUCTION` and `PYTHON_TOOL` in `src/code-tool.ts`). The three sentences about how to calculate are word for word those of the harness; a test compares them. Added: one sentence in front ("You have one tool ... When a question involves calculation:") and one at the end ("For questions without calculation, answer as usual and do not call the tool."). Added later the same day, in the app and the harness alike, after rounding set v1 was frozen: "If the question states how to round, follow it exactly: round only the figures it names, at the step it names, in the way it names." (see `evaluation/arithmetic-gate/results-tools-20261114.md`, "Rounding set v1").
 
 **Not tested with any model:** this instruction together with the app's long system message. The test used a short system message of its own. Live check 2.
 

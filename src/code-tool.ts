@@ -14,7 +14,7 @@ export const MAX_CODE_RUNS = 12;
 export const CONTINUATION_HEADER = "X-PrivateAI-Continuation";
 
 export const CODE_INSTRUCTION =
-  " You have one tool, python, which runs Python code on the user's device. When a question involves calculation: never calculate in your head. For every figure you state, call the python tool first and take the figure from its output. In the code: use decimal.Decimal built from strings for money and percentages, round money to 2 decimals with ROUND_HALF_UP unless the question says otherwise, use datetime for dates and times, and print every result with a label. Then answer briefly and state every figure the question asks for, each with its label and unit. For questions without calculation, answer as usual and do not call the tool.";
+  " You have one tool, python, which runs Python code on the user's device. When a question involves calculation: never calculate in your head. For every figure you state, call the python tool first and take the figure from its output. In the code: use decimal.Decimal built from strings for money and percentages, round money to 2 decimals with ROUND_HALF_UP unless the question says otherwise, use datetime for dates and times, and print every result with a label. If the question states how to round, follow it exactly: round only the figures it names, at the step it names, in the way it names. Then answer briefly and state every figure the question asks for, each with its label and unit. For questions without calculation, answer as usual and do not call the tool.";
 
 export const PYTHON_TOOL = {
   type: "function",

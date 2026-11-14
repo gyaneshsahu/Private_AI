@@ -58,6 +58,34 @@ The same set, this time through the app itself: browser, relay, streamed replies
 - The relay counted 8 of 184 replies as interrupted (the runner closes the page right after the answer).
 - Not checked: the follow-up credit and allowance counting with a signed-in account (the runner has no account; covered by unit tests only), a phone, Safari, Firefox, the hosted path.
 
+## Rounding set v1, prepared 14 November, not yet run
+
+Why: every real error above was a rounding rule stated in words. Adding a sentence and re-running this set would be tuning on the test, so a new set was written first.
+
+- **Set:** `rounding-v1-20261114.json`, 24 new two-turn conversations (12 German, 12 English, 18 critical), generated once by `make-rounding-v1.py` with Python's `decimal`. Each value is computed again from its written derivation by `tests/arithmetic-rounding-v1.test.ts`, which also pins the SHA-256 (`6e65df79...`), checks that no turn appears in an earlier set, that echoing the question fails, and that the frozen scorer accepts every expected value (and the Swiss format for CHF cases).
+- **Kinds:** Swiss 5-centime rounding of the total only (with discount, with lines, the till's line rounding); each line rounded then summed versus rounding the sum; whole euros or dollars half up, up and down; 10 cents; half up versus half to even; percentages to one decimal (rounded, truncated, half to even); whole packs, buckets, boxes, tables.
+- **Scoring:** the frozen `scorer.ts`, unchanged. No item uses the scorer's `rounding` field, because it would round the model's figure half up first (an unrounded 355.50 would pass for 356). 49 forbidden values catch the wrong rule (for example the tax rounded to 5 centimes).
+- **Frozen before the instruction changed** (commit `ccd9a6e`). Then one sentence was added to the code-tool instruction, in the app and the harness alike: "If the question states how to round, follow it exactly: round only the figures it names, at the step it names, in the way it names." (131 characters; the instruction is now 772.)
+- **To run (lead):** the Fast model before and after the change, 24 conversations each, about 50,000 tokens per run, about 100,000 together. The harness scores each conversation with the frozen scorer and prints the totals. "Before" runs from a worktree at the freeze commit, which has the old instruction:
+
+```powershell
+# before: instruction without the rounding sentence
+git worktree add .local/rounding-before ccd9a6e
+New-Item -ItemType Junction -Path .local/rounding-before/node_modules -Target C:\Gyanesh\Startups\Private_AI\node_modules
+Push-Location .local/rounding-before
+Invoke-WithPrivateAiSecret -Name PRIVATEMODE_API_KEY -Action {
+  npx tsx evaluation/arithmetic-gate/harness-tools.ts --cell flash --label rounding-v1-before --cases evaluation/arithmetic-gate/rounding-v1-20261114.json --cap 60000 }
+Pop-Location
+# after: from the checkout that has the new sentence
+Invoke-WithPrivateAiSecret -Name PRIVATEMODE_API_KEY -Action {
+  npx tsx evaluation/arithmetic-gate/harness-tools.ts --cell flash --label rounding-v1-after --cases evaluation/arithmetic-gate/rounding-v1-20261114.json --cap 60000 }
+# re-score either results file with the frozen scorer (lists the wrong case ids)
+npx tsx -e "import { readFileSync } from 'node:fs'; import { scoreConversation } from './evaluation/arithmetic-gate/scorer.ts'; const set = JSON.parse(readFileSync('evaluation/arithmetic-gate/rounding-v1-20261114.json', 'utf8')).cases; const run = JSON.parse(readFileSync(process.argv[1], 'utf8')).records; const wrong = run.filter((r) => !scoreConversation(set.find((c) => c.id === r.caseId), r.turns.map((t) => t.answer)).pass).map((r) => r.caseId); console.log({ conversations: run.length, exact: run.length - wrong.length, wrong })" .local/rounding-before/.local/arithmetic-tools-20261114/rounding-v1-before/results.json
+```
+
+  Then read every wrong answer: a misread rule, a scorer artefact (as `unseen3-23` was) or a real error. `--cap 60000` stops a run before a conversation once 60,000 tokens are passed. Remove the worktree afterwards with `git worktree remove .local/rounding-before`.
+- **Read the result honestly:** 24 conversations, one repetition each. A clear drop in wrong answers is a signal; a difference of one or two is noise.
+
 ## How it was run
 
 - `evaluation/arithmetic-gate/harness-tools.ts`: Privatemode SDK (attested, encrypted), one tool `python`, the harness runs the code in local Python with a deny-list (test harness only) and returns what it printed, at most 5 rounds per turn, the final text is scored by the frozen `scorer.ts`.
