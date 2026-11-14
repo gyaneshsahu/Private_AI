@@ -123,7 +123,7 @@ for (const lang of ["en", "de"] as const)
       try {
         const box = page.getByLabel(t.messageInput);
         const send = page.getByRole("button", { name: t.sendLabel, exact: true });
-        const done = page.locator("p.sr-only[role=status]");
+        const done = page.locator("p.answer-announcement");
         await ui(box).toBeVisible();
         await noSidewaysScroll(page);
         // The hint is shown only where there is a keyboard and room.
@@ -343,7 +343,7 @@ for (const lang of ["en", "de"] as const)
       expect(await calls(page)).toEqual(["line one\nline two"]);
       // The focus is not put back into the box: that would open the on-screen keyboard.
       expect(await focusedId(page)).not.toBe("message-input");
-      await ui(page.locator("p.sr-only[role=status]")).toHaveText(connectionText[lang].answerComplete);
+      await ui(page.locator("p.answer-announcement")).toHaveText(connectionText[lang].answerComplete);
       await noSidewaysScroll(page);
     } finally {
       await context.close();

@@ -45,7 +45,7 @@ export function AnswerAnnouncement({ last }: { last?: Pick<Message, "id" | "role
     );
   }, [last?.id, last?.role, last?.status]);
   return (
-    <p role="status" className="sr-only">
+    <p aria-live="polite" aria-atomic="true" className="sr-only answer-announcement">
       {done ? t.answerComplete : ""}
     </p>
   );
