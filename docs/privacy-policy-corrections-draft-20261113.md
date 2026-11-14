@@ -123,7 +123,9 @@ Evidence for 2.2:
 >
 > **To clear everything:** in your browser's settings, delete the site data for CometRow. This also deletes your saved conversations on this device. Download an encrypted backup first if you want to keep them.
 >
-> We store nothing in session storage, and the text recognition for photos keeps no copy of its data in your browser.
+> | `keyval-store` | IndexedDB database | The language files for reading text from photos and scans (German and English, about 39 MB). Public data, none of your content. Created the first time you use text recognition. | So the files need not be downloaded again. | Delete the site data for CometRow in your browser's settings (see below). |
+>
+> We store nothing in session storage. The text recognition for photos keeps no photo and no recognised text in your browser, only the language files above.
 
 Evidence for 2.3 (complete list of storage calls in `src/`, searched for `localStorage`, `sessionStorage`, `indexedDB`, `idb`, `caches`, `serviceWorker` and `document.cookie`):
 - Vault: `src/vault.ts:16-22` (stores `meta` and `conversations`), `:56` (default name `privateai-vault`, used only before an account is selected), `:64` (`privateai-vault-<id>`), `:833-841` (delete). Records are encrypted (`src/vault-crypto.ts`). Live search results and links are stripped before saving (`src/vault.ts:142`).
@@ -131,7 +133,7 @@ Evidence for 2.3 (complete list of storage calls in `src/`, searched for `localS
 - `src/health-consent.ts:5`, `:25-28` (version, choice, ISO time).
 - `src/answer-modes.ts:20`, `:31-33` (stores the value, including "auto"; never removed).
 - `src/appearance.ts:2`, `:13-15` (stores the value, including "system"; never removed).
-- OCR: `src/extraction.worker.ts:82` sets `cacheMethod: "none"`, so Tesseract does not use its IndexedDB cache.
+- OCR (changed 14 November 2026, owner decision): `src/extraction.worker.ts` no longer sets `cacheMethod: "none"`. Tesseract keeps the two unpacked language files (public data, 38.9 MB) in its IndexedDB database `keyval-store`, under keys starting with `ocr-data-1.0.0-4.0.0`. No photo and no recognised text is stored. See `docs/third-party-ocr-data-20261114.md`. The shipped policy says this in one sentence at the end of "What you can delete, and how" (`shared/privacy-policy.ts`, English and German); the table row and the sentence above are the matching draft wording.
 - No `sessionStorage`, Cache Storage or service worker in `src/`. No analytics or third-party loads in `index.html` or `src/`.
 - Cookies: Better Auth with prefix `privateai-account`, `httpOnly`, `sameSite: lax` (`server/account-auth.ts:270-274`); session length as in 2.1. Two other cookies exist in other server modes: `privateai-session` (`server/app.ts:306`, only when no consumer session is configured) and `privateai-access` (`server/invite-access.ts:57`, invite page). The production candidate uses the consumer session (`server/app.ts:145`), which sets no cookie of its own. Owner to confirm neither runs in production; if one does, add it to the table.
 

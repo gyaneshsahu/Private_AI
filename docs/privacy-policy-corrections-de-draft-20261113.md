@@ -93,7 +93,9 @@ UI-Bezeichnungen in Anführungszeichen („Gespeichert“, „Alles auf diesem G
 >
 > **Um alles zu entfernen:** Löschen Sie in den Einstellungen Ihres Browsers die Website-Daten von CometRow. Das löscht auch Ihre gespeicherten Unterhaltungen auf diesem Gerät. Laden Sie vorher eine verschlüsselte Sicherung herunter, wenn Sie sie behalten möchten.
 >
-> Wir speichern nichts im Sitzungsspeicher (Session Storage), und die Texterkennung für Fotos behält keine Kopie ihrer Daten in Ihrem Browser.
+> | `keyval-store` | IndexedDB-Datenbank | Die Sprachdateien für die Texterkennung in Fotos und Scans (Deutsch und Englisch, etwa 39 MB). Öffentliche Daten, keine Ihrer Inhalte. Wird angelegt, wenn Sie die Texterkennung zum ersten Mal nutzen. | Damit die Dateien nicht erneut heruntergeladen werden müssen. | Löschen Sie in den Einstellungen Ihres Browsers die Website-Daten von CometRow (siehe unten). |
+>
+> Wir speichern nichts im Sitzungsspeicher (Session Storage). Die Texterkennung für Fotos behält kein Foto und keinen erkannten Text in Ihrem Browser, nur die oben genannten Sprachdateien.
 
 Note: the English row for `cometrow.healthConsent` remains accurate. Since 13 November the record also notes which language the consent text was shown in (`lang`); one version covers the English and German texts together. If the owner approves 2.3, add "and the language" to the row in both languages ("und die Sprache").
 

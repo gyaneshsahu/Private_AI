@@ -3,16 +3,16 @@
   "healthConsentVersion": "draft-2026-11-13",
   "texts": {
     "policy": {
-      "en": "c59917f99a740c91d3dfd7191e589339444c9937116443491e0dc8e070df2d25",
-      "de": "e4b90119e11232cb39091e57c467f165b85b6873a9df98ea531206cc09337bb0"
+      "en": "adc93acba1ee6dab663ea6180089f21071bebf9721340ecb104495fc274dc23f",
+      "de": "b6b6501668fb61798004fe385f254bfbddc0ecc650e30d4ea081dcac05e76d95"
     },
     "policy.tinfoil": {
-      "en": "a270fd67fbd7c8faf2e353b42d1fee773046e043a83d7e3b1931150130c704a8",
-      "de": "2b9175d801b981e05a842e9bb392717430e5e9d6e7cb35bf10ff65620fc3f5f9"
+      "en": "527de726fa0955faa9fc83c98935550a3ef47f2e932377820cd3b4631f72cf10",
+      "de": "d1f6b4e4817f60919beeb8af4c1fe6e1ce31bf35be5f1564db0de7a710b0a845"
     },
     "policy.privatemode": {
-      "en": "284cb9c56c00ebecd3b14793c7bda6e7c5b993f0dc0529ba5addad6de8beac9f",
-      "de": "3344bad97028ddab618b1ec125956deeb5f565b14729401bd79540c5e4616754"
+      "en": "0ea5e6924db421daa10bc7d997e26ec6a44cceac0dd271c0a907b782549ab02f",
+      "de": "9d5329b0bb860c0d87045f5659441c84d8960e50798922d779a5ba2e67a2ffe9"
     },
     "privacyCopy.tinfoil": {
       "en": "5125ab1c1d598a59dbed22fba15b96b4edc0ddbe0766673d5274cc4036d7bd25",

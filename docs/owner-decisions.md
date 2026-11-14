@@ -4,6 +4,8 @@ Running list kept while the owner is away (from 12 November 2026). Each entry na
 
 ## What needs you before the alpha, in order (updated 13 November)
 
+**Added 14 November 2026 (owner-only, same read as the rest of the policy):** one new sentence in the privacy policy, English and German, at the end of "What you can delete, and how" / "Was Sie löschen können und wie" (`shared/privacy-policy.ts`). It says the text-recognition language files (public data, none of the user's content) are kept in the browser's storage after the first use, and that clearing the site's data removes them together with everything else saved on the device. It follows your decision of 14 November to keep the OCR data in the browser. An agent wrote both sentences and re-recorded the change pair; nobody has approved them. They need your approval and the same legal read as the rest of the policy, the German sentence first because it is the binding one. The policy date (22 October 2026) was not changed; decide the new date when you approve the policy as a whole. Details: `docs/third-party-ocr-data-20261114.md`.
+
 **Scope rule (owner, 13 November): alpha = beta, with the new feature scope.** There is no beta. Nothing is "later" any more. Every item is either **before the first invitee** or **during the alpha, before launch** (real invitees must use it before launch). An item leaves the scope only by an explicit owner decision. Handoff for the next session: `docs/handoff-20261113.md`. **Update, 13 November, night:** the owner named the features in this phase and an explicit "later" list (next block).
 
 

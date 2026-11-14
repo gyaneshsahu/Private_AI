@@ -36,7 +36,7 @@ Private chat is switched on only after our checks of the secure server pass. You
 
 ## What you can delete, and how
 
-One saved conversation: open Saved and choose Delete next to it. Everything saved on this device: open Saved and use Delete everything on this device; it removes every saved conversation and project in this browser and locks the vault, and cannot be undone. Encrypted backup files you downloaded are ordinary files on your device; delete them yourself, and remember that any copy still opens with its original password. Your account: open the account page and choose Close account; this needs a fresh email code, so on a service where email delivery is switched off it is not available yet.
+One saved conversation: open Saved and choose Delete next to it. Everything saved on this device: open Saved and use Delete everything on this device; it removes every saved conversation and project in this browser and locks the vault, and cannot be undone. Encrypted backup files you downloaded are ordinary files on your device; delete them yourself, and remember that any copy still opens with its original password. Your account: open the account page and choose Close account; this needs a fresh email code, so on a service where email delivery is switched off it is not available yet. The language files for reading text from photos and scans (public data, none of your content) are kept in this browser's storage after the first use so they need not be downloaded again; to remove them, clear this site's data in your browser settings, which also removes everything else saved on this device.
 
 ## What we cannot delete for you
 

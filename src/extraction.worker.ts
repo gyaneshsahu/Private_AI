@@ -29,16 +29,28 @@ class WorkerCanvasFactory {
     target.canvas = target.context = null;
   }
 }
-const ocrWorker = (progress?: (percent: number) => void) =>
+// The engine keeps the unpacked language data in this browser's IndexedDB (database
+// "keyval-store") under this name, so later runs do not download it again. Public data only.
+// The name carries the data version: tests/ocr-assets.test.ts fails until it is changed when the
+// data packages change, so an old copy is never read for new data.
+// shortcut: an old copy stays in the browser after such a change; delete the old keys then.
+const OCR_CACHE = "ocr-data-1.0.0-4.0.0";
+const ocrWorker = (progress?: (percent: number) => void) => {
   // German first, English second; both files come from /vendor/ocr on our own server.
-  createWorker(["deu", "eng"], 1, {
-    workerPath: "/vendor/ocr/worker.min.js",
-    corePath: "/vendor/ocr",
-    langPath: "/vendor/ocr",
-    cacheMethod: "none",
-    workerBlobURL: false,
-    logger: (info) => progress?.(Math.round(info.progress * 100)),
-  });
+  const start = (cacheMethod?: "refresh") =>
+    createWorker(["deu", "eng"], 1, {
+      workerPath: "/vendor/ocr/worker.min.js",
+      corePath: "/vendor/ocr",
+      langPath: "/vendor/ocr",
+      cachePath: OCR_CACHE,
+      cacheMethod,
+      workerBlobURL: false,
+      logger: (info) => progress?.(Math.round(info.progress * 100)),
+    });
+  // Blocked storage (a private window) is handled by the engine: it downloads instead. If the
+  // start still fails, for example on a damaged kept copy, try once more with a fresh download.
+  return start().catch(() => start("refresh"));
+};
 self.onmessage = async (event: MessageEvent<File>) => {
   const file = event.data;
   const limit = characterLimit(file.name);
