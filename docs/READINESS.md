@@ -1,4 +1,15 @@
 # PrivateAI readiness checklist
+## 14 November 2026, afternoon: live checks of memory and deep research; Privatemode rotated its deployment (agent)
+
+Verified live (development key, synthetic data):
+- **Memory** (probe, 14 calls): a relevant memory is used ("vegetarian, no peanuts" shaped a German recipe answer); unrelated memories do not leak into an unrelated answer; asked "what do you know about me", the model lists the notes; a German question with an English note gets a German answer; a masked `{{EMAIL-1}}` in a memory is repeated unchanged. The block costs about 65 prompt tokens.
+- **Deep research** (3 questions through the app, Privatemode and Brave): plans were 4 relevant search texts each; 12 searches, 5 to 6 pages per run; the answers were correct and structured (for example the notice periods in § 573c BGB: 3 months for the tenant, 3, 6 or 9 months for the landlord). About 6,500 to 7,100 tokens per run as reported by the app. **Defect:** citations showed as raw source codes instead of numbered source buttons; a fix is in progress.
+- **Code execution through the app** (earlier today): Fast 30 of 30, Thinking 16 of 16 exact.
+- **Privatemode rotated its deployment manifest** between the morning and the afternoon. The app refused chat as designed, but the user saw only "Protected response unavailable", because the SDK's attempt to fetch the new manifest is blocked by our content policy. Fixed: the app now says the provider's deployment differs from the reviewed one, and never retries on the backup. The owner must approve the new digest in the signed report (owner decisions, 14 November block, item 1). The local test report was updated so live tests could continue.
+- CI: the offline job was red on one flaky voice relay test (a count read before the refusal's response closed); fixed.
+
+Spend in this block: about 30,000 Privatemode tokens for memory, about 21,000 for deep research (plus probes), 12 Brave searches.
+
 ## 14 November 2026: canvas built, switched off, nothing verified live (agent)
 
 With the build setting `VITE_CANVAS=1` (absent by default), every completed answer has "Open in canvas": the answer becomes one editable document in a panel beside the chat (a full-screen sheet on tablet and phone). Markdown editor, live preview with the answer renderer, a table grid for a single Markdown table (spreadsheet paste, add and remove rows and columns, CSV). "Ask for changes" sends one ordinary message through the existing send path (masking, allowance, stop switch, modes), the canvas text once, at most 18,000 characters; the answer changes the canvas only on Apply; undo in memory. Saved with the conversation in the vault, never on the server. HTML mini pages were left out: a sandboxed frame cannot reliably close the network (WebRTC is not covered by CSP). Design and limits: `docs/canvas-20261114.md`.
