@@ -44,7 +44,7 @@ Invoke-WithPrivateAiSecret -Name PRIVATEMODE_API_KEY -Action { npx tsx scripts/p
 - Add `--sdk` to read the list through the Privatemode SDK instead of plain HTTPS.
 - Add `--models a,b` to check other IDs, for example a successor.
 
-**Not yet verified live (13 November 2026).** The baseline is not recorded. The server reads the list with a plain HTTPS GET to `/v1/models` and the key. The SDK documentation says this reply is not encrypted and needs only the key, but nobody has tried the plain call yet. If the plain call fails and `--sdk` works, tell the agent: the server check must then be changed. Until then the server logs `the daily model list check failed` every day, which is the intended behaviour for a check that cannot run.
+**Verified live on 14 November 2026:** the baseline is recorded (chat and speech models) and the plain HTTPS read works; see the section at the end. The paragraph below describes the state before that. The server reads the list with a plain HTTPS GET to `/v1/models` and the key. The SDK documentation says this reply is not encrypted and needs only the key, but nobody has tried the plain call yet. If the plain call fails and `--sdk` works, tell the agent: the server check must then be changed. Until then the server logs `the daily model list check failed` every day, which is the intended behaviour for a check that cannot run.
 
 The public changelog (https://docs.privatemode.ai/changelog/) is not checked automatically. A page fingerprint would raise an alert on every release note. Keep reading it in the weekly review.
 

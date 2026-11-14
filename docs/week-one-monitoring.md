@@ -72,7 +72,7 @@ Privatemode attestation queue: {"sent":12,"waited":3,"waitedMs":4100,"limited429
 
 | Limit | Message | Where | Note |
 | --- | --- | --- | --- |
-| 3 chats at once per server instance | "Three requests are already running." | `server/app.ts` (`active >= 3`) | Still 3. Your open decision: raise to 10 for the alpha (owner list, 13 November). Each refusal also throws away the browser's verified session, so the next message needs a new attestation check |
+| 3 chats at once per server instance | "Three requests are already running." | `server/app.ts` (`active >= 3`) | Still 3 (decided 13 November: stays 3 unless the busy count shows a problem). Earlier note: raise to 10 for the alpha (owner list, 13 November). Each refusal also throws away the browser's verified session, so the next message needs a new attestation check |
 | 1 chat at once per account | "A request is already running for this account." | `server/app.ts` | The slot is freed as soon as the browser hangs up, so the automatic retry after a time-out is not refused |
 | Allowance used up | "No request allowance is available. No request was forwarded." or "Not enough request allowance: this mode counts as 5 requests." | `server/app.ts` | See "Automatic allowance" |
 | Spend cap | "The approved spending limit for this provider review is reached. No request was forwarded." | `server/app.ts` | Chat stops for everyone; `/api/status` shows it |
@@ -138,7 +138,7 @@ Record each week in one line: date, portal tokens, Fast messages, Thinking messa
 
 ### Extra read-only queries (psql as the owner role)
 
-Queries A, B and C are in the Tinfoil-era section below and still apply. Query C counts Thinking as 3, the same as the allowance.
+Queries A, B and C are in the Tinfoil-era section below and still apply. Query C was written when Thinking counted 3; it now counts 5 (decided 14 November), so read its Thinking figures with that in mind.
 
 ```sql
 -- D: request records older than 90 days (should be 0 once the purge runs)

@@ -1,6 +1,6 @@
 # Render deploy and live checks (13 November 2026)
 
-Status: written by the agent from the repository on `codex/development-handoff` (local HEAD `4492903`; GitHub has `45fe62a`). Nothing was deployed, nothing was run on Render, no live call was made. Every step is for the owner. Anything the repository cannot show is marked **(unverified)**.
+Status: written by the agent from the repository on `codex/development-handoff` (written at local HEAD `4492903`. **Deploy commit `08b7bf1e5efe4bb3e045cb3544d05b1b188d5849` or newer**: before `7fc9635` of 14 November the Render bridge did not forward the Privatemode request headers and hosted chat would fail. Ask the agent for the newest green commit). Nothing was deployed, nothing was run on Render, no live call was made. Every step is for the owner. Anything the repository cannot show is marked **(unverified)**.
 
 How to read this: do the sections in order. Each section ends with what you should see. If you see something else, stop and go to section 7.
 
@@ -421,9 +421,9 @@ Inputs: report draft prices for GLM-5.3, EUR 1.55 input and EUR 5.74 output per 
 | A third of the allowance at the testing average | about 1.3 million | about EUR 4 | about EUR 4 to 5 |
 
 What this means:
-- **The free balance (about 500,000 tokens, owner, 13 November) is about 200 answers.** Phase 0 (you alone, at least 20 messages per mode plus these live checks) may use half of it. In the worst case, 10 people use it up in a few hours.
+- **The free balance was 1.579M tokens (owner, portal, 13 November evening; an earlier reading of about 500,000 was wrong) and about 1.2M on 14 November after testing.** The first invite waits for paid billing (decided 14 November). Phase 0 (you alone, at least 20 messages per mode plus these live checks) may use half of it. In the worst case, 10 people use it up in a few hours.
 - **The paid budget must exist before the first invitee.** Better: before you run the live checks, so they cannot stop halfway.
-- The recommended EUR 100 a month at Privatemode covers normal use (about EUR 15 to 55 a month for 10 people) but not the worst case (about EUR 180 net, EUR 210 with VAT, per month). EUR 100 is fine as a hard wall if you accept that chat stops at it. Set the portal alert at EUR 25 a week (the alpha plan's stop rule).
+- The recommended EUR 200 a month at Privatemode (corrected in `docs/owner-decisions.md`; this section first said EUR 100) covers normal use (about EUR 15 to 55 a month for 10 people) but not the worst case (about EUR 180 net, EUR 210 with VAT, per month). EUR 100 is fine as a hard wall if you accept that chat stops at it. Set the portal alert at EUR 25 a week (the alpha plan's stop rule).
 - **App cap (`approvedSpendUSD`)**: it books every request at about EUR 0.14 (32,000 characters) times your EUR to USD rate, Fast or Thinking alike. For a 7-day window: number of accounts x 150 x that amount. For 4 accounts in phase 1 (you, the test account, 2 friends) that is about USD 90 to 110 at a rate near 1.1; for 10 accounts about USD 240 to 290 **(unverified: your exchange rate and whether `pricing` includes VAT)**. The portal spend limit stays the real money wall.
 - Note for the weekly review: query A in `week-one-monitoring.md` counts each Thinking request 5 times (it includes the unit rows); the relay counts it once.
 
