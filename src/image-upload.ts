@@ -4,7 +4,14 @@
 // copied: only drawn pixels are encoded, so EXIF, GPS and other metadata cannot survive.
 import { IMAGE_MAX_EDGE } from "../shared/images";
 import { findIdentifiers, INVISIBLE, type IdentifierKind } from "./identifier-masking";
-import { outputSize, type CreateCanvas, type Rect, type Size } from "./photo-capture";
+import {
+  listImageMetadata,
+  outputSize,
+  sniffImageType,
+  type CreateCanvas,
+  type Rect,
+  type Size,
+} from "./photo-capture";
 import { imageText } from "./text/images";
 import { textFor } from "./text/core";
 
@@ -167,9 +174,37 @@ export async function encodeForSending(
   throw new Error(textFor(imageText).tooLarge);
 }
 
-/** The JPEG as the data URL that goes into the encrypted message. */
+/**
+ * Drops every application segment except the plain JFIF header, and every comment, from a JPEG.
+ * A canvas encoder copies nothing from the chosen file, but it may add segments of its own
+ * (Chromium writes its colour profile as APP2). What is sent holds only what a decoder needs.
+ * Fails closed: if anything of that kind is still found afterwards, nothing is sent.
+ */
+export function stripJpegMetadata(bytes: Uint8Array): Uint8Array {
+  const kept: Uint8Array[] = [bytes.subarray(0, 2)];
+  let offset = 2;
+  while (offset + 4 <= bytes.length && bytes[offset] === 0xff && bytes[offset + 1] !== 0xda) {
+    const marker = bytes[offset + 1];
+    const end = offset + 2 + ((bytes[offset + 2] << 8) | bytes[offset + 3]);
+    if (!((marker >= 0xe1 && marker <= 0xef) || marker === 0xfe)) kept.push(bytes.subarray(offset, end));
+    offset = end;
+  }
+  // From the image data on, the bytes stay as they are.
+  kept.push(bytes.subarray(offset));
+  const out = new Uint8Array(kept.reduce((n, part) => n + part.length, 0));
+  let at = 0;
+  for (const part of kept) {
+    out.set(part, at);
+    at += part.length;
+  }
+  if (sniffImageType(out) !== "image/jpeg" || listImageMetadata(out).length)
+    throw new Error(textFor(imageText).prepareFailed);
+  return out;
+}
+
+/** The JPEG, without any metadata segment, as the data URL that goes into the encrypted message. */
 export async function toAttachedImage(encoded: { blob: Blob; width: number; height: number }): Promise<AttachedImage> {
-  const bytes = new Uint8Array(await encoded.blob.arrayBuffer());
+  const bytes = stripJpegMetadata(new Uint8Array(await encoded.blob.arrayBuffer()));
   let binary = "";
   for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   return {

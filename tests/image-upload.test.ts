@@ -27,12 +27,13 @@ import {
   IMAGE_DATA_URL_PREFIX,
   imageConsentStep,
   sendSize,
+  stripJpegMetadata,
   suggestRedactions,
   toAttachedImage,
   type OcrWord,
 } from "../src/image-upload";
 import { streamReply } from "../src/inference";
-import type { CreateCanvas } from "../src/photo-capture";
+import { listImageMetadata, type CreateCanvas } from "../src/photo-capture";
 import { discardPrivatemodeSession } from "../src/providers/privatemode-client";
 import { containsImageData, savedConversationSchema } from "../src/saved-conversation";
 import { imageText } from "../src/text/images";
@@ -182,11 +183,36 @@ it("burns the boxes in after the picture is drawn, and lowers quality, then size
 });
 
 it("the data URL of a JPEG at the cap has exactly the length the relay's bound is computed from", async () => {
-  const attached = await toAttachedImage({ blob: new Blob([new Uint8Array(280_000).fill(200)], { type: "image/jpeg" }), width: 10, height: 10 });
+  // Start of image, then straight to the image data: nothing to strip.
+  const jpeg = Buffer.alloc(280_000, 200);
+  jpeg.set([0xff, 0xd8, 0xff, 0xda]);
+  const attached = await toAttachedImage({ blob: new Blob([jpeg], { type: "image/jpeg" }), width: 10, height: 10 });
   expect(attached.dataUrl.startsWith(IMAGE_DATA_URL_PREFIX)).toBe(true);
   expect(attached.dataUrl.length).toBe(imageDataUrlLength(280_000));
   expect(attached.bytes).toBe(280_000);
-  expect(Buffer.from(attached.dataUrl.slice(IMAGE_DATA_URL_PREFIX.length), "base64")).toEqual(Buffer.alloc(280_000, 200));
+  expect(Buffer.from(attached.dataUrl.slice(IMAGE_DATA_URL_PREFIX.length), "base64")).toEqual(jpeg);
+});
+
+it("keeps only what a decoder needs in the JPEG: EXIF, colour profile, other application segments and comments are dropped, and anything left over refuses the picture", async () => {
+  const segment = (marker: number, body: string) => {
+    const data = Buffer.from(body, "latin1");
+    return Buffer.concat([Buffer.from([0xff, marker, (data.length + 2) >> 8, (data.length + 2) & 255]), data]);
+  };
+  const soi = Buffer.from([0xff, 0xd8]);
+  const jfif = segment(0xe0, "JFIF\0header");
+  const tables = segment(0xdb, "quantisation tables");
+  const scan = Buffer.concat([segment(0xda, "scan header"), Buffer.from("compressed image data \xff\x00 more", "latin1"), Buffer.from([0xff, 0xd9])]);
+  const tagged = Buffer.concat([soi, jfif, segment(0xe1, "Exif\0\0GPS 52.52N 13.405E"), segment(0xe2, "ICC_PROFILE"), tables, segment(0xed, "Photoshop IPTC author"), segment(0xfe, "a comment"), scan]);
+  expect(listImageMetadata(tagged)).toEqual(["APP1", "APP2", "APP13", "COM"]);
+  const stripped = Buffer.from(stripJpegMetadata(tagged));
+  expect(stripped).toEqual(Buffer.concat([soi, jfif, tables, scan]));
+  expect(listImageMetadata(stripped)).toEqual([]);
+  // Through the real path: what is attached is the stripped file.
+  const attached = await toAttachedImage({ blob: new Blob([tagged], { type: "image/jpeg" }), width: 1, height: 1 });
+  expect(Buffer.from(attached.dataUrl.slice(IMAGE_DATA_URL_PREFIX.length), "base64")).toEqual(stripped);
+  expect(attached.bytes).toBe(stripped.length);
+  // Not a JPEG at all: refused, nothing attached.
+  expect(() => stripJpegMetadata(Buffer.from("not a picture"))).toThrow(imageText.en.prepareFailed);
 });
 
 const PICTURE = IMAGE_DATA_URL_PREFIX + Buffer.from("synthetic jpeg bytes").toString("base64");
