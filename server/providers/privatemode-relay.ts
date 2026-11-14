@@ -33,7 +33,7 @@ const single = (value: string | string[] | undefined) =>
   Array.isArray(value) ? value[0] : value;
 /** Client headers forwarded upstream: content negotiation and the SDK's own routing headers. */
 const REQUEST_HEADERS = /^(content-type|accept|privatemode-[a-z-]+)$/;
-const REPLY_HEADERS = /^(content-type|privatemode-oae-response-header|x-request-id)$/;
+export const REPLY_HEADERS = /^(content-type|privatemode-oae-response-header|x-request-id)$/;
 const KEY_PATHS = ["/privatemode/v1/attest", "/privatemode/v1/secret"];
 /** The relay's reply when an attest call cannot be sent in time; the browser shows a plain message. */
 export const ATTESTATION_BUSY = {
@@ -41,7 +41,7 @@ export const ATTESTATION_BUSY = {
   reason: "attestation_busy",
 };
 
-function forwardedHeaders(headers: IncomingHttpHeaders) {
+export function forwardedHeaders(headers: IncomingHttpHeaders) {
   const out: Record<string, string> = {};
   for (const [name, value] of Object.entries(headers))
     if (typeof value === "string" && REQUEST_HEADERS.test(name)) out[name] = value;
@@ -130,7 +130,8 @@ export function createPrivatemodeRelayAdapter(): InferenceRelayAdapter {
     guard() {
       return (_req, _res, next) => next();
     },
-    rootPaths: ["/v1/chat/completions", ...KEY_PATHS],
+    // The transcription path is answered only while voice input is switched on (privatemode-voice.ts).
+    rootPaths: ["/v1/chat/completions", "/v1/audio/transcriptions", ...KEY_PATHS],
     routes({ qualification, apiKey, manifest }) {
       const router = express.Router();
       // Counts only: no bodies, paths or account data.

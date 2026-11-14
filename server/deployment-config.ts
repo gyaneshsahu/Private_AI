@@ -48,6 +48,19 @@ const schema = z
           })
           .strict()
           .optional(),
+        /**
+         * Voice input (dictation), its own switch, off unless enabled. It also needs the report's
+         * `speech` model. Limits: seconds per recording, and audio minutes per account in any
+         * 24 hours with every recording counted at full length (docs/voice-to-text-20261114.md).
+         */
+        voice: z
+          .object({
+            enabled: z.boolean(),
+            maxSeconds: z.number().int().min(10).max(300),
+            dailyMinutes: z.number().int().min(1).max(120),
+          })
+          .strict()
+          .optional(),
       })
       .strict()
       .optional(),
@@ -196,6 +209,9 @@ export async function loadDeploymentConfig(file: string) {
               stopFile: inference.stopFile,
               ...(inference.allowance ? { allowance: inference.allowance } : {}),
               ...(inference.noticeFile ? { noticeFile: inference.noticeFile } : {}),
+              ...(inference.voice?.enabled
+                ? { voice: { maxSeconds: inference.voice.maxSeconds, dailyMinutes: inference.voice.dailyMinutes } }
+                : {}),
               ...(inference.searchKeyFile
                 ? { searchKey: (await boundedFile(inference.searchKeyFile)).toString("utf8").trim() }
                 : {}),

@@ -180,6 +180,14 @@ export const qualificationSchema = z.object({
   }),
   approvedSpendUSD: z.number().positive(),
   privatemode: privatemodeEvidence.optional(),
+  /**
+   * Voice input (dictation): the speech-to-text model at this report's provider and the allowance
+   * units one transcription uses. Absent means no voice input. Never a chat model.
+   */
+  speech: z
+    .object({ model: modelName, allowanceCost: z.number().int().min(1).max(10) })
+    .strict()
+    .optional(),
   ...modelSettings,
 });
 export type Qualification = z.infer<typeof qualificationSchema>;
@@ -246,6 +254,12 @@ export function qualifiedModels(report: Qualification): Set<string> {
     ].filter((m): m is string => !!m),
   );
 }
+/** Every model the daily model check watches: the chat models and the speech model. */
+export function watchedModels(report: Qualification): Set<string> {
+  const models = qualifiedModels(report);
+  if (report.speech) models.add(report.speech.model);
+  return models;
+}
 /** The largest output limit any request under this report may use. */
 export function largestOutputLimit(report: Qualification): number {
   return Math.max(
@@ -272,6 +286,9 @@ export function validateQualification(
   if ((report.provider === "privatemode") !== (report.privatemode !== undefined))
     throw Error("The Privatemode evidence block is required for Privatemode and only for it.");
   const models = qualifiedModels(report);
+  // Only Privatemode's speech endpoint is wired (server/providers/privatemode-voice.ts).
+  if (report.speech && (report.provider !== "privatemode" || models.has(report.speech.model)))
+    throw Error("The speech model needs a Privatemode report and must not be a chat model.");
   for (const [setting, owners] of Object.entries(MODEL_SETTINGS))
     if (report[setting as Setting] !== undefined && !owners.some((m) => models.has(m)))
       throw Error("A model setting names a model the report does not qualify.");
@@ -485,6 +502,8 @@ export interface AppStatus {
     cacheSalt?: string;
   };
   search: boolean;
+  /** Voice input is switched on for this deployment; absent means no microphone button. */
+  voice?: { maxSeconds: number };
   publicPageHosts?: string[] | null;
   /** Plain-text notice the operator shows to everyone (outage, announced provider switch). */
   operatorNotice?: string;

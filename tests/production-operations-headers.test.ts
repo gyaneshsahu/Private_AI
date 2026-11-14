@@ -31,7 +31,7 @@ it("healthz and readyz carry the fixed security headers and no cookie", async ()
       ["referrer-policy", "no-referrer"],
       ["x-content-type-options", "nosniff"],
       ["x-frame-options", "DENY"],
-      ["permissions-policy", "camera=(self), microphone=(), geolocation=()"],
+      ["permissions-policy", "camera=(self), microphone=(self), geolocation=()"],
       ["content-security-policy", "default-src 'none'"],
     ])
       expect(response.headers.get(name), `${path} ${name}`).toBe(value);

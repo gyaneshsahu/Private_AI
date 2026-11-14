@@ -28,6 +28,13 @@ const GERMAN: Record<string, string> = {
   "Only a qualified answer mode and its models are accepted.":
     "Nur ein freigegebener Antwortmodus und seine Modelle werden angenommen.",
   "Only the qualified model is accepted.": "Nur das freigegebene Modell wird angenommen.",
+  // Voice input
+  "Voice input is not switched on.": "Die Spracheingabe ist nicht eingeschaltet.",
+  "Only the qualified speech model is accepted.": "Nur das freigegebene Sprachmodell wird angenommen.",
+  "This recording is too large. No request was forwarded.": `Diese Aufnahme ist zu groß. ${NOTHING_SENT}`,
+  "The daily voice input limit is reached. It frees up within 24 hours. No request was forwarded.": `Das Tageslimit für Spracheingabe ist erreicht. Es wird innerhalb von 24 Stunden wieder frei. ${NOTHING_SENT}`,
+  "The recording could not be transcribed. No automatic retry was made.":
+    "Die Aufnahme konnte nicht in Text umgewandelt werden. Es wurde nicht automatisch erneut versucht.",
   "Only encrypted requests to the qualified destination are accepted.":
     "Nur verschlüsselte Anfragen an das freigegebene Ziel werden angenommen.",
   "The approved deployment manifest is unavailable.":
@@ -180,6 +187,10 @@ const PATTERNS: [RegExp, (...groups: string[]) => string][] = [
   [
     /^Not enough request allowance: this mode counts as (\d+) requests\. No request was forwarded\.$/,
     (n) => `Ihr Kontingent reicht nicht aus: Dieser Modus zählt als ${n} Anfragen. ${NOTHING_SENT}`,
+  ],
+  [
+    /^Not enough request allowance: voice input counts as (\d+) requests\. No request was forwarded\.$/,
+    (n) => `Ihr Kontingent reicht nicht aus: Die Spracheingabe zählt als ${n} Anfragen. ${NOTHING_SENT}`,
   ],
 ];
 

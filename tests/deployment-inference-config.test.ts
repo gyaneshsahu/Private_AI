@@ -60,8 +60,18 @@ it("loads production chat only when the inference section is present and enabled
   const noticeFile = join(root, "notice.txt");
   await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, noticeFile } }));
   expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ noticeFile });
-  // Relative paths, unknown fields, a bad allowance and an unreadable report refuse the whole configuration.
+  // Voice input has its own switch: absent or disabled means off; enabled passes the two limits on.
+  const voice = { enabled: true, maxSeconds: 120, dailyMinutes: 10 };
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, voice: { ...voice, enabled: false } } }));
+  expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("voice");
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, voice } }));
+  expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ voice: { maxSeconds: 120, dailyMinutes: 10 } });
+  // Relative paths, unknown fields, a bad allowance, bad voice limits and an unreadable report refuse the whole configuration.
   for (const bad of [
+    { ...inference, voice: { enabled: true } },
+    { ...inference, voice: { ...voice, maxSeconds: 3600 } },
+    { ...inference, voice: { ...voice, dailyMinutes: 0 } },
+    { ...inference, voice: { ...voice, model: "whisper-large-v3" } },
     { ...inference, stopFile: "chat-stopped" },
     { ...inference, extra: true },
     { ...inference, allowance: { requestLimit: 0, days: 7 } },

@@ -32,6 +32,7 @@ import { braveSearchProvider, type SearchProvider } from "./providers/search";
 // manual (a new report is deployed), never automatic on failure.
 import "./providers/tinfoil-relay";
 import { privatemodeKeyExpiryWarning } from "./providers/privatemode-relay";
+import { VOICE_PATH, voiceRoute, type VoiceSettings } from "./providers/privatemode-voice";
 import {
   serviceDispatcher,
   proxyConfigured,
@@ -77,6 +78,8 @@ export interface Config {
    * starts whenever the account has no current one. Absent means none is created (as before).
    */
   autoAllowance?: { requestLimit: number; days: number; dailyLimit?: number };
+  /** Voice input (dictation) limits; absent means off. It also needs the report's `speech` model. */
+  voice?: VoiceSettings;
   /** File whose text is shown to every user as a notice; missing or empty means none. Re-read every 30 s. */
   noticeFile?: string;
   /** Unmounted consumer composition. Candidate mode never accepts upstream credentials. */
@@ -209,8 +212,10 @@ export function createApp(config: Config) {
       "X-Frame-Options": "DENY",
       // Camera is allowed for this origin only; the client requests it solely
       // from the Photo to text dialog's Use camera button. Owner approved
-      // 21 October 2026. Microphone and geolocation stay blocked.
-      "Permissions-Policy": "camera=(self), microphone=(), geolocation=()",
+      // 21 October 2026. The microphone is allowed for this origin only, for voice
+      // input; the client requests it solely from the composer's microphone button,
+      // which exists only while voice input is switched on. Geolocation stays blocked.
+      "Permissions-Policy": "camera=(self), microphone=(self), geolocation=()",
       "Content-Security-Policy": contentSecurityPolicy,
     });
     next();
@@ -398,6 +403,7 @@ export function createApp(config: Config) {
           : {}),
       },
       search: !!config.searchKey,
+      ...(config.voice && ready && q?.speech ? { voice: { maxSeconds: config.voice.maxSeconds } } : {}),
       ...(await operatorNotice().then((text) => (text ? { operatorNotice: text } : {}))),
       publicPageHosts: proxyConfigured ? publicFetchHosts : null,
     });
@@ -446,6 +452,34 @@ export function createApp(config: Config) {
         });
       providerRoutes(req, res, next);
     });
+  if (config.voice)
+    app.post(
+      "/api/inference" + VOICE_PATH,
+      ...voiceRoute({
+        settings: config.voice,
+        apiKey: config.apiKey,
+        qualification: parseQualification,
+        stopped: config.inferenceStopped,
+        usage: config.usage,
+        dailyLimit: config.autoAllowance?.dailyLimit,
+        ensureAllowance,
+        running: () => active,
+        // The same slots as chat below: three per instance, one per account.
+        claim(accountId) {
+          if (active >= 3) return "instance";
+          if (accountId && inFlight.has(accountId)) return "account";
+          active++;
+          if (accountId) inFlight.set(accountId, 1);
+          let released = false;
+          return () => {
+            if (released) return;
+            released = true;
+            active--;
+            if (accountId) inFlight.delete(accountId);
+          };
+        },
+      }),
+    );
   app.post(
     "/api/inference/v1/chat/completions",
     express.raw({ type: "*/*", limit: "1mb" }),

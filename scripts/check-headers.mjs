@@ -5,7 +5,7 @@ const FIXED = {
   "referrer-policy": "no-referrer",
   "x-content-type-options": "nosniff",
   "x-frame-options": "DENY",
-  "permissions-policy": "camera=(self), microphone=(), geolocation=()",
+  "permissions-policy": "camera=(self), microphone=(self), geolocation=()",
 };
 const PATHS = ["/healthz", "/api/status", "/", "/missing"];
 const origin = process.argv[2];

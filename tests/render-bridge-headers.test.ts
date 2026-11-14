@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { expect, it } from "vitest";
 import { BRIDGE_REQUEST_HEADERS } from "../server/render-bridge";
 
-const RESPONSE_ONLY = new Set(["x-privateai-upstream", "ehbp-response-nonce"]);
+const RESPONSE_ONLY = new Set(["x-privateai-upstream", "x-privateai-voice", "ehbp-response-nonce"]);
 
 function sources(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {

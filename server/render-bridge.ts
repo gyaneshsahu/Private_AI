@@ -117,7 +117,7 @@ export function createRenderBridge(config: {
                 "X-Content-Type-Options": "nosniff",
                 "X-Frame-Options": "DENY",
                 "Permissions-Policy":
-                  "camera=(self), microphone=(), geolocation=()",
+                  "camera=(self), microphone=(self), geolocation=()",
                 "Content-Security-Policy": "default-src 'none'",
               })
               .end();

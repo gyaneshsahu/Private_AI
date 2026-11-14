@@ -242,7 +242,7 @@ describe.runIf(!!process.env.PRIVATEAI_SYNTHETIC_PG)(
       for (const [name, value] of [
         ["x-content-type-options", "nosniff"],
         ["x-frame-options", "DENY"],
-        ["permissions-policy", "camera=(self), microphone=(), geolocation=()"],
+        ["permissions-policy", "camera=(self), microphone=(self), geolocation=()"],
         ["content-security-policy", "default-src 'none'"],
       ])
         expect(health.headers[name], name).toBe(value);

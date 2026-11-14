@@ -6,7 +6,7 @@
 // key: no user data, no prompt, no tokens. Nothing is switched automatically.
 import { readFileSync } from "node:fs";
 import { request } from "undici";
-import { qualifiedModels, type Qualification } from "../shared/contracts";
+import { watchedModels, type Qualification } from "../shared/contracts";
 import { serviceDispatcher } from "./network";
 import { MODEL_ALERT } from "./providers/inference-relay";
 
@@ -129,7 +129,7 @@ export function scheduleModelCheck(
   if (q?.provider !== "privatemode") return () => {};
   let watched: string[];
   try {
-    watched = [...qualifiedModels(q)];
+    watched = [...watchedModels(q)];
     fetchList ??= privatemodeModelList(q.origin, apiKey);
   } catch {
     log(`${MODEL_ALERT} the daily model list check cannot start: the report's models or origin are unreadable. ${RUNBOOK}`);

@@ -85,7 +85,7 @@ export function productionOperations(database: Pool) {
         "Referrer-Policy": "no-referrer",
         "X-Content-Type-Options": "nosniff",
         "X-Frame-Options": "DENY",
-        "Permissions-Policy": "camera=(self), microphone=(), geolocation=()",
+        "Permissions-Policy": "camera=(self), microphone=(self), geolocation=()",
         "Content-Security-Policy": "default-src 'none'",
       });
     if (req.method === "GET" && req.originalUrl === "/healthz") {

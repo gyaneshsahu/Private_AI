@@ -70,6 +70,8 @@ export interface ProductionInferenceConfig {
   searchKey?: string;
   /** Text file shown to every user as a notice while it is non-empty. */
   noticeFile?: string;
+  /** Voice input limits; absent means voice input is off. */
+  voice?: { maxSeconds: number; dailyMinutes: number };
 }
 
 export function createProductionConsumerCandidate(
@@ -110,6 +112,7 @@ export function createProductionConsumerCandidate(
           ...(inference.allowance ? { autoAllowance: inference.allowance } : {}),
           ...(inference.searchKey ? { searchKey: inference.searchKey } : {}),
           ...(inference.noticeFile ? { noticeFile: inference.noticeFile } : {}),
+          ...(inference.voice ? { voice: inference.voice } : {}),
           // Per-account prompt-cache salts stay stable across restarts (derived, not the secret itself).
           cacheSaltSecret: createHash("sha256").update(`cache-salt-key|${config.secret}`).digest("hex"),
         }

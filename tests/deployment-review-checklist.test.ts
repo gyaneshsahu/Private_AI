@@ -114,7 +114,7 @@ describe("deployment review checklist (launch plan 7.5) matches the repository",
       '"referrer-policy": "no-referrer"',
       '"x-content-type-options": "nosniff"',
       '"x-frame-options": "DENY"',
-      '"permissions-policy": "camera=(self), microphone=(), geolocation=()"',
+      '"permissions-policy": "camera=(self), microphone=(self), geolocation=()"',
     ])
       expect(script, header).toContain(header);
   });

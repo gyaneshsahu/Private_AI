@@ -7,7 +7,7 @@ import { createApp } from "../server/app";
 import { InviteRegistry } from "../server/invite-registry";
 
 const FIXED = {
-  "permissions-policy": "camera=(self), microphone=(), geolocation=()",
+  "permissions-policy": "camera=(self), microphone=(self), geolocation=()",
   "cache-control": "no-store",
   "referrer-policy": "no-referrer",
   "x-content-type-options": "nosniff",
@@ -35,7 +35,7 @@ function expectFixedHeaders(response: Response, label: string) {
   ).toMatch(/default-src '(self|none)'/);
 }
 
-it("sends the fixed security headers on every response, allowing the camera for this origin only", async () => {
+it("sends the fixed security headers on every response, allowing the camera and the microphone for this origin only", async () => {
   // Same shape as the served development app: no invite gate, no credentials.
   const { server, origin } = await listen();
   server.on("request", createApp({ origin }));
