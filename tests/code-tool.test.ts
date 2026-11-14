@@ -247,7 +247,7 @@ it("serves the pinned Pyodide from our own origin: runtime files only, in a fold
   expect(readFileSync(`${folder}/NOTICE.txt`, "utf8")).toContain("Mozilla Public License 2.0");
   // Only the worker loads it, by our own path; the page and the other sources never name it.
   const worker = readFileSync("src/python.worker.ts", "utf8");
-  expect(worker).toContain("loadPyodide({ indexURL: PYODIDE_PATH })");
+  expect(worker).toContain("loadPyodide({ indexURL: PYODIDE_PATH, packageBaseUrl: PYODIDE_PATH })");
   for (const file of ["python.worker.ts", "python-sandbox.ts", "code-tool.ts"])
     expect(/https?:\/\/|jsdelivr|unpkg|cdnjs/i.test(readFileSync(`src/${file}`, "utf8")), file).toBe(false);
   expect(readFileSync("index.html", "utf8")).not.toMatch(/pyodide/i);

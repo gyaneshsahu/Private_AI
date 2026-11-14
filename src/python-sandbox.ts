@@ -30,6 +30,9 @@ const BLOCKED = [
   "RTCPeerConnection",
   "RTCDataChannel",
   "Notification",
+  // A font can be loaded from a URL, which is a request too.
+  "FontFace",
+  "fonts",
 ];
 const BLOCKED_NAVIGATOR = ["storage", "serviceWorker", "locks", "sendBeacon", "connection"];
 

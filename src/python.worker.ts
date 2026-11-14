@@ -11,7 +11,8 @@ const scope = self as unknown as {
 const ready: Promise<PythonRuntime | undefined> = (async () => {
   try {
     const { loadPyodide } = await import(/* @vite-ignore */ `${PYODIDE_PATH}pyodide.mjs`);
-    const python: PythonRuntime = await loadPyodide({ indexURL: PYODIDE_PATH });
+    // packageBaseUrl too: without it Pyodide keeps a CDN address as the place for packages.
+    const python: PythonRuntime = await loadPyodide({ indexURL: PYODIDE_PATH, packageBaseUrl: PYODIDE_PATH });
     // Fail closed: no code runs while a network or storage function is still reachable.
     return hardenScope(self).length ? undefined : python;
   } catch {
