@@ -19,7 +19,7 @@ const qualification = {
   },
 };
 // The model's part. The question picks the code; "SLOW" never ends, "BRIDGE" tries every way out.
-const model = `export async function streamReply(c,q,csrf,signal,chunk,status,calc,kept,choice,mode,salt,code){
+const model = `export async function streamReply(c,q,csrf,signal,chunk,status,calc,kept,choice,mode,salt,image,code){
   const question = c.messages.at(-1).text;
   (window.__calls ??= []).push({ mode, code: !!code });
   if (!code) { chunk("Without code: about 1,220 EUR."); return { input: 1, output: 1, total: 2, estimatedUSD: 0 }; }
