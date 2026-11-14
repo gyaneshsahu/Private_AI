@@ -87,6 +87,9 @@ import { AccountUsage } from "./AccountUsage";
 import { SupportPanel } from "./SupportPanel";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
+import { ReadAloudButton } from "./ReadAloudButton";
+import { stopReading } from "./read-aloud";
+import { PdfExportButton } from "./PdfExportButton";
 import { AttestationBusyError } from "./providers/inference-client";
 import { chatErrorText } from "./text/chat-errors";
 import { abortable, withDeadline } from "./abortable";
@@ -306,6 +309,8 @@ export function App() {
   }>();
   const [passphrase, setPassphrase] = useState("");
   const [unlocked, setUnlocked] = useState(false);
+  // Read aloud stops when a message is sent, another conversation opens or the vault locks.
+  useEffect(stopReading, [conversation.id, conversation.messages.length, unlocked]);
   const [saved, setSaved] = useState<Conversation[]>([]);
   const [unreadableSnapshots, setUnreadableSnapshots] = useState(0);
   const [editId, setEditId] = useState<string>();
@@ -1619,6 +1624,10 @@ export function App() {
               <button onClick={() => setTab("Saved")}>
                 {t.renameSave}
               </button>
+              <PdfExportButton
+                conversation={conversation}
+                disabled={!!busy || !conversation.messages.length}
+              />
               {tab === "Conversation" && (
                 <button onClick={() => setContextOpen(true)}>
                   {t.includedContext}
@@ -1906,6 +1915,19 @@ export function App() {
                         <Icon name="copy" />
                         {t.copyAnswer}
                       </button>
+                    )}
+                    {message.role === "assistant" && (
+                      <>
+                        <ReadAloudButton
+                          id={message.id}
+                          disabled={message.status !== "complete" || !message.text}
+                        />
+                        <PdfExportButton
+                          conversation={conversation}
+                          answer={index}
+                          disabled={message.status !== "complete" || !message.text}
+                        />
+                      </>
                     )}
                   </div>
                 </article>

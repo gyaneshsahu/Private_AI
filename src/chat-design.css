@@ -1802,3 +1802,8 @@
   background: var(--ink);
   color: var(--canvas);
 }
+/* Read aloud: the button stays marked while its answer is read. */
+.chat-design .message-actions button[aria-pressed="true"] {
+  border-color: currentColor;
+  font-weight: 600;
+}

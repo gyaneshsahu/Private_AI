@@ -17,6 +17,9 @@ COPY index.html tsconfig.json vite.config.ts ./
 # German interface: off unless built with --build-arg VITE_GERMAN_UI=1 (Render passes a service
 # environment variable of that name as this build argument). Off until the German legal texts are approved.
 ARG VITE_GERMAN_UI=
+# Read aloud and PDF export: each off unless built with its variable set to 1 (src/device-features.ts).
+ARG VITE_READ_ALOUD=
+ARG VITE_PDF_EXPORT=
 RUN npm run build
 
 # Supplier CLI for the relay-side attestation audit (server/attestation-audit.ts).
