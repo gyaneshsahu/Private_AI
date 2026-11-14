@@ -26,7 +26,8 @@ class WorkerCanvasFactory {
   }
 }
 const ocrWorker = (progress?: (percent: number) => void) =>
-  createWorker("eng", 1, {
+  // German first, English second; both files come from /vendor/ocr on our own server.
+  createWorker(["deu", "eng"], 1, {
     workerPath: "/vendor/ocr/worker.min.js",
     corePath: "/vendor/ocr",
     langPath: "/vendor/ocr",

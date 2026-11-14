@@ -34,7 +34,7 @@ export const documentText = defineText({
     readingScan: (page: number, pages: number) =>
       `Reading scanned page ${page} of ${pages} by OCR locally…`,
     pdfOcrWarning: (read: number, pages: number) =>
-      `This PDF has no text layer. Pages read by OCR on this device: ${read} of ${pages}. The text may contain errors. OCR knows printed English only; German umlauts and ß are often wrong. Check names, amounts and dates in the extracted text before sending.`,
+      `This PDF has no text layer. Pages read by OCR on this device: ${read} of ${pages}. The text may contain errors. OCR knows printed German and English. Check names, amounts and dates in the extracted text before sending.`,
     readingSheet: "Reading spreadsheet cells locally…",
     xlsxWarning:
       "Spreadsheet cell values only, one tab-separated block per sheet. Formulas are not recalculated; the last saved results are shown. Dates can appear as serial numbers. Number formats, charts, images and comments are not included. Review before use.",
@@ -103,7 +103,7 @@ export const documentText = defineText({
     readingScan: (page: number, pages: number) =>
       `Gescannte Seite ${page} von ${pages} wird auf diesem Gerät per Texterkennung gelesen…`,
     pdfOcrWarning: (read: number, pages: number) =>
-      `Dieses PDF enthält keinen Text. Auf diesem Gerät per Texterkennung gelesene Seiten: ${read} von ${pages}. Der Text kann Fehler enthalten. Die Texterkennung kennt nur gedrucktes Englisch; Umlaute und ß sind oft falsch. Prüfen Sie Namen, Beträge und Daten im ausgelesenen Text vor dem Senden.`,
+      `Dieses PDF enthält keinen Text. Auf diesem Gerät per Texterkennung gelesene Seiten: ${read} von ${pages}. Der Text kann Fehler enthalten. Die Texterkennung kennt gedrucktes Deutsch und Englisch. Prüfen Sie Namen, Beträge und Daten im ausgelesenen Text vor dem Senden.`,
     readingSheet: "Die Zellen der Tabelle werden auf diesem Gerät gelesen…",
     xlsxWarning:
       "Nur Zellwerte der Tabelle, je Blatt ein Block mit Tabulatoren. Formeln werden nicht neu berechnet; gezeigt werden die zuletzt gespeicherten Ergebnisse. Datumsangaben können als fortlaufende Zahlen erscheinen. Zahlenformate, Diagramme, Bilder und Kommentare sind nicht enthalten. Vor der Verwendung prüfen.",
