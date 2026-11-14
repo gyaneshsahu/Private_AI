@@ -273,6 +273,8 @@ export const appText = defineText({
     liveVoice: "Live voice conversation",
     photoNote:
       "Photo to text reads printed text on this device and asks for the camera only when you press Use camera; it is not general image understanding. Dictation, live voice, image creation and sharing are not connected: no permissions or media are collected for them.",
+    photoNoteVoice:
+      "Photo to text reads printed text on this device and asks for the camera only when you press Use camera; it is not general image understanding. Dictation asks for the microphone only when you press the microphone button. Live voice, image creation and sharing are not connected: no permissions or media are collected for them.",
     filesNote:
       "Files are read on this device. Review extracted text before sending.",
     answerMode: "Answer mode",
@@ -680,6 +682,8 @@ export const appText = defineText({
     liveVoice: "Gespräch per Stimme",
     photoNote:
       "Foto zu Text liest gedruckten Text auf diesem Gerät und fragt erst nach der Kamera, wenn Sie „Kamera verwenden“ drücken; Bilder werden darüber hinaus nicht verstanden. Diktieren, Gespräche per Stimme, Bilderstellung und Teilen sind nicht angebunden: Dafür werden keine Berechtigungen oder Medien erfasst.",
+    photoNoteVoice:
+      "Foto zu Text liest gedruckten Text auf diesem Gerät und fragt erst nach der Kamera, wenn Sie „Kamera verwenden“ drücken; Bilder werden darüber hinaus nicht verstanden. Das Diktieren fragt erst nach dem Mikrofon, wenn Sie die Mikrofon-Taste drücken. Gespräche per Stimme, Bilderstellung und Teilen sind nicht angebunden: Dafür werden keine Berechtigungen oder Medien erfasst.",
     filesNote:
       "Dateien werden auf diesem Gerät gelesen. Prüfen Sie den ausgelesenen Text vor dem Senden.",
     answerMode: "Antwortmodus",

@@ -71,6 +71,7 @@ import { disclosedProvider } from "../shared/provider-disclosure";
 import { imprintText } from "../shared/legal-identity";
 import { importDocuments, type ImportOutcome } from "./document-import";
 import { PhotoCapture } from "./PhotoCapture";
+import { VoiceInput } from "./VoiceInput";
 import { Vault, VaultConflictError } from "./vault";
 import { VaultBackup } from "./VaultBackup";
 import { VaultSecurity } from "./VaultSecurity";
@@ -2195,7 +2196,7 @@ export function App() {
                             ["mic", t.dictation],
                             ["voice", t.liveVoice],
                           ] as const
-                        ).map(([icon, label]) => (
+                        ).filter(([icon]) => icon !== "mic" || !status?.voice).map(([icon, label]) => (
                           <button key={icon} type="button" disabled>
                             <Icon name={icon} />
                             <span>{label}</span>
@@ -2203,7 +2204,7 @@ export function App() {
                           </button>
                         ))}
                       </div>
-                      <p className="muted">{t.photoNote}</p>
+                      <p className="muted">{status?.voice ? t.photoNoteVoice : t.photoNote}</p>
                       <p className="muted">{t.filesNote}</p>
                     </div>
                   </details>
@@ -2235,6 +2236,16 @@ export function App() {
                       conversation.attachments.filter((a) => a.selected).length,
                     )}
                   </button>
+                  {status?.voice && status.inference.ready ? (
+                    <VoiceInput
+                      status={status}
+                      maxSeconds={status.voice.maxSeconds}
+                      busy={!!busy}
+                      setInput={setInput}
+                      notify={setNotice}
+                      onVerifyWait={setVerifyWaitUntil}
+                    />
+                  ) : (
                   <button
                     type="button"
                     className="future-voice"
@@ -2245,6 +2256,7 @@ export function App() {
                     <Icon name="mic" />
                     <small>{t.comingLater}</small>
                   </button>
+                  )}
                   <button
                     type="button"
                     className="future-voice"

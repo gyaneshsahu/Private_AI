@@ -59,6 +59,11 @@ export interface VerifiedDestination {
   evidence: VerificationEvidence;
   /** A fresh transport bound to the verified key; callers never see the key. */
   transport(): Promise<EncryptedTransport>;
+  /**
+   * Speech to text over the same verified client, for a provider that offers it (voice input).
+   * The recording is encrypted in the browser like a chat message; the result is the plain text.
+   */
+  transcribe?(audio: Blob, model: string, signal: AbortSignal): Promise<string>;
 }
 
 export interface InferenceClientAdapter {

@@ -211,6 +211,35 @@ async function verifySession(
         host: new URL(policy.origin).hostname,
         releaseDigest: digest,
       },
+      async transcribe(audio, model, signal) {
+        if (changed) throw new Error(textFor(chatErrorText).deploymentDiffers);
+        if (closed) throw new Error(textFor(chatErrorText).connectionClosed);
+        // "audio/webm;codecs=opus" -> "audio/webm"; the file name carries the container too.
+        const type = audio.type.split(";")[0] || "audio/webm";
+        try {
+          const result = await client.audio.transcriptions.create(
+            {
+              file: new File([audio], `recording.${type.split("/")[1]}`, { type }),
+              model,
+              response_format: "json",
+            },
+            // The relay pins the speech model by this header, as it does for chat.
+            { signal, headers: { "privatemode-target-model": model } },
+          );
+          return String((result as { text?: unknown }).text ?? "");
+        } catch (error) {
+          const { status, headers } = error as { status?: unknown; headers?: unknown };
+          // Our relay's own refusal (limit, size, switch) never reached Privatemode: keep the client.
+          const own =
+            headers instanceof Headers &&
+            headers.has("x-privateai-voice") &&
+            !headers.has("x-privateai-upstream");
+          if (!own) discard();
+          if (typeof status === "number") throw error;
+          const wait = await verifyWaitSeconds();
+          throw wait > 0 || attestationBusy(error) ? new AttestationBusyError(wait) : error;
+        }
+      },
       async transport() {
         return {
           async request(_url, init) {

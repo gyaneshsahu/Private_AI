@@ -1205,6 +1205,52 @@
   flex-shrink: 0;
   color: var(--muted);
 }
+/* Voice input: the live microphone button (shown only while voice input is switched on). */
+.chat-design .voice-input {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.chat-design .voice-input-button {
+  border: 0;
+  background: transparent;
+  padding: 5px;
+  min-width: 32px;
+  min-height: 32px;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.chat-design .voice-input-button.recording {
+  color: var(--surface);
+  background: var(--accent);
+  border-radius: 16px;
+  padding: 5px 10px;
+}
+.chat-design .voice-input-button small {
+  font-size: 12px;
+}
+.chat-design .voice-input-note {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 5;
+  width: min(340px, calc(100vw - 48px));
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+.chat-design .voice-input-note-actions {
+  display: flex;
+  gap: 8px;
+}
 .chat-design .future-voice small {
   font-size: 9px;
   max-width: 38px;
