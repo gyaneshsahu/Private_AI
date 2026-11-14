@@ -19,6 +19,16 @@ export interface ProductionRuntimeConfig extends ProductionAccountCandidateConfi
   assets: string;
 }
 
+/**
+ * Files on disk that never change at their path, so browsers may keep them: Vite's hash-named
+ * build files, and the Pyodide runtime, which sits in a folder named by its exact version
+ * (scripts/assets.mjs). Without the second rule every calculation would download 13.5 MB again
+ * (docs/code-execution-20261114.md). The Render bridge has the same rule for request paths.
+ */
+export const neverChanges = (path: string) =>
+  /[\\/]assets[\\/][^\\/]+-[\w-]{8}\.(?:js|css|wasm|woff2?|svg|png)$/.test(path) ||
+  /[\\/]vendor[\\/]pyodide[\\/]\d+\.\d+\.\d+[\\/][\w.-]+\.(?:mjs|wasm|zip|json)$/.test(path);
+
 /** Explicit composition only; caller owns the database, sender and activation. */
 export async function prepareProductionRuntime(
   config: ProductionRuntimeConfig,
@@ -66,7 +76,7 @@ export async function prepareProductionRuntime(
       // Vite's hash-named build files never change at their path, so browsers may keep them;
       // everything else (index.html, API answers) keeps the global no-store.
       setHeaders: (res, path) => {
-        if (/[\\/]assets[\\/][^\\/]+-[\w-]{8}\.(?:js|css|wasm|woff2?|svg|png)$/.test(path))
+        if (neverChanges(path))
           res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
       },
     }),

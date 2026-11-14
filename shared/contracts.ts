@@ -462,6 +462,13 @@ export interface Message {
    * none is official. Never model context, never sent or logged.
    */
   noOfficialSource?: true;
+  /**
+   * Code the model wrote and this device ran for this answer (src/code-tool.ts), with what it
+   * printed. Shown under the answer and replayed to the model on later turns; saved with it.
+   */
+  codeRuns?: { code: string; output: string; error?: true }[];
+  /** The model asked for code but Pyodide could not start here: the answer was not calculated with code. */
+  codeUnavailable?: true;
 }
 export interface ConversationBranch {
   id: string;
@@ -529,6 +536,8 @@ export interface AppStatus {
   voice?: { maxSeconds: number };
   /** Image questions are switched on for this deployment; absent means no image upload. */
   images?: { maxBytes: number };
+  /** Code execution on the device is switched on for this deployment (docs/code-execution-20261114.md). */
+  code?: true;
   publicPageHosts?: string[] | null;
   /** Plain-text notice the operator shows to everyone (outage, announced provider switch). */
   operatorNotice?: string;
