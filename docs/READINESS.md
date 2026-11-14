@@ -1,4 +1,16 @@
 # PrivateAI readiness checklist
+## 14 November 2026, 01:10: file upload reads Excel files and scanned PDFs (agent)
+
+Verified by `tests/document-upload.test.ts` (6 tests, run in Node): an `.xlsx` made in the test gives the expected text (shared strings, inline strings, numbers, true and false, saved formula results, two sheets with names, a hidden sheet marked as hidden); a Word file, a CSV file and a Python file pass through the real worker code and `extract` unchanged; a file over 10 MB, text over 60,000 characters, `.xls`, `.doc`, `.xlsm`, `.html` and `.zip` are refused with a message that says what to do; an `.xlsx` with a 5 MB part, with more than 20 MB unpacked, with a macro part, with a DTD or with a broken string index is refused; an IBAN in spreadsheet text is masked like any other attachment text; every new worker message has German. `npx tsc --noEmit` is clean. The older document tests still pass (docx, document-formats, documents, document-import, i18n-modules).
+
+Checked once by hand, not kept as a test: a production build of the worker in headless Chromium 153 on this Windows machine. A text PDF read in 0.1 s. A 7-page scanned PDF (JPEG pages made in the page) was read by OCR in 2.3 s, pages 1 to 5 only, with the note "Pages read by OCR on this device: 5 of 7". A blank PDF was refused. An `.xlsx` and an `.xls` behaved as in the Node test. English words and numbers came out right. German came out wrong, as expected: "Größe" became "GroBe", "Müllerstraße" became "MiullerstraBe".
+
+Built: `src/xlsx.ts` (reads `.xlsx` with the zip and XML libraries already installed; formulas are never calculated; external links are never followed); OCR for a PDF with no text layer in `src/extraction.worker.ts`, 5 pages at most; `.xlsx` in the file picker; new messages in English and German.
+
+Not verified: Firefox, Safari, any phone, the hosted path, large real files from Excel, LibreOffice or Google Sheets (the test files are synthetic), real scans from a scanner or phone app, time and memory for OCR on a slow phone (the 90-second limit applies). No Playwright test was added or run for `.xlsx` or scanned PDFs. The text-layer PDF path has no Node test; `tests/browser/pdf.spec.ts` covers it and was not run here.
+
+Known limits: OCR data is English only. Spreadsheet dates show as serial numbers. A file over a limit is refused, not cut short. Scans stored as JBIG2 or JPEG 2000 are refused, because the decoders for them are not served. A PDF with text on some pages and scans on others gets no OCR. Old `.doc` and `.xls` files are not read.
+
 ## 14 November 2026, 00:45: tool calling works; unknown model checked (agent)
 
 Verified live on Privatemode with the development key: (1) a model ID that does not exist returns HTTP 404 with a plain "model not found" body, and the fail-closed check classes it correctly; (2) tool calling on the arithmetic set: Fast model with a code tool 29 of 30 conversations exact (was 43 of 90 without code), Thinking model 16 of 16 critical; a tool call on all 92 turns, none malformed. One repetition only. The single wrong answer was a misread rounding rule, silent. Not verified: streaming tool calls through the app, Pyodide in the browser. Nothing built into the app yet. Spend: 104,574 Privatemode tokens, no searches. Details: `evaluation/arithmetic-gate/results-tools-20261114.md`.
