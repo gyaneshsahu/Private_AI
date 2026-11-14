@@ -36,7 +36,7 @@ German costs a little more (more Thinking, longer replies) for the same quality.
 ## What to do with it
 
 1. English questions about German rules need the same detection as German ones. This matches the blind detector test (English 4 of 8). Next detector pass, on a new blind set.
-2. The "mieten" false alarm on a sum is covered by the detector's new rule for sums on the user's own figures only when two amounts are present; this one has several, so it should now be quiet. Not re-run.
+2. The "mieten" false alarm on a sum (P-M12) still happens with the second-pass detector, which was already merged for this run. Its rule for sums on the user's own figures did not cover this wording. For the next detector pass.
 3. No change to the model or prompt is needed for language parity.
 
 ## A finding about the test runner, not the app
