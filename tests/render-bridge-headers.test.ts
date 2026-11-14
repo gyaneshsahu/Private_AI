@@ -26,6 +26,18 @@ it("forwards every custom request header the browser sends", () => {
   expect(missing).toEqual([]);
 });
 
+it("forwards the Privatemode SDK's request headers: the relay needs the target model, and every header name in the installed Wasm is covered", () => {
+  expect(BRIDGE_REQUEST_HEADERS as readonly string[]).toContain("privatemode-target-model");
+  // Header names sit in the Wasm as plain text, run together with the next string; a name on the
+  // list must be a prefix of each one found (the response header is not a request header).
+  const wasm = readFileSync("node_modules/privatemode-ai/dist/privatemode.wasm").toString("latin1");
+  const found = new Set([...wasm.matchAll(/Privatemode-[A-Z][A-Za-z]*(?:-[A-Z][A-Za-z]*)*/g)].map((m) => m[0].toLowerCase()));
+  expect(found.size).toBeGreaterThan(5);
+  const listed = (BRIDGE_REQUEST_HEADERS as readonly string[]).filter((h) => h.startsWith("privatemode-"));
+  const uncovered = [...found].filter((name) => !name.startsWith("privatemode-oae-response-header") && !listed.some((h) => name.startsWith(h)));
+  expect(uncovered).toEqual([]);
+});
+
 it("still forwards no identity or forwarding headers", () => {
   for (const h of ["x-forwarded-for", "x-forwarded-host", "x-forwarded-proto", "x-real-ip", "forwarded", "authorization", "x-privateai-client-ip"])
     expect(BRIDGE_REQUEST_HEADERS as readonly string[]).not.toContain(h);

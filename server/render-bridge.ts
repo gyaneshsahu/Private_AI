@@ -21,6 +21,19 @@ export const BRIDGE_REQUEST_HEADERS = [
   "x-tinfoil-enclave-url",
   "x-tinfoil-model",
   "ehbp-encapsulated-key",
+  // The Privatemode SDK's own request headers (names read from its Wasm, SDK 1.63.0). The relay
+  // refuses a chat or transcription without privatemode-target-model, so without these every
+  // Privatemode request through the bridge failed with 400 (found 14 November, before any deploy).
+  "privatemode-target-model",
+  "privatemode-version",
+  "privatemode-user-request-id",
+  "privatemode-shard-key",
+  "privatemode-secret-id",
+  "privatemode-oae-request-header",
+  "privatemode-nvidia-ocsp-policy",
+  "privatemode-content-length-tokens",
+  "privatemode-anonymous-auth",
+  "privatemode-jwt",
 ] as const;
 
 const IMMUTABLE = "public, max-age=31536000, immutable";
