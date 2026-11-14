@@ -452,6 +452,8 @@ export function createApp(config: Config) {
     async (req, res) => {
       // One count per request, by mode and outcome (fixed names only: docs/alpha-plan-20261113.md).
       res.on("close", () => {
+        // A hang-up while the reply is being forwarded is counted when the forwarding ends (below).
+        if (res.locals.streaming && !res.writableFinished) return;
         const outcome =
           res.locals.outcome ??
           (res.statusCode === 200 ? (res.writableFinished ? "completed" : "interrupted") : `status_${res.statusCode}`);
@@ -534,11 +536,19 @@ export function createApp(config: Config) {
           else inFlight.delete(accountId);
         }
       };
+      // A browser that has read the whole reply often hangs up a moment before the provider
+      // closes its side (live runs of 14 November: complete answers were counted as interrupted).
+      // So a hang-up during forwarding gives the provider 2 s to end on its own. If it sends
+      // nothing more, every byte was delivered and the reply counts as complete; if more arrives,
+      // the browser missed it and the reply is interrupted, as before.
+      let hungUp = false;
       res.on("close", () => {
-        if (!res.writableFinished) {
-          abort.abort();
-          release();
-        }
+        if (res.writableFinished) return;
+        release();
+        if (res.locals.streaming) {
+          hungUp = true;
+          setTimeout(() => abort.abort(), 2000).unref();
+        } else abort.abort();
       });
       try {
         // Checked after this request claimed its slot, so concurrent requests count.
@@ -658,7 +668,9 @@ export function createApp(config: Config) {
         }
         for (const [name, value] of Object.entries(accepted.passthrough))
           res.setHeader(name, value);
+        res.locals.streaming = true;
         for await (const chunk of upstream.body) {
+          if (hungUp) abort.abort();
           if (abort.signal.aborted) break;
           if (!res.write(chunk))
             await once(res, "drain", { signal: abort.signal });
@@ -679,6 +691,7 @@ export function createApp(config: Config) {
         else res.destroy();
       } finally {
         release();
+        if (hungUp) count(`chat.${res.locals.mode ?? "none"}.${transportComplete ? "completed" : "interrupted"}`);
         if (config.usage && accountId && dispatched) {
           try {
             await config.usage.finish(

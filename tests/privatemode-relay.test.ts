@@ -320,6 +320,49 @@ it("a message the provider refused is not counted twice: the next request in the
   usage.close();
 });
 
+it.each([
+  ["sends nothing more", false, "completed", 1],
+  ["sends more", true, "interrupted", 0],
+])("a browser that hangs up after reading the reply: if the provider then %s, the reply counts as %s", async (_name, more, outcome, settled) => {
+  let finish!: (more: boolean) => void;
+  upstream.mockImplementation(
+    async () =>
+      new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode("data: whole reply\n\n"));
+            finish = (extra) => {
+              if (extra) controller.enqueue(new TextEncoder().encode("data: more\n\n"));
+              controller.close();
+            };
+          },
+        }),
+        { headers: { "content-type": "text/event-stream" } },
+      ),
+  );
+  const { root, usage, signIn } = await signedIn({ autoAllowance: { requestLimit: 10, days: 7 } });
+  const account = await signIn();
+  const { status, cookie } = await session(root, account.cookie);
+  takeCounts();
+  const hangUp = new AbortController();
+  const chat = await fetch(root + "/v1/chat/completions", {
+    method: "POST",
+    headers: { Origin: root, ...chatHeaders(cookie, status.csrf, "glm-5.3-flash", "fast") },
+    body: new Uint8Array(32).fill(7),
+    signal: hangUp.signal,
+  });
+  const reader = chat.body!.getReader();
+  expect(new TextDecoder().decode((await reader.read()).value)).toContain("whole reply");
+  hangUp.abort();
+  await new Promise((r) => setTimeout(r, 200));
+  // Nothing is counted while the relay waits for the provider to end on its own.
+  expect(takeCounts()).toEqual({});
+  finish(more);
+  await vi.waitFor(() => expect(takeCounts()).toEqual({ [`chat.fast.${outcome}`]: 1 }));
+  await vi.waitFor(() => expect(usage.summary(account.accountId)).toMatchObject({ used: 1, pending: 0, uncertain: 1 - settled }));
+  usage.close();
+});
+
 it("refuses an encrypted body far larger than the allowed input could be, before any allowance is used", async () => {
   const root = await listen();
   const { status, cookie } = await session(root);

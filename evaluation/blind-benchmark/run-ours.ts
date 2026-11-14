@@ -325,6 +325,9 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
       suggestionShown: probe.suggestionShown || !!first?.suggestionShown, suggestedQuery: first?.suggestedQuery, suggestionHeading: first?.suggestionHeading, tapped: !!first?.tapped, choiceShown: !!first?.choiceShown, choiceHeading: first?.choiceHeading, choiceQuery: first?.choiceQuery, chose: first?.chose, againShown: last.againShown, searchedQuery, pageRead, topPageNote, noOfficialNote, uncheckedWarning, links, citations, research: await research,
     };
   } finally {
+    // LINGER_MS keeps the page open after the answer, as a user who goes on reading would (14 November:
+    // closing at once made the relay count complete replies as interrupted).
+    if (process.env.LINGER_MS) await page.waitForTimeout(Number(process.env.LINGER_MS));
     await page.close();
   }
 }
