@@ -27,6 +27,21 @@ For comparison, the same set on 12 November without code (`results-v3-unseen-202
 
 `unseen3-07` (Swiss quote): "Steuer auf den Rappen, Total auf 5 Rappen gerundet". The model rounded the tax to 5 Rappen too (354.80 instead of 354.78). The code ran correctly; the model read the question wrongly. **Code execution makes the arithmetic exact. It does not fix a misread question, and this error was silent.** Showing the user the code (or at least "tax rounded to 0.05") is what makes such an error visible.
 
+## Second repetition (owner approved, 14 November)
+
+| System | Rep 1 | Rep 2 | Both | Turns with a tool call | Malformed calls | Code errors |
+| --- | --- | --- | --- | --- | --- | --- |
+| Fast model + code, 30 conversations | 29 | 27 | **56 of 60 (93 %)** | 120 of 120 | 0 | 0 |
+| Thinking model + code, 16 critical | 16 | 15 | **31 of 32 (97 %)** | 64 of 64 | 0 | 0 |
+
+The five answers scored wrong, read one by one:
+
+- **Four are the same mistake: Swiss rounding to 5 centimes.** `unseen3-07` (Fast, both repetitions: tax rounded to 5 Rappen although only the total should be) and `unseen3-22` (Fast and Thinking, repetition 2: the total left at 989.12 instead of 989.10). The code ran as written; the model wrote the wrong rounding step. Both models make it.
+- **One is a scoring artefact, not an error.** `unseen3-23` (Fast, repetition 2) answered "1 053.50 EUR" with a narrow space as the thousands separator, which the frozen scorer does not read. The figure is right. Counting it, Fast is 57 of 60.
+- No answer was wrong because of arithmetic.
+
+So the remaining risk is narrow and known: rounding rules stated in words. A line in the product prompt about "round to 0.05 only what the question says" is the obvious fix, but it would be tuning on this set, so it has to be tried on new cases. The scorer was not changed (it is frozen).
+
 ## How it was run
 
 - `evaluation/arithmetic-gate/harness-tools.ts`: Privatemode SDK (attested, encrypted), one tool `python`, the harness runs the code in local Python with a deny-list (test harness only) and returns what it printed, at most 5 rounds per turn, the final text is scored by the frozen `scorer.ts`.
@@ -42,10 +57,9 @@ For comparison, the same set on 12 November without code (`results-v3-unseen-202
 
 ## Not checked
 
-- Only one repetition; the 12 November baselines had three. A second repetition costs about 60,000 tokens.
 - Streaming with tool calls through the app's own path (this run used non-streaming calls from Node).
 - Pyodide itself: download size, start time on a phone, and whether its `decimal` output matches local Python exactly (it should, it is the same CPython).
 - Data analysis on an uploaded table (the set is word problems only).
 - The Thinking model on the 14 non-critical cases.
 
-Spend: 104,574 Privatemode tokens as reported by the API (pilot 6,067, Fast 59,508, Thinking 39,000). No searches.
+Spend: 202,842 Privatemode tokens as reported by the API (pilot 6,067; repetition 1: Fast 59,508, Thinking 39,000; repetition 2: Fast 59,168, Thinking 39,100). No searches.
