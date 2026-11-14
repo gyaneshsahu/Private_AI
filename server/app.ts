@@ -644,14 +644,13 @@ export function createApp(config: Config) {
         }
         const credit = accountId ? retryCredit.get(accountId) : undefined;
         if (accountId && credit) retryCredit.delete(accountId);
-        if (config.usage && credit && credit.mode === creditKind && credit.expires > Date.now())
         const toolCredit =
           !!config.code &&
           !!accountId &&
           req.headers[CONTINUATION_HEADER] === "tool" &&
           continuationCredits.claim(accountId, mode);
         if (toolCredit) count(`chat.${mode ?? "none"}.tool_continuation`);
-        else if (config.usage && credit && credit.mode === mode && credit.expires > Date.now())
+        else if (config.usage && credit && credit.mode === creditKind && credit.expires > Date.now())
           count(`chat.${mode ?? "none"}.retry_not_counted`);
         else if (config.usage) {
           await ensureAllowance(accountId);

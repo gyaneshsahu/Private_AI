@@ -75,6 +75,7 @@ const schema = z
           })
           .strict()
           .optional(),
+        /**
          * Code execution on the user's device, its own switch, off unless enabled
          * (docs/code-execution-20261114.md). The server must know: it grants the follow-up credit.
          */

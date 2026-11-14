@@ -408,13 +408,17 @@ async function streamMaskedConversation(
       messages[0].content +=
         " The latest message has a picture. Black boxes in it are parts the user covered on purpose: do not guess what is under them. Text read from a picture can be wrong; say so when it is unclear.";
     onKeptOnDevice?.(masking.summary());
+    // Code execution: the tool instruction, and earlier answers' code and output as tool messages.
+    const wire = report.codeTool
+      ? withCodeTool(messages, conversation, masking.mask, report.maxInputCharacters, textFor(codeText).tooLarge)
+      : messages;
     // The picture rides on the latest question only, as one image part beside its (masked) text.
     // Masking works on text: nothing inside the picture is masked here.
-    const asked = report.image ? messages.map((m) => m.role).lastIndexOf("user") : -1;
+    const asked = report.image ? wire.map((m) => m.role).lastIndexOf("user") : -1;
     const requestBody = {
       model: report.model,
-      messages: messages.map((message, index) =>
-        index === asked
+      messages: wire.map((message, index) =>
+        index === asked && typeof message.content === "string"
           ? {
               role: message.role,
               content: [
@@ -424,13 +428,6 @@ async function streamMaskedConversation(
             }
           : message,
       ),
-    // Code execution: the tool instruction, and earlier answers' code and output as tool messages.
-    const wire = report.codeTool
-      ? withCodeTool(messages, conversation, masking.mask, report.maxInputCharacters, textFor(codeText).tooLarge)
-      : messages;
-    const requestBody = {
-      model: report.model,
-      messages: wire,
       ...responseFormat,
       ...toolOptions,
       ...(report.codeTool ? CODE_REQUEST_OPTIONS : {}),

@@ -73,12 +73,6 @@ it("loads production chat only when the inference section is present and enabled
   await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, images } }));
   expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ images: { maxBytes: 280000, dailyImages: 10 } });
   // Relative paths, unknown fields, a bad allowance, bad voice limits and an unreadable report refuse the whole configuration.
-  for (const bad of [
-    { ...inference, images: { enabled: true } },
-    // Above 290,000 bytes the encrypted body could pass the bridge's 1 MiB limit.
-    { ...inference, images: { ...images, maxBytes: 290001 } },
-    { ...inference, images: { ...images, dailyImages: 0 } },
-    { ...inference, images: { ...images, model: "glm-5.3-flash" } },
   // Code execution has its own switch too: absent or disabled means off.
   expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("code");
   await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, code: { enabled: false } } }));
@@ -87,6 +81,11 @@ it("loads production chat only when the inference section is present and enabled
   expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ code: true });
   // Relative paths, unknown fields, a bad allowance, bad voice limits and an unreadable report refuse the whole configuration.
   for (const bad of [
+    { ...inference, images: { enabled: true } },
+    // Above 290,000 bytes the encrypted body could pass the bridge's 1 MiB limit.
+    { ...inference, images: { ...images, maxBytes: 290001 } },
+    { ...inference, images: { ...images, dailyImages: 0 } },
+    { ...inference, images: { ...images, model: "glm-5.3-flash" } },
     { ...inference, code: true },
     { ...inference, code: { enabled: true, rounds: 5 } },
     { ...inference, voice: { enabled: true } },

@@ -752,18 +752,14 @@ export function App() {
     const qualified = status.inference.qualification;
     const choiceForThis: ModeChoice = modeOverride ?? modeChoice;
     // Only the Fast model reads pictures, whatever mode is chosen; the answer label says so.
+    // Code execution on this device (docs/code-execution-20261114.md): with it, Auto keeps maths in Fast.
+    const codeOn = codeToolOn(status);
     const mode = qualified?.modes
       ? image
         ? "fast"
         : choiceForThis === "auto"
-          ? autoMode(next)
+          ? autoMode(next, codeOn)
           : choiceForThis
-    // Code execution on this device (docs/code-execution-20261114.md): with it, Auto keeps maths in Fast.
-    const codeOn = codeToolOn(status);
-    const mode = qualified?.modes
-      ? choiceForThis === "auto"
-        ? autoMode(next, codeOn)
-        : choiceForThis
       : undefined;
     const hasBackup = !image && !!qualified && !!tierFor(qualified, mode).backupModel;
     let textArrived = false;
