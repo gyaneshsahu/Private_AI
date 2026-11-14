@@ -44,12 +44,36 @@ export function sourceLine(source: Source): string {
   return `${source.title}${source.page ? `, p. ${source.page}` : ""}${source.url ? `: ${source.url}` : ""}`;
 }
 
+/**
+ * Copied text: each source code in a bracket becomes its number in the source list
+ * ("[2aee4cd21a78 (§ 573c BGB)]" -> "[1 (§ 573c BGB)]"). A code that names no source stays as written.
+ */
+export function numberedCitations(text: string, sources: Source[] = []): string {
+  const number = new Map(sources.map((source, index) => [source.id.toLowerCase(), index + 1]));
+  if (!number.size) return text;
+  return text.replace(/([\[【])([^\]】\n]{6,300})([\]】])(?!\()/g, (whole, open, inner: string, close) => {
+    const replaced = inner.replace(/[a-zA-Z0-9-]{6,36}/g, (code) => String(number.get(code.toLowerCase()) ?? code));
+    return replaced === inner ? whole : open + replaced + close;
+  });
+}
+
+/** One answer for "Copy answer": its text with numbered citations, then its source list. */
+export function answerCopyText(message: Message, lang: Lang): string {
+  const sources = message.sourceSnapshot ?? [];
+  return [
+    numberedCitations(message.text, sources).trim(),
+    sources.length ? `${deviceText[lang].sources}:\n${sources.map((source, index) => `${index + 1}. ${sourceLine(source)}`).join("\n")}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+}
+
 export const exportDate = (value: Date, lang: Lang) =>
   value.toLocaleDateString(lang, { dateStyle: "long" });
 
 /**
- * The conversation as Markdown text. Message text is copied exactly as stored, which is what the
- * screen shows: a masked identifier stays masked. Incomplete attempts carry their notice.
+ * The conversation as Markdown text. Message text is copied as stored (a masked identifier stays
+ * masked), with source codes turned into source list numbers. Incomplete attempts carry their notice.
  */
 export function conversationText(
   { title, createdAt, messages }: ExportContent,
@@ -63,7 +87,7 @@ export function conversationText(
     ...messages.flatMap((message) => [
       `## ${messageHeading(message, lang)}`,
       ...messageNotices(message, lang).map((note) => `> ${note}`),
-      message.text.trim(),
+      numberedCitations(message.text, message.sourceSnapshot).trim(),
       message.sourceSnapshot?.length
         ? `### ${t.sources}\n\n${message.sourceSnapshot.map((source, index) => `${index + 1}. ${sourceLine(source)}`).join("\n")}`
         : "",

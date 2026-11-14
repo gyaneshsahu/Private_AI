@@ -45,7 +45,8 @@ it("gives the whole conversation in order as Markdown, in English", () => {
       "Was kostet das? Konto {{IBAN-1}}",
       "## Answer · Auto · Thinking",
       ...messageNotices(messages[1], "en").map((note) => `> ${note}`),
-      "## Result\n\n| Item | Price |\n| --- | --- |\n| A | 3 |\n\n```js\nconst a = 1;\n```\n\nPaid from {{IBAN-1}} [src-000001].",
+      // The source code becomes its number in the list below.
+      "## Result\n\n| Item | Price |\n| --- | --- |\n| A | 3 |\n\n```js\nconst a = 1;\n```\n\nPaid from {{IBAN-1}} [1].",
       "### Sources\n\n1. Example page: https://www.example.org/rules?id=7\n2. report.pdf, p. 4",
       "## Question",
       "And next year?",

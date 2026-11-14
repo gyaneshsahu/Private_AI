@@ -140,3 +140,29 @@ it("links every code that names a source, drops codes that name none, and labels
   // The evidence notice counts the dropped code (and the placeholder), not the Markdown link label.
   expect(auditResearchAnswer(text, sources).unknownSourceReferences).toBe(2);
 });
+
+it("live deep research shape (14 November): a note after the code keeps the button and stays visible; copied text numbers the codes", async () => {
+  const { answerCopyText } = await import("../src/conversation-text");
+  const { auditResearchAnswer } = await import("../src/research-audit");
+  const { newMessage } = await import("../src/conversation");
+  const sources = [
+    { id: "2aee4cd21a78", title: "§ 573c BGB", text: "Synthetic", url: "https://www.gesetze-im-internet.de/bgb/__573c.html" },
+    { id: "b2dfe082cee1", title: "Synthetic guide", text: "Synthetic", url: "https://guide.example/kuendigung" },
+  ];
+  const text =
+    "## Mieter\n\nDrei Monate [2aee4cd21a78 (§ 573c Abs. 1 BGB)]. Kein Grund nötig [b2dfe082cee1]. Seite [b2dfe082cee1, p. 3]. Zwei [2aee4cd21a78 (Abs. 2), b2dfe082cee1]. Erfunden [0dffd17f5269 (§ 573a BGB)].";
+  const html = renderToStaticMarkup(createElement(Answer, { text, sources, open: () => {} }));
+  // Five buttons: the invented code is not one, and no code is shown raw.
+  expect(html.match(/<button class="citation"/g)).toHaveLength(5);
+  expect(html).not.toMatch(/\[(?:2aee4cd21a78|b2dfe082cee1|0dffd17f5269)/);
+  expect(html).toContain("gesetze-im-internet.de</button> (§ 573c Abs. 1 BGB)");
+  expect(html).toContain("</button> (Abs. 2)");
+  // The unknown code is dropped and flagged by the evidence notice; its note stays as text.
+  expect(html).toContain(" (§ 573a BGB)");
+  expect(auditResearchAnswer(text, sources).unknownSourceReferences).toBe(1);
+  // Copy answer: numbers of the source list, notes kept, the unknown code left as written, then the list.
+  const copied = answerCopyText({ ...newMessage("assistant", text), sourceSnapshot: sources }, "en");
+  expect(copied).toContain("Drei Monate [1 (§ 573c Abs. 1 BGB)]. Kein Grund nötig [2]. Seite [2, p. 3]. Zwei [1 (Abs. 2), 2].");
+  expect(copied).toContain("[0dffd17f5269 (§ 573a BGB)]");
+  expect(copied).toContain("1. § 573c BGB: https://www.gesetze-im-internet.de/bgb/__573c.html\n2. Synthetic guide: https://guide.example/kuendigung");
+});

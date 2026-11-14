@@ -25,7 +25,13 @@ import { composerText } from "./text/composer";
 import { imageText } from "./text/images";
 import { messageText } from "./text/message";
 
-const Answer = lazy(() => import("./Answer").then((module) => ({ default: module.Answer })));
+// Once loaded, the renderer is used directly: a lazy component suspends on its first render even
+// when its module is already loaded, and its placeholder shows raw Markdown and source codes.
+let answerModule: typeof import("./Answer") | undefined;
+const loadAnswer = () => import("./Answer").then((module) => (answerModule = module));
+const LazyAnswer = lazy(() => loadAnswer().then((module) => ({ default: module.Answer })));
+/** Loads the answer renderer before an answer is first shown (deep research writes it while the conversation is hidden). */
+export const preloadAnswer = () => void loadAnswer().catch(() => {});
 
 // Which long messages the user opened. Memory only: never saved, gone on reload.
 const expandedIds = new Set<string>();
@@ -149,6 +155,7 @@ export function ChatMessage({
   const { lang } = useLang();
   const t = appText[lang];
   const mt = messageText[lang];
+  const Answer = answerModule?.Answer ?? LazyAnswer;
   const user = message.role === "user";
   const [draft, setDraft] = useState(message.text);
   const editBox = useRef<HTMLTextAreaElement>(null);

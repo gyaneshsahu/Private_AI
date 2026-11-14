@@ -66,6 +66,7 @@ import { expireMessages, type DisappearAfter } from "./conversation";
 import { germanEnabled, LanguageSwitch, textFor, useLang } from "./i18n";
 import { researchText } from "./text/research";
 import { DeepResearch } from "./DeepResearch";
+import { answerCopyText } from "./conversation-text";
 import { deepResearchText } from "./text/deep-research";
 import { RESEARCH_MIN_SOURCE_CHARACTERS, researchSourceRoom } from "../shared/deep-research";
 import { serverMessage } from "./server-messages";
@@ -2175,7 +2176,7 @@ export function App() {
                   ready={!!status?.inference.ready}
                   openSource={setSource}
                   copied={copiedId === message.id}
-                  onCopy={() => void copyAnswer(message.text, message.id)}
+                  onCopy={() => void copyAnswer(answerCopyText(message, lang), message.id)}
                   editing={editId === message.id}
                   onEdit={(open) => setEditId(open ? message.id : undefined)}
                   onEditSend={(text) => editAndSend(message.id, text)}

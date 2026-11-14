@@ -42,7 +42,8 @@ beforeAll(async () => {
             if (signal.aborted) throw signal.reason;
             if (research === "plan")
               chunk("1. synthetic notice period\\n2. synthetic fee for person@example.test\\n3. synthetic law");
-            else chunk("Synthetic research answer [" + sources[0].id + "].");
+            // As the live model did (14 November): headings, a note after a code, a plain code, an invented code.
+            else chunk("## Synthetic heading\\n\\nSynthetic research answer [" + sources[0].id + " (§ 573c Abs. 1 BGB)]. More [" + sources[1].id + "]. Invented [0dffd17f5269].");
             return { input: 1, output: 1, total: 2, estimatedUSD: 0 };
           }`;
         },
@@ -236,8 +237,22 @@ for (const lang of ["en", "de"] as const)
         // The answer is in the conversation with its source and the note of what was searched and read.
         await page.getByRole("button", { name: t.showAnswer, exact: true }).click();
         const answer = page.locator("article.assistant").last();
+        // Rendered at once (the renderer was loaded during the run), not the plain-text placeholder
+        // with raw Markdown and codes that the live run read on 14 November. No waiting here.
+        const first = await answer.innerText();
+        expect(first).toContain("Synthetic heading");
+        expect(first).not.toContain("## Synthetic heading");
+        expect(first).not.toContain("[synthetic-");
+        await ui(answer.getByRole("heading", { name: "Synthetic heading" })).toBeVisible();
         await ui(answer).toContainText("Synthetic research answer");
-        await ui(answer.locator("button.citation")).toHaveCount(1);
+        await ui(answer.locator("button.citation")).toHaveCount(2);
+        await ui(answer).toContainText("(§ 573c Abs. 1 BGB)");
+        await ui(answer).not.toContainText("[synthetic-");
+        await ui(answer).not.toContainText("0dffd17f5269");
+        // A button opens its source.
+        await answer.locator("button.citation").first().click();
+        await ui(page.getByRole("dialog")).toBeVisible();
+        await page.keyboard.press("Escape");
         await ui(answer.locator(".passages-used")).toContainText(
           t.note(2, 0, 4, 0, `"synthetic notice period tenancy"; "${sentSecond}"`),
         );

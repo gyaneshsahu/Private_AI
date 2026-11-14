@@ -291,6 +291,8 @@ async function runResearchCase(page: Page, question: string) {
   const counted = await page.locator(".research-result p").first().innerText().catch(() => "");
   const show = page.locator(".research-result button.primary");
   if (await show.isVisible().catch(() => false)) await show.click();
+  // The answer renderer loads on first show; reading at once captured its plain-text placeholder.
+  await answer(page).locator("button.citation").first().waitFor({ timeout: 10_000 }).catch(() => {});
   const text = await answerText(page);
   const citations = await answer(page).locator("button.citation").evaluateAll((bs) => bs.map((b) => b.getAttribute("aria-label") ?? "")).catch(() => [] as string[]);
   const tokens = Number(/Reported inference: (\d+) tokens/.exec(await page.locator("main").innerText().catch(() => ""))?.[1]) || undefined;

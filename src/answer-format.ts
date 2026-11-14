@@ -17,9 +17,10 @@ export function sourceCitations() {
     });
     visit(tree, "text", (node, index, parent) => {
       if (index == null || !parent || parent.type === "link") return;
-      // One code, or several in one bracket ("[id1, id2]"), each with an optional page or line.
+      // One code, or several in one bracket ("[id1, id2]"), each with an optional page or line
+      // and an optional short note in parentheses ("[id (§ 573c Abs. 1 BGB)]"), seen in live replies.
       const parts = node.value.split(
-        /([\[【]\s*(?:[a-zA-Z0-9-]{6,36}(?:,\s*(?:page|p\.)\s*[1-9]\d{0,3}|†(?:source|L\d{1,6}(?:-L\d{1,6})?))?(?:\s*[,;]\s*(?=[a-zA-Z0-9-]{6,36}[,;†\]】\s])|\s*(?=[\]】])))+[\]】])/gi,
+        /([\[【]\s*(?:[a-zA-Z0-9-]{6,36}(?:,\s*(?:page|p\.)\s*[1-9]\d{0,3}|†(?:source|L\d{1,6}(?:-L\d{1,6})?))?(?:\s*\([^()[\]【】\n]{1,80}\))?(?:\s*[,;]\s*(?=[a-zA-Z0-9-]{6,36}[,;†\]】\s])|\s*(?=[\]】])))+[\]】])/gi,
       );
       if (parts.length === 1) return;
       const children: PhrasingContent[] = parts
@@ -31,12 +32,18 @@ export function sourceCitations() {
           return part
             .slice(1, -1)
             .trim()
-            .split(/\s*[,;]\s*(?!\s*(?:page|p\.)\s*\d)/i)
-            .map((code): PhrasingContent => ({
-              type: "link",
-              url: "#source-" + code.split(/[,†]/)[0].trim(),
-              children: [{ type: "text", value: open + code + close }],
-            }));
+            .split(/\s*[,;]\s*(?![^()]*\))(?!\s*(?:page|p\.)\s*\d)/i)
+            .flatMap((cited): PhrasingContent[] => {
+              // The note stays visible as plain text after the source button.
+              const note = /\s*(\([^()]*\))$/.exec(cited);
+              const code = note ? cited.slice(0, note.index) : cited;
+              const link: PhrasingContent = {
+                type: "link",
+                url: "#source-" + code.split(/[,†]/)[0].trim(),
+                children: [{ type: "text", value: open + code + close }],
+              };
+              return note ? [link, { type: "text", value: ` ${note[1]}` }] : [link];
+            });
         });
       parent.children.splice(index, 1, ...children);
       return index + children.length;

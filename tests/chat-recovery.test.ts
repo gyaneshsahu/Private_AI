@@ -197,7 +197,8 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       await page.evaluate(
         () => (window as unknown as FixtureWindow).copiedAnswer,
       ),
-    ).toMatch(/^TEST complete answer \[.+\]$/);
+      // The source code becomes its number, followed by the answer's source list.
+    ).toBe("TEST complete answer [1, page 1]\n\nSources:\n1. synthetic-source.txt");
     await page.evaluate(() =>
       Object.defineProperty(navigator, "clipboard", {
         configurable: true,

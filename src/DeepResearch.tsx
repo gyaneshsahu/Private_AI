@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Source } from "../shared/contracts";
 import { RESEARCH_LIMITS, researchWeights } from "../shared/deep-research";
+import { preloadAnswer } from "./ChatMessage";
 import { parsePlan, planPrompt, researchNote, runResearch, type Api, type RunStep } from "./deep-research";
 import { useText } from "./i18n";
 import { IncompleteReplyError } from "./reply-stream";
@@ -128,6 +129,9 @@ export function DeepResearch(props: {
     const stop = (abort.current = new AbortController());
     setPhase("running");
     props.hold(t.stepSearch, stop);
+    // The answer is written while the conversation is hidden: load its renderer now, so "Show
+    // answer" never meets the plain-text placeholder (raw Markdown and source codes).
+    preloadAnswer();
     const outcome = await runResearch(
       asked,
       approvedTexts,

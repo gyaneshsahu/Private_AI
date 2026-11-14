@@ -207,3 +207,11 @@ Nothing new. Research results follow the existing rule for searches (owner decis
 | Reserve all 15 units at the plan instead of 5 and 10 | No (see "Allowance") |
 | `maxInputCharacters` in the deployed report | 32,000 |
 | Privacy wording | See `deep-research-privacy-wording-draft-20261114.md`; the binding texts were not touched |
+
+## Live check, 14 November
+
+The lead ran three synthetic questions through the real app with Privatemode and Brave. The plans were good and relevant (4 approved searches, 5 to 6 pages read). The answers were correct and well structured. But the citations showed as raw codes (`[2aee4cd21a78 (§ 573c Abs. 1 BGB)]`, `[b2dfe082cee1]`) with no source buttons.
+
+Cause: the sources were recorded correctly on the answer. Two things went wrong on the screen. First, the answer is written while the Research tab is shown, so the answer renderer had never loaded; "Show answer" met its plain-text placeholder, which shows raw Markdown and codes (the benchmark runner read the page at that moment). Second, the model often adds a short note inside the brackets, and the renderer did not accept that form, so those codes stayed raw even after loading.
+
+Fixed by: loading the renderer when a run starts and using it directly once loaded (`src/ChatMessage.tsx` `preloadAnswer`); accepting `[id (note)]` in every answer, with the note kept as text after the source button (`src/answer-format.ts`); an unknown code is still dropped and counted by the evidence notice. "Copy answer" and "Copy conversation as text" now turn known codes into the numbers of the source list, and "Copy answer" adds that list. The PDF shows the same buttons and the source list. The benchmark runner now waits for the rendered answer. Tests: `tests/citations.test.ts` (live answer shape), `tests/deep-research-ui.test.ts` (the faked answer cites like the live model; the answer is rendered at once with two buttons and the note). Not verified live: the lead should rerun the three questions and check the buttons.
