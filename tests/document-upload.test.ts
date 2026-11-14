@@ -216,7 +216,7 @@ it("offers .xlsx in the file picker and has German for every new worker message"
   expect(documentMessage(en.pdfOcrWarning(5, 12), "de")).toBe(
     de.pdfOcrWarning(5, 12),
   );
-  expect(en.pdfOcrWarning(5, 12)).toContain("5 of 12 pages");
+  expect(en.pdfOcrWarning(5, 12)).toContain("Pages read by OCR on this device: 5 of 12.");
   // src/documents.ts rejects a worker note longer than 500 characters.
   for (const lang of [en, de])
     for (const note of [lang.pdfOcrWarning(5, 20), lang.xlsxWarning])
