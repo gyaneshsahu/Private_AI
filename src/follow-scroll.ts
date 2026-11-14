@@ -34,11 +34,19 @@ const reducedMotion = () =>
 export function useFollowScroll(end: RefObject<HTMLElement | null>, jumpKey: string) {
   const following = useRef(true);
   const [away, setAway] = useState(false);
+  // While following, the browser must not move the view itself when something above changes
+  // height (scroll anchoring). When an answer completed, the status line above went away and the
+  // answer's actions grew below in one step: the browser's correction looked like the user
+  // scrolling up and following stopped. Away from the end, anchoring stays on and keeps the place.
+  const set = (scroller: HTMLElement, on: boolean) => {
+    following.current = on;
+    scroller.style.overflowAnchor = on ? "none" : "";
+  };
   const toEnd = useCallback(
     (smooth: boolean) => {
       const scroller = end.current?.closest("main");
       if (!scroller) return;
-      following.current = true;
+      set(scroller, true);
       setAway(false);
       scroller.scrollTo({
         top: scroller.scrollHeight,
@@ -52,13 +60,17 @@ export function useFollowScroll(end: RefObject<HTMLElement | null>, jumpKey: str
     const scroller = marker?.closest("main");
     if (!marker || !scroller) return;
     let lastTop = scroller.scrollTop;
+    set(scroller, following.current);
     const onScroll = () => {
       const top = scroller.scrollTop;
-      following.current = nextFollowing(
-        following.current,
-        lastTop,
-        top,
-        scroller.scrollHeight - top - scroller.clientHeight,
+      set(
+        scroller,
+        nextFollowing(
+          following.current,
+          lastTop,
+          top,
+          scroller.scrollHeight - top - scroller.clientHeight,
+        ),
       );
       lastTop = top;
       setAway(!following.current);
@@ -78,5 +90,16 @@ export function useFollowScroll(end: RefObject<HTMLElement | null>, jumpKey: str
     // jumpKey: the marker is mounted again when the conversation view comes back.
   }, [end, jumpKey]);
   useEffect(() => toEnd(true), [jumpKey, toEnd]);
-  return { away, toEnd };
+  // The user changes the height of an earlier message (Show more / Show less): do not pull the
+  // view to the end for that. Following resumes if the view is still at the end afterwards.
+  const hold = useCallback(() => {
+    const scroller = end.current?.closest("main");
+    if (!scroller) return;
+    set(scroller, false);
+    requestAnimationFrame(() => {
+      set(scroller, scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight <= 2);
+      setAway(!following.current);
+    });
+  }, [end]);
+  return { away, toEnd, hold };
 }

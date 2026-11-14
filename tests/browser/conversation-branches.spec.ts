@@ -100,13 +100,21 @@ test("built workspace restores, edits, switches and saves branches without any i
   await page.getByRole("button", { name: "Edit into a new branch" }).click();
   await expect(page.getByLabel("Edited message")).toBeFocused();
   await page.getByLabel("Edited message").fill("SYNTHETIC SECOND EDIT");
-  await page
-    .getByRole("button", { name: "Create branch", exact: true })
-    .click();
+  // Edit and send is one step since 14 November. This build has no chat, so Send stays off and
+  // nothing can be sent or branched from here; Escape closes the box and nothing changed.
   await expect(
-    page.getByText("SYNTHETIC SECOND EDIT", { exact: true }),
+    page
+      .getByRole("article", { name: "Your message 1", exact: true })
+      .getByRole("button", { name: "Send", exact: true }),
+  ).toBeDisabled();
+  await page.getByLabel("Edited message").press("Escape");
+  await expect(page.getByLabel("Edited message")).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Edit into a new branch" }),
+  ).toBeFocused();
+  await expect(
+    page.getByText("SYNTHETIC ORIGINAL QUESTION", { exact: true }),
   ).toBeVisible();
-  await expect(page.getByLabel("Message CometRow")).toBeFocused();
   await tab("Saved").click();
   await page
     .getByRole("button", { name: "Save encrypted snapshot", exact: true })

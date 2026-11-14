@@ -1,6 +1,6 @@
 // Answer modes on this device: the remembered choice, Auto's rules, the one-retry rule and
 // the label. Only mode names reach the UI, never model names.
-import { selectedSources } from "./conversation";
+import { newMessage, selectedSources } from "./conversation";
 import { germanRulesQuestion, interfaceLanguage, liveText, textBlock } from "./german-rules";
 import type { Lang } from "./i18n";
 import { AttestationBusyError } from "./providers/inference-client";
@@ -8,8 +8,10 @@ import { IncompleteReplyError } from "./reply-stream";
 import { needsCurrentInformation } from "./when-to-search";
 import {
   replyLimits,
+  tierFor,
   type AnswerMode,
   type Conversation,
+  type Qualification,
 } from "../shared/contracts";
 
 export type ModeChoice = "auto" | AnswerMode;
@@ -180,6 +182,26 @@ export function autoDecision(
 /** Auto's mode only; the reason stays on this device and is never logged or sent. */
 export function autoMode(conversation: Conversation, codeTool = false): AnswerMode {
   return autoDecision(conversation, codeTool).mode;
+}
+
+/**
+ * Allowance units one request would use now, from the report: the chosen mode's cost; for Auto
+ * the mode is decided on this device first, as the send path does. `text` is a question not yet
+ * in the conversation (an edited message). Never a promise that a refused request is free.
+ */
+export function requestCost(
+  report: Qualification,
+  choice: ModeChoice,
+  conversation: Conversation,
+  codeTool = false,
+  text?: string,
+): number {
+  const asked =
+    text === undefined
+      ? conversation
+      : { ...conversation, messages: [...conversation.messages, newMessage("user", text)] };
+  const mode = report.modes ? (choice === "auto" ? autoMode(asked, codeTool) : choice) : undefined;
+  return tierFor(report, mode).allowanceCost;
 }
 
 // Unavailable, refused or overloaded at the provider (it arrives as the relay's 502), or no first token in time.

@@ -427,6 +427,8 @@ export interface Message {
   at?: string;
   /** Which mode answered and whether the backup model did, e.g. "Auto · Thinking". Never a model name (older saves may hold one). */
   answeredBy?: string;
+  /** The mode that answered, as data (the label above is text). Absent on answers from before 14 November 2026 and without modes. */
+  mode?: AnswerMode;
   /**
    * This question was asked about an image. Only this flag is kept: the image itself is never
    * part of a conversation, is not saved and is not sent again in later turns.

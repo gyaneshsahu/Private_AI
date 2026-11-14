@@ -292,18 +292,11 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     await page
       .getByLabel("Edited message")
       .fill("TEST revised original question");
+    // Edit and send in one step (14 November): the branch is made and the edited text is sent.
     await page
-      .getByRole("button", { name: "Create branch", exact: true })
+      .getByRole("button", { name: "Send (uses 1 request)", exact: true })
       .click();
-    await ui(page.locator("article.assistant")).toHaveCount(0);
-    expect(
-      await page.evaluate(
-        () => (window as unknown as FixtureWindow).fixtureCalls.length,
-      ),
-    ).toBe(3);
-    await page
-      .getByRole("button", { name: "Answer this question", exact: false })
-      .click();
+    await ui(page.locator("article.assistant")).toHaveCount(1);
     await ui(
       page.getByRole("button", { name: "Stop", exact: true }),
     ).toHaveCount(0);

@@ -2033,10 +2033,68 @@
   border: 2px dashed var(--ink);
   border-radius: 18px;
   pointer-events: none;
+}
 /* Code execution: the code and output under an answer (src/CodeRuns.tsx). */
 .chat-design .code-runs {
   margin: 0.25rem 0 0.5rem;
 }
 .chat-design .code-runs summary {
   cursor: pointer;
+}
+/* Message component (chat-feature-gaps C and D): own text as typed, collapse, edit in place,
+   action labels that carry the cost. */
+.chat-design .user-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+}
+/* 12 lines of 1.6em: COLLAPSED_LINES in src/message-collapse.ts. Cut by height with a fade; the
+   mask needs no colour, so it is the same in light and dark. No animation. */
+.chat-design .user-text.collapsed {
+  max-height: 19.2em;
+  overflow: hidden;
+  overflow: clip;
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 4.8em), transparent);
+  mask-image: linear-gradient(#000 calc(100% - 4.8em), transparent);
+}
+.chat-design .show-more {
+  margin-top: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+.chat-design .message-edit {
+  display: grid;
+  gap: 8px;
+  margin-top: 9px;
+}
+.chat-design .message-edit label {
+  font-size: 12px;
+  color: var(--muted);
+}
+.chat-design .message-edit textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 5em;
+  max-height: 50vh;
+  field-sizing: content;
+  resize: vertical;
+  font: inherit;
+  line-height: 1.6;
+}
+.chat-design .message-edit p {
+  margin: 0;
+  font-size: 12px;
+}
+.chat-design .message-edit .message-actions {
+  margin-top: 0;
+}
+.chat-design .message-actions button {
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+}
+@media (max-width: 760px) {
+  .chat-design .show-more {
+    min-height: 44px;
+  }
 }

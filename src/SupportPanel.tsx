@@ -10,11 +10,14 @@ import {
 
 export function SupportPanel({
   initialArea = "conversation",
+  initialSymptom,
 }: {
   initialArea?: SupportArea;
+  /** Set when opened from "Report a problem" on an answer: only this choice is pre-set, nothing about the conversation. */
+  initialSymptom?: SupportSymptom;
 }) {
   const [area, setArea] = useState<SupportArea>(initialArea);
-  const [symptom, setSymptom] = useState<SupportSymptom>("unavailable");
+  const [symptom, setSymptom] = useState<SupportSymptom>(initialSymptom ?? "unavailable");
   const [notice, setNotice] = useState("");
   const id = useId();
   const { lang } = useLang();
@@ -49,6 +52,8 @@ export function SupportPanel({
       <label htmlFor={`${id}-symptom`}>{t.whatHappened}</label>
       <select
         id={`${id}-symptom`}
+        // The button that led here is gone with the conversation view: the focus continues here.
+        autoFocus={!!initialSymptom}
         value={symptom}
         onChange={(event) => {
           setSymptom(event.target.value as SupportSymptom);

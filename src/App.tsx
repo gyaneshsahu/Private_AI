@@ -1,7 +1,7 @@
 import { Icon } from "./Icon";
 import type { Project } from "./projects";
 import { containDialogFocus } from "./dialog-focus";
-import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   emptyConversation,
   tierFor,
@@ -15,11 +15,12 @@ import {
   type Source,
 } from "../shared/contracts";
 import { codeToolOn, runPython } from "./code-tool";
-import { CodeRuns, calculatedWithCode } from "./CodeRuns";
+import { calculatedWithCode } from "./CodeRuns";
 import {
   answerLabel,
   autoMode,
   MODE_NAMES,
+  requestCost,
   readModeChoice,
   saveModeChoice,
   shouldRetryOnBackup,
@@ -53,10 +54,7 @@ import { HealthConsentPrompt, HealthConsentSetting } from "./HealthConsent";
 import {
   checkArithmetic,
 } from "./arithmetic/check";
-import {
-  checkAnswerCompleteness,
-  completenessWarning,
-} from "./arithmetic/completeness";
+import { checkAnswerCompleteness } from "./arithmetic/completeness";
 import {
   asksBeforeSending,
   checkUncheckedFigures,
@@ -65,7 +63,6 @@ import {
 } from "./german-rules";
 import { expireMessages, type DisappearAfter } from "./conversation";
 import { germanEnabled, LanguageSwitch, textFor, useLang } from "./i18n";
-import { arithmeticText } from "./text/arithmetic";
 import { researchText } from "./text/research";
 import { serverMessage } from "./server-messages";
 import { appText } from "./text/app";
@@ -93,16 +90,15 @@ import { WorkspaceNavigation } from "./WorkspaceNavigation";
 import { readAppearance, saveAppearance } from "./appearance";
 import { ConversationLibrary } from "./ConversationLibrary";
 import { CopyConversationButton } from "./CopyConversationButton";
-import { MessageMeta } from "./MessageMeta";
+import { ChatMessage, type RetryAction } from "./ChatMessage";
 import { ConversationBranches } from "./ConversationBranches";
 import { branchConversation, switchBranch } from "./conversation-branches";
 import { ContextReview } from "./ContextReview";
-import { correctSource, sourceHistoryStatus } from "./source-history";
+import { correctSource } from "./source-history";
 import { AccountUsage } from "./AccountUsage";
 import { SupportPanel } from "./SupportPanel";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
-import { ReadAloudButton } from "./ReadAloudButton";
 import { stopReading } from "./read-aloud";
 import { PdfExportButton } from "./PdfExportButton";
 import { AttestationBusyError } from "./providers/inference-client";
@@ -117,9 +113,6 @@ import {
 
 type Tab =
   "Conversation" | "Context" | "Research" | "Saved" | "Account" | "Help";
-const Answer = lazy(() =>
-  import("./Answer").then((module) => ({ default: module.Answer })),
-);
 export function App() {
   const { lang } = useLang();
   const t = appText[lang];
@@ -352,7 +345,6 @@ export function App() {
   const [saved, setSaved] = useState<Conversation[]>([]);
   const [unreadableSnapshots, setUnreadableSnapshots] = useState(0);
   const [editId, setEditId] = useState<string>();
-  const [editText, setEditText] = useState("");
   const [operandA, setOperandA] = useState("");
   const [operandB, setOperandB] = useState("");
   const [operation, setOperation] = useState("+");
@@ -481,7 +473,6 @@ export function App() {
       setQuery("");
       setProposal(undefined);
       setEditId(undefined);
-      setEditText("");
       setOperandA("");
       setOperandB("");
       setCalculation("");
@@ -541,9 +532,6 @@ export function App() {
     },
     () => tab === "Conversation" && !document.querySelector("dialog[open]"),
   );
-  useEffect(() => {
-    if (editId) document.getElementById("edited-message")?.focus();
-  }, [editId]);
   const reset = () => {
     savedBase.current = null;
     setSaveConflict(false);
@@ -558,7 +546,6 @@ export function App() {
     setQuery("");
     setProposal(undefined);
     setEditId(undefined);
-    setEditText("");
     setOperandA("");
     setOperandB("");
     setCalculation("");
@@ -694,6 +681,47 @@ export function App() {
     const retry = lastQuestion();
     if (retry) void send(retry.base, retry.text, false, false, modeOverride);
   }
+  // Edit and send in one step (docs/chat-feature-gaps-20261114.md, package D): the old sequence is
+  // kept as a branch, then the edited text goes through send() like any message. The edit box
+  // closes by itself when the edited message is replaced; it stays open if send() refuses.
+  function editAndSend(id: string, text: string) {
+    if (sendBlocked({ busy: !!busy, text, ready: !!status?.inference.ready })) return;
+    try {
+      const branch = branchConversation(conversation, input, id, text);
+      calculationSession.clear();
+      void send({ ...branch, messages: branch.messages.slice(0, -1) }, text, false);
+      focusComposer();
+    } catch (error) {
+      fail((error as Error).message);
+    }
+  }
+  // What a retry of the newest question would use now, for the visible labels. Auto reads the
+  // question on this device; it is worked out again only when the question or the choice changes.
+  const qualified = status?.inference.qualification;
+  const lastMessage = conversation.messages.at(-1);
+  const lastUser = [...conversation.messages].reverse().find((m) => m.role === "user");
+  const retryCost = useMemo(
+    () =>
+      qualified && lastUser
+        ? requestCost(qualified, modeChoice, conversation, codeToolOn(status))
+        : undefined,
+    [qualified, modeChoice, lastUser?.text, conversation.attachments, status?.code],
+  );
+  const retry: RetryAction = {
+    cost: retryCost,
+    // After a Fast answer only, by the recorded mode. Not for a picture question: asking again
+    // sends no picture.
+    thinkingCost:
+      qualified?.modes && lastMessage?.role === "assistant" && lastMessage.mode === "fast" && !lastUser?.image
+        ? tierFor(qualified, "thinking").allowanceCost
+        : undefined,
+    run: askAgain,
+  };
+  // "Report a problem with this answer" opens Help with that choice set; nothing else is passed.
+  const [reporting, setReporting] = useState(false);
+  useEffect(() => {
+    if (tab !== "Help") setReporting(false);
+  }, [tab]);
 
   async function send(
     base = conversation,
@@ -864,6 +892,8 @@ export function App() {
                     answeredBy: image
                       ? `${answerLabel("fast", mode, false) ?? ""} (${imageText[lang].readByFast})`.trim()
                       : answerLabel(choiceForThis, mode, choice === "backup"),
+                    // As data, so "Answer again with Thinking" never reads the label text.
+                    ...(mode ? { mode } : {}),
                   }
                 : m,
             ),
@@ -1887,7 +1917,6 @@ export function App() {
                   setConversation(next);
                   setInput(next.draft ?? "");
                   setEditId(undefined);
-                  setEditText("");
                   setSource(undefined);
                   setNotice(t.branchOpened);
                 } catch (error) {
@@ -1897,183 +1926,33 @@ export function App() {
             />
             <div className="messages">
               {conversation.messages.map((message, index) => (
-                <article
+                <ChatMessage
                   key={message.id}
-                  className={`message ${message.role}`}
-                  aria-label={t.messageLabel(message.role === "user", index + 1)}
-                >
-                  <div className="message-heading">
-                    <strong>
-                      {message.role === "user" ? t.you : "CometRow"}
-                    </strong>
-                    {message.status !== "complete" && (
-                      <span>
-                        {message.status === "partial"
-                          ? t.incompleteExcluded
-                          : t.noAnswer}
-                      </span>
-                    )}
-                  </div>
-                  {message.answeredBy && (
-                    <p className="muted answered-by">{message.answeredBy}</p>
-                  )}
-                  <CodeRuns message={message} />
-                  {message.arithmeticCheck &&
-                    message.arithmeticCheck.mismatches > 0 && (
-                      <p className="warning arithmetic-check" role="alert">
-                        {arithmeticText[lang].mismatch}
-                      </p>
-                    )}
-                  {message.arithmeticCheck &&
-                    (message.arithmeticCheck.ambiguous ?? 0) > 0 && (
-                      <p className="warning arithmetic-check" role="alert">
-                        {arithmeticText[lang].ambiguous}
-                      </p>
-                    )}
-                  {!!message.completenessCheck?.missing.length && (
-                    <p className="warning arithmetic-check" role="alert">
-                      {completenessWarning(message.completenessCheck.missing)}
-                    </p>
-                  )}
-                  {message.uncheckedFigures && (
-                    <p className="warning arithmetic-check" role="alert">
-                      {GERMAN_RULES.warning}
-                    </p>
-                  )}
-                  {message.noOfficialSource && (
-                    <p className="warning arithmetic-check" role="alert">
-                      {GERMAN_RULES.noOfficial}
-                    </p>
-                  )}
-                  {message.passagesUsed && (
-                    <p className="muted passages-used">{message.passagesUsed}</p>
-                  )}
-                  {message.keptOnDevice && (
-                    <p className="muted kept-on-device">
-                      {message.keptOnDevice} {t.keptNote}
-                    </p>
-                  )}
-                  {message.failure && (
-                    <p className="muted">{t.failure(message.failure)}</p>
-                  )}
-                  {message.image && <p className="muted image-not-kept">{imageText[lang].notKept}</p>}
-                  <Suspense
-                    fallback={
-                      <div className="message-text">{message.text}</div>
-                    }
-                  >
-                    <Answer
-                      text={message.text}
-                      complete={message.status === "complete"}
-                      sources={message.sourceSnapshot ?? []}
-                      open={setSource}
-                    />
-                  </Suspense>
-                  {sourceHistoryStatus(message, sourceHistory) ===
-                    "changed" && (
-                    <details className="source-history-note">
-                      <summary>{t.sourcesChanged}</summary>
-                      <p>{t.sourcesChangedText}</p>
-                    </details>
-                  )}
-                  {!!message.text &&
-                    sourceHistoryStatus(message, sourceHistory) ===
-                      "unrecorded" && (
-                      <details className="source-history-note">
-                        <summary>{t.sourcesUnrecorded}</summary>
-                        <p>{t.sourcesUnrecordedText}</p>
-                      </details>
-                    )}
-                  <div className="message-actions">
-                    {message.role === "user" && (
-                      <button
-                        disabled={!!busy}
-                        aria-label={t.editIntoBranch}
-                        id={`edit-message-${message.id}`}
-                        onClick={() => {
-                          setEditId(message.id);
-                          setEditText(message.text);
-                        }}
-                      >
-                        <Icon name="edit" />
-                        {t.edit}
-                      </button>
-                    )}
-                    {message.role === "user" && <MessageMeta message={message} />}
-                    {message.role === "assistant" && (
-                      <button
-                        disabled={
-                          message.status !== "complete" || !message.text
-                        }
-                        onClick={() => void copyAnswer(message.text, message.id)}
-                      >
-                        <Icon name="copy" />
-                        {copiedId === message.id ? ct.copied : t.copyAnswer}
-                      </button>
-                    )}
-                    {message.role === "assistant" && (
-                      <>
-                        <ReadAloudButton
-                          id={message.id}
-                          disabled={message.status !== "complete" || !message.text}
-                        />
-                        <PdfExportButton
-                          conversation={conversation}
-                          answer={index}
-                          disabled={message.status !== "complete" || !message.text}
-                        />
-                      </>
-                    )}
-                  </div>
-                </article>
+                  message={message}
+                  index={index}
+                  conversation={conversation}
+                  sourceHistory={sourceHistory}
+                  busy={!!busy}
+                  ready={!!status?.inference.ready}
+                  openSource={setSource}
+                  copied={copiedId === message.id}
+                  onCopy={() => void copyAnswer(message.text, message.id)}
+                  editing={editId === message.id}
+                  onEdit={(open) => setEditId(open ? message.id : undefined)}
+                  onEditSend={(text) => editAndSend(message.id, text)}
+                  editCost={(text) =>
+                    qualified && requestCost(qualified, modeChoice, conversation, codeToolOn(status), text)
+                  }
+                  retry={index === conversation.messages.length - 1 ? retry : undefined}
+                  onReport={() => {
+                    setReporting(true);
+                    setTab("Help");
+                  }}
+                  onResize={follow.hold}
+                />
               ))}
               <div ref={outputEnd} />
             </div>
-            {editId && (
-              <div className="panel">
-                <label>
-                  {t.editedMessage}
-                  <textarea
-                    id="edited-message"
-                    value={editText}
-                    onChange={(e) => setEditText(e.target.value)}
-                  />
-                </label>
-                <button
-                  disabled={!!busy || !editText.trim()}
-                  onClick={() => {
-                    try {
-                      setConversation(
-                        branchConversation(
-                          conversation,
-                          input,
-                          editId,
-                          editText,
-                        ),
-                      );
-                      calculationSession.clear();
-                      setEditId(undefined);
-                      setEditText("");
-                      document.getElementById("message-input")?.focus();
-                      setNotice(t.branchCreated);
-                    } catch (error) {
-                      fail((error as Error).message);
-                    }
-                  }}
-                >
-                  {t.createBranch}
-                </button>
-                <button
-                  onClick={() => {
-                    document.getElementById(`edit-message-${editId}`)?.focus();
-                    setEditId(undefined);
-                    setEditText("");
-                  }}
-                >
-                  {t.cancel}
-                </button>
-              </div>
-            )}
             <div className="composer-dock">
               {follow.away && conversation.messages.length > 0 && (
                 <button
@@ -2082,8 +1961,9 @@ export function App() {
                   aria-label={ct.jumpLatest}
                   title={ct.jumpLatest}
                   onClick={() => {
-                    follow.toEnd(true);
+                    // Focus first: focusing scrolls by itself and would cut the smooth jump short.
                     focusComposer();
+                    follow.toEnd(true);
                   }}
                 >
                   ↓
@@ -2473,36 +2353,6 @@ export function App() {
                   ))}
                 </ul>
               )}
-              {conversation.messages.length > 0 && (
-                <button
-                  className="text-button"
-                  title={
-                    status?.inference.ready ? t.newCharge : t.retryGated
-                  }
-                  disabled={!!busy || !status?.inference.ready}
-                  onClick={() => askAgain()}
-                >
-                  {conversation.messages.at(-1)?.role === "user"
-                    ? t.answerThis
-                    : t.retryLast}
-                </button>
-              )}
-              {/* One tap to the deeper mode after a Fast answer: user-chosen, labelled, same provider. */}
-              {status?.inference.qualification?.modes &&
-                conversation.messages.at(-1)?.role === "assistant" &&
-                // German label once answer-modes passes the language.
-                /(^|· )(Fast|Schnell)( ·|$)/.test(
-                  conversation.messages.at(-1)?.answeredBy ?? "",
-                ) && (
-                  <button
-                    className="text-button"
-                    title={t.newCharge}
-                    disabled={!!busy || !status?.inference.ready}
-                    onClick={() => askAgain("thinking")}
-                  >
-                    {t.answerThinking}
-                  </button>
-                )}
               <p className="composer-caption">
                 {unlocked ? t.captionVault : t.captionTemporary} {t.captionAi}
                 <span className="composer-hint"> · {ct.enterHint}</span>
@@ -2949,7 +2799,7 @@ export function App() {
             )}
           </section>
         )}
-        {tab === "Help" && <SupportPanel />}
+        {tab === "Help" && <SupportPanel initialSymptom={reporting ? "incorrect" : undefined} />}
         {tab === "Account" && (
           <>
             {status?.accountId && !status.consumerWorkspace && (
