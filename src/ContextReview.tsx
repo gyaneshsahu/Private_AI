@@ -2,6 +2,8 @@ import type { Conversation } from "../shared/contracts";
 import type { measureContext } from "./conversation";
 import { useLang } from "./i18n";
 import { contextReviewText } from "./text/conversation-ui";
+import { memoryEnabled } from "./device-features";
+import { memoryText } from "./text/memory";
 
 export function ContextReview({
   expanded = false,
@@ -52,6 +54,10 @@ export function ContextReview({
               [t.selectedMessages, size.breakdown.conversation],
               [t.selectedReferences, size.breakdown.references],
               [t.draft, size.breakdown.draft],
+              // Memory (docs/memory-20261114.md): the notes that go with the question count too.
+              ...(memoryEnabled()
+                ? ([[memoryText[lang].contextRow, size.breakdown.memory]] as const)
+                : []),
             ] as const
           ).map(([label, count]) => (
             <tr key={label}>

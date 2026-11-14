@@ -11,6 +11,8 @@ import { Icon } from "./Icon";
 import { useLang } from "./i18n";
 import { shouldCollapse } from "./message-collapse";
 import { MessageMeta } from "./MessageMeta";
+import { MemoryNote } from "./MemoryPanel";
+import { memoryText } from "./text/memory";
 import { PdfExportButton } from "./PdfExportButton";
 import { ReadAloudButton } from "./ReadAloudButton";
 import { sourceHistoryStatus } from "./source-history";
@@ -114,6 +116,7 @@ export function ChatMessage({
   editCost,
   retry,
   onReport,
+  onRemember,
   onResize,
 }: {
   message: Message;
@@ -132,6 +135,8 @@ export function ChatMessage({
   editCost: (text: string) => number | undefined;
   /** Only on the newest message. */
   retry?: RetryAction;
+  /** Memory across chats: offered on the user's own message when memory is on (absent otherwise). */
+  onRemember?: () => void;
   onReport: () => void;
   onResize: () => void;
 }) {
@@ -216,6 +221,7 @@ export function ChatMessage({
         </p>
       )}
       {message.passagesUsed && <p className="muted passages-used">{message.passagesUsed}</p>}
+      {message.memoriesUsed && <MemoryNote ids={message.memoriesUsed} />}
       {message.keptOnDevice && (
         <p className="muted kept-on-device">
           {message.keptOnDevice} {t.keptNote}
@@ -295,6 +301,12 @@ export function ChatMessage({
             >
               <Icon name="edit" />
               {t.edit}
+            </button>
+          )}
+          {user && onRemember && (
+            <button disabled={busy} onClick={onRemember}>
+              <Icon name="pin" />
+              {memoryText[lang].rememberThis}
             </button>
           )}
           {user && retryButtons}

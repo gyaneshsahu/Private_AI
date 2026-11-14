@@ -92,6 +92,8 @@ export function choosePassages(
   question: string,
   earlier = "",
   budget = PASSAGE_BUDGET,
+  /** At most this many passages (memories use it; documents are limited by the budget alone). */
+  limit = Number.POSITIVE_INFINITY,
 ): { chosen: number[]; matched: boolean } {
   const weights = new Map<string, number>();
   for (const word of terms(earlier)) weights.set(word, 0.5);
@@ -141,7 +143,7 @@ export function choosePassages(
       .filter((entry) => entry.score >= best * 0.2)
       .sort((a, b) => b.score - a.score || a.index - b.index);
     for (const { index } of ranked)
-      if (passages[index].text.length <= left) {
+      if (chosen.length < limit && passages[index].text.length <= left) {
         chosen.push(index);
         left -= passages[index].text.length;
       }

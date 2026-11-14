@@ -421,6 +421,8 @@ export interface Message {
   failure?: "stopped" | "timeout" | "incomplete" | "unavailable" | "empty";
   /** For an answer about a large document: which of its passages were sent, and that the rest was not. */
   passagesUsed?: string;
+  /** For an answer: the ids of the memories sent with its question. Ids only, so a deleted memory leaves no text here. */
+  memoriesUsed?: string[];
   /** Plain-language note of identifiers masked on this device for this reply, e.g. "Kept on this device: 1 bank account." */
   keptOnDevice?: string;
   /** Creation time, ISO 8601; absent on messages saved before 22 October 2026. */
@@ -503,6 +505,8 @@ export interface Conversation {
    * when the conversation is open or opened. Nothing is deleted anywhere else.
    */
   disappearAfter?: "hour" | "day" | "week";
+  /** Memory across chats is switched off for this conversation: no memory is sent with its questions. */
+  memoryOff?: true;
   id: string;
   title: string;
   messages: Message[];

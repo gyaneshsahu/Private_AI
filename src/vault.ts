@@ -1,6 +1,7 @@
 import { textFor } from "./text/core";
 import { vaultText } from "./text/vault";
 import { projectsSchema, type Project } from "./projects";
+import { memoriesSchema, mergeMemories, MemoryError, type Memory } from "./memory";
 import { deleteDB, openDB } from "idb";
 import type { Conversation } from "../shared/contracts";
 import {
@@ -23,6 +24,13 @@ const db = (name: string) =>
       database.createObjectStore("conversations");
     },
   });
+// Memories (src/memory.ts) are one encrypted record in "meta", like projects: an older vault
+// simply has none, so no database upgrade is needed. The label carries the format version.
+const MEMORY_LABEL = "memories-v1";
+const recordIv = (record?: Cipher) => JSON.stringify(record && Array.from(record.iv));
+async function openMemories(key: CryptoKey, record?: Cipher): Promise<Memory[]> {
+  return record ? memoriesSchema.parse(JSON.parse(await unseal(key, record, MEMORY_LABEL))) : [];
+}
 function random(length: number): Uint8Array<ArrayBuffer> {
   return crypto.getRandomValues(new Uint8Array(length));
 }
@@ -527,6 +535,60 @@ export class Vault {
       }
     });
   }
+  async readMemories(): Promise<Memory[]> {
+    const key = this.key,
+      generation = this.generation;
+    if (!key) throw Error(textFor(vaultText).unlockFirst);
+    await this.queue;
+    if (generation !== this.generation) throw Error(textFor(vaultText).changed);
+    const database = await db(this.databaseName);
+    try {
+      requireVaultIdentity(await database.get("meta", "vault"), this.salt);
+      const memories = await openMemories(key, await database.get("meta", "memories"));
+      if (generation !== this.generation) throw Error(textFor(vaultText).changed);
+      return memories;
+    } finally {
+      database.close();
+    }
+  }
+  /** Every change to the memories: `change` gets the stored list and returns the next one. */
+  writeMemories(change: (current: Memory[]) => Memory[]): Promise<Memory[]> {
+    const key = this.key,
+      salt = this.salt,
+      generation = this.generation,
+      databaseName = this.databaseName;
+    if (!key) return Promise.reject(Error(textFor(vaultText).unlockFirst));
+    return this.enqueue(async () => {
+      const database = await db(databaseName);
+      try {
+        requireVaultIdentity(await database.get("meta", "vault"), salt);
+        const previous = (await database.get("meta", "memories")) as Cipher | undefined;
+        const next = memoriesSchema.parse(change(await openMemories(key, previous)));
+        const encrypted = next.length
+          ? await seal(key, JSON.stringify(next), MEMORY_LABEL)
+          : undefined;
+        const tx = database.transaction("meta", "readwrite");
+        requireVaultIdentity(await tx.store.get("vault"), salt);
+        if (
+          recordIv(await tx.store.get("memories")) !== recordIv(previous) ||
+          generation !== this.generation
+        ) {
+          tx.abort();
+          await tx.done.catch(() => {});
+          throw new MemoryError("changed");
+        }
+        // "Forget all" leaves no record behind, not an encrypted empty list.
+        if (encrypted) await tx.store.put(encrypted, "memories");
+        else await tx.store.delete("memories");
+        await tx.done;
+        // Other tabs lock, as after a deletion: none keeps sending a memory that was removed here.
+        this.channel?.postMessage("memories");
+        return next;
+      } finally {
+        database.close();
+      }
+    });
+  }
   async exportBackup(): Promise<string> {
     const key = this.key,
       salt = this.salt,
@@ -543,6 +605,7 @@ export class Vault {
       salt,
       available.conversations,
       await this.readProjects(),
+      await this.readMemories(),
     );
     if (generation !== this.generation || !this.key)
       throw Error(textFor(vaultText).backupCancelled);
@@ -558,14 +621,16 @@ export class Vault {
         Error(textFor(vaultText).unlockDestination),
       );
     return this.enqueue(async () => {
-      const { conversations, projects } = await decodeVaultBackupContent(
+      const { conversations, projects, memories } = await decodeVaultBackupContent(
         text,
         passphrase,
       );
       const databaseBefore = await db(databaseName);
       let projectRecord: Cipher | undefined;
+      let memoryRecord: Cipher | undefined;
       try {
         projectRecord = await databaseBefore.get("meta", "projects");
+        memoryRecord = await databaseBefore.get("meta", "memories");
       } finally {
         databaseBefore.close();
       }
@@ -586,6 +651,18 @@ export class Vault {
         JSON.stringify(mergedProjects),
         "projects-v1",
       );
+      // The backup's memories are added to the ones here (src/memory.ts: mergeMemories).
+      const nextMemories = memories.length
+        ? await seal(
+            key,
+            JSON.stringify(
+              memoriesSchema.parse(
+                mergeMemories(memories)(await openMemories(key, memoryRecord)),
+              ),
+            ),
+            MEMORY_LABEL,
+          )
+        : undefined;
       const encrypted = [];
       for (const original of conversations) {
         if (generation !== this.generation || !this.key)
@@ -634,6 +711,11 @@ export class Vault {
           )
             throw Error(textFor(vaultText).projectsChangedRestore);
           await tx.objectStore("meta").put(nextProjects, "projects");
+          if (nextMemories) {
+            if (recordIv(await tx.objectStore("meta").get("memories")) !== recordIv(memoryRecord))
+              throw Error(textFor(vaultText).restoreCancelled);
+            await tx.objectStore("meta").put(nextMemories, "memories");
+          }
           for (const { id, ...record } of encrypted) {
             if (
               generation !== this.generation ||
@@ -699,6 +781,9 @@ export class Vault {
         const projectRecord = (await read
           .objectStore("meta")
           .get("projects")) as Cipher | undefined;
+        const memoryRecord = (await read
+          .objectStore("meta")
+          .get("memories")) as Cipher | undefined;
         await read.done;
         const currentKey = await derive(currentPassphrase, meta.salt);
         if (
@@ -720,6 +805,13 @@ export class Vault {
                 ),
               ),
               "projects-v1",
+            )
+          : undefined;
+        const nextMemories = memoryRecord
+          ? await seal(
+              nextKey,
+              JSON.stringify(await openMemories(currentKey, memoryRecord)),
+              MEMORY_LABEL,
             )
           : undefined;
         const replacements: {
@@ -784,6 +876,10 @@ export class Vault {
             throw Error(textFor(vaultText).projectsChangedPassphrase);
           if (nextProjects)
             await tx.objectStore("meta").put(nextProjects, "projects");
+          if (recordIv(await tx.objectStore("meta").get("memories")) !== recordIv(memoryRecord))
+            throw Error(textFor(vaultText).historyChangedPassphrase);
+          if (nextMemories)
+            await tx.objectStore("meta").put(nextMemories, "memories");
           await tx.objectStore("meta").put({ salt: nextSalt, check }, "vault");
           unchanged();
           await tx.done;

@@ -101,6 +101,20 @@ import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { stopReading } from "./read-aloud";
 import { PdfExportButton } from "./PdfExportButton";
+import { memoryEnabled } from "./device-features";
+import { addMemory, memoriesFor, rememberRequest } from "./memory";
+import {
+  changeMemories,
+  loadMemories,
+  MemoryChatSwitch,
+  MemoryNote,
+  memoryProblem,
+  MemorySettings,
+  RememberDialog,
+  useMemories,
+  useMemoryVault,
+} from "./MemoryPanel";
+import { memoryText } from "./text/memory";
 import { AttestationBusyError } from "./providers/inference-client";
 import { chatErrorText } from "./text/chat-errors";
 import { abortable, withDeadline } from "./abortable";
@@ -252,9 +266,12 @@ export function App() {
   const savedBase = useRef<Conversation | null>(null);
   const [saveConflict, setSaveConflict] = useState(false);
   const [imports, setImports] = useState<ImportOutcome[]>([]);
+  // Memory across chats (docs/memory-20261114.md): held only while the vault is unlocked.
+  const memories = useMemories();
+  const [remember, setRemember] = useState<{ text: string; draft: boolean }>();
   const selectedContextSize = useMemo(
     () => measureContext(conversation, input),
-    [conversation, input],
+    [conversation, input, memories],
   );
   const [busy, setBusy] = useState("");
   const [source, setSource] = useState<Source>();
@@ -351,6 +368,7 @@ export function App() {
   const [calculation, setCalculation] = useState("");
   const controller = useRef<AbortController | null>(null);
   const vault = useRef<Vault | null>(null);
+  useMemoryVault(vault.current, unlocked);
   const epoch = useRef(0);
   const accessNavigation = useRef(false);
   const outputEnd = useRef<HTMLDivElement>(null);
@@ -764,6 +782,8 @@ export function App() {
       sourceSnapshot: structuredClone(selectedSources(next)),
       // Large documents: which passages this answer was given, and that the rest was not sent.
       passagesUsed: passageNotes(next, true).join(" ") || undefined,
+      // Memory: the ids of the notes that go with this question (the same choice composeContext makes).
+      ...(memoriesFor(next).length ? { memoriesUsed: memoriesFor(next).map((m) => m.id) } : {}),
     };
     setConversation({ ...next, messages: [...next.messages, answer] });
     if (consumeDraft) setInput("");
@@ -1187,7 +1207,8 @@ export function App() {
     }
   }
   async function eraseEverything() {
-    if (!window.confirm(t.eraseConfirm)) return;
+    if (!window.confirm(t.eraseConfirm + (memoryEnabled() ? ` ${memoryText[lang].eraseAlso}` : "")))
+      return;
     const current = epoch.current;
     setBusy(t.erasing);
     try {
@@ -1313,6 +1334,7 @@ export function App() {
       if (current !== epoch.current) return;
       const count = await vault.current!.restoreBackup(text, secret);
       if (current !== epoch.current) return;
+      await loadMemories(vault.current!);
       const snapshots = await vault.current!.readAvailable();
       const projectList = await vault.current!.readProjects();
       if (current !== epoch.current) return;
@@ -1510,13 +1532,34 @@ export function App() {
           setSettingsOpen(true);
         }}
       />
+      {remember && (
+        <RememberDialog
+          text={remember.text}
+          canSave={unlocked}
+          canSend={remember.draft}
+          onClose={(result) => {
+            const asked = remember;
+            setRemember(undefined);
+            if (result === "send") void send();
+            else if (result)
+              changeMemories(vault.current!, addMemory(result.save)).then(
+                () => {
+                  if (asked.draft) setInput("");
+                  setNotice(memoryText[lang].added);
+                },
+                (error) => fail(memoryText[lang].problem(memoryProblem(error))),
+              );
+          }}
+        />
+      )}
       <dialog
         ref={settingsDialog}
         onKeyDown={containDialogFocus}
         className="settings-dialog"
         aria-label={t.settings}
-        onCancel={() => setSettingsOpen(false)}
-        onClose={() => setSettingsOpen(false)}
+        // React passes a nested dialog's cancel and close on to here (the Memory screen's confirmation).
+        onCancel={(event) => event.target === event.currentTarget && setSettingsOpen(false)}
+        onClose={(event) => event.target === event.currentTarget && setSettingsOpen(false)}
       >
         <div className="row">
           <h2>{t.settings}</h2>
@@ -1535,6 +1578,7 @@ export function App() {
                 ["account", "user", t.sectionAccount],
                 ["privacy", "shield", t.sectionPrivacy],
                 ["usage", "usage", t.sectionUsage],
+                ...(memoryEnabled() ? ([["memory", "pin", memoryText[lang].title]] as const) : []),
               ] as const
             ).map(([id, icon, label]) => (
               <button
@@ -1642,6 +1686,9 @@ export function App() {
             )}
             {settingsSection === "usage" && (
               <AccountUsage allowance={status?.requestAllowance} />
+            )}
+            {settingsSection === "memory" && memoryEnabled() && (
+              <MemorySettings vault={vault.current} unlocked={unlocked} />
             )}
           </section>
         </div>
@@ -1773,6 +1820,16 @@ export function App() {
                   <option value="week">{t.disappearWeek}</option>
                 </select>
               </label>
+              <MemoryChatSwitch
+                conversation={conversation}
+                unlocked={unlocked}
+                disabled={!!busy}
+                onChange={(on) =>
+                  setConversation(({ memoryOff: _off, ...c }) =>
+                    on ? c : { ...c, memoryOff: true },
+                  )
+                }
+              />
               <button onClick={() => setSettingsOpen(true)}>{t.settings}</button>
             </div>
           </details>
@@ -1944,6 +2001,11 @@ export function App() {
                     qualified && requestCost(qualified, modeChoice, conversation, codeToolOn(status), text)
                   }
                   retry={index === conversation.messages.length - 1 ? retry : undefined}
+                  onRemember={
+                    memoryEnabled() && !conversation.incognito
+                      ? () => setRemember({ text: message.text, draft: false })
+                      : undefined
+                  }
                   onReport={() => {
                     setReporting(true);
                     setTab("Help");
@@ -2099,8 +2161,14 @@ export function App() {
                 className="composer"
                 onSubmit={(e) => {
                   e.preventDefault();
+                  // "Remember that ...": ask to save it as a memory. Nothing is sent unless the user says so.
+                  const wanted =
+                    memoryEnabled() && !conversation.incognito && !attachedImage && !busy
+                      ? rememberRequest(input)
+                      : undefined;
+                  if (wanted) setRemember({ text: wanted, draft: true });
                   // A picture question goes straight to the model: no search step in between.
-                  if (attachedImage && status?.images) void send();
+                  else if (attachedImage && status?.images) void send();
                   else if ((autoSearch || autoRules) && suggestion)
                     void searchThenAnswer(suggestion.value, "auto");
                   else if (askFirst) setChoiceFor(input);

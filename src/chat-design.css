@@ -2100,4 +2100,96 @@
   .chat-design .message-edit-actions button {
     min-height: 44px;
   }
+/* Memory across chats: the Settings screen, the note under an answer, the chat switch (src/MemoryPanel.tsx). */
+.chat-design .memory-settings textarea,
+.chat-design .memory-settings input[type="search"],
+.chat-design .remember-dialog textarea {
+  box-sizing: border-box;
+  width: 100%;
+  font: inherit;
+}
+.chat-design .memory-add {
+  display: grid;
+  gap: 6px;
+}
+.chat-design .memory-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.chat-design .memory-actions > span {
+  margin-right: auto;
+}
+.chat-design .memory-actions button[aria-pressed="true"] {
+  color: var(--surface);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.chat-design .memory-status {
+  min-height: 1.6em;
+  margin: 6px 0;
+}
+.chat-design .memory-list {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 0;
+  list-style: none;
+}
+.chat-design .memory-list li {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.chat-design .memory-list p {
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}
+.chat-design .memory-foot {
+  margin-top: 12px;
+}
+.chat-design .memory-used {
+  font-size: 13px;
+}
+.chat-design .memory-used summary {
+  min-height: 24px;
+  cursor: pointer;
+}
+.chat-design .memory-used ul {
+  margin: 4px 0;
+  padding-left: 1.2em;
+}
+.chat-design .memory-used li,
+.chat-design .memory-used p {
+  margin: 2px 0;
+  overflow-wrap: anywhere;
+}
+.chat-design .menu-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 24px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9em;
+}
+.chat-design .remember-dialog label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.chat-design .remember-dialog p {
+  margin: 8px 0 12px;
+}
+@media (max-width: 760px) {
+  .chat-design .memory-actions button,
+  .chat-design .memory-used summary,
+  .chat-design .menu-check {
+    min-height: 44px;
+  }
+  .chat-design .memory-used summary {
+    box-sizing: border-box;
+    padding: 12px 0;
+  }
 }

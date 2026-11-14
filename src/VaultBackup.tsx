@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { BACKUP_MAX_BYTES } from "./vault-backup";
-import { useText } from "./i18n";
+import { useLang, useText } from "./i18n";
 import { vaultBackupText } from "./text/vault-ui";
+import { memoryEnabled } from "./device-features";
+import { memoryText } from "./text/memory";
 
 export function VaultBackup({
   busy,
@@ -19,10 +21,14 @@ export function VaultBackup({
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState("");
   const t = useText(vaultBackupText);
+  const { lang } = useLang();
   return (
     <section className="panel" aria-label={t.label}>
       <h3>{t.keepHeading}</h3>
-      <p>{t.keepIntro}</p>
+      <p>
+        {t.keepIntro}
+        {memoryEnabled() && ` ${memoryText[lang].backupAlso}`}
+      </p>
       <p className="muted">{t.limits}</p>
       <button disabled={busy || !canExport} onClick={() => void onExport()}>
         {t.download}

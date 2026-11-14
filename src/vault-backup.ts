@@ -1,6 +1,7 @@
 import { textFor } from "./text/core";
 import { vaultText } from "./text/vault";
 import { projectsSchema, type Project } from "./projects";
+import { memoriesSchema, type Memory } from "./memory";
 import { z } from "zod";
 import { derive, seal, unseal } from "./vault-crypto";
 import {
@@ -29,6 +30,8 @@ const payload = z
   .object({
     version: z.literal(1),
     projects: projectsSchema.optional(),
+    // Written only when there are memories, so a backup without them is unchanged.
+    memories: memoriesSchema.optional(),
     conversations: z
       .array(savedConversationSchema)
       .max(BACKUP_MAX_CONVERSATIONS),
@@ -53,6 +56,7 @@ function decode(value: string): Uint8Array<ArrayBuffer> {
 function validate(value: unknown): {
   conversations: Conversation[];
   projects: Project[];
+  memories: Memory[];
 } {
   const result = payload.parse(value);
   if (
@@ -70,6 +74,7 @@ function validate(value: unknown): {
   return {
     conversations: (value as { conversations: Conversation[] }).conversations,
     projects: result.projects ?? [],
+    memories: result.memories ?? [],
   };
 }
 export async function encodeVaultBackup(
@@ -77,8 +82,9 @@ export async function encodeVaultBackup(
   salt: Uint8Array<ArrayBuffer>,
   conversations: Conversation[],
   projects: Project[] = [],
+  memories: Memory[] = [],
 ): Promise<string> {
-  const content = { version: 1, conversations, projects };
+  const content = { version: 1, conversations, projects, ...(memories.length ? { memories } : {}) };
   validate(content);
   const text = JSON.stringify(content);
   if (
@@ -101,7 +107,7 @@ export async function encodeVaultBackup(
 export async function decodeVaultBackupContent(
   text: string,
   passphrase: string,
-): Promise<{ conversations: Conversation[]; projects: Project[] }> {
+): Promise<{ conversations: Conversation[]; projects: Project[]; memories: Memory[] }> {
   if (
     text.length > BACKUP_MAX_BYTES ||
     new TextEncoder().encode(text).byteLength > BACKUP_MAX_BYTES

@@ -25,6 +25,7 @@ const conversationBody = z.object({
   draft: z.string().optional(),
   temporarySearch: z.boolean().optional(),
   disappearAfter: z.enum(["hour", "day", "week"]).optional(),
+  memoryOff: z.literal(true).optional(),
   messages: z.array(
     z.object({
       id: z.string(),
@@ -38,6 +39,7 @@ const conversationBody = z.object({
         .optional(),
       keptOnDevice: z.string().max(300).optional(),
       passagesUsed: z.string().max(4000).optional(),
+      memoriesUsed: z.array(z.string().uuid()).max(8).optional(),
       answeredBy: z.string().max(300).optional(),
       mode: z.enum(["fast", "thinking"]).optional(),
       // Only the fact that a picture was asked about. There is no field that could hold a picture.

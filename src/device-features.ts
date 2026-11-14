@@ -10,3 +10,5 @@ const on = (name: string): boolean => {
 };
 export const readAloudEnabled = () => on("VITE_READ_ALOUD");
 export const pdfExportEnabled = () => on("VITE_PDF_EXPORT");
+/** Memory across chats (docs/memory-20261114.md): kept in the vault on the device, no server part. */
+export const memoryEnabled = () => on("VITE_MEMORY");

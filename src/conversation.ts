@@ -9,6 +9,7 @@ import {
 } from "./german-rules";
 import type { Lang } from "./i18n";
 import { choosePassages } from "./passage-retrieval";
+import { memoriesFor, memoryBlock } from "./memory";
 
 const textBlocks = textBlock({
   en: {
@@ -275,6 +276,10 @@ export function composeContext(
   for (const m of conversation.messages)
     if (m.included && m.status === "complete")
       messages.push({ role: m.role, content: m.image ? IMAGE_GONE_NOTE + m.text : m.text });
+  // Memory (docs/memory-20261114.md): the notes chosen on this device stand in front of the latest
+  // question, so the instructions and earlier turns stay as they were. Product path only.
+  const memory = variant === undefined ? memoryBlock(memoriesFor(conversation)) : "";
+  if (memory) messages[messages.length - 1].content = memory + messages[messages.length - 1].content;
   if (messages.reduce((n, m) => n + m.content.length, 0) > maxCharacters)
     throw new Error(text.tooLarge);
   return messages;
@@ -362,6 +367,7 @@ export function measureContext(
   const instructions = messages[0].content.length;
   const references = sources.length ? messages[1].content.length : 0;
   const draftCharacters = draft.trim().length;
+  const memory = variant === undefined ? memoryBlock(memoriesFor(asked)).length : 0;
   const characters = messages.reduce((sum, m) => sum + m.content.length, 0);
   return {
     characters,
@@ -369,8 +375,10 @@ export function measureContext(
     breakdown: {
       instructions,
       references,
-      conversation: characters - instructions - references - draftCharacters,
+      conversation: characters - instructions - references - draftCharacters - memory,
       draft: draftCharacters,
+      /** The memory notes that would go with the question, with their wrapper. */
+      memory,
     },
     includedMessages: conversation.messages.filter(
       (message) => message.included && message.status === "complete",
