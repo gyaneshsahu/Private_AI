@@ -50,6 +50,7 @@ This is a map of `docs/` for new sessions and for Graphify. Files dated 11 to 13
 - `i18n-20261113.md`: what was built and checked, and the conditions before German goes live.
 - `i18n-glossary-20261113.md`: fixed German terms; formal "Sie".
 - `legal-texts-de-20261113.md`, `legal-texts-side-by-side.md`: the German legal drafts and their open questions, with the side-by-side file for the lawyer.
+- `third-party-ocr-data-20261114.md`: the OCR engine and the German and English OCR data: versions, licences, sources, sizes and how they are loaded.
 
 ## Privacy and legal (drafts need the owner and a legal read)
 
