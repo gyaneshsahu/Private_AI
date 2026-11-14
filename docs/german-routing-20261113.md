@@ -2,6 +2,106 @@
 
 The owner requires a German and English interface and that the model answers in the user's language. This note covers the parts on the device: Auto's mode choice (`src/answer-modes.ts`), the German-rules detector (`src/german-rules.ts`), the when-to-search detector (`src/when-to-search.ts`) and the model's instructions (`src/conversation.ts`). Everything here was measured offline. No model was called.
 
+## 14 November 2026: English coverage
+
+This section adds English to the rules detector. The German cues are unchanged except for one fix (the cost split, below). Measured offline. No model was called. The two blind sets (`evaluation/german-rules-fresh-20261114/`, `evaluation/english-rules-fresh-20261114/`) were not opened for this work.
+
+### Diagnosis
+
+English needed the country named or a topic from a fixed list. The blind set said 4 of 8. The 40-pair run said 7 of 13 English rules questions against 12 of 13 German ones. The English frames were there every time ("can my boss", "do I have to", "how much is", "am I allowed"). There was no second half to pair them with unless the text said "in Germany".
+
+Owner's assumption, adopted here: CometRow's users live in Germany, Austria or Switzerland. So an English question about an official rule, fee, amount or deadline counts with no country named. A question that names another country does not count.
+
+### What changed (`src/german-rules.ts`)
+
+The same design as German: a frame counts only with a domain.
+
+- **Someone else's permission or duty** counts as it stands: "Can my boss ...", "Can the landlord ...", "Must the shop ...". The counterparty is the domain (landlord, employer, boss, insurer, bank, shop, airline, neighbour, police, authority, school).
+- **Permission or consequence** ("allowed", "legal", "illegal", "forbidden", "what happens if I", "at what age") with an official word, a dealing, or an everyday place or role: home, road and travel, work, children.
+- **The user's own duty** ("do I have to", "need to", "must", "mandatory") only with an official word, a dealing or a counterparty. "Do I have to water my tomatoes" stays out.
+- **An amount, date or need** ("how much", "how long", "by when", "what is the", "do I need", "can I") only with an official word.
+- **Entitlement and legality wording counts alone:** "entitled", "by law", "legally", "statutory", "my rights", "time-barred".
+- **Official words** are what the state, a law or an authority sets or decides: tax, benefit, allowance, pension, fee, fine, penalty, deposit, permit, visa, licence, residence, authority, deadline, limit, sick pay, parental leave, overtime, refund, compensation. English frames also take the German official words, so "How much Kirchensteuer do I pay" works. "Anmeldung", "Ummeldung" and "Abmeldung" count with an English frame.
+- **Registering** an address, car, dog or business counts, as in German.
+- **Kept out:**
+  - Another country: a place ("in France", "in California") or the rule itself ("US tax", "UK visa", "visa for Thailand"), unless Germany, Austria, Switzerland or "here" is also named. "I am from India" or "my Turkish passport" changes nothing.
+  - The rules of a game or sport (chess, Monopoly, football).
+  - An organisation's own rule in English ("company policy", "at our company", "my team").
+  - "Help me write ..." and "Can you write ...", like "Write ...".
+- **With the country named,** an own-duty frame is now enough ("How long does the rest period have to be in Germany?").
+- **The German cost split.** A sum on two or more of the user's own figures is now also a sum when it asks for a split or a share ("aufgeteilt", "pro Person", "jede Person", "split", "each person"). The holiday-flat question with "mieten" no longer fires. "euros" and "percent" now count as the user's own figures.
+- "landlord" and "tenant" stay topics on their own. "pension" alone no longer counts. It needs a frame now.
+
+No network, no model call, no new dependency. About fifteen more small pattern tests per message.
+
+### How it was measured
+
+- An English development set of 79 prompts (36 rules, 43 not, of which 31 are near-misses) was written and committed before the detector was touched (`evaluation/english-rules-dev-20261114/prompts.json`, commit `be3dbc8`).
+- A second round of 34 prompts on other topics was written after the first change and committed before it was run (`round2.json`, commit `c670b17`).
+- `tests/german-rules-sets.test.ts` holds the bars for both.
+
+| Set | Before | After |
+| --- | --- | --- |
+| English development set: recall (36) | 22 of 36 (61 %) | 36 of 36 |
+| English development set: false alarms, ordinary (12) | 0 | 0 |
+| English development set: false alarms, near-misses (31) | 4 | 2 (6 %) |
+| English round 2, first run: recall (16) | 5 of 16 (31 %) | **11 of 16 (69 %)** |
+| English round 2, first run: false alarms, ordinary (4) | 0 | 0 |
+| English round 2, first run: false alarms, near-misses (14) | 0 | **3 (21 %)** |
+| English round 2, after the fixes it led to | | 15 of 16, 1 near-miss |
+| German development set (30 / 30) | 30 of 30, 0 | 30 of 30, 0 |
+| German round 2 (22 / 14) | 19 of 22, 0 | 19 of 22, 0 |
+| Frozen set of 13 November (18 / 42) | 18 of 18, 0 | 18 of 18, 0 |
+| First hold-out of 13 November (12 / 8) | 12 of 12, 0 | 12 of 12, 0 |
+| 40-question set, all rules questions | 32 of 40 | 34 of 40 |
+| 40-pair run, English rules questions (13) | 7 of 13 | 12 of 13 |
+| 40-pair run, German rules questions (13) | 12 of 13 | 12 of 13 |
+| 40-pair run, German maths (13), false alarms | 1 (the cost split) | 0 |
+| 40-pair run, English general and maths (27), false alarms | 0 | 0 |
+| 478 stored prompts outside the new English sets: decisions changed | | 9: eight rules questions now recognised, one false alarm gone |
+
+**How to read this.**
+- The development set is optimistic. I wrote it and tuned on it.
+- **The honest number is the first run of round 2: 69 % recall, 3 false alarms of 14 near-misses, none on ordinary questions.** Before the change the same round was 31 %.
+- The 40-pair numbers are not clean either. I read the three English misses there after the first change. Two led to general fixes (time-barred, an own duty with the country named).
+- Expect about 70 to 85 % English recall on a fresh set, a few false alarms on hard near-misses, and none or nearly none on ordinary questions. The lead's blind sets give the clean number.
+- The nine changed decisions: R-03, Q35, Q38, and P-R01, R03, R08, R09, R13 in English are now recognised. P-M12 in German no longer fires. No general, maths, code or health prompt changed.
+
+`tests/german-rules.test.ts` and `tests/german-rules-sets.test.ts` pass (170 tests). Ten neighbouring test files for Auto, when-to-search and the search ranking pass unchanged. `npx tsc --noEmit` is clean. The whole suite and the browser tests were not run.
+
+### What still slips through
+
+Missed English rules questions:
+- **"Can I" as a permission with no legal word:** "How late can I make noise on a Saturday?", "Can I park here overnight?". English "can" is "darf" and "kann" in one word. Counting it with a place gave too many false alarms ("Can I take the train to Prague?").
+- **An amount about a counterparty with no official word:** "How long does my employer keep paying my salary when I am sick?" German misses this one too.
+- **A rule with no frame and no official word:** "Quiet hours on Sunday?"
+- **Legality with nothing from a domain:** "Is it legal to record a call?" It is caught with "in Germany" or with a place or counterparty.
+- **Typos in English official words.** German compounds survive a typo in the first part. English words do not.
+
+False alarms that remain possible:
+- **Personal questions with permission wording about a counterparty:** "My boss never says thank you. Am I allowed to be annoyed?"
+- **A landlord or tenant with no rule asked:** "My landlord is rude to me. How do I stay calm?" This fired before too.
+- **Sport and history with a penalty or fee word:** "What is the penalty for a false start in the 100 metres?"
+- **Private prices and limits with an official-looking word:** a gym fee, a baggage allowance, a character limit.
+- **Another country that the cues do not see:** "Do I need a visa for Thailand?" is kept out, but "Do I need a visa to go to Thailand?" still fires. So does a fee or fine in a country that is not on the list of names ("in Vietnam").
+- **A custom with the country named:** "Do I have to tip in Germany?"
+
+The answer-side check stays the safety net for misses.
+
+### Knock-on effects
+
+- **Auto and cost.** A newly recognised English question goes to Thinking with reason "rules" (Fast when web results are selected). On the 40-pair run English was 20 Fast and 20 Thinking. With this detector it is 15 and 25. German is 14 and 26. So English now costs about what German costs. In that run German used about 11 % more tokens per message (median 1,032 against 931) and took longer (5.5 s against 3.9 s). The rise applies only to rules questions. On my English development set 12 of 36 rules questions moved from Fast to Thinking and 2 more changed only their reason.
+- **The scoped prompt rule** is now added for these English questions: without web results the model is told not to state figures as facts.
+- **Before sending.** These questions now get the rules heading and the search-first choice. That is one more tap for the user, on real rules questions and on the false alarms above.
+- **The search text has no country.** The search sends exactly the user's text. "How much is the TV licence?" names no country, and the Brave request sets none. The results may be British. The ranking then puts German official sites first if any came back, and the model is told to prefer official sources. If none came back, the answer carries the note that no official source was found. That note is honest, but the answer may rest on another country's page. **This is the main risk of this change.** Not fixed here, because it changes what is sent to the search provider. Options for the owner: add the country to the Brave request as a parameter, or show "Germany" in the suggested search text so the user sees and approves it.
+- **Austria and Switzerland.** The official list is German on purpose (gv.at is "other"). The prompt rule says "German rules" and names gesetze-im-internet.de. An Austrian or Swiss question is detected but ranked and instructed as if it were German. This was already so for "in Austria" since the second pass. More such questions reach it now.
+- **Server.** `server/research.ts` uses the same detector, so these English searches ask for 10 results, are ranked by tier and cut to 6. `src/german-rules.ts` still imports nothing at run time.
+
+### How to rerun
+
+- `npx vitest run tests/german-rules-sets.test.ts --disable-console-intercept`
+- `npx vitest run tests/german-rules.test.ts`
+
 ## 14 November 2026: the rules detector, second pass
 
 This section replaces the hold-out numbers and the first limit below for the rules detector. Nothing else in this note changed. Measured offline. No model was called. The answer-side warning, the always-search setting and the official-source preference are untouched.
