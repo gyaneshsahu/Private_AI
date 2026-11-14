@@ -210,7 +210,7 @@ Effort: S is up to 2 agent-hours, M is 2 to 6, L is more than 6. "Risk" means ri
 | B. Follow the answer | Auto-follow, stop on scroll-up, floating jump button (2) | new `src/follow-scroll.ts`, tests; `chat-design.css` one new rule block | `479` to `486`, `1584` to `1599`, one line after `1936` | A, C, E, F |
 | C. Message component | Move the message article into `src/ChatMessage.tsx`: user text as plain text, collapse (5), copy on user messages and time (10) | new `src/ChatMessage.tsx`, `src/text/message.ts`, tests; `chat-design.css` message rules | `1808` to `1935` | A, B, E, F |
 | D. Answer actions | Edit and send in place (3), retry on the answer with cost (4, 13), "Report a problem" (11) | `src/ChatMessage.tsx`, `src/SupportPanel.tsx` (one new prop), `src/answer-modes.ts` (a cost helper), tests | `1938` to `1982`, `2313` to `2342` | **After C** (same component). Parallel with A, B, E, F |
-| E. Saved list and copy | Confirm before delete (7), copy conversation as text and removal of the dead Share button (8) | `src/ConversationLibrary.tsx`, new `src/conversation-text.ts`, `src/CopyConversationButton.tsx`, `src/text/conversation-ui.ts`, tests | `1602` to `1631`, `2955` to `2980` | A, B, C, D, F |
+| E. Saved list and copy (**built**, section 7) | Confirm before delete (7), copy conversation as text and removal of the dead Share button (8) | `src/ConversationLibrary.tsx`, new `src/conversation-text.ts`, `src/CopyConversationButton.tsx`, `src/text/conversation-ui.ts`, tests | `1602` to `1631`, `2955` to `2980` | A, B, C, D, F |
 | F. Connection and screen reader | Offline banner, "answer complete" announcement, focus after send (12) | new `src/ConnectionBanner.tsx`, `src/text/connection.ts`, tests | `1672` to `1724`; one line in `send()` at `871` | A, B, C, E |
 
 Order: A, B, C, E and F start together. D starts when C is merged. Ranks 14 to 20 wait for alpha feedback.
@@ -317,3 +317,20 @@ All read from the code. None was reproduced in a browser.
 - Every ChatGPT help page was seen only as a search snippet. The second half of the Gemini release notes was not read.
 - The collapse thresholds of the three products are from memory.
 - The sweep duration is inferred from old result files.
+
+## 7. Package E built (14 November 2026)
+
+Commits on the package branch: `27f17e5` (shared export module), `b30afb6` (features), `a9ebc41` (browser tests).
+
+| Item | State |
+| --- | --- |
+| Confirm before deleting a saved conversation (rank 7) | Built. In-app dialog, focus on "Cancel", Escape cancels, focus returns. |
+| Copy conversation as text (rank 8) | Built. Markdown. Same module as the PDF export (`src/conversation-text.ts`). Incomplete attempts are included and marked, as in the PDF. This differs from check 6 E above ("no partial ones"): the owner's later instruction was to mark them. |
+| Dead "Share" button (rank 8, section 5 item 10) | Removed from the header and the menu, with its three labels. Microphone, live voice and "Create image" stay as "Coming later". |
+| Copy on user messages, time on each message (rank 10) | Built for user messages as one small component (`src/MessageMeta.tsx`), so package C can move it. |
+| Group saved chats by date (rank 16) | Built in the sidebar. By creation date. Rename in place is not built: "Rename and manage" still opens the Saved tab. |
+| Empty states | Already present in the sidebar and the Saved tab. Now covered by a browser test. |
+
+Checked: `tests/conversation-text.test.ts` and `tests/saved-list-ui.test.ts` at 375, 768 and 1280 px in English and German, plus the existing tests named in `docs/READINESS.md`. Not checked: real phones, Safari, Firefox, screen readers, the UI sweep, the Playwright specs.
+
+Left as they are: "Delete everything on this device" and "remove project" ask through the browser's own confirm box. An undo after delete was not built: holding back the vault write for some seconds would leave the conversation in the vault if the tab closes or the vault locks in that time.

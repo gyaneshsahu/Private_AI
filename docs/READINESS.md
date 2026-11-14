@@ -1,4 +1,18 @@
 # PrivateAI readiness checklist
+## 14 November 2026: saved list and copy (package E of the chat feature gaps) built (agent)
+
+Before: one click on "Delete" removed a saved conversation for good. The header showed a dead "Share · Coming later" button. Now:
+
+- **Delete asks first.** A dialog names the conversation and says it cannot be undone. Focus starts on "Cancel", Escape cancels, Tab stays inside, focus returns to the "Delete" button. Only "Delete conversation" deletes (`src/ConfirmDialog.tsx`, `src/ConversationLibrary.tsx`).
+- **"Copy conversation as text"** in the conversation menu copies title, date, every question and answer with its mode, the app's notices and the source list as Markdown. The PDF export and the copy take headings, notices, source lines and dates from one module (`src/conversation-text.ts`). The result ("Copied to the clipboard." or a refusal message) shows at the control.
+- **The Share button is gone**, in the header and in the menu. Still shown as "Coming later": the microphone while voice is off, live voice, and "Create image" in the tools menu.
+- **Sidebar:** saved chats are grouped under "Pinned", "Today", "Yesterday", "Earlier this week", "Older" (by creation date; no later date is stored). Search results have no groups.
+- **Own messages** show their stored time in small text and have a "Copy" action. Message action buttons are 44 px high at phone width.
+
+Verified by `tests/conversation-text.test.ts` (7 tests) and `tests/saved-list-ui.test.ts` (12 tests) in a local Chromium at 375, 768 and 1280 px, in English and German, with the model replaced by a fake: clipboard content read back, cancel and Escape keep the conversation, confirm deletes, focus return, date groups, both empty states, keyboard use of pin, archive, rename and "New chat", no sideways scroll, target sizes. Also green: `tests/pdf-export.test.ts`, `tests/device-features-ui.test.ts`, `tests/i18n-app-ui.test.ts`, `tests/i18n-screens-ui.test.ts`, `tests/answer-modes-ui.test.ts`, `tests/workspace-races.test.ts`, `tests/text-contrast.test.ts`, and the type check.
+
+**Not verified:** no real phone, Safari or Firefox, no screen reader. Not run: the whole suite, the durable suite, the UI sweep, the Playwright specs. Three Playwright specs were edited without a run (`draft-workspace`, `vault-recovery`, `workspace`: one added click on "Delete conversation" each). "Delete everything" and "remove project" still use the browser's own confirm box. No undo after delete.
+
 ## 14 November 2026: the suggested search text can be edited, and is masked again (agent)
 
 Before: the search suggestion box showed the text for Brave Search as fixed text. Now: it is a text field filled with the suggestion, in the suggestion box, the search-first choice on Send and the search-again box. What the user types is masked again on the device by the same function; when masking changes it, "This text will be sent:" and the exact text appear under the field, and the tap sends that text. The server's rule for a search text (2 to 400 characters) is checked on the device with a message, and an empty text disables the button. Enter in the field searches; it does not send the chat message. With no edit, one tap behaves as before. Automatic search and "Always search for rules, fees and deadlines" send the unedited suggestion. The disclosure sentence is unchanged. Design: `docs/when-to-search-20261112.md`, "Search text".
