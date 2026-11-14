@@ -62,6 +62,8 @@ export function tidySpeech(text: string, words: SpokenWords): string {
     .replace(/(?:https?:\/\/|www\.)[^\s<>]*[^\s<>.,;:!?)\]]/gi, words.spokenLink)
     .replace(/\{{1,2}\s*[A-Za-z]+\s*-\s*\d+\s*\}{1,2}/g, words.spokenMasked)
     .replace(/[ \t]+/g, " ")
+    // A citation chip that was left out must not leave a gap before the full stop.
+    .replace(/ ([.,;:!?])/g, "$1")
     .replace(/ *\n\s*/g, "\n")
     .trim();
 }
@@ -168,7 +170,12 @@ export function createReader(
         synth.speak(speaking);
       };
       set({ id, paused: false });
-      next();
+      try {
+        next();
+      } catch {
+        // An engine that refuses the utterance must not leave the button on "reading".
+        stop();
+      }
     },
     pause() {
       if (!state || state.paused) return;
