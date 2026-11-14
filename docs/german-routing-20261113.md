@@ -195,3 +195,22 @@ From the repository root:
 - `npx tsx evaluation/german-routing-20261113/check.ts prompts.json after`
 - `npx tsx evaluation/german-routing-20261113/check.ts holdout.json after`
 - `npx tsx evaluation/german-routing-20261113/stored-answers.ts <folder with the stored runs, for example ../Private_AI/.local> [--samples]`
+
+## 14 November 2026: result on the blind hold-out
+
+The hold-out `evaluation/german-rules-fresh-20261114/` (60 prompts: 30 rules questions, 30 others of which 18 are deliberate near-misses) was written by a separate agent that never read the detector or earlier sets. The agent that changed the detector never saw it. Scored once, by the lead, with `npx tsx evaluation/german-rules-fresh-20261114/score.ts`.
+
+| | Before (13 November detector) | After (second pass) |
+| --- | --- | --- |
+| Rules questions caught | 21 of 30 (70 %) | **24 of 30 (80 %)** |
+| German | 17 of 22 | 20 of 22 (91 %) |
+| English | 4 of 8 | 4 of 8 |
+| False alarms, all 30 others | 5 | 6 |
+| False alarms, 12 ordinary others | 0 | 0 |
+| False alarms, 18 near-misses | 5 | 6 |
+
+- German recall is now 91 % on prompts nobody tuned on. The earlier figure of 5 of 12 came from a smaller, harder sample.
+- **English questions about German rules are the weak spot** (half missed, unchanged). The detector needs the country named or a listed topic.
+- False alarms happen only on near-misses built to share vocabulary (a rent sum on the user's own figures, "Frist" in project management, a historical rate). A false alarm costs one extra tap (the search-first question). A miss falls back to the answer-side warning.
+- This set has now been used once and is frozen. It must not be used for tuning. Which prompts were missed is recorded by id only (missed after: F2-01, F2-05, F2-07, F2-15, F2-26, F2-30; false alarms after: F2-31, F2-33, F2-38, F2-43, F2-47, F2-48).
+- The time box is used up. Next step if wanted: English frames without a country, tested on a new blind set.
