@@ -40,7 +40,8 @@ const client = new PrivatemodeAI({ apiKey, enableWasmLogging: false, openAIOptio
 try {
   await client.verify();
   await client.refreshSecret();
-  for (const { step, lang, question, notes } of CASES) {
+  const only = process.env.ONLY?.split(",");
+  for (const { step, lang, question, notes } of CASES.filter((c) => !only || only.includes(c.step))) {
     const conversation = { ...emptyConversation(), messages: [newMessage("user", question)] };
     const tokens: number[] = [];
     for (const withNotes of [false, true]) {
@@ -51,7 +52,8 @@ try {
       const started = performance.now();
       try {
         const chat = await client.chat.completions.create(
-          { model, max_tokens: 400, messages } as never,
+          // As the app sends Fast: effort low (the default max spends the whole limit on reasoning).
+          { model, max_tokens: 2048, reasoning_effort: "low", messages } as never,
           { headers: { "privatemode-target-model": model } },
         );
         tokens.push(chat.usage?.prompt_tokens ?? Number.NaN);

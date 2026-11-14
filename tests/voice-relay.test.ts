@@ -185,7 +185,13 @@ it("charges the speech model's allowance units through the usage ledger and boun
   expect(third.headers.get("x-privateai-voice")).toBe("refused_voice_daily");
   expect(upstream).toHaveBeenCalledTimes(2);
   expect(usage.summary(accountId)).toMatchObject({ used: 4 });
-  expect(takeCounts()).toMatchObject({ "voice.completed": 2, "voice.refused_voice_daily": 1 });
+  // The refusal is counted when its response closes, which can come a moment after the status.
+  await third.text();
+  const counts: Record<string, number> = {};
+  await vi.waitFor(() => {
+    Object.assign(counts, takeCounts());
+    expect(counts).toMatchObject({ "voice.completed": 2, "voice.refused_voice_daily": 1 });
+  });
 });
 
 it("refuses without allowance, at the chat allowance's daily cap, and at the spending limit", async () => {

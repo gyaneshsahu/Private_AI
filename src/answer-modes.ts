@@ -3,7 +3,7 @@
 import { newMessage, selectedSources } from "./conversation";
 import { germanRulesQuestion, interfaceLanguage, liveText, textBlock } from "./german-rules";
 import type { Lang } from "./i18n";
-import { AttestationBusyError } from "./providers/inference-client";
+import { AttestationBusyError, DeploymentChangedError } from "./providers/inference-client";
 import { IncompleteReplyError } from "./reply-stream";
 import { needsCurrentInformation } from "./when-to-search";
 import {
@@ -228,7 +228,7 @@ export function shouldRetryOnBackup(
   msLeft: number,
   mode: AnswerMode | undefined,
 ): boolean {
-  if (stoppedByUser || textArrived || error instanceof AttestationBusyError) return false;
+  if (stoppedByUser || textArrived || error instanceof AttestationBusyError || error instanceof DeploymentChangedError) return false;
   if (msLeft < replyLimits(mode).firstTextMs) return false;
   if (error instanceof IncompleteReplyError)
     return (

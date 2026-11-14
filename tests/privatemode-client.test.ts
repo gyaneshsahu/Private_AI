@@ -23,7 +23,7 @@ vi.mock("privatemode-ai", () => ({
     close = sdk.close;
   },
 }));
-import { AttestationBusyError, inferenceClientFor } from "../src/providers/inference-client";
+import { AttestationBusyError, DeploymentChangedError, inferenceClientFor } from "../src/providers/inference-client";
 import "../src/providers/privatemode-client";
 import "../src/providers/tinfoil-client";
 import {
@@ -363,6 +363,20 @@ it.each([429, 503])("a verification refused with %s on attest becomes the plain 
   // Other refusals keep their old handling.
   sdk.verify.mockRejectedValueOnce(Error("updating mesh CA: doing attest request: unexpected status code: 500"));
   await expect(send()).rejects.toThrow("Protected operation failed.");
+});
+
+it("a rotated Privatemode deployment is reported as such, even when the SDK cannot fetch the new manifest", async () => {
+  // In the browser the SDK's retry fetch is blocked by our content policy: only the error text tells.
+  for (const message of [
+    "initializing client: active manifest does not match expected manifest",
+    "fetching manifest: TypeError: Failed to fetch",
+  ]) {
+    sdk.verify.mockRejectedValueOnce(Error(message));
+    const failure = await send().catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(DeploymentChangedError);
+    expect((failure as Error).message).toBe("The provider's deployment differs from the reviewed one. Nothing was sent.");
+  }
+  expect(sdk.create).not.toHaveBeenCalled();
 });
 
 it("a refused verification the SDK reports in words we do not know is still the busy message when the relay says how long to wait", async () => {

@@ -119,7 +119,7 @@ import {
   useMemoryVault,
 } from "./MemoryPanel";
 import { memoryText } from "./text/memory";
-import { AttestationBusyError } from "./providers/inference-client";
+import { AttestationBusyError, DeploymentChangedError } from "./providers/inference-client";
 import { chatErrorText } from "./text/chat-errors";
 import { abortable, withDeadline } from "./abortable";
 import { createCalculationSession } from "./calculation-session";
@@ -1022,7 +1022,7 @@ export function App() {
         setNotice(
           abort.signal.aborted
             ? t.responseStopped
-            : error instanceof AttestationBusyError
+            : error instanceof AttestationBusyError || error instanceof DeploymentChangedError
               ? passed(error.message)
               : error instanceof IncompleteReplyError
                 ? `${passed(error.message)} ${error.usage ? t.usageRetained : t.costUnknown}`

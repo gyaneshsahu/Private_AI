@@ -12,6 +12,7 @@ import { chatErrorText } from "../text/chat-errors";
 import { abortable } from "../abortable";
 import {
   AttestationBusyError,
+  DeploymentChangedError,
   registerInferenceClient,
   type ClientPolicy,
   type InferenceClientAdapter,
@@ -195,7 +196,11 @@ async function verifySession(
     signal.throwIfAborted();
   } catch (error) {
     close();
-    if (changed) throw new Error(textFor(chatErrorText).deploymentDiffers);
+    // Privatemode rotated its deployment (live, 14 November): the SDK then tries to fetch the new
+    // manifest from its CDN, which our content policy blocks, so onManifestUpdate never runs and the
+    // error only says "fetching manifest". Either way the deployment is not the reviewed one.
+    if (changed || /active manifest does not match|fetching manifest/i.test(`${(refusal as Error | undefined)?.message ?? ""}`))
+      throw new DeploymentChangedError();
     if (signal.aborted) throw error;
     // The relay knows whether it held this verification back; the SDK's error text alone was
     // not recognised in a real browser (14 November) and users saw "Protected response unavailable".
@@ -212,7 +217,7 @@ async function verifySession(
         releaseDigest: digest,
       },
       async transcribe(audio, model, signal) {
-        if (changed) throw new Error(textFor(chatErrorText).deploymentDiffers);
+        if (changed) throw new DeploymentChangedError();
         if (closed) throw new Error(textFor(chatErrorText).connectionClosed);
         // "audio/webm;codecs=opus" -> "audio/webm"; the file name carries the container too.
         const type = audio.type.split(";")[0] || "audio/webm";
@@ -243,7 +248,7 @@ async function verifySession(
       async transport() {
         return {
           async request(_url, init) {
-            if (changed) throw new Error(textFor(chatErrorText).deploymentDiffers);
+            if (changed) throw new DeploymentChangedError();
             if (closed)
               throw new Error(
                 textFor(chatErrorText).connectionClosed,

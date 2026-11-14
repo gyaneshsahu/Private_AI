@@ -26,6 +26,17 @@ export class AttestationBusyError extends Error {
   }
 }
 
+/**
+ * The provider's deployment is not the one the report approved (a manifest rotation). Nothing was
+ * sent; the backup model runs on the same deployment, so it is never tried after this.
+ */
+export class DeploymentChangedError extends Error {
+  constructor() {
+    super(textFor(chatErrorText).deploymentDiffers);
+    this.name = "DeploymentChangedError";
+  }
+}
+
 /** Used only when a policy object carries no provider (older test fixtures); reports always name one. */
 export const defaultInferenceProvider: InferenceProviderId = "tinfoil";
 
