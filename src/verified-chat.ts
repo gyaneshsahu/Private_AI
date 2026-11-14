@@ -37,6 +37,7 @@ import {
 import {
   composeContext,
   selectedSources,
+  withChosenPassages,
   type AnswerPolicyVariant,
 } from "./conversation";
 import {
@@ -255,7 +256,8 @@ async function streamMaskedConversation(
       stillThinking = false;
     };
     const messages = composeContext(
-      maskAttachmentSources(conversation, masking),
+      // A large document: its chosen passages only, and only those are masked and sent.
+      maskAttachmentSources(withChosenPassages(conversation), masking),
       report.maxInputCharacters,
       new Date(),
       report.answerPolicyVariant,

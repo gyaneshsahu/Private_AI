@@ -98,6 +98,11 @@ export function ContextReview({
           </label>
         ))}
       </fieldset>
+      {size.passageNotes.map((note) => (
+        <p key={note} data-testid="passage-note">
+          {note}
+        </p>
+      ))}
       <p>{t.excluded(size.excludedMessages)}</p>
     </details>
   );

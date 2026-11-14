@@ -118,6 +118,7 @@ const screens: Record<string, () => React.ReactElement> = {
           characters: 1500,
           messages: 2,
           breakdown: { instructions: 1200, references: 200, conversation: 85, draft: 15 },
+          passageNotes: [],
           includedMessages: 1,
           excludedMessages: 1,
           sourceCount: 1,

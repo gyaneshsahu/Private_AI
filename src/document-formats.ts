@@ -5,7 +5,7 @@ export const MAX_DOCUMENT_CHARACTERS = 60000;
  * text than MAX_DOCUMENT_CHARACTERS is kept on the device in passages, and only the passages that
  * match a question are sent. Set to false to refuse such files as before (and 20 PDF pages).
  */
-export const LARGE_DOCUMENTS: boolean = false;
+export const LARGE_DOCUMENTS: boolean = true;
 export const MAX_LARGE_DOCUMENT_CHARACTERS = 500000;
 export const MAX_PDF_PAGES = LARGE_DOCUMENTS ? 150 : 20;
 // A reader over its limit keeps counting, without keeping text, so the refusal can say how far

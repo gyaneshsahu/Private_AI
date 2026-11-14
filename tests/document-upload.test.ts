@@ -177,9 +177,9 @@ it("says how far over a limit a file is and how to upload less of that kind of f
     "This file has 83,973 characters of text; the limit is 60,000 (about 40% too much). Upload fewer sheets, rows or columns, or export only the sheet that matters as CSV.",
   );
   await expect(
-    read([await docxFixture(`<w:p><w:r><w:t>${"a".repeat(66000)}</w:t></w:r></w:p>`)], "book.docx"),
+    read([await docxFixture(`<w:p><w:r><w:t>${"a".repeat(550000)}</w:t></w:r></w:p>`)], "book.docx"),
   ).rejects.toThrow(
-    "This file has 66,001 characters of text; the limit is 60,000 (about 10% too much). Upload only the chapter or section that matters, or split the file into parts.",
+    "This file has 550,001 characters of text; the limit is 500,000 (about 10% too much). Upload only the chapter or section that matters, or split the file into parts.",
   );
   await expect(read([new Uint8Array(13 * 1024 * 1024)], "scan.pdf")).rejects.toThrow(
     "This file is 13 MB; the limit is 10 MB. Upload only the page range that matters, or split the PDF into parts.",
@@ -231,6 +231,39 @@ it("refuses files over 10 MB, text over 60,000 characters and types it cannot re
   await expect(read(["not a zip"], "broken.xlsx")).rejects.toThrow(
     "cannot be read",
   );
+});
+
+it("keeps a long Word or text file on the device as a large document in passages; data files keep the small limit", async () => {
+  const paragraph = "Der Vertrag regelt die Übergabe der Wohnung und die Abrechnung der Nebenkosten. ";
+  const text = (paragraph.repeat(12) + "\n\n").repeat(210).trim();
+  expect(text.length).toBeGreaterThan(200000);
+  const book = await read([text], "vertrag.txt");
+  expect(book.large).toBe(true);
+  expect(book.sources.length).toBeGreaterThan(150);
+  expect(Math.max(...book.sources.map((source) => source.text.length))).toBeLessThanOrEqual(1200);
+  expect(new Set(book.sources.map((source) => source.id)).size).toBe(book.sources.length);
+  // Nothing but white space is lost between the file and the passages.
+  expect(book.sources.map((source) => source.text).join("").replace(/\s/g, "")).toBe(
+    text.replace(/\s/g, ""),
+  );
+  expect(book.warning).toBe(
+    `${documentText.en.textOnly} ${documentText.en.largeDocument(book.sources.length)}`,
+  );
+  const word = await read(
+    [await docxFixture(`<w:p><w:r><w:t>${paragraph.repeat(900)}</w:t></w:r></w:p>`)],
+    "vertrag.docx",
+  );
+  expect(word.large).toBe(true);
+  expect(word.sources.length).toBeGreaterThan(50);
+  // At or under the ordinary limit nothing changes: one source, no mark.
+  const small = await read(["a".repeat(60000)], "small.txt");
+  expect(small.large).toBeUndefined();
+  expect(small.sources).toHaveLength(1);
+  await expect(read(["a".repeat(500001)], "huge.md")).rejects.toThrow(
+    "This file has 500,001 characters of text; the limit is 500,000 (about 1% too much). Upload only the chapter",
+  );
+  for (const name of ["data.json", "table.tsv", "code.py"])
+    await expect(read(["a".repeat(60001)], name)).rejects.toThrow("the limit is 60,000");
 });
 
 it("offers .xlsx in the file picker and has German for every new worker message", () => {

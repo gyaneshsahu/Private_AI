@@ -37,6 +37,7 @@ const conversationBody = z.object({
         .enum(["stopped", "timeout", "incomplete", "unavailable", "empty"])
         .optional(),
       keptOnDevice: z.string().max(300).optional(),
+      passagesUsed: z.string().max(4000).optional(),
       answeredBy: z.string().max(300).optional(),
       at: z.string().datetime().optional(),
       arithmeticCheck: z
@@ -63,6 +64,7 @@ const conversationBody = z.object({
       id: z.string(),
       name: z.string(),
       selected: z.boolean(),
+      large: z.boolean().optional(),
       sources: z.array(source),
       warning: z.string().optional(),
       kind: z.enum(["document", "screenshot", "research"]).optional(),

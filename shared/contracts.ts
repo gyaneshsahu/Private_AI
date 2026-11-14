@@ -361,6 +361,11 @@ export interface Attachment {
   name: string;
   sources: Source[];
   selected: boolean;
+  /**
+   * A large document: `sources` are its passages, all kept on this device. Only the passages
+   * chosen for a question are sent (src/passage-retrieval.ts), never the whole document.
+   */
+  large?: boolean;
   warning?: string;
   kind?: "document" | "screenshot" | "research";
   researchQuery?: string;
@@ -379,6 +384,8 @@ export interface Message {
   included: boolean;
   sourceSnapshot?: Source[];
   failure?: "stopped" | "timeout" | "incomplete" | "unavailable" | "empty";
+  /** For an answer about a large document: which of its passages were sent, and that the rest was not. */
+  passagesUsed?: string;
   /** Plain-language note of identifiers masked on this device for this reply, e.g. "Kept on this device: 1 bank account." */
   keptOnDevice?: string;
   /** Creation time, ISO 8601; absent on messages saved before 22 October 2026. */

@@ -26,6 +26,7 @@ import {
 import {
   composeContext,
   measureContext,
+  passageNotes,
   newMessage,
   selectedSources,
 } from "./conversation";
@@ -666,6 +667,8 @@ export function App() {
       ...newMessage("assistant", ""),
       status: "partial" as const,
       sourceSnapshot: structuredClone(selectedSources(next)),
+      // Large documents: which passages this answer was given, and that the rest was not sent.
+      passagesUsed: passageNotes(next, true).join(" ") || undefined,
     };
     setConversation({ ...next, messages: [...next.messages, answer] });
     if (consumeDraft) setInput("");
@@ -1839,6 +1842,9 @@ export function App() {
                     <p className="warning arithmetic-check" role="alert">
                       {GERMAN_RULES.noOfficial}
                     </p>
+                  )}
+                  {message.passagesUsed && (
+                    <p className="muted passages-used">{message.passagesUsed}</p>
                   )}
                   {message.keptOnDevice && (
                     <p className="muted kept-on-device">

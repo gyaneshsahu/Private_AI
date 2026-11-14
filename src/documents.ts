@@ -2,8 +2,10 @@ import { textFor } from "./text/core";
 import { documentMessage, documentText, overLimitText } from "./text/documents";
 import type { Attachment, Source } from "../shared/contracts";
 import { z } from "zod";
+import { splitPassages } from "./passage-retrieval";
 import {
   characterLimit,
+  MAX_DOCUMENT_CHARACTERS,
   MAX_LARGE_DOCUMENT_CHARACTERS,
   MAX_PDF_PAGES,
 } from "./document-formats";
@@ -119,11 +121,24 @@ export async function extract(
         reject(new Error(overLimitText(data.over, file.name)));
         return;
       }
-      const sources: Source[] = data.pages.map((page) => ({
-        ...page,
-        id: crypto.randomUUID().slice(0, 8),
-        title: file.name,
-      }));
+      const characters = data.pages.reduce((n, page) => n + page.text.length, 0);
+      // Over the ordinary limit (only PDF, Word and plain text get this far): kept in passages,
+      // and only the passages that match a question are sent.
+      const large = characters > MAX_DOCUMENT_CHARACTERS;
+      const ids = new Set<string>();
+      const sources: Source[] = (
+        large
+          ? data.pages.flatMap((page) =>
+              splitPassages(page.text).map((text) => ({ ...page, text })),
+            )
+          : data.pages
+      ).map((page) => {
+        let id: string;
+        do id = crypto.randomUUID().slice(0, 8);
+        while (ids.has(id));
+        ids.add(id);
+        return { ...page, id, title: file.name };
+      });
       if (!sources.length || sources.every((s) => !s.text.trim())) {
         reject(
           new Error(
@@ -132,7 +147,6 @@ export async function extract(
         );
         return;
       }
-      const characters = sources.reduce((n, s) => n + s.text.length, 0);
       const limit = characterLimit(file.name);
       if (characters > limit) {
         reject(new Error(overLimitText({ characters, limit }, file.name)));
@@ -143,7 +157,14 @@ export async function extract(
         name: file.name,
         selected: true,
         sources,
-        warning: data.warning && documentMessage(data.warning),
+        ...(large ? { large } : {}),
+        warning:
+          [
+            data.warning && documentMessage(data.warning),
+            large && textFor(documentText).largeDocument(sources.length),
+          ]
+            .filter(Boolean)
+            .join(" ") || undefined,
         kind: file.type.startsWith("image/") ? "screenshot" : "document",
       });
     };

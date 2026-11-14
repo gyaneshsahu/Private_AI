@@ -300,7 +300,7 @@ export const appText = defineText({
     // Included context dialog
     closeContext: "Close context",
     attachmentsNote:
-      "Attachments are read on this device. Review extracted text before sending. DOCX body text, XLSX cell values, PDF, UTF-8 text, Markdown, data, source code, PNG and JPEG; five files, including up to three screenshots, 10 MB each, 60,000 extracted characters per file and 20 PDF pages. A scanned PDF is read by OCR, first 5 pages only. Images use text extraction, not general image understanding.",
+      "Attachments are read on this device. Review extracted text before sending. DOCX body text, XLSX cell values, PDF, UTF-8 text, Markdown, data, source code, PNG and JPEG; five files, including up to three screenshots, 10 MB each, 60,000 extracted characters per file and 150 PDF pages. A PDF, Word or text file with up to 500,000 characters is kept on this device as a large document: only the passages that match each question are sent. A scanned PDF is read by OCR, first 5 pages only. Images use text extraction, not general image understanding.",
     contextSize: (characters: string, limit?: string) =>
       `Selected input: ${characters} characters${limit ? ` of ${limit}` : " · sending limit unavailable until chat is qualified"}. Includes instructions, selected messages, documents and your draft. This is not a token count. Oversized requests are blocked; history is not silently shortened. There is no indefinite memory.`,
     onlySelected:
@@ -327,7 +327,7 @@ export const appText = defineText({
     formats:
       "DOCX body · XLSX cells · PDF · Text / Markdown / Code · CSV / JSON · PNG / JPEG",
     limits:
-      "Up to 10 MB, 60,000 extracted characters and 20 PDF pages per file. A scanned PDF is read by OCR, first 5 pages only. OCR supports printed German and English text. Older .doc and .xls files: save as .docx, .xlsx or PDF first.",
+      "Up to 10 MB, 60,000 extracted characters and 150 PDF pages per file. A PDF, Word or text file with up to 500,000 characters is kept on this device as a large document: only the passages that match each question are sent. A scanned PDF is read by OCR, first 5 pages only. OCR supports printed German and English text. Older .doc and .xls files: save as .docx, .xlsx or PDF first.",
     contextEmpty: "Your context is empty. Files are read on your device.",
     fromLiveSearch: "From a live search",
     liveSearchNote: (date: string) =>
@@ -709,7 +709,7 @@ export const appText = defineText({
 
     closeContext: "Kontext schließen",
     attachmentsNote:
-      "Anhänge werden auf diesem Gerät gelesen. Prüfen Sie den ausgelesenen Text vor dem Senden. Fließtext aus DOCX, Zellwerte aus XLSX, PDF, UTF-8-Text, Markdown, Daten, Quellcode, PNG und JPEG; fünf Dateien, davon bis zu drei Bildschirmfotos, je 10 MB, 60.000 ausgelesene Zeichen pro Datei und 20 PDF-Seiten. Ein gescanntes PDF wird per Texterkennung gelesen, nur die ersten 5 Seiten. Aus Bildern wird nur Text ausgelesen; ihr übriger Inhalt wird nicht verstanden.",
+      "Anhänge werden auf diesem Gerät gelesen. Prüfen Sie den ausgelesenen Text vor dem Senden. Fließtext aus DOCX, Zellwerte aus XLSX, PDF, UTF-8-Text, Markdown, Daten, Quellcode, PNG und JPEG; fünf Dateien, davon bis zu drei Bildschirmfotos, je 10 MB, 60.000 ausgelesene Zeichen pro Datei und 150 PDF-Seiten. Eine PDF-, Word- oder Textdatei mit bis zu 500.000 Zeichen bleibt als großes Dokument auf diesem Gerät: Gesendet werden nur die Abschnitte, die zur jeweiligen Frage passen. Ein gescanntes PDF wird per Texterkennung gelesen, nur die ersten 5 Seiten. Aus Bildern wird nur Text ausgelesen; ihr übriger Inhalt wird nicht verstanden.",
     contextSize: (characters: string, limit?: string) =>
       `Ausgewählte Eingabe: ${characters} Zeichen${limit ? ` von ${limit}` : " · die Sendegrenze ist erst bekannt, wenn der Chat geprüft ist"}. Enthält Anweisungen, ausgewählte Nachrichten, Dokumente und Ihren Entwurf. Das ist keine Zählung von Tokens. Zu große Anfragen werden blockiert; der Verlauf wird nicht stillschweigend gekürzt. Es gibt kein unbegrenztes Gedächtnis.`,
     onlySelected:
@@ -734,7 +734,7 @@ export const appText = defineText({
     formats:
       "DOCX-Text · XLSX-Zellen · PDF · Text / Markdown / Code · CSV / JSON · PNG / JPEG",
     limits:
-      "Bis zu 10 MB, 60.000 ausgelesene Zeichen und 20 PDF-Seiten pro Datei. Ein gescanntes PDF wird per Texterkennung gelesen, nur die ersten 5 Seiten. Die Texterkennung unterstützt gedruckten deutschen und englischen Text. Ältere .doc- und .xls-Dateien: zuerst als .docx, .xlsx oder PDF speichern.",
+      "Bis zu 10 MB, 60.000 ausgelesene Zeichen und 150 PDF-Seiten pro Datei. Eine PDF-, Word- oder Textdatei mit bis zu 500.000 Zeichen bleibt als großes Dokument auf diesem Gerät: Gesendet werden nur die Abschnitte, die zur jeweiligen Frage passen. Ein gescanntes PDF wird per Texterkennung gelesen, nur die ersten 5 Seiten. Die Texterkennung unterstützt gedruckten deutschen und englischen Text. Ältere .doc- und .xls-Dateien: zuerst als .docx, .xlsx oder PDF speichern.",
     contextEmpty: "Ihr Kontext ist leer. Dateien werden auf Ihrem Gerät gelesen.",
     fromLiveSearch: "Aus einer Websuche",
     liveSearchNote: (date: string) =>

@@ -8,21 +8,43 @@ import {
   tierLabel,
 } from "./german-rules";
 import type { Lang } from "./i18n";
+import { choosePassages } from "./passage-retrieval";
 
-const text = liveText(textBlock({
+const textBlocks = textBlock({
   en: {
     chooseMessage: "Choose a user message and enter its replacement.",
     edited: (title: string) => `${title} (edited)`,
     tooLarge:
       "Selected context is too large. Remove messages or attachments from context; nothing has been silently truncated.",
+    pages: (list: string, one: boolean) => `${one ? "page" : "pages"} ${list}`,
+    parts: (list: string, one: boolean) => `${one ? "passage" : "passages"} ${list}`,
+    passagesUsed: (name: string, used: number, total: number, where: string) =>
+      `This answer used ${used} of ${total} passages from "${name}" (${where}), chosen on this device to match the question. The other ${total - used} passages were not sent.`,
+    passagesNext: (name: string, used: number, total: number, where: string) =>
+      `For this question, ${used} of ${total} passages from "${name}" are sent (${where}), chosen on this device to match the question. The other ${total - used} passages are not sent.`,
+    passagesUnmatched: (name: string, used: number, total: number, where: string) =>
+      `No passage of "${name}" contains the words of the question, so only the first ${used} of ${total} passages are sent (${where}). The other ${total - used} passages are not sent. Ask with words that occur in the document.`,
+    passagesNone: (name: string, total: number) =>
+      `No passage from "${name}" is sent for this question: other passages matched it better. All ${total} passages stay on this device.`,
   },
   de: {
     chooseMessage: "Wählen Sie eine eigene Nachricht und geben Sie den neuen Text ein.",
     edited: (title: string) => `${title} (bearbeitet)`,
     tooLarge:
       "Der ausgewählte Kontext ist zu groß. Nehmen Sie Nachrichten oder Anhänge aus dem Kontext; es wurde nichts stillschweigend gekürzt.",
+    pages: (list: string, one: boolean) => `${one ? "Seite" : "Seiten"} ${list}`,
+    parts: (list: string, one: boolean) => `${one ? "Abschnitt" : "Abschnitte"} ${list}`,
+    passagesUsed: (name: string, used: number, total: number, where: string) =>
+      `Diese Antwort nutzte ${used} von ${total} Abschnitten aus „${name}“ (${where}), auf diesem Gerät passend zur Frage gewählt. Die übrigen ${total - used} Abschnitte wurden nicht gesendet.`,
+    passagesNext: (name: string, used: number, total: number, where: string) =>
+      `Für diese Frage werden ${used} von ${total} Abschnitten aus „${name}“ gesendet (${where}), auf diesem Gerät passend zur Frage gewählt. Die übrigen ${total - used} Abschnitte werden nicht gesendet.`,
+    passagesUnmatched: (name: string, used: number, total: number, where: string) =>
+      `Kein Abschnitt aus „${name}“ enthält die Wörter der Frage; deshalb werden nur die ersten ${used} von ${total} Abschnitten gesendet (${where}). Die übrigen ${total - used} Abschnitte werden nicht gesendet. Fragen Sie mit Wörtern, die im Dokument vorkommen.`,
+    passagesNone: (name: string, total: number) =>
+      `Aus „${name}“ wird für diese Frage kein Abschnitt gesendet: andere Abschnitte passten besser. Alle ${total} Abschnitte bleiben auf diesem Gerät.`,
   },
-}));
+});
+const text = liveText(textBlocks);
 
 export type AnswerPolicyVariant =
   "constraints-v1" | "constraints-v2" | "constraints-v3" | "constraints-v4";
@@ -79,10 +101,107 @@ export function forkAt(
     usage: [],
   };
 }
+// One remembered choice: a render asks several times with the same attachments and question.
+let lastChoice:
+  | { attachments: unknown; question: string; earlier: string; sent: Set<Source>; matched: boolean }
+  | undefined;
+/**
+ * Large documents only: the passages chosen on this device for the latest question. Chosen from
+ * the text as extracted, before identifier masking, so the review, the request and the note under
+ * the answer always name the same passages.
+ */
+function chosenPassages(conversation: Conversation) {
+  const large = conversation.attachments.filter((a) => a.selected && a.large);
+  if (!large.length) return undefined;
+  const asked = conversation.messages.filter(
+    (m) => m.role === "user" && m.included && m.status === "complete",
+  );
+  const question = asked[asked.length - 1]?.text ?? "";
+  const earlier = asked[asked.length - 2]?.text ?? "";
+  if (
+    lastChoice?.attachments !== conversation.attachments ||
+    lastChoice.question !== question ||
+    lastChoice.earlier !== earlier
+  ) {
+    const pool = large.flatMap((a) => a.sources);
+    const { chosen, matched } = choosePassages(pool, question, earlier);
+    lastChoice = {
+      attachments: conversation.attachments,
+      question,
+      earlier,
+      sent: new Set(chosen.map((index) => pool[index])),
+      matched,
+    };
+  }
+  return lastChoice;
+}
+/** What is sent: every source of a selected attachment; of a large document, the chosen passages. */
 export function selectedSources(conversation: Conversation): Source[] {
+  const choice = chosenPassages(conversation);
   return conversation.attachments
     .filter((a) => a.selected)
-    .flatMap((a) => a.sources);
+    .flatMap((a) =>
+      a.large && choice ? a.sources.filter((s) => choice.sent.has(s)) : a.sources,
+    );
+}
+/**
+ * The conversation with each selected large document reduced to the passages chosen for this
+ * question. Used before masking and composing, so nothing else of the document is touched.
+ */
+export function withChosenPassages<C extends Conversation>(conversation: C): C {
+  const choice = chosenPassages(conversation);
+  if (!choice) return conversation;
+  return {
+    ...conversation,
+    attachments: conversation.attachments.map((a) =>
+      a.selected && a.large
+        ? { ...a, large: false, sources: a.sources.filter((s) => choice.sent.has(s)) }
+        : a,
+    ),
+  };
+}
+/** 3, 4, 5, 9 becomes "3–5, 9". */
+function ranges(numbers: number[]): string {
+  const sorted = [...new Set(numbers)].sort((a, b) => a - b);
+  const parts: string[] = [];
+  for (let i = 0; i < sorted.length; i++) {
+    const start = sorted[i];
+    while (sorted[i + 1] === sorted[i] + 1) i++;
+    parts.push(start === sorted[i] ? `${start}` : `${start}–${sorted[i]}`);
+  }
+  return parts.join(", ");
+}
+/**
+ * One sentence per selected large document: how many of its passages go to the model for the
+ * latest question, from which pages, and that the rest is not sent. `sent` is true for the note
+ * kept under an answer, false for the review before sending.
+ */
+export function passageNotes(
+  conversation: Conversation,
+  sent: boolean,
+  lang: Lang = interfaceLanguage(),
+): string[] {
+  const choice = chosenPassages(conversation);
+  if (!choice) return [];
+  const t = textBlocks[lang];
+  return conversation.attachments
+    .filter((a) => a.selected && a.large)
+    .map((a) => {
+      const used = a.sources.flatMap((s, index) =>
+        choice.sent.has(s) ? [{ page: s.page, part: index + 1 }] : [],
+      );
+      if (!used.length) return t.passagesNone(a.name, a.sources.length);
+      const pages = used.flatMap((entry) => entry.page ?? []);
+      const where = pages.length
+        ? t.pages(ranges(pages), new Set(pages).size === 1)
+        : t.parts(ranges(used.map((entry) => entry.part)), used.length === 1);
+      return (choice.matched ? (sent ? t.passagesUsed : t.passagesNext) : t.passagesUnmatched)(
+        a.name,
+        used.length,
+        a.sources.length,
+        where,
+      );
+    });
 }
 export function composeContext(
   conversation: Conversation,
@@ -219,21 +338,20 @@ export function measureContext(
   draft = "",
   variant?: AnswerPolicyVariant,
 ) {
+  // With the draft as the latest question, so a large document shows the passages it would send.
+  const asked = draft.trim()
+    ? {
+        ...conversation,
+        messages: [...conversation.messages, newMessage("user", draft.trim())],
+      }
+    : conversation;
   const messages = composeContext(
-    draft.trim()
-      ? {
-          ...conversation,
-          messages: [
-            ...conversation.messages,
-            newMessage("user", draft.trim()),
-          ],
-        }
-      : conversation,
+    asked,
     Number.MAX_SAFE_INTEGER,
     new Date(),
     variant,
   );
-  const sources = selectedSources(conversation);
+  const sources = selectedSources(asked);
   const instructions = messages[0].content.length;
   const references = sources.length ? messages[1].content.length : 0;
   const draftCharacters = draft.trim().length;
@@ -254,5 +372,6 @@ export function measureContext(
       (message) => !message.included || message.status !== "complete",
     ).length,
     sourceCount: sources.length,
+    passageNotes: passageNotes(asked, false),
   };
 }

@@ -62,7 +62,7 @@ it.each([
   {},
   { pages: [{ text: 123 }] },
   { pages: [{ text: "synthetic", page: -1 }] },
-  { pages: Array.from({ length: 21 }, () => ({ text: "synthetic" })) },
+  { pages: Array.from({ length: 151 }, () => ({ text: "synthetic" })) },
   { progress: "reading", pages: [{ text: "synthetic" }] },
 ])(
   "settles invalid worker output and allows a subsequent extraction: %j",
