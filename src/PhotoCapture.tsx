@@ -50,9 +50,12 @@ function cameraFailure(cause: unknown, t: (typeof photoUiText)["en"]): string {
 export function PhotoCapture({
   onClose,
   onUse,
+  wording,
 }: {
   onClose(): void;
   onUse(file: File): void;
+  /** Other words for another use of the same dialog (a picture question instead of photo to text). */
+  wording?: { title: string; close: string; intro: string; extraction: string; use: string };
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const video = useRef<HTMLVideoElement>(null);
@@ -68,7 +71,7 @@ export function PhotoCapture({
   const [rotation, setRotation] = useState<Rotation>(0);
   const [inset, setInset] = useState<CropInset>(NO_CROP);
   const [error, setError] = useState("");
-  const t = useText(photoUiText);
+  const t = { ...useText(photoUiText), ...wording };
   const photoErrors = useText(photoText);
 
   const stopCamera = () => {

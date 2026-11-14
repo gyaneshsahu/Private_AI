@@ -74,6 +74,9 @@ import { imprintText } from "../shared/legal-identity";
 import { importDocuments, type ImportOutcome } from "./document-import";
 import { PhotoCapture } from "./PhotoCapture";
 import { VoiceInput } from "./VoiceInput";
+import { AttachedImageNote, ImageQuestion } from "./ImageQuestion";
+import type { AttachedImage } from "./image-upload";
+import { imageText } from "./text/images";
 import { Vault, VaultConflictError } from "./vault";
 import { VaultBackup } from "./VaultBackup";
 import { VaultSecurity } from "./VaultSecurity";
@@ -131,6 +134,10 @@ export function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
   const [photoOpen, setPhotoOpen] = useState(false);
+  // Image questions: the picture for the next message. Memory only; gone once it was sent,
+  // removed, or another conversation is opened. It is never part of `conversation`.
+  const [imageOpen, setImageOpen] = useState(false);
+  const [attachedImage, setAttachedImage] = useState<AttachedImage>();
   const settingsDialog = useRef<HTMLDialogElement>(null);
   const contextDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -216,6 +223,8 @@ export function App() {
   const [modeChoice, setModeChoice] = useState(readModeChoice);
   // Draft health consent (shared/health-consent.ts): only while the server enables it.
   const [healthConsent, setHealthConsent] = useState(readHealthConsent);
+  // Another conversation, a new one, a lock: the waiting picture is dropped.
+  useEffect(() => setAttachedImage(undefined), [conversation.id]);
   const [consentPending, setConsentPending] = useState<{
     base: Conversation;
     text: string;
@@ -666,6 +675,9 @@ export function App() {
     // The user's own one-off choice ("Answer again with Thinking"); it wins over Auto.
     modeOverride?: AnswerMode,
   ) {
+    // A picture goes with a message typed in the composer only, never with "ask again".
+    const image = consumeDraft && status?.images ? attachedImage : undefined;
+    if (image && !text.trim()) return fail(imageText[lang].needQuestion);
     if (busy || !status?.inference.ready || !text.trim()) return;
     if (status.healthConsentDraft && !healthConsent && !consentChosen) {
       // Ask once before the first message; the message waits and is not sent yet.
@@ -679,7 +691,7 @@ export function App() {
         (base.messages.length || base.title !== "New conversation")
           ? base.title
           : text.trim().slice(0, 60),
-      messages: [...base.messages, newMessage("user", text.trim())],
+      messages: [...base.messages, { ...newMessage("user", text.trim()), ...(image ? { image: true as const } : {}) }],
     };
     try {
       composeContext(
@@ -699,6 +711,8 @@ export function App() {
     };
     setConversation({ ...next, messages: [...next.messages, answer] });
     if (consumeDraft) setInput("");
+    // From here the picture lives only in this request; it is gone when the request ends.
+    if (image) setAttachedImage(undefined);
     setNotice("");
     setBusy(t.preparing);
     const abort = new AbortController();
@@ -709,12 +723,15 @@ export function App() {
     const current = epoch.current;
     const qualified = status.inference.qualification;
     const choiceForThis: ModeChoice = modeOverride ?? modeChoice;
+    // Only the Fast model reads pictures, whatever mode is chosen; the answer label says so.
     const mode = qualified?.modes
-      ? choiceForThis === "auto"
-        ? autoMode(next)
-        : choiceForThis
+      ? image
+        ? "fast"
+        : choiceForThis === "auto"
+          ? autoMode(next)
+          : choiceForThis
       : undefined;
-    const hasBackup = !!qualified && !!tierFor(qualified, mode).backupModel;
+    const hasBackup = !image && !!qualified && !!tierFor(qualified, mode).backupModel;
     let textArrived = false;
     let retried = false;
     const startedAt = Date.now();
@@ -757,6 +774,7 @@ export function App() {
           choice,
           mode,
           status.inference.cacheSalt,
+          image?.dataUrl,
         );
         abort.signal.throwIfAborted();
         if (epoch.current === current) {
@@ -789,11 +807,9 @@ export function App() {
                           ),
                         }
                       : {}),
-                    answeredBy: answerLabel(
-                      choiceForThis,
-                      mode,
-                      choice === "backup",
-                    ),
+                    answeredBy: image
+                      ? `${answerLabel("fast", mode, false) ?? ""} (${imageText[lang].readByFast})`.trim()
+                      : answerLabel(choiceForThis, mode, choice === "backup"),
                   }
                 : m,
             ),
@@ -1875,6 +1891,7 @@ export function App() {
                   {message.failure && (
                     <p className="muted">{t.failure(message.failure)}</p>
                   )}
+                  {message.image && <p className="muted image-not-kept">{imageText[lang].notKept}</p>}
                   <Suspense
                     fallback={
                       <div className="message-text">{message.text}</div>
@@ -2110,11 +2127,22 @@ export function App() {
                     {healthConsentCopy(lang).declinedNote}
                   </p>
                 )}
+              {attachedImage && status?.images && (
+                <AttachedImageNote
+                  image={attachedImage}
+                  onRemove={() => {
+                    setAttachedImage(undefined);
+                    setNotice(imageText[lang].removedNotice);
+                  }}
+                />
+              )}
               <form
                 className="composer"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if ((autoSearch || autoRules) && suggestion)
+                  // A picture question goes straight to the model: no search step in between.
+                  if (attachedImage && status?.images) void send();
+                  else if ((autoSearch || autoRules) && suggestion)
                     void searchThenAnswer(suggestion.value, "auto");
                   else if (askFirst) setChoiceFor(input);
                   else void send();
@@ -2181,6 +2209,17 @@ export function App() {
                         <Icon name="camera" />
                         {t.photoToText}
                       </button>
+                      {status?.images && status.inference.ready && (
+                        <button
+                          type="button"
+                          className="text-button"
+                          disabled={!!busy}
+                          onClick={() => setImageOpen(true)}
+                        >
+                          <Icon name="image" />
+                          {imageText[lang].menu}
+                        </button>
+                      )}
                       <button
                         type="button"
                         className="text-button"
@@ -3027,6 +3066,18 @@ export function App() {
         <PhotoCapture
           onClose={() => setPhotoOpen(false)}
           onUse={(file) => void importFiles([file])}
+        />
+      )}
+      {imageOpen && status?.images && (
+        <ImageQuestion
+          maxBytes={status.images.maxBytes}
+          thinkingChosen={modeChoice === "thinking"}
+          consentOn={!!status.healthConsentDraft}
+          consentChoice={healthConsent?.choice}
+          onConsent={chooseHealthConsent}
+          onAttach={setAttachedImage}
+          onClose={() => setImageOpen(false)}
+          notify={setNotice}
         />
       )}
       {source && (

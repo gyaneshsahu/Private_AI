@@ -39,6 +39,8 @@ const conversationBody = z.object({
       keptOnDevice: z.string().max(300).optional(),
       passagesUsed: z.string().max(4000).optional(),
       answeredBy: z.string().max(300).optional(),
+      // Only the fact that a picture was asked about. There is no field that could hold a picture.
+      image: z.literal(true).optional(),
       at: z.string().datetime().optional(),
       arithmeticCheck: z
         .object({
@@ -150,6 +152,15 @@ export function containsTemporaryResearch(conversation: Conversation): boolean {
       );
     },
   );
+}
+
+/**
+ * True when any value in the conversation is an embedded picture (a base64 data URL). A picture
+ * question keeps only a flag on its message (docs/images-20261114.md); the picture is never part
+ * of a conversation. The vault refuses to save one that carries a picture anyway.
+ */
+export function containsImageData(conversation: Conversation): boolean {
+  return /"data:image\/[a-z0-9.+-]+;base64,/i.test(JSON.stringify(conversation));
 }
 
 /** Every source that arrived through an approved search belongs to a search attachment, whatever its labelled kind. */

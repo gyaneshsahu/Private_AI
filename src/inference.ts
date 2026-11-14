@@ -25,15 +25,24 @@ export async function streamReply(
   mode?: AnswerMode,
   /** This account's prompt-cache salt from /api/status; the Privatemode adapter requires it. */
   cacheSalt?: string,
+  /** A picture for the latest question (JPEG data URL): sent once, with this request only. */
+  image?: string,
 ): Promise<Usage | undefined> {
   const report = validateQualification(qualification);
   if (mode && !report.modes) throw Error("No answer modes are qualified.");
+  // Only the report's vision model reads pictures: the Fast mode, never its backup.
+  if (
+    image &&
+    (!report.vision || modelChoice !== "primary" || mode !== (report.modes ? "fast" : undefined))
+  )
+    throw Error("A picture can only be sent to the qualified vision model.");
   // The backup is the same qualified deployment with a different catalog name; each
   // model gets only its own reviewed settings and the mode's own output limit.
   const policy = {
     ...policyForTier(report, mode, modelChoice),
     answerMode: mode,
     ...(cacheSalt ? { cacheSalt } : {}),
+    ...(image ? { image } : {}),
   };
   return streamVerifiedConversation(
     conversation,

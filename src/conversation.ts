@@ -203,6 +203,13 @@ export function passageNotes(
       );
     });
 }
+/**
+ * Stands in front of a question that was asked about a picture. The picture itself is never part
+ * of a conversation: it is sent once, with that question (src/verified-chat.ts takes this note out
+ * for that one request), and in every later turn the model is told plainly that it is gone.
+ */
+export const IMAGE_GONE_NOTE =
+  "[The user attached a picture to this message. It was not kept and cannot be seen now.]\n";
 export function composeContext(
   conversation: Conversation,
   maxCharacters: number,
@@ -267,7 +274,7 @@ export function composeContext(
     });
   for (const m of conversation.messages)
     if (m.included && m.status === "complete")
-      messages.push({ role: m.role, content: m.text });
+      messages.push({ role: m.role, content: m.image ? IMAGE_GONE_NOTE + m.text : m.text });
   if (messages.reduce((n, m) => n + m.content.length, 0) > maxCharacters)
     throw new Error(text.tooLarge);
   return messages;

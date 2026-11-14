@@ -68,7 +68,7 @@ export interface PhotoCanvasLike {
   width: number;
   height: number;
   getContext(contextId: "2d"): PhotoContextLike | null;
-  toBlob(callback: BlobCallback, type?: string): void;
+  toBlob(callback: BlobCallback, type?: string, quality?: number): void;
 }
 export type CreateCanvas = (width: number, height: number) => PhotoCanvasLike;
 

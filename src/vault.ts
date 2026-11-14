@@ -6,6 +6,7 @@ import type { Conversation } from "../shared/contracts";
 import {
   containsTemporaryResearch,
   stripLiveSearch,
+  containsImageData,
   savedConversationSchema,
 } from "./saved-conversation";
 import { derive, seal, unseal, type Cipher } from "./vault-crypto";
@@ -150,6 +151,9 @@ export class Vault {
           textFor(vaultText).temporaryNotRemoved,
         ),
       );
+    // Pictures are never stored. Nothing puts one into a conversation; this refuses if one is there.
+    if (containsImageData(conversation))
+      return Promise.reject(new Error(textFor(vaultText).pictureNotSaved));
     const key = this.key,
       salt = this.salt,
       generation = this.generation,

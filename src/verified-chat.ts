@@ -36,6 +36,7 @@ import {
 } from "../shared/contracts";
 import {
   composeContext,
+  IMAGE_GONE_NOTE,
   selectedSources,
   withChosenPassages,
   type AnswerPolicyVariant,
@@ -87,6 +88,11 @@ export type VerifiedChatPolicy = Pick<
   cacheSalt?: string;
   /** Declared to the relay so it admits this mode's models, limit and allowance cost. */
   answerMode?: AnswerMode;
+  /**
+   * A picture for the latest question, as a JPEG data URL. Sent once, in this request only, and
+   * declared to the relay as an image request. Never part of the conversation.
+   */
+  image?: string;
   answerPolicyVariant?: AnswerPolicyVariant;
   researchEvidenceContract?: boolean;
   checkedResponseContract?: boolean;
@@ -237,6 +243,16 @@ async function streamMaskedConversation(
     ].filter(Boolean).length > 1
   )
     throw new Error(textFor(chatErrorText).oneContract);
+  if (
+    report.image !== undefined &&
+    (!report.image.startsWith("data:image/jpeg;base64,") ||
+      report.optionalCalculator ||
+      report.checkedResponseContract ||
+      report.researchEvidenceContract ||
+      report.scopedResearchContract ||
+      report.assistedResearchContract)
+  )
+    throw Error("A picture is sent as a JPEG with a plain question only.");
   for (const [setting, owners] of Object.entries(MODEL_SETTINGS))
     if (
       report[setting as keyof typeof MODEL_SETTINGS] !== undefined &&
@@ -344,6 +360,8 @@ async function streamMaskedConversation(
     const routeHeaders = {
       ...adapter.requestHeaders(policy),
       ...(report.answerMode ? { "X-PrivateAI-Mode": report.answerMode } : {}),
+      // The relay cannot see the encrypted body: this buys the larger size bound at the image price.
+      ...(report.image ? { "X-PrivateAI-Kind": "image" } : {}),
     };
     const destination = await adapter.verify(policy, signal, onStatus);
     onVerified?.(destination.evidence);
@@ -364,10 +382,26 @@ async function streamMaskedConversation(
     // The policy's helpline numbers are public (PUBLIC_NUMBERS), so every message is masked whole.
     for (const message of messages) message.content = masking.mask(message.content);
     if (masking.kept.length) messages[0].content += MASKING_INSTRUCTION;
+    if (report.image)
+      messages[0].content +=
+        " The latest message has a picture. Black boxes in it are parts the user covered on purpose: do not guess what is under them. Text read from a picture can be wrong; say so when it is unclear.";
     onKeptOnDevice?.(masking.summary());
+    // The picture rides on the latest question only, as one image part beside its (masked) text.
+    // Masking works on text: nothing inside the picture is masked here.
+    const asked = report.image ? messages.map((m) => m.role).lastIndexOf("user") : -1;
     const requestBody = {
       model: report.model,
-      messages,
+      messages: messages.map((message, index) =>
+        index === asked
+          ? {
+              role: message.role,
+              content: [
+                { type: "text", text: message.content.replace(IMAGE_GONE_NOTE, "") },
+                { type: "image_url", image_url: { url: report.image } },
+              ],
+            }
+          : message,
+      ),
       ...responseFormat,
       ...toolOptions,
       ...adapter.modelOptions(policy),

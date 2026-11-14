@@ -14,6 +14,7 @@ export const vaultText = defineText({
     unlockCancelled: "Unlock cancelled.",
     temporaryNotRemoved:
       "Temporary research could not be removed from this conversation, so it was not saved.",
+    pictureNotSaved: "This conversation holds a picture, and pictures are never stored. It was not saved.",
     unlockBeforeSaving: "Unlock your vault before saving.",
     projectGone: "Project no longer exists. Remove its assignment before saving.",
     lockedBeforeSave: "Vault locked before save completed.",
@@ -71,6 +72,7 @@ export const vaultText = defineText({
     unlockCancelled: "Entsperren abgebrochen.",
     temporaryNotRemoved:
       "Die vorübergehende Recherche konnte nicht aus dieser Unterhaltung entfernt werden, daher wurde sie nicht gespeichert.",
+    pictureNotSaved: "Diese Unterhaltung enthält ein Bild, und Bilder werden nie gespeichert. Sie wurde nicht gespeichert.",
     unlockBeforeSaving: "Entsperren Sie Ihren Tresor, bevor Sie speichern.",
     projectGone:
       "Das Projekt existiert nicht mehr. Entfernen Sie die Zuordnung, bevor Sie speichern.",

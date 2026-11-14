@@ -51,7 +51,32 @@ const ocrWorker = (progress?: (percent: number) => void) => {
   // start still fails, for example on a damaged kept copy, try once more with a fresh download.
   return start().catch(() => start("refresh"));
 };
-self.onmessage = async (event: MessageEvent<File>) => {
+/**
+ * Suggested cover-up boxes for a picture (src/image-upload.ts): the same on-device OCR, but the
+ * words come back with their places. Only the words leave this worker, and only to the page.
+ */
+async function ocrWords(image: Blob) {
+  const worker = await ocrWorker((percent) => self.postMessage({ percent }));
+  try {
+    const { data } = await worker.recognize(image, {}, { blocks: true });
+    let line = 0;
+    const words = (data.blocks ?? []).flatMap((block) =>
+      block.paragraphs.flatMap((paragraph) =>
+        paragraph.lines.flatMap((entry) => {
+          line++;
+          return entry.words.map((word) => ({ text: word.text, line, ...word.bbox }));
+        }),
+      ),
+    );
+    self.postMessage({ words });
+  } catch {
+    self.postMessage({ error: true });
+  } finally {
+    await worker.terminate();
+  }
+}
+self.onmessage = async (event: MessageEvent<File | { ocrWords: Blob }>) => {
+  if ("ocrWords" in event.data) return ocrWords(event.data.ocrWords);
   const file = event.data;
   const limit = characterLimit(file.name);
   try {
