@@ -15,6 +15,7 @@ This is a map of `docs/` for new sessions and for Graphify. Files dated 11 to 13
 
 ## Alpha and launch
 
+- `chat-feature-gaps-20261114.md`: what ChatGPT, Gemini and Claude offer in the chat screen, what CometRow has (audited in the code), the ranked gap list, six work packages for parallel building, and how to run the UI sweep. Research and audit only; nothing built.
 - `read-aloud-and-pdf-export-20261114.md`: read aloud with on-device voices only (the local-voice rule and its limits per browser) and PDF export through the print dialog; both off by default, switches `VITE_READ_ALOUD` and `VITE_PDF_EXPORT`.
 - `large-documents-20261114.md`: questions about a long PDF or Word file. Passages are chosen on the device and only those are sent; the limits, the cost, what is not built and the owner's decisions.
 - `voice-to-text-20261114.md`: voice input (dictation) in the composer. Built and tested offline, switched off by default, nothing verified live. The design, the caps with their arithmetic, the cost, and the list of live checks for the lead. `voice-privacy-wording-draft-20261114.md` is the privacy wording draft for the owner (English and German).
