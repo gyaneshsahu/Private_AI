@@ -5,7 +5,7 @@ import {
   type Conversation,
   type Usage,
 } from "../shared/contracts";
-import { streamVerifiedConversation } from "./verified-chat";
+import { streamVerifiedConversation, type CodeRuntime } from "./verified-chat";
 import type { CalculationSession } from "./calculation-session";
 import type { IdentifierKind } from "./identifier-masking";
 export { assertVerification } from "./verified-chat";
@@ -27,6 +27,8 @@ export async function streamReply(
   cacheSalt?: string,
   /** A picture for the latest question (JPEG data URL): sent once, with this request only. */
   image?: string,
+  /** Code execution on this device; only the tested primary models get the tool. */
+  code?: CodeRuntime,
 ): Promise<Usage | undefined> {
   const report = validateQualification(qualification);
   if (mode && !report.modes) throw Error("No answer modes are qualified.");
@@ -43,6 +45,7 @@ export async function streamReply(
     answerMode: mode,
     ...(cacheSalt ? { cacheSalt } : {}),
     ...(image ? { image } : {}),
+    ...(code && modelChoice === "primary" ? { codeTool: true } : {}),
   };
   return streamVerifiedConversation(
     conversation,
@@ -61,5 +64,6 @@ export async function streamReply(
     undefined,
     undefined,
     onKeptOnDevice,
+    code && modelChoice === "primary" ? code : undefined,
   );
 }

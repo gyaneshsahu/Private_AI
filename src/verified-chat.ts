@@ -58,6 +58,21 @@ import "./providers/privatemode-client";
 export { assertVerification } from "./providers/tinfoil-client";
 import { consumeReply } from "./reply-stream";
 import {
+  CODE_REQUEST_OPTIONS,
+  CONTINUATION_HEADER,
+  withCodeTool,
+  type CodeResult,
+  type CodeRun,
+} from "./code-tool";
+import { runToolLoop } from "./tool-loop";
+import { codeText } from "./text/code";
+
+/** What the code tool needs from the caller: how to run code, and where the runs go. */
+export type CodeRuntime = {
+  run: (code: string, signal: AbortSignal) => Promise<CodeResult>;
+  onRuns: (runs: CodeRun[], unavailable: boolean) => void;
+};
+import {
   checkedResponseInstruction,
   consumeCheckedResponse,
 } from "./checked-response";
@@ -102,6 +117,8 @@ export type VerifiedChatPolicy = Pick<
   optionalCalculator?: boolean;
   calculatorReplay?: boolean;
   calculatorContinuation?: boolean;
+  /** Offer the `python` tool and run its calls on this device (src/code-tool.ts, src/tool-loop.ts). */
+  codeTool?: boolean;
 };
 
 /**
@@ -126,6 +143,7 @@ export async function streamVerifiedConversation(
     signal: AbortSignal,
   ) => Promise<{ approvalId: string }>,
   onKeptOnDevice?: (kept: Partial<Record<IdentifierKind, number>>) => void,
+  codeRuntime?: CodeRuntime,
 ): Promise<Usage | undefined> {
   const masking = createMaskingSession();
   const restored = masking.streamRestore(onChunk);
@@ -146,6 +164,7 @@ export async function streamVerifiedConversation(
       calculationSession,
       onModelEvent,
       authorizeContinuation,
+      codeRuntime,
     );
   } finally {
     restored.flush();
@@ -171,7 +190,9 @@ async function streamMaskedConversation(
   authorizeContinuation?: (
     signal: AbortSignal,
   ) => Promise<{ approvalId: string }>,
+  codeRuntime?: CodeRuntime,
 ): Promise<Usage | undefined> {
+  if (report.codeTool && !codeRuntime) throw Error("The code tool requires its runtime.");
   if (
     report.calculatorContinuation &&
     (!report.optionalCalculator || !authorizeContinuation)
@@ -240,6 +261,7 @@ async function streamMaskedConversation(
       report.researchEvidenceContract,
       report.scopedResearchContract,
       report.assistedResearchContract,
+      report.codeTool,
     ].filter(Boolean).length > 1
   )
     throw new Error(textFor(chatErrorText).oneContract);
@@ -402,8 +424,16 @@ async function streamMaskedConversation(
             }
           : message,
       ),
+    // Code execution: the tool instruction, and earlier answers' code and output as tool messages.
+    const wire = report.codeTool
+      ? withCodeTool(messages, conversation, masking.mask, report.maxInputCharacters, textFor(codeText).tooLarge)
+      : messages;
+    const requestBody = {
+      model: report.model,
+      messages: wire,
       ...responseFormat,
       ...toolOptions,
+      ...(report.codeTool ? CODE_REQUEST_OPTIONS : {}),
       ...adapter.modelOptions(policy),
       stream: true,
       stream_options: { include_usage: true },
@@ -573,6 +603,47 @@ async function streamMaskedConversation(
         evidenceSources,
         onChunk,
       );
+    if (report.codeTool)
+      return runToolLoop({
+        first: observedEvents(),
+        messages: wire,
+        // Each follow-up is its own request to the verified destination, declared to the relay.
+        next: async (next) => {
+          signal.throwIfAborted();
+          const again = await adapter.verify(policy, signal, () => {});
+          if (again.evidence.releaseDigest !== destination.evidence.releaseDigest)
+            throw Error(textFor(chatErrorText).deploymentChangedCalculation);
+          authorize();
+          onStatus(textFor(chatErrorText).receiving);
+          const followUp = await (await again.transport()).request(
+            `${location.origin}/api/inference/v1/chat/completions`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "text/event-stream",
+                "X-PrivateAI-CSRF": csrf,
+                ...routeHeaders,
+                [CONTINUATION_HEADER]: "tool",
+              },
+              body: JSON.stringify({ ...requestBody, messages: next }),
+              signal,
+              credentials: "same-origin",
+              redirect: "error",
+            },
+          );
+          return observedEvents(followUp, 2);
+        },
+        run: codeRuntime!.run,
+        pricing: report.pricing,
+        signal,
+        maxCharacters: report.maxInputCharacters,
+        onChunk,
+        onStatus,
+        onRuns: codeRuntime!.onRuns,
+        mask: masking.mask,
+        restore: masking.restore,
+      });
     return consumeReply(observedEvents(), report.pricing, signal, onChunk);
   });
   return reply.finally(() => clearTimeout(waiting));

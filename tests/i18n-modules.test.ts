@@ -10,6 +10,7 @@ import { researchText } from "../src/text/research";
 import { vaultText } from "../src/text/vault";
 import { voiceText } from "../src/text/voice";
 import { imageText } from "../src/text/images";
+import { codeText } from "../src/text/code";
 import { completenessWarning } from "../src/arithmetic/completeness";
 import { describeKept, prepareSearchQuery } from "../src/identifier-masking";
 import { topPageNote } from "../src/research-result";
@@ -20,6 +21,7 @@ import { decodeVaultBackupContent } from "../src/vault-backup";
 afterEach(() => vi.unstubAllGlobals());
 
 const blocks = { arithmeticText, chatErrorText, documentText, maskingText, photoText, researchText, vaultText, voiceText, imageText };
+const blocks = { arithmeticText, chatErrorText, documentText, maskingText, photoText, researchText, vaultText, voiceText, codeText };
 // Numbers with their separators removed, so 60,000 (English) and 60.000 (German) compare equal.
 const numbers = (text: string) => (text.match(/\d[\d.,]*\d|\d/g) ?? []).map((n) => n.replace(/[.,]/g, "")).sort();
 
