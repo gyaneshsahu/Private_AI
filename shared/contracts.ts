@@ -513,6 +513,11 @@ export interface Conversation {
   attachments: Attachment[];
   createdAt: string;
   usage: Usage[];
+  /**
+   * Canvas (docs/canvas-20261114.md): one editable document, kept on the device with the conversation.
+   * Sent only inside a change request the user makes. `resolved` is the answer already applied or discarded.
+   */
+  canvas?: { text: string; resolved?: string };
   /** Optional for snapshots saved before draft support. Never part of sent context. */
   draft?: string;
   /** Inactive versions are local history, never implicitly model context. */

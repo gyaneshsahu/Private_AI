@@ -26,6 +26,11 @@ const conversationBody = z.object({
   temporarySearch: z.boolean().optional(),
   disappearAfter: z.enum(["hour", "day", "week"]).optional(),
   memoryOff: z.literal(true).optional(),
+  // Canvas: absent in conversations saved before it existed. The limit is CANVAS_LIMITS.characters.
+  canvas: z
+    .object({ text: z.string().max(18000), resolved: z.string().max(100).optional() })
+    .strict()
+    .optional(),
   messages: z.array(
     z.object({
       id: z.string(),

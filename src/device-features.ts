@@ -12,3 +12,5 @@ export const readAloudEnabled = () => on("VITE_READ_ALOUD");
 export const pdfExportEnabled = () => on("VITE_PDF_EXPORT");
 /** Memory across chats (docs/memory-20261114.md): kept in the vault on the device, no server part. */
 export const memoryEnabled = () => on("VITE_MEMORY");
+/** Canvas (docs/canvas-20261114.md): an editable document beside the chat. Nothing new on the server. */
+export const canvasEnabled = () => on("VITE_CANVAS");

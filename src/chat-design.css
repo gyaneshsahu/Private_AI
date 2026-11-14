@@ -2281,3 +2281,152 @@
     min-height: 44px;
   }
 }
+
+/* Canvas (docs/canvas-20261114.md): a panel at the right from 1100 px, a full-screen sheet below. */
+.chat-design .canvas-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  color: var(--ink, inherit);
+}
+.chat-design .canvas-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.chat-design .canvas-head h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 17px;
+}
+.chat-design .canvas-head button {
+  min-width: 44px;
+  min-height: 44px;
+  background: transparent;
+  border-color: transparent;
+}
+.chat-design .canvas-close {
+  display: none;
+  font-size: 22px;
+}
+.chat-design .canvas-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 16px max(16px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.chat-design .canvas-views,
+.chat-design .canvas-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chat-design .canvas-views button[aria-pressed="true"] {
+  background: var(--subtle);
+  border-color: var(--line);
+  font-weight: 600;
+}
+.chat-design .canvas-panel button {
+  min-height: 44px;
+}
+.chat-design .canvas-text {
+  width: 100%;
+  min-height: 45vh;
+  resize: vertical;
+  font: 14px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+  padding: 10px;
+  box-sizing: border-box;
+}
+.chat-design .canvas-preview {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 4px 14px;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+.chat-design .canvas-count {
+  font-size: 12px;
+  margin: 0;
+}
+.chat-design .canvas-grid-scroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.chat-design .canvas-table table {
+  border-collapse: collapse;
+}
+.chat-design .canvas-table :is(th, td) {
+  border: 1px solid var(--line);
+  padding: 0;
+}
+.chat-design .canvas-table input {
+  width: 9rem;
+  min-height: 36px;
+  border: 0;
+  padding: 4px 8px;
+  background: transparent;
+  font: inherit;
+}
+.chat-design .canvas-table th input {
+  font-weight: 600;
+}
+.chat-design .canvas-ask {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.chat-design .canvas-ask textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+}
+.chat-design .canvas-ask .primary {
+  align-self: flex-start;
+}
+.chat-design .canvas-proposal {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+.chat-design .canvas-proposal h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+.chat-design .canvas-export {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+@media (min-width: 1100px) {
+  .chat-design.canvas-open {
+    --canvas-panel-width: clamp(380px, 38vw, 620px);
+  }
+  .chat-design .canvas-panel {
+    left: auto;
+    width: var(--canvas-panel-width);
+    border-left: 1px solid var(--line);
+  }
+  .chat-design.canvas-open main {
+    width: calc(100% - 272px - var(--canvas-panel-width));
+    padding: 0 24px;
+  }
+  .chat-design.canvas-open.navigation-collapsed main {
+    width: calc(100% - var(--canvas-panel-width));
+  }
+  .chat-design .canvas-back {
+    display: none;
+  }
+  .chat-design .canvas-close {
+    display: inline-block;
+  }
+  .chat-design .canvas-panel button {
+    min-height: 32px;
+  }
+}

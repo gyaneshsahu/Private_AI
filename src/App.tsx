@@ -105,7 +105,10 @@ import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { stopReading } from "./read-aloud";
 import { PdfExportButton } from "./PdfExportButton";
-import { memoryEnabled } from "./device-features";
+import { canvasEnabled, memoryEnabled } from "./device-features";
+import { CANVAS_LIMITS, keepForUndo, proposedText, withCanvas, withoutEarlierCanvas } from "./canvas";
+import { CanvasPanel } from "./CanvasPanel";
+import { canvasText } from "./text/canvas";
 import { addMemory, memoriesFor, rememberRequest } from "./memory";
 import {
   changeMemories,
@@ -369,6 +372,19 @@ export function App() {
   const [saved, setSaved] = useState<Conversation[]>([]);
   const [unreadableSnapshots, setUnreadableSnapshots] = useState(0);
   const [editId, setEditId] = useState<string>();
+  // Canvas (docs/canvas-20261114.md): whether its panel is open. Another conversation closes it.
+  const [canvasOpen, setCanvasOpen] = useState(false);
+  useEffect(() => setCanvasOpen(false), [conversation.id]);
+  function openCanvas(answer: string) {
+    const text = proposedText(answer);
+    const old = conversation.canvas?.text;
+    if (text.length > CANVAS_LIMITS.characters) return fail(canvasText[lang].problem("long"));
+    setCanvasOpen(true);
+    // Cancel opens the canvas as it is.
+    if (old === text || (old && !window.confirm(canvasText[lang].replaceConfirm))) return;
+    keepForUndo(conversation.id, old);
+    setConversation((c) => withCanvas(c, text));
+  }
   const [operandA, setOperandA] = useState("");
   const [operandB, setOperandB] = useState("");
   const [operation, setOperation] = useState("+");
@@ -1557,7 +1573,7 @@ export function App() {
   const sourceHistory = new Map(sources.map((item) => [item.id, item]));
   return (
     <div
-      className={`app-shell chat-design ${navigationCollapsed ? "navigation-collapsed" : ""}`}
+      className={`app-shell chat-design ${navigationCollapsed ? "navigation-collapsed" : ""}${canvasOpen && tab === "Conversation" ? " canvas-open" : ""}`}
       data-theme={
         appearance === "system" ? (systemDark ? "dark" : "light") : appearance
       }
@@ -2084,6 +2100,7 @@ export function App() {
                       ? () => setRemember({ text: message.text, draft: false })
                       : undefined
                   }
+                  onCanvas={canvasEnabled() ? () => openCanvas(message.text) : undefined}
                   onReport={() => {
                     setReporting(true);
                     setTab("Help");
@@ -3201,6 +3218,20 @@ export function App() {
           </footer>
         )}
       </main>
+      {canvasEnabled() && canvasOpen && tab === "Conversation" && (
+        <CanvasPanel
+          conversation={conversation}
+          update={setConversation}
+          busy={!!busy}
+          ready={!!status?.inference.ready}
+          cost={(text) =>
+            qualified && requestCost(qualified, modeChoice, withoutEarlierCanvas(conversation), codeToolOn(status), text)
+          }
+          onAsk={(text) => void send(withoutEarlierCanvas(conversation), text, false)}
+          onNotice={setNotice}
+          onClose={() => setCanvasOpen(false)}
+        />
+      )}
       {photoOpen && (
         <PhotoCapture
           onClose={() => setPhotoOpen(false)}

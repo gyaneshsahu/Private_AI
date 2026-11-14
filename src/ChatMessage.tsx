@@ -13,6 +13,7 @@ import { shouldCollapse } from "./message-collapse";
 import { MessageMeta } from "./MessageMeta";
 import { MemoryNote } from "./MemoryPanel";
 import { memoryText } from "./text/memory";
+import { canvasText } from "./text/canvas";
 import { PdfExportButton } from "./PdfExportButton";
 import { ReadAloudButton } from "./ReadAloudButton";
 import { sourceHistoryStatus } from "./source-history";
@@ -117,6 +118,7 @@ export function ChatMessage({
   retry,
   onReport,
   onRemember,
+  onCanvas,
   onResize,
 }: {
   message: Message;
@@ -137,6 +139,8 @@ export function ChatMessage({
   retry?: RetryAction;
   /** Memory across chats: offered on the user's own message when memory is on (absent otherwise). */
   onRemember?: () => void;
+  /** Canvas: offered on a completed answer when the canvas is on (absent otherwise). */
+  onCanvas?: () => void;
   onReport: () => void;
   onResize: () => void;
 }) {
@@ -319,6 +323,12 @@ export function ChatMessage({
               </button>
               <ReadAloudButton id={message.id} disabled={incomplete} />
               <PdfExportButton conversation={conversation} answer={index} disabled={incomplete} />
+              {onCanvas && (
+                <button disabled={incomplete} onClick={onCanvas}>
+                  <Icon name="edit" />
+                  {canvasText[lang].open}
+                </button>
+              )}
             </>
           )}
           {!user && retryButtons}

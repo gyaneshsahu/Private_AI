@@ -456,6 +456,26 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
   Expect: both show the answer, the line about searches and pages, and the numbered sources with their addresses.
   Tell the agent: anything missing in either.
 
+- [ ] **T-98 Canvas: open, edit, ask for changes (needs a build with `VITE_CANVAS=1`).**
+  Do: ask for a short plan, press "Open in canvas", change a line, then "Ask for changes" with "make it shorter". Apply, then "Undo last change".
+  Expect: the button shows the cost before sending; the canvas changes only on Apply; Undo brings your edited version back; the reply has no introduction.
+  Tell the agent: any extra text from the model in the proposal, or a cost that differs from the button.
+
+- [ ] **T-99 Canvas: a table on a phone.**
+  Do: ask for a small table, open it in the canvas on your phone, use the Table view, paste two rows from a spreadsheet app, add a row, download the .csv and open it.
+  Expect: the sheet covers the chat with "Back to chat"; nothing scrolls sideways except the table itself; umlauts are right in the CSV.
+  Tell the agent: anything hard to tap, or a paste that lands wrong.
+
+- [ ] **T-100 Canvas: export and keep.**
+  Do: export the canvas as PDF, copy it as Markdown, save the conversation, reload, unlock and open the canvas again.
+  Expect: the PDF shows only the canvas; the canvas is still there after reload (undo history is not).
+  Tell the agent: anything missing.
+
+- [ ] **T-101 Decide: canvas on for the alpha, and HTML mini pages.**
+  Do: read `docs/canvas-20261114.md`, section "HTML mini pages: left out".
+  Expect: a yes or no for switching canvas on in the alpha build, and whether mini pages are worth a separate origin later.
+  Tell the agent: your decision.
+
 ---
 
 ## Changes
@@ -466,3 +486,5 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 - 14 November 2026: added T-86 to T-90 (memory across chats: save and use, mixed languages, the Memory screen on a phone, incognito and per-chat off, the decision and privacy wording).
 - 14 November 2026: added T-86 to T-89 (deep research: a whole run, masking of search texts, stop, export). Only after the lead switched the feature on.
 - 14 November 2026: items from T-86 on renumbered in file order after three features were merged with the same numbers (now T-86 to T-97: long own message, edit and send, retry cost, memory, deep research). Older Changes lines above still name the numbers each agent first used.
+- 14 November 2026: added T-91 to T-94 (canvas: open, edit and ask for changes, a table on a phone, export and keep, the decision). Numbers continue after the highest one in this branch; the lead may renumber on merge.
+- 14 November 2026: canvas items added; all items renumbered in file order (now T-1 to T-101 with no gaps or repeats). Older Changes lines name the numbers first used.

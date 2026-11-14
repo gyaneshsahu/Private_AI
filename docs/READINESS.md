@@ -1,4 +1,12 @@
 # PrivateAI readiness checklist
+## 14 November 2026: canvas built, switched off, nothing verified live (agent)
+
+With the build setting `VITE_CANVAS=1` (absent by default), every completed answer has "Open in canvas": the answer becomes one editable document in a panel beside the chat (a full-screen sheet on tablet and phone). Markdown editor, live preview with the answer renderer, a table grid for a single Markdown table (spreadsheet paste, add and remove rows and columns, CSV). "Ask for changes" sends one ordinary message through the existing send path (masking, allowance, stop switch, modes), the canvas text once, at most 18,000 characters; the answer changes the canvas only on Apply; undo in memory. Saved with the conversation in the vault, never on the server. HTML mini pages were left out: a sandboxed frame cannot reliably close the network (WebRTC is not covered by CSP). Design and limits: `docs/canvas-20261114.md`.
+
+Verified by `tests/canvas.test.ts` (8 tests) and `tests/canvas-ui.test.ts` (6 tests; real headless Chromium at 375, 768 and 1280 px in English and German, real masking path, model faked): one masked request with the canvas once, apply, undo, table grid, CSV content, exports, layouts, focus and Escape.
+
+Not verified: anything against Privatemode (whether the models return the whole revised document cleanly, timings, token use), a real phone, Safari and Firefox, a screen reader, the real print dialog.
+
 ## 14 November 2026: deep research built, switched off, nothing verified live (agent)
 
 Before: one approved search and one page per question. Now, with `inference.research.enabled` in the deployment config (absent by default), the Research tab has a deep research panel: one Fast request proposes at most 4 search texts; the user sees, edits, removes and approves them (each masked on the device, again after every edit); the browser runs the searches and up to 6 page reads through the existing approved routes; one Thinking request writes the answer from passages chosen on the device, with the existing citations, source list and answer checks. A step list shows progress; Stop ends the run at once. Design, caps, cost and live checks: `docs/deep-research-20261114.md`.

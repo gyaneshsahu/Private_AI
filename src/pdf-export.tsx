@@ -18,7 +18,14 @@ import "./print.css";
 export type { ExportContent };
 
 /** The printed page. It gets only the messages it is given: no account, vault or other conversation. */
-export function ExportView({ title, createdAt, messages, now = new Date() }: ExportContent & { now?: Date }) {
+// `plain` (the canvas, docs/canvas-20261114.md): one document, without the conversation date and message headings.
+export function ExportView({
+  title,
+  createdAt,
+  messages,
+  plain,
+  now = new Date(),
+}: ExportContent & { now?: Date; plain?: boolean }) {
   const { lang } = useLang();
   const t = deviceText[lang];
   const date = (value: Date) => exportDate(value, lang);
@@ -27,11 +34,11 @@ export function ExportView({ title, createdAt, messages, now = new Date() }: Exp
       <header>
         <p className="print-brand">CometRow</p>
         <h1>{title}</h1>
-        <p>{t.conversationFrom(date(new Date(createdAt)))}</p>
+        {!plain && <p>{t.conversationFrom(date(new Date(createdAt)))}</p>}
       </header>
       {messages.map((message) => (
         <section key={message.id} className={`print-message ${message.role}`}>
-          <h2>{messageHeading(message, lang)}</h2>
+          {!plain && <h2>{messageHeading(message, lang)}</h2>}
           {messageNotices(message, lang).map((note) => (
             <p key={note} className="print-notice">
               {note}
@@ -61,7 +68,7 @@ export function ExportView({ title, createdAt, messages, now = new Date() }: Exp
 }
 
 /** Mounts the view beside the app, opens the print dialog once, and reports when it closes. */
-export default function PdfExport({ done, ...content }: ExportContent & { done: () => void }) {
+export default function PdfExport({ done, ...content }: ExportContent & { done: () => void; plain?: boolean }) {
   useEffect(() => {
     let live = true;
     const root = document.documentElement;
