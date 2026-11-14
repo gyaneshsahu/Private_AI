@@ -49,7 +49,7 @@ Cost lesson: a calculation through the app costs about 7,700 tokens per two-turn
 
 - Full unit suite: 1,666 passed; one browser test (`invite-browser`) failed once under load and passed alone (known).
 - End-to-end: 61 of 61. Layout sweep: 54 of 54 in English and 54 of 54 in German (3 browsers, 3 widths).
-- GitHub CI on the newest commit: running when this was written; the result is in the next message from me.
+- GitHub CI on `683e045` (the newest code commit): **green** (offline and durable jobs).
 
 ## Risks to know
 
