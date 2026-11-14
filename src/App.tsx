@@ -70,6 +70,7 @@ import { deepResearchText } from "./text/deep-research";
 import { RESEARCH_MIN_SOURCE_CHARACTERS, researchSourceRoom } from "../shared/deep-research";
 import { serverMessage } from "./server-messages";
 import { appText } from "./text/app";
+import { liveVoiceText } from "./text/live-voice";
 import { privacySummary, privacyText } from "../shared/privacy-copy";
 import { privacyPolicyText } from "../shared/privacy-policy";
 import { disclosedProvider } from "../shared/provider-disclosure";
@@ -77,6 +78,7 @@ import { imprintText } from "../shared/legal-identity";
 import { importDocuments, type ImportOutcome } from "./document-import";
 import { PhotoCapture } from "./PhotoCapture";
 import { VoiceInput } from "./VoiceInput";
+import { LiveVoice } from "./LiveVoice";
 import { AttachedImageNote, ImageQuestion } from "./ImageQuestion";
 import type { AttachedImage } from "./image-upload";
 import { imageText } from "./text/images";
@@ -105,7 +107,7 @@ import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { stopReading } from "./read-aloud";
 import { PdfExportButton } from "./PdfExportButton";
-import { canvasEnabled, memoryEnabled } from "./device-features";
+import { canvasEnabled, liveVoiceEnabled, memoryEnabled, readAloudEnabled } from "./device-features";
 import { CANVAS_LIMITS, keepForUndo, proposedText, withCanvas, withoutEarlierCanvas } from "./canvas";
 import { CanvasPanel } from "./CanvasPanel";
 import { canvasText } from "./text/canvas";
@@ -1054,6 +1056,29 @@ export function App() {
       }
     }
     return completed;
+  }
+  // Live voice (docs/live-voice-20261114.md): one spoken question through send(), in Fast unless
+  // the user chose Thinking. A question that would ask "search first?" or the health consent is
+  // handed to the screen instead: nothing is searched or sent without that choice.
+  const liveMode: AnswerMode | undefined = qualified?.modes
+    ? modeChoice === "thinking" ? "thinking" : "fast"
+    : undefined;
+  const liveVoiceOn =
+    liveVoiceEnabled() && readAloudEnabled() && !!status?.voice && !!status.inference.ready;
+  async function liveSend(text: string, signal: AbortSignal) {
+    const found = status?.search ? searchSuggestion(text) : undefined;
+    const web = selectedSources(conversationNow.current).some((source) => !!source.url);
+    if (found && (autoSearch ? !web : asksBeforeSending(found, false, web))) {
+      setInput(text);
+      setChoiceFor(text);
+      return "choice" as const;
+    }
+    const consent = !!status?.healthConsentDraft && !healthConsent;
+    const sent = send(conversationNow.current, text, false, false, liveMode);
+    const running = controller.current;
+    signal.addEventListener("abort", () => running?.abort(), { once: true });
+    if (consent) return "consent" as const;
+    return (await sent) ? ("answered" as const) : ("failed" as const);
   }
   // Deep research (docs/deep-research-20261114.md): the plan request. One message to the Fast
   // model through the ordinary send path (masking, verification, allowance, stop switch),
@@ -2397,7 +2422,7 @@ export function App() {
                             ["mic", t.dictation],
                             ["voice", t.liveVoice],
                           ] as const
-                        ).filter(([icon]) => icon !== "mic" || !status?.voice).map(([icon, label]) => (
+                        ).filter(([icon]) => (icon !== "mic" || !status?.voice) && (icon !== "voice" || !liveVoiceOn)).map(([icon, label]) => (
                           <button key={icon} type="button" disabled>
                             <Icon name={icon} />
                             <span>{label}</span>
@@ -2405,7 +2430,7 @@ export function App() {
                           </button>
                         ))}
                       </div>
-                      <p className="muted">{status?.voice ? t.photoNoteVoice : t.photoNote}</p>
+                      <p className="muted">{liveVoiceOn ? liveVoiceText[lang].menuNote : status?.voice ? t.photoNoteVoice : t.photoNote}</p>
                       <p className="muted">{t.filesNote}</p>
                     </div>
                   </details>
@@ -2458,6 +2483,25 @@ export function App() {
                     <small>{t.comingLater}</small>
                   </button>
                   )}
+                  {liveVoiceOn && status?.voice ? (
+                    <LiveVoice
+                      status={status}
+                      maxSeconds={status.voice.maxSeconds}
+                      modeName={MODE_NAMES[liveMode ?? "fast"]}
+                      messageCost={qualified ? tierFor(qualified, liveMode).allowanceCost : 1}
+                      busy={!!busy}
+                      verifyWaiting={verifyWaitUntil > Date.now()}
+                      conversationId={conversation.id}
+                      unlocked={unlocked}
+                      send={liveSend}
+                      notify={setNotice}
+                      onVerifyWait={setVerifyWaitUntil}
+                      onEdit={(text) => {
+                        setInput(text);
+                        focusComposer();
+                      }}
+                    />
+                  ) : (
                   <button
                     type="button"
                     className="future-voice"
@@ -2467,6 +2511,7 @@ export function App() {
                   >
                     <Icon name="voice" />
                   </button>
+                  )}
                   {controller.current ? (
                     <button
                       type="button"

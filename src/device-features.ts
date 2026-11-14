@@ -14,3 +14,5 @@ export const pdfExportEnabled = () => on("VITE_PDF_EXPORT");
 export const memoryEnabled = () => on("VITE_MEMORY");
 /** Canvas (docs/canvas-20261114.md): an editable document beside the chat. Nothing new on the server. */
 export const canvasEnabled = () => on("VITE_CANVAS");
+/** Live voice conversation (docs/live-voice-20261114.md): also needs voice input and read aloud. */
+export const liveVoiceEnabled = () => on("VITE_LIVE_VOICE");

@@ -1,4 +1,11 @@
 # PrivateAI readiness checklist
+## 14 November 2026: live voice conversation built, switched off, nothing verified live (agent)
+
+Before: voice input and read aloud existed separately; live voice was a disabled "Coming later" button. Now, with the build setting `VITE_LIVE_VOICE=1` (off by default) and voice input and read aloud both on, a panel runs a turn-by-turn voice conversation: listen, end of speech by silence detection or a tap, a 3-second review, send through the ordinary send path, read the answer aloud with an on-device voice, listen again. It is not a real-time voice model and says so. No server file was changed. Design, interruptions, cost, caps and live checks: `docs/live-voice-20261114.md`.
+
+Verified by `tests/live-voice.test.ts` (39 tests, fakes and fake timers): every transition, every interruption, the caps, requests equal turns, End from every state releasing the microphone, the request and the speech, and the silence detector with synthetic levels. Verified by `tests/live-voice-ui.test.ts` (6 runs; real headless Chromium, a generated tone as the microphone, model, transcription and speech faked): at 375, 768 and 1280 px in English and German, a turn that ends by silence alone, then End during the countdown with nothing sent and the microphone released.
+
+Not verified: a real microphone, real speech models, real voices and rooms, Safari, Firefox, phones, a screen reader. With the voice input defaults only 5 recordings a day are allowed, so 5 live turns a day.
 ## 14 November 2026, afternoon: live checks of memory and deep research; Privatemode rotated its deployment (agent)
 
 Verified live (development key, synthetic data):

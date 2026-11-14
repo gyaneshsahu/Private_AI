@@ -476,6 +476,30 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
   Expect: a yes or no for switching canvas on in the alpha build, and whether mini pages are worth a separate origin later.
   Tell the agent: your decision.
 
+- [ ] **T-102 Live voice: a whole conversation (needs a build with `VITE_LIVE_VOICE=1` and `VITE_READ_ALOUD=1`, voice input on).**
+  Do: on a computer with Chrome or Edge, tap the live voice button next to the microphone, read the panel, tap "Start talking". Ask a short question, then stay quiet. Do three turns, one in German.
+  Expect: the recording ends by itself about 1.5 seconds after you stop. "Sending in 3" shows what was heard. The answer is read aloud, then it listens again. The panel shows the questions sent and the units used.
+  Tell the agent: the device and browser, how long each step felt, any word heard wrongly, and whether it ended too early or too late.
+
+- [ ] **T-103 Live voice: End and Pause.**
+  Do: press End while it listens, while it is answering, and while it reads aloud. Then start again and press Pause, then Resume.
+  Expect: End stops everything at once: no sound, the browser's microphone sign goes off, no further request on the usage page. Resume listens again.
+  Tell the agent: anything that kept running after End.
+
+- [ ] **T-104 Live voice: interruptions.**
+  Do: ask "Wie hoch ist der Rundfunkbeitrag?" by voice. Then start again and switch to another tab while it listens. Then start again and say nothing for 10 seconds.
+  Expect: the rules question ends the session and waits in the message box with the search choice. The other tab pauses it with the microphone off. Silence pauses it with "No speech was heard".
+  Tell the agent: any case that sent something you did not expect.
+
+- [ ] **T-105 Live voice: phone and screen reader.**
+  Do: open the app on an Android phone and on an iPhone. On the computer, try the panel with a screen reader (NVDA or VoiceOver) and the keyboard only.
+  Expect: Android shows the button greyed out with the reason. On the iPhone it works or says why not. The screen reader announces each new state once; Tab reaches every button; Escape closes the panel.
+  Tell the agent: per device what happened.
+
+- [ ] **T-106 Decide: live voice on for the alpha, and the recordings per day.**
+  Do: read "Open decisions" in `docs/live-voice-20261114.md`.
+  Expect: you can decide the switch and the voice input limits. With today's limits a user gets 5 live turns a day.
+  Tell the agent: your decision. Recommended: on after T-91 and T-92 pass, with recordings of at most 30 seconds (20 a day).
 ---
 
 ## Changes
@@ -488,3 +512,5 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 - 14 November 2026: items from T-86 on renumbered in file order after three features were merged with the same numbers (now T-86 to T-97: long own message, edit and send, retry cost, memory, deep research). Older Changes lines above still name the numbers each agent first used.
 - 14 November 2026: added T-91 to T-94 (canvas: open, edit and ask for changes, a table on a phone, export and keep, the decision). Numbers continue after the highest one in this branch; the lead may renumber on merge.
 - 14 November 2026: canvas items added; all items renumbered in file order (now T-1 to T-101 with no gaps or repeats). Older Changes lines name the numbers first used.
+- 14 November 2026: added T-91 to T-95 (live voice: a whole conversation, End and Pause, interruptions, phone and screen reader, the decision and the recordings per day).
+- 14 November 2026: live voice items added; all items renumbered again in file order (T-01 to T-106).
