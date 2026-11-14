@@ -1,0 +1,162 @@
+/* PDF export (src/pdf-export.tsx): the export view exists only while an export runs and shows
+   only on paper. Ordinary printing of the app (no export running) is left as it was. */
+.print-root {
+  display: none;
+}
+@page {
+  margin: 18mm 16mm;
+}
+@media print {
+  /* No app chrome: everything beside the export view is gone, buttons and composer included. */
+  html.exporting-pdf body > :not(.print-root) {
+    display: none !important;
+  }
+  html.exporting-pdf,
+  html.exporting-pdf body {
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    background: #fff !important;
+    color-scheme: light;
+  }
+  html.exporting-pdf .print-root {
+    display: block;
+    font:
+      11pt/1.5 Georgia,
+      "Times New Roman",
+      serif;
+    overflow-wrap: break-word;
+  }
+  /* Dark mode is ignored: always dark text on white. */
+  .print-root,
+  .print-root * {
+    color: #000 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  .print-root .print-brand {
+    font: bold 10pt system-ui, sans-serif;
+    letter-spacing: 0.08em;
+    margin: 0;
+  }
+  .print-root h1 {
+    font-size: 18pt;
+    margin: 4pt 0;
+  }
+  .print-root header {
+    border-bottom: 1pt solid #000;
+    margin-bottom: 14pt;
+  }
+  .print-root header p {
+    margin: 0 0 8pt;
+  }
+  .print-root h2 {
+    font: bold 10pt system-ui, sans-serif;
+    margin: 14pt 0 4pt;
+  }
+  .print-root .print-message.user {
+    border-left: 2pt solid #000;
+    padding-left: 8pt;
+  }
+  .print-root .print-notice,
+  .print-root .message-text > .muted {
+    border: 0.75pt solid #000;
+    padding: 4pt 6pt;
+    font-size: 9.5pt;
+    margin: 4pt 0;
+    break-inside: avoid;
+  }
+  /* A heading stays with the text that follows it. */
+  .print-root :is(h1, h2, h3, h4, h5, h6) {
+    break-after: avoid;
+    break-inside: avoid;
+  }
+  .print-root p {
+    orphans: 3;
+    widows: 3;
+  }
+  .print-root :is(pre, table, .katex-display, li) {
+    break-inside: avoid;
+  }
+  /* Long code lines wrap. */
+  .print-root .code-block {
+    border: 0.75pt solid #000;
+    margin: 6pt 0;
+  }
+  .print-root .code-block-toolbar {
+    font: 8pt system-ui, sans-serif;
+    padding: 2pt 6pt;
+    border-bottom: 0.75pt solid #000;
+  }
+  .print-root pre {
+    margin: 0;
+    padding: 6pt;
+    font: 9pt/1.4 ui-monospace, Consolas, monospace;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    overflow: visible;
+    max-height: none;
+  }
+  .print-root code {
+    font-family: ui-monospace, Consolas, monospace;
+    overflow-wrap: anywhere;
+  }
+  /* A wide table wraps inside the page width; it is never cut off. */
+  .print-root .answer-table {
+    overflow: visible;
+    max-width: none;
+  }
+  .print-root table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    font-size: 9.5pt;
+  }
+  .print-root :is(th, td) {
+    border: 0.75pt solid #000;
+    padding: 3pt 5pt;
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+  .print-root thead {
+    display: table-header-group;
+  }
+  .print-root .katex-display {
+    overflow: visible;
+  }
+  .print-root img {
+    max-width: 100%;
+  }
+  .print-root button {
+    display: none !important;
+  }
+  /* A citation is text here, not a control. */
+  .print-root button.citation {
+    display: inline !important;
+    all: unset;
+    font-size: 9pt;
+  }
+  .print-root button.citation::before {
+    content: "[";
+  }
+  .print-root button.citation::after {
+    content: "]";
+  }
+  .print-root .print-sources {
+    font-size: 9.5pt;
+    overflow-wrap: anywhere;
+  }
+  .print-root .print-sources h3 {
+    font: bold 9.5pt system-ui, sans-serif;
+    margin: 8pt 0 2pt;
+  }
+  .print-root footer {
+    border-top: 1pt solid #000;
+    margin-top: 18pt;
+    padding-top: 6pt;
+    font: 9pt system-ui, sans-serif;
+    break-inside: avoid;
+  }
+}
