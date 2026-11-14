@@ -174,6 +174,8 @@ test("representative themes, long history, source and responsive keyboard contro
     .fill("long conversation");
   await page.getByRole("button", { name: long.title, exact: true }).click();
   await expect(page.locator(".messages article")).toHaveCount(30);
+  // The floating button shows only away from the end (package B, 14 November).
+  await page.locator("main").evaluate((el) => el.scrollTo(0, 0));
   await page
     .getByRole("button", { name: "Jump to latest", exact: false })
     .click();

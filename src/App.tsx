@@ -1,7 +1,7 @@
 import { Icon } from "./Icon";
 import type { Project } from "./projects";
 import { containDialogFocus } from "./dialog-focus";
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   emptyConversation,
   tierFor,
@@ -77,6 +77,11 @@ import { VoiceInput } from "./VoiceInput";
 import { AttachedImageNote, ImageQuestion } from "./ImageQuestion";
 import type { AttachedImage } from "./image-upload";
 import { imageText } from "./text/images";
+import { fitHeight, isSendKey, limitState, MESSAGE_LIMIT, sendBlocked, touchDevice } from "./composer-keys";
+import { filesFrom, useFileDrop } from "./file-drop";
+import { useFollowScroll } from "./follow-scroll";
+import { AnswerAnnouncement, ConnectionBanner } from "./ConnectionBanner";
+import { composerText } from "./text/composer";
 import { Vault, VaultConflictError } from "./vault";
 import { VaultBackup } from "./VaultBackup";
 import { VaultSecurity } from "./VaultSecurity";
@@ -506,14 +511,34 @@ export function App() {
       store.close();
     };
   }, []);
+  // Composer, following the answer, dropped files (docs/chat-feature-gaps-20261114.md, A, B, F).
+  const ct = composerText[lang];
+  const follow = useFollowScroll(
+    outputEnd,
+    `${tab}:${conversation.id}:${conversation.messages.length}`,
+  );
+  useLayoutEffect(
+    () => fitHeight(document.getElementById("message-input") as HTMLTextAreaElement | null),
+    [input, tab],
+  );
+  const limit = limitState(input.length);
+  const [copiedId, setCopiedId] = useState<string>();
   useEffect(() => {
-    outputEnd.current?.scrollIntoView({
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "instant"
-        : "smooth",
-      block: "end",
-    });
-  }, [conversation.messages.length]);
+    if (!copiedId) return;
+    const timer = setTimeout(() => setCopiedId(undefined), 2000);
+    return () => clearTimeout(timer);
+  }, [copiedId]);
+  const focusComposer = () => {
+    // Not on touch devices: focusing the box there opens the on-screen keyboard.
+    if (!touchDevice()) document.getElementById("message-input")?.focus();
+  };
+  const dropping = useFileDrop(
+    (files) => {
+      if (busy) setNotice(ct.dropBusy);
+      else void importFiles(files);
+    },
+    () => tab === "Conversation" && !document.querySelector("dialog[open]"),
+  );
   useEffect(() => {
     if (editId) document.getElementById("edited-message")?.focus();
   }, [editId]);
@@ -539,10 +564,11 @@ export function App() {
     setNotice(t.newTemporary);
   };
   const fail = (message: string) => setNotice(message);
-  async function copyAnswer(text: string) {
+  async function copyAnswer(text: string, id: string) {
     const current = epoch.current;
     try {
       await navigator.clipboard.writeText(text);
+      if (current === epoch.current) setCopiedId(id);
       if (current === epoch.current)
         setNotice(t.copied);
     } catch {
@@ -1620,18 +1646,7 @@ export function App() {
               )}
             {tab === "Conversation" && conversation.messages.length > 0 && (
               <p className="conversation-meta">
-                {t.messageCount(conversation.messages.length)}{" "}
-                <button
-                  className="text-button"
-                  onClick={() =>
-                    outputEnd.current?.scrollIntoView({
-                      block: "end",
-                      behavior: "instant",
-                    })
-                  }
-                >
-                  {t.jumpLatest}
-                </button>
+                {t.messageCount(conversation.messages.length)}
               </p>
             )}
           </div>
@@ -1732,6 +1747,9 @@ export function App() {
             <strong>{t.operatorNoticeTitle}</strong> {status.operatorNotice}
           </div>
         )}
+        <ConnectionBanner />
+        <AnswerAnnouncement last={conversation.messages.at(-1)} />
+        {dropping && <div className="drop-target">{ct.dropHere}</div>}
         {notice && (
           <div role="status" className="notice">
             {notice}
@@ -1770,7 +1788,17 @@ export function App() {
           </section>
         )}
         {tab === "Conversation" && (
-          <section className="chat-view">
+          <section
+            className="chat-view"
+            onPaste={(event) => {
+              // Pasted files go the way of the file picker; pasted text stays text.
+              const files = filesFrom(event.clipboardData);
+              if (!files.length) return;
+              event.preventDefault();
+              if (busy) setNotice(ct.dropBusy);
+              else void importFiles(files);
+            }}
+          >
             {!conversation.messages.length && (
               <div className="welcome">
                 <div className="welcome-mark">✳</div>
@@ -1940,10 +1968,10 @@ export function App() {
                         disabled={
                           message.status !== "complete" || !message.text
                         }
-                        onClick={() => void copyAnswer(message.text)}
+                        onClick={() => void copyAnswer(message.text, message.id)}
                       >
                         <Icon name="copy" />
-                        {t.copyAnswer}
+                        {copiedId === message.id ? ct.copied : t.copyAnswer}
                       </button>
                     )}
                     {message.role === "assistant" && (
@@ -2010,6 +2038,20 @@ export function App() {
               </div>
             )}
             <div className="composer-dock">
+              {follow.away && conversation.messages.length > 0 && (
+                <button
+                  type="button"
+                  className="jump-latest"
+                  aria-label={ct.jumpLatest}
+                  title={ct.jumpLatest}
+                  onClick={() => {
+                    follow.toEnd(true);
+                    focusComposer();
+                  }}
+                >
+                  ↓
+                </button>
+              )}
               {suggestion && shown && !autoSearch && !(autoRules && !choosing) && !busy && (
                 <div
                   className="notice composer-note search-suggestion"
@@ -2146,6 +2188,7 @@ export function App() {
                     void searchThenAnswer(suggestion.value, "auto");
                   else if (askFirst) setChoiceFor(input);
                   else void send();
+                  focusComposer();
                 }}
               >
                 <label className="sr-only" htmlFor="message-input">
@@ -2156,14 +2199,33 @@ export function App() {
                   placeholder={t.placeholder}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  maxLength={20000}
+                  maxLength={MESSAGE_LIMIT}
                   rows={1}
-                  onInput={(event) => {
-                    const field = event.currentTarget;
-                    field.style.height = "auto";
-                    field.style.height = `${Math.min(field.scrollHeight, 160)}px`;
+                  aria-describedby="composer-limit"
+                  onKeyDown={(event) => {
+                    if (!isSendKey(event.nativeEvent, touchDevice())) return;
+                    // With a keyboard, plain Enter never makes a line. It sends through the form,
+                    // as the Send button does, and only when that button could.
+                    event.preventDefault();
+                    if (
+                      !sendBlocked({
+                        busy: !!busy,
+                        text: input,
+                        ready: !!status?.inference.ready,
+                        waiting: choosing || !!consentPending,
+                      })
+                    )
+                      event.currentTarget.form?.requestSubmit();
                   }}
                 />
+                <p id="composer-limit" className="composer-limit" role="status">
+                  {limit.cut ? ct.limitCut(MESSAGE_LIMIT.toLocaleString(lang)) : ""}
+                </p>
+                {limit.counter && !limit.cut && (
+                  <p className="composer-limit">
+                    {ct.remaining(limit.remaining.toLocaleString(lang))}
+                  </p>
+                )}
                 <div className="composer-footer">
                   <input
                     ref={chatFileInput}
@@ -2329,16 +2391,21 @@ export function App() {
                     <button
                       type="button"
                       className="primary"
-                      onClick={() => controller.current?.abort()}
+                      onClick={() => {
+                        controller.current?.abort();
+                        focusComposer();
+                      }}
                     >
                       {t.stopResponse}
                     </button>
                   ) : (
                     <button
                       className="primary"
-                      disabled={
-                        !!busy || !input.trim() || !status?.inference.ready
-                      }
+                      disabled={sendBlocked({
+                        busy: !!busy,
+                        text: input,
+                        ready: !!status?.inference.ready,
+                      })}
                       type="submit"
                       aria-label={t.sendLabel}
                     >
@@ -2401,6 +2468,7 @@ export function App() {
                 )}
               <p className="composer-caption">
                 {unlocked ? t.captionVault : t.captionTemporary} {t.captionAi}
+                <span className="composer-hint"> · {ct.enterHint}</span>
               </p>
             </div>
             <dialog

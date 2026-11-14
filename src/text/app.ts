@@ -184,7 +184,6 @@ export const appText = defineText({
     // Header and banners
     openNavigation: "Open navigation",
     messageCount: (n: number) => `${n} messages ·`,
-    jumpLatest: "Jump to latest ↓",
     comingLater: "Coming later",
     conversationActions: "Conversation actions",
     renameSave: "Rename, save & manage history",
@@ -592,7 +591,6 @@ export const appText = defineText({
 
     openNavigation: "Navigation öffnen",
     messageCount: (n: number) => `${n} Nachrichten ·`,
-    jumpLatest: "Zur neuesten Nachricht ↓",
     comingLater: "Folgt später",
     conversationActions: "Aktionen für die Unterhaltung",
     renameSave: "Umbenennen, speichern & Verlauf verwalten",
