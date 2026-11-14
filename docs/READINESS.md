@@ -1,4 +1,13 @@
 # PrivateAI readiness checklist
+## 14 November 2026, 04:45: read aloud and PDF export built, both off by default (agent)
+
+Before: no speech synthesis call and no export in `src/`.
+
+Built, on the device only, no server change: "Read aloud" on each answer (`src/read-aloud.ts`, `src/ReadAloudButton.tsx`) and "Export as PDF" for one answer or the open conversation through the browser's print dialog (`src/pdf-export.tsx`, `src/PdfExportButton.tsx`, `src/print.css`). Switches: build variables `VITE_READ_ALOUD=1` and `VITE_PDF_EXPORT=1`, absent by default. Design, the local-voice rule and its limits: `docs/read-aloud-and-pdf-export-20261114.md`.
+
+Verified by `tests/read-aloud.test.ts` (12 tests, Node, fake voices and a fake engine): a voice is used only when the browser reports it as local, its name carries no mark of a network voice and the browser is not on Android; with only an online German voice nothing is spoken; reading stops cleanly and one answer is read at a time. Verified by `tests/pdf-export.test.ts` (5 tests, Node): the export markup in English and German, and that masked text stays masked. Verified by `tests/device-features-ui.test.ts` (4 tests, headless Chromium): the spoken text of a rendered German and English answer leaves out code, addresses, source ids and markdown signs; in print media the app chrome is hidden, nothing is wider than the page, text is black on white, and a 24-message conversation gives a PDF of 12 to 40 pages. `npx tsc --noEmit` passes.
+
+Not verified: any real voice or sound; what real browsers report as a local voice; real Safari, Firefox, Edge, iPhone, iPad, Android; a real print dialog; real screen readers; the buttons in the full app with the switches on; that Render passes the build variables to the Docker build; the full suite, the durable suite and the end-to-end specs (not run). The gates stay closed.
 ## 14 November 2026: OCR language data kept in the browser; "Germany" in the suggested search text for rules questions (agent)
 
 Two owner decisions of 14 November 2026.
