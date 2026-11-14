@@ -100,6 +100,7 @@ describe("detector", () => {
     "Was kostet die Vignette in Österreich",
     "Kann ich die Schuhe ohne Kassenzettel umtauschen?",
     "How long can I stay in Austria without registering?",
+    "Wie viel Steuern muss ich bei 3.000 € brutto ungefähr rechnen?",
   ])("recognises the shape of %s", (text) => expect(germanRulesQuestion(text)).toBe(true));
 
   it.each([
@@ -114,6 +115,8 @@ describe("detector", () => {
     "Meine Variable max_miete ist undefined. Woran liegt das?",
     "Bis wann muss ich bei uns im Verein den Mitgliedsbeitrag überweisen?",
     "Can I pay by card in Germany?",
+    // Steering, not tax.
+    "Wie kann ich die Heizung per App steuern?",
   ])("leaves the near-miss %s alone", (text) => expect(germanRulesQuestion(text)).toBe(false));
 });
 

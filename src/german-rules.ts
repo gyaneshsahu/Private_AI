@@ -66,8 +66,9 @@ const ENTITLED = words(
 // (Grundsicherung, Familienbeihilfe, Spitzensteuersatz, Aufenthaltsbewilligung, a misspelt
 // "Mindeslohn"). Everyday compounds on the same heads are kept out (Trinkgeld, insgesamt).
 const OFFICIAL = words(
-  // Taxes, benefits, contributions, fees and pay set by law. Not steering: Steuerung, gesteuert.
-  String.raw`\p{L}*steuer(?!ung|bar|t(?!\p{L})|e(?!\p{L}))\p{L}*|\p{L}{3,}(?<!trink|taschen|klein|bar|wechsel|spiel|preis|löse)geld(er|es)?`,
+  // Taxes, benefits, contributions, fees and pay set by law. Not steering (Steuerung, gesteuert,
+  // "per App steuern"): plain "steuern" is the tax only after a quantity word.
+  String.raw`\p{L}*steuer(?!ung|bar|[nte](?!\p{L}))\p{L}*|(wie ?viele?|welche|keine|ohne|mehr|weniger|höhere) steuern|\p{L}{3,}(?<!trink|taschen|klein|bar|wechsel|spiel|preis|löse)geld(er|es)?`,
   String.raw`\p{L}*(beitrag|beiträge|gebühr(en)?|pauschale|zuschlag|zulage|zuschuss|beihilfe|sozialhilfe|lohn|maut|vignette)`,
   String.raw`\p{L}{3,}(sicherung|grenze)`,
   // Offices, applications, permits and decisions.

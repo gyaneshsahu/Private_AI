@@ -2,6 +2,103 @@
 
 The owner requires a German and English interface and that the model answers in the user's language. This note covers the parts on the device: Auto's mode choice (`src/answer-modes.ts`), the German-rules detector (`src/german-rules.ts`), the when-to-search detector (`src/when-to-search.ts`) and the model's instructions (`src/conversation.ts`). Everything here was measured offline. No model was called.
 
+## 14 November 2026: the rules detector, second pass
+
+This section replaces the hold-out numbers and the first limit below for the rules detector. Nothing else in this note changed. Measured offline. No model was called. The answer-side warning, the always-search setting and the official-source preference are untouched.
+
+### Diagnosis: why 7 of the 12 fresh prompts were missed
+
+The detector knew topics by name and one question shape (permission or duty about a person or an office). Each miss had a clear rules shape but no word from the lists.
+
+| Prompt | What it asks | What was absent |
+| --- | --- | --- |
+| HD-01 delayed flight, "Bekomme ich da Geld zurück?" | a claim | no cue for "bekomme ich" or for money back |
+| HD-02 notice to the gym, "Wie lange vorher muss ich ..." | own duty and a deadline | the gym is not a listed party |
+| HD-03 "Anspruch auf Weihnachtsgeld" | an entitlement | "Anspruch" counted only next to a listed party. Weihnachtsgeld was not a listed benefit |
+| HD-05 student job, "Wie viel Geld darf ich ... verdienen, ohne Steuern zu zahlen" | a limit | "darf ich" needed a party. "ohne Steuern zu zahlen" is not the listed order "Steuern zahlen" |
+| HD-07 broken phone, "Muss der Laden es reparieren?" | someone else's duty | "muss der" was not a duty form. "Laden" is not a listed party |
+| HD-09 "Darf ich auf meinem Balkon grillen?" | a permission | permission about a place, not a person |
+| HD-10 child cycling on the road, "Ab wann darf mein Kind ..." | a permission by age | permission about a thing and a place |
+
+The pattern: the question frame was there every time (darf, muss, Anspruch, bekomme ich, wie viel, ab wann). What was missing was the second half. The lists named persons and offices, but people ask about places, things, contracts and payments. More topic words would not fix this. The next fresh set would use other words again.
+
+### What changed (`src/german-rules.ts`)
+
+The old cues stay. Added on top:
+
+- **Missing umlauts.** The text and every cue are compared in one folded spelling (ä as ae, ß as ss). "kuendigung" and "Kündigung" are the same word now.
+- **Frames with domains.** A question counts when a frame meets a domain:
+  - permission, punishment, or someone else's duty ("darf", "verboten", "Muss der Laden ...", "Müssen Überstunden ...") with an everyday-law word: home, school and age limits, road and travel, work, buying and contracts;
+  - the user's own duty ("muss ich") only with a counterparty (contract, seller, invoice, records) or an official word. "Muss ich" is as often practical as legal, see the false alarms below;
+  - an amount, date, need or payment ("wie viel", "wie hoch", "bis wann", "ab wann", "brauche ich", "bekomme ich", "kann ich") only with an official word.
+- **Official words by their last part.** German official words are compounds on a few heads: -geld, -steuer, -beitrag, -gebühr, -pauschale, -zuschlag, -beihilfe, -sicherung, -grenze, -amt, -bescheid, -antrag, -genehmigung, -bewilligung, -verbot, -strafe, -lohn. Any compound on such a head counts, named or not (Grundsicherung, Familienbeihilfe, Aufenthaltsbewilligung, Autobahnvignette). A typo in the first part still matches ("Mindeslohn"). Everyday compounds are kept out (Trinkgeld, Taschengeld, insgesamt).
+- **Entitlement and legality wording counts alone:** "Anspruch auf", "steht mir ... zu", "gesetzlich", "rechtlich", "rechtens", "strafbar", "verjährt".
+- **Kept out:** a sum on the user's own figures (two or more money or percent amounts), a question about software (Python, Excel, SQL ...), code identifiers (`checkFrist`, `max_miete`), an organisation's own rule ("bei uns in der Firma", "Intranet"), and "Darf ich dich ... fragen".
+- **English:** "in Austria" and "in Switzerland" count like "in Germany". A few more rule words count next to the country (visa, permit, tax, insurance, eligible, "can my", "how long can I", "do I need to"). English without a country and without a listed topic is unchanged.
+
+No network, no model call, no new dependency. About twenty small pattern tests per message.
+
+### How it was measured
+
+- A development set of 60 new prompts (30 rules, 30 not, with hard near-misses) was written and committed before the detector was touched (`evaluation/german-rules-dev-20261114/prompts.json`, commit `86ab6b7`).
+- A second round of 36 prompts on other topics was written after the first change and committed before it was run (`round2.json`, commit `1f5c5e0`).
+- `tests/german-rules-sets.test.ts` runs every set and holds the bars.
+
+| Set | Before | After |
+| --- | --- | --- |
+| Development set: recall (30) | 8 of 30 (27 %) | 30 of 30 (100 %) |
+| Development set: false alarms (30) | 3 of 30 (10 %) | 0 of 30 |
+| Round 2, first run: recall (22) | 6 of 22 (27 %) | 15 of 22 (68 %) |
+| Round 2, first run: false alarms (14) | 1 of 14 | 4 of 14 (29 %) |
+| Round 2, after the fixes it led to | | 19 of 22 (86 %), 0 of 14 |
+| Frozen set of 13 November: German recall (14) | 14 of 14 | 14 of 14 |
+| Frozen set: English recall (4) | 4 of 4 | 4 of 4 |
+| Frozen set: false alarms (42) | 0 of 42 | 0 of 42 |
+| First hold-out of 13 November: recall (12) | 5 of 12 (42 %) | 12 of 12 |
+| First hold-out: false alarms (8) | 0 of 8 | 0 of 8 |
+| 40-question set, all rules questions | 23 of 40 | 32 of 40 (80 %) |
+| All 347 stored prompts: decisions changed | | 9, all in the 40-question set, all now recognised |
+
+**How to read this.**
+- The development set and the first hold-out are optimistic. I wrote the first and I read the seven misses of the second before the change.
+- **The honest numbers are the first run of round 2 and the 40-question set.** Round 2 said 68 % recall and 4 false alarms of 14 hard near-misses. The 40-question set says 80 %. Its texts were not read for this work, only its ids.
+- The four round-2 false alarms were three kinds: a practical "muss ich" about a car and a garden, a question to the assistant ("Darf ich ... dich fragen"), and a coding question. Each led to one general fix (own duty needs a counterparty, questions to the assistant, software). After that round 2 is no longer a clean check.
+- Expect about 75 to 85 % recall on a truly fresh set, and a few false alarms on hard near-misses. The lead's hold-out at `evaluation/german-rules-fresh-20261114/` is the clean number. It was not seen here.
+
+Existing tests: `tests/german-rules.test.ts` passes with 19 new cases. The 16 other test files that use the detector, Auto, when-to-search, the prompt rule or the search ranking pass unchanged, and so do the three browser tests for these screens. `npx tsc --noEmit` is clean. The whole suite was not run.
+
+### What still slips through
+
+Missed rules questions:
+- **Typos in the head of the word** ("kfz steur", "Kindergeldt"). A typo in the first part of a compound is fine.
+- **Permission or amount about a thing no family names:** bringing cigarettes across the border, a doctor's note ("Attest"), deposits on bottles, how long a prescription is valid.
+- **A practical-looking own duty:** "Muss ich im Auto eine Warnweste haben?" has "muss ich" and a place only, which is left alone on purpose.
+- **"Wie viele Tage Urlaub habe ich?"** An amount with a work word but no official word. "Wie viel Urlaub steht mir zu" is caught.
+- **English with no country and no listed topic:** "Can my boss read my emails?"
+- **Passive and "kann" forms without an official word:** "Kann mir der Strom abgestellt werden?"
+- **Eight of the 40-question set** (Q16, Q17, Q19, Q22, Q35 to Q38). Not read, so not diagnosed.
+
+False alarms that remain possible:
+- **Permission about a listed place that is not legal:** "Darf ich nach der Operation Auto fahren?", "Darf mein Kind mit Fieber in die Schule?"
+- **Market prices with an official-looking head:** "Was kostet eine Haftpflichtversicherung?", "Wie hoch ist der Beitrag im Fitnessstudio?" A search still helps there, but it is not an official rule.
+- **A company rule without a marker,** such as "Bis wann muss ich den Urlaubsantrag abgeben?"
+- **A coding question in prose with no language named:** "Wie baue ich eine Funktion für die Kündigungsfrist?" This fired before the change too.
+- **A sum with one figure, or a sum on a topic word,** such as rent with a single amount.
+
+The answer-side check stays the safety net for what the question detector misses.
+
+### Effect on other routing
+
+- **Auto:** a newly recognised question goes to Thinking with reason "rules" (Fast with web results). Urgent, code, maths and rewrite are decided first, so none of those changed. On the 347 stored prompts no mode changed outside the 40-question set.
+- **When to search:** a newly recognised question gets the rules heading and the search-first choice. `needsCurrentInformation` itself is unchanged.
+- **Before sending and Auto can differ:** a sum with a topic word and one figure goes to maths in Auto but still shows the search-first choice. This was so before.
+- **Server:** `server/research.ts` uses the same detector for the official-source ranking, so more searches are ranked official first. `src/german-rules.ts` still imports nothing at run time.
+
+### How to rerun
+
+- `npx vitest run tests/german-rules-sets.test.ts --disable-console-intercept` prints recall, false alarms and every miss per set.
+- `npx vitest run tests/german-rules.test.ts`
+
 ## Result
 
 ### Frozen check: 60 new prompts (`evaluation/german-routing-20261113/`)
