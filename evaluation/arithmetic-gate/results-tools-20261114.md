@@ -107,3 +107,16 @@ npx tsx -e "import { readFileSync } from 'node:fs'; import { scoreConversation }
 - The Thinking model on the 14 non-critical cases.
 
 Spend: 202,842 Privatemode tokens as reported by the API (pilot 6,067; repetition 1: Fast 59,508, Thinking 39,000; repetition 2: Fast 59,168, Thinking 39,100). No searches.
+
+## Rounding set v1, run 14 November (Fast model, one repetition each)
+
+| Run | Scored exact | Real errors after reading each answer | Scoring artefacts |
+| --- | --- | --- | --- |
+| Before (instruction without the rounding sentence) | 22 of 24 | 2 | 0 |
+| After (with the sentence) | 20 of 24 | 1 | 3 |
+
+- **Real errors before:** round1-14 and round1-22, both the same mistake: the model stated a total like CHF 35.58 and wrote "already a multiple of 5 centimes, so no adjustment", which is false; it did not round in the code.
+- **Real error after:** round1-10, the correction turn: the total CHF 13'280.07 is wrong arithmetic (the discount change was not carried through), then rounded.
+- **Artefacts after:** round1-05, round1-12 and round1-24 give the right figures, but their explanations name the wrong alternative ("9 buckets would not be enough", "17 tables seat 136"), and the frozen scorer counts any forbidden value in the text. The scorer stays frozen; read results by hand.
+- **Conclusion:** with 24 conversations, 2 real errors against 1 is noise. The sentence costs 131 characters per request and did no harm, so it stays; it is not shown to help. Calculation in code is reliable; reading a rounding rule in words remains the weak point, in both runs. Showing the code to the user (built) is what makes such an error visible.
+- Spend: 114,581 Privatemode tokens (before 57,364, after 57,217).
