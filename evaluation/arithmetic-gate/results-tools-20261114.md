@@ -42,6 +42,22 @@ The five answers scored wrong, read one by one:
 
 So the remaining risk is narrow and known: rounding rules stated in words. A line in the product prompt about "round to 0.05 only what the question says" is the obvious fix, but it would be tuning on this set, so it has to be tried on new cases. The scorer was not changed (it is frozen).
 
+## Through the real app, 14 November (code execution merged, switch on locally)
+
+The same set, this time through the app itself: browser, relay, streamed replies, the model's tool calls assembled from the stream, the code run in the Pyodide sandbox in the browser, the app's own long system message beside the tool instruction. Runner: `run-ours.ts --privatemode --code --cases evaluation/arithmetic-gate/unseen-v3-20261023.json`, scored with `score-app-code.ts` (frozen scorer).
+
+| Mode | Conversations | Exact | Wrong | No answer | Turns marked "Calculated with code" |
+| --- | --- | --- | --- | --- | --- |
+| Fast (`glm-5.3-flash`, low) | 30 | **30** | 0 | 0 | 60 of 60 |
+| Thinking (`glm-5.3`, high), critical only | 16 | **16** | 0 | 0 | 32 of 32 |
+
+- **Streamed tool calls work on both models.** This was the main unverified point. 188 relay requests for 92 turns: every turn made one follow-up request, a few made two.
+- The model called the tool on every calculation although the app's system message is much longer than the harness's.
+- One repetition. The Swiss 5-centime cases that failed in the Node harness passed here; with one repetition that is not evidence that the app's prompt fixes them.
+- **Cost is higher than in the harness:** about 7,700 tokens per two-turn conversation (the harness: about 2,000), because every request carries the app's system message and each calculation is two requests. About 370,000 tokens for this run and its pilot.
+- The relay counted 8 of 184 replies as interrupted (the runner closes the page right after the answer).
+- Not checked: the follow-up credit and allowance counting with a signed-in account (the runner has no account; covered by unit tests only), a phone, Safari, Firefox, the hosted path.
+
 ## How it was run
 
 - `evaluation/arithmetic-gate/harness-tools.ts`: Privatemode SDK (attested, encrypted), one tool `python`, the harness runs the code in local Python with a deny-list (test harness only) and returns what it printed, at most 5 rounds per turn, the final text is scored by the frozen `scorer.ts`.
