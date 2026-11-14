@@ -12,12 +12,25 @@ export const documentText = defineText({
     invalidResult: "Document processing returned an invalid result. Try another file.",
     noText:
       "No readable text found. Handwriting is not supported. For a scanned page, try the Photo to text tool or a clear screenshot.",
-    tooMuchText: "Extracted text exceeds 60,000 characters. Choose a smaller document.",
+    tooBig: (megabytes: string, advice: string) =>
+      `This file is ${megabytes} MB; the limit is 10 MB. ${advice}`,
+    tooMuchText: (characters: string, limit: string, percent: number, advice: string) =>
+      `This file has ${characters} characters of text; the limit is ${limit} (about ${percent}% too much). ${advice}`,
+    tooMuchTextUncounted: (characters: string, limit: string, advice: string) =>
+      `This file has more than ${characters} characters of text; the limit is ${limit}. ${advice}`,
+    adviceSheet:
+      "Upload fewer sheets, rows or columns, or export only the sheet that matters as CSV.",
+    advicePdf: "Upload only the page range that matters, or split the PDF into parts.",
+    adviceText:
+      "Upload only the chapter or section that matters, or split the file into parts.",
+    largeDocument: (passages: number) =>
+      `Large document, kept on this device in ${passages} passages. For each question, the passages that best match the words of the question are chosen on this device, and only those are sent. Each answer says which ones.`,
     failed: "Extraction failed.",
     notUtf8: "This file is not UTF-8 text. Export it as UTF-8 and try again.",
     notPlain: "This file is not plain text.",
     readingWord: "Reading Word body text locally…",
-    pdfPages: "PDF exceeds the 20-page limit.",
+    pdfPages: (pages: number, limit: number, advice: string) =>
+      `This PDF has ${pages} pages; the limit is ${limit}. ${advice}`,
     readingPage: (page: number, pages: number) => `Reading page ${page} of ${pages} locally…`,
     pdfWarning:
       "Review extracted numbers and table relationships. PDF reading order may differ from the visual layout.",
@@ -76,14 +89,27 @@ export const documentText = defineText({
       "Die Verarbeitung des Dokuments lieferte ein ungültiges Ergebnis. Versuchen Sie eine andere Datei.",
     noText:
       "Kein lesbarer Text gefunden. Handschrift wird nicht unterstützt. Versuchen Sie bei einer gescannten Seite das Werkzeug Foto zu Text oder einen deutlichen Screenshot.",
-    tooMuchText:
-      "Der ausgelesene Text ist länger als 60.000 Zeichen. Wählen Sie ein kleineres Dokument.",
+    tooBig: (megabytes: string, advice: string) =>
+      `Diese Datei hat ${megabytes} MB; die Grenze liegt bei 10 MB. ${advice}`,
+    tooMuchText: (characters: string, limit: string, percent: number, advice: string) =>
+      `Diese Datei enthält ${characters} Zeichen Text; die Grenze liegt bei ${limit} (etwa ${percent} % zu viel). ${advice}`,
+    tooMuchTextUncounted: (characters: string, limit: string, advice: string) =>
+      `Diese Datei enthält mehr als ${characters} Zeichen Text; die Grenze liegt bei ${limit}. ${advice}`,
+    adviceSheet:
+      "Laden Sie weniger Blätter, Zeilen oder Spalten hoch, oder exportieren Sie nur das benötigte Blatt als CSV.",
+    advicePdf:
+      "Laden Sie nur den benötigten Seitenbereich hoch, oder teilen Sie das PDF in mehrere Teile.",
+    adviceText:
+      "Laden Sie nur das benötigte Kapitel oder den benötigten Abschnitt hoch, oder teilen Sie die Datei in mehrere Teile.",
+    largeDocument: (passages: number) =>
+      `Großes Dokument, auf diesem Gerät in ${passages} Abschnitten gehalten. Für jede Frage werden auf diesem Gerät die Abschnitte gewählt, die am besten zu den Wörtern der Frage passen, und nur diese werden gesendet. Jede Antwort nennt sie.`,
     failed: "Auslesen fehlgeschlagen.",
     notUtf8:
       "Diese Datei ist kein UTF-8-Text. Exportieren Sie sie als UTF-8 und versuchen Sie es erneut.",
     notPlain: "Diese Datei ist kein reiner Text.",
     readingWord: "Der Haupttext des Word-Dokuments wird auf diesem Gerät gelesen…",
-    pdfPages: "Das PDF überschreitet die Grenze von 20 Seiten.",
+    pdfPages: (pages: number, limit: number, advice: string) =>
+      `Dieses PDF hat ${pages} Seiten; die Grenze liegt bei ${limit}. ${advice}`,
     readingPage: (page: number, pages: number) =>
       `Seite ${page} von ${pages} wird auf diesem Gerät gelesen…`,
     pdfWarning:
@@ -137,6 +163,33 @@ export const documentText = defineText({
     docxContentType: "Nicht unterstützter Inhaltstyp der DOCX-Datei.",
   },
 });
+
+/** What the worker reports when a file is over a limit; documents.ts turns it into a sentence. */
+export type OverLimitDetail =
+  | { megabytes: number }
+  | { pages: number; limit: number }
+  // `more`: counting stopped early, so the file has more than `characters`.
+  | { characters: number; limit: number; more?: boolean };
+/** How far over the limit a file is, and how to upload less of this kind of file. */
+export function overLimitText(over: OverLimitDetail, name: string, lang: Lang = uiLang()): string {
+  const t = documentText[lang];
+  const n = (value: number) => value.toLocaleString(lang);
+  const advice = /\.(xlsx|csv|tsv)$/i.test(name)
+    ? t.adviceSheet
+    : /\.pdf$/i.test(name)
+      ? t.advicePdf
+      : t.adviceText;
+  if ("megabytes" in over) return t.tooBig(n(over.megabytes), advice);
+  if ("pages" in over) return t.pdfPages(over.pages, over.limit, t.advicePdf);
+  return over.more
+    ? t.tooMuchTextUncounted(n(over.characters), n(over.limit), advice)
+    : t.tooMuchText(
+        n(over.characters),
+        n(over.limit),
+        Math.max(1, Math.round((over.characters / over.limit - 1) * 100)),
+        advice,
+      );
+}
 
 const en = documentText.en;
 /** A worker message in the interface language; text it does not know is shown as sent. */

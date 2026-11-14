@@ -1,24 +1,44 @@
 import { textFor } from "./text/core";
-import { documentMessage, documentText } from "./text/documents";
+import { documentMessage, documentText, overLimitText } from "./text/documents";
 import type { Attachment, Source } from "../shared/contracts";
 import { z } from "zod";
-import { MAX_DOCUMENT_CHARACTERS } from "./document-formats";
+import {
+  characterLimit,
+  MAX_LARGE_DOCUMENT_CHARACTERS,
+  MAX_PDF_PAGES,
+} from "./document-formats";
 
 const workerResult = z.union([
   z.object({ progress: z.string().min(1).max(200) }).strict(),
   z.object({ error: z.string().min(1).max(500) }).strict(),
   z
     .object({
+      over: z.union([
+        z
+          .object({ pages: z.number().int().positive(), limit: z.number().int().positive() })
+          .strict(),
+        z
+          .object({
+            characters: z.number().int().positive(),
+            limit: z.number().int().positive(),
+            more: z.boolean().optional(),
+          })
+          .strict(),
+      ]),
+    })
+    .strict(),
+  z
+    .object({
       pages: z
         .array(
           z
             .object({
-              text: z.string().max(MAX_DOCUMENT_CHARACTERS),
+              text: z.string().max(MAX_LARGE_DOCUMENT_CHARACTERS),
               page: z.number().int().positive().optional(),
             })
             .strict(),
         )
-        .max(20),
+        .max(MAX_PDF_PAGES),
       warning: z.string().max(500).optional(),
     })
     .strict(),
@@ -29,8 +49,15 @@ export async function extract(
   progress: (value: string) => void,
 ): Promise<Attachment> {
   if (signal.aborted) throw new Error(textFor(documentText).cancelled);
-  if (file.size > 10 * 1024 * 1024 || file.size === 0)
-    throw new Error(textFor(documentText).size);
+  if (file.size === 0) throw new Error(textFor(documentText).size);
+  if (file.size > 10 * 1024 * 1024)
+    throw new Error(
+      overLimitText(
+        // Rounded up, so a file just over the limit never reads "10 MB; the limit is 10 MB".
+        { megabytes: Math.ceil(file.size / 104857.6) / 10 },
+        file.name,
+      ),
+    );
   const worker = new Worker(
     new URL("./extraction.worker.ts", import.meta.url),
     { type: "module" },
@@ -88,6 +115,10 @@ export async function extract(
         reject(new Error(documentMessage(data.error)));
         return;
       }
+      if ("over" in data) {
+        reject(new Error(overLimitText(data.over, file.name)));
+        return;
+      }
       const sources: Source[] = data.pages.map((page) => ({
         ...page,
         id: crypto.randomUUID().slice(0, 8),
@@ -101,12 +132,10 @@ export async function extract(
         );
         return;
       }
-      if (sources.reduce((n, s) => n + s.text.length, 0) > 60000) {
-        reject(
-          new Error(
-            textFor(documentText).tooMuchText,
-          ),
-        );
+      const characters = sources.reduce((n, s) => n + s.text.length, 0);
+      const limit = characterLimit(file.name);
+      if (characters > limit) {
+        reject(new Error(overLimitText({ characters, limit }, file.name)));
         return;
       }
       resolve({

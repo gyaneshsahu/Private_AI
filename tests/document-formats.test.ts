@@ -36,8 +36,12 @@ it("rejects malformed UTF-8, binary controls and oversized aggregate text withou
   expect(
     decodeTextDocument(new TextEncoder().encode("a".repeat(60000))),
   ).toHaveLength(60000);
-  expect(() => checkTextSize("x", 60000)).toThrow("exceeds");
+  expect(() => checkTextSize("x", 60000)).toThrow(
+    "more than 60,001 characters of text; the limit is 60,000",
+  );
   expect(() =>
-    decodeTextDocument(new TextEncoder().encode("a".repeat(60001))),
-  ).toThrow("exceeds");
+    decodeTextDocument(new TextEncoder().encode("a".repeat(84000))),
+  ).toThrow(
+    "This file has 84,000 characters of text; the limit is 60,000 (about 40% too much).",
+  );
 });

@@ -142,7 +142,7 @@ test("rejects oversized and disguised binary files and accepts a later valid fil
   ]);
   const results = page.getByRole("region", { name: "File import results" });
   await expect(results).toContainText("valid.json — added");
-  await expect(results).toContainText("exceeds 60,000");
+  await expect(results).toContainText("the limit is 60,000");
   await expect(results).toContainText("not plain text");
   await expect(results).toContainText(
     "unsupported.docx — failed",

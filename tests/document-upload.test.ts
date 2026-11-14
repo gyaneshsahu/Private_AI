@@ -5,10 +5,10 @@
  */
 import { afterAll, beforeAll, expect, it, vi } from "vitest";
 import { TextReader, Uint8ArrayWriter, ZipWriter } from "@zip.js/zip.js";
-import { DOCUMENT_ACCEPT } from "../src/document-formats";
+import { COUNT_STOP, DOCUMENT_ACCEPT } from "../src/document-formats";
 import { extract } from "../src/documents";
 import { createMaskingSession } from "../src/identifier-masking";
-import { documentMessage, documentText } from "../src/text/documents";
+import { documentMessage, documentText, overLimitText } from "../src/text/documents";
 import { extractXlsx } from "../src/xlsx";
 import { docxFixture } from "./fixtures/docx";
 
@@ -94,12 +94,12 @@ it("refuses XLSX parts beyond the size limits, too much text and unsafe packages
     `<row><c t="inlineStr"><is><t>${"a".repeat(30000)}</t></is></c></row>`.repeat(3),
   );
   await expect(extractXlsx(await xlsxFixture({ A: long }))).rejects.toThrow(
-    "exceeds 60,000",
+    "This file has 90,012 characters of text; the limit is 60,000 (about 50% too much).",
   );
   // A lone far-right cell per row is padded with tabs; the padding counts towards the limit.
   const wide = sheetXml('<row><c r="XFD1"><v>1</v></c></row>'.repeat(5));
   await expect(extractXlsx(await xlsxFixture({ A: wide }))).rejects.toThrow(
-    "exceeds 60,000",
+    "the limit is 60,000 (about 37% too much)",
   );
   for (const bytes of [
     new Uint8Array([1, 2, 3]),
@@ -169,16 +169,54 @@ it("masks identifiers in spreadsheet text exactly as in any other attachment tex
   expect(masked).not.toContain("DE89 3704");
 });
 
+it("says how far over a limit a file is and how to upload less of that kind of file", async () => {
+  const cell = (text: string) => `<row><c t="inlineStr"><is><t>${text}</t></is></c></row>`;
+  await expect(
+    read([await xlsxFixture({ A: sheetXml(cell("a".repeat(20990)).repeat(4)) })], "plan.xlsx"),
+  ).rejects.toThrow(
+    "This file has 83,973 characters of text; the limit is 60,000 (about 40% too much). Upload fewer sheets, rows or columns, or export only the sheet that matters as CSV.",
+  );
+  await expect(
+    read([await docxFixture(`<w:p><w:r><w:t>${"a".repeat(66000)}</w:t></w:r></w:p>`)], "book.docx"),
+  ).rejects.toThrow(
+    "This file has 66,001 characters of text; the limit is 60,000 (about 10% too much). Upload only the chapter or section that matters, or split the file into parts.",
+  );
+  await expect(read([new Uint8Array(13 * 1024 * 1024)], "scan.pdf")).rejects.toThrow(
+    "This file is 13 MB; the limit is 10 MB. Upload only the page range that matters, or split the PDF into parts.",
+  );
+  // A workbook built to expand: one 40,000-character shared string in 100 cells. The reader
+  // counts without keeping the text and gives up at COUNT_STOP instead of counting to the end.
+  const bomb = await xlsxFixture(
+    { A: sheetXml('<row><c t="s"><v>0</v></c></row>'.repeat(100)) },
+    [`<t>${"a".repeat(40000)}</t>`],
+  );
+  await expect(read([bomb], "bomb.xlsx")).rejects.toThrow(
+    `This file has more than ${COUNT_STOP.toLocaleString("en")} characters of text; the limit is 60,000. Upload fewer sheets`,
+  );
+  expect(overLimitText({ characters: 84000, limit: 60000 }, "plan.xlsx", "de")).toBe(
+    "Diese Datei enthält 84.000 Zeichen Text; die Grenze liegt bei 60.000 (etwa 40 % zu viel). Laden Sie weniger Blätter, Zeilen oder Spalten hoch, oder exportieren Sie nur das benötigte Blatt als CSV.",
+  );
+  expect(overLimitText({ pages: 34, limit: 20 }, "report.pdf", "de")).toBe(
+    "Dieses PDF hat 34 Seiten; die Grenze liegt bei 20. Laden Sie nur den benötigten Seitenbereich hoch, oder teilen Sie das PDF in mehrere Teile.",
+  );
+  expect(overLimitText({ pages: 34, limit: 20 }, "report.pdf", "en")).toBe(
+    "This PDF has 34 pages; the limit is 20. Upload only the page range that matters, or split the PDF into parts.",
+  );
+  expect(overLimitText({ megabytes: 12.4 }, "notes.txt", "de")).toBe(
+    "Diese Datei hat 12,4 MB; die Grenze liegt bei 10 MB. Laden Sie nur das benötigte Kapitel oder den benötigten Abschnitt hoch, oder teilen Sie die Datei in mehrere Teile.",
+  );
+});
+
 it("refuses files over 10 MB, text over 60,000 characters and types it cannot read, and says what to do", async () => {
   await expect(
     read([new Uint8Array(10 * 1024 * 1024 + 1)], "big.csv"),
-  ).rejects.toThrow("at most 10 MB");
+  ).rejects.toThrow("This file is 10.1 MB; the limit is 10 MB. Upload fewer sheets");
   await expect(read([], "empty.xlsx")).rejects.toThrow("at most 10 MB");
   expect(
     (await read(["a".repeat(60000)], "limit.csv")).sources[0].text,
   ).toHaveLength(60000);
   await expect(read(["a".repeat(60001)], "over.csv")).rejects.toThrow(
-    "exceeds 60,000",
+    "This file has 60,001 characters of text; the limit is 60,000 (about 1% too much).",
   );
   for (const name of ["old.xls", "OLD.DOC"])
     await expect(read(["ÐÏ\u0011à"], name)).rejects.toThrow(

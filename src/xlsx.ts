@@ -1,7 +1,7 @@
 import { documentText } from "./text/documents";
 import { Uint8ArrayReader, ZipReader, type FileEntry } from "@zip.js/zip.js";
 import { SaxesParser, type SaxesTagNS } from "saxes";
-import { checkTextSize } from "./document-formats";
+import { OverLimit, textCollector } from "./document-formats";
 import { readPart } from "./docx";
 
 const MAX_EXPANDED_BYTES = 20 * 1024 * 1024;
@@ -196,24 +196,22 @@ export async function extractXlsx(bytes: Uint8Array): Promise<string> {
     const strings = parts.has("xl/sharedStrings.xml")
       ? sharedStrings(await part("xl/sharedStrings.xml"))
       : [];
-    let text = "",
-      rows = 0;
-    const append = (line: string) => {
-      checkTextSize(line, text.length + 1);
-      text += line + "\n";
-    };
+    const text = textCollector();
+    let rows = 0;
+    const append = (line: string) => text.add(line + "\n");
     for (const sheet of sheets) {
-      append(`${text ? "\n" : ""}Sheet: ${sheet.name}${sheet.hidden ? " (hidden)" : ""}`);
+      append(`${text.length ? "\n" : ""}Sheet: ${sheet.name}${sheet.hidden ? " (hidden)" : ""}`);
       sheetRows(await part(sheet.path), strings, (line) => {
         rows++;
         append(line);
       });
     }
     if (!rows) throw Error(t.xlsxEmpty);
-    return text.trim();
+    return text.text().trim();
   } catch (error) {
     // Text from the XML parser or the ZIP reader is not shown; only this file's own messages are.
-    throw error instanceof Error && /XLSX|exceeds/.test(error.message)
+    throw error instanceof OverLimit ||
+      (error instanceof Error && /XLSX|exceeds/.test(error.message))
       ? error
       : invalid();
   } finally {

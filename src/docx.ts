@@ -1,7 +1,7 @@
 import { documentText } from "./text/documents";
 import { Uint8ArrayReader, ZipReader, type FileEntry } from "@zip.js/zip.js";
 import { SaxesParser } from "saxes";
-import { checkTextSize } from "./document-formats";
+import { MAX_DOCUMENT_CHARACTERS, textCollector } from "./document-formats";
 
 const MAX_PART_BYTES = 4 * 1024 * 1024;
 const MAX_EXPANDED_BYTES = 20 * 1024 * 1024;
@@ -22,19 +22,19 @@ const unsupported = new Set([
   "txbxContent",
 ]);
 
-export function docxBodyText(xml: string): string {
+export function docxBodyText(
+  xml: string,
+  limit = MAX_DOCUMENT_CHARACTERS,
+): string {
   const parser = new SaxesParser({ xmlns: true });
-  let text = "",
-    depth = 0,
+  const collected = textCollector(limit);
+  let depth = 0,
     bodyDepth = 0,
     textDepth = 0,
     cells = 0;
   let root = false,
     body = false;
-  const append = (value: string) => {
-    checkTextSize(value, text.length);
-    text += value;
-  };
+  const append = (value: string) => collected.add(value);
   parser.on("doctype", () => {
     throw Error(documentText.en.docxDtd);
   });
@@ -93,6 +93,7 @@ export function docxBodyText(xml: string): string {
     depth--;
   });
   parser.write(xml).close();
+  const text = collected.text();
   if (!root || !body || !text.trim())
     throw Error(documentText.en.docxNoBody);
   return text.trim();
@@ -125,7 +126,10 @@ export async function readPart(
   return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
 }
 
-export async function extractDocx(bytes: Uint8Array): Promise<string> {
+export async function extractDocx(
+  bytes: Uint8Array,
+  limit = MAX_DOCUMENT_CHARACTERS,
+): Promise<string> {
   if (!bytes.length || bytes.length > 10 * 1024 * 1024)
     throw Error(documentText.en.docxSize);
   const reader = new ZipReader(new Uint8ArrayReader(bytes), {
@@ -197,7 +201,7 @@ export async function extractDocx(bytes: Uint8Array): Promise<string> {
     });
     parser.write(await readPart(types)).close();
     if (!valid) throw Error(documentText.en.docxContentType);
-    return docxBodyText(await readPart(document));
+    return docxBodyText(await readPart(document), limit);
   } finally {
     await reader.close();
   }

@@ -5,9 +5,13 @@ import { createWorker } from "tesseract.js";
 import { extractDocx, DOCX_WARNING } from "./docx";
 import { extractXlsx } from "./xlsx";
 import {
+  characterLimit,
   checkTextSize,
+  COUNT_STOP,
   decodeTextDocument,
   isTextDocument,
+  MAX_PDF_PAGES,
+  OverLimit,
 } from "./document-formats";
 const MAX_OCR_PDF_PAGES = 5;
 // pdfjs asks for scratch canvases while it draws; a worker has no document to create them with.
@@ -37,6 +41,7 @@ const ocrWorker = (progress?: (percent: number) => void) =>
   });
 self.onmessage = async (event: MessageEvent<File>) => {
   const file = event.data;
+  const limit = characterLimit(file.name);
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
     const magic = new TextDecoder().decode(bytes.slice(0, 5));
@@ -51,7 +56,7 @@ self.onmessage = async (event: MessageEvent<File>) => {
     } else if (/\.docx$/i.test(file.name)) {
       self.postMessage({ progress: documentText.en.readingWord });
       self.postMessage({
-        pages: [{ text: await extractDocx(bytes) }],
+        pages: [{ text: await extractDocx(bytes, limit) }],
         warning: DOCX_WARNING,
       });
     } else if (magic === "%PDF-") {
@@ -72,27 +77,31 @@ self.onmessage = async (event: MessageEvent<File>) => {
       });
       try {
         const pdf = await task.promise;
-        if (pdf.numPages > 20)
-          throw new Error(documentText.en.pdfPages);
+        if (pdf.numPages > MAX_PDF_PAGES)
+          throw new OverLimit({ pages: pdf.numPages, limit: MAX_PDF_PAGES });
         let pages = [];
         let extractedLength = 0;
         for (let number = 1; number <= pdf.numPages; number++) {
           self.postMessage({
             progress: documentText.en.readingPage(number, pdf.numPages),
           });
-          const content = await (await pdf.getPage(number)).getTextContent();
-          pages.push({
-            page: number,
-            text: content.items
-              .map((item) =>
-                "str" in item ? item.str + (item.hasEOL ? "\n" : " ") : "",
-              )
-              .join("")
-              .trim(),
-          });
-          checkTextSize(pages[pages.length - 1].text, extractedLength);
-          extractedLength += pages[pages.length - 1].text.length;
+          const page = await pdf.getPage(number);
+          const content = await page.getTextContent();
+          page.cleanup();
+          const text = content.items
+            .map((item) =>
+              "str" in item ? item.str + (item.hasEOL ? "\n" : " ") : "",
+            )
+            .join("")
+            .trim();
+          extractedLength += text.length;
+          if (extractedLength > COUNT_STOP)
+            throw new OverLimit({ characters: COUNT_STOP, limit, more: true });
+          // Over the limit: the remaining pages are only counted, their text is not kept.
+          pages.push({ page: number, text: extractedLength > limit ? "" : text });
         }
+        if (extractedLength > limit)
+          throw new OverLimit({ characters: extractedLength, limit });
         let warning = documentText.en.pdfWarning;
         if (pages.every((page) => !page.text)) {
           // A scan: no text layer on any page. Draw the first pages and read them like a screenshot.
@@ -171,7 +180,7 @@ self.onmessage = async (event: MessageEvent<File>) => {
         await worker.terminate();
       }
     } else if (isTextDocument(file.name)) {
-      const text = decodeTextDocument(bytes);
+      const text = decodeTextDocument(bytes, limit);
       self.postMessage({
         pages: [{ text }],
         warning:
@@ -182,6 +191,10 @@ self.onmessage = async (event: MessageEvent<File>) => {
         documentText.en.formats,
       );
   } catch (error) {
+    if (error instanceof OverLimit) {
+      self.postMessage({ over: error.over });
+      return;
+    }
     self.postMessage({
       error:
         error instanceof Error &&
