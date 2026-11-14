@@ -256,7 +256,7 @@ it("keeps a long Word or text file on the device as a large document in passages
   expect(word.large).toBe(true);
   expect(word.sources.length).toBeGreaterThan(50);
   // At or under the ordinary limit nothing changes: one source, no mark.
-  const small = await read(["a".repeat(60000)], "small.txt");
+  const small = await read(["a".repeat(20000)], "small.txt");
   expect(small.large).toBeUndefined();
   expect(small.sources).toHaveLength(1);
   await expect(read(["a".repeat(500001)], "huge.md")).rejects.toThrow(

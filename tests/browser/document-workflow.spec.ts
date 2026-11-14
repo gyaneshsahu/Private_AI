@@ -120,8 +120,9 @@ test("rejects oversized and disguised binary files and accepts a later valid fil
   await page.goto("/");
   await page.getByLabel("Attach files to this conversation").setInputFiles([
     {
-      name: "large.md",
-      mimeType: "text/markdown",
+      // A data file keeps the 60,000 limit (a .md of this size is now kept as a large document).
+      name: "large.csv",
+      mimeType: "text/csv",
       buffer: Buffer.from("x".repeat(60001)),
     },
     {

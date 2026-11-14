@@ -7,13 +7,23 @@ export const MAX_DOCUMENT_CHARACTERS = 60000;
  */
 export const LARGE_DOCUMENTS: boolean = true;
 export const MAX_LARGE_DOCUMENT_CHARACTERS = 500000;
+/**
+ * A PDF, Word or text file from this many characters on goes the passage way (owner, 14 November).
+ * Below the old limit too: with about 4,000 characters of instructions and a 32,000 input limit, a
+ * file between about 27,000 and 60,000 characters was accepted but could not be sent whole.
+ */
+export const LARGE_FROM_CHARACTERS = 20000;
+const PASSAGE_KINDS = /\.(pdf|docx|txt|md|markdown)$/i;
+/** Whether a file with this name and amount of text is kept in passages. */
+export const isLargeDocument = (name: string, characters: number) =>
+  LARGE_DOCUMENTS && PASSAGE_KINDS.test(name) && characters > LARGE_FROM_CHARACTERS;
 export const MAX_PDF_PAGES = LARGE_DOCUMENTS ? 150 : 20;
 // A reader over its limit keeps counting, without keeping text, so the refusal can say how far
 // over the file is. It stops here, so a file built to expand cannot make it count forever.
 export const COUNT_STOP = 3000000;
 /** Spreadsheets, data and code are not prose: passage search fits them badly, so they keep the small limit. */
 export function characterLimit(name: string): number {
-  return LARGE_DOCUMENTS && /\.(pdf|docx|txt|md|markdown)$/i.test(name)
+  return LARGE_DOCUMENTS && PASSAGE_KINDS.test(name)
     ? MAX_LARGE_DOCUMENT_CHARACTERS
     : MAX_DOCUMENT_CHARACTERS;
 }

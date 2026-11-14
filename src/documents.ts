@@ -5,7 +5,7 @@ import { z } from "zod";
 import { splitPassages } from "./passage-retrieval";
 import {
   characterLimit,
-  MAX_DOCUMENT_CHARACTERS,
+  isLargeDocument,
   MAX_LARGE_DOCUMENT_CHARACTERS,
   MAX_PDF_PAGES,
 } from "./document-formats";
@@ -122,9 +122,9 @@ export async function extract(
         return;
       }
       const characters = data.pages.reduce((n, page) => n + page.text.length, 0);
-      // Over the ordinary limit (only PDF, Word and plain text get this far): kept in passages,
-      // and only the passages that match a question are sent.
-      const large = characters > MAX_DOCUMENT_CHARACTERS;
+      // A longer PDF, Word or plain-text file is kept in passages, and only the passages that
+      // match a question are sent.
+      const large = isLargeDocument(file.name, characters);
       const ids = new Set<string>();
       const sources: Source[] = (
         large

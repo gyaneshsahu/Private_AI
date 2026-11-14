@@ -95,3 +95,9 @@ Built end to end and switched on: `LARGE_DOCUMENTS` in `src/document-formats.ts`
 3. The 10 MB file limit. A 100-page PDF with pictures is often larger. Raising it is one constant in two places, but memory on a phone is not measured.
 4. Whether to build the "Summarise the whole document" button, with its stated cost (about 18 requests for a 400,000-character document).
 5. K3 proposes weight 2 for a file question. A question about a large document sends less text than a mid-sized file does today, so weight 1 is defensible; the owner sets it.
+
+## Owner decisions, 14 November
+
+- The large-document path stays on. A real 100-page PDF on a phone is on the owner's device checklist.
+- The passage path starts at 20,000 characters (`LARGE_FROM_CHARACTERS`), not 60,000, for PDF, Word and text files. Files between about 27,000 and 60,000 characters were accepted before but could not be sent whole.
+- The 10 MB file limit stays until the phone test.
