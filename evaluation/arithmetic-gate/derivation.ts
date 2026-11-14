@@ -13,6 +13,12 @@ const helpers = {
   pow: (a: Num, n: number) => d(a).pow(n),
   /** Commercial rounding, half away from zero (the rounding every case states). */
   round: (x: Num, places: number) => d(x).toDecimalPlaces(places, D.ROUND_HALF_UP),
+  /** Rounds to a step (0.05, 0.10, 1) by a stated rule; "up" and "down" are toward +/- infinity. */
+  roundTo: (x: Num, step: Num, mode: "half-up" | "half-even" | "up" | "down") =>
+    d(x)
+      .div(d(step))
+      .toDecimalPlaces(0, { "half-up": D.ROUND_HALF_UP, "half-even": D.ROUND_HALF_EVEN, up: D.ROUND_CEIL, down: D.ROUND_FLOOR }[mode])
+      .times(d(step)),
   clock: (hhmm: string) => parseClock(hhmm),
   fmtClock: (minutes: Num) => formatClock(d(minutes).toNumber()),
   hm: (h: number, m: number) => h * 60 + m,

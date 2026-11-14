@@ -4,7 +4,7 @@
 // No Design A/B, no flags: an answer is exact, wrong or missing. Synthetic set only.
 //
 //   Invoke-WithPrivateAiSecret -Name PRIVATEMODE_API_KEY -Action {
-//     npx tsx evaluation/arithmetic-gate/harness-tools.ts --cell flash --label flash-1 [--ids a,b] [--critical] [--cap 150000] }
+//     npx tsx evaluation/arithmetic-gate/harness-tools.ts --cell flash --label flash-1 [--cases <set.json>] [--ids a,b] [--critical] [--cap 150000] }
 //
 // Writes .local/arithmetic-tools-20261114/<label>/results.json. --cap stops before a conversation
 // once the reported tokens pass it (the free allowance is small).
@@ -114,7 +114,8 @@ async function main() {
   if (!apiKey) throw Error("Load PRIVATEMODE_API_KEY with scripts/WindowsSecrets.psm1");
   const cap = Number(arg("cap") ?? 150_000);
   const ids = arg("ids")?.split(",");
-  let cases = (JSON.parse(await readFile("evaluation/arithmetic-gate/unseen-v3-20261023.json", "utf8")).cases as GateCase[]).filter((c) => !ids || ids.includes(c.id));
+  const casesPath = arg("cases") ?? "evaluation/arithmetic-gate/unseen-v3-20261023.json";
+  let cases = (JSON.parse(await readFile(casesPath, "utf8")).cases as GateCase[]).filter((c) => !ids || ids.includes(c.id));
   if (process.argv.includes("--critical")) cases = cases.filter((c) => (c as { critical?: boolean }).critical);
   await mkdir(`${ROOT}/${label}`, { recursive: true });
   const client = new PrivatemodeAI({ apiKey, enableWasmLogging: false });
@@ -142,7 +143,7 @@ async function main() {
       const outcome = !delivered ? "no-answer" : score.pass ? "exact" : "wrong";
       records.push({ caseId: gateCase.id, critical: !!(gateCase as { critical?: boolean }).critical, outcome, usedTool: turns.map((t) => t.toolCalls > 0), turns, score });
       console.log(`${gateCase.id} ${outcome} tools ${turns.map((t) => t.toolCalls).join("+")} tokens ${turns.reduce((n, t) => n + t.input + t.output, 0)}`);
-      await writeFile(`${ROOT}/${label}/results.json`, JSON.stringify({ cell: cellName, ...cell, startedWith: SYSTEM, records }, null, 1));
+      await writeFile(`${ROOT}/${label}/results.json`, JSON.stringify({ cell: cellName, ...cell, cases: casesPath, startedWith: SYSTEM, records }, null, 1));
     }
   } finally {
     client.close();

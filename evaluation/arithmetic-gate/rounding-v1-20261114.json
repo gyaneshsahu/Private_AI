@@ -1,0 +1,1624 @@
+{
+  "status": "ROUNDING SET v1. Written 14 November 2026 before any change to the code-tool instruction; FROZEN by SHA-256 in tests/arithmetic-rounding-v1.test.ts; never used to tune an instruction.",
+  "authoredOn": "2026-11-14",
+  "synthetic": true,
+  "note": "Generated once by make-rounding-v1.py with Python's decimal module; every value is re-derived by the test. 24 cases, 12 German and 12 English, about rounding rules stated in words. No item uses the scorer's rounding field: rounded figures must be stated exactly.",
+  "cases": [
+    {
+      "id": "round1-01",
+      "family": "arithmetic",
+      "category": "swiss-total-only",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "Basel invoice, three lines",
+      "source": "Basel invoice, three lines",
+      "turns": [
+        "Rechnung aus Basel, drei Positionen netto: CHF 1'248.35, CHF 86.40 und CHF 512.95. MwSt 8.1 %. Die MwSt bitte auf den Rappen genau, und nur das Rechnungstotal auf 5 Rappen runden. Nettosumme, MwSt und Total?",
+        "Der Kunde zahlt bar mit CHF 2'000.00. Wie viel Rückgeld bekommt er?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Nettosumme",
+            "kind": "money",
+            "value": "1847.70",
+            "derivation": "add(1248.35, 86.40, 512.95)"
+          },
+          {
+            "label": "MwSt",
+            "kind": "money",
+            "value": "149.66",
+            "derivation": "round(mul(add(1248.35, 86.40, 512.95), 0.081), 2)"
+          },
+          {
+            "label": "Total",
+            "kind": "money",
+            "value": "1997.35",
+            "derivation": "roundTo(add(add(1248.35, 86.40, 512.95), round(mul(add(1248.35, 86.40, 512.95), 0.081), 2)), 0.05, \"half-up\")"
+          }
+        ],
+        [
+          {
+            "label": "Rückgeld",
+            "kind": "money",
+            "value": "2.65",
+            "derivation": "sub(2000, roundTo(add(add(1248.35, 86.40, 512.95), round(mul(add(1248.35, 86.40, 512.95), 0.081), 2)), 0.05, \"half-up\"))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "MwSt",
+            "kind": "money",
+            "value": "149.65",
+            "reason": "MwSt auf 5 Rappen gerundet, obwohl nur das Total so gerundet wird"
+          }
+        ],
+        [
+          {
+            "label": "Rückgeld",
+            "kind": "money",
+            "value": "2.64",
+            "reason": "Rückgeld vom ungerundeten Total"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Nettosumme: 1.847,70; MwSt: 149,66; Total: 1.997,35",
+        "Rückgeld: 2,65"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-02",
+      "family": "arithmetic",
+      "category": "swiss-lines-then-total",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "Lucerne market stall",
+      "source": "Lucerne market stall",
+      "turns": [
+        "Marktstand in Luzern, Preise inkl. MwSt: 1.37 kg Bergkäse zu CHF 23.90 pro kg und 0.62 kg Trockenfleisch zu CHF 48.50 pro kg. Jede Position auf den Rappen runden, nur den Endbetrag auf 5 Rappen. Beide Positionen und Endbetrag?",
+        "Korrektur: es waren 1.71 kg Bergkäse. Käseposition und Endbetrag?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Bergkäse",
+            "kind": "money",
+            "value": "32.74",
+            "derivation": "round(mul(1.37, 23.90), 2)"
+          },
+          {
+            "label": "Trockenfleisch",
+            "kind": "money",
+            "value": "30.07",
+            "derivation": "round(mul(0.62, 48.50), 2)"
+          },
+          {
+            "label": "Endbetrag",
+            "kind": "money",
+            "value": "62.80",
+            "derivation": "roundTo(add(round(mul(1.37, 23.90), 2), round(mul(0.62, 48.50), 2)), 0.05, \"half-up\")"
+          }
+        ],
+        [
+          {
+            "label": "Bergkäse",
+            "kind": "money",
+            "value": "40.87",
+            "derivation": "round(mul(1.71, 23.90), 2)"
+          },
+          {
+            "label": "Endbetrag",
+            "kind": "money",
+            "value": "70.95",
+            "derivation": "roundTo(add(round(mul(1.71, 23.90), 2), round(mul(0.62, 48.50), 2)), 0.05, \"half-up\")"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "Bergkäse",
+            "kind": "money",
+            "value": "32.75",
+            "reason": "Position auf 5 Rappen gerundet statt auf den Rappen"
+          }
+        ],
+        [
+          {
+            "label": "Bergkäse",
+            "kind": "money",
+            "value": "40.85",
+            "reason": "Position auf 5 Rappen gerundet statt auf den Rappen"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Bergkäse: 32,74; Trockenfleisch: 30,07; Endbetrag: 62,80",
+        "Bergkäse: 40,87; Endbetrag: 70,95"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-03",
+      "family": "arithmetic",
+      "category": "whole-euros-half-up",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "travel expenses",
+      "source": "travel expenses",
+      "turns": [
+        "Reisekosten: 412 km zu 0,30 EUR pro km, 3 Tage Verpflegung zu je 14,00 EUR und Hotel 189,90 EUR. Den Gesamtbetrag kaufmännisch auf volle Euro runden. Wie viel wird erstattet?",
+        "Korrektur: es waren 438 km. Erstattung nach derselben Regel?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Erstattung",
+            "kind": "money",
+            "value": "356.00",
+            "currency": "EUR",
+            "derivation": "roundTo(add(mul(412, 0.30), mul(3, 14), 189.90), 1, \"half-up\")"
+          }
+        ],
+        [
+          {
+            "label": "Erstattung",
+            "kind": "money",
+            "value": "363.00",
+            "currency": "EUR",
+            "derivation": "roundTo(add(mul(438, 0.30), mul(3, 14), 189.90), 1, \"half-up\")"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "Erstattung",
+            "kind": "money",
+            "value": "355.00",
+            "currency": "EUR",
+            "reason": "abgerundet statt kaufmännisch gerundet"
+          }
+        ],
+        [
+          {
+            "label": "Erstattung",
+            "kind": "money",
+            "value": "364.00",
+            "currency": "EUR",
+            "reason": "aufgerundet statt kaufmännisch gerundet"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Erstattung: 356,00 EUR",
+        "Erstattung: 363,00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-04",
+      "family": "arithmetic",
+      "category": "ten-cents-each-receipt",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "fuel receipts",
+      "source": "fuel receipts",
+      "turns": [
+        "Tankbeleg: 43,87 Liter zu 1,749 EUR pro Liter. In unserer Reisekostenabrechnung wird jeder Beleg kaufmännisch auf 10 Cent gerundet. Welcher Betrag wird abgerechnet?",
+        "Zweiter Beleg: 51,12 Liter zu 1,689 EUR pro Liter. Auch diesen einzeln auf 10 Cent runden, dann beide abgerechneten Beträge addieren. Betrag des zweiten Belegs und Summe?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Betrag",
+            "kind": "money",
+            "value": "76.70",
+            "currency": "EUR",
+            "derivation": "roundTo(mul(43.87, 1.749), 0.10, \"half-up\")"
+          }
+        ],
+        [
+          {
+            "label": "Zweiter Beleg",
+            "kind": "money",
+            "value": "86.30",
+            "currency": "EUR",
+            "derivation": "roundTo(mul(51.12, 1.689), 0.10, \"half-up\")"
+          },
+          {
+            "label": "Summe",
+            "kind": "money",
+            "value": "163.00",
+            "currency": "EUR",
+            "derivation": "add(roundTo(mul(43.87, 1.749), 0.10, \"half-up\"), roundTo(mul(51.12, 1.689), 0.10, \"half-up\"))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "Betrag",
+            "kind": "money",
+            "value": "76.80",
+            "currency": "EUR",
+            "reason": "auf 10 Cent aufgerundet statt kaufmännisch"
+          }
+        ],
+        [
+          {
+            "label": "Summe",
+            "kind": "money",
+            "value": "163.10",
+            "currency": "EUR",
+            "reason": "Summe der ungerundeten Beträge gerundet statt Summe der gerundeten Belege"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Betrag: 76,70 EUR",
+        "Zweiter Beleg: 86,30 EUR; Summe: 163,00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-05",
+      "family": "arithmetic",
+      "category": "half-even-vs-half-up",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "splitting app",
+      "source": "splitting app",
+      "turns": [
+        "Wir teilen eine Rechnung über 24,69 EUR zu zweit. Unsere Abrechnungs-App rundet den Anteil pro Person auf Cent, und zwar mathematisch: bei genau einer halben Stelle zur geraden Ziffer. Welchen Anteil zeigt die App?",
+        "Nächste Rechnung: 31,47 EUR, wieder zu zweit, diesmal kaufmännisch auf Cent gerundet. Anteil pro Person?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Anteil",
+            "kind": "money",
+            "value": "12.34",
+            "currency": "EUR",
+            "derivation": "roundTo(div(24.69, 2), 0.01, \"half-even\")"
+          }
+        ],
+        [
+          {
+            "label": "Anteil",
+            "kind": "money",
+            "value": "15.74",
+            "currency": "EUR",
+            "derivation": "round(div(31.47, 2), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "Anteil",
+            "kind": "money",
+            "value": "12.35",
+            "currency": "EUR",
+            "reason": "kaufmännisch gerundet statt zur geraden Ziffer"
+          }
+        ],
+        [
+          {
+            "label": "Anteil",
+            "kind": "money",
+            "value": "15.73",
+            "currency": "EUR",
+            "reason": "abgerundet statt kaufmännisch"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Anteil: 12,34 EUR",
+        "Anteil: 15,74 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-06",
+      "family": "arithmetic",
+      "category": "percent-one-decimal",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "quarterly revenue",
+      "source": "quarterly revenue",
+      "turns": [
+        "Umsatz im ersten Quartal 184.250,00 EUR, im zweiten Quartal 197.830,00 EUR. Um wie viel Prozent ist der Umsatz gestiegen, auf eine Nachkommastelle gerundet?",
+        "Welchen Anteil hat das zweite Quartal an der Summe beider Quartale, ebenfalls auf eine Nachkommastelle?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Anstieg",
+            "kind": "percent",
+            "value": "7.4",
+            "derivation": "round(mul(div(sub(197830, 184250), 184250), 100), 1)"
+          }
+        ],
+        [
+          {
+            "label": "Anteil",
+            "kind": "percent",
+            "value": "51.8",
+            "derivation": "round(mul(div(197830, add(184250, 197830)), 100), 1)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "Anstieg",
+            "kind": "percent",
+            "value": "7.3",
+            "reason": "abgeschnitten statt gerundet"
+          }
+        ],
+        [
+          {
+            "label": "Anteil",
+            "kind": "percent",
+            "value": "51.7",
+            "reason": "abgeschnitten statt gerundet"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Anstieg: 7,4 %",
+        "Anteil: 51,8 %"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-07",
+      "family": "arithmetic",
+      "category": "whole-packs",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "floor tiles",
+      "source": "floor tiles",
+      "turns": [
+        "Badezimmer: 23,4 m² Boden, dazu 8 % Verschnitt. Ein Paket Fliesen reicht für 1,44 m². Wie viele Pakete muss ich kaufen? Es gibt nur ganze Pakete.",
+        "Ein Paket kostet 32,90 EUR. Was kosten die Pakete zusammen?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Pakete",
+            "kind": "number",
+            "value": "18",
+            "derivation": "roundTo(div(mul(23.4, 1.08), 1.44), 1, \"up\")"
+          }
+        ],
+        [
+          {
+            "label": "Kosten",
+            "kind": "money",
+            "value": "592.20",
+            "currency": "EUR",
+            "derivation": "mul(roundTo(div(mul(23.4, 1.08), 1.44), 1, \"up\"), 32.90)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "Pakete",
+            "kind": "number",
+            "value": "17",
+            "reason": "abgerundet: zu wenige Pakete"
+          }
+        ],
+        [
+          {
+            "label": "Kosten",
+            "kind": "money",
+            "value": "559.30",
+            "currency": "EUR",
+            "reason": "Preis für abgerundete Paketzahl"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Pakete: 18",
+        "Kosten: 592,20 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-08",
+      "family": "arithmetic",
+      "category": "round-up-whole-euros",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "restaurant tip",
+      "source": "restaurant tip",
+      "turns": [
+        "Restaurantrechnung 67,40 EUR. Ich gebe 10 % Trinkgeld und runde den Gesamtbetrag auf volle Euro auf. Was zahle ich?",
+        "Und mit 13 % Trinkgeld, wieder auf volle Euro aufgerundet?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Zahlbetrag",
+            "kind": "money",
+            "value": "75.00",
+            "currency": "EUR",
+            "derivation": "roundTo(mul(67.40, 1.10), 1, \"up\")"
+          }
+        ],
+        [
+          {
+            "label": "Zahlbetrag",
+            "kind": "money",
+            "value": "77.00",
+            "currency": "EUR",
+            "derivation": "roundTo(mul(67.40, 1.13), 1, \"up\")"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "Zahlbetrag",
+            "kind": "money",
+            "value": "74.00",
+            "currency": "EUR",
+            "reason": "abgerundet statt aufgerundet"
+          }
+        ],
+        [
+          {
+            "label": "Zahlbetrag",
+            "kind": "money",
+            "value": "76.00",
+            "currency": "EUR",
+            "reason": "kaufmännisch gerundet statt aufgerundet"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Zahlbetrag: 75,00 EUR",
+        "Zahlbetrag: 77,00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-09",
+      "family": "arithmetic",
+      "category": "each-line-then-sum",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "timesheet pay",
+      "source": "timesheet pay",
+      "turns": [
+        "Stundenzettel, Stundensatz 23,47 EUR: Anna 7,5 Stunden, Ben 6,5 Stunden, Cem 8,5 Stunden. Lohn je Person auf Cent runden, dann die gerundeten Beträge addieren. Lohn je Person und Summe?",
+        "Korrektur: Ben hatte 5,5 Stunden. Bens Lohn und die neue Summe?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Anna",
+            "kind": "money",
+            "value": "176.03",
+            "currency": "EUR",
+            "derivation": "round(mul(7.5, 23.47), 2)"
+          },
+          {
+            "label": "Ben",
+            "kind": "money",
+            "value": "152.56",
+            "currency": "EUR",
+            "derivation": "round(mul(6.5, 23.47), 2)"
+          },
+          {
+            "label": "Cem",
+            "kind": "money",
+            "value": "199.50",
+            "currency": "EUR",
+            "derivation": "round(mul(8.5, 23.47), 2)"
+          },
+          {
+            "label": "Summe",
+            "kind": "money",
+            "value": "528.09",
+            "currency": "EUR",
+            "derivation": "add(round(mul(7.5, 23.47), 2), round(mul(6.5, 23.47), 2), round(mul(8.5, 23.47), 2))"
+          }
+        ],
+        [
+          {
+            "label": "Ben",
+            "kind": "money",
+            "value": "129.09",
+            "currency": "EUR",
+            "derivation": "round(mul(5.5, 23.47), 2)"
+          },
+          {
+            "label": "Summe",
+            "kind": "money",
+            "value": "504.62",
+            "currency": "EUR",
+            "derivation": "add(round(mul(7.5, 23.47), 2), round(mul(5.5, 23.47), 2), round(mul(8.5, 23.47), 2))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "Summe",
+            "kind": "money",
+            "value": "528.08",
+            "currency": "EUR",
+            "reason": "Summe aus ungerundeten Beträgen"
+          }
+        ],
+        [
+          {
+            "label": "Summe",
+            "kind": "money",
+            "value": "504.61",
+            "currency": "EUR",
+            "reason": "Summe aus ungerundeten Beträgen"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Anna: 176,03 EUR; Ben: 152,56 EUR; Cem: 199,50 EUR; Summe: 528,09 EUR",
+        "Ben: 129,09 EUR; Summe: 504,62 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-10",
+      "family": "arithmetic",
+      "category": "swiss-discount-vat-total",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "Winterthur quote",
+      "source": "Winterthur quote",
+      "turns": [
+        "Offerte aus Winterthur: CHF 12'470.00 netto, 3 % Rabatt, danach 8.1 % MwSt auf den rabattierten Betrag. Rabatt und MwSt auf den Rappen, nur den Endbetrag auf 5 Rappen. Rabatt, MwSt und Endbetrag?",
+        "Der Rabatt beträgt 5 %, nicht 3 %. Rabatt, MwSt und Endbetrag?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Rabatt",
+            "kind": "money",
+            "value": "374.10",
+            "derivation": "round(mul(12470, 0.03), 2)"
+          },
+          {
+            "label": "MwSt",
+            "kind": "money",
+            "value": "979.77",
+            "derivation": "round(mul(sub(12470, round(mul(12470, 0.03), 2)), 0.081), 2)"
+          },
+          {
+            "label": "Endbetrag",
+            "kind": "money",
+            "value": "13075.65",
+            "derivation": "roundTo(add(sub(12470, round(mul(12470, 0.03), 2)), round(mul(sub(12470, round(mul(12470, 0.03), 2)), 0.081), 2)), 0.05, \"half-up\")"
+          }
+        ],
+        [
+          {
+            "label": "Rabatt",
+            "kind": "money",
+            "value": "623.50",
+            "derivation": "round(mul(12470, 0.05), 2)"
+          },
+          {
+            "label": "MwSt",
+            "kind": "money",
+            "value": "959.57",
+            "derivation": "round(mul(sub(12470, round(mul(12470, 0.05), 2)), 0.081), 2)"
+          },
+          {
+            "label": "Endbetrag",
+            "kind": "money",
+            "value": "12806.05",
+            "derivation": "roundTo(add(sub(12470, round(mul(12470, 0.05), 2)), round(mul(sub(12470, round(mul(12470, 0.05), 2)), 0.081), 2)), 0.05, \"half-up\")"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "MwSt",
+            "kind": "money",
+            "value": "979.75",
+            "reason": "MwSt auf 5 Rappen gerundet, obwohl nur der Endbetrag so gerundet wird"
+          }
+        ],
+        [
+          {
+            "label": "MwSt",
+            "kind": "money",
+            "value": "959.55",
+            "reason": "MwSt auf 5 Rappen gerundet, obwohl nur der Endbetrag so gerundet wird"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Rabatt: 374,10; MwSt: 979,77; Endbetrag: 13.075,65",
+        "Rabatt: 623,50; MwSt: 959,57; Endbetrag: 12.806,05"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-11",
+      "family": "arithmetic",
+      "category": "percent-half-up-vs-down",
+      "locale": "de",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "answered requests",
+      "source": "answered requests",
+      "turns": [
+        "Von 63 Anfragen wurden 50 beantwortet. Quote in Prozent, kaufmännisch auf eine Nachkommastelle gerundet?",
+        "Im Folgemonat waren es 41 von 63. Laut Vorgabe diesmal auf eine Nachkommastelle abrunden. Quote?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Quote",
+            "kind": "percent",
+            "value": "79.4",
+            "derivation": "round(mul(div(50, 63), 100), 1)"
+          }
+        ],
+        [
+          {
+            "label": "Quote",
+            "kind": "percent",
+            "value": "65",
+            "derivation": "roundTo(mul(div(41, 63), 100), 0.1, \"down\")"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "Quote",
+            "kind": "percent",
+            "value": "79.3",
+            "reason": "abgeschnitten statt kaufmännisch"
+          }
+        ],
+        [
+          {
+            "label": "Quote",
+            "kind": "percent",
+            "value": "65.1",
+            "reason": "kaufmännisch statt abgerundet"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Quote: 79,4 %",
+        "Quote: 65 %"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-12",
+      "family": "arithmetic",
+      "category": "whole-buckets",
+      "locale": "de",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "wall paint",
+      "source": "wall paint",
+      "turns": [
+        "Ich streiche 87 m² Wand mit 2 Anstrichen. Ein Liter Farbe reicht für 7,5 m². Farbe gibt es nur in Eimern zu 2,5 Litern. Wie viele Liter brauche ich, und wie viele Eimer muss ich kaufen?",
+        "Ein Eimer kostet 26,50 EUR. Was kosten die Eimer zusammen?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "Liter",
+            "kind": "number",
+            "value": "23.2",
+            "derivation": "div(mul(87, 2), 7.5)"
+          },
+          {
+            "label": "Eimer",
+            "kind": "number",
+            "value": "10",
+            "derivation": "roundTo(div(div(mul(87, 2), 7.5), 2.5), 1, \"up\")"
+          }
+        ],
+        [
+          {
+            "label": "Kosten",
+            "kind": "money",
+            "value": "265.00",
+            "currency": "EUR",
+            "derivation": "mul(roundTo(div(div(mul(87, 2), 7.5), 2.5), 1, \"up\"), 26.50)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "Eimer",
+            "kind": "number",
+            "value": "9",
+            "reason": "abgerundet: zu wenig Farbe"
+          }
+        ],
+        [
+          {
+            "label": "Kosten",
+            "kind": "money",
+            "value": "238.50",
+            "currency": "EUR",
+            "reason": "Preis für abgerundete Eimerzahl"
+          },
+          {
+            "label": "Kosten",
+            "kind": "money",
+            "value": "245.92",
+            "currency": "EUR",
+            "reason": "Preis für eine gebrochene Eimerzahl"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "Liter: 23,2; Eimer: 10",
+        "Kosten: 265,00 EUR"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-13",
+      "family": "arithmetic",
+      "category": "swiss-total-only",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "Zurich supplier invoice",
+      "source": "Zurich supplier invoice",
+      "turns": [
+        "Invoice from a Zurich supplier: CHF 2'365.70 net, VAT 8.1%. VAT to the centime; only the invoice total is rounded to the nearest 5 centimes. VAT and total?",
+        "What if the reduced rate of 2.6% applies instead?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "191.62",
+            "derivation": "round(mul(2365.70, 0.081), 2)"
+          },
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "2557.30",
+            "derivation": "roundTo(add(2365.70, round(mul(2365.70, 0.081), 2)), 0.05, \"half-up\")"
+          }
+        ],
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "61.51",
+            "derivation": "round(mul(2365.70, 0.026), 2)"
+          },
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "2427.20",
+            "derivation": "roundTo(add(2365.70, round(mul(2365.70, 0.026), 2)), 0.05, \"half-up\")"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "191.60",
+            "reason": "VAT rounded to 5 centimes although only the total is"
+          }
+        ],
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "61.50",
+            "reason": "VAT rounded to 5 centimes although only the total is"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "VAT: 191.62; total: 2,557.30",
+        "VAT: 61.51; total: 2,427.20"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-14",
+      "family": "arithmetic",
+      "category": "swiss-lines-vs-till",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "Geneva market stall",
+      "source": "Geneva market stall",
+      "turns": [
+        "Market stall in Geneva, prices include VAT: 0.784 kg of cheese at CHF 31.60 per kg and 1.215 kg of olives at CHF 8.90 per kg. Round each line to the centime, then round only the total to 5 centimes. Each line and the total?",
+        "The till actually rounds each line to 5 centimes before adding them. What total does it print?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "cheese",
+            "kind": "money",
+            "value": "24.77",
+            "derivation": "round(mul(0.784, 31.60), 2)"
+          },
+          {
+            "label": "olives",
+            "kind": "money",
+            "value": "10.81",
+            "derivation": "round(mul(1.215, 8.90), 2)"
+          },
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "35.60",
+            "derivation": "roundTo(add(round(mul(0.784, 31.60), 2), round(mul(1.215, 8.90), 2)), 0.05, \"half-up\")"
+          }
+        ],
+        [
+          {
+            "label": "till total",
+            "kind": "money",
+            "value": "35.55",
+            "derivation": "add(roundTo(mul(0.784, 31.60), 0.05, \"half-up\"), roundTo(mul(1.215, 8.90), 0.05, \"half-up\"))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "cheese",
+            "kind": "money",
+            "value": "24.75",
+            "reason": "line rounded to 5 centimes instead of the centime"
+          },
+          {
+            "label": "olives",
+            "kind": "money",
+            "value": "10.80",
+            "reason": "line rounded to 5 centimes instead of the centime"
+          }
+        ],
+        []
+      ],
+      "mandatoryFacts": [
+        "cheese: 24.77; olives: 10.81; total: 35.60",
+        "till total: 35.55"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-15",
+      "family": "arithmetic",
+      "category": "each-line-vs-sum",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "invoice lines",
+      "source": "invoice lines",
+      "turns": [
+        "Invoice lines: 37 units at $1.235, 112 units at $0.4475, 18 units at $12.6625. Round each line amount to the cent (half up), then add the rounded lines. Each line and the invoice total?",
+        "Our new ERP instead adds the unrounded line amounts and rounds only the total to the cent. What total does it show?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "line 1",
+            "kind": "money",
+            "value": "45.70",
+            "currency": "USD",
+            "derivation": "round(mul(37, 1.235), 2)"
+          },
+          {
+            "label": "line 2",
+            "kind": "money",
+            "value": "50.12",
+            "currency": "USD",
+            "derivation": "round(mul(112, 0.4475), 2)"
+          },
+          {
+            "label": "line 3",
+            "kind": "money",
+            "value": "227.93",
+            "currency": "USD",
+            "derivation": "round(mul(18, 12.6625), 2)"
+          },
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "323.75",
+            "currency": "USD",
+            "derivation": "add(round(mul(37, 1.235), 2), round(mul(112, 0.4475), 2), round(mul(18, 12.6625), 2))"
+          }
+        ],
+        [
+          {
+            "label": "ERP total",
+            "kind": "money",
+            "value": "323.74",
+            "currency": "USD",
+            "derivation": "round(add(mul(37, 1.235), mul(112, 0.4475), mul(18, 12.6625)), 2)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [],
+        []
+      ],
+      "mandatoryFacts": [
+        "line 1: 45.70 USD; line 2: 50.12 USD; line 3: 227.93 USD; total: 323.75 USD",
+        "ERP total: 323.74 USD"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-16",
+      "family": "arithmetic",
+      "category": "half-even-explicit",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "ledger with banker's rounding",
+      "source": "ledger with banker's rounding",
+      "turns": [
+        "Our ledger rounds to the cent using round-half-to-even (banker's rounding). We split $48.69 equally between two accounts. What amount does the ledger post to each?",
+        "Same ledger: interest of 1.25% on $739.60. What does it post?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "each account",
+            "kind": "money",
+            "value": "24.34",
+            "currency": "USD",
+            "derivation": "roundTo(div(48.69, 2), 0.01, \"half-even\")"
+          }
+        ],
+        [
+          {
+            "label": "interest",
+            "kind": "money",
+            "value": "9.24",
+            "currency": "USD",
+            "derivation": "roundTo(mul(739.60, 0.0125), 0.01, \"half-even\")"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "each account",
+            "kind": "money",
+            "value": "24.35",
+            "currency": "USD",
+            "reason": "rounded half up instead of half to even"
+          }
+        ],
+        [
+          {
+            "label": "interest",
+            "kind": "money",
+            "value": "9.25",
+            "currency": "USD",
+            "reason": "rounded half up instead of half to even"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "each account: 24.34 USD",
+        "interest: 9.24 USD"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-17",
+      "family": "arithmetic",
+      "category": "whole-dollars-half-up",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "expense claim",
+      "source": "expense claim",
+      "turns": [
+        "Expense claim: 3 hotel nights at $142.50 and 287 miles at $0.67 per mile. The policy pays the total rounded to whole dollars, half up. How much is paid?",
+        "Correction: it was 301 miles. Amount paid?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "paid",
+            "kind": "money",
+            "value": "620.00",
+            "currency": "USD",
+            "derivation": "roundTo(add(mul(3, 142.50), mul(287, 0.67)), 1, \"half-up\")"
+          }
+        ],
+        [
+          {
+            "label": "paid",
+            "kind": "money",
+            "value": "629.00",
+            "currency": "USD",
+            "derivation": "roundTo(add(mul(3, 142.50), mul(301, 0.67)), 1, \"half-up\")"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "paid",
+            "kind": "money",
+            "value": "619.00",
+            "currency": "USD",
+            "reason": "rounded down instead of half up"
+          }
+        ],
+        [
+          {
+            "label": "paid",
+            "kind": "money",
+            "value": "630.00",
+            "currency": "USD",
+            "reason": "rounded up instead of half up"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "paid: 620.00 USD",
+        "paid: 629.00 USD"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-18",
+      "family": "arithmetic",
+      "category": "round-down-vs-up",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "volunteer stipend",
+      "source": "volunteer stipend",
+      "turns": [
+        "A volunteer stipend is 37.5 hours at $18.37 an hour, always rounded down to the whole dollar. What is paid?",
+        "For a second volunteer with 22.25 hours the rule is rounded up to the whole dollar instead. Amount?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "stipend",
+            "kind": "money",
+            "value": "688.00",
+            "currency": "USD",
+            "derivation": "roundTo(mul(37.5, 18.37), 1, \"down\")"
+          }
+        ],
+        [
+          {
+            "label": "stipend",
+            "kind": "money",
+            "value": "409.00",
+            "currency": "USD",
+            "derivation": "roundTo(mul(22.25, 18.37), 1, \"up\")"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "stipend",
+            "kind": "money",
+            "value": "689.00",
+            "currency": "USD",
+            "reason": "rounded half up instead of down"
+          }
+        ],
+        [
+          {
+            "label": "stipend",
+            "kind": "money",
+            "value": "408.00",
+            "currency": "USD",
+            "reason": "rounded down instead of up"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "stipend: 688.00 USD",
+        "stipend: 409.00 USD"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-19",
+      "family": "arithmetic",
+      "category": "percent-one-decimal",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "conversion rate",
+      "source": "conversion rate",
+      "turns": [
+        "Last week we had 389 sign-ups from 5,212 visits. What is the conversion rate as a percentage, rounded to one decimal place?",
+        "This week 431 sign-ups from 5,630 visits. Same rounding?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "conversion rate",
+            "kind": "percent",
+            "value": "7.5",
+            "derivation": "round(mul(div(389, 5212), 100), 1)"
+          }
+        ],
+        [
+          {
+            "label": "conversion rate",
+            "kind": "percent",
+            "value": "7.7",
+            "derivation": "round(mul(div(431, 5630), 100), 1)"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "conversion rate",
+            "kind": "percent",
+            "value": "7.4",
+            "reason": "truncated instead of rounded"
+          }
+        ],
+        [
+          {
+            "label": "conversion rate",
+            "kind": "percent",
+            "value": "7.6",
+            "reason": "truncated instead of rounded"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "conversion rate: 7.5%",
+        "conversion rate: 7.7%"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-20",
+      "family": "arithmetic",
+      "category": "whole-boxes",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "screws in boxes",
+      "source": "screws in boxes",
+      "turns": [
+        "I need 1,350 screws and they come in boxes of 200. How many boxes must I buy?",
+        "A box costs $8.95, plus 7% sales tax on the order, tax rounded to the cent. Order total?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "boxes",
+            "kind": "number",
+            "value": "7",
+            "derivation": "roundTo(div(1350, 200), 1, \"up\")"
+          }
+        ],
+        [
+          {
+            "label": "order total",
+            "kind": "money",
+            "value": "67.04",
+            "currency": "USD",
+            "derivation": "add(mul(roundTo(div(1350, 200), 1, \"up\"), 8.95), round(mul(mul(roundTo(div(1350, 200), 1, \"up\"), 8.95), 0.07), 2))"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "boxes",
+            "kind": "number",
+            "value": "6",
+            "reason": "rounded down: too few screws"
+          }
+        ],
+        [
+          {
+            "label": "order total",
+            "kind": "money",
+            "value": "57.46",
+            "currency": "USD",
+            "reason": "priced for the rounded-down box count"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "boxes: 7",
+        "order total: 67.04 USD"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-21",
+      "family": "arithmetic",
+      "category": "up-to-ten-cents",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "vending price",
+      "source": "vending price",
+      "turns": [
+        "Vending price: cost $0.83 plus 35% markup, rounded up to the next 10 cents. Selling price?",
+        "Cost $1.27, same rule?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "price",
+            "kind": "money",
+            "value": "1.20",
+            "currency": "USD",
+            "derivation": "roundTo(mul(0.83, 1.35), 0.10, \"up\")"
+          }
+        ],
+        [
+          {
+            "label": "price",
+            "kind": "money",
+            "value": "1.80",
+            "currency": "USD",
+            "derivation": "roundTo(mul(1.27, 1.35), 0.10, \"up\")"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "price",
+            "kind": "money",
+            "value": "1.10",
+            "currency": "USD",
+            "reason": "rounded to the nearest 10 cents instead of up"
+          }
+        ],
+        [
+          {
+            "label": "price",
+            "kind": "money",
+            "value": "1.70",
+            "currency": "USD",
+            "reason": "rounded to the nearest 10 cents instead of up"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "price: 1.20 USD",
+        "price: 1.80 USD"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-22",
+      "family": "arithmetic",
+      "category": "swiss-discount-vat-total",
+      "locale": "en",
+      "critical": true,
+      "secondTurn": "correction",
+      "synthetic": true,
+      "query": "Lausanne quote",
+      "source": "Lausanne quote",
+      "turns": [
+        "Quote from Lausanne: CHF 6'840.00 net, 4% discount, then 8.1% VAT on the discounted amount. Discount and VAT to the centime, only the total rounded to 5 centimes. Discount, VAT and total?",
+        "The discount is 7%, not 4%. Discount, VAT and total?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "discount",
+            "kind": "money",
+            "value": "273.60",
+            "derivation": "round(mul(6840, 0.04), 2)"
+          },
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "531.88",
+            "derivation": "round(mul(sub(6840, round(mul(6840, 0.04), 2)), 0.081), 2)"
+          },
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "7098.30",
+            "derivation": "roundTo(add(sub(6840, round(mul(6840, 0.04), 2)), round(mul(sub(6840, round(mul(6840, 0.04), 2)), 0.081), 2)), 0.05, \"half-up\")"
+          }
+        ],
+        [
+          {
+            "label": "discount",
+            "kind": "money",
+            "value": "478.80",
+            "derivation": "round(mul(6840, 0.07), 2)"
+          },
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "515.26",
+            "derivation": "round(mul(sub(6840, round(mul(6840, 0.07), 2)), 0.081), 2)"
+          },
+          {
+            "label": "total",
+            "kind": "money",
+            "value": "6876.45",
+            "derivation": "roundTo(add(sub(6840, round(mul(6840, 0.07), 2)), round(mul(sub(6840, round(mul(6840, 0.07), 2)), 0.081), 2)), 0.05, \"half-up\")"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "531.90",
+            "reason": "VAT rounded to 5 centimes although only the total is"
+          }
+        ],
+        [
+          {
+            "label": "VAT",
+            "kind": "money",
+            "value": "515.25",
+            "reason": "VAT rounded to 5 centimes although only the total is"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "discount: 273.60; VAT: 531.88; total: 7,098.30",
+        "discount: 478.80; VAT: 515.26; total: 6,876.45"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-23",
+      "family": "arithmetic",
+      "category": "percent-half-even",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "escalated tickets",
+      "source": "escalated tickets",
+      "turns": [
+        "13 of 80 tickets were escalated. Give the share as a percentage to one decimal place; our style guide rounds exact halves to the even digit.",
+        "And 29 of 400?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "share",
+            "kind": "percent",
+            "value": "16.2",
+            "derivation": "roundTo(mul(div(13, 80), 100), 0.1, \"half-even\")"
+          }
+        ],
+        [
+          {
+            "label": "share",
+            "kind": "percent",
+            "value": "7.2",
+            "derivation": "roundTo(mul(div(29, 400), 100), 0.1, \"half-even\")"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "share",
+            "kind": "percent",
+            "value": "16.3",
+            "reason": "rounded half up instead of half to even"
+          }
+        ],
+        [
+          {
+            "label": "share",
+            "kind": "percent",
+            "value": "7.3",
+            "reason": "rounded half up instead of half to even"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "share: 16.2%",
+        "share: 7.2%"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    },
+    {
+      "id": "round1-24",
+      "family": "arithmetic",
+      "category": "whole-tables-trays",
+      "locale": "en",
+      "critical": false,
+      "secondTurn": "follow-up",
+      "synthetic": true,
+      "query": "event catering",
+      "source": "event catering",
+      "turns": [
+        "Event for 137 guests. Tables seat 8 and each catering tray serves 12. How many tables and how many trays, whole units only?",
+        "22 more guests confirmed. Tables and trays now?"
+      ],
+      "expected": [
+        [
+          {
+            "label": "tables",
+            "kind": "number",
+            "value": "18",
+            "derivation": "roundTo(div(137, 8), 1, \"up\")"
+          },
+          {
+            "label": "trays",
+            "kind": "number",
+            "value": "12",
+            "derivation": "roundTo(div(137, 12), 1, \"up\")"
+          }
+        ],
+        [
+          {
+            "label": "tables",
+            "kind": "number",
+            "value": "20",
+            "derivation": "roundTo(div(add(137, 22), 8), 1, \"up\")"
+          },
+          {
+            "label": "trays",
+            "kind": "number",
+            "value": "14",
+            "derivation": "roundTo(div(add(137, 22), 12), 1, \"up\")"
+          }
+        ]
+      ],
+      "forbidden": [
+        [
+          {
+            "label": "tables",
+            "kind": "number",
+            "value": "17",
+            "reason": "rounded down: guests without a seat"
+          },
+          {
+            "label": "trays",
+            "kind": "number",
+            "value": "11",
+            "reason": "rounded down: too little food"
+          }
+        ],
+        [
+          {
+            "label": "tables",
+            "kind": "number",
+            "value": "19",
+            "reason": "rounded down: guests without a seat"
+          },
+          {
+            "label": "trays",
+            "kind": "number",
+            "value": "13",
+            "reason": "rounded down: too little food"
+          }
+        ]
+      ],
+      "mandatoryFacts": [
+        "tables: 18; trays: 12",
+        "tables: 20; trays: 14"
+      ],
+      "forbiddenConclusions": [],
+      "sources": [],
+      "humanScores": null
+    }
+  ]
+}
