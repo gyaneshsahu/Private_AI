@@ -683,6 +683,11 @@ it("one session cannot fill the shared attestation queue: 2 calls at once, 10 pe
   }
   expect((await attest(mine)).status).toBe(503);
   expect((await attest(theirs)).status).toBe(200);
+  // The browser can ask how long to wait: until the oldest of the 10 leaves the 10-minute window.
+  const wait = (who: typeof mine) =>
+    fetch(root + "/api/inference/privatemode/verify-wait", { headers: { Cookie: who.cookie } }).then((r) => r.json());
+  expect((await wait(mine)).seconds).toBe(600 - 8 * 61);
+  expect((await wait(theirs)).seconds).toBe(0);
   now.mockRestore();
   expect((await post(root, "/privatemode/v1/secret", chatHeaders(mine.cookie, mine.status.csrf))).status).toBe(200);
 });

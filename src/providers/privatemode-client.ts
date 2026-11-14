@@ -47,6 +47,20 @@ export function discardPrivatemodeSession() {
  * Privatemode's own limit (429). The Wasm reports it as plain text, e.g. "updating mesh CA: doing
  * attest request: unexpected status code: 503", directly or as the cause of a connection error.
  */
+/** Seconds until our relay lets this browser verify again; 0 when it is not limited or cannot say. */
+async function verifyWaitSeconds(): Promise<number> {
+  try {
+    const response = await fetch(`${PRIVATEMODE_RELAY_PATH}/verify-wait`, {
+      credentials: "same-origin",
+      cache: "no-store",
+      redirect: "error",
+    });
+    const seconds = response.ok ? Number((await response.json()).seconds) : 0;
+    return Number.isFinite(seconds) && seconds > 0 ? Math.min(seconds, 600) : 0;
+  } catch {
+    return 0;
+  }
+}
 function attestationBusy(error: unknown) {
   const { message, cause } = (error ?? {}) as { message?: unknown; cause?: { message?: unknown } };
   return /attest request: unexpected status code:? (429|503)\b/.test(`${message} ${cause?.message}`);
@@ -182,7 +196,11 @@ async function verifySession(
   } catch (error) {
     close();
     if (changed) throw new Error(textFor(chatErrorText).deploymentDiffers);
-    throw attestationBusy(refusal) && !signal.aborted ? new AttestationBusyError() : error;
+    if (signal.aborted) throw error;
+    // The relay knows whether it held this verification back; the SDK's error text alone was
+    // not recognised in a real browser (14 November) and users saw "Protected response unavailable".
+    const wait = await verifyWaitSeconds();
+    throw wait > 0 || attestationBusy(refusal) ? new AttestationBusyError(wait) : error;
   }
   const verified: VerifiedSession = {
     key,
@@ -228,7 +246,8 @@ async function verifySession(
                   headers: headers instanceof Headers ? headers : undefined,
                 });
               // The SDK verifies again by itself when its secret lapses; that can be refused too.
-              throw attestationBusy(error) ? new AttestationBusyError() : error;
+              const wait = await verifyWaitSeconds();
+              throw wait > 0 || attestationBusy(error) ? new AttestationBusyError(wait) : error;
             }
           },
         };

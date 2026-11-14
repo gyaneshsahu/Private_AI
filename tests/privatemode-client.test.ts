@@ -365,6 +365,26 @@ it.each([429, 503])("a verification refused with %s on attest becomes the plain 
   await expect(send()).rejects.toThrow("Protected operation failed.");
 });
 
+it("a refused verification the SDK reports in words we do not know is still the busy message when the relay says how long to wait", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string) =>
+      url.endsWith("/verify-wait") ? Response.json({ seconds: 240 }) : new Response(fakeManifest),
+    ),
+  );
+  sdk.verify.mockRejectedValueOnce(Error("some wording a real browser produced"));
+  const before = Date.now();
+  const failure = (await send().catch((error: unknown) => error)) as AttestationBusyError;
+  expect(failure).toBeInstanceOf(AttestationBusyError);
+  expect(failure.retryAt).toBeGreaterThanOrEqual(before + 240_000);
+  expect(failure.retryAt).toBeLessThan(before + 250_000);
+  expect(sdk.create).not.toHaveBeenCalled();
+  // Not limited (0 seconds) and unknown wording: the old handling.
+  vi.stubGlobal("fetch", vi.fn(async (url: string) => (url.endsWith("/verify-wait") ? Response.json({ seconds: 0 }) : new Response(fakeManifest))));
+  sdk.verify.mockRejectedValueOnce(Error("some other failure"));
+  await expect(send()).rejects.toThrow("Protected operation failed.");
+});
+
 it("the SDK's own re-verification refused on attest (a connection error with the busy cause) is the busy message too", async () => {
   const destination = await inferenceClientFor("privatemode").verify(policy, new AbortController().signal, () => {});
   sdk.create.mockRejectedValueOnce(Object.assign(Error("Connection error."), { cause: Error(BUSY_TEXT(503)) }));

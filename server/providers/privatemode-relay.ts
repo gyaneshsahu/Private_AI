@@ -152,6 +152,18 @@ export function createPrivatemodeRelayAdapter(): InferenceRelayAdapter {
         recent.push(now);
         return true;
       };
+      // When this browser may verify again (seconds; 0 = now). The SDK reports a refused
+      // verification only as text, so the browser asks here and shows the wait as a countdown.
+      let queueBusyAt = 0;
+      router.get("/privatemode/verify-wait", (_req, res) => {
+        const now = Date.now();
+        const who = String(res.locals.accountId ?? res.locals.session);
+        const recent = (attestStarts.get(who) ?? []).filter((t) => now - t < 600_000);
+        const share = recent.length >= 10 ? recent[0] + 600_000 - now : 0;
+        const queue = Math.max(0, queueBusyAt + 60_000 - now);
+        res.setHeader("Cache-Control", "no-store");
+        res.json({ seconds: Math.ceil(Math.max(share, queue) / 1000) });
+      });
       router.get("/privatemode/manifest", (_req, res) => {
         const q = qualification();
         const digest = manifest && createHash("sha256").update(manifest).digest("hex");
@@ -224,6 +236,7 @@ export function createPrivatemodeRelayAdapter(): InferenceRelayAdapter {
                 })
               : await send();
             if (reply === "busy") {
+              queueBusyAt = Date.now();
               count("attest.busy_queue");
               res.status(503).json(ATTESTATION_BUSY);
               return;

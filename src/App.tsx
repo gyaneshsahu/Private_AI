@@ -87,6 +87,7 @@ import { SupportPanel } from "./SupportPanel";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { AttestationBusyError } from "./providers/inference-client";
+import { chatErrorText } from "./text/chat-errors";
 import { abortable, withDeadline } from "./abortable";
 import { createCalculationSession } from "./calculation-session";
 import {
@@ -215,6 +216,21 @@ export function App() {
   const chooseHealthConsent = (choice: HealthConsentChoice) =>
     setHealthConsent(writeHealthConsent(choice));
   const [notice, setNotice] = useState("");
+  // Verification limit reached: count down to the moment the relay allows the next check.
+  const [verifyWaitUntil, setVerifyWaitUntil] = useState(0);
+  useEffect(() => {
+    if (!verifyWaitUntil) return;
+    const show = () => {
+      const left = Math.ceil((verifyWaitUntil - Date.now()) / 1000);
+      if (left <= 0) {
+        setNotice(textFor(chatErrorText).busyOver);
+        setVerifyWaitUntil(0);
+      } else setNotice(textFor(chatErrorText).busyWait(`${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`));
+    };
+    show();
+    const timer = setInterval(show, 1000);
+    return () => clearInterval(timer);
+  }, [verifyWaitUntil]);
   const savedBase = useRef<Conversation | null>(null);
   const [saveConflict, setSaveConflict] = useState(false);
   const [imports, setImports] = useState<ImportOutcome[]>([]);
@@ -829,6 +845,8 @@ export function App() {
               : message,
             lang,
           );
+        if (!abort.signal.aborted && error instanceof AttestationBusyError && error.retryAt)
+          setVerifyWaitUntil(error.retryAt);
         setNotice(
           abort.signal.aborted
             ? t.responseStopped

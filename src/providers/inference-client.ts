@@ -15,11 +15,14 @@ export type InferenceProviderId = Qualification["provider"];
  * sent; the backup model would need the same verification, so it is never tried after this.
  */
 export class AttestationBusyError extends Error {
-  constructor() {
+  /** When verification is allowed again (epoch ms), if the relay could say; the app counts down to it. */
+  readonly retryAt?: number;
+  constructor(waitSeconds = 0) {
     super(
       textFor(chatErrorText).busy,
     );
     this.name = "AttestationBusyError";
+    if (waitSeconds > 0) this.retryAt = Date.now() + waitSeconds * 1000;
   }
 }
 

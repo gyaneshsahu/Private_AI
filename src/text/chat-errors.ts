@@ -43,6 +43,9 @@ export const chatErrorText = defineText({
     operationStopped: "Operation stopped.",
     operationFailed: "Protected operation failed.",
     busy: "CometRow is busy checking the secure server. Please try again in a minute. Nothing was sent.",
+    busyWait: (time: string) =>
+      `CometRow checks the secure server before it sends anything, and this browser has reached the limit for those checks (10 in 10 minutes; each reload needs a new one). You can send again in ${time}. Nothing was sent.`,
+    busyOver: "You can send again now. Your last message was not sent.",
     loadingLibraries: "Loading inference libraries…",
     fetchingManifest: "Fetching the approved deployment manifest…",
     manifestUnavailable: "Deployment manifest unavailable.",
@@ -118,6 +121,9 @@ export const chatErrorText = defineText({
     operationStopped: "Vorgang angehalten.",
     operationFailed: "Der geschützte Vorgang ist fehlgeschlagen.",
     busy: `CometRow ist gerade mit der Prüfung des sicheren Servers ausgelastet. Bitte versuchen Sie es in einer Minute erneut. ${notSent}`,
+    busyWait: (time: string) =>
+      `CometRow prüft den sicheren Server, bevor etwas gesendet wird, und dieser Browser hat das Limit für diese Prüfungen erreicht (10 in 10 Minuten; jedes Neuladen braucht eine neue). Sie können in ${time} wieder senden. ${notSent}`,
+    busyOver: "Sie können jetzt wieder senden. Ihre letzte Nachricht wurde nicht gesendet.",
     loadingLibraries: "Die Programmbibliotheken für die Antwort werden geladen…",
     fetchingManifest: "Das freigegebene Bereitstellungsmanifest wird abgerufen…",
     manifestUnavailable: "Das Bereitstellungsmanifest ist nicht verfügbar.",

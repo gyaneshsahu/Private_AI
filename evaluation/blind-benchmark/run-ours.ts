@@ -48,7 +48,7 @@ const OUT = process.env.BENCH_OUT ?? `.local/${basename(DIR)}/ours${privatemode 
 // Each prompt also opens a fresh page, so it verifies again, and the relay gives one session 10
 // verifications per 10 minutes (13 November): 9 prompts per context stays under that. With 15,
 // prompts 11 to 15 of every context failed (German-English run, 14 November).
-const PROMPTS_PER_CONTEXT = privatemode ? 9 : Infinity;
+const PROMPTS_PER_CONTEXT = privatemode ? Number(process.env.PROMPTS_PER_CONTEXT ?? 9) : Infinity;
 const PACE_MS = privatemode ? Number(process.env.PACE_MS ?? 6500) : 0;
 let lastSend = 0;
 
