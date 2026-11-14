@@ -59,6 +59,20 @@ const conversationBody = z.object({
         .optional(),
       uncheckedFigures: z.literal(true).optional(),
       noOfficialSource: z.literal(true).optional(),
+      // Limits follow src/python-sandbox.ts and src/code-tool.ts, with room for the cut note.
+      codeRuns: z
+        .array(
+          z
+            .object({
+              code: z.string().max(4000),
+              output: z.string().max(4200),
+              error: z.literal(true).optional(),
+            })
+            .strict(),
+        )
+        .max(12)
+        .optional(),
+      codeUnavailable: z.literal(true).optional(),
     }),
   ),
   attachments: z.array(

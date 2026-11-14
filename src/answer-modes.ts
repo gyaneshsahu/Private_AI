@@ -136,7 +136,11 @@ export type AutoReason =
   | "simple";
 
 /** Auto's choice and its reason, decided on this device from the latest question. */
-export function autoDecision(conversation: Conversation): {
+export function autoDecision(
+  conversation: Conversation,
+  /** Code execution is on and usable: calculations run as code on the device (docs/code-execution-20261114.md). */
+  codeTool = false,
+): {
   mode: AnswerMode;
   reason: AutoReason;
 } {
@@ -156,7 +160,9 @@ export function autoDecision(conversation: Conversation): {
     (Math.max(text.match(QUANTITY)?.length ?? 0, text.match(/\d+([.,]\d+)*/g)?.length ?? 0) >= 2 &&
       WORK_OUT.test(text))
   )
-    return { mode: "thinking", reason: "maths" };
+    // With code the Fast model was exact more often than Thinking without it (56 of 60 against
+    // 43 of 90 on the arithmetic set, 14 November), and it is cheaper and faster.
+    return { mode: codeTool ? "fast" : "thinking", reason: "maths" };
   if (TRANSFORM.test(text)) return { mode: "fast", reason: "rewrite" };
   // German rules, fees and deadlines (docs/german-rules-20261113.md): on Privatemode Thinking
   // scored 3.0 against Fast's 1.8 without sources; with approved web results Fast suffices.
@@ -172,8 +178,8 @@ export function autoDecision(conversation: Conversation): {
 }
 
 /** Auto's mode only; the reason stays on this device and is never logged or sent. */
-export function autoMode(conversation: Conversation): AnswerMode {
-  return autoDecision(conversation).mode;
+export function autoMode(conversation: Conversation, codeTool = false): AnswerMode {
+  return autoDecision(conversation, codeTool).mode;
 }
 
 // Unavailable, refused or overloaded at the provider (it arrives as the relay's 502), or no first token in time.

@@ -2033,4 +2033,10 @@
   border: 2px dashed var(--ink);
   border-radius: 18px;
   pointer-events: none;
+/* Code execution: the code and output under an answer (src/CodeRuns.tsx). */
+.chat-design .code-runs {
+  margin: 0.25rem 0 0.5rem;
+}
+.chat-design .code-runs summary {
+  cursor: pointer;
 }

@@ -14,6 +14,8 @@ import {
   type Disclosure,
   type Source,
 } from "../shared/contracts";
+import { codeToolOn, runPython } from "./code-tool";
+import { CodeRuns, calculatedWithCode } from "./CodeRuns";
 import {
   answerLabel,
   autoMode,
@@ -756,6 +758,12 @@ export function App() {
         : choiceForThis === "auto"
           ? autoMode(next)
           : choiceForThis
+    // Code execution on this device (docs/code-execution-20261114.md): with it, Auto keeps maths in Fast.
+    const codeOn = codeToolOn(status);
+    const mode = qualified?.modes
+      ? choiceForThis === "auto"
+        ? autoMode(next, codeOn)
+        : choiceForThis
       : undefined;
     const hasBackup = !image && !!qualified && !!tierFor(qualified, mode).backupModel;
     let textArrived = false;
@@ -801,6 +809,28 @@ export function App() {
           mode,
           status.inference.cacheSalt,
           image?.dataUrl,
+          codeOn
+            ? {
+                run: runPython,
+                // Text streamed before the code ran was a preamble: the answer starts afresh.
+                onRuns: (codeRuns, unavailable) => {
+                  if (epoch.current === current && !abort.signal.aborted)
+                    setConversation((c) => ({
+                      ...c,
+                      messages: c.messages.map((m) =>
+                        m.id === answer.id
+                          ? {
+                              ...m,
+                              text: "",
+                              ...(codeRuns.length ? { codeRuns } : {}),
+                              ...(unavailable ? { codeUnavailable: true as const } : {}),
+                            }
+                          : m,
+                      ),
+                    }));
+                },
+              }
+            : undefined,
         );
         abort.signal.throwIfAborted();
         if (epoch.current === current) {
@@ -814,7 +844,9 @@ export function App() {
                     ...(!m.text ? { failure: "empty" as const } : {}),
                     ...(m.text
                       ? {
-                          arithmeticCheck: checkArithmetic(m.text),
+                          // Figures taken from code that ran here are not second-guessed by the
+                          // text recalculation: its notes would contradict the code mark.
+                          ...(calculatedWithCode(m) ? {} : { arithmeticCheck: checkArithmetic(m.text) }),
                           completenessCheck: checkAnswerCompleteness(
                             c.messages,
                             m.id,
@@ -864,6 +896,14 @@ export function App() {
         )
           throw error;
         retried = true;
+        // The backup answers without the code tool: runs of the failed attempt do not mark its answer.
+        if (epoch.current === current)
+          setConversation((c) => ({
+            ...c,
+            messages: c.messages.map((m) =>
+              m.id === answer.id ? { ...m, codeRuns: undefined, codeUnavailable: undefined } : m,
+            ),
+          }));
         if (
           epoch.current === current &&
           error instanceof IncompleteReplyError &&
@@ -1881,6 +1921,7 @@ export function App() {
                   {message.answeredBy && (
                     <p className="muted answered-by">{message.answeredBy}</p>
                   )}
+                  <CodeRuns message={message} />
                   {message.arithmeticCheck &&
                     message.arithmeticCheck.mismatches > 0 && (
                       <p className="warning arithmetic-check" role="alert">
