@@ -25,6 +25,7 @@ Running list kept while the owner is away (from 12 November 2026). Each entry na
 - **Confirmed:** allowance 150 requests per 7 days. Production search on (Brave); direct Exa stays stopped. Free, invite-only, one server. Erase deletes request records. Concurrency stays 3. Privatemode primary, Tinfoil backup only, switching manual and announced. German and English interface with a German off-switch, default off (built, `VITE_GERMAN_UI=1`, `docs/i18n-20261113.md`). German legal text is binding.
 - **Decided 14 November: Thinking counts 5** (owner confirmed after the update of 13 November night had said 3).
 - **Cost controls you want before anyone is invited** (`docs/pre-alpha-checklist.md` rows K1 to K6, all not built): maximum input size and maximum output tokens confirmed; a daily request cap beside the weekly one; a cost weight or cap per feature; retries not counted twice where avoidable; weekly reconciliation against the Privatemode portal; a notice to you when the free-token balance drops below 0.5M.
+- **Decided 14 November: the first invite waits until paid Privatemode billing is enabled.** The owner tops up first. No batch runs on the free quota alone; the free tokens are for testing.
 - **Privatemode budget (owner-reported, not verified):** 1.579M of 5M free tokens left. Pay-as-you-go cannot be enabled yet: the billing form needs a VAT ID and there is no registered company. Support was asked; waiting. The attestation-limit question went in the same email and is still unanswered.
 - **Known issue 1 (slow Thinking) is explained and closed:** `docs/thinking-slow-20261113.md`.
 - Feature status, row by row (what exists in the code and what is missing): `docs/pre-alpha-checklist.md` rows U1 to U12.
@@ -39,7 +40,7 @@ Running list kept while the owner is away (from 12 November 2026). Each entry na
 | 4 | Privatemode billing and the alpha key (rate limit and expiry, separate from the development key) | Steps 2 and 3; P10. Billing waits on item 3 or on support's answer |
 | 5 | Spend budget with a 90 % alert | Step 3; P12, S6 |
 | 6 | Rotate the exposed database password | Step 9; S2 |
-| 7 | Name a breach deputy | D15. The earlier default was no deputy for a 10-person alpha; your update asks for a name |
+| 7 | Breach deputy | **Decided 14 November: owner only, no deputy for now** (D15). Risk accepted: nobody acts on a breach while the owner is unreachable |
 | 8 | Safe Browsing review | Step 11; R4; `docs/safe-browsing-20261112.md` |
 | 9 | Device checks | Step 14; T1, T2 |
 | 10 | Score the 30-answer owner sample | Step 15; `evaluation/benchmark-fresh-20261112/owner-sample.md` |
@@ -165,7 +166,7 @@ Order = what unblocks the most first. My recommended default is in each row. Det
 | D12 | Whether to improve recall on scanned documents (87.3% on the German held-out set; ID numbers 94.1%), and how. A change must be tuned on the development split, then measured on a new held-out set. | No detector change in this slice. | Step 6 |
 | D13 | Add the measured masking limits to the approved privacy statement ("What stays on your device"). Proposed sentence (draft): "Not every one of these is recognised, least of all in photos and scans of documents, and web page addresses you approve for fetching are sent exactly as written." | The approved statement is unchanged; the same limits now appear in the app where they apply (note under answers, page-fetch approval). | T3 |
 | D14 | The privacy policy names no hosting provider (Render, with its network edge) and does not name Google sign-in as a recipient; the record of processing lists both. | Unchanged; added to the policy work with D8 and D10. | F1 |
-| D15 | Breach plan: name a deputy, or accept that nobody acts while the owner is unreachable during the alpha. | No deputy; the draft plan says so. | F1 |
+| D15 | Breach plan: name a deputy, or accept that nobody acts while the owner is unreachable during the alpha. | **Decided 14 November: owner only, no deputy for now.** Risk noted: while the owner is unreachable (travel, illness, night) nobody stops chat, reads the logs or starts the 72-hour notification clock under GDPR Art. 33. Review when invitees pass 10 or before launch. | F1 |
 | D16 | Approve the record of processing (`docs/art30-record-draft-20261112.md`) and the breach plan (`docs/breach-plan-draft-20261112.md`), both drafts. | Drafts in `docs/`, not acted on. | F1 |
 | D17 | If Privatemode is chosen, four sentences of the approved privacy statement must change (cache wording, metadata retention including permanent per-key token counts, soft spending limits, the browser-check gap), listed in `docs/provider-promises-20261112.md`. | The statement stays as approved; it is accurate for Tinfoil. | B19 |
 | D18 | Secret scan in CI. | **Resolved 12 November, no decision needed:** built as a small in-house script (`scripts/secret-scan.mjs`), no new dependency; history of all branches searched once, nothing found. | A9 |
