@@ -10,6 +10,18 @@ Research and code audit only. No code was changed, no tests or builds were run, 
 
 **Short answer.** CometRow is strong where the big products are weak (explicit context, on-device files, branches that never lose an answer, incognito, citations). It is weak in the small composer and message habits that people use fifty times a day: Enter to send, the view following the answer, edit and send in one step, retry on the answer with its cost, paste and drop, and a delete that asks first. Most of these are small. Section 3 ranks them and section 4 splits them into packages.
 
+## 0. Build status
+
+**Packages A, B and F are built (14 November 2026, commit `36dabab`, agent).** Not merged by this note, not deployed.
+
+- **A, composer.** With a keyboard, plain Enter sends through the form's own submit, so it does exactly what the Send button does (same masking, same allowance count). Shift+Enter makes a line. No send with a modifier key, while an input method composes text, from a held key, with an empty box, while a reply runs, or while the search-first choice or the health question is open. On touch devices Enter stays a new line. A desktop-only hint sits in the caption line. At 20,000 characters a notice says the message was cut; a counter shows from 1,000 characters left. The box height follows the text and resets. Dropped and pasted files go to `importFiles`; a drop anywhere in the window no longer opens the file; images go the existing photo-to-text way. New: `src/composer-keys.ts`, `src/file-drop.ts`, `src/text/composer.ts`.
+- **B, follow the answer.** The view follows streamed text without animation. Any move up stops it and a round "Jump to latest" button appears above the message box; the button or scrolling to the end resumes. The always-shown header link is gone. New: `src/follow-scroll.ts`.
+- **F, connection and screen reader.** Offline banner from the browser's own report (it does not block Send, see READINESS). "Answer complete" is announced once. After Send and Stop the focus goes back to the message box, not on touch devices. "Copy answer" shows "Copied" on the button for two seconds. New: `src/ConnectionBanner.tsx`, `src/text/connection.ts`.
+
+Verified: `npx tsc --noEmit` clean; `tests/composer-keys.test.ts` (6 tests); `tests/composer-ui.test.ts` (8 tests, local Chromium, fake inference) at 375, 768 and 1280 px in English and German plus a touch phone profile in both languages; the fake received exactly the intended sends. Also passing: `tests/i18n-app-ui.test.ts`, `answer-modes-ui`, `chat-recovery`, `when-to-search-ui`, `german-rules-ui`, `health-consent-ui`, `text-contrast`. `tests/browser/chat-design.spec.ts` was edited (it now scrolls up before pressing "Jump to latest") and **not run**. Not run: the UI sweep, the whole suite, the Playwright specs. Not verified: real phones, the on-screen keyboard, Safari, Firefox, any screen reader, a real drag from the desktop (the tests send synthetic drop events).
+
+Found while testing, not fixed: `germanRulesQuestion` (`src/german-rules.ts:125`) runs on every change of the draft and takes about 0.4 s for 2,000, 6 s for 8,000 and 31 s for 19,500 characters when the text is one unbroken run of the same letter. Ordinary text with spaces is fast. The page freezes for that time.
+
 ## 1. What the leading chat products offer
 
 ### 1.1 Feature list

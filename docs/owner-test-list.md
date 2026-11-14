@@ -378,8 +378,29 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 - [ ] **T-80 Two items from your concerns log (B13, F2).** The log is not in the repository. Describe them or drop them.
 - [ ] **T-81 Optional add-ons.** Remove the old Render disk, a second Privatemode organisation for tests, a status page (deploy doc, section 8). Default: not before the first invitee.
 
+- [ ] **T-82 Enter and Shift+Enter on a real phone keyboard and a hardware keyboard.**
+  Do: on a phone, type two lines with the on-screen Enter key, then tap Send. On a computer, press Shift+Enter, then Enter. Also with a Bluetooth keyboard on a tablet, and with a Japanese or Chinese input method if you have one.
+  Expect: phone: Enter makes a line, only the button sends. Computer: Enter sends once, Shift+Enter makes a line. Choosing a word in the input method does not send.
+  Tell the agent: device, keyboard, and any message that was sent without you wanting it. Not verified on any real device.
+
+- [ ] **T-83 Drag and drop on a computer.**
+  Do: drag a text file and a PDF from the desktop onto the chat. Drag one onto Settings. Paste a screenshot into the message box. Try Chrome, Firefox and Safari.
+  Expect: a frame "Drop files here" while dragging. The file appears under "File import results". The browser never opens the file or leaves the app. On Settings nothing happens.
+  Tell the agent: per browser: worked or not, and whether the frame stayed on screen after you dragged away. Not verified with a real drag.
+
+- [ ] **T-84 Jump to latest with the phone keyboard open.**
+  Do: on a phone, ask a Thinking question with a long answer. Scroll up while it streams. Tap into the message box so the keyboard opens. Tap the round arrow button.
+  Expect: the view stays where you scrolled. The arrow button sits above the message box, not under the keyboard. Tapping it goes to the newest text and follows again.
+  Tell the agent: phone, browser, and a screenshot if the button is hidden or covers text.
+
+- [ ] **T-85 Offline banner in flight mode.**
+  Do: type a draft. Switch on flight mode. Wait a few seconds. Switch it off.
+  Expect: a banner says the device has no connection and nothing can be sent. The draft stays. The banner goes away when the connection is back. It never says the server is down.
+  Tell the agent: device, browser, and how long the banner took to appear and to go.
+
 ---
 
 ## Changes
 
 - 14 November 2026: first version. 81 items. Sources: handoff, decisions doc, checklist, deploy doc, alpha plan, week-one monitoring, and the feature docs of 13 and 14 November. Where docs disagreed, the newest was used (decisions doc and `docs/READINESS.md` of 14 November).
+- 14 November 2026: added T-82 to T-85 (Enter key, drag and drop, jump to latest, offline banner) under "Needs a real device" for chat packages A, B and F.
