@@ -1,4 +1,12 @@
 # PrivateAI readiness checklist
+## 14 November 2026: the suggested search text can be edited, and is masked again (agent)
+
+Before: the search suggestion box showed the text for Brave Search as fixed text. Now: it is a text field filled with the suggestion, in the suggestion box, the search-first choice on Send and the search-again box. What the user types is masked again on the device by the same function; when masking changes it, "This text will be sent:" and the exact text appear under the field, and the tap sends that text. The server's rule for a search text (2 to 400 characters) is checked on the device with a message, and an empty text disables the button. Enter in the field searches; it does not send the chat message. With no edit, one tap behaves as before. Automatic search and "Always search for rules, fees and deadlines" send the unedited suggestion. The disclosure sentence is unchanged. Design: `docs/when-to-search-20261112.md`, "Search text".
+
+Verified by `tests/when-to-search.test.ts` (7 tests) and, in a local Chromium at 375 px with the API intercepted, `tests/when-to-search-ui.test.ts` and `tests/german-rules-ui.test.ts`: the body sent to `/api/research/prepare` equals the shown text, also after an edit with a typed email address and with "Deutschland" changed to "Österreich". `npx tsc --noEmit` is clean.
+
+**Not verified:** no live search, no real phone, Safari or Firefox, no screen reader, no on-screen keyboard. Not run: the whole suite, the durable suite, the Playwright specs (none was edited).
+
 ## 14 November 2026: voice-to-text (dictation) built, switched off, nothing verified live (agent)
 
 Before: a disabled "Coming later" microphone button. Now: with `inference.voice.enabled` in the deployment config and `speech` in the qualification report (both absent by default), a microphone button records up to `maxSeconds`, sends the recording through the verified Privatemode session to the report's speech model, and puts the text into the message box. Nothing is sent to the chat until the user presses Send. Design, caps and cost: `docs/voice-to-text-20261114.md`.

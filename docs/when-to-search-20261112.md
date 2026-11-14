@@ -40,13 +40,27 @@ Detected (tested): "What is the current ECB deposit rate?", "Who is the CEO of S
 
 The search text is the question as typed, with recognised identifiers removed on the device by `prepareSearchQuery` (the same function as the Research tab). If the result is shorter than 2 or longer than 200 characters, no suggestion is shown and automatic search does not run: long messages are rarely a simple lookup, and the provider limit is 400.
 
-**Update, 14 November 2026 (owner decision):** for a rules question that names no country, the search text ends with "Germany" ("Deutschland" for a German interface or a German question). The word is added on the device after the identifiers are removed, is shown in the box before the tap, and is part of the exact text sent to Brave Search; the server adds nothing. Ordinary time-sensitive searches are unchanged. The box shows the text; it cannot be typed into. Rule and examples: `docs/german-routing-20261113.md`, last section.
+**Update, 14 November 2026 (owner decision):** for a rules question that names no country, the search text ends with "Germany" ("Deutschland" for a German interface or a German question). The word is added on the device after the identifiers are removed, is shown in the box before the tap, and is part of the exact text sent to Brave Search; the server adds nothing. Ordinary time-sensitive searches are unchanged. Rule and examples: `docs/german-routing-20261113.md`, last section.
+
+**Update, 14 November 2026: the search text can be edited.** The text in the box is now a text field, filled with the suggestion. It is the same field in all three places the box appears: the suggestion above the message box, the search-first choice on Send, and the search-again box under an answer.
+
+- **Nothing edited:** one tap sends the suggestion, as before.
+- **Edited:** what the user types is masked again on the device on every change, by the same `prepareSearchQuery` (`editedSearchText` in `src/when-to-search.ts`). The field keeps what the user typed. When the masked text differs from it (an identifier was removed, or a line break or double space became one space), the line "This text will be sent:" and the exact text appear under the field, and the "Removed from the search text before approval" line counts what was removed from the question and from the edit together. The tap sends the masked text, never the typed one. The field is not rewritten while the user types, because that would move the cursor in the middle of a word.
+- **Limits:** the server accepts a search text of 2 to 400 characters after trimming (`disclosureSchema` in `shared/contracts.ts`), and the device checks the masked text against that same schema. Shorter, or empty: the search button is disabled and "The search text needs at least 2 characters." is shown. Longer (possible only when masking lengthens the text, since the field stops at 400 typed characters): the button is disabled and "The search text is too long. The limit is 400 characters." is shown. The 200-character rule still decides whether a suggestion is offered at all; it does not limit the edit.
+- **Enter** in the field does what the search button does. It never sends the chat message. Escape still closes the search-first choice.
+- **Scope of an edit:** one suggestion for one draft. Changing the question brings the new suggestion. Sending (also after a search) or another conversation drops the edit; after a failed search it is kept. Nothing is stored.
+- **Automatic paths** ("Search automatically ..." and "Always search for rules, fees and deadlines") show no box and send the unedited suggestion.
+- **The question is not changed.** The edit changes only what goes to Brave Search. The chat message is sent as typed and masked as before.
+- The disclosure sentence ("One tap sends exactly this text ...") is unchanged: with no difference the field is the text, and with a difference the exact text stands directly above the sentence.
+- Tested by `tests/when-to-search.test.ts` and, in a local Chromium at 375 px, `tests/when-to-search-ui.test.ts` and `tests/german-rules-ui.test.ts` (the request body equals the shown text). Not checked: real phones, Safari, Firefox, a screen reader, an on-screen keyboard.
 
 ## Exact wording (verbatim)
 
 Suggestion box above the composer:
 - Heading: **"This question may need current information."**
-- Label before the text: **"Search the web for:"** followed by the exact search text.
+- Label before the text: **"Search the web for:"** followed by the exact search text (since 14 November an editable field; this text is its label).
+- When an edit was changed by masking: **"This text will be sent:"** followed by the exact text.
+- When an edit is too short or too long: **"The search text needs at least 2 characters."** / **"The search text is too long. The limit is 400 characters."**
 - When identifiers were removed (existing wording from `describeKept`): **"Removed from the search text before approval: 1 email address."** (counts and kinds vary).
 - When the text may still name a person (existing wording): **"This search text may still contain personal details, such as a name or a long number, that cannot be recognised automatically. The search provider will see exactly this text. Approve only if that is fine."**
 - Explanation: **"One tap sends exactly this text to Brave Search through our server, and our server opens the top result page, preferring an official site. Nothing else from your conversation is sent. Press Send instead to answer without searching."**
