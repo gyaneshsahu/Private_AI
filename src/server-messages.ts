@@ -35,6 +35,9 @@ const GERMAN: Record<string, string> = {
   "The daily voice input limit is reached. It frees up within 24 hours. No request was forwarded.": `Das Tageslimit für Spracheingabe ist erreicht. Es wird innerhalb von 24 Stunden wieder frei. ${NOTHING_SENT}`,
   "The recording could not be transcribed. No automatic retry was made.":
     "Die Aufnahme konnte nicht in Text umgewandelt werden. Es wurde nicht automatisch erneut versucht.",
+  // Picture questions
+  "Picture questions are not switched on. No request was forwarded.": `Fragen zu Bildern sind nicht eingeschaltet. ${NOTHING_SENT}`,
+  "The daily picture limit is reached. It frees up within 24 hours. No request was forwarded.": `Das Tageslimit für Bilder ist erreicht. Es wird innerhalb von 24 Stunden wieder frei. ${NOTHING_SENT}`,
   "Only encrypted requests to the qualified destination are accepted.":
     "Nur verschlüsselte Anfragen an das freigegebene Ziel werden angenommen.",
   "The approved deployment manifest is unavailable.":
@@ -191,6 +194,10 @@ const PATTERNS: [RegExp, (...groups: string[]) => string][] = [
   [
     /^Not enough request allowance: voice input counts as (\d+) requests\. No request was forwarded\.$/,
     (n) => `Ihr Kontingent reicht nicht aus: Die Spracheingabe zählt als ${n} Anfragen. ${NOTHING_SENT}`,
+  ],
+  [
+    /^Not enough request allowance: a picture question counts as (\d+) requests\. No request was forwarded\.$/,
+    (n) => `Ihr Kontingent reicht nicht aus: Eine Frage zu einem Bild zählt als ${n} Anfragen. ${NOTHING_SENT}`,
   ],
 ];
 

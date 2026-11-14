@@ -178,7 +178,7 @@ it("charges the image price, not the mode's text price, and bounds image questio
   }
   const third = await post(root, headers(cookie, status.csrf));
   expect(third.status).toBe(429);
-  expect((await third.json()).error).toContain("daily image limit");
+  expect((await third.json()).error).toContain("daily picture limit");
   expect(usage.summary(accountId)).toMatchObject({ used: 7 });
   // Text chat still works after the day's images are used.
   expect((await post(root, headers(cookie, status.csrf, { image: false }))).status).toBe(200);
@@ -194,7 +194,7 @@ it("refuses without enough allowance and at the daily unit cap, and such a refus
     const refused = await post(tight.root, headers(tight.cookie, tight.status.csrf));
     expect(refused.status).toBe(429);
     expect((await refused.json()).error).toBe(
-      "Not enough request allowance: this image question counts as 3 requests. No request was forwarded.",
+      "Not enough request allowance: a picture question counts as 3 requests. No request was forwarded.",
     );
   }
   expect(upstream).not.toHaveBeenCalled();

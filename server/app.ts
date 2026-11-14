@@ -521,7 +521,7 @@ export function createApp(config: Config) {
       const declared = declaredImage(req.headers, q, config.images, textLimit);
       if ("refused" in declared) {
         count(`image.refused_${declared.refused}`);
-        res.status(400).json({ error: "Image questions are not switched on. No request was forwarded." });
+        res.status(400).json({ error: "Picture questions are not switched on. No request was forwarded." });
         return;
       }
       res.locals.image = declared.image;
@@ -572,7 +572,7 @@ export function createApp(config: Config) {
       if (declared.image && !imageDay.take(who)) {
         res.locals.outcome = "refused_image_daily";
         res.status(429).json({
-          error: "The daily image limit is reached. It frees up within 24 hours. No request was forwarded.",
+          error: "The daily picture limit is reached. It frees up within 24 hours. No request was forwarded.",
         });
         return;
       }
@@ -669,8 +669,10 @@ export function createApp(config: Config) {
               res.locals.outcome = "refused_allowance";
               res.status(429).json({
                 error:
-                  cost > 1
-                    ? `Not enough request allowance: this ${declared.image ? "image question" : "mode"} counts as ${cost} requests. No request was forwarded.`
+                  declared.image && cost > 1
+                    ? `Not enough request allowance: a picture question counts as ${cost} requests. No request was forwarded.`
+                    : cost > 1
+                    ? `Not enough request allowance: this mode counts as ${cost} requests. No request was forwarded.`
                     : "No request allowance is available. No request was forwarded.",
               });
               return;
