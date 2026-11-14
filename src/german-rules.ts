@@ -18,7 +18,7 @@ const TOPIC_DE = cue(
   /(?<!\p{L})(\p{L}*bu(ß|ss)geld\p{L}*|flensburg|geblitzt|blitzer\p{L}*|fahrverbot|innerorts|außerorts|winterreifen|hauptuntersuchung|rote\p{L}* ampel|rotlicht\p{L}*|(handy|alkohol) am steuer|promille\p{L}*|falschpark\p{L}*|parkverstoß|\p{L}*frist\p{L}*|(?!an)\p{L}*kündig\p{L}*|\p{L}*miet\p{L}*|vermieter\p{L}*|nebenkosten\p{L}*|\p{L}*kaution|mindesturlaub|urlaubsanspruch|resturlaub|urlaubstage|elternzeit|mutterschutz|probezeit|arbeitsvertrag|krankschreibung|lohnfortzahlung|abmahnung|abfindung|mindestlohn|kurzarbeit\p{L}*|gewährleistung\p{L}*|widerruf\p{L}*|rückgaberecht|umtauschrecht|steuererklärung|steuerklasse|\p{L}*freibetrag|einkommensteuer\p{L}*|finanzamt|kirchensteuer|grundsteuer|hundesteuer|kfz-steuer|kleinunternehmer\p{L}*|werbungskosten|pendlerpauschale|aufbewahr\p{L}*|steuer-id|steuernummer|kindergeld|elterngeld|bürgergeld|wohngeld|bafög|arbeitslosengeld|pflegegeld|\p{L}*rente(n\p{L}*)?|bürgeramt|einwohnermeldeamt|\p{L}*behörde\p{L}*|ausländerbehörde|standesamt|jobcenter|ummeld\p{L}*|wohnsitz\p{L}*|meldebescheinigung|wohnungsgeber\p{L}*|personalausweis|reisepass|\p{L}*ausweis|führerschein\p{L}*|fahrerlaubnis|zulassungsstelle|kfz-zulassung|\p{L}*zulassung|aufenthaltstitel|aufenthaltserlaubnis|einbürgerung|rundfunkbeitrag|krankenkasse\p{L}*|krankenversicherung\p{L}*|zusatzbeitrag|pflegeversicherung|sozialversicherung\p{L}*)(?!\p{L})/iu,
 );
 const TOPIC_EN =
-  /\b(speeding( tickets?| fines?)?|traffic fines?|penalty points|red lights?|drink[- ]driving|parking tickets?|notice period|landlords?|tenants?|tenancy|rent (increase|rise|reduction)|security deposit|minimum (annual )?(leave|holiday|vacation)|holiday entitlement|probation(ary)? period|statutory warranty|right of withdrawal|tax returns?|tax allowance|tax-free allowance|income tax|tax class|child benefit|parental (allowance|benefit|leave)|citizen'?s income|unemployment benefits?|pensions?|registration office|register (my )?address|deregister|ID card|identity card|passports?|driving licen[cs]e|driver'?s license|vehicle registration|licen[cs]e plates?|TV licen[cs]e|broadcasting fee|health insurance|residence permit|minimum wage|winter (tyres|tires)|retention period)\b/i;
+  /\b(speeding( tickets?| fines?)?|traffic fines?|penalty points|red lights?|drink[- ]driving|parking tickets?|notice period|landlords?|tenants?|tenancy|rent (increase|rise|reduction)|security deposit|minimum (annual )?(leave|holiday|vacation)|holiday entitlement|probation(ary)? period|statutory warranty|right of withdrawal|tax returns?|tax allowance|tax-free allowance|income tax|tax class|child benefit|parental (allowance|benefit|leave)|citizen'?s income|unemployment benefits?|registration office|register (my )?address|deregister|ID card|identity card|passports?|driving licen[cs]e|driver'?s license|vehicle registration|licen[cs]e plates?|TV licen[cs]e|broadcasting fee|health insurance|residence permit|minimum wage|winter (tyres|tires)|retention period)\b/i;
 // Everyday words for the same topics (13 November, evaluation/german-routing-20261113): what
 // people say instead of the official term (GEZ, Knöllchen, über Rot), and further legal topics.
 // Tax counts as something done (absetzen, zahlen, zurückbekommen), not as an amount: "Netto und
@@ -97,14 +97,78 @@ const DEALINGS = words(
 );
 // The user's own figures: with two or more money or percent amounts the question is a sum, so an
 // amount question alone is not enough ("500 € inklusive 19 % Mehrwertsteuer. Wie viel Steuer …").
-const OWN_FIGURE = /\d[\d.,]*\s?(€|eur\b|euro\b|%|prozent\b)|(€|\bEUR)\s?\d/gi;
+const OWN_FIGURE = /\d[\d.,]*\s?(€|eur\b|euros?\b|%|prozent\b|percent\b)|(€|\bEUR)\s?\d/gi;
+// Working out a total, a share or a split of those figures ("Wie viel zahlt jede Person?").
 const SUM_OF_THEM = cue(
-  /(?<!\p{L})(wie ?viel (ist|sind|macht|wäre|wären) das|was macht das|how much is that|what percentage)(?!\p{L})/iu,
+  /(?<!\p{L})(wie ?viel (ist|sind|macht|wäre|wären) das|was macht das|how much is that|what percentage|aufteil\p{L}*|aufgeteilt|geteilt durch|pro (person|kopf)|jede person|jeder von (uns|ihnen)|split|each (person|of (us|them))|per (person|head))(?!\p{L})/iu,
 );
 // An organisation's own rule (a company, a club) is not an official one.
 const INTERNAL = cue(
-  /(?<!\p{L})(intranet|bei uns (in der|im) (firma|abteilung|schule|betrieb|büro|unternehmen|verein|team))(?!\p{L})/iu,
+  /(?<!\p{L})(intranet|bei uns (in der|im) (firma|abteilung|schule|betrieb|büro|unternehmen|verein|team)|(company|office|team|club|house) (policy|rules?|guidelines?|handbook)|(at|in) (our|my) (company|office|firm|club|team|department)|(my|our) team)(?!\p{L})/iu,
 );
+// The rules of a game or a sport are not official ones either.
+const GAME =
+  /\b(chess|monopoly|poker|board game|card game|video game|the game|football|soccer|rugby|basketball|tennis|hockey|referee|offside)\b/i;
+
+// English (14 November, "English coverage" in docs/german-routing-20261113.md): the same design as
+// German. Users live in Germany, Austria or Switzerland, so no country has to be named. A frame
+// (permission, duty, amount or deadline, entitlement) counts with a domain, never a word alone.
+const en = (...families: string[]) => new RegExp(String.raw`\b(${families.join("|")})\b`, "i");
+// Whoever has legal duties towards the user.
+const PARTY_WORDS = String.raw`landlord|landlady|tenants?|employers?|boss|manager|company|insurer|insurance|bank|seller|shop|store|retailer|airline|neighbou?rs?|police|authorit(y|ies)|court|school|kindergarten|daycare|council|government|provider|agency|gym`;
+// "Can my boss …", "Can the landlord …", "Must the shop …": a rules question as it stands.
+const PARTY_EN = en(PARTY_WORDS);
+const THEIR_EN = en(String.raw`(can|could|may|must|shall) (my|our|your|the|a|an) (\w+ )?(${PARTY_WORDS})`);
+const ALLOWED_EN = en(
+  String.raw`allowed|permitted|legal|illegal|lawful|forbidden|prohibited|banned`,
+  String.raw`what happens if (i|we|you|my)|what if (i|we) (do not|don't|miss)`,
+);
+const OWN_DUTY_EN = en(String.raw`(have|has|need|needs|required|obliged|obligated|supposed) to|must (i|we|you)|mandatory|compulsory|obligatory`);
+const ASKING_EN = en(
+  String.raw`how (much|many|long|often|high|old|soon)|by when|until when|from when|when (is|are|do|does|must|should|can|will)`,
+  String.raw`what(['’]s| is| are) (the|my)|what does|do (i|we|you) (need|get|qualify)|(can|could|may|will|would) (i|we|you)|is there an?|are there|eligible`,
+);
+const ENTITLED_EN = en(
+  String.raw`entitled|entitlement|by law|legally|statutory|unlawful|against the law|my (legal )?rights|(have|has) (a|the|any) right to|sue|time-barred|statute of limitations|limitation period`,
+);
+// Official vocabulary: what the state, a law or an authority sets, grants, charges or decides.
+const OFFICIAL_EN = en(
+  String.raw`tax(es|ed|able)?|tax-free|vat|deduct\w*|customs|duty-free|tolls?|vignette`,
+  String.raw`benefits?(?! of)|allowances?|pensions?|subsid(y|ies)|welfare|social security|child support|alimony`,
+  String.raw`fees?|fines?|fined|penalt(y|ies)|surcharges?|contributions?|deposits?`,
+  String.raw`permits?|visas?|licen[cs]es?|citizenship|naturali[sz]\w*|passports?|residence|residency|blue card|authorit(y|ies)|job ?cent(er|re)`,
+  String.raw`(tax|immigration|registration|foreigners['’]?|citizens['’]?|employment|welfare) office`,
+  String.raw`deadlines?|limits?(?! (of|as))|minimum (wage|age)|fired|dismiss\w*|evict\w*|deport\w*|laid off|severance`,
+  String.raw`sick (leave|pay|notes?|days?)|(maternity|paternity|parental|annual|paid|unpaid) leave|(vacation|holiday|leave) (days|entitlement|pay)|overtime|probation\w*`,
+  String.raw`refunds?|compensation|warranty|anmeldung|ummeldung|abmeldung`,
+);
+// Everyday places and roles the law attaches to; they count only with a permission frame.
+const PLACES_EN = en(
+  PARTY_WORDS,
+  String.raw`flat|apartment|house|balcony|garden|yard|basement|stairwell|hallway|rent(ed|ing|al)?|sublet\w*|lease|noise|quiet hours`,
+  String.raw`school|children|child|kids?|minors?|under ?1[0-8]|at 1[0-8]|teenagers?`,
+  String.raw`roads?|streets?|pavement|sidewalk|cycle path|bike lane|motorway|autobahn|highway|cars?|driv(e|ing)|park(ed|ing)?|bikes?|bicycle|cycl(e|ing)|e-?scooter|moped|motor(bike|cycle)|trains?|bus|tram|flights?|tickets?`,
+  String.raw`work(s|ed|ing|place)?|jobs?|employ\w+|shifts?|part-time|full-time|freelanc\w+|self-employed|intern(ship)?|apprentice\w*|students?|salary|wages?|holidays?|vacation|sundays?`,
+);
+// Buying, contracts and records: dealings with a counterparty.
+const DEALINGS_EN = en(
+  String.raw`contracts?|subscriptions?|membership|bought|purchase[ds]?|ordered|cancel\w*|invoices?|receipts?|records|return (it|them|something|an?|the|my)|send (it|them) back`,
+);
+// Registering an address, a car, a dog or a business.
+const REGISTER_EN = en(String.raw`(de-?)?regist(er|ers|ered|ering|ration)`);
+const REGISTER_WHAT_EN = en(String.raw`address|residence|car|vehicle|dog|business|trade|moved?|moving|birth|marriage|authorit(y|ies)`);
+// Another country's rule is out of scope: the official-source handling is for Germany, Austria and
+// Switzerland. Only a place ("in France") or the rule itself ("US tax", "UK visa") counts, so "I am
+// from India" or "my Turkish passport" changes nothing.
+const ELSEWHERE = String.raw`usa|u\.s\.a?\.?|united states|america|uk|u\.k\.|united kingdom|britain|england|scotland|ireland|france|spain|italy|portugal|netherlands|belgium|poland|denmark|sweden|norway|greece|turkey|india|china|japan|canada|australia|brazil|mexico|california|texas|florida|new york|london|paris|dubai`;
+const ABROAD = [
+  en(String.raw`(in|under|within|across) (the )?(us|${ELSEWHERE})`),
+  en(
+    String.raw`(us|${ELSEWHERE}|american|british|english|irish|french|spanish|italian|dutch|polish|turkish|indian|chinese|japanese|canadian|australian) (law|laws|tax|taxes|visa|rules|regulations|minimum wage|citizenship|courts?)`,
+  ),
+  /\b(IRS|HMRC|NHS)\b/,
+];
+const AT_HOME = cue(/\b(germany|german|austrian?|swiss|switzerland|here)\b|deutsch|österreich|schweiz/iu);
 // A question about software is not a rules question, whatever the software computes.
 const SOFTWARE =
   /(?<!\p{L})(python|javascript|typescript|java|sql|excel|regex|html|css|json|csv|datetime)(?!\p{L})/iu;
@@ -131,26 +195,38 @@ const ASK = cue(
 // Rewriting, translating, summarising or writing given text: the rule words belong to the text,
 // not to a question. shortcut: "Write me what my notice period is" is missed; widen if seen.
 const TRANSFORM = cue(
-  /^\s*(please\s+|bitte\s+)?(rewrite|rephrase|reword|translate|summari[sz]e|shorten|proofread|write|draft|compose|turn (this|these)|make (this|these)\b)|(?<!\p{L})(formulier\p{L}*|übersetze|übersetz|fasse\p{L}*|zusammenfass\p{L}*|kürze|korrigiere den text|(kürzer|freundlicher|höflicher|förmlicher|lockerer) (machen|formulieren|schreiben|fassen))(?!\p{L})|^\s*(bitte\s+)?(schreib\p{L}*|entwirf|verfasse)(?!\p{L})/iu,
+  /^\s*(please\s+|bitte\s+)?((can|could) you\s+)?(please\s+)?(help me\s+(to\s+)?)?(rewrite|rephrase|reword|translate|summari[sz]e|shorten|proofread|write|draft|compose|turn (this|these)|make (this|these)\b)|(?<!\p{L})(formulier\p{L}*|übersetze|übersetz|fasse\p{L}*|zusammenfass\p{L}*|kürze|korrigiere den text|(kürzer|freundlicher|höflicher|förmlicher|lockerer) (machen|formulieren|schreiben|fassen))(?!\p{L})|^\s*(bitte\s+)?(schreib\p{L}*|entwirf|verfasse)(?!\p{L})/iu,
 );
 
 /** True when the text asks about German rules, fees, deadlines or administration. */
 export function germanRulesQuestion(question: string): boolean {
   const text = fold(question.replace(IDENTIFIER, " "));
-  if (TRANSFORM.test(text) || INTERNAL.test(text) || SOFTWARE.test(text)) return false;
+  if (TRANSFORM.test(text) || INTERNAL.test(text) || SOFTWARE.test(text) || GAME.test(text)) return false;
+  if (ABROAD.some((rule) => rule.test(text)) && !AT_HOME.test(text)) return false;
   const ownFigures = (text.match(OWN_FIGURE)?.length ?? 0) >= 2;
   if (ownFigures && SUM_OF_THEM.test(text)) return false;
   const allowed = ALLOWED.test(text);
   const official = OFFICIAL.test(text);
   const dealings = DEALINGS.test(text);
+  // English frames take German official words too ("How much Kirchensteuer do I pay?").
+  const officialEn = official || OFFICIAL_EN.test(text);
+  const dealingsEn = DEALINGS_EN.test(text);
+  const english =
+    THEIR_EN.test(text) ||
+    ENTITLED_EN.test(text) ||
+    (REGISTER_EN.test(text) && REGISTER_WHAT_EN.test(text)) ||
+    (ALLOWED_EN.test(text) && (officialEn || dealingsEn || PLACES_EN.test(text))) ||
+    (!ownFigures && OWN_DUTY_EN.test(text) && (officialEn || dealingsEn || PARTY_EN.test(text))) ||
+    (!ownFigures && ASKING_EN.test(text) && officialEn);
   const topic =
+    english ||
     TOPIC_DE.test(text) ||
     EVERYDAY_DE.test(text) ||
     (REGISTER.test(text) && REGISTER_WHAT.test(text)) ||
     (FRAME_DE.test(text) && PARTY_DE.test(text)) ||
     TOPIC_EN.test(text) ||
     STATUTE.test(question) ||
-    (GERMANY.test(text) && RULE.test(text)) ||
+    (GERMANY.test(text) && (RULE.test(text) || OWN_DUTY_EN.test(text))) ||
     ENTITLED.test(text) ||
     (allowed && (official || dealings || PLACES.test(text))) ||
     (!ownFigures && OWN_DUTY.test(text) && (official || dealings)) ||
