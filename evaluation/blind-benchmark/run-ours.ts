@@ -39,10 +39,16 @@ const choice = arg("choice") ?? "without";
 if (choice !== "search" && choice !== "without") throw Error("--choice must be search or without");
 // --goggles: the server flag for the Brave Goggle on German-rules searches (default off).
 const goggles = process.argv.includes("--goggles");
+// --code: code execution on the device switched on (docs/code-execution-20261114.md), as
+// `inference.code` does on the server. The model's Python runs in this browser's Pyodide worker.
+const code = process.argv.includes("--code");
+// --cases <file>: an arithmetic-gate case file ({cases: [{id, turns}]}) instead of prompts.json,
+// e.g. evaluation/arithmetic-gate/unseen-v3-20261023.json. Every turn's answer is in `turnTexts`.
+const casesFile = arg("cases");
 // BENCH_DIR runs another prompt set (e.g. evaluation/benchmark-fresh-20261112).
 const DIR = process.env.BENCH_DIR ?? "evaluation/blind-benchmark";
 // BENCH_OUT writes elsewhere, so a measurement run does not overwrite earlier evidence.
-const OUT = process.env.BENCH_OUT ?? `.local/${basename(DIR)}/ours${privatemode ? "-privatemode" : ""}${tapAll ? "-tapped" : ""}${arg("choice") ? `-choice-${choice}` : ""}`;
+const OUT = process.env.BENCH_OUT ?? `.local/${basename(DIR)}/ours${privatemode ? "-privatemode" : ""}${tapAll ? "-tapped" : ""}${arg("choice") ? `-choice-${choice}` : ""}${code ? "-code" : ""}`;
 // Each Privatemode message makes three POSTs (attest, secret, chat) against the 200-POST
 // session limit, so start a new browser context (a new session) every few prompts.
 // Each prompt also opens a fresh page, so it verifies again, and the relay gives one session 10
@@ -79,6 +85,11 @@ const NOTICES = [
   /^Our server also opened (the top (official )?result|an official source|a public-interest page|a non-official page)/,
   /^No official source was found/,
   /^The top result \(/,
+  // Code execution: the mark, the control that opens the code, and the two failure notes.
+  /^Calculated with code on this device/,
+  /^Show the code and its output/,
+  /^Code was tried on this device/,
+  /^The calculation was not run on this device/,
 ];
 
 // Controls are found by the app's own English and German labels, so --locale de-DE works too.
@@ -88,7 +99,11 @@ const searchName = either(WHEN_TO_SEARCH_TEXT.en.button, WHEN_TO_SEARCH_TEXT.de.
 const searchAgainName = either(WHEN_TO_SEARCH_TEXT.en.againButton, WHEN_TO_SEARCH_TEXT.de.againButton);
 const withoutName = either(GERMAN_RULES_TEXT.en.without, GERMAN_RULES_TEXT.de.without);
 type Prompt = { id: string; level: number | string; prompt: string | string[]; attachments?: { path: string }[]; searchExpected?: boolean; searchQuery?: string };
-const prompts = (JSON.parse(await readFile(`${DIR}/prompts.json`, "utf8")).prompts as Prompt[]).filter((p) => !only || only.includes(p.id));
+const prompts = (
+  casesFile
+    ? (JSON.parse(await readFile(casesFile, "utf8")).cases as { id: string; turns: string[] }[]).map((c) => ({ id: c.id, level: "arithmetic", prompt: c.turns }) as Prompt)
+    : (JSON.parse(await readFile(`${DIR}/prompts.json`, "utf8")).prompts as Prompt[])
+).filter((p) => !only || only.includes(p.id));
 
 // Router release digest of the day (attestation only, no key). Tinfoil only.
 const digest = privatemode
@@ -174,7 +189,7 @@ await new Promise((ok) => listener.once("listening", ok));
 const port = (listener.address() as { port: number }).port;
 const origin = tls ? `https://localhost:${port}` : `http://127.0.0.1:${port}`;
 const providerManifest = privatemode ? new Uint8Array(await readFile(".local/privatemode-manifest.json")) : undefined;
-const inner = createApp({ origin, dev: true, qualification, apiKey, searchKey, providerManifest, searchGoggles: goggles });
+const inner = createApp({ origin, dev: true, qualification, apiKey, searchKey, providerManifest, searchGoggles: goggles, ...(code ? { code: true } : {}) });
 const vite = await createServer({ server: { middlewareMode: true, hmr: false }, appType: "spa", logLevel: "error" });
 inner.use(vite.middlewares);
 outer.use(inner);
@@ -288,8 +303,10 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
     let last = { ttftMs: undefined as number | undefined, totalMs: 0, text: "", suggestionShown: false, suggestedQuery: undefined as string | undefined, suggestionHeading: undefined as string | undefined, tapped: false, choiceShown: false, choiceHeading: undefined as string | undefined, choiceQuery: undefined as string | undefined, chose: undefined as string | undefined, againShown: false, maxGapMs: 0, tokens: undefined as number | undefined };
     const all: { ttftMs?: number; totalMs: number; maxGapMs: number; tokens?: number }[] = [];
     let first: typeof last | undefined;
+    const rawTexts: string[] = [];
     for (const t of turns) {
       last = await sendTurn(page, t, { tapSuggestion: (tapAll || !!(query && searchKey && probe.suggestionShown)) && !first });
+      rawTexts.push(last.text);
       first ??= last;
       all.push({ ttftMs: last.ttftMs, totalMs: last.totalMs, maxGapMs: last.maxGapMs, tokens: last.tokens });
     }
@@ -313,6 +330,13 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
     const notice = (l: string) => NOTICES.some((n) => n.test(l.trim()));
     const notices = lines.filter((l) => l !== label && notice(l));
     const text = lines.filter((l) => l !== label && !notice(l)).join("\n");
+    // Every turn's answer without the app's own lines, for scoring a multi-turn case.
+    const turnTexts = rawTexts.map((raw) =>
+      raw.split("\n").filter((l) => l.trim() && !/^(CometRow|Copy answer)$/.test(l.trim()) && !/^(Auto|Fast|Thinking)( ·|$)/.test(l.trim()) && !notice(l)).join("\n"),
+    );
+    // Code execution: the mark of each answer, and every piece of code with its output as the user can open it.
+    const codeMarks = await page.locator("article.assistant .code-used").allInnerTexts().catch(() => [] as string[]);
+    const codeRuns = await page.locator("article.assistant details.code-runs pre").evaluateAll((pres) => pres.map((pre) => pre.textContent ?? "")).catch(() => [] as string[]);
     // The app's own failure line (why a reply is incomplete), for diagnosis only.
     const failure = /Response ended incomplete|Incomplete/.test(last.text)
       ? (await page.locator("main").innerText().catch(() => ""))
@@ -321,7 +345,7 @@ async function runOne(context: BrowserContext, mode: string, p: Prompt) {
           .slice(0, 4)
       : undefined;
     return {
-      text, notices, failure, ...(httpErrors.length ? { httpErrors } : {}), ttftMs: all[0].ttftMs, totalMs: all.reduce((n, t) => n + t.totalMs, 0), turnTimings: all, model: "(see tiers)", mode, label, searched,
+      text, turnTexts, ...(code ? { codeMarks, codeRuns } : {}), notices, failure, ...(httpErrors.length ? { httpErrors } : {}), ttftMs: all[0].ttftMs, totalMs: all.reduce((n, t) => n + t.totalMs, 0), turnTimings: all, model: "(see tiers)", mode, label, searched,
       suggestionShown: probe.suggestionShown || !!first?.suggestionShown, suggestedQuery: first?.suggestedQuery, suggestionHeading: first?.suggestionHeading, tapped: !!first?.tapped, choiceShown: !!first?.choiceShown, choiceHeading: first?.choiceHeading, choiceQuery: first?.choiceQuery, chose: first?.chose, againShown: last.againShown, searchedQuery, pageRead, topPageNote, noOfficialNote, uncheckedWarning, links, citations, research: await research,
     };
   } finally {
@@ -369,6 +393,6 @@ try {
   await vite.close();
   listener.close();
 }
-await writeFile(`${OUT}/run.json`, JSON.stringify({ startedAt, finishedAt: new Date().toISOString(), digest, tiers, relayRequests, prompts: prompts.length, modes: MODES, choice, goggles }, null, 2));
+await writeFile(`${OUT}/run.json`, JSON.stringify({ startedAt, finishedAt: new Date().toISOString(), digest, tiers, relayRequests, prompts: prompts.length, modes: MODES, choice, goggles, code }, null, 2));
 // The relay's own content-free counts (chat outcomes, attestation calls): shows a run that verified too often.
 console.log(`done: ${relayRequests} relay requests; counts ${JSON.stringify((await import("../../server/counters")).takeCounts())}`);
