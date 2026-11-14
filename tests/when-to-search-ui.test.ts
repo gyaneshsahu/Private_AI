@@ -155,10 +155,10 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
     await send.click();
     await ui(
       page.getByRole("status").filter({ hasText: "Searched the web automatically for:" }),
-    ).toContainText('"Wie hoch ist der Mindestlohn? Mail [email address removed]"');
+    ).toContainText('"Wie hoch ist der Mindestlohn? Mail [email address removed] Deutschland"');
     expect(searches.at(-1)).toEqual({
       kind: "search",
-      value: "Wie hoch ist der Mindestlohn? Mail [email address removed]",
+      value: "Wie hoch ist der Mindestlohn? Mail [email address removed] Deutschland",
     });
     // A timeless question is not searched even with the setting on.
     await ui(page.locator("article.assistant")).toHaveCount(3);

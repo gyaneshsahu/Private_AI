@@ -1,6 +1,6 @@
 // When to search (docs/when-to-search-20261112.md): on-device rules that spot a question
 // needing current information, the masked search text, and the opt-in automatic setting.
-import { germanRulesQuestion, liveText, textBlock } from "./german-rules";
+import { germanRulesQuestion, interfaceLanguage, liveText, namesCountry, textBlock } from "./german-rules";
 import { prepareSearchQuery } from "./identifier-masking";
 
 // Always time-sensitive. \p{L} boundaries so German umlauts count as letters.
@@ -52,15 +52,30 @@ export function needsCurrentInformation(text: string, now = new Date()): boolean
  * German rules, fees and deadlines (src/german-rules.ts), flagged `rules` for their heading.
  * `rulesAnswer`: the answer to this question stated unchecked rules (the answer-side check), so
  * the search-again box is offered even when the question itself was not recognised.
+ * A rules question that names no country gets "Germany" ("Deutschland" for a German interface or
+ * a German question) at the end of the shown text (owner decision of 14 November 2026), so the
+ * results are not another country's rules. The word is part of the text the user sees and
+ * approves; the server adds nothing.
  */
-export function searchSuggestion(text: string, now = new Date(), rulesAnswer = false) {
+export function searchSuggestion(
+  text: string,
+  now = new Date(),
+  rulesAnswer = false,
+  lang = interfaceLanguage(),
+) {
   const rules = rulesAnswer || germanRulesQuestion(text);
   if (!rules && !needsCurrentInformation(text, now)) return undefined;
+  // Identifiers are removed first; the country goes on the masked text.
   const prepared = prepareSearchQuery(text);
-  return prepared.value.length >= 2 && prepared.value.length <= 200
-    ? { ...prepared, rules }
-    : undefined;
+  const country =
+    rules && !namesCountry(text) ? (lang === "de" || GERMAN_TEXT.test(text) ? " Deutschland" : " Germany") : "";
+  // The country is left off rather than losing the suggestion to the length limit.
+  const value = prepared.value.length + country.length <= 200 ? prepared.value + country : prepared.value;
+  return value.length >= 2 && value.length <= 200 ? { ...prepared, value, rules } : undefined;
 }
+// A German question in an English interface: an umlaut or a common German word.
+const GERMAN_TEXT =
+  /[äöüß]|(?<!\p{L})(ich|wie|wann|welche\p{L}*|der|das|und|ist|mein\p{L}*|muss|darf|kostet|eine[mnr]?|fuer|bei|gibt)(?!\p{L})/iu;
 
 const key = "privateai.autoSearch";
 // The narrower setting (13 November): only German rules, fees and deadlines are searched without

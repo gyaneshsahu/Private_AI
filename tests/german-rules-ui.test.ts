@@ -86,6 +86,8 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     const without = suggestion.getByRole("button", { name: "Answer without checking" });
     const sent = () => page.evaluate(() => (window as unknown as { __sent?: [string, number][] }).__sent ?? []);
     const question = "Welche Kündigungsfrist habe ich als Mieter bei einem unbefristeten Mietvertrag?";
+    // The question names no country, so the shown and sent search text ends with one (14 November).
+    const searched = `${question} Deutschland`;
 
     // A question that is not about rules sends directly.
     await message.fill("Explain recursion");
@@ -106,7 +108,7 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
       "This answer gives figures or deadlines that were not checked against an official source.",
     );
     await ui(suggestion).toContainText("This answer did not use current information.");
-    await ui(suggestion.locator("pre")).toHaveText(missed);
+    await ui(suggestion.locator("pre")).toHaveText(`${missed} Deutschland`);
     await ui(suggestion.getByRole("button", { name: "Search and answer again" })).toBeVisible();
     expect(searches).toEqual([]);
     await page.reload();
@@ -116,7 +118,7 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     await ui(suggestion).toContainText(
       "Rules, fees and deadlines change. Check the official source first. Search the web for:",
     );
-    await ui(suggestion.locator("pre")).toHaveText(question);
+    await ui(suggestion.locator("pre")).toHaveText(searched);
     await ui(suggestion).not.toContainText("Press Send instead");
     await ui(without).toHaveCount(0);
 
@@ -125,7 +127,7 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     await ui(suggestion).toContainText(
       "This is about rules, fees or deadlines, which change. Search the official source first? Search the web for:",
     );
-    await ui(suggestion.locator("pre")).toHaveText(question);
+    await ui(suggestion.locator("pre")).toHaveText(searched);
     await ui(without).toBeVisible();
     await ui(searchFirst).toBeFocused();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
@@ -159,7 +161,7 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     await ui(page.locator("article.assistant").last()).toContainText("Synthetic: drei Monate gesetze-im-internet.de");
     await ui(page.locator("article.assistant").last().locator(".arithmetic-check")).toHaveCount(0);
     expect(await page.locator("article.assistant").count()).toBe(1);
-    expect(searches).toEqual([{ kind: "search", value: question }]);
+    expect(searches).toEqual([{ kind: "search", value: searched }]);
     // With web results selected, a follow-up rules question is answered from them directly.
     await message.fill("Und welche Frist gilt für den Vermieter?");
     await send.click();
@@ -174,7 +176,7 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     await send.click();
     await ui(searchFirst).toBeFocused();
     const shown = await suggestion.locator("pre").innerText();
-    expect(shown).toBe("Wie hoch ist das Bußgeld innerorts bei 21 km/h zu schnell? Mail [email address removed]");
+    expect(shown).toBe("Wie hoch ist das Bußgeld innerorts bei 21 km/h zu schnell? Mail [email address removed] Deutschland");
     await page.keyboard.press("Enter");
     await ui(page.locator("article.assistant").last()).toContainText("Synthetic: drei Monate gesetze-im-internet.de");
     expect(searches.at(-1)).toEqual({ kind: "search", value: shown });
@@ -188,10 +190,10 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     await send.click();
     await ui(
       page.getByRole("status").filter({ hasText: "Searched the web automatically for:" }),
-    ).toContainText(question);
+    ).toContainText(searched);
     await ui(page.locator("article.assistant")).toHaveCount(1);
     await ui(without).toHaveCount(0);
-    expect(searches.at(-1)).toEqual({ kind: "search", value: question });
+    expect(searches.at(-1)).toEqual({ kind: "search", value: searched });
     expect(searches).toHaveLength(3);
     // An official source in the results: the page note says so, and no note under the answer.
     await ui(page.getByRole("status").filter({ hasText: "Searched the web automatically for:" })).toContainText(
@@ -233,10 +235,10 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     await message.fill(next);
     await send.click();
     await ui(page.getByRole("status").filter({ hasText: "Searched the web automatically for:" })).toContainText(
-      "Wie viele Tage Mindesturlaub habe ich? Mail [email address removed]",
+      "Wie viele Tage Mindesturlaub habe ich? Mail [email address removed] Deutschland",
     );
     await ui(without).toHaveCount(0);
-    expect(searches.at(-1)).toEqual({ kind: "search", value: "Wie viele Tage Mindesturlaub habe ich? Mail [email address removed]" });
+    expect(searches.at(-1)).toEqual({ kind: "search", value: "Wie viele Tage Mindesturlaub habe ich? Mail [email address removed] Deutschland" });
     // Other time-sensitive questions are not covered: Send answers without a search.
     await page.reload();
     await message.fill("Wer ist aktuell Bundeskanzler?");

@@ -40,6 +40,8 @@ Detected (tested): "What is the current ECB deposit rate?", "Who is the CEO of S
 
 The search text is the question as typed, with recognised identifiers removed on the device by `prepareSearchQuery` (the same function as the Research tab). If the result is shorter than 2 or longer than 200 characters, no suggestion is shown and automatic search does not run: long messages are rarely a simple lookup, and the provider limit is 400.
 
+**Update, 14 November 2026 (owner decision):** for a rules question that names no country, the search text ends with "Germany" ("Deutschland" for a German interface or a German question). The word is added on the device after the identifiers are removed, is shown in the box before the tap, and is part of the exact text sent to Brave Search; the server adds nothing. Ordinary time-sensitive searches are unchanged. The box shows the text; it cannot be typed into. Rule and examples: `docs/german-routing-20261113.md`, last section.
+
 ## Exact wording (verbatim)
 
 Suggestion box above the composer:

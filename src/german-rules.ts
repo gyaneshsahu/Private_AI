@@ -161,10 +161,11 @@ const REGISTER_WHAT_EN = en(String.raw`address|residence|car|vehicle|dog|busines
 // Switzerland. Only a place ("in France") or the rule itself ("US tax", "UK visa") counts, so "I am
 // from India" or "my Turkish passport" changes nothing.
 const ELSEWHERE = String.raw`usa|u\.s\.a?\.?|united states|america|uk|u\.k\.|united kingdom|britain|england|scotland|ireland|france|spain|italy|portugal|netherlands|belgium|poland|denmark|sweden|norway|greece|turkey|india|china|japan|canada|australia|brazil|mexico|california|texas|florida|new york|london|paris|dubai`;
+const ELSEWHERE_PEOPLE = String.raw`american|british|english|irish|french|spanish|italian|dutch|polish|turkish|indian|chinese|japanese|canadian|australian`;
 const ABROAD = [
   en(String.raw`(in|under|within|across) (the )?(us|${ELSEWHERE})`),
   en(
-    String.raw`(us|${ELSEWHERE}|american|british|english|irish|french|spanish|italian|dutch|polish|turkish|indian|chinese|japanese|canadian|australian) (law|laws|tax|taxes|visa|rules|regulations|minimum wage|citizenship|courts?)`,
+    String.raw`(us|${ELSEWHERE}|${ELSEWHERE_PEOPLE}) (law|laws|tax|taxes|visa|rules|regulations|minimum wage|citizenship|courts?)`,
   ),
   /\b(IRS|HMRC|NHS)\b|\bvisa (for|to enter) (the )?[A-Z]/,
 ];
@@ -232,6 +233,31 @@ export function germanRulesQuestion(question: string): boolean {
     (!ownFigures && OWN_DUTY.test(text) && (official || dealings)) ||
     (!ownFigures && ASKING.test(text) && official);
   return topic && (!EXPLAIN.test(text) || ASK.test(text));
+}
+
+// A city, a Land or a body that already says which of the three countries is meant.
+const PLACE_AT_HOME = words(
+  String.raw`berlin|hamburg|münchen|munich|köln|cologne|frankfurt|stuttgart|düsseldorf|leipzig|dresden|hannover|nürnberg|bremen`,
+  String.raw`bayern|bavaria|nrw|nordrhein-westfalen|hessen|sachsen|baden-württemberg|wien|vienna|graz|salzburg|zürich|zurich|bern|basel|genf|geneva`,
+  String.raw`bundes\p{L}+|flensburg|gez|bafög|bürgergeld|jobcenter|schufa|elster`,
+);
+const NAMED_ELSEWHERE = en(ELSEWHERE, ELSEWHERE_PEOPLE);
+/**
+ * True when the text already says where its rule applies: Germany, Austria, Switzerland or the EU
+ * (also by a city, a Land, a federal body or a German statute), or a country outside them. Used
+ * for the suggested search text only (src/when-to-search.ts), never by the detector above.
+ * shortcut: "deutsch" and "German" as a language ("auf Deutsch") count as naming Germany.
+ */
+export function namesCountry(question: string): boolean {
+  // "here" keeps a foreign rule at home for the detector, but names no country for a search.
+  const text = fold(question.replace(IDENTIFIER, " ")).replace(/\bhere\b/gi, " ");
+  return (
+    AT_HOME.test(text) ||
+    PLACE_AT_HOME.test(text) ||
+    STATUTE.test(question) ||
+    NAMED_ELSEWHERE.test(text) ||
+    ABROAD.some((rule) => rule.test(text))
+  );
 }
 
 // Figures an answer states as facts: money, periods, deadlines, points, § references.

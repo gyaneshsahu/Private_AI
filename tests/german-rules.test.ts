@@ -155,7 +155,7 @@ describe("detector", () => {
 describe("before sending", () => {
   it("offers the search with the rules heading even when the question is not time-sensitive", () => {
     const now = new Date("2026-11-13T00:00:00Z");
-    expect(searchSuggestion(prompts["G-04"], now)).toMatchObject({ value: prompts["G-04"], rules: true });
+    expect(searchSuggestion(prompts["G-04"], now)).toMatchObject({ value: `${prompts["G-04"]} Deutschland`, rules: true });
     expect(searchSuggestion(prompts["T-04"], now)).toMatchObject({ rules: false });
     expect(searchSuggestion("Explain recursion", now)).toBeUndefined();
     // Ends with a full stop: the box goes on with "Search the web for:".
@@ -312,7 +312,7 @@ describe("answer-side check", () => {
     const question = "Was ist bei Geschenken vom Chef zu beachten?";
     expect(germanRulesQuestion(question)).toBe(false);
     expect(searchSuggestion(question, now)).toBeUndefined();
-    expect(searchSuggestion(question, now, true)).toMatchObject({ value: question, rules: true });
+    expect(searchSuggestion(question, now, true)).toMatchObject({ value: `${question} Deutschland`, rules: true });
   });
 });
 
