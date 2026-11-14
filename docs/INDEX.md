@@ -7,6 +7,7 @@ This is a map of `docs/` for new sessions and for Graphify. Files dated 11 to 13
 | File | What it is |
 | --- | --- |
 | `handoff-20261113.md` | The state at the end of 13 November, decisions, open items, known issues and what to read |
+| `owner-test-list.md` | Everything the owner must test, do or decide, as a short checklist with ids (T-01 ...), kept up to date as features land |
 | `owner-decisions.md` | Every owner decision and the owner's next steps, using the alpha-scope labels |
 | `pre-alpha-checklist.md` | Every item before launch, with who does it and when (before the first invitee, or during the alpha) |
 | `ARCHITECTURE.md` | The top section, "Current system, 13 November 2026"; the dated history follows below it |
