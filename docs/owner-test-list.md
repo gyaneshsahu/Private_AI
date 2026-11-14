@@ -412,46 +412,46 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
   Do: after a Fast answer, read the buttons under it. Press "Retry last response", then "Answer again with Thinking". Then press "Report a problem".
   Expect: both retry buttons show their cost in the label, also on a phone (no hover needed). Each press makes one new answer. "Report a problem" opens Help with "An answer was incorrect or misleading" already chosen. The note holds no text from your chat.
   Tell the agent: any label that is cut off or wraps badly on your phone, in German and English.
-- [ ] **T-86 Memory: save and use (needs a build with `VITE_MEMORY=1`).**
+- [ ] **T-89 Memory: save and use (needs a build with `VITE_MEMORY=1`).**
   Do: unlock the vault. Type "Remember that I am vegetarian" and send. Choose Save memory. In a new chat ask "Suggest a vegetarian dinner". Open the line under the answer.
   Expect: the first message is not sent and costs no allowance. A question "Save as a memory?" shows your words. The answer fits a vegetarian without saying "you told me". The line says 1 memory was sent and shows it.
   Tell the agent: the answer text, whether it mentioned the memory by itself, and its language. Not verified with a real model.
 
-- [ ] **T-87 Memory: German and English mixed.**
+- [ ] **T-90 Memory: German and English mixed.**
   Do: save one memory in English. Ask a fitting question in German. Then the other way round.
   Expect: each answer is in the language of the question, not of the memory.
   Tell the agent: any answer in the wrong language, with the question and the memory.
 
-- [ ] **T-88 Memory screen on a phone.**
+- [ ] **T-91 Memory screen on a phone.**
   Do: Settings, Memory. Add, edit, mark "Always include", delete one, then Forget all. Lock the vault and open the screen again.
   Expect: every button is easy to hit. Delete and Forget all ask first. After Forget all the list is empty. With the vault locked the screen says to unlock it and shows no memories.
   Tell the agent: phone, browser, and a screenshot of anything cut off or hard to tap. Not verified on any real device.
 
-- [ ] **T-89 Memory stays out where it should.**
+- [ ] **T-92 Memory stays out where it should.**
   Do: pin a memory ("Always include"). Ask a question in an incognito chat. In a normal chat, untick "Use memory in this chat" in the chat menu and ask again.
   Expect: no line about memories under either answer, and neither answer uses the memory.
   Tell the agent: any answer that used the memory.
 
-- [ ] **T-90 Decide: memory on for the alpha, and its privacy wording.**
+- [ ] **T-93 Decide: memory on for the alpha, and its privacy wording.**
   Do: read `docs/memory-privacy-wording-draft-20261114.md` (part 1 for the claim, part 2 for the policy sentences, part 3 for the texts in the app).
   Expect: you can say yes or no to switching it on, to the limits (200 memories, 8 per question, 3 pinned), and to each proposed sentence.
   Tell the agent: your decision and any sentence to change. Recommended: on after T-86 and T-87 pass.
-- [ ] **T-86 Deep research: one whole run (only after the lead switched it on and ran the live checks).**
+- [ ] **T-94 Deep research: one whole run (only after the lead switched it on and ran the live checks).**
   Do: open Research. Under "Deep research" type a question that needs several sources, for example about a notice period and where the law says so. Tap "Plan the research". Read the proposed search texts. Change one, remove one. Tap "Search for these texts". Watch the steps. At the end tap "Show the answer".
   Expect: nothing is searched before you approve. The steps show Planning, Searching, Reading pages, Writing the answer, each with its outcome. The answer has source links, and a line above it says how many searches and pages were used. The panel says "Requests counted for this run: 15 of 15".
   Tell the agent: the question, the proposed texts, how long it took, and whether the answer was worth 15 requests.
 
-- [ ] **T-87 Deep research: a personal detail never reaches a search text.**
+- [ ] **T-95 Deep research: a personal detail never reaches a search text.**
   Do: ask a research question that contains an email address or a phone number. Look at the proposed texts. Then type the address into one of the texts yourself.
   Expect: no proposed text contains the detail. After you type it in, the line "This text will be sent" shows the text without it.
   Tell the agent: any text that showed the detail as it would be sent.
 
-- [ ] **T-88 Deep research: stop.**
+- [ ] **T-96 Deep research: stop.**
   Do: start a run and tap "Stop the research" while it says "Searching". Start another and stop it while the answer is being written.
   Expect: it stops at once. The panel says it was stopped and how many requests were counted (5 of 15 after the plan; "at most 15" when stopped during the answer). Sources found so far are added to the conversation.
   Tell the agent: anything that kept running after Stop, and whether the counted number matches your usage page.
 
-- [ ] **T-89 Deep research: export.**
+- [ ] **T-97 Deep research: export.**
   Do: after a finished run, export the conversation as PDF and use "Copy conversation as text".
   Expect: both show the answer, the line about searches and pages, and the numbered sources with their addresses.
   Tell the agent: anything missing in either.
@@ -465,3 +465,4 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 - 14 November 2026: added T-86 to T-88 (long own message, edit and send, retry cost and report a problem) for chat packages C and D.
 - 14 November 2026: added T-86 to T-90 (memory across chats: save and use, mixed languages, the Memory screen on a phone, incognito and per-chat off, the decision and privacy wording).
 - 14 November 2026: added T-86 to T-89 (deep research: a whole run, masking of search texts, stop, export). Only after the lead switched the feature on.
+- 14 November 2026: items from T-86 on renumbered in file order after three features were merged with the same numbers (now T-86 to T-97: long own message, edit and send, retry cost, memory, deep research). Older Changes lines above still name the numbers each agent first used.
