@@ -4,6 +4,22 @@ Running list kept while the owner is away (from 12 November 2026). Each entry na
 
 ## What needs you before the alpha, in order (updated 13 November)
 
+**Decisions waiting for you, 14 November 2026 (agent's recommended default in brackets; nothing below is switched on).** Details in each feature's doc; the matching test items are in `docs/owner-test-list.md`.
+
+1. **Privatemode rotated its deployment manifest today.** The live manifest is now `d63eb5cf91cb3079fe25a848573a4d0e9d869f462dab4f71fd02bdb372f8e833`; the report draft approves only the old one. Hosted chat refuses until the signed report approves the new digest (fail closed, as designed). The agent approved it in its LOCAL test report only, so live tests could continue. [Approve the new digest when you sign the report; write the new manifest file to Render with it.]
+2. **Feature switches for the alpha** (all off today): voice input, read aloud, PDF export, images, code execution, memory, deep research, canvas. [Switch on one at a time after your device checks, starting with code execution (live result: 30 of 30 and 16 of 16 exact) and PDF export.]
+3. **Code execution:** long-lived browser caching of `/vendor/pyodide/<version>/` (widens a reviewed caching rule; without it each calculation downloads 13.5 MB) [accept]; follow-up requests on credit are not in the usage ledger [accept for the alpha]; 3 tool rounds with 2 free [keep].
+4. **Images:** daily pictures [10, or 5 while tokens are short]; image cost [2 units]; ask about health for every picture until consent [keep]; faces only by black boxes [accept].
+5. **Voice:** model [Whisper; both were exact on clean samples]; 120 s per recording, 10 minutes a day [keep]; microphone permission for everyone or only when voice is on [only when voice is on].
+6. **Read aloud on Android** [keep silent]; **print dialog as PDF export** [accept].
+7. **Deep research:** cost 15 [keep]; 3 runs and 24 searches per account per day [keep]; everyone or an allow-list [everyone]; context size 32,000 in the signed report (deep research cannot run at 8,000) [32,000].
+8. **Memory:** creation only when the user asks [keep]; limits 200 memories, 8 per question [keep]; add "Names and addresses are not masked" to the Memory screen [yes].
+9. **Canvas:** HTML mini pages [stay out; would need a separate origin].
+10. **Scheduled tasks** (design only, `docs/scheduled-tasks-design-20261114.md`): reminders in the vault plus a calendar file, nothing on the server [yes]; empty Web Push later [not now]; email reminders [no; no mail sender exists].
+11. **Privacy wording drafts** for voice, images, memory, deep research and the OCR language-file sentence: approve after the legal read, German first, and set a new policy date.
+12. **Search text editing:** done; no decision. **Breach deputy:** decided, owner only.
+
+
 **Added 14 November 2026 (owner-only, same read as the rest of the policy):** one new sentence in the privacy policy, English and German, at the end of "What you can delete, and how" / "Was Sie löschen können und wie" (`shared/privacy-policy.ts`). It says the text-recognition language files (public data, none of the user's content) are kept in the browser's storage after the first use, and that clearing the site's data removes them together with everything else saved on the device. It follows your decision of 14 November to keep the OCR data in the browser. An agent wrote both sentences and re-recorded the change pair; nobody has approved them. They need your approval and the same legal read as the rest of the policy, the German sentence first because it is the binding one. The policy date (22 October 2026) was not changed; decide the new date when you approve the policy as a whole. Details: `docs/third-party-ocr-data-20261114.md`.
 
 **Scope rule (owner, 13 November): alpha = beta, with the new feature scope.** There is no beta. Nothing is "later" any more. Every item is either **before the first invitee** or **during the alpha, before launch** (real invitees must use it before launch). An item leaves the scope only by an explicit owner decision. Handoff for the next session: `docs/handoff-20261113.md`. **Update, 13 November, night:** the owner named the features in this phase and an explicit "later" list (next block).
