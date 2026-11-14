@@ -6,6 +6,7 @@ This is a map of `docs/` for new sessions and for Graphify. Files dated 11 to 13
 
 | File | What it is |
 | --- | --- |
+| `wake-up-report-20261114.md` | What was built, verified and spent on 14 November, what is half-done, and the risks |
 | `handoff-20261113.md` | The state at the end of 13 November, decisions, open items, known issues and what to read |
 | `owner-test-list.md` | Everything the owner must test, do or decide, as a short checklist with ids (T-01 ...), kept up to date as features land |
 | `owner-decisions.md` | Every owner decision and the owner's next steps, using the alpha-scope labels |
