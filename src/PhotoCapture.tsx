@@ -272,8 +272,9 @@ export function PhotoCapture({
       className="photo-dialog"
       aria-label={t.title}
       onKeyDown={containDialogFocus}
+      // Escape and the back gesture arrive as cancel. No onClose: the element's own close event also
+      // fires when React's development double-mount closes and reopens it, which ended the dialog at once.
       onCancel={onClose}
-      onClose={onClose}
     >
       <div className="row">
         <h2>{t.title}</h2>
