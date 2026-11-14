@@ -99,10 +99,10 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
     await ui(suggestion).toHaveCount(0);
 
     // Time-sensitive question: the exact masked text is shown. Send alone searches nothing.
-    await message.fill("What is the current fee for transfers, mail max.mustermann@example.com");
+    await message.fill("Who is the current CEO of Siemens, mail max.mustermann@example.com");
     await ui(suggestion).toContainText("This question may need current information.");
     await ui(suggestion.locator("pre")).toHaveText(
-      "What is the current fee for transfers, mail [email address removed]",
+      "Who is the current CEO of Siemens, mail [email address removed]",
     );
     await ui(suggestion).toContainText(
       "Removed from the search text before approval: 1 email address.",
@@ -119,7 +119,7 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
     await ui(suggestion).toContainText("This answer did not use current information.");
     await ui(suggestion.getByRole("button", { name: "Search and answer again" })).toBeVisible();
     await ui(suggestion.locator("pre")).toHaveText(
-      "What is the current fee for transfers, mail [email address removed]",
+      "Who is the current CEO of Siemens, mail [email address removed]",
     );
     expect(searches).toEqual([]);
     const answers = await page.locator("article.assistant").count();
@@ -130,7 +130,7 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
     // The answer is replaced, not added; exactly the shown text was searched.
     expect(await page.locator("article.assistant").count()).toBe(answers);
     expect(searches).toEqual([
-      { kind: "search", value: "What is the current fee for transfers, mail [email address removed]" },
+      { kind: "search", value: "Who is the current CEO of Siemens, mail [email address removed]" },
     ]);
 
     // One tap runs exactly the shown text, then answers from the results.
@@ -174,9 +174,9 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
         (sent) => [sent.question, sent.sources],
       ),
     ).toEqual([
-      ["What is the current fee for transfers, mail max.mustermann@example.com", 0],
+      ["Who is the current CEO of Siemens, mail max.mustermann@example.com", 0],
       // Asked again after the one-tap check, now with the web result.
-      ["What is the current fee for transfers, mail max.mustermann@example.com", 1],
+      ["Who is the current CEO of Siemens, mail max.mustermann@example.com", 1],
       ["Wer ist Bundeskanzler?", 2],
       ["Wie hoch ist der Mindestlohn? Mail max.mustermann@example.com", 3],
       ["Explain recursion", 3],
