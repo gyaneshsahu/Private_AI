@@ -185,3 +185,17 @@ Not run: the whole suite, the durable suite, the Playwright end-to-end specs. No
 4. The model: Whisper large-v3 (proposed) or Voxtral Mini 3B, after live check 5.
 5. The privacy wording in `docs/voice-privacy-wording-draft-20261114.md`, including the sentence about spoken numbers.
 6. `microphone=(self)` for everyone from the next deploy, or only while voice input is on (that needs a small change to the header code and to `scripts/check-headers.mjs`).
+
+## Checked live, 14 November 2026 (lead, development key)
+
+Two synthetic samples made with the laptop's own Windows voices (one German, one English sentence, about 10 seconds each, WAV), sent through the Privatemode SDK with `evaluation/privatemode/voice-probe.ts`.
+
+- **Both models answered and both transcripts were exact**, including "Köln", "Gebühr" and "Personalausweis". `whisper-large-v3` and `voxtral-mini-3b` each took about 0.5 s.
+- **One verification covered the chat call and all four transcriptions.**
+- **Response shape:** JSON with `text` and `usage`; `usage` came back empty, so the relay cannot meter audio from the reply. Cost stays bounded by upload size and count, as designed.
+- **Format:** WAV is accepted.
+- The speech models are now in the model-watch baseline (`server/privatemode-models-baseline.json`).
+
+Not checked: WebM/Opus from Chrome and Firefox and MP4/AAC from Safari (the formats the browser recorder produces), real human speech, accents, noise, dialect, a full 120-second recording and its encrypted size, the whole path through the app and relay in a browser, phones, how Privatemode bills the minutes. Clean synthetic speech is the easy case, so this does not choose between the two models.
+
+Also found while merging: the Render bridge did not forward the Privatemode SDK's request headers, so chat and voice would both have failed on the hosted site. Fixed the same day (`server/render-bridge.ts`, `tests/render-bridge-headers.test.ts`).

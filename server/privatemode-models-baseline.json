@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-11-13T23:05:44.530Z",
+  "recordedAt": "2026-11-14T03:49:15.894Z",
   "source": "https://api.privatemode.ai/v1/models (plain HTTPS)",
   "models": {
     "glm-5.3": {
@@ -17,6 +17,20 @@
         "generate",
         "tool_calling",
         "vision"
+      ]
+    },
+    "whisper-large-v3": {
+      "id": "whisper-large-v3",
+      "object": "model",
+      "tasks": [
+        "transcribe"
+      ]
+    },
+    "voxtral-mini-3b": {
+      "id": "voxtral-mini-3b",
+      "object": "model",
+      "tasks": [
+        "transcribe"
       ]
     }
   }
