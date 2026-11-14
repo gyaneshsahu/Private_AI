@@ -2,8 +2,9 @@ import { useState } from "react";
 import { BACKUP_MAX_BYTES } from "./vault-backup";
 import { useLang, useText } from "./i18n";
 import { vaultBackupText } from "./text/vault-ui";
-import { memoryEnabled } from "./device-features";
+import { memoryEnabled, projectSpacesEnabled } from "./device-features";
 import { memoryText } from "./text/memory";
+import { projectText } from "./text/projects";
 
 export function VaultBackup({
   busy,
@@ -28,6 +29,7 @@ export function VaultBackup({
       <p>
         {t.keepIntro}
         {memoryEnabled() && ` ${memoryText[lang].backupAlso}`}
+        {projectSpacesEnabled() && ` ${projectText[lang].notInBackup}`}
       </p>
       <p className="muted">{t.limits}</p>
       <button disabled={busy || !canExport} onClick={() => void onExport()}>

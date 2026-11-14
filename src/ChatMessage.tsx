@@ -14,6 +14,8 @@ import { MessageMeta } from "./MessageMeta";
 import { MemoryNote } from "./MemoryPanel";
 import { memoryText } from "./text/memory";
 import { canvasText } from "./text/canvas";
+import { projectText } from "./text/projects";
+import { projectSpacesEnabled } from "./device-features";
 import { PdfExportButton } from "./PdfExportButton";
 import { ReadAloudButton } from "./ReadAloudButton";
 import { sourceHistoryStatus } from "./source-history";
@@ -226,6 +228,9 @@ export function ChatMessage({
       )}
       {message.passagesUsed && <p className="muted passages-used">{message.passagesUsed}</p>}
       {message.memoriesUsed && <MemoryNote ids={message.memoriesUsed} />}
+      {message.projectInstructionsSent && projectSpacesEnabled() && (
+        <p className="muted project-used">{projectText[lang].instructionsSent}</p>
+      )}
       {message.keptOnDevice && (
         <p className="muted kept-on-device">
           {message.keptOnDevice} {t.keptNote}

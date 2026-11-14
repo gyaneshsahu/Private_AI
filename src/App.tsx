@@ -107,7 +107,7 @@ import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { stopReading } from "./read-aloud";
 import { PdfExportButton } from "./PdfExportButton";
-import { canvasEnabled, liveVoiceEnabled, memoryEnabled, readAloudEnabled } from "./device-features";
+import { canvasEnabled, liveVoiceEnabled, memoryEnabled, projectSpacesEnabled, readAloudEnabled } from "./device-features";
 import { CANVAS_LIMITS, keepForUndo, proposedText, withCanvas, withoutEarlierCanvas } from "./canvas";
 import { CanvasPanel } from "./CanvasPanel";
 import { canvasText } from "./text/canvas";
@@ -125,6 +125,9 @@ import {
 } from "./MemoryPanel";
 import { memoryText } from "./text/memory";
 import { AttestationBusyError, DeploymentChangedError } from "./providers/inference-client";
+import { projectInstructionsBlock } from "./projects";
+import { ProjectPanel, useHeldProjects, useProjectVault } from "./ProjectPanel";
+import { projectText } from "./text/projects";
 import { chatErrorText } from "./text/chat-errors";
 import { abortable, withDeadline } from "./abortable";
 import { createCalculationSession } from "./calculation-session";
@@ -281,9 +284,12 @@ export function App() {
   // Memory across chats (docs/memory-20261114.md): held only while the vault is unlocked.
   const memories = useMemories();
   const [remember, setRemember] = useState<{ text: string; draft: boolean }>();
+  // Projects (docs/projects-20261114.md): instructions and files go with questions from what is held.
+  const heldProjects = useHeldProjects();
+  const [openProject, setOpenProject] = useState<string>();
   const selectedContextSize = useMemo(
     () => measureContext(conversation, input),
-    [conversation, input, memories],
+    [conversation, input, memories, heldProjects],
   );
   const [busy, setBusy] = useState("");
   const [source, setSource] = useState<Source>();
@@ -394,6 +400,7 @@ export function App() {
   const controller = useRef<AbortController | null>(null);
   const vault = useRef<Vault | null>(null);
   useMemoryVault(vault.current, unlocked);
+  useProjectVault(projects, vault.current, unlocked);
   const epoch = useRef(0);
   const accessNavigation = useRef(false);
   const outputEnd = useRef<HTMLDivElement>(null);
@@ -810,8 +817,11 @@ export function App() {
       // Large documents: which passages this answer was given, and that the rest was not sent.
       // Memory: the ids of the notes that go with this question (the same choice composeContext makes).
       ...(memoriesFor(next).length ? { memoriesUsed: memoriesFor(next).map((m) => m.id) } : {}),
+      ...(projectInstructionsBlock(next) ? { projectInstructionsSent: true as const } : {}),
       // A deep research answer: what was searched and read comes first (shown and exported the same way).
-      passagesUsed: [research?.note, ...passageNotes(next, true)].filter(Boolean).join(" ") || undefined,
+      // At most what a saved answer holds: with project files many documents can be named.
+      passagesUsed:
+        [research?.note, ...passageNotes(next, true)].filter(Boolean).join(" ").slice(0, 4000) || undefined,
     };
     setConversation({ ...next, messages: [...next.messages, answer] });
     if (consumeDraft) setInput("");
@@ -1326,7 +1336,13 @@ export function App() {
     }
   }
   async function eraseEverything() {
-    if (!window.confirm(t.eraseConfirm + (memoryEnabled() ? ` ${memoryText[lang].eraseAlso}` : "")))
+    if (
+      !window.confirm(
+        t.eraseConfirm +
+          (memoryEnabled() ? ` ${memoryText[lang].eraseAlso}` : "") +
+          (projectSpacesEnabled() ? ` ${projectText[lang].eraseAlso}` : ""),
+      )
+    )
       return;
     const current = epoch.current;
     setBusy(t.erasing);
@@ -1536,6 +1552,25 @@ export function App() {
       if (current === epoch.current) setBusy("");
     }
   }
+  // The project screen's delete: the project's chats first when the user chose that, then the project.
+  async function deleteProject(id: string, withChats: boolean): Promise<boolean> {
+    if (withChats) {
+      const current = epoch.current;
+      setBusy(t.deletingSnapshot);
+      try {
+        for (const c of saved.filter((s) => s.projectId === id)) {
+          await vault.current!.delete(c.id);
+          if (conversation.id === c.id) reset();
+        }
+      } catch {
+        if (current === epoch.current) fail(t.deleteFailed);
+        return false;
+      } finally {
+        if (current === epoch.current) setBusy("");
+      }
+    }
+    return editProject(id);
+  }
   async function organizeChat(
     c: Conversation,
     change: Pick<Conversation, "pinned" | "archived" | "projectId" | "title">,
@@ -1618,6 +1653,10 @@ export function App() {
         onSignOut={() => void signOut()}
         onCreateProject={createProject}
         onEditProject={editProject}
+        onOpenProject={(id) => {
+          setNavigationOpen(false);
+          setOpenProject(id);
+        }}
         onOrganize={(c, change) => void organizeChat(c, change)}
         unlocked={unlocked}
         busy={!!busy}
@@ -1669,6 +1708,30 @@ export function App() {
                 (error) => fail(memoryText[lang].problem(memoryProblem(error))),
               );
           }}
+        />
+      )}
+      {unlocked && projectSpacesEnabled() && projects.some((p) => p.id === openProject) && (
+        <ProjectPanel
+          key={openProject}
+          vault={vault.current!}
+          project={projects.find((p) => p.id === openProject)!}
+          chats={saved.filter((c) => c.projectId === openProject)}
+          busy={!!busy}
+          onClose={() => setOpenProject(undefined)}
+          onNewChat={() => {
+            if (!allowReplace()) return;
+            reset();
+            setConversation({ ...emptyConversation(), projectId: openProject });
+            setTab("Conversation");
+            setOpenProject(undefined);
+          }}
+          onOpenChat={(c) => {
+            setOpenProject(undefined);
+            openSaved(c);
+          }}
+          onRename={(name) => editProject(openProject!, name)}
+          onDelete={(withChats) => deleteProject(openProject!, withChats)}
+          onChange={async (change) => setProjects(await vault.current!.changeProjects(change))}
         />
       )}
       <dialog

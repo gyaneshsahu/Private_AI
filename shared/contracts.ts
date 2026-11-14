@@ -423,6 +423,8 @@ export interface Message {
   passagesUsed?: string;
   /** For an answer: the ids of the memories sent with its question. Ids only, so a deleted memory leaves no text here. */
   memoriesUsed?: string[];
+  /** For an answer: its chat's project instructions were sent with its question (the text is not kept here). */
+  projectInstructionsSent?: true;
   /** Plain-language note of identifiers masked on this device for this reply, e.g. "Kept on this device: 1 bank account." */
   keptOnDevice?: string;
   /** Creation time, ISO 8601; absent on messages saved before 22 October 2026. */

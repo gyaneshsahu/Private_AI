@@ -1,6 +1,13 @@
 import { textFor } from "./text/core";
 import { vaultText } from "./text/vault";
-import { projectsSchema, type Project } from "./projects";
+import { z } from "zod";
+import {
+  ProjectError,
+  projectFilesSchema,
+  projectsSchema,
+  type Project,
+  type ProjectFiles,
+} from "./projects";
 import { memoriesSchema, mergeMemories, MemoryError, type Memory } from "./memory";
 import { deleteDB, openDB } from "idb";
 import type { Conversation } from "../shared/contracts";
@@ -30,6 +37,13 @@ const MEMORY_LABEL = "memories-v1";
 const recordIv = (record?: Cipher) => JSON.stringify(record && Array.from(record.iv));
 async function openMemories(key: CryptoKey, record?: Cipher): Promise<Memory[]> {
   return record ? memoriesSchema.parse(JSON.parse(await unseal(key, record, MEMORY_LABEL))) : [];
+}
+// Project files (src/projects.ts) are one more encrypted record in "meta", keyed by project id.
+// Kept apart from the project list, which every save of a project chat reads.
+const FILES_LABEL = "project-files-v1";
+const projectFilesRecord = z.record(z.string().uuid(), projectFilesSchema);
+async function openProjectFiles(key: CryptoKey, record?: Cipher): Promise<ProjectFiles> {
+  return record ? projectFilesRecord.parse(JSON.parse(await unseal(key, record, FILES_LABEL))) : {};
 }
 function random(length: number): Uint8Array<ArrayBuffer> {
   return crypto.getRandomValues(new Uint8Array(length));
@@ -431,7 +445,17 @@ export class Vault {
           Cipher | undefined;
         const ids = await read.objectStore("conversations").getAllKeys();
         const records = await read.objectStore("conversations").getAll();
+        const filesRecord = (await read.objectStore("meta").get("project-files")) as Cipher | undefined;
         await read.done;
+        // A removed project's files go with it, in the same transaction.
+        let nextFiles: Cipher | undefined | "unchanged" = "unchanged";
+        if (name === undefined && filesRecord) {
+          const { [id]: removed, ...rest } = await openProjectFiles(key, filesRecord);
+          if (removed)
+            nextFiles = Object.keys(rest).length
+              ? await seal(key, JSON.stringify(rest), FILES_LABEL)
+              : undefined;
+        }
         const projects = previous
           ? projectsSchema.parse(
               JSON.parse(await unseal(key, previous, "projects-v1")),
@@ -521,8 +545,16 @@ export class Vault {
           }
           unchanged();
           await tx.objectStore("meta").put(encryptedProjects, "projects");
+          if (nextFiles !== "unchanged") {
+            if (recordIv(await tx.objectStore("meta").get("project-files")) !== recordIv(filesRecord))
+              throw Error(textFor(vaultText).projectsChanged);
+            if (nextFiles) await tx.objectStore("meta").put(nextFiles, "project-files");
+            else await tx.objectStore("meta").delete("project-files");
+          }
           unchanged();
           await tx.done;
+          // A removed project: other tabs lock, so none keeps sending its instructions or files.
+          if (name === undefined) this.channel?.postMessage("projects");
         } catch (error) {
           try {
             tx.abort();
@@ -530,6 +562,114 @@ export class Vault {
           await tx.done.catch(() => {});
           throw error;
         }
+      } finally {
+        database.close();
+      }
+    });
+  }
+  /**
+   * A change to the project list that touches no conversation (project instructions):
+   * `change` gets the stored list and returns the next one.
+   */
+  changeProjects(change: (current: Project[]) => Project[]): Promise<Project[]> {
+    const key = this.key,
+      salt = this.salt,
+      generation = this.generation,
+      databaseName = this.databaseName;
+    if (!key) return Promise.reject(Error(textFor(vaultText).unlockFirst));
+    return this.enqueue(async () => {
+      const database = await db(databaseName);
+      try {
+        requireVaultIdentity(await database.get("meta", "vault"), salt);
+        const previous = (await database.get("meta", "projects")) as Cipher | undefined;
+        const next = projectsSchema.parse(
+          change(
+            previous
+              ? projectsSchema.parse(JSON.parse(await unseal(key, previous, "projects-v1")))
+              : [],
+          ),
+        );
+        const encrypted = await seal(key, JSON.stringify(next), "projects-v1");
+        const tx = database.transaction("meta", "readwrite");
+        requireVaultIdentity(await tx.store.get("vault"), salt);
+        if (recordIv(await tx.store.get("projects")) !== recordIv(previous) || generation !== this.generation) {
+          tx.abort();
+          await tx.done.catch(() => {});
+          throw new ProjectError("changed");
+        }
+        await tx.store.put(encrypted, "projects");
+        await tx.done;
+        // Other tabs lock, as after a deletion: none keeps sending instructions changed here.
+        this.channel?.postMessage("projects");
+        return next;
+      } finally {
+        database.close();
+      }
+    });
+  }
+  async readProjectFiles(): Promise<ProjectFiles> {
+    const key = this.key,
+      generation = this.generation;
+    if (!key) throw Error(textFor(vaultText).unlockFirst);
+    await this.queue;
+    if (generation !== this.generation) throw Error(textFor(vaultText).changed);
+    const database = await db(this.databaseName);
+    try {
+      requireVaultIdentity(await database.get("meta", "vault"), this.salt);
+      const files = await openProjectFiles(key, await database.get("meta", "project-files"));
+      if (generation !== this.generation) throw Error(textFor(vaultText).changed);
+      return files;
+    } finally {
+      database.close();
+    }
+  }
+  /**
+   * Every change to project files: `change` gets the stored files and returns the next ones. Files
+   * of a project that no longer exists are refused ("gone").
+   */
+  changeProjectFiles(change: (current: ProjectFiles) => ProjectFiles): Promise<ProjectFiles> {
+    const key = this.key,
+      salt = this.salt,
+      generation = this.generation,
+      databaseName = this.databaseName;
+    if (!key) return Promise.reject(Error(textFor(vaultText).unlockFirst));
+    return this.enqueue(async () => {
+      const database = await db(databaseName);
+      try {
+        requireVaultIdentity(await database.get("meta", "vault"), salt);
+        const previous = (await database.get("meta", "project-files")) as Cipher | undefined;
+        const projectRecord = (await database.get("meta", "projects")) as Cipher | undefined;
+        const projects = projectRecord
+          ? projectsSchema.parse(JSON.parse(await unseal(key, projectRecord, "projects-v1")))
+          : [];
+        // Empty lists are dropped, so a project without files leaves nothing behind.
+        const next = Object.fromEntries(
+          Object.entries(projectFilesRecord.parse(change(await openProjectFiles(key, previous)))).filter(
+            ([, files]) => files.length,
+          ),
+        );
+        if (Object.keys(next).some((id) => !projects.some((p) => p.id === id)))
+          throw new ProjectError("gone");
+        const encrypted = Object.keys(next).length
+          ? await seal(key, JSON.stringify(next), FILES_LABEL)
+          : undefined;
+        const tx = database.transaction("meta", "readwrite");
+        requireVaultIdentity(await tx.store.get("vault"), salt);
+        if (
+          recordIv(await tx.store.get("project-files")) !== recordIv(previous) ||
+          recordIv(await tx.store.get("projects")) !== recordIv(projectRecord) ||
+          generation !== this.generation
+        ) {
+          tx.abort();
+          await tx.done.catch(() => {});
+          throw new ProjectError("changed");
+        }
+        if (encrypted) await tx.store.put(encrypted, "project-files");
+        else await tx.store.delete("project-files");
+        await tx.done;
+        // Other tabs lock: none keeps sending passages of a file that was removed here.
+        this.channel?.postMessage("projects");
+        return next;
       } finally {
         database.close();
       }
@@ -784,6 +924,7 @@ export class Vault {
         const memoryRecord = (await read
           .objectStore("meta")
           .get("memories")) as Cipher | undefined;
+        const filesRecord = (await read.objectStore("meta").get("project-files")) as Cipher | undefined;
         await read.done;
         const currentKey = await derive(currentPassphrase, meta.salt);
         if (
@@ -812,6 +953,13 @@ export class Vault {
               nextKey,
               JSON.stringify(await openMemories(currentKey, memoryRecord)),
               MEMORY_LABEL,
+            )
+          : undefined;
+        const nextFiles = filesRecord
+          ? await seal(
+              nextKey,
+              JSON.stringify(await openProjectFiles(currentKey, filesRecord)),
+              FILES_LABEL,
             )
           : undefined;
         const replacements: {
@@ -880,6 +1028,9 @@ export class Vault {
             throw Error(textFor(vaultText).historyChangedPassphrase);
           if (nextMemories)
             await tx.objectStore("meta").put(nextMemories, "memories");
+          if (recordIv(await tx.objectStore("meta").get("project-files")) !== recordIv(filesRecord))
+            throw Error(textFor(vaultText).historyChangedPassphrase);
+          if (nextFiles) await tx.objectStore("meta").put(nextFiles, "project-files");
           await tx.objectStore("meta").put({ salt: nextSalt, check }, "vault");
           unchanged();
           await tx.done;

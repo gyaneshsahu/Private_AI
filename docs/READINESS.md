@@ -1,4 +1,9 @@
 # PrivateAI readiness checklist
+## 14 November 2026: projects with instructions and files built, switched off, nothing verified live (agent)
+
+Before: a project was a name that grouped chats. Now, with `VITE_PROJECTS=1` at build time, a project also has instructions (sent in front of each question in its chats, before memory notes; the system message stays unchanged) and text files (the matching passages are chosen on the device per question, inside the existing 14,000-character passage budget). A project screen shows chats, instructions, files, New chat in this project, rename and delete. Everything is in the encrypted vault; no server file was changed. Project files are not in the backup file. Design, limits, cost and live checks: `docs/projects-20261114.md`.
+
+Verified by `tests/projects.test.ts` (11 tests, Node, fake IndexedDB, transport mocked) and `tests/projects-ui.test.ts` (7 tests, headless Chromium at 375, 768 and 1280 px in English and German, model faked). Not verified: anything against Privatemode, model behaviour with instructions, real phones, a screen reader.
 ## 14 November 2026: live voice conversation built, switched off, nothing verified live (agent)
 
 Before: voice input and read aloud existed separately; live voice was a disabled "Coming later" button. Now, with the build setting `VITE_LIVE_VOICE=1` (off by default) and voice input and read aloud both on, a panel runs a turn-by-turn voice conversation: listen, end of speech by silence detection or a tap, a 3-second review, send through the ordinary send path, read the answer aloud with an on-device voice, listen again. It is not a real-time voice model and says so. No server file was changed. Design, interruptions, cost, caps and live checks: `docs/live-voice-20261114.md`.

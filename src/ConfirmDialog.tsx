@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 import { containDialogFocus } from "./dialog-focus";
 
 /**
@@ -14,6 +14,7 @@ export function ConfirmDialog({
   cancelLabel,
   onClose,
   fallback,
+  children,
 }: {
   title: string;
   text: string;
@@ -21,6 +22,8 @@ export function ConfirmDialog({
   cancelLabel: string;
   onClose: (confirmed: boolean) => void;
   fallback?: () => HTMLElement | null;
+  /** Choices between the text and the buttons; the caller reads them in onClose. */
+  children?: ReactNode;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const cancel = useRef<HTMLButtonElement>(null);
@@ -52,6 +55,7 @@ export function ConfirmDialog({
     >
       <h2 id={`${id}-title`}>{title}</h2>
       <p id={`${id}-text`}>{text}</p>
+      {children}
       <div className="confirm-actions">
         <button ref={cancel} type="button" onClick={() => onClose(false)}>
           {cancelLabel}

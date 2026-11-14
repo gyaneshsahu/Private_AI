@@ -10,6 +10,7 @@ import {
 import type { Lang } from "./i18n";
 import { choosePassages } from "./passage-retrieval";
 import { memoriesFor, memoryBlock } from "./memory";
+import { isProjectFile, projectInstructionsBlock, withProjectFiles } from "./projects";
 
 const textBlocks = textBlock({
   en: {
@@ -126,11 +127,13 @@ function chosenPassages(conversation: Conversation) {
   ) {
     const pool = large.flatMap((a) => a.sources);
     const { chosen, matched } = choosePassages(pool, question, earlier);
+    // Nothing matched: the start of a document attached to the chat is sent, never of a project file.
+    const project = new Set(matched ? [] : large.filter(isProjectFile).flatMap((a) => a.sources));
     lastChoice = {
       attachments: conversation.attachments,
       question,
       earlier,
-      sent: new Set(chosen.map((index) => pool[index])),
+      sent: new Set(chosen.map((index) => pool[index]).filter((s) => !project.has(s))),
       matched,
     };
   }
@@ -138,6 +141,8 @@ function chosenPassages(conversation: Conversation) {
 }
 /** What is sent: every source of a selected attachment; of a large document, the chosen passages. */
 export function selectedSources(conversation: Conversation): Source[] {
+  // A project chat's project files count as large documents (docs/projects-20261114.md).
+  conversation = withProjectFiles(conversation);
   const choice = chosenPassages(conversation);
   return conversation.attachments
     .filter((a) => a.selected)
@@ -150,6 +155,7 @@ export function selectedSources(conversation: Conversation): Source[] {
  * question. Used before masking and composing, so nothing else of the document is touched.
  */
 export function withChosenPassages<C extends Conversation>(conversation: C): C {
+  conversation = withProjectFiles(conversation);
   const choice = chosenPassages(conversation);
   if (!choice) return conversation;
   return {
@@ -182,16 +188,18 @@ export function passageNotes(
   sent: boolean,
   lang: Lang = interfaceLanguage(),
 ): string[] {
+  conversation = withProjectFiles(conversation);
   const choice = chosenPassages(conversation);
   if (!choice) return [];
   const t = textBlocks[lang];
   return conversation.attachments
     .filter((a) => a.selected && a.large)
-    .map((a) => {
+    .flatMap((a) => {
       const used = a.sources.flatMap((s, index) =>
         choice.sent.has(s) ? [{ page: s.page, part: index + 1 }] : [],
       );
-      if (!used.length) return t.passagesNone(a.name, a.sources.length);
+      // A project file is named only when it was used; a project can have 20.
+      if (!used.length) return isProjectFile(a) ? [] : t.passagesNone(a.name, a.sources.length);
       const pages = used.flatMap((entry) => entry.page ?? []);
       const where = pages.length
         ? t.pages(ranges(pages), new Set(pages).size === 1)
@@ -278,7 +286,12 @@ export function composeContext(
       messages.push({ role: m.role, content: m.image ? IMAGE_GONE_NOTE + m.text : m.text });
   // Memory (docs/memory-20261114.md): the notes chosen on this device stand in front of the latest
   // question, so the instructions and earlier turns stay as they were. Product path only.
-  const memory = variant === undefined ? memoryBlock(memoriesFor(conversation)) : "";
+  // Project instructions (docs/projects-20261114.md) go first, for the same reason; the order is
+  // project instructions, memory notes, question.
+  const memory =
+    variant === undefined
+      ? projectInstructionsBlock(conversation) + memoryBlock(memoriesFor(conversation))
+      : "";
   if (memory) messages[messages.length - 1].content = memory + messages[messages.length - 1].content;
   if (messages.reduce((n, m) => n + m.content.length, 0) > maxCharacters)
     throw new Error(text.tooLarge);
@@ -368,6 +381,7 @@ export function measureContext(
   const references = sources.length ? messages[1].content.length : 0;
   const draftCharacters = draft.trim().length;
   const memory = variant === undefined ? memoryBlock(memoriesFor(asked)).length : 0;
+  const project = variant === undefined ? projectInstructionsBlock(asked).length : 0;
   const characters = messages.reduce((sum, m) => sum + m.content.length, 0);
   return {
     characters,
@@ -375,10 +389,12 @@ export function measureContext(
     breakdown: {
       instructions,
       references,
-      conversation: characters - instructions - references - draftCharacters - memory,
+      conversation: characters - instructions - references - draftCharacters - memory - project,
       draft: draftCharacters,
       /** The memory notes that would go with the question, with their wrapper. */
       memory,
+      /** The project's instructions that would go with the question, with their wrapper. */
+      project,
     },
     includedMessages: conversation.messages.filter(
       (message) => message.included && message.status === "complete",

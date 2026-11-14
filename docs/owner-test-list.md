@@ -501,7 +501,27 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
   Expect: you can decide the switch and the voice input limits. With today's limits a user gets 5 live turns a day.
   Tell the agent: your decision. Recommended: on after T-91 and T-92 pass, with recordings of at most 30 seconds (20 a day).
 ---
+- [ ] **T-107 Projects: instructions and a file in a project chat (only after the lead built with VITE_PROJECTS=1).**
+  Do: create a project. Open it from its menu in the sidebar ("Open project"). Write instructions, for example "Answer in German and name the clause." Add a PDF or Word file (a made-up contract is fine). Tap "New chat in this project" and ask about one clause, in English.
+  Expect: under the answer: "Project instructions were sent with this question" and a line naming the file and its pages. The answer follows the instructions.
+  Tell the agent: the question, whether the right pages were named, and whether the instructions were followed.
 
+- [ ] **T-108 Projects: nothing goes where it should not.**
+  Do: move that chat out of the project (chat menu in the sidebar, "Move to project", "No project") and ask again. Then ask the same in an incognito chat.
+  Expect: no line about project instructions under either answer, and neither answer uses the file.
+  Tell the agent: any answer that used the instructions or the file.
+
+- [ ] **T-109 Projects: the project screen on a phone.**
+  Do: open a project on your phone. Edit the instructions, add and remove a file, rename the project, then delete it and keep its chats.
+  Expect: every button is easy to hit, nothing is cut off, removing and deleting ask first. After deleting, the chats are still in Recent.
+  Tell the agent: phone, browser, and a screenshot of anything cut off or hard to tap.
+
+- [ ] **T-110 Decide: projects on for the alpha, and their privacy wording.**
+  Do: read `docs/projects-privacy-wording-draft-20261114.md` and the open decisions at the end of `docs/projects-20261114.md` (project files are not in the backup file).
+  Expect: you can say yes or no to switching it on, to the limits, and to each proposed sentence.
+  Tell the agent: your decision. Recommended: on after T-91 and T-92 pass.
+
+---
 ## Changes
 
 - 14 November 2026: first version. 81 items. Sources: handoff, decisions doc, checklist, deploy doc, alpha plan, week-one monitoring, and the feature docs of 13 and 14 November. Where docs disagreed, the newest was used (decisions doc and `docs/READINESS.md` of 14 November).
@@ -514,3 +534,5 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 - 14 November 2026: canvas items added; all items renumbered in file order (now T-1 to T-101 with no gaps or repeats). Older Changes lines name the numbers first used.
 - 14 November 2026: added T-91 to T-95 (live voice: a whole conversation, End and Pause, interruptions, phone and screen reader, the decision and the recordings per day).
 - 14 November 2026: live voice items added; all items renumbered again in file order (T-01 to T-106).
+- 14 November 2026: added T-91 to T-94 (projects with instructions and files: a project chat, nothing sent where it should not be, the project screen on a phone, the decision). Only after the lead built with the switch on.
+- 14 November 2026: Projects items added; all items renumbered in file order (T-01 to T-110).

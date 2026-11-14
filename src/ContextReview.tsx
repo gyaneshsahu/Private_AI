@@ -2,8 +2,9 @@ import type { Conversation } from "../shared/contracts";
 import type { measureContext } from "./conversation";
 import { useLang } from "./i18n";
 import { contextReviewText } from "./text/conversation-ui";
-import { memoryEnabled } from "./device-features";
+import { memoryEnabled, projectSpacesEnabled } from "./device-features";
 import { memoryText } from "./text/memory";
+import { projectText } from "./text/projects";
 
 export function ContextReview({
   expanded = false,
@@ -57,6 +58,10 @@ export function ContextReview({
               // Memory (docs/memory-20261114.md): the notes that go with the question count too.
               ...(memoryEnabled()
                 ? ([[memoryText[lang].contextRow, size.breakdown.memory]] as const)
+                : []),
+              // Projects (docs/projects-20261114.md): the chat's project instructions.
+              ...(projectSpacesEnabled()
+                ? ([[projectText[lang].contextRow, size.breakdown.project]] as const)
                 : []),
             ] as const
           ).map(([label, count]) => (

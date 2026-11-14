@@ -2516,3 +2516,127 @@
   gap: 6px;
   min-height: 32px;
 }
+/* Projects with instructions and files (docs/projects-20261114.md): the project screen. */
+.chat-design dialog.project-dialog {
+  width: min(640px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+.chat-design .project-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.chat-design .project-dialog-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  min-width: 0;
+}
+.chat-design .project-dialog-header h2:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.chat-design .project-dialog-actions,
+.chat-design .project-rename .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+.chat-design .project-rename {
+  margin-top: 12px;
+}
+.chat-design .project-rename input,
+.chat-design .project-section textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 4px;
+}
+.chat-design .project-status {
+  margin: 10px 0 0;
+}
+.chat-design .project-status:empty {
+  display: none;
+}
+.chat-design .project-section {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.chat-design .project-section h3 {
+  margin: 0 0 6px;
+}
+.chat-design .project-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+.chat-design .project-chats,
+.chat-design .project-files {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.chat-design .project-chats button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 36px;
+  text-align: left;
+}
+.chat-design .project-chats button span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.chat-design .project-chats small,
+.chat-design .project-files small {
+  color: var(--muted);
+}
+.chat-design .project-files li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+}
+.chat-design .project-files li span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.chat-design .project-delete-choice {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 0;
+  border: 0;
+}
+.chat-design .project-delete-choice label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+}
+.chat-design .project-used {
+  font-size: 13px;
+}
+@media (max-width: 760px) {
+  .chat-design .project-dialog button,
+  .chat-design .project-delete-choice label {
+    min-height: 44px;
+  }
+  .chat-design .project-dialog-actions > button {
+    flex: 1 1 100%;
+  }
+}

@@ -7,6 +7,8 @@ import { Icon } from "./Icon";
 import { useText } from "./i18n";
 import { savedListText } from "./text/saved-list";
 import { workspaceText } from "./text/workspace";
+import { projectText } from "./text/projects";
+import { projectSpacesEnabled } from "./device-features";
 
 export function WorkspaceNavigation(props: {
   open: boolean;
@@ -29,6 +31,8 @@ export function WorkspaceNavigation(props: {
   onSignOut: () => void;
   onCreateProject: (name: string) => Promise<string | undefined>;
   onEditProject: (id: string, name?: string) => Promise<boolean>;
+  /** The project screen (docs/projects-20261114.md); offered only while its switch is on. */
+  onOpenProject?: (id: string) => void;
   onOrganize: (
     c: Conversation,
     change: Pick<Conversation, "pinned" | "archived" | "projectId" | "title">,
@@ -55,9 +59,11 @@ export function WorkspaceNavigation(props: {
     onSignOut,
     onCreateProject,
     onEditProject,
+    onOpenProject,
     onOrganize,
   } = props;
   const t = useText(workspaceText);
+  const pt = useText(projectText);
   const groups = useText(savedListText);
   // Pinned chats first under their own heading, the rest by the day they were created.
   const groupOf = (c: Conversation) => (c.pinned ? "pinned" : dateGroup(c.createdAt));
@@ -246,6 +252,11 @@ export function WorkspaceNavigation(props: {
                       <Icon name="more" />
                     </summary>
                     <div>
+                      {projectSpacesEnabled() && onOpenProject && (
+                        <button disabled={busy} onClick={() => onOpenProject(p.id)}>
+                          {pt.open}
+                        </button>
+                      )}
                       <button
                         disabled={busy}
                         onClick={() => {
@@ -260,7 +271,10 @@ export function WorkspaceNavigation(props: {
                         disabled={busy}
                         onClick={async () => {
                           if (
-                            confirm(t.confirmRemoveProject(p.name)) &&
+                            confirm(
+                              t.confirmRemoveProject(p.name) +
+                                (projectSpacesEnabled() ? ` ${pt.removeAlso}` : ""),
+                            ) &&
                             (await onEditProject(p.id))
                           ) {
                             setFilter("recent");
