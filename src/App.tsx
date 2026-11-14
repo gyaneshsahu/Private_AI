@@ -32,7 +32,9 @@ import {
 } from "./conversation";
 import { DOCUMENT_ACCEPT } from "./document-formats";
 import { describeKept, prepareSearchQuery } from "./identifier-masking";
+import { SearchSuggestionField } from "./SearchSuggestionField";
 import {
+  editedSearchText,
   readAutoSearch,
   RULES_KEY,
   saveAutoSearch,
@@ -289,6 +291,23 @@ export function App() {
     );
     return again && { ...again, again: true };
   }, [status?.search, status?.inference.ready, input, conversation]);
+  // The user may edit the shown search text. The edit belongs to one suggestion for one draft:
+  // changing the question, sending or another conversation drops it. It is masked again here,
+  // and `shown.value` is what a tap sends. The automatic paths keep the unedited suggestion.
+  const [searchEdit, setSearchEdit] = useState<{ for: string; text: string }>();
+  useEffect(
+    () => setSearchEdit(undefined),
+    [conversation.id, conversation.messages.length],
+  );
+  const editFor = `${input}\n${suggestion?.value}`;
+  const searchText =
+    searchEdit?.for === editFor ? searchEdit.text : suggestion?.value ?? "";
+  const shown = suggestion && {
+    ...suggestion,
+    ...(searchEdit?.for === editFor
+      ? editedSearchText(searchEdit.text, suggestion.removed)
+      : { problem: undefined }),
+  };
   // Search first for German rules (docs/german-rules-20261113.md): Send shows the choice for
   // exactly this draft; editing the draft or Escape drops it, and nothing is remembered.
   const askFirst = asksBeforeSending(
@@ -1981,7 +2000,7 @@ export function App() {
               </div>
             )}
             <div className="composer-dock">
-              {suggestion && !autoSearch && !(autoRules && !choosing) && !busy && (
+              {suggestion && shown && !autoSearch && !(autoRules && !choosing) && !busy && (
                 <div
                   className="notice composer-note search-suggestion"
                   role="region"
@@ -2003,13 +2022,20 @@ export function App() {
                             ? GERMAN_RULES.heading
                             : WHEN_TO_SEARCH.heading}
                     </strong>{" "}
-                    {WHEN_TO_SEARCH.label}
+                    <span id="search-text-label">{WHEN_TO_SEARCH.label}</span>
                   </p>
-                  <pre>{suggestion.value}</pre>
-                  {suggestion.note && (
-                    <p className="muted">{suggestion.note}</p>
+                  <SearchSuggestionField
+                    labelledBy="search-text-label"
+                    text={searchText}
+                    sent={shown.value}
+                    problem={shown.problem}
+                    onChange={(text) => setSearchEdit({ for: editFor, text })}
+                    onEnter={() => choiceButton.current?.click()}
+                  />
+                  {shown.note && (
+                    <p className="muted">{shown.note}</p>
                   )}
-                  {suggestion.warning && (
+                  {shown.warning && (
                     <p className="warning">{WHEN_TO_SEARCH.warning}</p>
                   )}
                   <p className="muted">
@@ -2024,10 +2050,11 @@ export function App() {
                       ref={choiceButton}
                       type="button"
                       className="primary"
+                      disabled={!!shown.problem}
                       onClick={() => {
                         setChoiceFor(undefined);
                         void searchThenAnswer(
-                          suggestion.value,
+                          shown.value,
                           "tap",
                           suggestion.again,
                         );

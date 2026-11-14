@@ -1,7 +1,9 @@
 // When to search (docs/when-to-search-20261112.md): on-device rules that spot a question
 // needing current information, the masked search text, and the opt-in automatic setting.
 import { germanRulesQuestion, interfaceLanguage, liveText, namesCountry, textBlock } from "./german-rules";
-import { prepareSearchQuery } from "./identifier-masking";
+import { describeKept, prepareSearchQuery, type IdentifierKind } from "./identifier-masking";
+import { disclosureSchema } from "../shared/contracts";
+import type { Lang } from "./i18n";
 
 // Always time-sensitive. \p{L} boundaries so German umlauts count as letters.
 const TIME = [
@@ -77,6 +79,33 @@ export function searchSuggestion(
 const GERMAN_TEXT =
   /[äöüß]|(?<!\p{L})(ich|wie|wann|welche\p{L}*|der|das|und|ist|mein\p{L}*|muss|darf|kostet|eine[mnr]?|fuer|bei|gibt)(?!\p{L})/iu;
 
+/**
+ * A search text the user typed into the suggestion box (14 November 2026). It is masked again by
+ * the same function as the suggestion and the Research tab, and the server's own rule for a
+ * search (shared/contracts.ts: 2 to 400 characters after trimming) is checked here, so an edited
+ * text is never refused silently. `value` is what the tap sends. `removed` and `note` also count
+ * what the suggestion had already removed from the question. Line breaks become spaces.
+ */
+export function editedSearchText(
+  typed: string,
+  already: Partial<Record<IdentifierKind, number>> = {},
+  lang: Lang = interfaceLanguage(),
+) {
+  const prepared = prepareSearchQuery(typed.replace(/\s+/g, " "), lang);
+  const removed = { ...already };
+  for (const [kind, count] of Object.entries(prepared.removed) as [IdentifierKind, number][])
+    removed[kind] = (removed[kind] ?? 0) + count;
+  const problem: "short" | "long" | undefined = disclosureSchema.safeParse({
+    kind: "search",
+    value: prepared.value,
+  }).success
+    ? undefined
+    : prepared.value.length > 400
+      ? "long"
+      : "short";
+  return { ...prepared, removed, note: describeKept(removed, lang, "removed"), problem };
+}
+
 const key = "privateai.autoSearch";
 // The narrower setting (13 November): only German rules, fees and deadlines are searched without
 // asking. Same storage rules: this browser only, off unless switched on.
@@ -105,6 +134,10 @@ export const WHEN_TO_SEARCH_TEXT = textBlock({
     explanation:
       "One tap sends exactly this text to Brave Search through our server, and our server opens the top result page, preferring an official site. Nothing else from your conversation is sent. Press Send instead to answer without searching.",
     button: "Search and answer",
+    // The editable search text (14 November): shown only when they apply.
+    willBeSent: "This text will be sent:",
+    tooShort: "The search text needs at least 2 characters.",
+    tooLong: "The search text is too long. The limit is 400 characters.",
     // After an answer given without web results (routing design of 12 November).
     againHeading: "This answer did not use current information.",
     againExplanation:
@@ -135,6 +168,9 @@ export const WHEN_TO_SEARCH_TEXT = textBlock({
     explanation:
       "Ein Tippen sendet genau diesen Text über unseren Server an Brave Search, und unser Server öffnet die oberste Ergebnisseite, bevorzugt eine offizielle Website. Sonst wird nichts aus Ihrer Unterhaltung gesendet. Tippen Sie stattdessen auf Senden, um ohne Websuche eine Antwort zu erhalten.",
     button: "Suchen und antworten",
+    willBeSent: "Dieser Text wird gesendet:",
+    tooShort: "Der Suchtext braucht mindestens 2 Zeichen.",
+    tooLong: "Der Suchtext ist zu lang. Die Grenze liegt bei 400 Zeichen.",
     againHeading: "Diese Antwort hat keine aktuellen Informationen verwendet.",
     againExplanation:
       "Ein Tippen sendet genau diesen Text über unseren Server an Brave Search, unser Server öffnet die oberste Ergebnisseite, bevorzugt eine offizielle Website, und die Frage wird anhand der Ergebnisse neu beantwortet. Sonst wird nichts aus Ihrer Unterhaltung gesendet.",

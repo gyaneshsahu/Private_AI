@@ -82,6 +82,8 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     const message = page.getByLabel("Message CometRow");
     const suggestion = page.getByRole("region", { name: "Search suggestion" });
     const send = page.getByRole("button", { name: "Send ↑", exact: true });
+    // The search text is an editable field labelled by the visible "Search the web for:".
+    const field = suggestion.getByRole("textbox", { name: "Search the web for:" });
     const searchFirst = suggestion.getByRole("button", { name: "Search and answer", exact: true });
     const without = suggestion.getByRole("button", { name: "Answer without checking" });
     const sent = () => page.evaluate(() => (window as unknown as { __sent?: [string, number][] }).__sent ?? []);
@@ -108,7 +110,7 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
       "This answer gives figures or deadlines that were not checked against an official source.",
     );
     await ui(suggestion).toContainText("This answer did not use current information.");
-    await ui(suggestion.locator("pre")).toHaveText(`${missed} Deutschland`);
+    await ui(field).toHaveValue(`${missed} Deutschland`);
     await ui(suggestion.getByRole("button", { name: "Search and answer again" })).toBeVisible();
     expect(searches).toEqual([]);
     await page.reload();
@@ -118,7 +120,7 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     await ui(suggestion).toContainText(
       "Rules, fees and deadlines change. Check the official source first. Search the web for:",
     );
-    await ui(suggestion.locator("pre")).toHaveText(searched);
+    await ui(field).toHaveValue(searched);
     await ui(suggestion).not.toContainText("Press Send instead");
     await ui(without).toHaveCount(0);
 
@@ -127,7 +129,7 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     await ui(suggestion).toContainText(
       "This is about rules, fees or deadlines, which change. Search the official source first? Search the web for:",
     );
-    await ui(suggestion.locator("pre")).toHaveText(searched);
+    await ui(field).toHaveValue(searched);
     await ui(without).toBeVisible();
     await ui(searchFirst).toBeFocused();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
@@ -175,7 +177,7 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     await message.fill(masked);
     await send.click();
     await ui(searchFirst).toBeFocused();
-    const shown = await suggestion.locator("pre").innerText();
+    const shown = await field.inputValue();
     expect(shown).toBe("Wie hoch ist das Bußgeld innerorts bei 21 km/h zu schnell? Mail [email address removed] Deutschland");
     await page.keyboard.press("Enter");
     await ui(page.locator("article.assistant").last()).toContainText("Synthetic: drei Monate gesetze-im-internet.de");
@@ -183,7 +185,33 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     expect(searches).toHaveLength(2);
     await expect.poll(async () => (await sent()).at(-1)).toEqual([masked, 1]);
 
-    // Automatic search on: no choice, searched first and shown.
+    // The search-first choice has the same editable text. The user changes "Deutschland" to
+    // "Österreich" and adds an email address: the choice stays open, the masked text is shown,
+    // and Enter in the field searches exactly that text. The question is sent as typed.
+    await page.reload();
+    await message.fill(question);
+    await send.click();
+    await ui(field).toHaveValue(searched);
+    await ui(suggestion).not.toContainText("This text will be sent:");
+    await field.fill(`${question} Österreich max.mustermann@example.com`);
+    const edited = `${question} Österreich [email address removed]`;
+    await ui(without).toBeVisible();
+    await ui(suggestion).toContainText("This text will be sent:");
+    await ui(suggestion.locator("pre")).toHaveText(edited);
+    await ui(suggestion).toContainText("Removed from the search text before approval: 1 email address.");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+    // An empty text cannot be searched; "Answer without checking" stays available.
+    await field.fill("");
+    await ui(searchFirst).toBeDisabled();
+    await ui(without).toBeEnabled();
+    await field.fill(`${question} Österreich max.mustermann@example.com`);
+    await field.press("Enter");
+    await ui(page.locator("article.assistant").last()).toContainText("Synthetic: drei Monate gesetze-im-internet.de");
+    expect(searches.at(-1)).toEqual({ kind: "search", value: edited });
+    expect(searches).toHaveLength(3);
+    await expect.poll(async () => (await sent()).at(-1)).toEqual([question, 1]);
+
+    // Automatic search on: no choice, searched first and shown. The edit above is gone.
     await page.evaluate(() => localStorage.setItem("privateai.autoSearch", "on"));
     await page.reload();
     await message.fill(question);
@@ -194,7 +222,7 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     await ui(page.locator("article.assistant")).toHaveCount(1);
     await ui(without).toHaveCount(0);
     expect(searches.at(-1)).toEqual({ kind: "search", value: searched });
-    expect(searches).toHaveLength(3);
+    expect(searches).toHaveLength(4);
     // An official source in the results: the page note says so, and no note under the answer.
     await ui(page.getByRole("status").filter({ hasText: "Searched the web automatically for:" })).toContainText(
       "Our server also opened an official source and read its text: https://www.gesetze-im-internet.de/bgb/__573c.html",
@@ -228,7 +256,7 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     await ui(without).toBeVisible();
     await searchFirst.click();
     await ui(page.locator("article.assistant")).toHaveCount(1);
-    expect(searches).toHaveLength(5);
+    expect(searches).toHaveLength(6);
     // Next rules question: searched with its masked text without the choice, and shown.
     await page.reload();
     const next = "Wie viele Tage Mindesturlaub habe ich? Mail max.mustermann@example.com";
@@ -244,7 +272,7 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     await message.fill("Wer ist aktuell Bundeskanzler?");
     await send.click();
     await ui(page.locator("article.assistant")).toHaveCount(1);
-    expect(searches).toHaveLength(6);
+    expect(searches).toHaveLength(7);
     // The matching setting in the Research tab, switched off again there.
     await workspaceControl(page, "Research").click();
     await ui(always).toBeChecked();

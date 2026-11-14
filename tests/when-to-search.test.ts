@@ -2,7 +2,9 @@
 // search text, and automatic search off by default.
 import { afterEach, expect, it, vi } from "vitest";
 import { prepareSearchQuery } from "../src/identifier-masking";
+import { disclosureSchema } from "../shared/contracts";
 import {
+  editedSearchText,
   needsCurrentInformation,
   readAutoSearch,
   RULES_KEY,
@@ -125,6 +127,49 @@ it("adds Germany to the suggested text of a rules question that names no country
   // At the length limit the country is left off; the suggestion is kept.
   const long = `Wie hoch ist der Mindestlohn? ${"x".repeat(165)}`;
   expect(value(long)).toBe(long);
+});
+
+// 14 November 2026: the shown text can be edited; what the user types is masked again and held
+// to the server's own limits (2 to 400 characters) before a tap can send it.
+it("masks an edited search text again and applies the server's limits on the device", () => {
+  // Unchanged or harmless edits pass through as typed.
+  expect(editedSearchText("How much is the TV licence? Germany")).toMatchObject({
+    value: "How much is the TV licence? Germany",
+    note: "",
+    problem: undefined,
+  });
+  // The user may delete the country or name another one.
+  expect(editedSearchText("How much is the TV licence?").value).toBe("How much is the TV licence?");
+  expect(editedSearchText("Wie hoch ist der Rundfunkbeitrag? Österreich")).toMatchObject({
+    value: "Wie hoch ist der Rundfunkbeitrag? Österreich",
+    problem: undefined,
+  });
+  // A typed email address is removed and reported.
+  const typed = editedSearchText("TV licence fee max.mustermann@example.com", {}, "en");
+  expect(typed.value).toBe("TV licence fee [email address removed]");
+  expect(typed.note).toBe("Removed from the search text before approval: 1 email address.");
+  expect(typed.problem).toBeUndefined();
+  // What the suggestion already removed from the question stays in the count.
+  const question = searchSuggestion("Wie hoch ist der Mindestlohn? Mail max.mustermann@example.com", now)!;
+  const again = editedSearchText(`${question.value} IBAN DE89 3704 0044 0532 0130 00`, question.removed, "en");
+  expect(again.value).toBe("Wie hoch ist der Mindestlohn? Mail [email address removed] Deutschland IBAN [bank account removed]");
+  expect(again.note).toBe("Removed from the search text before approval: 1 bank account, 1 email address.");
+  expect(editedSearchText("max.mustermann@example.com", {}, "de").note).toBe(
+    "Vor der Freigabe aus dem Suchtext entfernt: 1 E-Mail-Adresse.",
+  );
+  // The masked text is the same when masked once more: what is shown is what is sent.
+  expect(editedSearchText(again.value).value).toBe(again.value);
+  // Line breaks and extra spaces become one space.
+  expect(editedSearchText("  TV licence\nfee   Germany ").value).toBe("TV licence fee Germany");
+  // Empty, too short, and too long (also when masking makes the text longer).
+  for (const short of ["", "   ", "a", "​"]) expect(editedSearchText(short).problem, short).toBe("short");
+  expect(editedSearchText("ab").problem).toBeUndefined();
+  expect(editedSearchText("x".repeat(400)).problem).toBeUndefined();
+  expect(editedSearchText("x".repeat(401)).problem).toBe("long");
+  expect(editedSearchText(`${"x".repeat(390)} a@b.de`).problem).toBe("long");
+  // Every edited text without a problem is one the server's schema accepts.
+  expect(disclosureSchema.safeParse({ kind: "search", value: again.value }).success).toBe(true);
+  expect(disclosureSchema.safeParse({ kind: "search", value: "x".repeat(401) }).success).toBe(false);
 });
 
 afterEach(() => vi.unstubAllGlobals());

@@ -93,6 +93,8 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
     const message = page.getByLabel("Message CometRow");
     const suggestion = page.getByRole("region", { name: "Search suggestion" });
     const send = page.getByRole("button", { name: "Send ↑", exact: true });
+    // The search text is an editable field labelled by the visible "Search the web for:".
+    const field = suggestion.getByRole("textbox", { name: "Search the web for:" });
 
     // Timeless question: no suggestion.
     await message.fill("Explain recursion");
@@ -101,7 +103,7 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
     // Time-sensitive question: the exact masked text is shown. Send alone searches nothing.
     await message.fill("Who is the current CEO of Siemens, mail max.mustermann@example.com");
     await ui(suggestion).toContainText("This question may need current information.");
-    await ui(suggestion.locator("pre")).toHaveText(
+    await ui(field).toHaveValue(
       "Who is the current CEO of Siemens, mail [email address removed]",
     );
     await ui(suggestion).toContainText(
@@ -118,7 +120,7 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
     // sent until the tap. Typing a new question replaces the offer.
     await ui(suggestion).toContainText("This answer did not use current information.");
     await ui(suggestion.getByRole("button", { name: "Search and answer again" })).toBeVisible();
-    await ui(suggestion.locator("pre")).toHaveText(
+    await ui(field).toHaveValue(
       "Who is the current CEO of Siemens, mail [email address removed]",
     );
     expect(searches).toEqual([]);
@@ -147,6 +149,41 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
       "Our server also opened the top official result and read its text: https://www.example.gov/fees",
     );
 
+    // The shown text can be edited. What is typed is masked again on the device, the text that
+    // will be sent is shown, and an empty text cannot be sent.
+    const search = suggestion.getByRole("button", { name: "Search and answer", exact: true });
+    const edited = "Bundeskanzler Österreich [email address removed]";
+    await message.fill("Wer ist aktuell Bundeskanzler?");
+    await ui(field).toHaveValue("Wer ist aktuell Bundeskanzler?");
+    await ui(suggestion).not.toContainText("This text will be sent:");
+    await field.fill("Bundeskanzler Österreich max.mustermann@example.com");
+    await ui(suggestion).toContainText("This text will be sent:");
+    await ui(suggestion.locator("pre")).toHaveText(edited);
+    await ui(suggestion).toContainText("Removed from the search text before approval: 1 email address.");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+    const box = (await field.boundingBox())!;
+    expect(box.height).toBeGreaterThanOrEqual(24);
+    await field.fill(" ");
+    await ui(search).toBeDisabled();
+    await ui(suggestion).toContainText("The search text needs at least 2 characters.");
+    await field.press("Enter");
+    // Editing the question brings a new suggestion; the edit applied to the old one only.
+    await message.fill("Wer ist heute Bundeskanzler?");
+    await ui(field).toHaveValue("Wer ist heute Bundeskanzler?");
+    await ui(search).toBeEnabled();
+    // Enter in the field does what the button does: it searches exactly the shown masked text.
+    // The chat message itself is the question as typed.
+    await field.fill("Bundeskanzler Österreich max.mustermann@example.com");
+    await ui(suggestion.locator("pre")).toHaveText(edited);
+    await field.press("Enter");
+    await ui(page.locator("article.assistant")).toHaveCount(3);
+    await ui(page.getByRole("status").filter({ hasText: `Searched the web for: "${edited}"` })).toBeVisible();
+    expect(searches).toHaveLength(3);
+    expect(searches.at(-1)).toEqual({ kind: "search", value: edited });
+    // The next question starts from its own suggestion again.
+    await message.fill("Wer ist Bundeskanzler?");
+    await ui(field).toHaveValue("Wer ist Bundeskanzler?");
+
     // Switched on: Send on a detected question searches the masked text first and shows it.
     await workspaceControl(page, "Research").click();
     await setting().check();
@@ -161,13 +198,13 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
       value: "Wie hoch ist der Mindestlohn? Mail [email address removed] Deutschland",
     });
     // A timeless question is not searched even with the setting on.
-    await ui(page.locator("article.assistant")).toHaveCount(3);
+    await ui(page.locator("article.assistant")).toHaveCount(4);
     const before = searches.length;
     await message.fill("Explain recursion");
     await send.click();
-    await ui(page.locator("article.assistant")).toHaveCount(4);
-    // The reply placeholder can appear before the send is recorded; wait for the fifth send.
-    await ui.poll(() => page.evaluate(() => (window as unknown as { __sent: unknown[] }).__sent.length)).toBe(5);
+    await ui(page.locator("article.assistant")).toHaveCount(5);
+    // The reply placeholder can appear before the send is recorded; wait for the sixth send.
+    await ui.poll(() => page.evaluate(() => (window as unknown as { __sent: unknown[] }).__sent.length)).toBe(6);
     expect(searches.length).toBe(before);
     expect(
       (await page.evaluate(() => (window as unknown as { __sent: { question: string; sources: number }[] }).__sent)).map(
@@ -178,8 +215,10 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
       // Asked again after the one-tap check, now with the web result.
       ["Who is the current CEO of Siemens, mail max.mustermann@example.com", 1],
       ["Wer ist Bundeskanzler?", 2],
-      ["Wie hoch ist der Mindestlohn? Mail max.mustermann@example.com", 3],
-      ["Explain recursion", 3],
+      // Searched with the edited text; the question is sent as typed.
+      ["Wer ist heute Bundeskanzler?", 3],
+      ["Wie hoch ist der Mindestlohn? Mail max.mustermann@example.com", 4],
+      ["Explain recursion", 4],
     ]);
   } finally {
     await browser.close();
