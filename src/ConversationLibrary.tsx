@@ -1,8 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { Conversation } from "../shared/contracts";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { conversationTitle, findConversations } from "./conversation-library";
 import { useLang } from "./i18n";
 import { libraryText } from "./text/conversation-ui";
+import { savedListText } from "./text/saved-list";
 
 export function ConversationLibrary({
   conversations,
@@ -19,12 +21,16 @@ export function ConversationLibrary({
   const t = libraryText[lang];
   const [query, setQuery] = useState("");
   const [order, setOrder] = useState<"newest" | "oldest" | "title">("newest");
+  // Deleting asks first (owner, 14 November 2026): the conversation waiting for an answer.
+  const [deleting, setDeleting] = useState<Conversation>();
+  const section = useRef<HTMLElement>(null);
+  const c = savedListText[lang];
   const visible = useMemo(
     () => findConversations(conversations, query, order),
     [conversations, query, order],
   );
   return (
-    <section aria-label={t.label}>
+    <section aria-label={t.label} ref={section} tabIndex={-1}>
       <div className="panel">
         <label>
           {t.search}
@@ -79,11 +85,24 @@ export function ConversationLibrary({
           <button disabled={busy} onClick={() => onOpen(conversation)}>
             {t.open}
           </button>
-          <button disabled={busy} onClick={() => onDelete(conversation)}>
+          <button disabled={busy} onClick={() => setDeleting(conversation)}>
             {t.delete}
           </button>
         </article>
       ))}
+      {deleting && (
+        <ConfirmDialog
+          title={c.deleteTitle}
+          text={c.deleteText(conversationTitle(deleting))}
+          confirmLabel={c.deleteConfirm}
+          cancelLabel={c.cancel}
+          fallback={() => section.current}
+          onClose={(confirmed) => {
+            setDeleting(undefined);
+            if (confirmed) onDelete(deleting);
+          }}
+        />
+      )}
     </section>
   );
 }

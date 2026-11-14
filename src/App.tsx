@@ -82,6 +82,8 @@ import { containsTemporaryResearch } from "./saved-conversation";
 import { WorkspaceNavigation } from "./WorkspaceNavigation";
 import { readAppearance, saveAppearance } from "./appearance";
 import { ConversationLibrary } from "./ConversationLibrary";
+import { CopyConversationButton } from "./CopyConversationButton";
+import { MessageMeta } from "./MessageMeta";
 import { ConversationBranches } from "./ConversationBranches";
 import { branchConversation, switchBranch } from "./conversation-branches";
 import { ContextReview } from "./ContextReview";
@@ -1618,16 +1620,6 @@ export function App() {
             )}
           </div>
           <LanguageSwitch />
-          <button
-            className="share-preview"
-            disabled
-            title={t.shareTitle}
-          >
-            <Icon name="share" />
-            <span>
-              {t.share} <small>{t.comingLater}</small>
-            </span>
-          </button>
           <details className="conversation-menu">
             <summary aria-label={t.conversationActions}>
               <Icon name="more" />
@@ -1637,10 +1629,10 @@ export function App() {
                 <Icon name="chat" />
                 {t.tabConversation}
               </button>
-              <button disabled>
-                <Icon name="share" />
-                {t.shareChatLater}
-              </button>
+              <CopyConversationButton
+                conversation={conversation}
+                disabled={!conversation.messages.length}
+              />
               <button onClick={() => setTab("Saved")}>
                 {t.renameSave}
               </button>
@@ -1925,6 +1917,7 @@ export function App() {
                         {t.edit}
                       </button>
                     )}
+                    {message.role === "user" && <MessageMeta message={message} />}
                     {message.role === "assistant" && (
                       <button
                         disabled={

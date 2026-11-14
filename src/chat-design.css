@@ -1188,15 +1188,6 @@
   padding: 0;
   margin: 0;
 }
-.chat-design .share-preview {
-  border: 0;
-  background: transparent;
-  font-size: 12px;
-}
-.chat-design .share-preview small {
-  display: block;
-  font-size: 10px;
-}
 .chat-design .future-voice {
   border: 0;
   background: transparent;
@@ -1295,9 +1286,6 @@
   .chat-design .settings-layout nav button {
     font-size: 12px;
   }
-  .chat-design .share-preview {
-    display: none;
-  }
   .chat-design .composer-footer {
     flex-wrap: wrap;
   }
@@ -1340,7 +1328,6 @@
   .chat-design button.navigation-toggle {
     display: inline-flex;
   }
-  .chat-design button.share-preview,
   .chat-design button.future-voice {
     display: none;
   }
@@ -1852,4 +1839,66 @@
 .chat-design .message-actions button[aria-pressed="true"] {
   border-color: currentColor;
   font-weight: 600;
+}
+
+/* Saved list and copy (package E): delete confirmation, copy status, message time, date groups. */
+.chat-design dialog.confirm-dialog {
+  width: min(440px, calc(100vw - 24px));
+}
+.chat-design .confirm-dialog p {
+  margin: 12px 0 20px;
+  overflow-wrap: anywhere;
+}
+.chat-design .confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.chat-design .danger-button {
+  color: #fff;
+  background: #a32020;
+  border-color: #a32020;
+  font-weight: 600;
+}
+.chat-design .danger-button:hover:not(:disabled) {
+  color: #fff;
+  background: #7f1818;
+  border-color: #7f1818;
+}
+.chat-design .copy-status {
+  font-size: 12px;
+  color: var(--muted);
+  align-self: center;
+}
+.chat-design .copy-status:empty {
+  display: none;
+}
+.chat-design .menu-surface .copy-status {
+  display: block;
+  padding: 0 10px 6px;
+}
+.chat-design .menu-surface .copy-status:empty {
+  display: none;
+}
+.chat-design .message-time {
+  font-size: 12px;
+  color: var(--muted);
+  align-self: center;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.chat-design .recent-chats h3.chat-group {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--muted);
+  margin: 12px 0 2px;
+  padding: 0 10px;
+}
+@media (max-width: 760px) {
+  .chat-design .confirm-actions button {
+    flex: 1 1 140px;
+    min-height: 44px;
+  }
 }

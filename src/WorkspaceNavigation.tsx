@@ -1,10 +1,11 @@
 import { containDialogFocus } from "./dialog-focus";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AppStatus, Conversation } from "../shared/contracts";
-import { conversationTitle, findConversations } from "./conversation-library";
+import { conversationTitle, dateGroup, findConversations } from "./conversation-library";
 import type { Project } from "./projects";
 import { Icon } from "./Icon";
 import { useText } from "./i18n";
+import { savedListText } from "./text/saved-list";
 import { workspaceText } from "./text/workspace";
 
 export function WorkspaceNavigation(props: {
@@ -57,6 +58,9 @@ export function WorkspaceNavigation(props: {
     onOrganize,
   } = props;
   const t = useText(workspaceText);
+  const groups = useText(savedListText);
+  // Pinned chats first under their own heading, the rest by the day they were created.
+  const groupOf = (c: Conversation) => (c.pinned ? "pinned" : dateGroup(c.createdAt));
   const dialog = useRef<HTMLDialogElement>(null);
   const [narrow, setNarrow] = useState(
     () => matchMedia("(max-width: 760px)").matches,
@@ -304,8 +308,12 @@ export function WorkspaceNavigation(props: {
                   {query ? t.noMatch : t.noSaved}
                 </p>
               )}
-              {visible.map((c) => (
+              {visible.map((c, index) => (
                 <div className="chat-list-item" key={c.id}>
+                  {!query &&
+                    groupOf(c) !== (index ? groupOf(visible[index - 1]) : "") && (
+                      <h3 className="chat-group">{groups[groupOf(c)]}</h3>
+                    )}
                   <div className="chat-list-row">
                     <button
                       disabled={busy}

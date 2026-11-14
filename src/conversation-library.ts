@@ -8,6 +8,19 @@ export function conversationTitle(conversation: Conversation): string {
     : conversation.title;
 }
 
+/** Where a saved chat falls in the sidebar's date groups. The week starts on Monday. */
+export function dateGroup(
+  iso: string,
+  now = new Date(),
+): "today" | "yesterday" | "week" | "older" {
+  const then = Date.parse(iso) || 0;
+  const daysAgo = (days: number) =>
+    new Date(now.getFullYear(), now.getMonth(), now.getDate() - days).getTime();
+  if (then >= daysAgo(0)) return "today";
+  if (then >= daysAgo(1)) return "yesterday";
+  return then >= daysAgo((now.getDay() + 6) % 7) ? "week" : "older";
+}
+
 /** Searches only already-unlocked records; creates no durable search index. */
 export function findConversations(
   conversations: readonly Conversation[],
