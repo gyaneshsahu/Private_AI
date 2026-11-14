@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from "react";
+import { containDialogFocus } from "./dialog-focus";
 
 /**
  * A modal question before a destructive action. Mount it while the question is open.
@@ -41,6 +42,7 @@ export function ConfirmDialog({
     <dialog
       ref={dialog}
       className="confirm-dialog"
+      onKeyDown={containDialogFocus}
       aria-labelledby={`${id}-title`}
       aria-describedby={`${id}-text`}
       onCancel={(event) => {

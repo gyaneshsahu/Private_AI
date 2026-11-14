@@ -133,6 +133,8 @@ test("encrypted snapshots survive reload, lock clears content and deletion persi
   );
   await workspaceControl(page, "Saved").click();
   await page.getByRole("button", { name: "Delete", exact: true }).click();
+  // Deleting asks first (14 November 2026).
+  await page.getByRole("button", { name: "Delete conversation" }).click();
   await expect(
     page.getByText("No saved conversations yet.", { exact: false }),
   ).toBeVisible();

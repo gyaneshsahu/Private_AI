@@ -282,6 +282,8 @@ it("clearing pending imports and locking pending encrypted saves cannot restore 
       };
     })()`);
     await page.getByRole("button", { name: "Delete", exact: true }).click();
+    // Deleting asks first (14 November 2026).
+    await page.getByRole("button", { name: "Delete conversation" }).click();
     await page.waitForFunction(
       () => (window as unknown as Fixture).deletePending,
     );

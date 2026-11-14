@@ -66,6 +66,8 @@ test("an unreadable snapshot stays stored while an intact draft can open, update
     page.getByRole("article", { name: "SYNTHETIC UPDATED DRAFT", exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Delete", exact: true }).click();
+  // Deleting asks first (14 November 2026).
+  await page.getByRole("button", { name: "Delete conversation" }).click();
   await expect(
     page.getByRole("button", { name: "Open", exact: true }),
   ).toHaveCount(0);

@@ -1901,4 +1901,7 @@
     flex: 1 1 140px;
     min-height: 44px;
   }
+  .chat-design .message-actions button {
+    min-height: 44px;
+  }
 }
