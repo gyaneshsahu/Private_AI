@@ -9,7 +9,7 @@ export const PASSAGE_CHARACTERS = 1200;
 /**
  * Most passage text sent with one question, over all large documents together. Fixed, so one
  * question costs the same whatever the document's size. With the 32,000-character input limit it
- * leaves room for the instructions (about 6,000) and for earlier messages.
+ * leaves room for the instructions (about 4,000) and about 12,000 for earlier messages.
  */
 export const PASSAGE_BUDGET = 14000;
 

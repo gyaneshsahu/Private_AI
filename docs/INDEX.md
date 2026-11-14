@@ -14,6 +14,7 @@ This is a map of `docs/` for new sessions and for Graphify. Files dated 11 to 13
 
 ## Alpha and launch
 
+- `large-documents-20261114.md`: questions about a long PDF or Word file. Passages are chosen on the device and only those are sent; the limits, the cost, what is not built and the owner's decisions.
 - `alpha-plan-20261113.md`: what the alpha must prove, its metrics, survey and stop rules.
 - `overnight-report-20261113.md`: what was built on the night of 13 November.
 - `render-deploy-and-live-checks-20261113.md`: exact Render deploy steps and the live-check list. Section 3.5 is the one-time SQL step.
