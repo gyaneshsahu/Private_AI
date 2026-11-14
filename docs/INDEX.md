@@ -8,6 +8,7 @@ This is a map of `docs/` for new sessions and for Graphify. Files dated 11 to 14
 | --- | --- |
 | `wake-up-report-20261114.md` | Read first: what was built, verified and spent on 14 November, what is half-done, and the risks |
 | `owner-test-list.md` | Everything the owner must test, do or decide, as a short checklist with ids (T-01 to T-110), kept up to date as features land |
+| `cost-weights-20261114.md` | What each feature really uses in tokens and euros, against its allowance weight; recommendations |
 | `owner-decisions.md` | Every owner decision; the block "Decisions waiting for you, 14 November" at the top is the current list |
 | `handoff-20261113.md` | The state at the end of 13 November; its banner lists what has been superseded since |
 | `pre-alpha-checklist.md` | Every item before launch, with who does it and when; rows U1 to U12 and K1 to K6 end with their 14 November status |

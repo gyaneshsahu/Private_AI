@@ -1,0 +1,47 @@
+# Cost weights from real token figures (14 November 2026)
+
+Each request costs allowance units (Fast 1, Thinking 5, and the feature weights below). This note compares those weights with what each request actually used in the live runs of 13 and 14 November, so the owner can decide before switching features on. Nothing was changed in the code: the weights are owner decisions.
+
+Two currencies matter:
+- **Free-quota tokens.** While Privatemode bills the free 5M quota, every token counts the same for both chat models (multiplier 1.0 for `glm-5.3` and `glm-5.3-flash`). Audio counts about 2,800 tokens per minute.
+- **Euros, after paid billing.** `glm-5.3` costs EUR 1.55 / 5.74 per million input / output tokens, `glm-5.3-flash` EUR 0.20 / 0.65 (owner's notes, plus VAT). A Thinking token is about 8 times a Fast token.
+
+## Measured, live, through the app (tokens as reported by the app per request)
+
+| What | Tokens | Source |
+| --- | --- | --- |
+| Fast message, everyday question | about 700 to 1,100 (median 1,123 over 84 recorded answers) | blind benchmark, parity and smoke runs |
+| Thinking message (effort high) | about 1,900 median (170 recorded answers; many older runs were at max effort, so high is lower) | same runs |
+| Calculation with code, Fast, per turn (two requests) | about 3,600 | arithmetic set through the app, 14 November |
+| Deep research run (plan on Fast plus answer on Thinking) | about 7,000 to 7,500 | three live runs, 14 November |
+| Memory notes added to a question | about 65 | memory probe |
+| Picture question (tiny synthetic picture) | 62 for the picture | image probe; a real photo is not measured |
+| Voice transcription | about 2,800 per audio minute | Privatemode's rule (owner's notes), not measured |
+
+**Prompt cache:** Privatemode reported `cached_tokens: 0` on every request we measured, including two identical requests with the same salt and a 2,232-token prompt. So the fixed system message (about 685 tokens for a plain question) is paid in full on every request. Worth one question to Privatemode support (owner decisions, 14 November block).
+
+## Weights compared with tokens
+
+Taking one Fast message (about 1,000 tokens) as one unit:
+
+| Feature | Weight today | Tokens per use | Units if weighted by tokens | Euro ratio to a Fast message (paid) |
+| --- | --- | --- | --- | --- |
+| Fast message | 1 | ~1,000 | 1 | 1 |
+| Thinking message | 5 | ~1,900 | about 2 | about 15 |
+| Calculation turn with code (Fast) | 1, plus 2 free follow-ups | ~3,600 | about 3.5 | about 3.5 |
+| Deep research run | 15 | ~7,300 | about 7 | about 30 |
+| Voice, one 2-minute recording | 2 | ~5,600 | about 5.5 | Whisper EUR 0.028, about 10 |
+| Picture question | 2 | not measured for real photos | unknown | unknown |
+| Memory, project instructions | 0 | +65 to +600 | under 1 | small |
+
+## What this means
+
+- **Thinking at 5** is right for euros (a Thinking message costs about 15 Fast messages after paid billing) and generous for free-quota tokens. Keep it.
+- **Deep research at 15** is right for euros and about double for tokens. Keep it.
+- **Code execution is under-weighted for tokens:** a calculation costs about 3.5 Fast messages but uses 1 unit. With the 150-unit week, a user who only calculates could use about 3.5 times the tokens of an average user. Recommended default: keep 1 unit for the alpha (exact answers are the point of the feature, and calculations are a small share of messages), and watch it in the weekly reconciliation.
+- **Voice is under-weighted:** a full 2-minute recording uses the tokens of about 5 Fast messages for 2 units. Recommended default: weight 3, or keep 2 with 30-second recordings (which also gives live voice more turns a day).
+- **Pictures:** measure one real photo (about 1,500 px) before deciding; the weight of 2 is a guess.
+
+## Live check of the smaller prompt (14 November)
+
+After the prompt change (`docs/prompt-size-20261114.md`): six everyday questions in Fast used 721 to 1,491 tokens; four calculation conversations used 2.6 % to 3.8 % fewer tokens than the same conversations in the morning and were all exact; the stroke question still says "Call 112 immediately", the crisis question still gives a crisis number, the rules question still hedges its figures, the German question is answered in German. Spend: about 35,000 tokens.

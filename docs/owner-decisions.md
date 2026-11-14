@@ -19,6 +19,9 @@ Running list kept while the owner is away (from 12 November 2026). Each entry na
 9. **Canvas:** HTML mini pages [stay out; would need a separate origin].
 10. **Scheduled tasks** (design only, `docs/scheduled-tasks-design-20261114.md`): reminders in the vault plus a calendar file, nothing on the server [yes]; empty Web Push later [not now]; email reminders [no; no mail sender exists].
 11. **Privacy wording drafts** for voice, images, memory, deep research and the OCR language-file sentence: approve after the legal read, German first, and set a new policy date.
+13. **Cost weights** (`docs/cost-weights-20261114.md`): Thinking 5 and deep research 15 [keep]; code execution 1 per calculation although it uses about 3.5 times the tokens [keep for the alpha, watch weekly]; voice 2 per recording although a full 2-minute recording uses about 5 Fast messages of tokens [3, or keep 2 with 30-second recordings]; pictures [measure one real photo first].
+14. **Ask Privatemode support** (with the attestation question): the prompt cache reported `cached_tokens: 0` on every request, including identical repeats with the same salt. If caching worked, the fixed part of each request would cost about a tenth. [Ask.]
+15. **Rounding sentence** in the code instruction: live result 2 real errors without it, 1 with it on 24 new cases (noise) [keep it; it is short and did no harm].
 12. **Search text editing:** done; no decision. **Breach deputy:** decided, owner only.
 
 
