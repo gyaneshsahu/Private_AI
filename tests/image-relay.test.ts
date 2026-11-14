@@ -12,7 +12,9 @@ vi.mock("undici", async (importOriginal) => ({
 }));
 import { createApp, type Config } from "../server/app";
 import { takeCounts } from "../server/counters";
+import { readFileSync } from "node:fs";
 import { imageDayCount } from "../server/image-admission";
+import { BASELINE_FILE, modelAlerts } from "../server/model-watch";
 import { InviteRegistry } from "../server/invite-registry";
 import { BRIDGE_REQUEST_HEADERS } from "../server/render-bridge";
 import { SqliteUsageLedger } from "../server/usage-ledger";
@@ -272,4 +274,15 @@ it("the report names the vision model: it must be the Fast mode's model, already
   const modes = { ...privatemodeReport().modes, fast };
   expect(() => validateQualification(privatemodeReport({ modes, vision: { ...VISION, allowanceCost: 1 } }))).toThrow();
   expect(() => validateQualification(privatemodeReport({ modes, vision: VISION }))).not.toThrow();
+});
+
+it("the daily model check alerts when the vision model loses its vision task in Privatemode's list", () => {
+  const baseline = JSON.parse(readFileSync(BASELINE_FILE, "utf8"));
+  expect(baseline.models[VISION.model].tasks).toContain("vision");
+  const entry = baseline.models[VISION.model];
+  expect(modelAlerts({ data: [entry] }, [VISION.model], baseline)).toEqual([]);
+  const blind = { ...entry, tasks: entry.tasks.filter((task: string) => task !== "vision") };
+  const alerts = modelAlerts({ data: [blind] }, [VISION.model], baseline);
+  expect(alerts).toHaveLength(1);
+  expect(alerts[0]).toContain(VISION.model);
 });

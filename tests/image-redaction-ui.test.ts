@@ -329,3 +329,30 @@ it("the flow when the picture is not a health picture, or consent was already gi
     await done(page);
   }
 });
+
+it("where the browser has its own on-device face finder, Cover faces puts a black box over each face found, a little larger than reported", async () => {
+  // Headless Chromium has no FaceDetector, so this is a stand-in that "finds" one face. A real
+  // face finder was not tried.
+  const page = await open("view=redactor");
+  await page.addInitScript(() => {
+    (window as never as { FaceDetector: unknown }).FaceDetector = class {
+      async detect() {
+        return [{ boundingBox: new DOMRectReadOnly(400, 500, 200, 200) }];
+      }
+    };
+  });
+  await page.reload();
+  await page.waitForFunction(() => "picture" in window);
+  await ui(page.locator("canvas.image-redact-canvas")).toBeVisible();
+  await ui(page.getByText(en.facesHint)).toBeVisible();
+  await page.getByRole("button", { name: en.faces }).click();
+  await ui(page.getByRole("status")).toHaveText(en.facesFound(1));
+  await ui(page.getByRole("button", { name: en.box(1, en.face) })).toBeVisible();
+  await page.getByRole("button", { name: en.preview }).click();
+  const pixels = await page.getByRole("img", { name: en.checkLabel }).evaluate((img: HTMLImageElement) =>
+    // 15% wider on each side and 20% higher: from (370, 460), 260 by 280.
+    (window as never as { picture: { pixels(url: string, region: unknown): Promise<number[][]> } }).picture.pixels(img.src, { x: 376, y: 466, width: 248, height: 268 }),
+  );
+  expect(pixels.flat().reduce((max, value) => Math.max(max, value), 0)).toBeLessThanOrEqual(12);
+  await done(page);
+});
