@@ -58,6 +58,8 @@ const app = createApp({
   searchKey: process.env.BRAVE_SEARCH_API_KEY,
   // Voice input on the development server: off unless "1" (it also needs `speech` in the report).
   ...(process.env.PRIVATEAI_VOICE === "1" ? { voice: { maxSeconds: 120, dailyMinutes: 10 } } : {}),
+  // Image questions on the development server: off unless "1" (they also need `vision` in the report).
+  ...(process.env.PRIVATEAI_IMAGES === "1" ? { images: { maxBytes: 280_000, dailyImages: 10 } } : {}),
   // Brave Goggle for German-rules searches (docs/german-rules-20261113.md); off unless "1".
   searchGoggles: process.env.PRIVATEAI_SEARCH_GOGGLES === "1",
 });

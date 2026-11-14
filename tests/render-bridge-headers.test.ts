@@ -38,6 +38,10 @@ it("forwards the Privatemode SDK's request headers: the relay needs the target m
   expect(uncovered).toEqual([]);
 });
 
+it("forwards the image declaration, so the relay can admit an image question through the bridge", () => {
+  expect(BRIDGE_REQUEST_HEADERS as readonly string[]).toContain("x-privateai-kind");
+});
+
 it("still forwards no identity or forwarding headers", () => {
   for (const h of ["x-forwarded-for", "x-forwarded-host", "x-forwarded-proto", "x-real-ip", "forwarded", "authorization", "x-privateai-client-ip"])
     expect(BRIDGE_REQUEST_HEADERS as readonly string[]).not.toContain(h);

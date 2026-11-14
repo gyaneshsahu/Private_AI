@@ -188,6 +188,15 @@ export const qualificationSchema = z.object({
     .object({ model: modelName, allowanceCost: z.number().int().min(1).max(10) })
     .strict()
     .optional(),
+  /**
+   * Image questions: the model that reads images and the allowance units one image question
+   * uses. Absent means no image upload. Always the Fast mode's own model (or the report's model
+   * when it has no modes), so the relay admits it and the model watch already covers it.
+   */
+  vision: z
+    .object({ model: modelName, allowanceCost: z.number().int().min(1).max(10) })
+    .strict()
+    .optional(),
   ...modelSettings,
 });
 export type Qualification = z.infer<typeof qualificationSchema>;
@@ -289,6 +298,15 @@ export function validateQualification(
   // Only Privatemode's speech endpoint is wired (server/providers/privatemode-voice.ts).
   if (report.speech && (report.provider !== "privatemode" || models.has(report.speech.model)))
     throw Error("The speech model needs a Privatemode report and must not be a chat model.");
+  // Only Privatemode's image input is wired, and only the Fast model reads images there.
+  const fastTier = tierFor(report, report.modes ? "fast" : undefined);
+  if (
+    report.vision &&
+    (report.provider !== "privatemode" ||
+      report.vision.model !== fastTier.model ||
+      report.vision.allowanceCost < fastTier.allowanceCost)
+  )
+    throw Error("The vision model needs a Privatemode report, must be the Fast mode's model and must not cost less than a Fast message.");
   for (const [setting, owners] of Object.entries(MODEL_SETTINGS))
     if (report[setting as Setting] !== undefined && !owners.some((m) => models.has(m)))
       throw Error("A model setting names a model the report does not qualify.");
@@ -410,6 +428,11 @@ export interface Message {
   /** Which mode answered and whether the backup model did, e.g. "Auto · Thinking". Never a model name (older saves may hold one). */
   answeredBy?: string;
   /**
+   * This question was asked about an image. Only this flag is kept: the image itself is never
+   * part of a conversation, is not saved and is not sent again in later turns.
+   */
+  image?: true;
+  /**
    * Local-only result of recalculating the arithmetic the reply writes out
    * (src/arithmetic/postcheck.ts): how many stated relations were checked and
    * how many did not add up. Never model context, never sent anywhere.
@@ -504,6 +527,8 @@ export interface AppStatus {
   search: boolean;
   /** Voice input is switched on for this deployment; absent means no microphone button. */
   voice?: { maxSeconds: number };
+  /** Image questions are switched on for this deployment; absent means no image upload. */
+  images?: { maxBytes: number };
   publicPageHosts?: string[] | null;
   /** Plain-text notice the operator shows to everyone (outage, announced provider switch). */
   operatorNotice?: string;

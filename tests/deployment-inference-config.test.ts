@@ -66,8 +66,19 @@ it("loads production chat only when the inference section is present and enabled
   expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("voice");
   await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, voice } }));
   expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ voice: { maxSeconds: 120, dailyMinutes: 10 } });
+  // Image questions have their own switch too: absent or disabled means off; enabled passes the two limits on.
+  const images = { enabled: true, maxBytes: 280000, dailyImages: 10 };
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, images: { ...images, enabled: false } } }));
+  expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("images");
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, images } }));
+  expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ images: { maxBytes: 280000, dailyImages: 10 } });
   // Relative paths, unknown fields, a bad allowance, bad voice limits and an unreadable report refuse the whole configuration.
   for (const bad of [
+    { ...inference, images: { enabled: true } },
+    // Above 290,000 bytes the encrypted body could pass the bridge's 1 MiB limit.
+    { ...inference, images: { ...images, maxBytes: 290001 } },
+    { ...inference, images: { ...images, dailyImages: 0 } },
+    { ...inference, images: { ...images, model: "glm-5.3-flash" } },
     { ...inference, voice: { enabled: true } },
     { ...inference, voice: { ...voice, maxSeconds: 3600 } },
     { ...inference, voice: { ...voice, dailyMinutes: 0 } },

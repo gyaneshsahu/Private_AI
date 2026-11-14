@@ -61,6 +61,20 @@ const schema = z
           })
           .strict()
           .optional(),
+        /**
+         * Image questions, their own switch, off unless enabled. They also need the report's
+         * `vision` model. Limits: bytes of the JPEG the browser sends (the top of the range still
+         * fits the Render bridge's 1 MB body limit), and image questions per account in any
+         * 24 hours (docs/images-20261114.md).
+         */
+        images: z
+          .object({
+            enabled: z.boolean(),
+            maxBytes: z.number().int().min(50_000).max(290_000),
+            dailyImages: z.number().int().min(1).max(100),
+          })
+          .strict()
+          .optional(),
       })
       .strict()
       .optional(),
@@ -211,6 +225,9 @@ export async function loadDeploymentConfig(file: string) {
               ...(inference.noticeFile ? { noticeFile: inference.noticeFile } : {}),
               ...(inference.voice?.enabled
                 ? { voice: { maxSeconds: inference.voice.maxSeconds, dailyMinutes: inference.voice.dailyMinutes } }
+                : {}),
+              ...(inference.images?.enabled
+                ? { images: { maxBytes: inference.images.maxBytes, dailyImages: inference.images.dailyImages } }
                 : {}),
               ...(inference.searchKeyFile
                 ? { searchKey: (await boundedFile(inference.searchKeyFile)).toString("utf8").trim() }

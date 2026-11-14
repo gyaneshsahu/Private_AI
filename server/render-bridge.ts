@@ -18,6 +18,8 @@ export const BRIDGE_REQUEST_HEADERS = [
   "x-privateai-csrf",
   "x-privateai-continuation-approval",
   "x-privateai-mode",
+  // Declares an image question; without it the relay refuses the larger body (docs/images-20261114.md).
+  "x-privateai-kind",
   "x-tinfoil-enclave-url",
   "x-tinfoil-model",
   "ehbp-encapsulated-key",

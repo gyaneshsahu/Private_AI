@@ -33,6 +33,7 @@ import { braveSearchProvider, type SearchProvider } from "./providers/search";
 import "./providers/tinfoil-relay";
 import { privatemodeKeyExpiryWarning } from "./providers/privatemode-relay";
 import { VOICE_PATH, voiceRoute, type VoiceSettings } from "./providers/privatemode-voice";
+import { declaredImage, imageDayCount, imageModelAdmitted, type ImageSettings } from "./image-admission";
 import {
   serviceDispatcher,
   proxyConfigured,
@@ -80,6 +81,8 @@ export interface Config {
   autoAllowance?: { requestLimit: number; days: number; dailyLimit?: number };
   /** Voice input (dictation) limits; absent means off. It also needs the report's `speech` model. */
   voice?: VoiceSettings;
+  /** Image questions; absent means off. It also needs the report's `vision` model. */
+  images?: ImageSettings;
   /** File whose text is shown to every user as a notice; missing or empty means none. Re-read every 30 s. */
   noticeFile?: string;
   /** Unmounted consumer composition. Candidate mode never accepts upstream credentials. */
@@ -404,6 +407,7 @@ export function createApp(config: Config) {
       },
       search: !!config.searchKey,
       ...(config.voice && ready && q?.speech ? { voice: { maxSeconds: config.voice.maxSeconds } } : {}),
+      ...(config.images && ready && q?.vision ? { images: { maxBytes: config.images.maxBytes } } : {}),
       ...(await operatorNotice().then((text) => (text ? { operatorNotice: text } : {}))),
       publicPageHosts: proxyConfigured ? publicFetchHosts : null,
     });
@@ -480,6 +484,7 @@ export function createApp(config: Config) {
         },
       }),
     );
+  const imageDay = imageDayCount(config.images?.dailyImages ?? 0);
   app.post(
     "/api/inference/v1/chat/completions",
     express.raw({ type: "*/*", limit: "1mb" }),
@@ -492,6 +497,7 @@ export function createApp(config: Config) {
           res.locals.outcome ??
           (res.statusCode === 200 ? (res.writableFinished ? "completed" : "interrupted") : `status_${res.statusCode}`);
         count(`chat.${res.locals.mode ?? "none"}.${outcome}`);
+        if (res.locals.image) count(`image.${outcome}`);
       });
       const q = parseQualification();
       if (!q || !config.apiKey) {
@@ -510,7 +516,17 @@ export function createApp(config: Config) {
       // The body is encrypted, so its size is the only input bound the server can enforce: 8 bytes
       // per allowed character covers UTF-8, JSON escaping and the encryption overhead, and stops a
       // modified browser from sending many times the allowed input on one allowance unit.
-      if (req.body.length > Math.max(65_536, q.maxInputCharacters * 8)) {
+      // A declared image request gets a larger bound, and pays for it below (image-admission.ts).
+      const textLimit = Math.max(65_536, q.maxInputCharacters * 8);
+      const declared = declaredImage(req.headers, q, config.images, textLimit);
+      if ("refused" in declared) {
+        count(`image.refused_${declared.refused}`);
+        res.status(400).json({ error: "Image questions are not switched on. No request was forwarded." });
+        return;
+      }
+      res.locals.image = declared.image;
+      if (req.body.length > (declared.image ? declared.limit : textLimit)) {
+        res.locals.outcome = "refused_size";
         res.status(413).json({ error: "This message is too large. No request was forwarded." });
         return;
       }
@@ -528,7 +544,8 @@ export function createApp(config: Config) {
       res.locals.mode = mode ?? "none";
       if (
         (modeHeader !== undefined && (!mode || !q.modes)) ||
-        (admission.model !== tier.model && admission.model !== tier.backupModel)
+        (admission.model !== tier.model && admission.model !== tier.backupModel) ||
+        (declared.image && !imageModelAdmitted(q, mode, admission.model))
       ) {
         res.status(400).json({ error: "Only a qualified answer mode and its models are accepted." });
         return;
@@ -548,12 +565,24 @@ export function createApp(config: Config) {
         });
         return;
       }
+      // An image question costs the report's image price, never the mode's text price.
+      const cost = declared.image ? declared.cost : tier.allowanceCost;
+      const creditKind = declared.image ? "image" : mode;
+      const who = String(accountId ?? res.locals.session);
+      if (declared.image && !imageDay.take(who)) {
+        res.locals.outcome = "refused_image_daily";
+        res.status(429).json({
+          error: "The daily image limit is reached. It frees up within 24 hours. No request was forwarded.",
+        });
+        return;
+      }
       const requestId = randomUUID();
       // Claim the local slots before awaiting shared admission.
       active++;
       if (accountId)
         inFlight.set(accountId, (inFlight.get(accountId) ?? 0) + 1);
       let dispatched = false;
+      let forwarded = false;
       let transportComplete = false;
       let metrics: UsageMetrics | undefined;
       const abort = new AbortController();
@@ -609,7 +638,7 @@ export function createApp(config: Config) {
         }
         const credit = accountId ? retryCredit.get(accountId) : undefined;
         if (accountId && credit) retryCredit.delete(accountId);
-        if (config.usage && credit && credit.mode === mode && credit.expires > Date.now())
+        if (config.usage && credit && credit.mode === creditKind && credit.expires > Date.now())
           count(`chat.${mode ?? "none"}.retry_not_counted`);
         else if (config.usage) {
           await ensureAllowance(accountId);
@@ -621,7 +650,7 @@ export function createApp(config: Config) {
               daily &&
               accountId &&
               (!config.usage.usedInLast ||
-                (await config.usage.usedInLast(accountId, 86_400_000)) + tier.allowanceCost > daily)
+                (await config.usage.usedInLast(accountId, 86_400_000)) + cost > daily)
             ) {
               res.locals.outcome = "refused_daily";
               res.status(429).json({
@@ -634,14 +663,14 @@ export function createApp(config: Config) {
               !(await config.usage.reserve(
                 accountId,
                 requestId,
-                tier.allowanceCost,
+                cost,
               ))
             ) {
               res.locals.outcome = "refused_allowance";
               res.status(429).json({
                 error:
-                  tier.allowanceCost > 1
-                    ? `Not enough request allowance: this mode counts as ${tier.allowanceCost} requests. No request was forwarded.`
+                  cost > 1
+                    ? `Not enough request allowance: this ${declared.image ? "image question" : "mode"} counts as ${cost} requests. No request was forwarded.`
                     : "No request allowance is available. No request was forwarded.",
               });
               return;
@@ -665,6 +694,7 @@ export function createApp(config: Config) {
           model: admission.model,
           upstreamHeaders: admission.upstreamHeaders,
         });
+        forwarded = true;
         const upstream = await upstreamRequest(plan.url, {
           dispatcher: serviceDispatcher,
           method: "POST",
@@ -691,7 +721,9 @@ export function createApp(config: Config) {
             ? "model-not-found"
             : relay.classifyFailure(reply);
           if (failure === "model-not-found") alertModelNotFound(admission.model, reply.statusCode);
-          if (accountId && dispatched) retryCredit.set(accountId, { mode, expires: Date.now() + 60_000 });
+          if (accountId && dispatched) retryCredit.set(accountId, { mode: creditKind, expires: Date.now() + 60_000 });
+          // Nothing was answered: the image does not count toward the day.
+          if (declared.image) imageDay.giveBack(who);
           res.setHeader("X-PrivateAI-Upstream", failure);
           res.locals.outcome = `upstream_${failure}`;
           res.status(502).json({
@@ -725,7 +757,12 @@ export function createApp(config: Config) {
         else res.destroy();
       } finally {
         release();
-        if (hungUp) count(`chat.${res.locals.mode ?? "none"}.${transportComplete ? "completed" : "interrupted"}`);
+        // Refused here before anything was sent: the image does not count toward the day.
+        if (declared.image && !forwarded) imageDay.giveBack(who);
+        if (hungUp) {
+          count(`chat.${res.locals.mode ?? "none"}.${transportComplete ? "completed" : "interrupted"}`);
+          if (declared.image) count(`image.${transportComplete ? "completed" : "interrupted"}`);
+        }
         if (config.usage && accountId && dispatched) {
           try {
             await config.usage.finish(
