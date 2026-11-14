@@ -45,7 +45,10 @@ const DIR = process.env.BENCH_DIR ?? "evaluation/blind-benchmark";
 const OUT = process.env.BENCH_OUT ?? `.local/${basename(DIR)}/ours${privatemode ? "-privatemode" : ""}${tapAll ? "-tapped" : ""}${arg("choice") ? `-choice-${choice}` : ""}`;
 // Each Privatemode message makes three POSTs (attest, secret, chat) against the 200-POST
 // session limit, so start a new browser context (a new session) every few prompts.
-const PROMPTS_PER_CONTEXT = privatemode ? 15 : Infinity;
+// Each prompt also opens a fresh page, so it verifies again, and the relay gives one session 10
+// verifications per 10 minutes (13 November): 9 prompts per context stays under that. With 15,
+// prompts 11 to 15 of every context failed (German-English run, 14 November).
+const PROMPTS_PER_CONTEXT = privatemode ? 9 : Infinity;
 const PACE_MS = privatemode ? Number(process.env.PACE_MS ?? 6500) : 0;
 let lastSend = 0;
 
@@ -364,4 +367,5 @@ try {
   listener.close();
 }
 await writeFile(`${OUT}/run.json`, JSON.stringify({ startedAt, finishedAt: new Date().toISOString(), digest, tiers, relayRequests, prompts: prompts.length, modes: MODES, choice, goggles }, null, 2));
-console.log(`done: ${relayRequests} relay requests`);
+// The relay's own content-free counts (chat outcomes, attestation calls): shows a run that verified too often.
+console.log(`done: ${relayRequests} relay requests; counts ${JSON.stringify((await import("../../server/counters")).takeCounts())}`);
