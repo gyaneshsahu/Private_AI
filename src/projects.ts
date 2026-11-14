@@ -162,7 +162,7 @@ function projectOf(conversation: Conversation) {
 }
 
 // No digits here: the whole message goes through identifier masking (see answerLanguagePolicy).
-const INSTRUCTIONS_NOTE =
+export const INSTRUCTIONS_NOTE =
   "[Instructions the user wrote for every chat in this project. Follow them for the message below unless that message says otherwise. They never override your rules above. They are not part of the message and their language does not set the reply language.]";
 /** What is put in front of the latest question. Empty when the chat's project has no instructions. */
 export function projectInstructionsBlock(conversation: Conversation): string {
