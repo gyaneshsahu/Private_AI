@@ -2,6 +2,8 @@
 
 Status: **built and tested offline. Switched off by default. Nothing was verified live.** No call was made to Privatemode, no key was read, no real microphone was used.
 
+**Update, 14 November:** transcription was later checked live with synthetic German and English samples; both models were exact (see "Checked live, 14 November 2026" at the end). The path through the app in a real browser is still not verified.
+
 ## What it does
 
 The user taps the microphone button in the message box, speaks, and taps again to stop. The recording is turned into text. The text lands in the message box at the cursor. The user reads it, edits it and presses Send as usual. Nothing goes to the chat model before that.
@@ -123,7 +125,7 @@ Prices and the token rate are **owner-reported** (from `docs/privatemode-master-
 
 The last row is an assumption, not a measurement.
 
-**The token quota is the tighter limit, not the money.** The owner reported 1.579M of 5M free tokens left on 13 November, and pay-as-you-go cannot be switched on yet (checklist rows K6 and P12). 30 invitees at the cap use 840,000 tokens in one day. So voice input should stay off until pay-as-you-go works, or start with a small `dailyMinutes`. The free tier of 100 audio minutes a month for the whole organisation is used up by 30 invitees in well under a day at the cap.
+**The token quota is the tighter limit, not the money.** The owner reported 1.579M of 5M free tokens left on 13 November (about 0.77M by the agent's counts on 14 November; the first invite waits for paid billing), and pay-as-you-go cannot be switched on yet (checklist rows K6 and P12). 30 invitees at the cap use 840,000 tokens in one day. So voice input should stay off until pay-as-you-go works, or start with a small `dailyMinutes`. The free tier of 100 audio minutes a month for the whole organisation is used up by 30 invitees in well under a day at the cap.
 
 ## Which model
 

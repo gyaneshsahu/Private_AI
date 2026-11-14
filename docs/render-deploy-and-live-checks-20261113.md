@@ -1,17 +1,20 @@
 # Render deploy and live checks (13 November 2026)
 
-Status: written by the agent from the repository on `codex/development-handoff` (written at local HEAD `4492903`. **Deploy commit `08b7bf1e5efe4bb3e045cb3544d05b1b188d5849` or newer**: before `7fc9635` of 14 November the Render bridge did not forward the Privatemode request headers and hosted chat would fail. Ask the agent for the newest green commit). Nothing was deployed, nothing was run on Render, no live call was made. Every step is for the owner. Anything the repository cannot show is marked **(unverified)**.
+Status: written by the agent from the repository on `codex/development-handoff` (written at local HEAD `4492903`, updated 14 November. **Deploy commit `683e045` (`683e0451d375f43b8ae33e7c0242baec9c02517f`, CI green) or newer**: before `7fc9635` of 14 November the Render bridge did not forward the Privatemode request headers and hosted chat would fail; an older note here said `08b7bf1`. Ask the agent for the newest green commit). Nothing was deployed, nothing was run on Render, no live call was made. Anything the repository cannot show is marked **(unverified)**.
+
+**Who does what:** you (the owner) deploy and run every step and check in this doc, because only you have Render access. The agent prepares the files (report, manifest, config text), gives you the commit, and reads the log lines and outputs you paste. The owner test list items for this doc are T-29 to T-36 (`docs/owner-test-list.md`).
 
 How to read this: do the sections in order. Each section ends with what you should see. If you see something else, stop and go to section 7.
 
-## 0. Read this first: three problems found while checking the code
+## 0. Read this first: problems found while checking the code
 
 1. **Fixed in code on 13 November (was a blocker): the automatic allowance on the hosted database.** The hosted service connects as the restricted role `cometrow_runtime`, which may only read allowances, so the first version of the automatic allowance would have failed there and every invitee would have seen "No request allowance is available." The fix follows the purge pattern: an operator SQL function `start_auto_allowance(text, integer, integer)` owned by the schema owner, with hard bounds (1 to 31 days, 1 to 10,000 requests), the database clock, and `EXECUTE` granted to `cometrow_runtime`. Tested against PostgreSQL as the restricted role (`tests/account-privileges.test.ts`).
    - **What you do once, before switching chat on:** section 3.5 (three SQL statements).
    - If it is not installed, the hourly count line shows `allowance.not_permitted` and invitees are refused.
    - Check after the fix: section 5, step 6 ("150 requests remaining" on the account page).
 2. **The app spend cap of USD 100 per week is too small for 10 active invitees.** The relay cannot meter Privatemode, so it books **every** request, Fast or Thinking, at the worst case of the largest mode: `(maxInputCharacters x input price + 16,384 x output price) / 1,000,000` (`server/spend-guard.ts`). With the report draft prices (EUR 1.55 input, EUR 5.74 output per 1M tokens) that is about EUR 0.11 per request at 8,000 characters and about EUR 0.14 at 32,000 characters. USD 100 then allows only about 530 to 850 requests per 7-day window, for everyone together. Ten invitees using only Fast can send 1,500. When the cap is reached, chat stops for **everyone** until the next report window. The rough check in `week-one-monitoring.md` (300 Thinking requests, about USD 30) misses that Fast requests are booked at the same worst case. Details and a suggested number: section 8, row "Privatemode balance".
-3. **The breach plan still names Tinfoil as the AI supplier** (`breach-plan-onepage-20261112.md`). Privatemode is primary since 12 November. The "Rotate secrets" list has no Privatemode key. Fix it before you approve the plan (owner list row 10, decision D16).
+3. **Resolved (checked 14 November):** the breach plan used to name Tinfoil as the AI supplier. `breach-plan-onepage-20261112.md` now names Privatemode as primary and Tinfoil as backup, and its "Rotate secrets" list has the Privatemode key. Left for you: approve it and fill the "no deputy" line (D15 decided: owner only; owner test list T-09).
+4. **New, 14 November: Privatemode rotated its deployment manifest.** The digest in the report draft is old. Chat refuses until the signed report approves the new digest and the matching manifest file is on Render. Steps: section 2.5.
 
 ## 1. Before you start
 
@@ -25,14 +28,15 @@ All of these must be done before the chat-on deploy (section 5). The code-only d
 | 4 | Privatemode privacy wording approved, including the "Always search" sentence and the Brave search sentences | rows 4 and 4b | [ ] |
 | 5 | Brave production key and its terms in hand (search is on) | row 4b, R5 | [ ] |
 | 6 | Four open report checks accepted in writing; repository name `edgelesssys/privatemode-public` confirmed | row 5, P9, D1 | [ ] |
-| 7 | Report finalised and signed by you. It must contain: `modes.thinking.allowanceCost: 5`, `maxInputCharacters: 32000` (row 8), `pricing`, `approvedSpendUSD`, `privatemode.portalKeyLimit` (with `expiresAt`), the manifest digest in `releaseDigests`, `reviewedAt` and `validUntil` (at most 7 days later) | rows 5 and 8 | [ ] |
+| 7 | Report finalised and signed by you. It must contain: `modes.thinking.allowanceCost: 5`, `maxInputCharacters: 32000` (row 8), `pricing`, `approvedSpendUSD`, `privatemode.portalKeyLimit` (with `expiresAt`), the **current** manifest digest in `releaseDigests` (after the rotation of 14 November: `d63eb5cf...f833`, see section 2.5), `reviewedAt` and `validUntil` (at most 7 days later) | rows 5 and 8 | [ ] |
+| 7a | The manifest file on Render matches that digest (section 2.5) | section 2.5 | [ ] |
 | 8 | Edgeless DPA of 24 July 2026 and the 12 November email filed | row 6, L5 | [ ] |
 | 9 | Safety case 07 graded for Fast `glm-5.3-flash` low and Thinking `glm-5.3` high | row 7, P5 | [ ] |
 | 10 | Database password rotated (the one you called exposed) | row 9, S2 | [ ] |
 | 11 | Legal texts approved after a legal read: privacy policy corrections, health consent decision, terms, acceptable use and the 18+ rule, record of processing, breach plan | row 10, L1 to L10, D16 | [ ] |
 | 12 | Safe Browsing review requested and cleared; a real website live at `cometrow.com` | row 11, R4, `safe-browsing-20261112.md` | [ ] |
 | 13 | Support mailbox working; first invitees chosen; pause rule decided | row 12, R3, R6 | [ ] |
-| 14 | Attestation question sent to Privatemode support (does not block the deploy, but decides capacity) | row 1, P11 | [ ] |
+| 14 | Attestation question sent to Privatemode support (does not block the deploy, but decides capacity). Owner-reported 13 November: sent; answer pending (owner test list T-23) | row 1, P11 | [ ] |
 | 14a | **Daily cap** (test account B, only if `dailyLimit` is set): set it low for one deploy (for example `"dailyLimit": 6`), send one Thinking and one Fast message, then one more Fast | The third is refused: "The daily request limit is reached. It frees up within 24 hours. No request was forwarded." The account page still shows requests left for the week. Set `dailyLimit` back | |
 
 Not needed for this deploy: email delivery, Tinfoil, the attestation audit (keep `attestationAudit` out of the config), payments.
@@ -132,6 +136,35 @@ Rules for this file:
 - `allowance.days` is 1 to 31. A new `requestLimit` applies only to new periods, not to a period already running.
 - Keep `attestationAudit` out of the file.
 - Every change to this file needs a deploy before it takes effect (section 4, part B).
+
+### 2.4 Feature switches (added 14 November): all off by default
+
+Leave every one of these out for the first chat-on deploy. Switch them on one at a time, after your device checks and your decision (owner decisions, 14 November block, item 2). Config fields are set in `render-config.json` under `inference` (fields and bounds: `docs/development-deployment.md`); build variables are Render environment variables with value `1` and need a new deploy (owner test list T-43).
+
+| Feature | Switch | Kind | Also needs | Doc |
+| --- | --- | --- | --- | --- |
+| Voice input | `inference.voice` | config | `speech` in the report | `voice-to-text-20261114.md` |
+| Images | `inference.images` | config | `vision` in the report | `images-20261114.md` |
+| Code execution | `inference.code` | config | none | `code-execution-20261114.md` |
+| Deep research | `inference.research` | config | `maxInputCharacters` 32,000 in the report; search key | `deep-research-20261114.md` |
+| Read aloud | `VITE_READ_ALOUD` | build | none | `read-aloud-and-pdf-export-20261114.md` |
+| PDF export | `VITE_PDF_EXPORT` | build | none | `read-aloud-and-pdf-export-20261114.md` |
+| Memory | `VITE_MEMORY` | build | none | `memory-20261114.md` |
+| Canvas | `VITE_CANVAS` | build | none | `canvas-20261114.md` |
+| Projects | `VITE_PROJECTS` | build | none | `projects-20261114.md` |
+| Live voice | `VITE_LIVE_VOICE` | build | voice input and `VITE_READ_ALOUD` | `live-voice-20261114.md` |
+| German interface | `VITE_GERMAN_UI` | build | the legal read first | `i18n-20261113.md` |
+
+Not a switch: large documents are on by a constant in the code (`LARGE_DOCUMENTS`, from 20,000 characters, `large-documents-20261114.md`). Scheduled tasks are not built. **(unverified: that Render passes build variables into the Docker build.)**
+
+### 2.5 Manifest after a Privatemode rotation (added 14 November)
+
+Privatemode rotated its deployment on 14 November. The live digest is `d63eb5cf91cb3079fe25a848573a4d0e9d869f462dab4f71fd02bdb372f8e833`. Do this now and after any later rotation (`model-deprecation-runbook.md` has the background):
+
+1. The agent writes the new manifest file outside alpha hours: `npx tsx scripts/privatemode-manifest.ts --write .local/privatemode-manifest.json`, and tells you the digest it prints.
+2. The agent puts that digest in the report's `releaseDigests`. You approve it by signing the report (section 1, row 7).
+3. Upload the new file as `privatemode-manifest.json` (exact bytes, do not open and re-save) and the signed report as `qualification-privatemode.json`. Save only.
+4. Deploy the same SHA. Then `/api/status` shows `"ready": true` and one message works. Until then users see that the provider's deployment differs from the reviewed one, and chat stays refused.
 
 ## 3. Database
 
@@ -257,6 +290,8 @@ Do section 1 first. Then section 5. Part B is written there because the order ma
 | `The Privatemode API key expires at ...` | hourly, from 14 days before `portalKeyLimit.expiresAt` | Create the next key |
 | `The Privatemode API key expired at ...` | hourly, after expiry | Every chat fails upstream |
 | `Request record purge failed.` | once a day | The purge function or its grant is missing (section 3.4) |
+| `CometRow model check: ... listed and unchanged since the baseline of ...` | at start, then once a day (added 14 November) | The report's models are still in Privatemode's list, unchanged. Normal |
+| `CometRow model alert: ...` | at start, then once a day, only on a change | A model is gone, marked deprecated, or lost a task, or the check could not run. Follow `model-deprecation-runbook.md` |
 
 ## 5. Switch chat on safely
 
@@ -372,7 +407,7 @@ Not known: what Render does when a deploy never becomes healthy. With the legacy
 5. **Database lost or damaged**: follow `recovery-rehearsal-20261024.md` (corrected 12 November). Restore into a new database, end old sessions (step 5a), check, reopen, and only then point the service at it.
 6. **Provider outage**: stop chat, put a notice in the notice file. A switch to Tinfoil is manual and announced (`provider-switch-20261112.md`), never automatic.
 7. **Preserve facts**: the time you noticed, who told you, Render Events and Logs, screenshots of supplier notices. Delete no database rows. Keep no message content.
-8. **Who to tell** (`breach-plan-onepage-20261112.md`, after you update it for Privatemode):
+8. **Who to tell** (`breach-plan-onepage-20261112.md`, which names Privatemode since 12 November; approve it first):
    - Personal data affected: the 72-hour clock starts when you become aware. Notify LDI NRW (Duesseldorf) through its online breach form unless the risk to people is unlikely.
    - High risk to people: email them without undue delay from security@cometrow.com (template in the breach plan).
    - Suppliers as needed: Privatemode (Edgeless Systems) support, Render support, Google (OAuth secret), Brave (search key).
@@ -399,7 +434,7 @@ Not known: what Render does when a deploy never becomes healthy. With the legacy
 | **Internal certificates expire 18 January 2027** | `server.pem` and `bridge.pem`. After that the bridge cannot reach the app: total outage. Calendar entry for early January to reissue them (`scripts/certificate-expiry.ts` reports expiry) | Must (calendar entry now) |
 | **Allowlist places** | Your account and the test account use 2 of the 10 places | Must (plan) |
 | **Test account** | A second Google account only for checks (T1, rows 14 and 28) | Must |
-| **Breach plan** | Update to Privatemode (section 0, point 3) and approve | Must |
+| **Breach plan** | Already names Privatemode (section 0, point 3). Approve it and fill the "no deputy" line (owner test list T-09) | Must |
 | **Database password** | Rotate the exposed one (S2) | Must |
 | **Render instance and no spin-down** | The service runs on 0.5 CPU / 512 MB at USD 7 a month (recorded 20 October). Paid instances do not spin down **(unverified: check the plan name on the dashboard)**. 512 MB under real load is untested | Check |
 | **Legacy disk** | The 1 GB disk at `/var/data` was kept for rolling back to the October runtime. A disk usually stops zero-downtime deploys, so every deploy or failed deploy can interrupt users **(unverified)**. Decide whether to remove it after a backup | Add-on |
@@ -421,7 +456,7 @@ Inputs: report draft prices for GLM-5.3, EUR 1.55 input and EUR 5.74 output per 
 | A third of the allowance at the testing average | about 1.3 million | about EUR 4 | about EUR 4 to 5 |
 
 What this means:
-- **The free balance was 1.579M tokens (owner, portal, 13 November evening; an earlier reading of about 500,000 was wrong) and about 1.2M on 14 November after testing.** The first invite waits for paid billing (decided 14 November). Phase 0 (you alone, at least 20 messages per mode plus these live checks) may use half of it. In the worst case, 10 people use it up in a few hours.
+- **The free balance was 1.579M tokens (owner, portal, 13 November evening; an earlier reading of about 500,000 was wrong) and about 1.2M on 14 November after testing; about 0.77M by the agent's counts at the end of 14 November (`wake-up-report-20261114.md`). Read the portal for the exact figure (owner test list T-24).** The first invite waits for paid billing (decided 14 November). Phase 0 (you alone, at least 20 messages per mode plus these live checks) may use half of it. In the worst case, 10 people use it up in a few hours.
 - **The paid budget must exist before the first invitee.** Better: before you run the live checks, so they cannot stop halfway.
 - The recommended EUR 200 a month at Privatemode (corrected in `docs/owner-decisions.md`; this section first said EUR 100) covers normal use (about EUR 15 to 55 a month for 10 people) but not the worst case (about EUR 180 net, EUR 210 with VAT, per month). EUR 100 is fine as a hard wall if you accept that chat stops at it. Set the portal alert at EUR 25 a week (the alpha plan's stop rule).
 - **App cap (`approvedSpendUSD`)**: it books every request at about EUR 0.14 (32,000 characters) times your EUR to USD rate, Fast or Thinking alike. For a 7-day window: number of accounts x 150 x that amount. For 4 accounts in phase 1 (you, the test account, 2 friends) that is about USD 90 to 110 at a rate near 1.1; for 10 accounts about USD 240 to 290 **(unverified: your exchange rate and whether `pricing` includes VAT)**. The portal spend limit stays the real money wall.

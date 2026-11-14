@@ -2,6 +2,8 @@
 
 Status: **built and tested offline, switched off by default, nothing verified live.** No request went to Privatemode or Brave while building it.
 
+**Update, 14 November:** three questions were later run live through the app; the citations defect found there was fixed and rechecked (see "Live check, 14 November" at the end, and `docs/wake-up-report-20261114.md`).
+
 Owner's words: "premium only, strict token caps, clear progress and cancel."
 
 ## What it does

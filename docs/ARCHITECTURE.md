@@ -6,6 +6,8 @@
 
 This section describes the system as it stands on `codex/development-handoff` (`e880318`). The dated sections below it are history, newest first. Some of them describe the Tinfoil-only design that this section replaces.
 
+**Update, 14 November (`683e045`):** not yet described in this section: the features built on 14 November behind their own switches, all off (voice input, read aloud, PDF export, images, code execution in Pyodide, memory, deep research, canvas, Projects, live voice), large documents by passage search on the device, the daily request cap, the daily model check (`server/model-watch.ts`) and the clear error on a provider manifest rotation. Each feature doc describes its parts; the list of switches is in `docs/render-deploy-and-live-checks-20261113.md`, section 2.4; the summary is `docs/wake-up-report-20261114.md`.
+
 **What CometRow is:** a privacy-first AI assistant. Messages are encrypted in the browser to a verified confidential-computing provider, so our server relays ciphertext it cannot read. Saved conversations live in an encrypted vault in the browser. The alpha is invite-only, free, on one Render server, and it is the last test before launch (no beta).
 
 ### Request path
@@ -46,7 +48,7 @@ This section describes the system as it stands on `codex/development-handoff` (`
 - `src/i18n.tsx` sets the language: from the browser language on the first visit, then from the DE/EN switch, stored on the device only. `src/text/*.ts` holds the text blocks, and `src/text/core.ts` is a React-free twin.
 - `src/server-messages.ts` translates the server's fixed English messages in the browser.
 - The legal texts in `shared/*.ts` exist in English and German, and German is binding. `shared/legal-text-pairs.json` and its test flag a change to one language.
-- **Decided but not built: a server flag, default off, that hides German until the legal read** (`docs/handoff-20261113.md`).
+- **German off-switch, built 13 November night:** a build setting `VITE_GERMAN_UI=1`, default off, hides German until the legal read (`docs/i18n-20261113.md`). An earlier line here said a server flag was decided but not built.
 
 ### Accounts and data
 

@@ -10,6 +10,17 @@ Same idea as before: a ten-minute routine, morning and evening, for the first se
 
 **Count line (added 13 November, not deployed yet):** once an hour, when anything happened, the log shows `CometRow counts (last hour): {...}` with fixed names only (no account, address or text). `chat.<fast|thinking|none>.<outcome>`: `completed`, `interrupted` (the user's Stop, a browser time-out or a dropped connection), `refused_allowance`, `refused_daily` (daily cap), `refused_account_busy`, `refused_instance_busy`, `refused_spend`, `upstream_rejected`, `upstream_unavailable`, `status_<code>` (for example 503 while paused). `attest.verified`, `attest.busy_queue`, `attest.busy_account_share`, `attest.status_<code>`. `search.executed`, `search.failed`. The counts reset at each restart. Search the log for `CometRow counts` in the daily routine.
 
+**New count names (added 14 November, not deployed yet):**
+- `chat.<mode>.upstream_model-not-found`: Privatemode said the model does not exist. The app fails closed, no backup retry. Follow `docs/model-deprecation-runbook.md`.
+- `chat.<mode>.retry_not_counted`: a request after a provider refusal ran on the earlier reservation (checklist K4).
+- `chat.<mode>.tool_continuation`: a code-execution follow-up on credit, not charged (`docs/code-execution-20261114.md`). Many of these per completed message means long tool loops.
+- `search.refused_daily`: an account reached its searches per day.
+- `voice.*` (only with voice input on): `completed`, `interrupted`, `refused_*` (size, model, allowance, daily, voice_daily, spend, account_busy, instance_busy), `upstream_*` (including `upstream_model-not-found`), `retry_not_counted`, and a few more (`docs/voice-to-text-20261114.md`, "Admission at the relay").
+- `image.*` (only with images on): each picture question counted again beside its `chat.fast.*` count, with `refused_size`, `refused_image_daily` and the usual outcomes (`docs/images-20261114.md`).
+- `research.<plan|answer>.<outcome>` and `research.refused_off` (only with deep research on; `docs/deep-research-20261114.md`).
+
+**Model check lines (added 14 November):** at start and once a day, `CometRow model check: ... listed and unchanged since the baseline of ...` is normal. `CometRow model alert: ...` means a model is gone, marked deprecated, lost a task, or the check could not run: follow `docs/model-deprecation-runbook.md`. Add `CometRow model` to the daily log search.
+
 What changed with Privatemode:
 - Privatemode limits **attestation checks per organisation** (about 6 to 10, then a 60-second pause, measured 13 November). Our server queues the checks and logs a count line when something goes wrong.
 - The relay **cannot meter** Privatemode tokens. The ledger books every request at its worst case. The Privatemode portal is the only real cost figure.
@@ -35,9 +46,9 @@ Rows marked "new" are Privatemode checks. The other rows still apply from the Ti
 | Chat ready (new) | In a signed-in browser tab: `https://app.cometrow.com/api/status` | `"inference":{"ready":true,...}` | `"ready":false` | The `reason` says why: "paused by the operator" (stop file), "spending limit ... is reached" (spend cap), or "unavailable until provider qualification ..." (report expired or invalid, key or manifest missing) |
 | Attestation queue (new) | Render, Logs, search `Privatemode attestation queue:` | no line at all | any line | See "Attestation queue line" below |
 | Busy answers (new) | Same log line (`busy`), and friends' reports | `busy` not rising | `busy` rising, or a friend saw "CometRow is busy checking the secure server" | Check that nobody ran a live test (rule above). If it happens with real use only, note the time and the count for the Privatemode support question (owner list step 1) |
-| Our own 429s (new) | Friends' reports only (not logged) | none | "Three requests are already running" or "A request is already running for this account" | See "Our own limits" below |
+| Our own 429s (new) | Friends' reports, and the hourly count line (`refused_instance_busy`, `refused_account_busy`) | none | "Three requests are already running" or "A request is already running for this account" | See "Our own limits" below |
 | Report renewal (new) | `/api/status` (signed in): `inference.qualification.validUntil`; your calendar | more than 2 days left | 2 days or less | Renew now. See "Weekly report renewal" below |
-| Key expiry (new) | Your calendar and the Privatemode portal (key list) | more than 14 days left | 14 days or less | Create the new key and swap it (owner list, "Key swap"). In the committed code there is **no log warning on Render** (see below) |
+| Key expiry (new) | Your calendar and the Privatemode portal (key list) | more than 14 days left | 14 days or less | Create the new key and swap it (owner list, "Key swap"). The Render log also warns every hour from 14 days before (see "API key expiry" below; an older note here said there was no such warning) |
 | Portal spend and free tokens (new) | Privatemode portal: usage per key, spend, free-token balance | spend in line with the number of messages (query E) | spend above EUR 25 in a week, or free tokens close to zero without a budget | Pause new invitees; set or raise the budget; check nothing else uses the alpha key |
 | App spend against the cap | query A | committed spend clearly under `approvedSpendUSD` | above 50 % of the cap | All Privatemode requests are booked at worst case (about USD 0.10 per Thinking request). Raise the cap on purpose (D5) or stop chat; the relay refuses on its own at 100 % |
 | Allowance (new) | query C | each invitee has a current period and is within it | an invitee with no period, or one near the limit on day one | See "Automatic allowance" below |
@@ -64,7 +75,7 @@ Privatemode attestation queue: {"sent":12,"waited":3,"waitedMs":4100,"limited429
 
 - All counts are **totals since the last start**. A deploy, a restart or a report renewal sets them back to 0.
 - **No line means no trouble.** Successful checks write nothing.
-- **Not in the line:** our per-account cap. One account (or session) may run at most 2 checks at once and 10 per 10 minutes. Above that, the relay answers the same 503 `attestation_busy` **without writing a log line**. Only a friend's report shows it.
+- **Not in the line:** our per-account cap. One account (or session) may run at most 2 checks at once and 10 per 10 minutes. Above that, the relay answers the same 503 `attestation_busy` **without writing this line**. The hourly count line counts it as `attest.busy_account_share`.
 - What the user sees: "CometRow is busy checking the secure server. Please try again in a minute. Nothing was sent."
 - Normal use needs 1 check per person per 10 minutes, plus 1 after a failure or a release change.
 
@@ -77,7 +88,7 @@ Privatemode attestation queue: {"sent":12,"waited":3,"waitedMs":4100,"limited429
 | Allowance used up | "No request allowance is available. No request was forwarded." or "Not enough request allowance: this mode counts as 5 requests." | `server/app.ts` | See "Automatic allowance" |
 | Spend cap | "The approved spending limit for this provider review is reached. No request was forwarded." | `server/app.ts` | Chat stops for everyone; `/api/status` shows it |
 
-The browser shows the first two as "The protected service is limiting requests. No answer was received." None of these four is counted or logged (by design, content-free logs). Counting them is a planned counter (`docs/alpha-plan-20261113.md`, section 9).
+The browser shows the first two as "The protected service is limiting requests. No answer was received." None of these four writes its own log line (by design, content-free logs). Since 13 November night they are counted in the hourly count line (`refused_instance_busy`, `refused_account_busy`, `refused_allowance`, `refused_daily`, `refused_spend`).
 
 ### Weekly report renewal (chat stops for everyone when it expires)
 
@@ -98,7 +109,7 @@ The browser shows the first two as "The protected service is limiting requests. 
 ### Portal: free tokens and spend
 
 - The relay cannot read Privatemode token use (the reply is encrypted), so query A shows every Privatemode request as unmetered. The portal is the only real cost figure.
-- Free tokens: 1.579M of 5M (owner-reported from the portal, 13 November evening; the app had estimated 0.69M). At about 2,500 tokens per answer (that run's average, with search), that is roughly 275 answers. **Set the spend budget before the first invitee** (owner list step 3), or chat stops when the free tokens run out.
+- Free tokens: 1.579M of 5M (owner-reported from the portal, 13 November evening; the app had estimated 0.69M). About 0.77M by the agent's counts on 14 November; read the portal. The first invite waits for paid billing (owner decision, 14 November). At about 2,500 tokens per answer (that run's average, with search), that is roughly 275 answers. **Set the spend budget before the first invitee** (owner list step 3), or chat stops when the free tokens run out.
 - Daily in week one, then weekly: note the portal's spend and tokens for the alpha key, and the message count from query E. EUR per message should stay roughly stable.
 - Act when: spend above EUR 25 in one week, or above 50 % of the monthly budget before the 15th.
 
@@ -167,7 +178,7 @@ Query E's mode split depends on today's costs (Fast 1, Thinking 5). If the repor
 
 ### Known gaps (Privatemode)
 
-- **Refused requests are not counted:** allowance, spend cap, 3 per server, 1 per account, paused, and busy from the per-account attestation cap. Friends' reports are the only signal.
+- **Refused requests have no line of their own.** They are counted in the hourly count line (allowance, daily cap, spend cap, 3 per server, 1 per account, `status_503` while paused). Busy from the per-account attestation cap is counted as `attest.busy_account_share`.
 - **Time-outs are not counted.** The browser decides them; the ledger shows them only inside `uncertain`.
 - **The report and key warnings are log lines only:** nobody sees them unless the log is read or an alert (O2) watches for them.
 - **The queue and our limits live in one server's memory.** With two instances, or a live test from another machine, each paces on its own and together they can pass Privatemode's limit.

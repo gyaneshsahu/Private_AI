@@ -157,7 +157,7 @@ No deploy needed. T-01 to T-22 block the first invitee.
 
 - [ ] **T-24 Free token balance.**
   Do: read the free balance in the Privatemode portal today.
-  Expect: a number (last reading: 1.579M of 5M).
+  Expect: a number (last portal reading: 1.579M of 5M on 13 November; the agent's own counts give about 0.77M on 14 November).
   Tell the agent: the number. Say so at once when it is below 0.5M.
 
 - [ ] **T-25 Score the 30-answer owner sample.**
@@ -186,7 +186,7 @@ No deploy needed. T-01 to T-22 block the first invitee.
 
 Do these in order. Use the deploy doc.
 
-**Important (fix of 14 November):** before commit `7fc9635` the Render bridge did not pass the Privatemode request headers. Any older commit fails every chat on the hosted site. Deploy `08b7bf1e5efe4bb3e045cb3544d05b1b188d5849` or newer. **Ask the agent for the newest green commit.**
+**Important (fix of 14 November):** before commit `7fc9635` the Render bridge did not pass the Privatemode request headers. Any older commit fails every chat on the hosted site. Deploy `683e045` (CI green, newest code commit on 14 November) or newer. **Ask the agent for the newest green commit.** Privatemode rotated its manifest on 14 November: the deploy also needs the new manifest file and the signed report that approves its digest (deploy doc, section 2.5).
 
 - [ ] **T-29 Deploy part A: new code, chat off.**
   Do: deploy doc, section 4.1 (settings) and 4.2 (10 steps). Use "Deploy a specific commit". Never "Deploy latest commit".
@@ -435,7 +435,7 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 - [ ] **T-93 Decide: memory on for the alpha, and its privacy wording.**
   Do: read `docs/memory-privacy-wording-draft-20261114.md` (part 1 for the claim, part 2 for the policy sentences, part 3 for the texts in the app).
   Expect: you can say yes or no to switching it on, to the limits (200 memories, 8 per question, 3 pinned), and to each proposed sentence.
-  Tell the agent: your decision and any sentence to change. Recommended: on after T-86 and T-87 pass.
+  Tell the agent: your decision and any sentence to change. Recommended: on after T-89 and T-90 pass.
 - [ ] **T-94 Deep research: one whole run (only after the lead switched it on and ran the live checks).**
   Do: open Research. Under "Deep research" type a question that needs several sources, for example about a notice period and where the law says so. Tap "Plan the research". Read the proposed search texts. Change one, remove one. Tap "Search for these texts". Watch the steps. At the end tap "Show the answer".
   Expect: nothing is searched before you approve. The steps show Planning, Searching, Reading pages, Writing the answer, each with its outcome. The answer has source links, and a line above it says how many searches and pages were used. The panel says "Requests counted for this run: 15 of 15".
@@ -499,7 +499,7 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 - [ ] **T-106 Decide: live voice on for the alpha, and the recordings per day.**
   Do: read "Open decisions" in `docs/live-voice-20261114.md`.
   Expect: you can decide the switch and the voice input limits. With today's limits a user gets 5 live turns a day.
-  Tell the agent: your decision. Recommended: on after T-91 and T-92 pass, with recordings of at most 30 seconds (20 a day).
+  Tell the agent: your decision. Recommended: on after T-102 and T-103 pass, with recordings of at most 30 seconds (20 a day).
 ---
 - [ ] **T-107 Projects: instructions and a file in a project chat (only after the lead built with VITE_PROJECTS=1).**
   Do: create a project. Open it from its menu in the sidebar ("Open project"). Write instructions, for example "Answer in German and name the clause." Add a PDF or Word file (a made-up contract is fine). Tap "New chat in this project" and ask about one clause, in English.
@@ -519,7 +519,7 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 - [ ] **T-110 Decide: projects on for the alpha, and their privacy wording.**
   Do: read `docs/projects-privacy-wording-draft-20261114.md` and the open decisions at the end of `docs/projects-20261114.md` (project files are not in the backup file).
   Expect: you can say yes or no to switching it on, to the limits, and to each proposed sentence.
-  Tell the agent: your decision. Recommended: on after T-91 and T-92 pass.
+  Tell the agent: your decision. Recommended: on after T-107 and T-108 pass.
 
 ---
 ## Changes
@@ -536,3 +536,4 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 - 14 November 2026: live voice items added; all items renumbered again in file order (T-01 to T-106).
 - 14 November 2026: added T-91 to T-94 (projects with instructions and files: a project chat, nothing sent where it should not be, the project screen on a phone, the decision). Only after the lead built with the switch on.
 - 14 November 2026: Projects items added; all items renumbered in file order (T-01 to T-110).
+- 14 November 2026: three cross-references fixed after the renumbering (T-93 now points to T-89 and T-90, T-106 to T-102 and T-103, T-110 to T-107 and T-108); T-24 shows the agent's balance estimate.

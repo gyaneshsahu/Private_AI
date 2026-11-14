@@ -6,7 +6,7 @@ Owner's request: a user should be able to upload, for example, a 100-page PDF or
 
 It sent the whole text. Each PDF page became one "source passage", every other file one. With each question, every source of every selected attachment went to the model in one block. Nothing chose among passages. Three limits applied: 10 MB per file, 20 PDF pages, 60,000 characters per file. A file over a limit was refused, never cut short.
 
-One thing was found on the way. The request itself is limited to 32,000 characters (`maxInputCharacters` in the report), and the instructions use about 4,000 of them. So a file between about 27,000 and 60,000 characters was accepted and then could not be sent: the user saw "Selected context is too large". This is still so (see "Decisions for the owner", point 2).
+One thing was found on the way. The request itself is limited to 32,000 characters (`maxInputCharacters` in the report), and the instructions use about 4,000 of them. So a file between about 27,000 and 60,000 characters was accepted and then could not be sent: the user saw "Selected context is too large". Fixed by the owner decision of 14 November: the passage path now starts at 20,000 characters (see "Owner decisions, 14 November").
 
 ## The three options
 
@@ -24,14 +24,14 @@ Why (a) fits this code: a "source" with an id, a title, a page and a text alread
 
 ## How it works
 
-1. Reading. A PDF, Word (`.docx`) or plain text file (`.txt`, `.md`, `.markdown`) with more than 60,000 characters is no longer refused, up to 500,000 characters. Spreadsheets, CSV, JSON and code keep the 60,000 limit: they are not prose, and word search over rows without their headers gives poor answers.
+1. Reading. A PDF, Word (`.docx`) or plain text file (`.txt`, `.md`, `.markdown`) with more than 20,000 characters (owner decision of 14 November, `LARGE_FROM_CHARACTERS`; first built at 60,000) takes the passage path, up to 500,000 characters. Above 60,000 such a file was refused before. Spreadsheets, CSV, JSON and code keep the 60,000 limit: they are not prose, and word search over rows without their headers gives poor answers.
 2. Passages. The text is cut into passages of at most 1,200 characters, at a paragraph break if there is one, else at a line break, a sentence end or a space. A PDF passage keeps its page number. Nothing but white space is dropped. The attachment is marked `large`.
 3. Choosing. For each question the device ranks all passages of the selected large documents with BM25, a standard word-overlap formula from search engines. German and English are treated alike: case, umlauts and ß are folded ("Kuendigung" finds "Kündigung", "Verträge" finds "Vertrag"), one common ending is removed, common words are ignored, and a word of five letters or more also finds compounds that contain it ("Frist" finds "Kündigungsfrist"), at half strength. Words of the question before count half, so a short follow-up keeps its topic.
 4. Budget. At most 14,000 characters of passages are sent with one question, over all large documents together (about 12 to 20 passages). The number is fixed, so the cost of a question does not grow with the document. Passages much weaker than the best one are left out even when there is room.
 5. Sending. Only the chosen passages are masked for identifiers and put into the request. The rest of the document is not touched at that step and never leaves the device.
 6. Telling the user. Before sending, the context review shows, for the draft as typed: "For this question, 9 of 412 passages from "X" are sent (pages 3, 17, 42-43), chosen on this device to match the question. The other 403 passages are not sent." Under each answer the same sentence is kept in the past tense. If no passage shares a word with the question, the first passages of the document are sent and the note says so and suggests asking with words that occur in the document. The attachment itself carries a note that it is a large document and how it is used.
 
-Small files work as before: at or under 60,000 characters nothing is cut into passages and everything selected is sent. One side effect: a PDF with 21 to 150 pages and little text (60,000 characters or less) is now accepted as an ordinary attachment.
+Small files work as before: at or under 20,000 characters (60,000 when first built) nothing is cut into passages and everything selected is sent. Spreadsheets, CSV, JSON and code keep the old rule up to 60,000. One side effect: a PDF with 21 to 150 pages and little text (20,000 characters or less) is now accepted as an ordinary attachment.
 
 ## Limits and why
 
@@ -39,7 +39,7 @@ Small files work as before: at or under 60,000 characters nothing is cut into pa
 | --- | --- | --- | --- |
 | File size | 10 MB | 10 MB | Unchanged; see "Decisions for the owner", point 3 |
 | PDF pages | 20 | 150 | Covers a 100-page document with room; reading time is the bound, not memory |
-| Characters, PDF, Word, plain text | 60,000 | 500,000 | About 150 dense pages. 500,000 characters are about 1 MB in memory and about 1 MB in the encrypted vault per document |
+| Characters, PDF, Word, plain text | 60,000 | 500,000 (passage path from 20,001) | About 150 dense pages. 500,000 characters are about 1 MB in memory and about 1 MB in the encrypted vault per document |
 | Characters, spreadsheets, CSV, data, code | 60,000 | 60,000 | Unchanged |
 | Scanned PDF read by OCR | first 5 pages | first 5 pages | Unchanged |
 | Sent with one question from large documents | does not apply | 14,000 characters | Leaves about 12,000 of the 32,000 for earlier messages |
@@ -89,6 +89,8 @@ Built end to end and switched on: `LARGE_DOCUMENTS` in `src/document-formats.ts`
 - The vault backup is limited to 16 MB in total. A few saved conversations with large documents (about 1 MB each) bring it closer; not tested.
 
 ## Decisions for the owner
+
+Points 1 to 3 are decided (see "Owner decisions, 14 November" below). Points 4 and 5 are open (owner test list T-73 and T-74).
 
 1. Leave the switch on for the alpha, or turn it off until one real 100-page PDF has been tried on a phone.
 2. Where the passage path starts. It starts above 60,000 characters, as asked ("only above the current limits"). But files between about 27,000 and 60,000 characters are accepted today and then cannot be sent within the 32,000-character input limit. Lowering the start to about 20,000 characters would make those files usable; it changes behaviour for files that fit today only in a report with a larger input limit. Recommended: lower it, after point 1.

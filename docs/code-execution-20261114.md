@@ -2,6 +2,8 @@
 
 Status: **built and tested offline and in headless Chromium. Switched off by default. Nothing was verified live.** No call was made to Privatemode and no key was read.
 
+**Update, 14 November:** later checked live through the app on Privatemode: Fast 30 of 30 and Thinking 16 of 16 arithmetic conversations exact, streamed tool calls work on both models, about 7,700 tokens per two-turn conversation (commit `fb1af03`; `docs/wake-up-report-20261114.md`). Phones, Safari, Firefox and the hosted path are still not verified.
+
 ## What it does
 
 With the switch on, a chat request carries one tool, `python`. When a question needs calculation, the model writes Python code. The code runs on the user's device, in Pyodide (CPython compiled to WebAssembly) inside a Web Worker. What the code printed goes back to the model in a follow-up request. The model then answers. The answer carries the mark "Calculated with code on this device" and a control that opens the code and its output.
