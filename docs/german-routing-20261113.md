@@ -314,3 +314,21 @@ The hold-out `evaluation/german-rules-fresh-20261114/` (60 prompts: 30 rules que
 - False alarms happen only on near-misses built to share vocabulary (a rent sum on the user's own figures, "Frist" in project management, a historical rate). A false alarm costs one extra tap (the search-first question). A miss falls back to the answer-side warning.
 - This set has now been used once and is frozen. It must not be used for tuning. Which prompts were missed is recorded by id only (missed after: F2-01, F2-05, F2-07, F2-15, F2-26, F2-30; false alarms after: F2-31, F2-33, F2-38, F2-43, F2-47, F2-48).
 - The time box is used up. Next step if wanted: English frames without a country, tested on a new blind set.
+
+## 14 November 2026: English coverage, result on the blind English hold-out
+
+The English hold-out `evaluation/english-rules-fresh-20261114/` (60 prompts: 30 rules questions of which 12 name Germany, 12 name no country, 3 Austria, 3 Switzerland; 30 others of which 25 are near-misses) was written by a separate agent that read neither the detector nor any earlier set. The agent that changed the detector never saw it. Scored by the lead with `npx tsx evaluation/english-rules-fresh-20261114/score.ts`, once before and once after the change.
+
+| | Before | After (English coverage) |
+| --- | --- | --- |
+| English rules questions caught | 15 of 30 (50 %) | **26 of 30 (87 %)** |
+| False alarms, 5 ordinary others | 0 | 0 |
+| False alarms, 25 near-misses | 6 | 7 |
+
+The German hold-out, scored again only to check for regression (not used for tuning): 26 of 30 caught (German 20 of 22 as before, English 6 of 8, was 4), false alarms 7 of 18 near-misses (was 6), 0 of 12 ordinary.
+
+- **English is now at the German level** on prompts nobody tuned on: 87 % against 91 %.
+- False alarms stay confined to near-misses in both sets. A false alarm costs one extra tap.
+- Missed after, by id only: E-03, E-07, E-09, E-33. False alarms after: E-02, E-15, E-21, E-25, E-30, E-36, E-40. Both hold-outs are now used and frozen.
+- **Open, found by the detector agent and not fixed:** the web search for an English rules question sends the user's text with no country, so "How much is the TV licence?" may bring back British pages. Austrian and Swiss questions are detected but ranked and instructed as German. Both change what is sent to the search provider, so they are a separate step.
+- **Cost:** English rules questions now go to Thinking as German ones do (in the 40-pair run: English 15 Fast / 25 Thinking instead of 20 / 20).
