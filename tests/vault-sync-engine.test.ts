@@ -48,7 +48,8 @@ async function device(origin: string, name: string) {
   const net: Net = { offline: false, bodies: [] };
   const fetcher: Fetcher = async (path, init) => {
     if (net.offline) throw new TypeError("fetch failed");
-    if (init.body) net.bodies.push(init.body);
+    // Blob bodies (bytes) are recorded as Latin-1 text, so the canary checks cover them too.
+    if (init.body) net.bodies.push(typeof init.body === "string" ? init.body : Buffer.from(init.body).toString("latin1"));
     return fetch(`${origin}${path}`, { method: init.method, headers: { ...init.headers, cookie }, body: init.body });
   };
   const engine = new SyncEngine({ vault, accountId: ACCOUNT, csrf: () => csrf, fetch: fetcher, storeName: `sync-${name}-${crypto.randomUUID()}`, pollMs: 10 });

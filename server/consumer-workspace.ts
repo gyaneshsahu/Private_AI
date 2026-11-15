@@ -12,7 +12,8 @@ import { createApp } from "./app";
 import { PostgresUsageLedger } from "./usage-postgres";
 import { PostgresUsageRecords } from "./usage-records-postgres";
 import { PostgresBackgroundStore } from "./background-store";
-import { PostgresSyncStore } from "./vault-sync-postgres";
+import { PostgresBlobStore, PostgresSyncStore } from "./vault-sync-postgres";
+import { S3Objects } from "./vault-sync-blobs";
 import { productionAccountTarget } from "../shared/account-design";
 import { productionOperations } from "./production-operations";
 import {
@@ -84,7 +85,7 @@ export interface ProductionInferenceConfig {
   /** Usage metering with this plan and an optional pinned weights version (docs/usage-metering-20261115.md); absent means off. */
   metering?: { plan: string; weightsVersion?: number };
   /** End-to-end encrypted vault sync limits; absent means off. */
-  vaultSync?: import("./vault-sync").SyncSettings;
+  vaultSync?: { quotaBytes: number; maxDevices: number; blobs?: import("./vault-sync").BlobSettings & { s3?: import("./vault-sync-blobs").S3Settings } };
   /** Background tasks (Auto mode of Scheduled); absent means off. */
   backgroundTasks?: {
     maxAutoTasks: number;
@@ -138,7 +139,27 @@ export function createProductionConsumerCandidate(
           ...(inference.metering
             ? { metering: { ...inference.metering, records: new PostgresUsageRecords(config.database) } }
             : {}),
-          ...(inference.vaultSync ? { vaultSync: { ...inference.vaultSync, store: new PostgresSyncStore(config.database) } } : {}),
+          ...(inference.vaultSync
+            ? {
+                vaultSync: {
+                  quotaBytes: inference.vaultSync.quotaBytes,
+                  maxDevices: inference.vaultSync.maxDevices,
+                  store: new PostgresSyncStore(config.database),
+                  ...(inference.vaultSync.blobs
+                    ? {
+                        blobs: {
+                          quotaBytes: inference.vaultSync.blobs.quotaBytes,
+                          maxFileBytes: inference.vaultSync.blobs.maxFileBytes,
+                          store: new PostgresBlobStore(
+                            config.database,
+                            inference.vaultSync.blobs.s3 ? new S3Objects(inference.vaultSync.blobs.s3) : undefined,
+                          ),
+                        },
+                      }
+                    : {}),
+                },
+              }
+            : {}),
           ...(inference.backgroundTasks
             ? {
                 backgroundTasks: {

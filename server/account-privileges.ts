@@ -38,6 +38,9 @@ export function accountPrivilegePlan(input: {
     `GRANT SELECT,INSERT,UPDATE,DELETE ON ${table("background_tasks")},${table("background_results")} TO ${runtime}`,
     // Vault sync (migration 0023): ciphertext, wrapped keys and hashes the runtime stores, replaces and deletes.
     `GRANT SELECT,INSERT,UPDATE,DELETE ON ${["sync_accounts", "sync_items", "sync_devices", "sync_wrappers", "sync_pairings"].map(table).join(",")} TO ${runtime}`,
+    // Project-file blobs (migration 0024): the runtime stores and deletes them; the delete trigger
+    // queues object keys, which the runtime's sweep reads and removes.
+    `GRANT SELECT,INSERT,DELETE ON ${table("sync_blobs")},${table("sync_blob_sweep")} TO ${runtime}`,
     `GRANT SELECT,INSERT ON ${table("account_security_event")} TO ${runtime}`,
     `GRANT SELECT,INSERT ON ${table("account_closure")} TO ${runtime}`,
     // Account data export reads the account's own billing binding and operations.

@@ -209,6 +209,47 @@ it("loads production chat only when the inference section is present and enabled
     await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, vaultSync: bad } }));
     await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
   }
+  // Stage 3, project files as blobs: absent means off; defaults 1024 MB and 10 MB; S3 keys only from the environment.
+  const withBlobs = (blobs: unknown) => writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, vaultSync: { ...vaultSync, blobs } } }));
+  await withBlobs({ store: "postgres" });
+  expect((await loadDeploymentConfig(configFile)).inference?.vaultSync).toEqual({
+    quotaBytes: 200 * 1024 * 1024,
+    maxDevices: 5,
+    blobs: { quotaBytes: 1024 * 1024 * 1024, maxFileBytes: 10 * 1024 * 1024 },
+  });
+  const s3 = { endpoint: "https://fsn1.your-objectstorage.com", region: "fsn1", bucket: "cometrow-files" };
+  const keys = ["PRIVATEAI_BLOB_S3_ACCESS_KEY_ID", "PRIVATEAI_BLOB_S3_SECRET_ACCESS_KEY"] as const;
+  const saved = keys.map((name) => process.env[name]);
+  try {
+    for (const name of keys) delete process.env[name];
+    await withBlobs({ store: "s3", quotaMb: 2048, maxFileMb: 25, s3 });
+    await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+    process.env.PRIVATEAI_BLOB_S3_ACCESS_KEY_ID = "SYNTHETIC-ACCESS-KEY";
+    await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+    process.env.PRIVATEAI_BLOB_S3_SECRET_ACCESS_KEY = "synthetic-secret";
+    expect((await loadDeploymentConfig(configFile)).inference?.vaultSync?.blobs).toEqual({
+      quotaBytes: 2048 * 1024 * 1024,
+      maxFileBytes: 25 * 1024 * 1024,
+      s3: { ...s3, accessKeyId: "SYNTHETIC-ACCESS-KEY", secretAccessKey: "synthetic-secret" },
+    });
+  } finally {
+    keys.forEach((name, i) => (saved[i] === undefined ? delete process.env[name] : (process.env[name] = saved[i])));
+  }
+  for (const bad of [
+    { store: "disk" },
+    { store: "s3" }, // s3 without its settings
+    { store: "postgres", s3 }, // s3 settings with postgres
+    { store: "postgres", quotaMb: 9 },
+    { store: "postgres", maxFileMb: 26 },
+    { store: "postgres", maxFileMb: 0 },
+    { store: "s3", s3: { ...s3, endpoint: "http://fsn1.your-objectstorage.com" } },
+    { store: "s3", s3: { ...s3, bucket: "Bad_Bucket" } },
+    { store: "s3", s3: { ...s3, accessKeyId: "in-the-file", secretAccessKey: "in-the-file" } }, // keys never in the file
+    { store: "postgres", extra: true },
+  ]) {
+    await withBlobs(bad);
+    await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+  }
   // The live manifest has its own switch: absent or false means off; Privatemode only.
   // (The loop above left a refused file behind: start again from a valid one.)
   await writeFile(configFile, JSON.stringify({ ...config, inference: { ...privatemode, manifestFile } }));

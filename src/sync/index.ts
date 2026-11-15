@@ -82,3 +82,15 @@ export const openLocalVault = async (vault: Vault): Promise<boolean> => {
   if (!engine || need().vault !== vault) return false;
   return (await engine.unlockThisDevice().catch(() => "not-remembered")) === "ok";
 };
+
+// Stage 3: project files as encrypted blobs (docs/vault-sync-20261115.md, "Stage 3: project files").
+export {
+  useSyncFiles,
+  downloadProjectFile,
+  removeSyncedProjectFile,
+  ensureProjectFiles,
+  type FilesView,
+  type FileState,
+  type FileEntry,
+  type DownloadResult,
+} from "./files";

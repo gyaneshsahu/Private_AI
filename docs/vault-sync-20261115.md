@@ -4,7 +4,7 @@
 
 ## 1. What it does
 
-A user turns sync on once. From then on their saved chats, memories, projects (with their instructions) and scheduled tasks are on every device they approve. The server stores an encrypted copy it cannot read. Project files stay on the device where they were added (Stage 3, section 9). Incognito chats are never saved and never synced.
+A user turns sync on once. From then on their saved chats, memories, projects (with their instructions) and scheduled tasks are on every device they approve. The server stores an encrypted copy it cannot read. Project files stay on the device where they were added, unless the deployment also switches on Stage 3 (`inference.vaultSync.blobs`, section 14): then they sync as encrypted blobs and other devices download them when they are opened or used. Incognito chats are never saved and never synced.
 
 ## 2. Key scheme
 
@@ -14,8 +14,8 @@ A user turns sync on once. From then on their saved chats, memories, projects (w
         +------------------+------------------+------------------+--------------------+
         |                  |                  |                  |                    |
   HKDF "item|<id>"   HKDF "local-vault"  HKDF "device-label"  HKDF "account-proof"  HKDF "file|<id>"
-  per-item key        this device's        device names          32 bytes; server     Stage 3 only
-  (AES-256-GCM)       vault key            (AES-GCM)             keeps SHA-256        (not built)
+  per-item key        this device's        device names          32 bytes; server     per-blob key
+  (AES-256-GCM)       vault key            (AES-GCM)             keeps SHA-256        (Stage 3, section 14)
 
   AK is wrapped (encrypted) once per unlocker; the server stores the wrapped blobs only:
 
@@ -97,11 +97,9 @@ Residual risk, stated plainly: the code is about 20 bits. Against a third party 
 
 **Not built, for the crypto review:** AK rotation on device removal (re-encrypting every item); a signed or hashed manifest of item versions (protects a fresh device against rollback and withheld items); authenticated tombstones (an encrypted tombstone payload); size padding; a stronger pairing channel (QR fingerprint or commit-reveal); moving rate limits to the database for several instances. A manifest was considered for Stage 1 and left out: without key rotation and authenticated deletes it would protect little, and it needs its own design (who signs, how devices agree).
 
-## 9. Project files, Stage 3 (not built; the interface is ready)
+## 9. Project files, Stage 3
 
-- Each file gets `fileId` (random UUID) and a per-file key `fileKey(AK, fileId)` (HKDF info `file|<fileId>`, in `src/sync/crypto.ts`). The blob is AES-256-GCM with AAD `fileAad(accountId, fileId, version)` = `account|file|version|project-file`, stored outside `sync_items` (EU object storage, for example Hetzner, through short-lived signed addresses).
-- The file index (name, size, type, fileId, version) goes inside the encrypted `projects` item, so the bucket holds no names and the merge rules for projects cover it. Today the `projects` payload is the project list; Stage 3 adds a field, and older devices ignore it.
-- Quota: blob sizes count against the same account quota (a server-side sum per account). Account erase and reset must also delete the blobs.
+Built on 15 November: see section 14. Two points of the earlier plan changed. The blobs go through our server (no signed addresses: the server must check the device token, the size and the quota, and it never sees a key either way), and they have their own quota. The sentence "older devices ignore the new field" was wrong: the item payload and the project list are strict, so a Stage 1 device would refuse the new shape. Stage 1 never ran in production, so Stage 1 and Stage 3 must simply ship together (the engine still reads the Stage 1 shape).
 
 ## 10. Switch, limits, cost
 
@@ -135,3 +133,75 @@ Residual risk, stated plainly: the code is about 20 bits. Against a third party 
 | VS-3 | Pairing channel strength | Accept the 6-digit code for the alpha with the stated server-side risk; add a QR fingerprint in Stage 2 |
 | VS-4 | AK rotation on device removal | Not for the alpha; on the crypto review list |
 | VS-5 | Not-remembered devices | Ask for a local passphrase when "remember this device" is off |
+
+## 14. Stage 3: project files (15 November 2026)
+
+**Status: built and tested offline, behind its own switch `inference.vaultSync.blobs` (absent means off: files stay on their device as in Stage 1). Object storage not tested live (no account exists). Real browsers not tested.** Owner decision of 15 November: project files sync as encrypted blobs as part of the lasting design.
+
+### 14.1 Design as built
+
+- **What a blob is.** A project file is kept today as its extracted text in passages, never the original file (`src/projects.ts`). The blob is exactly that: the file's JSON (name, passages) as stored in the vault, encrypted. The manifest's `type` names this format (`extracted-text-v1`), so originals could be added later as a second type.
+- **Keys.** Blob id = `blobIdFor(AK, localFileId)` (HKDF `item-id|project-file|<id>`, shaped as a UUID): the server cannot link it to the local file id or tell it from an item id. Key = `fileKey(AK, blobId)` (HKDF `file|<blobId>`). Cipher AES-256-GCM, 96-bit random nonce, AAD `fileAad(accountId, blobId, 1)` = `account|blob|1|project-file`. A file is never edited (only added or removed), so the version is always 1. Format: `nonce (12) || ciphertext || tag (16)`, 28 bytes more than the plaintext.
+- **Manifest inside the projects item.** The `projects` item's payload is now `{ projects, files }`. Each file entry: file id, project id, name, characters, time, plaintext size, type, blob id, SHA-256 of the plaintext. All of it is inside the item's ciphertext; the server sees none of it. Files are merged by file id apart from the projects, so a file added on one device while the instructions changed on another makes no "(2)" project copy. A file entry never conflicts (files are immutable).
+- **This device's record** (sealed under AK in the sync database): each manifest entry with a flag "here" (in this vault: added here or downloaded), and the blob deletes still owed. A local file without an entry is new (to upload); an entry marked here without the local file was deleted here; an entry not here is "Not downloaded yet".
+- **Order.** In each cycle: pull, then upload new local files (one blob each, `PUT /api/sync/blobs/:blobId`), then push the items (the manifest lists only files already uploaded), then delete the blobs of files that the accepted list no longer has. Deletes are kept until the server confirms them (404 counts as done). A file removed while it was uploading is deleted again at once. The offline queue is the vault as before: a file without an entry is pending, counted in `pending`, and retried with the engine's backoff.
+- **Lazy download.** Another device lists the file at once (from the manifest) and downloads its blob only on `downloadFile(id)` (the project screen's Download button) or `ensureProjectFiles(projectId)` (before a question in a project chat). The download streams with progress, is decrypted, checked against the manifest hash and file id, and written into the local vault; a mismatch is refused ("damaged"), never kept.
+- **Deletes reach every device.** Removing a downloaded file (the existing Remove) or a file never downloaded here (`removeSyncedProjectFile`) drops it from the manifest; other devices remove their copy at their next sync, and the device that removed it deletes the blob.
+- **Screens.** The project screen (`src/ProjectPanel.tsx`) shows, only while file sync is on: an intro sentence, the quota line ("Synced files: 5 MB of 1 GB used, 1,019 MB left"), per file "Not downloaded yet" with Download, a progress bar while downloading, a failure with its reason and Try again, "Waiting to sync", "Uploading", "Too large to sync (limit 10 MB). It stays on this device." and "Not synced: your file storage is full." Texts in English and German in `src/text/sync-files.ts`. The file limits of a project (20 files, 1,500,000 characters, 3,000,000 over all projects) count files not downloaded here too. The screen reads `src/sync/files.ts` only, so it works the same without sync.
+- **For the lead (one line, in a file this agent did not own):** the send path in `src/App.tsx` should `await ensureProjectFiles(conversation.projectId)` (exported from `src/sync`) before a question in a project chat; on `false`, say that some files could not be downloaded. Until then a question uses only the files already on this device (`withProjectFiles` is synchronous).
+
+### 14.2 What the server sees and stores
+
+- Per account: how many blobs, each blob's size (the plaintext size plus 28 bytes, not padded), and when it was stored, read and deleted (through the content-free counts `sync.blob.put`, `sync.blob.get`, `sync.blob.delete`). It never sees names, contents, which project a blob belongs to, or which file it is. It never logs blob bytes.
+- Tables (migration 0024): `sync_blobs` (account, blob id, size, the bytes or an object key, time; it goes with `sync_accounts`) and `sync_blob_sweep` (object keys waiting to be deleted in the bucket; keys only, no account). A delete trigger on `sync_blobs` queues the key of every deleted row that lives in the bucket, also when the row goes through the cascade of an account erase, so the server's sweep (after each write and hourly) deletes the object. An object whose database write failed after the upload stays unreferenced (rare; a listing sweep would catch it, not built).
+- Object storage (store `"s3"`): object keys are random (not the blob id, not the account), so the bucket provider cannot group objects by account. Requests are signed with AWS Signature Version 4 (`server/vault-sync-blobs.ts`, `node:crypto` and `fetch` only, path-style, PUT, GET and DELETE of one object).
+
+### 14.3 Limits and the quota choice
+
+- Per file: `maxFileMb`, default **10 MB**, at most 25. 10 MB is today's lower limit (a document above 10 MB is refused before reading, `src/documents.ts`); the blob is the extracted text, which is usually much smaller than the original.
+- Per account: `quotaMb`, default **1024 MB** for the alpha (10 to 10,240).
+- **Choice: a separate quota for files, not combined with the 200 MB item quota.** A full file storage must never stop chats, memories and tasks from syncing; with one shared quota, a few large files would. The two are shown apart (`/api/sync/state` gains `files: { count, usedBytes, limitBytes, maxFileBytes }`; the engine's `fileView().quota`). The screens' quota line (another agent's file) can show both; the project screen shows the file line.
+- A file over the limit stays on its device with its own state; a file over the quota waits ("storage full") and goes up when space is freed. Neither blocks the rest.
+
+### 14.4 Switch and configuration
+
+`inference.vaultSync.blobs: { "store": "postgres" | "s3", "quotaMb": 1024, "maxFileMb": 10, "s3": { "endpoint", "region", "bucket" } }`, strict zod; `s3` is required with `"s3"` and refused with `"postgres"`. The access key and secret come **only** from the environment variables `PRIVATEAI_BLOB_S3_ACCESS_KEY_ID` and `PRIVATEAI_BLOB_S3_SECRET_ACCESS_KEY`; the strict schema refuses them in the file, and a missing one stops the start. Development server: `PRIVATEAI_VAULT_SYNC=1 PRIVATEAI_VAULT_SYNC_FILES=1` (memory, 1 GB, 10 MB). Routes (device token and CSRF like the other sync routes, only with the switch on): `PUT /api/sync/blobs/:blobId` (raw body, 413 `too-large` or `quota`), `GET /api/sync/blobs/:blobId`, `DELETE /api/sync/blobs/:blobId`. `POST /api/sync/reset` and the account erase delete the blobs too.
+
+### 14.5 Cost
+
+- `store: "postgres"`: the blobs are rows in the existing database. The alpha worst case (30 users with 1 GB each) is 30 GB of database storage; the price of Render database storage at that size was not checked.
+- `store: "s3"` on Hetzner Object Storage (prices from `docs/multi-device-and-usability-20261115.md`, fetched 15 November): EUR 6.49 a month base, which includes 1 TB stored and 1 TB egress, no request fees. At 1 GB per account that covers about 1,000 full accounts, so the alpha costs **EUR 6.49 a month** whatever the use; beyond 1 TB about EUR 6.35 per TB-month and EUR 1.00 per TB of egress. Objects under 64 KB are billed as 64 KB (most extracted-text blobs are small; not padded here).
+
+### 14.6 What the owner must do before `store: "s3"`
+
+1. Create a Hetzner Object Storage bucket in an EU location (Falkenstein `fsn1` or Nuremberg `nbg1`), private, no public access.
+2. Sign Hetzner's AVV (data processing agreement) in the Hetzner account, and add Hetzner to the Art. 30 record and the privacy wording (draft section 7).
+3. Create an access key for that bucket and set `PRIVATEAI_BLOB_S3_ACCESS_KEY_ID` and `PRIVATEAI_BLOB_S3_SECRET_ACCESS_KEY` in the service's environment (Render), never in the config file.
+4. Set `"blobs": { "store": "s3", "s3": { "endpoint": "https://fsn1.your-objectstorage.com", "region": "fsn1", "bucket": "<name>" } }`.
+
+Until then use `"store": "postgres"`. The lead runs the live probe once the bucket exists, from the service shell where the two variables are set: `node --import tsx scripts/blob-s3-probe.ts https://fsn1.your-objectstorage.com fsn1 <bucket>` (puts, reads back and deletes one random 1 KB object; prints no key).
+
+### 14.7 Tests (offline)
+
+- `tests/vault-sync-blobs.test.ts`: blob crypto (round trip, wrong account, other blob id, other version, wrong key, bit flip, blob id unlinkable), AWS SigV4 against five vectors of the published AWS test suite and the S3 GET Object example of the AWS documentation, the S3 store against a local fake that recomputes every signature (path-style, payload hash, wrong secret refused, errors without keys), the routes (validation, device token, minimum and maximum size, replace counted once, quota 413, accounts apart, revoked device refused, reset deletes the account's blobs only, counts only, no console output, no routes without the switch, operator erase order).
+- `tests/vault-sync-files.test.ts`: two simulated devices with the engine and the real routes: A adds a file, nothing readable sent, B lists it without downloading, B downloads it with progress and gets the exact file, B deletes it, the blob and A's copy are gone; B removes a file it never downloaded; a file added during an instructions edit elsewhere makes no project copy; `ensureProjectFiles`; a changed blob is refused; a file above the limit, the quota full then freed, offline then online.
+- `tests/vault-sync-files-ui.test.ts`: the project screen at 375, 768 and 1280 px in English and German (view driven through test hooks).
+- `tests/deployment-inference-config.test.ts`: the `blobs` schema and the environment keys.
+- `tests/vault-sync-blobs-postgres.test.ts` (durable, the lead runs it): migration 0024 under the runtime role, quota with two concurrent writers, the bytes in the table and in an object store, the sweep queue with a failing bucket, reset and the operator erase. `tests/account-migrations.test.ts` counts 18.
+
+### 14.8 Not verified
+
+- Hetzner Object Storage live (no account): the signer matches the AWS vectors and a local fake, but Hetzner's acceptance of the exact requests (path-style, region name) is not proven.
+- PostgreSQL: the durable test is written, not run by this agent.
+- Real browsers and phones; download speed and memory with 10 MB blobs; iOS storage eviction of downloaded files.
+- The app wiring of `ensureProjectFiles` before a question (section 14.1). Until it is wired, switching `blobs` on means a project chat on a second device answers without the files not downloaded there yet: wire it first.
+- The Render bridge (`server/render-bridge.ts`, lead's commit 9451116) forwards `X-Sync-Device` and admits blob bodies up to 64 MB (items 6 MB; everything else 1 MB). It still buffers each body in memory before sign-in is checked; a blob through it is at most `maxFileMb` (25 MB by the schema) plus 28 bytes once the app checks it. Not tested through the bridge here.
+
+### 14.9 Owner decisions (recommended default first)
+
+| # | Decision | Recommended default |
+| --- | --- | --- |
+| VS-6 | File quota per account in the alpha, separate from the item quota | 1 GB, separate |
+| VS-7 | Store for the alpha | `postgres` until the Hetzner bucket, AVV and keys exist, then `s3` (Falkenstein) |
+| VS-8 | Per-file limit | 10 MB (today's upload limit) |
+| VS-9 | Privacy wording for files (draft section 7) | Approve with the legal read, together with VS-2 |

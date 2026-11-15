@@ -1,6 +1,7 @@
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import type { DeviceRow, PairingRow, PutResult, SetupInput, SyncStore } from "./vault-sync";
+import type { BlobPut, BlobStore, ObjectStorage } from "./vault-sync-blobs";
 
 const deviceFrom = (r: Record<string, unknown>): DeviceRow => ({
   deviceId: r.device_id as string,
@@ -249,5 +250,89 @@ export class PostgresSyncStore implements SyncStore {
   async reset(accountId: string) {
     // The children cascade from sync_accounts.
     await this.database.query("DELETE FROM sync_accounts WHERE account_id=$1", [accountId]);
+  }
+}
+
+/**
+ * Project-file blobs (migration 0024). Without `objects` the bytes are in sync_blobs.data; with
+ * object storage (S3Objects, Hetzner) the bucket holds them under a random key and the row is the
+ * index. Every deleted row with a key (also through the cascade of an account erase) queues the key
+ * in sync_blob_sweep, and sweep() deletes those objects, so no object outlives its row for long.
+ */
+export class PostgresBlobStore implements BlobStore {
+  constructor(
+    private database: Pool,
+    private objects?: ObjectStorage,
+  ) {
+    // An erase by the operator SQL or the inactive-account purge queues keys without this process.
+    if (objects) setInterval(() => void this.sweep().catch(() => {}), 3_600_000).unref();
+  }
+  async put(accountId: string, blobId: string, data: Buffer, quotaBytes: number, now: number): Promise<BlobPut> {
+    const client = await this.database.connect();
+    try {
+      await client.query("BEGIN");
+      if (!(await client.query("SELECT 1 FROM sync_accounts WHERE account_id=$1 FOR UPDATE", [accountId])).rowCount) {
+        await client.query("ROLLBACK");
+        return "no-account";
+      }
+      const used = Number(
+        (await client.query("SELECT coalesce(sum(size),0) AS n FROM sync_blobs WHERE account_id=$1 AND blob_id<>$2", [accountId, blobId])).rows[0].n,
+      );
+      if (used + data.length > quotaBytes) {
+        await client.query("ROLLBACK");
+        return "quota";
+      }
+      const key = this.objects ? randomUUID().replaceAll("-", "") : null;
+      // shortcut: an object stored here whose transaction then fails stays in the bucket unreferenced; rare, add a listing sweep if it matters.
+      if (key) await this.objects!.put(key, data);
+      // A replaced blob's old object key is queued for the sweep by the delete trigger.
+      await client.query("DELETE FROM sync_blobs WHERE account_id=$1 AND blob_id=$2", [accountId, blobId]);
+      await client.query("INSERT INTO sync_blobs(account_id,blob_id,size,data,object_key,created_at) VALUES($1,$2,$3,$4,$5,$6)", [
+        accountId,
+        blobId,
+        data.length,
+        key ? null : data,
+        key,
+        now,
+      ]);
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+    await this.sweep().catch(() => {});
+    return "ok";
+  }
+  async get(accountId: string, blobId: string) {
+    const row = (await this.database.query("SELECT data,object_key FROM sync_blobs WHERE account_id=$1 AND blob_id=$2", [accountId, blobId])).rows[0];
+    if (!row) return undefined;
+    return row.data ? (row.data as Buffer) : this.objects?.get(row.object_key as string);
+  }
+  async delete(accountId: string, blobId: string) {
+    const r = await this.database.query("DELETE FROM sync_blobs WHERE account_id=$1 AND blob_id=$2", [accountId, blobId]);
+    await this.sweep().catch(() => {});
+    return r.rowCount === 1;
+  }
+  async usage(accountId: string) {
+    const r = (await this.database.query("SELECT count(*) AS n, coalesce(sum(size),0) AS used FROM sync_blobs WHERE account_id=$1", [accountId])).rows[0];
+    return { count: Number(r.n), usedBytes: Number(r.used) };
+  }
+  async deleteAll(accountId: string) {
+    await this.database.query("DELETE FROM sync_blobs WHERE account_id=$1", [accountId]);
+    await this.sweep().catch(() => {});
+  }
+  /** Deletes queued objects in the bucket; a failure leaves the key queued for the next sweep. */
+  async sweep(limit = 100) {
+    if (!this.objects) return 0;
+    const keys = (await this.database.query("SELECT object_key FROM sync_blob_sweep ORDER BY queued_at LIMIT $1", [limit])).rows.map(
+      (r) => r.object_key as string,
+    );
+    for (const key of keys) {
+      await this.objects.delete(key);
+      await this.database.query("DELETE FROM sync_blob_sweep WHERE object_key=$1", [key]);
+    }
+    return keys.length;
   }
 }

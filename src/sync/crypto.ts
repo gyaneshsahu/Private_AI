@@ -74,11 +74,24 @@ export const baseKey = (ak: Uint8Array) => hkdf(ak, "sync-base");
 /** Per-item key for a sync item (HKDF info "item|<itemId>"). */
 export const itemKey = (ak: Uint8Array, itemId: string) => hkdf(ak, `item|${itemId}`);
 /**
- * Stage 3 (not built): per-file key for an encrypted project-file blob stored outside sync_items.
- * AAD for the blob is fileAad(); the file index (names, sizes) lives inside the "projects" item.
+ * Stage 3: per-file key for an encrypted project-file blob stored outside sync_items. `fileId` is
+ * the blob id (blobIdFor), so the server cannot link a blob to the local file. AAD is fileAad();
+ * the file manifest (names, sizes, hashes) lives inside the "projects" item.
  */
 export const fileKey = (ak: Uint8Array, fileId: string) => hkdf(ak, `file|${fileId}`);
 export const fileAad = (accountId: string, fileId: string, version: number) => `${accountId}|${fileId}|${version}|project-file`;
+/** A blob never changes: a file is added or removed, never edited, so its version is always 1. */
+export const BLOB_VERSION = 1;
+/** The blob id of a local project file: from AK, shaped as a UUID, unlinkable to the file id. */
+export const blobIdFor = (ak: Uint8Array, localFileId: string) => itemIdFor(ak, "project-file", localFileId);
+export async function encryptBlob(ak: Uint8Array, accountId: string, blobId: string, plain: Uint8Array): Promise<Bytes> {
+  return gcmSeal(await fileKey(ak, blobId), plain, fileAad(accountId, blobId, BLOB_VERSION));
+}
+export async function decryptBlob(ak: Uint8Array, accountId: string, blobId: string, sealed: Uint8Array): Promise<Bytes> {
+  return gcmOpen(await fileKey(ak, blobId), sealed, fileAad(accountId, blobId, BLOB_VERSION));
+}
+/** SHA-256 of a blob's plaintext, kept inside the encrypted manifest and checked after download. */
+export const contentHash = async (plain: Uint8Array) => toBase64(new Uint8Array(await crypto.subtle.digest("SHA-256", plain as Bytes)));
 
 /** A random-looking item id from AK, so the server cannot link ids to local ids or kinds. */
 export async function itemIdFor(ak: Uint8Array, kind: string, localId: string): Promise<string> {

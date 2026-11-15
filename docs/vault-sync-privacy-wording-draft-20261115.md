@@ -34,3 +34,16 @@ The [7] days must follow `docs/backup-retention-policy.md`; check before use.
 - Category: encrypted copy of saved content (end-to-end encrypted, the controller holds no key). Still personal data under GDPR. Retention: until the user deletes it, resets sync or closes the account; backups as above.
 - Metadata as in section 2, plus hashed device tokens, hashed proofs and the encrypted device names.
 - Threat model addition: `docs/vault-sync-20261115.md` section 8.
+
+## 7. Project files (Stage 3, added 15 November; only if `inference.vaultSync.blobs` is switched on)
+
+With file sync on, the last sentence of section 1 ("Files you add to a project stay on the device where you added them." / "Dateien, die Sie einem Projekt hinzufügen, bleiben auf dem Gerät, auf dem Sie sie hinzugefügt haben.") is replaced by the text below. Take the version for the store in use; [quota] is the file quota (alpha 1 GB).
+
+- EN, store "postgres": "If you turn on sync, files you add to a project are encrypted on your device and stored, still encrypted, on our servers in the EU, so your other devices can use them. We cannot read them. Another device downloads a file only when it is opened or used in a chat. We see how many files you store, how large each one is and when it is added, downloaded or deleted, but not their names or contents. You can store up to [quota] of files."
+- DE, store "postgres": "Wenn Sie die Synchronisierung einschalten, werden Dateien, die Sie einem Projekt hinzufügen, auf Ihrem Gerät verschlüsselt und weiterhin verschlüsselt auf unseren Servern in der EU gespeichert, damit Ihre anderen Geräte sie nutzen können. Wir können sie nicht lesen. Ein anderes Gerät lädt eine Datei erst herunter, wenn sie geöffnet oder in einem Chat verwendet wird. Wir sehen, wie viele Dateien Sie speichern, wie groß jede ist und wann sie hinzugefügt, heruntergeladen oder gelöscht wird, aber weder ihre Namen noch ihren Inhalt. Sie können bis zu [Kontingent] an Dateien speichern."
+- EN, store "s3" (Hetzner): as above, with "on our servers in the EU" replaced by "with our storage provider Hetzner Online GmbH in Germany", and "We cannot read them." replaced by "Neither Hetzner nor we can read them."
+- DE, store "s3" (Hetzner): wie oben, mit „auf unseren Servern in der EU“ ersetzt durch „bei unserem Speicheranbieter Hetzner Online GmbH in Deutschland“ und „Wir können sie nicht lesen.“ ersetzt durch „Weder Hetzner noch wir können sie lesen.“
+
+Deleting: "Delete synced data" and closing the account delete the stored files too (section 4 covers them: "the encrypted copy"). With Hetzner, a deleted file's object is removed from the bucket within about an hour.
+
+For the Art. 30 record: category "encrypted project files (end-to-end encrypted, the controller holds no key)"; metadata: number of files, sizes, times; with "s3" a new processor, Hetzner Online GmbH (AVV concluded in the Hetzner account), location Germany.

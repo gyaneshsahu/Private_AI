@@ -6,6 +6,7 @@ import express from "express";
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { count } from "./counters";
+import type { BlobStore } from "./vault-sync-blobs";
 
 export const SYNC_LIMITS = {
   itemBytes: 4 * 1024 * 1024,
@@ -18,10 +19,19 @@ export const SYNC_LIMITS = {
   wrongCodesPer10Min: 5,
 } as const;
 
+/** Stage 3, project files as blobs: a quota of their own, apart from the items' quota. */
+export interface BlobSettings {
+  quotaBytes: number;
+  maxFileBytes: number;
+}
 export interface SyncSettings {
   quotaBytes: number;
   maxDevices: number;
+  /** Absent: project files stay on their device (Stage 1 behaviour). */
+  blobs?: BlobSettings & { store: BlobStore };
 }
+/** AES-GCM adds a 12-byte nonce and a 16-byte tag to every blob. */
+export const BLOB_OVERHEAD = 28;
 export interface DeviceRow {
   deviceId: string;
   publicKey: Buffer;
@@ -309,7 +319,12 @@ export function syncRoutes(
   router.get(
     `${base}/state`,
     handle(false, async (_req, res, { account, token }) => {
-      const [hash, devices, usage] = await Promise.all([store.proofs(account), store.devices(account), store.usage(account)]);
+      const [hash, devices, usage, files] = await Promise.all([
+        store.proofs(account),
+        store.devices(account),
+        store.usage(account),
+        settings.blobs?.store.usage(account),
+      ]);
       const mine = token && devices.find((d) => d.deviceId === token.deviceId && same(d.tokenHash, token.hash));
       // Only to a signed-in device, and only whether one is waiting: no key, no code.
       const pairingPending = !!mine && !mine.revokedAt && (await store.pairings(account, clock())).length > 0;
@@ -326,6 +341,10 @@ export function syncRoutes(
           revoked: !!d.revokedAt,
         })),
         quota: { usedBytes: usage.usedBytes, limitBytes: settings.quotaBytes },
+        // Stage 3: present only when project files sync; a quota of their own.
+        ...(settings.blobs && files
+          ? { files: { count: files.count, usedBytes: files.usedBytes, limitBytes: settings.blobs.quotaBytes, maxFileBytes: settings.blobs.maxFileBytes } }
+          : {}),
         cursor: String(usage.cursor),
       });
     }),
@@ -529,11 +548,60 @@ export function syncRoutes(
     small,
     handle(false, async (req, res, { account }) => {
       if (!parse(z.object({ confirm: z.literal("DELETE SYNCED DATA") }).strict(), req.body, res)) return;
+      // Blobs first: with object storage their keys are only known while the index rows exist.
+      await settings.blobs?.store.deleteAll(account);
       await store.reset(account);
       count("sync.reset");
       res.status(204).end();
     }),
   );
+  // Stage 3: project files as encrypted blobs, raw bytes, under the device token like items.
+  const blobs = settings.blobs;
+  if (blobs) {
+    const maxBody = blobs.maxFileBytes + BLOB_OVERHEAD;
+    const raw = express.raw({ type: () => true, limit: maxBody });
+    const blobIdOf = (req: express.Request) => (uuid.safeParse(req.params.blobId).success ? String(req.params.blobId) : undefined);
+    router.put(
+      `${base}/blobs/:blobId`,
+      handle(true, async (req, res, { account, now }) => {
+        const blobId = blobIdOf(req);
+        if (!blobId) return fail(res, 400, "invalid");
+        if (Number(req.headers["content-length"] ?? 0) > maxBody) return fail(res, 413, "too-large");
+        const error = await new Promise<unknown>((resolve) => raw(req, res, resolve));
+        const tooLarge = (error as { type?: string } | undefined)?.type === "entity.too.large";
+        if (error) return tooLarge ? fail(res, 413, "too-large") : fail(res, 400, "invalid");
+        const body = req.body as unknown;
+        if (!Buffer.isBuffer(body) || body.length < BLOB_OVERHEAD) return fail(res, 400, "invalid");
+        const r = await blobs.store.put(account, blobId, body, blobs.quotaBytes, now);
+        if (r === "quota") return fail(res, 413, "quota");
+        if (r === "no-account") return fail(res, 404, "not-set-up");
+        count("sync.blob.put");
+        res.status(204).end();
+      }),
+    );
+    router.get(
+      `${base}/blobs/:blobId`,
+      handle(true, async (req, res, { account }) => {
+        const blobId = blobIdOf(req);
+        if (!blobId) return fail(res, 400, "invalid");
+        const data = await blobs.store.get(account, blobId);
+        if (!data) return fail(res, 404, "unknown");
+        count("sync.blob.get");
+        // shortcut: the whole blob is read into memory (at most maxFileMb plus 28 bytes); stream from object storage if files grow.
+        res.type("application/octet-stream").send(data);
+      }),
+    );
+    router.delete(
+      `${base}/blobs/:blobId`,
+      handle(true, async (req, res, { account }) => {
+        const blobId = blobIdOf(req);
+        if (!blobId) return fail(res, 400, "invalid");
+        if (!(await blobs.store.delete(account, blobId))) return fail(res, 404, "unknown");
+        count("sync.blob.delete");
+        res.status(204).end();
+      }),
+    );
+  }
   // Body-parser errors (bad JSON, too large) end here, never in the default handler, which would
   // log the request body in production.
   router.use((error: { type?: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) =>

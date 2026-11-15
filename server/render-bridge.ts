@@ -102,7 +102,7 @@ export function createRenderBridge(config: {
     // project-file blobs up to the configured file size. Everything else stays at 1 MB.
     const path = req.url.split("?")[0];
     const limit = path.startsWith("/api/sync/blobs/")
-      ? 64 * 1024 * 1024
+      ? 32 * 1024 * 1024 // maxFileMb is at most 25
       : path.startsWith("/api/sync/items/")
         ? 6 * 1024 * 1024
         : 1024 * 1024;

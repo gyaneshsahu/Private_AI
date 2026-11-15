@@ -157,6 +157,30 @@ const schema = z
             enabled: z.boolean(),
             quotaMb: z.number().int().min(10).max(2000),
             maxDevices: z.number().int().min(1).max(10),
+            /**
+             * Stage 3, project files as encrypted blobs; absent means files stay on their device.
+             * `quotaMb` is the files' own quota per account (apart from the items' quota);
+             * `maxFileMb` per file, at most the 25 MB of the design. With "s3" the bytes go to
+             * S3-compatible object storage (Hetzner, EU); its keys come ONLY from the environment
+             * (PRIVATEAI_BLOB_S3_ACCESS_KEY_ID, PRIVATEAI_BLOB_S3_SECRET_ACCESS_KEY), never this file.
+             */
+            blobs: z
+              .object({
+                store: z.enum(["postgres", "s3"]),
+                quotaMb: z.number().int().min(10).max(10240).default(1024),
+                maxFileMb: z.number().int().min(1).max(25).default(10),
+                s3: z
+                  .object({
+                    endpoint: z.url({ protocol: /^https$/ }).max(200),
+                    region: z.string().regex(/^[a-z0-9-]{2,32}$/),
+                    bucket: z.string().regex(/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/),
+                  })
+                  .strict()
+                  .optional(),
+              })
+              .strict()
+              .refine((b) => (b.store === "s3") === !!b.s3, "s3 settings belong to store \"s3\" and are required for it.")
+              .optional(),
           })
           .strict()
           .optional(),
@@ -279,6 +303,22 @@ export function withPlan<T extends Quotas>(
   return out;
 }
 
+/**
+ * Vault sync Stage 3 settings in bytes. The object-storage keys are read from the environment only
+ * (never the config file, which is strict and refuses them); a missing key stops the start.
+ */
+export function blobSettings(
+  b: { store: "postgres" | "s3"; quotaMb: number; maxFileMb: number; s3?: { endpoint: string; region: string; bucket: string } },
+  env: Record<string, string | undefined>,
+) {
+  const base = { quotaBytes: b.quotaMb * 1024 * 1024, maxFileBytes: b.maxFileMb * 1024 * 1024 };
+  if (b.store !== "s3" || !b.s3) return base;
+  const accessKeyId = env.PRIVATEAI_BLOB_S3_ACCESS_KEY_ID?.trim();
+  const secretAccessKey = env.PRIVATEAI_BLOB_S3_SECRET_ACCESS_KEY?.trim();
+  if (!accessKeyId || !secretAccessKey) throw Error("Object storage keys missing from the environment.");
+  return { ...base, s3: { ...b.s3, accessKeyId, secretAccessKey } };
+}
+
 async function boundedFile(file: string) {
   if (!isAbsolute(file)) throw Error("Invalid file path.");
   const info = await stat(file);
@@ -371,7 +411,13 @@ export async function loadDeploymentConfig(file: string) {
                 : {}),
               ...(inference.code?.enabled ? { code: true } : {}),
               ...(inference.vaultSync?.enabled
-                ? { vaultSync: { quotaBytes: inference.vaultSync.quotaMb * 1024 * 1024, maxDevices: inference.vaultSync.maxDevices } }
+                ? {
+                    vaultSync: {
+                      quotaBytes: inference.vaultSync.quotaMb * 1024 * 1024,
+                      maxDevices: inference.vaultSync.maxDevices,
+                      ...(inference.vaultSync.blobs ? { blobs: blobSettings(inference.vaultSync.blobs, process.env) } : {}),
+                    },
+                  }
                 : {}),
               // Background tasks need the Privatemode client in the server (the report's provider).
               ...(inference.backgroundTasks?.enabled

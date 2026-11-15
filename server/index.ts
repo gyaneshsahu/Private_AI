@@ -9,6 +9,7 @@ import { ephemeralKeyRing } from "./background-crypto";
 import { scheduleManifestCheck } from "./manifest-watch";
 import { SqliteUsageRecords } from "./usage-records";
 import { MemorySyncStore } from "./vault-sync";
+import { MemoryBlobStore } from "./vault-sync-blobs";
 const port = Number(process.env.PORT ?? "4173");
 if (!Number.isInteger(port) || port < 1024 || port > 65535)
   throw new Error("Invalid PORT");
@@ -78,7 +79,17 @@ const app = createApp({
     : {}),
   // Vault sync on the development server: off unless "1". Memory store, gone at restart.
   ...(process.env.PRIVATEAI_VAULT_SYNC === "1"
-    ? { vaultSync: { quotaBytes: 200 * 1024 * 1024, maxDevices: 5, store: new MemorySyncStore() } }
+    ? {
+        vaultSync: {
+          quotaBytes: 200 * 1024 * 1024,
+          maxDevices: 5,
+          store: new MemorySyncStore(),
+          // Project files as encrypted blobs (Stage 3): their own switch, memory store.
+          ...(process.env.PRIVATEAI_VAULT_SYNC_FILES === "1"
+            ? { blobs: { quotaBytes: 1024 * 1024 * 1024, maxFileBytes: 10 * 1024 * 1024, store: new MemoryBlobStore() } }
+            : {}),
+        },
+      }
     : {}),
   // Brave Goggle for German-rules searches (docs/german-rules-20261113.md); off unless "1".
   searchGoggles: process.env.PRIVATEAI_SEARCH_GOGGLES === "1",
