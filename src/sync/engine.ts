@@ -802,10 +802,16 @@ export class SyncEngine {
     await this.setOptedOut(true);
     this.set({ phase: "off", pending: 0, detached: undefined, error: undefined });
   }
-  /** "Delete everything on this device"; with `alsoDeleteSyncedData` the server copy goes too (needs this device unlocked). */
-  async deleteEverythingOnThisDevice(opts: { alsoDeleteSyncedData: boolean }) {
+  /**
+   * "Delete everything on this device"; with `alsoDeleteSyncedData` the server copy goes too: this
+   * device unlocked, or `recoveryKey` (a locked device, a forgotten passphrase). Without it, a locked
+   * device cannot remove itself from the account (that needs AK); another device can.
+   */
+  async deleteEverythingOnThisDevice(opts: { alsoDeleteSyncedData: boolean; recoveryKey?: string }) {
     if (opts.alsoDeleteSyncedData) {
-      const r = await this.call("POST", "/reset", await this.resetBody(), { detach: false });
+      const body = await this.resetBody(opts.recoveryKey);
+      const r = await this.call("POST", "/reset", body, { detach: false });
+      if (r.status === 403) throw new SyncError(body.recoveryProof ? "wrong-key" : "wrong-proof");
       if (r.status !== 204 && r.status !== 404) throw new SyncError("server");
     } else {
       const ak = this.o.vault.accountKey();

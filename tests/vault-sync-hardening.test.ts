@@ -164,6 +164,22 @@ describe("C1: a reset or removal elsewhere never costs a device its data", () =>
   }, 60_000);
 });
 
+describe("C1: deleting the synced copy needs a proof", () => {
+  it("a locked device deletes the synced copy only with the recovery key (forgotten passphrase)", async () => {
+    const { origin, store } = await serve();
+    const a = await device(origin, "a");
+    await populate(a.vault);
+    const recoveryKey = await setUp(a, false);
+    a.vault.lock();
+    await expect(a.engine.deleteEverythingOnThisDevice({ alsoDeleteSyncedData: true })).rejects.toMatchObject({ code: "locked" });
+    expect(await store.proofs(ACCOUNT)).toBeDefined();
+    await expect(a.engine.deleteEverythingOnThisDevice({ alsoDeleteSyncedData: true, recoveryKey: k.encodeRecoveryKey(k.newRecoveryKey().bytes) })).rejects.toMatchObject({ code: "wrong-key" });
+    await a.engine.deleteEverythingOnThisDevice({ alsoDeleteSyncedData: true, recoveryKey });
+    expect(await store.proofs(ACCOUNT)).toBeUndefined();
+    expect(await a.vault.exists()).toBe(false);
+  }, 60_000);
+});
+
 describe("H1: pairing authenticated both ways", () => {
   it("refuses a result the server made up (its own account key, a tag from what it stores) and leaves a non-empty local vault untouched", async () => {
     const { origin, store } = await serve();
