@@ -12,10 +12,21 @@ import { ConversationDeletedError, VaultConflictError, type TaskMasks, type Vaul
 import { seal, unseal, type Cipher } from "../vault-crypto";
 import { savedConversationSchema } from "../saved-conversation";
 import { memoriesSchema, type Memory } from "../memory";
-import { projectsSchema, type Project } from "../projects";
+import { holdProjects, projectFilesSchema, projectsSchema, type Project, type ProjectFile } from "../projects";
 import { scheduledTasksSchema } from "../scheduled";
 import * as k from "./crypto";
 import { mergeById, mergeConversation } from "./merge";
+import {
+  FILES_OFF,
+  fileRecordSchema,
+  projectsDataSchema,
+  publishFiles,
+  type FileEntry,
+  type FileRecord,
+  type FileState,
+  type FilesView,
+  type ProjectsData,
+} from "./files";
 
 export type SyncPhase = "off" | "locked" | "needs-approval" | "syncing" | "idle" | "error";
 export interface SyncDevice {
@@ -58,10 +69,11 @@ export class SyncError extends Error {
 }
 class Retry extends Error {}
 
+/** Bytes bodies and responses are for project-file blobs (Stage 3) only. */
 export type Fetcher = (
   path: string,
-  init: { method: string; headers: Record<string, string>; body?: string },
-) => Promise<{ status: number; json(): Promise<unknown> }>;
+  init: { method: string; headers: Record<string, string>; body?: string | Uint8Array<ArrayBuffer> },
+) => Promise<{ status: number; json(): Promise<unknown>; arrayBuffer?(): Promise<ArrayBuffer>; body?: ReadableStream<Uint8Array> | null }>;
 export interface EngineOptions {
   vault: Vault;
   accountId: string;
@@ -74,7 +86,10 @@ export interface EngineOptions {
   onState?: (state: SyncState) => void;
   /** After remote changes were written into the vault: the screens reload their lists. */
   onApplied?: () => void;
+  /** Project files' sync view (Stage 3); default: the shared one the project screen reads. */
+  onFiles?: (view: FilesView) => void;
 }
+type FileQuota = NonNullable<FilesView["quota"]>;
 
 type Kind = "conversation" | "memories" | "projects" | "scheduled-tasks";
 const LIST_KINDS = ["projects", "memories", "scheduled-tasks"] as const;
@@ -112,8 +127,10 @@ const omitPin = ({ pinned: _p, ...m }: Memory): Memory => m;
 
 const realFetch: Fetcher = async (path, init) => {
   const r = await fetch(path, { ...init, credentials: "same-origin" });
-  return { status: r.status, json: () => r.json() };
+  return { status: r.status, json: () => r.json(), arrayBuffer: () => r.arrayBuffer(), body: r.body };
 };
+const FILE_LABEL = "sync-files";
+const stripHere = ({ here: _h, ...entry }: FileRecord["entries"][number]): FileEntry => entry;
 
 export class SyncEngine {
   private db?: Promise<IDBPDatabase>;
@@ -133,6 +150,12 @@ export class SyncEngine {
   private applying = false;
   private stopped = false;
   private storeName: string;
+  // Stage 3: project files. `files` is set while the server keeps blobs (from /state).
+  private files?: FileQuota;
+  private fileStates: Record<string, FileState> = {};
+  private remote: FileEntry[] = [];
+  private fileLock: Promise<unknown> = Promise.resolve();
+  private view: FilesView = FILES_OFF;
   constructor(private o: EngineOptions) {
     this.fetcher = o.fetch ?? realFetch;
     this.storeName = o.storeName ?? `cometrow-sync-${o.accountId}`;
@@ -160,7 +183,11 @@ export class SyncEngine {
     const tx = d.transaction(["base", "meta"], "readwrite");
     await tx.objectStore("base").clear();
     await tx.objectStore("meta").delete("cursor");
+    await tx.objectStore("meta").delete("files");
     await tx.done;
+    this.remote = [];
+    this.fileStates = {};
+    this.publishView();
   }
   private set(patch: Partial<SyncState>) {
     this.state = { ...this.state, ...patch };
@@ -176,29 +203,32 @@ export class SyncEngine {
     body?: unknown,
     header = this.device && `${this.device.deviceId}.${this.device.token}`,
     handleRevoked = true,
+    /** A blob download: a 200 response is returned unread. */
+    bytes = false,
   ) {
-    let r: { status: number; json(): Promise<unknown> };
+    let r: Awaited<ReturnType<Fetcher>>;
+    const raw = body instanceof Uint8Array;
     try {
       r = await this.fetcher(`/api/sync${path}`, {
         method,
         headers: {
           ...(method === "GET" ? {} : { "X-PrivateAI-CSRF": this.o.csrf() }),
-          ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+          ...(body === undefined ? {} : { "Content-Type": raw ? "application/octet-stream" : "application/json" }),
           ...(header ? { "X-Sync-Device": header } : {}),
         },
-        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        ...(body === undefined ? {} : { body: raw ? (body as Uint8Array<ArrayBuffer>) : JSON.stringify(body) }),
       });
     } catch {
       throw new SyncError("offline");
     }
-    const data = (r.status === 204 ? {} : await r.json().catch(() => ({}))) as Record<string, unknown>;
+    const data = (r.status === 204 || (bytes && r.status === 200) ? {} : await r.json().catch(() => ({}))) as Record<string, unknown>;
     if (handleRevoked && ((r.status === 403 && data.code === "revoked") || (r.status === 401 && data.code === "device-unknown"))) {
       await this.revokedHere();
       throw new SyncError("revoked");
     }
     if (r.status >= 500) throw new SyncError("server");
     if (r.status === 429) throw new SyncError("rate-limited");
-    return { status: r.status, data };
+    return { status: r.status, data, response: r };
   }
   /** This device was removed from another one: forget its key, lock the vault, keep local data. */
   private async revokedHere() {
@@ -266,6 +296,7 @@ export class SyncEngine {
   detach() {
     this.stop();
     this.o.vault.onSync = undefined;
+    (this.o.onFiles ?? publishFiles)(FILES_OFF);
   }
   private later(ms: number) {
     if (this.stopped || !this.device) return;
@@ -320,8 +351,10 @@ export class SyncEngine {
       pairingPending?: boolean;
       devices: { deviceId: string; labelCiphertext: string; createdAt: string; lastSeenAt: string; revoked: boolean }[];
       quota: { usedBytes: number; limitBytes: number };
+      files?: FileQuota;
     };
     this.hasWrappers = s.hasWrappers;
+    this.files = s.files;
     if (s.thisDevice === "revoked" || (this.device && s.thisDevice === "unknown" && s.hasWrappers)) await this.revokedHere();
     else if (this.device && !s.hasWrappers) {
       // The synced data was reset from another device: this one is no longer part of it.
@@ -340,6 +373,7 @@ export class SyncEngine {
       })),
     );
     this.set({ quota: s.quota, devices, phase: this.phase(), pairingRequested: !!s.pairingPending && !!ak });
+    this.publishView();
   }
   private phase(): SyncPhase {
     if (!this.serverOn || this.optedOut) return "off";
@@ -613,9 +647,14 @@ export class SyncEngine {
       for (let round = 0; round < 3; round++) {
         this.again = false;
         await this.pull(ak);
+        // A file's blob goes up before the projects item that lists it.
+        const uploads = await this.uploadFiles(ak);
         ({ waiting, error } = await this.push(ak));
+        waiting += uploads;
         if (!this.again) break;
       }
+      // A blob goes only after the projects item without it was accepted.
+      waiting += await this.deleteBlobs(ak);
       await this.refresh();
       this.failures = 0;
       this.set({ phase: error ? "error" : "idle", pending: waiting, lastSyncAt: new Date().toISOString(), error });
@@ -649,7 +688,8 @@ export class SyncEngine {
       items.set(itemId, { itemId, kind, localId, data, text: JSON.stringify(data) });
     };
     for (const c of (await vault.readAvailable()).conversations) if (!c.incognito) await add("conversation", c.id, c);
-    await add("projects", "projects", await vault.readProjects());
+    const projects = await vault.readProjects();
+    await add("projects", "projects", { projects, files: await this.manifest(ak, projects) } satisfies ProjectsData);
     await add("memories", "memories", await vault.readMemories());
     await add("scheduled-tasks", "scheduled-tasks", { tasks: await vault.readTasks(), masks: await vault.readTaskMasks() });
     const tombstones = await vault.readTombstones();
@@ -757,10 +797,11 @@ export class SyncEngine {
         return true;
       }
       const remote = this.parseList(kind, data);
-      next = !mine || !localChanged ? remote : this.mergeList(kind, (await this.baseData(ak, base)) ?? this.parseList(kind, undefined), mine.data, remote);
+      const baseList = this.parseList(kind, await this.baseData(ak, base));
+      next = !mine || !localChanged ? remote : this.mergeList(kind, baseList, mine.data, remote);
       await this.putBase(await this.baseEntry(ak, item.itemId, kind, kind, item.version, remote));
       if (mine && JSON.stringify(next) === mine.text) return false;
-      await this.writeList(kind, next, mine?.text);
+      await this.writeList(ak, kind, next, mine?.text);
       return true;
     } catch (error) {
       if (error instanceof VaultConflictError) throw new Retry();
@@ -771,7 +812,7 @@ export class SyncEngine {
   }
   private parseList(kind: Kind, data: unknown): unknown {
     if (kind === "memories") return memoriesSchema.parse(data ?? []);
-    if (kind === "projects") return projectsSchema.parse(data ?? []);
+    if (kind === "projects") return projectsDataSchema.parse(data ?? []);
     const t = taskData.parse(data ?? { tasks: [], masks: {} });
     return { tasks: t.tasks, masks: t.masks as TaskMasks };
   }
@@ -786,10 +827,16 @@ export class SyncEngine {
       return pick(memoriesSchema, m, remote as Memory[], m.merged.slice(0, m.merged.length - m.copies));
     }
     if (kind === "projects") {
-      const m = mergeById(base as Project[], local as Project[], remote as Project[], {
+      const [b, l, r] = [base, local, remote] as ProjectsData[];
+      const m = mergeById(b.projects, l.projects, r.projects, {
         copy: (p) => ({ ...p, id: crypto.randomUUID(), name: `${p.name.slice(0, 76)} (2)` }),
       });
-      return pick(projectsSchema, m, remote as Project[], m.merged.slice(0, m.merged.length - m.copies));
+      const projects = pick(projectsSchema, m, r.projects, m.merged.slice(0, m.merged.length - m.copies));
+      // Files apart from projects (a file added while the instructions changed elsewhere makes no
+      // project copy). A file is never edited, only added or removed, so a pair never conflicts.
+      const ids = new Set(projects.map((p) => p.id));
+      const files = mergeById(b.files, l.files, r.files, { settle: (_mine, theirs) => theirs, copy: (x) => x }).merged.filter((f) => ids.has(f.projectId));
+      return { projects, files } satisfies ProjectsData;
     }
     const [b, l, r] = [base, local, remote] as TaskData[];
     const runFree = ({ lastRunAt: _l, nextDueAt: _n, ...rest }: ScheduledTask) => JSON.stringify(rest);
@@ -818,7 +865,7 @@ export class SyncEngine {
       if (!(error instanceof ConversationDeletedError)) throw error;
     }
   }
-  private async writeList(kind: Kind, next: unknown, expected?: string) {
+  private async writeList(ak: Uint8Array, kind: Kind, next: unknown, expected?: string) {
     const vault = this.o.vault;
     const guard = <T>(current: T, value: T) => {
       // Changed in this tab since the snapshot: try again in the next cycle, never overwrite.
@@ -827,12 +874,14 @@ export class SyncEngine {
     };
     if (kind === "memories") await vault.writeMemories((current) => guard(current, next as Memory[]));
     else if (kind === "projects") {
-      const list = next as Project[];
+      const { projects: list, files } = next as ProjectsData;
       const current = await vault.readProjects();
-      if (expected !== undefined && JSON.stringify(current) !== expected) throw new VaultConflictError();
+      if (expected !== undefined && JSON.stringify({ projects: current, files: await this.manifest(ak, current) }) !== expected)
+        throw new VaultConflictError();
       // A project removed elsewhere goes with its files and its chats' assignment, as a local removal.
       for (const p of current) if (!list.some((x) => x.id === p.id)) await vault.editProject(p.id);
       await vault.changeProjects(() => list);
+      await this.applyManifest(ak, files);
     } else {
       const t = next as TaskData;
       const currentMasks = await vault.readTaskMasks();
@@ -867,7 +916,9 @@ export class SyncEngine {
     const ak = this.o.vault.accountKey();
     if (!ak || !this.device) return 0;
     const { puts, deletes } = await this.changes(ak);
-    return puts.length + deletes.length;
+    const files = await this.fileWork(ak);
+    const uploads = files.uploads.filter(({ file }) => this.fileStates[file.id]?.state !== "too-large");
+    return puts.length + deletes.length + uploads.length + files.deletes.length;
   }
   /** Pushes every local change; returns how many are still waiting and why. */
   private async push(ak: Uint8Array): Promise<{ waiting: number; error?: string }> {
@@ -890,8 +941,16 @@ export class SyncEngine {
           return;
         }
         const r = await this.call("PUT", `/items/${item.itemId}`, { baseVersion: base?.version ?? 0, ciphertext });
-        if (r.status === 200) await this.putBase(await this.baseEntry(ak, item.itemId, item.kind, item.localId, version, item.data));
-        else if (r.status === 409) {
+        if (r.status === 200) {
+          if (item.kind === "projects") {
+            // Files the accepted list no longer has: their blobs are deleted now (and retried until done).
+            const kept = new Set((item.data as ProjectsData).files.map((f) => f.blobId));
+            const before = (this.parseList("projects", await this.baseData(ak, base)) as ProjectsData).files;
+            const gone = before.filter((f) => !kept.has(f.blobId)).map((f) => f.blobId);
+            if (gone.length) await this.updateFiles(ak, (rec) => ({ ...rec, deletes: [...new Set([...rec.deletes, ...gone])] }));
+          }
+          await this.putBase(await this.baseEntry(ak, item.itemId, item.kind, item.localId, version, item.data));
+        } else if (r.status === 409) {
           // Changed elsewhere since: merge it now, push the result in the next cycle.
           waiting++;
           const current = r.data.current as { version: number; ciphertext: string | null };
@@ -934,4 +993,229 @@ export class SyncEngine {
     );
     return { waiting, error };
   }
+
+  // Stage 3: project files as encrypted blobs (docs/vault-sync-20261115.md, "Stage 3: project files").
+  /** What the project screen shows of file sync on this device (tests read it per device). */
+  fileView() {
+    return this.view;
+  }
+  private publishView() {
+    this.view =
+      this.files && this.device && !this.optedOut ? { enabled: true, quota: this.files, remote: this.remote, states: { ...this.fileStates } } : FILES_OFF;
+    (this.o.onFiles ?? publishFiles)(this.view);
+  }
+  private setFileState(id: string, state?: FileState) {
+    const { [id]: _old, ...rest } = this.fileStates;
+    this.fileStates = state ? { ...rest, [id]: state } : rest;
+    this.publishView();
+  }
+  private async fileRecord(ak: Uint8Array): Promise<FileRecord> {
+    const sealed = (await (await this.store()).get("meta", "files")) as Cipher | undefined;
+    const rec = sealed ? fileRecordSchema.parse(JSON.parse(await unseal(await k.baseKey(ak), sealed, FILE_LABEL))) : { entries: [], deletes: [] };
+    this.remote = rec.entries.filter((e) => !e.here).map(stripHere);
+    return rec;
+  }
+  /** Changes this device's file record one change at a time (a cycle and a download can overlap). */
+  private updateFiles(ak: Uint8Array, change: (rec: FileRecord) => FileRecord | Promise<FileRecord>): Promise<FileRecord> {
+    const next = this.fileLock
+      .catch(() => {})
+      .then(async () => {
+        const rec = await change(await this.fileRecord(ak));
+        await (await this.store()).put("meta", await seal(await k.baseKey(ak), JSON.stringify(rec), FILE_LABEL), "files");
+        this.remote = rec.entries.filter((e) => !e.here).map(stripHere);
+        this.publishView();
+        return rec;
+      });
+    this.fileLock = next;
+    return next;
+  }
+  private async holdFiles() {
+    // The questions of a project chat use what is held (src/projects.ts withProjectFiles).
+    holdProjects({ files: await this.o.vault.readProjectFiles() });
+  }
+  private async localFiles() {
+    return Object.entries(await this.o.vault.readProjectFiles()).flatMap(([projectId, list]) => list.map((file) => ({ projectId, file })));
+  }
+  /** The manifest this device would push: its record, minus files deleted here and files of removed projects. */
+  private async manifest(ak: Uint8Array, projects: readonly Project[]): Promise<FileEntry[]> {
+    const rec = await this.fileRecord(ak);
+    if (!rec.entries.length) return [];
+    const ids = new Set(projects.map((p) => p.id));
+    const here = new Set((await this.localFiles()).map(({ file }) => file.id));
+    return rec.entries.filter((e) => ids.has(e.projectId) && (!e.here || here.has(e.id))).map(stripHere);
+  }
+  /** Writes a merged manifest: files removed elsewhere leave this vault, files added elsewhere are listed as not downloaded. */
+  private async applyManifest(ak: Uint8Array, files: FileEntry[]) {
+    let changed = false;
+    await this.updateFiles(ak, async (rec) => {
+      const keep = new Set(files.map((f) => f.id));
+      const known = new Set(rec.entries.map((e) => e.id));
+      // Only files this device synced before can go; a file added here and not uploaded yet stays.
+      if ((await this.localFiles()).some(({ file }) => known.has(file.id) && !keep.has(file.id))) {
+        await this.o.vault.changeProjectFiles((all) =>
+          Object.fromEntries(Object.entries(all).map(([p, list]) => [p, list.filter((f) => !known.has(f.id) || keep.has(f.id))])),
+        );
+        changed = true;
+      }
+      const here = new Set((await this.localFiles()).map(({ file }) => file.id));
+      return { ...rec, entries: files.map((f) => ({ ...f, here: here.has(f.id) })) };
+    });
+    if (changed) await this.holdFiles();
+  }
+  /** Local files not on the server yet, and blob deletes still owed (nothing while files do not sync here). */
+  private async fileWork(ak: Uint8Array) {
+    if (!this.files) return { uploads: [], deletes: [] };
+    const rec = await this.fileRecord(ak);
+    const known = new Set(rec.entries.map((e) => e.id));
+    const projects = new Set((await this.o.vault.readProjects()).map((p) => p.id));
+    const uploads = (await this.localFiles()).filter(({ projectId, file }) => projects.has(projectId) && !known.has(file.id));
+    return { uploads, deletes: rec.deletes };
+  }
+  /** Uploads each new local file as one blob; returns how many still wait (quota). */
+  private async uploadFiles(ak: Uint8Array): Promise<number> {
+    const { uploads } = await this.fileWork(ak);
+    const ids = new Set(uploads.map(({ file }) => file.id));
+    for (const [id, s] of Object.entries(this.fileStates))
+      if (["waiting", "uploading", "too-large", "quota"].includes(s.state) && !ids.has(id)) this.setFileState(id);
+    for (const id of ids) if (!this.fileStates[id]) this.setFileState(id, { state: "waiting" });
+    let waiting = 0;
+    let full = false;
+    for (const { projectId, file } of uploads) {
+      const plain = enc.encode(JSON.stringify(file));
+      if (plain.length > (this.files?.maxFileBytes ?? 0)) {
+        this.setFileState(file.id, { state: "too-large" });
+        continue;
+      }
+      waiting++;
+      if (full) {
+        this.setFileState(file.id, { state: "quota" });
+        continue;
+      }
+      this.setFileState(file.id, { state: "uploading" });
+      const blobId = await k.blobIdFor(ak, file.id);
+      const r = await this.call("PUT", `/blobs/${blobId}`, await k.encryptBlob(ak, this.o.accountId, blobId, plain)).catch((error: unknown) => {
+        this.setFileState(file.id, { state: "waiting" });
+        throw error;
+      });
+      if (r.status === 413) {
+        full = r.data.code === "quota";
+        if (!full) waiting--;
+        this.setFileState(file.id, { state: full ? "quota" : "too-large" });
+        continue;
+      }
+      if (r.status !== 204) throw new SyncError("server");
+      const entry = { id: file.id, projectId, name: file.name, characters: file.characters, at: file.at, size: plain.length, type: "extracted-text-v1" as const, blobId, hash: await k.contentHash(plain) };
+      await this.updateFiles(ak, async (rec) => {
+        const still = (await this.localFiles()).some(({ file: f }) => f.id === file.id);
+        // Removed while it was uploading: the blob goes again at once.
+        return still ? { ...rec, entries: [...rec.entries.filter((e) => e.id !== file.id), { ...entry, here: true }] } : { ...rec, deletes: [...rec.deletes, blobId] };
+      });
+      waiting--;
+      this.setFileState(file.id);
+    }
+    return waiting;
+  }
+  /** Deletes the blobs of files removed from the accepted manifest; 404 counts as done. */
+  private async deleteBlobs(ak: Uint8Array): Promise<number> {
+    const { deletes } = await this.fileWork(ak);
+    if (!deletes.length) return 0;
+    const done = new Set<string>();
+    for (const blobId of deletes) {
+      const r = await this.call("DELETE", `/blobs/${blobId}`);
+      if (r.status !== 204 && r.status !== 404) throw new SyncError("server");
+      done.add(blobId);
+    }
+    await this.updateFiles(ak, (rec) => ({ entries: rec.entries.filter((e) => !done.has(e.blobId)), deletes: rec.deletes.filter((d) => !done.has(d)) }));
+    return 0;
+  }
+  private downloads = new Map<string, Promise<"ok" | "failed">>();
+  /** Downloads a file another device listed, checks it against the manifest and keeps it in this vault. */
+  downloadFile(fileId: string): Promise<"ok" | "failed"> {
+    let running = this.downloads.get(fileId);
+    if (!running) {
+      running = this.download(fileId).finally(() => this.downloads.delete(fileId));
+      this.downloads.set(fileId, running);
+    }
+    return running;
+  }
+  private async download(fileId: string): Promise<"ok" | "failed"> {
+    const ak = this.o.vault.accountKey();
+    const entry = this.remote.find((e) => e.id === fileId);
+    if (!ak || !entry || !this.files) return "failed";
+    const fail = (reason: Extract<FileState, { state: "error" }>["reason"]) => {
+      this.setFileState(fileId, { state: "error", reason });
+      return "failed" as const;
+    };
+    try {
+      this.setFileState(fileId, { state: "downloading", progress: 0 });
+      const r = await this.call("GET", `/blobs/${entry.blobId}`, undefined, undefined, true, true);
+      if (r.status === 404) return fail("gone");
+      if (r.status !== 200) return fail("server");
+      const sealed = await readBytes(r.response, entry.size + 28, (progress) => this.setFileState(fileId, { state: "downloading", progress }));
+      let file: ProjectFile;
+      try {
+        const plain = await k.decryptBlob(ak, this.o.accountId, entry.blobId, sealed);
+        if ((await k.contentHash(plain)) !== entry.hash) throw Error("hash");
+        file = projectFilesSchema.element.parse(JSON.parse(new TextDecoder().decode(plain)));
+        if (file.id !== entry.id) throw Error("id");
+      } catch {
+        return fail("damaged");
+      }
+      let saved = true;
+      await this.updateFiles(ak, async (rec) => {
+        const at = rec.entries.findIndex((e) => e.id === fileId && !e.here);
+        if (at < 0) return rec; // removed meanwhile
+        try {
+          await this.o.vault.changeProjectFiles((all) => ({ ...all, [entry.projectId]: [...(all[entry.projectId] ?? []).filter((f) => f.id !== fileId), file] }));
+        } catch (error) {
+          saved = false;
+          // The project's file limit, reached by files added on two devices at once.
+          return error instanceof z.ZodError ? (fail("full"), rec) : (fail("server"), rec);
+        }
+        return { ...rec, entries: rec.entries.map((e, i) => (i === at ? { ...e, here: true } : e)) };
+      });
+      if (!saved) return "failed";
+      this.setFileState(fileId);
+      await this.holdFiles();
+      return "ok";
+    } catch (error) {
+      return fail(error instanceof SyncError && error.code === "offline" ? "offline" : "server");
+    }
+  }
+  /** Downloads every not yet downloaded file of a project, before a question in one of its chats. */
+  async ensureProjectFiles(projectId: string): Promise<boolean> {
+    const results = await Promise.all(this.remote.filter((e) => e.projectId === projectId).map((e) => this.downloadFile(e.id)));
+    return results.every((r) => r === "ok");
+  }
+  /** Removes a file another device listed and this one never downloaded; its blob goes after the next sync. */
+  async removeRemoteFile(fileId: string) {
+    const ak = this.o.vault.accountKey();
+    if (!ak) throw new SyncError("locked");
+    await this.updateFiles(ak, (rec) => ({ ...rec, entries: rec.entries.filter((e) => e.here || e.id !== fileId) }));
+    this.setFileState(fileId);
+    this.later(500);
+  }
+}
+
+const enc = new TextEncoder();
+/** A blob response's bytes, reporting the share received when the body streams. */
+async function readBytes(r: Awaited<ReturnType<Fetcher>>, total: number, progress: (share: number) => void): Promise<Uint8Array> {
+  const reader = r.body?.getReader();
+  if (!reader) return new Uint8Array(await r.arrayBuffer!());
+  const parts: Uint8Array[] = [];
+  let got = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    parts.push(value);
+    got += value.length;
+    progress(Math.min(1, got / total));
+  }
+  const out = new Uint8Array(got);
+  let at = 0;
+  for (const p of parts) {
+    out.set(p, at);
+    at += p.length;
+  }
+  return out;
 }

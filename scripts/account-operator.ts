@@ -5,7 +5,7 @@ import { z } from "zod";
 /**
  * Prints one SQL transaction for the owner to review and run in psql as the
  * schema owner. Never connects to a database. Tables come from
- * server/migrations/0001-0023; keep this list in step with new migrations.
+ * server/migrations/0001-0024; keep this list in step with new migrations.
  */
 export const commands = ["show", "suspend", "unsuspend", "erase"] as const;
 export type Command = (typeof commands)[number];
@@ -52,6 +52,7 @@ const tables = (literal: string): [string, string][] => [
   ["sync_wrappers", `account_id IN ${target}`],
   ["sync_devices", `account_id IN ${target}`],
   ["sync_items", `account_id IN ${target}`],
+  ["sync_blobs", `account_id IN ${target}`],
   ["sync_accounts", `account_id IN ${target}`],
   ["account_closure", `"userId" IN ${target}`],
 ];
@@ -85,11 +86,13 @@ export function operatorSql(command: Command, email: string): string {
       ...[
         "background_results",
         "background_tasks",
-        // Vault sync ciphertext and wrapped keys (migration 0023), children before sync_accounts.
+        // Vault sync ciphertext, wrapped keys and file blobs (migrations 0023, 0024), children before sync_accounts;
+        // blob rows kept in object storage queue their keys for the server's sweep (sync_blob_sweep).
         "sync_pairings",
         "sync_wrappers",
         "sync_devices",
         "sync_items",
+        "sync_blobs",
         "sync_accounts",
         "usage_metrics",
         "usage_records",
