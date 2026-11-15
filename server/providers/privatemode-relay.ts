@@ -22,6 +22,7 @@ import { request as upstreamRequest } from "undici";
 import { qualifiedModels, type Qualification } from "../../shared/contracts";
 import { serviceDispatcher } from "../network";
 import { createAttestQueue } from "./privatemode-attest-queue";
+import { liveManifestBytes } from "../manifest-watch";
 import { count } from "../counters";
 import {
   registerInferenceRelay,
@@ -168,13 +169,17 @@ export function createPrivatemodeRelayAdapter(): InferenceRelayAdapter {
       });
       router.get("/privatemode/manifest", (_req, res) => {
         const q = qualification();
-        const digest = manifest && createHash("sha256").update(manifest).digest("hex");
-        // Serve only the manifest the report approved; the browser checks the digest again.
-        if (!q || !manifest || !digest || !q.releaseDigests.includes(digest)) {
+        const approved = (bytes: Uint8Array | undefined): bytes is Uint8Array =>
+          !!q && !!bytes && q.releaseDigests.includes(createHash("sha256").update(bytes).digest("hex"));
+        // Serve only a manifest the report approved: the attested live one (inference.liveManifest),
+        // else the configured file. The browser checks the digest again.
+        const live = liveManifestBytes();
+        const body = approved(live) ? live : approved(manifest) ? manifest : undefined;
+        if (!body) {
           res.status(503).json({ error: "The approved deployment manifest is unavailable." });
           return;
         }
-        res.type("application/json").send(Buffer.from(manifest));
+        res.type("application/json").send(Buffer.from(body));
       });
       router.get("/privatemode/privatemode-:hash.wasm", async (req, res) => {
         const q = qualification();

@@ -35,6 +35,8 @@ const schema = z
         stopFile: path,
         /** The approved Privatemode manifest; required exactly when the report names Privatemode. */
         manifestFile: path.optional(),
+        /** Serve the attested live manifest when the report approves its digest (docs/manifest-rotation-20261114.md). Privatemode only. */
+        liveManifest: z.boolean().optional(),
         /** Brave Search key: web search the user approves (owner decision R5). Absent means no search. */
         searchKeyFile: path.optional(),
         /** A text file shown to every user while it holds text (outage, announced provider switch). */
@@ -257,7 +259,11 @@ export async function loadDeploymentConfig(file: string) {
             ) as { provider?: unknown } | undefined;
             const privatemode = qualification?.provider === "privatemode";
             // The manifest belongs to a Privatemode report only; the release audit to Tinfoil only.
-            if (privatemode !== !!inference.manifestFile || (privatemode && config.attestationAudit))
+            if (
+              privatemode !== !!inference.manifestFile ||
+              (privatemode && config.attestationAudit) ||
+              (!privatemode && inference.liveManifest)
+            )
               throw Error("Inference files do not match the report's provider.");
             return {
               apiKey: (await boundedFile(inference.apiKeyFile)).toString("utf8").trim(),
@@ -285,6 +291,7 @@ export async function loadDeploymentConfig(file: string) {
                     };
                   })(inference.backgroundTasks)
                 : {}),
+              ...(inference.liveManifest ? { liveManifest: true } : {}),
               ...(inference.research?.enabled
                 ? {
                     research: {

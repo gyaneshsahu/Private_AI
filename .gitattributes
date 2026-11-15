@@ -3,3 +3,5 @@ evaluation/cases/*.json text eol=lf
 evaluation/arithmetic-gate/*.json text eol=lf
 # Masking benchmark splits are hashed as bytes; keep LF on every checkout.
 evaluation/masking/**/*.json text eol=lf
+# The real Privatemode manifests are hashed as bytes (tests/manifest-rotation.test.ts).
+tests/fixtures/privatemode-manifest-*.json text eol=lf

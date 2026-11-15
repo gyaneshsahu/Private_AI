@@ -4,6 +4,8 @@ Written 13 November 2026. Use it when Privatemode announces a deprecation, or wh
 
 A model change is manual and announced. Nothing in the app switches models by itself.
 
+A **manifest rotation** (log line `CometRow manifest alert:`, chat paused for a provider update) is a different event with its own routine: [manifest-rotation-20261114.md](manifest-rotation-20261114.md), "Routine for the next rotation" (one command, `scripts/privatemode-rotation.ts`).
+
 ## What we know
 
 - The usual deprecation notice is about two weeks. It is guaranteed only with an Enterprise agreement (owner-reported, Edgeless email of 13 November 2026).

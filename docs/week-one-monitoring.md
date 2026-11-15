@@ -21,6 +21,8 @@ Same idea as before: a ten-minute routine, morning and evening, for the first se
 
 **Model check lines (added 14 November):** at start and once a day, `CometRow model check: ... listed and unchanged since the baseline of ...` is normal. `CometRow model alert: ...` means a model is gone, marked deprecated, lost a task, or the check could not run: follow `docs/model-deprecation-runbook.md`. Add `CometRow model` to the daily log search.
 
+**Manifest check lines (added 15 November):** at start and every 6 hours, `CometRow manifest check: the live Privatemode manifest ... is approved and served.` is normal. `CometRow manifest alert: Privatemode published a new deployment manifest <digest>; chat is paused until the report approves it (docs/manifest-rotation-20261114.md)` means Privatemode rotated its deployment: chat is paused for everyone and `/api/status` says "CometRow is checking an update from its AI provider. Chat is paused until the update is approved." Follow "Routine for the next rotation" in `docs/manifest-rotation-20261114.md`. Add `CometRow manifest` to the daily log search.
+
 What changed with Privatemode:
 - Privatemode limits **attestation checks per organisation** (about 6 to 10, then a 60-second pause, measured 13 November). Our server queues the checks and logs a count line when something goes wrong.
 - The relay **cannot meter** Privatemode tokens. The ledger books every request at its worst case. The Privatemode portal is the only real cost figure.
@@ -43,7 +45,7 @@ Rows marked "new" are Privatemode checks. The other rows still apply from the Ti
 | What | Where | Normal | Act when | What to do |
 | --- | --- | --- | --- | --- |
 | Service up | `curl -sS -o /dev/null -w "%{http_code}\n" https://app.cometrow.com/readyz` | `200` (body "ready") | anything else | Read the Render log; if the database or role is the cause, stop chat and use the runbook |
-| Chat ready (new) | In a signed-in browser tab: `https://app.cometrow.com/api/status` | `"inference":{"ready":true,...}` | `"ready":false` | The `reason` says why: "paused by the operator" (stop file), "spending limit ... is reached" (spend cap), or "unavailable until provider qualification ..." (report expired or invalid, key or manifest missing) |
+| Chat ready (new) | In a signed-in browser tab: `https://app.cometrow.com/api/status` | `"inference":{"ready":true,...}` | `"ready":false` | The `reason` says why: "paused by the operator" (stop file), "checking an update from its AI provider" (manifest rotation, see `CometRow manifest alert:`), "spending limit ... is reached" (spend cap), or "unavailable until provider qualification ..." (report expired or invalid, key or manifest missing) |
 | Attestation queue (new) | Render, Logs, search `Privatemode attestation queue:` | no line at all | any line | See "Attestation queue line" below |
 | Busy answers (new) | Same log line (`busy`), and friends' reports | `busy` not rising | `busy` rising, or a friend saw "CometRow is busy checking the secure server" | Check that nobody ran a live test (rule above). If it happens with real use only, note the time and the count for the Privatemode support question (owner list step 1) |
 | Our own 429s (new) | Friends' reports, and the hourly count line (`refused_instance_busy`, `refused_account_busy`) | none | "Three requests are already running" or "A request is already running for this account" | See "Our own limits" below |
@@ -53,7 +55,7 @@ Rows marked "new" are Privatemode checks. The other rows still apply from the Ti
 | App spend against the cap | query A | committed spend clearly under `approvedSpendUSD` | above 50 % of the cap | All Privatemode requests are booked at worst case (about USD 0.10 per Thinking request). Raise the cap on purpose (D5) or stop chat; the relay refuses on its own at 100 % |
 | Allowance (new) | query C | each invitee has a current period and is within it | an invitee with no period, or one near the limit on day one | See "Automatic allowance" below |
 | Purge job | Render, Logs | no "Request record purge failed." line | that line appears | Reinstall the purge function per `docs/development-deployment.md`. See "90-day purge" below |
-| Supplier status | Privatemode status page and changelog | no incident, no model deprecation | incident or deprecation, or a `CometRow model alert:` log line (daily model list check) | Follow `docs/model-deprecation-runbook.md`; a move to Tinfoil is manual and announced (`docs/provider-switch-20261112.md`) |
+| Supplier status | Privatemode status page and changelog | no incident, no model deprecation | incident or deprecation, a `CometRow model alert:` log line (daily model list check), or a `CometRow manifest alert:` line (manifest rotation) | Follow `docs/model-deprecation-runbook.md` (a rotation: `docs/manifest-rotation-20261114.md`); a move to Tinfoil is manual and announced (`docs/provider-switch-20261112.md`) |
 | Friends' reports | the support contact (R6) | quiet | someone saw another person's data, a wrong answer that hurt, or a page that would not load | Stop chat first, then investigate (stop rules in `docs/alpha-plan-20261113.md`) |
 
 ### Attestation queue line

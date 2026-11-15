@@ -24,7 +24,8 @@ export interface ModelBaseline {
 // if the first live record shows other keys changing between two calls, add them here.
 const VOLATILE = new Set(["created", "permission"]);
 
-const stable = (value: unknown): string =>
+/** JSON with object keys sorted, so key order never counts as a change. */
+export const stable = (value: unknown): string =>
   JSON.stringify(value, (_key, v) =>
     v && typeof v === "object" && !Array.isArray(v)
       ? Object.fromEntries(Object.entries(v).sort(([a], [b]) => (a < b ? -1 : 1)))

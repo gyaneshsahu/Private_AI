@@ -20,6 +20,8 @@ const GERMAN: Record<string, string> = {
   "Private chat is paused by the operator. No request was forwarded.": `Der private Chat ist vom Betreiber pausiert. ${NOTHING_SENT}`,
   "Protected inference is not qualified. No request was forwarded.": `Der sichere Server ist nicht freigegeben. ${NOTHING_SENT}`,
   "Protected inference is not qualified.": "Der sichere Server ist nicht freigegeben.",
+  "CometRow is checking an update from its AI provider. Chat is paused until the update is approved.":
+    "CometRow prüft ein Update seines KI-Anbieters. Der Chat ist pausiert, bis das Update freigegeben ist.",
   "Protected inference is temporarily unavailable. No request was forwarded.": `Der sichere Server ist vorübergehend nicht verfügbar. ${NOTHING_SENT}`,
   "Protected request interrupted. Retry explicitly if needed.":
     "Die geschützte Anfrage wurde unterbrochen. Senden Sie sie bei Bedarf selbst erneut.",

@@ -2049,8 +2049,8 @@ export function App() {
         )}
         {status?.operatorNotice && (
           <div role="status" className="notice operator-notice">
-            {/* The operator's own words are shown as written. */}
-            <strong>{t.operatorNoticeTitle}</strong> {status.operatorNotice}
+            {/* The operator's own words are shown as written; a fixed server notice is translated. */}
+            <strong>{t.operatorNoticeTitle}</strong> {serverMessage(status.operatorNotice, lang)}
           </div>
         )}
         <ConnectionBanner />

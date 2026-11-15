@@ -32,6 +32,7 @@ import { braveSearchProvider, type SearchProvider } from "./providers/search";
 // manual (a new report is deployed), never automatic on failure.
 import "./providers/tinfoil-relay";
 import { privatemodeKeyExpiryWarning } from "./providers/privatemode-relay";
+import { manifestPaused, PROVIDER_UPDATE_PAUSE } from "./manifest-watch";
 import { VOICE_PATH, voiceRoute, type VoiceSettings } from "./providers/privatemode-voice";
 import { declaredImage, imageDayCount, imageModelAdmitted, type ImageSettings } from "./image-admission";
 import { CONTINUATION_HEADER, ContinuationCredits } from "./continuation-credit";
@@ -378,7 +379,9 @@ export function createApp(config: Config) {
         q,
         active,
       ).catch(() => false));
-    const ready = !!q && !!config.apiKey && !stopped && !capReached;
+    // Set only by the server's own manifest check; it can only turn ready off (server/manifest-watch.ts).
+    const providerUpdate = manifestPaused();
+    const ready = !!q && !!config.apiKey && !stopped && !capReached && !providerUpdate;
     res.json({
       csrf: res.locals.csrf,
       ...(config.consumer ? { consumerWorkspace: true } : {}),
@@ -420,7 +423,9 @@ export function createApp(config: Config) {
             : "Provider qualification recorded; each request still requires browser verification."
           : stopped
             ? "Private chat is paused by the operator."
-            : capReached
+            : providerUpdate
+              ? PROVIDER_UPDATE_PAUSE
+              : capReached
               ? "The approved spending limit for this provider review is reached."
               : "Live chat is unavailable until provider qualification and service access are complete.",
         ...(ready
@@ -448,6 +453,8 @@ export function createApp(config: Config) {
           }
         : {}),
       ...(await operatorNotice().then((text) => (text ? { operatorNotice: text } : {}))),
+      // The operator's own notice wins; otherwise a provider update is announced to everyone.
+      ...(await operatorNotice().then((text) => (text || providerUpdate ? { operatorNotice: text || PROVIDER_UPDATE_PAUSE } : {}))),
       publicPageHosts: proxyConfigured ? publicFetchHosts : null,
     });
   });

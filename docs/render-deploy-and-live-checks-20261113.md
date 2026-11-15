@@ -161,10 +161,15 @@ Not a switch: large documents are on by a constant in the code (`LARGE_DOCUMENTS
 
 Privatemode rotated its deployment on 14 November. The live digest is `d63eb5cf91cb3079fe25a848573a4d0e9d869f462dab4f71fd02bdb372f8e833`. Do this now and after any later rotation (`model-deprecation-runbook.md` has the background):
 
-1. The agent writes the new manifest file outside alpha hours: `npx tsx scripts/privatemode-manifest.ts --write .local/privatemode-manifest.json`, and tells you the digest it prints.
-2. The agent puts that digest in the report's `releaseDigests`. You approve it by signing the report (section 1, row 7).
-3. Upload the new file as `privatemode-manifest.json` (exact bytes, do not open and re-save) and the signed report as `qualification-privatemode.json`. Save only.
-4. Deploy the same SHA. Then `/api/status` shows `"ready": true` and one message works. Until then users see that the provider's deployment differs from the reviewed one, and chat stays refused.
+Updated 15 November: one command now does the reading and comparing. The full routine with times is in `manifest-rotation-20261114.md`, "Routine for the next rotation".
+
+1. You learn about it from the log: `CometRow manifest alert: Privatemode published a new deployment manifest <digest>; chat is paused until the report approves it (docs/manifest-rotation-20261114.md)`. The server checks at start and every 6 hours. Users already see "CometRow is checking an update from its AI provider. Chat is paused until the update is approved." and cannot send.
+2. Run `Invoke-WithPrivateAiSecret -Name PRIVATEMODE_API_KEY -Action { npx tsx scripts/privatemode-rotation.ts --report <your signed report.json> --write .local/privatemode-manifest.<date>.json }`. It writes the new manifest, a report draft with the new digest first (`.report-draft.json`) and your checklist (`.checklist.md`), and prints every change in plain language. Any WARNING: stop and ask Edgeless.
+3. Sign the draft: set `reviewedAt` and `validUntil` (section 1, row 7). The draft cannot load until you do.
+4. Upload the signed report as `qualification-privatemode.json`. Unless `inference.liveManifest` is on, also upload the new manifest file as `privatemode-manifest.json` (exact bytes, do not open and re-save). Save only.
+5. Deploy the same SHA. Then the log shows `CometRow manifest check: the live Privatemode manifest ... is approved and served.`, `/api/status` shows `"ready": true`, the notice is gone, and one message works.
+
+If you sign the new digest but forget the manifest file (switch off), the log says `... is approved, but the manifest file on the server is another one ...` and chat stays paused until the file is replaced. `inference.liveManifest: true` (default off, `development-deployment.md`) removes the file upload; it does not remove the pause between a rotation and your approval, because Privatemode does not announce new digests in advance.
 
 ## 3. Database
 
@@ -292,6 +297,8 @@ Do section 1 first. Then section 5. Part B is written there because the order ma
 | `Request record purge failed.` | once a day | The purge function or its grant is missing (section 3.4) |
 | `CometRow model check: ... listed and unchanged since the baseline of ...` | at start, then once a day (added 14 November) | The report's models are still in Privatemode's list, unchanged. Normal |
 | `CometRow model alert: ...` | at start, then once a day, only on a change | A model is gone, marked deprecated, or lost a task, or the check could not run. Follow `model-deprecation-runbook.md` |
+| `CometRow manifest check: the live Privatemode manifest ... is approved and served.` | at start, then every 6 hours (added 15 November) | Normal |
+| `CometRow manifest alert: ...` | at start, then every 6 hours, only on a problem | A manifest rotation (chat is paused for everyone), the new manifest file is missing, or the check could not run. Follow section 2.5 |
 
 ## 5. Switch chat on safely
 

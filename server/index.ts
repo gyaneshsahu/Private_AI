@@ -6,6 +6,7 @@ import { createApp, scheduleExpiryWarnings } from "./app";
 import { openInviteRegistry } from "./registry-storage";
 import { MemoryBackgroundStore } from "./background-store";
 import { ephemeralKeyRing } from "./background-crypto";
+import { scheduleManifestCheck } from "./manifest-watch";
 const port = Number(process.env.PORT ?? "4173");
 if (!Number.isInteger(port) || port < 1024 || port > 65535)
   throw new Error("Invalid PORT");
@@ -41,6 +42,9 @@ if (localTLS && !loopback) throw new Error("Local TLS is for a loopback origin o
 const hosted = origin.startsWith("https:") && !loopback;
 if (hosted && dev) throw new Error("Development middleware cannot be hosted.");
 if (qualification !== undefined) scheduleExpiryWarnings(qualification, (line) => console.warn(line));
+// The manifest check and the live manifest on the development server: off unless "1" (one attestation per 6 hours).
+if (process.env.PRIVATEAI_LIVE_MANIFEST === "1" && privatemode && apiKey)
+  scheduleManifestCheck(qualification, apiKey, providerManifest, (line) => console.warn(line), { serveLive: true });
 const app = createApp({
   origin,
   accessKey: process.env.PRIVATEAI_ACCESS_KEY,

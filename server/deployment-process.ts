@@ -6,6 +6,7 @@ import { scheduleRequestPurge } from "./request-retention";
 import { scheduleExpiryWarnings } from "./app";
 import { scheduleCountsLog } from "./counters";
 import { scheduleModelCheck } from "./model-watch";
+import { scheduleManifestCheck } from "./manifest-watch";
 import {
   createDeploymentAttestationAudit,
   installAttestationAudit,
@@ -126,6 +127,15 @@ export async function startDeployment(render = false) {
     if (config.inference)
       scheduleModelCheck(config.inference.qualification, config.inference.apiKey, (line) =>
         process.stdout.write(`${line}\n`),
+      );
+    // A manifest rotation stops chat until the owner approves it: find it early, show "paused".
+    if (config.inference)
+      scheduleManifestCheck(
+        config.inference.qualification,
+        config.inference.apiKey,
+        config.inference.providerManifest,
+        (line) => process.stdout.write(`${line}\n`),
+        { serveLive: !!config.inference.liveManifest },
       );
   } catch {
     process.stderr.write("CometRow restricted deployment startup failed.\n");

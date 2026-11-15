@@ -153,7 +153,17 @@ it("loads production chat only when the inference section is present and enabled
     await writeFile(configFile, JSON.stringify({ ...config, inference: bad }));
     await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
   }
+  // The live manifest has its own switch: absent or false means off; Privatemode only.
+  // (The loop above left a refused file behind: start again from a valid one.)
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...privatemode, manifestFile } }));
+  expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("liveManifest");
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...privatemode, manifestFile, liveManifest: false } }));
+  expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("liveManifest");
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...privatemode, manifestFile, liveManifest: true } }));
+  expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ liveManifest: true });
   for (const bad of [
+    { ...config, inference: { ...inference, liveManifest: true } }, // live manifest with a Tinfoil report
+    { ...config, inference: { ...privatemode, manifestFile, liveManifest: "yes" } },
     { ...config, inference: privatemode }, // no manifest
     { ...config, inference: { ...inference, manifestFile } }, // manifest with a Tinfoil report
     {
