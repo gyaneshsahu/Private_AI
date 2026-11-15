@@ -174,6 +174,26 @@ it("loads production chat only when the inference section is present and enabled
     await writeFile(configFile, JSON.stringify({ ...config, inference: bad }));
     await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
   }
+  // Vault sync: its own switch, off when absent or disabled; strict bounds.
+  await writeFile(configFile, JSON.stringify({ ...config, inference }));
+  expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("vaultSync");
+  const vaultSync = { enabled: true, quotaMb: 200, maxDevices: 5 };
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, vaultSync: { ...vaultSync, enabled: false } } }));
+  expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("vaultSync");
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, vaultSync } }));
+  expect((await loadDeploymentConfig(configFile)).inference?.vaultSync).toEqual({ quotaBytes: 200 * 1024 * 1024, maxDevices: 5 });
+  for (const bad of [
+    { ...vaultSync, quotaMb: 9 },
+    { ...vaultSync, quotaMb: 2001 },
+    { ...vaultSync, maxDevices: 0 },
+    { ...vaultSync, maxDevices: 11 },
+    { ...vaultSync, quotaMb: 1.5 },
+    { ...vaultSync, extra: true },
+    { enabled: true, quotaMb: 200 },
+  ]) {
+    await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, vaultSync: bad } }));
+    await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+  }
   // The live manifest has its own switch: absent or false means off; Privatemode only.
   // (The loop above left a refused file behind: start again from a valid one.)
   await writeFile(configFile, JSON.stringify({ ...config, inference: { ...privatemode, manifestFile } }));

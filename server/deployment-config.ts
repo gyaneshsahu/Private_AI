@@ -137,6 +137,19 @@ const schema = z
          * `keyFile` and runs it on schedule. `maxAutoTasks` per account; `runHourUtcWindow`: UTC
          * hours [from, to) in which runs may start (absent: any hour). The stop file stops them too.
          */
+        /**
+         * End-to-end encrypted vault sync, its own switch, off unless enabled
+         * (docs/vault-sync-20261115.md). The server stores only ciphertext and wrapped keys.
+         * `quotaMb` per account; `maxDevices` per account.
+         */
+        vaultSync: z
+          .object({
+            enabled: z.boolean(),
+            quotaMb: z.number().int().min(10).max(2000),
+            maxDevices: z.number().int().min(1).max(10),
+          })
+          .strict()
+          .optional(),
         backgroundTasks: z
           .object({
             enabled: z.boolean(),
@@ -347,6 +360,9 @@ export async function loadDeploymentConfig(file: string) {
                 ? { images: { maxBytes: inference.images.maxBytes, dailyImages: inference.images.dailyImages } }
                 : {}),
               ...(inference.code?.enabled ? { code: true } : {}),
+              ...(inference.vaultSync?.enabled
+                ? { vaultSync: { quotaBytes: inference.vaultSync.quotaMb * 1024 * 1024, maxDevices: inference.vaultSync.maxDevices } }
+                : {}),
               // Background tasks need the Privatemode client in the server (the report's provider).
               ...(inference.backgroundTasks?.enabled
                 ? await (async (bg) => {

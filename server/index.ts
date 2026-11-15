@@ -8,6 +8,7 @@ import { MemoryBackgroundStore } from "./background-store";
 import { ephemeralKeyRing } from "./background-crypto";
 import { scheduleManifestCheck } from "./manifest-watch";
 import { SqliteUsageRecords } from "./usage-records";
+import { MemorySyncStore } from "./vault-sync";
 const port = Number(process.env.PORT ?? "4173");
 if (!Number.isInteger(port) || port < 1024 || port > 65535)
   throw new Error("Invalid PORT");
@@ -74,6 +75,10 @@ const app = createApp({
   // Usage metering on the development server: off unless "1". Records in memory, gone at restart.
   ...(process.env.PRIVATEAI_METERING === "1"
     ? { metering: { plan: "alpha", records: new SqliteUsageRecords(":memory:") } }
+    : {}),
+  // Vault sync on the development server: off unless "1". Memory store, gone at restart.
+  ...(process.env.PRIVATEAI_VAULT_SYNC === "1"
+    ? { vaultSync: { quotaBytes: 200 * 1024 * 1024, maxDevices: 5, store: new MemorySyncStore() } }
     : {}),
   // Brave Goggle for German-rules searches (docs/german-rules-20261113.md); off unless "1".
   searchGoggles: process.env.PRIVATEAI_SEARCH_GOGGLES === "1",

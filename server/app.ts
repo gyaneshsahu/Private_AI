@@ -51,6 +51,7 @@ import type { BackgroundStore, RunWindow } from "./background-store";
 import type { BackgroundKeyRing } from "./background-crypto";
 import { activeWeights, REQUEST_ID_HEADER } from "../shared/usage-config";
 import { chatFeature, createMetering, withWeights, type MeteringConfig } from "./usage-metering";
+import { syncRoutes, type SyncSettings, type SyncStore } from "./vault-sync";
 
 export interface Config {
   origin: string;
@@ -103,6 +104,8 @@ export interface Config {
   metering?: MeteringConfig;
   /** File whose text is shown to every user as a notice; missing or empty means none. Re-read every 30 s. */
   noticeFile?: string;
+  /** End-to-end encrypted vault sync (docs/vault-sync-20261115.md); absent means off. */
+  vaultSync?: SyncSettings & { store: SyncStore };
   /** Background tasks, the Auto mode of Scheduled (docs/background-tasks-20261115.md); absent means off. */
   backgroundTasks?: {
     maxAutoTasks: number;
@@ -479,6 +482,7 @@ export function createApp(config: Config) {
       ...(ready && search && researchAllowed(config.research, res.locals.accountEmail)
         ? { research: { cost: config.research.cost, dailyRuns: config.research.dailyRuns } }
         : {}),
+      ...(config.vaultSync ? { vaultSync: { quotaBytes: config.vaultSync.quotaBytes, maxDevices: config.vaultSync.maxDevices } } : {}),
       ...(config.backgroundTasks
         ? {
             backgroundTasks: {
@@ -1006,6 +1010,9 @@ export function createApp(config: Config) {
     app.use(backgroundRoutes(background, bg.maxAutoTasks, (res) => res.locals.accountId ?? (config.dev ? "local-development" : undefined)));
     if (bg.start !== false) background.start();
   }
+  // Before the 8 KB body parser: an encrypted sync item can be up to 4 MB.
+  if (config.vaultSync)
+    app.use(syncRoutes(config.vaultSync.store, config.vaultSync, (res) => res.locals.accountId ?? (config.dev ? "local-development" : undefined)));
   app.use("/api", express.json({ limit: "8kb" }));
   if (config.consumer?.billingRouter) app.use(config.consumer.billingRouter);
   if (metering) app.use(metering.router);
