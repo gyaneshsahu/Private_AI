@@ -25,8 +25,14 @@ import { implausible, PLAUSIBILITY, usageReportSchema, type NewUsageRecord, type
 export interface MeteringConfig {
   /** A plan id from shared/usage-plans.json. */
   plan: string;
+  /** Pins a version of shared/usage-weights.json; absent, the newest version whose date has passed. */
+  weightsVersion?: number;
   records: UsageRecords;
 }
+
+/** The weights charging at `now` under this config (the pinned version, or the newest in force). */
+export const meteringWeights = (config: Pick<MeteringConfig, "weightsVersion">, now = Date.now()) =>
+  activeWeights(now, undefined, config.weightsVersion);
 
 const DAY = 86_400_000;
 
@@ -71,6 +77,7 @@ export function meterView(input: {
   periodStart: number;
   now: number;
   recentCount?: number;
+  voice?: UsageMeterView["voice"];
 }): UsageMeterView {
   const { records, summary, now, weights } = input;
   const inPeriod = records.filter((r) => r.createdAt >= input.periodStart);
@@ -116,6 +123,7 @@ export function meterView(input: {
     features: [...features.values()].sort((a, b) => b.units - a.units || b.requests - a.requests),
     todayCounts: { images: counted("image"), researchRuns: counted("research-plan"), searches: counted("search") },
     recent: groups.slice(-(input.recentCount ?? 8)).reverse(),
+    ...(input.voice ? { voice: input.voice } : {}),
   };
 }
 
@@ -134,12 +142,17 @@ export function createMetering(deps: {
   qualification: () => Qualification | undefined;
   dailyLimit?: number;
   accountOf: (res: Response) => string | undefined;
+  /**
+   * While voice input is on: its daily budget and the units used, read exactly as the status reads
+   * them for "Voice today", so the meter and the microphone show the same numbers.
+   */
+  voice?: { dailyUnits: number; chunkSeconds: number; on: () => boolean; used: (res: Response) => Promise<number> };
   now?: () => number;
 }) {
   const { records } = deps.config;
   const plan = planFor(deps.config.plan);
   const now = deps.now ?? Date.now;
-  const weights = () => activeWeights(now());
+  const weights = () => meteringWeights(deps.config, now());
   const router = express.Router();
 
   router.post("/api/usage/report", async (req, res) => {
@@ -150,6 +163,9 @@ export function createMetering(deps: {
       const record = await records.get(who, parsed.data.requestId);
       if (!record) return void res.status(404).json({ error: "Unknown request." });
       if (record.report !== "none") return void res.status(409).json({ error: "Already reported." });
+      // Voice is measured by the relay (the chunk's 2-second units, checked against its size) and
+      // billed by audio length: the browser has nothing to add.
+      if (record.feature === "voice") return void res.status(409).json({ error: "Voice usage is measured by the server." });
       if (now() - record.createdAt > PLAUSIBILITY.reportWindowMs) {
         count("metering.report_late");
         return void res.status(410).json({ error: "Report window closed." });
@@ -180,6 +196,18 @@ export function createMetering(deps: {
         weights: weights(),
         periodStart,
         now: at,
+        ...(deps.voice && deps.voice.on()
+          ? {
+              voice: {
+                dailyUnits: deps.voice.dailyUnits,
+                chunkSeconds: deps.voice.chunkSeconds,
+                ...(await deps.voice.used(res).then(
+                  (usedUnits) => ({ usedUnits }),
+                  () => ({}),
+                )),
+              },
+            }
+          : {}),
       });
       res.json(view);
     } catch {

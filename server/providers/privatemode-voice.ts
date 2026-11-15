@@ -4,13 +4,16 @@
 // session and CSRF (before this route), stop switch, qualification, pinned model, three per
 // instance, one per account, spend guard, allowance and daily cap through the same usage ledger.
 // On top: the chunk's reported voice units are checked against its encrypted size, and the daily
-// voice budget is kept in the ledger. Nothing is stored or logged beyond that: the body lives in
-// memory for this one request, and counts carry fixed names only.
+// voice budget is kept in the ledger. With usage metering on, each forwarded chunk also gets a usage
+// record (feature voice, the units charged, sizes, duration; its ID carries the 2-second units).
+// Nothing is stored or logged beyond that: the body lives in memory for this one request, and
+// counts carry fixed names only.
 import { randomUUID } from "node:crypto";
 import { pipeline } from "node:stream/promises";
 import express, { type ErrorRequestHandler, type RequestHandler } from "express";
 import { request as upstreamRequest } from "undici";
 import type { Qualification } from "../../shared/contracts";
+import type { NewUsageRecord } from "../usage-records";
 import { voiceChunkLimit, voiceChunkUnits, type VoiceLimits } from "../../shared/voice";
 import { count } from "../counters";
 import { serviceDispatcher } from "../network";
@@ -67,6 +70,11 @@ export interface VoiceRelayDeps {
   claim: (accountId: string | undefined) => "instance" | "account" | (() => void);
   /** Requests running in this process, this one included (for the spend guard). */
   running: () => number;
+  /** Usage metering (docs/usage-metering-20261115.md); absent while it is off: then nothing is recorded. */
+  metering?: {
+    accountOf: (res: express.Response) => string | undefined;
+    record: (input: Omit<NewUsageRecord, "weightVersion">) => void;
+  };
 }
 
 /** The handlers for POST /api/inference/v1/audio/transcriptions, in order. */
@@ -122,6 +130,12 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
     const requestId = voiceRequestId(units, randomUUID());
     let dispatched = false;
     let complete = false;
+    // For the usage record: the allowance units this chunk was charged (0 on the retry credit).
+    let charged = speech.allowanceCost;
+    let forwarded = false;
+    let refusedUpstream = false;
+    let startedAt = 0;
+    let responseBytes = 0;
     const abort = new AbortController();
     res.on("close", () => {
       if (res.writableFinished) return;
@@ -148,8 +162,10 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
       const now = Date.now();
       const credit = retryCredit.get(who) ?? 0;
       retryCredit.delete(who);
-      if (credit > now) count("voice.retry_not_counted");
-      else {
+      if (credit > now) {
+        count("voice.retry_not_counted");
+        charged = 0;
+      } else {
         let used: number;
         try {
           used = await deps.budget.used(who, accountId);
@@ -194,6 +210,8 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
         deps.budget.record(who, units);
       }
       if (abort.signal.aborted) return;
+      forwarded = true;
+      startedAt = Date.now();
       const upstream = await upstreamRequest(new URL(VOICE_PATH, q.origin), {
         dispatcher: serviceDispatcher,
         method: "POST",
@@ -216,6 +234,7 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
         if (failure === "model-not-found") alertModelNotFound(speech.model, upstream.statusCode);
         // Nothing was transcribed: the same account's next recording within a minute is not counted again.
         retryCredit.set(who, Date.now() + 60_000);
+        refusedUpstream = true;
         res.setHeader("X-PrivateAI-Upstream", failure);
         return refuse(
           502,
@@ -227,7 +246,16 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
         const v = Array.isArray(value) ? value[0] : value;
         if (v !== undefined && REPLY_HEADERS.test(name)) res.setHeader(name, v);
       }
-      await pipeline(upstream.body, res);
+      await pipeline(
+        upstream.body,
+        async function* (source: AsyncIterable<Buffer>) {
+          for await (const chunk of source) {
+            responseBytes += chunk.length;
+            yield chunk;
+          }
+        },
+        res,
+      );
       complete = true;
     } catch {
       if (!res.headersSent)
@@ -235,6 +263,20 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
       else res.destroy();
     } finally {
       claimed();
+      // Every chunk Privatemode received gets a record, charged or not, as for chat.
+      const recordFor = deps.metering?.accountOf(res);
+      if (deps.metering && forwarded && recordFor)
+        deps.metering.record({
+          requestId,
+          accountId: recordFor,
+          feature: "voice",
+          units: charged,
+          outcome: complete ? "complete" : refusedUpstream ? "refused" : "interrupted",
+          model: speech.model,
+          requestBytes: req.body.length,
+          responseBytes,
+          durationMs: Date.now() - startedAt,
+        });
       if (deps.usage && accountId && dispatched)
         await Promise.resolve(
           deps.usage.finish(accountId, requestId, complete ? "transport_complete" : "uncertain"),

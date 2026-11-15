@@ -210,6 +210,7 @@ const GERMAN: Record<string, string> = {
   "Invalid usage report.": "Ungültige Verbrauchsmeldung.",
   "Unknown request.": "Unbekannte Anfrage.",
   "Already reported.": "Bereits gemeldet.",
+  "Voice usage is measured by the server.": "Die Sprachnutzung misst der Server selbst.",
   "Report window closed.": "Die Frist für diese Meldung ist abgelaufen.",
   "Usage records unavailable.": "Die Verbrauchsdaten sind nicht verfügbar.",
   "Sign in to see your usage.": "Melden Sie sich an, um Ihren Verbrauch zu sehen.",
