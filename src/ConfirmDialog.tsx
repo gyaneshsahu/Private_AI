@@ -15,6 +15,7 @@ export function ConfirmDialog({
   onClose,
   fallback,
   children,
+  confirmDisabled,
 }: {
   title: string;
   text: string;
@@ -24,6 +25,8 @@ export function ConfirmDialog({
   fallback?: () => HTMLElement | null;
   /** Choices between the text and the buttons; the caller reads them in onClose. */
   children?: ReactNode;
+  /** Keeps the confirm button off until a typed confirmation in children matches. */
+  confirmDisabled?: boolean;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const cancel = useRef<HTMLButtonElement>(null);
@@ -60,7 +63,7 @@ export function ConfirmDialog({
         <button ref={cancel} type="button" onClick={() => onClose(false)}>
           {cancelLabel}
         </button>
-        <button type="button" className="danger-button" onClick={() => onClose(true)}>
+        <button type="button" className="danger-button" disabled={confirmDisabled} onClick={() => onClose(true)}>
           {confirmLabel}
         </button>
       </div>

@@ -41,7 +41,22 @@ import {
   encodeVaultBackup,
   decodeVaultBackupContent,
   BACKUP_MAX_CONVERSATIONS,
+  BackupError,
+  planBackupParts,
 } from "./vault-backup";
+// "Remember this device" (docs/vault-sync-screens-20261115.md): the vault key itself, as the
+// non-extractable CryptoKey that derive() returns, kept in "meta". The page can use it, never read it.
+const REMEMBERED = "remembered-key";
+/** A stable identity for a restored copy: the same backup item always gets the same new id. */
+async function restoredId(id: string, content: unknown): Promise<string> {
+  const hash = new Uint8Array(
+    await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`restore:${id}:${JSON.stringify(content)}`)),
+  );
+  hash[6] = (hash[6] & 0x0f) | 0x40;
+  hash[8] = (hash[8] & 0x3f) | 0x80;
+  const hex = Array.from(hash.subarray(0, 16), (b) => b.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
+}
 const db = (name: string) =>
   openDB(name, 1, {
     upgrade(database) {
@@ -180,7 +195,69 @@ export class Vault {
     this.channel?.close();
     this.channel = undefined;
   }
-  async unlock(passphrase: string) {
+  /** Whether this device holds a vault for the selected account (false: unlock creates one). */
+  async exists(): Promise<boolean> {
+    const database = await db(this.databaseName);
+    try {
+      return (await database.get("meta", "vault")) !== undefined;
+    } finally {
+      database.close();
+    }
+  }
+  /** Whether this device keeps the vault key, so it opens without the passphrase. */
+  async isRemembered(): Promise<boolean> {
+    const database = await db(this.databaseName);
+    try {
+      return (await database.get("meta", REMEMBERED)) instanceof CryptoKey;
+    } finally {
+      database.close();
+    }
+  }
+  /** Keeps (or forgets) the unlocked vault's key on this device. */
+  async rememberDevice(remember: boolean) {
+    const key = this.key;
+    if (remember && !key) throw Error(textFor(vaultText).unlockFirst);
+    const database = await db(this.databaseName);
+    try {
+      if (remember) await database.put("meta", key, REMEMBERED);
+      else await database.delete("meta", REMEMBERED);
+    } finally {
+      database.close();
+    }
+  }
+  /** Opens with the remembered key; false when there is none or it no longer fits (it is then forgotten). */
+  async unlockRemembered(): Promise<boolean> {
+    const generation = ++this.generation;
+    this.key = undefined;
+    this.salt = undefined;
+    const database = await db(this.databaseName);
+    try {
+      const key = (await database.get("meta", REMEMBERED)) as CryptoKey | undefined;
+      const existing = (await database.get("meta", "vault")) as
+        { salt: Uint8Array<ArrayBuffer>; check: Cipher } | undefined;
+      if (!(key instanceof CryptoKey) || !existing) return false;
+      const fits = await unseal(key, existing.check, "vault-check-v1").then(
+        (value) => value === "privateai-v1",
+        () => false,
+      );
+      if (!fits) {
+        await database.delete("meta", REMEMBERED);
+        return false;
+      }
+      if (generation !== this.generation) throw new Error(textFor(vaultText).unlockCancelled);
+      this.key = key;
+      this.salt = existing.salt.slice();
+      return true;
+    } finally {
+      database.close();
+    }
+  }
+  async unlock(passphrase: string, remember?: boolean) {
+    await this.unlockWithPassphrase(passphrase);
+    // undefined leaves the device's choice as it is (callers that predate the choice).
+    if (remember !== undefined) await this.rememberDevice(remember);
+  }
+  private async unlockWithPassphrase(passphrase: string) {
     const generation = ++this.generation;
     this.key = undefined;
     this.salt = undefined;
@@ -539,26 +616,7 @@ export class Vault {
         const record = records[index];
         if (record === undefined) continue;
         try {
-          const raw = new Uint8Array(
-            JSON.parse(await unseal(key, record.wrapped, `key:${id}`)),
-          );
-          const dataKey = await crypto.subtle.importKey(
-            "raw",
-            raw,
-            "AES-GCM",
-            false,
-            ["decrypt"],
-          );
-          const decoded: unknown = JSON.parse(
-            await unseal(dataKey, record.data, `conversation:${id}`),
-          );
-          savedConversationSchema.parse(decoded);
-          // Validate without rewriting snapshots or dropping fields from older writers.
-          const conversation = decoded as Conversation;
-          if (containsTemporaryResearch(conversation))
-            throw new Error(textFor(vaultText).temporaryReopen);
-          if (conversation.id !== id)
-            throw new Error(textFor(vaultText).identityMismatch);
+          const conversation = await this.openRecord(key, id, record);
           output.push(conversation);
           const version = recordVersion(record);
           if (generation === this.generation) {
@@ -576,6 +634,27 @@ export class Vault {
     } finally {
       database.close();
     }
+  }
+  private async openRecord(
+    key: CryptoKey,
+    id: IDBValidKey,
+    record: { wrapped: Cipher; data: Cipher },
+  ): Promise<Conversation> {
+    const raw = new Uint8Array(
+      JSON.parse(await unseal(key, record.wrapped, `key:${id}`)),
+    );
+    const dataKey = await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]);
+    const decoded: unknown = JSON.parse(
+      await unseal(dataKey, record.data, `conversation:${id}`),
+    );
+    savedConversationSchema.parse(decoded);
+    // Validate without rewriting snapshots or dropping fields from older writers.
+    const conversation = decoded as Conversation;
+    if (containsTemporaryResearch(conversation))
+      throw new Error(textFor(vaultText).temporaryReopen);
+    if (conversation.id !== id)
+      throw new Error(textFor(vaultText).identityMismatch);
+    return conversation;
   }
   async readProjects(): Promise<Project[]> {
     const key = this.key,
@@ -1049,6 +1128,33 @@ export class Vault {
       throw Error(textFor(vaultText).backupCancelled);
     return text;
   }
+  /**
+   * The backup as one or more files (planBackupParts: at most 100 chats and 10 MiB each), with the
+   * project files when asked. Memories or tasks alone are enough; an empty vault is refused.
+   */
+  async exportBackupParts(includeFiles: boolean): Promise<string[]> {
+    const key = this.key,
+      salt = this.salt,
+      generation = this.generation;
+    if (!key || !salt) throw Error(textFor(vaultText).unlockBeforeBackup);
+    const available = await this.readAvailable();
+    if (available.unreadable) throw new BackupError("unreadable");
+    const shared = {
+      projects: await this.readProjects(),
+      memories: await this.readMemories(),
+      scheduledTasks: await this.readTasks(),
+    };
+    const files = includeFiles ? await this.readProjectFiles() : {};
+    if (!available.conversations.length && !shared.projects.length && !shared.memories.length && !shared.scheduledTasks.length)
+      throw new BackupError("empty");
+    const texts: string[] = [];
+    for (const [index, part] of planBackupParts(available.conversations, shared, files).entries())
+      texts.push(
+        await encodeVaultBackup(key, salt, part, shared.projects, shared.memories, shared.scheduledTasks, index ? {} : files),
+      );
+    if (generation !== this.generation || !this.key) throw Error(textFor(vaultText).backupCancelled);
+    return texts;
+  }
   restoreBackup(text: string, passphrase: string): Promise<number> {
     const key = this.key,
       salt = this.salt,
@@ -1059,18 +1165,34 @@ export class Vault {
         Error(textFor(vaultText).unlockDestination),
       );
     return this.enqueue(async () => {
-      const { conversations, projects, memories, scheduledTasks } = await decodeVaultBackupContent(
+      const { conversations, projects, memories, scheduledTasks, projectFiles } = await decodeVaultBackupContent(
         text,
         passphrase,
       );
+      // A restored item keeps its id when the same item is already here (then it is skipped), and
+      // otherwise gets a stable new id (restoredId), so restoring the same backup again adds nothing.
+      const copyIds = new Map<string, string>();
+      for (const original of conversations) copyIds.set(original.id, await restoredId(original.id, original));
       const databaseBefore = await db(databaseName);
       let projectRecord: Cipher | undefined;
       let memoryRecord: Cipher | undefined;
       let taskRecord: Cipher | undefined;
+      let filesRecord: Cipher | undefined;
+      const present = new Map<string, { record?: { wrapped: Cipher; data: Cipher }; copyTaken: boolean }>();
       try {
         projectRecord = await databaseBefore.get("meta", "projects");
         memoryRecord = await databaseBefore.get("meta", "memories");
         taskRecord = await databaseBefore.get("meta", "scheduled-tasks");
+        filesRecord = await databaseBefore.get("meta", "project-files");
+        for (const original of conversations) {
+          const copyId = copyIds.get(original.id)!;
+          present.set(original.id, {
+            record: await databaseBefore.get("conversations", original.id),
+            copyTaken:
+              (await databaseBefore.get("conversations", copyId)) !== undefined ||
+              (await databaseBefore.get("meta", `deleted:${copyId}`)) !== undefined,
+          });
+        }
       } finally {
         databaseBefore.close();
       }
@@ -1079,13 +1201,30 @@ export class Vault {
             JSON.parse(await unseal(key, projectRecord, "projects-v1")),
           )
         : [];
-      const projectIds = new Map(
-        projects.map((p) => [p.id, crypto.randomUUID()]),
-      );
-      const mergedProjects = projectsSchema.parse([
-        ...existingProjects,
-        ...projects.map((p) => ({ ...p, id: projectIds.get(p.id)! })),
-      ]);
+      const projectIds = new Map<string, string>();
+      const addedProjects: Project[] = [];
+      for (const p of projects) {
+        const same = existingProjects.find((e) => e.id === p.id);
+        if (same && JSON.stringify(same) === JSON.stringify(p)) {
+          projectIds.set(p.id, p.id);
+          continue;
+        }
+        const id = await restoredId(p.id, p);
+        projectIds.set(p.id, id);
+        if (!existingProjects.some((e) => e.id === id) && !addedProjects.some((e) => e.id === id))
+          addedProjects.push({ ...p, id });
+      }
+      const mergedProjects = projectsSchema.parse([...existingProjects, ...addedProjects]);
+      let nextFiles: Cipher | undefined;
+      if (Object.keys(projectFiles).length) {
+        const merged = await openProjectFiles(key, filesRecord);
+        for (const [projectId, files] of Object.entries(projectFiles)) {
+          const target = projectIds.get(projectId)!;
+          const have = merged[target] ?? [];
+          merged[target] = [...have, ...files.filter((file) => !have.some((h) => h.id === file.id))];
+        }
+        nextFiles = await seal(key, JSON.stringify(projectFilesRecord.parse(merged)), FILES_LABEL);
+      }
       const nextProjects = await seal(
         key,
         JSON.stringify(mergedProjects),
@@ -1116,13 +1255,19 @@ export class Vault {
       for (const original of conversations) {
         if (generation !== this.generation || !this.key)
           throw Error(textFor(vaultText).restoreCancelled);
-        const snapshot = {
+        const mapped = {
           ...original,
-          id: crypto.randomUUID(),
           projectId: original.projectId
             ? projectIds.get(original.projectId)
             : undefined,
         };
+        const { record, copyTaken } = present.get(original.id)!;
+        if (record) {
+          const stored = await this.openRecord(key, original.id, record).catch(() => undefined);
+          if (JSON.stringify(stored) === JSON.stringify(mapped)) continue;
+        }
+        if (copyTaken) continue;
+        const snapshot = { ...mapped, id: copyIds.get(original.id)! };
         const dataKey = await crypto.subtle.generateKey(
           { name: "AES-GCM", length: 256 },
           true,
@@ -1169,6 +1314,11 @@ export class Vault {
             if (recordIv(await tx.objectStore("meta").get("scheduled-tasks")) !== recordIv(taskRecord))
               throw Error(textFor(vaultText).restoreCancelled);
             await tx.objectStore("meta").put(nextTasks, "scheduled-tasks");
+          }
+          if (nextFiles) {
+            if (recordIv(await tx.objectStore("meta").get("project-files")) !== recordIv(filesRecord))
+              throw Error(textFor(vaultText).restoreCancelled);
+            await tx.objectStore("meta").put(nextFiles, "project-files");
           }
           for (const { id, ...record } of encrypted) {
             if (
@@ -1373,6 +1523,8 @@ export class Vault {
             throw Error(textFor(vaultText).historyChangedPassphrase);
           if (nextTasks) await tx.objectStore("meta").put(nextTasks, "scheduled-tasks");
           await tx.objectStore("meta").put(nextMeta, "vault");
+          // A remembered device stays remembered, with the new key.
+          if (await tx.objectStore("meta").get(REMEMBERED)) await tx.objectStore("meta").put(nextKey, REMEMBERED);
           unchanged();
           await tx.done;
         } catch (error) {

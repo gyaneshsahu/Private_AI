@@ -176,7 +176,9 @@ test("wrong password and corrupt backup preserve saved history; restore requires
   await expect(page.getByRole("article")).toHaveCount(1);
   await choose(page, backup);
   await page.getByRole("button", { name: "Restore as new copies" }).click();
-  await expect(page.getByRole("article")).toHaveCount(2);
+  // Stage 0 (docs/vault-sync-screens-20261115.md): the unchanged chat is already here, so it is skipped.
+  await expect(page.getByText("Restored 0 saved conversations", { exact: false }).first()).toBeVisible();
+  await expect(page.getByRole("article")).toHaveCount(1);
   await page
     .getByLabel("Encrypted backup file", { exact: true })
     .setInputFiles({

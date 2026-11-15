@@ -1,6 +1,6 @@
 import { UsageMeter } from "./UsageMeter";
 import { containDialogFocus } from "./dialog-focus";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { AppStatus, Conversation } from "../shared/contracts";
 import { conversationTitle, dateGroup, findConversations } from "./conversation-library";
 import type { Project } from "./projects";
@@ -39,6 +39,8 @@ export function WorkspaceNavigation(props: {
   onScheduled?: () => void;
   /** A background task exists: the entry keeps its badge. */
   backgroundActive?: boolean;
+  /** The quiet sync status (src/SyncScreens.tsx), only when the deployment has sync. */
+  syncIndicator?: ReactNode;
   onOrganize: (
     c: Conversation,
     change: Pick<Conversation, "pinned" | "archived" | "projectId" | "title">,
@@ -69,6 +71,7 @@ export function WorkspaceNavigation(props: {
     onScheduled,
     backgroundActive,
     onOrganize,
+    syncIndicator,
   } = props;
   const t = useText(workspaceText);
   const pt = useText(projectText);
@@ -481,6 +484,7 @@ export function WorkspaceNavigation(props: {
         <p>
           {unlocked ? t.vaultUnlocked : t.temporarySession} · {t.thisDevice}
         </p>
+        {syncIndicator}
       </nav>
     </aside>
   );

@@ -49,7 +49,7 @@ export const projectText = defineText({
     fileAdded: (name: string) => `“${name}” added to the project.`,
     fileRemoved: "File removed from the project.",
     notInBackup:
-      "Project files are not part of the encrypted backup file. After a restore, add them again from your originals. Project names and instructions are included.",
+      "Project files are in the encrypted backup only when you tick Include project files. Project names and instructions are always included.",
     problem: (problem: ProjectProblem | "failed") =>
       ({
         files: "A project can have at most 20 files. Remove one first.",
@@ -119,7 +119,7 @@ export const projectText = defineText({
     fileAdded: (name: string) => `„${name}“ wurde dem Projekt hinzugefügt.`,
     fileRemoved: "Datei aus dem Projekt entfernt.",
     notInBackup:
-      "Projektdateien sind nicht Teil der verschlüsselten Sicherungsdatei. Fügen Sie sie nach einer Wiederherstellung aus Ihren Originalen erneut hinzu. Projektnamen und Anweisungen sind enthalten.",
+      "Projektdateien sind nur dann in der verschlüsselten Sicherung, wenn Sie Projektdateien einschließen ankreuzen. Projektnamen und Anweisungen sind immer enthalten.",
     problem: (problem: ProjectProblem | "failed") =>
       ({
         files: "Ein Projekt kann höchstens 20 Dateien haben. Entfernen Sie zuerst eine.",

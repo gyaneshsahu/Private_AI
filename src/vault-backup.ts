@@ -1,6 +1,6 @@
 import { textFor } from "./text/core";
 import { vaultText } from "./text/vault";
-import { projectsSchema, type Project } from "./projects";
+import { projectFilesSchema, projectsSchema, type Project, type ProjectFiles } from "./projects";
 import { memoriesSchema, type Memory } from "./memory";
 import { scheduledTasksSchema } from "./scheduled";
 import type { ScheduledTask } from "../shared/scheduled-tasks";
@@ -15,6 +15,14 @@ import type { Conversation } from "../shared/contracts";
 export const BACKUP_MAX_BYTES = 16 * 1024 * 1024;
 export const BACKUP_MAX_CONVERSATIONS = 100;
 const payloadLimit = 10 * 1024 * 1024;
+export const BACKUP_MAX_CONTENT_BYTES = payloadLimit;
+/** Why a backup could not be made, for a plain message on the backup screen. */
+export class BackupError extends Error {
+  constructor(readonly code: "empty" | "unreadable" | "tooLarge" | "filesTooLarge") {
+    super(code);
+  }
+}
+const projectFilesRecord = z.record(z.string().uuid(), projectFilesSchema);
 const aad = "privateai-encrypted-backup:v1";
 const envelope = z
   .object({
@@ -36,6 +44,8 @@ const payload = z
     memories: memoriesSchema.optional(),
     // Scheduled tasks (src/scheduled.ts): also written only when there are some.
     scheduledTasks: scheduledTasksSchema.optional(),
+    // Project files, only when the user chose to include them (older apps cannot read such a file).
+    projectFiles: projectFilesRecord.optional(),
     conversations: z
       .array(savedConversationSchema)
       .max(BACKUP_MAX_CONVERSATIONS),
@@ -62,11 +72,13 @@ function validate(value: unknown): {
   projects: Project[];
   memories: Memory[];
   scheduledTasks: ScheduledTask[];
+  projectFiles: ProjectFiles;
 } {
   const result = payload.parse(value);
   if (
     new Set(result.conversations.map((c) => c.id)).size !==
       result.conversations.length ||
+    Object.keys(result.projectFiles ?? {}).some((id) => !result.projects?.some((p) => p.id === id)) ||
     result.conversations.some(containsTemporaryResearch) ||
     result.conversations.some(
       (c) => c.projectId && !result.projects?.some((p) => p.id === c.projectId),
@@ -81,7 +93,38 @@ function validate(value: unknown): {
     projects: result.projects ?? [],
     memories: result.memories ?? [],
     scheduledTasks: result.scheduledTasks ?? [],
+    projectFiles: result.projectFiles ?? {},
   };
+}
+const bytes = (value: unknown) => new TextEncoder().encode(JSON.stringify(value)).byteLength;
+/**
+ * Splits saved chats into backup files of at most 100 chats and 10 MiB each. Every part carries
+ * the projects, memories and tasks (a restore skips what is already there); project files go only
+ * in the first part. Refuses when one chat, or the first part with the files, cannot fit.
+ */
+export function planBackupParts(
+  conversations: Conversation[],
+  shared: { projects: Project[]; memories: Memory[]; scheduledTasks: ScheduledTask[] },
+  projectFiles: ProjectFiles = {},
+  limit = payloadLimit,
+): Conversation[][] {
+  // Room for the JSON around the lists ({"version":1,"conversations":[...],...}).
+  const base = bytes({ version: 1, conversations: [], ...shared }) + 64;
+  const files = Object.keys(projectFiles).length ? bytes(projectFiles) + 20 : 0;
+  if (base + files > limit) throw new BackupError(files ? "filesTooLarge" : "tooLarge");
+  const parts: Conversation[][] = [[]];
+  let used = base + files;
+  for (const conversation of conversations) {
+    const size = bytes(conversation) + 1;
+    if (base + size > limit) throw new BackupError("tooLarge");
+    if (parts.at(-1)!.length >= BACKUP_MAX_CONVERSATIONS || used + size > limit) {
+      parts.push([]);
+      used = base;
+    }
+    parts.at(-1)!.push(conversation);
+    used += size;
+  }
+  return parts;
 }
 export async function encodeVaultBackup(
   key: CryptoKey,
@@ -90,6 +133,7 @@ export async function encodeVaultBackup(
   projects: Project[] = [],
   memories: Memory[] = [],
   scheduledTasks: ScheduledTask[] = [],
+  projectFiles: ProjectFiles = {},
 ): Promise<string> {
   const content = {
     version: 1,
@@ -97,6 +141,7 @@ export async function encodeVaultBackup(
     projects,
     ...(memories.length ? { memories } : {}),
     ...(scheduledTasks.length ? { scheduledTasks } : {}),
+    ...(Object.keys(projectFiles).length ? { projectFiles } : {}),
   };
   validate(content);
   const text = JSON.stringify(content);
@@ -120,7 +165,13 @@ export async function encodeVaultBackup(
 export async function decodeVaultBackupContent(
   text: string,
   passphrase: string,
-): Promise<{ conversations: Conversation[]; projects: Project[]; memories: Memory[]; scheduledTasks: ScheduledTask[] }> {
+): Promise<{
+  conversations: Conversation[];
+  projects: Project[];
+  memories: Memory[];
+  scheduledTasks: ScheduledTask[];
+  projectFiles: ProjectFiles;
+}> {
   if (
     text.length > BACKUP_MAX_BYTES ||
     new TextEncoder().encode(text).byteLength > BACKUP_MAX_BYTES

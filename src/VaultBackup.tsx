@@ -1,27 +1,46 @@
 import { useState } from "react";
-import { BACKUP_MAX_BYTES } from "./vault-backup";
+import { BACKUP_MAX_BYTES, BackupError } from "./vault-backup";
 import { useLang, useText } from "./i18n";
 import { vaultBackupText } from "./text/vault-ui";
+import { backupPartsText } from "./text/sync";
 import { memoryEnabled, projectSpacesEnabled } from "./device-features";
 import { memoryText } from "./text/memory";
 import { projectText } from "./text/projects";
 
+function download(text: string, name: string) {
+  const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 export function VaultBackup({
   busy,
   canExport,
-  onExport,
+  exportParts,
   onRestore,
 }: {
   busy: boolean;
   canExport: boolean;
-  onExport: () => Promise<void>;
+  /** The backup files (src/vault.ts, exportBackupParts); one file unless there is too much for one. */
+  exportParts: (includeFiles: boolean) => Promise<string[]>;
   onRestore: (file: File, passphrase: string) => Promise<void>;
 }) {
   const [file, setFile] = useState<File>();
   const [passphrase, setPassphrase] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState("");
+  const [includeFiles, setIncludeFiles] = useState(true);
+  const [parts, setParts] = useState<string[]>([]);
+  const [done, setDone] = useState<number[]>([]);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
   const t = useText(vaultBackupText);
+  const p = useText(backupPartsText);
   const { lang } = useLang();
   return (
     <section className="panel" aria-label={t.label}>
@@ -31,10 +50,64 @@ export function VaultBackup({
         {memoryEnabled() && ` ${memoryText[lang].backupAlso}`}
         {projectSpacesEnabled() && ` ${projectText[lang].notInBackup}`}
       </p>
+      <p>{p.limitsUpFront}</p>
       <p className="muted">{t.limits}</p>
-      <button disabled={busy || !canExport} onClick={() => void onExport()}>
+      {projectSpacesEnabled() && (
+        <label className="row">
+          <input
+            type="checkbox"
+            checked={includeFiles}
+            disabled={busy || exporting}
+            onChange={(event) => {
+              setIncludeFiles(event.target.checked);
+              setParts([]);
+            }}
+          />
+          {p.includeFiles}
+        </label>
+      )}
+      {projectSpacesEnabled() && <p className="muted">{p.includeFilesNote}</p>}
+      <button
+        disabled={busy || exporting || !canExport}
+        onClick={async () => {
+          setExporting(true);
+          setExportError("");
+          setParts([]);
+          setDone([]);
+          try {
+            const texts = await exportParts(projectSpacesEnabled() && includeFiles);
+            if (texts.length === 1) download(texts[0], "privateai-encrypted.privateai-backup");
+            else setParts(texts);
+          } catch (caught) {
+            const code = caught instanceof BackupError ? caught.code : undefined;
+            setExportError(code ? p[code] : p.failed);
+          } finally {
+            setExporting(false);
+          }
+        }}
+      >
         {t.download}
       </button>
+      {exportError && <p role="alert">{exportError}</p>}
+      {parts.length > 1 && (
+        <div className="backup-parts">
+          <p>{p.parts(parts.length)}</p>
+          <ul>
+            {parts.map((text, index) => (
+              <li key={index}>
+                <button
+                  onClick={() => {
+                    download(text, `privateai-encrypted-part-${index + 1}-of-${parts.length}.privateai-backup`);
+                    setDone((list) => [...list, index]);
+                  }}
+                >
+                  {done.includes(index) ? p.downloaded(index + 1, parts.length) : p.downloadPart(index + 1, parts.length)}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <h3>{t.restoreHeading}</h3>
       <p>{t.restoreIntro}</p>
       <form

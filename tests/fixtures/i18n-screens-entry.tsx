@@ -103,7 +103,7 @@ const screens: Record<string, () => React.ReactElement> = {
   support: () => <SupportPanel />,
   vault: () => (
     <>
-      <VaultBackup busy={false} canExport onExport={async () => {}} onRestore={async () => {}} />
+      <VaultBackup busy={false} canExport exportParts={async () => []} onRestore={async () => {}} />
       <VaultSecurity busy={false} blocked={false} onChange={async () => {}} />
     </>
   ),
