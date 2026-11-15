@@ -194,7 +194,9 @@ Until then use `"store": "postgres"`. The lead runs the live probe once the buck
 - Hetzner Object Storage live (no account): the signer matches the AWS vectors and a local fake, but Hetzner's acceptance of the exact requests (path-style, region name) is not proven.
 - PostgreSQL: the durable test is written, not run by this agent.
 - Real browsers and phones; download speed and memory with 10 MB blobs; iOS storage eviction of downloaded files.
-- The app wiring of `ensureProjectFiles` before a question (section 14.1).
+- The app wiring of `ensureProjectFiles` before a question (section 14.1). Until it is wired, switching `blobs` on means a project chat on a second device answers without the files not downloaded there yet: wire it first.
+- **The Render bridge caps request bodies at 1 MB** (`server/render-bridge.ts` buffers every body and answers 413 above 1,048,576 bytes). Through Render, a blob above about 1 MB is refused there and shown as "Too large to sync"; the same cap already hits Stage 1 items above 1 MB (the routes allow 4 MB). Not changed here (a security boundary before sign-in). Lead decision: stream `PUT /api/sync/*` bodies through the bridge with their own cap, or set `maxFileMb` to 1 until then (a 1 MB file is then still 28 bytes over: in practice files up to about 1 MB of extracted text).
+- Found and fixed on the way: the bridge did not forward `X-Sync-Device`, so every sync route that needs a device answered 401 through Render (Stage 1 too).
 
 ### 14.9 Owner decisions (recommended default first)
 
