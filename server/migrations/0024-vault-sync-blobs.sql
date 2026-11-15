@@ -3,6 +3,7 @@
 -- the browser under a key the server never has. The plain columns are the account, a random-looking
 -- blob id, the size and the time. With object storage (store "s3") the bytes live in the bucket under
 -- a random object key and `data` is NULL here; the row stays the index for quota, reset and erase.
+ALTER TABLE sync_accounts ADD COLUMN blob_bytes bigint NOT NULL DEFAULT 0 CHECK (blob_bytes >= 0);
 CREATE TABLE sync_blobs (
   account_id uuid NOT NULL REFERENCES sync_accounts(account_id) ON DELETE CASCADE,
   blob_id uuid NOT NULL,

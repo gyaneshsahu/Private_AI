@@ -64,9 +64,14 @@ export function mergeMessages(base: readonly Message[], local: readonly Message[
   };
   const order = remote.map((m) => m.id);
   local.forEach((m, index) => {
-    if (r.has(m.id) || b.has(m.id)) return;
-    // A message added here goes right after the message it followed here.
-    const before = index > 0 ? order.indexOf(local[index - 1].id) : -1;
+    if (r.has(m.id)) return;
+    // Deleted on the other side and unchanged here: it goes. Edited here: the edit is kept (review L4).
+    if (b.has(m.id) && decide(m.id) === undefined) return;
+    // Right after the nearest message before it here that is still there; when none of those is
+    // left (all deleted elsewhere), after the rest rather than first (review L4).
+    let before = -1;
+    for (let i = index - 1; i >= 0 && before < 0; i--) before = order.indexOf(local[i].id);
+    if (before < 0 && index > 0) before = order.length - 1;
     order.splice(before + 1, 0, m.id);
   });
   return order.map(decide).filter((m): m is Message => !!m);

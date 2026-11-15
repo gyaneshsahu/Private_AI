@@ -96,3 +96,9 @@ export {
   type FileEntry,
   type DownloadResult,
 } from "./files";
+
+// Security review of 15 November (docs/vault-sync-20261115.md, section 15): the pairing code is 8
+// Crockford base32 characters (show it with formatPairingCode, accept any case, spaces and hyphens),
+// and SyncState.detached names a device that is no longer part of sync but keeps its data.
+export { PAIRING_CODE_LENGTH, formatPairingCode, normalizePairingCode } from "./crypto";
+export type { SyncDetached } from "./engine";

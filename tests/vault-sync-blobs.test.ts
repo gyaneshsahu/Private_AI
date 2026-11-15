@@ -168,7 +168,7 @@ describe("S3-compatible object storage", () => {
 });
 
 /** The routes alone, with the account from a test header. */
-async function routes(blobs: { quotaBytes: number; maxFileBytes: number } | null = { quotaBytes: 3000, maxFileBytes: 1000 }) {
+async function routes(blobs: { quotaBytes: number; maxFileBytes: number } | null = { quotaBytes: 3000, maxFileBytes: 1000 }, writeBurst?: number) {
   const store = new MemorySyncStore();
   const blobStore = new MemoryBlobStore();
   const app = express();
@@ -176,7 +176,7 @@ async function routes(blobs: { quotaBytes: number; maxFileBytes: number } | null
     res.locals.accountId = req.headers["x-test-account"];
     next();
   });
-  const settings: SyncSettings = { quotaBytes: 10_000, maxDevices: 3, ...(blobs ? { blobs: { ...blobs, store: blobStore } } : {}) };
+  const settings: SyncSettings = { quotaBytes: 10_000, maxDevices: 3, ...(writeBurst ? { writeBurst, writesPerSecond: 0.001 } : {}), ...(blobs ? { blobs: { ...blobs, store: blobStore } } : {}) };
   app.use(syncRoutes(store, settings, (res) => res.locals.accountId));
   const origin = await listen(app);
   const b64 = (n: number, fill?: number) => (fill === undefined ? randomBytes(n) : Buffer.alloc(n, fill)).toString("base64");
@@ -241,17 +241,32 @@ describe("blob routes", () => {
     expect((await s.call("alice", "DELETE", `/blobs/${blob}`, undefined, alice)).status).toBe(404);
     expect((await s.call("alice", "GET", `/blobs/${blob}`, undefined, alice)).status).toBe(404);
     // A revoked device can no longer read or write blobs.
-    expect((await s.call("alice", "POST", `/devices/${alice.deviceId}/revoke`, undefined, alice)).status).toBe(204);
+    expect((await s.call("alice", "POST", `/devices/${alice.deviceId}/revoke`, { accountProof: Buffer.alloc(32, 7).toString("base64") }, alice)).status).toBe(204);
     expect((await s.call("alice", "PUT", `/blobs/${randomUUID()}`, bytes, alice)).status).toBe(403);
     expect((await s.call("alice", "GET", `/blobs/${blob}`, undefined, alice)).status).toBe(403);
     // Reset deletes the account's blobs; Bob's stay.
     expect((await s.call("bob", "PUT", `/blobs/${randomUUID()}`, bytes, bob)).status).toBe(204);
-    expect((await s.call("alice", "POST", "/reset", { confirm: "DELETE SYNCED DATA" })).status).toBe(204);
+    // The session alone resets nothing (review C1); every device lost: the recovery proof.
+    expect((await s.call("alice", "POST", "/reset", { confirm: "DELETE SYNCED DATA" })).status).toBe(403);
+    expect(await s.blobStore.usage("alice")).toMatchObject({ count: 1 });
+    expect((await s.call("alice", "POST", "/reset", { confirm: "DELETE SYNCED DATA", recoveryProof: Buffer.alloc(32, 9).toString("base64") })).status).toBe(204);
     expect(await s.blobStore.usage("alice")).toEqual({ count: 0, usedBytes: 0 });
     expect(await s.blobStore.usage("bob")).toEqual({ count: 1, usedBytes: 1000 });
     // Content-free counts only; nothing written to the console.
     expect(takeCounts()).toMatchObject({ "sync.blob.put": 4, "sync.blob.get": 1, "sync.blob.delete": 1, "sync.reset": 1 });
     for (const log of logs) expect(log).not.toHaveBeenCalled();
+  });
+
+  it("counts blob writes against the account's write limit (review M8)", async () => {
+    const s = await routes(undefined, 3);
+    const alice = await s.setup("alice");
+    const blob = randomUUID();
+    expect((await s.call("alice", "PUT", `/blobs/${blob}`, randomBytes(100), alice)).status).toBe(204);
+    expect((await s.call("alice", "DELETE", `/blobs/${blob}`, undefined, alice)).status).toBe(204);
+    expect((await s.call("alice", "PUT", `/blobs/${randomUUID()}`, randomBytes(100), alice)).status).toBe(204);
+    const limited = await s.call("alice", "PUT", `/blobs/${randomUUID()}`, randomBytes(100), alice);
+    expect(limited.status).toBe(429);
+    expect((await s.call("alice", "DELETE", `/blobs/${randomUUID()}`, undefined, alice)).status).toBe(429);
   });
 
   it("mounts no blob route without inference.vaultSync.blobs, and the operator erase deletes the blob rows", async () => {
