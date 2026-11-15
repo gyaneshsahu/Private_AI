@@ -5,7 +5,7 @@ import { z } from "zod";
 /**
  * Prints one SQL transaction for the owner to review and run in psql as the
  * schema owner. Never connects to a database. Tables come from
- * server/migrations/0001-0021; keep this list in step with new migrations.
+ * server/migrations/0001-0023; keep this list in step with new migrations.
  */
 export const commands = ["show", "suspend", "unsuspend", "erase"] as const;
 export type Command = (typeof commands)[number];
@@ -48,6 +48,11 @@ const tables = (literal: string): [string, string][] => [
   ["billing_assessment", `customer_id IN (SELECT customer_id FROM billing_customer_binding WHERE account_id IN ${target})`],
   ["background_results", `account_id IN ${target}`],
   ["background_tasks", `account_id IN ${target}`],
+  ["sync_pairings", `account_id IN ${target}`],
+  ["sync_wrappers", `account_id IN ${target}`],
+  ["sync_devices", `account_id IN ${target}`],
+  ["sync_items", `account_id IN ${target}`],
+  ["sync_accounts", `account_id IN ${target}`],
   ["account_closure", `"userId" IN ${target}`],
 ];
 
@@ -80,6 +85,12 @@ export function operatorSql(command: Command, email: string): string {
       ...[
         "background_results",
         "background_tasks",
+        // Vault sync ciphertext and wrapped keys (migration 0023), children before sync_accounts.
+        "sync_pairings",
+        "sync_wrappers",
+        "sync_devices",
+        "sync_items",
+        "sync_accounts",
         "usage_metrics",
         "usage_records",
         "usage_requests",

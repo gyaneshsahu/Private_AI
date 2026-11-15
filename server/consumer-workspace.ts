@@ -12,6 +12,7 @@ import { createApp } from "./app";
 import { PostgresUsageLedger } from "./usage-postgres";
 import { PostgresUsageRecords } from "./usage-records-postgres";
 import { PostgresBackgroundStore } from "./background-store";
+import { PostgresSyncStore } from "./vault-sync-postgres";
 import { productionAccountTarget } from "../shared/account-design";
 import { productionOperations } from "./production-operations";
 import {
@@ -82,6 +83,8 @@ export interface ProductionInferenceConfig {
   research?: import("./research-admission").ResearchSettings;
   /** Usage metering with this plan (docs/usage-metering-20261115.md); absent means off. */
   metering?: { plan: string };
+  /** End-to-end encrypted vault sync limits; absent means off. */
+  vaultSync?: import("./vault-sync").SyncSettings;
   /** Background tasks (Auto mode of Scheduled); absent means off. */
   backgroundTasks?: {
     maxAutoTasks: number;
@@ -135,6 +138,7 @@ export function createProductionConsumerCandidate(
           ...(inference.metering
             ? { metering: { plan: inference.metering.plan, records: new PostgresUsageRecords(config.database) } }
             : {}),
+          ...(inference.vaultSync ? { vaultSync: { ...inference.vaultSync, store: new PostgresSyncStore(config.database) } } : {}),
           ...(inference.backgroundTasks
             ? {
                 backgroundTasks: {
