@@ -2640,3 +2640,352 @@
     flex: 1 1 100%;
   }
 }
+/* Scheduled tasks (docs/scheduled-20261115.md): the screen, the form, the due strip, the chat card. */
+.chat-design dialog.scheduled-dialog,
+.chat-design dialog.scheduled-form-dialog {
+  width: min(680px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+}
+.chat-design dialog.scheduled-form-dialog {
+  width: min(600px, calc(100vw - 24px));
+}
+.chat-design .scheduled-intro {
+  margin: 10px 0 0;
+  font-size: 14px;
+}
+.chat-design .scheduled-locked {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--subtle);
+}
+.chat-design .scheduled-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 16px;
+}
+.chat-design .scheduled-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.chat-design .scheduled-tabs button {
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  padding: 4px 14px;
+}
+.chat-design .scheduled-tabs button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--canvas);
+}
+.chat-design .scheduled-message {
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+.chat-design .scheduled-message:empty {
+  display: none;
+}
+.chat-design .scheduled-list,
+.chat-design .scheduled-templates,
+.chat-design .due-strip ul {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.chat-design .scheduled-list > li,
+.chat-design .scheduled-templates > li {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.chat-design .scheduled-list > li.is-due {
+  border-color: var(--accent);
+}
+.chat-design .scheduled-list p,
+.chat-design .scheduled-templates p {
+  margin: 4px 0;
+}
+.chat-design .scheduled-row-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+.chat-design .scheduled-chip,
+.chat-design .background-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.chat-design .scheduled-chip.is-due {
+  color: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.chat-design .background-badge {
+  color: var(--ink);
+  background: var(--subtle);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.chat-design .background-badge .ui-icon {
+  width: 14px;
+  height: 14px;
+  flex-basis: 14px;
+}
+.chat-design .scheduled-actions,
+.chat-design .schedule-card .row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.chat-design .scheduled-actions small {
+  font-weight: 400;
+}
+.chat-design .scheduled-empty {
+  margin-top: 16px;
+  padding: 24px 16px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  text-align: center;
+}
+.chat-design .scheduled-empty h3 {
+  margin: 0;
+}
+.chat-design .scheduled-empty .scheduled-actions {
+  justify-content: center;
+}
+.chat-design .scheduled-foot {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+.chat-design .scheduled-foot p {
+  margin: 0;
+  font-size: 13px;
+}
+.chat-design .scheduled-check,
+.chat-design .scheduled-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 24px;
+  margin: 6px 0;
+}
+.chat-design .scheduled-check input,
+.chat-design .scheduled-choice input {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0;
+}
+.chat-design .scheduled-form-dialog form > label,
+.chat-design .scheduled-advanced label[for] {
+  display: block;
+  margin-top: 14px;
+  font-weight: 600;
+}
+.chat-design .scheduled-form-dialog form > input,
+.chat-design .scheduled-form-dialog form > textarea,
+.chat-design .scheduled-form-dialog form > select,
+.chat-design .scheduled-advanced input:not([type="checkbox"]) {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 4px;
+}
+.chat-design .scheduled-length {
+  margin: 2px 0 0;
+  font-size: 12px;
+  text-align: end;
+}
+.chat-design .scheduled-form-dialog fieldset {
+  margin: 16px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  min-width: 0;
+}
+.chat-design .scheduled-form-dialog legend {
+  font-weight: 600;
+  padding: 0 4px;
+}
+.chat-design .scheduled-trigger-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+.chat-design .scheduled-trigger-row label {
+  display: grid;
+  gap: 4px;
+  font-size: 14px;
+  min-width: 0;
+}
+.chat-design .scheduled-every {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.chat-design .scheduled-every input {
+  width: 72px;
+}
+.chat-design .scheduled-trigger p,
+.chat-design .scheduled-consent p {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+.chat-design .scheduled-consent {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--subtle);
+}
+.chat-design .scheduled-advanced {
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+.chat-design .scheduled-advanced summary {
+  cursor: pointer;
+  font-weight: 600;
+  min-height: 24px;
+}
+.chat-design .scheduled-form-dialog .warning {
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+.chat-design .scheduled-cost {
+  margin: 16px 0;
+  font-size: 14px;
+}
+.chat-design .scheduled-needs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.chat-design .due-strip {
+  max-width: 800px;
+  margin: 8px auto 0;
+  padding: 10px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: var(--surface);
+  box-sizing: border-box;
+  width: calc(100% - 24px);
+}
+.chat-design .due-strip-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.chat-design .due-strip-head strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.chat-design .due-strip li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+}
+.chat-design .due-strip li .scheduled-actions {
+  margin-top: 0;
+}
+.chat-design .due-problems {
+  margin-top: 8px;
+}
+.chat-design .schedule-card p {
+  margin: 0 0 6px;
+}
+.chat-design .schedule-card-time {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+.chat-design .schedule-search-text {
+  font-family: ui-monospace, Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+.chat-design .scheduled-entry {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  margin: 8px 0 0;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+  font-size: 15px;
+}
+.chat-design .scheduled-entry > span:first-of-type {
+  flex: 1;
+}
+.chat-design .background-dot {
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--surface);
+}
+@media (max-width: 760px) {
+  .chat-design :is(.scheduled-dialog, .scheduled-form-dialog, .due-strip, .schedule-card) :is(button, select, input:not([type="checkbox"]):not([type="radio"])) {
+    min-height: 44px;
+  }
+  .chat-design .scheduled-entry,
+  .chat-design .scheduled-check,
+  .chat-design .scheduled-choice {
+    min-height: 44px;
+    align-items: center;
+  }
+  .chat-design .scheduled-check input,
+  .chat-design .scheduled-choice input {
+    width: 24px;
+    height: 24px;
+    margin: 0;
+  }
+  .chat-design .scheduled-bar > .primary,
+  .chat-design .due-strip .primary,
+  .chat-design .schedule-card .primary {
+    flex: 1 1 100%;
+  }
+  .chat-design .scheduled-dialog,
+  .chat-design .scheduled-form-dialog {
+    padding: 16px;
+  }
+}

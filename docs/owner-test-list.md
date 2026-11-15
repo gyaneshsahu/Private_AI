@@ -540,9 +540,33 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
   Do: with a task due in 10 minutes, create the stop file on the server (as for chat), wait past the due time, then remove it.
   Expect: no answer, a skipped result with the reason "service paused", and the task runs again at its next time after the file is gone.
   Tell the agent: what the Scheduled screen showed.
+- [ ] **T-115 Scheduled: a Manual task from a template, due and run (only after the lead built with VITE_SCHEDULED=1).**
+  Do: unlock your saved conversations. Open "Scheduled" in the left menu, then "Templates", "A new German word every day". Set the time to two minutes from now and tap Create. Wait with the app open.
+  Expect: a notice "Scheduled task due" and a "Due now" strip above the chat. "Run now" opens a new chat with the instruction and one answer. The strip goes away and the task shows tomorrow as next.
+  Tell the agent: whether the notice came on time, and the answer.
+
+- [ ] **T-116 Scheduled: the chat card.**
+  Do: in a normal chat write "can you give me a new German word to learn every 2 days because I am learning German?" and send. Then write "Erinnere mich jeden Tag um 10 Uhr daran, Wasser zu trinken" and send. Then ask "what is a weekly schedule?".
+  Expect: the first two show a card above the composer instead of an answer; the first asks "When do you want it?". Create adds the task and sends nothing. The third is answered normally, without a card.
+  Tell the agent: every message that showed a card when it should not, or no card when it should.
+
+- [ ] **T-117 Scheduled: the calendar file and the screen on a phone.**
+  Do: on your phone, open Scheduled, export one task to the calendar and open the file in your calendar app. Edit, pause and delete a task.
+  Expect: the calendar entry is called "CometRow task", repeats as set, and holds no instruction text. Every button is easy to hit; delete asks first.
+  Tell the agent: phone, calendar app, and a screenshot of anything wrong.
+
+- [ ] **T-118 Scheduled: a background task with your CV (only after the lead switched on background tasks on the development server).**
+  Do: Scheduled, "Templates", "Job search from my CV". Attach a made-up CV (a text file with a fake email address). Read the texts, tick the boxes, Create. Wait for the next run, or ask the lead to run it.
+  Expect: the "Background task" badge on the task and on the menu entry. The answer arrives as a new saved conversation. The fake email address never appears in what the server stored (the lead can check).
+  Tell the agent: whether the texts were clear, and the answer.
+
+- [ ] **T-119 Decide: Scheduled on for the alpha, and background tasks on or off.**
+  Do: read the owner decisions in `docs/scheduled-20261115.md` and `docs/background-tasks-20261115.md`, and the consent drafts in `docs/background-tasks-consent-draft-20261115.md`.
+  Expect: you can decide each switch and the consent wording.
+  Tell the agent: your decision. Recommended: Manual on after T-111 to T-113 pass; background tasks only after pay-as-you-go works and the consent text passes the legal read.
 
 ---
-- [ ] **T-115 Approve Privatemode's new deployment manifest (owner rule: only after checking).**
+- [ ] **T-120 Approve Privatemode's new deployment manifest (owner rule: only after checking).**
   Do: read `docs/manifest-rotation-20261114.md`; open docs.privatemode.ai/changelog and find v1.64.0; email Edgeless: did v1.64.0 go live on 14 November 2026, and is the new seed-share owner key (starting `3082020a02820201009eb7f0`) yours? Then sign the report with the new digest `d63eb5cf91cb3079fe25a848573a4d0e9d869f462dab4f71fd02bdb372f8e833` and upload the new manifest file with it.
   Expect: after the deploy, chat works on the hosted site; `/api/status` says ready.
   Report back: "manifest approved" and the date, or what Edgeless answered.
@@ -565,3 +589,5 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 - 15 November 2026: added T-111 (approve the new Privatemode manifest after checks).
 - 15 November 2026: added T-111 to T-114 (background tasks: the decision and texts, a job search from a made-up CV, delete really deletes, the stop file). Numbers continue after T-110; the lead may renumber on merge.
 - 15 November 2026: background task (Auto) items added; all items renumbered in file order (T-01 to T-115).
+- 15 November 2026: added T-111 to T-115 (Scheduled: a Manual task due and run, the chat card, the calendar file on a phone, a background task with a CV, the decision).
+- 15 November 2026: Scheduled (Manual) items added; all items renumbered in file order (T-01 to T-120).

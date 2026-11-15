@@ -9,6 +9,7 @@ import { savedListText } from "./text/saved-list";
 import { workspaceText } from "./text/workspace";
 import { projectText } from "./text/projects";
 import { projectSpacesEnabled } from "./device-features";
+import { scheduledText } from "./text/scheduled";
 
 export function WorkspaceNavigation(props: {
   open: boolean;
@@ -33,6 +34,10 @@ export function WorkspaceNavigation(props: {
   onEditProject: (id: string, name?: string) => Promise<boolean>;
   /** The project screen (docs/projects-20261114.md); offered only while its switch is on. */
   onOpenProject?: (id: string) => void;
+  /** The Scheduled screen (docs/scheduled-20261115.md); absent while its switch is off. */
+  onScheduled?: () => void;
+  /** A background task exists: the entry keeps its badge. */
+  backgroundActive?: boolean;
   onOrganize: (
     c: Conversation,
     change: Pick<Conversation, "pinned" | "archived" | "projectId" | "title">,
@@ -60,11 +65,14 @@ export function WorkspaceNavigation(props: {
     onCreateProject,
     onEditProject,
     onOpenProject,
+    onScheduled,
+    backgroundActive,
     onOrganize,
   } = props;
   const t = useText(workspaceText);
   const pt = useText(projectText);
   const groups = useText(savedListText);
+  const st = useText(scheduledText);
   // Pinned chats first under their own heading, the rest by the day they were created.
   const groupOf = (c: Conversation) => (c.pinned ? "pinned" : dateGroup(c.createdAt));
   const dialog = useRef<HTMLDialogElement>(null);
@@ -162,6 +170,21 @@ export function WorkspaceNavigation(props: {
           {t.incognito}
         </button>
       </div>
+      {onScheduled && (
+        <button
+          className="scheduled-entry"
+          onClick={onScheduled}
+          aria-label={backgroundActive ? st.menuBackground : undefined}
+        >
+          <Icon name="clock" />
+          <span>{st.menu}</span>
+          {backgroundActive && (
+            <span className="background-dot" title={st.background} aria-hidden="true">
+              {st.background}
+            </span>
+          )}
+        </button>
+      )}
       {unlocked ? (
         <>
           <label className="history-search">

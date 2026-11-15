@@ -2,6 +2,8 @@ import { textFor } from "./text/core";
 import { vaultText } from "./text/vault";
 import { projectsSchema, type Project } from "./projects";
 import { memoriesSchema, type Memory } from "./memory";
+import { scheduledTasksSchema } from "./scheduled";
+import type { ScheduledTask } from "../shared/scheduled-tasks";
 import { z } from "zod";
 import { derive, seal, unseal } from "./vault-crypto";
 import {
@@ -32,6 +34,8 @@ const payload = z
     projects: projectsSchema.optional(),
     // Written only when there are memories, so a backup without them is unchanged.
     memories: memoriesSchema.optional(),
+    // Scheduled tasks (src/scheduled.ts): also written only when there are some.
+    scheduledTasks: scheduledTasksSchema.optional(),
     conversations: z
       .array(savedConversationSchema)
       .max(BACKUP_MAX_CONVERSATIONS),
@@ -57,6 +61,7 @@ function validate(value: unknown): {
   conversations: Conversation[];
   projects: Project[];
   memories: Memory[];
+  scheduledTasks: ScheduledTask[];
 } {
   const result = payload.parse(value);
   if (
@@ -75,6 +80,7 @@ function validate(value: unknown): {
     conversations: (value as { conversations: Conversation[] }).conversations,
     projects: result.projects ?? [],
     memories: result.memories ?? [],
+    scheduledTasks: result.scheduledTasks ?? [],
   };
 }
 export async function encodeVaultBackup(
@@ -83,8 +89,15 @@ export async function encodeVaultBackup(
   conversations: Conversation[],
   projects: Project[] = [],
   memories: Memory[] = [],
+  scheduledTasks: ScheduledTask[] = [],
 ): Promise<string> {
-  const content = { version: 1, conversations, projects, ...(memories.length ? { memories } : {}) };
+  const content = {
+    version: 1,
+    conversations,
+    projects,
+    ...(memories.length ? { memories } : {}),
+    ...(scheduledTasks.length ? { scheduledTasks } : {}),
+  };
   validate(content);
   const text = JSON.stringify(content);
   if (
@@ -107,7 +120,7 @@ export async function encodeVaultBackup(
 export async function decodeVaultBackupContent(
   text: string,
   passphrase: string,
-): Promise<{ conversations: Conversation[]; projects: Project[]; memories: Memory[] }> {
+): Promise<{ conversations: Conversation[]; projects: Project[]; memories: Memory[]; scheduledTasks: ScheduledTask[] }> {
   if (
     text.length > BACKUP_MAX_BYTES ||
     new TextEncoder().encode(text).byteLength > BACKUP_MAX_BYTES

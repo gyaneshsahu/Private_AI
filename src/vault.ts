@@ -9,6 +9,8 @@ import {
   type ProjectFiles,
 } from "./projects";
 import { memoriesSchema, mergeMemories, MemoryError, type Memory } from "./memory";
+import { mergeTasks, scheduledTasksSchema, TaskError } from "./scheduled";
+import type { ScheduledTask } from "../shared/scheduled-tasks";
 import { deleteDB, openDB } from "idb";
 import type { Conversation } from "../shared/contracts";
 import {
@@ -44,6 +46,11 @@ const FILES_LABEL = "project-files-v1";
 const projectFilesRecord = z.record(z.string().uuid(), projectFilesSchema);
 async function openProjectFiles(key: CryptoKey, record?: Cipher): Promise<ProjectFiles> {
   return record ? projectFilesRecord.parse(JSON.parse(await unseal(key, record, FILES_LABEL))) : {};
+}
+// Scheduled tasks (src/scheduled.ts) are one more encrypted record in "meta", Manual and Auto.
+const TASKS_LABEL = "scheduled-tasks-v1";
+async function openTasks(key: CryptoKey, record?: Cipher): Promise<ScheduledTask[]> {
+  return record ? scheduledTasksSchema.parse(JSON.parse(await unseal(key, record, TASKS_LABEL))) : [];
 }
 function random(length: number): Uint8Array<ArrayBuffer> {
   return crypto.getRandomValues(new Uint8Array(length));
@@ -729,6 +736,54 @@ export class Vault {
       }
     });
   }
+  async readTasks(): Promise<ScheduledTask[]> {
+    const key = this.key,
+      generation = this.generation;
+    if (!key) throw Error(textFor(vaultText).unlockFirst);
+    await this.queue;
+    if (generation !== this.generation) throw Error(textFor(vaultText).changed);
+    const database = await db(this.databaseName);
+    try {
+      requireVaultIdentity(await database.get("meta", "vault"), this.salt);
+      const tasks = await openTasks(key, await database.get("meta", "scheduled-tasks"));
+      if (generation !== this.generation) throw Error(textFor(vaultText).changed);
+      return tasks;
+    } finally {
+      database.close();
+    }
+  }
+  /** Every change to the scheduled tasks (src/scheduled.ts), as writeMemories does for memories. */
+  writeTasks(change: (current: ScheduledTask[]) => ScheduledTask[]): Promise<ScheduledTask[]> {
+    const key = this.key,
+      salt = this.salt,
+      generation = this.generation,
+      databaseName = this.databaseName;
+    if (!key) return Promise.reject(Error(textFor(vaultText).unlockFirst));
+    return this.enqueue(async () => {
+      const database = await db(databaseName);
+      try {
+        requireVaultIdentity(await database.get("meta", "vault"), salt);
+        const previous = (await database.get("meta", "scheduled-tasks")) as Cipher | undefined;
+        const next = scheduledTasksSchema.parse(change(await openTasks(key, previous)));
+        const encrypted = next.length ? await seal(key, JSON.stringify(next), TASKS_LABEL) : undefined;
+        const tx = database.transaction("meta", "readwrite");
+        requireVaultIdentity(await tx.store.get("vault"), salt);
+        if (recordIv(await tx.store.get("scheduled-tasks")) !== recordIv(previous) || generation !== this.generation) {
+          tx.abort();
+          await tx.done.catch(() => {});
+          throw new TaskError("changed");
+        }
+        if (encrypted) await tx.store.put(encrypted, "scheduled-tasks");
+        else await tx.store.delete("scheduled-tasks");
+        await tx.done;
+        // Other tabs lock: none keeps showing or running a task that was changed here.
+        this.channel?.postMessage("scheduled-tasks");
+        return next;
+      } finally {
+        database.close();
+      }
+    });
+  }
   async exportBackup(): Promise<string> {
     const key = this.key,
       salt = this.salt,
@@ -746,6 +801,7 @@ export class Vault {
       available.conversations,
       await this.readProjects(),
       await this.readMemories(),
+      await this.readTasks(),
     );
     if (generation !== this.generation || !this.key)
       throw Error(textFor(vaultText).backupCancelled);
@@ -761,16 +817,18 @@ export class Vault {
         Error(textFor(vaultText).unlockDestination),
       );
     return this.enqueue(async () => {
-      const { conversations, projects, memories } = await decodeVaultBackupContent(
+      const { conversations, projects, memories, scheduledTasks } = await decodeVaultBackupContent(
         text,
         passphrase,
       );
       const databaseBefore = await db(databaseName);
       let projectRecord: Cipher | undefined;
       let memoryRecord: Cipher | undefined;
+      let taskRecord: Cipher | undefined;
       try {
         projectRecord = await databaseBefore.get("meta", "projects");
         memoryRecord = await databaseBefore.get("meta", "memories");
+        taskRecord = await databaseBefore.get("meta", "scheduled-tasks");
       } finally {
         databaseBefore.close();
       }
@@ -801,6 +859,14 @@ export class Vault {
               ),
             ),
             MEMORY_LABEL,
+          )
+        : undefined;
+      // The backup's tasks are added as Manual tasks (src/scheduled.ts: mergeTasks).
+      const nextTasks = scheduledTasks.length
+        ? await seal(
+            key,
+            JSON.stringify(scheduledTasksSchema.parse(mergeTasks(scheduledTasks)(await openTasks(key, taskRecord)))),
+            TASKS_LABEL,
           )
         : undefined;
       const encrypted = [];
@@ -855,6 +921,11 @@ export class Vault {
             if (recordIv(await tx.objectStore("meta").get("memories")) !== recordIv(memoryRecord))
               throw Error(textFor(vaultText).restoreCancelled);
             await tx.objectStore("meta").put(nextMemories, "memories");
+          }
+          if (nextTasks) {
+            if (recordIv(await tx.objectStore("meta").get("scheduled-tasks")) !== recordIv(taskRecord))
+              throw Error(textFor(vaultText).restoreCancelled);
+            await tx.objectStore("meta").put(nextTasks, "scheduled-tasks");
           }
           for (const { id, ...record } of encrypted) {
             if (
@@ -925,6 +996,7 @@ export class Vault {
           .objectStore("meta")
           .get("memories")) as Cipher | undefined;
         const filesRecord = (await read.objectStore("meta").get("project-files")) as Cipher | undefined;
+        const taskRecord = (await read.objectStore("meta").get("scheduled-tasks")) as Cipher | undefined;
         await read.done;
         const currentKey = await derive(currentPassphrase, meta.salt);
         if (
@@ -961,6 +1033,9 @@ export class Vault {
               JSON.stringify(await openProjectFiles(currentKey, filesRecord)),
               FILES_LABEL,
             )
+          : undefined;
+        const nextTasks = taskRecord
+          ? await seal(nextKey, JSON.stringify(await openTasks(currentKey, taskRecord)), TASKS_LABEL)
           : undefined;
         const replacements: {
           id: IDBValidKey;
@@ -1031,6 +1106,9 @@ export class Vault {
           if (recordIv(await tx.objectStore("meta").get("project-files")) !== recordIv(filesRecord))
             throw Error(textFor(vaultText).historyChangedPassphrase);
           if (nextFiles) await tx.objectStore("meta").put(nextFiles, "project-files");
+          if (recordIv(await tx.objectStore("meta").get("scheduled-tasks")) !== recordIv(taskRecord))
+            throw Error(textFor(vaultText).historyChangedPassphrase);
+          if (nextTasks) await tx.objectStore("meta").put(nextTasks, "scheduled-tasks");
           await tx.objectStore("meta").put({ salt: nextSalt, check }, "vault");
           unchanged();
           await tx.done;

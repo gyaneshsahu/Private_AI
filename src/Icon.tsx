@@ -28,6 +28,7 @@ const paths = {
   copy: "M8 8h13v13H8ZM16 4V2H2v14h2",
   edit: "m15 3 6 6-12 12H3v-6L15 3ZM12 6l6 6",
   send: "m3 11 18-8-8 18-2-8-8-2ZM11 13 21 3",
+  clock: "M12 7v5l3 2M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z",
 } as const;
 export type IconName = keyof typeof paths;
 export function Icon({ name }: { name: IconName }) {

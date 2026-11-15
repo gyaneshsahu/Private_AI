@@ -553,6 +553,8 @@ export interface AppStatus {
   code?: true;
   /** Deep research is switched on for this account (docs/deep-research-20261114.md): a run's allowance cost and the runs per 24 hours. */
   research?: { cost: number; dailyRuns: number };
+  /** Auto scheduled tasks ("Background task") are switched on (docs/background-tasks-20261115.md). */
+  backgroundTasks?: { maxAutoTasks: number; minIntervalHours: number; consentVersion: string };
   publicPageHosts?: string[] | null;
   /** Plain-text notice the operator shows to everyone (outage, announced provider switch). */
   operatorNotice?: string;

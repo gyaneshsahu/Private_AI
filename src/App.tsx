@@ -132,6 +132,23 @@ import { projectText } from "./text/projects";
 import { chatErrorText } from "./text/chat-errors";
 import { abortable, withDeadline } from "./abortable";
 import { createCalculationSession } from "./calculation-session";
+import { scheduledEnabled } from "./device-features";
+import { detectSchedule, type DetectedSchedule } from "./schedule-detection";
+import { addTask, markRun, newTask, skipTask, taskProblem } from "./scheduled";
+import {
+  changeTasks,
+  deleteServerCopies,
+  DueStrip,
+  RunSearchChoice,
+  runMode,
+  ScheduleCard,
+  ScheduledPanel,
+  useBackgroundResults,
+  useScheduledVault,
+  type TaskDraft,
+} from "./ScheduledPanel";
+import { scheduledText } from "./text/scheduled";
+import type { ScheduledTask } from "../shared/scheduled-tasks";
 import {
   parseResearchResult,
   researchSourceUrl,
@@ -402,6 +419,20 @@ export function App() {
   const vault = useRef<Vault | null>(null);
   useMemoryVault(vault.current, unlocked);
   useProjectVault(projects, vault.current, unlocked);
+  // Scheduled tasks (docs/scheduled-20261115.md): held only while the vault is unlocked.
+  const scheduledTasks = useScheduledVault(vault.current, unlocked);
+  const [scheduledOpen, setScheduledOpen] = useState<{ draft?: TaskDraft }>();
+  const [scheduleCard, setScheduleCard] = useState<{ text: string; found: DetectedSchedule }>();
+  const [runSearch, setRunSearch] = useState<ScheduledTask>();
+  const background = useBackgroundResults({
+    vault: vault.current,
+    unlocked,
+    status,
+    onSaved: (count) => {
+      setNotice(scheduledText[lang].resultSaved(count));
+      void vault.current?.readAvailable().then((snapshots) => setSaved(snapshots.conversations), () => {});
+    },
+  });
   const epoch = useRef(0);
   const accessNavigation = useRef(false);
   const outputEnd = useRef<HTMLDivElement>(null);
@@ -528,6 +559,9 @@ export function App() {
       setOperandB("");
       setCalculation("");
       setPassphrase("");
+      // A locked vault shows no scheduled task, not even a waiting run choice.
+      setRunSearch(undefined);
+      setScheduledOpen(undefined);
       setNotice(textFor(appText).vaultChangedElsewhere);
     };
     let timer: ReturnType<typeof setTimeout>;
@@ -1286,19 +1320,21 @@ export function App() {
     value: string,
     how: "tap" | "auto",
     again = false,
+    // A scheduled task's run: its own question and mode, not the draft.
+    asked?: { base: Conversation; text: string; mode?: AnswerMode },
   ) {
     const retry = again ? lastQuestion() : undefined;
     if (again && !retry) return;
-    const text = retry?.text ?? input;
-    const base = retry?.base ?? conversation;
+    const text = asked?.text ?? retry?.text ?? input;
+    const base = asked?.base ?? retry?.base ?? conversation;
+    const draft = !again && !asked;
     const outcome = await research({ kind: "search", value }, how);
     if (!outcome || (outcome === "failed" && how === "tap")) return;
     if (outcome === "failed") {
-      setSearchSent(WHEN_TO_SEARCH.automaticFailed);      void send(base, text, !again);
-      return;
+      setSearchSent(WHEN_TO_SEARCH.automaticFailed);      return send(base, text, draft, false, asked?.mode);
     }
     setSearchSent(outcome.note);
-    void send(
+    return send(
       outcome.attachment
         ? {
             ...base,
@@ -1307,8 +1343,53 @@ export function App() {
           }
         : base,
       text,
-      !again,
+      draft,
+      false,
+      asked?.mode,
     );
+  }
+  // The composer's Send. `asIs`: the user chose "Just send" on the scheduled-task card.
+  function submitDraft(asIs = false) {
+    // "Remember that ...": ask to save it as a memory. Nothing is sent unless the user says so.
+    const wanted =
+      memoryEnabled() && !conversation.incognito && !attachedImage && !busy
+        ? rememberRequest(input)
+        : undefined;
+    // "Every day at 10, give me ...": offer a scheduled task. Nothing is sent unless the user says so.
+    const planned =
+      !wanted && !asIs && scheduledEnabled() && !conversation.incognito && !attachedImage && !busy
+        ? detectSchedule(input)
+        : undefined;
+    if (wanted) setRemember({ text: wanted, draft: true });
+    else if (planned) setScheduleCard({ text: input, found: planned });
+    // A picture question goes straight to the model: no search step in between.
+    else if (attachedImage && status?.images) void send();
+    else if ((autoSearch || autoRules) && suggestion)
+      void searchThenAnswer(suggestion.value, "auto");
+    else if (askFirst) setChoiceFor(input);
+    else void send();
+  }
+  // "Run now" of a scheduled task: a new conversation with the instruction as its first message,
+  // through send() like any message. A task with an approved search text asks first, as the
+  // search suggestion does. Only an answered run moves the task on; a refusal leaves it due.
+  function runTask(task: ScheduledTask, search?: boolean) {
+    if (busy || !status?.inference.ready) return;
+    if (search === undefined) {
+      if (!allowReplace()) return;
+      reset();
+      setTab("Conversation");
+      setScheduledOpen(undefined);
+      setNavigationOpen(false);
+      if (task.useSearch && task.searchText && status.search) return setRunSearch(task);
+    }
+    setRunSearch(undefined);
+    const asked = { base: emptyConversation(), text: task.instruction, mode: runMode(task, status) };
+    const run = search
+      ? searchThenAnswer(task.searchText!, "tap", false, asked)
+      : send(asked.base, asked.text, false, false, asked.mode);
+    void run.then((answered) => {
+      if (answered && vault.current?.unlocked) changeTasks(vault.current, markRun(task.id)).catch(() => {});
+    });
   }
   async function unlockVault() {
     if (!status) {
@@ -1341,7 +1422,8 @@ export function App() {
       !window.confirm(
         t.eraseConfirm +
           (memoryEnabled() ? ` ${memoryText[lang].eraseAlso}` : "") +
-          (projectSpacesEnabled() ? ` ${projectText[lang].eraseAlso}` : ""),
+          (projectSpacesEnabled() ? ` ${projectText[lang].eraseAlso}` : "") +
+          (scheduledEnabled() ? ` ${scheduledText[lang].eraseAlso}` : ""),
       )
     )
       return;
@@ -1349,6 +1431,7 @@ export function App() {
     setBusy(t.erasing);
     try {
       controller.current?.abort();
+      await deleteServerCopies(status);
       await vault.current!.eraseEverything();
       if (current !== epoch.current) return;
       setUnlocked(false);
@@ -1690,7 +1773,27 @@ export function App() {
           setNavigationOpen(false);
           setSettingsOpen(true);
         }}
+        onScheduled={
+          scheduledEnabled()
+            ? () => {
+                setNavigationOpen(false);
+                setScheduledOpen({});
+              }
+            : undefined
+        }
+        backgroundActive={scheduledTasks.some((task) => task.mode === "auto")}
       />
+      {scheduledEnabled() && scheduledOpen && (
+        <ScheduledPanel
+          vault={vault.current}
+          unlocked={unlocked}
+          status={status}
+          busy={!!busy}
+          draft={scheduledOpen.draft}
+          onClose={() => setScheduledOpen(undefined)}
+          onRun={(task) => runTask(task)}
+        />
+      )}
       {remember && (
         <RememberDialog
           text={remember.text}
@@ -2093,6 +2196,26 @@ export function App() {
             )}
           </section>
         )}
+        {scheduledEnabled() && (
+          <DueStrip
+            tasks={scheduledTasks}
+            visible={tab === "Conversation"}
+            busy={!!busy}
+            ready={!!status?.inference.ready}
+            status={status}
+            problems={background.problems}
+            onRun={(task) => runTask(task)}
+            onSkip={(task) =>
+              changeTasks(vault.current!, skipTask(task.id)).then(
+                () => setNotice(scheduledText[lang].skipped),
+                (error) => fail(scheduledText[lang].problem(taskProblem(error))),
+              )
+            }
+            onOpen={() => setScheduledOpen({})}
+            onDismissProblems={background.dismiss}
+            onBecameDue={(task) => setNotice(scheduledText[lang].becameDue(task.name))}
+          />
+        )}
         {tab === "Conversation" && (
           <section
             className="chat-view"
@@ -2341,22 +2464,51 @@ export function App() {
                   }}
                 />
               )}
+              {scheduleCard?.text === input && (
+                <ScheduleCard
+                  key={input}
+                  found={scheduleCard.found}
+                  unlocked={unlocked}
+                  onCreate={(fields) => {
+                    // Create stores a Manual task in the vault. Nothing is sent to the model.
+                    changeTasks(vault.current!, addTask(newTask(fields))).then(
+                      () => {
+                        setScheduleCard(undefined);
+                        setInput("");
+                        setNotice(scheduledText[lang].cardCreated(fields.name));
+                        focusComposer();
+                      },
+                      (error) => fail(scheduledText[lang].problem(taskProblem(error))),
+                    );
+                  }}
+                  onEdit={(draft) => {
+                    setScheduleCard(undefined);
+                    setScheduledOpen({ draft });
+                  }}
+                  onSend={() => {
+                    setScheduleCard(undefined);
+                    submitDraft(true);
+                    focusComposer();
+                  }}
+                  onClose={() => {
+                    setScheduleCard(undefined);
+                    document.getElementById("message-input")?.focus();
+                  }}
+                />
+              )}
+              {runSearch && (
+                <RunSearchChoice
+                  task={runSearch}
+                  onSearch={() => runTask(runSearch, true)}
+                  onWithout={() => runTask(runSearch, false)}
+                  onClose={() => setRunSearch(undefined)}
+                />
+              )}
               <form
                 className="composer"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  // "Remember that ...": ask to save it as a memory. Nothing is sent unless the user says so.
-                  const wanted =
-                    memoryEnabled() && !conversation.incognito && !attachedImage && !busy
-                      ? rememberRequest(input)
-                      : undefined;
-                  if (wanted) setRemember({ text: wanted, draft: true });
-                  // A picture question goes straight to the model: no search step in between.
-                  else if (attachedImage && status?.images) void send();
-                  else if ((autoSearch || autoRules) && suggestion)
-                    void searchThenAnswer(suggestion.value, "auto");
-                  else if (askFirst) setChoiceFor(input);
-                  else void send();
+                  submitDraft();
                   focusComposer();
                 }}
               >

@@ -1,60 +1,69 @@
-// "Scheduled" tasks, Manual and Auto (shared contract of 15 November 2026). Manual tasks live only
-// in the encrypted vault; an Auto task ("Background task") is also stored on the server, which runs
-// it (docs/background-tasks-20261115.md). Pure: no browser or server imports.
+/**
+ * Scheduled tasks (docs/scheduled-20261115.md; shared contract of 15 November 2026). Manual tasks
+ * live only in the encrypted vault on the device. Auto tasks ("Background task") live in the vault
+ * and on the server, which runs them (docs/background-tasks-20261115.md). Both sides use this file.
+ */
 import { z } from "zod";
 
 export type ScheduleUnit = "day" | "week" | "month";
 export interface ScheduleTrigger {
-  every: number; // 1..31; interval in units; alpha minimum is one day
+  every: number;
   unit: ScheduleUnit;
-  time: string; // "HH:MM", 24 h, in `timeZone`
-  timeZone: string; // IANA, from the browser
-  weekday?: number; // 0..6 for unit "week" (optional)
-  dayOfMonth?: number; // 1..28 for unit "month" (optional)
+  time: string;
+  timeZone: string;
+  weekday?: number;
+  dayOfMonth?: number;
 }
 export interface ScheduledTask {
-  id: string; // uuid
-  name: string; // 1..80 characters
-  instruction: string; // 1..2,000 characters
+  id: string;
+  name: string;
+  instruction: string;
   trigger: ScheduleTrigger;
   mode: "manual" | "auto";
-  notify: { inApp: boolean; calendar: boolean }; // email and push: later
+  notify: { inApp: boolean; calendar: boolean };
   answerMode: "fast" | "thinking" | "auto";
-  useSearch: boolean; // the run may search the web (approved once, at creation, with the exact search text shown)
-  searchText?: string; // the masked search text approved at creation
-  createdAt: string; // ISO
-  nextDueAt: string; // ISO, computed
+  useSearch: boolean;
+  searchText?: string;
+  createdAt: string;
+  nextDueAt: string;
   lastRunAt?: string;
   paused?: boolean;
 }
 
-export const SCHEDULE_LIMITS = { name: 80, instruction: 2000, minIntervalHours: 24, maxAutoTasks: 3, maxManualTasks: 20 };
+export const SCHEDULE_LIMITS = {
+  name: 80,
+  instruction: 2000,
+  minIntervalHours: 24,
+  maxAutoTasks: 3,
+  maxManualTasks: 20,
+} as const;
 
-const validTimeZone = (zone: string) => {
+/** True when the runtime knows this IANA time zone. */
+export function validTimeZone(zone: string): boolean {
   try {
-    new Intl.DateTimeFormat("en", { timeZone: zone });
-    return true;
+    new Intl.DateTimeFormat("en-US", { timeZone: zone });
+    return zone.length > 0 && zone.length <= 64;
   } catch {
     return false;
   }
-};
+}
 
 export const scheduleTriggerSchema = z
   .object({
     every: z.number().int().min(1).max(31),
     unit: z.enum(["day", "week", "month"]),
     time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
-    timeZone: z.string().min(1).max(64).refine(validTimeZone),
+    timeZone: z.string().refine(validTimeZone, "Unknown time zone."),
     weekday: z.number().int().min(0).max(6).optional(),
     dayOfMonth: z.number().int().min(1).max(28).optional(),
   })
   .strict()
-  .refine((t) => t.weekday === undefined || t.unit === "week", "A weekday belongs to a weekly schedule.")
-  .refine((t) => t.dayOfMonth === undefined || t.unit === "month", "A day of the month belongs to a monthly schedule.");
+  .refine((t) => t.weekday === undefined || t.unit === "week", "A weekday belongs to a weekly trigger.")
+  .refine((t) => t.dayOfMonth === undefined || t.unit === "month", "A day of the month belongs to a monthly trigger.");
 
 export const scheduledTaskSchema = z
   .object({
-    id: z.uuid(),
+    id: z.string().uuid(),
     name: z.string().trim().min(1).max(SCHEDULE_LIMITS.name),
     instruction: z.string().trim().min(1).max(SCHEDULE_LIMITS.instruction),
     trigger: scheduleTriggerSchema,
@@ -64,19 +73,21 @@ export const scheduledTaskSchema = z
     useSearch: z.boolean(),
     // The same bounds as an approved search (shared/contracts.ts disclosureSchema).
     searchText: z.string().trim().min(2).max(400).optional(),
-    createdAt: z.iso.datetime(),
-    nextDueAt: z.iso.datetime(),
-    lastRunAt: z.iso.datetime().optional(),
+    createdAt: z.string().datetime(),
+    nextDueAt: z.string().datetime(),
+    lastRunAt: z.string().datetime().optional(),
     paused: z.boolean().optional(),
   })
   .strict()
   .refine((t) => !t.useSearch || !!t.searchText, "A task that searches needs its approved search text.");
 
-/** Wall-clock fields of `at` in `timeZone`. */
-function localParts(at: number, timeZone: string) {
-  const parts = Object.fromEntries(
-    new Intl.DateTimeFormat("en-US", {
-      timeZone,
+// One formatter per zone: building them is slow, and nextDue runs in loops.
+const formatters = new Map<string, Intl.DateTimeFormat>();
+function parts(at: number, zone: string) {
+  let format = formatters.get(zone);
+  if (!format) {
+    format = new Intl.DateTimeFormat("en-US", {
+      timeZone: zone,
       hourCycle: "h23",
       year: "numeric",
       month: "numeric",
@@ -84,66 +95,82 @@ function localParts(at: number, timeZone: string) {
       hour: "numeric",
       minute: "numeric",
       second: "numeric",
-    })
-      .formatToParts(new Date(at))
-      .map((p) => [p.type, Number(p.value)]),
-  ) as Record<"year" | "month" | "day" | "hour" | "minute" | "second", number>;
-  return parts;
+    });
+    formatters.set(zone, format);
+  }
+  const value: Record<string, number> = {};
+  for (const part of format.formatToParts(at)) if (part.type !== "literal") value[part.type] = Number(part.value);
+  return value as { year: number; month: number; day: number; hour: number; minute: number; second: number };
 }
-/** Milliseconds `timeZone` is ahead of UTC at instant `at`. */
-function offsetAt(at: number, timeZone: string) {
-  const p = localParts(at, timeZone);
+/** Milliseconds the zone is ahead of UTC at this instant. */
+export function zoneOffset(at: number, zone: string): number {
+  const p = parts(at, zone);
   return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - Math.floor(at / 1000) * 1000;
 }
 /**
- * The instant of a wall-clock time in `timeZone`. A time that does not exist (the hour skipped in
- * spring) moves forward by the gap; a time that exists twice (autumn) takes the later instant.
+ * The instant of a wall-clock time in a zone. A time that does not exist (the hour skipped when
+ * clocks go forward) moves forward by the gap, as calendars do: 02:30 becomes 03:30. A time that
+ * exists twice (clocks go back) is the later one.
  */
-function instantOf(y: number, m: number, d: number, hour: number, minute: number, timeZone: string) {
-  const guess = Date.UTC(y, m, d, hour, minute);
-  const first = guess - offsetAt(guess, timeZone);
-  const second = guess - offsetAt(first, timeZone);
-  return offsetAt(second, timeZone) === offsetAt(first, timeZone) ? second : Math.max(first, second);
+export function zonedInstant(year: number, month: number, day: number, hour: number, minute: number, zone: string): Date {
+  const guess = Date.UTC(year, month - 1, day, hour, minute);
+  const first = guess - zoneOffset(guess, zone);
+  const second = zoneOffset(first, zone);
+  return new Date(second === zoneOffset(guess, zone) ? first : guess - second);
 }
-const daysIn = (y: number, m: number) => new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+/** The calendar date of an instant in a zone. */
+export function zonedDate(at: Date, zone: string) {
+  const p = parts(at.getTime(), zone);
+  return { year: p.year, month: p.month, day: p.day };
+}
 
 /**
- * The next due time strictly after `after`. Pure and DST-safe: the wall-clock time stays the same
- * across daylight-saving changes. When `after` is itself a due time (the run that just happened),
- * the next one is `every` units later; otherwise it is the first matching time after `after`.
- * A monthly task without `dayOfMonth` keeps the day of `after`, moved to the month's last day when
- * the month is shorter.
+ * The first time after `after` the trigger fires. The candidate is the matching day on or after
+ * `after`'s date in the trigger's zone, at the trigger's time; if that is not later than `after`,
+ * the candidate moves on by the interval (`every` days, weeks or months). Called with the previous
+ * due time, this keeps the schedule's rhythm; called at creation, the first run is today if the
+ * time is still ahead, else one interval on. Pure: no clock, no storage.
  */
 export function nextDue(trigger: ScheduleTrigger, after: Date): Date {
   const [hour, minute] = trigger.time.split(":").map(Number);
   const zone = trigger.timeZone;
-  const t = after.getTime();
-  const p = localParts(t, zone);
-  const y = p.year,
-    m = p.month - 1;
-  const at = (yy: number, mm: number, dd: number) => instantOf(yy, mm, dd, hour, minute, zone);
-  const today = at(y, m, p.day);
-  const weekdayOf = (yy: number, mm: number, dd: number) => new Date(Date.UTC(yy, mm, dd)).getUTCDay();
-  const onSlot =
-    today === t &&
-    (trigger.unit !== "week" || trigger.weekday === undefined || weekdayOf(y, m, p.day) === trigger.weekday) &&
-    (trigger.unit !== "month" || trigger.dayOfMonth === undefined || p.day === trigger.dayOfMonth);
-  if (trigger.unit === "day") return new Date(onSlot ? at(y, m, p.day + trigger.every) : today > t ? today : at(y, m, p.day + 1));
+  const start = zonedDate(after, zone);
+  // Dates as UTC midnights, so adding days never meets a clock change.
+  let day = Date.UTC(start.year, start.month - 1, start.day);
+  const DAY = 86_400_000;
   if (trigger.unit === "week") {
-    if (onSlot) return new Date(at(y, m, p.day + 7 * trigger.every));
-    const target = trigger.weekday ?? weekdayOf(y, m, p.day);
-    let ahead = (target - weekdayOf(y, m, p.day) + 7) % 7;
-    if (ahead === 0 && today <= t) ahead = 7;
-    return new Date(at(y, m, p.day + ahead));
+    const weekday = trigger.weekday ?? new Date(day).getUTCDay();
+    day += ((weekday - new Date(day).getUTCDay() + 7) % 7) * DAY;
   }
-  const dayFor = (yy: number, mm: number) => Math.min(trigger.dayOfMonth ?? p.day, daysIn(yy, mm));
-  const month = (offset: number) => {
-    const first = new Date(Date.UTC(y, m + offset, 1));
-    const yy = first.getUTCFullYear(),
-      mm = first.getUTCMonth();
-    return at(yy, mm, dayFor(yy, mm));
+  if (trigger.unit === "month") {
+    const date = new Date(day);
+    const wanted = trigger.dayOfMonth ?? Math.min(date.getUTCDate(), 28);
+    day = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), wanted);
+  }
+  const at = (utcMidnight: number) => {
+    const d = new Date(utcMidnight);
+    return zonedInstant(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), hour, minute, zone);
   };
-  if (onSlot) return new Date(month(trigger.every));
-  const here = month(0);
-  return new Date(here > t ? here : month(1));
+  let candidate = at(day);
+  if (candidate.getTime() > after.getTime()) return candidate;
+  if (trigger.unit === "month") {
+    const d = new Date(day);
+    day = Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + trigger.every, d.getUTCDate());
+  } else day += trigger.every * (trigger.unit === "week" ? 7 : 1) * DAY;
+  candidate = at(day);
+  return candidate;
+}
+
+/**
+ * The next due time after a run of a task that was due at `due`: the schedule's rhythm is kept and
+ * missed slots are skipped, so a task that waited a week runs once, not once per missed slot.
+ */
+export function advanceAfterRun(trigger: ScheduleTrigger, due: Date, now: Date): Date {
+  let next = nextDue(trigger, due);
+  // Bounded: a task untouched for years is moved on from now instead.
+  for (let i = 0; next.getTime() <= now.getTime(); i++) {
+    if (i > 1000) return nextDue(trigger, now);
+    next = nextDue(trigger, next);
+  }
+  return next;
 }

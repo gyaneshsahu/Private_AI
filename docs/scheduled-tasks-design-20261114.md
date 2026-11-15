@@ -1,5 +1,7 @@
 # Scheduled tasks and reminders: the design that stores the least, 14 November 2026
 
+**Superseded by the owner's decision of 15 November 2026:** a "Scheduled" panel with Manual tasks (in the vault, as recommended here) and Auto tasks that the server stores and runs as a "Background task" (design C below, chosen by the owner as an explicit opt-in per task). Built: `docs/scheduled-20261115.md` (Manual and the interface) and `docs/background-tasks-20261115.md` (the server side). The text below is kept as the record of the options.
+
 Status: **design only. Nothing is built. No code, config or policy text was changed.** This is checklist row U11. The owner asked for the design that stores the least, and then a stop until he decides.
 
 Facts about the code were read from the branch `codex/development-handoff` on 14 November. Facts about browsers come from public sources (list at the end) and from general knowledge. Nothing was tried on a device.

@@ -21,3 +21,8 @@ export const liveVoiceEnabled = () => on("VITE_LIVE_VOICE");
  * device, no server part. Grouping chats by project works without this switch.
  */
 export const projectSpacesEnabled = () => on("VITE_PROJECTS");
+/**
+ * Scheduled tasks (docs/scheduled-20261115.md): the Scheduled screen, Manual tasks in the vault,
+ * the "Due now" strip and the chat detection. Auto tasks also need the server's switch.
+ */
+export const scheduledEnabled = () => on("VITE_SCHEDULED");
