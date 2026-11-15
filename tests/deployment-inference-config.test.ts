@@ -90,8 +90,22 @@ it("loads production chat only when the inference section is present and enabled
   expect((await loadDeploymentConfig(configFile)).inference?.research).toEqual({ cost: 15, dailyRuns: 3, dailySearches: 24 });
   await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, research: { ...research, allowedEmails: ["premium@example.test"] } } }));
   expect((await loadDeploymentConfig(configFile)).inference?.research).toMatchObject({ allowedEmails: ["premium@example.test"] });
+  // Usage metering has its own switch: off by default; on, the plan (default alpha) replaces the allowance and the daily limits.
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, metering: { enabled: false } } }));
+  expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("metering");
+  await writeFile(
+    configFile,
+    JSON.stringify({ ...config, inference: { ...inference, allowance: { requestLimit: 999, days: 3 }, research: { ...research, dailyRuns: 9 }, metering: { enabled: true } } }),
+  );
+  expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({
+    metering: { plan: "alpha" },
+    allowance: { requestLimit: 150, days: 7, dailyLimit: 40 },
+    research: { cost: 15, dailyRuns: 3, dailySearches: 24 },
+  });
   // Relative paths, unknown fields, a bad allowance, bad voice limits and an unreadable report refuse the whole configuration.
   for (const bad of [
+    { ...inference, metering: { enabled: true, plan: "gold" } },
+    { ...inference, metering: true },
     { ...inference, research: { enabled: true } },
     // A run is two charges of 1 to 10 units: 21 cannot be split.
     { ...inference, research: { ...research, cost: 21 } },

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { parseSocialCredentials } from "./account-social";
 import { attestationAuditDefaults } from "./attestation-audit-state";
 import { parseKeyRing } from "./background-crypto";
+import { PLAN_IDS, planFor } from "../shared/usage-config";
 
 const path = z.string().refine(isAbsolute);
 const schema = z
@@ -103,6 +104,16 @@ const schema = z
          * (docs/code-execution-20261114.md). The server must know: it grants the follow-up credit.
          */
         code: z.object({ enabled: z.boolean() }).strict().optional(),
+        /**
+         * Usage metering, its own switch, off unless enabled (docs/usage-metering-20261115.md): weights
+         * from shared/usage-weights.json, a usage record per request, the usage meter. `plan` (default
+         * alpha) names a plan in shared/usage-plans.json whose quotas then replace `allowance` and the
+         * daily limits of images, voice, deep research and background tasks written here.
+         */
+        metering: z
+          .object({ enabled: z.boolean(), plan: z.enum(PLAN_IDS as [string, ...string[]]).optional() })
+          .strict()
+          .optional(),
         /**
          * Deep research, its own switch, off unless enabled (docs/deep-research-20261114.md). It
          * also needs the search key. `cost`: allowance units one run uses. `dailyRuns` and
@@ -213,6 +224,38 @@ const schema = z
     "Render bridge requires loopback and restricted identities.",
   );
 
+type Quotas = {
+  allowance?: { requestLimit: number; days: number; dailyLimit?: number };
+  images?: { maxBytes: number; dailyImages: number };
+  voice?: { chunkSeconds: number; maxTurnSeconds: number; dailyUnits: number };
+  research?: { cost: number; dailyRuns: number; dailySearches: number; allowedEmails?: string[] };
+  backgroundTasks?: { maxAutoTasks: number };
+};
+/** With metering on, the plan's quotas replace the allowance and the per-feature daily limits; a cap of 0 switches the feature off. */
+export function withPlan<T extends Quotas>(
+  inference: T,
+  metering?: { enabled: boolean; plan?: string },
+): T & { metering?: { plan: string } } {
+  if (!metering?.enabled) return inference;
+  const plan = planFor(metering.plan ?? "alpha");
+  const c = plan.caps;
+  const out: T & { metering?: { plan: string } } = {
+    ...inference,
+    metering: { plan: plan.id },
+    allowance: { requestLimit: plan.units.period, days: plan.units.days, dailyLimit: plan.units.daily },
+  };
+  if (out.images) out.images = { ...out.images, dailyImages: c.imagesPerDay };
+  // The plan names voice minutes; the voice budget counts 2-second units (30 per minute).
+  if (out.voice) out.voice = { ...out.voice, dailyUnits: Math.min(1000, c.voiceMinutesPerDay * 30) };
+  if (out.research) out.research = { ...out.research, dailyRuns: c.researchRunsPerDay, dailySearches: c.searchesPerDay };
+  if (out.backgroundTasks) out.backgroundTasks = { ...out.backgroundTasks, maxAutoTasks: c.backgroundTasks };
+  if (!c.imagesPerDay) delete out.images;
+  if (!c.voiceMinutesPerDay) delete out.voice;
+  if (!c.researchRunsPerDay) delete out.research;
+  if (!c.backgroundTasks) delete out.backgroundTasks;
+  return out;
+}
+
 async function boundedFile(file: string) {
   if (!isAbsolute(file)) throw Error("Invalid file path.");
   const info = await stat(file);
@@ -285,7 +328,7 @@ export async function loadDeploymentConfig(file: string) {
               (!privatemode && inference.liveManifest)
             )
               throw Error("Inference files do not match the report's provider.");
-            return {
+            return withPlan({
               apiKey: (await boundedFile(inference.apiKeyFile)).toString("utf8").trim(),
               qualification: qualification as unknown,
               stopFile: inference.stopFile,
@@ -336,7 +379,7 @@ export async function loadDeploymentConfig(file: string) {
               ...(inference.manifestFile
                 ? { providerManifest: new Uint8Array(await boundedFile(inference.manifestFile)) }
                 : {}),
-            };
+            }, inference.metering);
           })(config.inference)
         : undefined,
       connectionString,

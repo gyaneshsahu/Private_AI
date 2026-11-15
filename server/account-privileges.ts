@@ -29,6 +29,9 @@ export function accountPrivilegePlan(input: {
     `GRANT UPDATE (state,updated_at) ON ${table("usage_requests")} TO ${runtime}`,
     // Completed-request metering (migration 0013): read for the usage summary, insert at settlement.
     `GRANT SELECT,INSERT ON ${table("usage_metrics")} TO ${runtime}`,
+    // Usage records (migration 0022): one row per forwarded request; only the browser's token report is updated.
+    `GRANT SELECT,INSERT ON ${table("usage_records")} TO ${runtime}`,
+    `GRANT UPDATE (prompt_tokens,completion_tokens,cached_tokens,reasoning_tokens,audio_seconds,report,report_note,reported_at) ON ${table("usage_records")} TO ${runtime}`,
     // Sign-in code delivery log (migration 0020): count, record and prune, never update.
     `GRANT SELECT,INSERT,DELETE ON ${table("signin_delivery")} TO ${runtime}`,
     // Background tasks (migration 0021): sealed rows the runtime creates, claims, updates and deletes.

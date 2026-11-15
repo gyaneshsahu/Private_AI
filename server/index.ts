@@ -7,6 +7,7 @@ import { openInviteRegistry } from "./registry-storage";
 import { MemoryBackgroundStore } from "./background-store";
 import { ephemeralKeyRing } from "./background-crypto";
 import { scheduleManifestCheck } from "./manifest-watch";
+import { SqliteUsageRecords } from "./usage-records";
 const port = Number(process.env.PORT ?? "4173");
 if (!Number.isInteger(port) || port < 1024 || port > 65535)
   throw new Error("Invalid PORT");
@@ -70,6 +71,10 @@ const app = createApp({
   ...(process.env.PRIVATEAI_CODE === "1" ? { code: true } : {}),
   // Deep research on the development server: off unless "1" (it also needs the search key).
   ...(process.env.PRIVATEAI_RESEARCH === "1" ? { research: { cost: 15, dailyRuns: 3, dailySearches: 24 } } : {}),
+  // Usage metering on the development server: off unless "1". Records in memory, gone at restart.
+  ...(process.env.PRIVATEAI_METERING === "1"
+    ? { metering: { plan: "alpha", records: new SqliteUsageRecords(":memory:") } }
+    : {}),
   // Brave Goggle for German-rules searches (docs/german-rules-20261113.md); off unless "1".
   searchGoggles: process.env.PRIVATEAI_SEARCH_GOGGLES === "1",
   // Background tasks on the development server: off unless "1". Memory store and a random key, so

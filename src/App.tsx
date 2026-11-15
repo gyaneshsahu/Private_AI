@@ -943,6 +943,8 @@ export function App() {
                               text: "",
                               ...(codeRuns.length ? { codeRuns } : {}),
                               ...(unavailable ? { codeUnavailable: true as const } : {}),
+                              // Each round is one follow-up request: shown as the calculation's cost with metering on.
+                              ...(status.metering ? { codeSteps: (m.codeSteps ?? 0) + 1 } : {}),
                             }
                           : m,
                       ),
@@ -1024,7 +1026,7 @@ export function App() {
           setConversation((c) => ({
             ...c,
             messages: c.messages.map((m) =>
-              m.id === answer.id ? { ...m, codeRuns: undefined, codeUnavailable: undefined } : m,
+              m.id === answer.id ? { ...m, codeRuns: undefined, codeUnavailable: undefined, codeSteps: undefined } : m,
             ),
           }));
         if (
@@ -1971,7 +1973,7 @@ export function App() {
               </>
             )}
             {settingsSection === "usage" && (
-              <AccountUsage allowance={status?.requestAllowance} />
+              <AccountUsage allowance={status?.requestAllowance} metering={!!status?.metering} refresh={status} />
             )}
             {settingsSection === "memory" && memoryEnabled() && (
               <MemorySettings vault={vault.current} unlocked={unlocked} />
@@ -3284,6 +3286,8 @@ export function App() {
             )}
             <AccountUsage
               allowance={status?.requestAllowance}
+              metering={!!status?.metering}
+              refresh={status}
               consumer={status?.consumerWorkspace}
               billing={
                 status?.billingRehearsal

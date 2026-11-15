@@ -10,6 +10,7 @@ import {
 import { consumerControl } from "./consumer-control";
 import { createApp } from "./app";
 import { PostgresUsageLedger } from "./usage-postgres";
+import { PostgresUsageRecords } from "./usage-records-postgres";
 import { PostgresBackgroundStore } from "./background-store";
 import { productionAccountTarget } from "../shared/account-design";
 import { productionOperations } from "./production-operations";
@@ -79,6 +80,8 @@ export interface ProductionInferenceConfig {
   code?: boolean;
   /** Deep research cost, caps and optional account list; absent means off. */
   research?: import("./research-admission").ResearchSettings;
+  /** Usage metering with this plan (docs/usage-metering-20261115.md); absent means off. */
+  metering?: { plan: string };
   /** Background tasks (Auto mode of Scheduled); absent means off. */
   backgroundTasks?: {
     maxAutoTasks: number;
@@ -129,6 +132,9 @@ export function createProductionConsumerCandidate(
           ...(inference.images ? { images: inference.images } : {}),
           ...(inference.code ? { code: true } : {}),
           ...(inference.research ? { research: inference.research } : {}),
+          ...(inference.metering
+            ? { metering: { plan: inference.metering.plan, records: new PostgresUsageRecords(config.database) } }
+            : {}),
           ...(inference.backgroundTasks
             ? {
                 backgroundTasks: {

@@ -117,16 +117,25 @@ The browser shows the first two as "The protected service is limiting requests. 
 
 ### Weekly reconciliation with the portal (checklist K5, added 14 November)
 
-The app counts requests, the portal counts tokens. Once a week, on the same weekday and outside alpha hours:
+**With usage metering on (`inference.metering`, added 15 November) steps 2 and 3 are one command.** The portal has no interface the server can read, so step 1 stays a reading by the owner:
+
+1. Portal: write down the token total (and, once billed, the euro amount) for the alpha key for the 7 days (owner; this is the only exact figure).
+2. Run, from a machine with the database URL in a file: `node --import tsx scripts/usage-metering.ts reconcile --from <first day> --to <day after the last> --database-url-file <file> --portal-tokens <portal total> [--portal-eur <amount>]`. It prints per feature and in total the requests, units, reported tokens, tokens estimated for requests without a report, interrupted requests (billed but not countable), list-price euros, and the gap between the portal and the app in tokens and percent.
+3. A gap within 10 % is normal (interrupted requests, rounding). Note the tokens per Fast message from the output for step 4.
+
+Without metering, as before:
 
 1. Portal: write down the token total used for the alpha key since last week's reading (owner; this is the only exact figure).
 2. Query E below: write down the Fast and Thinking message counts for the same 7 days (all states).
 3. Tokens per message = portal tokens divided by all messages. Planning figure so far: about 2,500 with search (13 November runs at the old max effort, so expect less at high).
+
+Then, in both cases:
+
 4. Compare with the worst case the allowance is planned on: Fast 13,000 tokens, Thinking 27,000 tokens per message (32,000 characters in, full output). If the real average is above a third of the worst case, lower `dailyLimit` first, then `requestLimit`.
 5. Free balance: the portal figure. Tell the agent when it is below 0.5M (K6). Weeks left = balance divided by this week's tokens.
 6. If the portal shows clearly more tokens than messages times the worst case, someone is sending requests the app does not count (a modified browser, or the development key in use): check the key's usage in the portal and rotate the alpha key.
 
-Record each week in one line: date, portal tokens, Fast messages, Thinking messages, tokens per message, free balance.
+Record each week in one line: date, portal tokens, Fast messages, Thinking messages, tokens per message, free balance (with metering: also the app's tokens and the gap from the script).
 
 | Week ending | Portal tokens | Fast | Thinking | Tokens per message | Free balance |
 | --- | --- | --- | --- | --- | --- |

@@ -893,6 +893,10 @@ function createAccountAuth(
           requests: await rows(
             "SELECT r.request_id,r.period_id,r.state,r.created_at,r.updated_at,m.prompt_tokens,m.completion_tokens,m.model,m.cost_usd::text AS cost_usd,m.web_search_calls FROM usage_requests r LEFT JOIN usage_metrics m ON m.request_id=r.request_id WHERE r.account_id=$1 ORDER BY r.created_at,r.request_id",
           ),
+          // Per-feature records (migration 0022), numbers only.
+          records: await rows(
+            "SELECT request_id,created_at,feature,units,weight_version,outcome,model,request_bytes,response_bytes,duration_ms,prompt_tokens,completion_tokens,cached_tokens,reasoning_tokens,audio_seconds,report,report_note FROM usage_records WHERE account_id=$1 ORDER BY created_at,request_id",
+          ),
         },
         billing: {
           customerBinding: single(await rows(

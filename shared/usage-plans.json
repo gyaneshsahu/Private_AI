@@ -1,0 +1,26 @@
+{
+  "note": "Quotas per plan (docs/usage-metering-20261115.md). With metering switched on, the deployment config names one plan (inference.metering.plan, default alpha) and these numbers replace the allowance and the per-feature daily limits written in the deployment config. A cap of 0 switches that feature off for the plan. The alpha uses one plan for everyone. free and premium are proposals for launch, not decided.",
+  "plans": [
+    {
+      "id": "alpha",
+      "name": "Alpha",
+      "status": "Values of the alpha configuration (docs/development-deployment.md), owner decisions of 13 and 14 November 2026",
+      "units": { "period": 150, "days": 7, "daily": 40 },
+      "caps": { "imagesPerDay": 10, "voiceMinutesPerDay": 10, "researchRunsPerDay": 3, "searchesPerDay": 24, "backgroundTasks": 3 }
+    },
+    {
+      "id": "free",
+      "name": "Free",
+      "status": "PROPOSAL for launch, not decided by the owner",
+      "units": { "period": 60, "days": 7, "daily": 20 },
+      "caps": { "imagesPerDay": 3, "voiceMinutesPerDay": 5, "researchRunsPerDay": 0, "searchesPerDay": 10, "backgroundTasks": 0 }
+    },
+    {
+      "id": "premium",
+      "name": "Premium",
+      "status": "PROPOSAL for launch, not decided by the owner; linked to a billing plan (shared/billing.ts) when paid plans start",
+      "units": { "period": 600, "days": 7, "daily": 150 },
+      "caps": { "imagesPerDay": 30, "voiceMinutesPerDay": 30, "researchRunsPerDay": 5, "searchesPerDay": 60, "backgroundTasks": 3 }
+    }
+  ]
+}

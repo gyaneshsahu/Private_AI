@@ -1,3 +1,4 @@
+import { UsageMeter } from "./UsageMeter";
 import { containDialogFocus } from "./dialog-focus";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AppStatus, Conversation } from "../shared/contracts";
@@ -452,6 +453,7 @@ export function WorkspaceNavigation(props: {
           <div className="account-popover">
             <p className="account-identity">{identity}</p>
             <p className="muted">{usage}</p>
+            {status?.metering && <UsageMeter compact refresh={status} />}
             <button onClick={() => onNavigate("Account")}>
               <Icon name="usage" />
               {t.accountUsage}

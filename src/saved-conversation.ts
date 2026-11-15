@@ -82,6 +82,7 @@ const conversationBody = z.object({
         .max(12)
         .optional(),
       codeUnavailable: z.literal(true).optional(),
+      codeSteps: z.number().int().min(0).max(10).optional(),
     }),
   ),
   attachments: z.array(

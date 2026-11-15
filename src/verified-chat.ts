@@ -67,6 +67,7 @@ import {
 import { runToolLoop } from "./tool-loop";
 import { codeText } from "./text/code";
 import { RESEARCH_KINDS, type ResearchStep } from "../shared/deep-research";
+import { reportUsage, type StreamUsage } from "./usage-report";
 
 /** What the code tool needs from the caller: how to run code, and where the runs go. */
 export type CodeRuntime = {
@@ -466,12 +467,19 @@ async function streamMaskedConversation(
       },
     );
     async function* observedEvents(input = response, round: 1 | 2 = 1) {
-      for await (const event of completionEvents(input, signal)) {
-        const delta = event.choices?.[0]?.delta;
-        if (delta?.content || delta?.refusal || delta?.tool_calls?.length)
-          answerStarted();
-        onModelEvent?.(event, round);
-        yield event;
+      let usage: StreamUsage | undefined;
+      try {
+        for await (const event of completionEvents(input, signal)) {
+          const delta = event.choices?.[0]?.delta;
+          if (delta?.content || delta?.refusal || delta?.tool_calls?.length)
+            answerStarted();
+          if (event.usage) usage = event.usage;
+          onModelEvent?.(event, round);
+          yield event;
+        }
+      } finally {
+        // Usage metering: this reply's decrypted token counts, numbers only (src/usage-report.ts).
+        reportUsage(csrf, input, usage);
       }
     }
     if (report.optionalCalculator) {

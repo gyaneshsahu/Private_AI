@@ -16,12 +16,15 @@ export const CREDIT_MS = 90_000;
 
 export class ContinuationCredits {
   private readonly credits = new Map<string, { mode: string | undefined; left: number; expires: number }>();
+  /** Free follow-ups per paid request: CONTINUATIONS, or the weights file's `freeCodeFollowUps` with metering on. */
+  constructor(private readonly perPaid = CONTINUATIONS) {}
 
   /** A paid request was accepted by the provider: its account may follow up in the same mode. */
   grant(accountId: string, mode: string | undefined, now = Date.now()) {
     if (this.credits.size > 10_000)
       for (const [id, credit] of this.credits) if (credit.expires <= now) this.credits.delete(id);
-    this.credits.set(accountId, { mode, left: CONTINUATIONS, expires: now + CREDIT_MS });
+    if (this.perPaid > 0) this.credits.set(accountId, { mode, left: this.perPaid, expires: now + CREDIT_MS });
+    else this.credits.delete(accountId);
   }
 
   /** Takes one follow-up from the account's credit; false means the request is charged normally. */

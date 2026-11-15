@@ -49,6 +49,8 @@ import { backgroundRoutes } from "./background-routes";
 import { createPrivatemodeBackgroundClient, type BackgroundModelClient } from "./background-privatemode";
 import type { BackgroundStore, RunWindow } from "./background-store";
 import type { BackgroundKeyRing } from "./background-crypto";
+import { activeWeights, REQUEST_ID_HEADER } from "../shared/usage-config";
+import { chatFeature, createMetering, withWeights, type MeteringConfig } from "./usage-metering";
 
 export interface Config {
   origin: string;
@@ -97,6 +99,8 @@ export interface Config {
   code?: boolean;
   /** Deep research (docs/deep-research-20261114.md); absent means off. It also needs search. */
   research?: ResearchSettings;
+  /** Usage metering (docs/usage-metering-20261115.md): weights from shared/usage-weights.json, usage records, meter; absent means off. */
+  metering?: MeteringConfig;
   /** File whose text is shown to every user as a notice; missing or empty means none. Re-read every 30 s. */
   noticeFile?: string;
   /** Background tasks, the Auto mode of Scheduled (docs/background-tasks-20261115.md); absent means off. */
@@ -206,9 +210,25 @@ export function createApp(config: Config) {
     throw Error(
       "Consumer integration requires the isolated lab or the unqualified production candidate without upstream credentials.",
     );
+  // With metering on, the weights file sets the allowance costs (the report's are replaced) and the
+  // deep-research cost (read at start), and each forwarded request gets a usage record.
+  if (config.metering && config.research)
+    config = { ...config, research: { ...config.research, cost: activeWeights().units["research-run"] } };
+  const meterAccount = (res: express.Response): string | undefined =>
+    res.locals.accountId ?? (config.dev ? "local-development" : undefined);
+  const metering = config.metering
+    ? createMetering({
+        config: config.metering,
+        usage: config.usage,
+        qualification: () => parseQualification(),
+        dailyLimit: config.autoAllowance?.dailyLimit,
+        accountOf: meterAccount,
+      })
+    : undefined;
   const parseQualification = (): Qualification | undefined => {
     try {
-      return validateQualification(config.qualification);
+      const q = validateQualification(config.qualification);
+      return metering ? withWeights(q, metering.weights()) : q;
     } catch {
       return undefined;
     }
@@ -360,7 +380,8 @@ export function createApp(config: Config) {
           res.status(403).json({ error: "Request authorization failed." });
           return;
         }
-        if (req.method === "POST" && ++session.count > 200) {
+        // A usage report follows a counted request and sends no content: it is not counted again.
+        if (req.method === "POST" && req.path !== "/usage/report" && ++session.count > 200) {
           res.status(429).json({ error: "Evaluation request limit reached." });
           return;
         }
@@ -450,6 +471,10 @@ export function createApp(config: Config) {
         : {}),
       ...(config.images && ready && q?.vision ? { images: { maxBytes: config.images.maxBytes } } : {}),
       ...(config.code && ready ? { code: true } : {}),
+      // Only where records are kept (a signed-in account), so the meter has something to show.
+      ...(metering && meterAccount(res)
+        ? { metering: { plan: metering.plan.id, weightsVersion: metering.weights().version } }
+        : {}),
       // Only for an account that may use it ("premium only"), so nobody else sees the feature.
       ...(ready && search && researchAllowed(config.research, res.locals.accountEmail)
         ? { research: { cost: config.research.cost, dailyRuns: config.research.dailyRuns } }
@@ -478,7 +503,7 @@ export function createApp(config: Config) {
   // move to the ledger together with the other single-server limits.
   const retryCredit = new Map<string, { mode: string | undefined; expires: number }>();
   // Code execution: up to two follow-up requests ride on one paid message (server/continuation-credit.ts).
-  const continuationCredits = new ContinuationCredits();
+  const continuationCredits = new ContinuationCredits(metering?.weights().freeCodeFollowUps);
   // Block-only attestation audit: can refuse forwarding, never supplies a key.
   // Pass-through until a deployment installs an audit configuration.
   // Block-only guard of the configured adapter (for Tinfoil, the release audit;
@@ -686,6 +711,10 @@ export function createApp(config: Config) {
       let forwarded = false;
       let transportComplete = false;
       let metrics: UsageMetrics | undefined;
+      // For the usage record: why nothing was charged, and what the relay itself measured.
+      let free: "code-followup" | "retry" | undefined;
+      let startedAt = 0;
+      let responseBytes = 0;
       const abort = new AbortController();
       // The slots are freed once, as soon as the browser hangs up: its automatic retry after
       // a time-out must not meet "already running" while the aborted upstream call settles.
@@ -745,10 +774,13 @@ export function createApp(config: Config) {
           !!accountId &&
           req.headers[CONTINUATION_HEADER] === "tool" &&
           continuationCredits.claim(accountId, mode);
-        if (toolCredit) count(`chat.${mode ?? "none"}.tool_continuation`);
-        else if (config.usage && credit && credit.mode === creditKind && credit.expires > Date.now())
+        if (toolCredit) {
+          count(`chat.${mode ?? "none"}.tool_continuation`);
+          free = "code-followup";
+        } else if (config.usage && credit && credit.mode === creditKind && credit.expires > Date.now()) {
           count(`chat.${mode ?? "none"}.retry_not_counted`);
-        else if (config.usage) {
+          free = "retry";
+        } else if (config.usage) {
           await ensureAllowance(accountId);
           try {
             // Daily cap beside the period allowance (owner, 13 November): a rolling 24 hours, so
@@ -821,6 +853,7 @@ export function createApp(config: Config) {
           upstreamHeaders: admission.upstreamHeaders,
         });
         forwarded = true;
+        startedAt = Date.now();
         const upstream = await upstreamRequest(plan.url, {
           dispatcher: serviceDispatcher,
           method: "POST",
@@ -861,6 +894,8 @@ export function createApp(config: Config) {
         }
         for (const [name, value] of Object.entries(accepted.passthrough))
           res.setHeader(name, value);
+        // The browser reports the decrypted token counts under this id (POST /api/usage/report).
+        if (metering && meterAccount(res)) res.setHeader(REQUEST_ID_HEADER, requestId);
         res.locals.streaming = true;
         // Granted when the provider accepts the paid request, not when it ends: the browser sends
         // its follow-up the moment it has read the reply. A follow-up on credit grants nothing.
@@ -869,6 +904,7 @@ export function createApp(config: Config) {
         for await (const chunk of upstream.body) {
           if (hungUp) abort.abort();
           if (abort.signal.aborted) break;
+          responseBytes += chunk.length;
           if (!res.write(chunk))
             await once(res, "drain", { signal: abort.signal });
         }
@@ -891,6 +927,20 @@ export function createApp(config: Config) {
         // Refused here before anything was sent: the image does not count toward the day.
         if (declared.image && !forwarded) imageDay.giveBack(who);
         if (!forwarded) researchBack();
+        // Every request Privatemode received gets a record, charged or free: the weekly reconciliation counts them all.
+        const recordFor = meterAccount(res);
+        if (metering && forwarded && recordFor)
+          metering.record({
+            requestId,
+            accountId: recordFor,
+            feature: free ?? chatFeature(research.step, declared.image, mode),
+            units: free ? 0 : cost,
+            outcome: transportComplete ? "complete" : String(res.locals.outcome).startsWith("upstream_") ? "refused" : "interrupted",
+            model: admission.model,
+            requestBytes: req.body.length,
+            responseBytes,
+            durationMs: Date.now() - startedAt,
+          });
         if (hungUp) {
           count(`chat.${res.locals.mode ?? "none"}.${transportComplete ? "completed" : "interrupted"}`);
           if (declared.image) count(`image.${transportComplete ? "completed" : "interrupted"}`);
@@ -958,6 +1008,12 @@ export function createApp(config: Config) {
   }
   app.use("/api", express.json({ limit: "8kb" }));
   if (config.consumer?.billingRouter) app.use(config.consumer.billingRouter);
+  if (metering) app.use(metering.router);
+  // Searches cost money at the search provider and page reads nothing; both are counted, never charged.
+  const recordTool = (res: express.Response, feature: "search" | "page-fetch") => {
+    const who = meterAccount(res);
+    if (metering && who) metering.record({ requestId: randomUUID(), accountId: who, feature, units: 0, outcome: "complete" });
+  };
   app.post("/api/research/prepare", async (req, res) => {
     try {
       res.json(await approvals.issue(res.locals.session, req.body));
@@ -998,7 +1054,9 @@ export function createApp(config: Config) {
         return;
       }
       if (request.kind === "page") {
-        res.json({ sources: await fetchPage(request.value, abort.signal) });
+        const sources = await fetchPage(request.value, abort.signal);
+        recordTool(res, "page-fetch");
+        res.json({ sources });
         return;
       }
       // Each search costs money at the search provider: with deep research on, every account has
@@ -1017,6 +1075,7 @@ export function createApp(config: Config) {
         if (config.research) searchDay.giveBack(who);
         throw error;
       });
+      recordTool(res, "search");
       const top = await search!.readTopPage?.(
         request.value,
         sources,

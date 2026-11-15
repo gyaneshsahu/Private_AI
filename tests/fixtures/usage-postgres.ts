@@ -41,6 +41,7 @@ export async function usageDatabase(options: { empty?: boolean } = {}) {
       for (const migration of [
         "server/migrations/0004-usage-ledger.sql",
         "server/migrations/0013-usage-metrics.sql",
+        "server/migrations/0022-usage-records.sql",
       ])
         await pool.query(await readFile(migration, "utf8"));
     return { pool, connect, close, dispose };

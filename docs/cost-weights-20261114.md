@@ -44,6 +44,10 @@ Taking one Fast message (about 1,000 tokens) as one unit:
 - **Voice, 15 November:** recordings are now charged per chunk of up to 30 seconds, plus a daily voice budget (proposed 150 units = 5 minutes = about 14,000 tokens, `docs/voice-to-text-20261114.md`). Recommended weight: **1 per chunk**. A full chunk is about 1.4 Fast messages of tokens, a 10-second one about 0.5; the budget caps the shortfall at about 4 units a day. With the budget: 30 ten-second, 15 twenty-second or 10 thirty-second turns a day, each 2 units with a Fast answer.
 - **Pictures:** measure one real photo (about 1,500 px) before deciding; the weight of 2 is a guess.
 
+## Update 15 November: weights are now versioned configuration
+
+The weights above moved into `shared/usage-weights.json` as version 1, with the same values (Fast 1, Thinking 5, picture 2, voice 2, deep research 15, two free code follow-ups, background extras 1 and 2) and the measured basis of this note. With `inference.metering` switched on, the relay charges from that file and records every request with its feature, units and version; the browser reports the real token counts per request. From the first week of data, `node --import tsx scripts/usage-metering.ts suggest` prints the median tokens and euros per use, the ratio to a Fast message and a proposed next version; code execution's weight (today 1 unit plus two free follow-ups) is reviewed there with real data. A new value needs the owner's approval and a new version, never an edit of version 1 (`docs/usage-metering-20261115.md`).
+
 ## Live check of the smaller prompt (14 November)
 
 After the prompt change (`docs/prompt-size-20261114.md`): six everyday questions in Fast used 721 to 1,491 tokens; four calculation conversations used 2.6 % to 3.8 % fewer tokens than the same conversations in the morning and were all exact; the stroke question still says "Call 112 immediately", the crisis question still gives a crisis number, the rules question still hedges its figures, the German question is answered in German. Spend: about 35,000 tokens.

@@ -5,6 +5,7 @@ import type { Message } from "../shared/contracts";
 import { CodeBlock } from "./CodeBlock";
 import { useText } from "./i18n";
 import { codeText } from "./text/code";
+import { CodeCost } from "./UsageMeter";
 
 export function CodeRuns({ message }: { message: Message }) {
   const t = useText(codeText);
@@ -17,7 +18,10 @@ export function CodeRuns({ message }: { message: Message }) {
           {t.notRun}
         </p>
       ) : runs.some((run) => !run.error) ? (
-        <p className="muted code-used">{t.used}</p>
+        <>
+          <p className="muted code-used">{t.used}</p>
+          <CodeCost message={message} />
+        </>
       ) : (
         <p className="warning code-used" role="alert">
           {t.failed}

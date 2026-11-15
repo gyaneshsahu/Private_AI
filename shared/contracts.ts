@@ -475,6 +475,8 @@ export interface Message {
   codeRuns?: { code: string; output: string; error?: true }[];
   /** The model asked for code but Pyodide could not start here: the answer was not calculated with code. */
   codeUnavailable?: true;
+  /** With metering on: how many follow-up requests the calculation made after the paid one (for the cost line). */
+  codeSteps?: number;
 }
 export interface ConversationBranch {
   id: string;
@@ -554,6 +556,8 @@ export interface AppStatus {
   images?: { maxBytes: number };
   /** Code execution on the device is switched on for this deployment (docs/code-execution-20261114.md). */
   code?: true;
+  /** Usage metering is on (docs/usage-metering-20261115.md): the plan and the weights version charging now. */
+  metering?: { plan: string; weightsVersion: number };
   /** Deep research is switched on for this account (docs/deep-research-20261114.md): a run's allowance cost and the runs per 24 hours. */
   research?: { cost: number; dailyRuns: number };
   /** Auto scheduled tasks ("Background task") are switched on (docs/background-tasks-20261115.md). */

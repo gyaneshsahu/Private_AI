@@ -2,6 +2,7 @@ import type { RequestAllowance } from "../shared/contracts";
 import { AccountBilling } from "./AccountBilling";
 import { useLang } from "./i18n";
 import { usageText } from "./text/account";
+import { UsageMeter } from "./UsageMeter";
 import {
   isActiveAllowance,
   meteredTokensSentence,
@@ -66,7 +67,13 @@ export function AccountUsagePage({
   busy,
   onManage,
   billing,
+  metering,
+  refresh,
 }: {
+  /** Usage metering is on: the meter with features and the latest requests (docs/usage-metering-20261115.md). */
+  metering?: boolean;
+  /** Changes when the app's status reloads, so the meter reloads with it. */
+  refresh?: unknown;
   allowance?: RequestAllowance;
   consumer?: boolean;
   busy?: boolean;
@@ -92,6 +99,7 @@ export function AccountUsagePage({
           </button>
         </div>
       )}
+      {metering && <UsageMeter refresh={refresh} />}
       {isActiveAllowance(allowance) ? (
         <>
           <PlanAllowance allowance={allowance} />

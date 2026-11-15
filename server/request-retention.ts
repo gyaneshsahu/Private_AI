@@ -27,6 +27,8 @@ BEGIN
     WHERE a.period_id = r.period_id AND r.created_at < cutoff AND a.ends_at <= now_ms;
   GET DIAGNOSTICS requests = ROW_COUNT;
   SELECT count(*) INTO held FROM usage_requests WHERE created_at < cutoff;
+  -- Usage records (migration 0022) explain the allowance per feature but hold none of it: gone at 90 days.
+  DELETE FROM usage_records WHERE created_at < cutoff;
 END
 $fn$`;
 }
