@@ -24,6 +24,7 @@ const files = [
   "billing-workflow",
   "request-retention",
   "account-operator-postgres",
+  "background-tasks-postgres",
 ].map((name) => `tests/${name}.test.ts`);
 
 async function main() {
