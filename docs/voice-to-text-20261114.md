@@ -265,3 +265,7 @@ Two synthetic samples made with the laptop's own Windows voices (one German, one
 Not checked: WebM/Opus from Chrome and Firefox and MP4/AAC from Safari (the formats the browser recorder produces), real human speech, accents, noise, dialect, a full 120-second recording and its encrypted size, the whole path through the app and relay in a browser, phones, how Privatemode bills the minutes. Clean synthetic speech is the easy case, so this does not choose between the two models.
 
 Also found while merging: the Render bridge did not forward the Privatemode SDK's request headers, so chat and voice would both have failed on the hosted site. Fixed the same day (`server/render-bridge.ts`, `tests/render-bridge-headers.test.ts`).
+
+## Measured live, 15 November: encryption overhead
+
+One 518,714-byte audio upload became 519,512 bytes after Privatemode's end-to-end encryption: about 0.15 % more, not the factor of 2 the chunk size limit assumes. So the relay's per-chunk limit (`units x 16,000 + 8,192` bytes) is about twice what an honest 32 kbit/s chunk needs, and the abuse bound in this doc is about twice as loose as necessary. Proposed: tighten to about `units x 9,600 + 8,192` (20 % headroom over 32 kbit/s) after one Safari MP4 chunk is measured on a real iPhone (Safari may record at a higher bitrate). Not changed yet.
