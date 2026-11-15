@@ -37,9 +37,10 @@
   "repository": "edgelesssys/privatemode-public",
   "repositoryNote": "The schema requires an edgelesssys/* repository. The exact repository the manifest is built from is not confirmed by Edgeless in writing (unknown); confirm before signature.",
   "releaseDigests": [
+    "d63eb5cf91cb3079fe25a848573a4d0e9d869f462dab4f71fd02bdb372f8e833",
     "5fa927e3b864738da35d427c10ba8e49ebeeb1531e49618899cf95f654d240c1"
   ],
-  "releaseDigestsNote": "SHA-256 of the live manifest bytes read with scripts/privatemode-manifest.ts on 12 November 2026 (5,992 bytes; reference values snp and tdx). Re-read on the day of signature: a rotated manifest needs a new digest.",
+  "releaseDigestsNote": "14 November 2026: Privatemode rotated its manifest (consistent with changelog v1.64.0); the new digest d63eb5cf... is listed first, PENDING the owner's approval after the checks in docs/manifest-rotation-20261114.md; the old digest 5fa927e3... is kept for the record and may be removed at signature. SHA-256 of the live manifest bytes read with scripts/privatemode-manifest.ts on 12 November 2026 (5,992 bytes; reference values snp and tdx). Re-read on the day of signature: a rotated manifest needs a new digest.",
   "reviewedAt": "REPLACE_ON_THE_DAY_OF_SIGNATURE",
   "validUntil": "REPLACE_AT_MOST_SEVEN_DAYS_LATER",
   "maxInputCharacters": 8000,
