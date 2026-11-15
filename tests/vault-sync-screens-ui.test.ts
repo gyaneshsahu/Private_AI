@@ -425,6 +425,8 @@ for (const width of WIDTHS)
       await ui(prompt.getByText(s.approvedOther)).toBeVisible();
       await ui(welcome).toHaveCount(0);
       await ui(B.getByText(s.approved).first()).toBeVisible();
+      // Saved on the approved device does not claim that it is empty (the Stage 0 notice is for unsynced devices).
+      await ui(B.getByRole("heading", { name: v.newDeviceHeading })).toHaveCount(0);
 
       // Device C: the code expires and a new one comes; then the recovery key, with a typo caught.
       const C = await open(width, lang, account, true);
@@ -444,9 +446,11 @@ for (const width of WIDTHS)
       const typo = alphabet[(alphabet.indexOf(account.key[0]) + 1) % 32] + account.key.slice(1);
       await field.fill(typo);
       await ui(again.getByText(s.hintTypo)).toBeVisible();
-      await ui(unlock).toBeDisabled();
+      // The local check is a hint, never a block: the engine decides.
+      await ui(unlock).toBeEnabled();
       await field.fill(account.key.slice(0, 10));
       await ui(again.getByText(s.hintShort(16))).toBeVisible();
+      await ui(unlock).toBeDisabled();
       await ui(field).toHaveValue(formatRecoveryKey(account.key.slice(0, 10)));
       await field.fill("9" + account.key.slice(1));
       await ui(again.getByText(s.hintCharacter("9"))).toBeVisible();

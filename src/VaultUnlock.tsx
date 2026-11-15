@@ -40,6 +40,7 @@ export function VaultUnlock({
   const v = useText(vaultUnlockText);
   const s = useText(syncText);
   const sync = useSyncState();
+  // This device is in sync (unlocked through the engine): the Stage 0 "nothing here" notice would be wrong.
   const syncOn = syncAvailable && sync.phase !== "off" && sync.phase !== "needs-approval";
   const [exists, setExists] = useState<boolean>();
   const [remembered, setRemembered] = useState(false);
@@ -52,7 +53,12 @@ export function VaultUnlock({
   useEffect(() => {
     let active = true;
     vault?.exists().then((value) => active && setExists(value), () => {});
-    vault?.isRemembered().then((value) => active && setRemembered(value), () => {});
+    vault?.isRemembered().then((value) => {
+      if (!active) return;
+      setRemembered(value);
+      // Typing the passphrase on a remembered device keeps it remembered unless unticked.
+      setRemember(value);
+    }, () => {});
     return () => {
       active = false;
     };
@@ -60,7 +66,7 @@ export function VaultUnlock({
 
   return (
     <div className="vault-unlock">
-      {exists === false && (
+      {exists === false && !syncOn && (
         <section className="panel new-device-notice" aria-labelledby="new-device-notice-heading">
           <h3 id="new-device-notice-heading">{v.newDeviceHeading}</h3>
           <p>{v.newDeviceText}</p>

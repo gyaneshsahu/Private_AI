@@ -66,6 +66,8 @@ export function RecoveryKeyForm({
   const hintId = useId();
   useEffect(() => heading.current?.focus(), []);
   const hint = recoveryKeyHint(key);
+  // The local check is a hint only (its bits are a proposal to the core): a "typo" warning never blocks.
+  const complete = hint.kind === "ok" || hint.kind === "typo";
   const hintText =
     hint.kind === "short"
       ? t.hintShort(hint.missing)
@@ -83,7 +85,7 @@ export function RecoveryKeyForm({
       className="sync-step"
       onSubmit={async (event) => {
         event.preventDefault();
-        if (busy || hint.kind !== "ok") return;
+        if (busy || !complete) return;
         setBusy(true);
         setError("");
         try {
@@ -126,7 +128,7 @@ export function RecoveryKeyForm({
       <RememberChoice checked={remember} onChange={setRemember} disabled={busy} />
       {error && <p role="alert">{error}</p>}
       <div className="row sync-actions">
-        <button className="primary" disabled={busy || hint.kind !== "ok"}>
+        <button className="primary" disabled={busy || !complete}>
           {busy ? t.working : t.unlock}
         </button>
         {onBack && (
