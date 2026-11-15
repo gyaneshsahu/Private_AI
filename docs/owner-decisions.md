@@ -6,6 +6,31 @@ Running list kept while the owner is away (from 12 November 2026). Each entry na
 
 ## What needs you before the alpha, in order (updated 13 November)
 
+**Decisions waiting for you, 15 November 2026: one list (agent's recommended default in brackets).** It replaces the scattered lists in the feature docs; details are in each doc named. Nothing below is switched on.
+
+*A. Before anything is deployed*
+1. **Privatemode manifest:** approve the new digest only after reading changelog v1.64.0 and Edgeless's answer (item 1 of the 14 November block below); drop the old digest when you sign [yes]; switch on `inference.liveManifest` [after the first deploy shows the `CometRow manifest check:` line] (`docs/manifest-rotation-20261114.md`).
+2. **One email to Edgeless** with all open questions: (a) billing without a VAT ID; (b) the attestation limit per organisation; (c) did v1.64.0 go live on 14 November, and is the new recovery key theirs; (d) an explicit "no training on customer data" sentence (their DPA has none; no-training follows only from purpose limitation, §4(4) and §2(1): `docs/multi-device-and-usability-20261115.md` section 5); (e) does the DPA cover requests started by our server for background tasks; (f) when shared prompt caching will be on (their changelog announces it; today we pay the full prompt every time). [Send.]
+
+*B. Privacy and legal (each needs the German legal read; German is binding)*
+3. **Usage records:** keep per-request usage numbers (tokens, sizes, feature, no content) linked to the account for 90 days, with one new policy sentence [yes] (`docs/usage-metering-privacy-wording-draft-20261115.md`). Alternatives: 7 days then totals only, or no token reports.
+4. **Encrypted sync (when built):** change "we keep no copy" to "we keep an encrypted copy we cannot read" and list the visible metadata [yes] (`docs/multi-device-and-usability-20261115.md`).
+5. **Background tasks (Auto):** consent texts, the extra CV and health consent, and the privacy wording [approve after the legal read] (`docs/background-tasks-consent-draft-20261115.md`, `docs/background-tasks-privacy-wording-draft-20261115.md`); a DPIA before invitees use it [yes].
+6. **Voice:** the ledger keeps each chunk's length in 2-second steps; wording in `docs/voice-privacy-wording-draft-20261114.md` [approve].
+7. Earlier drafts still waiting: OCR language files, pictures, memory, deep research, Projects; then a new policy date.
+
+*C. Product decisions*
+8. **Multi-device (the biggest usability gap):** build end-to-end encrypted sync of chats, memory, projects and tasks with device approval and a recovery key, behind `inference.vaultSync`, off until tested [yes, as the next big item]; sync on by default once built, with a device-only switch [yes]; save chats automatically except incognito [yes]; "remember this device" as a choice with its risk stated, now [yes]; passkeys as an extra unlock later [yes]; no key escrow, no readable sync [agreed red line].
+9. **Project files:** encrypted blobs on Hetzner Object Storage (EU), downloaded when opened, 1 GB per account in the alpha, Hetzner's AVV signed in the account [yes, after sync]; project files as an option in the backup meanwhile [yes].
+10. **Voice:** daily budget 150 units = 5 minutes [yes; 60 while tokens are short]; 30-second chunks, 3-minute turns [yes]; weight 1 allowance unit per chunk (needs weights version 2; version 1 says 2) [yes]; interrupt by tap only [yes]; tighten the chunk size limit after one iPhone recording is measured [yes].
+11. **Scheduled, Manual:** switch on after the device checks [yes]; chat detection on with it [yes]; neutral calendar title by default [yes]; CV consent asked again on every edit of a CV task [keep].
+12. **Scheduled, Auto (background tasks):** on for invitees only after paid billing, the legal read and the device checks [yes]; 3 tasks and 3 runs per account per day, daily minimum, pause after 3 allowance skips, results kept at most 7 days [keep]; attachment weight 2 units [keep]; the CV job search needs the run to open the result pages (job boards return overview pages only), which costs more per run [decide before offering the CV template].
+13. **Metering:** switch on after the live checks and item 3 [yes]; suggested weights based on euros, with tokens shown too [yes]; free and premium plan values are proposals [review before launch]; no euros on the user's meter [keep].
+14. **Cost weights** (14 November block, items 13 to 15): Thinking 5 and research 15 [keep]; code execution 1 per calculation [keep, watch weekly].
+
+*D. Your test list:* `docs/owner-test-list.md` now also has the device tests for voice chunks, multi-device and Scheduled.
+
+
 **Decisions waiting for you, 14 November 2026 (agent's recommended default in brackets; nothing below is switched on).** Details in each feature's doc; the matching test items are in `docs/owner-test-list.md`.
 
 1. **Privatemode manifest rotation (owner rule, 15 November: approve only after checking; never automatically).** What changed is explained in plain language in `docs/manifest-rotation-20261114.md`: the same services redeployed under a new name, stricter AMD firmware minimums, new VM images, and a new key-recovery owner key; consistent with changelog v1.64.0 (the changelog has no dates). The new digest `d63eb5cf…` is in the report draft, listed first, marked pending; the old `5fa927e3…` is kept for the record. **Your steps:** (a) read the changelog entry v1.64.0; (b) ask Edgeless whether v1.64.0 went live on 14 November and whether the new recovery key is theirs; (c) approve by signing the report with the new digest. **Built 15 November:** a 6-hourly manifest check with the log line `CometRow manifest alert:`; users then see "CometRow is checking an update from its AI provider. Chat is paused until the update is approved."; one command for a rotation (`scripts/privatemode-rotation.ts`, routine of about 30 to 40 minutes in `docs/manifest-rotation-20261114.md`), run live on 15 November: no further change since 14 November. **Decide:** drop the old digest when you sign [yes: the old manifest has weaker AMD minimums, keeping it would accept a return to them]; switch on `inference.liveManifest` (the relay serves the live manifest only if approved, so no manifest-file upload) [after the first deploy shows the `CometRow manifest check:` line].

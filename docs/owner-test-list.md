@@ -571,6 +571,39 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
   Expect: after the deploy, chat works on the hosted site; `/api/status` says ready.
   Report back: "manifest approved" and the date, or what Edgeless answered.
 
+- [ ] **T-121 Voice: long dictation across chunk boundaries.**
+  Do: in Chrome, Android Chrome and iPhone Safari, dictate slowly counting from one to sixty (about 70 s).
+  Expect: every number is in the text, including around 30 and 60 seconds; the warning shows at 2:40 if you keep going, the stop at 3:00.
+  Report back: which numbers were missing, per browser.
+- [ ] **T-122 Voice: used and left.**
+  Do: dictate a few times, then compare "Voice today" with the seconds you actually spoke.
+  Expect: the used time matches your speaking time within a few seconds per recording.
+  Report back: both numbers.
+- [ ] **T-123 Voice: iPhone chunk size.**
+  Do: on iPhone Safari, dictate 30 seconds once and note the upload size in the network panel (or ask the agent to read the log).
+  Expect: the upload is accepted.
+  Report back: the request size.
+- [ ] **T-124 Second device today.**
+  Do: on your phone, sign in with the same Google account; open Saved and type your usual passphrase.
+  Expect: the allowance matches the laptop; the vault is empty (data lives on the first device only).
+  Report back: whether that surprised you, and how it felt.
+- [ ] **T-125 Backup between devices.**
+  Do: on the laptop download an encrypted backup, move it to the phone, restore it with the passphrase.
+  Expect: chats, memory, projects and tasks arrive; project files do not; on iPhone, note where the file lands and whether the picker finds it.
+  Report back: what arrived and any trouble finding the file.
+- [ ] **T-126 Passkey support on your devices.**
+  Do: on iPhone, Android and the Windows laptop, open a public WebAuthn PRF test page with your passkey manager.
+  Expect: each says whether PRF works.
+  Report back: the result per device.
+- [ ] **T-127 Scheduled: Manual task and calendar (build with VITE_SCHEDULED=1).**
+  Do: create "A new German word every day" at a time a few minutes ahead; wait; tap Run now; export the calendar file and import it into your phone calendar.
+  Expect: the due strip appears; Run now starts a new chat; the calendar shows a neutral reminder at that time.
+  Report back: screenshots of the strip and the calendar entry.
+- [ ] **T-128 Scheduled: chat detection.**
+  Do: type "can you give me a new German word every 2 days?" in a normal chat.
+  Expect: a card offers to create the task and asks for a time; Create sends nothing.
+  Report back: whether the card appeared and felt right.
+
 ## Changes
 
 - 14 November 2026: first version. 81 items. Sources: handoff, decisions doc, checklist, deploy doc, alpha plan, week-one monitoring, and the feature docs of 13 and 14 November. Where docs disagreed, the newest was used (decisions doc and `docs/READINESS.md` of 14 November).
@@ -591,3 +624,4 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 - 15 November 2026: background task (Auto) items added; all items renumbered in file order (T-01 to T-115).
 - 15 November 2026: added T-111 to T-115 (Scheduled: a Manual task due and run, the chat card, the calendar file on a phone, a background task with a CV, the decision).
 - 15 November 2026: Scheduled (Manual) items added; all items renumbered in file order (T-01 to T-120).
+- 15 November 2026: added T-121 to T-128 (voice chunks, second device and backup, passkey support, Scheduled Manual and chat detection).
