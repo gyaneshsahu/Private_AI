@@ -90,6 +90,8 @@ export async function itemIdFor(ak: Uint8Array, kind: string, localId: string): 
 }
 /** Proves knowledge of AK to the server for device registration; the server keeps only its SHA-256. */
 export const accountProof = async (ak: Uint8Array, accountId: string) => toBase64(await hkdfBits(ak, `account-proof|${accountId}`));
+/** Proves knowledge of the recovery key; needed to enrol a new device id outside pairing. */
+export const recoveryProof = async (rk: Uint8Array, accountId: string) => toBase64(await hkdfBits(rk, `recovery-proof|${accountId}`));
 /** A keyed hash of a base snapshot, so the device's sync store holds no plaintext digest. */
 export async function baseHash(ak: Uint8Array, text: string): Promise<string> {
   const raw = await hkdfBits(ak, "base-hash");

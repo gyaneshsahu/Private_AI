@@ -48,12 +48,13 @@ async function bare(settings = { quotaBytes: 10_000, maxDevices: 2 }) {
       ...(body === undefined ? {} : { body: typeof body === "string" ? body : JSON.stringify(body) }),
     });
   const proof = b64(32, 7);
+  const recoveryProof = b64(32, 9);
   const setup = async (account: string) => {
     const d = newDevice();
-    const r = await call(account, "POST", "/setup", { deviceId: d.deviceId, devicePublicKey: key(), deviceWrapper: b64(126), recoveryWrapper: b64(61), labelCiphertext: b64(40), accountProof: proof }, d);
+    const r = await call(account, "POST", "/setup", { deviceId: d.deviceId, devicePublicKey: key(), deviceWrapper: b64(126), recoveryWrapper: b64(61), labelCiphertext: b64(40), accountProof: proof, recoveryProof }, d);
     return { r, d };
   };
-  return { call, setup, b64, key, newDevice, proof, store, advance: (ms: number) => (now += ms) };
+  return { call, setup, b64, key, newDevice, proof, recoveryProof, store, advance: (ms: number) => (now += ms) };
 }
 
 describe("sync routes", () => {
@@ -78,12 +79,12 @@ describe("sync routes", () => {
       { extra: true },
     ]) {
       const n = s.newDevice();
-      const body = { deviceId: n.deviceId, devicePublicKey: s.key(), deviceWrapper: null, recoveryWrapper: s.b64(61), labelCiphertext: s.b64(20), accountProof: s.proof, ...bad };
+      const body = { deviceId: n.deviceId, devicePublicKey: s.key(), deviceWrapper: null, recoveryWrapper: s.b64(61), labelCiphertext: s.b64(20), accountProof: s.proof, recoveryProof: s.recoveryProof, ...bad };
       expect((await s.call("carol", "POST", "/setup", body, n)).status, JSON.stringify(bad)).toBe(400);
     }
     // The device header must name the device being set up.
     const n = s.newDevice();
-    expect((await s.call("carol", "POST", "/setup", { deviceId: randomUUID(), devicePublicKey: s.key(), deviceWrapper: null, recoveryWrapper: s.b64(61), labelCiphertext: s.b64(20), accountProof: s.proof }, n)).status).toBe(400);
+    expect((await s.call("carol", "POST", "/setup", { deviceId: randomUUID(), devicePublicKey: s.key(), deviceWrapper: null, recoveryWrapper: s.b64(61), labelCiphertext: s.b64(20), accountProof: s.proof, recoveryProof: s.recoveryProof }, n)).status).toBe(400);
     expect((await s.call("", "GET", "/state")).status).toBe(401);
   });
 
@@ -121,10 +122,13 @@ describe("sync routes", () => {
   it("enforces the device limit, refuses a revoked device and deletes its wrapper", async () => {
     const s = await bare();
     const { d } = await s.setup("alice");
-    const register = (n: { deviceId: string; token: string }, proof = s.proof) =>
-      s.call("alice", "POST", "/devices", { deviceId: n.deviceId, devicePublicKey: s.key(), deviceWrapper: s.b64(126), labelCiphertext: s.b64(20), accountProof: proof }, n);
+    const register = (n: { deviceId: string; token: string }, proof = s.proof, recoveryProof: string | undefined = s.recoveryProof) =>
+      s.call("alice", "POST", "/devices", { deviceId: n.deviceId, devicePublicKey: s.key(), deviceWrapper: s.b64(126), labelCiphertext: s.b64(20), accountProof: proof, ...(recoveryProof ? { recoveryProof } : {}) }, n);
     const second = s.newDevice();
     expect((await register(second, s.b64(32, 8))).status).toBe(403); // wrong proof of AK
+    // AK alone cannot enrol a new id (a removed device that kept AK): the recovery key proof is needed.
+    expect((await register(second, s.proof, "")).status).toBe(403);
+    expect((await register(second, s.proof, s.b64(32, 1))).status).toBe(403);
     expect((await register(second)).status).toBe(204);
     expect((await register(s.newDevice())).status).toBe(409); // limit 2
     const wrappers = await (await s.call("alice", "GET", `/wrappers?deviceId=${second.deviceId}`, undefined, second)).json();
@@ -247,6 +251,39 @@ describe("in the app", () => {
       body: JSON.stringify({ confirm: "DELETE SYNCED DATA" }),
     });
     expect(noCsrf.status).toBe(403);
+  });
+});
+
+describe("in production mode", () => {
+  it("answers bad or oversized JSON with a code and logs nothing (no body in the logs)", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    const logs = [vi.spyOn(console, "log"), vi.spyOn(console, "warn"), vi.spyOn(console, "error")];
+    try {
+      const s = await bare();
+      const { d } = await s.setup("alice");
+      for (const [path, body] of [
+        ["/setup", '{"deviceId":"CANARY-BODY'],
+        ["/devices", "x".repeat(20_000)],
+        ["/pairings/find", '{"code":'],
+        ["/reset", "{bad"],
+      ] as const) {
+        const r = await s.call("alice", "POST", path, body, d);
+        expect([400, 413], path).toContain(r.status);
+        expect(await r.text()).not.toContain("CANARY");
+      }
+      for (const spy of logs) expect(spy).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+  it("tells a signed-in device, and only it, that a pairing request waits", async () => {
+    const s = await bare();
+    const { d } = await s.setup("alice");
+    expect((await (await s.call("alice", "GET", "/state", undefined, d)).json()).pairingPending).toBe(false);
+    const n = s.newDevice();
+    await s.call("alice", "POST", "/pairings", { newDevicePublicKey: s.key(), deviceId: n.deviceId }, n);
+    expect((await (await s.call("alice", "GET", "/state", undefined, d)).json()).pairingPending).toBe(true);
+    expect((await (await s.call("alice", "GET", "/state")).json()).pairingPending).toBe(false);
   });
 });
 

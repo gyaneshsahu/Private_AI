@@ -209,6 +209,30 @@ describe("sync between devices", () => {
     await a.engine.syncNow();
     expect((await a.vault.list()).some((c) => c.title === "Third (conflict copy)")).toBe(true);
 
+    // The other order: B deletes while offline, A keeps writing in that chat and pushes first.
+    const fourth = conversation("Fourth", ["four"]);
+    await a.vault.save(fourth, null);
+    await a.engine.syncNow();
+    await b.engine.syncNow();
+    await b.vault.delete(fourth.id);
+    const fourthOnA = (await a.vault.list()).find((x) => x.id === fourth.id)!;
+    await a.vault.save({ ...fourthOnA, messages: [...fourthOnA.messages, message("CANARY-KEPT-EDIT")] });
+    await a.engine.syncNow();
+    await b.engine.syncNow();
+    await a.engine.syncNow();
+    for (const v of [a.vault, b.vault]) {
+      const list = await v.list();
+      expect(list.some((x) => x.id === fourth.id)).toBe(false);
+      expect(list.find((x) => x.title === "Fourth (conflict copy)")?.messages.map((m) => m.text)).toContain("CANARY-KEPT-EDIT");
+    }
+
+    // A pairing request is noticed by the signed-in device without asking.
+    const waiting = await device(origin, "waiting");
+    const pending = await waiting.engine.startPairing();
+    await a.engine.refresh();
+    expect(a.engine.getState().pairingRequested).toBe(true);
+    void pending.wait.catch(() => {});
+
     // Revoke B from A: B's next request is refused, B locks and forgets its key; its local data stays.
     const bId = b.engine.getState().devices.find((d) => d.thisDevice)?.deviceId ?? (await b.engine.refresh(), b.engine.getState().devices.find((d) => d.thisDevice)!.deviceId);
     await a.engine.revokeDevice(bId);
@@ -230,7 +254,7 @@ describe("sync between devices", () => {
     await expect(c.engine.resetSync("DELETE SYNCED DATA")).rejects.toMatchObject({ code: "needs-local-passphrase" });
     await c.engine.resetSync("DELETE SYNCED DATA", { localPassphrase: "synthetic local passphrase C" });
     expect((await store.items(ACCOUNT, 0, 100)).items).toHaveLength(0);
-    expect(await store.authHash(ACCOUNT)).toBeUndefined();
+    expect(await store.proofs(ACCOUNT)).toBeUndefined();
     await a.engine.refresh();
     expect(a.engine.getState().phase).toBe("off");
     c.vault.lock();
@@ -272,6 +296,13 @@ describe("sync between devices", () => {
     await again.init(); // offline: the cached wrapper and the device key open the vault
     expect(b.vault.unlocked).toBe(true);
     expect((await b.vault.list()).length).toBe(2);
+    // After the idle lock (or a lock from another tab) it opens again without a secret.
+    b.vault.lock();
+    expect(await again.unlockThisDevice()).toBe("ok");
+    expect(b.vault.accountKey()).toHaveLength(32);
+    // A not-remembered device says so.
+    a.vault.lock();
+    expect(await a.engine.unlockThisDevice()).toBe("not-remembered");
   }, 60_000);
 });
 

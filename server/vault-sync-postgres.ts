@@ -1,6 +1,6 @@
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
-import type { DeviceRow, PairingRow, PutResult, SyncStore } from "./vault-sync";
+import type { DeviceRow, PairingRow, PutResult, SetupInput, SyncStore } from "./vault-sync";
 
 const deviceFrom = (r: Record<string, unknown>): DeviceRow => ({
   deviceId: r.device_id as string,
@@ -43,16 +43,17 @@ export class PostgresSyncStore implements SyncStore {
       client.release();
     }
   }
-  async authHash(accountId: string) {
-    return (await this.database.query("SELECT auth_hash FROM sync_accounts WHERE account_id=$1", [accountId])).rows[0]?.auth_hash as Buffer | undefined;
+  async proofs(accountId: string) {
+    const row = (await this.database.query("SELECT auth_hash,recovery_hash FROM sync_accounts WHERE account_id=$1", [accountId])).rows[0];
+    return row ? { auth: row.auth_hash as Buffer, recovery: row.recovery_hash as Buffer } : undefined;
   }
-  async setup(accountId: string, input: { authHash: Buffer; recoveryWrapper: Buffer; device: DeviceRow; deviceWrapper: Buffer | null }, now: number) {
+  async setup(accountId: string, input: SetupInput, now: number) {
     const client = await this.database.connect();
     try {
       await client.query("BEGIN");
       const created = await client.query(
-        "INSERT INTO sync_accounts(account_id,auth_hash,created_at) VALUES($1,$2,$3) ON CONFLICT (account_id) DO NOTHING",
-        [accountId, input.authHash, now],
+        "INSERT INTO sync_accounts(account_id,auth_hash,recovery_hash,created_at) VALUES($1,$2,$3,$4) ON CONFLICT (account_id) DO NOTHING",
+        [accountId, input.authHash, input.recoveryHash, now],
       );
       if (!created.rowCount) {
         await client.query("ROLLBACK");

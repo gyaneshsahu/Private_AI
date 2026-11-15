@@ -4,6 +4,7 @@
 CREATE TABLE sync_accounts (
   account_id uuid PRIMARY KEY REFERENCES "user"(id) ON DELETE CASCADE,
   auth_hash bytea NOT NULL CHECK (octet_length(auth_hash) = 32),
+  recovery_hash bytea NOT NULL CHECK (octet_length(recovery_hash) = 32),
   seq bigint NOT NULL DEFAULT 0 CHECK (seq >= 0),
   created_at bigint NOT NULL CHECK (created_at >= 0)
 );

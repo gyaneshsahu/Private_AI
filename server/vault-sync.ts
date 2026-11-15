@@ -50,6 +50,13 @@ export interface PairingRow {
   wrapper?: Buffer;
   labelCiphertext?: Buffer;
 }
+export interface SetupInput {
+  authHash: Buffer;
+  recoveryHash: Buffer;
+  recoveryWrapper: Buffer;
+  device: DeviceRow;
+  deviceWrapper: Buffer | null;
+}
 export type PutResult =
   | { status: "ok"; version: number }
   | { status: "conflict"; current: { version: number; ciphertext: Buffer | null } }
@@ -57,8 +64,9 @@ export type PutResult =
 
 /** Storage for sync. Every write for one account is serialised (PostgreSQL: a row lock on sync_accounts). */
 export interface SyncStore {
-  authHash(accountId: string): Promise<Buffer | undefined>;
-  setup(accountId: string, input: { authHash: Buffer; recoveryWrapper: Buffer; device: DeviceRow; deviceWrapper: Buffer | null }, now: number): Promise<"ok" | "exists">;
+  /** SHA-256 of the AK proof and of the recovery-key proof; undefined while sync is not set up. */
+  proofs(accountId: string): Promise<{ auth: Buffer; recovery: Buffer } | undefined>;
+  setup(accountId: string, input: SetupInput, now: number): Promise<"ok" | "exists">;
   devices(accountId: string): Promise<DeviceRow[]>;
   /** Registers a device or replaces its own wrapper and label; "revoked" for a revoked id. */
   upsertDevice(accountId: string, device: DeviceRow, wrapper: Buffer | null, maxDevices: number): Promise<"ok" | "limit" | "revoked" | "no-account">;
@@ -90,15 +98,15 @@ const codeHash = (pairingId: string, code: string) => sha256(`${pairingId}|${cod
 export class MemorySyncStore implements SyncStore {
   private accounts = new Map<
     string,
-    { authHash: Buffer; seq: number; recovery: Buffer; devices: Map<string, DeviceRow>; wrappers: Map<string, Buffer>; items: Map<string, ItemRow>; pairings: Map<string, PairingRow> }
+    { proofs: { auth: Buffer; recovery: Buffer }; seq: number; recovery: Buffer; devices: Map<string, DeviceRow>; wrappers: Map<string, Buffer>; items: Map<string, ItemRow>; pairings: Map<string, PairingRow> }
   >();
-  async authHash(accountId: string) {
-    return this.accounts.get(accountId)?.authHash;
+  async proofs(accountId: string) {
+    return this.accounts.get(accountId)?.proofs;
   }
-  async setup(accountId: string, input: { authHash: Buffer; recoveryWrapper: Buffer; device: DeviceRow; deviceWrapper: Buffer | null }) {
+  async setup(accountId: string, input: SetupInput) {
     if (this.accounts.has(accountId)) return "exists" as const;
     this.accounts.set(accountId, {
-      authHash: input.authHash,
+      proofs: { auth: input.authHash, recovery: input.recoveryHash },
       seq: 0,
       recovery: input.recoveryWrapper,
       devices: new Map([[input.device.deviceId, input.device]]),
@@ -221,9 +229,9 @@ const wrapper = base64(SYNC_LIMITS.wrapperBytes);
 const label = base64(SYNC_LIMITS.labelBytes);
 const proof = base64(32, 32);
 const registration = z
-  .object({ deviceId: uuid, devicePublicKey: publicKey, deviceWrapper: wrapper.nullable(), labelCiphertext: label, accountProof: proof })
+  .object({ deviceId: uuid, devicePublicKey: publicKey, deviceWrapper: wrapper.nullable(), labelCiphertext: label, accountProof: proof, recoveryProof: proof.optional() })
   .strict();
-const setupBody = registration.extend({ recoveryWrapper: wrapper }).strict();
+const setupBody = registration.extend({ recoveryWrapper: wrapper, recoveryProof: proof }).strict();
 const putBody = z.object({ baseVersion: z.number().int().min(0).max(2 ** 31 - 2), ciphertext: base64(SYNC_LIMITS.itemBytes) }).strict();
 const deviceHeader = /^([0-9a-f-]{36})\.([A-Za-z0-9_-]{43})$/;
 
@@ -301,12 +309,15 @@ export function syncRoutes(
   router.get(
     `${base}/state`,
     handle(false, async (_req, res, { account, token }) => {
-      const [hash, devices, usage] = await Promise.all([store.authHash(account), store.devices(account), store.usage(account)]);
+      const [hash, devices, usage] = await Promise.all([store.proofs(account), store.devices(account), store.usage(account)]);
       const mine = token && devices.find((d) => d.deviceId === token.deviceId && same(d.tokenHash, token.hash));
+      // Only to a signed-in device, and only whether one is waiting: no key, no code.
+      const pairingPending = !!mine && !mine.revokedAt && (await store.pairings(account, clock())).length > 0;
       res.json({
         enabled: true,
         hasWrappers: !!hash,
         thisDevice: mine ? (mine.revokedAt ? "revoked" : "ok") : "unknown",
+        pairingPending,
         devices: devices.map((d) => ({
           deviceId: d.deviceId,
           labelCiphertext: d.labelCiphertext.toString("base64"),
@@ -328,7 +339,7 @@ export function syncRoutes(
       if (!token || token.deviceId !== b.deviceId) return fail(res, 400, "invalid");
       const result = await store.setup(
         account,
-        { authHash: sha256(b.accountProof), recoveryWrapper: b.recoveryWrapper, device: newDevice(b, token.hash, now), deviceWrapper: b.deviceWrapper },
+        { authHash: sha256(b.accountProof), recoveryHash: sha256(b.recoveryProof), recoveryWrapper: b.recoveryWrapper, device: newDevice(b, token.hash, now), deviceWrapper: b.deviceWrapper },
         now,
       );
       if (result === "exists") return fail(res, 409, "exists");
@@ -337,7 +348,9 @@ export function syncRoutes(
     }),
   );
   // Registers this browser after a recovery-key unlock, or changes its own wrapper ("remember this
-  // device" on or off). The proof shows knowledge of AK; the server compares hashes in constant time.
+  // device" on or off). The AK proof is always required; a NEW device id also needs the proof derived
+  // from the recovery key, so a removed device that kept AK cannot enrol itself again under a new id.
+  // The server compares hashes in constant time.
   router.post(
     `${base}/devices`,
     small,
@@ -345,11 +358,12 @@ export function syncRoutes(
       const b = parse(registration, req.body, res);
       if (!b) return;
       if (!token || token.deviceId !== b.deviceId) return fail(res, 400, "invalid");
-      const hash = await store.authHash(account);
-      if (!hash) return fail(res, 404, "not-set-up");
-      if (!same(hash, sha256(b.accountProof))) return fail(res, 403, "wrong-proof");
+      const proofs = await store.proofs(account);
+      if (!proofs) return fail(res, 404, "not-set-up");
+      if (!same(proofs.auth, sha256(b.accountProof))) return fail(res, 403, "wrong-proof");
       const existing = (await store.devices(account)).find((d) => d.deviceId === b.deviceId);
       if (existing && !same(existing.tokenHash, token.hash)) return fail(res, 403, "device-unknown");
+      if (!existing && !(b.recoveryProof && same(proofs.recovery, sha256(b.recoveryProof)))) return fail(res, 403, "wrong-proof");
       const result = await store.upsertDevice(account, newDevice(b, token.hash, now), b.deviceWrapper, settings.maxDevices);
       if (result === "limit") return fail(res, 409, "device-limit");
       if (result === "revoked") return fail(res, 403, "revoked");
@@ -447,7 +461,7 @@ export function syncRoutes(
       const b = parse(z.object({ newDevicePublicKey: publicKey, deviceId: uuid }).strict(), req.body, res);
       if (!b) return;
       if (!token || token.deviceId !== b.deviceId) return fail(res, 400, "invalid");
-      if (!(await store.authHash(account))) return fail(res, 404, "not-set-up");
+      if (!(await store.proofs(account))) return fail(res, 404, "not-set-up");
       if (!pairingCreations.allow(account, now)) return fail(res, 429, "rate-limited");
       const pairingId = randomUUID();
       const code = pairingCode(account, b.newDevicePublicKey);
@@ -519,6 +533,11 @@ export function syncRoutes(
       count("sync.reset");
       res.status(204).end();
     }),
+  );
+  // Body-parser errors (bad JSON, too large) end here, never in the default handler, which would
+  // log the request body in production.
+  router.use((error: { type?: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) =>
+    fail(res, error?.type === "entity.too.large" ? 413 : 400, "invalid"),
   );
   return router;
 }

@@ -60,6 +60,8 @@ export const unlockWithRecoveryKey = (recoveryKey: string, opts: { deviceLabel: 
 export const revokeDevice = (deviceId: string) => need().revokeDevice(deviceId);
 export const resetSync = (confirm: string, opts?: { localPassphrase?: string }) => need().resetSync(confirm, opts);
 export const syncNow = () => need().syncNow();
+/** A remembered device opens its vault again after a lock; see openLocalVault. */
+export const unlockThisDevice = () => need().unlockThisDevice();
 export const turnOffSyncOnThisDevice = (opts?: { localPassphrase?: string }) => need().turnOffSyncOnThisDevice(opts);
 /** "Remember this device" on or off while sync is on here. */
 export const setRememberDevice = (remember: boolean) => need().setRememberDevice(remember);
@@ -69,4 +71,14 @@ export const deleteEverythingOnThisDevice = (opts: { alsoDeleteSyncedData: boole
  * Sets, replaces or (null) removes the optional local passphrase of a synced vault. After a
  * recovery-key unlock no current passphrase is needed: that is how a forgotten one is replaced.
  */
-export const setLocalPassphrase = (vault: Vault, next: string | null, current?: string) => vault.setLocalPassphrase(next, current);
+export const setLocalPassphrase = (passphrase: string | null, current?: string) => need().vault.setLocalPassphrase(passphrase, current);
+/**
+ * Opens this account's vault with this device's own key when the device is remembered for sync
+ * (also after the idle lock or a lock from another tab). False: not remembered here, so the
+ * passphrase, the recovery key or another device is needed. The app calls it on start and
+ * whenever the engine leaves "needs-approval".
+ */
+export const openLocalVault = async (vault: Vault): Promise<boolean> => {
+  if (!engine || need().vault !== vault) return false;
+  return (await engine.unlockThisDevice().catch(() => "not-remembered")) === "ok";
+};

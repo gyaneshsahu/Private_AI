@@ -33,6 +33,8 @@ export interface SyncState {
   error?: string;
   quota?: { usedBytes: number; limitBytes: number };
   devices: SyncDevice[];
+  /** An existing unlocked device: another device asked to be approved (the prompt opens by itself). */
+  pairingRequested?: boolean;
 }
 export type SyncErrorCode =
   | "unlock-first"
@@ -168,7 +170,13 @@ export class SyncEngine {
     return this.state;
   }
 
-  private async call(method: string, path: string, body?: unknown, header = this.device && `${this.device.deviceId}.${this.device.token}`) {
+  private async call(
+    method: string,
+    path: string,
+    body?: unknown,
+    header = this.device && `${this.device.deviceId}.${this.device.token}`,
+    handleRevoked = true,
+  ) {
     let r: { status: number; json(): Promise<unknown> };
     try {
       r = await this.fetcher(`/api/sync${path}`, {
@@ -184,7 +192,7 @@ export class SyncEngine {
       throw new SyncError("offline");
     }
     const data = (r.status === 204 ? {} : await r.json().catch(() => ({}))) as Record<string, unknown>;
-    if ((r.status === 403 && data.code === "revoked") || (r.status === 401 && data.code === "device-unknown")) {
+    if (handleRevoked && ((r.status === 403 && data.code === "revoked") || (r.status === 401 && data.code === "device-unknown"))) {
       await this.revokedHere();
       throw new SyncError("revoked");
     }
@@ -210,16 +218,23 @@ export class SyncEngine {
       if (event === "unlocked") void this.onUnlocked();
       else if (!this.applying) this.later(2000);
     };
-    if (this.device?.remembered && this.device.keyPair && this.device.wrapper && !this.o.vault.unlocked) {
-      try {
-        const ak = await k.unwrapWithDevice(this.device.wrapper, this.device.keyPair.privateKey, this.o.accountId, this.device.deviceId);
-        await this.bindAccountKey(ak);
-      } catch {
-        /* Stays locked: the vault may be a passphrase vault that must be unlocked first. */
-      }
-    }
+    await this.unlockThisDevice().catch(() => {});
     await this.refresh().catch(() => {});
     if (this.o.vault.unlocked) await this.syncNow().catch(() => {});
+  }
+  /**
+   * A remembered device opens its vault with its own key (also offline: the wrapper is cached
+   * here), at start and after any lock (idle timer, another tab). "not-remembered": use the local
+   * passphrase, the recovery key or another device.
+   */
+  async unlockThisDevice(): Promise<"ok" | "not-remembered"> {
+    const d = this.device;
+    if (this.o.vault.unlocked) return "ok";
+    if (!d?.remembered || !d.keyPair || !d.wrapper) return "not-remembered";
+    const ak = await k.unwrapWithDevice(d.wrapper, d.keyPair.privateKey, this.o.accountId, d.deviceId);
+    await this.bindAccountKey(ak);
+    this.set({ phase: this.phase() });
+    return "ok";
   }
   /** Timers: every 60 s while visible, on focus, 2 s after a local save, backoff after errors. */
   start() {
@@ -228,10 +243,15 @@ export class SyncEngine {
       if (document.visibilityState === "visible") void this.syncNow().catch(() => {});
     };
     const every = setInterval(tick, 60_000);
+    // A light poll (state only) so a waiting new device is noticed within seconds.
+    const light = setInterval(() => {
+      if (document.visibilityState === "visible" && this.o.vault.accountKey()) void this.refresh().catch(() => {});
+    }, 10_000);
     window.addEventListener("focus", tick);
     this.stop = () => {
       this.stopped = true;
       clearInterval(every);
+      clearInterval(light);
       window.removeEventListener("focus", tick);
       this.timers.forEach(clearTimeout);
     };
@@ -239,6 +259,9 @@ export class SyncEngine {
   stop() {
     this.stopped = true;
     this.timers.forEach(clearTimeout);
+  }
+  get vault() {
+    return this.o.vault;
   }
   detach() {
     this.stop();
@@ -250,11 +273,14 @@ export class SyncEngine {
     this.timers = [setTimeout(() => void this.syncNow().catch(() => {}), ms)];
   }
   private async onUnlocked() {
-    // A passphrase vault was unlocked on a device whose setup did not finish moving it: move it now.
+    // Opened without AK (a passphrase vault whose move did not finish, or a synced vault opened by
+    // another local unlocker): open it again with AK, moving it first when it is still a passphrase vault.
     const vault = this.o.vault;
     if (this.device?.keyPair && this.device.wrapper && !vault.accountKey()) {
       try {
-        await vault.adoptAccountKey(await k.unwrapWithDevice(this.device.wrapper, this.device.keyPair.privateKey, this.o.accountId, this.device.deviceId));
+        const ak = await k.unwrapWithDevice(this.device.wrapper, this.device.keyPair.privateKey, this.o.accountId, this.device.deviceId);
+        if ((await vault.mode()) === "sync") await vault.unlockWithAccountKey(ak);
+        else await vault.adoptAccountKey(ak);
       } catch {
         return;
       }
@@ -291,6 +317,7 @@ export class SyncEngine {
     const s = r.data as {
       hasWrappers: boolean;
       thisDevice: string;
+      pairingPending?: boolean;
       devices: { deviceId: string; labelCiphertext: string; createdAt: string; lastSeenAt: string; revoked: boolean }[];
       quota: { usedBytes: number; limitBytes: number };
     };
@@ -312,7 +339,7 @@ export class SyncEngine {
         revoked: d.revoked,
       })),
     );
-    this.set({ quota: s.quota, devices, phase: this.phase() });
+    this.set({ quota: s.quota, devices, phase: this.phase(), pairingRequested: !!s.pairingPending && !!ak });
   }
   private phase(): SyncPhase {
     if (!this.serverOn || this.optedOut) return "off";
@@ -351,6 +378,7 @@ export class SyncEngine {
         recoveryWrapper: await k.wrapWithRecovery(p.ak, p.rk.bytes, this.o.accountId),
         labelCiphertext: await k.encryptLabel(p.ak, this.o.accountId, deviceId, p.deviceLabel),
         accountProof: await k.accountProof(p.ak, this.o.accountId),
+        recoveryProof: await k.recoveryProof(p.rk.bytes, this.o.accountId),
       },
       `${deviceId}.${token}`,
     );
@@ -461,15 +489,17 @@ export class SyncEngine {
       return "wrong-key";
     }
     await this.bindAccountKey(ak);
-    await this.register(ak, opts.deviceLabel, opts.rememberDevice);
+    await this.register(ak, opts.deviceLabel, opts.rememberDevice, rk);
     await this.setOptedOut(false);
     await this.syncNow().catch(() => {});
     return "ok";
   }
   /** Registers this browser (or changes its own wrapper) with proof of AK. */
-  private async register(ak: Uint8Array, label: string, remember: boolean) {
+  private async register(ak: Uint8Array, label: string, remember: boolean, rk?: Uint8Array) {
     for (let attempt = 0; attempt < 2; attempt++) {
+      // A new id needs the recovery key's proof (server/vault-sync.ts); without it only this id is updated.
       const reuse = attempt === 0 ? this.device : undefined;
+      if (!reuse && !rk) throw new SyncError("revoked");
       const deviceId = reuse?.deviceId ?? crypto.randomUUID();
       const token = reuse?.token ?? this.newToken();
       const keyPair = reuse?.keyPair ?? (await k.newDeviceKeyPair());
@@ -481,16 +511,12 @@ export class SyncEngine {
         deviceWrapper: wrapper,
         labelCiphertext: await k.encryptLabel(ak, this.o.accountId, deviceId, label),
         accountProof: await k.accountProof(ak, this.o.accountId),
+        ...(rk ? { recoveryProof: await k.recoveryProof(rk, this.o.accountId) } : {}),
       };
-      let r: { status: number; data: Record<string, unknown> };
-      try {
-        r = await this.call("POST", "/devices", body, `${deviceId}.${token}`);
-      } catch (e) {
-        // This browser's old entry was removed: register it again under a new id.
-        if (e instanceof SyncError && e.code === "revoked" && attempt === 0) continue;
-        throw e;
-      }
-      if (r.status === 403 && attempt === 0) continue;
+      const r = await this.call("POST", "/devices", body, `${deviceId}.${token}`, false);
+      // This browser's old entry was removed: register it again under a new id.
+      if (r.status === 403 && r.data.code !== "wrong-proof" && attempt === 0) continue;
+      if (r.status === 403) throw new SyncError("revoked");
       if (r.status === 409) throw new SyncError("device-limit");
       if (r.status !== 204) throw new SyncError("server");
       await this.saveDevice({ deviceId, token, label, remembered: remember, ...(remember && wrapper ? { keyPair, wrapper } : {}) });
@@ -709,6 +735,12 @@ export class SyncEngine {
       let next: unknown;
       if (kind === "conversation") {
         const remote = savedConversationSchema.parse(data) as Conversation;
+        // Deleted here, edited elsewhere since: the delete stands, the newer edit survives as a copy.
+        if (!mine && base && !base.deleted && base.hash !== (await k.baseHash(ak, JSON.stringify(remote))) && (await vault.readTombstones()).includes(remote.id)) {
+          await this.saveCopy(remote);
+          await this.putBase(await this.baseEntry(ak, item.itemId, kind, remote.id, item.version, remote));
+          return true;
+        }
         if (!mine) next = remote;
         else if (!localChanged) next = remote;
         else {
@@ -885,7 +917,10 @@ export class SyncEngine {
         if (r.status !== 409) throw new SyncError("server");
         const current = r.data.current as { version: number; ciphertext: string | null };
         if (!current.ciphertext) return this.putBase({ itemId, kind: "conversation", localId, version: current.version, deleted: true });
-        // Edited elsewhere after this device deleted it: the local delete wins, against the newer version.
+        // Edited elsewhere after this device deleted it: the delete stands, the edit is kept as a copy.
+        const parsed = itemPayload.safeParse(await k.decryptItem(ak, this.o.accountId, itemId, current.version, current.ciphertext).catch(() => undefined));
+        const remote = parsed.success && parsed.data.kind === "conversation" ? savedConversationSchema.safeParse(parsed.data.data) : undefined;
+        if (remote?.success) await this.saveCopy(remote.data as Conversation);
         const again = await this.call("DELETE", `/items/${itemId}?baseVersion=${current.version}`);
         if (again.status === 200) await this.putBase({ itemId, kind: "conversation", localId, version: Number(again.data.version), deleted: true });
         else waiting++;
