@@ -603,6 +603,18 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
   Do: type "can you give me a new German word every 2 days?" in a normal chat.
   Expect: a card offers to create the task and asks for a time; Create sends nothing.
   Report back: whether the card appeared and felt right.
+- [ ] **T-129 Synced project files: the decisions (vault sync Stage 3).**
+  Do: read `docs/vault-sync-20261115.md` section 14 and the files part of `docs/vault-sync-privacy-wording-draft-20261115.md` (section 7).
+  Expect: you agree with a separate file quota of 1 GB, 10 MB per file, and `store: "postgres"` until Hetzner is set up.
+  Tell the agent: "approved" or changes (VS-6 to VS-9).
+- [ ] **T-130 Hetzner Object Storage for synced files (only when you want files in the bucket).**
+  Do: create a private bucket in Falkenstein or Nuremberg; sign the AVV in the Hetzner account; create an access key; set `PRIVATEAI_BLOB_S3_ACCESS_KEY_ID` and `PRIVATEAI_BLOB_S3_SECRET_ACCESS_KEY` in Render yourself.
+  Expect: nothing changes until the config says `"store": "s3"`.
+  Tell the agent: "bucket ready" with the bucket name and location (never the keys).
+- [ ] **T-131 A project file on two devices (needs sync with files switched on).**
+  Do: add a text file to a project on the laptop; on the phone open the same project; press Download; ask a question in a project chat; then remove the file on the phone.
+  Expect: the phone lists the file at once as "Not downloaded yet"; Download shows progress; the answer uses the file; after the next sync the file is gone on the laptop too.
+  Report back: screenshots of the file list before and after Download, and how long the download took.
 
 ## Changes
 
@@ -625,3 +637,4 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 - 15 November 2026: added T-111 to T-115 (Scheduled: a Manual task due and run, the chat card, the calendar file on a phone, a background task with a CV, the decision).
 - 15 November 2026: Scheduled (Manual) items added; all items renumbered in file order (T-01 to T-120).
 - 15 November 2026: added T-121 to T-128 (voice chunks, second device and backup, passkey support, Scheduled Manual and chat detection).
+- 15 November 2026: added T-129 to T-131 (synced project files: the decisions, the Hetzner bucket, a file on two devices).
