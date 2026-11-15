@@ -81,6 +81,11 @@ export function privatemodeKeyExpiryWarning(
     : `The Privatemode API key expires at ${expiresAt} (in ${Math.ceil(left / 86400000)} days). The owner must create a new key and update the report before then.`;
 }
 
+/** The one attestation queue of this server; background tasks share it (server/background-privatemode.ts). */
+export const relayAttestQueue = () =>
+  // Counts only: no bodies, paths or account data.
+  createAttestQueue(undefined, (stats) => console.warn(`Privatemode attestation queue: ${JSON.stringify(stats)}`));
+
 export function createPrivatemodeRelayAdapter(): InferenceRelayAdapter {
   return {
     id: "privatemode",
@@ -132,12 +137,8 @@ export function createPrivatemodeRelayAdapter(): InferenceRelayAdapter {
     },
     // The transcription path is answered only while voice input is switched on (privatemode-voice.ts).
     rootPaths: ["/v1/chat/completions", "/v1/audio/transcriptions", ...KEY_PATHS],
-    routes({ qualification, apiKey, manifest }) {
+    routes({ qualification, apiKey, manifest, attestQueue = relayAttestQueue() }) {
       const router = express.Router();
-      // Counts only: no bodies, paths or account data.
-      const attestQueue = createAttestQueue(undefined, (stats) =>
-        console.warn(`Privatemode attestation queue: ${JSON.stringify(stats)}`),
-      );
       // The queue is shared by everyone, so one account (or session) may hold only a small share:
       // at most 2 attestation calls at once and 10 per 10 minutes. A normal browser session needs
       // one per 10 minutes, plus one after a failure or a release change.

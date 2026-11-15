@@ -3,6 +3,7 @@ import { isAbsolute } from "node:path";
 import { z } from "zod";
 import { parseSocialCredentials } from "./account-social";
 import { attestationAuditDefaults } from "./attestation-audit-state";
+import { parseKeyRing } from "./background-crypto";
 
 const path = z.string().refine(isAbsolute);
 const schema = z
@@ -94,6 +95,25 @@ const schema = z
             dailyRuns: z.number().int().min(1).max(20),
             dailySearches: z.number().int().min(1).max(500),
             allowedEmails: z.array(z.email().max(254)).min(1).max(200).optional(),
+          })
+          .strict()
+          .optional(),
+        /**
+         * Background tasks, the Auto mode of Scheduled, their own switch, off unless enabled
+         * (docs/background-tasks-20261115.md). The server stores each task sealed under the key in
+         * `keyFile` and runs it on schedule. `maxAutoTasks` per account; `runHourUtcWindow`: UTC
+         * hours [from, to) in which runs may start (absent: any hour). The stop file stops them too.
+         */
+        backgroundTasks: z
+          .object({
+            enabled: z.boolean(),
+            maxAutoTasks: z.number().int().min(1).max(3),
+            keyFile: path,
+            runHourUtcWindow: z
+              .object({ from: z.number().int().min(0).max(23), to: z.number().int().min(0).max(23) })
+              .strict()
+              .refine((w) => w.from !== w.to, "An empty window would stop every run.")
+              .optional(),
           })
           .strict()
           .optional(),
@@ -252,6 +272,19 @@ export async function loadDeploymentConfig(file: string) {
                 ? { images: { maxBytes: inference.images.maxBytes, dailyImages: inference.images.dailyImages } }
                 : {}),
               ...(inference.code?.enabled ? { code: true } : {}),
+              // Background tasks need the Privatemode client in the server (the report's provider).
+              ...(inference.backgroundTasks?.enabled
+                ? await (async (bg) => {
+                    if (!privatemode) throw Error("Background tasks need a Privatemode report.");
+                    return {
+                      backgroundTasks: {
+                        maxAutoTasks: bg.maxAutoTasks,
+                        keys: parseKeyRing((await boundedFile(bg.keyFile)).toString("utf8")),
+                        ...(bg.runHourUtcWindow ? { runHourUtcWindow: bg.runHourUtcWindow } : {}),
+                      },
+                    };
+                  })(inference.backgroundTasks)
+                : {}),
               ...(inference.research?.enabled
                 ? {
                     research: {

@@ -5,7 +5,7 @@ import { z } from "zod";
 /**
  * Prints one SQL transaction for the owner to review and run in psql as the
  * schema owner. Never connects to a database. Tables come from
- * server/migrations/0001-0020; keep this list in step with new migrations.
+ * server/migrations/0001-0021; keep this list in step with new migrations.
  */
 export const commands = ["show", "suspend", "unsuspend", "erase"] as const;
 export type Command = (typeof commands)[number];
@@ -45,6 +45,8 @@ const tables = (literal: string): [string, string][] => [
   ["billing_customer_binding", `account_id IN ${target}`],
   ["billing_operation", `account_id IN ${target}`],
   ["billing_assessment", `customer_id IN (SELECT customer_id FROM billing_customer_binding WHERE account_id IN ${target})`],
+  ["background_results", `account_id IN ${target}`],
+  ["background_tasks", `account_id IN ${target}`],
   ["account_closure", `"userId" IN ${target}`],
 ];
 
@@ -70,10 +72,13 @@ export function operatorSql(command: Command, email: string): string {
     unsuspend: [
       `DELETE FROM account_closure WHERE "userId" IN ${target} AND "holdUntil"='infinity' AND "purgedAt" IS NULL;`,
     ],
-    // Children first (usage_metrics -> usage_requests -> usage_allowances; billing_assessment found via the binding); "user" cascades to the auth tables.
+    // Children first (usage_metrics -> usage_requests -> usage_allowances; billing_assessment found via the binding;
+    // background_results -> background_tasks); "user" cascades to the auth tables.
     erase: [
       `DELETE FROM session WHERE "userId" IN ${target};`,
       ...[
+        "background_results",
+        "background_tasks",
         "usage_metrics",
         "usage_requests",
         "usage_allowances",

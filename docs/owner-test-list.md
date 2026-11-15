@@ -521,8 +521,28 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
   Expect: you can say yes or no to switching it on, to the limits, and to each proposed sentence.
   Tell the agent: your decision. Recommended: on after T-107 and T-108 pass.
 
+- [ ] **T-111 Decide: background tasks (Auto mode) and their texts.**
+  Do: read sections 1, 8 and 14 of `docs/background-tasks-20261115.md`, then `docs/background-tasks-consent-draft-20261115.md` and `docs/background-tasks-privacy-wording-draft-20261115.md` with the same reader as the rest of the policy, German first.
+  Expect: you can answer the 12 decisions and the 6 legal questions in one line each, or say "all defaults".
+  Tell the agent: your answers. Recommended: on for invitees only after pay-as-you-go works and the legal read is done.
+
+- [ ] **T-112 Background tasks: the job search from a made-up CV (after the lead switched it on).**
+  Do: write a short made-up CV (no real person). In Scheduled, create a daily task at a time 10 minutes ahead with the CV attached, search on, mode Fast, and choose Background task. Close CometRow. Open it 20 minutes later.
+  Expect: the badge "Background task" on the task; both consent boxes before saving; the answer appears after opening and is saved in the vault; the allowance fell by 4; the next day either new offers or "no new results".
+  Tell the agent: the time it appeared, the allowance before and after, and a screenshot of the badge and the consent step.
+
+- [ ] **T-113 Background tasks: delete really deletes.**
+  Do: delete the task from T-112, or switch it to Manual. Then ask the lead to run `scripts/account-operator.ts show` for your test account.
+  Expect: `background_tasks` and `background_results` both show 0 rows for the account.
+  Tell the agent: the two counts.
+
+- [ ] **T-114 Background tasks: the stop file stops them.**
+  Do: with a task due in 10 minutes, create the stop file on the server (as for chat), wait past the due time, then remove it.
+  Expect: no answer, a skipped result with the reason "service paused", and the task runs again at its next time after the file is gone.
+  Tell the agent: what the Scheduled screen showed.
+
 ---
-- [ ] **T-111 Approve Privatemode's new deployment manifest (owner rule: only after checking).**
+- [ ] **T-115 Approve Privatemode's new deployment manifest (owner rule: only after checking).**
   Do: read `docs/manifest-rotation-20261114.md`; open docs.privatemode.ai/changelog and find v1.64.0; email Edgeless: did v1.64.0 go live on 14 November 2026, and is the new seed-share owner key (starting `3082020a02820201009eb7f0`) yours? Then sign the report with the new digest `d63eb5cf91cb3079fe25a848573a4d0e9d869f462dab4f71fd02bdb372f8e833` and upload the new manifest file with it.
   Expect: after the deploy, chat works on the hosted site; `/api/status` says ready.
   Report back: "manifest approved" and the date, or what Edgeless answered.
@@ -543,3 +563,5 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 - 14 November 2026: Projects items added; all items renumbered in file order (T-01 to T-110).
 - 14 November 2026: three cross-references fixed after the renumbering (T-93 now points to T-89 and T-90, T-106 to T-102 and T-103, T-110 to T-107 and T-108); T-24 shows the agent's balance estimate.
 - 15 November 2026: added T-111 (approve the new Privatemode manifest after checks).
+- 15 November 2026: added T-111 to T-114 (background tasks: the decision and texts, a job search from a made-up CV, delete really deletes, the stop file). Numbers continue after T-110; the lead may renumber on merge.
+- 15 November 2026: background task (Auto) items added; all items renumbered in file order (T-01 to T-115).

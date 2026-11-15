@@ -10,6 +10,7 @@ import {
 import { consumerControl } from "./consumer-control";
 import { createApp } from "./app";
 import { PostgresUsageLedger } from "./usage-postgres";
+import { PostgresBackgroundStore } from "./background-store";
 import { productionAccountTarget } from "../shared/account-design";
 import { productionOperations } from "./production-operations";
 import {
@@ -78,6 +79,12 @@ export interface ProductionInferenceConfig {
   code?: boolean;
   /** Deep research cost, caps and optional account list; absent means off. */
   research?: import("./research-admission").ResearchSettings;
+  /** Background tasks (Auto mode of Scheduled); absent means off. */
+  backgroundTasks?: {
+    maxAutoTasks: number;
+    keys: import("./background-crypto").BackgroundKeyRing;
+    runHourUtcWindow?: import("./background-store").RunWindow;
+  };
 }
 
 export function createProductionConsumerCandidate(
@@ -122,6 +129,15 @@ export function createProductionConsumerCandidate(
           ...(inference.images ? { images: inference.images } : {}),
           ...(inference.code ? { code: true } : {}),
           ...(inference.research ? { research: inference.research } : {}),
+          ...(inference.backgroundTasks
+            ? {
+                backgroundTasks: {
+                  ...inference.backgroundTasks,
+                  store: new PostgresBackgroundStore(config.database),
+                  log: (line: string) => void process.stdout.write(`${line}\n`),
+                },
+              }
+            : {}),
           // Per-account prompt-cache salts stay stable across restarts (derived, not the secret itself).
           cacheSaltSecret: createHash("sha256").update(`cache-salt-key|${config.secret}`).digest("hex"),
         }

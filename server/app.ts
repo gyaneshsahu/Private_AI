@@ -42,6 +42,12 @@ import {
   proxyConfigured,
   publicFetchHosts,
 } from "./network";
+import { relayAttestQueue } from "./providers/privatemode-relay";
+import { BACKGROUND_CONSENT_VERSION, BACKGROUND_LIMITS, createBackgroundTasks } from "./background-tasks";
+import { backgroundRoutes } from "./background-routes";
+import { createPrivatemodeBackgroundClient, type BackgroundModelClient } from "./background-privatemode";
+import type { BackgroundStore, RunWindow } from "./background-store";
+import type { BackgroundKeyRing } from "./background-crypto";
 
 export interface Config {
   origin: string;
@@ -92,6 +98,18 @@ export interface Config {
   research?: ResearchSettings;
   /** File whose text is shown to every user as a notice; missing or empty means none. Re-read every 30 s. */
   noticeFile?: string;
+  /** Background tasks, the Auto mode of Scheduled (docs/background-tasks-20261115.md); absent means off. */
+  backgroundTasks?: {
+    maxAutoTasks: number;
+    runHourUtcWindow?: RunWindow;
+    store: BackgroundStore;
+    keys: BackgroundKeyRing;
+    /** Tests pass a fake; otherwise the server's own Privatemode client is made from the key and report. */
+    model?: BackgroundModelClient;
+    log: (line: string) => void;
+    /** False keeps the minute timer off (tests call tick themselves). */
+    start?: boolean;
+  };
   /** Unmounted consumer composition. Candidate mode never accepts upstream credentials. */
   consumer?: {
     session: RequestHandler;
@@ -420,6 +438,15 @@ export function createApp(config: Config) {
       ...(ready && search && researchAllowed(config.research, res.locals.accountEmail)
         ? { research: { cost: config.research.cost, dailyRuns: config.research.dailyRuns } }
         : {}),
+      ...(config.backgroundTasks
+        ? {
+            backgroundTasks: {
+              maxAutoTasks: config.backgroundTasks.maxAutoTasks,
+              minIntervalHours: BACKGROUND_LIMITS.minIntervalHours,
+              consentVersion: BACKGROUND_CONSENT_VERSION,
+            },
+          }
+        : {}),
       ...(await operatorNotice().then((text) => (text ? { operatorNotice: text } : {}))),
       publicPageHosts: proxyConfigured ? publicFetchHosts : null,
     });
@@ -446,6 +473,9 @@ export function createApp(config: Config) {
     }
     relayFor(q).guard()(req, res, next);
   });
+  // Background tasks share the relay's attestation queue (one per server).
+  const attestQueue =
+    config.backgroundTasks && qualification?.provider === "privatemode" ? relayAttestQueue() : undefined;
   // Supplier endpoints besides chat (Privatemode: attestation, key exchange, approved manifest,
   // pinned Wasm), behind the same session, CSRF and stop switch.
   const providerRoutes =
@@ -454,6 +484,7 @@ export function createApp(config: Config) {
           qualification: parseQualification,
           apiKey: config.apiKey,
           manifest: config.providerManifest,
+          ...(attestQueue ? { attestQueue } : {}),
         })
       : undefined;
   if (providerRoutes)
@@ -860,6 +891,52 @@ export function createApp(config: Config) {
       }
     },
   );
+  const bg = config.backgroundTasks;
+  if (bg) {
+    const background = createBackgroundTasks({
+      store: bg.store,
+      keys: bg.keys,
+      settings: { maxAutoTasks: bg.maxAutoTasks, ...(bg.runHourUtcWindow ? { runHourUtcWindow: bg.runHourUtcWindow } : {}) },
+      qualification: parseQualification,
+      stopped: () => !!config.inferenceStopped?.(),
+      usage: config.usage,
+      ensureAllowance,
+      dailyLimit: config.autoAllowance?.dailyLimit,
+      spendAllows: async (outputTokens) => {
+        const q = parseQualification();
+        if (!q || !config.usage?.spend) return !!q;
+        return spendAllows(config.usage as Required<Pick<UsageLedger, "spend">>, q, active, outputTokens);
+      },
+      // One of the three chat slots, and only while two stay free for users; never beside the account's own chat.
+      claimSlot(accountId) {
+        if (active >= 2 || inFlight.has(accountId)) return undefined;
+        active++;
+        let released = false;
+        return () => {
+          if (released) return;
+          released = true;
+          active--;
+        };
+      },
+      search,
+      takeSearch: (accountId) => !config.research || searchDay.take(accountId),
+      giveBackSearch: (accountId) => void (config.research && searchDay.giveBack(accountId)),
+      model:
+        bg.model ??
+        createPrivatemodeBackgroundClient({
+          apiKey: config.apiKey ?? "",
+          qualification: () => (config.apiKey ? parseQualification() : undefined),
+          manifest: config.providerManifest,
+          attestQueue,
+          log: bg.log,
+        }),
+      cacheSalt: (accountId) => cacheSalt(accountId, ""),
+      log: bg.log,
+    });
+    // The development server (never hosted) has no accounts: one local account stands in.
+    app.use(backgroundRoutes(background, bg.maxAutoTasks, (res) => res.locals.accountId ?? (config.dev ? "local-development" : undefined)));
+    if (bg.start !== false) background.start();
+  }
   app.use("/api", express.json({ limit: "8kb" }));
   if (config.consumer?.billingRouter) app.use(config.consumer.billingRouter);
   app.post("/api/research/prepare", async (req, res) => {

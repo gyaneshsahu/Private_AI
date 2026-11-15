@@ -31,6 +31,8 @@ export function accountPrivilegePlan(input: {
     `GRANT SELECT,INSERT ON ${table("usage_metrics")} TO ${runtime}`,
     // Sign-in code delivery log (migration 0020): count, record and prune, never update.
     `GRANT SELECT,INSERT,DELETE ON ${table("signin_delivery")} TO ${runtime}`,
+    // Background tasks (migration 0021): sealed rows the runtime creates, claims, updates and deletes.
+    `GRANT SELECT,INSERT,UPDATE,DELETE ON ${table("background_tasks")},${table("background_results")} TO ${runtime}`,
     `GRANT SELECT,INSERT ON ${table("account_security_event")} TO ${runtime}`,
     `GRANT SELECT,INSERT ON ${table("account_closure")} TO ${runtime}`,
     // Account data export reads the account's own billing binding and operations.

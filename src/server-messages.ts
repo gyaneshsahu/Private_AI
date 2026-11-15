@@ -28,6 +28,23 @@ const GERMAN: Record<string, string> = {
   "Only a qualified answer mode and its models are accepted.":
     "Nur ein freigegebener Antwortmodus und seine Modelle werden angenommen.",
   "Only the qualified model is accepted.": "Nur das freigegebene Modell wird angenommen.",
+  // Background tasks (Auto mode of Scheduled)
+  "Sign in to use background tasks.": "Melden Sie sich an, um Hintergrundaufgaben zu nutzen.",
+  "Background tasks are unavailable right now. Nothing was changed.":
+    "Hintergrundaufgaben sind gerade nicht verfügbar. Es wurde nichts geändert.",
+  "This background task is not valid. Nothing was saved.": "Diese Hintergrundaufgabe ist ungültig. Es wurde nichts gespeichert.",
+  "A background task needs your consent first. Nothing was saved.":
+    "Eine Hintergrundaufgabe braucht zuerst Ihre Einwilligung. Es wurde nichts gespeichert.",
+  "The consent text has changed. Read it again and confirm. Nothing was saved.":
+    "Der Einwilligungstext hat sich geändert. Lesen Sie ihn erneut und bestätigen Sie. Es wurde nichts gespeichert.",
+  "A background task with an attached document needs the extra consent. Nothing was saved.":
+    "Eine Hintergrundaufgabe mit angehängtem Dokument braucht die zusätzliche Einwilligung. Es wurde nichts gespeichert.",
+  "Personal identifiers must be masked on this device before a background task is saved. Nothing was saved.":
+    "Persönliche Kennungen müssen auf diesem Gerät maskiert werden, bevor eine Hintergrundaufgabe gespeichert wird. Es wurde nichts gespeichert.",
+  "The limit of background tasks for this account is reached. Nothing was saved.":
+    "Die Höchstzahl an Hintergrundaufgaben für dieses Konto ist erreicht. Es wurde nichts gespeichert.",
+  "This background task already exists. Nothing was saved.": "Diese Hintergrundaufgabe gibt es bereits. Es wurde nichts gespeichert.",
+  "This background task does not exist.": "Diese Hintergrundaufgabe gibt es nicht.",
   // Voice input
   "Voice input is not switched on.": "Die Spracheingabe ist nicht eingeschaltet.",
   "Only the qualified speech model is accepted.": "Nur das freigegebene Sprachmodell wird angenommen.",

@@ -130,6 +130,29 @@ it("loads production chat only when the inference section is present and enabled
     qualification: { provider: "privatemode" },
     providerManifest: new TextEncoder().encode('{"synthetic":"manifest"}'),
   });
+  // Background tasks: their own switch, off unless enabled; a Privatemode report and a valid key file.
+  const keyFile = await file("background-keys", `k2:${Buffer.alloc(32, 2).toString("base64")}\nk1:${Buffer.alloc(32, 1).toString("base64")}\n`);
+  const backgroundTasks = { enabled: true, maxAutoTasks: 3, keyFile };
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...privatemode, manifestFile, backgroundTasks: { ...backgroundTasks, enabled: false } } }));
+  expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("backgroundTasks");
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...privatemode, manifestFile, backgroundTasks: { ...backgroundTasks, runHourUtcWindow: { from: 22, to: 6 } } } }));
+  const loaded = (await loadDeploymentConfig(configFile)).inference?.backgroundTasks;
+  expect(loaded).toMatchObject({ maxAutoTasks: 3, runHourUtcWindow: { from: 22, to: 6 } });
+  expect(loaded?.keys.current).toBe("k2");
+  expect([...(loaded?.keys.keys.keys() ?? [])]).toEqual(["k2", "k1"]);
+  for (const bad of [
+    { ...inference, backgroundTasks }, // a Tinfoil report: the server client is Privatemode only
+    { ...privatemode, manifestFile, backgroundTasks: { ...backgroundTasks, maxAutoTasks: 4 } },
+    { ...privatemode, manifestFile, backgroundTasks: { ...backgroundTasks, maxAutoTasks: 0 } },
+    { ...privatemode, manifestFile, backgroundTasks: { ...backgroundTasks, keyFile: "keys" } },
+    { ...privatemode, manifestFile, backgroundTasks: { ...backgroundTasks, keyFile: await file("short-key", "k1:c2hvcnQ=") } },
+    { ...privatemode, manifestFile, backgroundTasks: { ...backgroundTasks, runHourUtcWindow: { from: 3, to: 3 } } },
+    { ...privatemode, manifestFile, backgroundTasks: { ...backgroundTasks, extra: true } },
+    { ...privatemode, manifestFile, backgroundTasks: { enabled: true, maxAutoTasks: 3 } },
+  ]) {
+    await writeFile(configFile, JSON.stringify({ ...config, inference: bad }));
+    await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+  }
   for (const bad of [
     { ...config, inference: privatemode }, // no manifest
     { ...config, inference: { ...inference, manifestFile } }, // manifest with a Tinfoil report

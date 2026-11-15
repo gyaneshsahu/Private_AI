@@ -79,6 +79,10 @@ describe("account operator SQL", () => {
     expect(erase.indexOf('DELETE FROM "usage_metrics"')).toBeLessThan(
       erase.indexOf('DELETE FROM "usage_requests"'),
     );
+    // Background tasks and their undelivered results go too, results first, before the account row.
+    expect(erase).toContain('DELETE FROM "background_results" WHERE account_id IN');
+    expect(erase.indexOf('DELETE FROM "background_results"')).toBeLessThan(erase.indexOf('DELETE FROM "background_tasks"'));
+    expect(erase.indexOf('DELETE FROM "background_tasks"')).toBeLessThan(erase.indexOf('DELETE FROM "user"'));
     const suspend = operatorSql("suspend", "plain@example.test");
     expect(suspend).toContain("DELETE FROM session");
     expect(suspend).toContain("'infinity'");

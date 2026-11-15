@@ -80,6 +80,8 @@ export interface ProviderRouteContext {
   apiKey: string;
   /** The approved deployment manifest bytes, for suppliers whose browser SDK verifies one. */
   manifest?: Uint8Array;
+  /** Privatemode: the attestation queue shared with background tasks; absent means the relay makes its own. */
+  attestQueue?: ReturnType<typeof import("./privatemode-attest-queue").createAttestQueue>;
 }
 
 /** The log prefix the owner greps for: a model is gone, deprecated or changed (docs/model-deprecation-runbook.md). */

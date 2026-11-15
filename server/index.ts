@@ -4,6 +4,8 @@ import { resolve } from "node:path";
 import express from "express";
 import { createApp, scheduleExpiryWarnings } from "./app";
 import { openInviteRegistry } from "./registry-storage";
+import { MemoryBackgroundStore } from "./background-store";
+import { ephemeralKeyRing } from "./background-crypto";
 const port = Number(process.env.PORT ?? "4173");
 if (!Number.isInteger(port) || port < 1024 || port > 65535)
   throw new Error("Invalid PORT");
@@ -66,6 +68,18 @@ const app = createApp({
   ...(process.env.PRIVATEAI_RESEARCH === "1" ? { research: { cost: 15, dailyRuns: 3, dailySearches: 24 } } : {}),
   // Brave Goggle for German-rules searches (docs/german-rules-20261113.md); off unless "1".
   searchGoggles: process.env.PRIVATEAI_SEARCH_GOGGLES === "1",
+  // Background tasks on the development server: off unless "1". Memory store and a random key, so
+  // every task and result is gone at restart (docs/background-tasks-20261115.md).
+  ...(process.env.PRIVATEAI_BACKGROUND_TASKS === "1"
+    ? {
+        backgroundTasks: {
+          maxAutoTasks: 3,
+          store: new MemoryBackgroundStore(),
+          keys: ephemeralKeyRing(),
+          log: (line: string) => console.warn(line),
+        },
+      }
+    : {}),
 });
 if (dev) {
   const { createServer } = await import("vite");

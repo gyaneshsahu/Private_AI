@@ -125,6 +125,12 @@ export function createAttestQueue(
 
   return {
     stats: () => ({ ...stats }),
+    /** Nothing waiting, no pause, and at least half the burst free: background work may take one call. */
+    idle() {
+      const now = Date.now();
+      refill(now);
+      return !waiting.length && now >= pausedUntil && tokens >= capacity / 2;
+    },
     /**
      * Sends one attest call when the rate allows. Resolves with the upstream reply, or "busy"
      * when it could not be sent within `maxWaitMs`. A 429 is never passed on: the call goes back
