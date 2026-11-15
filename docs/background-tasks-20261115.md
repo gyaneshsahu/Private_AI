@@ -105,7 +105,7 @@ Make a key: `node -p "'k1:'+require('crypto').randomBytes(32).toString('base64')
 - **What the masking covers** (`src/identifier-masking.ts`): bank accounts (IBAN), card numbers, German tax numbers (tax ID, Steuernummer, VAT ID), German pension and health insurance numbers, passport and ID card numbers next to a label or in a machine-readable zone, phone numbers, email addresses, and dates of birth next to a label.
 - **What it does not cover**: names, street addresses, employers, schools, places, dates without a label, photos, and anything written in plain words (health, religion, union membership, nationality, criminal records). A CV is full of these. The consent text says so in plain words.
 - The attachment is stored sealed inside the task payload and sent with every run, because the model must read it each time. A requirement that it be sent once and kept by the model is not possible: the model keeps nothing.
-- The answer the model writes may repeat placeholders. The browser puts the real values back when it saves the result into the vault, as for chat (Agent M).
+- The answer the model writes may repeat placeholders. The browser puts the real values back when it saves the result into the vault, as for chat, from the masking map it keeps per task in the vault (built 15 November; the map never reaches the server).
 
 ## 6. Runs
 
@@ -160,7 +160,7 @@ It needs a Privatemode report (the server client is Privatemode only). Developme
 
 - `GET /api/background-tasks` gives `{ tasks, limits: { maxAutoTasks, minIntervalHours } }`.
 - `POST /api/background-tasks` with `{ task, consent, attachment? }` gives `{ task }`. The server sets `nextDueAt`. 409 when the account is full or the id exists; 400 without consent, with an old consent version, with an attachment but `sensitive: false`, with an unmasked identifier, with `mode: "manual"`, or with an invalid task.
-- `PATCH /api/background-tasks/:id` with any of `name, instruction, trigger, paused, answerMode, useSearch, searchText` gives `{ task }`; a new trigger or a resume sets a new `nextDueAt`.
+- `PATCH /api/background-tasks/:id` with any of `name, instruction, trigger, paused, answerMode, useSearch, searchText, notify` gives `{ task }`; a new trigger or a resume sets a new `nextDueAt`. A `consent` without an attachment is recorded too (the extra consent asked on an edit).
 - `DELETE /api/background-tasks/:id` gives 204 and deletes every stored result of it.
 - `GET /api/background-tasks/results` gives `{ results: [{ id, taskId, ranAt, status, text?, reason?, usage? }] }`, oldest first.
 - `POST /api/background-tasks/results/:id/ack` gives 204 and deletes the result at once.
@@ -169,7 +169,7 @@ It needs a Privatemode report (the server client is Privatemode only). Developme
 **Contract additions (for the lead to reconcile with Agent M):**
 
 1. POST body: optional `attachment: { text }` (the one document, masked on the device).
-2. PATCH body: optional `attachment: { text } | null` (replace or remove) and optional `consent` (required with a new attachment).
+2. PATCH body: optional `attachment: { text } | null` (replace or remove), optional `consent` (required with a new attachment) and, since 15 November, optional `notify`.
 3. `result.reason` values are fixed snake-case codes (listed in section 6) that the interface translates; skipped and failed results never carry text.
 4. The deployment config has two fields beyond the contract: `keyFile` (required) and the shape of `runHourUtcWindow` (`{ from, to }`, UTC hours, may wrap midnight).
 5. The consent version the server accepts today is `2026-11-15-draft`; it changes with every change of the consent text, and a task sent with another version is refused.
@@ -267,3 +267,12 @@ All proposed wording is in `docs/background-tasks-privacy-wording-draft-20261115
 - **What the answer showed:** Brave returns job-board overview pages ("796 Data Analyst jobs in Leipzig" on LinkedIn, StepStone, Indeed, Bundesagentur), not individual postings, and the model said so honestly instead of inventing offers. **For a useful job search the run must read the result pages** (the existing approved page fetch) or use a job board's own search; that is a product decision before the CV template is offered.
 - **Attestation:** the probe counted 2 attest calls for two runs, not 1 as expected; the second run verified again. Harmless at this scale; to check before many tasks run.
 - Not checked: Thinking, a real rotation, Render memory, many accounts.
+
+## Wired end to end, 15 November
+
+The interface (`docs/scheduled-20261115.md`) had only been tested against a fake of these routes, and these routes only with direct calls. `tests/scheduled-wiring-browser.test.ts` now runs the real app in Chromium against the real routes (`createApp` with the switch on, the memory store, a key file in a temporary folder, the development account `local-development`); only the run's Privatemode client and the search are faked. It creates the CV task through the form, edits, pauses and resumes it, runs it with the scheduler's `tick` a day later, lets the app's five-minute poll save and acknowledge the result, and deletes the task; the store holds no task and no result afterwards, and no request failed. What was found and fixed on this side:
+
+- **Citations the saved result cannot show.** The background policy told the model to cite `[source-id]`, as chat does; a saved result keeps no web results (as for a saved search), so every result showed "Original sources unavailable". The policy now asks for each web result as a Markdown link with its title and address; the interface shows model links as "title (address)", never clickable. The lead's live probe should confirm a real answer does this.
+- **`notify` in PATCH.** The interface keeps the task the server returns, and PATCH had no `notify`, so a changed notification choice was lost on every edit. `notify` is now accepted (strict schema; it is stored sealed with the task as before).
+- **The extra consent on an edit** is now sent by the interface and recorded here (`consent` without an attachment was already accepted).
+- Everything else matched: all six routes, the status codes, refusal texts and their German entries, the consent version, `attachment: { text }`, the status field, the CSRF header and session cookie. The interface's test fake now uses this file's `REFUSALS` and answers 204 for DELETE and ack of something already gone, as this server does.

@@ -27,12 +27,28 @@ Status: **built and tested offline, switched off by default (`VITE_SCHEDULED=1`)
 
 - With `status.backgroundTasks` absent, the Auto choice is shown disabled with "Not available yet" and nothing calls the server.
 - At the choice: the "Background task" badge, the consent text from Agent A's draft (`docs/background-tasks-consent-draft-20261115.md`, English and German, word for word) and its checkbox. "Auto" runs as Fast on the server, and the form says so.
-- **One document** (the CV case): a "Attach a document" button reads a text document on the device, masks identifiers with the same masking session as chat (email, phone, bank, card, tax, insurance and ID numbers become stand-ins such as `{{EMAIL-1}}`), keeps at most 30,000 characters and sends it once with the task (`attachment: { text }`). It is not kept in the vault. Editing a background task can send a new document (with the consent again) or remove the stored one.
+- **One document** (the CV case): a "Attach a document" button reads a text document on the device, masks identifiers with the same masking session as chat (email, phone, bank, card, tax, insurance and ID numbers become stand-ins such as `{{EMAIL-1}}`), keeps at most 30,000 characters and sends it once with the task (`attachment: { text }`). The document is not kept in the vault; its masking map (each stand-in and its original value) is, inside the encrypted tasks record, and never sent. Editing a background task can send a new document (with the consent again; it continues the same map, so stand-ins in earlier results keep their values) or remove the stored one.
 - **Extra consents**, each a separate unticked box: the document text when a document is attached; a short CV notice when the instruction itself looks like a CV (English and German keywords, on the device); the health text when the name, instruction or document looks like health content (keywords, on the device; there was no health detector before). `consent.sensitive` is true when any extra consent was given.
 - Identifiers in the name, instruction or search text of a background task are refused on the device with a plain sentence, because the server refuses them too.
 - The cost line for a background task uses Agent A's weights: Fast 1 (Auto counts as Fast) or Thinking 5, plus 1 for a search and 2 for a document.
-- **Results:** fetched on unlock and every five minutes while the app is open. A finished run is saved into the vault as a new conversation ("Job search from my CV (background task)") and only then acknowledged, so the server deletes it. "Nothing new" runs and skipped or failed runs are acknowledged and listed in plain words in the strip ("was skipped: your request allowance was used up"); every reason code of Agent A's section 6 has an English and a German sentence. When the server paused a task itself (three allowance skips, or an unreadable record), the vault copy is marked paused too.
-- Deleting a background task, or switching it to Manual, deletes the server copy first (DELETE); a 404 still lets the vault copy go.
+- **Results** (`src/background-results.ts`): fetched on unlock and every five minutes while the app is open. A finished run is saved into the vault as a new conversation ("Job search from my CV (background task)"), with the document's original values put back by the same `restore` chat uses for its own answers, and only then acknowledged, so the server deletes it. One tab at a time does this (Web Lock `cometrow-background-results`); the conversation takes the result's id, so the vault itself refuses a second save of the same result (browsers without Web Locks, or an acknowledgement that was lost). "Nothing new" runs and skipped or failed runs are acknowledged and listed in plain words in the strip ("was skipped: your request allowance was used up"); every reason code of Agent A's section 6 has an English and a German sentence. When the server paused a task itself (three allowance skips, or an unreadable record), the vault copy is marked paused too.
+- Deleting a background task, or switching it to Manual, deletes the server copy first (DELETE, 204 also when it is already gone) and its masking map with the vault copy.
+
+## 4a. Wired end to end, 15 November
+
+`tests/scheduled-wiring-browser.test.ts` runs the real app (Vite, `VITE_SCHEDULED=1`) against the real server routes (`createApp` with background tasks on, the memory store, a key file in a temporary folder, the development server's `local-development` account); only the runner's Privatemode client and the search are faked, and the runner is a second service over the same store and keys whose clock the test moves. Flow: open Scheduled, "Job search from my CV" with a synthetic CV and both consents, listed with the badge, edit (name, notifications, CV consent), pause and resume, a run on the server a day later, the five-minute poll saves the result as a conversation with the email restored, the server holds no result after the acknowledgement, delete removes the server copy. No request failed. Found and fixed:
+
+| # | Mismatch | Fix |
+| --- | --- | --- |
+| 1 | Stand-ins such as `{{EMAIL-1}}` stayed in saved results | Masking map per task in the vault; restored on save (above) |
+| 2 | Two tabs could save one result twice | Web Lock plus the result id as conversation id |
+| 3 | Every saved result showed "Original sources unavailable": the client saved the answer without `sourceSnapshot`, and the server told the model to cite `[source-id]`, which a saved result cannot resolve (web results are not kept) | Client saves `sourceSnapshot: []`; the server asks for each web result as a Markdown link with its address, shown as "title (address)" |
+| 4 | Editing a background task lost a changed notification choice: PATCH had no `notify`, and the client keeps the task the server returns | `notify` added to the PATCH body on both sides |
+| 5 | Editing a task whose name or instruction reads as a CV or health text asked for the extra consent but never sent it | The consent goes with the PATCH; the server records it |
+| 6 | The client allowed 3 background tasks even when the deployment allows fewer (`status.backgroundTasks.maxAutoTasks`) | The form and counts use the deployment's number |
+| 7 | The contract fake answered DELETE and ack of a missing item with 404 and used its own refusal texts; the server answers 204 and its texts have German entries | Fake aligned with the server (codes, `REFUSALS` texts, CSRF text, consent version) |
+
+Checked and found matching: request and response shapes of all six routes, status 200/204/400/401/403/404/409, the consent version from `/api/status`, the `attachment: { text }` field, the status field `backgroundTasks`, the CSRF header `X-PrivateAI-CSRF` and the session cookie, the German translations of every refusal. Result ids are now required to be UUIDs on the client (the server makes them so).
 
 ## 5. Chat detection: precision and recall
 
@@ -42,9 +58,11 @@ Status: **built and tested offline, switched off by default (`VITE_SCHEDULED=1`)
 | --- | --- | --- | --- |
 | Fixture, English (written before tuning) | 32 positive, 32 negative | 1.00 | 1.00 |
 | Fixture, German (written before tuning) | 32 positive, 32 negative | 1.00 | 1.00 |
-| Held-out, both languages (written after tuning, never tuned on) | 14 positive, 14 negative | 0.86 | 0.86 |
+| Held-out 1, both languages (written after the first tuning) | 14 positive, 14 negative | 0.86, now 1.00 | 0.86, now 1.00 |
+| Held-out 2, English (written and committed before the change of 15 November, never tuned on) | 20 positive, 20 negative | 0.71, now 0.77 | 0.75, now 0.85 |
+| Held-out 2, German (same) | 20 positive, 20 negative | 0.68, now 0.77 | 0.75, now 0.85 |
 
-The fixture was tuned on, so its perfect score says little. The held-out set is the honest figure: missed were "I'd like a weekly reminder to call grandma" and its German twin (an adjective before "reminder"); wrongly triggered were "Give me a list of things to do every day in Berlin" and its German twin. A wrong card costs one tap on "Just send".
+The fixture was tuned on, so its perfect score says little. Held-out 1 found two kinds of failure: an adjective before the reminder ("I'd like a weekly reminder to call grandma" and its German twin) and a frequency that describes the content of a one-off list ("Give me a list of things to do every day in Berlin" and its German twin). The change of 15 November fixes both kinds in general rules, not with these sentences: a frequency adjective counts after any request with an article ("I'd like a", "I need a", "set up a", German "tägliche/wöchentliche/monatliche" after "gib mir eine", "ich hätte gern eine", "ich brauche eine"...), unless a plan or schedule noun follows; and a frequency does not count when a collection noun (list, ideas, tips, things, places; Liste, Ideen, Tipps, Dinge, Orte...) and a clause (to + verb, that, which, I can; German ", die/was/wie/wo/um") stand between the request and the frequency. Held-out 1 guided the change, so held-out 2 is now the honest figure. Its remaining misses: "every weekday", "every single day", "twice a week" (not understood) and their German twins. Its remaining false triggers: questions dressed as requests ("I'd like to know why...", "Erzähl mir von Menschen, die jeden Tag..."), one-off lookups ("Send me the train times for every Monday in December"), one-off advice ("five tips for staying motivated every day", "a podcast I can listen to every morning", "a schedule for studying every evening") and their German twins. A wrong card costs one tap on "Just send".
 
 ## 6. Switch, cost, limits
 
@@ -54,11 +72,11 @@ The fixture was tuned on, so its perfect score says little. The held-out set is 
 
 ## 7. Not built, and not verified
 
-- **Placeholders in background answers are not put back.** The masked document's stand-ins (`{{EMAIL-1}}`) can appear in a saved result as written: the values would need a second encrypted record per task. Recommended next step if the owner wants it.
+- Masking maps are not in the encrypted backup file: a restored background task becomes a Manual task, which has no document.
 - One trigger per task (the screenshot's "+" for more triggers is not built: the contract has one trigger).
 - No browser or push notifications, no email; the in-app notice only while the app is open.
-- Two open tabs can both fetch the same result before it is acknowledged and save it twice.
-- Nothing ran against Agent A's real server: the client was tested against a fake written from the contract and Agent A's doc (`tests/fixtures/background-tasks-fake.ts`). The lead should run one task through the development server with `PRIVATEAI_BACKGROUND_TASKS=1` and `VITE_SCHEDULED=1`.
+- The wiring test runs one browser at 1280 px in English with a faked model and search. The lead should still run one task through the development server with `PRIVATEAI_BACKGROUND_TASKS=1` and `VITE_SCHEDULED=1` and a real model answer, and check that a real answer gives the offers as "title (address)".
+- An open tab whose session ran out (one hour) fetches results again only after its status refresh gives it a new session (every 30 seconds while visible); results wait on the server for up to 7 days.
 - No live model call. Run now uses the existing send path, which is checked elsewhere.
 - Not tried on a real phone or with a screen reader.
 - Calendar files were checked for structure in tests, not imported into Google, Apple or Outlook calendars.
@@ -68,7 +86,9 @@ The fixture was tuned on, so its perfect score says little. The held-out set is 
 - `tests/scheduled-tasks.test.ts`: nextDue (daily, every 2 days, weekly, every 2 weeks, monthly day 1 and 28, Europe/Berlin across both changes, the skipped and the doubled hour, New York, Tokyo, UTC, Kolkata, month ends, leap years, local date) and the schema.
 - `tests/scheduled-vault.test.ts`: encrypted record, locked refusal, other tabs, passphrase change, backup and restore, Delete everything, limits, due logic, edits.
 - `tests/scheduled-ics.test.ts`: CRLF, folding, escaping, VTIMEZONE for Berlin, New York and Tokyo, UTC, RRULE for each unit, no instruction.
-- `tests/schedule-detection.test.ts`: the precision and recall table, every positive case's fields.
+- `tests/schedule-detection.test.ts`: the precision and recall table, both held-out sets with floors at the measured values, every positive case's fields.
+- `tests/scheduled-wiring-browser.test.ts`: the end-to-end wiring test (section 4a).
+- `tests/background-results.test.ts`: placeholders restored from the vault's map (never sent), the map continued on a new document and deleted with the task or on a switch to Manual, kept through a passphrase change; two tabs saving one result once, with and without Web Locks; a result saved before whose acknowledgement was lost.
 - `tests/background-tasks-client.test.ts`: every route, CSRF header, refusals, document, results and acknowledgement, replies of the wrong shape.
 - `tests/scheduled-ui.test.ts`: at 375, 768 and 1280 px in English and German: locked screen, template, validation and focus, calendar download, the strip and Run now (exactly one request), the card's Create (no request) and Just send (one request), delete, the Auto flow with a CV (consents required, the masked document, badge, results saved and acknowledged, reason shown, delete on the server); plus the switch off.
 
@@ -78,5 +98,5 @@ The fixture was tuned on, so its perfect score says little. The held-out set is 
 | --- | --- | --- |
 | 1 | Switch Manual on for the alpha | Yes, after T-111 to T-113 pass. It stores nothing on the server. |
 | 2 | Chat detection on with it | Yes; it never sends without a tap and costs nothing. |
-| 3 | Put placeholders back in background answers | Yes, as a small follow-up (one more vault record). |
+| 3 | Put placeholders back in background answers | Done on 15 November (section 4a). |
 | 4 | Calendar file title | Neutral by default, as built. |

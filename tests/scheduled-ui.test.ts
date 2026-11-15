@@ -314,9 +314,9 @@ for (const width of WIDTHS)
         // Results: saved as a conversation and acknowledged; skipped and nothing-new shown plainly.
         const taskId = [...fake.tasks.keys()][0];
         fake.results.push(
-          { id: "r1", taskId, ranAt: "2026-11-16T08:05:00.000Z", status: "done", text: "Synthetic job list." },
-          { id: "r2", taskId, ranAt: "2026-11-16T08:06:00.000Z", status: "skipped", reason: "allowance_exhausted" },
-          { id: "r3", taskId, ranAt: "2026-11-16T08:07:00.000Z", status: "done", reason: "no_new_results" },
+          { id: "00000000-0000-4000-8000-000000000001", taskId, ranAt: "2026-11-16T08:05:00.000Z", status: "done", text: "Synthetic job list." },
+          { id: "00000000-0000-4000-8000-000000000002", taskId, ranAt: "2026-11-16T08:06:00.000Z", status: "skipped", reason: "allowance_exhausted" },
+          { id: "00000000-0000-4000-8000-000000000003", taskId, ranAt: "2026-11-16T08:07:00.000Z", status: "done", reason: "no_new_results" },
         );
         await page.clock.fastForward("05:05");
         await ui.poll(() => fake.acked.length).toBe(3);

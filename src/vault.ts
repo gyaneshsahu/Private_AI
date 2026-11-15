@@ -11,6 +11,7 @@ import {
 import { memoriesSchema, mergeMemories, MemoryError, type Memory } from "./memory";
 import { mergeTasks, scheduledTasksSchema, TaskError } from "./scheduled";
 import type { ScheduledTask } from "../shared/scheduled-tasks";
+import { IDENTIFIER_KINDS } from "./identifier-masking";
 import { deleteDB, openDB } from "idb";
 import type { Conversation } from "../shared/contracts";
 import {
@@ -49,12 +50,35 @@ async function openProjectFiles(key: CryptoKey, record?: Cipher): Promise<Projec
 }
 // Scheduled tasks (src/scheduled.ts) are one more encrypted record in "meta", Manual and Auto.
 const TASKS_LABEL = "scheduled-tasks-v1";
-async function openTasks(key: CryptoKey, record?: Cipher): Promise<ScheduledTask[]> {
-  return record ? scheduledTasksSchema.parse(JSON.parse(await unseal(key, record, TASKS_LABEL))) : [];
+// A background task's masking map (placeholder and original value of its document) sits in the
+// same record, so it never leaves the device and goes with its task. Without maps the record is
+// the plain list, as before.
+const taskMasksSchema = z.record(
+  z.string().uuid(),
+  z
+    .array(z.object({ kind: z.enum(IDENTIFIER_KINDS), placeholder: z.string().max(40), value: z.string().max(1000) }).strict())
+    .max(2000),
+);
+export type TaskMasks = z.infer<typeof taskMasksSchema>;
+type TaskRecord = { tasks: ScheduledTask[]; masks: TaskMasks };
+async function openTaskRecord(key: CryptoKey, record?: Cipher): Promise<TaskRecord> {
+  if (!record) return { tasks: [], masks: {} };
+  const data: unknown = JSON.parse(await unseal(key, record, TASKS_LABEL));
+  return Array.isArray(data)
+    ? { tasks: scheduledTasksSchema.parse(data), masks: {} }
+    : z.object({ tasks: scheduledTasksSchema, masks: taskMasksSchema }).strict().parse(data);
+}
+const openTasks = async (key: CryptoKey, record?: Cipher) => (await openTaskRecord(key, record)).tasks;
+/** The record's text; a map whose task is gone is dropped here. */
+function taskRecordText({ tasks, masks }: TaskRecord) {
+  const kept = Object.entries(masks).filter(([id]) => tasks.some((task) => task.id === id && task.mode === "auto"));
+  return JSON.stringify(kept.length ? { tasks, masks: Object.fromEntries(kept) } : tasks);
 }
 function random(length: number): Uint8Array<ArrayBuffer> {
   return crypto.getRandomValues(new Uint8Array(length));
 }
+/** A save of a conversation that was deleted here before. */
+export class ConversationDeletedError extends Error {}
 export class VaultConflictError extends Error {
   constructor() {
     super(
@@ -259,7 +283,7 @@ export class Vault {
         }
         if (await tx.objectStore("meta").get(`deleted:${snapshot.id}`)) {
           await tx.done;
-          throw new Error(
+          throw new ConversationDeletedError(
             textFor(vaultText).conversationDeleted,
           );
         }
@@ -752,20 +776,43 @@ export class Vault {
       database.close();
     }
   }
-  /** Every change to the scheduled tasks (src/scheduled.ts), as writeMemories does for memories. */
-  writeTasks(change: (current: ScheduledTask[]) => ScheduledTask[]): Promise<ScheduledTask[]> {
+  /** The background tasks' masking maps, to put the original values back into their results. */
+  async readTaskMasks(): Promise<TaskMasks> {
+    const key = this.key,
+      generation = this.generation;
+    if (!key) throw Error(textFor(vaultText).unlockFirst);
+    await this.queue;
+    const database = await db(this.databaseName);
+    try {
+      requireVaultIdentity(await database.get("meta", "vault"), this.salt);
+      const { masks } = await openTaskRecord(key, await database.get("meta", "scheduled-tasks"));
+      if (generation !== this.generation) throw Error(textFor(vaultText).changed);
+      return masks;
+    } finally {
+      database.close();
+    }
+  }
+  /**
+   * Every change to the scheduled tasks (src/scheduled.ts), as writeMemories does for memories.
+   * `masks` sets the masking map of the tasks it names, in the same write.
+   */
+  writeTasks(change: (current: ScheduledTask[]) => ScheduledTask[], masks: TaskMasks = {}): Promise<ScheduledTask[]> {
     const key = this.key,
       salt = this.salt,
       generation = this.generation,
       databaseName = this.databaseName;
     if (!key) return Promise.reject(Error(textFor(vaultText).unlockFirst));
+    const newMasks = taskMasksSchema.parse(masks);
     return this.enqueue(async () => {
       const database = await db(databaseName);
       try {
         requireVaultIdentity(await database.get("meta", "vault"), salt);
         const previous = (await database.get("meta", "scheduled-tasks")) as Cipher | undefined;
-        const next = scheduledTasksSchema.parse(change(await openTasks(key, previous)));
-        const encrypted = next.length ? await seal(key, JSON.stringify(next), TASKS_LABEL) : undefined;
+        const current = await openTaskRecord(key, previous);
+        const next = scheduledTasksSchema.parse(change(current.tasks));
+        const encrypted = next.length
+          ? await seal(key, taskRecordText({ tasks: next, masks: { ...current.masks, ...newMasks } }), TASKS_LABEL)
+          : undefined;
         const tx = database.transaction("meta", "readwrite");
         requireVaultIdentity(await tx.store.get("vault"), salt);
         if (recordIv(await tx.store.get("scheduled-tasks")) !== recordIv(previous) || generation !== this.generation) {
@@ -862,10 +909,11 @@ export class Vault {
           )
         : undefined;
       // The backup's tasks are added as Manual tasks (src/scheduled.ts: mergeTasks).
+      const currentTasks = await openTaskRecord(key, taskRecord);
       const nextTasks = scheduledTasks.length
         ? await seal(
             key,
-            JSON.stringify(scheduledTasksSchema.parse(mergeTasks(scheduledTasks)(await openTasks(key, taskRecord)))),
+            taskRecordText({ ...currentTasks, tasks: scheduledTasksSchema.parse(mergeTasks(scheduledTasks)(currentTasks.tasks)) }),
             TASKS_LABEL,
           )
         : undefined;
@@ -1035,7 +1083,7 @@ export class Vault {
             )
           : undefined;
         const nextTasks = taskRecord
-          ? await seal(nextKey, JSON.stringify(await openTasks(currentKey, taskRecord)), TASKS_LABEL)
+          ? await seal(nextKey, taskRecordText(await openTaskRecord(currentKey, taskRecord)), TASKS_LABEL)
           : undefined;
         const replacements: {
           id: IDBValidKey;

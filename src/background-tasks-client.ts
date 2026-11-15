@@ -21,7 +21,7 @@ export interface BackgroundAttachment {
 }
 export const ATTACHMENT_LIMIT = 30_000;
 export type BackgroundPatch = Partial<
-  Pick<ScheduledTask, "name" | "instruction" | "trigger" | "paused" | "answerMode" | "useSearch" | "searchText">
+  Pick<ScheduledTask, "name" | "instruction" | "trigger" | "paused" | "answerMode" | "useSearch" | "searchText" | "notify">
 > & {
   /** A new document (needs `consent`), or null to remove the stored one. */
   attachment?: BackgroundAttachment | null;
@@ -52,7 +52,8 @@ export const BACKGROUND_REASONS = [
 ] as const;
 export type BackgroundReason = (typeof BACKGROUND_REASONS)[number];
 export const backgroundResultSchema = z.object({
-  id: z.string().min(1).max(100),
+  // The saved conversation takes this id (src/background-results.ts); the server makes UUIDs.
+  id: z.uuid(),
   taskId: z.string().min(1).max(100),
   ranAt: z.string().datetime(),
   status: z.enum(["done", "failed", "skipped"]),

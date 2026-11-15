@@ -6,20 +6,18 @@ import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } fro
 import { emptyConversation, type AnswerMode, type AppStatus, type Qualification } from "../shared/contracts";
 import { SCHEDULE_LIMITS, type ScheduledTask, type ScheduleUnit } from "../shared/scheduled-tasks";
 import { autoMode, MODE_NAMES, requestCost } from "./answer-modes";
+import { collectBackgroundResults } from "./background-results";
 import {
-  ackBackgroundResult,
   BackgroundTasksError,
   createBackgroundTask,
   deleteBackgroundTask,
-  listBackgroundResults,
   updateBackgroundTask,
-  type BackgroundResult,
 } from "./background-tasks-client";
 import { ATTACHMENT_LIMIT } from "./background-tasks-client";
 import { codeToolOn } from "./code-tool";
 import { DOCUMENT_ACCEPT } from "./document-formats";
 import { extract } from "./documents";
-import { createMaskingSession, findIdentifiers } from "./identifier-masking";
+import { createMaskingSession, findIdentifiers, type KeptIdentifier } from "./identifier-masking";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { newMessage } from "./conversation";
 import { scheduledEnabled } from "./device-features";
@@ -46,7 +44,7 @@ import {
 import { calendarFile, downloadCalendar } from "./scheduled-ics";
 import { RESULT_RETENTION_DAYS, scheduledText } from "./text/scheduled";
 import { editedSearchText } from "./when-to-search";
-import type { Vault } from "./vault";
+import type { TaskMasks, Vault } from "./vault";
 
 export const useScheduledTasks = () => useSyncExternalStore(watchTasks, heldTasks);
 /** Holds the tasks while the vault is unlocked and drops them when it locks. Nothing with the switch off. */
@@ -59,8 +57,8 @@ export function useScheduledVault(vault: Vault | null, unlocked: boolean) {
   return useScheduledTasks();
 }
 /** One change, written to the vault first; the held list follows only when that worked. */
-export async function changeTasks(vault: Vault, change: (list: ScheduledTask[]) => ScheduledTask[]) {
-  holdTasks(await vault.writeTasks(change));
+export async function changeTasks(vault: Vault, change: (list: ScheduledTask[]) => ScheduledTask[], masks?: TaskMasks) {
+  holdTasks(await vault.writeTasks(change, masks));
 }
 /** "Delete everything on this device" also deletes the server copies of background tasks. */
 export async function deleteServerCopies(status: AppStatus | undefined) {
@@ -88,7 +86,7 @@ const when = (iso: string, lang: string) =>
  * What the form adds for a background task: whether an extra consent was given, and the masked
  * document text (a string), its removal (null) or nothing.
  */
-type FormExtra = { sensitive: boolean; attachment?: string | null };
+type FormExtra = { sensitive: boolean; attachment?: string | null; masks?: KeptIdentifier[] };
 /** What the form opens with: a template, the chat card's reading, or an existing task. */
 export type TaskDraft = Partial<TaskFields> & { id?: string };
 export function draftFromDetection(found: DetectedSchedule, time: string, fallbackName: string): TaskDraft {
@@ -187,6 +185,8 @@ export function ScheduledPanel({
   const csrf = status?.csrf ?? "";
   const due = new Set(dueTasks(tasks, now).map((task) => task.id));
   const autoCount = tasks.filter((task) => task.mode === "auto").length;
+  // The deployment may allow fewer than the contract's three (inference.backgroundTasks.maxAutoTasks).
+  const maxAuto = Math.min(status?.backgroundTasks?.maxAutoTasks ?? SCHEDULE_LIMITS.maxAutoTasks, SCHEDULE_LIMITS.maxAutoTasks);
   const manual = tasks.filter((task) => task.mode === "manual");
   // Server first for a background task, then the vault; a refusal changes nothing.
   const apply = async (work: () => Promise<void>, done: string) => {
@@ -209,7 +209,7 @@ export function ScheduledPanel({
     const attachment = extra.attachment ? { text: extra.attachment } : undefined;
     return apply(async () => {
       let task = existing ? editedTask(existing, fields) : newTask(fields);
-      if (!existing && task.mode === "auto" && autoCount >= SCHEDULE_LIMITS.maxAutoTasks) throw new TaskError("autoFull");
+      if (!existing && task.mode === "auto" && autoCount >= maxAuto) throw new TaskError("autoFull");
       if (task.mode === "auto" && existing?.mode !== "auto") task = await createBackgroundTask(csrf, task, consent, attachment);
       else if (task.mode === "auto")
         task = await updateBackgroundTask(csrf, task.id, {
@@ -218,13 +218,17 @@ export function ScheduledPanel({
           trigger: task.trigger,
           answerMode: task.answerMode,
           useSearch: task.useSearch,
+          notify: task.notify,
           ...(task.searchText ? { searchText: task.searchText } : {}),
-          // A new document needs the consent again; null removes the stored one.
+          // A new document needs the consent again; null removes the stored one. An extra consent
+          // asked on this edit (CV or health words) is recorded on the server too.
           ...(attachment ? { attachment, consent } : extra.attachment === null ? { attachment: null } : {}),
+          ...(!attachment && extra.sensitive ? { consent } : {}),
         });
       else if (existing?.mode === "auto") await deleteBackgroundTask(csrf, existing.id);
       try {
-        await changeTasks(vault!, existing ? replaceTask(task) : addTask(task));
+        // The document's masking map stays in the vault, to put its values back into results.
+        await changeTasks(vault!, existing ? replaceTask(task) : addTask(task), extra.masks && attachment ? { [task.id]: extra.masks } : undefined);
       } catch (error) {
         // The vault refused: the new server copy must not stay behind without a record here.
         if (task.mode === "auto" && existing?.mode !== "auto") await deleteBackgroundTask(csrf, task.id).catch(() => {});
@@ -439,7 +443,7 @@ export function ScheduledPanel({
                 {t.exportAll}
               </button>
               <p className="muted">
-                {t.counts(manual.length, SCHEDULE_LIMITS.maxManualTasks, autoCount, SCHEDULE_LIMITS.maxAutoTasks)}
+                {t.counts(manual.length, SCHEDULE_LIMITS.maxManualTasks, autoCount, status?.backgroundTasks ? maxAuto : SCHEDULE_LIMITS.maxAutoTasks)}
               </p>
             </div>
           )}
@@ -448,7 +452,8 @@ export function ScheduledPanel({
               draft={form}
               existing={editing}
               status={status}
-              autoFull={autoCount >= SCHEDULE_LIMITS.maxAutoTasks && editing?.mode !== "auto"}
+              autoFull={autoCount >= maxAuto && editing?.mode !== "auto"}
+              loadMasks={async () => (editing?.mode === "auto" ? ((await vault.readTaskMasks())[editing.id] ?? []) : [])}
               onClose={() => setForm(undefined)}
               onSubmit={async (fields, extra) => {
                 const ok = await submit(fields, editing, extra);
@@ -485,6 +490,7 @@ function TaskForm({
   existing,
   status,
   autoFull,
+  loadMasks,
   onClose,
   onSubmit,
 }: {
@@ -492,6 +498,8 @@ function TaskForm({
   existing?: ScheduledTask;
   status?: AppStatus;
   autoFull: boolean;
+  /** The task's masking map so far (empty for a new task). */
+  loadMasks: () => Promise<KeptIdentifier[]>;
   onClose: () => void;
   onSubmit: (fields: TaskFields, extra: FormExtra) => Promise<boolean>;
 }) {
@@ -521,7 +529,7 @@ function TaskForm({
   const [cvConsent, setCvConsent] = useState(false);
   const [healthConsent, setHealthConsent] = useState(false);
   // One document for a background task: extracted and masked on this device, never the file.
-  const [document, setDocument] = useState<{ name: string; text: string; replaced: number; shortened: boolean }>();
+  const [document, setDocument] = useState<{ name: string; text: string; replaced: number; shortened: boolean; kept: KeptIdentifier[] }>();
   const [reading, setReading] = useState("");
   const [removeStored, setRemoveStored] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -554,13 +562,16 @@ function TaskForm({
     try {
       const extracted = await extract(file, new AbortController().signal, () => {});
       const whole = extracted.sources.map((source) => source.text).join("\n\n");
-      const session = createMaskingSession();
+      // A replaced document continues the task's map, so placeholders in earlier results keep their values.
+      const session = createMaskingSession(await loadMasks().catch(() => []));
       const masked = session.mask(whole);
+      const text = masked.slice(0, ATTACHMENT_LIMIT);
       setDocument({
         name: file.name,
-        text: masked.slice(0, ATTACHMENT_LIMIT),
-        replaced: session.kept.length,
+        text,
+        replaced: new Set(text.match(/\{\{[A-Z-]+-\d+\}\}/g)).size,
         shortened: masked.length > ATTACHMENT_LIMIT,
+        kept: [...session.kept],
       });
       setDocumentConsent(false);
       setReading("");
@@ -639,7 +650,7 @@ function TaskForm({
             },
             {
               sensitive: asksDocument || asksCv || asksHealth,
-              ...(asksDocument ? { attachment: document!.text } : auto && removeStored ? { attachment: null } : {}),
+              ...(asksDocument ? { attachment: document!.text, masks: document!.kept } : auto && removeStored ? { attachment: null } : {}),
             },
           );
           setSaving(false);
@@ -1186,46 +1197,14 @@ export function useBackgroundResults({
       if (running) return;
       running = true;
       try {
-        const results: BackgroundResult[] = await listBackgroundResults(csrf);
-        let count = 0;
-        for (const result of results) {
-          if (stopped || !vault.unlocked) return;
-          const task = heldTasks().find((item) => item.id === result.taskId);
-          const name = task?.name ?? t.unknownTask;
-          if (result.status === "done" && result.text) {
-            const at = result.ranAt;
-            await vault.save(
-              {
-                ...emptyConversation(),
-                title: t.resultTitle(name).slice(0, 120),
-                createdAt: at,
-                messages: [
-                  { ...newMessage("user", task?.instruction ?? name), at },
-                  { ...newMessage("assistant", result.text), at },
-                ],
-              },
-              null,
-            );
-            count++;
-            if (task) await changeTasks(vault, replaceTask({ ...task, lastRunAt: at })).catch(() => {});
-          } else if (result.status === "done") {
-            // The search found nothing new: no model request was made.
-            setProblems((list) => [...list, t.resultNothingNew(name, when(result.ranAt, lang))]);
-            if (task) await changeTasks(vault, replaceTask({ ...task, lastRunAt: result.ranAt })).catch(() => {});
-          } else {
-            const line = (result.status === "skipped" ? t.resultSkipped : t.resultFailed)(
-              name,
-              when(result.ranAt, lang),
-              result.reason ? t.reason(result.reason) : t.reasonUnknown,
-            );
-            setProblems((list) => [...list, line]);
-            // The server paused the task itself: the vault copy shows it paused too.
-            if (task && /^(paused_allowance|failed_unreadable)$/.test(result.reason ?? ""))
-              await changeTasks(vault, replaceTask({ ...task, paused: true })).catch(() => {});
-          }
-          // Only after the result is saved (or shown): then the server deletes it.
-          await ackBackgroundResult(csrf, result.id);
-        }
+        const count = await collectBackgroundResults(
+          vault,
+          csrf,
+          t,
+          (iso) => when(iso, lang),
+          (line) => setProblems((list) => [...list, line]),
+          () => stopped,
+        );
         if (count && !stopped) saved.current(count);
       } catch {
         /* The next poll tries again; nothing is acknowledged that was not saved. */

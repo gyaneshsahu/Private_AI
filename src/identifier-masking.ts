@@ -713,12 +713,23 @@ export function findIdentifiers(
   return found.sort((a, b) => a.start - b.start);
 }
 
-export function createMaskingSession(): MaskingSession {
+/**
+ * `from` continues an earlier session's map (a background task's, kept in the vault): its
+ * placeholders keep their values, and new values get the next free numbers.
+ */
+export function createMaskingSession(from: readonly KeptIdentifier[] = []): MaskingSession {
   const kept: KeptIdentifier[] = [];
   const byValue = new Map<string, KeptIdentifier>();
   const counters = new Map<IdentifierKind, number>();
+  const valueKey = (kind: IdentifierKind, value: string) => `${kind}:${value.replace(/[\s./-]/g, "")}`;
+  for (const entry of from) {
+    kept.push(entry);
+    byValue.set(valueKey(entry.kind, entry.value), entry);
+    const number = Number(/-(\d+)\}\}$/.exec(entry.placeholder)?.[1] ?? 0);
+    counters.set(entry.kind, Math.max(counters.get(entry.kind) ?? 0, number));
+  }
   const placeholderFor = (kind: IdentifierKind, value: string) => {
-    const key = `${kind}:${value.replace(/[\s./-]/g, "")}`;
+    const key = valueKey(kind, value);
     const existing = byValue.get(key);
     if (existing) return existing.placeholder;
     const next = (counters.get(kind) ?? 0) + 1;

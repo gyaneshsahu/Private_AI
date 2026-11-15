@@ -11,6 +11,12 @@ import {
   HELD_OUT_POSITIVE,
   type DetectionCase,
 } from "./fixtures/schedule-detection-cases";
+import {
+  HELD_OUT_2_DE_NEGATIVE,
+  HELD_OUT_2_DE_POSITIVE,
+  HELD_OUT_2_EN_NEGATIVE,
+  HELD_OUT_2_EN_POSITIVE,
+} from "./fixtures/schedule-detection-heldout-2";
 
 function score(positive: DetectionCase[], negative: DetectionCase[]) {
   const truePositive = positive.filter((c) => detectSchedule(c.text)).length;
@@ -45,12 +51,34 @@ describe("schedule detection", () => {
       expect(s.missed).toEqual([]);
     }
   });
-  it("held-out wording, not used for tuning: 12 of 14 found, 2 of 14 wrongly (measured 15 November)", () => {
+  it("first held-out set: 14 of 14 found, none wrongly (was 12 and 2 before its two failure kinds were fixed in general rules)", () => {
     const found = HELD_OUT_POSITIVE.filter((t) => detectSchedule(t)).length;
     const wrong = HELD_OUT_NEGATIVE.filter((t) => detectSchedule(t)).length;
-    // Recall 0.857, precision 0.857. A wrong card costs one tap on "Just send".
+    // Its misses and false triggers guided the change, so this is no longer an honest figure.
     expect(found / HELD_OUT_POSITIVE.length).toBeGreaterThanOrEqual(0.8);
     expect(found / (found + wrong)).toBeGreaterThanOrEqual(0.8);
+  });
+  it("second held-out set, written and committed before the change, never tuned on (measured 15 November)", () => {
+    // Before the change: recall 0.75 in both languages, precision 0.714 (English) and 0.682 (German).
+    // After: recall 0.85, precision 0.773 in both. A wrong card costs one tap on "Just send".
+    for (const [positive, negative] of [
+      [HELD_OUT_2_EN_POSITIVE, HELD_OUT_2_EN_NEGATIVE],
+      [HELD_OUT_2_DE_POSITIVE, HELD_OUT_2_DE_NEGATIVE],
+    ]) {
+      const found = positive.filter((t) => detectSchedule(t)).length;
+      const wrong = negative.filter((t) => detectSchedule(t)).length;
+      expect(found / positive.length).toBeGreaterThanOrEqual(0.85);
+      expect(found / (found + wrong)).toBeGreaterThanOrEqual(0.77);
+    }
+  });
+  it("frequency adjectives after a request, and frequencies that only describe a one-off collection", () => {
+    expect(detectSchedule("I want a weekly digest of science news")).toMatchObject({ every: 1, unit: "week" });
+    expect(detectSchedule("Ich brauche eine monatliche Erinnerung an die Steuer")).toMatchObject({ every: 1, unit: "month", lang: "de" });
+    expect(detectSchedule("Schick mir eine tägliche Nachricht mit dem Wetter")).toMatchObject({ every: 1, unit: "day" });
+    expect(detectSchedule("Gib mir einen wöchentlichen Trainingsplan")).toBeUndefined();
+    expect(detectSchedule("Send me a list of new jobs every Monday")).toMatchObject({ every: 1, unit: "week", weekday: 1 });
+    expect(detectSchedule("Give me ideas that we can cook every week")).toBeUndefined();
+    expect(detectSchedule("Nenn mir Orte, wo man jeden Sonntag frühstücken kann")).toBeUndefined();
   });
   for (const c of [...ENGLISH_POSITIVE, ...GERMAN_POSITIVE])
     it(`reads the schedule: ${c.text}`, () => {

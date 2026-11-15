@@ -55,7 +55,8 @@ describe("background tasks client", () => {
     const refused = await createBackgroundTask("SYNTHETIC", auto("d"), consent).catch((e) => e);
     expect(refused).toBeInstanceOf(BackgroundTasksError);
     expect(refused.status).toBe(409);
-    expect(refused.message).toContain("3 background tasks");
+    // The real server's text (server/background-tasks.ts REFUSALS.full), in the interface language.
+    expect(refused.message).toBe("The limit of background tasks for this account is reached. Nothing was saved.");
   });
   it("sends one masked document with the extra consent, and removes it with null", async () => {
     const fake = createBackgroundTasksFake();
@@ -71,11 +72,11 @@ describe("background tasks client", () => {
   it("fetches results and acknowledges them, after which the server has none", async () => {
     const fake = createBackgroundTasksFake();
     vi.stubGlobal("fetch", fakeFetch(fake));
-    fake.results.push({ id: "r1", taskId: "t1", ranAt: "2026-11-16T07:00:00.000Z", status: "done", text: "Three offers." });
+    fake.results.push({ id: "00000000-0000-4000-8000-000000000001", taskId: "t1", ranAt: "2026-11-16T07:00:00.000Z", status: "done", text: "Three offers." });
     const [result] = await listBackgroundResults("SYNTHETIC");
     expect(result.text).toBe("Three offers.");
     await ackBackgroundResult("SYNTHETIC", result.id);
-    expect(fake.acked).toEqual(["r1"]);
+    expect(fake.acked).toEqual(["00000000-0000-4000-8000-000000000001"]);
     expect(await listBackgroundResults("SYNTHETIC")).toEqual([]);
   });
   it("refuses a reply of the wrong shape", async () => {

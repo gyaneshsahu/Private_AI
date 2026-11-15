@@ -55,7 +55,28 @@ const PLAN_NOUNS = re(
   "^\\s*(?:[\\p{L}-]+\\s+){0,2}?(plan|schedule|routine|budget|planner|timetable|overview|calendar|report|ticket|fee|newspaper|limit|rate|pass|subscription)s?\\b>",
 );
 const ADVERB_FOLLOWERS = re("^(?:\\s*$|\\s*[,.;:!?]|\\s+(?:(?:at|on|in|from|to|please|until|starting|and|or|for|around|about)\\b>|\\d))");
-const GIVE_A = re("\\b<(?:give|send|bring|show|tell|teach|text|email|write)\\s+me\\s+(?:a|an|one|my)?\\s*$");
+// A request for something with a frequency adjective in front: "give me a daily word", "I'd like a
+// weekly reminder", "ich hätte gern eine wöchentliche Erinnerung".
+const GIVE_A = re(
+  "\\b<(?:(?:give|send|bring|show|tell|teach|text|email|write)\\s+me|i'?d\\s+(?:like|love)|i\\s+would\\s+(?:like|love)|i\\s+want|i\\s+need|set\\s+up)\\s+(?:a|an|one|my)?\\s*$",
+);
+const GIVE_A_DE = re(
+  "\\b<(?:(?:gib|geben\\s+sie|schick|schicke|sende|schreib|schreibe|zeig|zeige|bring|bringe|empfiehl|nenn|nenne)\\s+(?:mir|uns)|ich\\s+hätte\\s+gerne?|ich\\s+möchte|ich\\s+will|ich\\s+brauche|richte)\\s+(?:eine[nm]?|ein)\\s*$",
+);
+// German nouns are compounds: "Trainingsplan", "Monatsbudget".
+const PLAN_NOUNS_DE = re(
+  "^\\s*(?:[\\p{L}-]+\\s+){0,2}?\\p{L}*(plan|pläne|routine|budget|übersicht|kalender|bericht|gebühr|zeitung|limit|abo|abonnement|ticket|karte|zinsen|verzinsung|treffen|sitzung|besprechung)\\p{L}*\\b>",
+);
+/**
+ * A frequency that describes the content of a one-off collection, not when to run: "a list of
+ * things to do every day", "eine Liste mit Dingen, die man jeden Tag machen kann". It needs both
+ * a collection noun and a clause (infinitive or relative) between it and the frequency, so "send
+ * me a list of new jobs every Monday" stays a task.
+ */
+const CONTENT_CLAUSE = re(
+  "\\b<(?:lists?|ideas|tips|suggestions|examples|options|things|places|ways|activities|reasons|habits)\\b>.*(?:\\b<to\\s+\\p{L}+|\\b<(?:that|which|who|where)\\b>|\\b<(?:i|you|we|one|people)\\s+(?:can|could|should|might)\\b>)" +
+    "|\\b<(?:liste[n]?|ideen|tipps|vorschläge[n]?|beispiele[n]?|möglichkeiten|dinge[n]?|orte[n]?|wege[n]?|aktivitäten|gründe[n]?|gewohnheiten)\\b>.*(?:,\\s*(?:die|der|das|dem|den|denen|was|wie|wo|womit|um)\\b>)",
+);
 
 const RULES: Rule[] = [
   {
@@ -121,16 +142,26 @@ const RULES: Rule[] = [
       return { every: 1, unit: m[1].toLowerCase() === "daily" ? "day" : m[1].toLowerCase() === "weekly" ? "week" : "month", de: false };
     },
   },
+  {
+    // The German adjectives ("eine wöchentliche Erinnerung"), only after a request with an
+    // article and not before a plan or schedule ("gib mir einen wöchentlichen Trainingsplan").
+    pattern: re("\\b<(täglich|wöchentlich|monatlich)e[nmrs]?\\b>"),
+    read: (m) => {
+      if (!GIVE_A_DE.test(m.input.slice(0, m.index)) || PLAN_NOUNS_DE.test(m.input.slice(m.index + m[0].length))) return undefined;
+      const stem = m[1].toLowerCase();
+      return { every: 1, unit: stem === "täglich" ? "day" : stem === "wöchentlich" ? "week" : "month", de: true };
+    },
+  },
 ];
 
 const MARKERS = [
   re("\\b<remind\\s+me\\b>"),
   re("\\b<(?:give|send|tell|teach|show|bring|write|text|email|ping|quiz|test|notify|recommend)\\s+me\\b>"),
-  re("\\b<(?:suggest|i'?d\\s+like|i\\s+would\\s+like|i\\s+want|i'?d\\s+love|let\\s+me\\s+know)\\b>"),
+  re("\\b<(?:suggest|i'?d\\s+like|i\\s+would\\s+like|i\\s+want|i'?d\\s+love|i\\s+need|set\\s+up|let\\s+me\\s+know)\\b>"),
   re("\\b<erinner(?:e|n\\s+sie)?\\s+mich\\b>"),
   re("\\b<(?:gib|geben\\s+sie|schick|schicke|sende|senden\\s+sie|erzähl|erzähle|zeig|zeige|schreib|schreibe|bring|bringe|empfiehl|nenn|nenne|schlag|schlage)\\s+(?:mir|uns)\\b>"),
   re("\\b<(?:frag|frage)\\s+mich\\b>|\\b<mich\\b.*\\babfragen\\b>"),
-  re("\\b<(?:ich\\s+hätte\\s+gerne?|ich\\s+möchte|ich\\s+will)\\b>"),
+  re("\\b<(?:ich\\s+hätte\\s+gerne?|ich\\s+möchte|ich\\s+will|ich\\s+brauche|richte)\\b>"),
   re("\\b<(?:kannst|könntest|würdest|magst)\\s+du\\s+(?:mir|mich)\\b>|\\b<(?:können|könnten|würden)\\s+sie\\s+(?:mir|mich)\\b>"),
 ];
 const REMIND = re("\\b<(?:remind\\s+me|erinner(?:e|n\\s+sie)?\\s+mich)\\b>");
@@ -222,6 +253,8 @@ export function detectSchedule(message: string): DetectedSchedule | undefined {
     const m = rule.pattern.exec(text);
     const found = m && rule.read(m);
     if (!found) continue;
+    // Between the request and the frequency, a one-off collection described by a clause.
+    if (m.index > marker.index && CONTENT_CLAUSE.test(text.slice(marker.index + marker[0].length, m.index))) return undefined;
     frequency = found;
     spans.push([m.index, m.index + m[0].length]);
     break;
