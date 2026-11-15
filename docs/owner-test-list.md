@@ -522,6 +522,11 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
   Tell the agent: your decision. Recommended: on after T-107 and T-108 pass.
 
 ---
+- [ ] **T-111 Approve Privatemode's new deployment manifest (owner rule: only after checking).**
+  Do: read `docs/manifest-rotation-20261114.md`; open docs.privatemode.ai/changelog and find v1.64.0; email Edgeless: did v1.64.0 go live on 14 November 2026, and is the new seed-share owner key (starting `3082020a02820201009eb7f0`) yours? Then sign the report with the new digest `d63eb5cf91cb3079fe25a848573a4d0e9d869f462dab4f71fd02bdb372f8e833` and upload the new manifest file with it.
+  Expect: after the deploy, chat works on the hosted site; `/api/status` says ready.
+  Report back: "manifest approved" and the date, or what Edgeless answered.
+
 ## Changes
 
 - 14 November 2026: first version. 81 items. Sources: handoff, decisions doc, checklist, deploy doc, alpha plan, week-one monitoring, and the feature docs of 13 and 14 November. Where docs disagreed, the newest was used (decisions doc and `docs/READINESS.md` of 14 November).
@@ -537,3 +542,4 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 - 14 November 2026: added T-91 to T-94 (projects with instructions and files: a project chat, nothing sent where it should not be, the project screen on a phone, the decision). Only after the lead built with the switch on.
 - 14 November 2026: Projects items added; all items renumbered in file order (T-01 to T-110).
 - 14 November 2026: three cross-references fixed after the renumbering (T-93 now points to T-89 and T-90, T-106 to T-102 and T-103, T-110 to T-107 and T-108); T-24 shows the agent's balance estimate.
+- 15 November 2026: added T-111 (approve the new Privatemode manifest after checks).
