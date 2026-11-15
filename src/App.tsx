@@ -90,6 +90,9 @@ import { AnswerAnnouncement, ConnectionBanner } from "./ConnectionBanner";
 import { composerText } from "./text/composer";
 import { Vault, VaultConflictError } from "./vault";
 import { VaultBackup } from "./VaultBackup";
+import { VaultUnlock } from "./VaultUnlock";
+import { PairingPrompt, SyncGate, SyncIndicator, SyncSettings } from "./SyncScreens";
+import { syncText } from "./text/sync";
 import { VaultSecurity } from "./VaultSecurity";
 import { BACKUP_MAX_BYTES } from "./vault-backup";
 import { containsTemporaryResearch } from "./saved-conversation";
@@ -393,6 +396,8 @@ export function App() {
   }>();
   const [passphrase, setPassphrase] = useState("");
   const [unlocked, setUnlocked] = useState(false);
+  // The new-device sync screen, until the user picks Not now (docs/vault-sync-screens-20261115.md).
+  const [syncDismissed, setSyncDismissed] = useState(false);
   // Read aloud stops when a message is sent, another conversation opens or the vault locks.
   useEffect(stopReading, [conversation.id, conversation.messages.length, unlocked]);
   const [saved, setSaved] = useState<Conversation[]>([]);
@@ -1393,7 +1398,8 @@ export function App() {
       if (answered && vault.current?.unlocked) changeTasks(vault.current, markRun(task.id)).catch(() => {});
     });
   }
-  async function unlockVault() {
+  // remember: true or false is the device choice; "remembered" opens with the key this device keeps.
+  async function unlockVault(remember: boolean | "remembered" = false) {
     if (!status) {
       fail(t.waitForAccess);
       return;
@@ -1403,7 +1409,9 @@ export function App() {
     setPassphrase("");
     setBusy(t.unlocking);
     try {
-      await vault.current!.unlock(secret);
+      if (remember === "remembered") {
+        if (!(await vault.current!.unlockRemembered())) throw Error("not remembered");
+      } else await vault.current!.unlock(secret, remember);
       const snapshots = await vault.current!.readAvailable();
       const projectList = await vault.current!.readProjects();
       if (current !== epoch.current) return;
@@ -1419,6 +1427,24 @@ export function App() {
       if (current === epoch.current) setBusy("");
     }
   }
+  // Forgotten passphrase (Stage 0): deletes this device's vault while locked; nothing else.
+  async function resetForgotten(): Promise<boolean> {
+    try {
+      await vault.current!.eraseEverything();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  // A remembered device opens by itself on each visit (docs/vault-sync-screens-20261115.md).
+  // Also the way in after sync unlocks this device (the engine decides whether it is remembered).
+  const openIfRemembered = () =>
+    void vault.current?.isRemembered().then((yes) => {
+      if (yes) void unlockVault("remembered");
+    }, () => {});
+  useEffect(() => {
+    if (status && !unlocked) openIfRemembered();
+  }, [status?.accountId, !!status]);
   async function eraseEverything() {
     if (
       !window.confirm(
@@ -1497,32 +1523,6 @@ export function App() {
           : t.saveFailed,
       );
     } finally {
-      if (current === epoch.current) setBusy("");
-    }
-  }
-  async function exportVaultBackup() {
-    const current = epoch.current;
-    setBusy(t.encryptingBackup);
-    let url: string | undefined;
-    try {
-      const text = await vault.current!.exportBackup();
-      if (current !== epoch.current) return;
-      url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "privateai-encrypted.privateai-backup";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      setNotice(t.backupRequested);
-    } catch {
-      if (current === epoch.current)
-        fail(t.backupFailed);
-    } finally {
-      if (url) {
-        const expired = url;
-        setTimeout(() => URL.revokeObjectURL(expired), 1000);
-      }
       if (current === epoch.current) setBusy("");
     }
   }
@@ -1784,7 +1784,29 @@ export function App() {
             : undefined
         }
         backgroundActive={scheduledTasks.some((task) => task.mode === "auto")}
+        syncIndicator={
+          status?.vaultSync && (
+            <SyncIndicator
+              onOpen={() => {
+                setNavigationOpen(false);
+                setSettingsSection("sync");
+                setSettingsOpen(true);
+              }}
+            />
+          )
+        }
       />
+      {status?.vaultSync && (
+        <SyncGate
+          dismissed={syncDismissed}
+          onDismiss={() => setSyncDismissed(true)}
+          onUnlocked={() => {
+            setNotice(syncText[lang].approved);
+            setTab("Saved");
+            openIfRemembered();
+          }}
+        />
+      )}
       {scheduledEnabled() && scheduledOpen && (
         <ScheduledPanel
           vault={vault.current}
@@ -1867,6 +1889,7 @@ export function App() {
                 ["privacy", "shield", t.sectionPrivacy],
                 ["usage", "usage", t.sectionUsage],
                 ...(memoryEnabled() ? ([["memory", "pin", memoryText[lang].title]] as const) : []),
+                ...(status?.vaultSync ? ([["sync", "shield", syncText[lang].section]] as const) : []),
               ] as const
             ).map(([id, icon, label]) => (
               <button
@@ -1978,6 +2001,9 @@ export function App() {
             {settingsSection === "memory" && memoryEnabled() && (
               <MemorySettings vault={vault.current} unlocked={unlocked} />
             )}
+            {settingsSection === "sync" && status?.vaultSync && (
+              <SyncSettings unlocked={unlocked} onNotice={setNotice} />
+            )}
           </section>
         </div>
         <div className="workspace-help">
@@ -2021,6 +2047,7 @@ export function App() {
         </div>
       </dialog>
       <main>
+        {status?.vaultSync && <PairingPrompt />}
         <header className="conversation-header">
           <button
             className="navigation-toggle"
@@ -3337,29 +3364,19 @@ export function App() {
               {unsaved ? t.unsavedChanges : t.noUnsavedChanges} {t.reloadClears}
             </p>
             {!unlocked ? (
-              <form
-                className="panel"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void unlockVault();
-                }}
-              >
-                <label>
-                  {t.passphrase}
-                  <input
-                    type="password"
-                    autoComplete="off"
-                    minLength={12}
-                    value={passphrase}
-                    onChange={(e) => setPassphrase(e.target.value)}
-                    required
-                  />
-                </label>
-                <p className="muted">{t.passphraseNote}</p>
-                <button className="primary" disabled={!!busy}>
-                  {t.createOrUnlock}
-                </button>
-              </form>
+              <VaultUnlock
+                vault={vault.current}
+                scope={status?.accountId}
+                busy={!!busy}
+                passphrase={passphrase}
+                onPassphrase={setPassphrase}
+                onUnlock={(remember) => void unlockVault(remember)}
+                onOpenRemembered={() => void unlockVault("remembered")}
+                onReset={resetForgotten}
+                syncAvailable={!!status?.vaultSync}
+                onSyncRecovered={openIfRemembered}
+                onGetFromOther={() => setSyncDismissed(false)}
+              />
             ) : (
               <>
                 <div className="row">
@@ -3465,11 +3482,13 @@ export function App() {
                 />
                 <VaultBackup
                   busy={!!busy}
-                  canExport={
-                    (saved.length > 0 || projects.length > 0) &&
-                    unreadableSnapshots === 0
-                  }
-                  onExport={exportVaultBackup}
+                  // Memories or tasks alone are enough; an empty vault gets a plain message.
+                  canExport={unreadableSnapshots === 0}
+                  exportParts={async (includeFiles) => {
+                    const parts = await vault.current!.exportBackupParts(includeFiles);
+                    if (parts.length === 1) setNotice(t.backupRequested);
+                    return parts;
+                  }}
                   onRestore={restoreVaultBackup}
                 />
               </>

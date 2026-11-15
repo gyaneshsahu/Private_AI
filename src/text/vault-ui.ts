@@ -8,11 +8,11 @@ export const vaultBackupText = defineText({
     keepIntro:
       "Download saved conversations and projects to your device, protected by this vault’s passphrase. Unsaved work and temporary research are not included. Nothing is uploaded.",
     limits:
-      "Up to 100 saved conversations and 10 MiB of content. Keep the file and passphrase safe: there is no passphrase recovery. Deleting history here cannot delete downloaded copies.",
+      "Keep the file and passphrase safe: there is no passphrase recovery. Deleting history here cannot delete downloaded copies.",
     download: "Download encrypted backup",
     restoreHeading: "Restore into this unlocked vault",
     restoreIntro:
-      "Choose your backup and its original passphrase. Conversations are added as new copies with new project identities; existing snapshots and your open workspace stay unchanged. Repeating a restore adds more copies.",
+      "Choose your backup and its original passphrase. Conversations and projects are added as new copies; existing snapshots and your open workspace stay unchanged. What is already here is skipped, so restoring the same file again adds nothing twice. A chat that changed here since the backup comes back as a separate copy.",
     file: "Encrypted backup file",
     fileError: "Choose a non-empty encrypted backup file of at most 16 MiB.",
     passphrase: "Original backup passphrase",
@@ -25,11 +25,11 @@ export const vaultBackupText = defineText({
     keepIntro:
       "Laden Sie gespeicherte Unterhaltungen und Projekte auf Ihr Gerät herunter, geschützt durch die Passphrase dieses Tresors. Nicht gespeicherte Arbeit und vorübergehende Websuchen sind nicht enthalten. Es wird nichts hochgeladen.",
     limits:
-      "Bis zu 100 gespeicherte Unterhaltungen und 10 MiB Inhalt. Bewahren Sie Datei und Passphrase sicher auf: Eine Passphrase kann nicht wiederhergestellt werden. Wenn Sie hier den Verlauf löschen, werden heruntergeladene Kopien nicht gelöscht.",
+      "Bewahren Sie Datei und Passphrase sicher auf: Eine Passphrase kann nicht wiederhergestellt werden. Wenn Sie hier den Verlauf löschen, werden heruntergeladene Kopien nicht gelöscht.",
     download: "Verschlüsselte Sicherung herunterladen",
     restoreHeading: "In diesen entsperrten Tresor wiederherstellen",
     restoreIntro:
-      "Wählen Sie Ihre Sicherung und ihre ursprüngliche Passphrase. Unterhaltungen werden als neue Kopien mit neuen Projektkennungen hinzugefügt; vorhandene Stände und Ihr geöffneter Arbeitsbereich bleiben unverändert. Ein erneutes Wiederherstellen fügt weitere Kopien hinzu.",
+      "Wählen Sie Ihre Sicherung und ihre ursprüngliche Passphrase. Unterhaltungen und Projekte werden als neue Kopien hinzugefügt; vorhandene Stände und Ihr geöffneter Arbeitsbereich bleiben unverändert. Was schon hier ist, wird übersprungen; dieselbe Datei erneut wiederherzustellen fügt also nichts doppelt hinzu. Ein Chat, der sich hier seit der Sicherung geändert hat, kommt als eigene Kopie zurück.",
     file: "Verschlüsselte Sicherungsdatei",
     fileError: "Wählen Sie eine nicht leere verschlüsselte Sicherungsdatei mit höchstens 16 MiB.",
     passphrase: "Ursprüngliche Passphrase der Sicherung",

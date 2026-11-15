@@ -3057,3 +3057,191 @@
     padding: 0.3rem 0.2rem;
   }
 }
+
+/* Devices and sync, and the Stage 0 vault screens (docs/vault-sync-screens-20261115.md). */
+.chat-design .sync-step,
+.chat-design .vault-unlock,
+.chat-design .sync-settings {
+  display: grid;
+  gap: 0.6rem;
+  min-width: 0;
+}
+.chat-design .sync-step h2:focus,
+.chat-design .sync-step h3:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.chat-design .sync-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.chat-design .sync-actions button,
+.chat-design .new-device-actions button,
+.chat-design .sync-danger button,
+.chat-design .backup-parts button {
+  min-height: 44px;
+}
+.chat-design .new-device-actions {
+  display: grid;
+  gap: 0.5rem;
+}
+.chat-design .remember-choice p {
+  margin: 0 0 0 1.6rem;
+  font-size: 0.9rem;
+}
+.chat-design .sync-warning {
+  border-left: 4px solid var(--accent);
+  padding: 0.4rem 0.7rem;
+  background: var(--subtle);
+}
+.chat-design .recovery-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.chat-design .recovery-key li {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 1.3rem;
+  letter-spacing: 0.08em;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+}
+.chat-design .recovery-key-input {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  width: 100%;
+}
+.chat-design .pairing-code {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: clamp(2.2rem, 11vw, 3.2rem);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  margin: 0.4rem 0;
+}
+.chat-design .pairing-code-input {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 1.4rem;
+  letter-spacing: 0.2em;
+  max-width: 12rem;
+}
+.chat-design .pairing-prompt {
+  margin: 0.75rem;
+  padding: 0.9rem 1rem;
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.chat-design dialog.new-device-dialog {
+  width: min(34rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 1.25rem;
+}
+.chat-design .sync-devices {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.chat-design .sync-devices li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.8rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.chat-design .sync-badge {
+  font-size: 0.8rem;
+  padding: 0.05rem 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.chat-design .sync-quota progress {
+  display: block;
+  width: 100%;
+}
+.chat-design .sync-danger {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.chat-design .sync-error {
+  border-left: 4px solid currentColor;
+  padding-left: 0.6rem;
+}
+.chat-design .typed-confirm input {
+  display: block;
+  width: 100%;
+  margin-top: 0.3rem;
+}
+.chat-design .sync-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 1.5rem;
+  font-size: 0.85rem;
+}
+/* The state is in the word; the shape repeats it (filled, ring, hollow, square), never colour alone. */
+.chat-design .sync-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  background: currentColor;
+}
+.chat-design .sync-indicator[data-state="syncing"] .sync-dot {
+  background: transparent;
+  border-right-color: transparent;
+  animation: sync-turn 1s linear infinite;
+}
+.chat-design .sync-indicator[data-state="offline"] .sync-dot,
+.chat-design .sync-indicator[data-state="approval"] .sync-dot,
+.chat-design .sync-indicator[data-state="locked"] .sync-dot {
+  background: transparent;
+}
+.chat-design .sync-indicator[data-state="error"] .sync-dot {
+  border-radius: 1px;
+}
+@keyframes sync-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-design .sync-indicator[data-state="syncing"] .sync-dot {
+    animation: none;
+  }
+}
+.print-only {
+  display: none;
+}
+@media print {
+  body.printing-recovery-key * {
+    visibility: hidden;
+  }
+  body.printing-recovery-key .recovery-key-sheet,
+  body.printing-recovery-key .recovery-key-sheet * {
+    visibility: visible;
+  }
+  body.printing-recovery-key .recovery-key-sheet {
+    position: absolute;
+    inset: 0 auto auto 0;
+  }
+  body.printing-recovery-key .print-only {
+    display: block;
+  }
+}

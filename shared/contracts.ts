@@ -569,6 +569,8 @@ export interface AppStatus {
   healthConsentDraft?: boolean;
   /** Draft provider section for the privacy policy (shared/provider-disclosure.ts); off unless set. */
   providerDisclosureDraft?: "tinfoil" | "privatemode";
+  /** End-to-end encrypted sync is switched on (.local/sync-contract.md); absent means no sync screens. */
+  vaultSync?: { quotaBytes: number; maxDevices: number };
 }
 export type RequestAllowance =
   | { state: "unavailable" }

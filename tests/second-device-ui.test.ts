@@ -12,6 +12,7 @@ import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { workspaceControl } from "../evaluation/workspace-navigation";
 import { appText } from "../src/text/app";
 import { vaultBackupText } from "../src/text/vault-ui";
+import { vaultUnlockText } from "../src/text/sync";
 import { workspaceText } from "../src/text/workspace";
 import { decodeVaultBackupContent } from "../src/vault-backup";
 
@@ -333,10 +334,13 @@ describe("a second device on the same account, today", () => {
     await page.getByRole("button", { name: a.createOrUnlock }).click();
     await ui(page.getByText(a.unlockFailed).first()).toBeVisible();
     await ui(page.getByLabel(a.passphrase, { exact: true })).toBeVisible();
-    // While locked there is no "Delete everything", no backup and no recovery control.
+    // While locked there is no "Delete everything" and no backup. Since Stage 0 there is "Forgot your
+    // passphrase?" (docs/vault-sync-screens-20261115.md): without sync it can only delete this device's
+    // data after a typed confirmation; it recovers nothing. Not pressed here.
     await ui(page.getByRole("region", { name: a.deleteAll })).toHaveCount(0);
     await ui(page.getByRole("region", { name: b.label })).toHaveCount(0);
-    await ui(page.getByRole("button", { name: /forgot|recover|reset/i })).toHaveCount(0);
+    await ui(page.getByRole("button", { name: /recover|reset/i })).toHaveCount(0);
+    await ui(page.getByRole("button", { name: vaultUnlockText.en.forgotLink })).toBeVisible();
     // The stored data is only ciphertext; the wrong passphrase is refused by the vault itself.
     await expect(readVault(page, "synthetic forgotten passphrase")).rejects.toThrow();
     expect(await rawStorage(page)).not.toMatch(CANARIES);
