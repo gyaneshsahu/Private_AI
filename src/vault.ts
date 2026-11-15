@@ -405,7 +405,8 @@ export class Vault {
   }
   /** After an internal re-encryption: open with the new key, keeping the open chats' version tracking. */
   private reopen(nextKey: CryptoKey, nextMeta: VaultMeta, renamed: Map<string, string>, ak: Uint8Array<ArrayBuffer> | undefined) {
-    const observed = this.observed,
+    // A copy: lock() clears this.observed in place.
+    const observed = new Map(this.observed),
       versions = this.versions,
       previous = this.renamed;
     // Other tabs and in-flight work hold the old key: lock them out, then open with the new one.

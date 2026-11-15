@@ -243,7 +243,9 @@ export class SyncEngine {
     if (d.token) this.token = d.token;
     else if (d.sealedToken)
       try {
-        this.token = await unseal(await k.tokenKey(ak), d.sealedToken, `sync-token|${d.deviceId}`);
+        const token = await unseal(await k.tokenKey(ak), d.sealedToken, `sync-token|${d.deviceId}`);
+        // Only for the record it was sealed for, and never over a token set meanwhile.
+        if (this.device === d && !this.token) this.token = token;
       } catch {
         // Sealed under another account key (a vault moved since): this record cannot sync.
       }
@@ -336,6 +338,9 @@ export class SyncEngine {
       const d = await this.store();
       this.device = await d.get("device", "this");
       this.optedOut = !!(await d.get("meta", "optedOut"));
+      // Items held for a newer app version (review M5): this may be that version, so the next pull
+      // starts from the beginning once and reads them again (everything else is skipped by version).
+      if (((await d.getAll("base")) as BaseEntry[]).some((b) => b.hold)) await d.delete("meta", "cursor");
     }
     this.o.vault.onSync = (event) => {
       if (event === "unlocked") void this.onUnlocked();
@@ -452,10 +457,16 @@ export class SyncEngine {
     // The vault was opened or moved: the screens reload what they show.
     this.o.onApplied?.();
   }
-  /** Joining (setup, pairing): the vault must be open, or not exist yet. */
-  private async requireUsableVault() {
+  /**
+   * Joining: a locked passphrase vault must be unlocked first (it is moved under AK). A new setup
+   * (a new AK) also needs a locked synced vault unlocked, or nothing could open it afterwards; an
+   * approval may open a locked synced vault of the same account (a device that is not remembered,
+   * at every visit). The earlier record stays until the vault opened or moved (bindAccountKey first).
+   */
+  private async requireUsableVault(forNewKey = false) {
     if (this.o.vault.unlocked) return;
-    if ((await this.o.vault.mode()) !== "none") throw new SyncError("unlock-first");
+    const mode = await this.o.vault.mode();
+    if (mode === "passphrase" || (forNewKey && mode === "sync")) throw new SyncError("unlock-first");
   }
 
   async refresh() {
@@ -510,7 +521,7 @@ export class SyncEngine {
 
   // Setup on the first device.
   async setUp(opts: { deviceLabel: string; rememberDevice: boolean }) {
-    await this.requireUsableVault();
+    await this.requireUsableVault(true);
     const s = await this.call("GET", "/state", undefined, { header: null, detach: false });
     if (s.status === 404) throw new SyncError("not-set-up");
     if ((s.data as { hasWrappers?: boolean }).hasWrappers) throw new SyncError("already-set-up");
@@ -524,7 +535,7 @@ export class SyncEngine {
     if (!p) throw new SyncError("not-set-up");
     const typed = lastGroup.toUpperCase().replace(/[\s-]/g, "").replace(/O/g, "0").replace(/[IL]/g, "1");
     if (typed !== p.rk.text.slice(-4)) return false;
-    await this.requireUsableVault();
+    await this.requireUsableVault(true);
     const deviceId = crypto.randomUUID();
     const token = this.newToken();
     const keyPair = await k.newDeviceKeyPair();
@@ -683,6 +694,8 @@ export class SyncEngine {
     const ak = served ? await k.unwrapWithRecovery(served, rk, this.o.accountId).catch(() => undefined) : undefined;
     if (ak) {
       await this.bindAccountKey(ak, { recovered: true });
+      // This browser's own token (sealed on disk) first, so its existing device id is reused.
+      await this.loadToken(ak);
       await this.register(ak, opts.deviceLabel, opts.rememberDevice, rk, served);
       await this.setOptedOut(false);
       await this.syncNow().catch(() => {});
@@ -977,7 +990,8 @@ export class SyncEngine {
       for (const item of page.items) {
         const base = bases.get(item.itemId);
         // Never backwards: an older version than the one synced here is ignored (rollback by the server).
-        if (base && item.version <= base.version) continue;
+        // A held item is read again at its own version (this app version may now understand it).
+        if (base && (item.version < base.version || (item.version === base.version && !base.hold))) continue;
         decoded.push({ item, opened: await this.open(ak, item) });
       }
       // Lists before conversations, so a project exists before its chats.

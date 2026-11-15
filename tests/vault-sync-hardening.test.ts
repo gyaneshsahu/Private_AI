@@ -164,6 +164,96 @@ describe("C1: a reset or removal elsewhere never costs a device its data", () =>
   }, 60_000);
 });
 
+describe("after a reload (the sealed token read from disk)", () => {
+  it("the recovery key on a locked device that is not remembered reuses its device id, and the token from disk syncs", async () => {
+    const { origin, store } = await serve();
+    const a = await device(origin, "a");
+    await populate(a.vault);
+    const recoveryKey = await setUp(a, false);
+    const ids = (await store.devices(ACCOUNT)).map((d) => d.deviceId);
+    a.vault.lock();
+    // The next visit: a new engine on the same sync database, nothing in memory.
+    const status = await fetch(`${origin}/api/status`);
+    const cookie = status.headers.getSetCookie()[0].split(";")[0];
+    const { csrf } = await status.json();
+    const next = new SyncEngine({
+      vault: a.vault,
+      accountId: ACCOUNT,
+      csrf: () => csrf,
+      fetch: (path, init) => fetch(`${origin}${path}`, { method: init.method, headers: { ...init.headers, cookie }, body: init.body }),
+      storeName: a.storeName,
+    });
+    next.stop();
+    await next.init();
+    expect(next.getState().phase).toBe("locked");
+    expect(await next.unlockWithRecoveryKey(recoveryKey, { deviceLabel: "Laptop", rememberDevice: false })).toBe("ok");
+    expect((await store.devices(ACCOUNT)).map((d) => d.deviceId)).toEqual(ids);
+    await a.vault.save(conversation("After the reload", ["x"]), null);
+    await next.syncNow();
+    expect(next.getState()).toMatchObject({ phase: "idle", pending: 0 });
+  }, 60_000);
+
+  it("a locked synced vault that is not remembered opens again by an approval (every visit)", async () => {
+    const { origin } = await serve();
+    const a = await device(origin, "a");
+    await populate(a.vault);
+    await setUp(a);
+    const b = await device(origin, "b");
+    await pair(a, b, false);
+    const before = await contents(b.vault);
+    b.vault.lock();
+    await pair(a, b, false);
+    expect(b.vault.unlocked).toBe(true);
+    expect(await contents(b.vault)).toEqual(before);
+  }, 60_000);
+
+  it("an item held for a newer app version is read again after the upgrade (the next start)", async () => {
+    const { origin, store } = await serve();
+    const a = await device(origin, "a");
+    await populate(a.vault);
+    await setUp(a);
+    const b = await device(origin, "b");
+    await pair(a, b);
+    const target = (await a.vault.list()).find((c) => c.title === "First chat")!;
+    await a.vault.save({ ...target, title: "Read after the upgrade" });
+    await a.engine.syncNow();
+    // As an older app version would have left it: the new version seen, held, not applied.
+    const { itemId, row } = await itemOf(a, "conversation", target.id, store);
+    await b.engine.syncNow(); // applies it; now put it back as held at that version with the old content
+    const database = await openDB(b.storeName, 1);
+    const base = await database.get("base", itemId);
+    database.close();
+    const old = (await b.vault.list()).find((c) => c.id === target.id)!;
+    await b.vault.save({ ...old, title: "First chat" });
+    const reopened = await openDB(b.storeName, 1);
+    await reopened.put("base", { ...base, version: row.version, hold: true, hash: "old", sealed: undefined }, itemId);
+    reopened.close();
+    const next = new SyncEngine({ vault: b.vault, accountId: ACCOUNT, csrf: () => "", fetch: (b.engine as unknown as { fetcher: Fetcher }).fetcher, storeName: b.storeName });
+    next.stop();
+    await next.init();
+    await next.syncNow();
+    expect((await b.vault.list()).find((c) => c.id === target.id)?.title).toBe("Read after the upgrade");
+    expect(next.getState().needsUpgrade).toBeUndefined();
+  }, 60_000);
+});
+
+describe("W4 after a move out of sync and a direct move", () => {
+  it("keeps version tracking for a chat read before turning sync off or before adoptAccountKey", async () => {
+    const { origin } = await serve();
+    const a = await device(origin, "a");
+    await populate(a.vault);
+    await setUp(a);
+    await a.vault.setLocalPassphrase(LOCAL);
+    const read = (await a.vault.list()).find((c) => c.title === "First chat")!;
+    await a.engine.turnOffSyncOnThisDevice({ localPassphrase: LOCAL });
+    await a.vault.save({ ...read, title: "Saved after sync off" });
+    const again = (await a.vault.list()).find((c) => c.id === read.id)!;
+    await a.vault.adoptAccountKey(k.newAccountKey());
+    await a.vault.save({ ...again, title: "Saved after a direct move" });
+    expect((await a.vault.list()).find((c) => c.id === read.id)?.title).toBe("Saved after a direct move");
+  }, 60_000);
+});
+
 describe("C1: deleting the synced copy needs a proof", () => {
   it("a locked device deletes the synced copy only with the recovery key (forgotten passphrase)", async () => {
     const { origin, store } = await serve();
