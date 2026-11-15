@@ -109,8 +109,8 @@ async function setUp(d: Awaited<ReturnType<typeof device>>, remember = true) {
 }
 async function pair(a: Awaited<ReturnType<typeof device>>, b: Awaited<ReturnType<typeof device>>) {
   const { code, wait } = await b.engine.startPairing({ deviceLabel: "Phone" });
-  expect(code).toMatch(/^\d{6}$/);
-  expect(await a.engine.approvePairing(code === "123456" ? "654321" : "123456", "Phone")).toBe("wrong-code");
+  expect(code).toMatch(/^[0-9A-HJKMNP-TV-Z]{8}$/); // 40 bits, Crockford base32 (review H1)
+  expect(await a.engine.approvePairing(code === "00000000" ? "11111111" : "00000000", "Phone")).toBe("wrong-code");
   expect(await a.engine.approvePairing(code, "Phone")).toBe("approved");
   expect(await wait).toBe("approved");
 }
@@ -133,7 +133,7 @@ describe("sync between devices", () => {
     for (const canary of ["CANARY-CHAT", "CANARY-MEMORY", "SYNTHETIC-INSTRUCTIONS", "SYNTHETIC-TASK", "CANARY-FILE", "Laptop", recoveryKey])
       expect(sent).not.toContain(canary);
     expect(a.engine.getState()).toMatchObject({ phase: "idle", pending: 0 });
-    expect((await store.items(ACCOUNT, 0, 100)).items).toHaveLength(5); // 2 chats, projects, memories, tasks
+    expect((await store.items(ACCOUNT, 0, 100, 1e9)).items).toHaveLength(5); // 2 chats, projects, memories, tasks
 
     // B: a new browser, approved by A with the code.
     const b = await device(origin, "b");
@@ -187,14 +187,16 @@ describe("sync between devices", () => {
     expect(branched.branches?.archived.length).toBeGreaterThanOrEqual(1);
     expect((await b.vault.list()).find((c) => c.id === merged.id)).toEqual(branched);
 
-    // Deletes are tombstones: A deletes; B's older offline edit loses, a newer one is kept as a copy.
+    // Deletes are tombstones: A deletes; any edit B made meanwhile is kept as a copy, whatever its message times (review L5, M2).
     const projectChat = (await a.vault.list()).find((c) => c.title === "Project chat")!;
     await a.vault.delete(projectChat.id);
     await a.engine.syncNow();
     const onBproject = (await b.vault.list()).find((c) => c.id === projectChat.id)!;
     await b.vault.save({ ...onBproject, messages: [...onBproject.messages, message("CANARY-OLD-EDIT", "2026-01-01T00:00:00.000Z")] });
     await b.engine.syncNow();
-    expect((await b.vault.list()).some((c) => c.id === projectChat.id || JSON.stringify(c).includes("CANARY-OLD-EDIT"))).toBe(false);
+    const afterDelete = await b.vault.list();
+    expect(afterDelete.some((c) => c.id === projectChat.id)).toBe(false);
+    expect(afterDelete.find((c) => c.title === "Project chat (conflict copy)")?.messages.map((m) => m.text)).toContain("CANARY-OLD-EDIT");
     const third = conversation("Third", ["three"]);
     await a.vault.save(third, null);
     await a.engine.syncNow();
@@ -234,12 +236,16 @@ describe("sync between devices", () => {
     expect(a.engine.getState().pairingRequested).toBe(true);
     void pending.wait.catch(() => {});
 
-    // Revoke B from A: B's next request is refused, B locks and forgets its key; its local data stays.
+    // Remove B from A: B's next request is refused; B stops syncing and says so, keeps its key and all its data (review C1).
     const bId = b.engine.getState().devices.find((d) => d.thisDevice)?.deviceId ?? (await b.engine.refresh(), b.engine.getState().devices.find((d) => d.thisDevice)!.deviceId);
+    const bBefore = await contents(b.vault);
     await a.engine.revokeDevice(bId);
-    await expect(b.engine.syncNow()).rejects.toMatchObject({ code: "revoked" });
-    expect(b.vault.unlocked).toBe(false);
-    expect(b.engine.getState()).toMatchObject({ phase: "needs-approval", error: "revoked" });
+    await expect(b.engine.syncNow()).rejects.toMatchObject({ code: "removed" });
+    expect(b.engine.getState()).toMatchObject({ phase: "error", error: "removed", detached: "removed" });
+    expect(await contents(b.vault)).toEqual(bBefore);
+    b.vault.lock();
+    expect(await b.engine.unlockThisDevice()).toBe("ok");
+    expect(await contents(b.vault)).toEqual(bBefore);
 
     // Recovery on a fresh device C, with a typo first.
     const c = await device(origin, "c");
@@ -250,14 +256,15 @@ describe("sync between devices", () => {
     expect((await c.vault.list()).map((x) => x.id).sort()).toEqual((await a.vault.list()).map((x) => x.id).sort());
     expect(await c.vault.readMemories()).toEqual(memories);
 
-    // Reset (all synced data and wrappers gone); C keeps its local data under a local passphrase.
+    // Reset (all synced data and wrappers gone); C keeps its local data (its own key) and adds a local passphrase.
     await expect(c.engine.resetSync("delete")).rejects.toMatchObject({ code: "wrong-confirmation" });
-    await expect(c.engine.resetSync("DELETE SYNCED DATA")).rejects.toMatchObject({ code: "needs-local-passphrase" });
     await c.engine.resetSync("DELETE SYNCED DATA", { localPassphrase: "synthetic local passphrase C" });
-    expect((await store.items(ACCOUNT, 0, 100)).items).toHaveLength(0);
+    expect((await store.items(ACCOUNT, 0, 100, 1e9)).items).toHaveLength(0);
     expect(await store.proofs(ACCOUNT)).toBeUndefined();
+    // A learns it at its next contact: detached, with the distinct code, data kept (review C1).
     await a.engine.refresh();
-    expect(a.engine.getState().phase).toBe("off");
+    expect(a.engine.getState()).toMatchObject({ phase: "error", error: "reset-elsewhere", detached: "reset-elsewhere" });
+    expect(c.engine.getState().phase).toBe("off");
     c.vault.lock();
     await c.vault.unlock("synthetic local passphrase C");
     expect((await c.vault.list()).length).toBeGreaterThan(0);

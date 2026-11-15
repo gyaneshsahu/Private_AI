@@ -55,6 +55,8 @@ it.skipIf(!process.env.PRIVATEAI_SYNTHETIC_PG)(
       expect(await inTable.put(a, one, randomBytes(400), 2500, 2)).toBe("ok");
       expect(await inTable.put(a, one, data, 2500, 3)).toBe("ok");
       expect(await inTable.usage(a)).toEqual({ count: 1, usedBytes: 1000 });
+      // The running total (review M8) matches the rows, without a SUM per write.
+      expect((await db.pool.query("SELECT blob_bytes FROM sync_accounts WHERE account_id=$1", [a])).rows[0].blob_bytes).toBe("1000");
       expect(await inTable.get(a, one)).toEqual(data);
       expect(await inTable.get(b, one)).toBeUndefined();
       const racers = await Promise.all([inTable.put(a, randomUUID(), randomBytes(1000), 2500, 4), new PostgresBlobStore(runtime.pool).put(a, randomUUID(), randomBytes(1000), 2500, 4)]);
@@ -62,6 +64,7 @@ it.skipIf(!process.env.PRIVATEAI_SYNTHETIC_PG)(
       expect(await inTable.put(randomUUID(), randomUUID(), data, 2500, 5)).toBe("no-account");
       expect(await inTable.delete(a, one)).toBe(true);
       expect(await inTable.delete(a, one)).toBe(false);
+      expect((await inTable.usage(a)).usedBytes).toBe(1000); // the racer that won
       // The schema refuses what the code does not write: no bytes and no key, a size that differs.
       await expect(db.pool.query("INSERT INTO sync_blobs(account_id,blob_id,size,data,object_key,created_at) VALUES($1,$2,100,NULL,NULL,1)", [a, randomUUID()])).rejects.toThrow();
       await expect(db.pool.query("INSERT INTO sync_blobs(account_id,blob_id,size,data,object_key,created_at) VALUES($1,$2,100,$3,NULL,1)", [a, randomUUID(), randomBytes(99)])).rejects.toThrow();

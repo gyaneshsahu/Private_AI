@@ -81,8 +81,9 @@ async function openProjectFiles(key: CryptoKey, record?: Cipher): Promise<Projec
 // Scheduled tasks (src/scheduled.ts) are one more encrypted record in "meta", Manual and Auto.
 const TASKS_LABEL = "scheduled-tasks-v1";
 // A background task's masking map (placeholder and original value of its document) sits in the
-// same record, so it never leaves the device and goes with its task. Without maps the record is
-// the plain list, as before.
+// same record and goes with its task. It never leaves the device unencrypted: with sync on it
+// travels end-to-end encrypted inside the tasks item, like the task itself (security review L8).
+// Without maps the record is the plain list, as before.
 const taskMasksSchema = z.record(
   z.string().uuid(),
   z
@@ -140,6 +141,13 @@ function requireVaultIdentity(
 export class Vault {
   private observed = new Map<string, string>();
   private versions = new WeakMap<Conversation, string>();
+  /**
+   * Record versions renamed by an internal re-encryption (the move under sync's account key, or
+   * back): a save based on a copy read before the move still matches (wiring finding 4).
+   */
+  private renamed = new Map<string, string>();
+  /** True while this vault was opened with the recovery key (security review L2). */
+  private recovered = false;
   private databaseName = "privateai-vault";
   selectAccount(id?: string) {
     if (this.unlocked)
@@ -184,6 +192,8 @@ export class Vault {
   lock(broadcast = true) {
     this.observed.clear();
     this.versions = new WeakMap();
+    this.renamed = new Map();
+    this.recovered = false;
     this.key = undefined;
     this.salt = undefined;
     this.accountKeyRaw = undefined;
@@ -226,7 +236,10 @@ export class Vault {
     if (remember && !key) throw Error(textFor(vaultText).unlockFirst);
     const database = await db(this.databaseName);
     try {
-      if (remember) await database.put("meta", key, REMEMBERED);
+      // A synced vault is remembered through sync's device key (engine setRememberDevice), never
+      // through this slot, which would open it without the account key (security review M7, L3).
+      if (remember && this.accountKeyRaw) await database.delete("meta", REMEMBERED);
+      else if (remember) await database.put("meta", key, REMEMBERED);
       else await database.delete("meta", REMEMBERED);
     } finally {
       database.close();
@@ -241,9 +254,14 @@ export class Vault {
     const database = await db(this.databaseName);
     try {
       const key = (await database.get("meta", REMEMBERED)) as CryptoKey | undefined;
-      const existing = (await database.get("meta", "vault")) as
-        { salt: Uint8Array<ArrayBuffer>; check: Cipher } | undefined;
+      const existing = (await database.get("meta", "vault")) as VaultMeta | undefined;
       if (!(key instanceof CryptoKey) || !existing) return false;
+      // A synced vault never opens from this slot: it is opened by sync (device key, local
+      // passphrase or recovery key), so the account key is always there (security review M7, L3).
+      if (existing.sync) {
+        await database.delete("meta", REMEMBERED);
+        return false;
+      }
       const fits = await unseal(key, existing.check, "vault-check-v1").then(
         (value) => value === "privateai-v1",
         () => false,
@@ -349,11 +367,12 @@ export class Vault {
    * device approval), or creates an empty synced vault when this account has none here. A passphrase
    * vault is refused: it must be unlocked with its passphrase and then moved with adoptAccountKey.
    */
-  async unlockWithAccountKey(ak: Uint8Array): Promise<void> {
+  async unlockWithAccountKey(ak: Uint8Array, opts: { recovered?: boolean } = {}): Promise<void> {
     const generation = ++this.generation;
     this.key = undefined;
     this.salt = undefined;
     this.accountKeyRaw = undefined;
+    this.recovered = false;
     const key = await localVaultKey(ak);
     const database = await db(this.databaseName);
     try {
@@ -367,6 +386,8 @@ export class Vault {
           throw new Error(textFor(vaultText).unlockFailed);
         }
         salt = existing.salt;
+        // A Stage-0 "remember" slot left from before sync goes (security review M7).
+        await database.delete("meta", REMEMBERED);
       } else {
         salt = random(16);
         const meta: VaultMeta = { salt, check: await seal(key, "privateai-v1", "vault-check-v1"), sync: 1 };
@@ -376,41 +397,82 @@ export class Vault {
       this.key = key;
       this.salt = salt.slice();
       this.accountKeyRaw = new Uint8Array(ak);
+      this.recovered = !!opts.recovered;
     } finally {
       database.close();
     }
     this.onSync?.("unlocked");
+  }
+  /** After an internal re-encryption: open with the new key, keeping the open chats' version tracking. */
+  private reopen(nextKey: CryptoKey, nextMeta: VaultMeta, renamed: Map<string, string>, ak: Uint8Array<ArrayBuffer> | undefined) {
+    const observed = this.observed,
+      versions = this.versions,
+      previous = this.renamed;
+    // Other tabs and in-flight work hold the old key: lock them out, then open with the new one.
+    this.lock();
+    this.key = nextKey;
+    this.salt = nextMeta.salt.slice();
+    this.accountKeyRaw = ak;
+    this.versions = versions;
+    this.observed = new Map([...observed].map(([id, v]) => [id, renamed.get(v) ?? v]));
+    this.renamed = new Map([...[...previous].map(([from, to]) => [from, renamed.get(to) ?? to] as const), ...renamed]);
   }
   /**
    * Moves this unlocked vault (a passphrase vault, or one keyed by another account key) under sync's
    * account key: every record is re-encrypted in one transaction, as a passphrase change does, so
    * nothing is lost or half-moved. The old passphrase no longer opens it; setLocalPassphrase can add one.
    */
-  adoptAccountKey(ak: Uint8Array): Promise<void> {
+  adoptAccountKey(ak: Uint8Array, opts: { recovered?: boolean } = {}): Promise<void> {
     const key = this.key,
       salt = this.salt,
       generation = this.generation,
       databaseName = this.databaseName;
     if (!key || !salt) return Promise.reject(Error(textFor(vaultText).unlockTheVault));
     const accountKey = new Uint8Array(ak);
+    // The Stage-0 "remember" slot is dropped: a synced vault is remembered through sync's device key.
     return this.reencrypt(salt, generation, databaseName, async () => {
       const nextKey = await localVaultKey(accountKey);
       const nextMeta: VaultMeta = { salt: random(16), check: await seal(nextKey, "privateai-v1", "vault-check-v1"), sync: 1 };
       return { currentKey: key, nextKey, nextMeta };
-    }).then(({ nextKey, nextMeta }) => {
+    }, "forget").then(({ nextKey, nextMeta, renamed }) => {
       if (generation !== this.generation) return;
-      // Other tabs and in-flight work hold the old key: lock them out, then open with the new one.
-      this.lock();
-      this.key = nextKey;
-      this.salt = nextMeta.salt.slice();
-      this.accountKeyRaw = accountKey;
+      this.reopen(nextKey, nextMeta, renamed, accountKey);
+      this.recovered = !!opts.recovered;
       this.onSync?.("unlocked");
     });
   }
   /**
+   * Leaves sync on this device (security review L9): the vault is re-encrypted under the local
+   * passphrase as a plain passphrase vault, so the account key no longer stays on this device. An
+   * existing local passphrase must be the one given.
+   */
+  leaveSync(passphrase: string): Promise<void> {
+    const key = this.key,
+      salt = this.salt,
+      generation = this.generation,
+      databaseName = this.databaseName;
+    if (!key || !salt || !this.accountKeyRaw) return Promise.reject(Error(textFor(vaultSyncText).notSynced));
+    if (passphrase.length < 12) return Promise.reject(Error(textFor(vaultText).shortPassphrase));
+    return this.reencrypt(salt, generation, databaseName, async (meta) => {
+      if (meta.passphrase)
+        try {
+          await unseal(await derive(passphrase, meta.passphrase.salt), meta.passphrase.wrap, AK_LABEL);
+        } catch {
+          throw Error(textFor(vaultText).wrongPassphrase);
+        }
+      const nextSalt = random(16);
+      const nextKey = await derive(passphrase, nextSalt);
+      return { currentKey: key, nextKey, nextMeta: { salt: nextSalt, check: await seal(nextKey, "privateai-v1", "vault-check-v1") } };
+    }, "forget").then(({ nextKey, nextMeta, renamed }) => {
+      if (generation !== this.generation) return;
+      this.reopen(nextKey, nextMeta, renamed, undefined);
+    });
+  }
+  /**
    * The optional local passphrase of a synced vault: AK wrapped under PBKDF2 of it, kept only in this
-   * device's vault, never on the server. null removes it. `current` must match an existing one,
-   * except after a recovery-key unlock (`current` omitted), which is how a forgotten one is replaced.
+   * device's vault, never on the server. null removes it. Replacing or removing an existing one needs
+   * `current`, except right after a recovery-key unlock, which is how a forgotten one is replaced
+   * (security review L2: a device-key unlock alone is not enough).
    */
   setLocalPassphrase(next: string | null, current?: string): Promise<void> {
     const ak = this.accountKeyRaw,
@@ -419,11 +481,13 @@ export class Vault {
       databaseName = this.databaseName;
     if (!this.key || !ak) return Promise.reject(Error(textFor(vaultSyncText).notSynced));
     if (next !== null && next.length < 12) return Promise.reject(Error(textFor(vaultText).shortPassphrase));
+    const recovered = this.recovered;
     return this.enqueue(async () => {
       const database = await db(databaseName);
       try {
         const meta = (await database.get("meta", "vault")) as VaultMeta;
         requireVaultIdentity(meta, salt);
+        if (current === undefined && meta.passphrase && !recovered) throw Error(textFor(vaultText).wrongPassphrase);
         if (current !== undefined && meta.passphrase) {
           try {
             await unseal(await derive(current, meta.passphrase.salt), meta.passphrase.wrap, AK_LABEL);
@@ -489,12 +553,13 @@ export class Vault {
       return Promise.reject(new Error(textFor(vaultText).unlockBeforeSaving));
     const snapshot = structuredClone(conversation);
     return this.enqueue(async () => {
-      const expected =
+      const seen =
         basedOn === undefined
           ? this.observed.get(snapshot.id)
           : basedOn === null
             ? undefined
             : this.versions.get(basedOn);
+      const expected = seen === undefined ? undefined : (this.renamed.get(seen) ?? seen);
       if (basedOn && (basedOn.id !== snapshot.id || expected === undefined))
         throw new VaultConflictError();
       let projectRecord: Cipher | undefined;
@@ -1398,7 +1463,9 @@ export class Vault {
     generation: number,
     databaseName: string,
     keys: (meta: VaultMeta) => Promise<{ currentKey: CryptoKey; nextKey: CryptoKey; nextMeta: VaultMeta }>,
-  ): Promise<{ nextKey: CryptoKey; nextMeta: VaultMeta }> {
+    /** "keep": a remembered device stays remembered with the new key (passphrase change); "forget": the slot goes (moves into and out of sync). */
+    remembered: "keep" | "forget" = "keep",
+  ): Promise<{ nextKey: CryptoKey; nextMeta: VaultMeta; renamed: Map<string, string> }> {
     return this.enqueue(async () => {
       const unchanged = () => {
         if (generation !== this.generation || !this.key)
@@ -1531,8 +1598,9 @@ export class Vault {
             throw Error(textFor(vaultText).historyChangedPassphrase);
           if (nextTasks) await tx.objectStore("meta").put(nextTasks, "scheduled-tasks");
           await tx.objectStore("meta").put(nextMeta, "vault");
-          // A remembered device stays remembered, with the new key.
-          if (await tx.objectStore("meta").get(REMEMBERED)) await tx.objectStore("meta").put(nextKey, REMEMBERED);
+          // A remembered device stays remembered, with the new key; a move into or out of sync drops the slot.
+          if (remembered === "forget") await tx.objectStore("meta").delete(REMEMBERED);
+          else if (await tx.objectStore("meta").get(REMEMBERED)) await tx.objectStore("meta").put(nextKey, REMEMBERED);
           unchanged();
           await tx.done;
         } catch (error) {
@@ -1544,18 +1612,24 @@ export class Vault {
           await tx.done.catch(() => {});
           throw error;
         }
-        return { nextKey, nextMeta };
+        const renamed = new Map(replacements.map((r) => [r.version, recordVersion({ wrapped: r.wrapped })]));
+        return { nextKey, nextMeta, renamed };
       } finally {
         database.close();
       }
     });
   }
-  delete(id: string) {
+  /**
+   * Deletes a conversation (and leaves its tombstone). `basedOn` (sync applying a remote delete):
+   * refused with VaultConflictError when the stored copy changed since that copy was read.
+   */
+  delete(id: string, basedOn?: Conversation) {
     const generation = this.generation,
       salt = this.salt,
       databaseName = this.databaseName;
     if (!this.key)
       return Promise.reject(new Error(textFor(vaultText).unlockBeforeDeleting));
+    const seen = basedOn ? this.versions.get(basedOn) : undefined;
     return this.enqueue(async () => {
       if (generation !== this.generation || !this.key)
         throw new Error(textFor(vaultText).deletionCancelled);
@@ -1565,6 +1639,15 @@ export class Vault {
           throw new Error(textFor(vaultText).deletionCancelled);
         const tx = database.transaction(["meta", "conversations"], "readwrite");
         requireVaultIdentity(await tx.objectStore("meta").get("vault"), salt);
+        if (basedOn) {
+          const existing = await tx.objectStore("conversations").get(id);
+          const expected = seen === undefined ? undefined : (this.renamed.get(seen) ?? seen);
+          if (basedOn.id !== id || expected === undefined || (existing ? recordVersion(existing) : undefined) !== expected) {
+            tx.abort();
+            await tx.done.catch(() => {});
+            throw new VaultConflictError();
+          }
+        }
         await tx.objectStore("meta").put(true, `deleted:${id}`);
         if (generation !== this.generation || !this.key) {
           tx.abort();

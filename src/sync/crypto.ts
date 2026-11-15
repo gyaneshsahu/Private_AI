@@ -5,6 +5,8 @@
  */
 const enc = new TextEncoder();
 const SALT = enc.encode("cometrow-sync-v1");
+/** Crockford base32: recovery keys and pairing codes. */
+const ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 type Bytes = Uint8Array<ArrayBuffer>;
 
 export function random(length: number): Bytes {
@@ -150,7 +152,7 @@ export async function unwrapWithDevice(blob: string, privateKey: CryptoKey, acco
 }
 
 // Recovery key: 128 random bits as 26 Crockford base32 characters plus 2 check characters.
-const ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+// (ALPHABET is declared at the top: the pairing code uses it too.)
 const CHECK_PRIME = 1021;
 const checksum = (values: number[]) => values.reduce((sum, v, i) => (sum + (i + 1) * v) % CHECK_PRIME, 0);
 export function encodeRecoveryKey(bytes: Uint8Array): string {
@@ -204,13 +206,91 @@ export async function decryptLabel(ak: Uint8Array, accountId: string, deviceId: 
   return new TextDecoder().decode(await gcmOpen(await hkdf(ak, "device-label"), fromBase64(blob), labelAad(accountId, deviceId)));
 }
 
+// Tombstones (security review H4, M3): a delete is an AEAD record under the item's own key, with an
+// AAD that names the version and "deleted", so neither the server nor a holder of a device token
+// can forge one, and a tombstone cannot pass for content (or content for a tombstone).
+export const tombstoneAad = (accountId: string, itemId: string, version: number) => `${accountId}|${itemId}|${version}|deleted`;
+export interface TombstonePayload {
+  /** Only chats are ever deleted; a tombstone of any other kind is refused (lists are never deleted). */
+  kind: "conversation";
+  /** When this device deleted it (its own clock; informational). */
+  at: string;
+}
+export async function encryptTombstone(ak: Uint8Array, accountId: string, itemId: string, version: number, payload: TombstonePayload) {
+  return toBase64(await gcmSeal(await itemKey(ak, itemId), enc.encode(JSON.stringify(payload)), tombstoneAad(accountId, itemId, version)));
+}
+export async function decryptTombstone(ak: Uint8Array, accountId: string, itemId: string, version: number, ciphertext: string): Promise<unknown> {
+  const plain = await gcmOpen(await itemKey(ak, itemId), fromBase64(ciphertext), tombstoneAad(accountId, itemId, version));
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+/** Seals this device's sync token in its sync database: no usable token at rest without AK (H4). */
+export const tokenKey = (ak: Uint8Array) => hkdf(ak, "device-token");
+
 /**
- * The 6-digit pairing code (short authentication string) from the new device's public key: the
- * new device shows it, the approving device recomputes it from the key the server hands over, so a
- * swapped key gives a different code. server/vault-sync.ts computes the same value.
+ * Pairing (security review H1), authenticated in both directions. The new device makes a random
+ * 40-bit secret s, shown as 8 Crockford base32 characters, and a master value
+ * m = PBKDF2-SHA-256(s, "cometrow-pair-v1|account|pairingId|public key", 200,000, 256 bits) that never
+ * leaves it. It sends c = HKDF(m, "cometrow-pair-commit-v1") with its public key. The approver types
+ * s, recomputes c from the key the server hands over (a swapped key fails) and tags its result with
+ * K = HKDF(m, "cometrow-pair-tag-v1"); the new device checks the tag before it uses anything.
+ * K is NOT derived from c: the server stores c, so a tag key from c would be the server's to use.
  */
-export async function pairingCode(accountId: string, publicKey: Uint8Array): Promise<string> {
-  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", enc.encode(`cometrow-pairing-v1|${accountId}|${toBase64(publicKey)}`)));
-  const n = ((digest[0] << 24) | (digest[1] << 16) | (digest[2] << 8) | digest[3]) >>> 0;
-  return String(n % 1_000_000).padStart(6, "0");
+export const PAIRING_CODE_LENGTH = 8;
+export const PAIRING_ITERATIONS = 200_000;
+export function encodePairingCode(secret: Uint8Array): string {
+  if (secret.length !== 5) throw Error("A pairing secret has 5 bytes.");
+  let bits = 0n;
+  for (const b of secret) bits = (bits << 8n) | BigInt(b);
+  return Array.from({ length: 8 }, (_, i) => ALPHABET[Number((bits >> BigInt(5 * (7 - i))) & 31n)]).join("");
+}
+/** The 5 secret bytes, or null when the text is not 8 Crockford characters (spaces, hyphens, case, O, I and L allowed). */
+export function decodePairingCode(text: string): Bytes | null {
+  const clean = normalizePairingCode(text);
+  if (!clean) return null;
+  let bits = 0n;
+  for (const c of clean) bits = (bits << 5n) | BigInt(ALPHABET.indexOf(c));
+  const out = new Uint8Array(5);
+  for (let i = 4; i >= 0; i--) {
+    out[i] = Number(bits & 255n);
+    bits >>= 8n;
+  }
+  return out;
+}
+/** The code as typed, normalised (upper case, O as 0, I and L as 1, no spaces or hyphens); null when it cannot be one. */
+export function normalizePairingCode(text: string): string | null {
+  const clean = text.toUpperCase().replace(/[\s-]/g, "").replace(/O/g, "0").replace(/[IL]/g, "1");
+  return /^[0-9A-HJKMNP-TV-Z]{8}$/.test(clean) ? clean : null;
+}
+/** Two groups of 4 for reading: "7K3M-9QXR". */
+export const formatPairingCode = (code: string) => `${code.slice(0, 4)}-${code.slice(4)}`;
+export function newPairingSecret() {
+  const bytes = random(5);
+  return { bytes, code: encodePairingCode(bytes) };
+}
+export async function pairingKeys(secret: Uint8Array, accountId: string, pairingId: string, publicKey: Uint8Array) {
+  const base = await crypto.subtle.importKey("raw", secret as Bytes, "PBKDF2", false, ["deriveBits"]);
+  const master = new Uint8Array(
+    await crypto.subtle.deriveBits(
+      { name: "PBKDF2", hash: "SHA-256", iterations: PAIRING_ITERATIONS, salt: enc.encode(`cometrow-pair-v1|${accountId}|${pairingId}|${toBase64(publicKey)}`) },
+      base,
+      256,
+    ),
+  );
+  const commitment = toBase64(await hkdfBits(master, "cometrow-pair-commit-v1"));
+  const tagKey = await crypto.subtle.importKey("raw", await hkdfBits(master, "cometrow-pair-tag-v1"), { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
+  return { commitment, tagKey };
+}
+const tagMessage = (pairingId: string, publicKey: Uint8Array, wrapper: string) => enc.encode(`result|${pairingId}|${toBase64(publicKey)}|${wrapper}`);
+export async function pairingTag(tagKey: CryptoKey, pairingId: string, publicKey: Uint8Array, wrapper: string) {
+  return toBase64(new Uint8Array(await crypto.subtle.sign("HMAC", tagKey, tagMessage(pairingId, publicKey, wrapper))));
+}
+/** Constant-time check (WebCrypto's HMAC verify). */
+export async function verifyPairingTag(tagKey: CryptoKey, pairingId: string, publicKey: Uint8Array, wrapper: string, tag: string): Promise<boolean> {
+  let raw: Bytes;
+  try {
+    raw = fromBase64(tag);
+  } catch {
+    return false;
+  }
+  return raw.length === 32 && crypto.subtle.verify("HMAC", tagKey, raw, tagMessage(pairingId, publicKey, wrapper));
 }
