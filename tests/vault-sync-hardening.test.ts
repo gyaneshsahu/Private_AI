@@ -579,3 +579,19 @@ describe("wiring findings", () => {
     expect((await indexedDB.databases()).some((d) => d.name === a.storeName)).toBe(true);
   }, 60_000);
 });
+
+describe("texts (src/text/sync-hardening.ts)", () => {
+  it("has every text in English and German, translated, with its numbers", async () => {
+    const { syncHardeningText: t } = await import("../src/text/sync-hardening");
+    const numbers = (text: string) => (text.match(/\d+/g) ?? []).sort();
+    expect(Object.keys(t.de).sort()).toEqual(Object.keys(t.en).sort());
+    for (const [key, en] of Object.entries(t.en)) {
+      const de = (t.de as Record<string, unknown>)[key];
+      const [e, d] = typeof en === "function" ? [String((en as (x: never) => string)(7 as never)), String((de as (x: never) => string)(7 as never))] : [en, de as string];
+      expect(d, key).not.toBe(e);
+      expect(numbers(d), key).toEqual(numbers(e));
+      expect(`${e} ${d}`, key).not.toMatch(/—/); // no em dashes
+    }
+    expect(t.en.detachedResetElsewhere.toLowerCase()).toContain("reset");
+  });
+});
