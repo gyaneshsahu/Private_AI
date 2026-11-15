@@ -176,7 +176,7 @@ async function routes(blobs: { quotaBytes: number; maxFileBytes: number } | null
     res.locals.accountId = req.headers["x-test-account"];
     next();
   });
-  const settings: SyncSettings = { quotaBytes: 10_000, maxDevices: 3, ...(writeBurst ? { writeBurst } : {}), ...(blobs ? { blobs: { ...blobs, store: blobStore } } : {}) };
+  const settings: SyncSettings = { quotaBytes: 10_000, maxDevices: 3, ...(writeBurst ? { writeBurst, writesPerSecond: 0.001 } : {}), ...(blobs ? { blobs: { ...blobs, store: blobStore } } : {}) };
   app.use(syncRoutes(store, settings, (res) => res.locals.accountId));
   const origin = await listen(app);
   const b64 = (n: number, fill?: number) => (fill === undefined ? randomBytes(n) : Buffer.alloc(n, fill)).toString("base64");

@@ -43,6 +43,7 @@ export interface SyncSettings {
   /** Tests only: smaller page and write limits. */
   pageBytes?: number;
   writeBurst?: number;
+  writesPerSecond?: number;
 }
 /** AES-GCM adds a 12-byte nonce and a 16-byte tag to every blob. */
 export const BLOB_OVERHEAD = 28;
@@ -358,7 +359,7 @@ export function syncRoutes(
   const pairingCreations = new Window(SYNC_LIMITS.pairingsPerHour, 3_600_000);
   const approvals = new Window(SYNC_LIMITS.approvalsPer10Min, 600_000);
   const lookups = new Window(SYNC_LIMITS.lookupsPer10Min, 600_000);
-  const writes = new Bucket(settings.writeBurst ?? SYNC_LIMITS.writeBurst, SYNC_LIMITS.writesPerSecond);
+  const writes = new Bucket(settings.writeBurst ?? SYNC_LIMITS.writeBurst, settings.writesPerSecond ?? SYNC_LIMITS.writesPerSecond);
   const pageBytes = settings.pageBytes ?? SYNC_LIMITS.pageBytes;
   const base = "/api/sync";
   type Ctx = { account: string; now: number; device?: DeviceRow; token?: { deviceId: string; hash: Buffer } };
