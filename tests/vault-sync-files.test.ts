@@ -9,6 +9,7 @@ import { createApp } from "../server/app";
 import { MemorySyncStore } from "../server/vault-sync";
 import { MemoryBlobStore } from "../server/vault-sync-blobs";
 import { Vault } from "../src/vault";
+import { emptyConversation } from "../shared/contracts";
 import { SyncEngine, SyncError, type Fetcher } from "../src/sync/engine";
 import type { FilesView } from "../src/sync/files";
 import { heldProjects, holdProjects, setInstructions, type ProjectFile } from "../src/projects";
@@ -25,9 +26,8 @@ afterEach(async () => {
   holdProjects({ projects: [], files: {} });
 });
 
-async function serve(blobs = { quotaBytes: 1024 * 1024 * 1024, maxFileBytes: 10 * 1024 * 1024 }) {
+async function serve(blobs = { quotaBytes: 1024 * 1024 * 1024, maxFileBytes: 10 * 1024 * 1024 }, blobStore = new MemoryBlobStore()) {
   const store = new MemorySyncStore();
-  const blobStore = new MemoryBlobStore();
   const server = createServer();
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
   const address = server.address();
@@ -214,5 +214,55 @@ describe("project files as encrypted blobs", () => {
     expect(b.engine.fileView().remote.map((f) => f.name).sort()).toEqual(["Offline.txt", "Over.txt"]);
     expect(await b.engine.downloadFile(offline.id)).toBe("ok");
     expect((await b.vault.readProjectFiles())[project.id]).toEqual([offline]);
+  }, 60_000);
+
+  it("keeps syncing chats while the blob store fails, carries a multi-megabyte file intact, and forgets other devices' file names when locked", async () => {
+    class FlakyStore extends MemoryBlobStore {
+      down = false;
+      override async put(accountId: string, blobId: string, data: Buffer, quotaBytes: number) {
+        if (this.down) throw Error("object storage down");
+        return super.put(accountId, blobId, data, quotaBytes);
+      }
+    }
+    const flaky = new FlakyStore();
+    const { origin } = await serve(undefined, flaky);
+    const a = await device(origin, "a");
+    const project = await withProject(a);
+    await setUp(a);
+    const b = await device(origin, "b");
+    await pair(a, b);
+    // The blob store fails: the file waits, the chat still reaches B.
+    flaky.down = true;
+    const stuck = makeFile("Stuck.txt", "s".repeat(2000));
+    await addFile(a.vault, project.id, stuck);
+    const at = new Date().toISOString();
+    await a.vault.save({ ...emptyConversation(), title: "Chat while files fail", messages: [{ id: crypto.randomUUID(), role: "user", text: "hello", status: "complete", included: true, at }] }, null);
+    await expect(a.engine.syncNow()).rejects.toBeInstanceOf(SyncError);
+    expect(a.engine.fileView().states[stuck.id]).toEqual({ state: "waiting" });
+    expect(a.engine.getState().pending).toBe(1); // only the file
+    await b.engine.syncNow();
+    expect((await b.vault.list()).map((c) => c.title)).toContain("Chat while files fail");
+    expect(b.engine.fileView().remote).toEqual([]);
+    // Back up: the file goes, B lists it.
+    flaky.down = false;
+    await a.engine.syncNow();
+    expect(a.engine.getState()).toMatchObject({ phase: "idle", pending: 0 });
+
+    // A file of about 3 MB as a blob (1,500,000 characters, the project limit): through the real routes intact.
+    const big = makeFile("Thesis.pdf", "Ä long thesis paragraph with umlauts: Grüße aus München. ".repeat(86).slice(0, 5000), 300);
+    await addFile(a.vault, project.id, big);
+    await a.engine.syncNow();
+    expect(a.engine.fileView().states).toEqual({});
+    await b.engine.syncNow();
+    const entry = b.engine.fileView().remote.find((f) => f.id === big.id)!;
+    expect(entry.size).toBeGreaterThan(1_500_000);
+    expect(await b.engine.downloadFile(big.id)).toBe("ok");
+    expect((await b.vault.readProjectFiles())[project.id].find((f) => f.id === big.id)).toEqual(big);
+
+    // Locked: the next cycle forgets the names of files not downloaded here.
+    expect(b.engine.fileView().remote.map((f) => f.name)).toEqual(["Stuck.txt"]);
+    b.vault.lock();
+    await b.engine.syncNow();
+    expect(b.engine.fileView().remote).toEqual([]);
   }, 60_000);
 });

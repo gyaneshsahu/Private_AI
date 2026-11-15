@@ -64,8 +64,9 @@ describe("account operator SQL", () => {
       .join("\n")
       .matchAll(/create table "?([A-Za-z_]+)"?/gi);
     // rateLimit: keyed by IP and path; signin_delivery: keyed hash needs the app secret, pruned after a day;
-    // billing_event_inbox: provider events, not keyed to an account; account_recovery_control: one service-wide row.
-    const accountFree = ["rateLimit", "signin_delivery", "billing_event_inbox", "account_recovery_control"];
+    // billing_event_inbox: provider events, not keyed to an account; account_recovery_control: one service-wide row;
+    // sync_blob_sweep: object keys waiting for deletion in the bucket, no account (migration 0024).
+    const accountFree = ["rateLimit", "signin_delivery", "billing_event_inbox", "account_recovery_control", "sync_blob_sweep"];
     const show = operatorSql("show", "plain@example.test");
     for (const [, table] of created)
       if (!accountFree.includes(table))

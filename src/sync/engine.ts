@@ -639,6 +639,12 @@ export class SyncEngine {
   private async cycle() {
     const ak = this.o.vault.accountKey();
     if (!this.device || this.optedOut || !ak) {
+      // Locked: the names of other devices' files leave memory and the screen too.
+      if (this.remote.length || Object.keys(this.fileStates).length) {
+        this.remote = [];
+        this.fileStates = {};
+        this.publishView();
+      }
       this.set({ phase: this.phase() });
       return;
     }
@@ -650,10 +656,12 @@ export class SyncEngine {
       for (let round = 0; round < 3; round++) {
         this.again = false;
         await this.pull(ak);
-        // A file's blob goes up before the projects item that lists it.
+        // A file's blob goes up before the projects item that lists it. A failed upload never holds
+        // back chats and lists: they are pushed first, then the failure counts (backoff).
         const uploads = await this.uploadFiles(ak);
         ({ waiting, error } = await this.push(ak));
-        waiting += uploads;
+        waiting += uploads.waiting;
+        if (uploads.failure) throw uploads.failure;
         if (!this.again) break;
       }
       // A blob goes only after the projects item without it was accepted.
@@ -1004,7 +1012,9 @@ export class SyncEngine {
   }
   private publishView() {
     this.view =
-      this.files && this.device && !this.optedOut ? { enabled: true, quota: this.files, remote: this.remote, states: { ...this.fileStates } } : FILES_OFF;
+      this.files && this.device && !this.optedOut
+        ? { enabled: true, quota: this.files, remote: this.o.vault.accountKey() ? this.remote : [], states: { ...this.fileStates } }
+        : FILES_OFF;
     // The engine attached for the app serves the project screen's buttons.
     if (!this.o.onFiles) bindFileActions(this.view.enabled ? this : undefined);
     (this.o.onFiles ?? publishFiles)(this.view);
@@ -1076,8 +1086,17 @@ export class SyncEngine {
     const uploads = (await this.localFiles()).filter(({ projectId, file }) => projects.has(projectId) && !known.has(file.id));
     return { uploads, deletes: rec.deletes };
   }
-  /** Uploads each new local file as one blob; returns how many still wait (quota). */
-  private async uploadFiles(ak: Uint8Array): Promise<number> {
+  /** Uploads each new local file as one blob; how many still wait, and an error that stopped the uploads. */
+  private async uploadFiles(ak: Uint8Array): Promise<{ waiting: number; failure?: unknown }> {
+    try {
+      return { waiting: await this.uploadEach(ak) };
+    } catch (failure) {
+      if (failure instanceof SyncError && failure.code === "revoked") throw failure;
+      for (const [id, s] of Object.entries(this.fileStates)) if (s.state === "uploading") this.setFileState(id, { state: "waiting" });
+      return { waiting: 0, failure };
+    }
+  }
+  private async uploadEach(ak: Uint8Array): Promise<number> {
     const { uploads } = await this.fileWork(ak);
     const ids = new Set(uploads.map(({ file }) => file.id));
     for (const [id, s] of Object.entries(this.fileStates))

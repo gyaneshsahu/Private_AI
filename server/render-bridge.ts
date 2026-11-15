@@ -24,6 +24,9 @@ export const BRIDGE_REQUEST_HEADERS = [
   "x-privateai-kind",
   // A voice chunk's length in 2-second units; the relay checks it against the size (docs/voice-to-text-20261114.md).
   "x-privateai-voice-units",
+  // The device token of vault sync (server/vault-sync.ts); without it every item and blob route
+  // answered 401 through Render (found 15 November, before any deploy).
+  "x-sync-device",
   "x-tinfoil-enclave-url",
   "x-tinfoil-model",
   "ehbp-encapsulated-key",
