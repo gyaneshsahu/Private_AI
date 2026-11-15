@@ -6,6 +6,20 @@ Running list kept while the owner is away (from 12 November 2026). Each entry na
 
 ## What needs you before the alpha, in order (updated 13 November)
 
+**Encrypted sync, 15 November 2026 (you decided: build it, with device approval, a recovery key and project files as encrypted blobs). Still for you; agent's recommended default in brackets.** Sync is built and merged behind `inference.vaultSync`, off. Details: `docs/vault-sync-20261115.md` (design, threat analysis) and `docs/vault-sync-screens-20261115.md` (every screen and text).
+
+1. **External cryptography review** before any invitee turns sync on [yes; it costs money, so it is your call: a fixed-scope review of the key scheme, pairing and recovery by an independent cryptographer]. An internal review runs now and its findings will be fixed first.
+2. **What "recoverable" means:** a forgotten passphrase is recoverable with the recovery key only on an account that turned sync on. Without sync there is no recovery key and a lost passphrase is still final; the locked screen then offers "delete this device's data and start again" and says that sync gives a recovery key [accept, and say it plainly in the help text].
+3. **Privacy wording:** "we keep an encrypted copy we cannot read" plus the visible metadata (number and size of items, change times, devices and when each was last seen) [approve after the German legal read] (`docs/vault-sync-privacy-wording-draft-20261115.md`).
+4. **Limits in the alpha:** 200 MB of synced data and 5 devices per account [yes].
+5. **Pairing code:** 6 digits computed from the new device's key, valid 10 minutes, one use [accept for the alpha]. A server that is itself malicious could try about a million keys in that window to match a code; a QR code with a longer fingerprint closes that in Stage 2 [yes, later].
+6. **Removing a device** deletes its unlock key on the server and refuses its requests; it does not re-encrypt everything under a new key, so a removed device keeps what it already had [accept for the alpha; key rotation goes on the review list].
+7. **A malicious server could still delete or hold back synced items** (deletes are not signed yet); it cannot read or change them unnoticed [accept for the alpha; signed item lists on the review list].
+8. **"Remember this device":** unticked by default for the local vault, ticked by default in the sync screens, with its risk sentence beside it; when it is off on a synced device, the app asks for a local passphrase [yes].
+9. **Backup:** "Include project files" ticked by default; older app versions refuse such a backup rather than misread it [yes]. A restored copy that you later deleted does not come back on a later restore of the same file [accept].
+10. **Forgotten passphrase while locked** cannot delete Auto background tasks on the server (they need the unlocked vault); their next results arrive as unknown and are dropped [accept; Auto stays off until your legal read anyway].
+
+
 **Decisions waiting for you, 15 November 2026: one list (agent's recommended default in brackets).** It replaces the scattered lists in the feature docs; details are in each doc named. Nothing below is switched on.
 
 *A. Before anything is deployed*

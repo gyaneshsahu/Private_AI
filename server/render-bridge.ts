@@ -24,8 +24,7 @@ export const BRIDGE_REQUEST_HEADERS = [
   "x-privateai-kind",
   // A voice chunk's length in 2-second units; the relay checks it against the size (docs/voice-to-text-20261114.md).
   "x-privateai-voice-units",
-  // The device token of vault sync (server/vault-sync.ts); without it every item and blob route
-  // answered 401 through Render (found 15 November, before any deploy).
+  // Encrypted sync: "<deviceId>.<token>" on every device route (docs/vault-sync-20261115.md).
   "x-sync-device",
   "x-tinfoil-enclave-url",
   "x-tinfoil-model",
@@ -99,13 +98,21 @@ export function createRenderBridge(config: {
     if (!health)
       for (const name of BRIDGE_REQUEST_HEADERS as readonly string[])
         if (req.headers[name] !== undefined) headers[name] = req.headers[name];
+    // Sync bodies are ciphertext the app limits itself: items up to 4 MB (as base64 JSON),
+    // project-file blobs up to the configured file size. Everything else stays at 1 MB.
+    const path = req.url.split("?")[0];
+    const limit = path.startsWith("/api/sync/blobs/")
+      ? 64 * 1024 * 1024
+      : path.startsWith("/api/sync/items/")
+        ? 6 * 1024 * 1024
+        : 1024 * 1024;
     let bytes = 0;
     let oversized = false;
     let chunks: Buffer[] = [];
     req.on("error", () => res.destroy());
     req.on("data", (chunk: Buffer) => {
       bytes += chunk.length;
-      if (bytes > 1024 * 1024) {
+      if (bytes > limit) {
         if (!oversized) res.writeHead(413).end("Request too large.");
         oversized = true;
         chunks = [];

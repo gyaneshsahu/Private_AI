@@ -603,18 +603,58 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
   Do: type "can you give me a new German word every 2 days?" in a normal chat.
   Expect: a card offers to create the task and asks for a time; Create sends nothing.
   Report back: whether the card appeared and felt right.
-- [ ] **T-129 Synced project files: the decisions (vault sync Stage 3).**
+- [ ] **T-129 New device notice.**
+  Do: on a phone or browser that has never used CometRow, open Saved.
+  Expect: it says plainly that chats from your other devices are not here and how to bring them.
+  Report back: whether it was clear.
+- [ ] **T-130 Remember this device (no sync).**
+  Do: create a vault with "Remember this device" ticked, close and reopen the browser; then untick it and reopen again.
+  Expect: the first time Saved opens without the passphrase; the second time it asks for it.
+  Report back: both results, per browser.
+- [ ] **T-131 Forgotten passphrase, cancel.**
+  Do: lock Saved, press "Forgot your passphrase?", go as far as typing the confirmation word, then Cancel.
+  Expect: nothing is deleted; your passphrase still opens it.
+  Report back: whether anything changed.
+- [ ] **T-132 Restore the same backup twice.**
+  Do: with one memory and one chat saved, download a backup and restore it twice on another browser.
+  Expect: one chat and one memory, not two.
+  Report back: the counts.
+- [ ] **T-133 Sync: turn on and print the recovery key (deployment with inference.vaultSync on).**
+  Do: on the laptop, Settings, Devices and sync, turn on; print or download the recovery key; type its last group.
+  Expect: the key is shown once in 7 groups of 4; sync shows Synced.
+  Report back: how long it took and anything unclear.
+- [ ] **T-134 Sync: approve your phone.**
+  Do: sign in on the phone; choose "Approve from another device"; on the laptop enter the code that appears on the phone.
+  Expect: the laptop's prompt appears by itself; the phone then shows your chats, memory and projects.
+  Report back: the time from sign-in to seeing your chats.
+- [ ] **T-135 Sync: edit on both.**
+  Do: change a chat on the phone and a different one on the laptop; wait a minute.
+  Expect: both changes appear on both devices.
+  Report back: anything missing or doubled.
+- [ ] **T-136 Sync: recovery key on a third browser.**
+  Do: in another browser, choose "Use your recovery key"; type it with one wrong character first, then correctly.
+  Expect: a hint appears for the typo; the correct key opens everything.
+  Report back: the hint text and the result.
+- [ ] **T-137 Sync: forgotten passphrase on the laptop.**
+  Do: lock the laptop, press "Forgot your passphrase?", use the recovery key, set a new passphrase, lock again and open with the new one.
+  Expect: all data is there; the new passphrase works.
+  Report back: the result.
+- [ ] **T-138 Sync: remove the phone.**
+  Do: on the laptop, Devices, remove the phone.
+  Expect: the phone stops syncing and says so in plain words; it still shows what it had.
+  Report back: the phone's message.
+- [ ] **T-139 Sync: project files.**
+  Do: add a file to a project on the laptop; open the project on the phone; open the file.
+  Expect: the phone lists the file as not downloaded, downloads it when opened, and the content is the same.
+  Report back: the time to open and any error.
+- [ ] **T-140 Synced project files: the decisions (vault sync Stage 3).**
   Do: read `docs/vault-sync-20261115.md` section 14 and the files part of `docs/vault-sync-privacy-wording-draft-20261115.md` (section 7).
   Expect: you agree with a separate file quota of 1 GB, 10 MB per file, and `store: "postgres"` until Hetzner is set up.
   Tell the agent: "approved" or changes (VS-6 to VS-9).
-- [ ] **T-130 Hetzner Object Storage for synced files (only when you want files in the bucket).**
+- [ ] **T-141 Hetzner Object Storage for synced files (only when you want files in the bucket).**
   Do: create a private bucket in Falkenstein or Nuremberg; sign the AVV in the Hetzner account; create an access key; set `PRIVATEAI_BLOB_S3_ACCESS_KEY_ID` and `PRIVATEAI_BLOB_S3_SECRET_ACCESS_KEY` in Render yourself.
   Expect: nothing changes until the config says `"store": "s3"`.
   Tell the agent: "bucket ready" with the bucket name and location (never the keys).
-- [ ] **T-131 A project file on two devices (needs sync with files switched on).**
-  Do: add a text file to a project on the laptop; on the phone open the same project; press Download; ask a question in a project chat; then remove the file on the phone.
-  Expect: the phone lists the file at once as "Not downloaded yet"; Download shows progress; the answer uses the file; after the next sync the file is gone on the laptop too.
-  Report back: screenshots of the file list before and after Download, and how long the download took.
 
 ## Changes
 
@@ -637,4 +677,5 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 - 15 November 2026: added T-111 to T-115 (Scheduled: a Manual task due and run, the chat card, the calendar file on a phone, a background task with a CV, the decision).
 - 15 November 2026: Scheduled (Manual) items added; all items renumbered in file order (T-01 to T-120).
 - 15 November 2026: added T-121 to T-128 (voice chunks, second device and backup, passkey support, Scheduled Manual and chat detection).
-- 15 November 2026: added T-129 to T-131 (synced project files: the decisions, the Hetzner bucket, a file on two devices).
+- 15 November 2026: added T-129 to T-139 (vault Stage 0 fixes, encrypted sync on two and three devices, recovery key, forgotten passphrase, removing a device, project files).
+- 15 November 2026: added T-140 and T-141 (synced project files: the decisions VS-6 to VS-9, the Hetzner bucket). A file on two devices is T-139.
