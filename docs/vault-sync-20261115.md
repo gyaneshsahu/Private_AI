@@ -179,7 +179,7 @@ Built on 15 November: see section 14. Two points of the earlier plan changed. Th
 3. Create an access key for that bucket and set `PRIVATEAI_BLOB_S3_ACCESS_KEY_ID` and `PRIVATEAI_BLOB_S3_SECRET_ACCESS_KEY` in the service's environment (Render), never in the config file.
 4. Set `"blobs": { "store": "s3", "s3": { "endpoint": "https://fsn1.your-objectstorage.com", "region": "fsn1", "bucket": "<name>" } }`.
 
-Until then use `"store": "postgres"`. The lead runs the live probe once the bucket exists: put, get and delete one random object with `S3Objects` from the service shell.
+Until then use `"store": "postgres"`. The lead runs the live probe once the bucket exists, from the service shell where the two variables are set: `node --import tsx scripts/blob-s3-probe.ts https://fsn1.your-objectstorage.com fsn1 <bucket>` (puts, reads back and deletes one random 1 KB object; prints no key).
 
 ### 14.7 Tests (offline)
 
