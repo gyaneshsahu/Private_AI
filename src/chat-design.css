@@ -3247,6 +3247,12 @@
 }
 
 /* Vault sync Stage 3: synced project file states in the project screen (src/ProjectPanel.tsx). */
+.chat-design .project-files li {
+  flex-wrap: wrap;
+}
+.chat-design .project-files li > span:first-child {
+  flex: 1 1 200px;
+}
 .chat-design .project-files .project-file-state {
   display: block;
   margin-top: 2px;
@@ -3266,6 +3272,7 @@
   justify-content: flex-end;
   gap: 6px;
   flex-shrink: 0;
+  margin-left: auto;
 }
 .chat-design .project-file-actions button {
   min-height: 32px;
