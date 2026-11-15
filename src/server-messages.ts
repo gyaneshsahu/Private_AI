@@ -207,6 +207,13 @@ const GERMAN: Record<string, string> = {
   "Invalid webhook body.": "Ungültiger Webhook-Inhalt.",
   "Unsupported event object.": "Nicht unterstütztes Ereignisobjekt.",
   "Webhook verification failed.": "Die Überprüfung des Webhooks ist fehlgeschlagen.",
+  "Invalid usage report.": "Ungültige Verbrauchsmeldung.",
+  "Unknown request.": "Unbekannte Anfrage.",
+  "Already reported.": "Bereits gemeldet.",
+  "Report window closed.": "Die Frist für diese Meldung ist abgelaufen.",
+  "Usage records unavailable.": "Die Verbrauchsdaten sind nicht verfügbar.",
+  "Sign in to see your usage.": "Melden Sie sich an, um Ihren Verbrauch zu sehen.",
+  "Usage is unavailable right now.": "Der Verbrauch ist gerade nicht verfügbar.",
 };
 
 // Messages with a number in them. Every number is carried over to the German text.
