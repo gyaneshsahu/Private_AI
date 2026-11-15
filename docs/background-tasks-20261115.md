@@ -259,3 +259,11 @@ All proposed wording is in `docs/background-tasks-privacy-wording-draft-20261115
 | 10 | When it goes on for invitees | After pay-as-you-go works, the consent and privacy texts pass the legal read, and the durable tests and the live probe pass |
 | 11 | Health-looking content | Allowed with the extra consent, as for a CV; no server-side check |
 | 12 | Search fee | Accept it; revisit if Brave costs more than EUR 20 a month |
+
+## Checked by the lead, 15 November 2026
+
+- **Durable tests:** the whole durable suite passed, 138 of 138, on a fresh synthetic database (container `privateai-durable-20261115`, port 55439, the documented synthetic credentials; stopped after the run). The migration tests had pinned the old migration count (14); they now count 0021.
+- **Live probe** (development key, synthetic CV, Fast, with search): run 1 `done` in 4.8 s, 982 prompt and 301 completion tokens, 4 allowance units, 2 Brave searches over both runs; run 2 `no_new_results` in 0.9 s with no model request. Process memory 218 MB.
+- **What the answer showed:** Brave returns job-board overview pages ("796 Data Analyst jobs in Leipzig" on LinkedIn, StepStone, Indeed, Bundesagentur), not individual postings, and the model said so honestly instead of inventing offers. **For a useful job search the run must read the result pages** (the existing approved page fetch) or use a job board's own search; that is a product decision before the CV template is offered.
+- **Attestation:** the probe counted 2 attest calls for two runs, not 1 as expected; the second run verified again. Harmless at this scale; to check before many tasks run.
+- Not checked: Thinking, a real rotation, Render memory, many accounts.
