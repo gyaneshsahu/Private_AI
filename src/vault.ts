@@ -21,7 +21,22 @@ import {
   savedConversationSchema,
 } from "./saved-conversation";
 import { derive, seal, unseal, type Cipher } from "./vault-crypto";
+import { localVaultKey, toBase64, fromBase64 } from "./sync/crypto";
+import { vaultSyncText } from "./text/vault-sync";
 export type { Cipher } from "./vault-crypto";
+/**
+ * The vault's identity record. A passphrase vault is { salt, check } as always. A vault keyed by
+ * sync's account key (docs/vault-sync-20261115.md) adds `sync: 1` (its key is HKDF of AK; salt is
+ * then only its identity) and, optionally, AK wrapped under a local passphrase that never leaves
+ * this device.
+ */
+type VaultMeta = {
+  salt: Uint8Array<ArrayBuffer>;
+  check: Cipher;
+  sync?: 1;
+  passphrase?: { salt: Uint8Array<ArrayBuffer>; wrap: Cipher };
+};
+const AK_LABEL = "account-key-v1";
 import {
   encodeVaultBackup,
   decodeVaultBackupContent,
@@ -122,10 +137,17 @@ export class Vault {
   }
   private key?: CryptoKey;
   private salt?: Uint8Array<ArrayBuffer>;
+  /** Sync's account key while a synced vault is unlocked; absent for a passphrase vault. */
+  private accountKeyRaw?: Uint8Array<ArrayBuffer>;
   private generation = 0;
   private queue: Promise<unknown> = Promise.resolve();
   private channel?: BroadcastChannel;
   onInvalidate?: () => void;
+  /** The sync engine listens (src/sync/engine.ts); unset while sync is off. */
+  onSync?: (event: "unlocked" | "written") => void;
+  private written() {
+    this.onSync?.("written");
+  }
   constructor() {
     this.connectChannel();
   }
@@ -149,6 +171,7 @@ export class Vault {
     this.versions = new WeakMap();
     this.key = undefined;
     this.salt = undefined;
+    this.accountKeyRaw = undefined;
     this.generation++;
     if (broadcast) this.channel?.postMessage("lock");
   }
@@ -167,8 +190,27 @@ export class Vault {
       );
     const database = await db(this.databaseName);
     try {
-      const existing = (await database.get("meta", "vault")) as
-        { salt: Uint8Array<ArrayBuffer>; check: Cipher } | undefined;
+      const existing = (await database.get("meta", "vault")) as VaultMeta | undefined;
+      // A synced vault: the local passphrase (if one is set) unwraps AK; nothing else changes here.
+      if (existing?.sync) {
+        if (!existing.passphrase) throw new Error(textFor(vaultSyncText).noLocalPassphrase);
+        let ak: Uint8Array<ArrayBuffer>;
+        let key: CryptoKey;
+        try {
+          const wrapKey = await derive(passphrase, existing.passphrase.salt);
+          ak = fromBase64(await unseal(wrapKey, existing.passphrase.wrap, AK_LABEL));
+          key = await localVaultKey(ak);
+          if ((await unseal(key, existing.check, "vault-check-v1")) !== "privateai-v1") throw Error();
+        } catch {
+          throw new Error(textFor(vaultText).unlockFailed);
+        }
+        if (generation !== this.generation) throw new Error(textFor(vaultText).unlockCancelled);
+        this.key = key;
+        this.salt = existing.salt.slice();
+        this.accountKeyRaw = ak;
+        this.onSync?.("unlocked");
+        return;
+      }
       const salt = existing?.salt ?? random(16);
       const key = await derive(passphrase, salt);
       if (existing) {
@@ -185,6 +227,153 @@ export class Vault {
       if (generation !== this.generation) throw new Error(textFor(vaultText).unlockCancelled);
       this.key = key;
       this.salt = salt.slice();
+    } finally {
+      database.close();
+    }
+  }
+  /** Which kind of vault this account has on this device, without unlocking it. */
+  async mode(): Promise<"none" | "passphrase" | "sync"> {
+    const database = await db(this.databaseName);
+    try {
+      const meta = (await database.get("meta", "vault")) as VaultMeta | undefined;
+      return !meta ? "none" : meta.sync ? "sync" : "passphrase";
+    } finally {
+      database.close();
+    }
+  }
+  /** True when this synced vault has a local passphrase (it then opens without a device or the recovery key). */
+  async hasLocalPassphrase(): Promise<boolean> {
+    const database = await db(this.databaseName);
+    try {
+      return !!((await database.get("meta", "vault")) as VaultMeta | undefined)?.passphrase;
+    } finally {
+      database.close();
+    }
+  }
+  /** Sync's account key while a synced vault is unlocked (a copy). */
+  accountKey(): Uint8Array<ArrayBuffer> | undefined {
+    return this.accountKeyRaw?.slice();
+  }
+  /** True when this unlocked vault is keyed by this account key. */
+  hasAccountKey(ak: Uint8Array): boolean {
+    const own = this.accountKeyRaw;
+    return !!own && own.length === ak.length && own.every((b, i) => b === ak[i]);
+  }
+  /**
+   * Opens a synced vault with sync's account key (from this device's key, the recovery key or a
+   * device approval), or creates an empty synced vault when this account has none here. A passphrase
+   * vault is refused: it must be unlocked with its passphrase and then moved with adoptAccountKey.
+   */
+  async unlockWithAccountKey(ak: Uint8Array): Promise<void> {
+    const generation = ++this.generation;
+    this.key = undefined;
+    this.salt = undefined;
+    this.accountKeyRaw = undefined;
+    const key = await localVaultKey(ak);
+    const database = await db(this.databaseName);
+    try {
+      const existing = (await database.get("meta", "vault")) as VaultMeta | undefined;
+      let salt: Uint8Array<ArrayBuffer>;
+      if (existing) {
+        if (!existing.sync) throw new Error(textFor(vaultSyncText).passphraseVaultLocked);
+        try {
+          if ((await unseal(key, existing.check, "vault-check-v1")) !== "privateai-v1") throw Error();
+        } catch {
+          throw new Error(textFor(vaultText).unlockFailed);
+        }
+        salt = existing.salt;
+      } else {
+        salt = random(16);
+        const meta: VaultMeta = { salt, check: await seal(key, "privateai-v1", "vault-check-v1"), sync: 1 };
+        await database.add("meta", meta, "vault");
+      }
+      if (generation !== this.generation) throw new Error(textFor(vaultText).unlockCancelled);
+      this.key = key;
+      this.salt = salt.slice();
+      this.accountKeyRaw = new Uint8Array(ak);
+    } finally {
+      database.close();
+    }
+    this.onSync?.("unlocked");
+  }
+  /**
+   * Moves this unlocked vault (a passphrase vault, or one keyed by another account key) under sync's
+   * account key: every record is re-encrypted in one transaction, as a passphrase change does, so
+   * nothing is lost or half-moved. The old passphrase no longer opens it; setLocalPassphrase can add one.
+   */
+  adoptAccountKey(ak: Uint8Array): Promise<void> {
+    const key = this.key,
+      salt = this.salt,
+      generation = this.generation,
+      databaseName = this.databaseName;
+    if (!key || !salt) return Promise.reject(Error(textFor(vaultText).unlockTheVault));
+    const accountKey = new Uint8Array(ak);
+    return this.reencrypt(salt, generation, databaseName, async () => {
+      const nextKey = await localVaultKey(accountKey);
+      const nextMeta: VaultMeta = { salt: random(16), check: await seal(nextKey, "privateai-v1", "vault-check-v1"), sync: 1 };
+      return { currentKey: key, nextKey, nextMeta };
+    }).then(({ nextKey, nextMeta }) => {
+      if (generation !== this.generation) return;
+      // Other tabs and in-flight work hold the old key: lock them out, then open with the new one.
+      this.lock();
+      this.key = nextKey;
+      this.salt = nextMeta.salt.slice();
+      this.accountKeyRaw = accountKey;
+      this.onSync?.("unlocked");
+    });
+  }
+  /**
+   * The optional local passphrase of a synced vault: AK wrapped under PBKDF2 of it, kept only in this
+   * device's vault, never on the server. null removes it. `current` must match an existing one,
+   * except after a recovery-key unlock (`current` omitted), which is how a forgotten one is replaced.
+   */
+  setLocalPassphrase(next: string | null, current?: string): Promise<void> {
+    const ak = this.accountKeyRaw,
+      salt = this.salt,
+      generation = this.generation,
+      databaseName = this.databaseName;
+    if (!this.key || !ak) return Promise.reject(Error(textFor(vaultSyncText).notSynced));
+    if (next !== null && next.length < 12) return Promise.reject(Error(textFor(vaultText).shortPassphrase));
+    return this.enqueue(async () => {
+      const database = await db(databaseName);
+      try {
+        const meta = (await database.get("meta", "vault")) as VaultMeta;
+        requireVaultIdentity(meta, salt);
+        if (current !== undefined && meta.passphrase) {
+          try {
+            await unseal(await derive(current, meta.passphrase.salt), meta.passphrase.wrap, AK_LABEL);
+          } catch {
+            throw Error(textFor(vaultText).wrongPassphrase);
+          }
+        }
+        const { passphrase: _old, ...rest } = meta;
+        let nextMeta: VaultMeta = rest;
+        if (next !== null) {
+          const wrapSalt = random(16);
+          nextMeta = { ...rest, passphrase: { salt: wrapSalt, wrap: await seal(await derive(next, wrapSalt), toBase64(ak), AK_LABEL) } };
+        }
+        const tx = database.transaction("meta", "readwrite");
+        requireVaultIdentity(await tx.store.get("vault"), salt);
+        if (generation !== this.generation) {
+          tx.abort();
+          await tx.done.catch(() => {});
+          throw Error(textFor(vaultText).passphraseCancelled);
+        }
+        await tx.store.put(nextMeta, "vault");
+        await tx.done;
+      } finally {
+        database.close();
+      }
+    });
+  }
+  /** Ids of conversations deleted on this device (their tombstones), for sync. */
+  async readTombstones(): Promise<string[]> {
+    if (!this.key) throw Error(textFor(vaultText).unlockFirst);
+    await this.queue;
+    const database = await db(this.databaseName);
+    try {
+      requireVaultIdentity(await database.get("meta", "vault"), this.salt);
+      return (await database.getAllKeys("meta")).map(String).filter((k) => k.startsWith("deleted:")).map((k) => k.slice(8));
     } finally {
       database.close();
     }
@@ -306,6 +495,7 @@ export class Vault {
           this.observed.set(snapshot.id, version);
           this.versions.set(snapshot, version);
         }
+        this.written();
         return snapshot;
       } finally {
         database.close();
@@ -447,6 +637,7 @@ export class Vault {
         }
         await tx.store.put(encrypted, "projects");
         await tx.done;
+        this.written();
         return next;
       } finally {
         database.close();
@@ -586,6 +777,7 @@ export class Vault {
           await tx.done;
           // A removed project: other tabs lock, so none keeps sending its instructions or files.
           if (name === undefined) this.channel?.postMessage("projects");
+          this.written();
         } catch (error) {
           try {
             tx.abort();
@@ -632,6 +824,7 @@ export class Vault {
         await tx.done;
         // Other tabs lock, as after a deletion: none keeps sending instructions changed here.
         this.channel?.postMessage("projects");
+        this.written();
         return next;
       } finally {
         database.close();
@@ -754,6 +947,7 @@ export class Vault {
         await tx.done;
         // Other tabs lock, as after a deletion: none keeps sending a memory that was removed here.
         this.channel?.postMessage("memories");
+        this.written();
         return next;
       } finally {
         database.close();
@@ -825,6 +1019,7 @@ export class Vault {
         await tx.done;
         // Other tabs lock: none keeps showing or running a task that was changed here.
         this.channel?.postMessage("scheduled-tasks");
+        this.written();
         return next;
       } finally {
         database.close();
@@ -996,6 +1191,7 @@ export class Vault {
           await tx.done.catch(() => {});
           throw error;
         }
+        this.written();
         return encrypted.length;
       } finally {
         database.close();
@@ -1015,6 +1211,36 @@ export class Vault {
       return Promise.reject(
         Error(textFor(vaultText).differentPassphrase),
       );
+    // A synced vault: the passphrase only wraps AK on this device, so changing it re-wraps AK.
+    if (this.accountKeyRaw)
+      return this.setLocalPassphrase(nextPassphrase, currentPassphrase).then(() => {
+        if (generation === this.generation) this.lock();
+      });
+    return this.reencrypt(salt, generation, databaseName, async (meta) => {
+      const currentKey = await derive(currentPassphrase, meta.salt);
+      if (
+        (await unseal(currentKey, meta.check, "vault-check-v1")) !==
+        "privateai-v1"
+      )
+        throw Error(textFor(vaultText).wrongPassphrase);
+      const nextSalt = random(16);
+      const nextKey = await derive(nextPassphrase, nextSalt);
+      const check = await seal(nextKey, "privateai-v1", "vault-check-v1");
+      return { currentKey, nextKey, nextMeta: { salt: nextSalt, check } };
+    }).then(() => {
+      if (generation === this.generation) this.lock();
+    });
+  }
+  /**
+   * Re-encrypts every record from one vault key to another in one transaction: the passphrase
+   * change, and the move of a vault under sync's account key. `keys` gets the stored identity record.
+   */
+  private reencrypt(
+    salt: Uint8Array<ArrayBuffer>,
+    generation: number,
+    databaseName: string,
+    keys: (meta: VaultMeta) => Promise<{ currentKey: CryptoKey; nextKey: CryptoKey; nextMeta: VaultMeta }>,
+  ): Promise<{ nextKey: CryptoKey; nextMeta: VaultMeta }> {
     return this.enqueue(async () => {
       const unchanged = () => {
         if (generation !== this.generation || !this.key)
@@ -1028,10 +1254,7 @@ export class Vault {
           ["meta", "conversations"],
           "readonly",
         );
-        const meta = (await read.objectStore("meta").get("vault")) as {
-          salt: Uint8Array<ArrayBuffer>;
-          check: Cipher;
-        };
+        const meta = (await read.objectStore("meta").get("vault")) as VaultMeta;
         requireVaultIdentity(meta, salt);
         const [ids, records] = await Promise.all([
           read.objectStore("conversations").getAllKeys(),
@@ -1046,15 +1269,7 @@ export class Vault {
         const filesRecord = (await read.objectStore("meta").get("project-files")) as Cipher | undefined;
         const taskRecord = (await read.objectStore("meta").get("scheduled-tasks")) as Cipher | undefined;
         await read.done;
-        const currentKey = await derive(currentPassphrase, meta.salt);
-        if (
-          (await unseal(currentKey, meta.check, "vault-check-v1")) !==
-          "privateai-v1"
-        )
-          throw Error(textFor(vaultText).wrongPassphrase);
-        const nextSalt = random(16);
-        const nextKey = await derive(nextPassphrase, nextSalt);
-        const check = await seal(nextKey, "privateai-v1", "vault-check-v1");
+        const { currentKey, nextKey, nextMeta } = await keys(meta);
         const nextProjects = projectRecord
           ? await seal(
               nextKey,
@@ -1157,7 +1372,7 @@ export class Vault {
           if (recordIv(await tx.objectStore("meta").get("scheduled-tasks")) !== recordIv(taskRecord))
             throw Error(textFor(vaultText).historyChangedPassphrase);
           if (nextTasks) await tx.objectStore("meta").put(nextTasks, "scheduled-tasks");
-          await tx.objectStore("meta").put({ salt: nextSalt, check }, "vault");
+          await tx.objectStore("meta").put(nextMeta, "vault");
           unchanged();
           await tx.done;
         } catch (error) {
@@ -1169,7 +1384,7 @@ export class Vault {
           await tx.done.catch(() => {});
           throw error;
         }
-        if (generation === this.generation) this.lock();
+        return { nextKey, nextMeta };
       } finally {
         database.close();
       }
@@ -1199,6 +1414,7 @@ export class Vault {
         await tx.objectStore("conversations").delete(id);
         await tx.done;
         if (generation === this.generation) this.channel?.postMessage("delete");
+        this.written();
       } finally {
         database.close();
       }
