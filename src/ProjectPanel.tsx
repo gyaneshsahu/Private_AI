@@ -21,9 +21,11 @@ import {
   setInstructions,
   watchProjects,
   type Project,
-  type ProjectFile,
 } from "./projects";
 import { projectText } from "./text/projects";
+import { syncFilesText } from "./text/sync-files";
+// From src/sync/files.ts, not the whole sync API: the screen works the same without sync.
+import { downloadProjectFile, removeSyncedProjectFile, useSyncFiles, type FileState } from "./sync/files";
 import type { Vault } from "./vault";
 
 // Pictures are not project files in this pass.
@@ -94,8 +96,36 @@ export function ProjectPanel({
   const [status, setStatus] = useState("");
   const held = useSyncExternalStore(watchProjects, heldProjects);
   const files = held.files[project.id] ?? [];
+  // Synced project files (Stage 3), only while file sync is on for this device.
+  const sync = useSyncFiles();
+  const f = syncFilesText[lang];
+  const remote = sync.enabled ? sync.remote.filter((entry) => entry.projectId === project.id) : [];
+  const remoteCharacters = (projectId?: string) =>
+    sync.enabled ? sync.remote.filter((e) => projectId === undefined || e.projectId === projectId).reduce((n, e) => n + e.characters, 0) : 0;
+  const rows = [
+    ...files.map((file) => ({ id: file.id, name: file.name, characters: file.characters, remote: false })),
+    ...remote.map((entry) => ({ id: entry.id, name: entry.name, characters: entry.characters, remote: true })),
+  ];
+  const bytes = (n: number) =>
+    n >= 1024 ** 3
+      ? `${(n / 1024 ** 3).toLocaleString(locale, { maximumFractionDigits: 1 })} GB`
+      : n >= 1024 ** 2
+        ? `${(n / 1024 ** 2).toLocaleString(locale, { maximumFractionDigits: 1 })} MB`
+        : `${Math.ceil(n / 1024).toLocaleString(locale)} KB`;
+  const stateText = (state: FileState | undefined, isRemote: boolean) => {
+    if (!state) return isRemote ? f.notDownloaded : "";
+    if (state.state === "downloading") return f.downloading(Math.round(state.progress * 100));
+    if (state.state === "error") return f.error(state.reason);
+    if (state.state === "too-large") return f.tooLarge(bytes(sync.quota?.maxFileBytes ?? 0));
+    if (state.state === "quota") return f.full;
+    return state.state === "uploading" ? f.uploading : f.waiting;
+  };
+  const download = async (id: string, name: string) => {
+    const result = await downloadProjectFile(id).catch(() => "server" as const);
+    setStatus(result === "ok" ? f.downloaded(name) : f.error(result));
+  };
   const [reading, setReading] = useState<AbortController>();
-  const [removing, setRemoving] = useState<ProjectFile>();
+  const [removing, setRemoving] = useState<{ id: string; name: string; remote: boolean }>();
   const fileInput = useRef<HTMLInputElement>(null);
   // Reading stops when the screen closes.
   useEffect(() => () => reading?.abort(), [reading]);
@@ -114,10 +144,19 @@ export function ProjectPanel({
     try {
       const extracted = await extract(file, abort.signal, () => {});
       await changeFiles((all) => {
-        const elsewhere = Object.entries(all)
-          .filter(([id]) => id !== project.id)
-          .reduce((sum, [, list]) => sum + charactersOf(list), 0);
-        return { ...all, [project.id]: addProjectFile(extracted, elsewhere)(all[project.id] ?? []) };
+        // Files listed by another device and not downloaded here count toward the limits too.
+        const here = remoteCharacters(project.id);
+        const elsewhere =
+          Object.entries(all)
+            .filter(([id]) => id !== project.id)
+            .reduce((sum, [, list]) => sum + charactersOf(list), 0) +
+          remoteCharacters() -
+          here;
+        if (remote.length + (all[project.id]?.length ?? 0) >= PROJECT_LIMITS.files) throw new ProjectError("files");
+        if (remote.some((entry) => entry.name === extracted.name)) throw new ProjectError("duplicate");
+        const next = addProjectFile(extracted, elsewhere + here)(all[project.id] ?? []);
+        if (charactersOf(next) + here > PROJECT_LIMITS.characters) throw new ProjectError("characters");
+        return { ...all, [project.id]: next };
       }, t.fileAdded(file.name));
     } catch (error) {
       // Extraction messages are already in the interface language.
@@ -256,12 +295,18 @@ export function ProjectPanel({
         <h3 id={`${id}-files`}>{t.files}</h3>
         <p className="muted">{t.filesIntro}</p>
         <p className="muted">{t.notInBackup}</p>
+        {sync.enabled && <p className="muted">{f.intro}</p>}
+        {sync.enabled && sync.quota && (
+          <p className="muted">
+            {f.quota(bytes(sync.quota.usedBytes), bytes(sync.quota.limitBytes), bytes(Math.max(0, sync.quota.limitBytes - sync.quota.usedBytes)))}
+          </p>
+        )}
         <div className="project-row">
           <span>
             {t.filesLimits(
-              files.length,
+              rows.length,
               PROJECT_LIMITS.files,
-              charactersOf(files).toLocaleString(locale),
+              (charactersOf(files) + remoteCharacters(project.id)).toLocaleString(locale),
               PROJECT_LIMITS.characters.toLocaleString(locale),
             )}
           </span>
@@ -279,32 +324,51 @@ export function ProjectPanel({
           />
           <button
             type="button"
-            disabled={busy || !!reading || files.length >= PROJECT_LIMITS.files}
+            disabled={busy || !!reading || rows.length >= PROJECT_LIMITS.files}
             onClick={() => fileInput.current?.click()}
           >
             <Icon name="plus" />
             {t.addFile}
           </button>
         </div>
-        {!files.length ? (
+        {!rows.length ? (
           <p className="muted">{t.noFiles}</p>
         ) : (
           <ul className="project-files" aria-label={t.files}>
-            {files.map((file) => (
-              <li key={file.id}>
-                <span>
-                  {file.name} <small>{t.fileSize(file.characters.toLocaleString(locale))}</small>
-                </span>
-                <button
-                  type="button"
-                  aria-label={t.removeFile(file.name)}
-                  disabled={busy || !!reading}
-                  onClick={() => setRemoving(file)}
-                >
-                  {t.remove}
-                </button>
-              </li>
-            ))}
+            {rows.map((file) => {
+              const state = sync.enabled ? sync.states[file.id] : undefined;
+              const label = sync.enabled ? stateText(state, file.remote) : "";
+              const downloading = state?.state === "downloading";
+              return (
+                <li key={file.id}>
+                  <span>
+                    {file.name} <small>{t.fileSize(file.characters.toLocaleString(locale))}</small>
+                    {label && <small className={`project-file-state${state?.state === "error" ? " warning" : ""}`}>{label}</small>}
+                    {downloading && <progress max={1} value={state.progress} aria-label={f.progressLabel(file.name)} />}
+                  </span>
+                  <span className="project-file-actions">
+                    {file.remote && !downloading && (
+                      <button
+                        type="button"
+                        aria-label={state?.state === "error" ? f.retryFile(file.name) : f.downloadFile(file.name)}
+                        disabled={busy}
+                        onClick={() => void download(file.id, file.name)}
+                      >
+                        {state?.state === "error" ? f.retry : f.download}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      aria-label={t.removeFile(file.name)}
+                      disabled={busy || !!reading || downloading}
+                      onClick={() => setRemoving(file)}
+                    >
+                      {t.remove}
+                    </button>
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
@@ -330,13 +394,18 @@ export function ProjectPanel({
       {removing && (
         <ConfirmDialog
           title={t.removeFileTitle(removing.name)}
-          text={t.removeFileText}
+          text={sync.enabled ? f.removeText : t.removeFileText}
           confirmLabel={t.remove}
           cancelLabel={t.cancel}
           fallback={() => fileInput.current?.nextElementSibling as HTMLElement | null}
           onClose={(confirmed) => {
             setRemoving(undefined);
-            if (confirmed)
+            if (confirmed && removing.remote)
+              void removeSyncedProjectFile(removing.id).then(
+                () => setStatus(t.fileRemoved),
+                () => setStatus(t.problem("failed")),
+              );
+            else if (confirmed)
               void changeFiles(
                 (all) => ({ ...all, [project.id]: removeProjectFile(removing.id)(all[project.id] ?? []) }),
                 t.fileRemoved,

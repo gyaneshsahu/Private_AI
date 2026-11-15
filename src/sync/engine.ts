@@ -18,11 +18,13 @@ import * as k from "./crypto";
 import { mergeById, mergeConversation } from "./merge";
 import {
   FILES_OFF,
+  bindFileActions,
   fileRecordSchema,
   projectsDataSchema,
   publishFiles,
   type FileEntry,
   type FileRecord,
+  type DownloadResult,
   type FileState,
   type FilesView,
   type ProjectsData,
@@ -296,6 +298,7 @@ export class SyncEngine {
   detach() {
     this.stop();
     this.o.vault.onSync = undefined;
+    if (!this.o.onFiles) bindFileActions(undefined);
     (this.o.onFiles ?? publishFiles)(FILES_OFF);
   }
   private later(ms: number) {
@@ -1002,6 +1005,8 @@ export class SyncEngine {
   private publishView() {
     this.view =
       this.files && this.device && !this.optedOut ? { enabled: true, quota: this.files, remote: this.remote, states: { ...this.fileStates } } : FILES_OFF;
+    // The engine attached for the app serves the project screen's buttons.
+    if (!this.o.onFiles) bindFileActions(this.view.enabled ? this : undefined);
     (this.o.onFiles ?? publishFiles)(this.view);
   }
   private setFileState(id: string, state?: FileState) {
@@ -1128,9 +1133,9 @@ export class SyncEngine {
     await this.updateFiles(ak, (rec) => ({ entries: rec.entries.filter((e) => !done.has(e.blobId)), deletes: rec.deletes.filter((d) => !done.has(d)) }));
     return 0;
   }
-  private downloads = new Map<string, Promise<"ok" | "failed">>();
+  private downloads = new Map<string, Promise<DownloadResult>>();
   /** Downloads a file another device listed, checks it against the manifest and keeps it in this vault. */
-  downloadFile(fileId: string): Promise<"ok" | "failed"> {
+  downloadFile(fileId: string): Promise<DownloadResult> {
     let running = this.downloads.get(fileId);
     if (!running) {
       running = this.download(fileId).finally(() => this.downloads.delete(fileId));
@@ -1138,13 +1143,13 @@ export class SyncEngine {
     }
     return running;
   }
-  private async download(fileId: string): Promise<"ok" | "failed"> {
+  private async download(fileId: string): Promise<DownloadResult> {
     const ak = this.o.vault.accountKey();
     const entry = this.remote.find((e) => e.id === fileId);
-    if (!ak || !entry || !this.files) return "failed";
+    if (!ak || !entry || !this.files) return "gone";
     const fail = (reason: Extract<FileState, { state: "error" }>["reason"]) => {
       this.setFileState(fileId, { state: "error", reason });
-      return "failed" as const;
+      return reason;
     };
     try {
       this.setFileState(fileId, { state: "downloading", progress: 0 });
@@ -1161,20 +1166,20 @@ export class SyncEngine {
       } catch {
         return fail("damaged");
       }
-      let saved = true;
+      let refused: DownloadResult | undefined;
       await this.updateFiles(ak, async (rec) => {
         const at = rec.entries.findIndex((e) => e.id === fileId && !e.here);
         if (at < 0) return rec; // removed meanwhile
         try {
           await this.o.vault.changeProjectFiles((all) => ({ ...all, [entry.projectId]: [...(all[entry.projectId] ?? []).filter((f) => f.id !== fileId), file] }));
         } catch (error) {
-          saved = false;
           // The project's file limit, reached by files added on two devices at once.
-          return error instanceof z.ZodError ? (fail("full"), rec) : (fail("server"), rec);
+          refused = fail(error instanceof z.ZodError ? "full" : "server");
+          return rec;
         }
         return { ...rec, entries: rec.entries.map((e, i) => (i === at ? { ...e, here: true } : e)) };
       });
-      if (!saved) return "failed";
+      if (refused) return refused;
       this.setFileState(fileId);
       await this.holdFiles();
       return "ok";

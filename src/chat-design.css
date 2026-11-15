@@ -3245,3 +3245,33 @@
     display: block;
   }
 }
+
+/* Vault sync Stage 3: synced project file states in the project screen (src/ProjectPanel.tsx). */
+.chat-design .project-files .project-file-state {
+  display: block;
+  margin-top: 2px;
+}
+.chat-design .project-files .project-file-state.warning {
+  color: inherit;
+  font-weight: 600;
+}
+.chat-design .project-files progress {
+  display: block;
+  width: min(100%, 220px);
+  margin-top: 4px;
+}
+.chat-design .project-files .project-file-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.chat-design .project-file-actions button {
+  min-height: 32px;
+}
+@media (max-width: 600px) {
+  .chat-design .project-file-actions button {
+    min-height: 44px;
+  }
+}

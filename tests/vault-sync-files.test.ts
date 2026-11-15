@@ -165,7 +165,7 @@ describe("project files as encrypted blobs", () => {
     await b.engine.syncNow();
     const entry = b.engine.fileView().remote.find((f) => f.id === third.id)!;
     await blobStore.put(ACCOUNT, entry.blobId, Buffer.alloc(entry.size + 28, 1), Number.MAX_SAFE_INTEGER);
-    expect(await b.engine.downloadFile(third.id)).toBe("failed");
+    expect(await b.engine.downloadFile(third.id)).toBe("damaged");
     expect(b.engine.fileView().states[third.id]).toEqual({ state: "error", reason: "damaged" });
     expect((await b.vault.readProjectFiles())[project.id].map((f) => f.name)).toEqual(["Second.txt"]);
   }, 60_000);

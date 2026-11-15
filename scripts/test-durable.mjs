@@ -27,6 +27,7 @@ const files = [
   "background-tasks-postgres",
   "usage-records-postgres",
   "vault-sync-postgres",
+  "vault-sync-blobs-postgres",
 ].map((name) => `tests/${name}.test.ts`);
 
 async function main() {

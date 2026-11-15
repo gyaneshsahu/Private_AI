@@ -78,6 +78,28 @@ export interface FilesView {
 }
 export const FILES_OFF: FilesView = { enabled: false, remote: [], states: {} };
 
+/** "ok", or why a download failed (the project screen says it). */
+export type DownloadResult = "ok" | Extract<FileState, { state: "error" }>["reason"];
+
+// The engine that serves the project screen (src/sync/engine.ts binds itself while attached). Kept
+// here, not in src/sync/index.ts, so the project screen does not depend on the whole sync API.
+interface FileActions {
+  downloadFile(fileId: string): Promise<DownloadResult>;
+  removeRemoteFile(fileId: string): Promise<void>;
+  ensureProjectFiles(projectId: string): Promise<boolean>;
+}
+let actions: FileActions | undefined;
+export const bindFileActions = (next?: FileActions) => void (actions = next);
+/** Downloads a file another device listed (the project screen's Download button). */
+export const downloadProjectFile = (fileId: string): Promise<DownloadResult> => actions?.downloadFile(fileId) ?? Promise.resolve("gone");
+/** Removes a file another device listed and this device never downloaded; its blob goes after the next sync. */
+export const removeSyncedProjectFile = (fileId: string) => actions?.removeRemoteFile(fileId) ?? Promise.resolve();
+/**
+ * Before a question in a project chat: downloads the project's files not downloaded here yet.
+ * True when every file is here (at once without file sync); false: the question would go without some.
+ */
+export const ensureProjectFiles = (projectId: string) => actions?.ensureProjectFiles(projectId) ?? Promise.resolve(true);
+
 let view = FILES_OFF;
 const listeners = new Set<() => void>();
 export function publishFiles(next: FilesView) {
