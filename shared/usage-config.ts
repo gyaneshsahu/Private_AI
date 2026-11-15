@@ -84,10 +84,22 @@ export type WeightsVersion = z.infer<typeof versionSchema>;
 export type WeightsFile = z.infer<typeof weightsFileSchema>;
 export const usageWeights: WeightsFile = weightsFileSchema.parse(rawWeights);
 
-/** The version in force at `now`: the newest whose effective date has passed (version 1 before any). */
-export function activeWeights(now = Date.now(), file: WeightsFile = usageWeights): WeightsVersion {
+/**
+ * The version in force at `now`: the newest whose effective date has passed (version 1 before any),
+ * or the version the deployment pins (`inference.metering.weightsVersion`), whatever the date.
+ */
+export function activeWeights(now = Date.now(), file: WeightsFile = usageWeights, pinned?: number): WeightsVersion {
+  if (pinned !== undefined) {
+    const version = file.versions.find((v) => v.version === pinned);
+    if (!version) throw Error(`Unknown weights version: ${pinned}`);
+    return version;
+  }
   return [...file.versions].reverse().find((v) => Date.parse(v.effectiveFrom) <= now) ?? file.versions[0];
 }
+/** The weights version numbers in shared/usage-weights.json (the deployment config may pin one). */
+export const WEIGHT_VERSIONS = usageWeights.versions.map((v) => v.version);
+/** One weights version by number (records keep theirs), or undefined when the file has none. */
+export const weightsVersion = (version: number, file: WeightsFile = usageWeights) => file.versions.find((v) => v.version === version);
 
 const planSchema = z
   .object({
@@ -138,6 +150,11 @@ export interface UsageMeterView {
   features: { feature: Feature; requests: number; units: number; tokens: number; reported: number }[];
   /** Requests per capped feature in the last 24 hours. */
   todayCounts: { images: number; researchRuns: number; searches: number };
+  /**
+   * While voice input is on: the daily voice budget in 2-second units, from the same source as the
+   * status's `voice.usedUnits` ("Voice today"); `usedUnits` absent when usage cannot be read.
+   */
+  voice?: { dailyUnits: number; chunkSeconds: number; usedUnits?: number };
   /** Newest first. A calculation's free code follow-ups are folded into the message that paid for them. */
   recent: { at: number; feature: Feature; units: number; followUps: number; tokens?: number }[];
 }

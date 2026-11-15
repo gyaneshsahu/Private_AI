@@ -4,9 +4,9 @@
     {
       "id": "alpha",
       "name": "Alpha",
-      "status": "Values of the alpha configuration (docs/development-deployment.md), owner decisions of 13 and 14 November 2026",
+      "status": "Values of the alpha configuration (docs/development-deployment.md), owner decisions of 13, 14 and 15 November 2026 (voice: 2 minutes = 60 units while tokens are short; 5 minutes = 150 units after)",
       "units": { "period": 150, "days": 7, "daily": 40 },
-      "caps": { "imagesPerDay": 10, "voiceMinutesPerDay": 10, "researchRunsPerDay": 3, "searchesPerDay": 24, "backgroundTasks": 3 }
+      "caps": { "imagesPerDay": 10, "voiceMinutesPerDay": 2, "researchRunsPerDay": 3, "searchesPerDay": 24, "backgroundTasks": 3 }
     },
     {
       "id": "free",

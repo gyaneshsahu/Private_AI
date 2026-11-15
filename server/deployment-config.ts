@@ -4,7 +4,7 @@ import { z } from "zod";
 import { parseSocialCredentials } from "./account-social";
 import { attestationAuditDefaults } from "./attestation-audit-state";
 import { parseKeyRing } from "./background-crypto";
-import { PLAN_IDS, planFor } from "../shared/usage-config";
+import { PLAN_IDS, planFor, WEIGHT_VERSIONS } from "../shared/usage-config";
 
 const path = z.string().refine(isAbsolute);
 const schema = z
@@ -109,9 +109,19 @@ const schema = z
          * from shared/usage-weights.json, a usage record per request, the usage meter. `plan` (default
          * alpha) names a plan in shared/usage-plans.json whose quotas then replace `allowance` and the
          * daily limits of images, voice, deep research and background tasks written here.
+         * `weightsVersion` (optional) pins a version of the weights file; absent, the newest version
+         * whose date has passed charges (version 2 since 15 November: voice 1 unit per chunk).
          */
         metering: z
-          .object({ enabled: z.boolean(), plan: z.enum(PLAN_IDS as [string, ...string[]]).optional() })
+          .object({
+            enabled: z.boolean(),
+            plan: z.enum(PLAN_IDS as [string, ...string[]]).optional(),
+            weightsVersion: z
+              .number()
+              .int()
+              .refine((v) => WEIGHT_VERSIONS.includes(v), "Unknown weights version.")
+              .optional(),
+          })
           .strict()
           .optional(),
         /**
@@ -247,14 +257,14 @@ type Quotas = {
 /** With metering on, the plan's quotas replace the allowance and the per-feature daily limits; a cap of 0 switches the feature off. */
 export function withPlan<T extends Quotas>(
   inference: T,
-  metering?: { enabled: boolean; plan?: string },
-): T & { metering?: { plan: string } } {
+  metering?: { enabled: boolean; plan?: string; weightsVersion?: number },
+): T & { metering?: { plan: string; weightsVersion?: number } } {
   if (!metering?.enabled) return inference;
   const plan = planFor(metering.plan ?? "alpha");
   const c = plan.caps;
-  const out: T & { metering?: { plan: string } } = {
+  const out: T & { metering?: { plan: string; weightsVersion?: number } } = {
     ...inference,
-    metering: { plan: plan.id },
+    metering: { plan: plan.id, ...(metering.weightsVersion !== undefined ? { weightsVersion: metering.weightsVersion } : {}) },
     allowance: { requestLimit: plan.units.period, days: plan.units.days, dailyLimit: plan.units.daily },
   };
   if (out.images) out.images = { ...out.images, dailyImages: c.imagesPerDay };

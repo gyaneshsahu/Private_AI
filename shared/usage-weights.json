@@ -39,6 +39,33 @@
         "image": { "tokensPerUse": 62, "uses": 1, "source": "tiny synthetic picture only; a real photo is not measured" },
         "voice": { "tokensPerUse": 5600, "uses": 0, "source": "Privatemode's rule of about 2,800 tokens per audio minute for a 2-minute recording; not measured" }
       }
+    },
+    {
+      "version": 2,
+      "effectiveFrom": "2026-11-15T20:00:00.000Z",
+      "approvedBy": "Owner decision of 15 November 2026 (docs/owner-decisions.md, 15 November list, item 10): voice counts 1 allowance unit per chunk of up to 30 seconds. Every other value is unchanged from version 1.",
+      "units": {
+        "chat-fast": 1,
+        "chat-thinking": 5,
+        "image": 2,
+        "voice": 1,
+        "research-run": 15,
+        "code-followup": 0,
+        "retry": 0,
+        "background-search": 1,
+        "background-attachment": 2,
+        "search": 0,
+        "page-fetch": 0
+      },
+      "freeCodeFollowUps": 2,
+      "basis": {
+        "chat-fast": { "tokensPerUse": 1123, "uses": 84, "source": "median over recorded answers, blind benchmark, parity and smoke runs (docs/cost-weights-20261114.md)" },
+        "chat-thinking": { "tokensPerUse": 1900, "uses": 170, "source": "median, effort high and older max runs (docs/cost-weights-20261114.md)" },
+        "code-followup": { "tokensPerUse": 3600, "uses": 0, "source": "one calculation turn with code in Fast, both requests together, arithmetic set of 14 November; per-request count not recorded" },
+        "research-run": { "tokensPerUse": 7300, "uses": 3, "source": "three live runs of 14 November, plan and answer together" },
+        "image": { "tokensPerUse": 62, "uses": 1, "source": "tiny synthetic picture only; a real photo is not measured" },
+        "voice": { "tokensPerUse": 1400, "uses": 0, "source": "one full 30-second chunk at Privatemode's rule of about 2,800 tokens per audio minute; not measured" }
+      }
     }
   ]
 }

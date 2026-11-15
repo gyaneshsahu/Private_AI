@@ -81,8 +81,8 @@ export interface ProductionInferenceConfig {
   code?: boolean;
   /** Deep research cost, caps and optional account list; absent means off. */
   research?: import("./research-admission").ResearchSettings;
-  /** Usage metering with this plan (docs/usage-metering-20261115.md); absent means off. */
-  metering?: { plan: string };
+  /** Usage metering with this plan and an optional pinned weights version (docs/usage-metering-20261115.md); absent means off. */
+  metering?: { plan: string; weightsVersion?: number };
   /** End-to-end encrypted vault sync limits; absent means off. */
   vaultSync?: import("./vault-sync").SyncSettings;
   /** Background tasks (Auto mode of Scheduled); absent means off. */
@@ -136,7 +136,7 @@ export function createProductionConsumerCandidate(
           ...(inference.code ? { code: true } : {}),
           ...(inference.research ? { research: inference.research } : {}),
           ...(inference.metering
-            ? { metering: { plan: inference.metering.plan, records: new PostgresUsageRecords(config.database) } }
+            ? { metering: { ...inference.metering, records: new PostgresUsageRecords(config.database) } }
             : {}),
           ...(inference.vaultSync ? { vaultSync: { ...inference.vaultSync, store: new PostgresSyncStore(config.database) } } : {}),
           ...(inference.backgroundTasks
