@@ -151,6 +151,8 @@ export function createMetering(deps: {
 }) {
   const { records } = deps.config;
   const plan = planFor(deps.config.plan);
+  // An unknown pinned weights version stops the server at start, never later inside a request.
+  meteringWeights(deps.config);
   const now = deps.now ?? Date.now;
   const weights = () => meteringWeights(deps.config, now());
   const router = express.Router();

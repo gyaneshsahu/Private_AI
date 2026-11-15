@@ -38,6 +38,7 @@ const view: UsageMeterView = {
   recent: [
     { at: NOW - 60_000, feature: "chat-fast", units: 1, followUps: 2, tokens: 3600 },
     { at: NOW - 3_600_000, feature: "research-answer", units: 10, followUps: 0 },
+    { at: NOW - 7_200_000, feature: "voice", units: 1, followUps: 0 },
   ],
 };
 
@@ -111,6 +112,9 @@ for (const lang of LANGS)
         await ui(full.getByRole("listitem").filter({ hasText: voiceText[lang].today("0:24", "1:36") })).toBeVisible();
         await ui(full.getByText(t.voiceCost(1, 30), { exact: false })).toBeVisible();
         await ui(full.getByRole("rowheader", { name: t.voice })).toBeVisible();
+        // Voice is measured by the relay: never shown as "not reported".
+        await ui(full.getByRole("row", { name: new RegExp(t.voice) }).getByRole("cell").last()).toHaveText(t.voiceMeasured);
+        await ui(full.getByRole("listitem").filter({ hasText: `${t.voice}: ${t.counted(1)} · ${t.voiceMeasured}` })).toBeVisible();
         // The cost line under the calculation: 1 request, 2 steps free.
         await ui(page.getByText(t.codeCost(1, 2))).toBeVisible();
         // The compact meter, in the account menu.

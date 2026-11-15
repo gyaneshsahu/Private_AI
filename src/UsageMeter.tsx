@@ -127,7 +127,7 @@ export function UsageMeter({ compact = false, refresh }: { compact?: boolean; re
                 <th scope="row">{t[row.feature]}</th>
                 <td>{number(row.requests)}</td>
                 <td>{number(row.units)}</td>
-                <td>{row.reported ? number(row.tokens) : t.tokensUnknown}</td>
+                <td>{row.feature === "voice" ? t.voiceMeasured : row.reported ? number(row.tokens) : t.tokensUnknown}</td>
               </tr>
             ))}
           </tbody>
@@ -144,7 +144,7 @@ export function UsageMeter({ compact = false, refresh }: { compact?: boolean; re
                 <time dateTime={new Date(r.at).toISOString()}>
                   {new Date(r.at).toLocaleString(lang, { dateStyle: "short", timeStyle: "short" })}
                 </time>{" "}
-                {describe(r)} · {r.tokens === undefined ? t.tokensUnknown : t.tokensCount(number(r.tokens))}
+                {describe(r)} · {r.feature === "voice" ? t.voiceMeasured : r.tokens === undefined ? t.tokensUnknown : t.tokensCount(number(r.tokens))}
               </li>
             ))}
           </ul>

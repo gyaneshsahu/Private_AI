@@ -20,3 +20,10 @@ Today the policy lists our own request records as: which account asked, when, ho
 ## Owner decision
 
 Option A (recommended): per-request records for 90 days, with the sentence above. Options B (7 days, then totals without the account) and C (no token reports) are described in the design note.
+
+## Voice (added 15 November 2026, evening)
+
+With metering on, each voice part (up to 30 seconds) also gets a record: feature voice, the requests it counted, the speech model, the size of the encrypted recording part and of the encrypted text that came back, how long it took, and its length in 2-second steps (the same length the usage ledger already keeps for the daily voice limit, `docs/voice-privacy-wording-draft-20261114.md`). No audio, no text. The browser sends nothing for voice. The sentence above covers this if its example list names voice:
+
+- English: "(for example a Fast message, a picture question, a voice recording part and its length, or a web search)"
+- Deutsch: "(zum Beispiel eine Nachricht in „Schnell“, eine Frage zu einem Bild, ein Teil einer Sprachaufnahme und seine Länge oder eine Websuche)"

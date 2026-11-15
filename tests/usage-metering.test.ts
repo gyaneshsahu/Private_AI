@@ -16,7 +16,7 @@ import { researchWeights } from "../shared/deep-research";
 import { BACKGROUND_LIMITS } from "../server/background-tasks";
 import { CONTINUATIONS } from "../server/continuation-credit";
 import { withPlan } from "../server/deployment-config";
-import { meteringWeights, meterView, withWeights } from "../server/usage-metering";
+import { createMetering, meteringWeights, meterView, withWeights } from "../server/usage-metering";
 import { voiceRequestId } from "../server/usage-contract";
 import { implausible, SqliteUsageRecords, type UsageRecord } from "../server/usage-records";
 import { usageReportBody } from "../src/usage-report";
@@ -353,4 +353,15 @@ it("the meter carries the voice budget it is given (the status's numbers), and n
   };
   expect(meterView(base)).not.toHaveProperty("voice");
   expect(meterView({ ...base, voice: { dailyUnits: 60, chunkSeconds: 30, usedUnits: 12 } }).voice).toEqual({ dailyUnits: 60, chunkSeconds: 30, usedUnits: 12 });
+});
+
+it("an unknown pinned weights version stops metering at start, not inside a request", () => {
+  const records = new SqliteUsageRecords(":memory:");
+  try {
+    const base = { qualification: () => undefined, accountOf: () => undefined };
+    expect(() => createMetering({ ...base, config: { plan: "alpha", records, weightsVersion: 9 } })).toThrow();
+    expect(createMetering({ ...base, config: { plan: "alpha", records, weightsVersion: 1 } }).weights().version).toBe(1);
+  } finally {
+    records.close();
+  }
 });
