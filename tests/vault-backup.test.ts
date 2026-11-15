@@ -98,9 +98,53 @@ it("restores an encrypted backup under a different destination key without overw
   });
   expect(saved.every((c) => c.id !== original.id)).toBe(true);
   await expect(destination.v.save(original)).rejects.toThrow("deleted");
-  expect(await destination.v.restoreBackup(text, source.password)).toBe(1);
-  expect(await destination.v.list()).toHaveLength(3);
+  // Restoring the same backup again adds nothing (Stage 0: no duplicates on a repeat restore).
+  expect(await destination.v.restoreBackup(text, source.password)).toBe(0);
+  expect(await destination.v.list()).toHaveLength(2);
 });
+
+it("restoring into the vault that made the backup skips unchanged chats and projects; a changed chat comes back once as a copy", async () => {
+  const source = await vault();
+  const [project] = await source.v.createProject("SYNTHETIC PROJECT");
+  const original = { ...draft(), projectId: project.id };
+  await source.v.save(original);
+  const text = await source.v.exportBackup();
+  expect(await source.v.restoreBackup(text, source.password)).toBe(0);
+  expect(await source.v.list()).toHaveLength(1);
+  expect(await source.v.readProjects()).toHaveLength(1);
+  await source.v.save({ ...original, title: "Changed here" });
+  expect(await source.v.restoreBackup(text, source.password)).toBe(1);
+  expect(await source.v.restoreBackup(text, source.password)).toBe(0);
+  const titles = (await source.v.list()).map((c) => c.title).sort();
+  expect(titles).toEqual(["Changed here", "SYNTHETIC PRIVATE TITLE"]);
+});
+
+it("exports in parts above 100 chats, with memories or tasks alone, and with project files on request; parts restore without duplicates", async () => {
+  const source = await vault();
+  await expect(source.v.exportBackupParts(true)).rejects.toMatchObject({ code: "empty" });
+  await source.v.writeMemories(() => [{ id: crypto.randomUUID(), text: "SYNTHETIC MEMORY", at: new Date().toISOString() }]);
+  const [only] = await source.v.exportBackupParts(true);
+  const target = await vault("synthetic target password 1");
+  expect(await target.v.restoreBackup(only, source.password)).toBe(0);
+  expect((await target.v.readMemories()).map((m) => m.text)).toEqual(["SYNTHETIC MEMORY"]);
+
+  const [project] = await source.v.createProject("SYNTHETIC FILES");
+  const at = new Date().toISOString();
+  await source.v.changeProjectFiles(() => ({
+    [project.id]: [{ id: crypto.randomUUID(), name: "a.txt", characters: 5, at, sources: [{ id: "a", title: "a.txt", text: "hello" }] }],
+  }));
+  for (let i = 0; i < 101; i++) await source.v.save({ ...emptyConversation(), title: `Chat ${i}` });
+  await expect(source.v.exportBackup()).rejects.toThrow("100");
+  const parts = await source.v.exportBackupParts(true);
+  expect(parts).toHaveLength(2);
+  const withoutFiles = await source.v.exportBackupParts(false);
+  expect(withoutFiles[0].length).toBeLessThan(parts[0].length);
+  for (const part of [...parts, ...parts]) await target.v.restoreBackup(part, source.password);
+  expect(await target.v.list()).toHaveLength(101);
+  expect(await target.v.readProjects()).toHaveLength(1);
+  expect(Object.values(await target.v.readProjectFiles()).flat()).toHaveLength(1);
+  expect(await target.v.readMemories()).toHaveLength(1);
+}, 60_000);
 
 it("rejects incorrect passwords, altered ciphertext, unknown versions and excessive work parameters without writes", async () => {
   const source = await vault(),
