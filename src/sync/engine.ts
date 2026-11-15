@@ -947,7 +947,9 @@ export class SyncEngine {
     const kind = env.data.kind as Kind;
     const parsed = kind === "conversation" ? savedConversationSchema.safeParse(env.data.data) : this.listSchema(kind).safeParse(env.data.data);
     if (!parsed.success) return { type: "needs-upgrade" };
-    const data = kind === "scheduled-tasks" ? { tasks: (parsed.data as TaskData).tasks, masks: (parsed.data as TaskData).masks } : parsed.data;
+    // A chat is kept as written (the vault keeps fields a newer version added, as for its own records).
+    const data =
+      kind === "conversation" ? env.data.data : kind === "scheduled-tasks" ? { tasks: (parsed.data as TaskData).tasks, masks: (parsed.data as TaskData).masks } : parsed.data;
     return { type: "item", kind, data };
   }
 
