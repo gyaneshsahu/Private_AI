@@ -255,6 +255,11 @@ describe.runIf(!!process.env.PRIVATEAI_SYNTHETIC_PG)(
           })
         ).status,
       ).toBe(413);
+      // Encrypted sync items may be up to 4 MB of ciphertext; the bridge admits them, but not more.
+      const item = "/api/sync/items/00000000-0000-4000-8000-000000000000";
+      expect((await call(item, { data: "x".repeat(2 * 1024 * 1024) })).body).not.toBe("Request too large.");
+      const big = await call(item, { data: "x".repeat(6 * 1024 * 1024 + 1) });
+      expect([big.status, big.body]).toEqual([413, "Request too large."]);
       const bad = createRenderBridge({
         port: upstreamPort,
         ...tls.proxy,

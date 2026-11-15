@@ -19,7 +19,7 @@ it("forwards every custom request header the browser sends", () => {
   const sent = new Set<string>();
   const files = [...sources("src"), ...sources("node_modules/ehbp/dist")];
   for (const file of files)
-    for (const match of readFileSync(file, "utf8").matchAll(/["'](x-privateai-[a-z-]+|x-tinfoil-[a-z-]+|ehbp-[a-z-]+)["']/gi))
+    for (const match of readFileSync(file, "utf8").matchAll(/["'](x-privateai-[a-z-]+|x-sync-[a-z-]+|x-tinfoil-[a-z-]+|ehbp-[a-z-]+)["']/gi))
       if (!RESPONSE_ONLY.has(match[1].toLowerCase())) sent.add(match[1].toLowerCase());
   expect(sent.size).toBeGreaterThan(3);
   const missing = [...sent].filter((h) => !(BRIDGE_REQUEST_HEADERS as readonly string[]).includes(h));
