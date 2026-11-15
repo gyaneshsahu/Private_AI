@@ -4,8 +4,10 @@
 import { useEffect, useId, useState } from "react";
 import type { Message } from "../shared/contracts";
 import { activeWeights, type UsageMeterView } from "../shared/usage-config";
+import { voiceTodayClocks } from "../shared/voice";
 import { useLang, useText } from "./i18n";
 import { usageMeterText } from "./text/usage-meter";
+import { voiceText } from "./text/voice";
 
 /** Loads the meter; `refresh` changing (the app's status every 30 s) or the window regaining focus reloads it. */
 function useMeter(refresh: unknown) {
@@ -35,6 +37,7 @@ function Bar({ used, limit, label }: { used: number; limit: number; label: strin
 
 export function UsageMeter({ compact = false, refresh }: { compact?: boolean; refresh?: unknown }) {
   const t = useText(usageMeterText);
+  const vt = useText(voiceText);
   const { lang } = useLang();
   const view = useMeter(refresh);
   const headingId = useId();
@@ -64,6 +67,8 @@ export function UsageMeter({ compact = false, refresh }: { compact?: boolean; re
     caps.imagesPerDay > 0 && t.pictures(view.todayCounts.images, caps.imagesPerDay),
     caps.researchRunsPerDay > 0 && t.researchRuns(view.todayCounts.researchRuns, caps.researchRunsPerDay),
     caps.searchesPerDay > 0 && t.searches(view.todayCounts.searches, caps.searchesPerDay),
+    // The same count and words as "Voice today" at the microphone.
+    view.voice?.usedUnits !== undefined && vt.today(...voiceTodayClocks(view.voice.usedUnits, view.voice.dailyUnits)),
   ].filter((line): line is string => !!line);
   const describe = (r: UsageMeterView["recent"][number]) =>
     r.followUps > 0 ? t.calculation(r.units, r.followUps) : `${t[r.feature]}: ${t.counted(r.units)}`;
@@ -122,7 +127,7 @@ export function UsageMeter({ compact = false, refresh }: { compact?: boolean; re
                 <th scope="row">{t[row.feature]}</th>
                 <td>{number(row.requests)}</td>
                 <td>{number(row.units)}</td>
-                <td>{row.reported ? number(row.tokens) : t.tokensUnknown}</td>
+                <td>{row.feature === "voice" ? t.voiceMeasured : row.reported ? number(row.tokens) : t.tokensUnknown}</td>
               </tr>
             ))}
           </tbody>
@@ -139,7 +144,7 @@ export function UsageMeter({ compact = false, refresh }: { compact?: boolean; re
                 <time dateTime={new Date(r.at).toISOString()}>
                   {new Date(r.at).toLocaleString(lang, { dateStyle: "short", timeStyle: "short" })}
                 </time>{" "}
-                {describe(r)} · {r.tokens === undefined ? t.tokensUnknown : t.tokensCount(number(r.tokens))}
+                {describe(r)} · {r.feature === "voice" ? t.voiceMeasured : r.tokens === undefined ? t.tokensUnknown : t.tokensCount(number(r.tokens))}
               </li>
             ))}
           </ul>
@@ -147,6 +152,7 @@ export function UsageMeter({ compact = false, refresh }: { compact?: boolean; re
       )}
       <p className="muted">
         {t.weights(view.weightsVersion)} {t.costs(view.units["chat-thinking"], view.units.image, view.units["research-run"])}
+        {view.voice && <> {t.voiceCost(view.units.voice, view.voice.chunkSeconds)}</>}
       </p>
       <p className="muted">{t.tokensNote}</p>
     </section>

@@ -106,7 +106,8 @@ it("on: the weights charge (Thinking 5), each forwarded request is recorded with
   upstream.mockImplementation(async () => ok());
   const { signIn, records } = await relay();
   const alice = await signIn();
-  expect(alice.status.metering).toEqual({ plan: "alpha", weightsVersion: 1 });
+  // Version 2 (15 November) is in force: chat costs as in version 1.
+  expect(alice.status.metering).toEqual({ plan: "alpha", weightsVersion: 2 });
   expect(alice.status.inference.qualification.modes.thinking.allowanceCost).toBe(5);
   const reply = await alice.chat("thinking", false, 4000);
   expect(alice.used()).toBe(5);
@@ -116,7 +117,7 @@ it("on: the weights charge (Thinking 5), each forwarded request is recorded with
   expect(records.get(alice.id, id)).toMatchObject({
     feature: "chat-thinking",
     units: 5,
-    weightVersion: 1,
+    weightVersion: 2,
     outcome: "complete",
     model: "glm-5.3",
     requestBytes: 4000,

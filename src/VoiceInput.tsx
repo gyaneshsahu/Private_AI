@@ -2,7 +2,7 @@
 // is switched on. Logic lives in src/voice-input.ts; this file is the button and its wiring.
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AppStatus } from "../shared/contracts";
-import { voiceClock } from "../shared/voice";
+import { voiceTodayClocks } from "../shared/voice";
 import { Icon } from "./Icon";
 import { useText } from "./i18n";
 import { AttestationBusyError } from "./providers/inference-client";
@@ -47,7 +47,7 @@ export function useVoiceUsed(status: AppStatus) {
 }
 /** "Voice today: 2:10 used, 2:50 left." or nothing when the server could not say. */
 export function voiceToday(t: (typeof voiceText)["en"], voice: NonNullable<AppStatus["voice"]>, used?: number) {
-  return used === undefined ? "" : t.today(voiceClock(used), voiceClock(voice.dailyUnits - used));
+  return used === undefined ? "" : t.today(...voiceTodayClocks(used, voice.dailyUnits));
 }
 
 export function VoiceInput({

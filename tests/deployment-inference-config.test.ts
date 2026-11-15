@@ -102,10 +102,25 @@ it("loads production chat only when the inference section is present and enabled
     allowance: { requestLimit: 150, days: 7, dailyLimit: 40 },
     research: { cost: 15, dailyRuns: 3, dailySearches: 24 },
   });
+  // Voice under the alpha plan: 2 minutes = 60 units while tokens are short (owner, 15 November).
+  // A weights version can be pinned; absent, the newest in force charges (no field passed on).
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, voice, metering: { enabled: true } } }));
+  const metered = (await loadDeploymentConfig(configFile)).inference;
+  expect(metered?.voice).toEqual({ chunkSeconds: 30, maxTurnSeconds: 180, dailyUnits: 60 });
+  expect(metered?.metering).toEqual({ plan: "alpha" });
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, metering: { enabled: true, weightsVersion: 1 } } }));
+  expect((await loadDeploymentConfig(configFile)).inference?.metering).toEqual({ plan: "alpha", weightsVersion: 1 });
+  // Off with a pin: nothing changes, as off always does.
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, voice, metering: { enabled: false, weightsVersion: 1 } } }));
+  const off = (await loadDeploymentConfig(configFile)).inference;
+  expect(off).not.toHaveProperty("metering");
+  expect(off?.voice).toEqual({ chunkSeconds: 30, maxTurnSeconds: 180, dailyUnits: 150 });
   // Relative paths, unknown fields, a bad allowance, bad voice limits and an unreadable report refuse the whole configuration.
   for (const bad of [
     { ...inference, metering: { enabled: true, plan: "gold" } },
     { ...inference, metering: true },
+    { ...inference, metering: { enabled: true, weightsVersion: 99 } },
+    { ...inference, metering: { enabled: true, weightsVersion: 1.5 } },
     { ...inference, research: { enabled: true } },
     // A run is two charges of 1 to 10 units: 21 cannot be split.
     { ...inference, research: { ...research, cost: 21 } },

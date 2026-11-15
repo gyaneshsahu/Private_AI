@@ -16,10 +16,11 @@ import { researchWeights } from "../shared/deep-research";
 import { BACKGROUND_LIMITS } from "../server/background-tasks";
 import { CONTINUATIONS } from "../server/continuation-credit";
 import { withPlan } from "../server/deployment-config";
-import { meterView, withWeights } from "../server/usage-metering";
+import { createMetering, meteringWeights, meterView, withWeights } from "../server/usage-metering";
+import { voiceRequestId } from "../server/usage-contract";
 import { implausible, SqliteUsageRecords, type UsageRecord } from "../server/usage-records";
 import { usageReportBody } from "../src/usage-report";
-import { reconcile, suggestWeights, quotaTokens, euros, formatReconciliation, formatSuggestion } from "../scripts/usage-metering";
+import { audioSecondsOf, reconcile, suggestWeights, quotaTokens, euros, formatReconciliation, formatSuggestion } from "../scripts/usage-metering";
 import { privatemodeReport } from "./fixtures/privatemode-report";
 
 it("version 1 carries today's weights unchanged: report draft, code credit, background extras, research", () => {
@@ -84,13 +85,17 @@ it("plans: the alpha plan is today's configuration; a plan replaces the quotas a
     metering: { plan: "alpha" },
     allowance: { requestLimit: 150, days: 7, dailyLimit: 40 },
     images: { maxBytes: 280_000, dailyImages: 10 },
-    voice: { chunkSeconds: 30, maxTurnSeconds: 180, dailyUnits: 300 },
+    // The alpha plan's voice: 2 minutes (60 units) while tokens are short (owner, 15 November).
+    voice: { chunkSeconds: 30, maxTurnSeconds: 180, dailyUnits: 60 },
     research: { cost: 15, dailyRuns: 3, dailySearches: 24 },
   });
   // The free proposal has no deep research.
   const free = withPlan(inference, { enabled: true, plan: "free" });
   expect(free).not.toHaveProperty("research");
   expect(free).toMatchObject({ allowance: { requestLimit: 60, dailyLimit: 20 }, images: { dailyImages: 3 } });
+  // A pinned weights version is passed on with the plan; off ignores it.
+  expect(withPlan(inference, { enabled: true, weightsVersion: 1 }).metering).toEqual({ plan: "alpha", weightsVersion: 1 });
+  expect(withPlan(inference, { enabled: false, weightsVersion: 1 })).toBe(inference);
 });
 
 const record = (over: Partial<UsageRecord> = {}): UsageRecord => ({
@@ -247,9 +252,116 @@ it("suggestion: medians per use, ratios to a Fast message, a proposal for the ne
   expect(row("code-turn-fast")).toMatchObject({ uses: 30, tokens: 3600 });
   expect(row("code-turn-fast").tokenRatio).toBeCloseTo(3.27, 2);
   expect(row("image")).toMatchObject({ uses: 0, enough: false, suggested: undefined });
-  expect(result.proposal).toMatchObject({ version: 2, effectiveFrom: "SET_ON_APPROVAL", units: { "chat-thinking": 2, image: 2, "chat-fast": 1 } });
+  expect(result.proposal).toMatchObject({ version: 3, effectiveFrom: "SET_ON_APPROVAL", units: { "chat-thinking": 2, image: 2, "chat-fast": 1 } });
   expect(result.changed).toBe(true);
   // By euros a Thinking message is far dearer (glm-5.3 against glm-5.3-flash), capped at 10.
   expect(suggestWeights(syntheticWeek(), usageWeights, { basis: "euros" }).table.find((r) => r.key === "chat-thinking")?.suggested).toBe(10);
-  expect(formatSuggestion(result)).toContain('"version": 2');
+  expect(formatSuggestion(result)).toContain('"version": 3');
+});
+
+// Voice in the metering ledger (15 November, owner decision item 10): version 2 counts 1 unit per chunk.
+it("version 2 is version 1 except voice (1 unit per chunk); version 1 stays; it is in force unless a version is pinned", () => {
+  const [v1, v2] = usageWeights.versions;
+  expect(v2.version).toBe(2);
+  expect(v2.units).toEqual({ ...v1.units, voice: 1 });
+  expect(v2.freeCodeFollowUps).toBe(v1.freeCodeFollowUps);
+  expect(v2.effectiveFrom > v1.effectiveFrom).toBe(true);
+  expect(v1.units.voice).toBe(2);
+  expect(activeWeights(Date.parse("2026-11-16T00:00:00Z")).version).toBe(2);
+  expect(activeWeights(Date.parse("2026-11-15T10:00:00Z")).version).toBe(1);
+  // A pin wins over the date, both ways; an unknown pin stops the server.
+  expect(activeWeights(Date.parse("2026-11-16T00:00:00Z"), usageWeights, 1).version).toBe(1);
+  expect(meteringWeights({}, Date.parse("2026-11-16T00:00:00Z")).version).toBe(2);
+  expect(meteringWeights({ weightsVersion: 1 }, Date.parse("2026-11-16T00:00:00Z")).units.voice).toBe(2);
+  expect(() => activeWeights(0, usageWeights, 7)).toThrow();
+  // Charged per chunk: version 1 makes the report's speech cost 2, version 2 makes it 1.
+  const q = validateQualification(privatemodeReport({ speech: { model: "whisper-large-v3", allowanceCost: 3 } }));
+  expect(withWeights(q, v1)!.speech?.allowanceCost).toBe(2);
+  expect(withWeights(q, v2)!.speech?.allowanceCost).toBe(1);
+  expect(withWeights(q, v2)!.modes).toEqual(withWeights(q, v1)!.modes);
+});
+
+it("voice records: audio seconds from the chunk's 2-second units in the request ID, only for a transcribed chunk", () => {
+  const prices = usageWeights.prices;
+  const voice = (units: number, over: Partial<UsageRecord> = {}) =>
+    record({ requestId: voiceRequestId(units, `u${units}${over.outcome ?? ""}`), feature: "voice", model: "whisper-large-v3", units: 1, weightVersion: 2, ...over });
+  expect(audioSecondsOf(voice(15))).toBe(30);
+  expect(audioSecondsOf(voice(3))).toBe(6);
+  expect(audioSecondsOf(voice(15, { outcome: "refused" }))).toBeUndefined();
+  expect(audioSecondsOf(voice(15, { outcome: "interrupted" }))).toBeUndefined();
+  // A reported length wins (none is accepted for voice today); chat never has one.
+  expect(audioSecondsOf(voice(15, { audioSeconds: 20 }))).toBe(20);
+  expect(audioSecondsOf(record())).toBeUndefined();
+  expect(quotaTokens(voice(15), prices)).toBe(1400);
+  expect(euros(voice(15), prices)).toBeCloseTo(0.007);
+});
+
+it("reconciliation across weights versions: units as charged per record, a line per version, estimates from the record's own version", () => {
+  const prices = usageWeights.prices;
+  const rows: UsageRecord[] = [];
+  const add = (over: Partial<UsageRecord>) => rows.push(record({ requestId: `r${rows.length}`, createdAt: rows.length, ...over }));
+  // Before the switch: two chunks under version 1 at 2 units each; after: three under version 2 at 1.
+  for (const [units, version, charged] of [[15, 1, 2], [5, 1, 2], [15, 2, 1], [15, 2, 1], [10, 2, 1]])
+    add({ requestId: voiceRequestId(units, `v${rows.length}`), feature: "voice", model: "whisper-large-v3", units: charged, weightVersion: version });
+  // A chunk on the retry credit: Privatemode billed it, nothing was charged.
+  add({ requestId: voiceRequestId(4, "retry"), feature: "voice", model: "whisper-large-v3", units: 0, weightVersion: 2 });
+  add({ requestId: voiceRequestId(15, "refused"), feature: "voice", model: "whisper-large-v3", units: 1, weightVersion: 2, outcome: "refused" });
+  add({ feature: "chat-fast", weightVersion: 1, report: "accepted", promptTokens: 800, completionTokens: 200 });
+  add({ feature: "chat-fast", weightVersion: 2 }); // complete, not reported
+  // Nothing measured for images: estimated from the record's own version's basis.
+  add({ feature: "image", units: 2, weightVersion: 1 });
+  const result = reconcile(rows, prices);
+  const voice = result.features.find((f) => f.feature === "voice")!;
+  expect(voice).toMatchObject({ requests: 7, units: 2 + 2 + 1 + 1 + 1 + 0 + 1, reported: 6, incomplete: 1, unreported: 0 });
+  // 30 + 10 + 30 + 30 + 20 + 8 seconds at 2,800 tokens a minute.
+  expect(voice.quotaTokens).toBe([30, 10, 30, 30, 20, 8].reduce((sum, s) => sum + Math.round((s / 60) * 2800), 0));
+  expect(result.versions).toEqual([
+    { version: 1, requests: 4, units: 2 + 2 + 1 + 2 },
+    { version: 2, requests: 6, units: 1 + 1 + 1 + 0 + 1 + 1 },
+  ]);
+  expect(result.features.find((f) => f.feature === "chat-fast")).toMatchObject({ unreported: 1, estimatedTokens: 1000 });
+  expect(result.features.find((f) => f.feature === "image")).toMatchObject({ estimatedTokens: 62 });
+  const text = formatReconciliation(result, "2026-11-16", "2026-11-23");
+  expect(text).toContain("Charged by weights version: version 1: 4 requests, 7 units; version 2: 6 requests, 5 units.");
+  // A voice record with nothing measured: version 1's basis is a whole recording, version 2's one chunk.
+  const unmeasured = (version: number) =>
+    reconcile([record({ feature: "voice", requestId: "voice-x", model: "whisper-large-v3", weightVersion: version })], prices).total.estimatedTokens;
+  expect(unmeasured(1)).toBe(5600);
+  expect(unmeasured(2)).toBe(1400);
+});
+
+it("suggestion compares against the version in force or a pinned one, and proposes version 3", () => {
+  const now = Date.parse("2026-11-20T00:00:00Z");
+  const current = suggestWeights([], usageWeights, { now });
+  expect(current.current).toBe(2);
+  expect(current.table.find((r) => r.key === "voice")?.current).toBe(1);
+  const pinned = suggestWeights([], usageWeights, { now, weightsVersion: 1 });
+  expect(pinned.current).toBe(1);
+  expect(pinned.table.find((r) => r.key === "voice")?.current).toBe(2);
+  expect(pinned.proposal.version).toBe(3);
+});
+
+it("the meter carries the voice budget it is given (the status's numbers), and nothing without voice", () => {
+  const base = {
+    records: [],
+    summary: { state: "unavailable" as const },
+    todayUsed: 0,
+    plan: planFor("alpha"),
+    weights: usageWeights.versions[1],
+    periodStart: 0,
+    now: 1,
+  };
+  expect(meterView(base)).not.toHaveProperty("voice");
+  expect(meterView({ ...base, voice: { dailyUnits: 60, chunkSeconds: 30, usedUnits: 12 } }).voice).toEqual({ dailyUnits: 60, chunkSeconds: 30, usedUnits: 12 });
+});
+
+it("an unknown pinned weights version stops metering at start, not inside a request", () => {
+  const records = new SqliteUsageRecords(":memory:");
+  try {
+    const base = { qualification: () => undefined, accountOf: () => undefined };
+    expect(() => createMetering({ ...base, config: { plan: "alpha", records, weightsVersion: 9 } })).toThrow();
+    expect(createMetering({ ...base, config: { plan: "alpha", records, weightsVersion: 1 } }).weights().version).toBe(1);
+  } finally {
+    records.close();
+  }
 });

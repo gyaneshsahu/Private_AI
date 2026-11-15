@@ -49,8 +49,8 @@ import { backgroundRoutes } from "./background-routes";
 import { createPrivatemodeBackgroundClient, type BackgroundModelClient } from "./background-privatemode";
 import type { BackgroundStore, RunWindow } from "./background-store";
 import type { BackgroundKeyRing } from "./background-crypto";
-import { activeWeights, REQUEST_ID_HEADER } from "../shared/usage-config";
-import { chatFeature, createMetering, withWeights, type MeteringConfig } from "./usage-metering";
+import { REQUEST_ID_HEADER } from "../shared/usage-config";
+import { chatFeature, createMetering, meteringWeights, withWeights, type MeteringConfig } from "./usage-metering";
 import { syncRoutes, type SyncSettings, type SyncStore } from "./vault-sync";
 
 export interface Config {
@@ -216,7 +216,7 @@ export function createApp(config: Config) {
   // With metering on, the weights file sets the allowance costs (the report's are replaced) and the
   // deep-research cost (read at start), and each forwarded request gets a usage record.
   if (config.metering && config.research)
-    config = { ...config, research: { ...config.research, cost: activeWeights().units["research-run"] } };
+    config = { ...config, research: { ...config.research, cost: meteringWeights(config.metering).units["research-run"] } };
   const meterAccount = (res: express.Response): string | undefined =>
     res.locals.accountId ?? (config.dev ? "local-development" : undefined);
   const metering = config.metering
@@ -226,6 +226,17 @@ export function createApp(config: Config) {
         qualification: () => parseQualification(),
         dailyLimit: config.autoAllowance?.dailyLimit,
         accountOf: meterAccount,
+        // The status's "Voice today" numbers (voiceBudget below), so meter and microphone agree.
+        ...(config.voice
+          ? {
+              voice: {
+                dailyUnits: config.voice.dailyUnits,
+                chunkSeconds: config.voice.chunkSeconds,
+                on: () => !!parseQualification()?.speech,
+                used: (res: express.Response) => voiceBudget.used(String(res.locals.accountId ?? res.locals.session), res.locals.accountId),
+              },
+            }
+          : {}),
       })
     : undefined;
   const parseQualification = (): Qualification | undefined => {
@@ -554,6 +565,7 @@ export function createApp(config: Config) {
       ...voiceRoute({
         settings: config.voice,
         budget: voiceBudget,
+        ...(metering ? { metering: { accountOf: meterAccount, record: metering.record } } : {}),
         apiKey: config.apiKey,
         qualification: parseQualification,
         stopped: config.inferenceStopped,

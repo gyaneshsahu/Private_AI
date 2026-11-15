@@ -9,12 +9,20 @@
 //              changes until the owner approves and the agent appends the version.
 //
 // node --import tsx scripts/usage-metering.ts reconcile --from 2026-11-16 --to 2026-11-23 --database-url-file <file> [--portal-tokens N] [--portal-eur X]
-// node --import tsx scripts/usage-metering.ts suggest --from 2026-11-16 --to 2026-11-23 --database-url-file <file> [--basis euros|tokens]
+// node --import tsx scripts/usage-metering.ts suggest --from 2026-11-16 --to 2026-11-23 --database-url-file <file> [--basis euros|tokens] [--weights-version N]
+//
+// Several weights versions: every record keeps the version it was charged under (version 1: voice 2
+// units per recording part; version 2: 1). reconcile adds up the units each record was charged and
+// prints them per version; an unreported request is estimated from its own version's basis when
+// nothing was measured. suggest compares against the version in force (or --weights-version N, as
+// a deployment that pins one) and proposes the next version number.
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Pool } from "pg";
-import { activeWeights, usageWeights, type Feature, type WeightsFile, type WeightsVersion } from "../shared/usage-config";
+import { activeWeights, usageWeights, weightsVersion, type Feature, type WeightsFile, type WeightsVersion } from "../shared/usage-config";
+import { VOICE_UNIT_SECONDS } from "../shared/voice";
+import { voiceUnitsOf } from "../server/usage-contract";
 import type { UsageRecord } from "../server/usage-records";
 import { PostgresUsageRecords } from "../server/usage-records-postgres";
 
@@ -30,9 +38,23 @@ export function median(values: number[]): number | undefined {
 
 const reported = (r: UsageRecord) => r.report === "accepted" && r.promptTokens !== undefined && r.completionTokens !== undefined;
 
+/**
+ * Audio seconds of a record: reported, or for a voice chunk the relay recorded, its 2-second units
+ * from the request ID (voice-<units>-<uuid>, checked against the chunk's size before it was
+ * forwarded). Rounded up per chunk, so at most 2 seconds above the real length. Only for a chunk
+ * that was transcribed: a refused or interrupted one is counted as incomplete.
+ */
+export function audioSecondsOf(r: UsageRecord): number | undefined {
+  if (r.audioSeconds !== undefined) return r.audioSeconds;
+  if (r.feature !== "voice" || r.outcome !== "complete") return undefined;
+  const units = voiceUnitsOf(r.requestId);
+  return units > 0 ? units * VOICE_UNIT_SECONDS : undefined;
+}
+
 /** Tokens as Privatemode's free quota deducts them: cached prompt tokens at the cached:regular price ratio, audio at its tokens per minute. */
 export function quotaTokens(r: UsageRecord, prices: Prices): number | undefined {
-  if (r.audioSeconds !== undefined) return Math.round((r.audioSeconds / 60) * prices.audioTokensPerMinute);
+  const audio = audioSecondsOf(r);
+  if (audio !== undefined) return Math.round((audio / 60) * prices.audioTokensPerMinute);
   if (!reported(r)) return undefined;
   const price = prices.models[r.model ?? ""];
   const cached = r.cachedTokens ?? 0;
@@ -44,7 +66,8 @@ export function quotaTokens(r: UsageRecord, prices: Prices): number | undefined 
 export function euros(r: UsageRecord, prices: Prices): number | undefined {
   const price = prices.models[r.model ?? ""];
   if (!price) return undefined;
-  if (r.audioSeconds !== undefined) return price.perAudioMinute === undefined ? undefined : (r.audioSeconds / 60) * price.perAudioMinute;
+  const audio = audioSecondsOf(r);
+  if (audio !== undefined) return price.perAudioMinute === undefined ? undefined : (audio / 60) * price.perAudioMinute;
   if (!reported(r) || price.inputPerMillion === undefined || price.outputPerMillion === undefined) return undefined;
   const cached = r.cachedTokens ?? 0;
   return (
@@ -77,15 +100,29 @@ const empty = (feature: FeatureTotals["feature"]): FeatureTotals => ({
   prompt: 0, completion: 0, cached: 0, reasoning: 0, quotaTokens: 0, estimatedTokens: 0, eur: 0,
 });
 
-export function reconcile(records: UsageRecord[], prices: Prices, portal: { tokens?: number; eur?: number } = {}, weights: WeightsVersion = activeWeights()) {
+export function reconcile(
+  records: UsageRecord[],
+  prices: Prices,
+  portal: { tokens?: number; eur?: number } = {},
+  weights: WeightsVersion = activeWeights(),
+  file: WeightsFile = usageWeights,
+) {
   const byFeature = new Map<Feature, FeatureTotals>();
   const medians = new Map<Feature, number>();
   for (const feature of new Set(records.map((r) => r.feature))) {
     const m = median(records.filter((r) => r.feature === feature).map((r) => quotaTokens(r, prices)).filter((n): n is number => n !== undefined));
-    const fallback = weights.basis[feature]?.tokensPerUse;
-    if (m !== undefined || fallback !== undefined) medians.set(feature, m ?? fallback!);
+    if (m !== undefined) medians.set(feature, m);
   }
+  // Nothing measured for a feature: the basis of the version the record was charged under (a voice
+  // record of version 1 was a whole recording, of version 2 one chunk), else of `weights`.
+  const estimate = (r: UsageRecord) =>
+    medians.get(r.feature) ?? (weightsVersion(r.weightVersion, file) ?? weights).basis[r.feature]?.tokensPerUse ?? weights.basis[r.feature]?.tokensPerUse ?? 0;
+  const byVersion = new Map<number, { version: number; requests: number; units: number }>();
   for (const r of records) {
+    const v = byVersion.get(r.weightVersion) ?? { version: r.weightVersion, requests: 0, units: 0 };
+    v.requests++;
+    v.units += r.units;
+    byVersion.set(r.weightVersion, v);
     const row = byFeature.get(r.feature) ?? empty(r.feature);
     row.requests++;
     row.units += r.units;
@@ -101,7 +138,7 @@ export function reconcile(records: UsageRecord[], prices: Prices, portal: { toke
       row.eur += euros(r, prices) ?? 0;
     } else if (r.outcome === "complete") {
       row.unreported++;
-      row.estimatedTokens += medians.get(r.feature) ?? 0;
+      row.estimatedTokens += estimate(r);
     } else row.incomplete++;
     byFeature.set(r.feature, row);
   }
@@ -113,6 +150,7 @@ export function reconcile(records: UsageRecord[], prices: Prices, portal: { toke
   return {
     features,
     total,
+    versions: [...byVersion.values()].sort((a, b) => a.version - b.version),
     appTokens: app,
     ...(portal.tokens !== undefined
       ? { tokenGap: portal.tokens - app, tokenGapPercent: portal.tokens ? ((portal.tokens - app) / portal.tokens) * 100 : 0 }
@@ -141,6 +179,8 @@ export function formatReconciliation(result: ReturnType<typeof reconcile>, from:
     "",
     `App total: ${n(result.total.quotaTokens)} reported tokens + ${n(result.total.estimatedTokens)} estimated for ${result.total.unreported} unreported requests = ${n(result.appTokens)} tokens.`,
     `${result.total.incomplete} requests were interrupted or refused: Privatemode may have billed some of their tokens; they are not in the total.`,
+    `Charged by weights version: ${result.versions.map((v) => `version ${v.version}: ${v.requests} requests, ${v.units} units`).join("; ") || "none"}.`,
+    "Voice is measured by the relay (2-second steps per part, rounded up), not reported by the browser.",
   );
   if (portal.tokens !== undefined)
     lines.push(
@@ -168,9 +208,13 @@ function bundles(records: UsageRecord[], head: (r: UsageRecord) => boolean, tail
   return out;
 }
 
-export function suggestWeights(records: UsageRecord[], file: WeightsFile = usageWeights, options: { basis?: "euros" | "tokens"; minUses?: number; now?: number } = {}) {
+export function suggestWeights(
+  records: UsageRecord[],
+  file: WeightsFile = usageWeights,
+  options: { basis?: "euros" | "tokens"; minUses?: number; now?: number; weightsVersion?: number } = {},
+) {
   const prices = file.prices;
-  const current = activeWeights(options.now ?? Date.now(), file);
+  const current = activeWeights(options.now ?? Date.now(), file, options.weightsVersion);
   const minUses = options.minUses ?? 20;
   const complete = records.filter((r) => r.outcome === "complete");
   const cost = (group: UsageRecord[]) => {
@@ -274,7 +318,7 @@ export async function main(argv: string[]) {
     end = Date.parse(`${to}T00:00:00Z`);
   if (!["reconcile", "suggest"].includes(command) || !urlFile || !(start < end) || end - start > 92 * DAY)
     throw Error(
-      "Usage: node --import tsx scripts/usage-metering.ts reconcile|suggest --from YYYY-MM-DD --to YYYY-MM-DD --database-url-file <file> [--portal-tokens N] [--portal-eur X] [--basis euros|tokens]",
+      "Usage: node --import tsx scripts/usage-metering.ts reconcile|suggest --from YYYY-MM-DD --to YYYY-MM-DD --database-url-file <file> [--portal-tokens N] [--portal-eur X] [--basis euros|tokens] [--weights-version N]",
     );
   const url = (await readFile(urlFile, "utf8")).trim();
   if (!/^postgres(ql)?:\/\//.test(url)) throw Error("URL file must hold one PostgreSQL URL.");
@@ -283,7 +327,8 @@ export async function main(argv: string[]) {
     const records = await new PostgresUsageRecords(database).between(start, end);
     if (command === "suggest") {
       const basis = argument(args, "--basis") === "tokens" ? "tokens" : "euros";
-      return formatSuggestion(suggestWeights(records, usageWeights, { basis }));
+      const pinned = argument(args, "--weights-version");
+      return formatSuggestion(suggestWeights(records, usageWeights, { basis, ...(pinned ? { weightsVersion: Number(pinned) } : {}) }));
     }
     const portal = {
       ...(argument(args, "--portal-tokens") ? { tokens: Number(argument(args, "--portal-tokens")) } : {}),

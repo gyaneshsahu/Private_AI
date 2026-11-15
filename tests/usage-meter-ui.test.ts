@@ -9,6 +9,7 @@ import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { usageMeterText } from "../src/text/usage-meter";
 import { workspaceText } from "../src/text/workspace";
+import { voiceText } from "../src/text/voice";
 import type { UsageMeterView } from "../shared/usage-config";
 
 let vite: ViteDevServer;
@@ -18,9 +19,9 @@ const WIDTHS = [375, 768, 1280];
 const LANGS = ["en", "de"] as const;
 const NOW = Date.UTC(2026, 10, 18, 12);
 const view: UsageMeterView = {
-  plan: { id: "alpha", name: "Alpha", caps: { imagesPerDay: 10, voiceMinutesPerDay: 10, researchRunsPerDay: 3, searchesPerDay: 24, backgroundTasks: 3 } },
-  weightsVersion: 1,
-  units: { "chat-fast": 1, "chat-thinking": 5, image: 2, voice: 2, "research-run": 15, "code-followup": 0, retry: 0, "background-search": 1, "background-attachment": 2, search: 0, "page-fetch": 0 },
+  plan: { id: "alpha", name: "Alpha", caps: { imagesPerDay: 10, voiceMinutesPerDay: 2, researchRunsPerDay: 3, searchesPerDay: 24, backgroundTasks: 3 } },
+  weightsVersion: 2,
+  units: { "chat-fast": 1, "chat-thinking": 5, image: 2, voice: 1, "research-run": 15, "code-followup": 0, retry: 0, "background-search": 1, "background-attachment": 2, search: 0, "page-fetch": 0 },
   freeCodeFollowUps: 2,
   week: { used: 12, limit: 150, remaining: 138, resetsAt: new Date(NOW + 4 * 86_400_000).toISOString() },
   today: { used: 7, limit: 40 },
@@ -29,11 +30,15 @@ const view: UsageMeterView = {
     { feature: "research-answer", requests: 1, units: 10, tokens: 0, reported: 0 },
     { feature: "chat-fast", requests: 4, units: 4, tokens: 4400, reported: 4 },
     { feature: "code-followup", requests: 2, units: 0, tokens: 2400, reported: 2 },
+    { feature: "voice", requests: 2, units: 2, tokens: 0, reported: 0 },
   ],
   todayCounts: { images: 1, researchRuns: 1, searches: 4 },
+  // 12 units = 24 s used of 60 units = 2 minutes: the same numbers the status gives the microphone.
+  voice: { dailyUnits: 60, chunkSeconds: 30, usedUnits: 12 },
   recent: [
     { at: NOW - 60_000, feature: "chat-fast", units: 1, followUps: 2, tokens: 3600 },
     { at: NOW - 3_600_000, feature: "research-answer", units: 10, followUps: 0 },
+    { at: NOW - 7_200_000, feature: "voice", units: 1, followUps: 0 },
   ],
 };
 
@@ -103,6 +108,13 @@ for (const lang of LANGS)
         await ui(full.getByText(t.calculation(1, 2), { exact: false })).toBeVisible();
         await ui(full.getByText(t.tokensCount((3600).toLocaleString(lang)), { exact: false })).toBeVisible();
         await ui(full.getByText(t.costs(5, 2, 15), { exact: false })).toBeVisible();
+        // Voice today in the daily limits, in the microphone's own words, and the voice cost.
+        await ui(full.getByRole("listitem").filter({ hasText: voiceText[lang].today("0:24", "1:36") })).toBeVisible();
+        await ui(full.getByText(t.voiceCost(1, 30), { exact: false })).toBeVisible();
+        await ui(full.getByRole("rowheader", { name: t.voice })).toBeVisible();
+        // Voice is measured by the relay: never shown as "not reported".
+        await ui(full.getByRole("row", { name: new RegExp(t.voice) }).getByRole("cell").last()).toHaveText(t.voiceMeasured);
+        await ui(full.getByRole("listitem").filter({ hasText: `${t.voice}: ${t.counted(1)} · ${t.voiceMeasured}` })).toBeVisible();
         // The cost line under the calculation: 1 request, 2 steps free.
         await ui(page.getByText(t.codeCost(1, 2))).toBeVisible();
         // The compact meter, in the account menu.
