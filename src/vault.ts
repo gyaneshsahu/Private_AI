@@ -195,8 +195,14 @@ export class Vault {
     this.channel?.close();
     this.channel = undefined;
   }
+  /** Whether the vault database is on this device, without creating it (opening an absent one would). */
+  private async present(): Promise<boolean> {
+    if (typeof indexedDB.databases !== "function") return true; // Old browsers: fall back to opening.
+    return (await indexedDB.databases()).some((d) => d.name === this.databaseName);
+  }
   /** Whether this device holds a vault for the selected account (false: unlock creates one). */
   async exists(): Promise<boolean> {
+    if (!(await this.present())) return false;
     const database = await db(this.databaseName);
     try {
       return (await database.get("meta", "vault")) !== undefined;
@@ -206,6 +212,7 @@ export class Vault {
   }
   /** Whether this device keeps the vault key, so it opens without the passphrase. */
   async isRemembered(): Promise<boolean> {
+    if (!(await this.present())) return false;
     const database = await db(this.databaseName);
     try {
       return (await database.get("meta", REMEMBERED)) instanceof CryptoKey;
@@ -230,6 +237,7 @@ export class Vault {
     const generation = ++this.generation;
     this.key = undefined;
     this.salt = undefined;
+    if (!(await this.present())) return false;
     const database = await db(this.databaseName);
     try {
       const key = (await database.get("meta", REMEMBERED)) as CryptoKey | undefined;
