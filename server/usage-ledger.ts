@@ -7,6 +7,8 @@ import {
   usageUnits,
   unitRowIds,
   NOT_UNIT_ROW,
+  VOICE_ROWS,
+  voiceUnitsOf,
   type UsageLedger,
 } from "./usage-contract";
 import { usageMetricsSchema, type UsageMetrics } from "./usage-metrics";
@@ -163,6 +165,15 @@ export class SqliteUsageLedger implements UsageLedger {
         .prepare("SELECT COUNT(*) AS used FROM usage_requests WHERE account_id=? AND created_at>?")
         .get(accountId, this.now() - windowMs)!.used,
     );
+  }
+  voiceUnitsInLast(accountId: string, windowMs: number): number {
+    id.parse(accountId);
+    return this.db
+      .prepare(
+        `SELECT r.request_id FROM usage_requests r WHERE r.account_id=? AND r.created_at>? AND ${VOICE_ROWS} AND ${NOT_UNIT_ROW}`,
+      )
+      .all(accountId, this.now() - windowMs)
+      .reduce((sum, row) => sum + voiceUnitsOf(String(row.request_id)), 0);
   }
   reserve(accountId: string, requestId: string, units = 1): boolean {
     id.parse(accountId);

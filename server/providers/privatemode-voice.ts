@@ -1,34 +1,61 @@
-// Voice input (dictation) through the relay: the browser's Privatemode SDK encrypts one recording
-// and posts it to /v1/audio/transcriptions at our origin; this route forwards the opaque bytes to
-// Privatemode with the real key. Admission is the chat route's: session and CSRF (before this
-// route), stop switch, qualification, pinned model, three per instance, one per account, spend
-// guard, allowance and daily cap through the same usage ledger. Nothing is stored or logged:
-// the body lives in memory for this one request, and counts carry fixed names only.
+// Voice input (dictation) through the relay: the browser's Privatemode SDK encrypts one chunk of a
+// recording (up to chunkSeconds) and posts it to /v1/audio/transcriptions at our origin; this route
+// forwards the opaque bytes to Privatemode with the real key. Admission is the chat route's:
+// session and CSRF (before this route), stop switch, qualification, pinned model, three per
+// instance, one per account, spend guard, allowance and daily cap through the same usage ledger.
+// On top: the chunk's reported voice units are checked against its encrypted size, and the daily
+// voice budget is kept in the ledger. Nothing is stored or logged beyond that: the body lives in
+// memory for this one request, and counts carry fixed names only.
 import { randomUUID } from "node:crypto";
 import { pipeline } from "node:stream/promises";
 import express, { type ErrorRequestHandler, type RequestHandler } from "express";
 import { request as upstreamRequest } from "undici";
 import type { Qualification } from "../../shared/contracts";
-import { voiceDailyCount, voiceUploadLimit } from "../../shared/voice";
+import { voiceChunkLimit, voiceChunkUnits, type VoiceLimits } from "../../shared/voice";
 import { count } from "../counters";
 import { serviceDispatcher } from "../network";
 import { spendAllows } from "../spend-guard";
-import type { UsageLedger } from "../usage-contract";
+import { voiceRequestId, type UsageLedger } from "../usage-contract";
 import { alertModelNotFound, modelNotFound } from "./inference-relay";
 import { forwardedHeaders, REPLY_HEADERS } from "./privatemode-relay";
 
 export const VOICE_PATH = "/v1/audio/transcriptions";
+/** The browser reports each chunk's voice units (2-second steps, rounded up) in this header. */
+export const VOICE_UNITS_HEADER = "x-privateai-voice-units";
 const DAY = 86_400_000;
 
-export interface VoiceSettings {
-  /** Longest recording; with the bitrate it sets the upload size limit. */
-  maxSeconds: number;
-  /** Audio minutes per account in any 24 hours, every recording counted at full length. */
-  dailyMinutes: number;
+export type VoiceSettings = VoiceLimits;
+
+/**
+ * Voice units used in any 24 hours: from the usage ledger, where each chunk's request ID carries its
+ * units (durable), or without a ledger (the development server) from this process's memory.
+ */
+export function voiceUsage(usage?: UsageLedger) {
+  // shortcut: without a ledger the units live in memory and a restart forgets them; every
+  // deployment with accounts has the ledger.
+  const memory = new Map<string, { at: number; units: number }[]>();
+  const recent = (who: string, now: number) => (memory.get(who) ?? []).filter((e) => now - e.at < DAY);
+  return {
+    async used(who: string, accountId: string | undefined): Promise<number> {
+      if (!usage) return recent(who, Date.now()).reduce((sum, e) => sum + e.units, 0);
+      if (!accountId || !usage.voiceUnitsInLast) throw Error("Voice usage unavailable.");
+      return usage.voiceUnitsInLast(accountId, DAY);
+    },
+    /** Without a ledger only: with one, the units are part of the reserved request's ID. */
+    record(who: string, units: number) {
+      if (usage) return;
+      const now = Date.now();
+      if (memory.size > 5000)
+        for (const key of memory.keys()) if (!recent(key, now).length) memory.delete(key);
+      memory.set(who, [...recent(who, now), { at: now, units }]);
+    },
+  };
 }
+export type VoiceUsage = ReturnType<typeof voiceUsage>;
 
 export interface VoiceRelayDeps {
   settings: VoiceSettings;
+  budget: VoiceUsage;
   apiKey?: string;
   qualification: () => Qualification | undefined;
   stopped?: () => boolean;
@@ -45,11 +72,9 @@ export interface VoiceRelayDeps {
 /** The handlers for POST /api/inference/v1/audio/transcriptions, in order. */
 export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequestHandler)[] {
   const { settings } = deps;
-  const limit = voiceUploadLimit(settings.maxSeconds);
-  const perDay = voiceDailyCount(settings.dailyMinutes, settings.maxSeconds);
-  // shortcut: the voice day count and the retry credit live in this process's memory, like chat's
-  // retry credit, so a restart forgets them; move to the ledger with the other single-server limits.
-  const starts = new Map<string, number[]>();
+  const maxUnits = voiceChunkUnits(settings.chunkSeconds);
+  // shortcut: the retry credit lives in this process's memory, like chat's retry credit, so a
+  // restart forgets it; move to the ledger with the other single-server limits.
   const retryCredit = new Map<string, number>();
 
   const handler: RequestHandler = async (req, res) => {
@@ -80,13 +105,21 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
       req.body.length < 16
     )
       return refuse(400, "refused_model", "Only the qualified speech model is accepted.");
+    // The browser measures the chunk's length; its encrypted size must fit that length (shared/voice.ts).
+    const reported = String(req.headers[VOICE_UNITS_HEADER] ?? "");
+    const units = /^\d{1,3}$/.test(reported) ? Number(reported) : 0;
+    if (units < 1 || units > maxUnits)
+      return refuse(400, "refused_units", "Each voice part must state its length. No request was forwarded.");
+    if (req.body.length > voiceChunkLimit(units))
+      return refuse(413, "refused_size", "This recording is too large. No request was forwarded.");
     const accountId: string | undefined = res.locals.accountId;
     const claimed = deps.claim(accountId);
     if (claimed === "instance")
       return refuse(429, "refused_instance_busy", "Three requests are already running.");
     if (claimed === "account")
       return refuse(429, "refused_account_busy", "A request is already running for this account.");
-    const requestId = randomUUID();
+    // The units ride in the ledger row's ID: the durable daily voice budget (usage-contract.ts).
+    const requestId = voiceRequestId(units, randomUUID());
     let dispatched = false;
     let complete = false;
     const abort = new AbortController();
@@ -117,8 +150,13 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
       retryCredit.delete(who);
       if (credit > now) count("voice.retry_not_counted");
       else {
-        const recent = (starts.get(who) ?? []).filter((t) => now - t < DAY);
-        if (recent.length >= perDay)
+        let used: number;
+        try {
+          used = await deps.budget.used(who, accountId);
+        } catch {
+          return refuse(503, "usage_unavailable", "Usage controls unavailable. No request was forwarded.");
+        }
+        if (used + units > settings.dailyUnits)
           return refuse(
             429,
             "refused_voice_daily",
@@ -153,9 +191,7 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
             return refuse(503, "usage_unavailable", "Usage controls unavailable. No request was forwarded.");
           }
         }
-        if (starts.size > 5000)
-          for (const [key, times] of starts) if (times.every((t) => now - t >= DAY)) starts.delete(key);
-        starts.set(who, [...recent, now]);
+        deps.budget.record(who, units);
       }
       if (abort.signal.aborted) return;
       const upstream = await upstreamRequest(new URL(VOICE_PATH, q.origin), {
@@ -215,5 +251,5 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
     res.setHeader("X-PrivateAI-Voice", "refused_size");
     res.status(413).json({ error: "This recording is too large. No request was forwarded." });
   };
-  return [express.raw({ type: () => true, limit }), handler, tooLarge];
+  return [express.raw({ type: () => true, limit: voiceChunkLimit(maxUnits) }), handler, tooLarge];
 }

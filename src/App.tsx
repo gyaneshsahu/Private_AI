@@ -2681,7 +2681,7 @@ export function App() {
                   {status?.voice && status.inference.ready ? (
                     <VoiceInput
                       status={status}
-                      maxSeconds={status.voice.maxSeconds}
+                      voice={status.voice}
                       busy={!!busy}
                       setInput={setInput}
                       notify={setNotice}
@@ -2702,7 +2702,7 @@ export function App() {
                   {liveVoiceOn && status?.voice ? (
                     <LiveVoice
                       status={status}
-                      maxSeconds={status.voice.maxSeconds}
+                      voice={status.voice}
                       modeName={MODE_NAMES[liveMode ?? "fast"]}
                       messageCost={qualified ? tierFor(qualified, liveMode).allowanceCost : 1}
                       busy={!!busy}

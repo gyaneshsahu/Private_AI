@@ -35,6 +35,15 @@ export const voiceText = defineText({
     off: "Voice input is switched off right now.",
     failed: "The recording could not be turned into text. It was dropped. Please try again or type.",
     noText: "No speech was recognised in the recording.",
+    today: (used: string, left: string) => `Voice today: ${used} used, ${left} left.`,
+    usedUp: "Today's voice time is used up. It frees up within 24 hours. You can still type.",
+    stopsIn: (seconds: number) => `Stops in ${clock(seconds)}`,
+    warn: (seconds: number) => `The recording stops in ${seconds} seconds. Tap the microphone to finish.`,
+    partMissing: "[part not transcribed]",
+    partsFailed: (count: number) =>
+      count === 1
+        ? "One part could not be turned into text. It is marked in the message box."
+        : `${count} parts could not be turned into text. They are marked in the message box.`,
   },
   de: {
     start: "Per Mikrofon diktieren",
@@ -65,5 +74,14 @@ export const voiceText = defineText({
     off: "Die Spracheingabe ist im Moment ausgeschaltet.",
     failed: "Die Aufnahme konnte nicht in Text umgewandelt werden. Sie wurde verworfen. Bitte versuchen Sie es erneut oder tippen Sie.",
     noText: "In der Aufnahme wurde keine Sprache erkannt.",
+    today: (used: string, left: string) => `Sprache heute: ${used} verbraucht, ${left} übrig.`,
+    usedUp: "Die Sprachzeit für heute ist aufgebraucht. Sie wird innerhalb von 24 Stunden wieder frei. Tippen können Sie weiterhin.",
+    stopsIn: (seconds: number) => `Endet in ${clock(seconds)}`,
+    warn: (seconds: number) => `Die Aufnahme endet in ${seconds} Sekunden. Tippen Sie auf das Mikrofon, um abzuschließen.`,
+    partMissing: "[Teil nicht umgewandelt]",
+    partsFailed: (count: number) =>
+      count === 1
+        ? "Ein Teil konnte nicht in Text umgewandelt werden. Er ist im Nachrichtenfeld markiert."
+        : `${count} Teile konnten nicht in Text umgewandelt werden. Sie sind im Nachrichtenfeld markiert.`,
   },
 });

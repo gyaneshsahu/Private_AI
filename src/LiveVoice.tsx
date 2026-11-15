@@ -22,7 +22,17 @@ import { textFor, uiLang } from "./text/core";
 import { deviceText } from "./text/device-features";
 import { liveVoiceText } from "./text/live-voice";
 import { voiceText } from "./text/voice";
-import { createVoiceRecorder, transcribeRecording, voiceFailureText, type MicrophoneFailure } from "./voice-input";
+import {
+  createChunkQueue,
+  createVoiceRecorder,
+  finalVoiceRefusal,
+  transcribeRecording,
+  turnSeconds,
+  voiceFailureText,
+  type ChunkQueue,
+  type MicrophoneFailure,
+} from "./voice-input";
+import { useVoiceUsed, voiceToday } from "./VoiceInput";
 
 const PREFS_KEY = "cometrow.live-voice";
 type Prefs = { ask: boolean; sounds: boolean };
@@ -37,13 +47,13 @@ function readPrefs(): Prefs {
 /** Seconds the transcript is shown before it is sent by itself. */
 const REVIEW_SECONDS = 3;
 const READER_ID = "live-voice";
-/** Relay refusals after which no further turn can work today: the session ends. */
-const FINAL = ["refused_voice_daily", "refused_daily", "refused_allowance", "refused_spend", "stopped", "off"];
+/** Seconds before the turn maximum when the warning shows. */
+const WARN_SECONDS = 20;
 const frame = () => new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
 
 export function LiveVoice(props: {
   status: AppStatus;
-  maxSeconds: number;
+  voice: NonNullable<AppStatus["voice"]>;
   /** The mode a live turn uses (Fast unless the user chose Thinking) and its allowance units. */
   modeName: string;
   messageCost: number;
@@ -58,12 +68,15 @@ export function LiveVoice(props: {
   /** Review → Edit: the transcript goes into the message box. */
   onEdit(text: string): void;
   /** Test seam; the attested Privatemode session by default. */
-  transcribe?(audio: Blob, signal: AbortSignal): Promise<string>;
+  transcribe?(audio: Blob, units: number, signal: AbortSignal): Promise<string>;
 }) {
   const t = useText(liveVoiceText);
+  const vt = useText(voiceText);
   const { lang } = useLang();
-  const latest = useRef(props);
-  latest.current = props;
+  const [used, refreshUsed] = useVoiceUsed(props.status);
+  const latest = useRef({ ...props, used, refreshUsed });
+  latest.current = { ...props, used, refreshUsed };
+  const [turnMax, setTurnMax] = useState(0);
   const [open, setOpen] = useState(false);
   const [snap, setSnap] = useState<LiveSnapshot>({ phase: "idle", transcript: "", turns: 0, units: 0 });
   const [elapsed, setElapsed] = useState(0);
@@ -78,15 +91,21 @@ export function LiveVoice(props: {
 
   const live = useMemo(() => {
     let unwatch = () => {};
+    let queue: ChunkQueue | undefined;
     const recorder = createVoiceRecorder({
-      maxSeconds: props.maxSeconds,
+      get maxSeconds() {
+        return turnSeconds(latest.current.voice, latest.current.used);
+      },
+      chunkSeconds: props.voice.chunkSeconds,
       onState: (state) => {
         if (state !== "idle") return;
         unwatch();
         unwatch = () => {};
       },
       onTick: setElapsed,
-      onAudio: (audio) => machine.audio(audio),
+      // Each chunk is turned into text while the user keeps talking.
+      onChunk: (audio, units) => queue?.add(audio, units),
+      onEnd: () => machine.heard(queue?.size ?? 0),
       // The stream is also watched for the end of speech and for another app taking the microphone.
       media: {
         async getUserMedia(constraints) {
@@ -102,24 +121,38 @@ export function LiveVoice(props: {
     const machine = createLiveVoice(
       {
         recorder: {
-          start: () =>
-            recorder.start().catch((failure: MicrophoneFailure) => {
+          start: () => {
+            setTurnMax(turnSeconds(latest.current.voice, latest.current.used));
+            queue = createChunkQueue(
+              (audio, units, signal) => {
+                const p = latest.current;
+                return (p.transcribe ?? ((a, u, s) => transcribeRecording(a, u, p.status, s)))(audio, units, signal);
+              },
+              textFor(voiceText).partMissing,
+              // Budget or allowance gone: the turn ends here; the reason comes with its text.
+              () => recorder.stop(),
+            );
+            return recorder.start().catch((failure: MicrophoneFailure) => {
               const vt = textFor(voiceText);
               throw vt[failure] ?? vt.micFailed;
-            }),
+            });
+          },
           stop: recorder.stop,
-          cancel: recorder.cancel,
+          cancel: () => {
+            recorder.cancel();
+            queue?.cancel();
+          },
         },
-        async transcribe(audio, signal) {
+        async transcribe(signal) {
           const p = latest.current;
-          try {
-            return await (p.transcribe ?? ((a, s) => transcribeRecording(a, p.status, s)))(audio, signal);
-          } catch (error) {
-            if (error instanceof AttestationBusyError && error.retryAt) p.onVerifyWait(error.retryAt);
-            const headers = (error as { headers?: unknown } | undefined)?.headers;
-            const reason = headers instanceof Headers ? headers.get("x-privateai-voice") : null;
-            throw { detail: voiceFailureText(error), end: FINAL.includes(reason ?? "") } satisfies LiveStop;
-          }
+          const turn = queue!;
+          signal.addEventListener("abort", turn.cancel);
+          const result = await turn.finish();
+          void p.refreshUsed();
+          if (result.failed < turn.size) return result;
+          const error = result.error;
+          if (error instanceof AttestationBusyError && error.retryAt) p.onVerifyWait(error.retryAt);
+          throw { detail: voiceFailureText(error), end: finalVoiceRefusal(error) } satisfies LiveStop;
         },
         blocked() {
           const p = latest.current;
@@ -127,6 +160,9 @@ export function LiveVoice(props: {
           if (navigator.onLine === false) return { detail: lt.offline };
           if (p.busy) return { detail: lt.otherRequest };
           if (p.verifyWaiting) return { detail: lt.verifyWait };
+          // Today's voice time: the next turn needs at least a second of it.
+          if (machine.snapshot().phase !== "review" && turnSeconds(p.voice, p.used) < 1)
+            return { detail: textFor(voiceText).usedUp, end: true };
           // Before listening a turn needs both; at review the transcription is already paid.
           const need = p.messageCost + (machine.snapshot().phase === "review" ? 0 : speechCost);
           const allowance = p.status.requestAllowance;
@@ -191,7 +227,7 @@ export function LiveVoice(props: {
       },
     );
     return machine;
-  }, [props.maxSeconds, speechCost]);
+  }, [props.voice.chunkSeconds, speechCost]);
 
   // Another conversation or a locked vault ends the session; so does leaving the page.
   useEffect(() => () => live.end({ key: "conversationChanged" }), [live, props.conversationId]);
@@ -258,13 +294,16 @@ export function LiveVoice(props: {
 
   const { phase } = snap;
   const active = !["idle", "paused", "ended"].includes(phase);
+  const warning = phase === "listening" && turnMax - elapsed <= WARN_SECONDS;
   const stateLine =
     phase === "idle"
       ? ""
       : phase === "starting"
         ? t.starting
         : phase === "listening"
-          ? t.listening(elapsed, props.maxSeconds)
+          ? warning
+            ? `${t.listening(elapsed, turnMax)} · ${vt.stopsIn(Math.max(0, turnMax - elapsed))}`
+            : t.listening(elapsed, turnMax)
           : phase === "transcribing"
             ? t.transcribing
             : phase === "review"
@@ -276,9 +315,15 @@ export function LiveVoice(props: {
                 : phase === "speaking"
                   ? t.speaking
                   : `${phase === "paused" ? t.paused : t.ended} ${reasonText()}`;
-  // Announced once per change of state: not the ticking clock or countdown.
+  // Announced once per change of state, and once 20 seconds before the end: not the ticking clock.
   const announced =
-    phase === "listening" ? t.listening(0, props.maxSeconds).replace(/\s*\d.*$/, "") : phase === "review" ? t.review : stateLine;
+    phase === "listening"
+      ? warning && turnMax > WARN_SECONDS
+        ? t.warn(WARN_SECONDS)
+        : t.listening(0, turnMax).replace(/\s*\d.*$/, "")
+      : phase === "review"
+        ? t.review
+        : stateLine;
 
   return (
     <>
@@ -393,6 +438,7 @@ export function LiveVoice(props: {
           {phase !== "idle" && (
             <p className="muted">{t.used(snap.turns, LIVE_VOICE_CAPS.maxTurns, snap.units)}</p>
           )}
+          {used !== undefined && <p className="muted live-voice-today">{voiceToday(vt, props.voice, used)}</p>}
           <div className="live-voice-prefs">
             <label>
               <input type="checkbox" checked={prefs.ask} onChange={(e) => save({ ...prefs, ask: e.target.checked })} />

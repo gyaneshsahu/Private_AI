@@ -52,17 +52,37 @@ const schema = z
           .strict()
           .optional(),
         /**
-         * Voice input (dictation), its own switch, off unless enabled. It also needs the report's
-         * `speech` model. Limits: seconds per recording, and audio minutes per account in any
-         * 24 hours with every recording counted at full length (docs/voice-to-text-20261114.md).
+         * Voice input (dictation and live voice), its own switch, off unless enabled. It also needs
+         * the report's `speech` model. Limits: seconds per chunk (each chunk is transcribed while
+         * the user keeps talking), seconds per turn, and voice units (2 seconds each) per account
+         * in any 24 hours (docs/voice-to-text-20261114.md).
          */
         voice: z
-          .object({
-            enabled: z.boolean(),
-            maxSeconds: z.number().int().min(10).max(300),
-            dailyMinutes: z.number().int().min(1).max(120),
-          })
-          .strict()
+          .union([
+            z
+              .object({
+                enabled: z.boolean(),
+                chunkSeconds: z.number().int().min(10).max(30),
+                maxTurnSeconds: z.number().int().min(30).max(300),
+                dailyUnits: z.number().int().min(1).max(1000),
+              })
+              .strict(),
+            // The 14 November shape is still read: 30-second chunks, the old recording length as
+            // the turn maximum, the old daily minutes as units (30 per minute).
+            z
+              .object({
+                enabled: z.boolean(),
+                maxSeconds: z.number().int().min(10).max(300),
+                dailyMinutes: z.number().int().min(1).max(120),
+              })
+              .strict()
+              .transform((old) => ({
+                enabled: old.enabled,
+                chunkSeconds: 30,
+                maxTurnSeconds: Math.max(30, old.maxSeconds),
+                dailyUnits: Math.min(1000, old.dailyMinutes * 30),
+              })),
+          ])
           .optional(),
         /**
          * Image questions, their own switch, off unless enabled. They also need the report's
@@ -272,7 +292,13 @@ export async function loadDeploymentConfig(file: string) {
               ...(inference.allowance ? { allowance: inference.allowance } : {}),
               ...(inference.noticeFile ? { noticeFile: inference.noticeFile } : {}),
               ...(inference.voice?.enabled
-                ? { voice: { maxSeconds: inference.voice.maxSeconds, dailyMinutes: inference.voice.dailyMinutes } }
+                ? {
+                    voice: {
+                      chunkSeconds: inference.voice.chunkSeconds,
+                      maxTurnSeconds: inference.voice.maxTurnSeconds,
+                      dailyUnits: inference.voice.dailyUnits,
+                    },
+                  }
                 : {}),
               ...(inference.images?.enabled
                 ? { images: { maxBytes: inference.images.maxBytes, dailyImages: inference.images.dailyImages } }

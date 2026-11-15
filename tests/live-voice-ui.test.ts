@@ -10,6 +10,7 @@ import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { appText } from "../src/text/app";
 import { liveVoiceText } from "../src/text/live-voice";
+import { voiceText } from "../src/text/voice";
 
 let vite: ViteDevServer;
 let browser: Browser;
@@ -40,7 +41,7 @@ beforeAll(async () => {
           if (!id.replaceAll("\\", "/").endsWith("/src/voice-input.ts")) return;
           return code.replace(
             "export async function transcribeRecording(",
-            `export async function transcribeRecording(audio, status, signal) {
+            `export async function transcribeRecording(audio, units, status, signal) {
               (window.__heard ??= []).push(audio.size);
               await new Promise((r) => setTimeout(r, 100));
               signal.throwIfAborted();
@@ -137,7 +138,7 @@ async function open(lang: "en" | "de", width: number) {
             qualification: { maxInputCharacters: 100000, speech: { model: "synthetic-speech", allowanceCost: 1 } },
           },
           search: false,
-          voice: { maxSeconds: 120 },
+          voice: { chunkSeconds: 10, maxTurnSeconds: 180, dailyUnits: 150, usedUnits: 10 },
         },
       });
     return route.continue();
@@ -172,7 +173,9 @@ for (const lang of ["en", "de"] as const)
         const panel = page.getByRole("region", { name: t.title });
         await ui(panel).toBeVisible();
         await ui(panel).toContainText(t.what);
-        await ui(panel).toContainText(t.cost(2, "Fast", 15, 10).split("(")[0]);
+        await ui(panel).toContainText(t.cost(2, "Fast", 15, 15).split("(")[0]);
+        // Today's voice time, from the status.
+        await ui(panel).toContainText(voiceText[lang].today("0:20", "4:40"));
         // Focus moves into the panel; it fits the screen; no sideways scroll.
         await ui(panel.getByRole("button", { name: t.start })).toBeFocused();
         const box = (await panel.boundingBox())!;
@@ -203,6 +206,10 @@ for (const lang of ["en", "de"] as const)
         expect(await calls(page)).toEqual(["What time is it"]);
         await ui(panel).toContainText(t.used(1, 15, 2));
         await ui(page.locator("article.assistant").last()).toContainText("Synthetic answer about the time.");
+        // The turn went through the chunked recorder: one chunk of the real MediaRecorder, its units reported.
+        const heard = await page.evaluate(() => (window as unknown as { __heard: number[] }).__heard);
+        expect(heard).toHaveLength(1);
+        expect(heard[0]).toBeGreaterThan(1000);
 
         // Turn 2: tap to stop speaking, then End during the countdown. Nothing more is sent.
         await loud(page, true);

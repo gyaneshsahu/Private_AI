@@ -216,7 +216,7 @@ async function verifySession(
         host: new URL(policy.origin).hostname,
         releaseDigest: digest,
       },
-      async transcribe(audio, model, signal) {
+      async transcribe(audio, model, units, signal) {
         if (changed) throw new DeploymentChangedError();
         if (closed) throw new Error(textFor(chatErrorText).connectionClosed);
         // "audio/webm;codecs=opus" -> "audio/webm"; the file name carries the container too.
@@ -228,8 +228,9 @@ async function verifySession(
               model,
               response_format: "json",
             },
-            // The relay pins the speech model by this header, as it does for chat.
-            { signal, headers: { "privatemode-target-model": model } },
+            // The relay pins the speech model by this header, as it does for chat, and checks the
+            // chunk's encrypted size against its reported length.
+            { signal, headers: { "privatemode-target-model": model, "x-privateai-voice-units": String(units) } },
           );
           return String((result as { text?: unknown }).text ?? "");
         } catch (error) {

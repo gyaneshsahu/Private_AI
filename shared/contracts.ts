@@ -545,8 +545,11 @@ export interface AppStatus {
     cacheSalt?: string;
   };
   search: boolean;
-  /** Voice input is switched on for this deployment; absent means no microphone button. */
-  voice?: { maxSeconds: number };
+  /**
+   * Voice input is switched on for this deployment; absent means no microphone button. `usedUnits`:
+   * this account's voice units in the last 24 hours (absent when usage cannot be read).
+   */
+  voice?: import("./voice").VoiceLimits & { usedUnits?: number };
   /** Image questions are switched on for this deployment; absent means no image upload. */
   images?: { maxBytes: number };
   /** Code execution on the device is switched on for this deployment (docs/code-execution-20261114.md). */

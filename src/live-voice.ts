@@ -65,10 +65,16 @@ export type SendOutcome = "answered" | "consent" | "choice" | "failed";
 export type Earcon = "listen" | "heard" | "sent" | "end";
 
 export interface LiveVoiceDeps {
-  /** start() rejects when the microphone cannot be opened. After stop() the recording arrives through audio(). */
+  /**
+   * start() rejects when the microphone cannot be opened. The recorder sends chunks off to be
+   * transcribed while the user talks; after stop() it reports the turn's chunk count through heard().
+   */
   recorder: { start(): Promise<void>; stop(): void; cancel(): void };
-  /** Rejects with a LiveStop (or anything else: a plain failure). */
-  transcribe(audio: Blob, signal: AbortSignal): Promise<string>;
+  /**
+   * The turn's text once the recorder ended: the chunks' texts joined, `failed` chunks marked.
+   * Rejects with a LiveStop (or anything else: a plain failure).
+   */
+  transcribe(signal: AbortSignal): Promise<{ text: string; failed: number }>;
   /** Asked before the microphone opens and before a question is sent: a reason not to go on. */
   blocked(): LiveStop | undefined;
   /**
@@ -95,13 +101,12 @@ export interface LiveVoiceOptions {
   review: number | "ask";
   maxTurns: number;
   maxMs: number;
-  /** Allowance units of one transcription and of one message in this session's mode. */
+  /** Allowance units of one transcribed chunk and of one message in this session's mode. */
   speechCost: number;
   messageCost: number;
 }
-export const LIVE_VOICE_CAPS = { maxTurns: 15, maxMs: 10 * 60_000 } as const;
-/** A recording smaller than this holds no sound (the same floor voice input uses). */
-const EMPTY_AUDIO_BYTES = 1000;
+/** 15 minutes: a turn may now be up to 3 minutes of speech, and the voice budget is the daily cap. */
+export const LIVE_VOICE_CAPS = { maxTurns: 15, maxMs: 15 * 60_000 } as const;
 
 export function createLiveVoice(deps: LiveVoiceDeps, options: LiveVoiceOptions) {
   let snapshot: LiveSnapshot = { phase: "idle", transcript: "", turns: 0, units: 0 };
@@ -152,16 +157,19 @@ export function createLiveVoice(deps: LiveVoiceDeps, options: LiveVoiceOptions) 
     set({ phase: "listening" });
   }
 
-  async function transcribe(audio: Blob) {
+  async function transcribe(chunks: number) {
     if (snapshot.phase !== "listening") return;
-    if (audio.size < EMPTY_AUDIO_BYTES) return halt("paused", { key: "noSpeech" });
+    // No chunk held sound: nothing was sent.
+    if (!chunks) return halt("paused", { key: "noSpeech" });
     const mine = ++run;
     abort = new AbortController();
     deps.earcon?.("heard");
     set({ phase: "transcribing" });
     let text: string;
+    let failed: number;
     try {
-      text = (await deps.transcribe(audio, abort.signal)).trim();
+      ({ text, failed } = await deps.transcribe(abort.signal));
+      text = text.trim();
     } catch (cause) {
       if (mine !== run) return;
       const stop = cause as Partial<LiveStop> | undefined;
@@ -171,10 +179,11 @@ export function createLiveVoice(deps: LiveVoiceDeps, options: LiveVoiceOptions) 
       });
     }
     if (mine !== run) return;
-    set({ units: snapshot.units + options.speechCost });
+    set({ units: snapshot.units + chunks * options.speechCost });
     if (!text) return halt("paused", { key: "emptyTranscript" });
     set({ phase: "review", transcript: text });
-    if (options.review === "ask") return;
+    // A part that could not be turned into text is marked: never sent without a tap.
+    if (options.review === "ask" || failed) return;
     let left = options.review;
     const tick = () => {
       if (mine !== run) return;
@@ -259,8 +268,8 @@ export function createLiveVoice(deps: LiveVoiceDeps, options: LiveVoiceOptions) 
     noSpeech() {
       if (snapshot.phase === "listening") halt("paused", { key: "noSpeech" });
     },
-    /** The finished recording (after doneSpeaking, or the recorder's own maximum length). */
-    audio: (blob: Blob) => void transcribe(blob),
+    /** The recorder ended the turn (after doneSpeaking, or its maximum length); `chunks` were sent. */
+    heard: (chunks: number) => void transcribe(chunks),
     sendNow: () => void sendNow(),
     cancelReview() {
       if (snapshot.phase === "review") halt("paused", { key: "cancelled" });
@@ -272,7 +281,7 @@ export function createLiveVoice(deps: LiveVoiceDeps, options: LiveVoiceOptions) 
       halt("ended", { key: "edit" });
       return text;
     },
-    /** A tap while the answer is spoken: stop the speech and listen. */
+    /** A tap while the answer is spoken (barge-in by tap): stop the speech and listen. */
     skipSpeech() {
       if (snapshot.phase !== "speaking") return;
       run++; // the pending end of speech is now a no-op

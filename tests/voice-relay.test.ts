@@ -3,6 +3,9 @@
 // Upstream is a test double: no audio, no key and no provider call. Synthetic only.
 import { afterEach, expect, it, vi } from "vitest";
 import { createServer, type Server } from "node:http";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { asUndiciRequestResult } from "./fixtures/undici-request";
 const upstream = vi.hoisted(() => vi.fn());
 vi.mock("undici", async (importOriginal) => ({
@@ -16,12 +19,12 @@ import { InviteRegistry } from "../server/invite-registry";
 import { scheduleModelCheck } from "../server/model-watch";
 import { SqliteUsageLedger } from "../server/usage-ledger";
 import { validateQualification, watchedModels, qualifiedModels } from "../shared/contracts";
-import { voiceDailyCount, voiceUploadLimit } from "../shared/voice";
+import { voiceChunkLimit, voiceUnits } from "../shared/voice";
 import { fakeManifest, privatemodeReport } from "./fixtures/privatemode-report";
 
 const PATH = "/v1/audio/transcriptions";
 const SPEECH = { model: "whisper-large-v3", allowanceCost: 2 };
-const VOICE = { maxSeconds: 30, dailyMinutes: 1 }; // two recordings a day
+const VOICE = { chunkSeconds: 30, maxTurnSeconds: 180, dailyUnits: 20 }; // 40 seconds a day
 const servers: Server[] = [];
 afterEach(async () => {
   upstream.mockReset();
@@ -61,20 +64,21 @@ async function session(root: string, cookie?: string) {
   const sessionCookie = response.headers.get("set-cookie")!.split(";")[0];
   return { status, cookie: cookie ? `${cookie}; ${sessionCookie}` : sessionCookie };
 }
-const headers = (cookie: string, csrf: string, model: string | null = SPEECH.model) => ({
+const headers = (cookie: string, csrf: string, model: string | null = SPEECH.model, units: string | null = "2") => ({
   Cookie: cookie,
   "X-PrivateAI-CSRF": csrf,
   authorization: "Bearer relay-injects-the-key",
   ...(model ? { "privatemode-target-model": model } : {}),
+  ...(units ? { "x-privateai-voice-units": units } : {}),
   "privatemode-client": "SDK",
   "Content-Type": "multipart/form-data; boundary=synthetic",
 });
 const post = (root: string, path: string, h: Record<string, string>, body: BodyInit = new Uint8Array(64).fill(7)) =>
   fetch(root + path, { method: "POST", headers: { Origin: root, ...h }, body });
 async function signedIn(extra: Partial<Config> = {}) {
-  const registry = new InviteRegistry(":memory:");
-  const usage = new SqliteUsageLedger(":memory:");
-  const root = await listen({ invites: registry, usage, ...extra });
+  const registry = (extra.invites as InviteRegistry | undefined) ?? new InviteRegistry(":memory:");
+  const usage = (extra.usage as SqliteUsageLedger | undefined) ?? new SqliteUsageLedger(":memory:");
+  const root = await listen({ ...extra, invites: registry, usage });
   const invite = registry.issue(Date.now() + 60000);
   const registration = await fetch(root + "/auth/register", {
     method: "POST",
@@ -111,7 +115,7 @@ it("forwards the encrypted recording with the real key and the pinned speech mod
   upstream.mockImplementation(async () => transcript());
   const root = await listen();
   const { status, cookie } = await session(root);
-  expect(status.voice).toEqual({ maxSeconds: 30 });
+  expect(status.voice).toEqual({ ...VOICE, usedUnits: 0 });
   expect(status.inference.qualification.speech).toEqual(SPEECH);
   const body = new Uint8Array(4096).fill(9);
   const reply = await post(root, PATH, headers(cookie, status.csrf), body);
@@ -152,48 +156,101 @@ it("the stop switch refuses voice input at once and the status hides the button"
   expect(upstream).not.toHaveBeenCalled();
 });
 
-it("bounds the upload by size: one byte over the limit for the maximum length is refused before anything is forwarded", async () => {
-  // 30 s x 4,000 bytes/s x 2 + 65,536 = 305,536 bytes; 120 s gives 1,025,536 (under the bridge's 1 MiB).
-  expect(voiceUploadLimit(30)).toBe(305_536);
-  expect(voiceUploadLimit(120)).toBe(1_025_536);
-  expect(voiceUploadLimit(120)).toBeLessThanOrEqual(1024 * 1024);
-  upstream.mockImplementation(async () => transcript());
-  const root = await listen();
-  const { status, cookie } = await session(root);
-  const refused = await post(root, PATH, headers(cookie, status.csrf), new Uint8Array(305_537));
-  expect(refused.status).toBe(413);
-  expect(refused.headers.get("x-privateai-voice")).toBe("refused_size");
-  expect(upstream).not.toHaveBeenCalled();
-  expect(takeCounts()).toMatchObject({ "voice.refused_size": 1 });
-  expect((await post(root, PATH, headers(cookie, status.csrf), new Uint8Array(305_536))).status).toBe(200);
-});
+// An honest chunk at the requested 32,000 bit/s: 4,400 bytes a second with the WebM container's
+// share, enlarged by a third (as if the encryption were base64), plus 2,000 bytes of header and form.
+const honest = (seconds: number) => Math.ceil(seconds * 4_400 * (4 / 3)) + 2_000;
 
-it("charges the speech model's allowance units through the usage ledger and bounds recordings per day by count", async () => {
-  expect(voiceDailyCount(1, 30)).toBe(2);
-  expect(voiceDailyCount(10, 120)).toBe(5);
+it("checks each chunk's encrypted size against its reported length: honest sizes pass, inflated or over-long chunks are refused before anything is forwarded", async () => {
+  // units x 2 s x 4,000 bytes/s x 2 + 8,192: 24,192 bytes for 1 unit, 248,192 for 15 (30 s), far under the bridge's 1 MiB.
+  expect(voiceChunkLimit(1)).toBe(24_192);
+  expect(voiceChunkLimit(15)).toBe(248_192);
+  expect(voiceChunkLimit(15)).toBeLessThan(1024 * 1024);
+  // The browser's count: 2-second steps rounded up, at least 1, never more than a chunk's 15.
+  expect([voiceUnits(300, 30), voiceUnits(2_000, 30), voiceUnits(2_001, 30), voiceUnits(30_250, 30), voiceUnits(9_999, 10)]).toEqual([1, 1, 2, 15, 5]);
+  for (let seconds = 1; seconds <= 30; seconds++)
+    expect(honest(seconds), `${seconds} s`).toBeLessThanOrEqual(voiceChunkLimit(voiceUnits(seconds * 1000, 30)));
   upstream.mockImplementation(async () => transcript());
-  const { root, usage, accountId, status, cookie, settled } = await signedIn({ autoAllowance: { requestLimit: 50, days: 7 } });
-  for (let i = 1; i <= 2; i++) {
-    const reply = await post(root, PATH, headers(cookie, status.csrf));
-    expect(reply.status).toBe(200);
-    await reply.text();
-    await settled();
-    expect(usage.summary(accountId)).toMatchObject({ used: 2 * i });
+  const root = await listen({ voice: { ...VOICE, dailyUnits: 1000 } });
+  const { status, cookie } = await session(root);
+  const send = (bytes: number, units: string | null) =>
+    post(root, PATH, headers(cookie, status.csrf, SPEECH.model, units), new Uint8Array(bytes));
+  // Honest chunks of 2, 10 and 30 seconds pass.
+  for (const [seconds, units] of [[2, "1"], [10, "5"], [30, "15"]] as const) expect((await send(honest(seconds), units)).status).toBe(200);
+  // A 30-second body that claims 10 seconds, and one byte over the limit of its units, are refused.
+  for (const [bytes, units] of [[honest(30), "5"], [voiceChunkLimit(5) + 1, "5"]] as const) {
+    const refused = await send(bytes, units);
+    expect(refused.status).toBe(413);
+    expect(refused.headers.get("x-privateai-voice")).toBe("refused_size");
   }
-  const third = await post(root, PATH, headers(cookie, status.csrf));
-  expect(third.status).toBe(429);
-  expect(third.headers.get("x-privateai-voice")).toBe("refused_voice_daily");
-  expect(upstream).toHaveBeenCalledTimes(2);
-  expect(usage.summary(accountId)).toMatchObject({ used: 4 });
-  // The refusal is counted when its response closes, which can come a moment after the status.
-  await third.text();
+  expect((await send(voiceChunkLimit(5), "5")).status).toBe(200);
+  // No length, a length over one chunk (16 units = 32 s), and nonsense are refused.
+  for (const units of [null, "0", "16", "1.5", "abc"]) {
+    const refused = await send(honest(2), units);
+    expect(refused.status).toBe(400);
+    expect(refused.headers.get("x-privateai-voice")).toBe("refused_units");
+  }
+  // Above the largest chunk the body parser refuses before the handler runs.
+  expect((await send(voiceChunkLimit(15) + 1, "15")).status).toBe(413);
+  expect(upstream).toHaveBeenCalledTimes(4);
   const counts: Record<string, number> = {};
   await vi.waitFor(() => {
     Object.assign(counts, takeCounts());
-    expect(counts).toMatchObject({ "voice.completed": 2, "voice.refused_voice_daily": 1 });
+    expect(counts).toMatchObject({ "voice.completed": 4, "voice.refused_size": 3, "voice.refused_units": 5 });
   });
 });
 
+it("keeps the daily voice budget in the usage ledger: units add up, the status shows used units, a chunk over the budget is refused, and a restart forgets nothing", async () => {
+  upstream.mockImplementation(async () => transcript());
+  const dir = await mkdtemp(join(tmpdir(), "privateai-voice-budget-"));
+  const file = join(dir, "usage.sqlite");
+  const registry = new InviteRegistry(":memory:");
+  const config = { invites: registry, autoAllowance: { requestLimit: 50, days: 7 } };
+  const ledgers: SqliteUsageLedger[] = [];
+  const open = () => ledgers[ledgers.push(new SqliteUsageLedger(file)) - 1];
+  try {
+    const { root, usage, accountId, status, cookie, settled } = await signedIn({ ...config, usage: open() });
+    // 15 + 4 units: 38 seconds of the 40; each chunk is one allowance charge of the speech cost (2).
+    for (const units of ["15", "4"]) {
+      const reply = await post(root, PATH, headers(cookie, status.csrf, SPEECH.model, units), new Uint8Array(honest(Number(units) * 2)));
+      expect(reply.status).toBe(200);
+      await reply.text();
+      await settled();
+    }
+    expect(usage.summary(accountId)).toMatchObject({ used: 4 });
+    const fresh = await (await fetch(root + "/api/status", { headers: { Cookie: cookie } })).json();
+    expect(fresh.voice.usedUnits).toBe(19);
+    // 2 more units would make 21 of 20: refused, nothing forwarded or charged. 1 more fits.
+    const over = await post(root, PATH, headers(cookie, status.csrf, SPEECH.model, "2"));
+    expect(over.status).toBe(429);
+    expect(over.headers.get("x-privateai-voice")).toBe("refused_voice_daily");
+    expect((await post(root, PATH, headers(cookie, status.csrf, SPEECH.model, "1"))).status).toBe(200);
+    await settled();
+    expect(upstream).toHaveBeenCalledTimes(3);
+    expect(usage.summary(accountId)).toMatchObject({ used: 6 });
+
+    // A restart: a new server and a new ledger object on the same database file.
+    const restarted = open();
+    const root2 = await listen({ ...config, usage: restarted });
+    const login = await fetch(root2 + "/auth/login", {
+      method: "POST",
+      redirect: "manual",
+      headers: { Origin: root2, "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ id: accountId, password: "SYNTHETIC account password" }),
+    });
+    const again = await session(root2, login.headers.get("set-cookie")!.split(";")[0]);
+    expect(again.status.voice.usedUnits).toBe(20);
+    const refused = await post(root2, PATH, headers(again.cookie, again.status.csrf, SPEECH.model, "1"));
+    expect(refused.headers.get("x-privateai-voice")).toBe("refused_voice_daily");
+    expect(upstream).toHaveBeenCalledTimes(3);
+  } finally {
+    for (const server of servers.splice(0)) {
+      server.closeAllConnections();
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+    for (const ledger of ledgers) ledger.close();
+    await rm(dir, { recursive: true, force: true });
+  }
+});
 it("refuses without allowance, at the chat allowance's daily cap, and at the spending limit", async () => {
   upstream.mockImplementation(async () => transcript());
   const none = await signedIn();

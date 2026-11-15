@@ -72,7 +72,7 @@ export interface ProductionInferenceConfig {
   /** Text file shown to every user as a notice while it is non-empty. */
   noticeFile?: string;
   /** Voice input limits; absent means voice input is off. */
-  voice?: { maxSeconds: number; dailyMinutes: number };
+  voice?: import("../shared/voice").VoiceLimits;
   /** Image question limits; absent means image upload is off. */
   images?: { maxBytes: number; dailyImages: number };
   /** Code execution on the user's device; absent means off. */

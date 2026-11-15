@@ -3,7 +3,7 @@
 // tab's memory (never the vault, a saved conversation or storage) and is dropped after the call.
 // The browser's own dictation (Web Speech API) is not used: it would send audio to Google or Apple.
 import type { AppStatus } from "../shared/contracts";
-import { VOICE_BITS_PER_SECOND } from "../shared/voice";
+import { VOICE_BITS_PER_SECOND, VOICE_UNIT_SECONDS, voiceUnits } from "../shared/voice";
 import { AttestationBusyError, inferenceClientFor } from "./providers/inference-client";
 import "./providers/privatemode-client";
 import { textFor } from "./text/core";
@@ -24,12 +24,17 @@ interface RecorderLike {
   stop(): void;
 }
 export interface VoiceRecorderOptions {
+  /** Longest turn in seconds; read at each start. */
   maxSeconds: number;
+  /** Longest chunk in seconds. */
+  chunkSeconds: number;
   onState(state: VoiceRecorderState): void;
-  /** Whole seconds recorded so far, about once a second. */
+  /** Whole seconds recorded so far in this turn, about once a second. */
   onTick(elapsed: number): void;
-  /** The finished recording after stop() or the maximum; never called after cancel(). */
-  onAudio(audio: Blob): void;
+  /** One finished chunk, a standalone file, with its voice units. In order; never after cancel(). */
+  onChunk(audio: Blob, units: number): void;
+  /** After stop() or the maximum, once the last chunk was handed over; never after cancel(). */
+  onEnd(): void;
   /** Test seams; the browser's own by default. */
   media?: { getUserMedia(constraints: { audio: true }): Promise<MediaStream> };
   Recorder?: {
@@ -46,33 +51,87 @@ function microphoneFailure(cause: unknown): MicrophoneFailure {
   return "micFailed";
 }
 
+/** A chunk smaller than this holds no sound (a header and a few frames): it is not sent. */
+const EMPTY_CHUNK_BYTES = 1000;
+
 /**
- * One recorder for the composer. start() asks for the microphone (only ever from the user's tap)
- * and rejects with a MicrophoneFailure; stop() ends the recording and hands it over; cancel()
- * drops it. The microphone is released the moment recording ends, whatever ended it.
+ * One recorder for a turn of speech. start() asks for the microphone (only ever from the user's
+ * tap) and rejects with a MicrophoneFailure; stop() ends the turn and hands over the last chunk;
+ * cancel() drops everything. The microphone is released the moment recording ends.
+ * Chunks: every `chunkSeconds` the running MediaRecorder is stopped and a new one starts on the
+ * same stream, so every chunk is a complete file with its own header (MediaRecorder's timeslice
+ * pieces are not: only the first carries the header). The switch takes a few milliseconds.
  */
 export function createVoiceRecorder(options: VoiceRecorderOptions) {
   let state: VoiceRecorderState = "idle";
   let stream: MediaStream | undefined;
-  let recorder: RecorderLike | undefined;
+  let stopCurrent: ((keep: boolean) => void) | undefined;
   let timer: ReturnType<typeof setInterval> | undefined;
   let run = 0; // a cancel during the permission prompt makes the pending start a no-op
-  const set = (next: VoiceRecorderState) => {
-    state = next;
-    options.onState(next);
+  let generation = 0; // a cancel makes the pending chunks of the turn no-ops
+  // Chunks finish asynchronously; they are handed over in the order they were started.
+  let made = 0;
+  let next = 0;
+  let ending = false;
+  const done = new Map<number, [Blob, number] | null>();
+  const set = (state_: VoiceRecorderState) => {
+    state = state_;
+    options.onState(state_);
+  };
+  const deliver = () => {
+    while (done.has(next)) {
+      const chunk = done.get(next);
+      done.delete(next++);
+      if (chunk) options.onChunk(...chunk);
+    }
+    if (ending && next === made) {
+      ending = false;
+      options.onEnd();
+    }
   };
   const end = (keep: boolean) => {
     run++;
     clearInterval(timer);
-    const active = recorder;
-    recorder = undefined;
-    if (active) {
-      if (!keep) active.ondataavailable = active.onstop = null;
-      if (active.state !== "inactive") active.stop();
+    if (keep) ending = !!stopCurrent; // only a running turn ends with onEnd
+    else {
+      generation++;
+      done.clear();
+      ending = false;
     }
+    stopCurrent?.(keep);
+    stopCurrent = undefined;
     stream?.getTracks().forEach((track) => track.stop());
     stream = undefined;
     if (state !== "idle") set("idle");
+    if (ending) deliver();
+  };
+  /** Starts the next chunk on the open stream. */
+  const begin = (Recorder: NonNullable<VoiceRecorderOptions["Recorder"]>, mimeType: string | undefined) => {
+    const index = made++;
+    const mine = generation;
+    const active = new Recorder(stream!, {
+      ...(mimeType ? { mimeType } : {}),
+      audioBitsPerSecond: VOICE_BITS_PER_SECOND,
+    });
+    const parts: Blob[] = [];
+    const startedAt = Date.now();
+    let ms = 0;
+    active.ondataavailable = (event) => {
+      if (event.data.size) parts.push(event.data);
+    };
+    active.onstop = () => {
+      if (mine !== generation) return;
+      const audio = new Blob(parts, { type: active.mimeType || mimeType || "audio/webm" });
+      done.set(index, audio.size < EMPTY_CHUNK_BYTES ? null : [audio, voiceUnits(ms, options.chunkSeconds)]);
+      deliver();
+    };
+    active.start();
+    stopCurrent = (keep) => {
+      ms = Date.now() - startedAt;
+      if (!keep) active.ondataavailable = active.onstop = null;
+      if (active.state !== "inactive") active.stop();
+    };
+    return startedAt;
   };
   return {
     get state() {
@@ -85,6 +144,8 @@ export function createVoiceRecorder(options: VoiceRecorderOptions) {
         options.Recorder ?? (globalThis.MediaRecorder as VoiceRecorderOptions["Recorder"] | undefined);
       if (!media?.getUserMedia || !Recorder) throw "unsupported" satisfies MicrophoneFailure;
       const mine = ++run;
+      let mimeType: string | undefined;
+      let chunkStartedAt = 0;
       set("starting");
       try {
         const granted = await media.getUserMedia({ audio: true });
@@ -93,30 +154,27 @@ export function createVoiceRecorder(options: VoiceRecorderOptions) {
           return;
         }
         stream = granted;
-        const mimeType = MIME_TYPES.find((type) => Recorder.isTypeSupported?.(type));
-        const active = new Recorder(granted, {
-          ...(mimeType ? { mimeType } : {}),
-          audioBitsPerSecond: VOICE_BITS_PER_SECOND,
-        });
-        const chunks: Blob[] = [];
-        active.ondataavailable = (event) => {
-          if (event.data.size) chunks.push(event.data);
-        };
-        active.onstop = () =>
-          options.onAudio(new Blob(chunks, { type: active.mimeType || mimeType || "audio/webm" }));
-        active.start();
-        recorder = active;
+        mimeType = MIME_TYPES.find((type) => Recorder.isTypeSupported?.(type));
+        chunkStartedAt = begin(Recorder, mimeType);
       } catch (cause) {
         end(false);
         throw microphoneFailure(cause);
       }
       const startedAt = Date.now();
+      const max = options.maxSeconds; // fixed for the turn, even if the budget shown changes
       set("recording");
       options.onTick(0);
       timer = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startedAt) / 1000);
-        options.onTick(Math.min(elapsed, options.maxSeconds));
-        if (elapsed >= options.maxSeconds) end(true);
+        const now = Date.now();
+        const elapsed = Math.floor((now - startedAt) / 1000);
+        options.onTick(Math.min(elapsed, max));
+        if (elapsed >= max) return end(true);
+        if (now - chunkStartedAt >= options.chunkSeconds * 1000) {
+          // The next chunk starts first: speech is never cut off at a chunk boundary.
+          const previous = stopCurrent!;
+          chunkStartedAt = begin(Recorder, mimeType);
+          previous(true);
+        }
       }, 250);
     },
     stop: () => end(true),
@@ -124,9 +182,10 @@ export function createVoiceRecorder(options: VoiceRecorderOptions) {
   };
 }
 
-/** The recording as text, through the session chat already verified (or one new verification). */
+/** One chunk as text, through the session chat already verified (or one new verification). */
 export async function transcribeRecording(
   audio: Blob,
+  units: number,
   status: Pick<AppStatus, "csrf" | "inference">,
   signal: AbortSignal,
 ): Promise<string> {
@@ -139,8 +198,98 @@ export async function transcribeRecording(
     () => {},
   );
   if (!destination.transcribe) throw new Error(textFor(voiceText).off);
-  return (await destination.transcribe(audio, report.speech.model, signal)).trim();
+  return (await destination.transcribe(audio, report.speech.model, units, signal)).trim();
 }
+
+/**
+ * Longest next turn in seconds: the turn maximum, or less when today's voice budget is nearly used.
+ * One unit stays free because the last chunk's length is rounded up to whole units.
+ */
+export const turnSeconds = (voice: NonNullable<AppStatus["voice"]>, used = voice.usedUnits) =>
+  used === undefined
+    ? voice.maxTurnSeconds
+    : Math.max(0, Math.min(voice.maxTurnSeconds, (voice.dailyUnits - used - 1) * VOICE_UNIT_SECONDS));
+
+/** Relay refusals after which no further chunk can work today; a busy verification also stops. */
+const FINAL = ["refused_voice_daily", "refused_daily", "refused_allowance", "refused_spend", "stopped", "off"];
+export function finalVoiceRefusal(error: unknown): boolean {
+  if (error instanceof AttestationBusyError) return true;
+  const headers = (error as { headers?: unknown } | undefined)?.headers;
+  return headers instanceof Headers && FINAL.includes(headers.get("x-privateai-voice") ?? "");
+}
+
+export interface TurnText {
+  /** The chunks' texts in order, joined; a chunk that failed twice is a marker in the text. */
+  text: string;
+  /** Chunks sent (each may have used allowance units), and how many of them failed. */
+  chunks: number;
+  failed: number;
+  /** The last failure, for the message. */
+  error?: unknown;
+}
+
+/**
+ * Transcribes a turn's chunks one after the other (one request per account) while the user keeps
+ * talking. A failed chunk is tried once more after a second; then its place gets `marker` and the
+ * rest goes on. A final refusal (budget, allowance, verification busy) marks the remaining chunks
+ * without sending them and calls `onFinal`, so the caller can stop recording.
+ */
+export function createChunkQueue(
+  transcribe: (audio: Blob, units: number, signal: AbortSignal) => Promise<string>,
+  marker: string,
+  onFinal: (error: unknown) => void = () => {},
+  retryMs = 1000,
+) {
+  const abort = new AbortController();
+  const parts: string[] = [];
+  let tail = Promise.resolve();
+  let chunks = 0;
+  let failed = 0;
+  let error: unknown;
+  let final = false;
+  const fail = (index: number) => {
+    parts[index] = marker;
+    failed++;
+  };
+  return {
+    add(audio: Blob, units: number) {
+      const index = parts.push("") - 1;
+      tail = tail.then(async () => {
+        if (abort.signal.aborted) return;
+        if (final) return fail(index);
+        chunks++;
+        for (let attempt = 0; ; attempt++) {
+          try {
+            parts[index] = (await transcribe(audio, units, abort.signal)).trim();
+            return;
+          } catch (cause) {
+            if (abort.signal.aborted) return;
+            error = cause;
+            if (finalVoiceRefusal(cause)) {
+              final = true;
+              onFinal(cause);
+              return fail(index);
+            }
+            if (attempt >= 1) return fail(index);
+            await new Promise((resolve) => setTimeout(resolve, retryMs));
+            if (abort.signal.aborted) return;
+          }
+        }
+      });
+    },
+    /** Waits for every chunk added so far. */
+    async finish(): Promise<TurnText> {
+      await tail;
+      abort.signal.throwIfAborted();
+      return { text: parts.filter(Boolean).join(" "), chunks, failed, error };
+    },
+    cancel: () => abort.abort(),
+    get size() {
+      return parts.length;
+    },
+  };
+}
+export type ChunkQueue = ReturnType<typeof createChunkQueue>;
 
 const REFUSALS: Record<string, keyof (typeof voiceText)["en"]> = {
   refused_size: "tooLarge",

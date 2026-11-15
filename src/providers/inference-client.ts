@@ -73,8 +73,9 @@ export interface VerifiedDestination {
   /**
    * Speech to text over the same verified client, for a provider that offers it (voice input).
    * The recording is encrypted in the browser like a chat message; the result is the plain text.
+   * `units`: the chunk's measured length in voice units, which the relay checks against its size.
    */
-  transcribe?(audio: Blob, model: string, signal: AbortSignal): Promise<string>;
+  transcribe?(audio: Blob, model: string, units: number, signal: AbortSignal): Promise<string>;
 }
 
 export interface InferenceClientAdapter {

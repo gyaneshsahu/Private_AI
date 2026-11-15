@@ -30,7 +30,8 @@ Taking one Fast message (about 1,000 tokens) as one unit:
 | Thinking message | 5 | ~1,900 | about 2 | about 15 |
 | Calculation turn with code (Fast) | 1, plus 2 free follow-ups | ~3,600 | about 3.5 | about 3.5 |
 | Deep research run | 15 | ~7,300 | about 7 | about 30 |
-| Voice, one 2-minute recording | 2 | ~5,600 | about 5.5 | Whisper EUR 0.028, about 10 |
+| Voice, one 2-minute recording (14 November design) | 2 | ~5,600 | about 5.5 | Whisper EUR 0.028, about 10 |
+| Voice since 15 November, per chunk of up to 30 s (1 voice unit = 2 s, about 93 tokens) | 1 proposed | ~470 (10 s) to ~1,400 (30 s) | 0.5 to 1.4 | Whisper EUR 0.007 per full chunk, about 2.5 |
 | Picture question | 2 | not measured for real photos | unknown | unknown |
 | Memory, project instructions | 0 | +65 to +600 | under 1 | small |
 
@@ -40,6 +41,7 @@ Taking one Fast message (about 1,000 tokens) as one unit:
 - **Deep research at 15** is right for euros and about double for tokens. Keep it.
 - **Code execution is under-weighted for tokens:** a calculation costs about 3.5 Fast messages but uses 1 unit. With the 150-unit week, a user who only calculates could use about 3.5 times the tokens of an average user. Recommended default: keep 1 unit for the alpha (exact answers are the point of the feature, and calculations are a small share of messages), and watch it in the weekly reconciliation.
 - **Voice is under-weighted:** a full 2-minute recording uses the tokens of about 5 Fast messages for 2 units. Recommended default: weight 3, or keep 2 with 30-second recordings (which also gives live voice more turns a day).
+- **Voice, 15 November:** recordings are now charged per chunk of up to 30 seconds, plus a daily voice budget (proposed 150 units = 5 minutes = about 14,000 tokens, `docs/voice-to-text-20261114.md`). Recommended weight: **1 per chunk**. A full chunk is about 1.4 Fast messages of tokens, a 10-second one about 0.5; the budget caps the shortfall at about 4 units a day. With the budget: 30 ten-second, 15 twenty-second or 10 thirty-second turns a day, each 2 units with a Fast answer.
 - **Pictures:** measure one real photo (about 1,500 px) before deciding; the weight of 2 is a guess.
 
 ## Live check of the smaller prompt (14 November)

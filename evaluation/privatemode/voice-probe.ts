@@ -10,6 +10,10 @@
 //   ... --models whisper-large-v3,voxtral-mini-3b   (default: both)
 //   ... --chat-model glm-5.3-flash                  (the chat call that shares the session)
 //
+// For the chunk size check (15 November), record 2 s, 10 s and 30 s chunks of a made-up sentence
+// in Chrome (WebM/Opus) and Safari (MP4) and pass them here: each line prints `encryptedBytes`,
+// which must stay under voiceChunkLimit(units): 24,192 bytes for 2 s, 88,192 for 10 s, 248,192 for 30 s.
+//
 // Each transcription is billed by audio length (owner's notes: EUR 0.014 or 0.004 per minute).
 import { readFileSync } from "node:fs";
 import { basename, extname } from "node:path";
@@ -32,6 +36,28 @@ const TYPES: Record<string, string> = {
   ".ogg": "audio/ogg",
   ".wav": "audio/wav",
   ".mp3": "audio/mpeg",
+};
+
+// The encrypted body size of each transcription request (15 November: the relay checks each
+// chunk's size against its reported length; docs/voice-to-text-20261114.md, live check 4). The
+// SDK's Wasm sends through the global fetch, so the size is read there; content is never printed.
+const encryptedSizes: (number | string)[] = [];
+const realFetch = globalThis.fetch;
+globalThis.fetch = (input, init) => {
+  const url = String(input instanceof Request ? input.url : input);
+  if (url.includes("/v1/audio/transcriptions")) {
+    const body = init?.body;
+    encryptedSizes.push(
+      body instanceof Uint8Array || body instanceof ArrayBuffer
+        ? body.byteLength
+        : body instanceof Blob
+          ? body.size
+          : typeof body === "string"
+            ? Buffer.byteLength(body)
+            : `unknown (${Object.prototype.toString.call(body)})`,
+    );
+  }
+  return realFetch(input, init);
 };
 
 let verifications = 0;
@@ -66,6 +92,8 @@ try {
             file: basename(path),
             type,
             bytes: bytes.length,
+            // What our relay would see; compare with voiceChunkLimit(units) in shared/voice.ts.
+            encryptedBytes: encryptedSizes.at(-1),
             model,
             ms: Math.round(performance.now() - started),
             responseKeys: Object.keys(data as object),

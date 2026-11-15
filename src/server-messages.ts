@@ -50,6 +50,7 @@ const GERMAN: Record<string, string> = {
   // Voice input
   "Voice input is not switched on.": "Die Spracheingabe ist nicht eingeschaltet.",
   "Only the qualified speech model is accepted.": "Nur das freigegebene Sprachmodell wird angenommen.",
+  "Each voice part must state its length. No request was forwarded.": `Jeder Sprachteil muss seine Länge angeben. ${NOTHING_SENT}`,
   "This recording is too large. No request was forwarded.": `Diese Aufnahme ist zu groß. ${NOTHING_SENT}`,
   "The daily voice input limit is reached. It frees up within 24 hours. No request was forwarded.": `Das Tageslimit für Spracheingabe ist erreicht. Es wird innerhalb von 24 Stunden wieder frei. ${NOTHING_SENT}`,
   "The recording could not be transcribed. No automatic retry was made.":

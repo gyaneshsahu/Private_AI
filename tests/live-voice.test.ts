@@ -12,8 +12,6 @@ import {
   type SendOutcome,
 } from "../src/live-voice";
 
-const SOUND = new Blob([new Uint8Array(5000)]);
-const SILENT = new Blob([new Uint8Array(10)]);
 const flush = () => vi.advanceTimersByTimeAsync(0);
 
 function setup(options: Partial<Parameters<typeof createLiveVoice>[1]> = {}) {
@@ -21,10 +19,10 @@ function setup(options: Partial<Parameters<typeof createLiveVoice>[1]> = {}) {
   const signals: AbortSignal[] = [];
   let finishSpeech: ((result: "spoken" | { refused: string }) => void) | undefined;
   const deps = {
-    recorder: { start: vi.fn(async () => {}), stop: vi.fn(() => live.audio(SOUND)), cancel: vi.fn() },
-    transcribe: vi.fn(async (_audio: Blob, signal: AbortSignal) => {
+    recorder: { start: vi.fn(async () => {}), stop: vi.fn(() => live.heard(1)), cancel: vi.fn() },
+    transcribe: vi.fn(async (signal: AbortSignal) => {
       signals.push(signal);
-      return " What is the time? ";
+      return { text: " What is the time? ", failed: 0 };
     }),
     blocked: vi.fn((): LiveStop | undefined => undefined),
     send: vi.fn(async (_text: string, signal: AbortSignal): Promise<SendOutcome> => {
@@ -198,15 +196,28 @@ describe("interruptions", () => {
   it("a silent recording is neither transcribed nor sent", async () => {
     const s = setup();
     await reach(s, "listening");
-    s.live.audio(SILENT);
+    s.live.heard(0);
     await flush();
     expect(s.live.snapshot()).toMatchObject({ phase: "paused", reason: { key: "noSpeech" }, units: 0 });
     expect(s.deps.transcribe).not.toHaveBeenCalled();
   });
 
+  it("a long turn in several chunks counts each chunk; a part that failed waits for a tap before sending", async () => {
+    const s = setup({ speechCost: 1 });
+    s.deps.recorder.stop.mockImplementationOnce(() => s.live.heard(3));
+    s.deps.transcribe.mockResolvedValueOnce({ text: "First part [part not transcribed] third part", failed: 1 });
+    await reach(s, "review");
+    expect(s.live.snapshot()).toMatchObject({ phase: "review", units: 3, reviewLeft: undefined });
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(s.deps.send).not.toHaveBeenCalled();
+    s.live.sendNow();
+    await flush();
+    expect(s.deps.send).toHaveBeenCalledWith("First part [part not transcribed] third part", expect.any(AbortSignal));
+  });
+
   it("an empty transcript pauses and costs the transcription only", async () => {
     const s = setup();
-    s.deps.transcribe.mockResolvedValueOnce("  ");
+    s.deps.transcribe.mockResolvedValueOnce({ text: "  ", failed: 0 });
     await reach(s, "review");
     expect(s.live.snapshot()).toMatchObject({ phase: "paused", reason: { key: "emptyTranscript" }, units: 1 });
     expect(s.deps.send).not.toHaveBeenCalled();
@@ -400,9 +411,9 @@ describe("Stop", () => {
   it("aborts a running transcription and drops its late text", async () => {
     const s = setup();
     let finish!: (text: string) => void;
-    s.deps.transcribe.mockImplementationOnce((_a, signal) => {
+    s.deps.transcribe.mockImplementationOnce((signal) => {
       s.signals.push(signal);
-      return new Promise((resolve) => (finish = resolve));
+      return new Promise((resolve) => (finish = (text) => resolve({ text, failed: 0 })));
     });
     s.live.start();
     await flush();

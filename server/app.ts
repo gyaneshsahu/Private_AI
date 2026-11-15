@@ -33,7 +33,7 @@ import { braveSearchProvider, type SearchProvider } from "./providers/search";
 import "./providers/tinfoil-relay";
 import { privatemodeKeyExpiryWarning } from "./providers/privatemode-relay";
 import { manifestPaused, PROVIDER_UPDATE_PAUSE } from "./manifest-watch";
-import { VOICE_PATH, voiceRoute, type VoiceSettings } from "./providers/privatemode-voice";
+import { VOICE_PATH, voiceRoute, voiceUsage, type VoiceSettings } from "./providers/privatemode-voice";
 import { declaredImage, imageDayCount, imageModelAdmitted, type ImageSettings } from "./image-admission";
 import { CONTINUATION_HEADER, ContinuationCredits } from "./continuation-credit";
 import { declaredResearch, researchAllowed, ResearchTickets, type ResearchSettings } from "./research-admission";
@@ -367,6 +367,8 @@ export function createApp(config: Config) {
         next();
       }),
   );
+  // Voice units per account in any 24 hours, shown in the status and enforced by the voice route.
+  const voiceBudget = voiceUsage(config.usage);
   app.get("/api/status", async (_req, res) => {
     const q = parseQualification();
     const stopped = !!config.inferenceStopped?.();
@@ -436,7 +438,16 @@ export function createApp(config: Config) {
           : {}),
       },
       search: !!config.searchKey,
-      ...(config.voice && ready && q?.speech ? { voice: { maxSeconds: config.voice.maxSeconds } } : {}),
+      ...(config.voice && ready && q?.speech
+        ? {
+            voice: {
+              ...config.voice,
+              usedUnits: await voiceBudget
+                .used(String(res.locals.accountId ?? res.locals.session), res.locals.accountId)
+                .catch(() => undefined),
+            },
+          }
+        : {}),
       ...(config.images && ready && q?.vision ? { images: { maxBytes: config.images.maxBytes } } : {}),
       ...(config.code && ready ? { code: true } : {}),
       // Only for an account that may use it ("premium only"), so nobody else sees the feature.
@@ -513,6 +524,7 @@ export function createApp(config: Config) {
       "/api/inference" + VOICE_PATH,
       ...voiceRoute({
         settings: config.voice,
+        budget: voiceBudget,
         apiKey: config.apiKey,
         qualification: parseQualification,
         stopped: config.inferenceStopped,

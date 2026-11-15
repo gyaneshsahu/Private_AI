@@ -2,11 +2,13 @@
 
 Status: **built and tested offline. Switched off by default. Nothing was verified live.** No call was made to Privatemode, no key was read, no real microphone, speaker or phone was used.
 
+**Update, 15 November:** live voice uses voice input's new metering (`docs/voice-to-text-20261114.md`, "Metering by speaking time"): a question is recorded in chunks of up to 30 seconds that are turned into text while the user talks, up to 3 minutes per question with a warning 20 seconds before, and turns are limited by the daily voice budget (proposed 150 units, 5 minutes) instead of 5 recordings a day. The panel shows "Voice today: used, left". "Skip reading" is now "Interrupt and speak". Sections changed below: the loop, cost and caps, interruptions, echo and barge-in, open decisions.
+
 ## What it is, and what it is not
 
 A hands-free conversation, turn by turn. The user speaks, CometRow turns the speech into text, shows it for a moment, sends it as an ordinary chat message, reads the answer aloud with a voice on the device, and then opens the microphone again.
 
-It is **not** a real-time voice model. Privatemode has none. One side speaks at a time. The user cannot interrupt while the answer is read (no barge-in). The panel says this in plain words before the first turn.
+It is **not** a real-time voice model. Privatemode has none. One side speaks at a time. The user can interrupt the answer with a tap ("Interrupt and speak"), not by speaking (see "Echo and barge-in"). The panel says this in plain words before the first turn.
 
 It is built only from parts that exist: voice input (`docs/voice-to-text-20261114.md`) and read aloud (`docs/read-aloud-and-pdf-export-20261114.md`). No new server route, no new server field, nothing new is stored.
 
@@ -28,11 +30,11 @@ The loop is a pure module, `src/live-voice.ts`, with everything that touches the
 | --- | --- | --- |
 | idle | The panel explains the feature, the voice note and the cost | Start talking, Close |
 | starting | The microphone opens (the browser may ask for permission) | Pause, End |
-| listening | Recording, with the clock and the maximum length | Done speaking, Pause, End |
-| transcribing | The recording goes to the speech model | Pause, End |
+| listening | Recording, with the clock and the maximum length; each 30-second chunk is already turned into text while the user talks; "Stops in 0:19" for the last 20 seconds | Done speaking, Pause, End |
+| transcribing | The last chunk goes to the speech model; the parts are joined | Pause, End |
 | review | The text is shown: "Sending in 3 ..." | Send now, Cancel, Edit, Pause, End |
 | answering | Sent through the app's own send path; the answer streams into the chat | Pause, End |
-| speaking | The answer is read aloud; the microphone is closed | Skip reading, Pause, End |
+| speaking | The answer is read aloud; the microphone is closed | Interrupt and speak, Pause, End |
 | paused | Nothing runs; the reason is shown | Resume, End |
 | ended | The reason is shown | Start again, Close |
 
@@ -49,7 +51,7 @@ Two ways, both always available:
 1. **Silence detection** with the Web Audio API (`watchSpeech` and `createSilenceDetector`). An AnalyserNode measures the level every 50 ms. The first 300 ms set the room's noise floor; the threshold is 3 times that, kept between 0.015 and 0.06 so talking during the measurement cannot push it out of reach. Speech counts after 150 ms above the threshold. The recording ends 1.5 s after speech falls below it. If no speech comes within 8 s, nothing is transcribed or sent ("No speech was heard").
 2. **"Done speaking"**, a big button, always shown while listening.
 
-The existing maximum length of voice input (120 s by default) is the backstop.
+The turn maximum of voice input (`maxTurnSeconds`, proposed 180 s, or less when the day's voice time is nearly used) is the backstop, with a warning 20 seconds before.
 
 Tested: the detector with synthetic level sequences (quiet room, noisy room, a pause inside a sentence, a click, talking during calibration), and in real headless Chromium with a generated tone as the microphone: the first turn of every UI test ends by silence alone, with no tap. **Not tested:** real voices, real rooms, real microphones with noise suppression. Limits: loud steady noise looks like speech; a long thinking pause looks like the end. The button and the maximum length cover both.
 
@@ -66,7 +68,8 @@ The transcript then goes through `send()` in `src/App.tsx` like typed text: iden
 | Rules or current-facts question that would ask "search first?" (`asksBeforeSending`), or automatic search is on | **Decision: pause and ask on screen.** Nothing is searched silently and nothing is sent. The session ends, the text goes into the message box with the usual search choice, and the notice line says why. Questions that do not trigger the choice are sent without search, exactly as typed ones are |
 | Health consent not yet given | The session ends; the usual consent prompt is shown with the question waiting, as for typed text |
 | Allowance too low for a turn | Ends, with the units needed and left |
-| Daily request limit, recordings-per-day limit, spend limit, stop switch | The relay's refusal ends the session with the voice input message |
+| Daily request limit, daily voice budget, spend limit, stop switch | The relay's refusal ends the session with the voice input message. A used-up voice budget is also caught before listening |
+| A chunk failed twice | Its place is marked "[part not transcribed]"; the review then waits for a tap instead of sending by itself |
 | Verification limit | The app's countdown shows; the session pauses; Resume after it |
 | Offline | Pauses before listening or sending |
 | Empty recording, no words | Pauses, nothing sent (an empty transcription still costs its units) |
@@ -80,21 +83,25 @@ The transcript then goes through `send()` in `src/App.tsx` like typed text: iden
 
 ## Cost and caps
 
-One turn is one transcription plus one chat message, charged through the existing ledger. No new server route.
+One turn is one transcription per chunk (a question up to 30 seconds is one chunk) plus one chat message, charged through the existing ledger. No new server route.
 
-| Mode | Units per turn (with the proposed speech cost of 2) |
+| Mode | Units per turn of up to 30 s (with the proposed speech cost of 1 per chunk) |
 | --- | --- |
-| Fast (default) | 2 + 1 = 3 |
-| Thinking (only when the user chose Thinking in the mode menu; Auto uses Fast) | 2 + 5 = 7 |
+| Fast (default) | 1 + 1 = 2 |
+| Thinking (only when the user chose Thinking in the mode menu; Auto uses Fast) | 1 + 5 = 6 |
 
-- A session ends after **15 questions or 10 minutes** (`LIVE_VOICE_CAPS`), checked before each listening. Start again for more.
-- The panel shows "Questions sent: n of 15 · about x units used". "About", because a failed request may still be charged; the usage page is the truth.
-- **Important:** the recordings-per-day cap of voice input applies. With today's defaults (10 minutes per day, 120 s per recording) that is **5 recordings per day**, so 5 live turns per day. See the open decisions.
-- One request per turn: tested (requests equal turns, and the count stops at the cap).
+- A session ends after **15 questions or 15 minutes** (`LIVE_VOICE_CAPS`; 10 minutes before 15 November, raised because one question may now take 3 minutes), checked before each listening. Start again for more. The daily voice budget is the real daily cap; the session caps only stop a forgotten session.
+- The panel shows "Questions sent: n of 15 · about x units used" and "Voice today: 2:10 used, 2:50 left." "About", because a failed request may still be charged; the usage page is the truth.
+- Turns per day with the 150-unit budget: about 25 questions of 10 seconds (each also records the 1.5 s of silence that ends it), 15 of 20 seconds, 10 of 30 seconds. Before: 5 a day. The table in `docs/voice-to-text-20261114.md` has the tokens.
+- One chat request per turn: tested (requests equal turns, and the count stops at the cap). Chunks: tested with a fake recorder (three chunks count three speech charges) and in Chromium with the real MediaRecorder.
 
-## Echo
+## Echo and barge-in
 
-The microphone is never open while the answer is read. It opens only after speech ends (or the time-out above). The start tone plays before the microphone opens, so it is not part of the noise measurement. Barge-in is out of scope.
+The microphone is never open while the answer is read. It opens only after speech ends (or the time-out above). The start tone plays before the microphone opens, so it is not part of the noise measurement.
+
+**Barge-in by tap: built.** "Interrupt and speak" (formerly "Skip reading") stops the reading at once and opens the microphone. Only the new speech is recorded and counted; the reading and the processing are never counted.
+
+**Barge-in by speaking: not built, on purpose (15 November).** It would need the microphone open while the answer is read. Without headphones the device's speaker feeds the microphone, so the app would hear its own voice and interrupt itself. The usual remedy, comparing the microphone level with the playback level, does not work here: read aloud uses the browser's speech engine (`speechSynthesis`), whose sound does not pass through the page's Web Audio, so its level cannot be measured. The browser's echo cancellation is made for call audio; whether it removes `speechSynthesis` output is not known and differs by system. It would also break the promise that the microphone is closed while the answer is read. And none of it can be tested offline. Recommended: keep the tap; try spoken barge-in later only with headphones detected, after a device test.
 
 ## Android
 
@@ -122,10 +129,14 @@ Build with `VITE_LIVE_VOICE=1` and `VITE_READ_ALOUD=1`, voice input on (`PRIVATE
 5. Press End while the answer is read and while it is answering. Expect: silence at once, no further request on the usage page.
 6. Ask "Wie hoch ist der Rundfunkbeitrag?". Expect: the session ends, the question is in the message box with the search choice.
 7. Count the units on the usage page after three Fast turns. Expect: 3 x (speech cost + 1).
+8. (15 November) Ask one question of about 45 seconds. Expect: two chunks, one joined text in "You said", "Voice today" grows by about 23 units.
+9. (15 November) While the answer is read, tap "Interrupt and speak". Expect: the reading stops at once, the microphone opens, the new question is answered.
 
 ## Open decisions for the owner
 
-- **Recordings per day.** With the defaults, live voice gets 5 turns a day. Recommended for the alpha: `maxSeconds` 30 and `dailyMinutes` 10 (20 recordings), or keep it and say so.
-- **Speech cost.** The proposed 2 units per recording makes a Fast turn 3 units. Recommended: keep for the alpha and track it.
+- **Recordings per day (done 15 November).** Replaced by the daily voice budget: 150 units (5 minutes) give about 25 short questions a day. Recommended: 150.
+- **Speech cost.** Now per chunk: 1 makes a Fast turn of up to 30 seconds 2 units. Recommended: 1.
+- **Session caps.** 15 questions or 15 minutes. Recommended: keep.
+- **Barge-in by speaking.** Not built (see "Echo and barge-in"). Recommended: keep the tap for the alpha.
 - **Review delay.** 3 seconds by default. Recommended: keep.
 - **Android.** Not offered. Recommended: keep until read aloud has an answer for Android.

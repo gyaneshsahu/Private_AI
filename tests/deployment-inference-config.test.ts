@@ -60,12 +60,15 @@ it("loads production chat only when the inference section is present and enabled
   const noticeFile = join(root, "notice.txt");
   await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, noticeFile } }));
   expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ noticeFile });
-  // Voice input has its own switch: absent or disabled means off; enabled passes the two limits on.
-  const voice = { enabled: true, maxSeconds: 120, dailyMinutes: 10 };
+  // Voice input has its own switch: absent or disabled means off; enabled passes the three limits on.
+  const voice = { enabled: true, chunkSeconds: 30, maxTurnSeconds: 180, dailyUnits: 150 };
   await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, voice: { ...voice, enabled: false } } }));
   expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("voice");
   await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, voice } }));
-  expect((await loadDeploymentConfig(configFile)).inference).toMatchObject({ voice: { maxSeconds: 120, dailyMinutes: 10 } });
+  expect((await loadDeploymentConfig(configFile)).inference?.voice).toEqual({ chunkSeconds: 30, maxTurnSeconds: 180, dailyUnits: 150 });
+  // The 14 November shape is still read, translated: 120 s turns in 30 s chunks, 10 minutes = 300 units.
+  await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, voice: { enabled: true, maxSeconds: 120, dailyMinutes: 10 } } }));
+  expect((await loadDeploymentConfig(configFile)).inference?.voice).toEqual({ chunkSeconds: 30, maxTurnSeconds: 120, dailyUnits: 300 });
   // Image questions have their own switch too: absent or disabled means off; enabled passes the two limits on.
   const images = { enabled: true, maxBytes: 280000, dailyImages: 10 };
   await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, images: { ...images, enabled: false } } }));
@@ -104,8 +107,12 @@ it("loads production chat only when the inference section is present and enabled
     { ...inference, code: true },
     { ...inference, code: { enabled: true, rounds: 5 } },
     { ...inference, voice: { enabled: true } },
-    { ...inference, voice: { ...voice, maxSeconds: 3600 } },
-    { ...inference, voice: { ...voice, dailyMinutes: 0 } },
+    { ...inference, voice: { ...voice, chunkSeconds: 60 } },
+    { ...inference, voice: { ...voice, chunkSeconds: 5 } },
+    { ...inference, voice: { ...voice, maxTurnSeconds: 600 } },
+    { ...inference, voice: { ...voice, dailyUnits: 0 } },
+    { ...inference, voice: { ...voice, maxSeconds: 120 } }, // old and new fields mixed
+    { ...inference, voice: { enabled: true, maxSeconds: 3600, dailyMinutes: 10 } },
     { ...inference, voice: { ...voice, model: "whisper-large-v3" } },
     { ...inference, stopFile: "chat-stopped" },
     { ...inference, extra: true },

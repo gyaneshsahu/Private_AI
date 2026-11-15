@@ -2989,3 +2989,11 @@
     padding: 16px;
   }
 }
+
+/* Voice input, 15 November: on phones the first-use note hangs from the composer (the dock is
+   positioned), not from the microphone, so it never runs off the left edge. */
+@media (max-width: 600px) {
+  .chat-design .voice-input {
+    position: static;
+  }
+}

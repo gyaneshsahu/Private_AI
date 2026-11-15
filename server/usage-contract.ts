@@ -26,6 +26,14 @@ export const usageUnits = z.number().int().min(1).max(10);
 export const unitRowIds = (requestId: string, units: number) =>
   Array.from({ length: units - 1 }, (_, i) => `${requestId}.${i + 2}`);
 export const NOT_UNIT_ROW = "r.request_id NOT LIKE '%.%'";
+/**
+ * A voice chunk's request ID carries its voice units (2-second steps of the user's recording):
+ * `voice-<units>-<uuid>`. Content-free like the token counts, and durable with the request, so the
+ * daily voice budget survives a restart without a schema change.
+ */
+export const voiceRequestId = (units: number, uuid: string) => `voice-${units}-${uuid}`;
+export const VOICE_ROWS = "r.request_id LIKE 'voice-%'";
+export const voiceUnitsOf = (requestId: string) => Number(/^voice-(\d+)-/.exec(requestId)?.[1] ?? 0);
 type Result<T> = T | Promise<T>;
 export type { UsageMetrics } from "./usage-metrics";
 
@@ -39,6 +47,8 @@ export interface UsageLedger {
   reserve(accountId: string, requestId: string, units?: number): Result<boolean>;
   /** Allowance units this account reserved in the last `windowMs`, whatever their outcome (daily cap). */
   usedInLast?(accountId: string, windowMs: number): Result<number>;
+  /** Voice units (from voice request IDs) this account reserved in the last `windowMs` (daily voice budget). */
+  voiceUnitsInLast?(accountId: string, windowMs: number): Result<number>;
   dispatch(accountId: string, requestId: string): Result<void>;
   /** Completed-request metering for one of the account's own requests; another account's request ID reads as absent. */
   metrics(

@@ -8,6 +8,8 @@ import {
   usageUnits,
   unitRowIds,
   NOT_UNIT_ROW,
+  VOICE_ROWS,
+  voiceUnitsOf,
   type UsageLedger,
 } from "./usage-contract";
 import { usageMetricsSchema, type UsageMetrics } from "./usage-metrics";
@@ -196,6 +198,14 @@ export class PostgresUsageLedger implements UsageLedger {
       [accountId, (await this.now(this.database)) - windowMs],
     );
     return result.rows[0].used;
+  }
+  async voiceUnitsInLast(accountId: string, windowMs: number): Promise<number> {
+    usageId.parse(accountId);
+    const result = await this.database.query(
+      `SELECT r.request_id FROM usage_requests r WHERE r.account_id=$1 AND r.created_at>$2 AND ${VOICE_ROWS} AND ${NOT_UNIT_ROW}`,
+      [accountId, (await this.now(this.database)) - windowMs],
+    );
+    return result.rows.reduce((sum, row) => sum + voiceUnitsOf(String(row.request_id)), 0);
   }
   async reserve(
     accountId: string,

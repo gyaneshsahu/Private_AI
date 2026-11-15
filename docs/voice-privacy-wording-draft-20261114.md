@@ -66,7 +66,13 @@ EN: "Voice input is optional. Your browser asks for the microphone only when you
 
 DE: "Die Spracheingabe ist freiwillig. Ihr Browser fragt erst nach dem Mikrofon, wenn Sie die Mikrofon-Taste drücken, und gibt es frei, sobald die Aufnahme endet. Eine Aufnahme ist höchstens [2] Minuten lang. Sie bleibt im Speicher Ihres Browsers, bis sie in Text umgewandelt ist, und wird dann verworfen. Wir speichern keine Aufnahmen, und unsere Systeme können sie auf dem Weg nicht öffnen. Der Text erscheint im Nachrichtenfeld und wird erst gesendet, wenn Sie auf Senden drücken. Den Diktierdienst Ihres Browsers verwenden wir nicht."
 
-The number in brackets is `inference.voice.maxSeconds` as the owner sets it.
+The number in brackets is `inference.voice.maxTurnSeconds` as the owner sets it (since 15 November; proposed 180 seconds, so [3]).
+
+Proposed addition (15 November, voice metered by speaking time), after the third sentence:
+
+EN: "A longer recording is sent in parts of up to 30 seconds while you speak. For your daily voice time we record how long each part was, never what was said."
+
+DE: "Eine längere Aufnahme wird in Teilen von höchstens 30 Sekunden gesendet, während Sie sprechen. Für Ihre tägliche Sprachzeit speichern wir, wie lang jeder Teil war, nie, was gesagt wurde."
 
 ## 3. Questions for the legal read
 

@@ -63,7 +63,7 @@ const app = createApp({
   cacheSaltSecret: process.env.PRIVATEAI_CACHE_SALT_SECRET,
   searchKey: process.env.BRAVE_SEARCH_API_KEY,
   // Voice input on the development server: off unless "1" (it also needs `speech` in the report).
-  ...(process.env.PRIVATEAI_VOICE === "1" ? { voice: { maxSeconds: 120, dailyMinutes: 10 } } : {}),
+  ...(process.env.PRIVATEAI_VOICE === "1" ? { voice: { chunkSeconds: 30, maxTurnSeconds: 180, dailyUnits: 150 } } : {}),
   // Image questions on the development server: off unless "1" (they also need `vision` in the report).
   ...(process.env.PRIVATEAI_IMAGES === "1" ? { images: { maxBytes: 280_000, dailyImages: 10 } } : {}),
   // Code execution on the device, on the development server: off unless "1".

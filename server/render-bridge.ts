@@ -22,6 +22,8 @@ export const BRIDGE_REQUEST_HEADERS = [
   "x-privateai-mode",
   // Declares an image question; without it the relay refuses the larger body (docs/images-20261114.md).
   "x-privateai-kind",
+  // A voice chunk's length in 2-second units; the relay checks it against the size (docs/voice-to-text-20261114.md).
+  "x-privateai-voice-units",
   "x-tinfoil-enclave-url",
   "x-tinfoil-model",
   "ehbp-encapsulated-key",
