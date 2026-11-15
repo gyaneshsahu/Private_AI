@@ -66,6 +66,8 @@ export const usageMeterText = defineText({
     weights: (version: number) => `Weights version ${version}. A Fast message counts as 1 request.`,
     costs: (thinking: number, image: number, research: number) =>
       `A Thinking message counts as ${thinking}, a picture question as ${image}, a deep research run as ${research}.`,
+    voiceCost: (units: number, seconds: number) =>
+      `Each voice part of up to ${seconds} seconds of your speech counts as ${units} ${plural(units, "request", "requests")}. Only your own speaking time counts toward the daily voice limit, not the processing or the AI speaking.`,
     tokensNote:
       "Tokens are the size of a question and its answer as the AI service counts them. Your browser reads them from the encrypted answer and tells our server the numbers only, never the text.",
     codeCost: (units: number, steps: number) =>
@@ -106,6 +108,8 @@ export const usageMeterText = defineText({
     weights: (version: number) => `Gewichtung Version ${version}. Eine Nachricht in „Schnell“ zählt als 1 Anfrage.`,
     costs: (thinking: number, image: number, research: number) =>
       `Eine Nachricht in „Gründlich“ zählt als ${thinking}, eine Frage zu einem Bild als ${image}, eine tiefe Recherche als ${research}.`,
+    voiceCost: (units: number, seconds: number) =>
+      `Jeder Sprachteil mit bis zu ${seconds} Sekunden Ihrer Sprache zählt als ${units} ${plural(units, "Anfrage", "Anfragen")}. Auf das tägliche Sprachlimit zählt nur Ihre eigene Sprechzeit, nicht die Verarbeitung und nicht die Sprachausgabe der KI.`,
     tokensNote:
       "Tokens sind die Größe einer Frage und ihrer Antwort, wie der KI-Dienst sie zählt. Ihr Browser liest sie aus der verschlüsselten Antwort und teilt unserem Server nur die Zahlen mit, nie den Text.",
     codeCost: (units: number, steps: number) =>

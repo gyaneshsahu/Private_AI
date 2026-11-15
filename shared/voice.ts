@@ -37,3 +37,10 @@ export const voiceClock = (units: number) => {
   const seconds = Math.max(0, units) * VOICE_UNIT_SECONDS;
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 };
+
+/**
+ * "Voice today" as used and left clocks. The microphone, live voice and the usage meter all show
+ * it from the server's one count (the ledger's voice units in the last 24 hours) through this.
+ */
+export const voiceTodayClocks = (usedUnits: number, dailyUnits: number) =>
+  [voiceClock(usedUnits), voiceClock(dailyUnits - usedUnits)] as const;
