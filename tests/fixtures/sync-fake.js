@@ -59,4 +59,23 @@ export const setLocalPassphrase = () => call("set-passphrase");
 export const revokeDevice = (deviceId) => call("revoke", { deviceId });
 export const resetSync = (confirm) => call("reset", { confirm });
 export const syncNow = () => call("sync-now");
-export const turnOffSyncOnThisDevice = () => call("turn-off");
+export class SyncError extends Error {
+  constructor(code) {
+    super(`Sync: ${code}`);
+    this.code = code;
+  }
+}
+// As the engine: turning sync off needs a local passphrase first (the screen asks, then retries).
+export async function turnOffSyncOnThisDevice(opts) {
+  if (!opts?.localPassphrase) throw new SyncError("needs-local-passphrase");
+  return call("turn-off");
+}
+// The app's wiring (src/App.tsx); the fake engine never opens the vault itself.
+export const attachSync = async () => {};
+export const detachSync = () => {};
+export const onSyncApplied = () => () => {};
+export const openLocalVault = async () => false;
+export const unlockThisDevice = async () => "not-remembered";
+export const setRememberDevice = async () => {};
+export const deleteEverythingOnThisDevice = async () => {};
+export { encodeRecoveryKey, decodeRecoveryKey } from "/src/sync/crypto.ts";

@@ -13,12 +13,18 @@ import { appText } from "../src/text/app";
 import { vaultBackupText } from "../src/text/vault-ui";
 import { backupPartsText, syncText, vaultUnlockText } from "../src/text/sync";
 import { decodeVaultBackupContent } from "../src/vault-backup";
-import { formatRecoveryKey, makeRecoveryKey, normalizeRecoveryKey, recoveryKeyGroups } from "../src/recovery-key-format";
+import { encodeRecoveryKey } from "../src/sync/crypto";
+
+// The engine's recovery key format (src/sync/crypto.ts): 28 Crockford base32 characters in 7 groups of 4.
+const normalizeRecoveryKey = (key: string) => key.toUpperCase().replace(/[\s-]/g, "").replace(/O/g, "0").replace(/[IL]/g, "1");
+const recoveryKeyGroups = (key: string) => normalizeRecoveryKey(key).match(/.{1,4}/g) ?? [];
+const makeRecoveryKey = () => normalizeRecoveryKey(encodeRecoveryKey(crypto.getRandomValues(new Uint8Array(16))));
 
 const WIDTHS = [375, 768, 1280] as const;
 const LANGS = ["en", "de"] as const;
 const PASS = "synthetic sync screens passphrase";
 const FAKE = readFileSync(new URL("./fixtures/sync-fake.js", import.meta.url), "utf8");
+const FILES_FAKE = readFileSync(new URL("./fixtures/sync-files-fake.js", import.meta.url), "utf8");
 
 let vite: ViteDevServer;
 let browser: Browser;
@@ -44,6 +50,7 @@ beforeAll(async () => {
               return { input: 1, output: 1, total: 2, estimatedUSD: 0 };
             }`;
           if (path.endsWith("/src/sync/index.ts")) return FAKE;
+          if (path.endsWith("/src/sync/files.ts")) return FILES_FAKE;
         },
       },
     ],
@@ -110,7 +117,7 @@ function operate(account: Account, operation: string, body: Record<string, any>)
     case "state":
       return undefined;
     case "setup":
-      account.pendingKey = formatRecoveryKey(makeRecoveryKey());
+      account.pendingKey = encodeRecoveryKey(crypto.getRandomValues(new Uint8Array(16)));
       account.pendingLabel = body.deviceLabel;
       return { recoveryKey: account.pendingKey };
     case "confirm":
@@ -375,12 +382,15 @@ for (const width of WIDTHS)
       await ui(settings(A).getByRole("checkbox", { name: v.rememberLabel })).toBeChecked();
       await settings(A).getByLabel(s.deviceName).fill("Laptop");
       await settings(A).getByRole("button", { name: s.continue }).click();
-      await ui(settings(A).getByRole("heading", { name: s.keyHeading })).toBeFocused();
-      const groups = settings(A).getByRole("list", { name: s.keyGroups(6) });
-      await ui(groups.getByRole("listitem")).toHaveCount(6);
+      // The key starts at Print, the safest way to keep it; copying and downloading carry a warning.
+      await ui(settings(A).getByRole("heading", { name: s.keyHeading })).toBeVisible();
+      await ui(settings(A).getByRole("button", { name: s.print })).toBeFocused();
+      await ui(settings(A).getByText(s.keyCopyRisk)).toBeVisible();
+      const groups = settings(A).getByRole("list", { name: s.keyGroups(7) });
+      await ui(groups.getByRole("listitem")).toHaveCount(7);
       const key = account.pendingKey;
       const last = recoveryKeyGroups(key).at(-1)!;
-      await ui(groups.getByRole("listitem").last()).toContainText(s.keyGroup(6, [...last].join(" ")));
+      await ui(groups.getByRole("listitem").last()).toContainText(s.keyGroup(7, [...last].join(" ")));
       await ui(settings(A).getByText(s.keyWarning)).toBeVisible();
       expect(await download(A, () => settings(A).getByRole("button", { name: s.download }).click())).toContain(key);
       await settings(A).getByRole("button", { name: s.saved }).click();
@@ -395,6 +405,19 @@ for (const width of WIDTHS)
       await ui(list.getByRole("listitem").filter({ hasText: "Laptop" })).toContainText(s.thisDevice);
       await noSidewaysScroll(A);
       await closeSettings(A);
+
+      // Delete everything with sync on here asks about the synced copy too (Cancel deletes nothing).
+      await menuItem(A, a.renameSave);
+      await A.getByRole("button", { name: a.deleteAll, exact: true }).click();
+      const erase = A.getByRole("dialog", { name: a.deleteAll });
+      const alsoSynced = erase.getByRole("checkbox", { name: s.alsoDeleteSynced });
+      await ui(alsoSynced).not.toBeChecked();
+      await ui(erase.getByText(s.alsoDeleteSyncedNote)).toBeVisible();
+      await target(erase.getByRole("button", { name: a.deleteAll }), width);
+      await noSidewaysScroll(A);
+      await erase.getByRole("button", { name: s.cancel }).click();
+      await ui(erase).toHaveCount(0);
+      await ui(A.getByRole("button", { name: a.lockAndClear })).toBeVisible();
 
       // Device B: a new device; approval from A is the obvious way in.
       const B = await open(width, lang, account, true);
@@ -411,10 +434,20 @@ for (const width of WIDTHS)
       expect(shown).toBe(account.pairing!.code);
       await noSidewaysScroll(B);
 
-      // Device A shows the prompt by itself; a wrong code is refused, the right one approves.
+      // Device A shows a quiet notice by itself (never the form); the user opens it, says they hold
+      // the device, then a wrong code is refused and the right one approves.
       const prompt = A.getByRole("region", { name: s.promptHeading });
       await ui(prompt).toBeVisible();
+      await ui(prompt.getByLabel(s.promptCode)).toHaveCount(0);
+      await ui(prompt).toContainText(s.pairingNotice("").split(" ").slice(0, 4).join(" "));
+      await target(prompt.getByRole("button", { name: s.reviewRequest }), width);
+      await noSidewaysScroll(A);
+      await prompt.getByRole("button", { name: s.reviewRequest }).click();
       await ui(prompt.getByText(s.promptWarning)).toBeVisible();
+      await ui(prompt.getByText(new RegExp(`^${s.promptRequestedAt("").split(" ")[0]} `))).toBeVisible();
+      await ui(prompt.getByLabel(s.promptCode)).toBeDisabled();
+      await prompt.getByRole("checkbox", { name: s.holdingLabel }).check();
+      await noSidewaysScroll(A);
       const wrong = String((Number(shown[0]) + 1) % 10) + shown.slice(1);
       await prompt.getByLabel(s.promptCode).fill(wrong);
       await prompt.getByRole("button", { name: s.approve }).click();
@@ -423,6 +456,11 @@ for (const width of WIDTHS)
       await prompt.getByLabel(s.promptName).fill("Phone");
       await prompt.getByRole("button", { name: s.approve }).click();
       await ui(prompt.getByText(s.approvedOther)).toBeVisible();
+      // Every other device says once that a device was added.
+      const added = A.getByRole("region", { name: s.deviceAddedHeading });
+      await ui(added).toContainText("Phone");
+      await added.getByRole("button", { name: s.closeNotice }).click();
+      await ui(added).toHaveCount(0);
       await ui(welcome).toHaveCount(0);
       await ui(B.getByText(s.approved).first()).toBeVisible();
       // Saved on the approved device does not claim that it is empty (the Stage 0 notice is for unsynced devices).
@@ -442,18 +480,18 @@ for (const width of WIDTHS)
       await ui(again.getByRole("heading", { name: s.recoveryHeading })).toBeFocused();
       const field = again.getByLabel(s.recoveryLabel);
       const unlock = again.getByRole("button", { name: s.unlock });
-      const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+      const alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
       const typo = alphabet[(alphabet.indexOf(account.key[0]) + 1) % 32] + account.key.slice(1);
       await field.fill(typo);
       await ui(again.getByText(s.hintTypo)).toBeVisible();
       // The local check is a hint, never a block: the engine decides.
       await ui(unlock).toBeEnabled();
       await field.fill(account.key.slice(0, 10));
-      await ui(again.getByText(s.hintShort(16))).toBeVisible();
+      await ui(again.getByText(s.hintShort(18))).toBeVisible();
       await ui(unlock).toBeDisabled();
-      await ui(field).toHaveValue(formatRecoveryKey(account.key.slice(0, 10)));
-      await field.fill("9" + account.key.slice(1));
-      await ui(again.getByText(s.hintCharacter("9"))).toBeVisible();
+      await ui(field).toHaveValue(recoveryKeyGroups(account.key.slice(0, 10)).join("-"));
+      await field.fill("U" + account.key.slice(1));
+      await ui(again.getByText(s.hintCharacter("U"))).toBeVisible();
       let other = makeRecoveryKey();
       while (other === account.key) other = makeRecoveryKey();
       await field.fill(other);
@@ -462,8 +500,17 @@ for (const width of WIDTHS)
       await ui(again.getByText(s.wrongKey)).toBeVisible();
       await field.fill(account.key.toLowerCase());
       await again.getByLabel(s.deviceName).fill("Tablet");
+      // Not remembered: a local passphrase is asked for (owner decision VS-5).
+      await again.getByRole("checkbox", { name: v.rememberLabel }).uncheck();
       await unlock.click();
       await ui(again).toHaveCount(0);
+      const local = C.getByRole("dialog", { name: v.newPassphraseHeading });
+      await ui(local.getByText(s.localPassphraseNotRemembered)).toBeVisible();
+      await ui(local.getByRole("button", { name: v.newPassphraseSave })).toBeDisabled();
+      await noSidewaysScroll(C);
+      await local.getByLabel(v.newPassphrase).fill("synthetic local passphrase C");
+      await local.getByRole("button", { name: v.newPassphraseSave }).click();
+      await ui(local).toHaveCount(0);
 
       // Device C turns sync off for itself.
       await openSync(C);
@@ -471,6 +518,11 @@ for (const width of WIDTHS)
       const off = C.getByRole("dialog", { name: s.turnOffTitle });
       await ui(off.getByText(s.turnOffText)).toBeVisible();
       await off.getByRole("button", { name: s.turnOffConfirm }).click();
+      // The engine needs a local passphrase before sync goes off here: asked, then retried.
+      const offPassphrase = C.getByRole("dialog", { name: v.newPassphraseHeading });
+      await ui(offPassphrase.getByText(s.localPassphraseNeeded)).toBeVisible();
+      await offPassphrase.getByLabel(v.newPassphrase).fill("synthetic local passphrase C2");
+      await offPassphrase.getByRole("button", { name: v.newPassphraseSave }).click();
       await ui(settings(C).getByText(s.turnedOff).first()).toBeVisible();
       expect(account.devices.map((d) => d.label)).toEqual(["Laptop", "Phone"]);
 
@@ -493,6 +545,10 @@ for (const width of WIDTHS)
       await ui(settings(A).getByText(s.errorQuota)).toBeVisible();
       account.override = { error: "conflict-copies" };
       await ui(settings(A).getByText(s.errorConflict)).toBeVisible();
+      for (const [code, text] of [["server", s.errorServer], ["rate-limited", s.errorRateLimited], ["item-too-large", s.errorItemTooLarge]] as const) {
+        account.override = { phase: "error", error: code };
+        await ui(settings(A).getByText(text)).toBeVisible();
+      }
       await noSidewaysScroll(A);
       await closeSettings(A);
 
@@ -560,3 +616,55 @@ it("the forgotten-passphrase confirmation starts on Cancel and Escape deletes no
   await ui(page.getByRole("dialog", { name: v.resetTitle })).toHaveCount(0);
   expect(await vaultHolds(page, PASS)).toEqual({ chats: 0, memories: 0 });
 }, 60_000);
+
+for (const [width, lang] of [[1280, "en"], [375, "de"]] as const)
+  it(`${width} px, ${lang}: a question in a project whose synced files could not be downloaded asks before sending`, async () => {
+    const a = appText[lang];
+    const s = syncText[lang];
+    const account = fakeAccount();
+    // This device is in sync (fake engine) and file sync is on (fake files module).
+    Object.assign(account, { on: true, key: "K", devices: [{ deviceId: "x", label: "Other", createdAt: new Date().toISOString(), lastSeenAt: new Date().toISOString(), revoked: false }] });
+    const page = await open(width, lang, account, true);
+    const device = await page.evaluate(() => localStorage.getItem("fake-sync-device"));
+    account.devices.push({ deviceId: device!, label: "Laptop", createdAt: new Date().toISOString(), lastSeenAt: new Date().toISOString(), revoked: false });
+    await page.evaluate(
+      async ({ account, passphrase }) => {
+        const load = (path: string) => new Function("p", "return import(p)")(path);
+        const { Vault } = (await load("/src/vault.ts")) as typeof import("../src/vault");
+        const { emptyConversation } = (await load("/shared/contracts.ts")) as typeof import("../shared/contracts");
+        const { newMessage } = (await load("/src/conversation.ts")) as typeof import("../src/conversation");
+        const store = new Vault();
+        store.selectAccount(account);
+        await store.unlock(passphrase);
+        const projectId = crypto.randomUUID();
+        await store.changeProjects(() => [{ id: projectId, name: "SYNTHETIC PROJECT" }]);
+        await store.save({ ...emptyConversation(), title: "SYNTHETIC PROJECT CHAT", projectId, messages: [newMessage("user", "Synthetic first question.")] });
+        store.close(false);
+      },
+      { account: ACCOUNT_ID, passphrase: PASS },
+    );
+    await menuItem(page, a.renameSave);
+    await page.getByLabel(a.passphrase, { exact: true }).fill(PASS);
+    await page.getByRole("button", { name: a.createOrUnlock }).click();
+    await page.getByRole("article", { name: "SYNTHETIC PROJECT CHAT" }).getByRole("button").first().click();
+    const ask = async () => {
+      await page.locator("#message-input").fill("Synthetic question about the project files.");
+      await page.getByRole("button", { name: a.sendLabel, exact: true }).click();
+      return page.getByRole("dialog", { name: s.missingFilesTitle });
+    };
+    // Cancel: nothing is sent, the question stays in the composer.
+    let dialog = await ask();
+    await ui(dialog.getByText(s.missingFilesText)).toBeVisible();
+    await target(dialog.getByRole("button", { name: s.sendAnyway }), width);
+    await noSidewaysScroll(page);
+    await dialog.getByRole("button", { name: s.cancel }).click();
+    await ui(dialog).toHaveCount(0);
+    await ui(page.locator("#message-input")).toHaveValue("Synthetic question about the project files.");
+    await ui(page.getByText("Synthetic answer.")).toHaveCount(0);
+    // Send anyway: the question goes without the files.
+    dialog = await ask();
+    await dialog.getByRole("button", { name: s.sendAnyway }).click();
+    await ui(page.getByText("Synthetic answer.").first()).toBeVisible();
+    expect(await page.evaluate(() => (window as unknown as { __ensureProjectFiles: number }).__ensureProjectFiles)).toBe(2);
+    await page.context().close();
+  }, 120_000);

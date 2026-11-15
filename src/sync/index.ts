@@ -7,6 +7,8 @@ import { useSyncExternalStore } from "react";
 import type { Vault } from "../vault";
 import { SyncEngine, SyncError, type Fetcher, type SyncState } from "./engine";
 export { SyncError, type SyncErrorCode, type SyncPhase, type SyncState, type SyncDevice } from "./engine";
+/** The recovery key's own format (28 Crockford base32 characters, 7 groups of 4, mod-1021 check) for the screens. */
+export { encodeRecoveryKey, decodeRecoveryKey } from "./crypto";
 
 const OFF: SyncState = { phase: "off", pending: 0, devices: [] };
 let engine: SyncEngine | undefined;

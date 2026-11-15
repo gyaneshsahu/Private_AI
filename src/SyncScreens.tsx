@@ -1,12 +1,12 @@
 // Devices and sync (docs/vault-sync-screens-20261115.md): the Settings section, the quiet status
 // indicator, the pairing prompt on an existing device and the new-device screen. Shown only when the
 // deployment has sync (status.vaultSync); every call goes to the engine API in src/sync/.
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { useLang, useText } from "./i18n";
-import { syncText } from "./text/sync";
+import { syncText, vaultUnlockText } from "./text/sync";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { containDialogFocus } from "./dialog-focus";
-import { resetSync, revokeDevice, syncNow, turnOffSyncOnThisDevice, useSyncState, type SyncState } from "./sync";
+import { SyncError, resetSync, revokeDevice, syncNow, turnOffSyncOnThisDevice, useSyncState, type SyncState } from "./sync";
 import { SyncSetup } from "./SyncSetup";
 import { ApprovePairing, ShowPairingCode } from "./SyncPairing";
 import { RecoveryKeyForm, RememberChoice } from "./SyncRecoveryKey";
@@ -20,6 +20,7 @@ export function TypedConfirm({
   confirmLabel,
   cancelLabel,
   onClose,
+  children,
 }: {
   title: string;
   text: string;
@@ -28,6 +29,7 @@ export function TypedConfirm({
   confirmLabel: string;
   cancelLabel: string;
   onClose: (confirmed: boolean) => void;
+  children?: ReactNode;
 }) {
   const [typed, setTyped] = useState("");
   const matches = typed.trim().toUpperCase() === phrase.toUpperCase();
@@ -44,21 +46,122 @@ export function TypedConfirm({
         {label}
         <input value={typed} autoComplete="off" spellCheck={false} onChange={(e) => setTyped(e.target.value)} />
       </label>
+      {children}
     </ConfirmDialog>
   );
 }
 
+/** "Also delete the synced copy" for the two "delete everything on this device" questions. */
+export function AlsoDeleteSynced({ checked, onChange }: { checked: boolean; onChange: (value: boolean) => void }) {
+  const t = useText(syncText);
+  const id = useId();
+  return (
+    <div className="remember-choice">
+      <label className="row">
+        <input type="checkbox" checked={checked} aria-describedby={id} onChange={(e) => onChange(e.target.checked)} />
+        {t.alsoDeleteSynced}
+      </label>
+      <p id={id} className="muted">
+        {t.alsoDeleteSyncedNote}
+      </p>
+    </div>
+  );
+}
+
+/**
+ * Asks for a local passphrase for a synced vault: when this device is not remembered (owner
+ * decision VS-5), and when turning sync off or deleting the synced copy needs one first.
+ */
+export function LocalPassphraseDialog({
+  text,
+  cancelLabel,
+  onSubmit,
+  onClose,
+}: {
+  text: string;
+  cancelLabel: string;
+  onSubmit: (passphrase: string) => Promise<void>;
+  onClose: (done: boolean) => void;
+}) {
+  const v = useText(vaultUnlockText);
+  const dialog = useRef<HTMLDialogElement>(null);
+  const id = useId();
+  const [value, setValue] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    const element = dialog.current;
+    const trigger = document.activeElement as HTMLElement | null;
+    element?.showModal();
+    return () => {
+      element?.close();
+      if (trigger?.isConnected) trigger.focus();
+    };
+  }, []);
+  return (
+    <dialog
+      ref={dialog}
+      className="confirm-dialog"
+      aria-labelledby={id}
+      onKeyDown={containDialogFocus}
+      onCancel={(event) => {
+        event.preventDefault();
+        if (!busy) onClose(false);
+      }}
+    >
+      <form
+        onSubmit={async (event) => {
+          event.preventDefault();
+          if (busy || value.length < 12) return;
+          setBusy(true);
+          setError("");
+          try {
+            await onSubmit(value);
+            onClose(true);
+          } catch {
+            setError(v.newPassphraseFailed);
+            setBusy(false);
+          }
+        }}
+      >
+        <h2 id={id}>{v.newPassphraseHeading}</h2>
+        <p>{text}</p>
+        <label>
+          {v.newPassphrase}
+          <input type="password" autoComplete="new-password" minLength={12} required value={value} onChange={(e) => setValue(e.target.value)} />
+        </label>
+        {error && <p role="alert">{error}</p>}
+        <div className="confirm-actions">
+          <button type="button" disabled={busy} onClick={() => onClose(false)}>
+            {cancelLabel}
+          </button>
+          <button className="primary" disabled={busy || value.length < 12}>
+            {v.newPassphraseSave}
+          </button>
+        </div>
+      </form>
+    </dialog>
+  );
+}
+
 type Errorish = Pick<SyncState, "phase" | "error">;
-/** The engine's error, in plain words. Codes: offline, quota, revoked, conflict (see the doc). */
+/** The engine's error, in plain words. Codes: offline, quota, revoked, server, rate-limited, item-too-large. */
 export function syncErrorText(state: Errorish, t: (typeof syncText)["en"]): string {
   if (!state.error) return state.phase === "error" ? t.errorOther : "";
   const code = state.error.toLowerCase();
   if (code.includes("offline")) return t.errorOffline;
   if (code.includes("quota")) return t.errorQuota;
   if (code.includes("revoked")) return t.errorRevoked;
+  // Not reported by the engine yet (security review C1): the synced data was reset from another device.
+  if (code.includes("reset")) return t.errorReset;
+  if (code.includes("rate-limited")) return t.errorRateLimited;
+  if (code.includes("item-too-large")) return t.errorItemTooLarge;
+  if (code.includes("server")) return t.errorServer;
+  // The engine merges conflicts and never reports one; kept for older codes.
   if (code.includes("conflict")) return t.errorConflict;
   return t.errorOther;
 }
+const needsPassphrase = (error: unknown) => error instanceof SyncError && error.code === "needs-local-passphrase";
 
 function indicatorState(state: SyncState, t: (typeof syncText)["en"]): { key: string; text: string } | undefined {
   if (state.phase === "off") return undefined;
@@ -88,31 +191,57 @@ const megabytes = (bytes: number, lang: string) =>
   `${new Intl.NumberFormat(lang === "de" ? "de-DE" : "en-GB", { maximumFractionDigits: 1 }).format(bytes / 1_000_000)} MB`;
 
 /** Settings, Devices and sync. */
-export function SyncSettings({ unlocked, onNotice }: { unlocked: boolean; onNotice: (text: string) => void }) {
+export function SyncSettings({
+  unlocked,
+  onNotice,
+  onOpened,
+}: {
+  unlocked: boolean;
+  onNotice: (text: string) => void;
+  /** Sync was turned on here, with this device's "Remember this device" choice. */
+  onOpened?: (remember: boolean) => void;
+}) {
   const t = useText(syncText);
   const { lang } = useLang();
   const state = useSyncState();
   const [setup, setSetup] = useState(false);
   const [approving, setApproving] = useState(false);
   const [confirm, setConfirm] = useState<{ kind: "revoke"; id: string; name: string } | { kind: "off" } | { kind: "reset" }>();
+  // Turning sync off or deleting the synced copy needs a local passphrase first: asked, then retried.
+  const [retry, setRetry] = useState<{ action: (localPassphrase: string) => Promise<void>; done: string }>();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const headingId = useId();
   const date = (iso: string) =>
     new Intl.DateTimeFormat(lang === "de" ? "de-DE" : "en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
-  const run = async (action: () => Promise<void>, done: string, failed = t.actionFailed) => {
+  const run = async (action: () => Promise<void>, done: string, failed = t.actionFailed, again?: (localPassphrase: string) => Promise<void>) => {
     setBusy(true);
     setMessage("");
     try {
       await action();
       setMessage(done);
       onNotice(done);
-    } catch {
-      setMessage(failed);
+    } catch (error) {
+      if (again && needsPassphrase(error)) setRetry({ action: again, done });
+      else setMessage(failed);
     } finally {
       setBusy(false);
     }
   };
+  const passphraseDialog = retry && (
+    <LocalPassphraseDialog
+      text={t.localPassphraseNeeded}
+      cancelLabel={t.cancel}
+      onSubmit={retry.action}
+      onClose={(done) => {
+        setRetry(undefined);
+        if (done) {
+          setMessage(retry.done);
+          onNotice(retry.done);
+        }
+      }}
+    />
+  );
 
   if (state.phase === "off" || state.phase === "needs-approval")
     return (
@@ -121,15 +250,17 @@ export function SyncSettings({ unlocked, onNotice }: { unlocked: boolean; onNoti
         {setup ? (
           <SyncSetup
             onCancel={() => setSetup(false)}
-            onDone={() => {
+            onDone={(remember) => {
               setSetup(false);
               setMessage(t.onDone);
               onNotice(t.onDone);
+              onOpened?.(remember);
             }}
           />
         ) : (
           <>
             <p>{t.offIntro}</p>
+            {state.error && <p className="sync-error">{syncErrorText(state, t)}</p>}
             {state.phase === "needs-approval" ? (
               <p>{t.newText}</p>
             ) : unlocked ? (
@@ -142,6 +273,7 @@ export function SyncSettings({ unlocked, onNotice }: { unlocked: boolean; onNoti
             {message && <p role="alert">{message}</p>}
           </>
         )}
+        {passphraseDialog}
       </section>
     );
 
@@ -225,7 +357,10 @@ export function SyncSettings({ unlocked, onNotice }: { unlocked: boolean; onNoti
           cancelLabel={t.cancel}
           onClose={(yes) => {
             setConfirm(undefined);
-            if (yes) void run(turnOffSyncOnThisDevice, t.turnedOff);
+            if (yes)
+              void run(() => turnOffSyncOnThisDevice(), t.turnedOff, t.actionFailed, (localPassphrase) =>
+                turnOffSyncOnThisDevice({ localPassphrase }),
+              );
           }}
         />
       )}
@@ -240,34 +375,118 @@ export function SyncSettings({ unlocked, onNotice }: { unlocked: boolean; onNoti
           onClose={(yes) => {
             setConfirm(undefined);
             // The server takes the contract's English phrase; the user typed it in their language.
-            if (yes) void run(() => resetSync("DELETE SYNCED DATA"), t.resetDone);
+            if (yes)
+              void run(() => resetSync("DELETE SYNCED DATA"), t.resetDone, t.actionFailed, (localPassphrase) =>
+                resetSync("DELETE SYNCED DATA", { localPassphrase }),
+              );
           }}
         />
       )}
+      {passphraseDialog}
     </section>
   );
 }
 
-/** On an existing device: the prompt shows by itself when a new device asks to pair. */
+const timeOf = (iso: string, lang: string) =>
+  new Intl.DateTimeFormat(lang === "de" ? "de-DE" : "en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
+
+/**
+ * On an existing device: a quiet notice when a new device asks to join (security review M1: never
+ * a form that opens by itself). The user opens it deliberately; the form then asks for "I am
+ * holding this device" before the code. Also the one-time "A new device was added" notice.
+ */
 export function PairingPrompt() {
   const state = useSyncState();
-  // Stays open after the request is answered, so the result shows, until the user closes it.
+  const t = useText(syncText);
+  const { lang } = useLang();
+  // When this device first noticed the request (the engine does not report the request's time).
+  const [askedAt, setAskedAt] = useState<string>();
   const [open, setOpen] = useState(false);
   const member = state.phase !== "off" && state.phase !== "needs-approval";
   useEffect(() => {
-    if (state.pairingRequested && member) setOpen(true);
+    if (state.pairingRequested && member) setAskedAt((at) => at ?? new Date().toISOString());
+    // Stays while the form is open, so its result shows until the user closes it.
+    else if (!open) setAskedAt(undefined);
   }, [state.pairingRequested, member]);
-  const t = useText(syncText);
-  if (!open) return null;
   return (
-    <section className="pairing-prompt" aria-label={t.promptHeading} aria-live="polite">
-      <ApprovePairing autoFocus={false} onClose={() => setOpen(false)} />
+    <>
+      {askedAt && (
+        <section className="pairing-prompt" aria-label={t.promptHeading} aria-live="polite">
+          {open ? (
+            <ApprovePairing
+              requestedAt={timeOf(askedAt, lang)}
+              onClose={() => {
+                setOpen(false);
+                setAskedAt(undefined);
+              }}
+            />
+          ) : (
+            <>
+              <p>{t.pairingNotice(timeOf(askedAt, lang))}</p>
+              <div className="row sync-actions">
+                <button onClick={() => setOpen(true)}>{t.reviewRequest}</button>
+                <button className="text-button" onClick={() => setAskedAt(undefined)}>
+                  {t.dismiss}
+                </button>
+              </div>
+            </>
+          )}
+        </section>
+      )}
+      <DeviceAddedNotice />
+    </>
+  );
+}
+
+/**
+ * "A new device was added: <name>, <time>", once per device on every other device of the
+ * account. The device ids this browser has seen are kept in localStorage (ids only, no names).
+ */
+function DeviceAddedNotice() {
+  const state = useSyncState();
+  const t = useText(syncText);
+  const { lang } = useLang();
+  const [added, setAdded] = useState<SyncState["devices"]>([]);
+  useEffect(() => {
+    const me = state.devices.find((d) => d.thisDevice);
+    // Names are readable only with the account key (not while locked).
+    if (!me || state.phase === "locked" || state.devices.some((d) => !d.label)) return;
+    const key = `cometrow-sync-seen-${me.deviceId}`;
+    let seen: string[] | undefined;
+    try {
+      seen = JSON.parse(localStorage.getItem(key) ?? "null") ?? undefined;
+      localStorage.setItem(key, JSON.stringify(state.devices.map((d) => d.deviceId)));
+    } catch {
+      return;
+    }
+    // The first look on this device only records what is there.
+    const fresh = seen ? state.devices.filter((d) => !d.thisDevice && !d.revoked && !seen!.includes(d.deviceId)) : [];
+    if (fresh.length) setAdded((list) => [...list, ...fresh]);
+  }, [state.devices, state.phase]);
+  if (!added.length) return null;
+  return (
+    <section className="pairing-prompt" aria-label={t.deviceAddedHeading} aria-live="polite">
+      {added.map((d) => (
+        <p key={d.deviceId}>{t.deviceAdded(d.label, timeOf(d.createdAt, lang))}</p>
+      ))}
+      <button onClick={() => setAdded([])}>{t.closeNotice}</button>
     </section>
   );
 }
 
 /** The new-device screen over the app, until the user picks Not now. */
-export function SyncGate({ dismissed, onDismiss, onUnlocked }: { dismissed: boolean; onDismiss: () => void; onUnlocked: () => void }) {
+export function SyncGate({
+  dismissed,
+  onDismiss,
+  onUnlocked,
+  onOpened,
+}: {
+  dismissed: boolean;
+  onDismiss: () => void;
+  onUnlocked: () => void;
+  /** Approved or recovered here, with this device's "Remember this device" choice. */
+  onOpened?: (remember: boolean) => void;
+}) {
   const state = useSyncState();
   // The engine moves this device out of "needs-approval" once approved or recovered; that is the signal.
   const waiting = useRef(false);
@@ -278,7 +497,7 @@ export function SyncGate({ dismissed, onDismiss, onUnlocked }: { dismissed: bool
       onUnlocked();
     }
   }, [state.phase]);
-  return state.phase === "needs-approval" && !dismissed ? <NewDeviceDialog onNotNow={onDismiss} /> : null;
+  return state.phase === "needs-approval" && !dismissed ? <NewDeviceDialog onNotNow={onDismiss} onOpened={onOpened} /> : null;
 }
 
 /**
@@ -286,8 +505,9 @@ export function SyncGate({ dismissed, onDismiss, onUnlocked }: { dismissed: bool
  * Not now (an empty local vault, labelled not synced). "Remember this device" is preselected.
  * It closes when the engine leaves "needs-approval" (SyncGate).
  */
-export function NewDeviceDialog({ onNotNow }: { onNotNow: () => void }) {
+export function NewDeviceDialog({ onNotNow, onOpened }: { onNotNow: () => void; onOpened?: (remember: boolean) => void }) {
   const t = useText(syncText);
+  const state = useSyncState();
   const [view, setView] = useState<"choose" | "code" | "recovery">("choose");
   const [remember, setRemember] = useState(true);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -316,6 +536,7 @@ export function NewDeviceDialog({ onNotNow }: { onNotNow: () => void }) {
           <h2 id="new-device-heading" ref={heading} tabIndex={-1}>
             {t.newHeading}
           </h2>
+          {state.error === "revoked" && <p className="sync-error">{t.errorRevoked}</p>}
           <p>{t.newText}</p>
           <RememberChoice checked={remember} onChange={setRemember} />
           <div className="new-device-actions">
@@ -327,12 +548,14 @@ export function NewDeviceDialog({ onNotNow }: { onNotNow: () => void }) {
               {t.notNow}
             </button>
           </div>
-          <p className="muted">{t.notNowNote}</p>
+          <p className="muted">{state.error === "revoked" ? t.notNowRevoked : t.notNowNote}</p>
         </div>
       )}
       {view !== "choose" && <h2 id="new-device-heading" className="sr-only">{t.newHeading}</h2>}
-      {view === "code" && <ShowPairingCode rememberDevice={remember} onApproved={() => {}} onBack={() => setView("choose")} />}
-      {view === "recovery" && <RecoveryKeyForm rememberDefault={remember} onDone={() => {}} onBack={() => setView("choose")} />}
+      {view === "code" && <ShowPairingCode rememberDevice={remember} onApproved={() => onOpened?.(remember)} onBack={() => setView("choose")} />}
+      {view === "recovery" && (
+        <RecoveryKeyForm rememberDefault={remember} onDone={(choice) => onOpened?.(choice)} onBack={() => setView("choose")} />
+      )}
     </dialog>
   );
 }

@@ -8,7 +8,7 @@ import { syncText, vaultUnlockText } from "./text/sync";
 import type { Vault } from "./vault";
 import { setLocalPassphrase, useSyncState } from "./sync";
 import { RecoveryKeyForm, RememberChoice } from "./SyncRecoveryKey";
-import { TypedConfirm } from "./SyncScreens";
+import { AlsoDeleteSynced, TypedConfirm } from "./SyncScreens";
 
 export function VaultUnlock({
   vault,
@@ -31,9 +31,11 @@ export function VaultUnlock({
   onPassphrase: (value: string) => void;
   onUnlock: (remember: boolean) => void;
   onOpenRemembered: () => void;
-  onReset: () => Promise<boolean>;
+  /** Deletes this device's saved data; with sync on here, the user chose whether the synced copy goes too. */
+  onReset: (alsoDeleteSynced: boolean) => Promise<boolean>;
   syncAvailable: boolean;
-  onSyncRecovered: () => void;
+  /** The recovery key opened the vault and a new passphrase is set; "Remember this device" as chosen. */
+  onSyncRecovered: (remember: boolean) => void;
   onGetFromOther?: () => void;
 }) {
   const t = useText(appText);
@@ -47,6 +49,8 @@ export function VaultUnlock({
   const [remember, setRemember] = useState(false);
   const [forgot, setForgot] = useState<"closed" | "open" | "new-passphrase">("closed");
   const [confirming, setConfirming] = useState(false);
+  const [alsoSynced, setAlsoSynced] = useState(false);
+  const [recoveredRemember, setRecoveredRemember] = useState(true);
   const [version, setVersion] = useState(0);
   const [newSecret, setNewSecret] = useState("");
   const [message, setMessage] = useState("");
@@ -129,7 +133,7 @@ export function VaultUnlock({
               await setLocalPassphrase(secret);
               setMessage(v.newPassphraseDone);
               setForgot("closed");
-              onSyncRecovered();
+              onSyncRecovered(recoveredRemember);
             } catch {
               setMessage(v.newPassphraseFailed);
             }
@@ -150,7 +154,8 @@ export function VaultUnlock({
             <>
               <p>{v.forgotWithSync}</p>
               <RecoveryKeyForm
-                onDone={() => {
+                onDone={(remember) => {
+                  setRecoveredRemember(remember);
                   setMessage(s.recovered);
                   setForgot("new-passphrase");
                 }}
@@ -184,14 +189,16 @@ export function VaultUnlock({
           onClose={async (yes) => {
             setConfirming(false);
             if (!yes) return;
-            const done = await onReset();
+            const done = await onReset(syncOn && alsoSynced);
             setMessage(done ? v.resetDone : v.resetFailed);
             if (done) {
               setForgot("closed");
               setVersion((n) => n + 1);
             }
           }}
-        />
+        >
+          {syncOn && <AlsoDeleteSynced checked={alsoSynced} onChange={setAlsoSynced} />}
+        </TypedConfirm>
       )}
     </div>
   );

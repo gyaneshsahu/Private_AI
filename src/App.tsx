@@ -91,8 +91,21 @@ import { composerText } from "./text/composer";
 import { Vault, VaultConflictError } from "./vault";
 import { VaultBackup } from "./VaultBackup";
 import { VaultUnlock } from "./VaultUnlock";
-import { PairingPrompt, SyncGate, SyncIndicator, SyncSettings } from "./SyncScreens";
-import { syncText } from "./text/sync";
+import { AlsoDeleteSynced, LocalPassphraseDialog, PairingPrompt, SyncGate, SyncIndicator, SyncSettings } from "./SyncScreens";
+import { syncText, vaultUnlockText } from "./text/sync";
+import {
+  attachSync,
+  deleteEverythingOnThisDevice,
+  detachSync,
+  onSyncApplied,
+  openLocalVault,
+  setLocalPassphrase,
+  setRememberDevice,
+  useSyncState,
+} from "./sync";
+import { ConfirmDialog } from "./ConfirmDialog";
+import { holdTasks } from "./scheduled";
+import { ensureProjectFiles, useSyncFiles } from "./sync/files";
 import { VaultSecurity } from "./VaultSecurity";
 import { BACKUP_MAX_BYTES } from "./vault-backup";
 import { containsTemporaryResearch } from "./saved-conversation";
@@ -398,6 +411,22 @@ export function App() {
   const [unlocked, setUnlocked] = useState(false);
   // The new-device sync screen, until the user picks Not now (docs/vault-sync-screens-20261115.md).
   const [syncDismissed, setSyncDismissed] = useState(false);
+  // Sync runs only signed in and with the deployment switch; "member": this device is in sync (also locked).
+  const syncOn = !!status?.vaultSync && !!status?.accountId;
+  const syncState = useSyncState();
+  const syncMember = syncOn && syncState.phase !== "off" && syncState.phase !== "needs-approval";
+  const syncCsrf = useRef("");
+  syncCsrf.current = status?.csrf ?? "";
+  // Pulled changes are shown only while the vault is shown (a recovery-key unlock keeps its own screen).
+  const vaultShown = useRef(false);
+  vaultShown.current = unlocked;
+  const vaultOpening = useRef(false);
+  const [syncRound, setSyncRound] = useState(0);
+  const [askLocalPassphrase, setAskLocalPassphrase] = useState(false);
+  const [eraseQuestion, setEraseQuestion] = useState(false);
+  const [eraseSynced, setEraseSynced] = useState(false);
+  const syncFiles = useSyncFiles();
+  const [filesQuestion, setFilesQuestion] = useState<(sendAnyway: boolean) => void>();
   // Read aloud stops when a message is sent, another conversation opens or the vault locks.
   useEffect(stopReading, [conversation.id, conversation.messages.length, unlocked]);
   const [saved, setSaved] = useState<Conversation[]>([]);
@@ -739,6 +768,7 @@ export function App() {
     setBusy(t.signingOut);
     try {
       await api("/api/auth/sign-out", {});
+      detachSync();
       vault.current?.lock();
       vault.current?.onInvalidate?.();
       accessNavigation.current = true;
@@ -831,6 +861,14 @@ export function App() {
       // Ask once before the first message; the message waits and is not sent yet.
       setConsentPending({ base, text, consumeDraft, modeOverride });
       return;
+    }
+    // Project files synced from another device are downloaded before a question in their project;
+    // without them the question goes only if the user says so.
+    if (base.projectId && syncOn && syncFiles.enabled) {
+      setBusy(syncText[lang].fetchingFiles);
+      const ready = await ensureProjectFiles(base.projectId).catch(() => false);
+      setBusy("");
+      if (!ready && !(await new Promise<boolean>((resolve) => setFilesQuestion(() => resolve)))) return;
     }
     const next = {
       ...base,
@@ -1409,17 +1447,31 @@ export function App() {
     setPassphrase("");
     setBusy(t.unlocking);
     try {
+      const store = vault.current!;
+      // A synced vault opens with this device's sync key, so the account key comes with it.
+      const synced = syncOn && (await store.mode()) === "sync";
+      let note = t.vaultUnlocked;
       if (remember === "remembered") {
-        if (!(await vault.current!.unlockRemembered())) throw Error("not remembered");
-      } else await vault.current!.unlock(secret, remember);
-      const snapshots = await vault.current!.readAvailable();
-      const projectList = await vault.current!.readProjects();
+        if (!(synced && (await openLocalVault(store))) && !(await store.unlockRemembered())) throw Error("not remembered");
+      } else {
+        const before = synced && syncMember && (await store.isRemembered());
+        await store.unlock(secret, remember);
+        // "Remember this device" on a synced device is the sync device key (VS-5: off needs this passphrase).
+        if (synced && syncMember && before !== remember)
+          await setRememberDevice(remember).catch(async () => {
+            // Not changed in sync: the vault's slot follows it back, so the lock screen stays true.
+            await store.rememberDevice(before).catch(() => {});
+            note = syncText[lang].actionFailed;
+          });
+      }
+      const snapshots = await store.readAvailable();
+      const projectList = await store.readProjects();
       if (current !== epoch.current) return;
       setUnlocked(true);
       setSaved(snapshots.conversations);
       setProjects(projectList);
       setUnreadableSnapshots(snapshots.unreadable);
-      setNotice(t.vaultUnlocked);
+      setNotice(note);
     } catch {
       if (current !== epoch.current) return;
       fail(t.unlockFailed);
@@ -1428,39 +1480,106 @@ export function App() {
     }
   }
   // Forgotten passphrase (Stage 0): deletes this device's vault while locked; nothing else.
-  async function resetForgotten(): Promise<boolean> {
+  async function resetForgotten(alsoDeleteSynced: boolean): Promise<boolean> {
     try {
-      await vault.current!.eraseEverything();
+      await eraseThisDevice(alsoDeleteSynced);
       return true;
     } catch {
       return false;
     }
   }
+  /** With sync here the engine deletes its own data too (and the synced copy if asked), then starts again. */
+  async function eraseThisDevice(alsoDeleteSynced: boolean) {
+    if (!syncOn || syncState.phase === "off") return vault.current!.eraseEverything();
+    await deleteEverythingOnThisDevice({ alsoDeleteSyncedData: alsoDeleteSynced });
+    setSyncRound((n) => n + 1);
+  }
   // A remembered device opens by itself on each visit (docs/vault-sync-screens-20261115.md).
-  // Also the way in after sync unlocks this device (the engine decides whether it is remembered).
   const openIfRemembered = () =>
     void vault.current?.isRemembered().then((yes) => {
       if (yes) void unlockVault("remembered");
     }, () => {});
   useEffect(() => {
-    if (status && !unlocked) openIfRemembered();
+    // With sync the attach below opens it first, so the device key, not an older key, opens a synced vault.
+    if (status && !unlocked && !(status.vaultSync && status.accountId)) openIfRemembered();
   }, [status?.accountId, !!status]);
-  async function eraseEverything() {
-    if (
-      !window.confirm(
-        t.eraseConfirm +
-          (memoryEnabled() ? ` ${memoryText[lang].eraseAlso}` : "") +
-          (projectSpacesEnabled() ? ` ${projectText[lang].eraseAlso}` : "") +
-          (scheduledEnabled() ? ` ${scheduledText[lang].eraseAlso}` : ""),
-      )
-    )
+  /** Shows what the vault holds after sync opened it or wrote pulled changes into it. */
+  async function showVault() {
+    const store = vault.current;
+    if (!store?.unlocked) return;
+    const current = epoch.current;
+    vaultOpening.current = true;
+    try {
+      const snapshots = await store.readAvailable();
+      const projectList = await store.readProjects();
+      if (current !== epoch.current || !store.unlocked) return;
+      setUnlocked(true);
+      setSaved(snapshots.conversations);
+      setProjects(projectList);
+      setUnreadableSnapshots(snapshots.unreadable);
+      await loadMemories(store);
+      if (scheduledEnabled()) holdTasks(await store.readTasks());
+    } catch {
+      /* Locked in between: the lock screen shows. */
+    } finally {
+      vaultOpening.current = false;
+    }
+  }
+  useEffect(() => {
+    const store = vault.current;
+    if (!syncOn || !store) {
+      detachSync();
       return;
+    }
+    let active = true;
+    const stop = onSyncApplied(() => {
+      if (vaultShown.current || vaultOpening.current) void showVault();
+    });
+    void attachSync({ vault: store, accountId: status!.accountId!, csrf: () => syncCsrf.current })
+      .catch(() => {})
+      .then(() => {
+        if (!active) return;
+        if (store.unlocked) void showVault();
+        else openIfRemembered();
+      });
+    return () => {
+      active = false;
+      stop();
+      detachSync();
+    };
+  }, [syncOn, status?.accountId, syncRound]);
+  /** Sync opened this device (set up, approved, recovery key) with the user's "Remember this device" choice. */
+  async function syncOpened(remember: boolean) {
+    const store = vault.current;
+    if (store?.unlocked) {
+      // The vault's remembered key marks the choice for the lock screen; it opens through openLocalVault.
+      await store.rememberDevice(remember).catch(() => {});
+      await showVault();
+    }
+    // VS-5: a device that is not remembered needs a local passphrase, or the recovery key every visit.
+    if (!remember && !(await store?.hasLocalPassphrase().catch(() => true))) setAskLocalPassphrase(true);
+  }
+  const eraseText = () =>
+    t.eraseConfirm +
+    (memoryEnabled() ? ` ${memoryText[lang].eraseAlso}` : "") +
+    (projectSpacesEnabled() ? ` ${projectText[lang].eraseAlso}` : "") +
+    (scheduledEnabled() ? ` ${scheduledText[lang].eraseAlso}` : "");
+  async function eraseEverything(alsoDeleteSynced?: boolean) {
+    if (alsoDeleteSynced === undefined) {
+      // In sync here: one question that also asks about the synced copy (below), not the browser's.
+      if (syncMember) {
+        setEraseSynced(false);
+        setEraseQuestion(true);
+        return;
+      }
+      if (!window.confirm(eraseText())) return;
+    }
     const current = epoch.current;
     setBusy(t.erasing);
     try {
       controller.current?.abort();
       await deleteServerCopies(status);
-      await vault.current!.eraseEverything();
+      await eraseThisDevice(!!alsoDeleteSynced);
       if (current !== epoch.current) return;
       setUnlocked(false);
       setSaved([]);
@@ -1578,6 +1697,7 @@ export function App() {
       return;
     }
     if (!allowReplace()) return;
+    detachSync();
     vault.current?.lock();
     vault.current?.onInvalidate?.();
     try {
@@ -1785,7 +1905,7 @@ export function App() {
         }
         backgroundActive={scheduledTasks.some((task) => task.mode === "auto")}
         syncIndicator={
-          status?.vaultSync && (
+          syncOn && (
             <SyncIndicator
               onOpen={() => {
                 setNavigationOpen(false);
@@ -1796,16 +1916,54 @@ export function App() {
           )
         }
       />
-      {status?.vaultSync && (
+      {syncOn && (
         <SyncGate
           dismissed={syncDismissed}
           onDismiss={() => setSyncDismissed(true)}
           onUnlocked={() => {
             setNotice(syncText[lang].approved);
             setTab("Saved");
-            openIfRemembered();
+            void showVault();
+          }}
+          onOpened={(remember) => void syncOpened(remember)}
+        />
+      )}
+      {askLocalPassphrase && (
+        <LocalPassphraseDialog
+          text={syncText[lang].localPassphraseNotRemembered}
+          cancelLabel={syncText[lang].notNow}
+          onSubmit={(secret) => setLocalPassphrase(secret)}
+          onClose={(done) => {
+            setAskLocalPassphrase(false);
+            if (done) setNotice(vaultUnlockText[lang].newPassphraseDone);
           }}
         />
+      )}
+      {filesQuestion && (
+        <ConfirmDialog
+          title={syncText[lang].missingFilesTitle}
+          text={syncText[lang].missingFilesText}
+          confirmLabel={syncText[lang].sendAnyway}
+          cancelLabel={syncText[lang].cancel}
+          onClose={(yes) => {
+            setFilesQuestion(undefined);
+            filesQuestion(yes);
+          }}
+        />
+      )}
+      {eraseQuestion && (
+        <ConfirmDialog
+          title={t.deleteAll}
+          text={eraseText()}
+          confirmLabel={t.deleteAll}
+          cancelLabel={syncText[lang].cancel}
+          onClose={(yes) => {
+            setEraseQuestion(false);
+            if (yes) void eraseEverything(eraseSynced);
+          }}
+        >
+          <AlsoDeleteSynced checked={eraseSynced} onChange={setEraseSynced} />
+        </ConfirmDialog>
       )}
       {scheduledEnabled() && scheduledOpen && (
         <ScheduledPanel
@@ -1889,7 +2047,7 @@ export function App() {
                 ["privacy", "shield", t.sectionPrivacy],
                 ["usage", "usage", t.sectionUsage],
                 ...(memoryEnabled() ? ([["memory", "pin", memoryText[lang].title]] as const) : []),
-                ...(status?.vaultSync ? ([["sync", "shield", syncText[lang].section]] as const) : []),
+                ...(syncOn ? ([["sync", "shield", syncText[lang].section]] as const) : []),
               ] as const
             ).map(([id, icon, label]) => (
               <button
@@ -2001,8 +2159,8 @@ export function App() {
             {settingsSection === "memory" && memoryEnabled() && (
               <MemorySettings vault={vault.current} unlocked={unlocked} />
             )}
-            {settingsSection === "sync" && status?.vaultSync && (
-              <SyncSettings unlocked={unlocked} onNotice={setNotice} />
+            {settingsSection === "sync" && syncOn && (
+              <SyncSettings unlocked={unlocked} onNotice={setNotice} onOpened={(remember) => void syncOpened(remember)} />
             )}
           </section>
         </div>
@@ -2047,7 +2205,7 @@ export function App() {
         </div>
       </dialog>
       <main>
-        {status?.vaultSync && <PairingPrompt />}
+        {syncOn && <PairingPrompt />}
         <header className="conversation-header">
           <button
             className="navigation-toggle"
@@ -3373,8 +3531,8 @@ export function App() {
                 onUnlock={(remember) => void unlockVault(remember)}
                 onOpenRemembered={() => void unlockVault("remembered")}
                 onReset={resetForgotten}
-                syncAvailable={!!status?.vaultSync}
-                onSyncRecovered={openIfRemembered}
+                syncAvailable={syncOn}
+                onSyncRecovered={(remember) => void syncOpened(remember)}
                 onGetFromOther={() => setSyncDismissed(false)}
               />
             ) : (

@@ -3,8 +3,32 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useText } from "./i18n";
 import { syncText, vaultUnlockText } from "./text/sync";
-import { formatRecoveryKey, recoveryKeyGroups, recoveryKeyHint } from "./recovery-key-format";
-import { unlockWithRecoveryKey } from "./sync";
+import { decodeRecoveryKey, unlockWithRecoveryKey } from "./sync";
+
+const RECOVERY_KEY_LENGTH = 28;
+/** As decodeRecoveryKey reads a key (src/sync/crypto.ts): upper case, no spaces or dashes, O as 0, I and L as 1. */
+export const normalizeRecoveryKey = (input: string) =>
+  input.toUpperCase().replace(/[\s-]/g, "").replace(/O/g, "0").replace(/[IL]/g, "1");
+/** Groups of 4, as the engine shows the key (7 groups when complete). */
+export const formatRecoveryKey = (input: string) => (normalizeRecoveryKey(input).match(/.{1,4}/g) ?? []).join("-");
+
+export type RecoveryKeyHint =
+  | { kind: "empty" }
+  | { kind: "short"; missing: number }
+  | { kind: "long"; extra: number }
+  | { kind: "character"; character: string }
+  | { kind: "typo" }
+  | { kind: "ok" };
+/** Typing help; the check is the engine's own (decodeRecoveryKey). */
+export function recoveryKeyHint(input: string): RecoveryKeyHint {
+  const value = normalizeRecoveryKey(input);
+  if (!value) return { kind: "empty" };
+  const bad = [...value].find((c) => !/[0-9A-HJKMNP-TV-Z]/.test(c));
+  if (bad) return { kind: "character", character: bad };
+  if (value.length < RECOVERY_KEY_LENGTH) return { kind: "short", missing: RECOVERY_KEY_LENGTH - value.length };
+  if (value.length > RECOVERY_KEY_LENGTH) return { kind: "long", extra: value.length - RECOVERY_KEY_LENGTH };
+  return decodeRecoveryKey(value) ? { kind: "ok" } : { kind: "typo" };
+}
 
 /** A name for this browser to start from, from its own description of itself. */
 export function defaultDeviceName(): string {
@@ -16,7 +40,7 @@ export function defaultDeviceName(): string {
 
 export function RecoveryKeyGroups({ value }: { value: string }) {
   const t = useText(syncText);
-  const groups = recoveryKeyGroups(value);
+  const groups = formatRecoveryKey(value).split("-");
   return (
     <ol className="recovery-key" aria-label={t.keyGroups(groups.length)}>
       {groups.map((group, index) => (
@@ -52,7 +76,8 @@ export function RecoveryKeyForm({
   onBack,
   rememberDefault = true,
 }: {
-  onDone: () => void;
+  /** After the key opened the saved data, with this device's "Remember this device" choice. */
+  onDone: (remember: boolean) => void;
   onBack?: () => void;
   rememberDefault?: boolean;
 }) {
@@ -66,7 +91,7 @@ export function RecoveryKeyForm({
   const hintId = useId();
   useEffect(() => heading.current?.focus(), []);
   const hint = recoveryKeyHint(key);
-  // The local check is a hint only (its bits are a proposal to the core): a "typo" warning never blocks.
+  // A "typo" warning does not block: the engine answers it with "wrong-key", so both say the same.
   const complete = hint.kind === "ok" || hint.kind === "typo";
   const hintText =
     hint.kind === "short"
@@ -90,7 +115,7 @@ export function RecoveryKeyForm({
         setError("");
         try {
           const result = await unlockWithRecoveryKey(key, { deviceLabel: label.trim() || defaultDeviceName(), rememberDevice: remember });
-          if (result === "ok") onDone();
+          if (result === "ok") onDone(remember);
           else setError(t.wrongKey);
         } catch {
           setError(t.recoveryFailed);

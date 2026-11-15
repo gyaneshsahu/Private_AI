@@ -4,11 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { useText } from "./i18n";
 import { syncText } from "./text/sync";
 import { confirmRecoveryKeySaved, setUpSync } from "./sync";
-import { RecoveryKeyGroups, RememberChoice, defaultDeviceName } from "./SyncRecoveryKey";
+import { RecoveryKeyGroups, RememberChoice, defaultDeviceName, normalizeRecoveryKey } from "./SyncRecoveryKey";
 
 type Step = "explain" | "key" | "confirm";
 
-export function SyncSetup({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
+export function SyncSetup({ onDone, onCancel }: { onDone: (remember: boolean) => void; onCancel: () => void }) {
   const t = useText(syncText);
   const [step, setStep] = useState<Step>("explain");
   const [label, setLabel] = useState(defaultDeviceName);
@@ -19,8 +19,10 @@ export function SyncSetup({ onDone, onCancel }: { onDone: () => void; onCancel: 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const heading = useRef<HTMLHeadingElement>(null);
-  // Each step starts at its heading, so a screen reader hears where it is.
-  useEffect(() => heading.current?.focus(), [step]);
+  const print = useRef<HTMLButtonElement>(null);
+  // Each step starts at its heading, so a screen reader hears where it is; the key starts at Print,
+  // the safest way to keep it (security review L7).
+  useEffect(() => (step === "key" ? print : heading).current?.focus(), [step]);
   useEffect(() => {
     const after = () => document.body.classList.remove("printing-recovery-key");
     window.addEventListener("afterprint", after);
@@ -115,6 +117,7 @@ export function SyncSetup({ onDone, onCancel }: { onDone: () => void; onCancel: 
             {t.download}
           </button>
           <button
+            ref={print}
             type="button"
             onClick={() => {
               document.body.classList.add("printing-recovery-key");
@@ -124,6 +127,7 @@ export function SyncSetup({ onDone, onCancel }: { onDone: () => void; onCancel: 
             {t.print}
           </button>
         </div>
+        <p className="muted">{t.keyCopyRisk}</p>
         <p aria-live="polite" className="muted">
           {message}
         </p>
@@ -143,9 +147,10 @@ export function SyncSetup({ onDone, onCancel }: { onDone: () => void; onCancel: 
         setBusy(true);
         setError("");
         try {
-          if (await confirmRecoveryKeySaved(lastGroup.trim())) {
+          // The engine compares exactly; read O as 0 and I or L as 1 here, as the key's format does.
+          if (await confirmRecoveryKeySaved(normalizeRecoveryKey(lastGroup))) {
             setKey("");
-            onDone();
+            onDone(remember);
           } else setError(t.confirmWrong);
         } catch {
           setError(t.setupFailed);
