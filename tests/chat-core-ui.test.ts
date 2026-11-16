@@ -298,6 +298,39 @@ for (const lang of ["en", "de"] as const)
     }, 120_000);
 
 for (const lang of ["en", "de"] as const)
+  for (const width of [375, 768, 1280])
+    it(`a picture with no readable text points to Ask about a picture, ${width} px, ${lang}`, async () => {
+      const t = appText[lang];
+      const im = imageText[lang];
+      const { context, page, external } = await open(lang, width);
+      try {
+        const png = await page.evaluate(async () => {
+          const canvas = document.createElement("canvas");
+          [canvas.width, canvas.height] = [240, 160];
+          const g = canvas.getContext("2d")!;
+          g.fillStyle = "#fff";
+          g.fillRect(0, 0, 240, 160);
+          const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), "image/png"));
+          return [...new Uint8Array(await blob.arrayBuffer())];
+        });
+        // Through the file picker (not a paste): the text reader reads it and finds no text.
+        await page.getByLabel(t.attachFiles).setInputFiles({ name: "blank.png", mimeType: "image/png", buffer: Buffer.from(png) });
+        const results = page.getByRole("region", { name: t.importResults });
+        const hint = results.getByRole("button", { name: im.menu, exact: true });
+        await ui(hint).toBeVisible({ timeout: 90_000 });
+        await ui(results).toContainText(chatCoreText[lang].pictureHint);
+        expect((await hint.boundingBox())!.height).toBeGreaterThanOrEqual(24);
+        await noSidewaysScroll(page);
+        await hint.click();
+        await ui(page.getByRole("heading", { name: im.noteTitle })).toBeVisible();
+        expect(await calls(page)).toEqual([]);
+        expect(external).toEqual([]);
+      } finally {
+        await context.close();
+      }
+    }, 150_000);
+
+for (const lang of ["en", "de"] as const)
   it(`chat not available yet, 375 px, ${lang}: one line at the message box, not under the header`, async () => {
     const t = appText[lang];
     const { context, page, external } = await open(lang, 375, false);

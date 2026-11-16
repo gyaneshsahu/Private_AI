@@ -45,6 +45,13 @@ describe("failure kinds", () => {
     expect(failureKind(incomplete("HTTP_MODEL_NOT_FOUND"), false)).toBe("unavailable");
     expect(failureKind(new DeploymentChangedError(), false)).toBe("unavailable");
     expect(failureKind(incomplete("TRANSPORT_OR_DECRYPTION"), false)).toBe("incomplete");
+    expect(failureKind(incomplete("MISSING_DONE"), false)).toBe("incomplete");
+    expect(failureKind(incomplete("OUTPUT_LIMIT_REACHED"), false)).toBe("incomplete");
+    expect(failureKind(incomplete("TIMED_OUT"), false)).toBe("timeout");
+    expect(failureKind(incomplete("HTTP_UPSTREAM_REJECTED"), false)).toBe("error");
+    expect(failureKind(incomplete("INVALID_JSON"), false)).toBe("error");
+    // A withheld research answer carries no stream code.
+    expect(failureKind(new IncompleteReplyError("withheld"), false)).toBe("error");
     expect(failureKind(new DOMException("x", "TimeoutError"), false)).toBe("timeout");
     expect(failureKind(new Error("anything else"), false)).toBe("error");
   });

@@ -14,7 +14,7 @@ export const chatCoreText = defineText({
     failureTimeout: "Response timed out. Try again in a minute.",
     failureBusy: "The service is busy right now. Try again in a minute.",
     failureUnavailable: "The service is not available right now. Try again in a minute.",
-    failureIncomplete: "The connection dropped before the answer finished.",
+    failureIncomplete: "The answer was cut off before it finished.",
     failureEmpty: "No answer came back. Try again.",
     failureError: `Something went wrong. ${tryAgainHelpEn}`,
     failureMore: "What this means",
@@ -32,7 +32,7 @@ export const chatCoreText = defineText({
     failureBusy: "Der Dienst ist gerade ausgelastet. Versuchen Sie es in einer Minute erneut.",
     failureUnavailable:
       "Der Dienst ist gerade nicht erreichbar. Versuchen Sie es in einer Minute erneut.",
-    failureIncomplete: "Die Verbindung ist abgebrochen, bevor die Antwort fertig war.",
+    failureIncomplete: "Die Antwort brach ab, bevor sie fertig war.",
     failureEmpty: "Es kam keine Antwort. Versuchen Sie es erneut.",
     failureError: `Etwas ist schiefgegangen. ${tryAgainHelpDe}`,
     failureMore: "Was das bedeutet",

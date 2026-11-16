@@ -3498,3 +3498,10 @@
     min-height: 44px;
   }
 }
+/* The microphone and live voice sit beside Send on the right, so their notes open over the message box. */
+.chat-design .composer-footer > :is(.voice-input, .live-voice-open) {
+  margin-left: auto;
+}
+.chat-design .composer-footer > :is(.voice-input, .live-voice-open) ~ :is(.voice-input, .live-voice-open, .primary) {
+  margin-left: 0;
+}
