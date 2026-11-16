@@ -93,6 +93,7 @@ import { VaultBackup } from "./VaultBackup";
 import { VaultUnlock } from "./VaultUnlock";
 import { AlsoDeleteSynced, LocalPassphraseDialog, PairingPrompt, SyncGate, SyncIndicator, SyncSettings } from "./SyncScreens";
 import { syncText, vaultUnlockText } from "./text/sync";
+import { syncHardeningText } from "./text/sync-hardening";
 import {
   attachSync,
   deleteEverythingOnThisDevice,
@@ -101,6 +102,8 @@ import {
   openLocalVault,
   setLocalPassphrase,
   setRememberDevice,
+  SyncError,
+  unlockThisDevice,
   useSyncState,
 } from "./sync";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -1452,17 +1455,16 @@ export function App() {
       const synced = syncOn && (await store.mode()) === "sync";
       let note = t.vaultUnlocked;
       if (remember === "remembered") {
-        if (!(synced && (await openLocalVault(store))) && !(await store.unlockRemembered())) throw Error("not remembered");
+        // A synced vault opens only with this device's sync key; the older remembered key is for a passphrase vault.
+        if (!(synced ? await openLocalVault(store) : await store.unlockRemembered())) throw Error("not remembered");
       } else {
-        const before = synced && syncMember && (await store.isRemembered());
-        await store.unlock(secret, remember);
+        await store.unlock(secret, synced ? undefined : remember);
         // "Remember this device" on a synced device is the sync device key (VS-5: off needs this passphrase).
-        if (synced && syncMember && before !== remember)
-          await setRememberDevice(remember).catch(async () => {
-            // Not changed in sync: the vault's slot follows it back, so the lock screen stays true.
-            await store.rememberDevice(before).catch(() => {});
-            note = syncText[lang].actionFailed;
-          });
+        // unlockThisDevice first: the engine unseals this device's token only after the unlock event.
+        if (synced && syncMember && !!syncState.remembered !== remember)
+          await unlockThisDevice()
+            .then(() => setRememberDevice(remember))
+            .catch(() => (note = syncText[lang].actionFailed));
       }
       const snapshots = await store.readAvailable();
       const projectList = await store.readProjects();
@@ -1480,18 +1482,19 @@ export function App() {
     }
   }
   // Forgotten passphrase (Stage 0): deletes this device's vault while locked; nothing else.
-  async function resetForgotten(alsoDeleteSynced: boolean): Promise<boolean> {
+  // The synced copy too needs the recovery key here: a locked device cannot prove it holds the account key.
+  async function resetForgotten(alsoDeleteSynced: boolean, recoveryKey?: string): Promise<true | string> {
     try {
-      await eraseThisDevice(alsoDeleteSynced);
+      await eraseThisDevice(alsoDeleteSynced, recoveryKey);
       return true;
-    } catch {
-      return false;
+    } catch (error) {
+      return error instanceof SyncError && error.code === "wrong-key" ? syncHardeningText[lang].wrongRecoveryKey : vaultUnlockText[lang].resetFailed;
     }
   }
   /** With sync here the engine deletes its own data too (and the synced copy if asked), then starts again. */
-  async function eraseThisDevice(alsoDeleteSynced: boolean) {
+  async function eraseThisDevice(alsoDeleteSynced: boolean, recoveryKey?: string) {
     if (!syncOn || syncState.phase === "off") return vault.current!.eraseEverything();
-    await deleteEverythingOnThisDevice({ alsoDeleteSyncedData: alsoDeleteSynced });
+    await deleteEverythingOnThisDevice({ alsoDeleteSyncedData: alsoDeleteSynced, ...(recoveryKey ? { recoveryKey } : {}) });
     setSyncRound((n) => n + 1);
   }
   // A remembered device opens by itself on each visit (docs/vault-sync-screens-20261115.md).
@@ -1551,11 +1554,7 @@ export function App() {
   /** Sync opened this device (set up, approved, recovery key) with the user's "Remember this device" choice. */
   async function syncOpened(remember: boolean) {
     const store = vault.current;
-    if (store?.unlocked) {
-      // The vault's remembered key marks the choice for the lock screen; it opens through openLocalVault.
-      await store.rememberDevice(remember).catch(() => {});
-      await showVault();
-    }
+    if (store?.unlocked) await showVault();
     // VS-5: a device that is not remembered needs a local passphrase, or the recovery key every visit.
     if (!remember && !(await store?.hasLocalPassphrase().catch(() => true))) setAskLocalPassphrase(true);
   }
@@ -1567,7 +1566,7 @@ export function App() {
   async function eraseEverything(alsoDeleteSynced?: boolean) {
     if (alsoDeleteSynced === undefined) {
       // In sync here: one question that also asks about the synced copy (below), not the browser's.
-      if (syncMember) {
+      if (syncMember && !syncState.detached) {
         setEraseSynced(false);
         setEraseQuestion(true);
         return;
@@ -2160,7 +2159,7 @@ export function App() {
               <MemorySettings vault={vault.current} unlocked={unlocked} />
             )}
             {settingsSection === "sync" && syncOn && (
-              <SyncSettings unlocked={unlocked} onNotice={setNotice} onOpened={(remember) => void syncOpened(remember)} />
+              <SyncSettings unlocked={unlocked} vault={vault.current} onNotice={setNotice} onOpened={(remember) => void syncOpened(remember)} />
             )}
           </section>
         </div>

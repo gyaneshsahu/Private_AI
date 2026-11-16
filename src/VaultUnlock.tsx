@@ -1,13 +1,14 @@
 // The locked vault screen (docs/vault-sync-screens-20261115.md). Stage 0, live without the sync
 // switch: the new-device notice, "Remember this device", and a way out of a forgotten passphrase.
 // With sync on for the account, a forgotten passphrase goes to the recovery key first.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useText } from "./i18n";
 import { appText } from "./text/app";
 import { syncText, vaultUnlockText } from "./text/sync";
 import type { Vault } from "./vault";
 import { setLocalPassphrase, useSyncState } from "./sync";
-import { RecoveryKeyForm, RememberChoice } from "./SyncRecoveryKey";
+import { RecoveryKeyForm, RememberChoice, formatRecoveryKey, recoveryKeyHint } from "./SyncRecoveryKey";
+import { syncHardeningText } from "./text/sync-hardening";
 import { AlsoDeleteSynced, TypedConfirm } from "./SyncScreens";
 
 export function VaultUnlock({
@@ -32,7 +33,7 @@ export function VaultUnlock({
   onUnlock: (remember: boolean) => void;
   onOpenRemembered: () => void;
   /** Deletes this device's saved data; with sync on here, the user chose whether the synced copy goes too. */
-  onReset: (alsoDeleteSynced: boolean) => Promise<boolean>;
+  onReset: (alsoDeleteSynced: boolean, recoveryKey?: string) => Promise<true | string>;
   syncAvailable: boolean;
   /** The recovery key opened the vault and a new passphrase is set; "Remember this device" as chosen. */
   onSyncRecovered: (remember: boolean) => void;
@@ -41,15 +42,19 @@ export function VaultUnlock({
   const t = useText(appText);
   const v = useText(vaultUnlockText);
   const s = useText(syncText);
+  const h = useText(syncHardeningText);
   const sync = useSyncState();
   // This device is in sync (unlocked through the engine): the Stage 0 "nothing here" notice would be wrong.
   const syncOn = syncAvailable && sync.phase !== "off" && sync.phase !== "needs-approval";
+  const syncOnRef = useRef(syncOn);
+  syncOnRef.current = syncOn;
   const [exists, setExists] = useState<boolean>();
   const [remembered, setRemembered] = useState(false);
   const [remember, setRemember] = useState(false);
   const [forgot, setForgot] = useState<"closed" | "open" | "new-passphrase">("closed");
   const [confirming, setConfirming] = useState(false);
   const [alsoSynced, setAlsoSynced] = useState(false);
+  const [resetKey, setResetKey] = useState("");
   const [recoveredRemember, setRecoveredRemember] = useState(true);
   const [version, setVersion] = useState(0);
   const [newSecret, setNewSecret] = useState("");
@@ -60,13 +65,21 @@ export function VaultUnlock({
     vault?.isRemembered().then((value) => {
       if (!active) return;
       setRemembered(value);
-      // Typing the passphrase on a remembered device keeps it remembered unless unticked.
-      setRemember(value);
+      // Typing the passphrase on a remembered device keeps it remembered unless unticked
+      // (on a synced device the engine's own flag sets the tick, below).
+      if (!syncOnRef.current) setRemember(value);
     }, () => {});
     return () => {
       active = false;
     };
   }, [vault, scope, version]);
+  // On a synced device "remembered" is the engine's: its own sync key, not the older vault slot.
+  const isRemembered = syncOn ? !!sync.remembered : remembered;
+  useEffect(() => {
+    if (syncOn) setRemember(!!sync.remembered);
+  }, [syncOn, sync.remembered]);
+  const keyNeeded = syncOn && alsoSynced;
+  const keyHint = recoveryKeyHint(resetKey);
 
   return (
     <div className="vault-unlock">
@@ -84,7 +97,7 @@ export function VaultUnlock({
           <button onClick={onGetFromOther}>{s.getFromOther}</button>
         </div>
       )}
-      {remembered && exists && (
+      {isRemembered && exists && (
         <div className="panel">
           <p>{v.rememberedText}</p>
           <button className="primary" disabled={busy} onClick={onOpenRemembered}>
@@ -186,18 +199,35 @@ export function VaultUnlock({
           phrase={v.resetWord}
           confirmLabel={v.resetConfirm}
           cancelLabel={v.cancel}
+          blocked={keyNeeded && keyHint.kind !== "ok"}
           onClose={async (yes) => {
             setConfirming(false);
+            const key = resetKey;
+            setResetKey("");
             if (!yes) return;
-            const done = await onReset(syncOn && alsoSynced);
-            setMessage(done ? v.resetDone : v.resetFailed);
-            if (done) {
+            const done = await onReset(keyNeeded, keyNeeded ? key : undefined);
+            setMessage(done === true ? v.resetDone : done);
+            if (done === true) {
               setForgot("closed");
               setVersion((n) => n + 1);
             }
           }}
         >
           {syncOn && <AlsoDeleteSynced checked={alsoSynced} onChange={setAlsoSynced} />}
+          {keyNeeded && (
+            // Locked, this device cannot prove it holds the account key: the recovery key does.
+            <label>
+              {h.resetNeedsRecoveryKey}
+              <input
+                className="recovery-key-input"
+                value={resetKey}
+                autoComplete="off"
+                autoCapitalize="characters"
+                spellCheck={false}
+                onChange={(e) => setResetKey(formatRecoveryKey(e.target.value))}
+              />
+            </label>
+          )}
         </TypedConfirm>
       )}
     </div>

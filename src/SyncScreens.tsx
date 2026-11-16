@@ -6,7 +6,18 @@ import { useLang, useText } from "./i18n";
 import { syncText, vaultUnlockText } from "./text/sync";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { containDialogFocus } from "./dialog-focus";
-import { SyncError, resetSync, revokeDevice, syncNow, turnOffSyncOnThisDevice, useSyncState, type SyncState } from "./sync";
+import { syncHardeningText } from "./text/sync-hardening";
+import type { Vault } from "./vault";
+import {
+  SyncError,
+  resetSync,
+  revokeDevice,
+  setLocalPassphrase,
+  syncNow,
+  turnOffSyncOnThisDevice,
+  useSyncState,
+  type SyncState,
+} from "./sync";
 import { SyncSetup } from "./SyncSetup";
 import { ApprovePairing, ShowPairingCode } from "./SyncPairing";
 import { RecoveryKeyForm, RememberChoice } from "./SyncRecoveryKey";
@@ -21,6 +32,7 @@ export function TypedConfirm({
   cancelLabel,
   onClose,
   children,
+  blocked,
 }: {
   title: string;
   text: string;
@@ -30,9 +42,11 @@ export function TypedConfirm({
   cancelLabel: string;
   onClose: (confirmed: boolean) => void;
   children?: ReactNode;
+  /** Something in children is still missing (for example the recovery key). */
+  blocked?: boolean;
 }) {
   const [typed, setTyped] = useState("");
-  const matches = typed.trim().toUpperCase() === phrase.toUpperCase();
+  const matches = typed.trim().toUpperCase() === phrase.toUpperCase() && !blocked;
   return (
     <ConfirmDialog
       title={title}
@@ -144,30 +158,42 @@ export function LocalPassphraseDialog({
   );
 }
 
-type Errorish = Pick<SyncState, "phase" | "error">;
-/** The engine's error, in plain words. Codes: offline, quota, revoked, server, rate-limited, item-too-large. */
-export function syncErrorText(state: Errorish, t: (typeof syncText)["en"]): string {
+type Errorish = Pick<SyncState, "phase" | "error" | "needsUpgrade">;
+type Hardening = (typeof syncHardeningText)["en"];
+/** The engine's error, in plain words (docs/vault-sync-20261115.md, section 15.4). */
+export function syncErrorText(state: Errorish, t: (typeof syncText)["en"], h: Hardening): string {
   if (!state.error) return state.phase === "error" ? t.errorOther : "";
-  const code = state.error.toLowerCase();
+  return codeText(state.error, t, h, state.needsUpgrade) ?? t.errorOther;
+}
+function codeText(error: string, t: (typeof syncText)["en"], h: Hardening, needsUpgrade = 1): string | undefined {
+  const code = error.toLowerCase();
   if (code.includes("offline")) return t.errorOffline;
   if (code.includes("quota")) return t.errorQuota;
-  if (code.includes("revoked")) return t.errorRevoked;
-  // Not reported by the engine yet (security review C1): the synced data was reset from another device.
-  if (code.includes("reset")) return t.errorReset;
-  if (code.includes("rate-limited")) return t.errorRateLimited;
-  if (code.includes("item-too-large")) return t.errorItemTooLarge;
+  if (code === "removed") return h.detachedRemoved;
+  if (code === "reset-elsewhere") return h.detachedResetElsewhere;
+  if (code.includes("rate-limited")) return h.rateLimited;
+  if (code.includes("item-too-large")) return h.itemTooLarge;
+  if (code === "pairing-unverified") return h.pairingUnverified;
+  if (code === "wrong-key") return h.wrongRecoveryKey;
+  if (code === "wrong-proof") return h.wrongProof;
+  if (code === "needs-upgrade") return h.needsUpgrade(needsUpgrade);
+  if (code === "locked") return h.unlockFirst;
   if (code.includes("server")) return t.errorServer;
   // The engine merges conflicts and never reports one; kept for older codes.
   if (code.includes("conflict")) return t.errorConflict;
-  return t.errorOther;
+  return undefined;
 }
+/** A refused action in plain words, or the fallback. */
+const actionText = (error: unknown, t: (typeof syncText)["en"], h: Hardening, fallback: string) =>
+  (error instanceof SyncError && error.code !== "server" && codeText(error.code, t, h)) || fallback;
 const needsPassphrase = (error: unknown) => error instanceof SyncError && error.code === "needs-local-passphrase";
 
 function indicatorState(state: SyncState, t: (typeof syncText)["en"]): { key: string; text: string } | undefined {
   if (state.phase === "off") return undefined;
   if (state.phase === "syncing") return { key: "syncing", text: t.stateSyncing };
   if (state.phase === "locked") return { key: "locked", text: t.stateLocked };
-  if (state.phase === "needs-approval") return { key: "approval", text: t.stateApproval };
+  // Removed or reset elsewhere: not syncing here, and nothing is wrong with the data on this device.
+  if (state.phase === "needs-approval" || state.detached) return { key: "approval", text: t.stateApproval };
   if (state.phase === "error" || state.error)
     return state.error?.toLowerCase().includes("offline") ? { key: "offline", text: t.stateOffline } : { key: "error", text: t.stateError };
   return { key: "synced", text: t.stateSynced };
@@ -193,28 +219,43 @@ const megabytes = (bytes: number, lang: string) =>
 /** Settings, Devices and sync. */
 export function SyncSettings({
   unlocked,
+  vault,
   onNotice,
   onOpened,
 }: {
   unlocked: boolean;
+  /** This account's vault: whether a detached device still needs a local passphrase. */
+  vault?: Vault | null;
   onNotice: (text: string) => void;
-  /** Sync was turned on here, with this device's "Remember this device" choice. */
+  /** Sync was turned on (or on again) here, with this device's "Remember this device" choice. */
   onOpened?: (remember: boolean) => void;
 }) {
   const t = useText(syncText);
+  const h = useText(syncHardeningText);
+  const vaultUnlock = useText(vaultUnlockText);
   const { lang } = useLang();
   const state = useSyncState();
   const [setup, setSetup] = useState(false);
+  const [joining, setJoining] = useState(false);
   const [approving, setApproving] = useState(false);
   const [confirm, setConfirm] = useState<{ kind: "revoke"; id: string; name: string } | { kind: "off" } | { kind: "reset" }>();
   // Turning sync off or deleting the synced copy needs a local passphrase first: asked, then retried.
-  const [retry, setRetry] = useState<{ action: (localPassphrase: string) => Promise<void>; done: string }>();
+  const [retry, setRetry] = useState<{ action: (localPassphrase: string) => Promise<void>; done: string; text: string }>();
+  const [hasLocal, setHasLocal] = useState(true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const headingId = useId();
+  useEffect(() => {
+    if (state.detached && vault) vault.hasLocalPassphrase().then(setHasLocal, () => {});
+  }, [state.detached, vault, retry]);
   const date = (iso: string) =>
     new Intl.DateTimeFormat(lang === "de" ? "de-DE" : "en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso));
-  const run = async (action: () => Promise<void>, done: string, failed = t.actionFailed, again?: (localPassphrase: string) => Promise<void>) => {
+  const run = async (
+    action: () => Promise<void>,
+    done: string,
+    failed = t.actionFailed,
+    again?: { action: (localPassphrase: string) => Promise<void>; text: string },
+  ) => {
     setBusy(true);
     setMessage("");
     try {
@@ -222,15 +263,15 @@ export function SyncSettings({
       setMessage(done);
       onNotice(done);
     } catch (error) {
-      if (again && needsPassphrase(error)) setRetry({ action: again, done });
-      else setMessage(failed);
+      if (again && needsPassphrase(error)) setRetry({ ...again, done });
+      else setMessage(actionText(error, t, h, failed));
     } finally {
       setBusy(false);
     }
   };
   const passphraseDialog = retry && (
     <LocalPassphraseDialog
-      text={t.localPassphraseNeeded}
+      text={retry.text}
       cancelLabel={t.cancel}
       onSubmit={retry.action}
       onClose={(done) => {
@@ -242,6 +283,85 @@ export function SyncSettings({
       }}
     />
   );
+  const turnOff = () =>
+    void run(() => turnOffSyncOnThisDevice(), t.turnedOff, t.actionFailed, {
+      action: (localPassphrase) => turnOffSyncOnThisDevice({ localPassphrase }),
+      text: h.turnOffNeedsPassphrase,
+    });
+
+  // Removed from sync or reset elsewhere: what happened, that the data stays, and a way back.
+  // No destructive action is offered here, least of all as the primary one.
+  if (state.detached)
+    return (
+      <section aria-labelledby={headingId} className="sync-settings">
+        <h3 id={headingId}>{t.section}</h3>
+        {setup ? (
+          <SyncSetup
+            onCancel={() => setSetup(false)}
+            onDone={(remember) => {
+              setSetup(false);
+              setMessage(t.onDone);
+              onNotice(t.onDone);
+              onOpened?.(remember);
+            }}
+          />
+        ) : (
+          <>
+            <p className="sync-error">{state.detached === "removed" ? h.detachedRemoved : h.detachedResetElsewhere}</p>
+            {!state.remembered && !hasLocal && (
+              <>
+                <p>{h.detachedKeepAccess}</p>
+                <button
+                  disabled={busy}
+                  onClick={() =>
+                    setRetry({ action: (secret) => setLocalPassphrase(secret), done: vaultUnlock.newPassphraseDone, text: h.detachedKeepAccess })
+                  }
+                >
+                  {vaultUnlock.newPassphraseSave}
+                </button>
+              </>
+            )}
+            <div className="row sync-actions">
+              <button
+                className="primary"
+                disabled={busy || !unlocked}
+                onClick={() => (state.detached === "removed" ? setJoining(true) : setSetup(true))}
+              >
+                {h.syncAgain}
+              </button>
+              <button disabled={busy || !unlocked} onClick={() => setConfirm({ kind: "off" })}>
+                {t.turnOffHere}
+              </button>
+            </div>
+            {!unlocked && <p className="muted">{h.unlockFirst}</p>}
+            <p aria-live="polite">{message}</p>
+          </>
+        )}
+        {joining && (
+          <NewDeviceDialog
+            rejoin
+            onNotNow={() => setJoining(false)}
+            onOpened={(remember) => {
+              setJoining(false);
+              onOpened?.(remember);
+            }}
+          />
+        )}
+        {confirm?.kind === "off" && (
+          <ConfirmDialog
+            title={t.turnOffTitle}
+            text={t.turnOffText}
+            confirmLabel={t.turnOffConfirm}
+            cancelLabel={t.cancel}
+            onClose={(yes) => {
+              setConfirm(undefined);
+              if (yes) turnOff();
+            }}
+          />
+        )}
+        {passphraseDialog}
+      </section>
+    );
 
   if (state.phase === "off" || state.phase === "needs-approval")
     return (
@@ -260,7 +380,7 @@ export function SyncSettings({
         ) : (
           <>
             <p>{t.offIntro}</p>
-            {state.error && <p className="sync-error">{syncErrorText(state, t)}</p>}
+            {state.error && <p className="sync-error">{syncErrorText(state, t, h)}</p>}
             {state.phase === "needs-approval" ? (
               <p>{t.newText}</p>
             ) : unlocked ? (
@@ -277,7 +397,7 @@ export function SyncSettings({
       </section>
     );
 
-  const error = syncErrorText(state, t);
+  const error = syncErrorText(state, t, h);
   const quota = state.quota;
   return (
     <section aria-labelledby={headingId} className="sync-settings">
@@ -286,6 +406,7 @@ export function SyncSettings({
       <p>{state.lastSyncAt ? t.lastSync(date(state.lastSyncAt)) : t.neverSynced}</p>
       <p>{t.pending(state.pending)}</p>
       {error && <p className="sync-error">{error}</p>}
+      {!!state.needsUpgrade && state.error !== "needs-upgrade" && <p className="sync-error">{h.needsUpgrade(state.needsUpgrade)}</p>}
       {quota && (
         <>
           <label className="sync-quota">
@@ -357,10 +478,7 @@ export function SyncSettings({
           cancelLabel={t.cancel}
           onClose={(yes) => {
             setConfirm(undefined);
-            if (yes)
-              void run(() => turnOffSyncOnThisDevice(), t.turnedOff, t.actionFailed, (localPassphrase) =>
-                turnOffSyncOnThisDevice({ localPassphrase }),
-              );
+            if (yes) turnOff();
           }}
         />
       )}
@@ -376,9 +494,10 @@ export function SyncSettings({
             setConfirm(undefined);
             // The server takes the contract's English phrase; the user typed it in their language.
             if (yes)
-              void run(() => resetSync("DELETE SYNCED DATA"), t.resetDone, t.actionFailed, (localPassphrase) =>
-                resetSync("DELETE SYNCED DATA", { localPassphrase }),
-              );
+              void run(() => resetSync("DELETE SYNCED DATA"), t.resetDone, t.actionFailed, {
+                action: (localPassphrase) => resetSync("DELETE SYNCED DATA", { localPassphrase }),
+                text: t.localPassphraseNeeded,
+              });
           }}
         />
       )}
@@ -399,33 +518,31 @@ export function PairingPrompt() {
   const state = useSyncState();
   const t = useText(syncText);
   const { lang } = useLang();
-  // When this device first noticed the request (the engine does not report the request's time).
-  const [askedAt, setAskedAt] = useState<string>();
+  // The request's own time from the engine; a dismissed request stays hidden until a new one comes.
+  const [dismissed, setDismissed] = useState<string>();
   const [open, setOpen] = useState(false);
-  const member = state.phase !== "off" && state.phase !== "needs-approval";
-  useEffect(() => {
-    if (state.pairingRequested && member) setAskedAt((at) => at ?? new Date().toISOString());
-    // Stays while the form is open, so its result shows until the user closes it.
-    else if (!open) setAskedAt(undefined);
-  }, [state.pairingRequested, member]);
+  const member = state.phase !== "off" && state.phase !== "needs-approval" && !state.detached;
+  const at = state.pairingRequestedAt ?? "";
+  const shown = open || (!!state.pairingRequested && member && at !== dismissed);
+  const time = timeOf(at || new Date().toISOString(), lang);
   return (
     <>
-      {askedAt && (
+      {shown && (
         <section className="pairing-prompt" aria-label={t.promptHeading} aria-live="polite">
           {open ? (
             <ApprovePairing
-              requestedAt={timeOf(askedAt, lang)}
+              requestedAt={at ? time : undefined}
               onClose={() => {
                 setOpen(false);
-                setAskedAt(undefined);
+                setDismissed(at);
               }}
             />
           ) : (
             <>
-              <p>{t.pairingNotice(timeOf(askedAt, lang))}</p>
+              <p>{t.pairingNotice(time)}</p>
               <div className="row sync-actions">
                 <button onClick={() => setOpen(true)}>{t.reviewRequest}</button>
-                <button className="text-button" onClick={() => setAskedAt(undefined)}>
+                <button className="text-button" onClick={() => setDismissed(at)}>
                   {t.dismiss}
                 </button>
               </div>
@@ -505,7 +622,16 @@ export function SyncGate({
  * Not now (an empty local vault, labelled not synced). "Remember this device" is preselected.
  * It closes when the engine leaves "needs-approval" (SyncGate).
  */
-export function NewDeviceDialog({ onNotNow, onOpened }: { onNotNow: () => void; onOpened?: (remember: boolean) => void }) {
+export function NewDeviceDialog({
+  onNotNow,
+  onOpened,
+  rejoin,
+}: {
+  onNotNow: () => void;
+  onOpened?: (remember: boolean) => void;
+  /** A detached device joining again: its data is here, so "Not now" changes nothing. */
+  rejoin?: boolean;
+}) {
   const t = useText(syncText);
   const state = useSyncState();
   const [view, setView] = useState<"choose" | "code" | "recovery">("choose");
@@ -536,7 +662,6 @@ export function NewDeviceDialog({ onNotNow, onOpened }: { onNotNow: () => void; 
           <h2 id="new-device-heading" ref={heading} tabIndex={-1}>
             {t.newHeading}
           </h2>
-          {state.error === "revoked" && <p className="sync-error">{t.errorRevoked}</p>}
           <p>{t.newText}</p>
           <RememberChoice checked={remember} onChange={setRemember} />
           <div className="new-device-actions">
@@ -548,7 +673,7 @@ export function NewDeviceDialog({ onNotNow, onOpened }: { onNotNow: () => void; 
               {t.notNow}
             </button>
           </div>
-          <p className="muted">{state.error === "revoked" ? t.notNowRevoked : t.notNowNote}</p>
+          {!rejoin && <p className="muted">{t.notNowNote}</p>}
         </div>
       )}
       {view !== "choose" && <h2 id="new-device-heading" className="sr-only">{t.newHeading}</h2>}

@@ -3,7 +3,8 @@
 import { expect, it } from "vitest";
 import { formatRecoveryKey, normalizeRecoveryKey, recoveryKeyHint } from "../src/SyncRecoveryKey";
 import { encodeRecoveryKey } from "../src/sync/crypto";
-import { PAIRING_CODE_LENGTH, normalizePairingCode, pairingCodeGroups } from "../src/SyncPairing";
+import { PAIRING_CODE_LENGTH, formatPairingCode, normalizePairingCode } from "../src/sync/crypto";
+import { syncHardeningText } from "../src/text/sync-hardening";
 import { backupPartsText, syncText, vaultUnlockText } from "../src/text/sync";
 
 const newKey = () => encodeRecoveryKey(crypto.getRandomValues(new Uint8Array(16)));
@@ -29,18 +30,19 @@ it("hints: short, long, a foreign character, a typo caught by the engine's check
   expect(recoveryKeyHint(plain.slice(0, 3) + typo + plain.slice(4))).toEqual({ kind: "typo" });
 });
 
-it("pairing codes: one length constant, read forgivingly, shown in two halves", () => {
-  expect(PAIRING_CODE_LENGTH).toBe(6);
-  expect(normalizePairingCode(" 12-3 456 ")).toBe("123456");
-  expect(normalizePairingCode("7k3p-q9xa")).toBe("7K3PQ9XA");
-  expect(normalizePairingCode("oil")).toBe("011");
-  expect(pairingCodeGroups("123456")).toEqual(["123", "456"]);
+it("pairing codes: the engine's 8 characters, read forgivingly, shown as 4 and 4", () => {
+  expect(PAIRING_CODE_LENGTH).toBe(8);
+  expect(normalizePairingCode(" 7k3p-q9xa ")).toBe("7K3PQ9XA");
+  expect(normalizePairingCode("oilz-oilz")).toBe("011Z011Z");
+  expect(normalizePairingCode("7K3P")).toBeNull();
+  expect(normalizePairingCode("UUUUUUUU")).toBeNull();
+  expect(formatPairingCode("7K3PQ9XA")).toBe("7K3P-Q9XA");
 });
 
 it("translates every sync text and keeps its numbers", () => {
   const numbers = (text: string) => (text.match(/\d[\d.,]*\d|\d/g) ?? []).map((n) => n.replace(/[.,]/g, "")).sort();
   const same = new Set(["stateOffline", "statusHeading"]);
-  for (const [name, block] of Object.entries({ syncText, vaultUnlockText, backupPartsText }))
+  for (const [name, block] of Object.entries({ syncText, vaultUnlockText, backupPartsText, syncHardeningText }))
     for (const [key, en] of Object.entries(block.en)) {
       if (typeof en !== "string") continue;
       const de = (block.de as Record<string, unknown>)[key] as string;
