@@ -206,6 +206,10 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   await ui(A.getByRole("dialog")).toHaveCount(0);
   await ask(A, "en", "SYNTHETIC SECURE QUESTION");
   await ui((await navigation(A, "en")).filter({ hasText: "SYNTHETIC SECURE QUESTION" })).toBeVisible();
+  // The sidebar says where Secure chats are kept: no "this vault", no "this device".
+  await ui(A.locator(".history-search input")).toHaveAttribute("placeholder", modeCopyText.en.searchPlaceholder_secure);
+  await ui(A.locator(".sidebar-bottom > p")).toHaveText(modeCopyText.en.vaultUnlocked_secure);
+  await ui(A.locator("button.new-incognito")).toHaveAttribute("title", workspaceText.en.incognitoTitle_secure);
   // A memory and a project, both in Secure.
   await openSettings(A, "en", memoryText.en.title);
   await settings(A).getByLabel(memoryText.en.addLabel).fill("SYNTHETIC SECURE MEMORY");
@@ -487,6 +491,9 @@ it("375 px, German: the Secure wiring fits a phone", async () => {
   await noSidewaysScroll(page);
   await ask(page, "de", "SYNTHETISCHE FRAGE");
   await ui((await navigation(page, "de")).filter({ hasText: "SYNTHETISCHE FRAGE" })).toBeVisible();
+  await ui(page.locator(".history-search input")).toHaveAttribute("placeholder", modeCopyText.de.searchPlaceholder_secure);
+  await ui(page.locator(".sidebar-bottom > p")).toHaveText(modeCopyText.de.vaultUnlocked_secure);
+  await ui(page.locator("button.new-incognito")).toHaveAttribute("title", workspaceText.de.incognitoTitle_secure);
   // The Secure Max section: one entry, then (after the explanation) the locked section with its unlock button.
   await ui(page.getByRole("button", { name: modesText.de.maxLocked })).toBeVisible();
   await openMax(page, "de");
