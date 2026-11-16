@@ -35,7 +35,7 @@ export function SecureMaxDialog({
   onConfirm,
   onCancel,
 }: {
-  subject: "chat" | "project" | "default";
+  subject: "chat" | "project" | "section";
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -72,8 +72,8 @@ export function SecureMaxDialog({
         onCancel();
       }}
     >
-      {/* Only the default changes the title; the body is the same for every subject. */}
-      <h2 ref={heading} tabIndex={-1} id={`${id}-title`}>{subject === "default" ? t.maxDialogTitleDefault : t.maxDialogTitle}</h2>
+      {/* Only the first opening of the section changes the title; the body is the same for every subject. */}
+      <h2 ref={heading} tabIndex={-1} id={`${id}-title`}>{subject === "section" ? t.maxIntroTitle : t.maxDialogTitle}</h2>
       <div className="secure-max-body">
         <p id={`${id}-text`}>{t.maxDialogParagraph}</p>
         <h3 id={`${id}-list`}>{t.maxDifferentHeading}</h3>
