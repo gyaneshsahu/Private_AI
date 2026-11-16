@@ -30,6 +30,7 @@ import { canvasText } from "./text/canvas";
 import { questionText } from "./text/questions";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { forStorage, type Storage } from "./text/mode-copy";
+import { focusOrigin } from "./focus-origin";
 
 const Answer = retryLazy(() =>
   importFresh(() => import("./Answer")).then((module) => ({ default: module.Answer })),
@@ -204,7 +205,7 @@ export function CanvasPanel({
   // full-screen sheet the page behind must not take focus or clicks (inert), and is usable again
   // before the focus goes back.
   useLayoutEffect(() => {
-    const from = document.activeElement as HTMLElement | null;
+    const from = focusOrigin();
     const query = matchMedia(CANVAS_OVERLAY);
     const others = [...(panel.current?.parentElement?.children ?? [])].filter(
       (el): el is HTMLElement => el !== panel.current && el instanceof HTMLElement && !el.inert,

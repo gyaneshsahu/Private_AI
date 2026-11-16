@@ -22,6 +22,7 @@ import {
 import { SyncSetup } from "./SyncSetup";
 import { ApprovePairing, ShowPairingCode } from "./SyncPairing";
 import { RecoveryKeyForm, RememberChoice } from "./SyncRecoveryKey";
+import { focusOrigin } from "./focus-origin";
 
 /** A destructive question that needs a typed word or phrase before its button works. */
 export function TypedConfirm({
@@ -106,7 +107,7 @@ export function LocalPassphraseDialog({
   const [error, setError] = useState("");
   useEffect(() => {
     const element = dialog.current;
-    const trigger = document.activeElement as HTMLElement | null;
+    const trigger = focusOrigin();
     element?.showModal();
     return () => {
       element?.close();

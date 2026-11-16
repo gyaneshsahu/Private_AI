@@ -33,6 +33,7 @@ import {
   type MicrophoneFailure,
 } from "./voice-input";
 import { useVoiceUsed, voiceToday } from "./VoiceInput";
+import { focusOrigin } from "./focus-origin";
 
 const PREFS_KEY = "cometrow.live-voice";
 type Prefs = { ask: boolean; sounds: boolean };
@@ -266,7 +267,7 @@ export function LiveVoice(props: {
   // focus goes to the panel's first action; it is not taken from elsewhere on the page.
   useEffect(() => {
     if (!open) return;
-    const focused = document.activeElement;
+    const focused = focusOrigin();
     if (focused && focused !== document.body && panel.current?.isConnected && focused !== trigger.current) return;
     panel.current?.querySelector<HTMLElement>(".live-voice-actions button")?.focus();
   }, [open, snap.phase]);

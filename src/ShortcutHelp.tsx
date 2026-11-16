@@ -3,6 +3,7 @@ import { containDialogFocus } from "./dialog-focus";
 import { useText } from "./i18n";
 import { shortcutsText } from "./text/shortcuts";
 import { isApple, SHORTCUTS } from "./use-shortcuts";
+import { focusOrigin } from "./focus-origin";
 
 /**
  * The list of keyboard shortcuts, as a modal dialog. Mount it while open (like ConfirmDialog):
@@ -24,7 +25,7 @@ export function ShortcutHelp({
   const id = useId();
   useEffect(() => {
     const element = dialog.current;
-    const trigger = document.activeElement as HTMLElement | null;
+    const trigger = focusOrigin();
     element?.showModal();
     close.current?.focus();
     return () => {

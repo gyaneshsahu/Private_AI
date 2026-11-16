@@ -20,6 +20,7 @@ import {
 } from "./photo-capture";
 import { useText } from "./i18n";
 import { photoText, photoUiText } from "./text/photo";
+import { focusOrigin } from "./focus-origin";
 
 type Stage = "choose" | "camera" | "edit" | "preparing";
 const PREVIEW_BOX: Size = { width: 560, height: 340 };
@@ -100,7 +101,7 @@ export function PhotoCapture({
   useEffect(() => {
     mounted.current = true;
     const element = dialog.current;
-    const trigger = document.activeElement as HTMLElement | null;
+    const trigger = focusOrigin();
     element?.showModal();
     return () => {
       mounted.current = false;

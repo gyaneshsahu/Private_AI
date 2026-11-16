@@ -8,6 +8,7 @@ import { AccountPreview } from "./AccountPreview";
 import { preloadAnswer } from "./ChatMessage";
 import { importFresh, LoadBoundary, loadInference, retryLazy } from "./LoadBoundary";
 import { isAccountPreview } from "../shared/account-design";
+import "./focus-origin"; // starts remembering focus before any on-demand dialog loads
 import "./styles.css";
 import "./chat-design.css";
 const AccountLab = retryLazy(() => importFresh(() => import("./AccountLab")));
