@@ -149,10 +149,11 @@ for (const width of WIDTHS)
         if (!(await page.getByRole("button", { name: w.createProject, exact: true }).isVisible()))
           await page.getByRole("button", { name: a.openNavigation }).click();
       };
+      // The sidebar row itself opens the project screen (FE-08).
+      const projectRow = (name: string) => page.locator(".project-list .project-row").filter({ hasText: name });
       const openProject = async (name: string) => {
         await sidebar();
-        await page.getByLabel(w.projectActions(name), { exact: true }).click();
-        await page.getByRole("button", { name: p.open, exact: true }).click();
+        await projectRow(name).locator(":scope > button").click();
         await ui(panel.getByRole("heading", { name, exact: true })).toBeFocused();
       };
       const ask = async (text: string, index: number) => {
@@ -175,8 +176,8 @@ for (const width of WIDTHS)
         await page.getByRole("button", { name: w.create, exact: true }).click();
         await ui(page.getByText(a.projectCreated)).toBeVisible();
 
-        // The project screen: no chats yet, instructions with a counter and a cap said in words.
-        await openProject(x.project);
+        // The project screen opens right after Create: no chats yet, instructions with a counter and a cap said in words.
+        await ui(panel.getByRole("heading", { name: x.project, exact: true })).toBeFocused();
         await ui(panel.getByText(p.noChats)).toBeVisible();
         const field = panel.getByRole("textbox", { name: p.instructions, exact: true });
         const save = panel.getByRole("button", { name: p.saveInstructions });
@@ -210,6 +211,14 @@ for (const width of WIDTHS)
         // Escape closes the screen.
         await page.keyboard.press("Escape");
         await ui(panel).toHaveCount(0);
+        // The sidebar row keeps its "…" on its own line, beside the name.
+        await sidebar();
+        const button = (await projectRow(x.project).locator(":scope > button").boundingBox())!;
+        const more = (await projectRow(x.project).locator("summary").boundingBox())!;
+        expect(more.y).toBeGreaterThanOrEqual(button.y - 1);
+        expect(more.y + more.height).toBeLessThanOrEqual(button.y + button.height + 1);
+        expect(more.x).toBeGreaterThanOrEqual(button.x + button.width - 1);
+        await target(projectRow(x.project).locator("summary"), width);
 
         // New chat in this project: the instructions go in front of the question, and the answer says so.
         await openProject(x.project);
@@ -347,9 +356,26 @@ it("with the switch off there is no project screen and no instructions are sent"
     await page.getByRole("button", { name: w.createProject, exact: true }).click();
     await page.getByLabel(w.projectName, { exact: true }).fill("Grouping only");
     await page.getByRole("button", { name: w.create, exact: true }).click();
+    // The row only filters: no screen opens, after Create or on a click.
+    const row = page.locator(".project-row > button").filter({ hasText: "Grouping only" });
+    await row.click();
+    await ui(row).toHaveAttribute("aria-pressed", "true");
+    await ui(page.locator("dialog.project-dialog")).toHaveCount(0);
     await page.getByLabel(w.projectActions("Grouping only"), { exact: true }).click();
     await ui(page.getByRole("button", { name: w.renameProject })).toBeVisible();
     await ui(page.getByRole("button", { name: projectText.en.open })).toHaveCount(0);
+    // Delete asks in the app's own dialog (no window.confirm): no chats, so no choice; the project goes.
+    page.removeAllListeners("dialog");
+    page.on("dialog", () => {
+      throw Error("native dialog");
+    });
+    await page.getByRole("button", { name: projectText.en.delete, exact: true }).click();
+    const confirm = page.locator("dialog.confirm-dialog");
+    await ui(confirm).toContainText(w.deleteProjectKeeps);
+    await ui(confirm.getByRole("radio")).toHaveCount(0);
+    await confirm.getByRole("button", { name: projectText.en.delete, exact: true }).click();
+    await ui(page.getByText(a.projectRemoved)).toBeVisible();
+    await ui(page.locator(".project-row")).toHaveCount(0);
     await page.context().close();
   } finally {
     await off.server.close();

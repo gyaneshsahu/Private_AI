@@ -127,9 +127,8 @@ for (const width of WIDTHS)
         await page.getByLabel(w.projectName, { exact: true }).fill("Thesis");
         await page.getByRole("button", { name: w.create, exact: true }).click();
         await ui(page.getByText(a.projectCreated)).toBeVisible();
-        await sidebar();
-        await page.getByLabel(w.projectActions("Thesis"), { exact: true }).click();
-        await page.getByRole("button", { name: p.open, exact: true }).click();
+        // Create opens the project screen.
+        await ui(panel.getByRole("heading", { name: "Thesis", exact: true })).toBeFocused();
         await panel.locator('input[type="file"]').setInputFiles({ name: "notes.txt", mimeType: "text/plain", buffer: Buffer.from("Synthetic notes for the thesis.\n") });
         await ui(status).toHaveText(p.fileAdded("notes.txt"));
         // Without file sync the screen is as before.

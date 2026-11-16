@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import type { Conversation } from "../shared/contracts";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { ProjectDeleteDialog } from "./ProjectDeleteDialog";
 import { conversationTitle } from "./conversation-library";
 import { containDialogFocus } from "./dialog-focus";
 import { Icon } from "./Icon";
@@ -99,7 +100,6 @@ export function ProjectPanel({
   const [name, setName] = useState(project.name);
   const [instructions, setDraft] = useState(project.instructions ?? "");
   const [deleting, setDeleting] = useState(false);
-  const [deleteChats, setDeleteChats] = useState(false);
   const [status, setStatus] = useState("");
   const held = useSyncExternalStore(watchProjects, heldProjects);
   const files = held.files[project.id] ?? [];
@@ -421,43 +421,18 @@ export function ProjectPanel({
         />
       )}
       {deleting && (
-        <ConfirmDialog
-          title={t.deleteTitle(project.name)}
+        <ProjectDeleteDialog
+          name={project.name}
           text={t.deleteText}
-          confirmLabel={t.delete}
-          cancelLabel={t.cancel}
+          chats={chats.length}
           fallback={() => heading.current}
-          onClose={(confirmed) => {
+          onClose={(confirmed, withChats) => {
             setDeleting(false);
-            if (confirmed) void onDelete(chats.length > 0 && deleteChats);
-            setDeleteChats(false);
+            if (confirmed) void onDelete(withChats);
           }}
-        >
-          {chats.length > 0 && (
-            <fieldset className="project-delete-choice">
-              <legend className="sr-only">{t.chats}</legend>
-              <label>
-                <input
-                  type="radio"
-                  name={`${id}-chats`}
-                  checked={!deleteChats}
-                  onChange={() => setDeleteChats(false)}
-                />
-                {t.keepChats}
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name={`${id}-chats`}
-                  checked={deleteChats}
-                  onChange={() => setDeleteChats(true)}
-                />
-                {t.deleteChats(chats.length)}
-              </label>
-            </fieldset>
-          )}
-        </ConfirmDialog>
+        />
       )}
     </dialog>
   );
 }
+
