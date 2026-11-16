@@ -114,7 +114,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     await page
       .getByLabel("Message CometRow")
       .fill("TEST question with a source");
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
     await ui(page.getByText("TEST_PARTIAL", { exact: true })).toBeVisible();
     await ui(
       page
@@ -266,7 +266,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     await page
       .getByLabel("Message CometRow")
       .fill("TEST follow-up correction");
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
     await ui(page.locator("article.assistant")).toHaveCount(2);
     await ui(
       page.getByRole("button", { name: "Stop", exact: true }),
@@ -341,7 +341,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     await page
       .getByLabel("Message CometRow")
       .fill("TEST clear during response");
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
     await ui(page.getByText("TEST_PARTIAL", { exact: true })).toBeVisible();
     page.once("dialog", (dialog) => dialog.accept());
     await page
@@ -370,7 +370,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     await page
       .getByLabel("Message CometRow")
       .fill("TEST lock during response");
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
     await ui(page.getByText("TEST_PARTIAL", { exact: true })).toBeVisible();
     await tab("Saved").click();
     await page
@@ -395,7 +395,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       }),
     );
     await page.getByLabel("Message CometRow").fill("TEST render formatting");
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
     await ui(page.locator("article.assistant table")).toBeVisible();
     await ui(page.locator("article.assistant .katex")).toBeVisible();
     await page.getByRole("button", { name: "Copy code", exact: true }).click();
@@ -446,7 +446,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     const messagesBeforeLimit = await page.locator("article.message").count();
     const oversizedDraft = "SYNTHETIC_LONG_".repeat(400);
     await page.getByLabel("Message CometRow").fill(oversizedDraft);
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
     await ui(
       page.getByText("Selected context is too large.", { exact: false }),
     ).toBeVisible();
@@ -461,7 +461,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       Object.assign(window, { fixtureMode: "timeout" }),
     );
     await page.getByLabel("Message CometRow").fill("TEST shortened question");
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
     await ui(
       page.getByRole("button", { name: "Stop", exact: true }),
     ).toHaveCount(0);
@@ -484,7 +484,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     await page
       .getByLabel("Message CometRow")
       .fill("TEST invalid research evidence");
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
     await ui(
       page.getByText("Research answer withheld:", { exact: false }),
     ).toBeVisible();
@@ -513,7 +513,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       await page
         .getByLabel("Message CometRow")
         .fill("TEST unavailable service");
-      await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+      await page.getByRole("button", { name: "Send message", exact: true }).click();
       await ui(
         page.getByRole("status").filter({
           hasText:

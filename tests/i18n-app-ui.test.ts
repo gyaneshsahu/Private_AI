@@ -38,7 +38,7 @@ it("a German browser gets the German main screen at phone and desktop width; the
       "placeholder",
       "Was möchten Sie durchdenken?",
     );
-    await ui(page.getByRole("button", { name: "Senden ↑", exact: true })).toBeVisible();
+    await ui(page.getByRole("button", { name: "Nachricht senden", exact: true })).toBeVisible();
     await ui(page.getByLabel("Anhänge und Werkzeuge", { exact: true })).toBeVisible();
     await ui(page.getByText("ETWAS KLARHEIT, NACH IHREN REGELN")).toBeVisible();
     await ui(page.getByRole("button", { name: /Schreiben oder überarbeiten/ })).toBeVisible();
@@ -61,7 +61,7 @@ it("a German browser gets the German main screen at phone and desktop width; the
       "placeholder",
       "What would you like to work through?",
     );
-    await ui(page.getByRole("button", { name: "Send ↑", exact: true })).toBeVisible();
+    await ui(page.getByRole("button", { name: "Send message", exact: true })).toBeVisible();
     await ui(page.getByText("A LITTLE CLARITY, ON YOUR TERMS")).toBeVisible();
   };
   try {

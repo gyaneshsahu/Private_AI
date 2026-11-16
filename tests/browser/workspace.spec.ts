@@ -15,7 +15,7 @@ test("temporary text extraction, context corrections and calculator work without
   ).toBeVisible();
   await page.getByLabel("Message CometRow").fill("PRIVATE CANARY 4829");
   await expect(
-    page.getByRole("button", { name: "Send ↑", exact: true }),
+    page.getByRole("button", { name: "Send message", exact: true }),
   ).toBeDisabled();
   await workspaceControl(page, "Context").click();
   await page.getByLabel("Add documents or screenshots").setInputFiles({

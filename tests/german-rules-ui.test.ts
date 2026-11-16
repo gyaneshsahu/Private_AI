@@ -81,7 +81,7 @@ it("asks to search first on Send, warns about unchecked figures, and offers the 
     await page.goto(origin, { timeout: 30000 });
     const message = page.getByLabel("Message CometRow");
     const suggestion = page.getByRole("region", { name: "Search suggestion" });
-    const send = page.getByRole("button", { name: "Send ↑", exact: true });
+    const send = page.getByRole("button", { name: "Send message", exact: true });
     // The search text is an editable field labelled by the visible "Search the web for:".
     const field = suggestion.getByRole("textbox", { name: "Search the web for:" });
     const searchFirst = suggestion.getByRole("button", { name: "Search and answer", exact: true });

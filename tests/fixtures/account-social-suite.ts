@@ -446,7 +446,7 @@ export function accountSocialSuite(production = false) {
             .getByLabel("Message CometRow")
             .fill("SYNTHETIC SOCIAL WORKSPACE DRAFT");
           await browserExpect(
-            page.getByRole("button", { name: "Send ↑", exact: true }),
+            page.getByRole("button", { name: "Send message", exact: true }),
           ).toBeDisabled();
           await workspaceControl(page, "Account").click();
           page.once("dialog", (dialog) => dialog.accept());

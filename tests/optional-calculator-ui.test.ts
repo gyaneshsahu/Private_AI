@@ -101,7 +101,7 @@ it("displays optional native calculator results and a corrected total through th
       ["Now tax applies only to items; delivery stays untaxed.", "99.72 EUR"],
     ]) {
       await page.getByLabel("Message CometRow").fill(question);
-      await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+      await page.getByRole("button", { name: "Send message", exact: true }).click();
       await ui(page.locator("article.assistant").last()).toContainText(total);
       await ui(page.locator("article.assistant").last()).toContainText(
         "The total includes delivery",
@@ -133,7 +133,7 @@ it("displays optional native calculator results and a corrected total through th
     await page
       .getByLabel("Message CometRow")
       .fill("Calculate the fresh invoice.");
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
     await ui(page.locator("article.assistant").last()).toContainText(
       "95.20 EUR",
     );

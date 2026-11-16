@@ -79,7 +79,7 @@ async function open(context: BrowserContext) {
 async function ask(page: Page, text: string) {
   const before = await page.locator("article.assistant").count();
   await page.getByLabel("Message CometRow").fill(text);
-  await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+  await page.getByRole("button", { name: "Send message", exact: true }).click();
   const started = Date.now();
   while (Date.now() - started < 120_000) {
     if ((await page.locator("article.assistant").count()) > before && !(await busy(page).isVisible().catch(() => false))) break;
@@ -153,7 +153,7 @@ try {
   mark = snapshot();
   if (!process.argv.includes("--skip-stop")) {
   await pa.getByLabel("Message CometRow").fill("Write a 400-word story about a lighthouse keeper.");
-  await pa.getByRole("button", { name: "Send ↑", exact: true }).click();
+  await pa.getByRole("button", { name: "Send message", exact: true }).click();
   await busy(pa).waitFor({ timeout: 60_000 });
   await pa.waitForTimeout(2500);
   await busy(pa).click();

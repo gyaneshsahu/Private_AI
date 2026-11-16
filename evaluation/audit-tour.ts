@@ -143,7 +143,7 @@ const STEPS: Step[] = [
     // The health consent draft is asked on the first send in a fresh browser (switch on only).
     await c.fresh();
     await c.label("Message CometRow").fill("Hello, a first question.");
-    await c.click("Send ↑");
+    await c.click("Send message");
     await pause(c.page, 800);
     await c.shot("first-send-consent");
     const agree = vis(c.page.getByRole("button", { name: c.tr("I agree"), exact: true }));
@@ -649,7 +649,7 @@ export async function runTour(o: {
               if (name) fakes.answer(name);
               const before = await c.page.locator("article.assistant").count();
               await c.label("Message CometRow").fill(text);
-              await c.click("Send ↑");
+              await c.click("Send message");
               const agree = vis(c.page.getByRole("button", { name: tr("I agree"), exact: true }));
               if (await agree.waitFor({ timeout: 1500 }).then(() => true, () => false)) {
                 // German at 375 px pushed this button out of reach (16 November): note it and go on.

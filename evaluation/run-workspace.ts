@@ -670,7 +670,7 @@ try {
             phase = `reply-${t + 1}`;
             await page.getByLabel("Message CometRow").fill(fixture.turns[t]);
             await page
-              .getByRole("button", { name: "Send ↑", exact: true })
+              .getByRole("button", { name: "Send message", exact: true })
               .click();
             await page.waitForFunction(
               (n) => (window as any).__workspaceEvaluation.results.length > n,

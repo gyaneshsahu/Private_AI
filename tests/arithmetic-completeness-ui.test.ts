@@ -50,7 +50,7 @@ it("warns when the answer leaves out a requested figure, and only then", async (
     await page.goto(origin, { timeout: 30000 });
     const ask = async () => {
       await page.getByLabel("Message CometRow").fill("Quote: 3,850.00 EUR net plus 19% VAT. What are the VAT and the total?");
-      await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+      await page.getByRole("button", { name: "Send message", exact: true }).click();
     };
     await ask();
     const first = page.locator("article.assistant").nth(0);

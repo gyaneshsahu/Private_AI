@@ -34,7 +34,7 @@ test("trial boundaries are readable on a narrow screen with keyboard dismissal a
   await expect(dialog).toHaveCount(0);
   await expect(trigger).toBeFocused();
   await expect(
-    page.getByRole("button", { name: "Send ↑", exact: true }),
+    page.getByRole("button", { name: "Send message", exact: true }),
   ).toBeDisabled();
   expect(external).toEqual([]);
 });

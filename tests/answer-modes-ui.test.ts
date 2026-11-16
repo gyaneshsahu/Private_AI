@@ -81,7 +81,7 @@ it("shows Auto, Fast and Thinking only, remembers the choice, and labels a backu
 
     // Auto picks Thinking on this device; the primary model rejects, the backup answers once.
     await page.getByLabel("Message CometRow").fill("Explain step by step why the synthetic sum is 4.");
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
     const answer = page.locator("article.assistant").last();
     await ui(answer).toContainText("Synthetic backup answer.");
     await ui(answer.locator(".answered-by")).toHaveText("Auto · Thinking · Answered by the backup model");
@@ -95,7 +95,7 @@ it("shows Auto, Fast and Thinking only, remembers the choice, and labels a backu
 
     // A simple question goes to Fast; one tap asks it again on Thinking, labelled "Thinking".
     await page.getByLabel("Message CometRow").fill("What is the capital of France?");
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
     await ui(page.locator("article.assistant").last().locator(".answered-by")).toHaveText(
       "Auto · Fast · Answered by the backup model",
     );
@@ -111,7 +111,7 @@ it("shows Auto, Fast and Thinking only, remembers the choice, and labels a backu
 
     // A verification refused for load: no backup retry (it would verify too), a plain message.
     await page.getByLabel("Message CometRow").fill("SYNTHETIC_BUSY: what is the capital of France?");
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
     await ui(page.getByText("CometRow is busy checking the secure server. Please try again in a minute.")).toBeVisible();
     expect(
       (await page.evaluate(() => (window as unknown as { __calls: { choice: string }[] }).__calls)).slice(6),
