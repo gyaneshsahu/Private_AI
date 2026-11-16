@@ -5,6 +5,54 @@ import type { DisappearAfter } from "../conversation";
 import { failureSentence } from "../chat-failures";
 import { chatCoreText } from "./chat-core";
 
+// The guide in Help (`guideText`): the same paragraphs in every storage mode, except saving and
+// deleting. Limits as in src/attachment-limits.ts, src/document-formats.ts and src/documents.ts.
+const guideEn = {
+  start:
+    "Start a chat. Type a message, or pick a starter to get a draft you can edit. Nothing is sent until you press Send. Answers come from an AI and can be wrong, so check important answers.",
+  files:
+    "Add files when you need them. You can attach PDF, Word (DOCX), Excel (XLSX), text, Markdown, data and code files, and PNG or JPEG pictures. Files are read on your device. Code is read as text and never run. Spreadsheet formulas are not recalculated. Check numbers, tables and wording before you rely on them.",
+  limits:
+    "File limits: 5 files per chat, up to 3 of them pictures, and 10 MB per file. PDFs can have up to 150 pages. Long PDF, Word and text files (up to 500,000 characters) are split into passages, and only the passages that match your question are sent. Spreadsheets, data and code files can have up to 60,000 characters. A scanned PDF is read with text recognition: first 5 pages only, printed German and English text, no handwriting. Web searches do not count toward the file limit.",
+  masking:
+    "Personal details are masked. Email addresses, bank details and similar identifiers are replaced with placeholders before a message goes to the AI. Not every number is recognised, least of all in photos and scans.",
+  saveLocal:
+    "Save what you want to keep. Temporary work disappears on reload. To save, open Saved, create or unlock your vault with a passphrase, then choose Save encrypted snapshot. Save again after changes. Saved chats are encrypted in the vault on this device. Your passphrase cannot be recovered, so keep it safe. In Saved you can also download an encrypted backup and restore it later with its original passphrase. Incognito chats are never saved. Locking clears unsaved work.",
+  saveSecure:
+    "Your chats are saved automatically. They are saved to your account, encrypted while stored, and are on all your devices after sign-in. CometRow holds the key. Incognito chats are never saved. If your sidebar shows Secure Max, you can keep chats there with their own key and recovery key, which you keep yourself. Its rules are shown before you start.",
+  search:
+    "Web search is your choice. CometRow first shows the exact search text or page address. Review the exact query before you approve it. Only the text you approve goes to the search service; your chat and files are not sent with it. Results and source links are not saved.",
+  control:
+    "Stay in control. Stop ends an answer, and an unfinished answer is not used later. Retry asks again as a new request. Edit an earlier message to start a new branch. Copy answer puts the text on your clipboard.",
+  deleteLocal:
+    "Locking the vault does not clear the clipboard. To delete a chat, choose Delete in its menu in the chat list. Downloaded backups are not affected.",
+  deleteSecure: "To delete a chat, choose Delete in its menu in the chat list. It is deleted on all your devices.",
+};
+const guideDe = {
+  start:
+    "Starten Sie einen Chat. Schreiben Sie eine Nachricht oder wählen Sie einen Vorschlag, um einen Entwurf zu erhalten, den Sie bearbeiten können. Gesendet wird erst, wenn Sie Senden drücken. Antworten stammen von einer KI und können falsch sein. Prüfen Sie deshalb wichtige Antworten.",
+  files:
+    "Fügen Sie Dateien hinzu, wenn Sie sie brauchen. Sie können PDF-, Word- (DOCX) und Excel-Dateien (XLSX), Text-, Markdown-, Daten- und Codedateien sowie PNG- oder JPEG-Bilder anhängen. Dateien werden auf Ihrem Gerät gelesen. Code wird als Text gelesen und nie ausgeführt. Formeln in Tabellen werden nicht neu berechnet. Prüfen Sie Zahlen, Tabellen und Formulierungen, bevor Sie sich darauf verlassen.",
+  limits:
+    "Grenzen für Dateien: 5 Dateien pro Chat, davon bis zu 3 Bilder, und 10 MB pro Datei. PDFs können bis zu 150 Seiten haben. Lange PDF-, Word- und Textdateien (bis zu 500.000 Zeichen) werden in Abschnitte geteilt, und gesendet werden nur die Abschnitte, die zu Ihrer Frage passen. Tabellen, Daten- und Codedateien können bis zu 60.000 Zeichen haben. Ein gescanntes PDF wird per Texterkennung gelesen: nur die ersten 5 Seiten, gedruckter deutscher und englischer Text, keine Handschrift. Websuchen zählen nicht zur Dateigrenze.",
+  masking:
+    "Persönliche Angaben werden verborgen. E-Mail-Adressen, Bankdaten und ähnliche Kennungen werden durch Platzhalter ersetzt, bevor eine Nachricht an die KI geht. Nicht jede Zahl wird erkannt, am wenigsten in Fotos und Scans.",
+  saveLocal:
+    "Speichern Sie, was Sie behalten möchten. Vorübergehende Arbeit verschwindet beim Neuladen. Zum Speichern öffnen Sie Gespeichert, legen Ihren Tresor mit einer Passphrase an oder entsperren ihn und wählen dann Verschlüsselt speichern. Speichern Sie nach Änderungen erneut. Gespeicherte Chats liegen verschlüsselt im Tresor auf diesem Gerät. Ihre Passphrase kann nicht wiederhergestellt werden. Bewahren Sie sie gut auf. Unter Gespeichert können Sie auch eine verschlüsselte Sicherung herunterladen und später mit ihrer ursprünglichen Passphrase wiederherstellen. Inkognito-Chats werden nie gespeichert. Sperren entfernt ungespeicherte Arbeit.",
+  saveSecure:
+    "Ihre Chats werden automatisch gespeichert. Sie werden in Ihrem Konto gespeichert, verschlüsselt abgelegt, und sind nach der Anmeldung auf allen Ihren Geräten. CometRow verwahrt den Schlüssel. Inkognito-Chats werden nie gespeichert. Wenn Ihre Seitenleiste Secure Max zeigt, können Sie Chats dort mit einem eigenen Schlüssel und einem eigenen Wiederherstellungsschlüssel aufbewahren, die Sie selbst verwahren. Die Regeln dafür sehen Sie, bevor Sie beginnen.",
+  search:
+    "Die Websuche ist Ihre Entscheidung. CometRow zeigt zuerst den genauen Suchtext oder die Seitenadresse. Prüfen Sie die genaue Suchanfrage, bevor Sie sie freigeben. Nur der Text, den Sie freigeben, geht an den Suchdienst; Ihr Chat und Ihre Dateien werden nicht mitgesendet. Ergebnisse und Quellenlinks werden nicht gespeichert.",
+  control:
+    "Sie behalten die Kontrolle. Stoppen beendet eine Antwort, und eine unvollständige Antwort wird später nicht verwendet. Eine Antwort neu anzufordern ist eine eigene Anfrage. Bearbeiten Sie eine frühere Nachricht, um einen neuen Zweig zu beginnen. Antwort kopieren legt den Text in Ihre Zwischenablage.",
+  deleteLocal:
+    "Das Sperren des Tresors leert die Zwischenablage nicht. Um einen Chat zu löschen, wählen Sie Löschen in seinem Menü in der Chatliste. Heruntergeladene Sicherungen sind davon nicht betroffen.",
+  deleteSecure:
+    "Um einen Chat zu löschen, wählen Sie Löschen in seinem Menü in der Chatliste. Er wird auf allen Ihren Geräten gelöscht.",
+};
+const guide = (g: typeof guideEn, storage: "local" | "secure") =>
+  [g.start, g.files, g.limits, g.masking, storage === "local" ? g.saveLocal : g.saveSecure, g.search, `${g.control} ${storage === "local" ? g.deleteLocal : g.deleteSecure}`].join("\n\n");
+
 export const appText = defineText({
   en: {
     // Tabs (the heading shows the open tab)
@@ -158,11 +206,13 @@ export const appText = defineText({
     historyControls: "History & data controls",
     gettingStarted: "Getting started",
     guideTitle: "Using CometRow",
-    guideText:
-      "Start in Conversation. Write a message or use a starter to prepare an editable draft. Nothing sends until you choose Send. This evaluation is for synthetic examples; private chat remains unavailable until its privacy checks pass.\n\nAdd context when you need it. In Context, import DOCX body text, XLSX cell values, a PDF, UTF-8 text, Markdown, data or source-code file, PNG or JPEG. Code is read as text, never executed; spreadsheet formulas are not recalculated. Files are read on your device. Limits: five files (up to three screenshots), 10 MB each, 20 PDF pages; printed German and English text. Review extracted numbers, tables and wording before using them. A scanned PDF is read by OCR, first 5 pages only, and can contain errors. Handwriting is not supported. Select only the context you want included.\n\nSave deliberately. Temporary work disappears on reload. In Saved, create or unlock a vault, then choose Save encrypted snapshot. Save again after changes. Your passphrase cannot be recovered. History stays in this browser unless you explicitly download an encrypted backup in Saved; there is no cloud sync. Restore needs the backup and its original passphrase and adds copies to an unlocked vault. Backups include saved snapshots only, never current unsaved work or temporary research. Deleting browser history does not delete downloaded copies. Locking clears unsaved work. Removing an attachment does not remove its earlier messages or saved snapshots.\n\nResearch is your choice. Review the exact query or public URL before approving it. The research service and recipient can see it; your chat is not added automatically.\n\nStay in control. Stop ends an active response; an incomplete reply is excluded from later context. Retry is a separate request. Copy answer places completed text on your device clipboard; locking the vault does not clear that clipboard. Edit an earlier message to start a new branch. To remove a saved conversation, delete its snapshot in Saved. A new conversation clears the current workspace but does not delete saved snapshots.",
+    // Help, Getting started. `guideText` is the device vault's ("local"); `_secure` with Secure on.
+    guideText: guide(guideEn, "local"),
+    guideText_secure: guide(guideEn, "secure"),
     safetyTitle: "Trial scope and safety",
+    // The same in every storage mode: nothing in it is about where chats are saved.
     safetyText:
-      "This initial trial is for adults aged 18 and over. Explicit sexual generation is outside its scope; non-graphic sexual-health, consent and relationship advice are supported. The assistant should refuse help enabling serious harm and respond supportively to distress. These instructions are being evaluated, not a guarantee that every unsafe answer will be prevented. Check important advice; CometRow is not an emergency service and cannot contact help for you. If you are in immediate danger, contact local emergency services or someone you trust. No separate moderation service receives your messages. Private-data chat remains gated until provider privacy qualification passes.",
+      "This trial is for adults aged 18 and over.\n\nExplicit sexual content is not supported. Non-graphic sexual-health, consent and relationship advice are supported.\n\nThe assistant refuses help that could cause serious harm and responds with care when you are struggling. These safety rules reduce risk, but they are not a guarantee that every unsafe answer is prevented. Check important advice.\n\nCometRow is not an emergency service and cannot contact help for you. If you are in immediate danger, call your local emergency number (112 in the EU) or someone you trust.\n\nNo separate moderation service receives your messages.",
     privacyBoundariesTitle: "Your privacy boundaries",
     privacyBoundariesLink: "Privacy boundaries ↗",
 
@@ -184,8 +234,9 @@ export const appText = defineText({
     privateNotYet: "Private chat isn’t available yet",
     privacyDetails: "Privacy details",
     privateNotConnected: "Private chat is not connected yet",
+    // Shown only while chat is not connected (App.tsx connection banner); true in every storage mode.
     localOnly:
-      "Local documents and your vault work here. Messages stay on this device until private chat is switched on.",
+      "You can still read documents and open your saved chats. Nothing is sent to the AI until chat is connected.",
     incognitoBannerTitle: "Incognito chat.",
     incognitoBanner:
       "Nothing from this chat is saved on this device; it is gone when you start another chat, lock, reload or sign out. This does not change what the secure server keeps for a short time or the request records we hold.",
@@ -548,11 +599,11 @@ export const appText = defineText({
     historyControls: "Verlauf & Datenverwaltung",
     gettingStarted: "Erste Schritte",
     guideTitle: "CometRow verwenden",
-    guideText:
-      "Beginnen Sie in der Unterhaltung. Schreiben Sie eine Nachricht oder nutzen Sie einen Vorschlag, um einen bearbeitbaren Entwurf vorzubereiten. Gesendet wird erst, wenn Sie Senden wählen. Diese Erprobung ist für ausgedachte Beispiele gedacht; der private Chat bleibt nicht verfügbar, bis seine Datenschutzprüfungen bestanden sind.\n\nFügen Sie Kontext hinzu, wenn Sie ihn brauchen. Unter Kontext können Sie Fließtext aus DOCX, Zellwerte aus XLSX, ein PDF, UTF-8-Text, Markdown-, Daten- oder Quellcodedateien, PNG oder JPEG importieren. Code wird als Text gelesen, nie ausgeführt; Formeln in Tabellen werden nicht neu berechnet. Dateien werden auf Ihrem Gerät gelesen. Grenzen: fünf Dateien (davon bis zu drei Bildschirmfotos), je 10 MB, 20 PDF-Seiten; gedruckter deutscher und englischer Text. Prüfen Sie ausgelesene Zahlen, Tabellen und Formulierungen, bevor Sie sie verwenden. Ein gescanntes PDF wird per Texterkennung gelesen, nur die ersten 5 Seiten, und kann Fehler enthalten. Handschrift wird nicht unterstützt. Wählen Sie nur den Kontext aus, der einbezogen werden soll.\n\nSpeichern Sie bewusst. Vorübergehende Arbeit verschwindet beim Neuladen. Legen Sie unter Gespeichert einen Tresor an oder entsperren Sie ihn und wählen Sie dann Verschlüsselt speichern. Speichern Sie nach Änderungen erneut. Ihre Passphrase kann nicht wiederhergestellt werden. Der Verlauf bleibt in diesem Browser, außer Sie laden unter Gespeichert ausdrücklich eine verschlüsselte Sicherung herunter; es gibt keine Synchronisierung über eine Cloud. Zum Wiederherstellen brauchen Sie die Sicherung und ihre ursprüngliche Passphrase; die Kopien werden einem entsperrten Tresor hinzugefügt. Sicherungen enthalten nur gespeicherte Stände, nie ungespeicherte Arbeit oder vorübergehende Recherche. Das Löschen des Browserverlaufs löscht keine heruntergeladenen Kopien. Sperren entfernt ungespeicherte Arbeit. Das Entfernen eines Anhangs entfernt weder frühere Nachrichten dazu noch gespeicherte Stände.\n\nRecherche ist Ihre Entscheidung. Prüfen Sie die genaue Suchanfrage oder öffentliche Adresse, bevor Sie sie freigeben. Der Recherchedienst und der Empfänger können sie sehen; Ihr Chat wird nicht automatisch hinzugefügt.\n\nSie behalten die Kontrolle. Stoppen beendet eine laufende Antwort; eine unvollständige Antwort wird nicht in den späteren Kontext übernommen. Erneutes Anfragen ist eine eigene Anfrage. Antwort kopieren legt den fertigen Text in die Zwischenablage Ihres Geräts; das Sperren des Tresors leert diese Zwischenablage nicht. Bearbeiten Sie eine frühere Nachricht, um einen neuen Zweig zu beginnen. Um eine gespeicherte Unterhaltung zu entfernen, löschen Sie ihren Speicherstand unter Gespeichert. Eine neue Unterhaltung leert den aktuellen Arbeitsbereich, löscht aber keine gespeicherten Stände.",
+    guideText: guide(guideDe, "local"),
+    guideText_secure: guide(guideDe, "secure"),
     safetyTitle: "Umfang und Sicherheit der Testphase",
     safetyText:
-      "Diese erste Testphase ist für Erwachsene ab 18 Jahren. Das Erzeugen expliziter sexueller Inhalte gehört nicht dazu; nicht explizite Ratschläge zu sexueller Gesundheit, Einvernehmen und Beziehungen werden unterstützt. Der Assistent soll Hilfe ablehnen, die ernsthaften Schaden ermöglicht, und auf Belastung unterstützend reagieren. Diese Anweisungen werden erprobt; sie garantieren nicht, dass jede unsichere Antwort verhindert wird. Prüfen Sie wichtige Ratschläge; CometRow ist kein Notdienst und kann keine Hilfe für Sie rufen. Wenn Sie in unmittelbarer Gefahr sind, wenden Sie sich an den örtlichen Notruf oder an eine Person Ihres Vertrauens. Kein gesonderter Moderationsdienst erhält Ihre Nachrichten. Der Chat mit privaten Daten bleibt gesperrt, bis die Datenschutzprüfung des Anbieters bestanden ist.",
+      "Diese Testphase ist für Erwachsene ab 18 Jahren.\n\nExplizite sexuelle Inhalte werden nicht unterstützt. Nicht explizite Ratschläge zu sexueller Gesundheit, Einvernehmen und Beziehungen werden unterstützt.\n\nDer Assistent lehnt Hilfe ab, die ernsthaften Schaden anrichten kann, und reagiert einfühlsam, wenn es Ihnen schlecht geht. Diese Sicherheitsregeln verringern das Risiko, garantieren aber nicht, dass jede unsichere Antwort verhindert wird. Prüfen Sie wichtige Ratschläge.\n\nCometRow ist kein Notdienst und kann keine Hilfe für Sie rufen. Wenn Sie in unmittelbarer Gefahr sind, rufen Sie den örtlichen Notruf (112 in der EU) oder eine Person Ihres Vertrauens an.\n\nKein gesonderter Moderationsdienst erhält Ihre Nachrichten.",
     privacyBoundariesTitle: "Ihre Datenschutzgrenzen",
     privacyBoundariesLink: "Datenschutzgrenzen ↗",
 
@@ -574,7 +625,7 @@ export const appText = defineText({
     privacyDetails: "Details zum Datenschutz",
     privateNotConnected: "Der private Chat ist noch nicht verbunden",
     localOnly:
-      "Lokale Dokumente und Ihr Tresor funktionieren hier. Nachrichten bleiben auf diesem Gerät, bis der private Chat eingeschaltet ist.",
+      "Sie können weiterhin Dokumente lesen und Ihre gespeicherten Chats öffnen. An die KI wird nichts gesendet, bis der Chat verbunden ist.",
     incognitoBannerTitle: "Inkognito-Chat.",
     incognitoBanner:
       "Nichts aus diesem Chat wird auf diesem Gerät gespeichert; er ist weg, sobald Sie einen anderen Chat beginnen, sperren, neu laden oder sich abmelden. Das ändert nichts daran, was der sichere Server kurzzeitig behält, und nichts an unseren Aufzeichnungen über Anfragen.",

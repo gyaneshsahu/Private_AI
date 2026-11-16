@@ -12,6 +12,9 @@ import { savedListText } from "../src/text/saved-list";
 import { scheduledText } from "../src/text/scheduled";
 import { syncText } from "../src/text/sync";
 import { syncFilesText } from "../src/text/sync-files";
+import { appText } from "../src/text/app";
+import { FILE_LIMIT, SCREENSHOT_LIMIT } from "../src/attachment-limits";
+import { MAX_PDF_PAGES } from "../src/document-formats";
 
 type Key = keyof typeof modesText.en;
 const keys = Object.keys(modesText.en) as Key[];
@@ -131,4 +134,45 @@ it("storage modes: Secure never claims device-only storage or that we cannot rea
   // Secure has no encrypted backup file: the project screen leaves that line out.
   expect(forStorage(projectText.en, "secure").notInBackup).toBe("");
   expect(forStorage(projectText.en, "max").notInBackup).toBe(projectText.en.notInBackup);
+});
+
+// Help guides (src/text/app.ts), resolved as App.tsx does: tm("settings") is
+// forStorage({ ...appText, ...modeCopyText }, secureOn ? "secure" : "local").
+// "read on your device" / "auf Ihrem Gerät gelesen" (files are extracted in the browser) is true in
+// every mode and is not on the list, so no exception is needed.
+const GUIDE_KEYS = ["guideText", "safetyText", "localOnly"] as const;
+const BANNED_IN_SECURE_GUIDE = /this browser|this device|no cloud sync|evaluation|Tresor|diesem Gerät|diesem Browser/i;
+const BANNED_IN_LOCAL_GUIDE = /evaluation|synthetic|Erprobung|ausgedacht|synthetisch/i;
+
+it("help guides: true in Secure, and no evaluation wording in the device vault's texts", () => {
+  for (const lang of ["en", "de"] as const) {
+    const all = { ...appText[lang], ...modeCopyText[lang] };
+    const secure = forStorage(all, "secure");
+    const local = forStorage(all, "local");
+    for (const key of GUIDE_KEYS) {
+      expect(secure[key], `secure ${lang}.${key}`).not.toMatch(BANNED_IN_SECURE_GUIDE);
+      expect(secure[key], `secure ${lang}.${key}`).not.toMatch(BANNED_IN_SECURE);
+      expect(secure[key], `secure ${lang}.${key}`).not.toMatch(CANNOT_READ);
+      expect(local[key], `local ${lang}.${key}`).not.toMatch(BANNED_IN_LOCAL_GUIDE);
+      expect(local[key], `local ${lang}.${key}`).not.toMatch(/remains (unavailable|gated)|bleibt (gesperrt|nicht verfügbar)/i);
+      expect(local[key], `local ${lang}.${key}`).not.toMatch(/—/);
+    }
+    // Secure gets its own guide; the vault's stays for "local".
+    expect(secure.guideText).not.toBe(local.guideText);
+    expect(local.guideText).toMatch(/passphrase|Passphrase/);
+    // Every `_secure` key in appText replaces a key of the same kind.
+    for (const key of Object.keys(appText[lang]).filter((k) => k.endsWith("_secure")))
+      expect(typeof appText[lang][key.replace(/_secure$/, "") as keyof (typeof appText)["en"]], `${lang}.${key}`).toBe("string");
+  }
+  // The limits stated are the code's.
+  for (const text of [appText.en.guideText, appText.en.guideText_secure])
+    expect(text).toContain(`${FILE_LIMIT} files per chat, up to ${SCREENSHOT_LIMIT} of them pictures`);
+  expect(appText.en.guideText).toContain(`up to ${MAX_PDF_PAGES} pages`);
+});
+
+it("help guides: the draft for the legal read has every paragraph word for word", () => {
+  const doc = readFileSync("docs/secure-copy-draft-20261116.md", "utf8");
+  for (const lang of ["en", "de"] as const)
+    for (const key of [...GUIDE_KEYS, "guideText_secure"] as const)
+      for (const paragraph of appText[lang][key].split("\n\n")) expect(doc, `${lang}.${key}`).toContain(paragraph);
 });

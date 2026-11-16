@@ -40,7 +40,120 @@ Alternative (shorter, the approved one-liner from product-modes section 4): "Sav
 3. Account export text for Secure says saved items are listed by number, size and time without content. Check against the Secure export (FE-03) once built [recheck then].
 4. The background-task consent (`scheduledText.consentBody`, unchanged) says the answer waits on our server "until CometRow saves it on your device" and is then deleted from our server. In Secure the saved copy is on our server too. It is a consent text, so it was not rewritten here [the lawyer adds one Secure sentence, for example: "In Secure, the saved answer is then kept with your account like any chat."].
 5. Footer: "No advertising. No training on your data." instead of "Built for a bounded evaluation." [yes].
+6. Help guides: the safety text adds "112 in the EU" and keeps "This trial is for adults aged 18 and over" and the title "Trial scope and safety". At launch, keep the trial wording or drop it [keep it while the alpha runs].
 ## The texts, screen by screen
+
+### Help guides (src/text/app.ts, shown from Help and the connection banner)
+
+Rewritten on 16 November so they are true in every storage mode and with chat connected. Removed: "evaluation", "synthetic examples", "private chat remains unavailable until its privacy checks pass", "History stays in this browser", "there is no cloud sync" and the old 20-page PDF limit. Limits are the code's: 5 files per chat (3 pictures), searches not counted (src/attachment-limits.ts); 10 MB per file (src/documents.ts); 150 PDF pages, 500,000 characters for long PDF, Word and text files, 60,000 for others (src/document-formats.ts); text recognition on the first 5 pages of a scanned PDF (src/extraction.worker.ts).
+
+Secure Max has no guide of its own: the Help guide is the account's (Secure) whenever Secure is on, and it mentions Secure Max in one conditional sentence. Secure Max's own rules are in its first-open dialog (section 4 texts). Wiring: the Secure guide shows once App.tsx reads `tm("settings").guideText` instead of `t.guideText`.
+
+#### `app.guideText` (Help, Getting started; agent proposal)
+
+- Today (device vault, "local") EN:
+
+  > Start a chat. Type a message, or pick a starter to get a draft you can edit. Nothing is sent until you press Send. Answers come from an AI and can be wrong, so check important answers.
+  >
+  > Add files when you need them. You can attach PDF, Word (DOCX), Excel (XLSX), text, Markdown, data and code files, and PNG or JPEG pictures. Files are read on your device. Code is read as text and never run. Spreadsheet formulas are not recalculated. Check numbers, tables and wording before you rely on them.
+  >
+  > File limits: 5 files per chat, up to 3 of them pictures, and 10 MB per file. PDFs can have up to 150 pages. Long PDF, Word and text files (up to 500,000 characters) are split into passages, and only the passages that match your question are sent. Spreadsheets, data and code files can have up to 60,000 characters. A scanned PDF is read with text recognition: first 5 pages only, printed German and English text, no handwriting. Web searches do not count toward the file limit.
+  >
+  > Personal details are masked. Email addresses, bank details and similar identifiers are replaced with placeholders before a message goes to the AI. Not every number is recognised, least of all in photos and scans.
+  >
+  > Save what you want to keep. Temporary work disappears on reload. To save, open Saved, create or unlock your vault with a passphrase, then choose Save encrypted snapshot. Save again after changes. Saved chats are encrypted in the vault on this device. Your passphrase cannot be recovered, so keep it safe. In Saved you can also download an encrypted backup and restore it later with its original passphrase. Incognito chats are never saved. Locking clears unsaved work.
+  >
+  > Web search is your choice. CometRow first shows the exact search text or page address. Review the exact query before you approve it. Only the text you approve goes to the search service; your chat and files are not sent with it. Results and source links are not saved.
+  >
+  > Stay in control. Stop ends an answer, and an unfinished answer is not used later. Retry asks again as a new request. Edit an earlier message to start a new branch. Copy answer puts the text on your clipboard. Locking the vault does not clear the clipboard. To delete a chat, choose Delete in its menu in the chat list. Downloaded backups are not affected.
+
+- Today (device vault, "local") DE:
+
+  > Starten Sie einen Chat. Schreiben Sie eine Nachricht oder wählen Sie einen Vorschlag, um einen Entwurf zu erhalten, den Sie bearbeiten können. Gesendet wird erst, wenn Sie Senden drücken. Antworten stammen von einer KI und können falsch sein. Prüfen Sie deshalb wichtige Antworten.
+  >
+  > Fügen Sie Dateien hinzu, wenn Sie sie brauchen. Sie können PDF-, Word- (DOCX) und Excel-Dateien (XLSX), Text-, Markdown-, Daten- und Codedateien sowie PNG- oder JPEG-Bilder anhängen. Dateien werden auf Ihrem Gerät gelesen. Code wird als Text gelesen und nie ausgeführt. Formeln in Tabellen werden nicht neu berechnet. Prüfen Sie Zahlen, Tabellen und Formulierungen, bevor Sie sich darauf verlassen.
+  >
+  > Grenzen für Dateien: 5 Dateien pro Chat, davon bis zu 3 Bilder, und 10 MB pro Datei. PDFs können bis zu 150 Seiten haben. Lange PDF-, Word- und Textdateien (bis zu 500.000 Zeichen) werden in Abschnitte geteilt, und gesendet werden nur die Abschnitte, die zu Ihrer Frage passen. Tabellen, Daten- und Codedateien können bis zu 60.000 Zeichen haben. Ein gescanntes PDF wird per Texterkennung gelesen: nur die ersten 5 Seiten, gedruckter deutscher und englischer Text, keine Handschrift. Websuchen zählen nicht zur Dateigrenze.
+  >
+  > Persönliche Angaben werden verborgen. E-Mail-Adressen, Bankdaten und ähnliche Kennungen werden durch Platzhalter ersetzt, bevor eine Nachricht an die KI geht. Nicht jede Zahl wird erkannt, am wenigsten in Fotos und Scans.
+  >
+  > Speichern Sie, was Sie behalten möchten. Vorübergehende Arbeit verschwindet beim Neuladen. Zum Speichern öffnen Sie Gespeichert, legen Ihren Tresor mit einer Passphrase an oder entsperren ihn und wählen dann Verschlüsselt speichern. Speichern Sie nach Änderungen erneut. Gespeicherte Chats liegen verschlüsselt im Tresor auf diesem Gerät. Ihre Passphrase kann nicht wiederhergestellt werden. Bewahren Sie sie gut auf. Unter Gespeichert können Sie auch eine verschlüsselte Sicherung herunterladen und später mit ihrer ursprünglichen Passphrase wiederherstellen. Inkognito-Chats werden nie gespeichert. Sperren entfernt ungespeicherte Arbeit.
+  >
+  > Die Websuche ist Ihre Entscheidung. CometRow zeigt zuerst den genauen Suchtext oder die Seitenadresse. Prüfen Sie die genaue Suchanfrage, bevor Sie sie freigeben. Nur der Text, den Sie freigeben, geht an den Suchdienst; Ihr Chat und Ihre Dateien werden nicht mitgesendet. Ergebnisse und Quellenlinks werden nicht gespeichert.
+  >
+  > Sie behalten die Kontrolle. Stoppen beendet eine Antwort, und eine unvollständige Antwort wird später nicht verwendet. Eine Antwort neu anzufordern ist eine eigene Anfrage. Bearbeiten Sie eine frühere Nachricht, um einen neuen Zweig zu beginnen. Antwort kopieren legt den Text in Ihre Zwischenablage. Das Sperren des Tresors leert die Zwischenablage nicht. Um einen Chat zu löschen, wählen Sie Löschen in seinem Menü in der Chatliste. Heruntergeladene Sicherungen sind davon nicht betroffen.
+
+- Secure EN:
+
+  > Start a chat. Type a message, or pick a starter to get a draft you can edit. Nothing is sent until you press Send. Answers come from an AI and can be wrong, so check important answers.
+  >
+  > Add files when you need them. You can attach PDF, Word (DOCX), Excel (XLSX), text, Markdown, data and code files, and PNG or JPEG pictures. Files are read on your device. Code is read as text and never run. Spreadsheet formulas are not recalculated. Check numbers, tables and wording before you rely on them.
+  >
+  > File limits: 5 files per chat, up to 3 of them pictures, and 10 MB per file. PDFs can have up to 150 pages. Long PDF, Word and text files (up to 500,000 characters) are split into passages, and only the passages that match your question are sent. Spreadsheets, data and code files can have up to 60,000 characters. A scanned PDF is read with text recognition: first 5 pages only, printed German and English text, no handwriting. Web searches do not count toward the file limit.
+  >
+  > Personal details are masked. Email addresses, bank details and similar identifiers are replaced with placeholders before a message goes to the AI. Not every number is recognised, least of all in photos and scans.
+  >
+  > Your chats are saved automatically. They are saved to your account, encrypted while stored, and are on all your devices after sign-in. CometRow holds the key. Incognito chats are never saved. If your sidebar shows Secure Max, you can keep chats there with their own key and recovery key, which you keep yourself. Its rules are shown before you start.
+  >
+  > Web search is your choice. CometRow first shows the exact search text or page address. Review the exact query before you approve it. Only the text you approve goes to the search service; your chat and files are not sent with it. Results and source links are not saved.
+  >
+  > Stay in control. Stop ends an answer, and an unfinished answer is not used later. Retry asks again as a new request. Edit an earlier message to start a new branch. Copy answer puts the text on your clipboard. To delete a chat, choose Delete in its menu in the chat list. It is deleted on all your devices.
+
+- Secure DE:
+
+  > Starten Sie einen Chat. Schreiben Sie eine Nachricht oder wählen Sie einen Vorschlag, um einen Entwurf zu erhalten, den Sie bearbeiten können. Gesendet wird erst, wenn Sie Senden drücken. Antworten stammen von einer KI und können falsch sein. Prüfen Sie deshalb wichtige Antworten.
+  >
+  > Fügen Sie Dateien hinzu, wenn Sie sie brauchen. Sie können PDF-, Word- (DOCX) und Excel-Dateien (XLSX), Text-, Markdown-, Daten- und Codedateien sowie PNG- oder JPEG-Bilder anhängen. Dateien werden auf Ihrem Gerät gelesen. Code wird als Text gelesen und nie ausgeführt. Formeln in Tabellen werden nicht neu berechnet. Prüfen Sie Zahlen, Tabellen und Formulierungen, bevor Sie sich darauf verlassen.
+  >
+  > Grenzen für Dateien: 5 Dateien pro Chat, davon bis zu 3 Bilder, und 10 MB pro Datei. PDFs können bis zu 150 Seiten haben. Lange PDF-, Word- und Textdateien (bis zu 500.000 Zeichen) werden in Abschnitte geteilt, und gesendet werden nur die Abschnitte, die zu Ihrer Frage passen. Tabellen, Daten- und Codedateien können bis zu 60.000 Zeichen haben. Ein gescanntes PDF wird per Texterkennung gelesen: nur die ersten 5 Seiten, gedruckter deutscher und englischer Text, keine Handschrift. Websuchen zählen nicht zur Dateigrenze.
+  >
+  > Persönliche Angaben werden verborgen. E-Mail-Adressen, Bankdaten und ähnliche Kennungen werden durch Platzhalter ersetzt, bevor eine Nachricht an die KI geht. Nicht jede Zahl wird erkannt, am wenigsten in Fotos und Scans.
+  >
+  > Ihre Chats werden automatisch gespeichert. Sie werden in Ihrem Konto gespeichert, verschlüsselt abgelegt, und sind nach der Anmeldung auf allen Ihren Geräten. CometRow verwahrt den Schlüssel. Inkognito-Chats werden nie gespeichert. Wenn Ihre Seitenleiste Secure Max zeigt, können Sie Chats dort mit einem eigenen Schlüssel und einem eigenen Wiederherstellungsschlüssel aufbewahren, die Sie selbst verwahren. Die Regeln dafür sehen Sie, bevor Sie beginnen.
+  >
+  > Die Websuche ist Ihre Entscheidung. CometRow zeigt zuerst den genauen Suchtext oder die Seitenadresse. Prüfen Sie die genaue Suchanfrage, bevor Sie sie freigeben. Nur der Text, den Sie freigeben, geht an den Suchdienst; Ihr Chat und Ihre Dateien werden nicht mitgesendet. Ergebnisse und Quellenlinks werden nicht gespeichert.
+  >
+  > Sie behalten die Kontrolle. Stoppen beendet eine Antwort, und eine unvollständige Antwort wird später nicht verwendet. Eine Antwort neu anzufordern ist eine eigene Anfrage. Bearbeiten Sie eine frühere Nachricht, um einen neuen Zweig zu beginnen. Antwort kopieren legt den Text in Ihre Zwischenablage. Um einen Chat zu löschen, wählen Sie Löschen in seinem Menü in der Chatliste. Er wird auf allen Ihren Geräten gelöscht.
+
+#### `app.safetyText` (Help, Trial scope and safety; agent proposal)
+
+The same in every mode: nothing in it is about storage. The sentence "Private-data chat remains gated until provider privacy qualification passes" was removed; while chat is not connected, the connection banner and Settings say so on their own (`privateNotYet`, `privateNotConnected`, `privateChatGated`).
+
+- Every mode EN:
+
+  > This trial is for adults aged 18 and over.
+  >
+  > Explicit sexual content is not supported. Non-graphic sexual-health, consent and relationship advice are supported.
+  >
+  > The assistant refuses help that could cause serious harm and responds with care when you are struggling. These safety rules reduce risk, but they are not a guarantee that every unsafe answer is prevented. Check important advice.
+  >
+  > CometRow is not an emergency service and cannot contact help for you. If you are in immediate danger, call your local emergency number (112 in the EU) or someone you trust.
+  >
+  > No separate moderation service receives your messages.
+
+- Every mode DE:
+
+  > Diese Testphase ist für Erwachsene ab 18 Jahren.
+  >
+  > Explizite sexuelle Inhalte werden nicht unterstützt. Nicht explizite Ratschläge zu sexueller Gesundheit, Einvernehmen und Beziehungen werden unterstützt.
+  >
+  > Der Assistent lehnt Hilfe ab, die ernsthaften Schaden anrichten kann, und reagiert einfühlsam, wenn es Ihnen schlecht geht. Diese Sicherheitsregeln verringern das Risiko, garantieren aber nicht, dass jede unsichere Antwort verhindert wird. Prüfen Sie wichtige Ratschläge.
+  >
+  > CometRow ist kein Notdienst und kann keine Hilfe für Sie rufen. Wenn Sie in unmittelbarer Gefahr sind, rufen Sie den örtlichen Notruf (112 in der EU) oder eine Person Ihres Vertrauens an.
+  >
+  > Kein gesonderter Moderationsdienst erhält Ihre Nachrichten.
+
+#### `app.localOnly` (connection banner, shown only while chat is not connected; agent proposal)
+
+One text, true in every mode.
+
+- Every mode EN:
+
+  > You can still read documents and open your saved chats. Nothing is sent to the AI until chat is connected.
+
+- Every mode DE:
+
+  > Sie können weiterhin Dokumente lesen und Ihre gespeicherten Chats öffnen. An die KI wird nichts gesendet, bis der Chat verbunden ist.
 
 ### Memory (src/text/memory.ts, MemorySettings, RememberDialog, MemoryNote)
 
