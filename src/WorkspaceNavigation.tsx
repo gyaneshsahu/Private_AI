@@ -5,7 +5,7 @@ import type { AppStatus, Conversation } from "../shared/contracts";
 import { conversationTitle, dateGroup, findConversations, lastActivity } from "./conversation-library";
 import type { Project } from "./projects";
 import { Icon } from "./Icon";
-import { useText } from "./i18n";
+import { useLang, useText } from "./i18n";
 import { savedListText } from "./text/saved-list";
 import { workspaceText } from "./text/workspace";
 import { projectText } from "./text/projects";
@@ -15,7 +15,7 @@ import { messageActionsText } from "./text/message-actions";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { ProjectDeleteDialog } from "./ProjectDeleteDialog";
 import { shortcutsText } from "./text/shortcuts";
-import { forStorage, type Storage } from "./text/mode-copy";
+import { forStorage, modeCopyText, type Storage } from "./text/mode-copy";
 
 export function WorkspaceNavigation(props: {
   open: boolean;
@@ -44,6 +44,8 @@ export function WorkspaceNavigation(props: {
   onDeleteProject?: (id: string, deleteChats: boolean) => Promise<boolean>;
   /** Where these projects are kept, as given to ProjectPanel; decides what the delete question promises. */
   projectStorage?: Storage;
+  /** Where the normal list's chats are kept: decides what the search box, list and footer may promise. */
+  storage?: Storage;
   /** Opens the keyboard shortcuts list (src/ShortcutHelp.tsx); the account menu entry is shown only when given. */
   onShortcuts?: () => void;
   /** The Scheduled screen (docs/scheduled-20261115.md); absent while its switch is off. */
@@ -85,6 +87,7 @@ export function WorkspaceNavigation(props: {
     onOpenProject,
     onDeleteProject,
     projectStorage,
+    storage,
     onShortcuts,
     onScheduled,
     backgroundActive,
@@ -93,7 +96,9 @@ export function WorkspaceNavigation(props: {
     syncIndicator,
     maxSection,
   } = props;
-  const t = useText(workspaceText);
+  const { lang } = useLang();
+  // Mode texts (src/text/mode-copy.ts) replace the device-vault wording where chats are kept with the account.
+  const t = forStorage(useMemo(() => ({ ...workspaceText[lang], ...modeCopyText[lang] }), [lang]), storage);
   const ma = useText(messageActionsText);
   // Rename in place: the row becomes a field. The ref ends it once (Enter, Escape or leaving the field).
   const [renaming, setRenaming] = useState<string>();
@@ -618,9 +623,7 @@ export function WorkspaceNavigation(props: {
             )}
           </div>
         </details>
-        <p>
-          {unlocked ? t.vaultUnlocked : t.temporarySession} · {t.thisDevice}
-        </p>
+        <p>{[unlocked ? t.vaultUnlocked : t.temporarySession, t.thisDevice].filter(Boolean).join(" · ")}</p>
         {syncIndicator}
       </nav>
     </aside>

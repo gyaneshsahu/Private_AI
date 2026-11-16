@@ -145,6 +145,10 @@ import { ContextReview } from "./ContextReview";
 import { correctSource } from "./source-history";
 import { AccountUsage } from "./AccountUsage";
 import { SupportPanel } from "./SupportPanel";
+import { useShortcuts } from "./use-shortcuts";
+import { ShortcutHelp } from "./ShortcutHelp";
+import { lastAnswer, lastCodeBlock } from "./shortcut-copy";
+import { shortcutsText } from "./text/shortcuts";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { stopReading } from "./read-aloud";
@@ -218,6 +222,7 @@ export function App() {
   );
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [navigationCollapsed, setNavigationCollapsed] = useState(false);
+  const [shortcutHelp, setShortcutHelp] = useState(false);
   const [settingsSection, setSettingsSection] = useState("appearance");
   const [projects, setProjects] = useState<Project[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -1055,6 +1060,53 @@ export function App() {
   // New chat while an answer streams asks first, in one question that also covers unsaved changes.
   const allowNew = () =>
     answering ? ask(q.stopTitle, unsaved ? cc.stopForNewUnsaved : cc.stopForNew, q.stop) : allowReplace();
+  // Keyboard shortcuts (docs/keyboard-shortcuts-20261116.md) and the skip link: the message box, from any tab.
+  const goToMessageBox = () => {
+    setTab("Conversation");
+    setNavigationOpen(false);
+    requestAnimationFrame(() => document.getElementById("message-input")?.focus());
+  };
+  const sh = shortcutsText[lang];
+  useShortcuts({
+    newChat: () => {
+      if (busy && !controller.current) return false;
+      // New chat keeps the section the user is in (owner note).
+      void (async () => {
+        if (!(await allowNew())) return;
+        reset();
+        setTab("Conversation");
+        setNavigationOpen(false);
+      })();
+    },
+    search: () => {
+      if (!anyStore) return false;
+      const box = () => document.querySelector<HTMLInputElement>(".history-search input");
+      if (box()?.checkVisibility()) return box()!.focus();
+      setNavigationOpen(true);
+      requestAnimationFrame(() => box()?.focus());
+    },
+    sidebar: () => {
+      if (matchMedia("(max-width: 760px)").matches) setNavigationOpen((o) => !o);
+      else {
+        setNavigationCollapsed((c) => !c);
+        setNavigationOpen(false);
+      }
+    },
+    composer: goToMessageBox,
+    // The copy actions never return false: Ctrl+Shift+C would open the developer tools.
+    copyAnswer: () => {
+      const m = lastAnswer(conversation.messages);
+      if (!m) return setNotice(sh.noAnswer);
+      void copyAnswer(answerCopyText(m, lang), m.id);
+    },
+    copyCode: () => {
+      const a = lastAnswer(conversation.messages);
+      const code = a && lastCodeBlock(a.text);
+      if (code === undefined) return setNotice(a ? sh.noCode : sh.noAnswer);
+      navigator.clipboard.writeText(code).then(() => setNotice(t.copied), () => fail(t.copyFailed));
+    },
+    help: () => setShortcutHelp((o) => !o),
+  });
   // "Report a problem with this answer" opens Help with that choice set; nothing else is passed.
   const [reporting, setReporting] = useState(false);
   useEffect(() => {
@@ -2238,6 +2290,14 @@ export function App() {
         onSignOut={() => void signOut()}
         onCreateProject={createProject}
         onEditProject={editProject}
+        onDeleteProject={deleteProject}
+        // The normal list holds Secure projects with Secure on (Secure Max has its own section).
+        projectStorage={secureOn ? "secure" : "local"}
+        storage={secureOn ? "secure" : "local"}
+        onShortcuts={() => {
+          setNavigationOpen(false);
+          setShortcutHelp(true);
+        }}
         onOpenProject={(id) => {
           setNavigationOpen(false);
           setOpenProject(id);
@@ -2401,6 +2461,14 @@ export function App() {
             setQuestion(undefined);
             question.answer(yes);
           }}
+        />
+      )}
+      {shortcutHelp && (
+        <ShortcutHelp
+          onClose={() => setShortcutHelp(false)}
+          fallback={() =>
+            [...document.querySelectorAll<HTMLElement>(".account-menu summary, .navigation-toggle")].find((e) => e.checkVisibility()) ?? null
+          }
         />
       )}
       {filesQuestion && (
@@ -2972,6 +3040,7 @@ export function App() {
                   sourceHistory={sourceHistory}
                   busy={!!busy}
                   streaming={answering && index === conversation.messages.length - 1}
+                  storage={storageOf(mode)}
                   ready={!!status?.inference.ready}
                   openSource={setSource}
                   copied={copiedId === message.id}
@@ -3898,7 +3967,21 @@ export function App() {
             )}
           </section>
         )}
-        {tab === "Help" && <SupportPanel initialSymptom={reporting ? "incorrect" : undefined} />}
+        {tab === "Help" && (
+          <SupportPanel
+            initialSymptom={reporting ? "incorrect" : undefined}
+            onShortcuts={() => setShortcutHelp(true)}
+            onDocument={(id) =>
+              setSource(
+                id === "imprint"
+                  ? { id, title: t.imprint, text: imprintText(undefined, lang) }
+                  : id === "privacy-policy"
+                    ? { id, title: t.privacyPolicy, text: privacyPolicyText(disclosedProvider(status), lang) }
+                    : { id, title: t.guideTitle, text: t.guideText },
+              )
+            }
+          />
+        )}
         {status?.research && status.search && status.inference.ready && !(status.healthConsentDraft && !healthConsent) && (
           <DeepResearch
             hidden={tab !== "Research"}
