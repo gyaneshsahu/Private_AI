@@ -28,8 +28,8 @@ function upstream(answer: (n: number) => Reply = () => reply()) {
   return { sentAt, send };
 }
 
-it("the numbers follow the measurements: start and burst below the 9 calls that passed, wait about 20 s", () => {
-  expect(ATTEST_LIMITS.startPerMinute).toBeLessThan(9);
+it("the numbers follow the measurements: start at the 30 a minute that passed on 16 Nov, burst below the 9 of 13 Nov, wait about 20 s", () => {
+  expect(ATTEST_LIMITS.startPerMinute).toBe(30);
   expect(ATTEST_LIMITS.burst).toBeLessThan(9);
   expect(ATTEST_LIMITS.floorPerMinute).toBeGreaterThan(0);
   expect(ATTEST_LIMITS.ceilingPerMinute).toBeGreaterThan(20);
@@ -37,7 +37,7 @@ it("the numbers follow the measurements: start and burst below the 9 calls that 
 });
 
 it("sends a burst of 6 calls at once, then paces at 6 calls a minute", async () => {
-  const queue = createAttestQueue({ ...ATTEST_LIMITS, maxWaitMs: 25_000 });
+  const queue = createAttestQueue({ ...ATTEST_LIMITS, startPerMinute: 6, maxWaitMs: 25_000 });
   const { sentAt, send } = upstream();
   const results = Array.from({ length: 8 }, () => queue.run(send, never));
   await vi.advanceTimersByTimeAsync(21_000);
@@ -52,7 +52,7 @@ it("sends a burst of 6 calls at once, then paces at 6 calls a minute", async () 
 });
 
 it("halves the rate on a 429, pauses, never passes the 429 on, halves once per burst, and ends a call at its 20 s", async () => {
-  const limits = { ...ATTEST_LIMITS, pauseAfter429Ms: 6_000 };
+  const limits = { ...ATTEST_LIMITS, startPerMinute: 6, pauseAfter429Ms: 6_000 };
   const queue = createAttestQueue(limits);
   // The first three calls are refused upstream, as by Privatemode's per-organisation limit.
   const { sentAt, send } = upstream((n) => reply(n <= 3 ? 429 : 200));
@@ -99,7 +99,7 @@ it("without Retry-After pauses for Privatemode's usual 60 s", async () => {
 });
 
 it("grows by one call a minute after 10 successes in a row, never beyond the ceiling, and never below the floor", async () => {
-  const limits = { ...ATTEST_LIMITS, ceilingPerMinute: 10, burst: 1000, pauseAfter429Ms: 6_000 };
+  const limits = { ...ATTEST_LIMITS, startPerMinute: 6, ceilingPerMinute: 10, burst: 1000, pauseAfter429Ms: 6_000 };
   const queue = createAttestQueue(limits);
   const { send } = upstream();
   for (let i = 0; i < 9; i++) await queue.run(send, never);
@@ -118,7 +118,7 @@ it("grows by one call a minute after 10 successes in a row, never beyond the cei
 });
 
 it("a call that cannot be sent in time gets busy at once; the others are sent within the wait", async () => {
-  const queue = createAttestQueue();
+  const queue = createAttestQueue({ ...ATTEST_LIMITS, startPerMinute: 6 });
   const { sentAt, send } = upstream();
   const results = Array.from({ length: 10 }, () => queue.run(send, never));
   // 6 at once, then one per 10 000 ms: call 7 fits in 20 s; 8 to 10 never would.

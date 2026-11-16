@@ -1,5 +1,7 @@
 # Privatemode attestation limit: a capacity decision for the alpha (12 November 2026)
 
+**16 November 2026, after billing was switched on (measured by the agent):** 12 verify-only attestations 2 s apart all passed in 23 s, no HTTP 429, no tokens (`evaluation/privatemode/attest-only-probe.mts 2000 12`). The owner's correction of the same day: the earlier refusals were most likely a general request limit (the free tier allows 40 requests a minute, pay-as-you-go 100). The queue and the cap per session stay as built; only the start rate changed, from 6 to 30 a minute. Not tested: more than 30 a minute, and several sessions at once through the real app.
+
 **16 November 2026, support answer (owner-reported, not verified):** Privatemode says there is no limit on attestation verification; limits apply only to token throughput and to requests to the inference API. The 429 responses measured on 12 and 13 November therefore count against the request limit (attest and secret calls go to the same API), not a separate attestation limit. No change to the built design: one verified session per browser, re-verified after 10 minutes, with the attestation queue. Open question for support if needed: the request limit per minute for our key.
 
 **Status: finding measured; owner accepted option B ("Option 1", 12 November); built on branch `privatemode-session-verify` (see "Built" below). Attestation queue built and checked live on 13 November (see "Queue (built)" below): it stops the 429 storm, but five sessions starting together still fail when Privatemode's allowance is used up. Option A (higher limit) is still open and now the main fix.**
@@ -79,7 +81,7 @@ Why: the live test of 13 November (session verification, `37b0985`) passed one s
 
 | Setting | Value | Basis |
 | --- | --- | --- |
-| Start rate | 6 calls a minute | below the 9 to 10 calls that passed live on 13 Nov |
+| Start rate | 30 calls a minute (6 until 16 Nov) | 12 verifications 2 s apart passed on 16 Nov with pay-as-you-go on |
 | Allowed at once | 6 | 5 sessions starting together need 5 |
 | On 429 | halve; pause for `Retry-After` (default 60 s) | Privatemode sent `Retry-After: 60` |
 | Growth | +1 a minute after 10 successes in a row, ceiling 120 | slow probing; ceiling far above today's limit |

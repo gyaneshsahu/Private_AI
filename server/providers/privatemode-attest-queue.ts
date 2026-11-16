@@ -1,8 +1,9 @@
 // One adaptive queue for Privatemode attestation calls from all users of this server
-// (owner, 13 November). Privatemode rate-limits attestation per organisation; without a queue,
-// a few sessions starting together exceed it, and the SDK's own three attempts per verification
-// turn each refusal into more calls (live test of 13 November: 3 sessions at once, 22 HTTP 429).
-// Chat and key exchange never pass through here: only the attest call was ever refused.
+// (owner, 13 November). Attest calls count toward Privatemode's request limit per organisation
+// (support, 16 November: no separate attestation limit, only token and request limits); without a
+// queue, a few sessions starting together exceed it, and the SDK's own three attempts per
+// verification turn each refusal into more calls (live test of 13 November: 3 sessions at once,
+// 22 HTTP 429). Chat and key exchange never pass through here: only the attest call was ever refused.
 // shortcut: queue state is in memory per server instance; with several instances behind one
 // key, each paces on its own and together they can exceed the limit. Move the state to a shared
 // store (or one relay instance) before running more than one.
@@ -14,11 +15,13 @@
  *   verifications a minute passed, 20 a minute drew 429s, 15 back to back passed in 30 s.
  * - 13 November, live through this queue: 10 attest calls within about 8 s passed, the 11th got
  *   HTTP 429 with Retry-After: 60; in another run the 10th within two minutes got it. So today's
- *   limit is about 9 to 10 calls a minute per organisation, with a 60 s penalty.
+ *   limit was about 9 to 10 calls a minute per organisation, with a 60 s penalty.
+ * - 16 November, pay-as-you-go on (evaluation/privatemode/attest-only-probe.mts): 12 verify-only
+ *   attestations 2 s apart all passed in 23 s (about 30 a minute), no 429.
  */
 export const ATTEST_LIMITS = {
-  /** Start well below the 9 to 10 calls a minute that passed: one call every 10 s. */
-  startPerMinute: 6,
+  /** The rate that passed on 16 November with billing on: one call every 2 s. Was 6 before. */
+  startPerMinute: 30,
   /** Never slower than this, however many 429s arrive. */
   floorPerMinute: 2,
   /** Growth stops here, far above today's limit, so a raised limit is used with no code change. */

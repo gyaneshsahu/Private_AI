@@ -226,7 +226,7 @@ export function createPrivatemodeRelayAdapter(): InferenceRelayAdapter {
                 body: Buffer.isBuffer(req.body) ? new Uint8Array(req.body) : new Uint8Array(),
                 signal: AbortSignal.any([abort.signal, AbortSignal.timeout(30000)]),
               });
-            // Only attestation is rate-limited upstream; key exchange goes straight through.
+            // Only attest calls are queued (they count toward the request limit); key exchange goes straight through.
             const attest = req.path === KEY_PATHS[0];
             const who = String(res.locals.accountId ?? res.locals.session);
             if (attest && !attestAllowed(who, Date.now())) {
