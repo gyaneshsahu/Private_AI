@@ -107,6 +107,7 @@ Design: `docs/settings-structure-20261116.md`.
 - Full unit suite: in CI on every push (sharded).
 - Layout sweep (`evaluation/ui-sweep.ts`, Chromium, Firefox and WebKit, phone, tablet and desktop): English 54 of 54 views clean; German (a build with `VITE_GERMAN_UI`) 54 of 54 clean, no English words left, no overflow.
 - Audit harness, final run: every switch on 558 screenshots, every switch off 366, no request beyond localhost, no page overflow inside the app, no untranslated labels. The three tour steps that still expected the old behaviour (send while offline, Secure Max first use) were updated and pass; the harness build now keeps fonts as files like the real build.
+- Firefox and WebKit, audit harness on 17 key screens at 375 and 1280 px in English and German (207 screenshots): no overflow, no request beyond localhost; two page loads timed out once and passed on a rerun. Remaining console messages: Firefox reports the CSP blocking a harmless eval probe in a library; the local server's bare 404 (the branded page runs only in production) blocks its own icon and style. The new UI tests themselves run in Chromium only.
 - Provider spend this run: Privatemode 0, Tinfoil 0, Brave 0. No live calls were made.
 
 ## 6. Known risks
