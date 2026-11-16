@@ -232,8 +232,12 @@
   border: 0;
   padding: 20px 0;
 }
+.chat-design hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+}
 .chat-design .message.user {
-  background: var(--subtle);
+  background: var(--bubble);
   color: var(--ink);
   border-radius: 16px;
   padding: 16px 20px;

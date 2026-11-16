@@ -250,7 +250,7 @@ for (const lang of LANGS)
     const band = await section.evaluate((element) => [getComputedStyle(element).borderLeftWidth, getComputedStyle(element).borderLeftColor, getComputedStyle(element).backgroundColor]);
     expect(band[0]).toBe("4px");
     expect(band[1]).not.toBe(band[2]);
-    expect(await page.locator(".chat-design").evaluate((element) => getComputedStyle(element).backgroundColor)).toBe("rgb(25, 28, 31)");
+    expect(await page.locator(".chat-design").evaluate((element) => getComputedStyle(element).backgroundColor)).toBe("rgb(11, 15, 23)"); // --bg of the dark token block in src/chat-design.css
     await shot(page, `${lang}-375-short-dark-locked`);
 
     const settings = page.locator("#settings");
