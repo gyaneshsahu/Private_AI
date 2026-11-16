@@ -145,12 +145,12 @@ it("puts everything on a second device after sign-in alone, merges edits both wa
   await b.engine.syncNow();
   const mine = await a.vault.save({ ...first, messages: [...first.messages, message("added on A")] }, first);
   await a.engine.syncNow();
-  const merged = (await a.vault.readAvailable()).conversations[0];
-  expect(merged.id).toBe(mine.id);
+  // A still lists its local incognito chat (the vault keeps it on this device; the engine never sends it).
+  const merged = (await a.vault.readAvailable()).conversations.find((c) => c.id === mine.id)!;
   expect(merged.title).toBe("Renamed on B");
   expect(merged.messages.map((m) => m.text)).toEqual(expect.arrayContaining(["CANARY-CHAT", "added on A", "added on B"]));
   await b.engine.syncNow();
-  expect((await b.vault.readAvailable()).conversations[0].messages).toHaveLength(merged.messages.length);
+  expect((await b.vault.readAvailable()).conversations.find((c) => c.id === mine.id)!.messages).toHaveLength(merged.messages.length);
 
   // A delete on A reaches B.
   await a.vault.delete(merged.id);
