@@ -16,6 +16,7 @@ export const workspaceText = defineText({
     newChat: "New chat",
     newIncognito: "New incognito chat",
     incognitoTitle: "Never saved on this device; gone when you close, lock or sign out",
+    incognitoTitle_secure: "Never saved",
     incognito: "Incognito chat",
     searchChats: "Search chats",
     searchPlaceholder: "Search this vault",
@@ -58,6 +59,8 @@ export const workspaceText = defineText({
     vaultUnlocked: "Local vault unlocked",
     temporarySession: "Temporary session",
     thisDevice: "This device",
+    // Secure: saved to the account, so the footer line names no device.
+    thisDevice_secure: "",
     navigation: "Navigation",
   },
   de: {
@@ -75,6 +78,7 @@ export const workspaceText = defineText({
     newIncognito: "Neuer Inkognito-Chat",
     incognitoTitle:
       "Wird nie auf diesem Gerät gespeichert; verschwindet beim Schließen, Sperren oder Abmelden",
+    incognitoTitle_secure: "Nie gespeichert",
     incognito: "Inkognito-Chat",
     searchChats: "Chats durchsuchen",
     searchPlaceholder: "Diesen Tresor durchsuchen",
@@ -118,6 +122,7 @@ export const workspaceText = defineText({
     vaultUnlocked: "Lokaler Tresor entsperrt",
     temporarySession: "Vorübergehende Sitzung",
     thisDevice: "Dieses Gerät",
+    thisDevice_secure: "",
     navigation: "Navigation",
   },
 });

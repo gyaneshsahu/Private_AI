@@ -3917,3 +3917,70 @@
   font-weight: 600;
   margin: 8px 0 0;
 }
+/* round 3 wiring 16 Nov */
+/* SS-23: the skip link, off screen until it has the keyboard focus. */
+.chat-design .skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--canvas);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+.chat-design .skip-link:focus {
+  transform: none;
+  outline: 2px solid var(--canvas);
+  outline-offset: -4px;
+}
+/* FE-07: "Search the web" is armed for the next message; one button undoes it. */
+.chat-design .search-next {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+.chat-design .search-next span {
+  flex: 1 1 220px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.chat-design .search-next button {
+  min-height: 24px;
+}
+@media (max-width: 760px) {
+  .chat-design .search-next button,
+  .chat-design .search-suggestion .row button {
+    min-height: 44px;
+  }
+}
+/* The account page's questions (src/AccountAccess.tsx) use the app's dialog outside .chat-design. */
+.account-preview dialog.confirm-dialog {
+  width: min(440px, calc(100vw - 24px));
+}
+.account-preview .confirm-dialog p {
+  margin: 12px 0 20px;
+  overflow-wrap: anywhere;
+}
+.account-preview .confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.account-preview .confirm-actions button {
+  min-height: 44px;
+}
+.account-preview .danger-button {
+  color: #fff;
+  background: #a32020;
+  border-color: #a32020;
+  font-weight: 600;
+}

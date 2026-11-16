@@ -28,6 +28,7 @@ import { arithmeticText } from "./text/arithmetic";
 import { composerText } from "./text/composer";
 import { imageText } from "./text/images";
 import { messageText } from "./text/message";
+import type { Storage } from "./text/mode-copy";
 
 // Once loaded, the renderer is used directly: a lazy component suspends on its first render even
 // when its module is already loaded, and its placeholder shows raw Markdown and source codes.
@@ -133,6 +134,7 @@ export function ChatMessage({
   onCanvas,
   onResize,
   streaming,
+  storage,
 }: {
   message: Message;
   index: number;
@@ -158,6 +160,8 @@ export function ChatMessage({
   onResize: () => void;
   /** This answer is still arriving: no status label and no actions; dots until its first text. */
   streaming?: boolean;
+  /** Where this chat is kept: what the memory note may promise (src/text/mode-copy.ts). */
+  storage?: Storage;
 }) {
   const { lang } = useLang();
   const t = appText[lang];
@@ -248,7 +252,7 @@ export function ChatMessage({
         </p>
       )}
       {message.passagesUsed && <p className="muted passages-used">{message.passagesUsed}</p>}
-      {message.memoriesUsed && <MemoryNote ids={message.memoriesUsed} />}
+      {message.memoriesUsed && <MemoryNote ids={message.memoriesUsed} storage={storage} />}
       {message.projectInstructionsSent && projectSpacesEnabled() && (
         <p className="muted project-used">{projectText[lang].instructionsSent}</p>
       )}

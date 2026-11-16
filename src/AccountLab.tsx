@@ -1,5 +1,5 @@
 import { SignInIcon } from "./SignInIcon";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createAuthClient } from "better-auth/client";
 import { passkeyClient } from "@better-auth/passkey/client";
 import { z } from "zod";
@@ -12,6 +12,7 @@ import { accountRequest } from "./account-request";
 import { createPasskeyTransport } from "./passkey-transport";
 import { LanguageSwitch, useLang, useText } from "./i18n";
 import { accountLabText } from "./text/account";
+import { forStorage, modeCopyText, type Storage } from "./text/mode-copy";
 import { sessionExpiryText } from "./text/session-expiry";
 
 const sessionSchema = z
@@ -49,6 +50,8 @@ const noticesSchema = z.object({
 const statusSchema = z.object({
   inference: z.object({ ready: z.boolean() }),
   accountPurge: z.object({ graceDays: z.number().int().positive() }).optional(),
+  // Secure on: saved chats are kept with the account, so the page says so (src/text/mode-copy.ts).
+  secureStore: z.object({}).passthrough().optional(),
 });
 const noticeKeys = {
   pending: "noticePending",
@@ -89,7 +92,9 @@ export default function AccountLab({
     z.infer<typeof noticesSchema>["notices"]
   >([]);
   const codeInput = useRef<HTMLInputElement>(null);
-  const t = useText(accountLabText);
+  const { lang } = useLang();
+  const storage: Storage = session && status?.secureStore ? "secure" : "local";
+  const t = forStorage(useMemo(() => ({ ...accountLabText[lang], ...modeCopyText[lang] }), [lang]), storage);
   const expiry = useText(sessionExpiryText);
   // SS-14: the app sends an ended session here with ?reason=expired.
   const [expired] = useState(() => new URLSearchParams(window.location.search).get("reason") === "expired");
@@ -451,7 +456,7 @@ export default function AccountLab({
             >
               {t.signOut}
             </button>
-            <AccountExport />
+            <AccountExport storage={storage} />
             <AccountDeletion
               emailEnabled={emailEnabled}
               synthetic={synthetic}

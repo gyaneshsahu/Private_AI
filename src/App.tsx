@@ -106,6 +106,7 @@ import { mergeConversation } from "./sync/merge";
 import { holdProjects } from "./projects";
 import { VaultBackup } from "./VaultBackup";
 import { VaultUnlock } from "./VaultUnlock";
+import { SyncSetup } from "./SyncSetup";
 import { AlsoDeleteSynced, LocalPassphraseDialog, PairingPrompt, SyncGate, SyncIndicator, SyncSettings } from "./SyncScreens";
 import { syncText, vaultUnlockText } from "./text/sync";
 import { syncHardeningText } from "./text/sync-hardening";
@@ -145,6 +146,12 @@ import { ContextReview } from "./ContextReview";
 import { correctSource } from "./source-history";
 import { AccountUsage } from "./AccountUsage";
 import { SupportPanel } from "./SupportPanel";
+import { useShortcuts } from "./use-shortcuts";
+import { ShortcutHelp } from "./ShortcutHelp";
+import { lastAnswer, lastCodeBlock } from "./shortcut-copy";
+import { shortcutsText } from "./text/shortcuts";
+import { skipLinkText } from "./text/skip-link";
+import { searchNextText } from "./text/search-next";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { stopReading } from "./read-aloud";
@@ -218,6 +225,7 @@ export function App() {
   );
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [navigationCollapsed, setNavigationCollapsed] = useState(false);
+  const [shortcutHelp, setShortcutHelp] = useState(false);
   const [settingsSection, setSettingsSection] = useState("appearance");
   const [projects, setProjects] = useState<Project[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -381,8 +389,18 @@ export function App() {
   };
   const [searchSent, setSearchSent] = useState("");
   useEffect(() => setSearchSent(""), [conversation.id]);
+  // FE-07: "+" > "Search the web" arms the next Send (`searchNext`); that Send opens the approval
+  // card for exactly the typed text (`searchFor`). Nothing is searched until the card's button.
+  const [searchNext, setSearchNext] = useState(false);
+  const [searchFor, setSearchFor] = useState<string>();
+  useEffect(() => {
+    setSearchNext(false);
+    setSearchFor(undefined);
+  }, [conversation.id]);
+  const forced = searchFor !== undefined && searchFor === input && !!input.trim();
   const suggestion = useMemo(() => {
     if (!status?.search || !status.inference.ready) return undefined;
+    if (forced) return { ...prepareSearchQuery(input.replace(/\s+/g, " ")), rules: false, again: false };
     if (input.trim()) {
       const draft = searchSuggestion(input);
       return draft && { ...draft, again: false };
@@ -407,7 +425,7 @@ export function App() {
       !!last.uncheckedFigures,
     );
     return again && { ...again, again: true };
-  }, [status?.search, status?.inference.ready, input, conversation]);
+  }, [status?.search, status?.inference.ready, input, conversation, forced]);
   // The user may edit the shown search text. The edit belongs to one suggestion for one draft:
   // changing the question, sending or another conversation drops it. It is masked again here,
   // and `shown.value` is what a tap sends. The automatic paths keep the unedited suggestion.
@@ -423,7 +441,8 @@ export function App() {
     ...suggestion,
     ...(searchEdit?.for === editFor
       ? editedSearchText(searchEdit.text, suggestion.removed)
-      : { problem: undefined }),
+      : // Any typed text can be searched from the menu: its length is checked as an edited text is.
+        { problem: forced ? editedSearchText(suggestion.value).problem : undefined }),
   };
   // Search first for German rules (docs/german-rules-20261113.md): Send shows the choice for
   // exactly this draft; editing the draft or Escape drops it, and nothing is remembered.
@@ -438,8 +457,9 @@ export function App() {
   const choosing = askFirst && choiceFor === input;
   const choiceButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    if (choosing) choiceButton.current?.focus();
-  }, [choosing]);
+    if (choosing || forced) choiceButton.current?.focus();
+  }, [choosing, forced]);
+  const sn = searchNextText[lang];
   const [proposalNote, setProposalNote] = useState<{
     note: string;
     warning: boolean;
@@ -937,13 +957,26 @@ export function App() {
       );
     return result;
   }
+  // FE-02: the first use of Secure Max on a device sets up its encrypted sync (device name, recovery
+  // key), never a device-only passphrase vault. True while this device has no vault at all and sync
+  // is not on here yet; an existing passphrase vault keeps its form, an approved account its gate.
+  const [maxFirst, setMaxFirst] = useState(false);
+  useEffect(() => {
+    let active = true;
+    if (!maxAvailable || unlocked || syncState.phase === "needs-approval" || syncState.detached) setMaxFirst(false);
+    // Other phases come and go while the set-up itself runs: the screen stays until it is done.
+    else if (syncState.phase === "off") vault.current?.mode().then((m) => active && setMaxFirst(m === "none"), () => {});
+    return () => {
+      active = false;
+    };
+  }, [maxAvailable, unlocked, syncState.phase, syncState.detached, status?.accountId, tab]);
   /** "Unlock Secure Max" in its section: the screen that fits this device. */
   function unlockMax() {
     setNavigationOpen(false);
     setSection("max");
     // A device that is not approved yet: the code from this device, or the recovery key.
     if (syncState.phase === "needs-approval") return setSyncDismissed(false);
-    // Otherwise this device's own form: unlock, or (first use) create the vault; its sync is turned on in Settings.
+    // Otherwise this device's own screen: the first use sets up sync (maxFirst), else the unlock form.
     setTab("Saved");
   }
   /** Before sign-out: one bounded send; if Secure changes are still not on the account, the user decides. */
@@ -1055,6 +1088,53 @@ export function App() {
   // New chat while an answer streams asks first, in one question that also covers unsaved changes.
   const allowNew = () =>
     answering ? ask(q.stopTitle, unsaved ? cc.stopForNewUnsaved : cc.stopForNew, q.stop) : allowReplace();
+  // Keyboard shortcuts (docs/keyboard-shortcuts-20261116.md) and the skip link: the message box, from any tab.
+  const goToMessageBox = () => {
+    setTab("Conversation");
+    setNavigationOpen(false);
+    requestAnimationFrame(() => document.getElementById("message-input")?.focus());
+  };
+  const sh = shortcutsText[lang];
+  useShortcuts({
+    newChat: () => {
+      if (busy && !controller.current) return false;
+      // New chat keeps the section the user is in (owner note).
+      void (async () => {
+        if (!(await allowNew())) return;
+        reset();
+        setTab("Conversation");
+        setNavigationOpen(false);
+      })();
+    },
+    search: () => {
+      if (!anyStore) return false;
+      const box = () => document.querySelector<HTMLInputElement>(".history-search input");
+      if (box()?.checkVisibility()) return box()!.focus();
+      setNavigationOpen(true);
+      requestAnimationFrame(() => box()?.focus());
+    },
+    sidebar: () => {
+      if (matchMedia("(max-width: 760px)").matches) setNavigationOpen((o) => !o);
+      else {
+        setNavigationCollapsed((c) => !c);
+        setNavigationOpen(false);
+      }
+    },
+    composer: goToMessageBox,
+    // The copy actions never return false: Ctrl+Shift+C would open the developer tools.
+    copyAnswer: () => {
+      const m = lastAnswer(conversation.messages);
+      if (!m) return setNotice(sh.noAnswer);
+      void copyAnswer(answerCopyText(m, lang), m.id);
+    },
+    copyCode: () => {
+      const a = lastAnswer(conversation.messages);
+      const code = a && lastCodeBlock(a.text);
+      if (code === undefined) return setNotice(a ? sh.noCode : sh.noAnswer);
+      navigator.clipboard.writeText(code).then(() => setNotice(t.copied), () => fail(t.copyFailed));
+    },
+    help: () => setShortcutHelp((o) => !o),
+  });
   // "Report a problem with this answer" opens Help with that choice set; nothing else is passed.
   const [reporting, setReporting] = useState(false);
   useEffect(() => {
@@ -1595,6 +1675,14 @@ export function App() {
   }
   // The composer's Send. `asIs`: the user chose "Just send" on the scheduled-task card.
   function submitDraft(asIs = false) {
+    // FE-07: armed from the "+" menu, Send shows the approval card for this text (also with
+    // automatic search on: the menu is a request to search, the card is the approval).
+    // While that card is open, Send changes nothing: the card's buttons decide.
+    if (forced || (searchNext && status?.search && status.inference.ready && !attachedImage && !busy)) {
+      setSearchNext(false);
+      setSearchFor(input);
+      return;
+    }
     // "Remember that ...": ask to save it as a memory. Nothing is sent unless the user says so.
     const wanted =
       memoryEnabled() && !conversation.incognito && !attachedImage && !busy
@@ -2221,6 +2309,17 @@ export function App() {
         appearance === "system" ? (systemDark ? "dark" : "light") : appearance
       }
     >
+      {/* SS-23: first in the tab order; works from every tab (the message box exists on Conversation only). */}
+      <a
+        className="skip-link"
+        href="#message-input"
+        onClick={(event) => {
+          event.preventDefault();
+          goToMessageBox();
+        }}
+      >
+        {skipLinkText[lang].toMessageBox}
+      </a>
       <WorkspaceNavigation
         onDelete={(c) => void deleteSnapshot(c)}
         open={navigationOpen}
@@ -2238,6 +2337,14 @@ export function App() {
         onSignOut={() => void signOut()}
         onCreateProject={createProject}
         onEditProject={editProject}
+        onDeleteProject={deleteProject}
+        // The normal list holds Secure projects with Secure on (Secure Max has its own section).
+        projectStorage={secureOn ? "secure" : "local"}
+        storage={secureOn ? "secure" : "local"}
+        onShortcuts={() => {
+          setNavigationOpen(false);
+          setShortcutHelp(true);
+        }}
         onOpenProject={(id) => {
           setNavigationOpen(false);
           setOpenProject(id);
@@ -2401,6 +2508,14 @@ export function App() {
             setQuestion(undefined);
             question.answer(yes);
           }}
+        />
+      )}
+      {shortcutHelp && (
+        <ShortcutHelp
+          onClose={() => setShortcutHelp(false)}
+          fallback={() =>
+            [...document.querySelectorAll<HTMLElement>(".account-menu summary, .navigation-toggle")].find((e) => e.checkVisibility()) ?? null
+          }
         />
       )}
       {filesQuestion && (
@@ -2972,6 +3087,7 @@ export function App() {
                   sourceHistory={sourceHistory}
                   busy={!!busy}
                   streaming={answering && index === conversation.messages.length - 1}
+                  storage={storageOf(mode)}
                   ready={!!status?.inference.ready}
                   openSource={setSource}
                   copied={copiedId === message.id}
@@ -3014,15 +3130,24 @@ export function App() {
                   ↓
                 </button>
               )}
-              {suggestion && shown && !autoSearch && !(autoRules && !choosing) && !busy && (
+              {searchNext && !forced && !busy && (
+                <div className="notice composer-note search-next">
+                  <span>{sn.armed}</span>
+                  <button type="button" className="text-button" onClick={() => setSearchNext(false)}>
+                    {sn.cancel}
+                  </button>
+                </div>
+              )}
+              {suggestion && shown && (forced || (!autoSearch && !(autoRules && !choosing))) && !busy && (
                 <div
                   className="notice composer-note search-suggestion"
                   role="region"
                   aria-label={t.searchSuggestion}
                   onKeyDown={(event) => {
-                    if (!choosing || event.key !== "Escape") return;
+                    if (!(choosing || forced) || event.key !== "Escape") return;
                     event.preventDefault();
                     setChoiceFor(undefined);
+                    setSearchFor(undefined);
                     document.getElementById("message-input")?.focus();
                   }}
                 >
@@ -3030,7 +3155,9 @@ export function App() {
                     <strong>
                       {suggestion.again
                         ? WHEN_TO_SEARCH.againHeading
-                        : choosing
+                        : forced
+                          ? sn.heading
+                          : choosing
                           ? GERMAN_RULES.choiceHeading
                           : suggestion.rules
                             ? GERMAN_RULES.heading
@@ -3055,7 +3182,7 @@ export function App() {
                   <p className="muted">
                     {suggestion.again
                       ? WHEN_TO_SEARCH.againExplanation
-                      : askFirst
+                      : askFirst || forced
                         ? GERMAN_RULES.explanation
                         : WHEN_TO_SEARCH.explanation}
                   </p>
@@ -3067,6 +3194,8 @@ export function App() {
                       disabled={!!shown.problem}
                       onClick={() => {
                         setChoiceFor(undefined);
+                        setSearchFor(undefined);
+                        setSearchNext(false); // this search is the one the menu asked for
                         void searchThenAnswer(
                           shown.value,
                           "tap",
@@ -3078,15 +3207,16 @@ export function App() {
                         ? WHEN_TO_SEARCH.againButton
                         : WHEN_TO_SEARCH.button}
                     </button>
-                    {choosing && (
+                    {(choosing || forced) && (
                       <button
                         type="button"
                         onClick={() => {
                           setChoiceFor(undefined);
+                          setSearchFor(undefined);
                           void send();
                         }}
                       >
-                        {GERMAN_RULES.without}
+                        {forced ? sn.without : GERMAN_RULES.without}
                       </button>
                     )}
                   </div>
@@ -3213,7 +3343,7 @@ export function App() {
                         busy: !!busy,
                         text: input,
                         ready: !!status?.inference.ready && online,
-                        waiting: choosing || !!consentPending,
+                        waiting: choosing || forced || !!consentPending,
                       })
                     )
                       event.currentTarget.form?.requestSubmit();
@@ -3302,6 +3432,22 @@ export function App() {
                           )}
                         </span>
                       </button>
+                      {status?.search && status.inference.ready && (
+                        <button
+                          type="button"
+                          className="text-button"
+                          aria-pressed={searchNext}
+                          disabled={!!busy}
+                          onClick={() => {
+                            setSearchNext((on) => !on);
+                            // The menu closes on the click (closeMenus); typing goes on in the message box.
+                            requestAnimationFrame(() => document.getElementById("message-input")?.focus());
+                          }}
+                        >
+                          <Icon name="search" />
+                          {sn.menu}
+                        </button>
+                      )}
                       <button
                         type="button"
                         className="text-button"
@@ -3432,7 +3578,9 @@ export function App() {
                 </ul>
               )}
               <p className="composer-caption">
-                {secureOn && !conversation.incognito
+                {conversation.incognito
+                  ? t.captionIncognito
+                  : secureOn
                   ? mode === "secure"
                     ? secureReady
                       ? st.captionSecure
@@ -3898,7 +4046,21 @@ export function App() {
             )}
           </section>
         )}
-        {tab === "Help" && <SupportPanel initialSymptom={reporting ? "incorrect" : undefined} />}
+        {tab === "Help" && (
+          <SupportPanel
+            initialSymptom={reporting ? "incorrect" : undefined}
+            onShortcuts={() => setShortcutHelp(true)}
+            onDocument={(id) =>
+              setSource(
+                id === "imprint"
+                  ? { id, title: t.imprint, text: imprintText(undefined, lang) }
+                  : id === "privacy-policy"
+                    ? { id, title: t.privacyPolicy, text: privacyPolicyText(disclosedProvider(status), lang) }
+                    : { id, title: t.guideTitle, text: t.guideText },
+              )
+            }
+          />
+        )}
         {status?.research && status.search && status.inference.ready && !(status.healthConsentDraft && !healthConsent) && (
           <DeepResearch
             hidden={tab !== "Research"}
@@ -4014,7 +4176,29 @@ export function App() {
               <ConversationLibrary storage="secure" conversations={saved.filter((c) => !inMax(c.id))} busy={!!busy} onOpen={openSaved} onDelete={(c) => void deleteSnapshot(c)} />
             )}
             {/* The vault's own screens: inside the Secure Max section, or as before where Secure Max is not offered. */}
-            {maxAvailable && section === "secure" ? null : !unlocked ? (
+            {maxAvailable && section === "secure" ? null : !unlocked && maxFirst ? (
+              <SyncSetup
+                storage="max"
+                // Not now: back to the normal section; nothing was created.
+                onCancel={() => {
+                  setSection("secure");
+                  goToMessageBox();
+                }}
+                // Set up meanwhile on another device: this one joins by approval.
+                onAlreadySetUp={() => setSyncDismissed(false)}
+                onDone={(remember) => {
+                  setMaxFirst(false);
+                  setNotice(syncText[lang].onDone);
+                  void syncOpened(remember).then(() =>
+                    requestAnimationFrame(() => {
+                      const first = document.querySelector<HTMLElement>(".secure-max-section button");
+                      if (first?.checkVisibility()) first.focus();
+                      else goToMessageBox();
+                    }),
+                  );
+                }}
+              />
+            ) : !unlocked ? (
               <VaultUnlock
                 vault={vault.current}
                 scope={status?.accountId}
@@ -4130,7 +4314,6 @@ export function App() {
         )}
         {tab !== "Conversation" && (
           <footer>
-            {t.footer}
             <span>{tm(mode).footerNote}</span>
           </footer>
         )}

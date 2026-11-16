@@ -3,6 +3,9 @@ import { z } from "zod";
 import { accountRequest } from "./account-request";
 import { useLang, useText } from "./i18n";
 import { accountAccessText } from "./text/account";
+import { accountConfirmText } from "./text/account-confirm";
+import { questionText } from "./text/questions";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 const accessSchema = z.object({
   sessions: z.array(
@@ -46,6 +49,10 @@ export default function AccountAccess({
   const [loading, setLoading] = useState(true);
   const [needsRefresh, setNeedsRefresh] = useState(false);
   const t = useText(accountAccessText);
+  const c = useText(accountConfirmText);
+  const q = useText(questionText);
+  // The question before signing out a session or removing a method (the app's dialog, not window.confirm).
+  const [asking, setAsking] = useState<{ path: "revoke" | "remove"; body: object; current?: boolean; label?: string }>();
   const locale = useLang().lang === "de" ? "de-DE" : undefined;
   useEffect(() => {
     const abort = new AbortController();
@@ -117,6 +124,7 @@ export default function AccountAccess({
       <h2>{t.heading}</h2>
       <p className="account-preview-small">{t.sessionsNote}</p>
       <button
+        className="account-access-refresh"
         disabled={busy || loading}
         onClick={() => {
           setBusy(true);
@@ -142,14 +150,7 @@ export default function AccountAccess({
                 {session.id.slice(0, 8)}
                 <button
                   disabled={busy || loading || needsRefresh}
-                  onClick={() => {
-                    if (
-                      window.confirm(
-                        session.current ? t.confirmThis : t.confirmOther,
-                      )
-                    )
-                      void update("revoke", { id: session.id });
-                  }}
+                  onClick={() => setAsking({ path: "revoke", body: { id: session.id }, current: session.current })}
                 >
                   {session.current
                     ? t.signOutThis
@@ -187,15 +188,7 @@ export default function AccountAccess({
                 <button
                   disabled={!emailEnabled || busy || loading || needsRefresh}
                   aria-label={t.removeLabel(method.label)}
-                  onClick={() => {
-                    if (
-                      window.confirm(t.confirmRemove(method.label))
-                    )
-                      void update("remove", {
-                        kind: method.kind,
-                        id: method.id,
-                      });
-                  }}
+                  onClick={() => setAsking({ path: "remove", body: { kind: method.kind, id: method.id }, label: method.label })}
                 >
                   {t.remove}
                 </button>
@@ -203,6 +196,20 @@ export default function AccountAccess({
             ))}
           </ul>
         </>
+      )}
+      {asking && (
+        <ConfirmDialog
+          title={asking.path === "remove" ? c.removeTitle : asking.current ? t.confirmThis : t.confirmOther}
+          text={asking.path === "remove" ? t.confirmRemove(asking.label!) : c.signOutText}
+          confirmLabel={asking.path === "remove" ? t.remove : q.signOut}
+          cancelLabel={q.cancel}
+          // The row's button is gone after a change: the refresh button.
+          fallback={() => document.querySelector<HTMLElement>(".account-access-refresh")}
+          onClose={(yes) => {
+            setAsking(undefined);
+            if (yes) void update(asking.path, asking.body);
+          }}
+        />
       )}
       <p aria-live="polite">
         {busy ? t.updating : loading ? t.checking : message}
