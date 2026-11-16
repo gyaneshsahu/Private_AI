@@ -99,7 +99,8 @@ const TEXT: Record<Exclude<AnswerName, "long" | "stop" | "error-429" | "error-50
     "```",
   ].join("\n"),
   math: [
-    "Inline math with dollars: $E = mc^2$, and with brackets: \\(a^2 + b^2 = c^2\\).",
+    // The app renders inline math as $$...$$ (single dollars are off for prices, src/Answer.tsx).
+    "Inline math as the app supports it: $$E = mc^2$$. Forms it does not render: $E = mc^2$ and \\(a^2 + b^2 = c^2\\).",
     "",
     "Display math with dollars:",
     "",
@@ -182,6 +183,8 @@ export async function installFakes(context: BrowserContext, options: FakeOptions
   const queue: AnswerName[] = [];
   const log: AuditLog = { console: [], pageErrors: [], failed: [], nonLocal: [], replies: [] };
   let ready = options.ready ?? true;
+  // Playwright still runs route handlers while the context is offline: the fakes must fail too.
+  let offline = false;
   let serial = 0;
   const source = (url: string, evidenceKind: string) => ({
     id: `synthetic-${String(++serial).padStart(4, "0")}`,
@@ -263,6 +266,7 @@ export async function installFakes(context: BrowserContext, options: FakeOptions
 
   await context.route("**/*", async (route) => {
     const url = new URL(route.request().url());
+    if (offline) return route.abort("internetdisconnected");
     if (!isLocal(url)) {
       log.nonLocal.push(`${route.request().method()} ${url.href.slice(0, 200)}`);
       return route.abort("blockedbyclient");
@@ -289,7 +293,7 @@ export async function installFakes(context: BrowserContext, options: FakeOptions
   });
 
   const watch = (page: Page) => {
-    page.on("console", (m) => m.type() === "error" && log.console.push(`${page.url()} :: ${m.text().slice(0, 300)}`));
+    page.on("console", (m) => m.type() === "error" && log.console.push(`${page.url()} :: ${m.text().replace(/data:[^'"\s]{40,}/g, "data:…").slice(0, 300)}`));
     page.on("pageerror", (e) => log.pageErrors.push(`${page.url()} :: ${String(e.message).slice(0, 300)}`));
   };
   context.pages().forEach(watch);
@@ -309,6 +313,11 @@ export async function installFakes(context: BrowserContext, options: FakeOptions
     log,
     /** Queue the next replies by name (first in, first out); then the default or the message's audit:<name>. */
     answer: (...names: AnswerName[]) => void queue.push(...names),
+    /** Go offline or back online: the context and the fakes together. */
+    setOffline: async (value: boolean) => {
+      offline = value;
+      await context.setOffline(value);
+    },
     /** Turn the fake ready status on or off (reload the page afterwards). */
     setReady: (value: boolean) => void (ready = value),
   };

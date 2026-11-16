@@ -26,6 +26,7 @@ const fakes = await installFakes(context, { origin, config: "on" });
 fakes.answer("table");   // next reply; or type audit:table in the message
 fakes.log;               // console errors, failed and non-local requests
 fakes.setReady(false);   // the real "chat unavailable" status after a reload
+await fakes.setOffline(true); // offline: the context and the fakes (route handlers still run offline)
 ```
 
 In a plain browser without the fakes, chat shows as unavailable. The account lab (`/?account-lab=1`) needs its `/api/account/*` and `/api/auth/*` answers faked per page (see the `account-lab` step in `evaluation/audit-tour.ts`).

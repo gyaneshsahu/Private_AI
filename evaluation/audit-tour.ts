@@ -6,7 +6,10 @@ import { readdirSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 import type { Browser, BrowserContext, BrowserType, Locator, Page } from "@playwright/test";
-import { AUDIT_ACCOUNT, installFakes, type AnswerName, type AuditConfig, type Fakes } from "./audit-fakes";
+import { randomUUID } from "node:crypto";
+import { appText } from "../src/text/app";
+import { deepResearchText } from "../src/text/deep-research";
+import { installFakes, type AnswerName, type AuditConfig, type Fakes } from "./audit-fakes";
 
 type Lang = "en" | "de";
 export interface Entry {
@@ -25,6 +28,8 @@ export interface Entry {
   nonLocal: string[];
   overflowPx: number;
   outside: string[];
+  /** Elements whose content is wider than their box: cut off (hidden/clip) or scrolling sideways (auto/scroll). */
+  wide: string[];
   germanOff?: boolean;
 }
 
@@ -54,7 +59,10 @@ const MEASURE = `(() => {
   const clipped = (el) => { for (let e = el.parentElement; e; e = e.parentElement) { const o = getComputedStyle(e).overflowX; if (o !== "visible") return true; } return false; };
   const name = (el) => el.tagName.toLowerCase() + (el.id ? "#" + el.id : "") + (typeof el.className === "string" && el.className.trim() ? "." + el.className.trim().split(/\\s+/).slice(0, 2).join(".") : "") + ' "' + (el.textContent || "").trim().slice(0, 40) + '"';
   const outside = [...document.querySelectorAll("body *")].filter((el) => visible(el) && !clipped(el)).filter((el) => { const r = el.getBoundingClientRect(); return r.right > vw + 1 || r.left < -1; }).map(name);
-  return { overflowPx: document.documentElement.scrollWidth - vw, outside: [...new Set(outside)].slice(0, 10) };
+  const wide = [...document.querySelectorAll("body *")]
+    .filter((el) => !["TEXTAREA", "INPUT", "SELECT"].includes(el.tagName) && !el.closest(".sr-only, .katex-mathml") && visible(el) && el.scrollWidth > el.clientWidth + 1 && el.clientWidth > 0)
+    .map((el) => name(el) + " +" + (el.scrollWidth - el.clientWidth) + "px " + getComputedStyle(el).overflowX);
+  return { overflowPx: document.documentElement.scrollWidth - vw, outside: [...new Set(outside)].slice(0, 10), wide: [...new Set(wide)].slice(0, 12) };
 })()`;
 
 interface Ctx {
@@ -67,6 +75,8 @@ interface Ctx {
   lang: Lang;
   width: number;
   tr: (en: string) => string;
+  /** The language the page really shows ("en" when the build has no German). */
+  germanOff: () => boolean;
   click: (name: string, role?: "button" | "link" | "checkbox" | "tab" | "menuitem") => Promise<void>;
   label: (name: string) => Locator;
   fresh: (path?: string) => Promise<void>;
@@ -160,7 +170,8 @@ const STEPS: Step[] = [
     await c.click("Copy answer");
     await pause(c.page, 300);
     await c.shot("message-copied");
-    await c.click("Retry last response (uses 1 request)");
+    await vis(c.page.getByRole("button", { name: new RegExp("^" + c.tr("Retry last response")) })).click();
+    c.clicked.push("Retry last response");
     await pause(c.page, 2000);
     await c.shot("message-retried-versions");
     await vis(c.page.getByRole("button", { name: c.tr("Edit into a new branch") })).click();
@@ -171,7 +182,7 @@ const STEPS: Step[] = [
   ["answer-again-thinking", async (c) => {
     await c.fresh();
     await c.send("Quick one. audit:plain", undefined, true);
-    await vis(c.page.getByRole("button", { name: /^(Answer again with Thinking|Mit Denken erneut beantworten)/ })).click();
+    await vis(c.page.getByRole("button", { name: new RegExp("^" + c.tr("Answer again with Thinking")) })).click();
     await pause(c.page, 2000);
     await c.shot("answer-again-thinking");
   }],
@@ -237,7 +248,12 @@ const STEPS: Step[] = [
     await c.send("What is in this picture? audit:image", undefined, true);
     await c.shot("image-question-answer");
   }, "on"],
-  ["context-review", async (c) => { await c.fresh(); await c.click("0 messages included · 0 files"); await c.shot("context-review"); }],
+  ["context-review", async (c) => {
+    await c.fresh();
+    await vis(c.page.getByRole("button", { name: appText[c.germanOff() ? "en" : c.lang].contextCount(0, 0), exact: true })).click();
+    c.clicked.push("Context count");
+    await c.shot("context-review");
+  }],
   ["conversation-files", async (c) => { await c.fresh(); await tools(c, "Conversation files"); await c.shot("conversation-files"); }],
   ["voice-dictation", async (c) => {
     await c.fresh();
@@ -246,12 +262,10 @@ const STEPS: Step[] = [
     await c.shot("voice-note");
     // Chromium only: a fake microphone (launch flags); the transcription is faked.
     if (c.browser.browserType().name() !== "chromium") return;
-    const start = vis(c.page.locator(".voice-note button, [role=group] button").filter({ hasText: /Start|Starten|Aufnahme/ }));
-    if (await start.isVisible()) await start.click(), c.clicked.push("Start dictation");
+    await c.click("Start recording");
     await pause(c.page, 2500);
     await c.shot("voice-recording");
-    const stop = vis(c.page.getByRole("button", { name: /Stop|Beenden|stoppen/ }));
-    if (await stop.isVisible()) await stop.click(), c.clicked.push("Stop dictation");
+    await c.click("Stop recording");
     await pause(c.page, 2000);
     await c.shot("voice-transcribed");
   }, "on"],
@@ -264,9 +278,7 @@ const STEPS: Step[] = [
     await c.click("Review disclosure");
     await pause(c.page, 600);
     await c.shot("search-approval");
-    const approve = vis(c.page.locator("main").getByRole("button", { name: /^(Approve|Freigeben|Search|Suchen)/ }));
-    await approve.click({ timeout: 5000 });
-    c.clicked.push("Approve search");
+    await c.click("Approve and retrieve");
     await pause(c.page, 1500);
     await c.shot("search-results");
     await c.click("Prepare a question about these sources");
@@ -284,7 +296,7 @@ const STEPS: Step[] = [
     await c.click("Plan the research");
     await vis(c.page.getByRole("group", { name: c.tr("Search the web for these texts?") })).waitFor({ timeout: 20000 });
     await c.shot("deep-research-approval");
-    await vis(c.page.getByRole("button", { name: /^(Search for these \d+ texts|Search for this text|Nach diesen \d+ Texten suchen|Nach diesem Text suchen)/ })).click();
+    await vis(c.page.getByRole("button", { name: deepResearchText[c.germanOff() ? "en" : c.lang].approve(3), exact: true })).click();
     c.clicked.push("Approve deep research");
     await pause(c.page, 4000);
     await c.shot("deep-research-answer");
@@ -347,8 +359,10 @@ const STEPS: Step[] = [
     await c.click("Scheduled");
     await pause(c.page, 800);
     await c.shot("scheduled");
-    const add = vis(c.page.getByRole("button", { name: /^(New task|Neue Aufgabe)/ }));
-    if (await add.isVisible()) await add.click(), c.clicked.push("New task"), await pause(c.page, 600), await c.shot("scheduled-new-task");
+    await vis(c.page.getByRole("button", { name: new RegExp(c.tr("New task") + "$") })).click();
+    c.clicked.push("New task");
+    await pause(c.page, 600);
+    await c.shot("scheduled-new-task");
   }, "on"],
   ["secure-max", async (c) => {
     await c.fresh();
@@ -364,6 +378,13 @@ const STEPS: Step[] = [
     await c.click("Unlock Secure Max");
     await pause(c.page, 1000);
     await c.shot("secure-max-unlock");
+    // The synthetic passphrase of tests/secure-store-e2e-ui.test.ts (a test value, this machine only).
+    await c.label("Vault passphrase").fill("synthetic secure max passphrase");
+    await c.click("Create or unlock vault");
+    await pause(c.page, 2500);
+    await c.shot("secure-max-unlocked");
+    await c.nav();
+    await c.shot("secure-max-section-unlocked");
   }, "on"],
   ["conversation-menu", async (c) => { await c.fresh(); await conversationMenu(c); await c.shot("conversation-menu"); }],
   ["manage-history", async (c) => {
@@ -414,21 +435,39 @@ const STEPS: Step[] = [
   }],
   ["development-tools", async (c) => { await c.fresh("/?developmentTools"); await c.shot("development-tools"); }],
   ["navigation-drawer", async (c) => { await c.fresh(); await c.nav(); await c.shot("navigation"); }],
-  ["offline", async (c) => {
+  ["offline-first-send", async (c) => {
     await c.fresh();
-    await c.context.setOffline(true);
+    await c.fakes.setOffline(true);
     c.clicked.push("context.setOffline(true)");
     try {
       await pause(c.page, 1000);
-      await c.shot("offline-banner");
+      await c.shot("offline-before-first-send");
       await c.send("Sent while offline. audit:plain", undefined, false);
       await pause(c.page, 2500);
-      await c.shot("offline-send");
+      await c.shot("offline-first-send");
     } finally {
-      await c.context.setOffline(false);
+      await c.fakes.setOffline(false);
     }
     await pause(c.page, 2000);
     await c.shot("back-online");
+  }],
+  ["offline-after-answer", async (c) => {
+    // As a user would: one answer first (the answer code is loaded), then the connection drops.
+    await c.fresh();
+    await c.send("Before going offline. audit:plain", undefined, true);
+    await c.fakes.setOffline(true);
+    c.clicked.push("context.setOffline(true)");
+    try {
+      await pause(c.page, 1000);
+      await c.shot("offline-after-answer");
+      await c.send("Sent while offline. audit:plain", undefined, false);
+      await pause(c.page, 2500);
+      await c.shot("offline-after-answer-send");
+    } finally {
+      await c.fakes.setOffline(false);
+    }
+    await pause(c.page, 2000);
+    await c.shot("offline-after-answer-back-online");
   }],
   ["chat-unavailable", async (c) => {
     c.fakes.setReady(false);
@@ -521,15 +560,19 @@ export async function runTour(o: {
           });
           context.setDefaultTimeout(8000);
           if (engineName === "chromium") await context.grantPermissions(["microphone"], { origin: o.origin }).catch(() => {});
-          await context.addCookies([{ name: "audit-account", value: AUDIT_ACCOUNT, url: o.origin }]);
+          // Each context its own synthetic account, so saved chats and projects do not carry over.
+          await context.addCookies([{ name: "audit-account", value: randomUUID(), url: o.origin }]);
           const fakes = await installFakes(context, { origin: o.origin, config: o.config });
           const page = await context.newPage();
-          page.on("dialog", (d) => void d.dismiss().catch(() => {}));
+          // "Leave site?" (unsaved work) is accepted so the next step can navigate; other dialogs are dismissed.
+          page.on("dialog", (d) => void (d.type() === "beforeunload" ? d.accept() : d.dismiss()).catch(() => {}));
           let n = 0;
           let germanOff = false;
-          const tr = (en: string) => (lang === "de" && !de.has(en) && missing.add(en), lang === "de" ? de.get(en) ?? en : en);
+          // A build without German shows English: then the English labels are the right ones.
+          const tr = (en: string) => (lang !== "de" || germanOff ? en : (de.has(en) || missing.add(en), de.get(en) ?? en));
           const c: Ctx = {
             page, context, browser, fakes, origin: o.origin, config: o.config, lang, width, tr, clicked: [],
+            germanOff: () => germanOff,
             async click(name, role = "button") {
               await vis(c.page.getByRole(role, { name: tr(name), exact: true })).click();
               c.clicked.push(name);
@@ -567,7 +610,7 @@ export async function runTour(o: {
               const file = `${String(++n).padStart(2, "0")}-${screen}-${lang}-${width}-${engineName}.png`;
               let error: string | undefined;
               await c.page.screenshot({ path: `${o.out}/${file}`, fullPage: false, timeout: 15000 }).catch((e) => (error = `screenshot: ${String(e.message).slice(0, 200)}`));
-              const m = (await c.page.evaluate(MEASURE).catch(() => ({ overflowPx: -1, outside: [] }))) as { overflowPx: number; outside: string[] };
+              const m = (await c.page.evaluate(MEASURE).catch(() => ({ overflowPx: -1, outside: [], wide: [] }))) as { overflowPx: number; outside: string[]; wide: string[] };
               const log = fakes.log;
               entries.push({
                 n, screen, browser: engineName, width, lang, file, url: c.page.url(), clicked: [...c.clicked],
@@ -599,5 +642,10 @@ export async function runTour(o: {
       await browser.close();
     }
   }
-  return { config: o.config, origin: o.origin, generated: new Date().toISOString(), hardFailures, untranslatedLabels: [...missing], entries };
+  // Self-check: screens the first combination reached that another one did not (a silent skip or a failure).
+  const combos = [...new Set(entries.map((e) => `${e.browser} ${e.lang} ${e.width}`))];
+  const reached = (combo: string) => new Set(entries.filter((e) => `${e.browser} ${e.lang} ${e.width}` === combo && !e.error).map((e) => e.screen));
+  const first = reached(combos[0] ?? "");
+  const missingScreens = Object.fromEntries(combos.slice(1).map((combo) => [combo, [...first].filter((s) => !reached(combo).has(s))]).filter(([, list]) => list.length));
+  return { config: o.config, origin: o.origin, generated: new Date().toISOString(), hardFailures, untranslatedLabels: [...missing], missingScreens, entries };
 }
