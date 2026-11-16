@@ -72,7 +72,7 @@ it("reviews and changes bounded context in the actual workspace, preserves encry
       .click();
     await tab("Conversation").click();
     const summary = page.locator(".context-review summary");
-    await page.getByRole("button", { name: /messages included/ }).click();
+    await page.getByRole("button", { name: /included ·/ }).click();
     const review = page.locator(".context-review");
     await ui(review).toContainText("Over the sending limit by");
     const partial = review.getByRole("checkbox", { name: /INCOMPLETE CANARY/ });
@@ -105,7 +105,7 @@ it("reviews and changes bounded context in the actual workspace, preserves encry
       .getByRole("button", { name: "Open", exact: true })
       .click();
     await tab("Conversation").click();
-    await page.getByRole("button", { name: /messages included/ }).click();
+    await page.getByRole("button", { name: /included ·/ }).click();
     await ui(
       review.getByRole("checkbox", { name: /Earlier date/ }),
     ).not.toBeChecked();

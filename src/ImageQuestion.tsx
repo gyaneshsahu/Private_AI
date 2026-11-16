@@ -423,7 +423,10 @@ export function ImageQuestion({
   onAttach,
   onClose,
   notify,
+  initialFile,
 }: {
+  /** A pasted or dropped picture: the same steps, starting at turn and crop instead of choosing. */
+  initialFile?: File;
   maxBytes: number;
   thinkingChosen: boolean;
   /** The health-consent step is switched on for this deployment. */
@@ -444,6 +447,7 @@ export function ImageQuestion({
     return (
       <PhotoCapture
         wording={{ title: t.pickTitle, close: t.pickClose, intro: t.pickIntro, extraction: t.pickExtraction, use: t.pickUse }}
+        initialFile={initialFile}
         onUse={(next) => {
           picked.current = true;
           setFile(next);

@@ -8,7 +8,6 @@ import { chromium, expect as ui, type Browser, type Page } from "@playwright/tes
 import { createServer, type ViteDevServer } from "vite";
 import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
-import { appText } from "../src/text/app";
 import { liveVoiceText } from "../src/text/live-voice";
 import { voiceText } from "../src/text/voice";
 
@@ -168,7 +167,7 @@ for (const lang of ["en", "de"] as const)
         const trigger = page.getByRole("button", { name: t.open, exact: true });
         await ui(trigger).toBeVisible();
         // The disabled placeholder is gone; the menu no longer lists live voice as coming later.
-        await ui(page.getByRole("button", { name: appText[lang].liveVoiceLater })).toHaveCount(0);
+        await ui(page.locator(".future-voice, .coming-later-list")).toHaveCount(0);
         await trigger.click();
         const panel = page.getByRole("region", { name: t.title });
         await ui(panel).toBeVisible();

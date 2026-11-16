@@ -16,6 +16,20 @@ export function filesFrom(data: Transfer): File[] {
 }
 
 /**
+ * Where dropped or pasted files go: one picture, while image questions are on, opens the
+ * "Ask about a picture" steps (with their notice, consent and covering); anything else goes to
+ * the text reader, as the file picker does.
+ */
+export function routeFiles(
+  files: readonly File[],
+  imagesOn: boolean,
+): { to: "image"; file: File } | { to: "reader"; files: readonly File[] } {
+  return imagesOn && files.length === 1 && /^image\/(png|jpeg)$/.test(files[0].type)
+    ? { to: "image", file: files[0] }
+    : { to: "reader", files };
+}
+
+/**
  * Window-wide file drops. Returns true while files are dragged over the window. `onFiles` gets the
  * dropped files only while `accept()` is true (the conversation is on screen and no dialog is open);
  * otherwise the drop is swallowed.

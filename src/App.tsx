@@ -71,7 +71,6 @@ import { deepResearchText } from "./text/deep-research";
 import { RESEARCH_MIN_SOURCE_CHARACTERS, researchSourceRoom } from "../shared/deep-research";
 import { serverMessage } from "./server-messages";
 import { appText } from "./text/app";
-import { liveVoiceText } from "./text/live-voice";
 import { privacySummary, privacyText } from "../shared/privacy-copy";
 import { privacyPolicyText } from "../shared/privacy-policy";
 import { disclosedProvider } from "../shared/provider-disclosure";
@@ -84,9 +83,13 @@ import { AttachedImageNote, ImageQuestion } from "./ImageQuestion";
 import type { AttachedImage } from "./image-upload";
 import { imageText } from "./text/images";
 import { fitHeight, isSendKey, limitState, MESSAGE_LIMIT, sendBlocked, touchDevice } from "./composer-keys";
-import { filesFrom, useFileDrop } from "./file-drop";
+import { filesFrom, routeFiles, useFileDrop } from "./file-drop";
 import { useFollowScroll } from "./follow-scroll";
-import { AnswerAnnouncement, ConnectionBanner } from "./ConnectionBanner";
+import { AnswerAnnouncement, ConnectionBanner, useOnline } from "./ConnectionBanner";
+import { failureKind } from "./chat-failures";
+import { chatCoreText } from "./text/chat-core";
+import { titleFrom } from "./title-from";
+import { useMenuKeys } from "./use-menu-keys";
 import { composerText } from "./text/composer";
 import { Vault, VaultConflictError } from "./vault";
 import type { Mode } from "../shared/modes";
@@ -213,6 +216,8 @@ export function App() {
   // Image questions: the picture for the next message. Memory only; gone once it was sent,
   // removed, or another conversation is opened. It is never part of `conversation`.
   const [imageOpen, setImageOpen] = useState(false);
+  // A pasted or dropped picture that opened the same steps (it starts at turn and crop).
+  const [imageFile, setImageFile] = useState<File>();
   const [attachedImage, setAttachedImage] = useState<AttachedImage>();
   const settingsDialog = useRef<HTMLDialogElement>(null);
   const contextDialog = useRef<HTMLDialogElement>(null);
@@ -241,7 +246,11 @@ export function App() {
     return () => {
       dialog?.close();
       if (trigger?.checkVisibility()) trigger.focus();
-      else document.querySelector<HTMLElement>(".context-count")?.focus();
+      else
+        (
+          document.querySelector<HTMLElement>(".context-count") ??
+          document.querySelector<HTMLElement>(".tools-menu summary")
+        )?.focus();
     };
   }, [contextOpen]);
   useEffect(() => {
@@ -720,6 +729,7 @@ export function App() {
   const follow = useFollowScroll(
     outputEnd,
     `${tab}:${conversation.id}:${conversation.messages.length}`,
+    conversation.messages.length > 0,
   );
   useLayoutEffect(
     () => fitHeight(document.getElementById("message-input") as HTMLTextAreaElement | null),
@@ -736,11 +746,17 @@ export function App() {
     // Not on touch devices: focusing the box there opens the on-screen keyboard.
     if (!touchDevice()) document.getElementById("message-input")?.focus();
   };
+  // Dropped and pasted files: one picture opens "Ask about a picture" (its notice, consent and
+  // covering steps, as from the "+" menu); everything else goes to the text reader.
+  const takeFiles = (files: File[]) => {
+    if (busy) return setNotice(ct.dropBusy);
+    const route = routeFiles(files, !!status?.images && !!status.inference.ready);
+    if (route.to === "reader") return void importFiles(route.files);
+    setImageFile(route.file);
+    setImageOpen(true);
+  };
   const dropping = useFileDrop(
-    (files) => {
-      if (busy) setNotice(ct.dropBusy);
-      else void importFiles(files);
-    },
+    takeFiles,
     () => tab === "Conversation" && !document.querySelector("dialog[open]"),
   );
   const reset = () => {
@@ -963,6 +979,24 @@ export function App() {
         : undefined,
     run: askAgain,
   };
+  const cc = chatCoreText[lang];
+  const menuKeys = useMenuKeys();
+  // A new chat with nothing in it: no "Conversation" heading, no context count, no jump.
+  const emptyChat =
+    tab === "Conversation" && !conversation.messages.length && conversation.title === "New conversation";
+  const online = useOnline();
+  const developmentTools =
+    !!import.meta.env.DEV || new URLSearchParams(location.search).has("developmentTools");
+  // An answer is streaming: its request runs and the newest answer is open with no failure yet.
+  // (Imports and searches also hold `controller`, but they add no open answer.)
+  const answering =
+    !!controller.current &&
+    lastMessage?.role === "assistant" &&
+    lastMessage.status === "partial" &&
+    !lastMessage.failure;
+  // New chat while an answer streams asks first, in one question that also covers unsaved changes.
+  const allowNew = () =>
+    answering ? window.confirm(unsaved ? cc.stopForNewUnsaved : cc.stopForNew) : allowReplace();
   // "Report a problem with this answer" opens Help with that choice set; nothing else is passed.
   const [reporting, setReporting] = useState(false);
   useEffect(() => {
@@ -1002,7 +1036,7 @@ export function App() {
         base.title.trim() &&
         (base.messages.length || base.title !== "New conversation")
           ? base.title
-          : text.trim().slice(0, 60),
+          : titleFrom(text),
       messages: [...base.messages, { ...newMessage("user", text.trim()), ...(image ? { image: true as const } : {}) }],
     };
     try {
@@ -1219,19 +1253,7 @@ export function App() {
               ? {
                   ...m,
                   status: "partial",
-                  failure: abort.signal.aborted
-                    ? "stopped"
-                    : error instanceof IncompleteReplyError
-                      ? [
-                          "HTTP_RATE_LIMITED",
-                          "HTTP_SERVICE_UNAVAILABLE",
-                          "HTTP_MODEL_NOT_FOUND",
-                        ].includes(error.diagnostic?.code ?? "")
-                        ? "unavailable"
-                        : "incomplete"
-                      : error instanceof Error && error.name === "TimeoutError"
-                        ? "timeout"
-                        : "unavailable",
+                  failure: failureKind(error, abort.signal.aborted),
                 }
               : m,
           ),
@@ -2092,6 +2114,38 @@ export function App() {
 
   const sources = conversation.attachments.flatMap((a) => a.sources);
   const sourceHistory = new Map(sources.map((item) => [item.id, item]));
+  // On the conversation screen, notices and the "not available" line sit just above the message
+  // box: at the top they scrolled away under the sticky header (phones, long chats).
+  const inDock = tab === "Conversation";
+  const connectionStatus = (
+    <details className="connection-banner">
+      <summary>
+        {status?.inference.ready ? t.protectedAvailable : t.privateNotYet}{" "}
+        <span>{t.privacyDetails}</span>
+      </summary>
+      <span className="status-icon">◇</span>
+      <div>
+        <strong>
+          {status?.inference.ready
+            ? t.protectedAvailable
+            : t.privateNotConnected}
+        </strong>
+        <p>
+          {status?.inference.ready && status.inference.qualification
+            ? verificationSummary(status.inference.qualification, lang)
+            : t.localOnly}
+        </p>
+      </div>
+    </details>
+  );
+  const noticeLine = notice && (
+    <div role="status" className={inDock ? "notice composer-note dock-notice" : "notice"}>
+      {notice}
+      <button aria-label={t.dismissNotice} onClick={() => setNotice("")}>
+        ×
+      </button>
+    </div>
+  );
   return (
     <div
       className={`app-shell chat-design ${navigationCollapsed ? "navigation-collapsed" : ""}${canvasOpen && tab === "Conversation" ? " canvas-open" : ""}`}
@@ -2163,7 +2217,7 @@ export function App() {
                   vault.current?.onInvalidate?.();
                 }}
                 onNewChat={() => {
-                  if (!allowReplace()) return;
+                  if (!allowNew()) return;
                   reset();
                   setSection("max");
                   setTab("Conversation");
@@ -2196,7 +2250,7 @@ export function App() {
         currentId={conversation.id}
         onOpen={openSaved}
         onNew={(projectId) => {
-          if (!allowReplace()) return;
+          if (!allowNew()) return;
           reset();
           setSection("secure");
           if (projectId) setConversation({ ...emptyConversation(), projectId });
@@ -2204,7 +2258,7 @@ export function App() {
           setNavigationOpen(false);
         }}
         onNewIncognito={() => {
-          if (!allowReplace()) return;
+          if (!allowNew()) return;
           reset();
           setConversation({
             ...emptyConversation(),
@@ -2333,7 +2387,7 @@ export function App() {
           busy={!!busy}
           onClose={() => setOpenProject(undefined)}
           onNewChat={() => {
-            if (!allowReplace()) return;
+            if (!allowNew()) return;
             reset();
             if (secureOn) setSection(modeOf(openProject) ?? "secure");
             setConversation({ ...emptyConversation(), projectId: openProject });
@@ -2559,7 +2613,8 @@ export function App() {
             <Icon name="sidebar" />
           </button>
           <div className="header-title">
-            <h1>
+            {/* An empty chat shows no heading; it stays for screen readers. */}
+            <h1 className={emptyChat ? "sr-only" : undefined}>
               {tab === "Conversation" &&
               conversation.title !== "New conversation"
                 ? conversation.title
@@ -2579,20 +2634,23 @@ export function App() {
             )}
           </div>
           <LanguageSwitch />
-          <details className="conversation-menu">
+          <details className="conversation-menu" {...menuKeys}>
             <summary aria-label={t.conversationActions}>
               <Icon name="more" />
             </summary>
             <div className="menu-surface">
-              <button onClick={() => setTab("Conversation")}>
-                <Icon name="chat" />
-                {t.tabConversation}
-              </button>
+              {tab !== "Conversation" && (
+                <button onClick={() => setTab("Conversation")}>
+                  <Icon name="chat" />
+                  {t.tabConversation}
+                </button>
+              )}
               <CopyConversationButton
                 conversation={conversation}
                 disabled={!conversation.messages.length}
               />
               <button onClick={() => setTab("Saved")}>
+                <Icon name="edit" />
                 {t.renameSave}
               </button>
               <PdfExportButton
@@ -2601,10 +2659,12 @@ export function App() {
               />
               {tab === "Conversation" && (
                 <button onClick={() => setContextOpen(true)}>
+                  <Icon name="search" />
                   {t.includedContext}
                 </button>
               )}
               <button onClick={() => setTab("Context")}>
+                <Icon name="folder" />
                 {t.conversationFiles}
               </button>
               <label className="menu-select">
@@ -2645,29 +2705,14 @@ export function App() {
                   )
                 }
               />
-              <button onClick={() => setSettingsOpen(true)}>{t.settings}</button>
+              <button onClick={() => setSettingsOpen(true)}>
+                <Icon name="settings" />
+                {t.settings}
+              </button>
             </div>
           </details>
         </header>
-        <details className="connection-banner">
-          <summary>
-            {status?.inference.ready ? t.protectedAvailable : t.privateNotYet}{" "}
-            <span>{t.privacyDetails}</span>
-          </summary>
-          <span className="status-icon">◇</span>
-          <div>
-            <strong>
-              {status?.inference.ready
-                ? t.protectedAvailable
-                : t.privateNotConnected}
-            </strong>
-            <p>
-              {status?.inference.ready && status.inference.qualification
-                ? verificationSummary(status.inference.qualification, lang)
-                : t.localOnly}
-            </p>
-          </div>
-        </details>
+        {!(inDock && !status?.inference.ready) && connectionStatus}
         {conversation.incognito && (
           <div role="status" className="notice incognito-banner">
             <strong>{t.incognitoBannerTitle}</strong> {t.incognitoBanner}
@@ -2685,22 +2730,16 @@ export function App() {
             <strong>{t.operatorNoticeTitle}</strong> {serverMessage(status.operatorNotice, lang)}
           </div>
         )}
-        <ConnectionBanner />
+        {!inDock && <ConnectionBanner />}
         <AnswerAnnouncement last={conversation.messages.at(-1)} />
         {dropping && <div className="drop-target">{ct.dropHere}</div>}
-        {notice && (
-          <div role="status" className="notice">
-            {notice}
-            <button aria-label={t.dismissNotice} onClick={() => setNotice("")}>
-              ×
-            </button>
-          </div>
-        )}
+        {!inDock && noticeLine}
         {busy && (
           <div role="status" className="progress">
             <span className="spinner" />
             {busy}
-            {controller.current && (
+            {/* On the conversation screen the message box has the one Stop. */}
+            {controller.current && !inDock && (
               <button onClick={() => controller.current?.abort()}>{t.stop}</button>
             )}
           </div>
@@ -2715,6 +2754,23 @@ export function App() {
                     {item.name} — {item.status}
                   </span>
                   {item.detail && <p>{item.detail}</p>}
+                  {/* A picture the text reader could not use (no printed text, or unreadable):
+                      point to the picture question instead. */}
+                  {item.status === "failed" &&
+                    /\.(png|jpe?g)$/i.test(item.name) &&
+                    status?.images &&
+                    status.inference.ready && (
+                      <p>
+                        {cc.pictureHint}{" "}
+                        <button
+                          type="button"
+                          className="text-button"
+                          onClick={() => setImageOpen(true)}
+                        >
+                          {imageText[lang].menu}
+                        </button>
+                      </p>
+                    )}
                 </li>
               ))}
             </ul>
@@ -2753,8 +2809,7 @@ export function App() {
               const files = filesFrom(event.clipboardData);
               if (!files.length) return;
               event.preventDefault();
-              if (busy) setNotice(ct.dropBusy);
-              else void importFiles(files);
+              takeFiles(files);
             }}
           >
             {!conversation.messages.length && (
@@ -2791,7 +2846,7 @@ export function App() {
                         }
                       }}
                     >
-                      <span>{title} ↗</span>
+                      <span>{title}</span>
                       <p>{description}</p>
                     </button>
                   ))}
@@ -3033,6 +3088,9 @@ export function App() {
                   onClose={() => setRunSearch(undefined)}
                 />
               )}
+              {noticeLine}
+              <ConnectionBanner />
+              {!status?.inference.ready && connectionStatus}
               <form
                 className="composer"
                 onSubmit={(e) => {
@@ -3061,7 +3119,7 @@ export function App() {
                       !sendBlocked({
                         busy: !!busy,
                         text: input,
-                        ready: !!status?.inference.ready,
+                        ready: !!status?.inference.ready && online,
                         waiting: choosing || !!consentPending,
                       })
                     )
@@ -3090,7 +3148,7 @@ export function App() {
                       event.target.value = "";
                     }}
                   />
-                  <details className="tools-menu">
+                  <details className="tools-menu" {...menuKeys}>
                     <summary aria-label={t.tools}>
                       <Icon name="plus" />
                     </summary>
@@ -3137,6 +3195,7 @@ export function App() {
                         className="text-button"
                         onClick={() => setContextOpen(true)}
                       >
+                        <Icon name="search" />
                         {t.reviewContext}{" "}
                         <span>
                           {t.selectedCount(
@@ -3153,30 +3212,14 @@ export function App() {
                         <Icon name="globe" />
                         {t.tabResearch}
                       </button>
-                      <button type="button" onClick={() => setTab("Context")}>
+                      <button
+                        type="button"
+                        className="text-button"
+                        onClick={() => setTab("Context")}
+                      >
                         <Icon name="folder" />
                         {t.conversationFiles}
                       </button>
-                      <div
-                        className="coming-later-list"
-                        aria-label={t.planned}
-                      >
-                        {(
-                          [
-                            ["image", t.createImage],
-                            ["mic", t.dictation],
-                            ["voice", t.liveVoice],
-                          ] as const
-                        ).filter(([icon]) => (icon !== "mic" || !status?.voice) && (icon !== "voice" || !liveVoiceOn)).map(([icon, label]) => (
-                          <button key={icon} type="button" disabled>
-                            <Icon name={icon} />
-                            <span>{label}</span>
-                            <small>{t.comingLater}</small>
-                          </button>
-                        ))}
-                      </div>
-                      <p className="muted">{liveVoiceOn ? liveVoiceText[lang].menuNote : status?.voice ? t.photoNoteVoice : t.photoNote}</p>
-                      <p className="muted">{t.filesNote}</p>
                     </div>
                   </details>
                   {status?.inference.qualification?.modes && (
@@ -3197,17 +3240,20 @@ export function App() {
                       ))}
                     </select>
                   )}
-                  <button
-                    type="button"
-                    className="context-count"
-                    onClick={() => setContextOpen(true)}
-                  >
-                    {t.contextCount(
-                      selectedContextSize.includedMessages,
-                      conversation.attachments.filter((a) => a.selected).length,
-                    )}
-                  </button>
-                  {status?.voice && status.inference.ready ? (
+                  {/* Nothing to count in an empty chat; "+" > Review context still opens the review. */}
+                  {(conversation.messages.length > 0 || conversation.attachments.length > 0) && (
+                    <button
+                      type="button"
+                      className="context-count"
+                      onClick={() => setContextOpen(true)}
+                    >
+                      {t.contextCount(
+                        selectedContextSize.includedMessages,
+                        conversation.attachments.filter((a) => a.selected).length,
+                      )}
+                    </button>
+                  )}
+                  {status?.voice && status.inference.ready && (
                     <VoiceInput
                       status={status}
                       voice={status.voice}
@@ -3216,19 +3262,8 @@ export function App() {
                       notify={setNotice}
                       onVerifyWait={setVerifyWaitUntil}
                     />
-                  ) : (
-                  <button
-                    type="button"
-                    className="future-voice"
-                    disabled
-                    aria-label={t.dictationLater}
-                    title={t.dictationLater}
-                  >
-                    <Icon name="mic" />
-                    <small>{t.comingLater}</small>
-                  </button>
                   )}
-                  {liveVoiceOn && status?.voice ? (
+                  {liveVoiceOn && status?.voice && (
                     <LiveVoice
                       status={status}
                       voice={status.voice}
@@ -3246,16 +3281,6 @@ export function App() {
                         focusComposer();
                       }}
                     />
-                  ) : (
-                  <button
-                    type="button"
-                    className="future-voice"
-                    disabled
-                    aria-label={t.liveVoiceLater}
-                    title={t.liveVoiceLater}
-                  >
-                    <Icon name="voice" />
-                  </button>
                   )}
                   {controller.current ? (
                     <button
@@ -3274,10 +3299,12 @@ export function App() {
                       disabled={sendBlocked({
                         busy: !!busy,
                         text: input,
-                        ready: !!status?.inference.ready,
+                        ready: !!status?.inference.ready && online,
                       })}
                       type="submit"
                       aria-label={t.sendLabel}
+                      // Offline: the banner just above says why Send is off.
+                      aria-describedby={online ? undefined : "offline-reason"}
                     >
                       {t.send} <Icon name="send" />
                     </button>
@@ -3418,7 +3445,8 @@ export function App() {
                 <output>{calculation}</output>
               </details>
             )}
-            {conversation.usage.length > 0 && (
+            {/* Token and dollar figures are for development only, never for users. */}
+            {developmentTools && conversation.usage.length > 0 && (
               <p className="muted">
                 {t.usage(
                   conversation.usage.reduce((n, u) => n + u.total, 0),
@@ -4027,8 +4055,12 @@ export function App() {
           consentChoice={healthConsent?.choice}
           onConsent={chooseHealthConsent}
           onAttach={setAttachedImage}
-          onClose={() => setImageOpen(false)}
+          onClose={() => {
+            setImageOpen(false);
+            setImageFile(undefined);
+          }}
           notify={setNotice}
+          initialFile={imageFile}
         />
       )}
       {source && (

@@ -19,10 +19,12 @@ export function workspaceControl(page: Page, name: string) {
           .click();
       } else if (name === "Conversation") {
         await page.getByLabel("Conversation actions", { exact: true }).click();
-        await page
+        const item = page
           .locator(".conversation-menu")
-          .getByRole("button", { name, exact: true })
-          .click();
+          .getByRole("button", { name, exact: true });
+        // Already on the conversation: the menu has no such item (16 November), so close it.
+        if (await item.count()) await item.click();
+        else await page.keyboard.press("Escape");
       } else {
         const toggle = page.getByRole("button", { name: "Open navigation" });
         if (
