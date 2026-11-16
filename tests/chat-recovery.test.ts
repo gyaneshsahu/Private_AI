@@ -413,9 +413,11 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       }),
     );
     await page.getByRole("button", { name: "Copy code", exact: true }).click();
-    await ui(
-      page.getByText("Code copied. Review before running it.", { exact: true }),
-    ).toBeVisible();
+    // The button says "Copied" for 2 seconds; the one announcement is for screen readers.
+    await ui(page.getByRole("button", { name: "Copied", exact: true })).toBeVisible();
+    await ui(page.getByRole("status").filter({ hasText: "Code copied. Review before running it." })).toHaveClass("sr-only");
+    await ui(page.getByRole("button", { name: "Copy code", exact: true })).toBeVisible({ timeout: 4000 });
+    await ui(page.getByText("Code copied. Review before running it.")).toHaveCount(0);
     expect(
       await page.evaluate(
         () => (window as unknown as FixtureWindow).copiedAnswer,
