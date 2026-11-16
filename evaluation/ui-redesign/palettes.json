@@ -1,0 +1,20 @@
+{
+  "A": {
+    "name": "A · Graphite",
+    "note": "Pure neutral greys, black buttons, blue only for links and focus.",
+    "light": { "bg": "#ffffff", "sidebar": "#f7f7f8", "surface": "#ffffff", "hover": "#ececee", "ink": "#18181b", "ink2": "#5c5c66", "ink3": "#6f6f7a", "line": "#e4e4e7", "accent": "#2459d6", "primary": "#18181b", "primaryInk": "#ffffff", "bubble": "#f1f1f3", "code": "#f7f7f8", "glow": "none" },
+    "dark": { "bg": "#1b1b1e", "sidebar": "#141416", "surface": "#26262a", "hover": "#2e2e33", "ink": "#ededf0", "ink2": "#b1b1ba", "ink3": "#9a9aa5", "line": "#35353b", "accent": "#8fb4ff", "primary": "#ededf0", "primaryInk": "#18181b", "bubble": "#2a2a2f", "code": "#141416", "glow": "none" }
+  },
+  "B": {
+    "name": "B · Warm paper",
+    "note": "Warm off-white and warm greys, deep evergreen accent used sparingly.",
+    "light": { "bg": "#faf9f6", "sidebar": "#f2f0ea", "surface": "#ffffff", "hover": "#e9e6dd", "ink": "#1f1e1b", "ink2": "#5f5c54", "ink3": "#716d64", "line": "#e2ded3", "accent": "#1b6453", "primary": "#1f1e1b", "primaryInk": "#ffffff", "bubble": "#eeebe3", "code": "#f2f0ea", "glow": "none" },
+    "dark": { "bg": "#1e1d1b", "sidebar": "#171614", "surface": "#292826", "hover": "#32302d", "ink": "#ece9e2", "ink2": "#b5b0a5", "ink3": "#9c978c", "line": "#3a3835", "accent": "#74c7b1", "primary": "#ece9e2", "primaryInk": "#1f1e1b", "bubble": "#2e2c29", "code": "#171614", "glow": "none" }
+  },
+  "C": {
+    "name": "C · Comet",
+    "note": "Cool neutral with one blue accent and a soft glow behind the message box on the start screen.",
+    "light": { "bg": "#fbfcfe", "sidebar": "#f2f5fa", "surface": "#ffffff", "hover": "#e6ebf4", "ink": "#101828", "ink2": "#525d76", "ink3": "#667089", "line": "#dfe5ef", "accent": "#2456e6", "primary": "#2456e6", "primaryInk": "#ffffff", "bubble": "#e9f0ff", "code": "#f2f5fa", "glow": "radial-gradient(60% 70% at 50% 60%, #7fb2ff40, #6fe0d018 55%, transparent 75%)" },
+    "dark": { "bg": "#0b0f17", "sidebar": "#070a10", "surface": "#141a26", "hover": "#1b2333", "ink": "#e8ecf4", "ink2": "#a5b0c6", "ink3": "#8b96ad", "line": "#222b3c", "accent": "#86adff", "primary": "#3565e8", "primaryInk": "#ffffff", "bubble": "#162138", "code": "#070a10", "glow": "radial-gradient(55% 65% at 50% 60%, #2f6bff3d, #19c5b01a 55%, transparent 78%)" }
+  }
+}

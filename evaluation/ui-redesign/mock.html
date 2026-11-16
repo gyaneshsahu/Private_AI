@@ -1,0 +1,195 @@
+<!doctype html>
+<!-- Design mock for the UI redesign (step 1, palette choice). Not part of the app.
+     Opened by render.mjs with ?p=A|B|C&theme=light|dark&screen=empty|answer|phone -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CometRow design mock</title>
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{font:15px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;letter-spacing:-.003em}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.app{display:flex;height:100%}
+/* sidebar */
+.side{width:260px;background:var(--sidebar);padding:10px 8px;display:flex;flex-direction:column;gap:2px;flex:none}
+.brand{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 12px}
+.brand b{font-size:16px;font-weight:650;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.mark{width:20px;height:20px;stroke:none;fill:var(--ink)}
+.row{display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:9px;font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row.on,.row:hover{background:var(--hover)}
+.sec{font-size:12px;color:var(--ink3);padding:18px 10px 6px;font-weight:500}
+.row.chat{display:block;line-height:36px;color:var(--ink)}
+.me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;font-size:14px}
+.av{width:28px;height:28px;border-radius:50%;background:var(--hover);display:grid;place-items:center;font-size:12px;font-weight:600}
+.me small{display:block;color:var(--ink3);font-size:12px;line-height:1.2}
+/* main */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;position:relative}
+.top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;flex:none}
+.top .title{font-size:15px;font-weight:550}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink2);padding:5px 10px;border-radius:99px}
+.chip svg{width:14px;height:14px}
+.icon{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;color:var(--ink2)}
+.icon:hover{background:var(--hover)}
+/* empty */
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 20px 9vh;position:relative}
+.empty::before{content:"";position:absolute;inset:0;background:var(--glow);pointer-events:none}
+.empty h1{font-size:30px;font-weight:500;letter-spacing:-.025em;margin-bottom:28px;position:relative}
+.sugg{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;justify-content:center;position:relative}
+.sugg span{font-size:13.5px;color:var(--ink2);border:1px solid var(--line);background:var(--surface);padding:7px 13px;border-radius:99px;display:inline-flex;gap:7px;align-items:center}
+.sugg svg{width:15px;height:15px}
+/* composer */
+.composer{width:100%;max-width:740px;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:12px 12px 10px 16px;box-shadow:0 1px 2px #0000000a,0 8px 28px -12px #00000024;position:relative}
+.composer .ph{color:var(--ink3);font-size:16px;padding:4px 2px 12px}
+.composer .txt{font-size:16px;padding:4px 2px 12px}
+.bar{display:flex;align-items:center;gap:4px}
+.bar .sp{flex:1}
+.mode{font-size:13.5px;color:var(--ink2);padding:6px 9px;border-radius:9px;display:inline-flex;align-items:center;gap:4px}
+.mode svg{width:14px;height:14px}
+.go{width:36px;height:36px;border-radius:50%;background:var(--primary);color:var(--primaryInk);display:grid;place-items:center}
+.go svg{stroke-width:2}
+.foot{font-size:12px;color:var(--ink3);text-align:center;padding:8px 12px 12px}
+.dock{padding:0 20px;display:flex;flex-direction:column;align-items:center;flex:none}
+/* thread */
+.thread{flex:1;overflow:hidden;padding:8px 20px 0}
+.col{max-width:740px;margin:0 auto}
+.user{margin:10px 0 22px auto;max-width:78%;width:fit-content;background:var(--bubble);padding:10px 16px;border-radius:20px 20px 6px 20px;font-size:15.5px}
+.ans{font-size:15.5px;line-height:1.7}
+.ans h2{font-size:19px;font-weight:620;letter-spacing:-.015em;margin:22px 0 8px}
+.ans p{margin:0 0 12px}
+.ans a{color:var(--accent);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
+.ans code.i{font:13.5px ui-monospace,"SF Mono",Consolas,monospace;background:var(--code);border:1px solid var(--line);padding:1px 5px;border-radius:6px}
+.pre{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:6px 0 16px;background:var(--code)}
+.pre .hd{display:flex;justify-content:space-between;align-items:center;padding:4px 6px 4px 14px;font-size:12px;color:var(--ink2);border-bottom:1px solid var(--line)}
+.pre .hd button{display:inline-flex;gap:6px;align-items:center;font-size:12px;color:var(--ink2);padding:5px 8px;border-radius:7px}
+.pre .hd svg{width:14px;height:14px}
+.pre pre{font:13.5px/1.65 ui-monospace,"SF Mono",Consolas,monospace;padding:12px 14px;overflow:hidden;white-space:pre}
+.k{color:var(--accent)}.c{color:var(--ink3)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;margin:6px 0 16px}
+th{font-weight:600;text-align:left;font-size:12.5px;color:var(--ink2);padding:8px 12px;border-bottom:1px solid var(--line)}
+td{padding:9px 12px;border-bottom:1px solid var(--line)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.card{border:1px solid var(--line);border-radius:14px;padding:14px 16px 10px;margin:6px 0 16px;background:var(--surface)}
+.card .cap{font-size:13px;color:var(--ink2);margin-bottom:8px;display:flex;justify-content:space-between}
+.card svg{width:100%;height:150px;stroke:none}
+.card text{font:11px ui-sans-serif,system-ui,"Segoe UI",sans-serif;fill:var(--ink3)}
+.acts{display:flex;gap:2px;color:var(--ink3);margin:2px 0 18px -8px}
+.acts .icon{width:32px;height:32px}.acts svg{width:16px;height:16px}
+/* phone */
+body.phone .side{display:none}
+body.phone .top{padding:0 8px}
+body.phone .thread{padding:4px 16px 0}
+body.phone .dock{padding:0 10px}
+body.phone .composer{border-radius:22px;padding:10px 10px 8px 14px}
+body.phone .ans h2{font-size:18px}
+body.phone .user{max-width:86%}
+[hidden]{display:none!important}
+</style></head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h8M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></symbol>
+<symbol id="i-retry" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></symbol>
+<symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 10v4h3l5 4V6L7 10zM16 9a4 4 0 0 1 0 6"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
+<symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM14 3v5h5"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+<symbol id="i-mark" viewBox="0 0 24 24"><circle cx="16" cy="8" r="4.2"/><path d="M11.6 9.6 2.5 20.8c-.4.5.2 1.1.7.7L14.4 12.4z" opacity=".55"/></symbol>
+</defs></svg>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand"><b><svg class="mark"><use href="#i-mark"/></svg>CometRow</b><span class="icon"><svg><use href="#i-panel"/></svg></span></div>
+    <div class="row on"><svg><use href="#i-edit"/></svg>New chat</div>
+    <div class="row"><svg><use href="#i-search"/></svg>Search</div>
+    <div class="row"><svg><use href="#i-folder"/></svg>Projects</div>
+    <div class="row"><svg><use href="#i-clock"/></svg>Scheduled</div>
+    <div class="sec">Recent</div>
+    <div class="row chat">Tax receipt questions</div>
+    <div class="row chat">Letter to the landlord</div>
+    <div class="row chat">Savings growth 2022 to 2026</div>
+    <div class="row chat">Plan the move in March</div>
+    <div class="row chat">Explain my payslip</div>
+    <div class="me"><span class="av">G</span><span>Gyanesh<small>Alpha plan</small></span></div>
+  </aside>
+
+  <main class="main">
+    <div class="top">
+      <span style="display:flex;align-items:center;gap:4px">
+        <span class="icon" data-phone><svg><use href="#i-menu"/></svg></span>
+        <span class="title" data-chat>Savings growth 2022 to 2026</span>
+      </span>
+      <span style="display:flex;align-items:center;gap:2px">
+        <span class="chip" data-desk><svg><use href="#i-lock"/></svg>Secure</span>
+        <span class="icon" data-phone><svg><use href="#i-edit"/></svg></span>
+        <span class="icon" data-desk><svg><use href="#i-more"/></svg></span>
+      </span>
+    </div>
+
+    <section class="empty" data-empty>
+      <h1>What’s on your mind?</h1>
+      <div class="composer">
+        <div class="ph">Ask anything</div>
+        <div class="bar"><span class="icon"><svg><use href="#i-plus"/></svg></span><span class="sp"></span>
+          <span class="mode">Auto<svg><use href="#i-down"/></svg></span>
+          <span class="icon" style="color:var(--ink)"><svg><use href="#i-mic"/></svg></span></div>
+      </div>
+      <div class="sugg"><span><svg><use href="#i-edit"/></svg>Write or revise</span><span><svg><use href="#i-doc"/></svg>Understand a document</span><span><svg><use href="#i-globe"/></svg>Search the web</span></div>
+    </section>
+
+    <section class="thread" data-chat><div class="col">
+      <div class="user">How did my savings grow from 2022 to 2026, and how do I work out the yearly rate?</div>
+      <div class="ans">
+        <p>Your savings grew from <b>€4,200</b> to <b>€9,850</b>, which is about <b>23.7% a year</b> on average.</p>
+        <div class="card" data-desk><div class="cap"><span>Savings at year end, in €</span><span>2022 to 2026</span></div>
+          <svg viewBox="0 0 600 150" preserveAspectRatio="none"><g fill="var(--accent)">
+            <rect x="40" y="86" width="64" height="44" rx="5" opacity=".45"/><rect x="150" y="72" width="64" height="58" rx="5" opacity=".55"/><rect x="260" y="54" width="64" height="76" rx="5" opacity=".7"/><rect x="370" y="38" width="64" height="92" rx="5" opacity=".85"/><rect x="480" y="26" width="64" height="104" rx="5"/></g>
+            <g text-anchor="middle"><text x="72" y="146">2022</text><text x="182" y="146">2023</text><text x="292" y="146">2024</text><text x="402" y="146">2025</text><text x="512" y="146">2026</text>
+            <text x="72" y="80">4,200</text><text x="182" y="66">5,480</text><text x="292" y="48">7,150</text><text x="402" y="32">8,600</text><text x="512" y="20">9,850</text></g></svg></div>
+        <h2>How the yearly rate is worked out</h2>
+        <p>Divide the end value by the start value, take the root for the number of years, and subtract one. In a spreadsheet that is <code class="i">=(B2/B1)^(1/4)-1</code>. The same in Python:</p>
+        <div class="pre"><div class="hd"><span>python</span><button><svg><use href="#i-copy"/></svg>Copy</button></div>
+<pre><span class="k">def</span> yearly_rate(start, end, years):
+    <span class="c"># compound annual growth rate</span>
+    <span class="k">return</span> (end / start) ** (1 / years) - 1
+
+yearly_rate(4200, 9850, 4)   <span class="c"># 0.2375</span></pre></div>
+        <table data-desk><tr><th>Year</th><th class="n">Balance</th><th class="n">Change</th></tr>
+          <tr><td>2024</td><td class="n">€7,150</td><td class="n">+30.5%</td></tr>
+          <tr><td>2025</td><td class="n">€8,600</td><td class="n">+20.3%</td></tr>
+          <tr><td>2026</td><td class="n">€9,850</td><td class="n">+14.5%</td></tr></table>
+        <p data-phone>Growth slowed each year, from 30.5% in 2024 to 14.5% in 2026. <a>See the table</a></p>
+        <div class="acts"><span class="icon"><svg><use href="#i-copy"/></svg></span><span class="icon"><svg><use href="#i-sound"/></svg></span><span class="icon"><svg><use href="#i-retry"/></svg></span><span class="icon"><svg><use href="#i-more"/></svg></span></div>
+      </div>
+    </div></section>
+
+    <div class="dock" data-chat>
+      <div class="composer">
+        <div class="txt" data-desk>And what if I add €200 every month?</div>
+        <div class="ph" data-phone>Ask anything</div>
+        <div class="bar"><span class="icon"><svg><use href="#i-plus"/></svg></span><span class="sp"></span>
+          <span class="mode">Auto<svg><use href="#i-down"/></svg></span>
+          <span class="go" data-desk><svg><use href="#i-up"/></svg></span>
+          <span class="icon" data-phone style="color:var(--ink)"><svg><use href="#i-mic"/></svg></span></div>
+      </div>
+      <div class="foot">Answers come from an AI. Check important ones.</div>
+    </div>
+  </main>
+</div>
+<script>
+const q=new URLSearchParams(location.search), view=q.get("screen")||"empty", t=(window.P||{})[q.get("p")||"A"]?.[q.get("theme")||"light"]||{};
+for(const [k,v] of Object.entries(t)) document.documentElement.style.setProperty("--"+k,v);
+const phone=view==="phone"; document.body.classList.toggle("phone",phone);
+const hide=(s,on)=>document.querySelectorAll(s).forEach(e=>{if(on)e.hidden=true});
+hide("[data-empty]",view!=="empty"); hide("[data-chat]",view==="empty"); hide("[data-phone]",!phone); hide("[data-desk]",phone);
+</script>
+</body></html>
