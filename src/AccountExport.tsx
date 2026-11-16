@@ -2,16 +2,18 @@ import { useState } from "react";
 import { accountRequest } from "./account-request";
 import { useLang } from "./i18n";
 import { accountExportText } from "./text/account";
+import { modeCopyText, type Storage } from "./text/mode-copy";
 import { serverMessage } from "./server-messages";
 
 /**
  * Downloads everything the service holds about the signed-in account as one
  * JSON file: identity, sign-in methods without secrets, sessions, security
  * notices, usage and cost records, billing operations and closure state.
- * Conversations are never held by the service; their export is the encrypted
- * vault backup on this device.
+ * Without Secure, conversations are never held by the service; their export is
+ * the encrypted vault backup on this device. With Secure (`storage` "secure")
+ * the body says saved content is listed by number and size only.
  */
-export default function AccountExport() {
+export default function AccountExport({ storage = "local" }: { storage?: Storage }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const { lang } = useLang();
@@ -19,7 +21,7 @@ export default function AccountExport() {
   return (
     <section aria-label={t.heading}>
       <h2>{t.heading}</h2>
-      <p>{t.body}</p>
+      <p>{storage === "secure" ? modeCopyText[lang].exportBody_secure : t.body}</p>
       <button
         disabled={busy}
         onClick={() => {

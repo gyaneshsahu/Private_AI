@@ -12,6 +12,7 @@ export const questionText = defineText({
     canvasReplace: "Replace",
     signOutTitle: "Sign out anyway?",
     signOut: "Sign out",
+    remove: "Remove",
     cancel: "Cancel",
   },
   de: {
@@ -23,6 +24,7 @@ export const questionText = defineText({
     canvasReplace: "Ersetzen",
     signOutTitle: "Trotzdem abmelden?",
     signOut: "Abmelden",
+    remove: "Entfernen",
     cancel: "Abbrechen",
   },
 });

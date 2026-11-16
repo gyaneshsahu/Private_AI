@@ -27,6 +27,8 @@ import { useText } from "./i18n";
 import { importFresh, LoadBoundary, retryLazy } from "./LoadBoundary";
 import { messageText } from "./text/message";
 import { canvasText } from "./text/canvas";
+import { questionText } from "./text/questions";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { forStorage, type Storage } from "./text/mode-copy";
 
 const Answer = retryLazy(() =>
@@ -191,6 +193,8 @@ export function CanvasPanel({
   const [instruction, setInstruction] = useState("");
   const [problem, setProblem] = useState("");
   const [printing, setPrinting] = useState(0);
+  const [removing, setRemoving] = useState(false);
+  const q = useText(questionText);
   const fail = (error: unknown) =>
     setProblem(error instanceof CanvasError ? t.problem(error.problem) : (error as Error).message);
   const proposal = canvasProposal(conversation);
@@ -419,17 +423,29 @@ export function CanvasPanel({
           </button>
           <button
             type="button"
-            onClick={() => {
-              if (!window.confirm(t.removeConfirm)) return;
-              forgetUndo(conversation.id);
-              update(withoutCanvas);
-              onClose();
-            }}
+            onClick={() => setRemoving(true)}
           >
             {t.remove}
           </button>
         </div>
       </div>
+      {removing && (
+        <ConfirmDialog
+          title={t.remove}
+          text={t.removeConfirm}
+          confirmLabel={q.remove}
+          cancelLabel={q.cancel}
+          // Removed: the panel closes with it, so the message box.
+          fallback={() => document.getElementById("message-input")}
+          onClose={(yes) => {
+            setRemoving(false);
+            if (!yes) return;
+            forgetUndo(conversation.id);
+            update(withoutCanvas);
+            onClose();
+          }}
+        />
+      )}
       {printing > 0 && (
         <LoadBoundary>
           <Suspense>

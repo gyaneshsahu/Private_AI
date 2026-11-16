@@ -4,10 +4,14 @@
 // with unsent changes) alike. Tests about a question itself click its buttons instead.
 import type { Page } from "@playwright/test";
 import { questionText } from "../../src/text/questions";
+import { accountAccessText } from "../../src/text/account";
+import { accountConfirmText } from "../../src/text/account-confirm";
 
 const titles = (["en", "de"] as const).flatMap((lang) => {
   const q = questionText[lang];
-  return [q.discardTitle, q.stopTitle, q.canvasTitle, q.signOutTitle];
+  const a = accountAccessText[lang];
+  // The account page's questions (src/AccountAccess.tsx) too: sign out a session, remove a method.
+  return [q.discardTitle, q.stopTitle, q.canvasTitle, q.signOutTitle, a.confirmThis, a.confirmOther, accountConfirmText[lang].removeTitle];
 });
 
 function answer([titles, yes]: [string[], boolean]) {
