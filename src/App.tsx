@@ -106,6 +106,7 @@ import { mergeConversation } from "./sync/merge";
 import { holdProjects } from "./projects";
 import { VaultBackup } from "./VaultBackup";
 import { VaultUnlock } from "./VaultUnlock";
+import { SyncSetup } from "./SyncSetup";
 import { AlsoDeleteSynced, LocalPassphraseDialog, PairingPrompt, SyncGate, SyncIndicator, SyncSettings } from "./SyncScreens";
 import { syncText, vaultUnlockText } from "./text/sync";
 import { syncHardeningText } from "./text/sync-hardening";
@@ -956,13 +957,25 @@ export function App() {
       );
     return result;
   }
+  // FE-02: the first use of Secure Max on a device sets up its encrypted sync (device name, recovery
+  // key), never a device-only passphrase vault. True while this device has no vault at all and sync
+  // is not on here yet; an existing passphrase vault keeps its form, an approved account its gate.
+  const [maxFirst, setMaxFirst] = useState(false);
+  useEffect(() => {
+    let active = true;
+    if (!maxAvailable || unlocked || syncState.phase !== "off" || syncState.detached) setMaxFirst(false);
+    else vault.current?.mode().then((m) => active && setMaxFirst(m === "none"), () => {});
+    return () => {
+      active = false;
+    };
+  }, [maxAvailable, unlocked, syncState.phase, syncState.detached, status?.accountId, tab]);
   /** "Unlock Secure Max" in its section: the screen that fits this device. */
   function unlockMax() {
     setNavigationOpen(false);
     setSection("max");
     // A device that is not approved yet: the code from this device, or the recovery key.
     if (syncState.phase === "needs-approval") return setSyncDismissed(false);
-    // Otherwise this device's own form: unlock, or (first use) create the vault; its sync is turned on in Settings.
+    // Otherwise this device's own screen: the first use sets up sync (maxFirst), else the unlock form.
     setTab("Saved");
   }
   /** Before sign-out: one bounded send; if Secure changes are still not on the account, the user decides. */
@@ -4161,7 +4174,29 @@ export function App() {
               <ConversationLibrary storage="secure" conversations={saved.filter((c) => !inMax(c.id))} busy={!!busy} onOpen={openSaved} onDelete={(c) => void deleteSnapshot(c)} />
             )}
             {/* The vault's own screens: inside the Secure Max section, or as before where Secure Max is not offered. */}
-            {maxAvailable && section === "secure" ? null : !unlocked ? (
+            {maxAvailable && section === "secure" ? null : !unlocked && maxFirst ? (
+              <SyncSetup
+                storage="max"
+                // Not now: back to the normal section; nothing was created.
+                onCancel={() => {
+                  setSection("secure");
+                  setTab("Conversation");
+                }}
+                // Set up meanwhile on another device: this one joins by approval.
+                onAlreadySetUp={() => setSyncDismissed(false)}
+                onDone={(remember) => {
+                  setMaxFirst(false);
+                  setNotice(syncText[lang].onDone);
+                  void syncOpened(remember).then(() =>
+                    requestAnimationFrame(() => {
+                      const first = document.querySelector<HTMLElement>(".secure-max-section button");
+                      if (first?.checkVisibility()) first.focus();
+                      else goToMessageBox();
+                    }),
+                  );
+                }}
+              />
+            ) : !unlocked ? (
               <VaultUnlock
                 vault={vault.current}
                 scope={status?.accountId}

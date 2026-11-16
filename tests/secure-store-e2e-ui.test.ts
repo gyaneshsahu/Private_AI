@@ -263,22 +263,24 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   await ui(maxSection(A)).toHaveCount(0);
   await ui(A.locator(".secure-max-entry")).toBeFocused();
   await openMax(A);
+  // FE-02: the first Unlock sets up the encrypted sync (device name, recovery key), never a passphrase-only vault.
   await maxSection(A).getByRole("button", { name: m.maxUnlock }).click();
-  await A.getByLabel(a.passphrase, { exact: true }).fill("synthetic secure max passphrase");
-  await A.getByRole("button", { name: a.createOrUnlock }).click();
-  await ui(maxSection(A).getByRole("button", { name: m.maxNewChat })).toBeVisible();
-  await openSettings(A, "en", t.section);
-  await settings(A).getByRole("button", { name: t.turnOn }).click();
-  await settings(A).getByLabel(t.deviceName).fill("Laptop");
-  await settings(A).getByRole("button", { name: t.continue }).click();
-  const groups = settings(A).getByRole("list", { name: t.keyGroups(7) });
+  await ui(A.getByRole("heading", { name: t.explainHeading })).toBeVisible();
+  await ui(A.locator('input[type="password"]')).toHaveCount(0);
+  await ui(A.getByRole("button", { name: a.createOrUnlock })).toHaveCount(0);
+  await A.getByLabel(t.deviceName).fill("Laptop");
+  await A.getByRole("button", { name: t.continue }).click();
+  const groups = A.getByRole("list", { name: t.keyGroups(7) });
   await ui(groups.getByRole("listitem")).toHaveCount(7);
   const key = (await groups.locator("span[aria-hidden]").allTextContents()).join("-");
-  await settings(A).getByRole("button", { name: t.saved }).click();
-  await settings(A).getByLabel(t.confirmLabel).fill(key.slice(-4).toLowerCase());
-  await settings(A).getByRole("button", { name: t.confirmButton }).click();
-  await ui(settings(A).getByText(t.onDone).first()).toBeVisible();
-  await closeSettings(A, "en");
+  await A.getByRole("button", { name: t.saved }).click();
+  await A.getByLabel(t.confirmLabel).fill(key.slice(-4).toLowerCase());
+  await A.getByRole("button", { name: t.confirmButton }).click();
+  await ui(A.getByRole("status").filter({ hasText: t.onDone })).toBeVisible();
+  // The intro's promise is true now: a copy on the server (the recovery key's wrapper) and the section unlocked here.
+  expect(await s.stores.sync.proofs(account)).toBeDefined();
+  await ui(maxSection(A).getByRole("button", { name: m.maxNewChat })).toBeVisible();
+  await ui(maxSection(A).getByRole("button", { name: m.maxNewChat })).toBeFocused();
   // The section is unlocked on A now; a chat made inside it is a Secure Max chat.
   await maxSection(A).getByRole("button", { name: m.maxNewChat }).click();
   await ui(A.getByText(st.captionMax)).toBeVisible();
@@ -490,6 +492,17 @@ it("375 px, German: the Secure wiring fits a phone", async () => {
   await openMax(page, "de");
   await ui(page.getByRole("region", { name: modesText.de.maxLabel }).getByRole("button", { name: modesText.de.maxUnlock })).toBeVisible();
   await noSidewaysScroll(page);
+  // FE-02: the first Unlock offers the sync set-up (with its recovery key), not a passphrase; Cancel creates nothing.
+  await page.getByRole("region", { name: modesText.de.maxLabel }).getByRole("button", { name: modesText.de.maxUnlock }).click();
+  await ui(page.getByRole("heading", { name: syncText.de.explainHeading })).toBeVisible();
+  await ui(page.getByText(syncText.de.explainRecovery)).toBeVisible();
+  await ui(page.locator('input[type="password"]')).toHaveCount(0);
+  await noSidewaysScroll(page);
+  const setUpButtons = page.locator(".sync-step .sync-actions button");
+  for (const box of await Promise.all((await setUpButtons.all()).map((b) => b.boundingBox()))) expect(box!.height).toBeGreaterThanOrEqual(44);
+  await page.getByRole("button", { name: syncText.de.cancel, exact: true }).click();
+  await ui(page.getByRole("heading", { name: syncText.de.explainHeading })).toHaveCount(0);
+  expect(await s.stores.sync.proofs(account)).toBeUndefined();
   await page.keyboard.press("Escape");
   await privacy(page, "de");
   await ui(settings(page).getByText(modesText.de.secureLong)).toBeVisible();
@@ -523,6 +536,25 @@ it("375 px, German: the Secure wiring fits a phone", async () => {
   expect(await page.evaluate(() => [localStorage.getItem("cometrow.openInSecureMax"), localStorage.getItem("cometrow.secureMaxConfirmed")])).toEqual([null, null]);
   await page.context().close();
 }, 180_000);
+
+// FE-02 at the widths and languages the two tests above do not cover: the first Unlock is the sync set-up.
+it.each([
+  [375, "en"],
+  [768, "en"],
+  [768, "de"],
+  [1280, "de"],
+] as const)("%i px, %s: the first Secure Max unlock offers the sync set-up with a recovery key (FE-02)", async (width, lang) => {
+  const s = await site({ secure: true, sync: true });
+  const page = await device(s, randomUUID(), lang, width);
+  await openMax(page, lang);
+  await page.getByRole("region", { name: modesText[lang].maxLabel }).getByRole("button", { name: modesText[lang].maxUnlock }).click();
+  await ui(page.getByRole("heading", { name: syncText[lang].explainHeading })).toBeVisible();
+  await ui(page.getByText(syncText[lang].explainRecovery)).toBeVisible();
+  await ui(page.getByLabel(syncText[lang].deviceName)).toBeVisible();
+  await ui(page.locator('input[type="password"]')).toHaveCount(0);
+  await noSidewaysScroll(page);
+  await page.context().close();
+}, 120_000);
 
 it("1280 px, English: encrypted sync without file sync offers no Secure Max", async () => {
   const s = await site({ secure: true, sync: true, files: false });
