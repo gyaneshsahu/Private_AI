@@ -29,10 +29,13 @@ const reducedMotion = () =>
  * `end` is the marker after the last message; its scroll container is the nearest <main>.
  * `jumpKey` changes when a message is added, another conversation opens or the conversation view
  * comes back on screen: the view goes to the end.
+ * `jump` false (an empty chat): the view stays where it is, so the top of the screen stays in view.
  * Returns whether the user is away from the end (show the button) and the jump function.
  */
-export function useFollowScroll(end: RefObject<HTMLElement | null>, jumpKey: string) {
+export function useFollowScroll(end: RefObject<HTMLElement | null>, jumpKey: string, jump = true) {
   const following = useRef(true);
+  const jumps = useRef(jump);
+  jumps.current = jump;
   const [away, setAway] = useState(false);
   // While following, the browser must not move the view itself when something above changes
   // height (scroll anchoring). When an answer completed, the status line above went away and the
@@ -78,7 +81,7 @@ export function useFollowScroll(end: RefObject<HTMLElement | null>, jumpKey: str
     // Streamed text, a table, a code block or the message box growing: stay at the end, in one
     // step without animation, so nothing jumps.
     const grown = new ResizeObserver(() => {
-      if (following.current) scroller.scrollTop = scroller.scrollHeight;
+      if (following.current && jumps.current) scroller.scrollTop = scroller.scrollHeight;
     });
     grown.observe(marker.parentElement!);
     if (marker.parentElement!.parentElement) grown.observe(marker.parentElement!.parentElement);
@@ -89,7 +92,9 @@ export function useFollowScroll(end: RefObject<HTMLElement | null>, jumpKey: str
     };
     // jumpKey: the marker is mounted again when the conversation view comes back.
   }, [end, jumpKey]);
-  useEffect(() => toEnd(true), [jumpKey, toEnd]);
+  useEffect(() => {
+    if (jump) toEnd(true);
+  }, [jumpKey, toEnd]); // eslint-disable-line react-hooks/exhaustive-deps
   // The user changes the height of an earlier message (Show more / Show less): do not pull the
   // view to the end for that. Following resumes if the view is still at the end afterwards.
   const hold = useCallback(() => {

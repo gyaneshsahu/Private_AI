@@ -51,11 +51,14 @@ export function PhotoCapture({
   onClose,
   onUse,
   wording,
+  initialFile,
 }: {
   onClose(): void;
   onUse(file: File): void;
   /** Other words for another use of the same dialog (a picture question instead of photo to text). */
   wording?: { title: string; close: string; intro: string; extraction: string; use: string };
+  /** A pasted or dropped picture: opens at turn and crop, as if it had been chosen here. */
+  initialFile?: File;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const video = useRef<HTMLVideoElement>(null);
@@ -110,6 +113,9 @@ export function PhotoCapture({
       else document.querySelector<HTMLElement>(".tools-menu summary")?.focus();
     };
   }, []);
+  useEffect(() => {
+    if (initialFile) void choose(initialFile);
+  }, [initialFile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const element = video.current;

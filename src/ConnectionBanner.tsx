@@ -15,16 +15,16 @@ function subscribe(changed: () => void) {
   };
 }
 
+/** Whether the browser reports a connection; it changes with the online and offline events. */
+export const useOnline = () => useSyncExternalStore(subscribe, () => navigator.onLine, () => true);
+
+/** `id`: Send points at it as the reason it is off. */
 export function ConnectionBanner() {
   const t = useText(connectionText);
-  const online = useSyncExternalStore(
-    subscribe,
-    () => navigator.onLine,
-    () => true,
-  );
+  const online = useOnline();
   if (online) return null;
   return (
-    <div role="status" className="notice offline-banner">
+    <div role="status" id="offline-reason" className="notice offline-banner">
       {t.offline}
     </div>
   );

@@ -40,7 +40,7 @@ const conversationBody = z.object({
       included: z.boolean(),
       sourceSnapshot: z.array(source).optional(),
       failure: z
-        .enum(["stopped", "timeout", "incomplete", "unavailable", "empty"])
+        .enum(["stopped", "timeout", "incomplete", "unavailable", "empty", "busy", "error"])
         .optional(),
       keptOnDevice: z.string().max(300).optional(),
       passagesUsed: z.string().max(4000).optional(),
