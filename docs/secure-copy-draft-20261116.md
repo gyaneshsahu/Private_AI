@@ -1,6 +1,6 @@
 # Secure and Secure Max: texts per storage mode (draft for the legal read, 16 November 2026)
 
-Status: draft. Built behind an optional `storage` prop that defaults to today's texts, so nothing changes in the app until the lead wires it. The German is binding only after the owner's legal read. Binding legal texts (`shared/privacy-*.ts`) are not edited; their proposed replacement is below.
+Status: draft. Built behind an optional `storage` prop that defaults to today's texts, so nothing changes in the app until the lead wires it. Exception: the Help guides below (`guideText`, `safetyText`, `localOnly`, `savedIntro`) changed their base texts directly, so those are live once merged; only `guideText_secure` waits for wiring. The German is binding only after the owner's legal read. Binding legal texts (`shared/privacy-*.ts`) are not edited; their proposed replacement is below.
 
 ## Why
 
@@ -59,11 +59,11 @@ Secure Max has no guide of its own: the Help guide is the account's (Secure) whe
   >
   > File limits: 5 files per chat, up to 3 of them pictures, and 10 MB per file. PDFs can have up to 150 pages. Long PDF, Word and text files (up to 500,000 characters) are split into passages, and only the passages that match your question are sent. Spreadsheets, data and code files can have up to 60,000 characters. A scanned PDF is read with text recognition: first 5 pages only, printed German and English text, no handwriting. Web searches do not count toward the file limit.
   >
-  > Personal details are masked. Email addresses, bank details and similar identifiers are replaced with placeholders before a message goes to the AI. Not every number is recognised, least of all in photos and scans.
+  > ID, bank and contact details are masked. Email addresses, phone numbers, bank and card numbers, and tax and ID numbers are replaced with placeholders before a message goes to the AI. Names and addresses are not recognised, and not every number is, least of all in photos and scans.
   >
   > Save what you want to keep. Temporary work disappears on reload. To save, open Saved, create or unlock your vault with a passphrase, then choose Save encrypted snapshot. Save again after changes. Saved chats are encrypted in the vault on this device. Your passphrase cannot be recovered, so keep it safe. In Saved you can also download an encrypted backup and restore it later with its original passphrase. Incognito chats are never saved. Locking clears unsaved work.
   >
-  > Web search is your choice. CometRow first shows the exact search text or page address. Review the exact query before you approve it. Only the text you approve goes to the search service; your chat and files are not sent with it. Results and source links are not saved.
+  > Web search is your choice. CometRow first shows the exact search text or page address. Review the exact query before you approve it. Only the text you approve goes to the search service; your chat and files are not sent with it. Search results and source links are not saved.
   >
   > Stay in control. Stop ends an answer, and an unfinished answer is not used later. Retry asks again as a new request. Edit an earlier message to start a new branch. Copy answer puts the text on your clipboard. Locking the vault does not clear the clipboard. To delete a chat, choose Delete in its menu in the chat list. Downloaded backups are not affected.
 
@@ -75,11 +75,11 @@ Secure Max has no guide of its own: the Help guide is the account's (Secure) whe
   >
   > Grenzen für Dateien: 5 Dateien pro Chat, davon bis zu 3 Bilder, und 10 MB pro Datei. PDFs können bis zu 150 Seiten haben. Lange PDF-, Word- und Textdateien (bis zu 500.000 Zeichen) werden in Abschnitte geteilt, und gesendet werden nur die Abschnitte, die zu Ihrer Frage passen. Tabellen, Daten- und Codedateien können bis zu 60.000 Zeichen haben. Ein gescanntes PDF wird per Texterkennung gelesen: nur die ersten 5 Seiten, gedruckter deutscher und englischer Text, keine Handschrift. Websuchen zählen nicht zur Dateigrenze.
   >
-  > Persönliche Angaben werden verborgen. E-Mail-Adressen, Bankdaten und ähnliche Kennungen werden durch Platzhalter ersetzt, bevor eine Nachricht an die KI geht. Nicht jede Zahl wird erkannt, am wenigsten in Fotos und Scans.
+  > Identifikations-, Bank- und Kontaktangaben werden verborgen. E-Mail-Adressen, Telefonnummern, Bank- und Kartennummern sowie Steuer- und Ausweisnummern werden durch Platzhalter ersetzt, bevor eine Nachricht an die KI geht. Namen und Adressen werden nicht erkannt, und nicht jede Zahl wird erkannt, am wenigsten in Fotos und Scans.
   >
   > Speichern Sie, was Sie behalten möchten. Vorübergehende Arbeit verschwindet beim Neuladen. Zum Speichern öffnen Sie Gespeichert, legen Ihren Tresor mit einer Passphrase an oder entsperren ihn und wählen dann Verschlüsselt speichern. Speichern Sie nach Änderungen erneut. Gespeicherte Chats liegen verschlüsselt im Tresor auf diesem Gerät. Ihre Passphrase kann nicht wiederhergestellt werden. Bewahren Sie sie gut auf. Unter Gespeichert können Sie auch eine verschlüsselte Sicherung herunterladen und später mit ihrer ursprünglichen Passphrase wiederherstellen. Inkognito-Chats werden nie gespeichert. Sperren entfernt ungespeicherte Arbeit.
   >
-  > Die Websuche ist Ihre Entscheidung. CometRow zeigt zuerst den genauen Suchtext oder die Seitenadresse. Prüfen Sie die genaue Suchanfrage, bevor Sie sie freigeben. Nur der Text, den Sie freigeben, geht an den Suchdienst; Ihr Chat und Ihre Dateien werden nicht mitgesendet. Ergebnisse und Quellenlinks werden nicht gespeichert.
+  > Die Websuche ist Ihre Entscheidung. CometRow zeigt zuerst den genauen Suchtext oder die Seitenadresse. Prüfen Sie die genaue Suchanfrage, bevor Sie sie freigeben. Nur der Text, den Sie freigeben, geht an den Suchdienst; Ihr Chat und Ihre Dateien werden nicht mitgesendet. Suchergebnisse und Quellenlinks werden nicht gespeichert.
   >
   > Sie behalten die Kontrolle. Stoppen beendet eine Antwort, und eine unvollständige Antwort wird später nicht verwendet. Eine Antwort neu anzufordern ist eine eigene Anfrage. Bearbeiten Sie eine frühere Nachricht, um einen neuen Zweig zu beginnen. Antwort kopieren legt den Text in Ihre Zwischenablage. Das Sperren des Tresors leert die Zwischenablage nicht. Um einen Chat zu löschen, wählen Sie Löschen in seinem Menü in der Chatliste. Heruntergeladene Sicherungen sind davon nicht betroffen.
 
@@ -91,11 +91,11 @@ Secure Max has no guide of its own: the Help guide is the account's (Secure) whe
   >
   > File limits: 5 files per chat, up to 3 of them pictures, and 10 MB per file. PDFs can have up to 150 pages. Long PDF, Word and text files (up to 500,000 characters) are split into passages, and only the passages that match your question are sent. Spreadsheets, data and code files can have up to 60,000 characters. A scanned PDF is read with text recognition: first 5 pages only, printed German and English text, no handwriting. Web searches do not count toward the file limit.
   >
-  > Personal details are masked. Email addresses, bank details and similar identifiers are replaced with placeholders before a message goes to the AI. Not every number is recognised, least of all in photos and scans.
+  > ID, bank and contact details are masked. Email addresses, phone numbers, bank and card numbers, and tax and ID numbers are replaced with placeholders before a message goes to the AI. Names and addresses are not recognised, and not every number is, least of all in photos and scans.
   >
   > Your chats are saved automatically. They are saved to your account, encrypted while stored, and are on all your devices after sign-in. CometRow holds the key. Incognito chats are never saved. If your sidebar shows Secure Max, you can keep chats there with their own key and recovery key, which you keep yourself. Its rules are shown before you start.
   >
-  > Web search is your choice. CometRow first shows the exact search text or page address. Review the exact query before you approve it. Only the text you approve goes to the search service; your chat and files are not sent with it. Results and source links are not saved.
+  > Web search is your choice. CometRow first shows the exact search text or page address. Review the exact query before you approve it. Only the text you approve goes to the search service; your chat and files are not sent with it. Search results and source links are not saved.
   >
   > Stay in control. Stop ends an answer, and an unfinished answer is not used later. Retry asks again as a new request. Edit an earlier message to start a new branch. Copy answer puts the text on your clipboard. To delete a chat, choose Delete in its menu in the chat list. It is deleted on all your devices.
 
@@ -107,11 +107,11 @@ Secure Max has no guide of its own: the Help guide is the account's (Secure) whe
   >
   > Grenzen für Dateien: 5 Dateien pro Chat, davon bis zu 3 Bilder, und 10 MB pro Datei. PDFs können bis zu 150 Seiten haben. Lange PDF-, Word- und Textdateien (bis zu 500.000 Zeichen) werden in Abschnitte geteilt, und gesendet werden nur die Abschnitte, die zu Ihrer Frage passen. Tabellen, Daten- und Codedateien können bis zu 60.000 Zeichen haben. Ein gescanntes PDF wird per Texterkennung gelesen: nur die ersten 5 Seiten, gedruckter deutscher und englischer Text, keine Handschrift. Websuchen zählen nicht zur Dateigrenze.
   >
-  > Persönliche Angaben werden verborgen. E-Mail-Adressen, Bankdaten und ähnliche Kennungen werden durch Platzhalter ersetzt, bevor eine Nachricht an die KI geht. Nicht jede Zahl wird erkannt, am wenigsten in Fotos und Scans.
+  > Identifikations-, Bank- und Kontaktangaben werden verborgen. E-Mail-Adressen, Telefonnummern, Bank- und Kartennummern sowie Steuer- und Ausweisnummern werden durch Platzhalter ersetzt, bevor eine Nachricht an die KI geht. Namen und Adressen werden nicht erkannt, und nicht jede Zahl wird erkannt, am wenigsten in Fotos und Scans.
   >
   > Ihre Chats werden automatisch gespeichert. Sie werden in Ihrem Konto gespeichert, verschlüsselt abgelegt, und sind nach der Anmeldung auf allen Ihren Geräten. CometRow verwahrt den Schlüssel. Inkognito-Chats werden nie gespeichert. Wenn Ihre Seitenleiste Secure Max zeigt, können Sie Chats dort mit einem eigenen Schlüssel und einem eigenen Wiederherstellungsschlüssel aufbewahren, die Sie selbst verwahren. Die Regeln dafür sehen Sie, bevor Sie beginnen.
   >
-  > Die Websuche ist Ihre Entscheidung. CometRow zeigt zuerst den genauen Suchtext oder die Seitenadresse. Prüfen Sie die genaue Suchanfrage, bevor Sie sie freigeben. Nur der Text, den Sie freigeben, geht an den Suchdienst; Ihr Chat und Ihre Dateien werden nicht mitgesendet. Ergebnisse und Quellenlinks werden nicht gespeichert.
+  > Die Websuche ist Ihre Entscheidung. CometRow zeigt zuerst den genauen Suchtext oder die Seitenadresse. Prüfen Sie die genaue Suchanfrage, bevor Sie sie freigeben. Nur der Text, den Sie freigeben, geht an den Suchdienst; Ihr Chat und Ihre Dateien werden nicht mitgesendet. Suchergebnisse und Quellenlinks werden nicht gespeichert.
   >
   > Sie behalten die Kontrolle. Stoppen beendet eine Antwort, und eine unvollständige Antwort wird später nicht verwendet. Eine Antwort neu anzufordern ist eine eigene Anfrage. Bearbeiten Sie eine frühere Nachricht, um einen neuen Zweig zu beginnen. Antwort kopieren legt den Text in Ihre Zwischenablage. Um einen Chat zu löschen, wählen Sie Löschen in seinem Menü in der Chatliste. Er wird auf allen Ihren Geräten gelöscht.
 
@@ -125,7 +125,7 @@ The same in every mode: nothing in it is about storage. The sentence "Private-da
   >
   > Explicit sexual content is not supported. Non-graphic sexual-health, consent and relationship advice are supported.
   >
-  > The assistant refuses help that could cause serious harm and responds with care when you are struggling. These safety rules reduce risk, but they are not a guarantee that every unsafe answer is prevented. Check important advice.
+  > The assistant is instructed to refuse help that could cause serious harm and to respond with care when you are struggling. These safety rules reduce risk, but they are not a guarantee that every unsafe answer is prevented. Check important advice.
   >
   > CometRow is not an emergency service and cannot contact help for you. If you are in immediate danger, call your local emergency number (112 in the EU) or someone you trust.
   >
@@ -137,7 +137,7 @@ The same in every mode: nothing in it is about storage. The sentence "Private-da
   >
   > Explizite sexuelle Inhalte werden nicht unterstützt. Nicht explizite Ratschläge zu sexueller Gesundheit, Einvernehmen und Beziehungen werden unterstützt.
   >
-  > Der Assistent lehnt Hilfe ab, die ernsthaften Schaden anrichten kann, und reagiert einfühlsam, wenn es Ihnen schlecht geht. Diese Sicherheitsregeln verringern das Risiko, garantieren aber nicht, dass jede unsichere Antwort verhindert wird. Prüfen Sie wichtige Ratschläge.
+  > Der Assistent soll Hilfe ablehnen, die ernsthaften Schaden anrichten kann, und einfühlsam reagieren, wenn es Ihnen schlecht geht. Diese Sicherheitsregeln verringern das Risiko, garantieren aber nicht, dass jede unsichere Antwort verhindert wird. Prüfen Sie wichtige Ratschläge.
   >
   > CometRow ist kein Notdienst und kann keine Hilfe für Sie rufen. Wenn Sie in unmittelbarer Gefahr sind, rufen Sie den örtlichen Notruf (112 in der EU) oder eine Person Ihres Vertrauens an.
   >
@@ -154,6 +154,13 @@ One text, true in every mode.
 - Every mode DE:
 
   > Sie können weiterhin Dokumente lesen und Ihre gespeicherten Chats öffnen. An die KI wird nichts gesendet, bis der Chat verbunden ist.
+
+#### `app.savedIntro` (Saved, device vault only; agent proposal)
+
+"No cloud sync" and "stored only in this browser" were dropped: with the sync switch on, the device vault syncs too. Secure and Secure Max keep their own texts (`savedIntro_secure`, `savedIntro_max` above).
+
+- Today (device vault, "local") EN: Optional encrypted snapshots, saved only when you choose. Your passphrase cannot be recovered. You can download an encrypted backup.
+- Today (device vault, "local") DE: Freiwillige verschlüsselte Speicherstände, nur gespeichert, wenn Sie es wählen. Ihre Passphrase kann nicht wiederhergestellt werden. Sie können eine verschlüsselte Sicherung herunterladen.
 
 ### Memory (src/text/memory.ts, MemorySettings, RememberDialog, MemoryNote)
 

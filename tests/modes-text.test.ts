@@ -140,9 +140,10 @@ it("storage modes: Secure never claims device-only storage or that we cannot rea
 // forStorage({ ...appText, ...modeCopyText }, secureOn ? "secure" : "local").
 // "read on your device" / "auf Ihrem Gerät gelesen" (files are extracted in the browser) is true in
 // every mode and is not on the list, so no exception is needed.
-const GUIDE_KEYS = ["guideText", "safetyText", "localOnly"] as const;
+const GUIDE_KEYS = ["guideText", "safetyText", "localOnly", "savedIntro"] as const;
 const BANNED_IN_SECURE_GUIDE = /this browser|this device|no cloud sync|evaluation|Tresor|diesem Gerät|diesem Browser/i;
-const BANNED_IN_LOCAL_GUIDE = /evaluation|synthetic|Erprobung|ausgedacht|synthetisch/i;
+// The device vault can sync too (sync switch), so "no cloud sync" is not said there either.
+const BANNED_IN_LOCAL_GUIDE = /evaluation|synthetic|Erprobung|ausgedacht|synthetisch|cloud sync|über eine Cloud/i;
 
 it("help guides: true in Secure, and no evaluation wording in the device vault's texts", () => {
   for (const lang of ["en", "de"] as const) {
