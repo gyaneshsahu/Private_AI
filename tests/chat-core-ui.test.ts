@@ -205,7 +205,7 @@ for (const lang of ["en", "de"] as const)
           data.items.add(new File([blob], "pasted.png", { type: "image/png" }));
           el.dispatchEvent(new ClipboardEvent("paste", { clipboardData: data, bubbles: true, cancelable: true }));
         });
-        await ui(page.getByRole("heading", { name: im.noteTitle })).toBeVisible();
+        await ui(page.getByRole("heading", { name: im.noteTitle })).toBeVisible({ timeout: 30_000 }); // loaded on demand: the dev server compiles it on first use
         await page.getByRole("button", { name: im.noteContinue }).click();
         // The picture is already chosen: the dialog opens at turn and crop.
         await ui(page.getByRole("button", { name: im.pickUse })).toBeEnabled();
@@ -326,7 +326,7 @@ for (const lang of ["en", "de"] as const)
         expect((await hint.boundingBox())!.height).toBeGreaterThanOrEqual(24);
         await noSidewaysScroll(page);
         await hint.click();
-        await ui(page.getByRole("heading", { name: im.noteTitle })).toBeVisible();
+        await ui(page.getByRole("heading", { name: im.noteTitle })).toBeVisible({ timeout: 30_000 }); // loaded on demand: the dev server compiles it on first use
         expect(await calls(page)).toEqual([]);
         expect(external).toEqual([]);
       } finally {
