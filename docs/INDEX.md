@@ -92,6 +92,7 @@ This is a map of `docs/` for new sessions and for Graphify. Files dated 11 to 14
 - `art30-record-draft-20261112.md`: the record of processing.
 - `inactivity-retention-proposal-20261112.md`: the inactivity rule.
 - `copy-audit-20261112.md`: overclaims in the app copy.
+- `secure-copy-draft-20261116.md`: every storage text per mode (device vault, Secure, Secure Max) in English and German, and the proposed Secure privacy summary, for the legal read.
 - `threat-model-20261022.md`: the threat model, updated 12 November.
 - `name-change-20261025.md`: the PrivateAI to CometRow rename, and the identifiers that keep the old name.
 
