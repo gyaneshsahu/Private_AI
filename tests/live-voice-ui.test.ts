@@ -126,9 +126,13 @@ async function open(lang: "en" | "de", width: number, userAgent?: string) {
       },
     });
   });
+  const outside: string[] = [];
   await page.route("**/*", (route) => {
     const url = new URL(route.request().url());
-    if (url.origin !== origin) return route.abort();
+    if (url.origin !== origin) {
+      outside.push(url.href);
+      return route.abort();
+    }
     if (url.pathname === "/api/status")
       return route.fulfill({
         json: {
@@ -146,7 +150,7 @@ async function open(lang: "en" | "de", width: number, userAgent?: string) {
   });
   await page.goto(origin, { timeout: 90000 });
   await ui(page.locator("html")).toHaveAttribute("lang", lang);
-  return { context, page };
+  return { context, page, outside };
 }
 
 type Fake = { spoken: string[]; tracks: { readyState: string }[] };
@@ -236,7 +240,7 @@ const ANDROID = "Mozilla/5.0 (Linux; Android 15; SM-A525F) AppleWebKit/537.36 (K
 for (const lang of ["en", "de"] as const)
   for (const width of [375, 768, 1280])
     it(`live voice at ${width} px, ${lang}: on Android there is no live voice button at all`, async () => {
-      const { context, page } = await open(lang, width, ANDROID);
+      const { context, page, outside } = await open(lang, width, ANDROID);
       try {
         // The part is loaded and the composer drawn (dictation still works on Android) ...
         await page.waitForLoadState("networkidle");
@@ -250,6 +254,7 @@ for (const lang of ["en", "de"] as const)
         expect(
           await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
         ).toBe(true);
+        expect(outside).toEqual([]); // nothing left the machine
       } finally {
         await context.close();
       }

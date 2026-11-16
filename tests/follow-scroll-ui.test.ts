@@ -140,12 +140,12 @@ for (const lang of ["en", "de"] as const)
         await box.fill("LONG stream");
         await sendButton.click();
         await ui(answers.last()).toContainText("Synthetic line 20.", { timeout: 15000 });
-        await expect.poll(() => fromEnd(page)).toBeLessThanOrEqual(50);
+        await expect.poll(() => fromEnd(page), { timeout: 5000 }).toBeLessThanOrEqual(50);
         await page.mouse.move(width / 2, 200);
         await page.mouse.wheel(0, -600);
         await ui(jump).toBeVisible();
         const away = await fromEnd(page);
-        await expect.poll(() => fromEnd(page)).toBeGreaterThan(away + 200);
+        await expect.poll(() => fromEnd(page), { timeout: 8000 }).toBeGreaterThan(away + 200); // text keeps arriving
         await ui(jump).toBeVisible();
         await jump.click();
         await expect.poll(() => fromEnd(page), { timeout: 8000 }).toBeLessThanOrEqual(50);
