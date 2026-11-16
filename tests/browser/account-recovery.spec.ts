@@ -71,6 +71,7 @@ for (const operation of ["revoke", "remove"] as const) {
         ? "Sign out session bbbbbbbb"
         : "Remove Synthetic passkey";
     await page.getByRole("button", { name, exact: true }).click();
+    await page.locator("dialog.confirm-dialog[open] .danger-button").click(); // the app asks first (16 November)
     await expect.poll(attempts).toBe(1);
     await page.clock.runFor(10_050);
     await expect(
