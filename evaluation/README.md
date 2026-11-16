@@ -31,6 +31,8 @@ await fakes.setOffline(true); // offline: the context and the fakes (route handl
 
 In a plain browser without the fakes, chat shows as unavailable. The account lab (`/?account-lab=1`) needs its `/api/account/*` and `/api/auth/*` answers faked per page (see the `account-lab` step in `evaluation/audit-tour.ts`).
 
+**Config differences in the tour:** in `off` the steps of switched-off features are skipped (voice, pictures, code, canvas, memory, scheduled, Secure Max, deep research, web search), and saved history is in the local vault, which the tour unlocks with the synthetic passphrase of `tests/secure-store-e2e-ui.test.ts`. `on` runs with the development CSP (`dev: true`), `off` with the production CSP.
+
 **Not reached:** the hosted `/account` page (the local server serves only `/`, as `server/index.ts`); real microphone capture outside Chromium (Chromium uses a fake device); real sign-in, passkeys, billing checkout and e-mail; sync between two devices (one browser context only); the provider's attestation and encryption (replaced by the stand-in above).
 
 ## Active development policy — 19 October 2026
