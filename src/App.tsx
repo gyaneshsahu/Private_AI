@@ -2169,7 +2169,7 @@ export function App() {
                   setTab("Conversation");
                   setNavigationOpen(false);
                 }}
-                onNewProject={() => setMaxCreating(true)}
+                onNewProject={projectSpacesEnabled() ? () => setMaxCreating(true) : undefined}
                 onCancelIntro={() => setSection("secure")}
               >
                 <SecureMaxLists

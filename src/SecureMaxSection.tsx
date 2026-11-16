@@ -40,7 +40,8 @@ export function SecureMaxSection({
   onUnlock: () => void;
   onLock: () => void;
   onNewChat: () => void;
-  onNewProject: () => void;
+  /** Absent when Projects is switched off: no button then. */
+  onNewProject?: () => void;
   onCancelIntro: () => void;
   children: ReactNode;
 }) {
@@ -73,9 +74,11 @@ export function SecureMaxSection({
             <button ref={primary} type="button" className="primary" onClick={onNewChat}>
               {t.maxNewChat}
             </button>
-            <button type="button" onClick={onNewProject}>
-              {t.maxNewProject}
-            </button>
+            {onNewProject && (
+              <button type="button" onClick={onNewProject}>
+                {t.maxNewProject}
+              </button>
+            )}
             <button type="button" onClick={onLock}>
               {t.maxLockNow}
             </button>
