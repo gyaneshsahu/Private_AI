@@ -199,6 +199,10 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   await A.getByRole("button", { name: w.createProject }).click();
   await A.getByLabel(w.projectName).fill("SYNTHETIC SECURE PROJECT");
   await A.getByRole("button", { name: w.create, exact: true }).click();
+  // Create opens the project screen; closed again here.
+  await ui(A.locator("dialog.project-dialog")).toBeVisible();
+  await A.keyboard.press("Escape");
+  await ui(A.locator("dialog.project-dialog")).toHaveCount(0);
   await ui((await navigation(A, "en")).filter({ hasText: "SYNTHETIC SECURE PROJECT" }).first()).toBeVisible();
   await focus(A); // sends what the 2-second timer has not sent yet
   await expect.poll(async () => (await s.stores.secure.usage(account)).cursor, { timeout: 20_000 }).toBeGreaterThanOrEqual(3);

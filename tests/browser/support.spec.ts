@@ -93,7 +93,7 @@ test("help handles denied copying and remains usable with keyboard and enlarged 
     ),
   ).toBe(true);
   await expect(
-    page.getByText("A staffed support contact", { exact: false }),
+    page.getByText("Contact support:", { exact: false }),
   ).toBeVisible();
   await page.screenshot({
     path: ".local/review-batches/product-20261019/help-mobile.png",

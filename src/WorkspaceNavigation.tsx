@@ -13,6 +13,9 @@ import { projectSpacesEnabled } from "./device-features";
 import { scheduledText } from "./text/scheduled";
 import { messageActionsText } from "./text/message-actions";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { ProjectDeleteDialog } from "./ProjectDeleteDialog";
+import { shortcutsText } from "./text/shortcuts";
+import { forStorage, type Storage } from "./text/mode-copy";
 
 export function WorkspaceNavigation(props: {
   open: boolean;
@@ -35,8 +38,14 @@ export function WorkspaceNavigation(props: {
   onSignOut: () => void;
   onCreateProject: (name: string) => Promise<string | undefined>;
   onEditProject: (id: string, name?: string) => Promise<boolean>;
-  /** The project screen (docs/projects-20261114.md); offered only while its switch is on. */
+  /** The project screen (docs/projects-20261114.md); offered only while its switch is on. The row and Create open it. */
   onOpenProject?: (id: string) => void;
+  /** Deletes the project, and its chats when chosen; resolves true when it is gone. Without it the chats are kept. */
+  onDeleteProject?: (id: string, deleteChats: boolean) => Promise<boolean>;
+  /** Where these projects are kept, as given to ProjectPanel; decides what the delete question promises. */
+  projectStorage?: Storage;
+  /** Opens the keyboard shortcuts list (src/ShortcutHelp.tsx); the account menu entry is shown only when given. */
+  onShortcuts?: () => void;
   /** The Scheduled screen (docs/scheduled-20261115.md); absent while its switch is off. */
   onScheduled?: () => void;
   /** A background task exists: the entry keeps its badge. */
@@ -74,6 +83,9 @@ export function WorkspaceNavigation(props: {
     onCreateProject,
     onEditProject,
     onOpenProject,
+    onDeleteProject,
+    projectStorage,
+    onShortcuts,
     onScheduled,
     backgroundActive,
     onOrganize,
@@ -88,6 +100,8 @@ export function WorkspaceNavigation(props: {
   const [renameDraft, setRenameDraft] = useState("");
   const renameRef = useRef<string | undefined>(undefined);
   const [deleting, setDeleting] = useState<Conversation>();
+  const [deletingProject, setDeletingProject] = useState<Project>();
+  const sk = useText(shortcutsText);
   const finishRename = (c: Conversation, save: boolean, refocus: boolean) => {
     if (renameRef.current !== c.id) return;
     renameRef.current = undefined;
@@ -111,6 +125,8 @@ export function WorkspaceNavigation(props: {
   const [editingProject, setEditingProject] = useState<string>();
   const [projectName, setProjectName] = useState("");
   const drawer = narrow || collapsed;
+  // The project screen exists only while its switch is on; otherwise a project row filters the list.
+  const openProject = projectSpacesEnabled() ? onOpenProject : undefined;
   const visible = useMemo(
     () =>
       findConversations(conversations, query, "newest")
@@ -256,6 +272,8 @@ export function WorkspaceNavigation(props: {
                     setProjectName("");
                     setCreating(false);
                     setEditingProject(undefined);
+                    // A new project opens its screen, so instructions and files can be added right away.
+                    if (!editingProject) openProject?.(id);
                   }
                 }}
               >
@@ -284,7 +302,12 @@ export function WorkspaceNavigation(props: {
                   <button
                     className={filter === p.id ? "selected" : ""}
                     aria-pressed={filter === p.id}
-                    onClick={() => setFilter(p.id)}
+                    disabled={!!openProject && busy}
+                    onClick={() => {
+                      // The list also shows the project's chats, so New chat and closing the screen land in it.
+                      setFilter(p.id);
+                      openProject?.(p.id);
+                    }}
                   >
                     <Icon name="folder" />
                     <span>{p.name}</span>
@@ -297,12 +320,12 @@ export function WorkspaceNavigation(props: {
                     </small>
                   </button>
                   <details className="project-actions">
-                    <summary aria-label={t.projectActions(p.name)}>
+                    <summary id={`project-menu-${p.id}`} aria-label={t.projectActions(p.name)}>
                       <Icon name="more" />
                     </summary>
                     <div>
-                      {projectSpacesEnabled() && onOpenProject && (
-                        <button disabled={busy} onClick={() => onOpenProject(p.id)}>
+                      {openProject && (
+                        <button disabled={busy} onClick={() => openProject(p.id)}>
                           {pt.open}
                         </button>
                       )}
@@ -318,20 +341,12 @@ export function WorkspaceNavigation(props: {
                       </button>
                       <button
                         disabled={busy}
-                        onClick={async () => {
-                          if (
-                            confirm(
-                              t.confirmRemoveProject(p.name) +
-                                (projectSpacesEnabled() ? ` ${pt.removeAlso}` : ""),
-                            ) &&
-                            (await onEditProject(p.id))
-                          ) {
-                            setFilter("recent");
-                            setCreating(false);
-                          }
+                        onClick={(e) => {
+                          e.currentTarget.closest("details")!.open = false;
+                          setDeletingProject(p);
                         }}
                       >
-                        {t.removeProject}
+                        {pt.delete}
                       </button>
                     </div>
                   </details>
@@ -526,6 +541,36 @@ export function WorkspaceNavigation(props: {
           }}
         />
       )}
+      {deletingProject && (() => {
+        const p = deletingProject;
+        const chats = conversations.filter((c) => c.projectId === p.id).length;
+        const choice = !!onDeleteProject && chats > 0;
+        return (
+          <ProjectDeleteDialog
+            name={p.name}
+            text={
+              choice
+                ? projectSpacesEnabled() ? forStorage(pt, projectStorage).deleteText : t.deleteProjectChoose
+                : projectSpacesEnabled() ? `${pt.removeAlso} ${t.deleteProjectKeeps}` : t.deleteProjectKeeps
+            }
+            chats={choice ? chats : 0}
+            // Kept: back to the row's "…"; deleted: to the create button.
+            fallback={() =>
+              document.getElementById(`project-menu-${p.id}`) ??
+              document.querySelector<HTMLElement>(".navigation-history .section-heading button")
+            }
+            onClose={async (confirmed, deleteChats) => {
+              setDeletingProject(undefined);
+              if (!confirmed) return;
+              const gone = onDeleteProject ? await onDeleteProject(p.id, deleteChats) : await onEditProject(p.id);
+              if (gone) {
+                setFilter("recent");
+                setCreating(false);
+              }
+            }}
+          />
+        );
+      })()}
       {maxSection}
       <nav aria-label={t.workspace} className="sidebar-bottom">
         <details className="account-menu">
@@ -559,6 +604,12 @@ export function WorkspaceNavigation(props: {
               <Icon name="help" />
               {t.help}
             </button>
+            {onShortcuts && (
+              <button type="button" onClick={onShortcuts}>
+                <Icon name="help" />
+                {sk.menuEntry}
+              </button>
+            )}
             {status?.accountId && (
               <button disabled={busy} onClick={onSignOut}>
                 <Icon name="logout" />

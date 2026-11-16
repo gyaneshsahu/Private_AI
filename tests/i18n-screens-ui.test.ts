@@ -240,10 +240,10 @@ it("help panel: German areas, guidance and support note", async () => {
     await page.getByLabel("Problembereich").selectOption({ label: "Nutzung oder Zahlung" });
     await ui(page.getByText(/^Ein Kontingent zählt Versuche/)).toBeVisible();
     await ui(page.getByLabel("Ihre Support-Notiz prüfen")).toHaveValue(
-      /^CometRow Support-Notiz \(Format 1\)\nBereich: Nutzung oder Zahlung\nProblem: Eine Funktion war nicht verfügbar/,
+      /^CometRow Support-Notiz\nBereich: Nutzung oder Zahlung\nProblem: Eine Funktion war nicht verfügbar/,
     );
     await ui(page.getByRole("button", { name: "Support-Notiz kopieren" })).toBeVisible();
-    await ui(page.getByText(/^Ein besetzter Support-Kontakt/)).toBeVisible();
+    await ui(page.getByText(/^Support kontaktieren:/)).toBeVisible();
   } finally {
     await done(page);
   }

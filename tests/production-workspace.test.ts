@@ -437,12 +437,16 @@ for (const viewport of [
         await browserExpect(page.locator(".project-list")).toContainText(
           "JOURNEY_Renamed",
         );
-        page.once("dialog", (d) => d.accept());
         await page
           .getByLabel("Actions for project JOURNEY_Renamed", { exact: true })
           .click();
         await page
-          .getByRole("button", { name: "Remove project", exact: true })
+          .getByRole("button", { name: "Delete project", exact: true })
+          .click();
+        // The app's own question (keep the chats is the default), not window.confirm.
+        await page
+          .locator("dialog.confirm-dialog")
+          .getByRole("button", { name: "Delete project", exact: true })
           .click();
         await browserExpect(page.locator(".project-list")).not.toContainText(
           "JOURNEY_Renamed",

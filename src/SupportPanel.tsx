@@ -1,5 +1,8 @@
 import { useId, useState } from "react";
+import { LEGAL_IDENTITY, PLACEHOLDER } from "../shared/legal-identity";
 import { useLang } from "./i18n";
+import { appText } from "./text/app";
+import { shortcutsText } from "./text/shortcuts";
 import { supportText } from "./text/support";
 import {
   supportCopy,
@@ -8,13 +11,25 @@ import {
   type SupportSymptom,
 } from "./support-report";
 
+/** The documents Help links to; the app shows them in its document viewer, as Settings does. */
+export type HelpDocument = "workspace-guide" | "privacy-policy" | "imprint";
+
 export function SupportPanel({
   initialArea = "conversation",
   initialSymptom,
+  onDocument,
+  onShortcuts,
+  supportAddress = LEGAL_IDENTITY.supportContactEmail,
 }: {
   initialArea?: SupportArea;
   /** Set when opened from "Report a problem" on an answer: only this choice is pre-set, nothing about the conversation. */
   initialSymptom?: SupportSymptom;
+  /** Getting started, Privacy policy and Imprint are offered only when given. */
+  onDocument?: (id: HelpDocument) => void;
+  /** Opens the keyboard shortcuts list; the button is offered only when given. */
+  onShortcuts?: () => void;
+  /** The support mailbox (deployment/legal-identity.json); nothing is shown while it is not named. */
+  supportAddress?: string;
 }) {
   const [area, setArea] = useState<SupportArea>(initialArea);
   const [symptom, setSymptom] = useState<SupportSymptom>(initialSymptom ?? "unavailable");
@@ -22,12 +37,36 @@ export function SupportPanel({
   const id = useId();
   const { lang } = useLang();
   const t = supportText[lang];
+  const a = appText[lang];
   const copy = supportCopy(lang);
   const report = supportReport({ area, symptom }, lang);
+  const address = supportAddress.trim().toLowerCase() === PLACEHOLDER ? "" : supportAddress.trim();
   return (
     <section className="content-view" aria-label={t.heading}>
       <h2>{t.heading}</h2>
       <p>{t.intro}</p>
+      {(onDocument || onShortcuts) && (
+        <div className="help-links" role="group" aria-label={t.links}>
+          {onDocument && (
+            <>
+              <button type="button" className="text-button" onClick={() => onDocument("workspace-guide")}>
+                {a.gettingStarted}
+              </button>
+              <button type="button" className="text-button" onClick={() => onDocument("privacy-policy")}>
+                {a.privacyPolicy}
+              </button>
+              <button type="button" className="text-button" onClick={() => onDocument("imprint")}>
+                {a.imprint}
+              </button>
+            </>
+          )}
+          {onShortcuts && (
+            <button type="button" className="text-button" onClick={onShortcuts}>
+              {shortcutsText[lang].menuEntry}
+            </button>
+          )}
+        </div>
+      )}
       <label htmlFor={`${id}-area`}>{t.area}</label>
       <select
         id={`${id}-area`}
@@ -83,7 +122,11 @@ export function SupportPanel({
       <p role="status" aria-live="polite">
         {notice}
       </p>
-      <p>{t.contact}</p>
+      {address && (
+        <p className="help-contact">
+          {t.contact} <a href={`mailto:${address}`}>{address}</a>. {t.contactHow}
+        </p>
+      )}
     </section>
   );
 }
