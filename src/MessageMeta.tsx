@@ -22,12 +22,13 @@ export function MessageMeta({ message }: { message: Message }) {
   return (
     <>
       <button
+        className="icon-action"
         disabled={!message.text}
         aria-label={t.copyMessageLabel}
+        title={t.copyMessageLabel}
         onClick={() => void copy(message.text)}
       >
-        <Icon name="copy" />
-        {t.copyMessage}
+        <Icon name={state === "copied" ? "check" : "copy"} />
       </button>
       <CopyStatus state={state} />
       {time && (

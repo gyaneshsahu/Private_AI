@@ -91,7 +91,7 @@ test("representative themes, long history, source and responsive keyboard contro
   await expect(page.getByLabel("javascript code block")).toBeVisible();
   await page.getByRole("button", { name: "Dismiss notice" }).click();
   await expect(
-    page.getByRole("button", { name: "Send ↑", exact: true }),
+    page.getByRole("button", { name: "Send message", exact: true }),
   ).toBeDisabled();
   await expect(
     page

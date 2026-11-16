@@ -92,7 +92,7 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
 
     const message = page.getByLabel("Message CometRow");
     const suggestion = page.getByRole("region", { name: "Search suggestion" });
-    const send = page.getByRole("button", { name: "Send ↑", exact: true });
+    const send = page.getByRole("button", { name: "Send message", exact: true });
     // The search text is an editable field labelled by the visible "Search the web for:".
     const field = suggestion.getByRole("textbox", { name: "Search the web for:" });
 

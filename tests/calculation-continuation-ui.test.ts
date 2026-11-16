@@ -109,7 +109,7 @@ it("delivers bounded continuation in the actual temporary research workspace wit
     await page
       .getByLabel("Message CometRow")
       .fill("Calculate the items and explain missing delivery information.");
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
     await ui(page.locator("article.assistant").last()).toContainText(
       "14.00 EUR",
     );

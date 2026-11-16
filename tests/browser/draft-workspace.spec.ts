@@ -54,7 +54,7 @@ test("draft and corrected document survive explicit encrypted save; switching pr
     .getByLabel("Message CometRow")
     .fill("DRAFT CANARY 732: compare this bill");
   await expect(
-    page.getByRole("button", { name: "Send ↑", exact: true }),
+    page.getByRole("button", { name: "Send message", exact: true }),
   ).toBeDisabled();
   page.once("dialog", (dialog) => dialog.dismiss());
   await workspaceControl(page, "New conversation").click();

@@ -63,7 +63,7 @@ export function supportCopy(lang: Lang): {
 
 export const supportGuidance: Record<SupportArea, readonly string[]> = {
   conversation: [
-    "A missing or stopped reply is not a completed answer. Retry starts a new request and may use another allowance; CometRow does not retry automatically.",
+    "A missing or stopped reply is not a completed answer. If no answer text arrived, CometRow tries once more by itself on the backup model and says so. Your own Retry is a new request and uses your allowance again.",
     "Check important answers against reliable evidence. For immediate danger, contact local emergency services or a trusted person; this app cannot contact help for you.",
   ],
   research: [

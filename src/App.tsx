@@ -2154,6 +2154,7 @@ export function App() {
       }
     >
       <WorkspaceNavigation
+        onDelete={(c) => void deleteSnapshot(c)}
         open={navigationOpen}
         collapsed={navigationCollapsed}
         onClose={() => setNavigationOpen(false)}
@@ -2880,6 +2881,7 @@ export function App() {
                   conversation={conversation}
                   sourceHistory={sourceHistory}
                   busy={!!busy}
+                  streaming={answering && index === conversation.messages.length - 1}
                   ready={!!status?.inference.ready}
                   openSource={setSource}
                   copied={copiedId === message.id}

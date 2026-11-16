@@ -249,7 +249,7 @@ export const appText = defineText({
     contextCount: (messages: number, files: number) =>
       `${messages} ${messages === 1 ? "message" : "messages"} included · ${files} ${files === 1 ? "file" : "files"}`,
     stopResponse: "Stop response",
-    sendLabel: "Send ↑",
+    sendLabel: "Send message",
     send: "Send",
     attachments: "Conversation attachments",
     included: "Included",
@@ -636,7 +636,7 @@ export const appText = defineText({
     contextCount: (messages: number, files: number) =>
       `${messages} ${messages === 1 ? "Nachricht" : "Nachrichten"} einbezogen · ${files} ${files === 1 ? "Datei" : "Dateien"}`,
     stopResponse: "Antwort stoppen",
-    sendLabel: "Senden ↑",
+    sendLabel: "Nachricht senden",
     send: "Senden",
     attachments: "Anhänge der Unterhaltung",
     included: "Einbezogen",

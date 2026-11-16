@@ -56,7 +56,7 @@ it("asks once before the first message, holds the message until a choice, rememb
   };
   const ask = async (page: Page, text: string) => {
     await page.getByLabel("Message CometRow").fill(text);
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
   };
   const prompt = (page: Page) => page.getByRole("region", { name: HEALTH_CONSENT.title });
   try {

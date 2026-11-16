@@ -10,7 +10,6 @@ export const savedListText = defineText({
     deleteConfirm: "Delete conversation",
     cancel: "Cancel",
     copyConversation: "Copy conversation as text",
-    copyMessage: "Copy",
     copyMessageLabel: "Copy your message",
     copied: "Copied to the clipboard.",
     copyFailed:
@@ -34,7 +33,6 @@ export const savedListText = defineText({
     deleteConfirm: "Unterhaltung löschen",
     cancel: "Abbrechen",
     copyConversation: "Unterhaltung als Text kopieren",
-    copyMessage: "Kopieren",
     copyMessageLabel: "Ihre Nachricht kopieren",
     copied: "In die Zwischenablage kopiert.",
     copyFailed:

@@ -497,7 +497,7 @@ describe.runIf(
           .getByLabel("Message CometRow")
           .fill("INGRESS_LOCAL_DRAFT_CANARY");
         await browserExpect(
-          page.getByRole("button", { name: "Send ↑", exact: true }),
+          page.getByRole("button", { name: "Send message", exact: true }),
         ).toBeDisabled();
         await tab("Context").click();
         await page.getByLabel("Add documents or screenshots").setInputFiles({

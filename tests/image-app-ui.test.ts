@@ -81,12 +81,12 @@ it("the picture entry exists only while the server says pictures are on; an atta
 
     // One message with the picture. Offline the request cannot be made, so the answer fails.
     await page.getByLabel("Message CometRow").fill("What is in this synthetic picture?");
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
     const question = page.getByRole("article").filter({ hasText: "What is in this synthetic picture?" });
     await ui(question.getByText(en.notKept)).toBeVisible();
     // The picture left the composer when the message was sent, and it does not come back.
     await ui(attached).toHaveCount(0);
-    await ui(page.getByRole("button", { name: "Send ↑", exact: true })).toBeVisible();
+    await ui(page.getByRole("button", { name: "Send message", exact: true })).toBeVisible();
     await ui(attached).toHaveCount(0);
     // Nothing of the picture is anywhere in the page or in browser storage.
     ui(await page.evaluate(() => document.documentElement.innerHTML.includes("data:image/jpeg"))).toBe(false);

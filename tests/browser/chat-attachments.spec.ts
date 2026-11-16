@@ -43,7 +43,7 @@ test("attaches from the keyboard in chat, reviews local corrections and preserve
     "Compare these synthetic notes",
   );
   await expect(
-    page.getByRole("button", { name: "Send ↑", exact: true }),
+    page.getByRole("button", { name: "Send message", exact: true }),
   ).toBeDisabled();
   await attachments
     .getByRole("button", { name: "Review first-note.txt", exact: true })

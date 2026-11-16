@@ -5,7 +5,7 @@ import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { AnswerMode, Conversation, Message, Source } from "../shared/contracts";
 import { completenessWarning } from "./arithmetic/completeness";
 import { CodeRuns } from "./CodeRuns";
-import { isSendKey, MESSAGE_LIMIT, touchDevice } from "./composer-keys";
+import { fitHeight, isSendKey, MESSAGE_LIMIT, touchDevice } from "./composer-keys";
 import { GERMAN_RULES } from "./german-rules";
 import { Icon } from "./Icon";
 import { importFresh, LoadBoundary, retryLazy } from "./LoadBoundary";
@@ -13,6 +13,8 @@ import { useLang } from "./i18n";
 import { shouldCollapse } from "./message-collapse";
 import { MessageMeta } from "./MessageMeta";
 import { MemoryNote } from "./MemoryPanel";
+import { MenuButton, type MenuItem } from "./MenuButton";
+import { messageActionsText } from "./text/message-actions";
 import { memoryText } from "./text/memory";
 import { canvasText } from "./text/canvas";
 import { projectText } from "./text/projects";
@@ -21,6 +23,7 @@ import { PdfExportButton } from "./PdfExportButton";
 import { ReadAloudButton } from "./ReadAloudButton";
 import { sourceHistoryStatus } from "./source-history";
 import { appText } from "./text/app";
+import { chatCoreText } from "./text/chat-core";
 import { arithmeticText } from "./text/arithmetic";
 import { composerText } from "./text/composer";
 import { imageText } from "./text/images";
@@ -129,6 +132,7 @@ export function ChatMessage({
   onRemember,
   onCanvas,
   onResize,
+  streaming,
 }: {
   message: Message;
   index: number;
@@ -152,10 +156,13 @@ export function ChatMessage({
   onCanvas?: () => void;
   onReport: () => void;
   onResize: () => void;
+  /** This answer is still arriving: no status label and no actions; dots until its first text. */
+  streaming?: boolean;
 }) {
   const { lang } = useLang();
   const t = appText[lang];
   const mt = messageText[lang];
+  const ma = messageActionsText[lang];
   const Answer = answerModule?.Answer ?? LazyAnswer;
   const user = message.role === "user";
   const [draft, setDraft] = useState(message.text);
@@ -173,28 +180,34 @@ export function ChatMessage({
     wasEditing.current = editing;
     // message.text cannot change while its box is open.
   }, [editing, message.id]);
+  // The edit box grows with its text, as the message box does.
+  useLayoutEffect(() => {
+    if (editing) fitHeight(editBox.current);
+  }, [editing, draft]);
   // Read again on every render: the mode choice may change while the box is open.
   const draftCost = editing ? editCost(draft) : undefined;
   const blocked = busy || !ready || !draft.trim();
   const withCost = (label: string, cost?: number) =>
     cost === undefined ? label : `${label} (${mt.uses(cost)})`;
   const incomplete = message.status !== "complete" || !message.text;
-  const retryButtons = retry && (
-    <>
-      <button
-        disabled={busy || !ready}
-        title={ready ? undefined : t.retryGated}
-        onClick={() => retry.run()}
-      >
-        {withCost(user ? t.answerThis : t.retryLast, retry.cost)}
-      </button>
-      {/* One tap to the deeper mode after a Fast answer: user-chosen, labelled, same provider. */}
-      {retry.thinkingCost !== undefined && (
-        <button disabled={busy || !ready} onClick={() => retry.run("thinking")}>
-          {withCost(t.answerThinking, retry.thinkingCost)}
-        </button>
-      )}
-    </>
+  // One Retry button with a small menu; each item shows what a press uses before it is pressed.
+  const retryItems: MenuItem[] = retry
+    ? [
+        { label: withCost(user ? t.answerThis : t.retryLast, retry.cost), onSelect: () => retry.run() },
+        // One tap to the deeper mode after a Fast answer: user-chosen, labelled, same provider.
+        ...(retry.thinkingCost === undefined
+          ? []
+          : [{ label: withCost(t.answerThinking, retry.thinkingCost), onSelect: () => retry.run("thinking") }]),
+      ]
+    : [];
+  const retryMenu = retry && (
+    <MenuButton
+      label={ma.retry}
+      title={ready ? undefined : t.retryGated}
+      icon="retry"
+      disabled={busy || !ready}
+      items={retryItems}
+    />
   );
   return (
     <article
@@ -203,7 +216,7 @@ export function ChatMessage({
     >
       <div className="message-heading">
         <strong>{user ? t.you : "CometRow"}</strong>
-        {message.status !== "complete" && (
+        {message.status !== "complete" && !streaming && (
           <span>{message.status === "partial" ? t.incompleteExcluded : t.noAnswer}</span>
         )}
       </div>
@@ -244,7 +257,15 @@ export function ChatMessage({
           {message.keptOnDevice} {t.keptNote}
         </p>
       )}
-      {message.failure && <p className="muted">{t.failure(message.failure)}</p>}
+      {message.failure && (
+        <div className="failure-note">
+          <p>{t.failure(message.failure)}</p>
+          <details>
+            <summary>{chatCoreText[lang].failureMore}</summary>
+            <p>{chatCoreText[lang].failureExplanation}</p>
+          </details>
+        </div>
+      )}
       {message.image && <p className="muted image-not-kept">{imageText[lang].notKept}</p>}
       {user && editing ? (
         <form
@@ -285,6 +306,16 @@ export function ChatMessage({
         </form>
       ) : user ? (
         <UserText message={message} onResize={onResize} />
+      ) : streaming && !message.text ? (
+        // Before the first text: moving dots for the eye, a sentence for screen readers.
+        <div className="message-text message-waiting">
+          <span className="typing-dots" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+          <span className="sr-only">{ma.writing}</span>
+        </div>
       ) : (
         <LoadBoundary placeholder={<div className="message-text">{message.text}</div>}>
           <Suspense fallback={<div className="message-text">{message.text}</div>}>
@@ -309,48 +340,65 @@ export function ChatMessage({
           <p>{t.sourcesUnrecordedText}</p>
         </details>
       )}
-      {!(user && editing) && (
-        <div className="message-actions">
+      {!(user && editing) && !streaming && (
+        <div className="message-actions compact-actions">
           {user && (
             <button
+              className="icon-action"
               disabled={busy}
               aria-label={t.editIntoBranch}
+              title={t.editIntoBranch}
               id={`edit-message-${message.id}`}
               onClick={() => onEdit(true)}
             >
               <Icon name="edit" />
-              {t.edit}
             </button>
           )}
           {user && onRemember && (
-            <button disabled={busy} onClick={onRemember}>
+            <button
+              className="icon-action"
+              disabled={busy}
+              aria-label={memoryText[lang].rememberThis}
+              title={memoryText[lang].rememberThis}
+              onClick={onRemember}
+            >
               <Icon name="pin" />
-              {memoryText[lang].rememberThis}
             </button>
           )}
-          {user && retryButtons}
+          {user && retryMenu}
           {user && <MessageMeta message={message} />}
           {!user && (
             <>
-              <button disabled={incomplete} onClick={onCopy}>
-                <Icon name="copy" />
-                {copied ? composerText[lang].copied : t.copyAnswer}
+              {/* A partial answer with text can be copied too: the copy says what it is. */}
+              <button
+                className="icon-action"
+                disabled={!message.text}
+                aria-label={copied ? composerText[lang].copied : t.copyAnswer}
+                title={copied ? composerText[lang].copied : t.copyAnswer}
+                onClick={onCopy}
+              >
+                <Icon name={copied ? "check" : "copy"} />
               </button>
               <ReadAloudButton id={message.id} disabled={incomplete} />
               <PdfExportButton conversation={conversation} answer={index} disabled={incomplete} />
               {onCanvas && (
-                <button disabled={incomplete} onClick={onCanvas}>
+                <button
+                  className="icon-action"
+                  disabled={incomplete}
+                  aria-label={canvasText[lang].open}
+                  title={canvasText[lang].open}
+                  onClick={onCanvas}
+                >
                   <Icon name="edit" />
-                  {canvasText[lang].open}
                 </button>
               )}
+              {retryMenu}
+              <MenuButton
+                label={ma.moreActions}
+                icon="more"
+                items={[{ label: mt.report, ariaLabel: mt.reportLabel, onSelect: onReport }]}
+              />
             </>
-          )}
-          {!user && retryButtons}
-          {!user && (
-            <button aria-label={mt.reportLabel} onClick={onReport}>
-              {mt.report}
-            </button>
           )}
         </div>
       )}

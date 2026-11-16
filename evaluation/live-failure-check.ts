@@ -134,7 +134,7 @@ async function withApp(
   try {
     const page = await (await browser.newContext({ ignoreHTTPSErrors: !!tls })).newPage();
     await page.goto(appOrigin, { timeout: 60_000 });
-    await page.getByRole("button", { name: "Send ↑", exact: true }).waitFor();
+    await page.getByRole("button", { name: "Send message", exact: true }).waitFor();
     return await run(page, () => hits);
   } finally {
     await browser.close();
@@ -146,8 +146,8 @@ async function withApp(
 
 async function send(page: Page, text: string) {
   await page.getByLabel("Message CometRow").fill(text);
-  const button = page.getByRole("button", { name: "Send ↑", exact: true });
-  await page.waitForFunction(() => !document.querySelector("button[aria-label='Send ↑']")?.hasAttribute("disabled"), null, { timeout: 30_000 });
+  const button = page.getByRole("button", { name: "Send message", exact: true });
+  await page.waitForFunction(() => !document.querySelector("button[aria-label='Send message']")?.hasAttribute("disabled"), null, { timeout: 30_000 });
   await button.click();
 }
 const assistantText = (page: Page) => page.locator("article.assistant").last().innerText().catch(() => "");

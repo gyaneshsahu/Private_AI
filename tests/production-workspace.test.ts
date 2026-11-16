@@ -385,7 +385,7 @@ for (const viewport of [
           "JOURNEY_LOCAL_DRAFT: explain the corrected note",
         );
         await browserExpect(
-          page.getByRole("button", { name: "Send ↑", exact: true }),
+          page.getByRole("button", { name: "Send message", exact: true }),
         ).toBeDisabled();
         await nav("Context").click();
         await page.locator(".content-view details summary").first().click();

@@ -143,7 +143,7 @@ const STEPS: Step[] = [
     // The health consent draft is asked on the first send in a fresh browser (switch on only).
     await c.fresh();
     await c.label("Message CometRow").fill("Hello, a first question.");
-    await c.click("Send ↑");
+    await c.click("Send message");
     await pause(c.page, 800);
     await c.shot("first-send-consent");
     const agree = vis(c.page.getByRole("button", { name: c.tr("I agree"), exact: true }));
@@ -184,7 +184,10 @@ const STEPS: Step[] = [
     await c.click("Copy answer");
     await pause(c.page, 300);
     await c.shot("message-copied");
-    await vis(c.page.getByRole("button", { name: new RegExp(`^(${c.alts("Retry last response").join("|")})`) })).click();
+    await c.click("Retry");
+    await pause(c.page, 300);
+    await c.shot("message-retry-menu");
+    await vis(c.page.getByRole("menuitem", { name: new RegExp(`^(${c.alts("Retry last response").join("|")})`) })).click();
     c.clicked.push("Retry last response");
     await pause(c.page, 2000);
     await c.shot("message-retried-versions");
@@ -196,14 +199,17 @@ const STEPS: Step[] = [
   ["answer-again-thinking", async (c) => {
     await c.fresh();
     await c.send("Quick one. audit:plain", undefined, true);
-    await vis(c.page.getByRole("button", { name: new RegExp(`^(${c.alts("Answer again with Thinking").join("|")})`) })).click();
+    await c.click("Retry");
+    await vis(c.page.getByRole("menuitem", { name: new RegExp(`^(${c.alts("Answer again with Thinking").join("|")})`) })).click();
     await pause(c.page, 2000);
     await c.shot("answer-again-thinking");
   }],
   ["report-problem", async (c) => {
     await c.fresh();
     await c.send("Report this. audit:plain", undefined, true);
-    await vis(c.page.getByRole("button", { name: c.tr("Report a problem with this answer") })).click();
+    await vis(c.page.locator("article.assistant").last().getByRole("button", { name: c.tr("More actions"), exact: true })).click();
+    c.clicked.push("More actions");
+    await vis(c.page.getByRole("menuitem", { name: c.tr("Report a problem with this answer") })).click();
     await pause(c.page, 600);
     await c.shot("report-problem");
   }],
@@ -651,7 +657,7 @@ export async function runTour(o: {
               if (name) fakes.answer(name);
               const before = await c.page.locator("article.assistant").count();
               await c.label("Message CometRow").fill(text);
-              await c.click("Send ↑");
+              await c.click("Send message");
               const agree = vis(c.page.getByRole("button", { name: tr("I agree"), exact: true }));
               if (await agree.waitFor({ timeout: 1500 }).then(() => true, () => false)) {
                 // German at 375 px pushed this button out of reach (16 November): note it and go on.

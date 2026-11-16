@@ -1,7 +1,7 @@
 import "fake-indexeddb/auto";
 import { it, expect } from "vitest";
 import { emptyConversation, type Conversation } from "../shared/contracts";
-import { branchConversation, switchBranch } from "../src/conversation-branches";
+import { branchConversation, branchLabel, switchBranch } from "../src/conversation-branches";
 import { composeContext, newMessage } from "../src/conversation";
 import {
   containsTemporaryResearch,
@@ -210,4 +210,18 @@ it("retains existing direct-page saving permission and carries branch history th
     source.close();
     target.close();
   }
+});
+
+it("shows stored branch names (kind and number) in the interface language", () => {
+  const c = example();
+  const edited = branchConversation(c, "", c.messages[0].id, "SYNTHETIC change");
+  expect(edited.branches?.activeLabel).toBe("Edit 1");
+  expect(edited.branches?.archived[0].label).toBe("Original");
+  expect(branchLabel("Edit 1", "en")).toBe("Edit 1");
+  expect(branchLabel("Edit 1", "de")).toBe("Bearbeitung 1");
+  expect(branchLabel("Retry 12", "de")).toBe("Neuer Versuch 12");
+  expect(branchLabel("Original", "de")).toBe("Original");
+  // Names from elsewhere (sync's "main", older tests) are shown as stored.
+  expect(branchLabel("main", "de")).toBe("main");
+  expect(branchLabel("Retry two", "de")).toBe("Retry two");
 });

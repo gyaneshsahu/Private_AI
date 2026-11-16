@@ -46,7 +46,6 @@ export const workspaceText = defineText({
     moveToProject: "Move to project",
     projectFor: (title: string) => `Project for ${title}`,
     noProject: "No project",
-    renameManage: "Rename & manage",
     yourConversations: "Your conversations",
     unlockNote: "Unlock your local vault to search and organize saved chats and projects.",
     unlockHistory: "Unlock history",
@@ -107,7 +106,6 @@ export const workspaceText = defineText({
     moveToProject: "In Projekt verschieben",
     projectFor: (title: string) => `Projekt für ${title}`,
     noProject: "Kein Projekt",
-    renameManage: "Umbenennen und verwalten",
     yourConversations: "Ihre Unterhaltungen",
     unlockNote:
       "Entsperren Sie Ihren lokalen Tresor, um gespeicherte Chats und Projekte zu durchsuchen und zu ordnen.",

@@ -103,7 +103,7 @@ it("runs the model's code in the worker with the real Pyodide, marks the answer,
     await page.goto(origin, { timeout: 30000 });
     const ask = async (text: string) => {
       await page.getByLabel("Message CometRow").fill(text);
-      await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+      await page.getByRole("button", { name: "Send message", exact: true }).click();
     };
     // Pyodide is not loaded with the page.
     await ui(page.getByLabel("Message CometRow")).toBeVisible();

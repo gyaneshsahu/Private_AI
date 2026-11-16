@@ -12,6 +12,7 @@ import { appText } from "../src/text/app";
 import { composerText } from "../src/text/composer";
 import { branchesText } from "../src/text/conversation-ui";
 import { messageText } from "../src/text/message";
+import { messageActionsText } from "../src/text/message-actions";
 import { savedListText } from "../src/text/saved-list";
 import { supportText } from "../src/text/support";
 
@@ -148,6 +149,7 @@ for (const lang of ["en", "de"] as const)
       const m = messageText[lang];
       const b = branchesText[lang];
       const st = supportText[lang];
+      const ma = messageActionsText[lang];
       const { context, page, errors, writes } = await open(lang, width);
       try {
         const box = page.getByLabel(a.messageInput);
@@ -265,35 +267,47 @@ for (const lang of ["en", "de"] as const)
         await expect.poll(() => fromEnd(page), { timeout: 8000 }).toBeLessThanOrEqual(4);
         await noSidewaysScroll(page);
 
-        // --- Retry on the newest answer, with the cost from the report in the visible label.
+        // --- Retry on the newest answer: one Retry button; its menu shows the cost from the
+        // report as visible text before a press.
         await ask(QUESTION);
         const retryName = (units: number) => `${a.retryLast} (${m.uses(units)})`;
         const thinkingName = `${a.answerThinking} (${m.uses(3)})`;
-        const retry = page.getByRole("button", { name: retryName(1), exact: true });
-        const thinking = page.getByRole("button", { name: thinkingName, exact: true });
-        await ui(retry).toHaveCount(1); // only on the newest message
-        await ui(answers.last().getByRole("button", { name: retryName(1), exact: true })).toBeVisible();
+        const retryButton = page.getByRole("button", { name: ma.retry, exact: true });
+        const retry = page.getByRole("menuitem", { name: retryName(1), exact: true });
+        const thinking = page.getByRole("menuitem", { name: thinkingName, exact: true });
+        await ui(retryButton).toHaveCount(1); // only on the newest message
+        await ui(answers.last().getByRole("button", { name: ma.retry, exact: true })).toBeVisible();
+        await target(retryButton, width);
+        await press(page, retryButton);
+        await ui(retry).toBeFocused();
         await ui(retry).toHaveText(retryName(1)); // visible text, not a hover title
         await ui(thinking).toHaveText(thinkingName);
-        await target(retry, width);
-        await target(thinking, width);
         await noSidewaysScroll(page);
         const articles = await page.locator("article.message").count();
-        await press(page, retry);
+        await page.keyboard.press("Enter");
         await idle(++sent);
         expect((await calls(page)).at(-1)).toEqual({ text: QUESTION, mode: "fast" });
         await ui(page.locator("article.message")).toHaveCount(articles);
         // One press, one Thinking request; after a Thinking answer there is nothing deeper to offer.
+        await retryButton.click();
         await thinking.click();
         await idle(++sent);
         expect((await calls(page)).at(-1)).toEqual({ text: QUESTION, mode: "thinking" });
+        await retryButton.click();
+        await ui(retry).toBeFocused();
         await ui(thinking).toHaveCount(0);
+        await page.keyboard.press("Escape");
+        await ui(retryButton).toBeFocused();
         await ui(page.locator("article.message")).toHaveCount(articles);
         // The label follows the mode that a press would use: Thinking 3, Auto reads the question.
         await mode.selectOption("thinking");
-        await ui(page.getByRole("button", { name: retryName(3), exact: true })).toHaveCount(1);
+        await retryButton.click();
+        await ui(page.getByRole("menuitem", { name: retryName(3), exact: true })).toHaveCount(1);
+        await page.keyboard.press("Escape");
         await mode.selectOption("auto");
+        await retryButton.click();
         await ui(retry).toHaveCount(1);
+        await page.keyboard.press("Escape");
 
         // --- Edit in place. Escape and Cancel send nothing and change nothing.
         const mine = users.last();
@@ -336,11 +350,12 @@ for (const lang of ["en", "de"] as const)
         expect(await shownText(users.last().locator(".user-text"))).toBe(EDITED);
         await ui(page.locator("article.message")).toHaveCount(articles);
         // The version before the edit is kept as a branch; opening it makes no request.
-        await page.getByText(b.summary(4, "Edit 3"), { exact: true }).click();
-        await page.getByRole("button", { name: b.open("Retry 2"), exact: true }).click();
+        // Branch names are stored as kind and number and shown in the interface language.
+        await page.getByText(b.summary(4, ma.branchEdit(3)), { exact: true }).click();
+        await page.getByRole("button", { name: b.open(ma.branchRetry(2)), exact: true }).click();
         expect(await shownText(users.last().locator(".user-text"))).toBe(QUESTION);
         await ui(answers.last()).toContainText("Synthetic answer.");
-        await page.getByRole("button", { name: b.open("Edit 3"), exact: true }).click();
+        await page.getByRole("button", { name: b.open(ma.branchEdit(3)), exact: true }).click();
         expect(await shownText(users.last().locator(".user-text"))).toBe(EDITED);
         expect(await calls(page)).toHaveLength(sent);
         // With a keyboard, Enter in the edit box sends once, as in the message box.
@@ -357,11 +372,15 @@ for (const lang of ["en", "de"] as const)
 
         // --- Report a problem: the support note with the answer choice set. Nothing about the
         // conversation is in it and nothing is sent.
-        const report = answers.last().getByRole("button", { name: m.reportLabel, exact: true });
+        // It sits in each answer's "More" menu.
+        const moreActions = answers.last().getByRole("button", { name: ma.moreActions, exact: true });
+        await ui(page.getByRole("button", { name: ma.moreActions, exact: true })).toHaveCount(await answers.count());
+        await target(moreActions, width);
+        await press(page, moreActions);
+        const report = answers.last().getByRole("menuitem", { name: m.reportLabel, exact: true });
         await ui(report).toHaveText(m.report);
-        await ui(page.getByRole("button", { name: m.reportLabel, exact: true })).toHaveCount(await answers.count());
-        await target(report, width);
-        await press(page, report);
+        await ui(report).toBeFocused();
+        await page.keyboard.press("Enter");
         await ui(page.getByRole("heading", { name: st.heading, exact: true })).toBeVisible();
         await ui(page.getByLabel(st.whatHappened, { exact: true })).toHaveValue("incorrect");
         await ui(page.getByLabel(st.whatHappened, { exact: true })).toBeFocused();

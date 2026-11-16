@@ -287,8 +287,9 @@ it("saved library, branches and context review are German", async () => {
     await ui(library.getByRole("button", { name: "Öffnen" })).toBeVisible();
     await library.getByLabel("Gespeicherte Unterhaltungen durchsuchen").fill("kein Treffer");
     await ui(library).toContainText("Keine passenden Unterhaltungen.");
-    await ui(page.getByText("Zweige der Unterhaltung · 2 · Edit 1")).toBeVisible();
-    await page.getByText("Zweige der Unterhaltung · 2 · Edit 1").click();
+    // Stored as "Edit 1" (kind and number), shown in German.
+    await ui(page.getByText("Zweige der Unterhaltung · 2 · Bearbeitung 1")).toBeVisible();
+    await page.getByText("Zweige der Unterhaltung · 2 · Bearbeitung 1").click();
     await ui(page.getByRole("button", { name: "Zweig Original öffnen" })).toBeVisible();
     await ui(page.getByText(/1 Nachrichten · enthält einen unvollständigen Versuch/)).toBeVisible();
     const review = page.locator(".context-review");

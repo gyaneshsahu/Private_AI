@@ -69,7 +69,7 @@ it("renders model output without loading any remote image, embed, stylesheet or 
     });
     await page.goto(origin, { timeout: 30000 });
     await page.getByLabel("Message CometRow").fill("Synthetic question");
-    await page.getByRole("button", { name: "Send ↑", exact: true }).click();
+    await page.getByRole("button", { name: "Send message", exact: true }).click();
     const answer = page.locator("article.assistant").last();
     await ui(answer).toContainText("Synthetic answer with remote references.");
     await ui(answer).toContainText("[Image omitted: pixel]");

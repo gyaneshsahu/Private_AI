@@ -211,7 +211,7 @@ const suggestionBox = (page: Page) => page.getByRole("region", { name: uiLabel("
 async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolean } = {}) {
   const before = await page.locator("article.assistant").count();
   await page.getByLabel(uiLabel("messageInput")).fill(text);
-  await page.waitForFunction(() => !document.querySelector("button[aria-label='Send ↑']")?.hasAttribute("disabled"), null, { timeout: 60_000 });
+  await page.waitForFunction(() => !document.querySelector("button[aria-label='Send message']")?.hasAttribute("disabled"), null, { timeout: 60_000 });
   await page.waitForTimeout(300);
   const suggestionShown = await suggestionBox(page).isVisible().catch(() => false);
   const suggestedQuery = suggestionShown ? ((await suggestionBox(page).locator("pre").innerText().catch(() => "")) || undefined) : undefined;

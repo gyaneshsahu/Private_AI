@@ -1,5 +1,6 @@
 // Saved list checks (tests/saved-list-ui.test.ts): the sidebar alone with synthetic saved chats
-// of known dates (?screen=nav) or none (?screen=empty). Pin and archive change local state.
+// of known dates (?screen=nav), none (?screen=empty), or chats used after they were created with
+// rename and delete (?screen=activity). Pin, archive, rename and delete change local state.
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import type { Conversation } from "../../shared/contracts";
@@ -28,9 +29,19 @@ const chats = [
     pinned: true,
   }),
 ];
+// Created in October, used today: sorted and grouped by its last message (chat core fixes, 16 November).
+const activity = [
+  chat("a2", "Synthetic chat from yesterday", 13),
+  chat("a1", "Synthetic chat from October used today", -20, {
+    messages: [
+      { id: "m1", role: "user", text: "Synthetic", status: "complete", included: true, at: new Date(2026, 10, 14, 10).toISOString() },
+    ],
+  }),
+];
 const noop = () => {};
+const log = (entry: string) => ((window as unknown as { __log: string[] }).__log ??= []).push(entry);
 
-function Sidebar({ initial }: { initial: Conversation[] }) {
+function Sidebar({ initial, deletable }: { initial: Conversation[]; deletable?: boolean }) {
   const [saved, setSaved] = useState(initial);
   return (
     <div className="app-shell chat-design">
@@ -58,8 +69,17 @@ function Sidebar({ initial }: { initial: Conversation[] }) {
         onSignOut={noop}
         onCreateProject={async () => undefined}
         onEditProject={async () => false}
-        onOrganize={(c, change) =>
-          setSaved((all) => all.map((item) => (item.id === c.id ? { ...item, ...change } : item)))
+        onOrganize={(c, change) => {
+          log(`organize:${c.id}:${JSON.stringify(change)}`);
+          setSaved((all) => all.map((item) => (item.id === c.id ? { ...item, ...change } : item)));
+        }}
+        onDelete={
+          deletable
+            ? (c) => {
+                log(`delete:${c.id}`);
+                setSaved((all) => all.filter((item) => item.id !== c.id));
+              }
+            : undefined
         }
       />
     </div>
@@ -69,6 +89,9 @@ function Sidebar({ initial }: { initial: Conversation[] }) {
 const screen = new URL(location.href).searchParams.get("screen");
 createRoot(document.getElementById("root")!).render(
   <LangProvider>
-    <Sidebar initial={screen === "empty" ? [] : chats} />
+    <Sidebar
+      initial={screen === "empty" ? [] : screen === "activity" ? activity : chats}
+      deletable={screen === "activity"}
+    />
   </LangProvider>,
 );

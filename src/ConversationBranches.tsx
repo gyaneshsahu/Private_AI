@@ -1,6 +1,7 @@
 import type { Conversation } from "../shared/contracts";
 import { useRef } from "react";
-import { useText } from "./i18n";
+import { branchLabel } from "./conversation-branches";
+import { useLang, useText } from "./i18n";
 import { branchesText } from "./text/conversation-ui";
 
 export function ConversationBranches({
@@ -14,16 +15,18 @@ export function ConversationBranches({
 }) {
   const summary = useRef<HTMLElement>(null);
   const t = useText(branchesText);
+  const { lang } = useLang();
   const branches = conversation.branches;
   if (!branches) return null;
+  const active = branchLabel(branches.activeLabel, lang);
   return (
     <details className="panel">
       <summary ref={summary}>
-        {t.summary(branches.archived.length + 1, branches.activeLabel)}
+        {t.summary(branches.archived.length + 1, active)}
       </summary>
       <p>{t.intro}</p>
       <p>
-        {t.active} <strong>{branches.activeLabel}</strong>
+        {t.active} <strong>{active}</strong>
       </p>
       <ul>
         {branches.archived.map((branch) => (
@@ -35,7 +38,7 @@ export function ConversationBranches({
                 summary.current?.focus();
               }}
             >
-              {t.open(branch.label)}
+              {t.open(branchLabel(branch.label, lang))}
             </button>
             {" · "}
             {t.messages(branch.messages.length)}

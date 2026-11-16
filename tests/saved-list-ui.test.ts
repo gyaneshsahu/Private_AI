@@ -11,6 +11,7 @@ import { libraryText } from "../src/text/conversation-ui";
 import { deviceText } from "../src/text/device-features";
 import { savedListText } from "../src/text/saved-list";
 import { workspaceText } from "../src/text/workspace";
+import { messageActionsText } from "../src/text/message-actions";
 
 let vite: ViteDevServer;
 let browser: Browser;
@@ -127,7 +128,8 @@ for (const width of WIDTHS)
         const mine = page.locator("article.user").first();
         await ui(mine.locator("time.message-time")).toHaveText(lang === "de" ? "12:00" : /^12:00\sPM$/);
         const copy = mine.getByRole("button", { name: s.copyMessageLabel });
-        await ui(copy).toHaveText(s.copyMessage);
+        // A compact icon button: named, with the same text as its tooltip.
+        await ui(copy).toHaveAttribute("title", s.copyMessageLabel);
         await target(copy, width);
         await press(page, copy);
         await ui(mine.locator(".copy-status")).toHaveText(s.copied);
@@ -253,6 +255,8 @@ for (const width of WIDTHS)
         expect(box.x).toBeGreaterThanOrEqual(0);
         expect(box.x + box.width).toBeLessThanOrEqual(width);
         await page.keyboard.press("Tab");
+        await ui(popover.getByRole("button", { name: messageActionsText[lang].rename, exact: true })).toBeFocused();
+        await page.keyboard.press("Tab");
         await ui(popover.getByRole("button", { name: w.pin, exact: true })).toBeFocused();
         await page.keyboard.press("Enter");
         await ui(groups).toHaveText([s.pinned, s.today, s.week, s.older]);
@@ -282,9 +286,9 @@ for (const width of WIDTHS)
         await search.fill("");
         await ui(chats).toHaveCount(4);
 
-        // Rename and "New chat" from the keyboard.
+        // "Manage history" and "New chat" from the keyboard.
         await press(page, actions("Synthetic chat from today"));
-        await press(page, side.locator(".chat-item-menu[open]").getByRole("button", { name: w.renameManage }));
+        await press(page, side.locator(".chat-item-menu[open]").getByRole("button", { name: messageActionsText[lang].manageHistory }));
         await expect.poll(() => page.title()).toBe("opened Saved");
         await press(page, side.getByRole("button", { name: w.newConversation, exact: true }));
         await expect.poll(() => page.title()).toBe("new chat");
@@ -299,5 +303,86 @@ for (const width of WIDTHS)
         await noSidewaysScroll(empty);
       } finally {
         await empty.context().close();
+      }
+    }, 90_000);
+
+for (const width of WIDTHS)
+  for (const lang of LANGS)
+    it(`${width} px, ${lang}: sidebar sorted by last activity, rename in place, delete asks first`, async () => {
+      const s = savedListText[lang];
+      const w = workspaceText[lang];
+      const ma = messageActionsText[lang];
+      const page = await open("/saved-list?screen=activity", width, lang);
+      const requests: string[] = [];
+      page.on("request", (request) => requests.push(request.url()));
+      const log = () => page.evaluate(() => (window as unknown as { __log?: string[] }).__log ?? []);
+      try {
+        const side = page.locator(".sidebar");
+        const groups = side.locator(".recent-chats h3");
+        const chats = side.locator(".chat-list-row > button");
+        // Created in October but used today: first, under Today (not Older).
+        await ui(groups).toHaveText([s.today, s.yesterday]);
+        await ui(chats).toHaveText(["Synthetic chat from October used today", "Synthetic chat from yesterday"]);
+
+        const title = "Synthetic chat from yesterday";
+        const actions = side.getByLabel(w.chatActions(title), { exact: true });
+        const menu = side.locator(".chat-item-menu[open] .chat-item-actions");
+        // Every entry of the row menu is a real button of at least 24 px (44 px on phones).
+        await press(page, actions);
+        await target(actions, width);
+        for (const name of [ma.rename, w.pin, w.archive, ma.manageHistory, ma.delete])
+          await target(menu.getByRole("button", { name, exact: true }), width);
+        const box = (await menu.boundingBox())!;
+        expect(box.x + box.width).toBeLessThanOrEqual(width);
+        // Create project and the drawer's close button: 44 px on phones (CC-19).
+        await target(side.getByRole("button", { name: w.createProject, exact: true }), width);
+        if (width < 760) await target(side.getByRole("button", { name: w.closeNavigation, exact: true }), width);
+        expect(await menu.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
+
+        // Rename in place: Escape keeps the name and returns focus to the row.
+        await press(page, menu.getByRole("button", { name: ma.rename, exact: true }));
+        const field = side.getByRole("textbox", { name: ma.chatName(title), exact: true });
+        await ui(field).toBeFocused();
+        await ui(field).toHaveValue(title);
+        await target(field, width);
+        await page.keyboard.type("SYNTHETIC never saved");
+        await page.keyboard.press("Escape");
+        await ui(field).toHaveCount(0);
+        await ui(side.getByRole("button", { name: title, exact: true })).toBeFocused();
+        expect(await log()).toEqual([]);
+        // Enter saves through onOrganize with the new title only, and focus returns to the row.
+        await press(page, actions);
+        await press(page, menu.getByRole("button", { name: ma.rename, exact: true }));
+        await page.keyboard.type("Synthetic renamed chat");
+        await page.keyboard.press("Enter");
+        await ui(side.getByRole("button", { name: "Synthetic renamed chat", exact: true })).toBeFocused();
+        expect(await log()).toEqual([`organize:a2:${JSON.stringify({ title: "Synthetic renamed chat" })}`]);
+        await noSidewaysScroll(page);
+
+        // Delete asks first: Cancel keeps the chat and returns focus to its menu button.
+        const renamedActions = side.getByLabel(w.chatActions("Synthetic renamed chat"), { exact: true });
+        await press(page, renamedActions);
+        await press(page, menu.getByRole("button", { name: ma.delete, exact: true }));
+        const dialog = page.getByRole("dialog", { name: s.deleteTitle });
+        await ui(dialog).toBeVisible();
+        await ui(dialog).toContainText(s.deleteText("Synthetic renamed chat"));
+        const cancel = dialog.getByRole("button", { name: w.cancel, exact: true });
+        await ui(cancel).toBeFocused();
+        await target(cancel, width);
+        await page.keyboard.press("Enter");
+        await ui(dialog).toHaveCount(0);
+        await ui(renamedActions).toBeFocused();
+        await ui(chats).toHaveCount(2);
+        // Confirm deletes once.
+        await press(page, renamedActions);
+        await press(page, menu.getByRole("button", { name: ma.delete, exact: true }));
+        await dialog.getByRole("button", { name: s.deleteConfirm, exact: true }).click();
+        await ui(chats).toHaveText(["Synthetic chat from October used today"]);
+        expect((await log()).filter((entry) => entry.startsWith("delete:"))).toEqual(["delete:a2"]);
+        await noSidewaysScroll(page);
+        // Nothing left the machine.
+        expect(requests.filter((url) => new URL(url).origin !== origin)).toEqual([]);
+      } finally {
+        await page.context().close();
       }
     }, 90_000);
