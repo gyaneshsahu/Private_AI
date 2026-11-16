@@ -3808,4 +3808,49 @@
     flex: none;
     overflow: visible;
   }
+/* Keyboard shortcuts help (src/ShortcutHelp.tsx). */
+.chat-design dialog.shortcut-help {
+  width: min(480px, calc(100vw - 24px));
+  padding: 20px;
+}
+.chat-design .shortcut-help > p {
+  margin: 8px 0 12px;
+  color: var(--muted);
+}
+.chat-design .shortcut-help dl {
+  margin: 0 0 16px;
+}
+.chat-design .shortcut-help dl > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+.chat-design .shortcut-help dt {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.chat-design .shortcut-help dd {
+  margin: 0;
+  white-space: nowrap;
+}
+.chat-design .shortcut-help kbd {
+  display: inline-block;
+  min-width: 24px;
+  padding: 2px 6px;
+  text-align: center;
+  font: inherit;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: var(--subtle);
+}
+@media (max-width: 760px) {
+  .chat-design .shortcut-help .confirm-actions button {
+    min-height: 44px;
+  }
 }

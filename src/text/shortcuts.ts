@@ -1,0 +1,43 @@
+// Keyboard shortcuts and their help dialog (docs/keyboard-shortcuts-20261116.md).
+import { defineText } from "./core";
+
+export const shortcutsText = defineText({
+  en: {
+    title: "Keyboard shortcuts",
+    intro: "These work anywhere in CometRow, except while another dialog is open.",
+    close: "Close",
+    newChat: "New chat",
+    search: "Search chats",
+    sidebar: "Show or hide the sidebar",
+    composer: "Go to the message box",
+    copyAnswer: "Copy the last answer",
+    copyCode: "Copy the last code block",
+    help: "Show keyboard shortcuts",
+    ctrl: "Ctrl",
+    shift: "Shift",
+    esc: "Esc",
+    command: "Command",
+    noAnswer: "There is no complete answer to copy yet.",
+    noCode: "The last answer has no code block.",
+    menuEntry: "Keyboard shortcuts",
+  },
+  de: {
+    title: "Tastenkürzel",
+    intro: "Sie funktionieren überall in CometRow, außer während ein anderes Fenster offen ist.",
+    close: "Schließen",
+    newChat: "Neuer Chat",
+    search: "Chats durchsuchen",
+    sidebar: "Seitenleiste ein- oder ausblenden",
+    composer: "Zum Nachrichtenfeld",
+    copyAnswer: "Letzte Antwort kopieren",
+    copyCode: "Letzten Codeblock kopieren",
+    help: "Tastenkürzel anzeigen",
+    ctrl: "Strg",
+    shift: "Umschalt",
+    esc: "Esc",
+    command: "Befehl",
+    noAnswer: "Es gibt noch keine vollständige Antwort zum Kopieren.",
+    noCode: "Die letzte Antwort enthält keinen Codeblock.",
+    menuEntry: "Tastenkürzel",
+  },
+});

@@ -1,4 +1,8 @@
 # PrivateAI readiness checklist
+## 16 November 2026: keyboard shortcuts and their help (agent B6)
+
+Built and tested offline (Chromium at 375, 768 and 1280 px, English and German); not wired into App.tsx yet; no switch (nothing talks to the server). useShortcuts maps Ctrl or Cmd + Shift + O (new chat), + K (search chats), + Shift + S (sidebar), Shift + Esc (message box), + Shift + C (copy last answer), + Shift + ; (copy last code block) and + / (the help dialog). Cmd on Apple devices, Ctrl elsewhere; another open dialog blocks them, except the sidebar drawer and the help. The browser keeps a key unless an action ran. Not verified: the App wiring, what real browsers do with their own uses of these keys (bookmarks, developer tools, task manager), Safari, Firefox. Details: `docs/keyboard-shortcuts-20261116.md`.
+
 ## 16 November 2026: chat core component fixes (agent B2)
 
 Built and tested offline in Chromium at 375, 768 and 1280 px, English and German; not tried on a real phone, in Firefox or Safari, or with a screen reader. A streaming answer has no "Incomplete" label and no actions, and shows typing dots before its first text. Answer actions are one row of named icon buttons; Retry opens a menu whose items show their cost; Report a problem is under More; the menus work by keyboard. The sidebar row menu renames in place and deletes after a confirmation; chats are sorted by last activity. Branch names, the help text on automatic retry, Copy code feedback, the Send button name and phone layout (44 px targets, one-line title, no overflow in the measured screens) are fixed. For the lead: wire `streaming` and `onDelete` in `src/App.tsx`. Details: `docs/chat-core-fixes-20261116.md`.
