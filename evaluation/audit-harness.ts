@@ -69,7 +69,8 @@ export async function buildClient(config: AuditConfig): Promise<string> {
         },
       },
     ],
-    build: { outDir, emptyOutDir: true, sourcemap: false, chunkSizeWarningLimit: 100_000 },
+    // Same font rule as vite.config.ts (fonts stay files, so the CSP does not block KaTeX fonts).
+    build: { outDir, emptyOutDir: true, sourcemap: false, chunkSizeWarningLimit: 100_000, assetsInlineLimit: (file) => (/\.(woff2?|ttf|otf|eot)$/i.test(file) ? false : undefined) },
     worker: { format: "es" },
   });
   return outDir;

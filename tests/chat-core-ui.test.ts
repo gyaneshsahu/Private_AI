@@ -3,6 +3,7 @@
 // picture question, the failure sentence and notice above the message box, Send off while offline,
 // one Stop, New chat asking before it stops an answer, and the sidebar's New chat on one line.
 // Offline: a Vite plugin replaces src/inference.ts, the status is faked, nothing leaves the machine.
+import { workspaceBrowserDependencies } from "../evaluation/browser-dependencies";
 import { afterAll, beforeAll, expect, it } from "vitest";
 import { chromium, expect as ui, type Browser, type Locator, type Page } from "@playwright/test";
 import { createServer, type ViteDevServer } from "vite";
@@ -26,6 +27,8 @@ beforeAll(async () => {
     configFile: false,
     logLevel: "silent",
     cacheDir: "node_modules/.vite-chat-core-ui-test",
+    // A fixed dependency list: no late discovery (and page reload) when a part loaded on demand is first used.
+    optimizeDeps: { include: workspaceBrowserDependencies, noDiscovery: true },
     plugins: [
       {
         name: "synthetic-chat-core-stream",
