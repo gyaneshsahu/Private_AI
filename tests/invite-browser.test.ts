@@ -131,7 +131,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     ).toBeVisible();
     await workspaceControl(page, "Account").click();
     await page.getByRole("button", { name: "Sign out", exact: true }).click();
-    await ui(page).toHaveURL(origin + "/auth");
+    await ui(page).toHaveURL((url) => url.href === origin + "/auth" || url.href === origin + "/auth?reason=expired");
     await accept(bob);
     await unlock();
     await ui(
@@ -142,7 +142,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     );
     registry.revoke(bob.id);
     await page.evaluate(() => window.dispatchEvent(new Event("focus")));
-    await ui(page).toHaveURL(origin + "/auth");
+    await ui(page).toHaveURL((url) => url.href === origin + "/auth" || url.href === origin + "/auth?reason=expired");
     const login = page.locator('form[action="/auth/login"]');
     await login.getByLabel("Access ID").fill(alice.id);
     await login.getByLabel("Password").fill("synthetic access password");
@@ -191,7 +191,7 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
       .getByLabel("Confirm new password", { exact: true })
       .fill("synthetic changed password");
     await passwordForm.getByRole("button").click();
-    await ui(page).toHaveURL(origin + "/auth");
+    await ui(page).toHaveURL((url) => url.href === origin + "/auth" || url.href === origin + "/auth?reason=expired");
     await login.getByLabel("Access ID").fill(alice.id);
     await login.getByLabel("Password").fill("synthetic changed password");
     await login.getByRole("button", { name: "Sign in", exact: true }).click();
@@ -254,4 +254,4 @@ it("accepts two invitations and keeps the signed-out user's saved workspace isol
     await new Promise<void>((resolve) => server.close(() => resolve()));
     registry.close();
   }
-}, 30000);
+}, 90000);

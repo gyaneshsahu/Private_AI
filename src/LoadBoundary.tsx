@@ -69,7 +69,8 @@ function importAgain(url: string) {
  */
 export async function importFresh<T>(load: () => Promise<T>): Promise<T> {
   for (let tries = 0; ; tries++) {
-    await relinkFailedStyles();
+    // A stylesheet that still fails belongs to another part (the answer's): it must not stop this import (the send path).
+    await relinkFailedStyles().catch(() => undefined);
     try {
       return await load();
     } catch (error) {
