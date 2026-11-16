@@ -125,7 +125,7 @@ import { holdTasks } from "./scheduled";
 import { ensureProjectFiles, useSyncFiles } from "./sync/files";
 import { VaultSecurity } from "./VaultSecurity";
 import { BACKUP_MAX_BYTES } from "./vault-backup";
-import { containsTemporaryResearch } from "./saved-conversation";
+import { containsTemporaryResearch, keepLiveSearch } from "./saved-conversation";
 import { WorkspaceNavigation } from "./WorkspaceNavigation";
 import { readAppearance, saveAppearance } from "./appearance";
 import { ConversationLibrary } from "./ConversationLibrary";
@@ -1726,11 +1726,14 @@ export function App() {
       setUnreadableSnapshots(snapshots.unreadable);
       const shown = conversationRef.current;
       const fresh = snapshots.conversations.find((c) => c.id === shown.id);
-      // Only when nothing here waits to be saved and no answer is streaming: otherwise the next save merges.
-      if (fresh && !controller.current && plain(shown) === autoSaved.current && plain(fresh) !== autoSaved.current) {
+      // Only a change from elsewhere (the stored copy is not what this tab last saved or opened), only
+      // when nothing here waits to be saved and no answer is streaming: otherwise the next save merges.
+      // A save strips live search (owner decision 22 October), so the open chat keeps its own results.
+      if (fresh && !controller.current && plain(shown) === autoSaved.current && (!savedBase.current || plain(fresh) !== plain(savedBase.current))) {
+        const next = keepLiveSearch(fresh, shown);
         savedBase.current = fresh;
-        autoSaved.current = plain(fresh);
-        setConversation(structuredClone(fresh));
+        autoSaved.current = plain(next);
+        setConversation(structuredClone(next));
       }
       const held = heldModeRef.current === "secure" ? secureVault() : undefined;
       if (held) {
@@ -1777,9 +1780,10 @@ export function App() {
         if (!theirs) return;
         snapshot = await store.save({ ...mergeConversation(savedBase.current ?? undefined, conversation, theirs), draft: input }, theirs);
         if (current !== epoch.current) return;
-        autoSaved.current = plain(snapshot);
+        const next = keepLiveSearch(snapshot, conversation);
+        autoSaved.current = plain(next);
         savedBase.current = snapshot;
-        setConversation(structuredClone(snapshot));
+        setConversation(structuredClone(next));
         assignMode(snapshot.id, mode);
         return void showLists();
       }
@@ -1793,7 +1797,8 @@ export function App() {
     }
   }
   useEffect(() => {
-    if (!secureOn || busy || conversation.incognito || !(conversation.messages.length || conversation.attachments.length)) return;
+    // Only once the chat has a message: attaching a file alone saves nothing (FE-12).
+    if (!secureOn || busy || conversation.incognito || !conversation.messages.length) return;
     if (!vaultFor(mode, vault.current)?.unlocked || plain(conversation) === autoSaved.current) return;
     const timer = setTimeout(() => void autoSave(), 300);
     return () => clearTimeout(timer);

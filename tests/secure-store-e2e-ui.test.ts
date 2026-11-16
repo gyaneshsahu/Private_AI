@@ -43,7 +43,8 @@ beforeAll(async () => {
         enforce: "pre",
         load(id) {
           if (id.replaceAll("\\", "/").endsWith("/src/inference.ts"))
-            return `export async function streamReply(c,q,csrf,signal,chunk){ chunk("Synthetic answer."); return { input: 1, output: 1, total: 2, estimatedUSD: 0 }; }`;
+            // With sources attached, the answer says how many arrived and cites the first by its id.
+            return `export async function streamReply(c,q,csrf,signal,chunk){ const s=c.attachments.filter(a=>a.selected).flatMap(a=>a.sources); chunk(s.length ? "Synthetic answer. Sources: "+s.length+" ["+s[0].id+"]" : "Synthetic answer."); return { input: 1, output: 1, total: 2, estimatedUSD: 0 }; }`;
         },
       },
     ],
@@ -99,7 +100,7 @@ async function site(o: { secure: boolean; sync: boolean; files?: boolean }) {
 }
 type Site = Awaited<ReturnType<typeof site>>;
 
-async function device(s: Site, account: string, lang: "en" | "de" = "en", width = 1280) {
+async function device(s: Site, account: string, lang: "en" | "de" = "en", width = 1280, search = false) {
   const context = await browser.newContext({ locale: lang === "de" ? "de-DE" : "en-US", viewport: { width, height: width < 700 ? 812 : 900 }, hasTouch: width < 760 });
   context.setDefaultTimeout(20_000);
   await context.addCookies([{ name: "test-account", value: account, url: s.origin }]);
@@ -113,7 +114,7 @@ async function device(s: Site, account: string, lang: "en" | "de" = "en", width 
     if (url.pathname === "/api/status") {
       const real = await route.fetch();
       if (!real.ok()) return route.fulfill({ response: real });
-      return route.fulfill({ response: real, json: { ...(await real.json()), inference: { ready: true, reason: "OFFLINE ONLY", qualification: { maxInputCharacters: 100000 } }, search: false } });
+      return route.fulfill({ response: real, json: { ...(await real.json()), inference: { ready: true, reason: "OFFLINE ONLY", qualification: { maxInputCharacters: 100000 } }, search } });
     }
     // Sign-out of the simulated session: the app's own steps run, then the page leaves.
     if (url.pathname === "/auth/logout") return route.fulfill({ status: 200, body: "" });
@@ -348,6 +349,71 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   await ui((await navigation(A, "en")).filter({ hasText: "SYNTHETIC SECURE QUESTION" })).toBeVisible();
   await A.context().close();
 }, 300_000);
+
+it("1280 px, English: an approved search keeps its results in Secure, also after a change from another device (FE-01)", async () => {
+  const s = await site({ secure: true, sync: false });
+  const account = randomUUID();
+  const a = appText.en;
+  const A = await device(s, account, "en", 1280, true);
+  const outside: string[] = [];
+  A.on("request", (request) => {
+    if (new URL(request.url()).origin !== s.origin) outside.push(request.url());
+  });
+  // The search provider is mocked: the approved text comes back with one synthetic result.
+  await A.route("**/api/research/*", (route) =>
+    new URL(route.request().url()).pathname.endsWith("/prepare")
+      ? route.fulfill({ json: { id: "synthetic-prepared" } })
+      : route.fulfill({
+          json: { sources: [{ id: "synthetic-0002", title: "Synthetic result", text: "SYNTHETIC RESULT TEXT", url: "https://example.com/synthetic", retrievedAt: new Date().toISOString(), evidenceKind: "search-excerpt" }] },
+        }),
+  );
+  // A chat with a message saves by itself; the search below then changes a saved chat.
+  await ask(A, "en", "SYNTHETIC FIRST QUESTION");
+  await expect.poll(async () => (await s.stores.secure.usage(account)).cursor, { timeout: 20_000 }).toBeGreaterThanOrEqual(1);
+  await A.locator("details.tools-menu summary").click();
+  await A.locator("details.tools-menu").getByRole("button", { name: a.tabResearch }).click();
+  await A.getByLabel(a.exactQuery).fill("synthetic public query");
+  await A.getByRole("button", { name: a.reviewDisclosure }).click();
+  await A.getByRole("button", { name: a.approve }).click();
+  await ui(A.getByRole("button", { name: a.prepareQuestion })).toBeVisible();
+  // Long enough for the automatic save (300 ms) and the list refresh after it.
+  const written = (await s.stores.secure.usage(account)).cursor;
+  await focus(A);
+  await expect.poll(async () => (await s.stores.secure.usage(account)).cursor, { timeout: 20_000 }).toBeGreaterThan(written);
+  await A.getByRole("button", { name: a.prepareQuestion }).click();
+  const answer = A.locator("article.assistant").last();
+  const check = async () => {
+    await ui(answer).toContainText("Sources: 1");
+    await ui(answer.locator("button.citation")).toHaveCount(1);
+    await ui(answer).not.toContainText("[synthetic-0002]");
+    await ui(A.getByText(a.sourcesUnrecorded)).toHaveCount(0);
+  };
+  await A.getByRole("button", { name: a.sendLabel, exact: true }).click();
+  await check();
+
+  // B changes the chat; the change reaches A, where the chat is open, and A keeps its results.
+  const B = await device(s, account);
+  await (await navigation(B, "en")).filter({ hasText: "SYNTHETIC FIRST QUESTION" }).getByRole("button").first().click();
+  await ask(B, "en", "SYNTHETIC QUESTION FROM B");
+  await focus(B);
+  await expect
+    .poll(
+      async () => {
+        await focus(A);
+        return A.getByText("SYNTHETIC QUESTION FROM B").count();
+      },
+      { timeout: 30_000, interval: 1500 },
+    )
+    .toBeGreaterThan(0);
+  await ui(A.locator("article.assistant", { hasText: "Sources: 1" }).locator("button.citation")).toHaveCount(1);
+  await ask(A, "en", "SYNTHETIC QUESTION AFTER THE PULL");
+  await check();
+  // B never had the results: they were not stored.
+  await ui(B.getByText("SYNTHETIC RESULT TEXT")).toHaveCount(0);
+  expect(outside).toEqual([]);
+  await A.context().close();
+  await B.context().close();
+}, 180_000);
 
 it("375 px, German: the Secure wiring fits a phone", async () => {
   const s = await site({ secure: true, sync: true });
