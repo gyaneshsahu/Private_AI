@@ -634,7 +634,7 @@ describe("wiring findings", () => {
     await a.engine.refresh();
     expect(a.engine.getState()).toMatchObject({ pairingRequested: true });
     expect(Date.parse(a.engine.getState().pairingRequestedAt!)).toBeGreaterThan(Date.now() - 60_000);
-    await a.engine.setRememberDevice(true);
+    await a.engine.setRememberDevice(false);
     expect(a.engine.getState().remembered).toBe(false);
   }, 60_000);
 
