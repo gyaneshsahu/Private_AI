@@ -1,5 +1,37 @@
 # Evaluation evidence
 
+## Audit harness (16 November 2026)
+
+`evaluation/audit-harness.ts` shows every screen of CometRow on this machine, with every feature on (or none), the AI's answers faked and nothing sent beyond localhost. It never builds into or serves `dist/`.
+
+```
+npx tsx evaluation/audit-harness.ts [--config on|off] [--out <folder>] [--browsers chromium,firefox,webkit] [--widths 375,768,1280] [--lang en,de] [--serve]
+```
+
+- `--config on`: the client is built with every `VITE_*` switch set to "1" and the server has every development switch of `server/index.ts` on (voice, images, code, research, metering, vault sync with files, Secure, background tasks, health consent draft, provider disclosure draft, Goggles; `dev` mode). `--config off`: no switch, as production today. German exists only in the `on` build (`VITE_GERMAN_UI`); in `off` a German run shows English and each entry says `germanOff: true`.
+- The build goes to `.local/audit-build/<config>/`. The server is composed in-process (`createApp`) on a free port at `http://localhost:<port>`, with no keys and no provider report. A cookie `audit-account` signs in a synthetic account (`AUDIT_ACCOUNT`), the same test-only pattern as `tests/secure-store-e2e-ui.test.ts`.
+- Output (default `.local/audit/<config>/`, ignored by git): `<nn>-<screen>-<lang>-<width>-<browser>.png` and `index.json` (screen, URL, what was clicked, console errors, page errors, failed requests, requests to other hosts, page overflow, elements outside the viewport, a step's error). A request to any host other than localhost is aborted, recorded and makes the run exit 1. Browsers also run behind a dead proxy for every other host, so a missed route cannot reach the network.
+- Default: Chromium, 375, 768 and 1280 px, English and German. About 20 minutes per config in Chromium.
+
+**How the AI is faked.** Chat is attested and encrypted end to end in the browser, so a reply cannot be faked by route interception alone. The harness build replaces `src/inference.ts` with `evaluation/audit-inference.ts` (as the `*-ui` tests do with a Vite plugin). It asks the same origin for the answer (`POST /__audit/reply`) and runs it through the app's real stream parser (`completionEvents`, `consumeReply`), so errors, drops and stops show the app's own wording. Voice transcription in the harness build calls `/__audit/transcribe`. Everything else is route interception in `evaluation/audit-fakes.ts`: the status (the server's real answer, with chat ready and the provider-dependent fields added), search and deep research results, transcription. The app's source is unchanged.
+
+**Named answers:** `markdown`, `code`, `math`, `table`, `citations` (cites the sources attached by an approved search), `long`, `slow` (first token after 6 s), `error-429`, `error-500`, `error-503`, `dropped` (no finish, no [DONE]), `stop` (streams for about a minute), `python` (runs Python in the app's real Pyodide worker), `image`, `plain`. Deep research plans and answers are chosen automatically.
+
+**Clicking around yourself.** `--serve` builds, starts the server, prints the URL and waits. From your own Playwright script:
+
+```ts
+import { AUDIT_ACCOUNT, installFakes } from "./evaluation/audit-fakes";
+await context.addCookies([{ name: "audit-account", value: AUDIT_ACCOUNT, url: origin }]); // signed in
+const fakes = await installFakes(context, { origin, config: "on" });
+fakes.answer("table");   // next reply; or type audit:table in the message
+fakes.log;               // console errors, failed and non-local requests
+fakes.setReady(false);   // the real "chat unavailable" status after a reload
+```
+
+In a plain browser without the fakes, chat shows as unavailable. The account lab (`/?account-lab=1`) needs its `/api/account/*` and `/api/auth/*` answers faked per page (see the `account-lab` step in `evaluation/audit-tour.ts`).
+
+**Not reached:** the hosted `/account` page (the local server serves only `/`, as `server/index.ts`); real microphone capture outside Chromium (Chromium uses a fake device); real sign-in, passkeys, billing checkout and e-mail; sync between two devices (one browser context only); the provider's attestation and encryption (replaced by the stand-in above).
+
 ## Active development policy — 19 October 2026
 
 The public-product roadmap is active. Founder reaffirms cumulative TinfoilUSD5, subject to actual account/key controls and available credit. No arbitrary smaller testing cap; choose meaningful fixed studies with a request ceiling, worst-case reserve, independent ground truth where possible, exact configurations and failure accounting. Check actual usage before paid execution. Unused reservations are not spent money. The agent never changes billing, recharge, limits or plans.
