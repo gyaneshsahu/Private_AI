@@ -64,20 +64,15 @@ test("synthetic account status renders request counts without claiming token bil
       exact: false,
     }),
   ).toBeVisible();
+  // Provider tokens and cost are developer details, hidden from users (SS-09, 16 November).
   await expect(
     page.getByText("1,200 prompt tokens and 340 completion tokens", {
       exact: false,
     }),
-  ).toBeVisible();
+  ).toHaveCount(0);
   await expect(
     page.getByText("Published cost so far: USD 0.00046", { exact: false }),
-  ).toBeVisible();
-  await expect(
-    page.getByText(
-      "interrupted requests are billed by the provider but cannot be counted here",
-      { exact: false },
-    ),
-  ).toBeVisible();
+  ).toHaveCount(0);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

@@ -64,7 +64,8 @@ export const usageMeterText = defineText({
     calculation: (units: number, steps: number) =>
       `Calculation with code: ${units} ${plural(units, "request", "requests")}, ${steps} ${plural(steps, "follow-up", "follow-ups")} at no charge`,
     tokensCount: (n: string) => `${n} tokens`,
-    weights: (version: number) => `Weights version ${version}. A Fast message counts as 1 request.`,
+    weights: (version: number) => `Weights version ${version}.`,
+    fastCost: "A Fast message counts as 1 request.",
     costs: (thinking: number, image: number, research: number) =>
       `A Thinking message counts as ${thinking}, a picture question as ${image}, a deep research run as ${research}.`,
     voiceCost: (units: number, seconds: number) =>
@@ -107,7 +108,8 @@ export const usageMeterText = defineText({
     calculation: (units: number, steps: number) =>
       `Berechnung mit Code: ${units} ${plural(units, "Anfrage", "Anfragen")}, ${steps} ${plural(steps, "Folgeschritt", "Folgeschritte")} ohne Anrechnung`,
     tokensCount: (n: string) => `${n} Tokens`,
-    weights: (version: number) => `Gewichtung Version ${version}. Eine Nachricht in „Schnell“ zählt als 1 Anfrage.`,
+    weights: (version: number) => `Gewichtung Version ${version}.`,
+    fastCost: "Eine Nachricht in „Schnell“ zählt als 1 Anfrage.",
     costs: (thinking: number, image: number, research: number) =>
       `Eine Nachricht in „Gründlich“ zählt als ${thinking}, eine Frage zu einem Bild als ${image}, eine tiefe Recherche als ${research}.`,
     voiceCost: (units: number, seconds: number) =>

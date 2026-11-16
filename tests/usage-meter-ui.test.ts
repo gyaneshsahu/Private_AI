@@ -64,7 +64,7 @@ afterAll(async () => {
   await vite?.close();
 });
 
-async function open(width: number, lang: "en" | "de", failing = false) {
+async function open(width: number, lang: "en" | "de", failing = false, query = "") {
   const context = await browser.newContext({ locale: lang === "de" ? "de-DE" : "en-US", viewport: { width, height: 900 }, hasTouch: width < 760 });
   context.setDefaultTimeout(15_000);
   const page = await context.newPage();
@@ -83,7 +83,7 @@ async function open(width: number, lang: "en" | "de", failing = false) {
       });
     return route.continue();
   });
-  await page.goto(origin + "/usage-meter", { timeout: 30_000 });
+  await page.goto(origin + "/usage-meter" + query, { timeout: 30_000 });
   await ui(page.locator("html")).toHaveAttribute("lang", lang);
   return page;
 }
@@ -104,17 +104,19 @@ for (const lang of LANGS)
         await ui(full.getByRole("meter", { name: t.today(7, 40) })).toBeVisible();
         await ui(full.getByText(t.pictures(1, 10))).toBeVisible();
         await ui(full.getByRole("rowheader", { name: t["chat-thinking"] })).toBeVisible();
-        await ui(full.getByRole("row", { name: new RegExp(t["research-answer"]) }).getByRole("cell").last()).toHaveText(t.tokensUnknown);
+        // Requests only: token counts and the weights version are developer details (SS-09).
+        await ui(full.getByRole("row", { name: new RegExp(t["research-answer"]) }).getByRole("cell").last()).toHaveText("10");
+        await ui(full.getByRole("columnheader", { name: t.tokens })).toHaveCount(0);
         await ui(full.getByText(t.calculation(1, 2), { exact: false })).toBeVisible();
-        await ui(full.getByText(t.tokensCount((3600).toLocaleString(lang)), { exact: false })).toBeVisible();
+        await ui(full.getByText(t.tokensCount((3600).toLocaleString(lang)), { exact: false })).toHaveCount(0);
+        await ui(full.getByText(t.weights(2), { exact: false })).toHaveCount(0);
+        await ui(full.getByText(t.fastCost, { exact: false })).toBeVisible();
         await ui(full.getByText(t.costs(5, 2, 15), { exact: false })).toBeVisible();
         // Voice today in the daily limits, in the microphone's own words, and the voice cost.
         await ui(full.getByRole("listitem").filter({ hasText: voiceText[lang].today("0:24", "1:36") })).toBeVisible();
         await ui(full.getByText(t.voiceCost(1, 30), { exact: false })).toBeVisible();
         await ui(full.getByRole("rowheader", { name: t.voice })).toBeVisible();
-        // Voice is measured by the relay: never shown as "not reported".
-        await ui(full.getByRole("row", { name: new RegExp(t.voice) }).getByRole("cell").last()).toHaveText(t.voiceMeasured);
-        await ui(full.getByRole("listitem").filter({ hasText: `${t.voice}: ${t.counted(1)} · ${t.voiceMeasured}` })).toBeVisible();
+        await ui(full.getByRole("listitem").filter({ hasText: `${t.voice}: ${t.counted(1)}` })).toBeVisible();
         // The cost line under the calculation: 1 request, 2 steps free.
         await ui(page.getByText(t.codeCost(1, 2))).toBeVisible();
         // The compact meter, in the account menu.
@@ -133,6 +135,21 @@ for (const lang of LANGS)
         await page.context().close();
       }
     }, 60_000);
+
+it("a development build with ?developmentTools shows tokens and the weights version", async () => {
+  const page = await open(1280, "en", false, "?developmentTools");
+  try {
+    const t = usageMeterText.en;
+    const full = page.getByRole("region", { name: t.heading });
+    await ui(full.getByRole("row", { name: new RegExp(t["research-answer"]) }).getByRole("cell").last()).toHaveText(t.tokensUnknown);
+    // Voice is measured by the relay: never shown as "not reported".
+    await ui(full.getByRole("row", { name: new RegExp(t.voice) }).getByRole("cell").last()).toHaveText(t.voiceMeasured);
+    await ui(full.getByText(t.tokensCount((3600).toLocaleString("en")), { exact: false })).toBeVisible();
+    await ui(full.getByText(t.weights(2), { exact: false })).toBeVisible();
+  } finally {
+    await page.context().close();
+  }
+}, 60_000);
 
 it("a meter that cannot load says so in plain words and the rest of the page stays usable", async () => {
   const page = await open(375, "de", true);
