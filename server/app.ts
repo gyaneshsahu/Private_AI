@@ -1144,7 +1144,8 @@ export function finalErrorHandler(
   const status = Number(e.status ?? e.statusCode);
   if (e.type === "entity.too.large" || status === 413)
     res.status(413).json({ error: "The request is too large. Nothing was sent." });
-  else if (e.type === "entity.parse.failed" || (status >= 400 && status < 500))
+  // A schema check that throws (research cancel parses its body unguarded) is the client's input too.
+  else if (e.type === "entity.parse.failed" || err instanceof z.ZodError || (status >= 400 && status < 500))
     res.status(400).json({ error: "Invalid request." });
   else res.status(503).json({ error: "Service temporarily unavailable. No new request was started." });
 }

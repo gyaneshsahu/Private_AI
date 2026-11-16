@@ -1,5 +1,6 @@
 // SS-10 and SS-11: branded 404/500 pages for page requests, and the final API error handler.
 import express from "express";
+import { z } from "zod";
 import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { finalErrorHandler } from "../server/app";
@@ -16,6 +17,9 @@ beforeAll(async () => {
   app.get("/refused", (_req, _res, next) => next(Object.assign(Error("no"), { status: 403 })));
   app.use("/api", express.json({ limit: "1kb" }));
   app.post("/api/echo", (req, res) => void res.json(req.body));
+  app.post("/api/strict", (req) => {
+    z.object({ id: z.string() }).strict().parse(req.body);
+  });
   app.get("/api/boom", () => {
     throw Error("SECRET_STACK_CANARY");
   });
@@ -77,6 +81,10 @@ describe("final API error handler", () => {
     const r = await fetch(`${base}/api/echo`, { method: "POST", headers: { "content-type": "application/json" }, body: "{" });
     expect(r.status).toBe(400);
     expect(await r.json()).toEqual({ error: "Invalid request." });
+  });
+  it("keeps 400 for a body that fails a schema check", async () => {
+    const r = await fetch(`${base}/api/strict`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: 1 }) });
+    expect(r.status).toBe(400);
   });
   it("answers 413 for a body over the limit", async () => {
     const r = await fetch(`${base}/api/echo`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ a: "x".repeat(2000) }) });
