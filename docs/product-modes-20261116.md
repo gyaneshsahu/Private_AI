@@ -40,13 +40,16 @@ Status: proposal plus texts. Nothing here is switched on. The legal read of ever
 | Temporary chat | Saved nowhere, as today | Saved nowhere |
 | Moving between modes | Export, then import | Export, then import |
 
-## 3. The simplest interface
+## 3. The interface (owner decision of 16 November, replaces the lock toggle)
 
-- **New chat / New project:** one small lock toggle beside the title, off by default (or on, if the account default says so). Off = Secure, nothing to read. Turning it on shows one line under it and, the first time, the dialog in section 4.
-- **Lists:** Secure Max chats and projects carry a small lock. While Secure Max is locked on a device they show as "Locked" with one button, "Unlock Secure Max".
-- **Settings, "Default for new chats":** Secure (recommended for most people) or Secure Max.
-- **Nothing at login.** A new user signs in and types. No passphrase, no key, no choice.
-- A chat cannot change mode. "Export" is the only way across.
+- **The normal sidebar stays exactly as it is** (new chat, search, projects, tasks, saved chats) and holds only Secure chats. No toggle on New chat or New project. A new user signs in and types: nothing is asked at login.
+- **Secure Max is a separate section in the sidebar** with a lock icon. Inside it: a "Secure Max" header with the lock, a distinct colour band (never colour alone), "New Secure Max chat", "New Secure Max project", the section's own chats, projects, memory and search, and "Lock now".
+- **First time the section is opened:** the confirmation dialog (section 4: paragraph, trade-offs, "I understand"). Cancel returns to the normal sidebar.
+- **New device:** the normal account and chats are there at once. The section shows as locked with one button, "Unlock Secure Max": approve on a device already in use by typing the code the new device shows, or use the recovery key. Without either, everything outside the section still works.
+- **Locking:** after 15 minutes without activity inside the section, and with "Lock now".
+- **Settings:** "Reset Secure Max" (after a recent sign-in, with a clear warning and a typed confirmation) deletes the Secure Max vault on the server and on this device and starts a fresh one, so nobody has to contact support. Optional: "Open CometRow in Secure Max" for professionals who work there all day (replaces the earlier "Default for new chats", which the section makes unnecessary).
+- **Lists outside the section never show Secure Max items,** not even as locked entries. A chat never changes section; moving content is an explicit export.
+- Secure Max is offered only when file sync is on (owner, 16 November), so "files" in the dialog is true.
 
 ## 4. Texts (English and German; the German is binding after the legal read)
 
@@ -123,7 +126,7 @@ Not said anywhere about Secure: "private", "only you", "we cannot read", "zero k
 1. One engine with a server-held key for Secure, instead of a separate plaintext store [yes].
 2. First version of Secure: the server only stores and hands out; no server feature reads content yet [yes].
 3. Secure Max always with sync and a recovery key; no device-only vault as a choice, and always with file sync on, so that "files" in the dialog is true [yes].
-4. Memory: separate per mode in the first version [yes]; later, optionally let Secure Max chats read Secure memories (never the other way) [later].
+4. Memory: separate per mode [decided 16 November: Secure Max memory and search work only inside the section while unlocked]; later, optionally let Secure Max chats read Secure memories (never the other way) [later].
 5. On sign-out, the local copy of Secure data on that device is deleted [yes: shared computers].
 6. Secure Max in the paid plan, first for professional testers [yes].
 7. Retention values in section 5.3 [yes, after the legal read].
