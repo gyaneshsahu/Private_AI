@@ -105,7 +105,8 @@ Design: `docs/settings-structure-20261116.md`.
 - Durable (PostgreSQL, synthetic): 144 of 144.
 - `npm run eval:check`: fixtures unchanged, no model requests.
 - Full unit suite: in CI on every push (sharded).
-- Layout sweep and audit harness: see the run log at the end of this file.
+- Layout sweep (`evaluation/ui-sweep.ts`, Chromium, Firefox and WebKit, phone, tablet and desktop): English 54 of 54 views clean; German (a build with `VITE_GERMAN_UI`) 54 of 54 clean, no English words left, no overflow.
+- Audit harness, final run: every switch on 558 screenshots, every switch off 366, no request beyond localhost, no page overflow inside the app, no untranslated labels. The three tour steps that still expected the old behaviour (send while offline, Secure Max first use) were updated and pass; the harness build now keeps fonts as files like the real build.
 - Provider spend this run: Privatemode 0, Tinfoil 0, Brave 0. No live calls were made.
 
 ## 6. Known risks
@@ -132,4 +133,4 @@ Design: `docs/settings-structure-20261116.md`.
 
 ## Run log
 
-- 16 November: harness, three audits, nine build rounds, three test-fix rounds; 93 commits on `codex/development-handoff`, all pushed.
+- 16 November: harness, three audits, nine build rounds, three test-fix rounds; about 100 commits on `codex/development-handoff`, all pushed. Test fixes at the end: test servers warm every component and use a fixed dependency list where a part loads on demand, so a first use no longer reloads the page mid-test.
