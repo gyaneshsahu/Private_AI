@@ -3412,3 +3412,236 @@
 .secure-max-mount {
   display: contents;
 }
+
+/* chat core component fixes 16 Nov */
+/* Message actions (src/ChatMessage.tsx, src/MenuButton.tsx): one compact row of named icon buttons; Retry and More open small menus. */
+.chat-design .message-actions.compact-actions {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.chat-design .message-actions.compact-actions .icon-action {
+  display: inline-grid;
+  place-items: center;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+}
+.chat-design .message-actions.compact-actions .icon-action .ui-icon {
+  width: 18px;
+  height: 18px;
+  flex-basis: 18px;
+}
+.chat-design .message-actions.compact-actions .icon-action:not(:disabled):hover,
+.chat-design .message-actions.compact-actions .icon-action[aria-expanded="true"] {
+  background: var(--subtle);
+  color: var(--ink);
+}
+.chat-design .message-actions.compact-actions .icon-action[aria-pressed="true"] {
+  border-color: currentColor;
+  color: var(--ink);
+}
+.chat-design .message-actions .action-menu-list {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 4px);
+  z-index: 20;
+  display: grid;
+  gap: 2px;
+  width: max-content;
+  max-width: min(360px, calc(100vw - 32px));
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+.chat-design .message-actions .action-menu-list [role="menuitem"] {
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+  text-align: left;
+  white-space: normal;
+}
+.chat-design .message-actions .action-menu-list [role="menuitem"]:not(:disabled):is(:hover, :focus-visible) {
+  background: var(--subtle);
+}
+/* The streaming answer before its first text: three dots, still for reduced motion. */
+.chat-design .message-waiting {
+  min-height: 1.6em;
+}
+.chat-design .typing-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 1.6em;
+}
+.chat-design .typing-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  animation: chat-typing 1.2s ease-in-out infinite;
+}
+.chat-design .typing-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.chat-design .typing-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes chat-typing {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-design .typing-dots span {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+@media (max-width: 760px) {
+  .chat-design .message-actions.compact-actions .icon-action {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .chat-design .message-actions .action-menu-list [role="menuitem"] {
+    min-height: 44px;
+  }
+}
+/* Sidebar row: rename in place (src/WorkspaceNavigation.tsx). */
+.chat-design .chat-list-row .chat-rename {
+  width: calc(100% - 34px);
+  min-width: 0;
+  min-height: 40px;
+  margin: 0;
+  font-size: 14px;
+}
+/* Row and project menus: the closed menu's content is not laid out (it measured wider than its 34 px box); long German entries wrap. */
+.chat-design :is(.chat-item-menu, .project-actions):not([open]) > :not(summary) {
+  display: none;
+}
+.chat-design :is(.chat-item-actions, .project-actions > div) button {
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+}
+/* Secure Max entry: a normal sidebar item (the generic .nav-item span is a 21 px icon slot, hidden on phones). */
+.chat-design .secure-max-entry {
+  justify-content: flex-start;
+  margin: 8px 0 0;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 15px;
+  gap: 9px;
+}
+.chat-design .secure-max-entry > span {
+  display: inline;
+  width: auto;
+  min-width: 0;
+  font-size: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Answer tables: cells keep whole words and the table scrolls sideways instead of breaking text letter by letter. */
+.chat-design .answer-table :is(th, td) {
+  min-width: 6em;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+/* Health consent and the in-chat search suggestion: stacked, never squeezed into columns. */
+.chat-design .notice:is(.health-consent, .search-suggestion) {
+  flex-direction: column;
+  align-items: stretch;
+}
+.chat-design .notice:is(.health-consent, .search-suggestion) > * {
+  min-width: 0;
+  margin-left: 0;
+}
+.chat-design .notice.search-suggestion textarea {
+  width: 100%;
+}
+.chat-design .notice.health-consent .row {
+  flex-wrap: wrap;
+}
+/* Composer toolbar (markup in src/App.tsx, checked on da864bf): wraps instead of pushing Send or Stop out while recording or streaming. */
+.chat-design .composer-footer {
+  flex-wrap: wrap;
+}
+.chat-design .composer-footer .context-count {
+  min-width: 0;
+}
+/* Settings, Privacy & data: space between "Privacy policy ↗" and "Imprint ↗". */
+.chat-design .settings-content > .text-button + .text-button {
+  margin-left: 16px;
+}
+@media (max-width: 760px) {
+  /* Phone header: the title on one line with an ellipsis. */
+  .chat-design .conversation-header {
+    align-items: center;
+  }
+  .chat-design .conversation-header .header-title {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .chat-design .conversation-header h1 {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow-wrap: normal;
+  }
+  /* 44 px targets on phones: row and project "…", create project, close navigation, DE/EN, "+", microphone and voice. */
+  .chat-design .chat-list-row > button,
+  .chat-design .chat-list-row .chat-rename,
+  .chat-design .project-row > button {
+    width: calc(100% - 44px);
+  }
+  .chat-design .chat-list-row .chat-rename {
+    min-height: 44px;
+  }
+  .chat-design details.chat-item-menu:not([open]),
+  .chat-design details.project-actions:not([open]),
+  .chat-design .chat-item-menu summary,
+  .chat-design .project-actions summary {
+    width: 44px;
+  }
+  .chat-design .chat-item-menu summary,
+  .chat-design .project-actions summary {
+    min-height: 44px;
+  }
+  .chat-design :is(.chat-item-actions, .project-actions > div) button {
+    min-height: 44px;
+  }
+  .chat-design .section-heading .icon-button,
+  .chat-design .sidebar-heading .icon-button,
+  .chat-design .language-switch button,
+  .chat-design .future-voice,
+  .chat-design .voice-input-button,
+  .chat-design .live-voice-open {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .chat-design .tools-menu summary {
+    width: 44px;
+    height: 44px;
+  }
+}
