@@ -3808,6 +3808,8 @@
     flex: none;
     overflow: visible;
   }
+}
+
 /* Keyboard shortcuts help (src/ShortcutHelp.tsx). */
 .chat-design dialog.shortcut-help {
   width: min(480px, calc(100vw - 24px));
