@@ -210,6 +210,8 @@ for (const lang of LANGS)
         const all = seen.join("\n");
         const other = modesText[lang === "de" ? "en" : "de"];
         for (const key of Object.keys(t) as (keyof typeof t)[]) {
+          // Shown elsewhere: "Use Secure Max?" is the title for the other subjects; the stale sign-in and failure lines are checked in the tests below, in both languages.
+          if (key === "maxDialogTitle" || key === "maxResetSignInFirst" || key === "maxResetFailed") continue;
           const mine = t[key];
           const theirs = other[key];
           const [a, b] = typeof mine === "function" && typeof theirs === "function" ? [mine(t.maxResetPhrase), theirs(other.maxResetPhrase)] : [mine, theirs];
@@ -221,9 +223,10 @@ for (const lang of LANGS)
       }
     }, 90_000);
 
-it("locked from the start, sidebar entry says so; stale sign-in blocks the reset; a failed reset says so; dark theme", async () => {
-  const t = modesText.de;
-  const page = await open(375, "de", "?locked=1&stale=1&fail=1&theme=dark", 560);
+for (const lang of LANGS)
+  it(`${lang}: locked from the start, sidebar entry says so; stale sign-in blocks the reset; dark theme`, async () => {
+  const t = modesText[lang];
+  const page = await open(375, lang, "?locked=1&stale=1&fail=1&theme=dark", 560);
   try {
     const sidebar = page.locator("#side");
     const entry = sidebar.getByRole("button", { name: t.maxLocked, exact: true });
@@ -233,14 +236,14 @@ it("locked from the start, sidebar entry says so; stale sign-in blocks the reset
     const intro = page.getByRole("dialog", { name: t.maxIntroTitle, exact: true });
     const box = (await intro.boundingBox())!;
     expect(box.y + box.height).toBeLessThanOrEqual(560);
-    await shot(page, "de-375-short-dark-intro");
+    await shot(page, `${lang}-375-short-dark-intro`);
     await intro.getByRole("checkbox").check();
     await intro.getByRole("button", { name: t.maxConfirm, exact: true }).click();
     const section = sidebar.getByRole("region", { name: t.maxLabel });
     await ui(section.getByText(t.maxIsLocked)).toBeVisible();
     await ui(section.getByRole("button")).toHaveText([t.maxUnlock]);
     expect(await page.locator(".chat-design").evaluate((element) => getComputedStyle(element).backgroundColor)).toBe("rgb(25, 28, 31)");
-    await shot(page, "de-375-short-dark-locked");
+    await shot(page, `${lang}-375-short-dark-locked`);
 
     const settings = page.locator("#settings");
     await ui(settings.getByText(t.maxResetSignInFirst)).toBeVisible();
@@ -251,9 +254,10 @@ it("locked from the start, sidebar entry says so; stale sign-in blocks the reset
   }
 }, 60_000);
 
-it("a reset that fails says so and deletes nothing in the interface", async () => {
-  const t = modesText.en;
-  const page = await open(768, "en", "?fail=1");
+for (const lang of LANGS)
+  it(`${lang}: a reset that fails says so and deletes nothing in the interface`, async () => {
+  const t = modesText[lang];
+  const page = await open(768, lang, "?fail=1");
   try {
     const settings = page.locator("#settings");
     await settings.getByRole("button", { name: t.maxResetLabel, exact: true }).click();
