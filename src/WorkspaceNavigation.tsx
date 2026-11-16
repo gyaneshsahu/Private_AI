@@ -15,6 +15,7 @@ import { messageActionsText } from "./text/message-actions";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { ProjectDeleteDialog } from "./ProjectDeleteDialog";
 import { shortcutsText } from "./text/shortcuts";
+import { forStorage, type Storage } from "./text/mode-copy";
 
 export function WorkspaceNavigation(props: {
   open: boolean;
@@ -41,6 +42,8 @@ export function WorkspaceNavigation(props: {
   onOpenProject?: (id: string) => void;
   /** Deletes the project, and its chats when chosen; resolves true when it is gone. Without it the chats are kept. */
   onDeleteProject?: (id: string, deleteChats: boolean) => Promise<boolean>;
+  /** Where these projects are kept, as given to ProjectPanel; decides what the delete question promises. */
+  projectStorage?: Storage;
   /** Opens the keyboard shortcuts list (src/ShortcutHelp.tsx); the account menu entry is shown only when given. */
   onShortcuts?: () => void;
   /** The Scheduled screen (docs/scheduled-20261115.md); absent while its switch is off. */
@@ -81,6 +84,7 @@ export function WorkspaceNavigation(props: {
     onEditProject,
     onOpenProject,
     onDeleteProject,
+    projectStorage,
     onShortcuts,
     onScheduled,
     backgroundActive,
@@ -546,7 +550,7 @@ export function WorkspaceNavigation(props: {
             name={p.name}
             text={
               choice
-                ? projectSpacesEnabled() ? pt.deleteText : t.deleteProjectChoose
+                ? projectSpacesEnabled() ? forStorage(pt, projectStorage).deleteText : t.deleteProjectChoose
                 : projectSpacesEnabled() ? `${pt.removeAlso} ${t.deleteProjectKeeps}` : t.deleteProjectKeeps
             }
             chats={choice ? chats : 0}
