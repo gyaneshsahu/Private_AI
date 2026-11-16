@@ -8,6 +8,7 @@ import {
   type ProductionInferenceConfig,
 } from "./consumer-workspace";
 import type { ProductionAccountCandidateConfig } from "./account-auth";
+import { errorPage, notFoundPage } from "./error-page";
 
 export interface ProductionRuntimeConfig extends ProductionAccountCandidateConfig {
   inference?: ProductionInferenceConfig;
@@ -84,6 +85,9 @@ export async function prepareProductionRuntime(
   candidate.app.get(["/", "/account"], (_req, res) =>
     res.sendFile(resolve(config.assets, "index.html")),
   );
+  // Unknown page paths and errors after this point: branded pages, never Express's bare text.
+  candidate.app.use(notFoundPage);
+  candidate.app.use(errorPage);
   server.on("request", candidate.app);
   server.headersTimeout = 15_000;
   server.requestTimeout = 30_000;
