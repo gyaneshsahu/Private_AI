@@ -4,6 +4,7 @@ import { readAloudEnabled } from "./device-features";
 import { useLang, useText } from "./i18n";
 import { chooseVoice, loadVoices, pageReader, speechChunks, spokenText } from "./read-aloud";
 import { deviceText } from "./text/device-features";
+import { Icon } from "./Icon";
 
 const idle = () => () => {};
 /** "Read aloud" on one answer, with pause while it reads. Renders nothing while the feature is off. */
@@ -24,7 +25,10 @@ export function ReadAloudButton({ id, disabled }: { id: string; disabled: boolea
   return (
     <>
       <button
+        className="icon-action"
         disabled={disabled}
+        aria-label={t.readAloud}
+        title={t.readAloud}
         aria-pressed={active}
         onClick={async (event) => {
           if (active) return reader.stop();
@@ -39,14 +43,17 @@ export function ReadAloudButton({ id, disabled }: { id: string; disabled: boolea
           reader.start(id, speechChunks(spokenText(shown, deviceText[answerLang])), voice);
         }}
       >
-        {t.readAloud}
+        <Icon name="speaker" />
       </button>
       {active && (
         <button
+          className="icon-action"
+          aria-label={t.pause}
+          title={t.pause}
           aria-pressed={state.paused}
           onClick={() => (state.paused ? reader.resume() : reader.pause())}
         >
-          {t.pause}
+          <Icon name="pause" />
         </button>
       )}
       {/* Always present, so a screen reader announces the text when it appears. */}

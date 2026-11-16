@@ -116,12 +116,9 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       .fill("TEST question with a source");
     await page.getByRole("button", { name: "Send message", exact: true }).click();
     await ui(page.getByText("TEST_PARTIAL", { exact: true })).toBeVisible();
-    await ui(
-      page
-        .locator("article.assistant")
-        .last()
-        .getByRole("button", { name: "Copy answer" }),
-    ).toBeDisabled();
+    // While it streams the answer has no actions and no "Incomplete" label (ChatMessage `streaming`, CC-01).
+    await ui(page.locator("article.assistant").last().locator(".message-actions")).toHaveCount(0);
+    await ui(page.locator("article.assistant").last().getByText("Incomplete · excluded from context")).toHaveCount(0);
     await page.getByRole("button", { name: "Stop", exact: true }).click();
     await ui(
       page.getByText("Response stopped.", { exact: false }),
@@ -160,8 +157,9 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     await page
       .getByLabel("Message CometRow")
       .fill("UNSENT FOLLOW-UP DURING RETRY");
+    await page.getByRole("button", { name: "Retry", exact: true }).click();
     await page
-      .getByRole("button", { name: "Retry last response", exact: false })
+      .getByRole("menuitem", { name: "Retry last response", exact: false })
       .click();
     await ui(page.locator("article.assistant")).toHaveCount(1);
     await ui(page.getByLabel("Message CometRow")).toHaveValue(

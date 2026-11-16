@@ -3,6 +3,7 @@ import type { Conversation } from "../shared/contracts";
 import { pdfExportEnabled } from "./device-features";
 import { useText } from "./i18n";
 import { deviceText } from "./text/device-features";
+import { Icon } from "./Icon";
 
 const PdfExport = lazy(() => import("./pdf-export"));
 
@@ -32,9 +33,22 @@ export function PdfExportButton({
         );
   return (
     <>
-      <button disabled={disabled} onClick={() => setRun((n) => Math.abs(n) + 1)}>
-        {answer === undefined ? t.exportConversation : t.exportPdf}
-      </button>
+      {answer === undefined ? (
+        <button disabled={disabled} onClick={() => setRun((n) => Math.abs(n) + 1)}>
+          {t.exportConversation}
+        </button>
+      ) : (
+        // One answer: an icon in the compact action row.
+        <button
+          className="icon-action"
+          aria-label={t.exportPdf}
+          title={t.exportPdf}
+          disabled={disabled}
+          onClick={() => setRun((n) => Math.abs(n) + 1)}
+        >
+          <Icon name="file" />
+        </button>
+      )}
       {run > 0 && (
         <Suspense>
           <PdfExport

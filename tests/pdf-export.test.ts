@@ -81,7 +81,8 @@ it("shows no button while the switch is off, and one when it is on", () => {
     renderToStaticMarkup(createElement(PdfExportButton, { conversation, answer: 1, disabled: false }));
   expect(button()).toBe("");
   vi.stubEnv("VITE_PDF_EXPORT", "1");
-  expect(button()).toBe("<button>Export as PDF</button>");
+  // One answer: an icon button in the compact row, named and with a tooltip.
+  expect(button()).toMatch(/^<button class="icon-action" aria-label="Export as PDF" title="Export as PDF"><svg [^]*<\/svg><\/button>$/);
 });
 
 it("has print rules that hide the app, keep blocks whole and ignore dark mode", () => {

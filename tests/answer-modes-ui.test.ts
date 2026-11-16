@@ -90,8 +90,11 @@ it("shows Auto, Fast and Thinking only, remembers the choice, and labels a backu
       { choice: "backup", mode: "thinking" },
     ]);
     await ui(page.getByRole("dialog")).toHaveCount(0);
-    // After a Thinking answer there is nothing deeper to offer.
-    await ui(page.getByRole("button", { name: "Answer again with Thinking" })).toHaveCount(0);
+    // After a Thinking answer there is nothing deeper to offer (the Retry menu has one item).
+    await page.getByRole("button", { name: "Retry", exact: true }).click();
+    await ui(page.getByRole("menuitem", { name: /^Retry last response/ })).toBeVisible();
+    await ui(page.getByRole("menuitem", { name: /^Answer again with Thinking/ })).toHaveCount(0);
+    await page.keyboard.press("Escape");
 
     // A simple question goes to Fast; one tap asks it again on Thinking, labelled "Thinking".
     await page.getByLabel("Message CometRow").fill("What is the capital of France?");
@@ -99,7 +102,8 @@ it("shows Auto, Fast and Thinking only, remembers the choice, and labels a backu
     await ui(page.locator("article.assistant").last().locator(".answered-by")).toHaveText(
       "Auto · Fast · Answered by the backup model",
     );
-    await page.getByRole("button", { name: "Answer again with Thinking" }).click();
+    await page.getByRole("button", { name: "Retry", exact: true }).click();
+    await page.getByRole("menuitem", { name: /^Answer again with Thinking/ }).click();
     await ui(page.locator("article.assistant").last().locator(".answered-by")).toHaveText(
       "Thinking · Answered by the backup model",
     );

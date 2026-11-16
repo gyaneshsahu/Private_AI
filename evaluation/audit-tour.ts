@@ -184,7 +184,10 @@ const STEPS: Step[] = [
     await c.click("Copy answer");
     await pause(c.page, 300);
     await c.shot("message-copied");
-    await vis(c.page.getByRole("button", { name: new RegExp(`^(${c.alts("Retry last response").join("|")})`) })).click();
+    await c.click("Retry");
+    await pause(c.page, 300);
+    await c.shot("message-retry-menu");
+    await vis(c.page.getByRole("menuitem", { name: new RegExp(`^(${c.alts("Retry last response").join("|")})`) })).click();
     c.clicked.push("Retry last response");
     await pause(c.page, 2000);
     await c.shot("message-retried-versions");
@@ -196,14 +199,17 @@ const STEPS: Step[] = [
   ["answer-again-thinking", async (c) => {
     await c.fresh();
     await c.send("Quick one. audit:plain", undefined, true);
-    await vis(c.page.getByRole("button", { name: new RegExp(`^(${c.alts("Answer again with Thinking").join("|")})`) })).click();
+    await c.click("Retry");
+    await vis(c.page.getByRole("menuitem", { name: new RegExp(`^(${c.alts("Answer again with Thinking").join("|")})`) })).click();
     await pause(c.page, 2000);
     await c.shot("answer-again-thinking");
   }],
   ["report-problem", async (c) => {
     await c.fresh();
     await c.send("Report this. audit:plain", undefined, true);
-    await vis(c.page.getByRole("button", { name: c.tr("Report a problem with this answer") })).click();
+    await vis(c.page.locator("article.assistant").last().getByRole("button", { name: c.tr("More actions"), exact: true })).click();
+    c.clicked.push("More actions");
+    await vis(c.page.getByRole("menuitem", { name: c.tr("Report a problem with this answer") })).click();
     await pause(c.page, 600);
     await c.shot("report-problem");
   }],

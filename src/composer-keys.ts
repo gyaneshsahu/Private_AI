@@ -58,5 +58,7 @@ export function limitState(length: number, max = MESSAGE_LIMIT) {
 export function fitHeight(field: HTMLTextAreaElement | null) {
   if (!field) return;
   field.style.height = "auto";
-  if (field.value) field.style.height = `${Math.min(field.scrollHeight, MAX_HEIGHT)}px`;
+  // Plus the borders (offsetHeight - clientHeight): a bordered box would otherwise scroll by 2 px.
+  if (field.value)
+    field.style.height = `${Math.min(field.scrollHeight + field.offsetHeight - field.clientHeight, MAX_HEIGHT)}px`;
 }
