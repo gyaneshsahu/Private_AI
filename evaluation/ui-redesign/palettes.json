@@ -1,7 +1,7 @@
 {
   "F": {
-    "name": "C light + A dark, no glow",
-    "note": "Light theme from option C, dark theme from option A. No glow and no light line on the message box.",
+    "name": "C light + A dark, soft cosmic background",
+    "note": "Light theme from option C, dark theme from option A. A faint cosmic glow sits in the page background; the message box itself has no glow.",
     "light": {
       "bg": "#fbfcfe",
       "sidebar": "#f2f5fa",
@@ -17,7 +17,8 @@
       "bubble": "#e9f0ff",
       "code": "#f2f5fa",
       "danger": "#a3261d",
-      "light": "#2456e6"
+      "light": "#2456e6",
+      "glow": "radial-gradient(70% 55% at 50% 42%, #7fb2ff2e, transparent 70%), radial-gradient(45% 40% at 78% 18%, #6fe0d01f, transparent 70%), radial-gradient(40% 40% at 18% 85%, #a9b8ff1f, transparent 70%)"
     },
     "dark": {
       "bg": "#1b1b1e",
@@ -34,7 +35,8 @@
       "bubble": "#2a2a2f",
       "code": "#141416",
       "danger": "#ff9c92",
-      "light": "#8fb4ff"
+      "light": "#8fb4ff",
+      "glow": "radial-gradient(70% 55% at 50% 40%, #5b8cff26, transparent 70%), radial-gradient(45% 40% at 80% 15%, #3fd0c016, transparent 70%), radial-gradient(40% 40% at 15% 88%, #8f9bff18, transparent 70%)"
     }
   }
 }
