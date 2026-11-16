@@ -12,6 +12,10 @@ import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { appText } from "../src/text/app";
 import { deepResearchText } from "../src/text/deep-research";
 import { researchNextText } from "../src/text/research-next";
+import { skipLinkText } from "../src/text/skip-link";
+import { titleFrom } from "../src/title-from";
+import { workspaceText } from "../src/text/workspace";
+import { answerIfAsked } from "./fixtures/app-questions";
 
 type Lang = "en" | "de";
 let vite: ViteDevServer;
@@ -213,7 +217,16 @@ for (const lang of ["en", "de"] as const)
         expect(posted).toEqual([]);
         await tall(width, approval.getByRole("button"));
         await noSidewaysScroll(page);
+        // Another tab and back (the skip link): the run waits at the approval, nothing searched.
+        await page.getByLabel(a.tools, { exact: true }).click();
+        await page.locator(".tools-menu").getByRole("button", { name: a.tabResearch, exact: true }).click();
+        await ui(page.locator(".deep-research-inline")).toHaveCount(0); // the page's own panel shows here
+        await page.getByRole("link", { name: skipLinkText[lang].toMessageBox }).focus();
+        await page.keyboard.press("Enter");
+        await ui(approval.getByRole("textbox")).toHaveCount(3);
+        expect(posted).toEqual([]);
         // Escape at the approval: closed, the draft kept, the plan's count said, nothing searched.
+        await page.locator("#deep-research-inline-approve").focus();
         await page.keyboard.press("Escape");
         await ui(card).toHaveCount(0);
         await ui(box).toHaveValue(question);
@@ -243,6 +256,7 @@ for (const lang of ["en", "de"] as const)
         await ui(card).toHaveCount(0);
         await ui(page.getByRole("button", { name: t.showAnswer })).toHaveCount(0);
         await ui(page.locator("article.user").last()).toContainText(question);
+        await ui(page.locator("h1")).toHaveText(titleFrom(question)); // this chat, named by the question
         await ui(box).toHaveValue("");
         await ui(page.locator(".dock-notice")).toContainText(t.used(15, 15));
         // Exactly the approved texts were searched (the second masked on this device).
@@ -264,6 +278,53 @@ for (const lang of ["en", "de"] as const)
         await context.close();
       }
     }, 150_000);
+
+it("a new chat during the searches stops the run; nothing of it reaches the new chat", async () => {
+  const t = deepResearchText.en;
+  const a = appText.en;
+  const { context, page, posted, hold } = await open("en", 1280);
+  try {
+    await page.getByLabel(a.tools, { exact: true }).click();
+    await page.locator(".tools-menu").getByRole("button", { name: t.heading, exact: true }).click();
+    await page.getByLabel(a.messageInput).fill("How long is the synthetic notice period?");
+    await page.getByRole("button", { name: a.sendLabel, exact: true }).click();
+    const card = page.getByRole("region", { name: t.heading });
+    await card.getByRole("button", { name: t.plan, exact: true }).click({ timeout: 30_000 });
+    const release = hold();
+    await card.getByRole("button", { name: t.approve(3), exact: true }).click();
+    await ui(card.getByRole("list", { name: t.steps }).locator('li[data-state="running"]')).toContainText(t.searching(1, 3));
+    await page.getByRole("button", { name: workspaceText.en.newConversation, exact: true }).first().click();
+    await answerIfAsked(page, true);
+    await ui(card).toHaveCount(0);
+    const sent = posted.length;
+    release();
+    await page.waitForTimeout(500);
+    expect(posted).toHaveLength(sent);
+    await ui(page.locator(".context-count")).toHaveCount(0); // no research results in the new chat
+    await ui(page.getByText(t.resultCancelled)).toHaveCount(0);
+    expect((await calls(page)).map((c) => c.research)).toEqual(["plan"]);
+  } finally {
+    await context.close();
+  }
+}, 120_000);
+
+it("a question longer than a research question may be is refused with the reason; nothing is sent", async () => {
+  const t = deepResearchText.en;
+  const a = appText.en;
+  const { context, page } = await open("en", 768);
+  try {
+    await page.getByLabel(a.tools, { exact: true }).click();
+    await page.locator(".tools-menu").getByRole("button", { name: t.heading, exact: true }).click();
+    await page.getByLabel(a.messageInput).fill("synthetic question ".repeat(60));
+    await page.getByRole("button", { name: a.sendLabel, exact: true }).click();
+    const card = page.getByRole("region", { name: t.heading });
+    await card.getByRole("button", { name: t.plan, exact: true }).click({ timeout: 30_000 });
+    await ui(card.getByRole("alert")).toHaveText(researchNextText.en.tooLong(1000));
+    expect(await calls(page)).toEqual([]);
+  } finally {
+    await context.close();
+  }
+}, 120_000);
 
 it("without the deep research switch the menu has no Deep research", async () => {
   const { context, page } = await open("en", 768, false);

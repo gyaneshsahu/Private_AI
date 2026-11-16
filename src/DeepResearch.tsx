@@ -77,8 +77,15 @@ export function DeepResearch(props: {
   const questionField = useRef<HTMLTextAreaElement>(null);
   const planButton = useRef<HTMLButtonElement>(null);
   const step = (name: Step, view: StepView) => setSteps((all) => ({ ...all, [name]: view }));
-  // Gone (another chat, the switch off): nothing more is sent for this run.
-  useEffect(() => () => abort.current?.abort(), []);
+  // Gone (another chat, the switch off): nothing more is sent, kept or said for this run.
+  const gone = useRef(false);
+  useEffect(() => {
+    gone.current = false; // StrictMode runs the cleanup once at mount
+    return () => {
+      gone.current = true;
+      abort.current?.abort();
+    };
+  }, []);
 
   // Another conversation (or a lock): the run belongs to the one it started in.
   const first = useRef(true);
@@ -99,6 +106,7 @@ export function DeepResearch(props: {
   }, [phase, props.hidden]);
 
   const finish = (text: string, used: string, extra: { kept?: string; show?: string } = {}) => {
+    if (gone.current) return;
     if (inline) {
       // The run is over: closing must not abort the answer's controller (it is the send's own).
       abort.current = undefined;
@@ -208,7 +216,7 @@ export function DeepResearch(props: {
     }));
     // Sources of a run that ended before the answer was requested are kept for a normal question.
     const kept = !outcome.answerSent && outcome.sources.length ? outcome.sources : undefined;
-    if (kept) props.keep(kept, tally.queries);
+    if (kept && !gone.current) props.keep(kept, tally.queries);
     finish(
       outcome.status === "done"
         ? t.resultDone

@@ -39,5 +39,5 @@ Unused keys left in `src/text/app.ts` (another agent owns it): `responseStopped`
 
 ## Tests
 
-- `tests/deep-research-chat-ui.test.ts`: 3 widths x 2 languages; the armed note with the cost, the card, Escape before and at the approval with the draft kept and focus in the message box, no search before the approval, the masked texts, the progress in the card, the answer in the conversation without a click, no "Show the answer", the cleared draft, one-shot; no item without the switch; nothing outside the machine.
+- `tests/deep-research-chat-ui.test.ts`: 3 widths x 2 languages; the armed note with the cost, the card, Escape before and at the approval with the draft kept and focus in the message box, no search before the approval, the masked texts, the progress in the card, the answer in the conversation without a click, no "Show the answer", the cleared draft, the chat named by the question, one-shot, another tab and back at the approval; a new chat during the searches stops the run and gets nothing of it; a question over 1,000 characters refused; no item without the switch; nothing outside the machine.
 - `tests/chat-recovery.test.ts` and `tests/chat-core-ui.test.ts` check the sentence in the message, the hidden status line and that the long text is gone. The placement check of the notice above the message box now uses the "new chat" notice.
