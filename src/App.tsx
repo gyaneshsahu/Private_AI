@@ -619,8 +619,11 @@ export function App() {
   // The app's own question in place of window.confirm (FE-14): one at a time, answered by the dialog below.
   const q = questionText[lang];
   const [question, setQuestion] = useState<{ title: string; text: string; confirm: string; answer: (yes: boolean) => void }>();
-  const ask = (title: string, text: string, confirm: string) =>
-    new Promise<boolean>((answer) => setQuestion({ title, text, confirm, answer }));
+  // The browser's question froze the page; this one does not, so a lock or sign-out meanwhile (epoch) turns a yes into no.
+  const ask = (title: string, text: string, confirm: string) => {
+    const at = epoch.current;
+    return new Promise<boolean>((resolve) => setQuestion({ title, text, confirm, answer: (yes) => resolve(yes && at === epoch.current) }));
+  };
   const allowReplace = async () => !unsaved || ask(q.discardTitle, t.discardConfirm, q.discard);
   useEffect(() => {
     if (!source) return;
@@ -4124,8 +4127,7 @@ export function App() {
         {tab !== "Conversation" && (
           <footer>
             {t.footer}
-            {/* True in every mode (rule 7); the old line spoke of an evaluation (FE-19). */}
-            <span>{modeCopyText[lang].footerNote_secure}</span>
+            <span>{tm(mode).footerNote}</span>
           </footer>
         )}
       </main>

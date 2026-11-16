@@ -21,7 +21,7 @@ import { newMessage } from "../src/conversation";
 import { derive } from "../src/vault-crypto";
 import { encodeVaultBackup } from "../src/vault-backup";
 import { localTLS } from "./fixtures/local-tls";
-import { answerQuestion, answerQuestions } from "./fixtures/app-questions";
+import { answerIfAsked, answerQuestions } from "./fixtures/app-questions";
 
 const enabled = !!process.env.PRIVATEAI_SYNTHETIC_PG;
 const origin = productionAccountTarget.origin;
@@ -304,7 +304,7 @@ for (const viewport of [
           .getByRole("article", { name: "JOURNEY_REPLIES_0", exact: true })
           .getByRole("button", { name: "Open", exact: true })
           .click();
-        await answerQuestion(page, true);
+        await answerIfAsked(page, true);
         await browserExpect(page.locator(".messages article")).toHaveCount(30);
         await page
           .getByRole("button", {

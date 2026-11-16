@@ -115,9 +115,14 @@ async function device(s: Site, account: string, lang: "en" | "de" = "en", width 
     if (url.origin !== s.origin) return route.abort();
     // The real status, with chat marked ready (no provider is configured in this test).
     if (url.pathname === "/api/status") {
-      const real = await route.fetch();
-      if (!real.ok()) return route.fulfill({ response: real });
-      return route.fulfill({ response: real, json: { ...(await real.json()), inference: { ready: true, reason: "OFFLINE ONLY", qualification: { maxInputCharacters: 100000 } }, search } });
+      try {
+        const real = await route.fetch();
+        if (!real.ok()) return await route.fulfill({ response: real });
+        return await route.fulfill({ response: real, json: { ...(await real.json()), inference: { ready: true, reason: "OFFLINE ONLY", qualification: { maxInputCharacters: 100000 } }, search } });
+      } catch {
+        // The page left or its context closed while the status was on its way.
+        return;
+      }
     }
     // Sign-out of the simulated session: the app's own steps run, then the page leaves.
     if (url.pathname === "/auth/logout") return route.fulfill({ status: 200, body: "" });

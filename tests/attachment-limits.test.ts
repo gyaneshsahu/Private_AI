@@ -13,6 +13,9 @@ it("searches do not count as files, and a new search replaces the oldest one (FE
   const next = withResearch(list, search("new"));
   expect(next.map((a) => a.id)).toEqual(["f1", "s1", "f2", "f3", "f4", "f5", "s2", "s3", "s4", "new"]);
   expect(fileCount(next)).toBe(5);
+  // An opened page is not a search: it is never the one replaced.
+  const page: Attachment = { id: "page", name: "page", selected: true, kind: "research", sources: [] };
+  expect(withResearch([page, ...searches], search("new")).map((a) => a.id)).toEqual(["page", "s1", "s2", "s3", "s4", "new"]);
   // Below the limit nothing goes.
   expect(withResearch(files, search("new")).map((a) => a.id)).toEqual(["f1", "f2", "f3", "f4", "f5", "new"]);
 });

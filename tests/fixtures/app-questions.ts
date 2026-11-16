@@ -23,6 +23,12 @@ function answer([titles, yes]: [string[], boolean]) {
 export const answerQuestion = (page: Page, yes: boolean) =>
   page.locator("dialog.confirm-dialog[open]").locator(yes ? ".danger-button" : ".confirm-actions button:not(.danger-button)").click();
 
+/** Answers the app's question if one opens within a moment (where the old test accepted a browser question that may not come). */
+export async function answerIfAsked(page: Page, yes: boolean) {
+  const open = page.locator("dialog.confirm-dialog[open]");
+  if (await open.waitFor({ timeout: 2000 }).then(() => true, () => false)) await answerQuestion(page, yes);
+}
+
 export async function answerQuestions(page: Page, yes = true) {
   page.on("dialog", (dialog) => void (yes ? dialog.accept() : dialog.dismiss()));
   await page.addInitScript(answer, [titles, yes] as [string[], boolean]);
