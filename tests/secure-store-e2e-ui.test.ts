@@ -65,7 +65,7 @@ afterAll(async () => {
 });
 
 /** One deployment on a random port: /api and /auth go to the real app, the rest to Vite. */
-async function site(o: { secure: boolean; sync: boolean }) {
+async function site(o: { secure: boolean; sync: boolean; files?: boolean }) {
   const server = createServer();
   servers.push(server);
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -77,7 +77,7 @@ async function site(o: { secure: boolean; sync: boolean }) {
     origin,
     dev: true,
     ...(o.sync
-      ? { vaultSync: { quotaBytes: 200 * 1024 * 1024, maxDevices: 5, store: stores.sync, blobs: { quotaBytes: 1024 * 1024 * 1024, maxFileBytes: 10 * 1024 * 1024, store: new MemoryBlobStore() } } }
+      ? { vaultSync: { quotaBytes: 200 * 1024 * 1024, maxDevices: 5, store: stores.sync, ...(o.files === false ? {} : { blobs: { quotaBytes: 1024 * 1024 * 1024, maxFileBytes: 10 * 1024 * 1024, store: new MemoryBlobStore() } }) } }
       : {}),
     ...(o.secure
       ? { secureStore: { quotaBytes: 200 * 1024 * 1024, filesQuotaBytes: 1024 * 1024 * 1024, master: ephemeralCustodyMaster(), store: stores.secure, blobs: new MemoryBlobStore() } }
@@ -164,6 +164,8 @@ async function openMax(page: Page, lang: "en" | "de" = "en") {
   }
   await ui(maxSection(page)).toBeVisible();
   await ui(page.locator(".secure-max-entry")).toHaveCount(0);
+  // Focus is inside the section (its opener is gone), after Confirm as on a later open.
+  await expect.poll(() => page.evaluate(() => !!document.activeElement?.closest(".secure-max-section")), { timeout: 5000 }).toBe(true);
 }
 async function memories(page: Page) {
   await openSettings(page, "en", memoryText.en.title);
@@ -369,6 +371,37 @@ it("375 px, German: the Secure wiring fits a phone", async () => {
   await ui(settings(page).getByRole("switch", { name: modesText.de.maxStartLabel })).toBeVisible();
   await ui(settings(page).getByRole("button", { name: modesText.de.maxResetLabel })).toHaveCount(0);
   await noSidewaysScroll(page);
+  // Open CometRow in Secure Max: after a reload the section is open, nothing is asked.
+  await settings(page).getByRole("switch", { name: modesText.de.maxStartLabel }).check();
+  await page.reload();
+  // A new chat starts in Secure Max (locked here, so nothing is saved until it is unlocked).
+  await ui(page.getByText(secureStoreText.de.captionMaxLocked)).toBeVisible();
+  await navigation(page, "de");
+  await ui(page.getByRole("region", { name: modesText.de.maxLabel })).toBeVisible();
+  await ui(page.getByRole("dialog", { name: modesText.de.maxIntroTitle })).toHaveCount(0);
+  // A temporary chat is saved nowhere: the Secure store gets nothing.
+  await focus(page);
+  await expect.poll(async () => (await s.stores.secure.usage(account)).cursor, { timeout: 20_000 }).toBeGreaterThanOrEqual(1); // the earlier chat
+  const cursor = (await s.stores.secure.usage(account)).cursor;
+  await page.locator("button.new-incognito").click();
+  await ask(page, "de", "TEMPORAERE FRAGE");
+  await focus(page);
+  await page.waitForTimeout(1500);
+  expect((await s.stores.secure.usage(account)).cursor).toBe(cursor);
+  // Sign-out forgets the start choice and the confirmation on this browser.
+  await navigation(page, "de");
+  await page.locator("button", { hasText: workspaceText.de.signOut }).first().dispatchEvent("click");
+  await page.waitForURL(/\/auth$/);
+  expect(await page.evaluate(() => [localStorage.getItem("cometrow.openInSecureMax"), localStorage.getItem("cometrow.secureMaxConfirmed")])).toEqual([null, null]);
+  await page.context().close();
+}, 180_000);
+
+it("1280 px, English: encrypted sync without file sync offers no Secure Max", async () => {
+  const s = await site({ secure: true, sync: true, files: false });
+  const page = await device(s, randomUUID());
+  await ui(page.getByText(secureStoreText.en.captionSecure)).toBeVisible();
+  await ui(page.locator(".secure-max-entry")).toHaveCount(0);
+  await ui(maxSection(page)).toHaveCount(0);
   await page.context().close();
 }, 180_000);
 

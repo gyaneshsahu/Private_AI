@@ -122,6 +122,8 @@ export async function openSecure(o: { accountId: string; csrf: () => string; onA
 export async function flushSecure() {
   if (current) await within(current.engine.syncNow().catch(() => {}), 3000);
 }
+/** Secure changes on this device that have not reached the account yet (sign-out would delete them). */
+export const securePending = async () => (current ? await current.engine.pendingCount().catch(() => 0) : 0);
 /**
  * Stops the Secure store. `erase` (sign-out, another account): the local Secure databases on this
  * device are deleted; the server copy stays with the account.

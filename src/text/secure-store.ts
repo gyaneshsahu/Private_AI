@@ -14,6 +14,8 @@ export const secureStoreText = defineText({
     otherMode: "A chat stays in its mode. It cannot move to a project in the other mode.",
     unavailable: "Your saved chats could not be loaded. Check the connection and reload the page.",
     saveFailed: "This chat could not be saved yet. CometRow will try again after the next message.",
+    unsentSignOut: "Some changes have not reached your account yet. If you sign out now, they are deleted from this device. Sign out anyway?",
+    maxResetDone: "Secure Max was reset on our server and on this device. Unlock Secure Max to start a new one. Your Secure chats are unchanged.",
   },
   de: {
     captionSecure: "Secure · Wird automatisch in Ihrem Konto gespeichert",
@@ -26,5 +28,7 @@ export const secureStoreText = defineText({
     otherMode: "Ein Chat bleibt in seinem Modus. Er kann nicht in ein Projekt des anderen Modus verschoben werden.",
     unavailable: "Ihre gespeicherten Chats konnten nicht geladen werden. Prüfen Sie die Verbindung und laden Sie die Seite neu.",
     saveFailed: "Dieser Chat konnte noch nicht gespeichert werden. CometRow versucht es nach der nächsten Nachricht erneut.",
+    unsentSignOut: "Einige Änderungen sind noch nicht in Ihrem Konto angekommen. Wenn Sie sich jetzt abmelden, werden sie auf diesem Gerät gelöscht. Trotzdem abmelden?",
+    maxResetDone: "Secure Max wurde auf unserem Server und auf diesem Gerät zurückgesetzt. Entsperren Sie Secure Max, um neu zu beginnen. Ihre Secure-Chats bleiben unverändert.",
   },
 });

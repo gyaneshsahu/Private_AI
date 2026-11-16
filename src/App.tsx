@@ -90,7 +90,7 @@ import { AnswerAnnouncement, ConnectionBanner } from "./ConnectionBanner";
 import { composerText } from "./text/composer";
 import { Vault, VaultConflictError } from "./vault";
 import type { Mode } from "../shared/modes";
-import { assignMode, closeSecure, flushSecure, modeOf, openSecure, readAvailable, readProjects, secureVault, useSecureState, vaultFor } from "./stores";
+import { assignMode, closeSecure, flushSecure, securePending, modeOf, openSecure, readAvailable, readProjects, secureVault, useSecureState, vaultFor } from "./stores";
 import { SecureMaxSection, SecureMaxSidebarEntry, shouldShowSecureMaxIntro } from "./SecureMaxSection";
 import { SecureMaxResetSetting } from "./SecureMaxResetSetting";
 import { SecureMaxStartSetting } from "./SecureMaxStartSetting";
@@ -478,24 +478,31 @@ export function App() {
   const st = secureStoreText[lang];
   // The section the user is in (owner, 16 November): the normal app is Secure; Secure Max is its own
   // section of the sidebar, opened from its one entry. The app starts in the normal section unless
-  // "Open CometRow in Secure Max" is on for this device (Settings).
-  const [startInMax, setStartInMaxState] = useState(() => {
+  // "Open CometRow in Secure Max" is on for this account on this device (Settings) and the explanation
+  // was already confirmed here: nothing is asked at sign-in.
+  const storedStart = () => {
     try {
-      return localStorage.getItem(START_KEY) === "1";
+      return localStorage.getItem(START_KEY);
     } catch {
-      return false;
+      return null;
     }
-  });
+  };
+  const [startInMax, setStartInMaxState] = useState(false);
   const setStartInMax = (on: boolean) => {
     setStartInMaxState(on);
     try {
-      if (on) localStorage.setItem(START_KEY, "1");
+      if (on && status?.accountId) localStorage.setItem(START_KEY, status.accountId);
       else localStorage.removeItem(START_KEY);
     } catch {
       /* storage blocked: the app starts in the normal section */
     }
   };
-  const [sectionState, setSection] = useState<Mode>(() => (startInMax ? "max" : "secure"));
+  const [sectionState, setSection] = useState<Mode>("secure");
+  useEffect(() => {
+    const on = maxAvailable && storedStart() === status?.accountId;
+    setStartInMaxState(on);
+    if (on && !shouldShowSecureMaxIntro()) setSection("max");
+  }, [maxAvailable, status?.accountId]);
   const section: Mode = maxAvailable ? sectionState : "secure";
   const sectionRef = useRef(section);
   sectionRef.current = section;
@@ -867,17 +874,24 @@ export function App() {
     // Otherwise this device's own form: unlock, or (first use) create the vault; its sync is turned on in Settings.
     setTab("Saved");
   }
+  /** Before sign-out: one bounded send; if Secure changes are still not on the account, the user decides. */
+  async function readyToLeaveSecure() {
+    if (!secureOn) return true;
+    await flushSecure();
+    return (await securePending()) === 0 || window.confirm(st.unsentSignOut);
+  }
   /** Sign-out with Secure on: the local Secure databases on this device are deleted (the account keeps its copy). */
   async function leaveSecure() {
     if (!secureOn) return;
     resetSecureMaxConfirmed();
+    setStartInMax(false); // a shared computer starts the next person in the normal section
     await closeSecure(true, status!.accountId);
   }
   async function signOutConsumer() {
     if (!status?.consumerWorkspace || busy || !allowReplace()) return;
     setBusy(t.signingOut);
     try {
-      if (secureOn) await flushSecure();
+      if (!(await readyToLeaveSecure())) return setBusy("");
       await api("/api/auth/sign-out", {});
       await leaveSecure();
       detachSync();
@@ -1619,7 +1633,7 @@ export function App() {
     await eraseThisDevice(true);
     vault.current?.lock();
     vault.current?.onInvalidate?.();
-    setNotice(t.erased);
+    setNotice(st.maxResetDone);
   }
   // A remembered device opens by itself on each visit (docs/vault-sync-screens-20261115.md).
   const openIfRemembered = () =>
@@ -1910,7 +1924,7 @@ export function App() {
       return;
     }
     if (!allowReplace()) return;
-    if (secureOn) await flushSecure();
+    if (!(await readyToLeaveSecure())) return;
     detachSync();
     vault.current?.lock();
     vault.current?.onInvalidate?.();
@@ -2121,6 +2135,20 @@ export function App() {
             <div
               className="secure-max-mount"
               ref={(element) => {
+                if (element && !element.dataset.focusWatch) {
+                  element.dataset.focusWatch = "1";
+                  // After Confirm on the explanation its opener (the entry) is gone: focus moves into the section.
+                  // Capture: a dialog's close event does not bubble.
+                  element.addEventListener(
+                    "close",
+                    () =>
+                      requestAnimationFrame(() => {
+                        if (element.isConnected && (!document.activeElement || document.activeElement === document.body))
+                          element.querySelector<HTMLElement>("button")?.focus();
+                      }),
+                    true,
+                  );
+                }
                 // Opened from the entry: focus moves into the section, unless the explanation took it.
                 if (!element || !focusSection.current) return;
                 focusSection.current = false;

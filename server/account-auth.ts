@@ -866,7 +866,7 @@ function createAccountAuth(
         version: 1,
         exportedAt: new Date().toISOString(),
         note: custody
-          ? "Records this service holds about your account. Secret keys, tokens, passphrases and search text are never held and are not included. Content you saved in Secure mode (chats, memories, projects, files and tasks) is held encrypted under a key CometRow keeps for your account: secureStore lists it by size and time, and the content itself is shown in the app after sign-in. Content saved in Secure Max or only on your devices is not held in readable form and is not included."
+          ? "Records this service holds about your account. Sign-in tokens, passphrases and search text are never held and are not included. Content you saved in Secure mode (chats, memories, projects, files and tasks) is held encrypted under a key CometRow keeps for your account (the key is not included): secureStore lists it by size and time, and the content itself is shown in the app after sign-in. Content saved in Secure Max or only on your devices is not held in readable form and is not included."
           : "Records this service holds about your account. Secret keys, tokens, passphrases, conversations, documents and search text are never held and are not included.",
         secureStore: custody
           ? {

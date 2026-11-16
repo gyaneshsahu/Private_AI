@@ -26,11 +26,12 @@ One storage engine, two key holders. Secure Max is the existing vault with the h
 - Inside: New Secure Max chat, New Secure Max project (the name form is in `src/SecureMaxLists.tsx`), Lock now, the section's own search, projects and chats.
 - Locked (a new device, after Lock now, after 15 minutes): "Unlock Secure Max" opens the existing screens: the code approval or recovery key on a device that is not approved, otherwise this device's own unlock form. Nothing outside the section needs Secure Max.
 - The 15-minute lock counts only activity while the user is in the section or in a Secure Max chat. Working in Secure does not keep Secure Max unlocked.
-- Secure Max is offered only when `vaultSync` with file sync is on. Without it the section and entry do not exist. The older local passphrase vault then stays reachable under Saved, as before, so nobody loses data (owner decision 3 below).
-- Settings, Sync section: "Open CometRow in Secure Max" (this device only, stored in the browser, no content) and, while Secure Max is unlocked here, "Reset Secure Max" with the typed phrase.
+- Secure Max is offered only when `vaultSync` with file sync is on. Without it the section and entry do not exist. The older local passphrase vault then stays reachable under Saved, as before, so nobody loses data (an owner decision, listed in the agent's report).
+- Settings, Sync section: "Open CometRow in Secure Max" (this account on this device, stored in the browser, no content; it applies only once the explanation was confirmed in this browser, and it is cleared at sign-out so a shared computer starts the next person in the normal section) and, while Secure Max is unlocked here, "Reset Secure Max" with the typed phrase.
 - Reset Secure Max uses the hardened sync reset (`deleteEverythingOnThisDevice` with the synced copy): it needs this unlocked device's proof of the account key, deletes the synced copy and this device's Secure Max data, and "Unlock Secure Max" then starts a fresh one. A locked device uses "Forgot your passphrase?" with the recovery key, as before. `resetSync` alone was not used because it keeps the local data, and the owner's text says "on the server and on this device".
 - "After a recent sign-in" is a screen gate only: the status carries `signedInAt` while Secure is on, and the button is off when the session is older than 5 minutes. The server does not check it; the real gate is the reset proof.
 - `resetSecureMaxConfirmed()` runs on sign-out, when a request finds the session gone, and when the account changes.
+- Sign-out first tries to send what is not sent yet (at most 3 seconds). If Secure changes are still waiting, the user is asked before the local copy is deleted. When the session ends by itself (expired, signed out elsewhere), there is no session left to send with: unsent Secure changes on that device are lost.
 
 ## 4. Key handling in plain words
 
