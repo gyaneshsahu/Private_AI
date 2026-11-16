@@ -11,6 +11,7 @@ import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { appText } from "../src/text/app";
 import { canvasText } from "../src/text/canvas";
+import { questionText } from "../src/text/questions";
 import { messageText } from "../src/text/message";
 
 const EMAIL = "bert.synthetic@example.org";
@@ -93,7 +94,7 @@ async function open(width: number, lang: "en" | "de") {
       });
     return route.continue();
   });
-  page.on("dialog", (dialog) => void dialog.accept());
+  page.on("dialog", (dialog) => void dialog.accept()); // the browser's questions only (beforeunload)
   await page.goto(origin, { timeout: 30_000 });
   await ui(page.locator("html")).toHaveAttribute("lang", lang);
   return { page, outside };
@@ -222,9 +223,13 @@ for (const width of [375, 768, 1280])
         await ui(panel).toHaveCount(0);
         await ui(opener.first()).toBeFocused();
         expect(await page.evaluate(() => document.querySelector("main")!.inert)).toBe(false);
-        // Another answer, declining to replace: the same canvas opens; it belongs to the conversation.
-        await page.evaluate(() => (window.confirm = () => false));
+        // Another answer, declining to replace (the app's own question, FE-14): the same canvas opens; it belongs to the conversation.
         await page.getByRole("button", { name: t.open }).first().click();
+        const q = questionText[lang];
+        const asked = page.getByRole("dialog", { name: q.canvasTitle });
+        await ui(asked).toContainText(t.replaceConfirm);
+        await ui(asked.getByRole("button", { name: q.canvasReplace })).toBeVisible();
+        await asked.getByRole("button", { name: q.cancel }).click();
         await ui(page.getByRole("button", { name: t.edit, exact: true })).toBeVisible();
         await ui(page.getByLabel(t.textLabel)).toHaveCount(0); // a table opens in the table view
         await page.getByRole("button", { name: overlay ? `← ${t.back}` : t.close }).click();

@@ -4,6 +4,7 @@ import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
 import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
+import { answerQuestions } from "./fixtures/app-questions";
 
 type Fixture = Window & {
   releaseUnlock: () => void;
@@ -56,7 +57,7 @@ it("clearing pending imports and locking pending encrypted saves cannot restore 
   const unexpected: string[] = [];
   try {
     const page = await browser.newPage();
-    page.on("dialog", (dialog) => dialog.accept());
+    await answerQuestions(page);
     await page.route("**/*", (route) => {
       const request = route.request(),
         url = new URL(request.url());

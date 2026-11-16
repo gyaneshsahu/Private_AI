@@ -22,6 +22,7 @@ const h = syncHardeningText.en;
 import { memoryText } from "../src/text/memory";
 import { projectText } from "../src/text/projects";
 import { workspaceText } from "../src/text/workspace";
+import { answerQuestions } from "./fixtures/app-questions";
 
 // Generous waits: PBKDF2 and several browsers at once are slow on a busy machine; nothing here polls a clock.
 const ui = playwrightExpect.configure({ timeout: 20_000 });
@@ -108,7 +109,7 @@ async function device(s: Site, account: string | undefined, lang: "en" | "de" = 
   // token and the other's cookie until the next status poll (reported; not a sync matter).
   await context.request.get(`${s.origin}/api/status`);
   const page = await context.newPage();
-  page.on("dialog", (dialog) => void dialog.accept());
+  await answerQuestions(page);
   await page.route("**/*", (route) => (new URL(route.request().url()).origin === s.origin ? route.continue() : route.abort()));
   await page.goto(s.origin, { timeout: 90_000 });
   await ui(page.locator("html")).toHaveAttribute("lang", lang);

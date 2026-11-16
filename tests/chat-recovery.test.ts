@@ -9,6 +9,7 @@ type FixtureWindow = Window & {
 };
 import { createServer } from "vite";
 import { warmDevServer } from "./fixtures/dev-server-warmup";
+import { answerQuestion } from "./fixtures/app-questions";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 
 it("real conversation UI stops partial output, retries explicitly, preserves source evidence and clears late work", async () => {
@@ -343,10 +344,10 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       .fill("TEST clear during response");
     await page.getByRole("button", { name: "Send ↑", exact: true }).click();
     await ui(page.getByText("TEST_PARTIAL", { exact: true })).toBeVisible();
-    page.once("dialog", (dialog) => dialog.accept());
     await page
       .getByRole("button", { name: "New conversation", exact: false })
       .click();
+    await answerQuestion(page, true);
     await ui(page.locator("article.message")).toHaveCount(0);
     // Wait on the fixture's actual delayed callback, not a timing guess.
     await page.waitForFunction(

@@ -4,6 +4,7 @@ import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
 import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
+import { answerQuestions } from "./fixtures/app-questions";
 
 it("delivers bounded continuation in the actual temporary research workspace without persistence", async () => {
   const vite = await createServer({
@@ -151,7 +152,7 @@ it("delivers bounded continuation in the actual temporary research workspace wit
     expect(logs.join("\n")).not.toMatch(
       /Each item costs|Delivery is not included|tool-1/,
     );
-    page.on("dialog", (dialog) => dialog.accept());
+    await answerQuestions(page);
     await page.reload();
     await tab("Context").click();
     await ui(

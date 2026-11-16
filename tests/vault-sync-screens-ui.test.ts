@@ -15,6 +15,7 @@ import { backupPartsText, syncText, vaultUnlockText } from "../src/text/sync";
 import { syncHardeningText } from "../src/text/sync-hardening";
 import { decodeVaultBackupContent } from "../src/vault-backup";
 import { encodeRecoveryKey } from "../src/sync/crypto";
+import { answerQuestions } from "./fixtures/app-questions";
 
 // The engine's recovery key format (src/sync/crypto.ts): 28 Crockford base32 characters in 7 groups of 4.
 const normalizeRecoveryKey = (key: string) => key.toUpperCase().replace(/[\s-]/g, "").replace(/O/g, "0").replace(/[IL]/g, "1");
@@ -181,7 +182,7 @@ async function open(width: number, lang: "en" | "de", account: Account, sync: bo
   context.setDefaultTimeout(15_000);
   await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin });
   const page = await context.newPage();
-  page.on("dialog", (dialog) => void dialog.accept());
+  await answerQuestions(page);
   await page.route("**/*", async (route) => {
     const request = route.request();
     const url = new URL(request.url());

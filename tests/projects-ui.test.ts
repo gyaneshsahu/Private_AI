@@ -10,6 +10,7 @@ import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { appText } from "../src/text/app";
 import { projectText } from "../src/text/projects";
 import { workspaceText } from "../src/text/workspace";
+import { answerQuestions } from "./fixtures/app-questions";
 
 let vite: ViteDevServer;
 let browser: Browser;
@@ -88,7 +89,7 @@ async function open(at: string, width: number, lang: "en" | "de") {
     return route.continue();
   });
   // window.confirm (leaving an unsaved chat) is accepted.
-  page.on("dialog", (dialog) => void dialog.accept());
+  await answerQuestions(page);
   await page.goto(at, { timeout: 30_000 });
   await ui(page.locator("html")).toHaveAttribute("lang", lang);
   return { page, outside };

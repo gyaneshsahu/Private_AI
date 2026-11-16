@@ -4,6 +4,7 @@ import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
 import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
+import { answerQuestions } from "./fixtures/app-questions";
 
 it("displays optional native calculator results and a corrected total through the actual application", async () => {
   const vite = await createServer({
@@ -116,7 +117,7 @@ it("displays optional native calculator results and a corrected total through th
     await page
       .getByRole("button", { name: "Close source", exact: true })
       .click();
-    page.on("dialog", (dialog) => dialog.accept());
+    await answerQuestions(page);
     await page
       .getByRole("button", { name: "New conversation", exact: false })
       .click();

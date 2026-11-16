@@ -13,6 +13,7 @@ vi.mock("../server/research", async (original) => ({
   searchWeb: search,
 }));
 import { createSyntheticConsumerWorkspace } from "../server/consumer-workspace";
+import { answerQuestion, answerQuestions } from "./fixtures/app-questions";
 
 const enabled = !!process.env.PRIVATEAI_SYNTHETIC_PG;
 const cleanups: (() => Promise<void>)[] = [];
@@ -403,7 +404,7 @@ it.skipIf(!enabled)(
       await browserExpect(page.getByLabel("Message CometRow")).toHaveValue(
         "SYNTHETIC PRIVATE DRAFT MUST NOT LEAVE BROWSER",
       );
-      page.on("dialog", (dialog) => dialog.accept());
+      await answerQuestions(page);
       await page.reload();
       await browserExpect(
         page.getByText("Synthetic public source", { exact: true }),
@@ -507,8 +508,8 @@ it.skipIf(!enabled)(
         .getByLabel("Message CometRow")
         .fill("UNSAVED ACCOUNT A CHANGE");
       await tab(page, "Account").click();
-      page.once("dialog", (dialog) => dialog.dismiss());
       await page.getByRole("button", { name: "Sign out", exact: true }).click();
+      await answerQuestion(page, false);
       await browserExpect(
         page.getByRole("button", { name: "Sign out", exact: true }),
       ).toBeVisible();
@@ -517,8 +518,8 @@ it.skipIf(!enabled)(
         "UNSAVED ACCOUNT A CHANGE",
       );
       await tab(page, "Account").click();
-      page.once("dialog", (dialog) => dialog.accept());
       await page.getByRole("button", { name: "Sign out", exact: true }).click();
+      await answerQuestion(page, true);
       await browserExpect(page.getByLabel("Test email address")).toBeVisible();
       await browserExpect(other.getByLabel("Message CometRow")).toHaveValue(
         "",

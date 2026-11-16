@@ -4,6 +4,7 @@ import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
 import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
+import { answerQuestions } from "./fixtures/app-questions";
 
 it("reviews and changes bounded context in the actual workspace, preserves encrypted selections and never sends them", async () => {
   const vite = await createServer({
@@ -25,7 +26,7 @@ it("reviews and changes bounded context in the actual workspace, preserves encry
       viewport: { width: 390, height: 844 },
     });
     page.setDefaultTimeout(5000);
-    page.on("dialog", (dialog) => void dialog.accept());
+    await answerQuestions(page);
     await page.route("**/*", (route) => {
       const request = route.request(),
         url = new URL(request.url());

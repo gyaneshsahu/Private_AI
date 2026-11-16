@@ -13,6 +13,7 @@ import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { createBackgroundTasksFake, FAKE_STATUS } from "./fixtures/background-tasks-fake";
 import { appText } from "../src/text/app";
 import { scheduledText } from "../src/text/scheduled";
+import { answerQuestions } from "./fixtures/app-questions";
 
 let vite: ViteDevServer;
 let off: ViteDevServer;
@@ -110,7 +111,7 @@ async function open(at: string, width: number, lang: "en" | "de") {
       });
     return route.continue();
   });
-  page.on("dialog", (dialog) => void dialog.accept());
+  await answerQuestions(page);
   await page.goto(at, { timeout: 30_000 });
   await ui(page.locator("html")).toHaveAttribute("lang", lang);
   return { page, fake, state, outside };

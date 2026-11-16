@@ -23,6 +23,9 @@ import { modesText } from "../src/text/modes";
 import { secureStoreText } from "../src/text/secure-store";
 import { syncText, vaultUnlockText } from "../src/text/sync";
 import { workspaceText } from "../src/text/workspace";
+import { dataControlsText } from "../src/text/data-controls";
+import { modeCopyText } from "../src/text/mode-copy";
+import { privacySummary } from "../shared/privacy-copy";
 
 const ui = playwrightExpect.configure({ timeout: 20_000 });
 let vite: ViteDevServer;
@@ -175,6 +178,13 @@ async function memories(page: Page) {
   return texts.join("\n");
 }
 const focus = (page: Page) => page.evaluate(() => void window.dispatchEvent(new Event("focus")));
+/** Settings > Privacy & data in Secure: the Secure summary, never the binding "we never can", and the data controls. */
+async function privacy(page: Page, lang: "en" | "de") {
+  await openSettings(page, lang, appText[lang].sectionPrivacy);
+  await ui(settings(page).getByText(modeCopyText[lang].privacySummary_secure)).toBeVisible();
+  await ui(settings(page).getByText(privacySummary(lang))).toHaveCount(0);
+  await ui(settings(page).getByRole("region", { name: dataControlsText[lang].heading })).toBeVisible();
+}
 
 it("1280 px, English: a chat saves by itself, a second device has everything after sign-in, edits travel, sign-out deletes the local copy, the Secure Max section stays locked and apart", async () => {
   const s = await site({ secure: true, sync: true });
@@ -410,10 +420,53 @@ it("1280 px, English: an approved search keeps its results in Secure, also after
   await check();
   // B never had the results: they were not stored.
   await ui(B.getByText("SYNTHETIC RESULT TEXT")).toHaveCount(0);
+
+  // Settings > Privacy & data in Secure: the Secure summary (SS-01) and Delete all chats (item 11),
+  // which reaches B too.
+  await privacy(A, "en");
+  const d = dataControlsText.en;
+  await settings(A).getByRole("button", { name: d.deleteButton }).click();
+  const confirm = A.getByRole("dialog", { name: d.confirmTitle });
+  await ui(confirm).toContainText(d.confirmChats);
+  await confirm.getByRole("button", { name: d.confirm }).click();
+  await ui(settings(A).getByText(d.deleted)).toBeVisible();
+  await closeSettings(A, "en");
+  await ui(await navigation(A, "en")).toHaveCount(0);
+  await expect
+    .poll(
+      async () => {
+        await focus(B);
+        return (await navigation(B, "en")).count();
+      },
+      { timeout: 30_000, interval: 1500 },
+    )
+    .toBe(0);
   expect(outside).toEqual([]);
   await A.context().close();
   await B.context().close();
 }, 180_000);
+
+it("768 px, German: an ended session goes to sign-in with its reason and keeps the unsent message for this tab (SS-14)", async () => {
+  const s = await site({ secure: true, sync: false });
+  const account = randomUUID();
+  const A = await device(s, account, "de", 768);
+  await A.getByLabel(appText.de.messageInput).fill("SYNTHETIC UNSENT DRAFT");
+  // The server ends the session: the next access check is refused.
+  await A.route("**/api/status", (route) => route.fulfill({ status: 401, json: { error: "signed out" } }));
+  await focus(A);
+  await A.waitForURL(/\/auth\?reason=expired$/);
+  await A.unroute("**/api/status");
+  // Signed in again on this tab: the message is back once, and only for the same account.
+  await A.goto(s.origin);
+  await ui(A.getByLabel(appText.de.messageInput)).toHaveValue("SYNTHETIC UNSENT DRAFT");
+  await privacy(A, "de");
+  await noSidewaysScroll(A);
+  await closeSettings(A, "de");
+  expect(await A.evaluate(() => sessionStorage.getItem("cometrow.expired-draft"))).toBeNull();
+  await A.reload();
+  await ui(A.getByLabel(appText.de.messageInput)).toHaveValue("");
+  await A.context().close();
+}, 120_000);
 
 it("375 px, German: the Secure wiring fits a phone", async () => {
   const s = await site({ secure: true, sync: true });
@@ -429,7 +482,7 @@ it("375 px, German: the Secure wiring fits a phone", async () => {
   await ui(page.getByRole("region", { name: modesText.de.maxLabel }).getByRole("button", { name: modesText.de.maxUnlock })).toBeVisible();
   await noSidewaysScroll(page);
   await page.keyboard.press("Escape");
-  await openSettings(page, "de", appText.de.sectionPrivacy);
+  await privacy(page, "de");
   await ui(settings(page).getByText(modesText.de.secureLong)).toBeVisible();
   await noSidewaysScroll(page);
   // Settings for Secure Max: Open in Secure Max; Reset only where Secure Max is unlocked (not here).

@@ -14,6 +14,7 @@ import { appText } from "../src/text/app";
 import { projectText } from "../src/text/projects";
 import { syncFilesText } from "../src/text/sync-files";
 import { workspaceText } from "../src/text/workspace";
+import { answerQuestions } from "./fixtures/app-questions";
 
 const WIDTHS = [375, 768, 1280];
 const LANGS = ["en", "de"] as const;
@@ -78,7 +79,7 @@ async function open(width: number, lang: "en" | "de") {
       return route.fulfill({ json: { csrf: "SYNTHETIC", inference: { ready: true, reason: "OFFLINE ONLY", qualification: { maxInputCharacters: 20000 } }, search: false } });
     return route.continue();
   });
-  page.on("dialog", (dialog) => void dialog.accept());
+  await answerQuestions(page);
   await page.goto(origin, { timeout: 30_000 });
   await ui(page.locator("html")).toHaveAttribute("lang", lang);
   return { page, outside };
