@@ -200,6 +200,31 @@ function searchResultIds(
 }
 
 /**
+ * The stored copy of a chat (live search stripped) with the open copy's live search put back:
+ * search attachments by id, each message's source snapshot by id and the session flag. Used when a
+ * change from elsewhere replaces the open chat, so this session keeps the results it fetched.
+ */
+export function keepLiveSearch(stored: Conversation, open: Conversation): Conversation {
+  type Branch = Pick<Conversation, "messages" | "attachments">;
+  const restore = <T extends Branch>(into: T, from: Branch | undefined): T => {
+    if (!from) return into;
+    const live = new Map(from.attachments.filter((a) => a.researchQuery !== undefined).map((a) => [a.id, a]));
+    const snapshots = new Map(from.messages.flatMap((m) => (m.sourceSnapshot ? [[m.id, m.sourceSnapshot] as const] : [])));
+    return {
+      ...into,
+      attachments: into.attachments.map((a) => live.get(a.id) ?? a),
+      messages: into.messages.map((m) => (snapshots.has(m.id) ? { ...m, sourceSnapshot: snapshots.get(m.id) } : m)),
+    };
+  };
+  const out = restore(stored, open);
+  if (open.temporarySearch) out.temporarySearch = true;
+  const openBranches = new Map((open.branches?.archived ?? []).map((b) => [b.id, b]));
+  if (out.branches?.archived)
+    out.branches = { ...out.branches, archived: out.branches.archived.map((b) => restore(b, openBranches.get(b.id))) };
+  return out;
+}
+
+/**
  * What a save keeps of a live search (owner decision, 22 October 2026): the
  * written answers and the approved query, never the provider's results or
  * links. Pages the user opened through the page workflow are their own action

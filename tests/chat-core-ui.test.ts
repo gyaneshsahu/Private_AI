@@ -10,6 +10,7 @@ import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { appText } from "../src/text/app";
 import { chatCoreText } from "../src/text/chat-core";
+import { questionText } from "../src/text/questions";
 import { connectionText } from "../src/text/connection";
 import { imageText } from "../src/text/images";
 import { workspaceText } from "../src/text/workspace";
@@ -125,6 +126,7 @@ for (const lang of ["en", "de"] as const)
     it(`chat core at ${width} px, ${lang}`, async () => {
       const t = appText[lang];
       const cc = chatCoreText[lang];
+      const q = questionText[lang];
       const im = imageText[lang];
       const w = workspaceText[lang];
       const { context, page, external } = await open(lang, width);
@@ -264,18 +266,19 @@ for (const lang of ["en", "de"] as const)
           if (await toggle.isVisible()) await toggle.click();
           await vis(page.getByRole("button", { name: w.newConversation, exact: true })).click();
         };
-        let asked = "";
-        page.once("dialog", (dialog) => {
-          asked = dialog.message();
-          void dialog.dismiss();
-        });
+        // The app's own question (not the browser's): Cancel keeps the answer, focus goes back.
         await newChat();
-        expect(asked).toBe(cc.stopForNewUnsaved);
+        const asked = page.getByRole("dialog", { name: q.stopTitle });
+        await ui(asked).toContainText(cc.stopForNewUnsaved);
+        await ui(asked.getByRole("button", { name: q.cancel })).toBeFocused();
+        await asked.getByRole("button", { name: q.cancel }).click();
+        await ui(asked).toHaveCount(0);
+        await ui(vis(page.getByRole("button", { name: w.newConversation, exact: true }))).toBeFocused();
         if (width <= 760) await page.keyboard.press("Escape");
         await ui(stop).toBeVisible();
         await ui(page.locator("article.assistant")).toHaveCount(2);
-        page.once("dialog", (dialog) => void dialog.accept());
         await newChat();
+        await page.getByRole("dialog", { name: q.stopTitle }).getByRole("button", { name: q.stop }).click();
         await ui(page.locator("article.message")).toHaveCount(0);
         await ui(stop).toHaveCount(0);
         await ui(heading).toHaveClass(/sr-only/);

@@ -17,6 +17,7 @@ import {
   dispatchOneSecurityNotice,
   syntheticNoticeTransport,
 } from "../server/security-notices";
+import { answerQuestions } from "./fixtures/app-questions";
 
 const enabled = !!process.env.PRIVATEAI_SYNTHETIC_PG;
 let db: Awaited<ReturnType<typeof usageDatabase>>,
@@ -807,7 +808,7 @@ it.skipIf(!enabled)(
         return route.abort();
       });
       const page = await context.newPage();
-      page.on("dialog", (dialog) => void dialog.accept());
+      await answerQuestions(page);
       const cdp = await context.newCDPSession(page);
       await cdp.send("WebAuthn.enable");
       await cdp.send("WebAuthn.addVirtualAuthenticator", {

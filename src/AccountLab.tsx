@@ -12,6 +12,7 @@ import { accountRequest } from "./account-request";
 import { createPasskeyTransport } from "./passkey-transport";
 import { LanguageSwitch, useLang, useText } from "./i18n";
 import { accountLabText } from "./text/account";
+import { sessionExpiryText } from "./text/session-expiry";
 
 const sessionSchema = z
   .object({ user: z.object({ id: z.string(), email: z.string() }) })
@@ -89,6 +90,9 @@ export default function AccountLab({
   >([]);
   const codeInput = useRef<HTMLInputElement>(null);
   const t = useText(accountLabText);
+  const expiry = useText(sessionExpiryText);
+  // SS-14: the app sends an ended session here with ?reason=expired.
+  const [expired] = useState(() => new URLSearchParams(window.location.search).get("reason") === "expired");
   const locale = useLang().lang === "de" ? "de-DE" : undefined;
   async function refresh() {
     try {
@@ -325,6 +329,7 @@ export default function AccountLab({
               ? t.headingLab
               : t.headingLogin}
         </h1>
+        {!session && expired && <p className="account-expired">{expiry.expired}</p>}
         <p className="account-preview-intro">
           {session ? t.introSession : t.introLogin}
         </p>

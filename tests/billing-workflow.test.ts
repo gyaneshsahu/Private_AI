@@ -14,6 +14,7 @@ import {
 } from "../server/billing-events";
 import { reconcileBillingReceipt } from "../server/billing-reconciliation";
 import { usageDatabase } from "./fixtures/usage-postgres";
+import { answerQuestion } from "./fixtures/app-questions";
 import { applyAccountMigrations } from "../server/account-migrations";
 import { createSyntheticConsumerWorkspace } from "../server/consumer-workspace";
 import {
@@ -537,18 +538,18 @@ it.skipIf(!enabled)(
       fullPage: true,
     });
     // Declining departure must preserve the draft; the prepared checkout remains resumable.
-    page.once("dialog", (dialog) => dialog.dismiss());
     await page
       .getByRole("button", { name: "Open test checkout", exact: true })
       .click();
+    await answerQuestion(page, false);
     await browserExpect(
       page.getByRole("button", { name: "Continue or check checkout" }),
     ).toBeEnabled();
     expect(page.url()).toContain(h.origin);
-    page.once("dialog", (dialog) => dialog.accept());
     await page
       .getByRole("button", { name: "Continue or check checkout" })
       .click();
+    await answerQuestion(page, true);
     await page.getByRole("link", { name: "Cancel and return" }).click();
     await browserExpect(
       page.getByText("You returned without completing checkout.", {

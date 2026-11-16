@@ -11,6 +11,7 @@ import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { accountDeletionText, accountLabText, usageText } from "../src/text/account";
 import { dataControlsText } from "../src/text/data-controls";
+import { sessionExpiryText } from "../src/text/session-expiry";
 
 let vite: ViteDevServer;
 let browser: Browser;
@@ -199,6 +200,28 @@ for (const lang of LANGS)
         await noSidewaysScroll(page);
       } finally {
         await page.context().close();
+      }
+    }, 60_000);
+
+for (const lang of LANGS)
+  for (const width of WIDTHS)
+    it(`${lang} at ${width} px: after an ended session the sign-in page says why (SS-14)`, async () => {
+      const t = accountLabText[lang];
+      const page = await open("/account?reason=expired", width, lang, { signedIn: false });
+      try {
+        await ui(page.getByRole("heading", { name: t.headingLogin })).toBeVisible();
+        await ui(page.getByText(sessionExpiryText[lang].expired, { exact: true })).toBeVisible();
+        await noSidewaysScroll(page);
+      } finally {
+        await page.context().close();
+      }
+      // Without the reason (or another value) the line is not there.
+      const plain = await open("/account?reason=other", width, lang, { signedIn: false });
+      try {
+        await ui(plain.getByRole("heading", { name: t.headingLogin })).toBeVisible();
+        await ui(plain.getByText(sessionExpiryText[lang].expired)).toHaveCount(0);
+      } finally {
+        await plain.context().close();
       }
     }, 60_000);
 

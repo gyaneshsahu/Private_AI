@@ -3886,3 +3886,34 @@
     min-height: 44px;
   }
 }
+
+/* round 2 Secure fixes 16 Nov */
+/* FE-10: the Conversation files page has the app's own button; the browser's file field stays hidden. */
+.upload-zone input[type="file"][hidden] {
+  display: none;
+}
+.chat-design .upload-zone .upload-choose {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 12px;
+  margin: 14px 0;
+  font-weight: 400;
+}
+@media (max-width: 760px) {
+  .chat-design .upload-zone .upload-choose button {
+    min-height: 44px;
+  }
+}
+/* FE-06: why a "+" item is off, under it. */
+.chat-design .menu-surface .menu-reason {
+  margin: 0 0 6px;
+  color: var(--muted);
+}
+/* SS-14: the one line on the sign-in page after a session ended. */
+.account-expired {
+  text-align: center;
+  font-weight: 600;
+  margin: 8px 0 0;
+}

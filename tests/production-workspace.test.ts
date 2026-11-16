@@ -21,6 +21,7 @@ import { newMessage } from "../src/conversation";
 import { derive } from "../src/vault-crypto";
 import { encodeVaultBackup } from "../src/vault-backup";
 import { localTLS } from "./fixtures/local-tls";
+import { answerIfAsked, answerQuestions } from "./fixtures/app-questions";
 
 const enabled = !!process.env.PRIVATEAI_SYNTHETIC_PG;
 const origin = productionAccountTarget.origin;
@@ -299,11 +300,11 @@ for (const viewport of [
           .getByRole("button", { name: "Restore as new copies" })
           .click();
         await browserExpect(page.getByRole("article")).toHaveCount(4);
-        page.once("dialog", (dialog) => dialog.accept());
         await page
           .getByRole("article", { name: "JOURNEY_REPLIES_0", exact: true })
           .getByRole("button", { name: "Open", exact: true })
           .click();
+        await answerIfAsked(page, true);
         await browserExpect(page.locator(".messages article")).toHaveCount(30);
         await page
           .getByRole("button", {
@@ -670,6 +671,9 @@ it.skipIf(!enabled)(
       (await request("/api/status", { host: "other.example.test" })).status,
     ).toBe(403);
     expect((await request("/auth")).headers.location).toBe("/account");
+    // SS-14: only the expired reason passes on to the sign-in page.
+    expect((await request("/auth?reason=expired")).headers.location).toBe("/account?reason=expired");
+    expect((await request("/auth?reason=%3Cx%3E")).headers.location).toBe("/account");
   },
 );
 
@@ -752,7 +756,7 @@ it.skipIf(!enabled)(
         ),
       ).toBe(false);
       await workspaceControl(page, "Account").click();
-      page.on("dialog", (dialog) => dialog.accept());
+      await answerQuestions(page);
       await page.getByRole("button", { name: /Manage sign-in/ }).click();
       await browserExpect(
         page.getByRole("heading", { name: "Your account", exact: true }),

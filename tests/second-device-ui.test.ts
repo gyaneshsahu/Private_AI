@@ -15,6 +15,7 @@ import { vaultBackupText } from "../src/text/vault-ui";
 import { vaultUnlockText } from "../src/text/sync";
 import { workspaceText } from "../src/text/workspace";
 import { decodeVaultBackupContent } from "../src/vault-backup";
+import { answerQuestions } from "./fixtures/app-questions";
 
 const a = appText.en;
 const b = vaultBackupText.en;
@@ -103,7 +104,7 @@ async function device(width: number) {
   context.setDefaultTimeout(15_000);
   const requests: string[] = [];
   const page = await context.newPage();
-  page.on("dialog", (dialog) => void dialog.dismiss());
+  await answerQuestions(page, false);
   await page.route("**/*", async (route) => {
     const request = route.request();
     const url = new URL(request.url());

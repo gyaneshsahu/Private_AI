@@ -5,6 +5,7 @@ import { chromium, expect as ui } from "@playwright/test";
 import { createServer } from "vite";
 import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
+import { answerQuestions } from "./fixtures/app-questions";
 
 it("keeps citations tied to captured evidence through correction, removal and encrypted reopen", async () => {
   const vite = await createServer({
@@ -27,7 +28,7 @@ it("keeps citations tied to captured evidence through correction, removal and en
       viewport: { width: 390, height: 844 },
     });
     page.setDefaultTimeout(5000);
-    page.on("dialog", (dialog) => void dialog.accept());
+    await answerQuestions(page);
     await page.route("**/*", (route) => {
       if (
         new URL(route.request().url()).origin !== origin ||

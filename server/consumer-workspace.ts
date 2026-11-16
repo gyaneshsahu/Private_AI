@@ -21,6 +21,9 @@ import {
   type SyntheticBillingConfig,
 } from "./billing-workflow";
 
+/** SS-14: the app sends an ended session to /auth?reason=expired; the sign-in page says why. Only this one value passes. */
+const expiredReason = (reason: unknown, joiner: "?" | "&") => (reason === "expired" ? `${joiner}reason=expired` : "");
+
 /** Test harness composition only. No production mount or inference key support. */
 export function createSyntheticConsumerWorkspace(
   config: SyntheticAccountConfig & {
@@ -44,9 +47,9 @@ export function createSyntheticConsumerWorkspace(
     : undefined;
   const app = express();
   app.use(lab.router);
-  app.get("/auth", (_req, res) => {
+  app.get("/auth", (req, res) => {
     res.setHeader("Cache-Control", "no-store");
-    res.redirect(303, "/?account-lab=1");
+    res.redirect(303, `/?account-lab=1${expiredReason(req.query.reason, "&")}`);
   });
   app.use(
     createApp({
@@ -184,7 +187,7 @@ export function createProductionConsumerCandidate(
       : {}),
   });
   app.use(workspace);
-  app.get("/auth", (_req, res) => res.redirect(303, "/account"));
+  app.get("/auth", (req, res) => res.redirect(303, `/account${expiredReason(req.query.reason, "?")}`));
   return {
     app,
     auth: account.auth,

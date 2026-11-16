@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Conversation } from "../shared/contracts";
 import {
   containsTemporaryResearch,
+  keepLiveSearch,
   savedConversationSchema,
   stripLiveSearch,
 } from "../src/saved-conversation";
@@ -164,5 +165,23 @@ describe("what a save keeps of a live search (launch plan 4.1, owner decision 22
     expect(containsTemporaryResearch(c)).toBe(false);
     c.attachments[0].sources = [excerpt];
     expect(containsTemporaryResearch(c)).toBe(true);
+  });
+});
+
+describe("a stored copy replacing the open chat (FE-01)", () => {
+  it("puts the open chat's live search back: results by attachment id, sources by message id, the flag", () => {
+    const open = liveSearchConversation();
+    const now = new Date("2026-11-16T00:00:00Z");
+    const stored = { ...stripLiveSearch(open, now), title: "Renamed elsewhere" };
+    const shown = keepLiveSearch(stored, open);
+    expect(shown.title).toBe("Renamed elsewhere");
+    expect(shown.attachments[0].sources).toEqual([excerpt]);
+    expect(shown.messages[1].sourceSnapshot).toEqual([excerpt, page]);
+    expect(shown.temporarySearch).toBe(true);
+    // A message or attachment only the stored copy has stays as stored.
+    const extra = { ...stored, messages: [...stored.messages, { id: "n", role: "user" as const, text: "New elsewhere", status: "complete" as const, included: true }] };
+    expect(keepLiveSearch(extra, open).messages[2]).toEqual(extra.messages[2]);
+    // Nothing live in the open chat: the stored copy as it is.
+    expect(keepLiveSearch(stored, stripLiveSearch(open, now))).toEqual(stored);
   });
 });

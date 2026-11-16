@@ -100,6 +100,7 @@ import { SecureMaxStartSetting } from "./SecureMaxStartSetting";
 import { SecureMaxLists } from "./SecureMaxLists";
 import { resetSecureMaxConfirmed } from "./SecureMaxDialog";
 import { modesText } from "./text/modes";
+import { forStorage, modeCopyText, type Storage } from "./text/mode-copy";
 import { secureStoreText } from "./text/secure-store";
 import { mergeConversation } from "./sync/merge";
 import { holdProjects } from "./projects";
@@ -121,11 +122,18 @@ import {
   useSyncState,
 } from "./sync";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { DataControls } from "./DataControls";
+import { questionText } from "./text/questions";
+import { sessionExpiryText } from "./text/session-expiry";
+import { developerView } from "./developer-view";
+import { loadInference } from "./LoadBoundary";
+import { attachLimitText } from "./text/attach-limits";
+import { fileCount, FILE_LIMIT, SCREENSHOT_LIMIT, screenshotCount, withResearch } from "./attachment-limits";
 import { holdTasks } from "./scheduled";
 import { ensureProjectFiles, useSyncFiles } from "./sync/files";
 import { VaultSecurity } from "./VaultSecurity";
 import { BACKUP_MAX_BYTES } from "./vault-backup";
-import { containsTemporaryResearch } from "./saved-conversation";
+import { containsTemporaryResearch, keepLiveSearch } from "./saved-conversation";
 import { WorkspaceNavigation } from "./WorkspaceNavigation";
 import { readAppearance, saveAppearance } from "./appearance";
 import { ConversationLibrary } from "./ConversationLibrary";
@@ -192,6 +200,8 @@ type Tab =
   "Conversation" | "Context" | "Research" | "Saved" | "Account" | "Help";
 /** "Open CometRow in Secure Max" on this device; no content, only the choice. */
 const START_KEY = "cometrow.openInSecureMax";
+/** SS-14: the unsent message of a session that ended, for this tab only. */
+const EXPIRED_DRAFT_KEY = "cometrow.expired-draft";
 export function App() {
   const { lang } = useLang();
   const t = appText[lang];
@@ -354,6 +364,8 @@ export function App() {
   const [source, setSource] = useState<Source>();
   const sourceDialog = useRef<HTMLDialogElement>(null);
   const chatFileInput = useRef<HTMLInputElement>(null);
+  const contextFileInput = useRef<HTMLInputElement>(null);
+  const al = attachLimitText[lang];
   const [researchKind, setResearchKind] = useState<"search" | "page">("search");
   const [query, setQuery] = useState("");
   const [proposal, setProposal] = useState<Disclosure>();
@@ -460,13 +472,14 @@ export function App() {
   // Canvas (docs/canvas-20261114.md): whether its panel is open. Another conversation closes it.
   const [canvasOpen, setCanvasOpen] = useState(false);
   useEffect(() => setCanvasOpen(false), [conversation.id]);
-  function openCanvas(answer: string) {
+  async function openCanvas(answer: string) {
     const text = proposedText(answer);
     const old = conversation.canvas?.text;
     if (text.length > CANVAS_LIMITS.characters) return fail(canvasText[lang].problem("long"));
-    setCanvasOpen(true);
     // Cancel opens the canvas as it is.
-    if (old === text || (old && !window.confirm(canvasText[lang].replaceConfirm))) return;
+    const replace = old !== text && (!old || (await ask(q.canvasTitle, canvasText[lang].replaceConfirm, q.canvasReplace)));
+    setCanvasOpen(true);
+    if (!replace) return;
     keepForUndo(conversation.id, old);
     setConversation((c) => withCanvas(c, text));
   }
@@ -532,6 +545,11 @@ export function App() {
   const storeOf = (id: string) => vaultFor(modeOf(id) ?? "max", vault.current)!;
   const modeRef = useRef(mode);
   modeRef.current = mode;
+  // Where saved data lives decides what a text may promise (src/text/mode-copy.ts). Never `mode` or
+  // `heldMode` directly: both are "max" while Secure is off.
+  const storageOf = (m: Mode): Storage => (!secureOn ? "local" : m === "max" ? "max" : "secure");
+  const appModeText = useMemo(() => ({ ...appText[lang], ...modeCopyText[lang] }), [lang]);
+  const tm = (m: Mode | "settings") => forStorage(appModeText, m === "settings" ? (secureOn ? "secure" : "local") : storageOf(m));
   const heldModeRef = useRef(heldMode);
   heldModeRef.current = heldMode;
   const conversationRef = useRef(conversation);
@@ -598,9 +616,15 @@ export function App() {
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [unsaved]);
-  const allowReplace = () =>
-    !unsaved ||
-    window.confirm(t.discardConfirm);
+  // The app's own question in place of window.confirm (FE-14): one at a time, answered by the dialog below.
+  const q = questionText[lang];
+  const [question, setQuestion] = useState<{ title: string; text: string; confirm: string; answer: (yes: boolean) => void }>();
+  // The browser's question froze the page; this one does not, so a lock or sign-out meanwhile (epoch) turns a yes into no.
+  const ask = (title: string, text: string, confirm: string) => {
+    const at = epoch.current;
+    return new Promise<boolean>((resolve) => setQuestion({ title, text, confirm, answer: (yes) => resolve(yes && at === epoch.current) }));
+  };
+  const allowReplace = async () => !unsaved || ask(q.discardTitle, t.discardConfirm, q.discard);
   useEffect(() => {
     if (!source) return;
     const previous = document.activeElement as HTMLElement;
@@ -750,6 +774,8 @@ export function App() {
   // covering steps, as from the "+" menu); everything else goes to the text reader.
   const takeFiles = (files: File[]) => {
     if (busy) return setNotice(ct.dropBusy);
+    // On Conversation files everything goes to the reader, as its own button does.
+    if (tab === "Context") return void importFiles(files);
     const route = routeFiles(files, !!status?.images && !!status.inference.ready);
     if (route.to === "reader") return void importFiles(route.files);
     setImageFile(route.file);
@@ -757,7 +783,7 @@ export function App() {
   };
   const dropping = useFileDrop(
     takeFiles,
-    () => tab === "Conversation" && !document.querySelector("dialog[open]"),
+    () => (tab === "Conversation" || tab === "Context") && !document.querySelector("dialog[open]"),
   );
   const reset = () => {
     savedBase.current = null;
@@ -817,6 +843,8 @@ export function App() {
             (next.accountId !== status.accountId ||
               next.accessEpoch !== status.accessEpoch))
         ) {
+          // Before the lock below empties the message box.
+          if (response.status === 401) keepDraftForSignIn();
           vault.current?.close(false);
           vault.current?.onInvalidate?.();
           // Signed out or another account: this device's Secure copy goes.
@@ -825,7 +853,7 @@ export function App() {
             await closeSecure(true, status.accountId);
           }
           accessNavigation.current = true;
-          window.location.assign(response.status === 401 ? "/auth" : "/");
+          window.location.assign(response.status === 401 ? "/auth?reason=expired" : "/");
         } else if (next) {
           setStatus(next);
         }
@@ -852,6 +880,33 @@ export function App() {
       document.removeEventListener("visibilitychange", visible);
     };
   }, [status?.accountId, status?.accessEpoch]);
+  // SS-14: an ended session keeps the unsent message for this tab, so it is back after signing in
+  // again. Never for incognito or Secure Max: sessionStorage is not encrypted (owner decision).
+  const inputRef = useRef(input);
+  inputRef.current = input;
+  function keepDraftForSignIn() {
+    const text = inputRef.current;
+    if (!text.trim() || !status?.accountId || conversationRef.current.incognito || (secureOnRef.current && modeRef.current === "max")) return;
+    try {
+      sessionStorage.setItem(EXPIRED_DRAFT_KEY, JSON.stringify({ account: status.accountId, text }));
+    } catch {
+      /* storage blocked: the draft is lost as before */
+    }
+  }
+  useEffect(() => {
+    if (!status?.accountId) return;
+    try {
+      const kept = JSON.parse(sessionStorage.getItem(EXPIRED_DRAFT_KEY) ?? "null");
+      sessionStorage.removeItem(EXPIRED_DRAFT_KEY);
+      // Only for the account that wrote it: another person signing in on this tab never sees it.
+      if (kept?.account === status.accountId && typeof kept.text === "string" && kept.text) {
+        setInput((now) => now || kept.text);
+        setNotice(sessionExpiryText[lang].draftRestored);
+      }
+    } catch {
+      /* storage blocked or unreadable: nothing to restore */
+    }
+  }, [status?.accountId]);
   async function api(path: string, data: unknown, signal?: AbortSignal) {
     if (!status) throw new Error(t.serviceUnavailable);
     const response = await fetch(path, {
@@ -865,6 +920,7 @@ export function App() {
     });
     const result = await response.json();
     if (response.status === 401 && status.accountId) {
+      keepDraftForSignIn(); // before the lock below empties the message box
       vault.current?.lock();
       vault.current?.onInvalidate?.();
       // The session ended: this device's Secure copy goes, as at sign-out.
@@ -873,7 +929,7 @@ export function App() {
         await closeSecure(true, status.accountId);
       }
       accessNavigation.current = true;
-      window.location.assign("/auth");
+      window.location.assign("/auth?reason=expired");
     }
     if (!response.ok)
       throw new Error(
@@ -894,7 +950,7 @@ export function App() {
   async function readyToLeaveSecure() {
     if (!secureOn) return true;
     await flushSecure();
-    return (await securePending()) === 0 || window.confirm(st.unsentSignOut);
+    return (await securePending()) === 0 || ask(q.signOutTitle, st.unsentSignOut, q.signOut);
   }
   /** Sign-out with Secure on: the local Secure databases on this device are deleted (the account keeps its copy). */
   async function leaveSecure() {
@@ -904,7 +960,7 @@ export function App() {
     await closeSecure(true, status!.accountId);
   }
   async function signOutConsumer() {
-    if (!status?.consumerWorkspace || busy || !allowReplace()) return;
+    if (!status?.consumerWorkspace || busy || !(await allowReplace())) return;
     setBusy(t.signingOut);
     try {
       if (!(await readyToLeaveSecure())) return setBusy("");
@@ -985,8 +1041,8 @@ export function App() {
   const emptyChat =
     tab === "Conversation" && !conversation.messages.length && conversation.title === "New conversation";
   const online = useOnline();
-  const developmentTools =
-    !!import.meta.env.DEV || new URLSearchParams(location.search).has("developmentTools");
+  // SS-22: developer screens (calculator, token and dollar figures) only in a development build opened with ?developmentTools.
+  const developmentTools = developerView();
   // An answer is streaming: its request runs and the newest answer is open with no failure yet.
   // (Imports and searches also hold `controller`, but they add no open answer.)
   const answering =
@@ -996,7 +1052,7 @@ export function App() {
     !lastMessage.failure;
   // New chat while an answer streams asks first, in one question that also covers unsaved changes.
   const allowNew = () =>
-    answering ? window.confirm(unsaved ? cc.stopForNewUnsaved : cc.stopForNew) : allowReplace();
+    answering ? ask(q.stopTitle, unsaved ? cc.stopForNewUnsaved : cc.stopForNew, q.stop) : allowReplace();
   // "Report a problem with this answer" opens Help with that choice set; nothing else is passed.
   const [reporting, setReporting] = useState(false);
   useEffect(() => {
@@ -1096,7 +1152,7 @@ export function App() {
         choice: "primary" | "backup",
         signal = abort.signal,
       ) => {
-        const { streamReply } = await abortable(import("./inference"), signal);
+        const { streamReply } = await abortable(loadInference(), signal);
         signal.throwIfAborted();
         const usage = await streamReply(
           next,
@@ -1323,7 +1379,7 @@ export function App() {
   // declared to the relay as a research plan. Its text is not shown; the search texts are.
   async function planResearch(prompt: string, signal: AbortSignal) {
     if (!status) throw Error(t.serviceUnavailable);
-    const { streamReply } = await abortable(import("./inference"), signal);
+    const { streamReply } = await abortable(loadInference(), signal);
     const counted = (usage?: Usage) => {
       if (usage) setConversation((c) => ({ ...c, usage: [...c.usage, usage] }));
     };
@@ -1377,17 +1433,15 @@ export function App() {
     const cost = status?.research?.cost ?? 0;
     if (allowance && allowance.state !== "unavailable" && allowance.remaining < cost)
       return deepResearchText[lang].notEnough(cost, allowance.remaining);
-    if (conversation.attachments.length >= 5) return t.researchLimit;
     if (researchRoom(question) < RESEARCH_MIN_SOURCE_CHARACTERS) return deepResearchText[lang].tooLong;
     return undefined;
   }
   async function importFiles(files: FileList | readonly File[] | null) {
     if (!files || busy) return;
     if (
-      files.length + conversation.attachments.length > 5 ||
-      Array.from(files).filter((f) => f.type.startsWith("image/")).length +
-        conversation.attachments.filter((a) => a.kind === "screenshot").length >
-        3
+      files.length + fileCount(conversation.attachments) > FILE_LIMIT ||
+      Array.from(files).filter((f) => f.type.startsWith("image/")).length + screenshotCount(conversation.attachments) >
+        SCREENSHOT_LIMIT
     ) {
       fail(t.tooManyAttachments);
       return;
@@ -1430,10 +1484,6 @@ export function App() {
     how?: "tap" | "auto",
   ): Promise<{ attachment?: Attachment; note: string } | "failed" | undefined> {
     if (!approved || busy) return;
-    if (conversation.attachments.length >= 5) {
-      fail(t.researchLimit);
-      return "failed";
-    }
     setProposal(undefined);
     setSearchSent("");
     setBusy(t.retrieving);
@@ -1480,7 +1530,7 @@ export function App() {
           setConversation((c) => ({
             ...c,
             temporarySearch: c.temporarySearch || approved.kind === "search",
-            attachments: [...c.attachments, attachment],
+            attachments: withResearch(c.attachments, attachment),
           }));
         if (how)
           return {
@@ -1532,7 +1582,7 @@ export function App() {
         ? {
             ...base,
             temporarySearch: true,
-            attachments: [...base.attachments, outcome.attachment],
+            attachments: withResearch(base.attachments, outcome.attachment),
           }
         : base,
       text,
@@ -1565,10 +1615,10 @@ export function App() {
   // "Run now" of a scheduled task: a new conversation with the instruction as its first message,
   // through send() like any message. A task with an approved search text asks first, as the
   // search suggestion does. Only an answered run moves the task on; a refusal leaves it due.
-  function runTask(task: ScheduledTask, search?: boolean) {
+  async function runTask(task: ScheduledTask, search?: boolean) {
     if (busy || !status?.inference.ready) return;
     if (search === undefined) {
-      if (!allowReplace()) return;
+      if (!(await allowReplace())) return;
       reset();
       setTab("Conversation");
       setScheduledOpen(undefined);
@@ -1726,11 +1776,14 @@ export function App() {
       setUnreadableSnapshots(snapshots.unreadable);
       const shown = conversationRef.current;
       const fresh = snapshots.conversations.find((c) => c.id === shown.id);
-      // Only when nothing here waits to be saved and no answer is streaming: otherwise the next save merges.
-      if (fresh && !controller.current && plain(shown) === autoSaved.current && plain(fresh) !== autoSaved.current) {
+      // Only a change from elsewhere (the stored copy is not what this tab last saved or opened), only
+      // when nothing here waits to be saved and no answer is streaming: otherwise the next save merges.
+      // A save strips live search (owner decision 22 October), so the open chat keeps its own results.
+      if (fresh && !controller.current && plain(shown) === autoSaved.current && (!savedBase.current || plain(fresh) !== plain(savedBase.current))) {
+        const next = keepLiveSearch(fresh, shown);
         savedBase.current = fresh;
-        autoSaved.current = plain(fresh);
-        setConversation(structuredClone(fresh));
+        autoSaved.current = plain(next);
+        setConversation(structuredClone(next));
       }
       const held = heldModeRef.current === "secure" ? secureVault() : undefined;
       if (held) {
@@ -1777,9 +1830,10 @@ export function App() {
         if (!theirs) return;
         snapshot = await store.save({ ...mergeConversation(savedBase.current ?? undefined, conversation, theirs), draft: input }, theirs);
         if (current !== epoch.current) return;
-        autoSaved.current = plain(snapshot);
+        const next = keepLiveSearch(snapshot, conversation);
+        autoSaved.current = plain(next);
         savedBase.current = snapshot;
-        setConversation(structuredClone(snapshot));
+        setConversation(structuredClone(next));
         assignMode(snapshot.id, mode);
         return void showLists();
       }
@@ -1793,7 +1847,8 @@ export function App() {
     }
   }
   useEffect(() => {
-    if (!secureOn || busy || conversation.incognito || !(conversation.messages.length || conversation.attachments.length)) return;
+    // Only once the chat has a message: attaching a file alone saves nothing (FE-12).
+    if (!secureOn || busy || conversation.incognito || !conversation.messages.length) return;
     if (!vaultFor(mode, vault.current)?.unlocked || plain(conversation) === autoSaved.current) return;
     const timer = setTimeout(() => void autoSave(), 300);
     return () => clearTimeout(timer);
@@ -1812,13 +1867,10 @@ export function App() {
     (scheduledEnabled() ? ` ${scheduledText[lang].eraseAlso}` : "");
   async function eraseEverything(alsoDeleteSynced?: boolean) {
     if (alsoDeleteSynced === undefined) {
-      // In sync here: one question that also asks about the synced copy (below), not the browser's.
-      if (syncMember && !syncState.detached) {
-        setEraseSynced(false);
-        setEraseQuestion(true);
-        return;
-      }
-      if (!window.confirm(eraseText())) return;
+      // The app's question (SS-16); in sync here it also asks about the synced copy (below).
+      setEraseSynced(false);
+      setEraseQuestion(true);
+      return;
     }
     const current = epoch.current;
     setBusy(t.erasing);
@@ -1898,7 +1950,7 @@ export function App() {
     currentSecret: string,
     nextSecret: string,
   ) {
-    if (!allowReplace()) return;
+    if (!(await allowReplace())) return;
     const current = epoch.current;
     setBusy(t.updatingProtection);
     try {
@@ -1945,7 +1997,7 @@ export function App() {
       await signOutConsumer();
       return;
     }
-    if (!allowReplace()) return;
+    if (!(await allowReplace())) return;
     if (!(await readyToLeaveSecure())) return;
     detachSync();
     vault.current?.lock();
@@ -1972,7 +2024,7 @@ export function App() {
       const all = secureOn ? await readProjects(vault.current) : next;
       if (current !== epoch.current) return;
       setProjects(all);
-      setNotice(t.projectCreated);
+      setNotice(tm(into).projectCreated);
       return id;
     } catch (error) {
       if (current === epoch.current)
@@ -2055,7 +2107,7 @@ export function App() {
       if (current !== epoch.current) return;
       setSaved(available.conversations);
       setUnreadableSnapshots(available.unreadable);
-      setNotice(t.organized);
+      setNotice(tm(modeOf(c.id) ?? section).organized);
     } catch (error) {
       if (current === epoch.current)
         fail(
@@ -2065,6 +2117,18 @@ export function App() {
         );
     } finally {
       if (current === epoch.current) setBusy("");
+    }
+  }
+  /** Data controls' "Delete all chats" in Secure: each chat's delete leaves a tombstone that reaches every device. */
+  async function deleteAllSecure() {
+    const store = secureVault();
+    if (!store) throw Error("Secure is not open");
+    const chats = saved.filter((c) => !inMax(c.id));
+    if (chats.some((c) => c.id === conversation.id)) reset();
+    try {
+      for (const c of chats) await store.delete(c.id);
+    } finally {
+      await showLists();
     }
   }
   async function deleteSnapshot(c: Conversation) {
@@ -2086,8 +2150,8 @@ export function App() {
       if (current === epoch.current) setBusy("");
     }
   }
-  const openSaved = (c: Conversation) => {
-    if (!allowReplace()) return;
+  const openSaved = async (c: Conversation) => {
+    if (!(await allowReplace())) return;
     reset();
     savedBase.current = c;
     if (secureOn) setSection(modeOf(c.id) ?? "secure");
@@ -2112,6 +2176,8 @@ export function App() {
       setNotice(t.opened);
   };
 
+  const filesFull = fileCount(conversation.attachments) >= FILE_LIMIT;
+  const screenshotsFull = screenshotCount(conversation.attachments) >= SCREENSHOT_LIMIT;
   const sources = conversation.attachments.flatMap((a) => a.sources);
   const sourceHistory = new Map(sources.map((item) => [item.id, item]));
   // On the conversation screen, notices and the "not available" line sit just above the message
@@ -2217,8 +2283,8 @@ export function App() {
                   vault.current?.lock();
                   vault.current?.onInvalidate?.();
                 }}
-                onNewChat={() => {
-                  if (!allowNew()) return;
+                onNewChat={async () => {
+                  if (!(await allowNew())) return;
                   reset();
                   setSection("max");
                   setTab("Conversation");
@@ -2250,16 +2316,16 @@ export function App() {
         newDisabled={!!busy && !controller.current}
         currentId={conversation.id}
         onOpen={openSaved}
-        onNew={(projectId) => {
-          if (!allowNew()) return;
+        onNew={async (projectId) => {
+          if (!(await allowNew())) return;
           reset();
           setSection("secure");
           if (projectId) setConversation({ ...emptyConversation(), projectId });
           setTab("Conversation");
           setNavigationOpen(false);
         }}
-        onNewIncognito={() => {
-          if (!allowNew()) return;
+        onNewIncognito={async () => {
+          if (!(await allowNew())) return;
           reset();
           setConversation({
             ...emptyConversation(),
@@ -2321,6 +2387,20 @@ export function App() {
           }}
         />
       )}
+      {question && (
+        <ConfirmDialog
+          title={question.title}
+          text={question.text}
+          confirmLabel={question.confirm}
+          cancelLabel={q.cancel}
+          // The opener can sit in a menu that closed: then the message box.
+          fallback={() => document.getElementById("message-input")}
+          onClose={(yes) => {
+            setQuestion(undefined);
+            question.answer(yes);
+          }}
+        />
+      )}
       {filesQuestion && (
         <ConfirmDialog
           title={syncText[lang].missingFilesTitle}
@@ -2344,11 +2424,12 @@ export function App() {
             if (yes) void eraseEverything(eraseSynced);
           }}
         >
-          <AlsoDeleteSynced checked={eraseSynced} onChange={setEraseSynced} />
+          {syncMember && !syncState.detached && <AlsoDeleteSynced checked={eraseSynced} onChange={setEraseSynced} />}
         </ConfirmDialog>
       )}
       {scheduledEnabled() && scheduledOpen && (
         <ScheduledPanel
+          storage={storageOf(heldMode)}
           vault={heldVault}
           unlocked={heldReady}
           status={status}
@@ -2360,6 +2441,7 @@ export function App() {
       )}
       {remember && (
         <RememberDialog
+          storage={storageOf(heldMode)}
           text={remember.text}
           canSave={heldReady}
           canSend={remember.draft}
@@ -2371,7 +2453,7 @@ export function App() {
               changeMemories(heldVault!, addMemory(result.save)).then(
                 () => {
                   if (asked.draft) setInput("");
-                  setNotice(memoryText[lang].added);
+                  setNotice(forStorage(memoryText[lang], storageOf(heldMode)).added);
                 },
                 (error) => fail(memoryText[lang].problem(memoryProblem(error))),
               );
@@ -2381,14 +2463,15 @@ export function App() {
       {anyStore && projectSpacesEnabled() && projects.some((p) => p.id === openProject) && (
         <ProjectPanel
           key={openProject}
+          storage={storageOf(modeOf(openProject) === "secure" ? "secure" : "max")}
           vault={storeOf(openProject!)}
           fileSlot={modeOf(openProject) === "secure" ? "secure" : "max"}
           project={projects.find((p) => p.id === openProject)!}
           chats={saved.filter((c) => c.projectId === openProject)}
           busy={!!busy}
           onClose={() => setOpenProject(undefined)}
-          onNewChat={() => {
-            if (!allowNew()) return;
+          onNewChat={async () => {
+            if (!(await allowNew())) return;
             reset();
             if (secureOn) setSection(modeOf(openProject) ?? "secure");
             setConversation({ ...emptyConversation(), projectId: openProject });
@@ -2462,7 +2545,7 @@ export function App() {
                   <option value="light">{t.themeLight}</option>
                   <option value="dark">{t.themeDark}</option>
                 </select>
-                <p className="muted">{t.appearanceNote}</p>
+                <p className="muted">{tm("settings").appearanceNote}</p>
                 {germanEnabled() && (
                   <>
                     <h3>{t.languageLabel}</h3>
@@ -2495,8 +2578,13 @@ export function App() {
             {settingsSection === "privacy" && (
               <>
                 <h3>{t.sectionPrivacy}</h3>
-                <p>{privacySummary(lang)}</p>
+                {/* SS-01: the binding summary says "we never can" read: only true without Secure. */}
+                <p>{secureOn ? modeCopyText[lang].privacySummary_secure : privacySummary(lang)}</p>
                 {secureOn && <p>{modesText[lang].secureLong}</p>}
+                {/* Export and delete of the Secure chats (SS-03). Secure Max and the device vault keep their own controls. */}
+                {secureReady && (
+                  <DataControls conversations={saved.filter((c) => !inMax(c.id))} onDeleteAll={deleteAllSecure} erasesEverything={false} busy={!!busy} />
+                )}
                 {status?.healthConsentDraft && (
                   <HealthConsentSetting
                     record={healthConsent}
@@ -2530,7 +2618,7 @@ export function App() {
                   {t.imprintLink}
                 </button>
                 <p>{t.privateChatGated}</p>
-                <p>{t.projectsNote}</p>
+                <p>{tm("settings").projectsNote}</p>
                 <button
                   onClick={() => {
                     setSettingsOpen(false);
@@ -2542,13 +2630,13 @@ export function App() {
               </>
             )}
             {settingsSection === "usage" && (
-              <AccountUsage allowance={status?.requestAllowance} metering={!!status?.metering} refresh={status} />
+              <AccountUsage allowance={status?.requestAllowance} metering={!!status?.metering} refresh={status} chatReady={status?.inference.ready} />
             )}
             {settingsSection === "memory" && memoryEnabled() && (
-              <MemorySettings vault={heldVault} unlocked={heldReady} />
+              <MemorySettings vault={heldVault} unlocked={heldReady} storage={storageOf(heldMode)} />
             )}
             {settingsSection === "sync" && syncOn && (
-              <SyncSettings unlocked={unlocked} vault={vault.current} onNotice={setNotice} onOpened={(remember) => void syncOpened(remember)} />
+              <SyncSettings storage={secureOn ? "secure" : "local"} unlocked={unlocked} vault={vault.current} onNotice={setNotice} onOpened={(remember) => void syncOpened(remember)} />
             )}
             {settingsSection === "sync" && maxAvailable && (
               <>
@@ -2716,7 +2804,7 @@ export function App() {
         {!(inDock && !status?.inference.ready) && connectionStatus}
         {conversation.incognito && (
           <div role="status" className="notice incognito-banner">
-            <strong>{t.incognitoBannerTitle}</strong> {t.incognitoBanner}
+            <strong>{t.incognitoBannerTitle}</strong> {tm(mode).incognitoBanner}
           </div>
         )}
         {conversation.disappearAfter && (
@@ -3053,6 +3141,7 @@ export function App() {
               {scheduleCard?.text === input && (
                 <ScheduleCard
                   key={input}
+                  storage={storageOf(heldMode)}
                   found={scheduleCard.found}
                   unlocked={heldReady}
                   onCreate={(fields) => {
@@ -3158,29 +3247,34 @@ export function App() {
                       <button
                         type="button"
                         className="text-button"
-                        disabled={
-                          !!busy || conversation.attachments.length >= 5
-                        }
+                        disabled={!!busy || filesFull}
+                        aria-describedby={filesFull ? "file-limit-reason" : undefined}
                         onClick={() => chatFileInput.current?.click()}
                       >
                         <Icon name="file" />
                         {t.attachFile}
                       </button>
+                      {/* FE-06: a "+" item that is off says why (searches never count). */}
+                      {filesFull && (
+                        <p id="file-limit-reason" className="menu-reason">
+                          {al.fileLimit(FILE_LIMIT)}
+                        </p>
+                      )}
                       <button
                         type="button"
                         className="text-button"
-                        disabled={
-                          !!busy ||
-                          conversation.attachments.length >= 5 ||
-                          conversation.attachments.filter(
-                            (a) => a.kind === "screenshot",
-                          ).length >= 3
-                        }
+                        disabled={!!busy || filesFull || screenshotsFull}
+                        aria-describedby={!filesFull && screenshotsFull ? "screenshot-limit-reason" : undefined}
                         onClick={() => setPhotoOpen(true)}
                       >
                         <Icon name="camera" />
                         {t.photoToText}
                       </button>
+                      {!filesFull && screenshotsFull && (
+                        <p id="screenshot-limit-reason" className="menu-reason">
+                          {al.screenshotLimit(SCREENSHOT_LIMIT)}
+                        </p>
+                      )}
                       {status?.images && status.inference.ready && (
                         <button
                           type="button"
@@ -3404,7 +3498,7 @@ export function App() {
               </p>
               <p className="composer-note">{t.onlySelected}</p>
             </dialog>
-            {new URLSearchParams(location.search).has("developmentTools") && (
+            {developmentTools && (
               <details className="panel">
                 <summary>{t.calculator}</summary>
                 <p>{t.calculatorNote}</p>
@@ -3471,9 +3565,12 @@ export function App() {
               <em>{t.contextHeadB}</em>
             </h2>
             <p className="intro">{t.contextIntro}</p>
-            <label className="upload-zone">
-              ＋ {t.addDocuments}
+            {/* FE-10: the app's own button (the browser's file field is unstyled and in the browser's language); drops here are taken. */}
+            <div className="upload-zone">
+              <span>＋ {t.addDocuments}</span>
               <input
+                ref={contextFileInput}
+                hidden
                 aria-label={t.addDocuments}
                 type="file"
                 multiple
@@ -3484,12 +3581,18 @@ export function App() {
                   e.target.value = "";
                 }}
               />
+              <span className="upload-choose">
+                <button type="button" disabled={!!busy} onClick={() => contextFileInput.current?.click()}>
+                  {al.chooseFiles}
+                </button>
+                <span>{al.dropHere}</span>
+              </span>
               <small>
                 {t.formats}
                 <br />
                 {t.limits}
               </small>
-            </label>
+            </div>
             {conversation.attachments.length === 0 && (
               <p className="empty-note">{t.contextEmpty}</p>
             )}
@@ -3813,7 +3916,7 @@ export function App() {
                 {
                   ...conversationNow.current,
                   temporarySearch: true,
-                  attachments: [...conversationNow.current.attachments, researchAttachment(sources, queries)],
+                  attachments: withResearch(conversationNow.current.attachments, researchAttachment(sources, queries)),
                 },
                 question,
                 false,
@@ -3826,7 +3929,7 @@ export function App() {
               setConversation((c) => ({
                 ...c,
                 temporarySearch: true,
-                attachments: [...c.attachments, researchAttachment(sources, queries)],
+                attachments: withResearch(c.attachments, researchAttachment(sources, queries)),
               }))
             }
             showAnswer={() => setTab("Conversation")}
@@ -3836,8 +3939,8 @@ export function App() {
           <>
             {status?.accountId && !status.consumerWorkspace && (
               <button
-                onClick={() => {
-                  if (!allowReplace()) return;
+                onClick={async () => {
+                  if (!(await allowReplace())) return;
                   vault.current?.lock();
                   vault.current?.onInvalidate?.();
                   accessNavigation.current = true;
@@ -3853,6 +3956,7 @@ export function App() {
               </button>
             )}
             <AccountUsage
+              chatReady={status?.inference.ready}
               allowance={status?.requestAllowance}
               metering={!!status?.metering}
               refresh={status}
@@ -3861,8 +3965,8 @@ export function App() {
                 status?.billingRehearsal
                   ? {
                       csrf: status.csrf,
-                      onNavigate: (url) => {
-                        if (!allowReplace()) return;
+                      onNavigate: async (url) => {
+                        if (!(await allowReplace())) return;
                         accessNavigation.current = true;
                         window.location.assign(url);
                       },
@@ -3870,8 +3974,8 @@ export function App() {
                   : undefined
               }
               busy={!!busy}
-              onManage={() => {
-                if (!allowReplace()) return;
+              onManage={async () => {
+                if (!(await allowReplace())) return;
                 accessNavigation.current = true;
                 window.location.assign("/auth");
               }}
@@ -3885,7 +3989,7 @@ export function App() {
               <br />
               <em>{t.savedHeadB}</em>
             </h2>
-            <p className="intro">{t.savedIntro}</p>
+            <p className="intro">{tm(section).savedIntro}</p>
             <label>
               {t.titleLabel}
               <input
@@ -3900,12 +4004,12 @@ export function App() {
                 }
               />
             </label>
-            <p className="muted">{t.titleNote}</p>
+            <p className="muted">{tm(mode).titleNote}</p>
             <p role="status">
               {unsaved ? t.unsavedChanges : t.noUnsavedChanges} {t.reloadClears}
             </p>
             {secureReady && section === "secure" && (
-              <ConversationLibrary conversations={saved.filter((c) => !inMax(c.id))} busy={!!busy} onOpen={openSaved} onDelete={(c) => void deleteSnapshot(c)} />
+              <ConversationLibrary storage="secure" conversations={saved.filter((c) => !inMax(c.id))} busy={!!busy} onOpen={openSaved} onDelete={(c) => void deleteSnapshot(c)} />
             )}
             {/* The vault's own screens: inside the Secure Max section, or as before where Secure Max is not offered. */}
             {maxAvailable && section === "secure" ? null : !unlocked ? (
@@ -3996,8 +4100,8 @@ export function App() {
                   <p className="empty-note">{t.noSaved}</p>
                 )}
                 <ConversationLibrary
+                  storage={secureOn ? "max" : "local"}
                   conversations={secureOn ? saved.filter((c) => inMax(c.id)) : saved}
-
                   busy={!!busy}
                   onOpen={openSaved}
                   onDelete={(c) => void deleteSnapshot(c)}
@@ -4025,12 +4129,13 @@ export function App() {
         {tab !== "Conversation" && (
           <footer>
             {t.footer}
-            <span>{t.footerNote}</span>
+            <span>{tm(mode).footerNote}</span>
           </footer>
         )}
       </main>
       {canvasEnabled() && canvasOpen && tab === "Conversation" && (
         <CanvasPanel
+          storage={storageOf(mode)}
           conversation={conversation}
           update={setConversation}
           busy={!!busy}
