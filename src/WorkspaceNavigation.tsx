@@ -11,6 +11,8 @@ import { workspaceText } from "./text/workspace";
 import { projectText } from "./text/projects";
 import { projectSpacesEnabled } from "./device-features";
 import { scheduledText } from "./text/scheduled";
+import { messageActionsText } from "./text/message-actions";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 export function WorkspaceNavigation(props: {
   open: boolean;
@@ -47,6 +49,8 @@ export function WorkspaceNavigation(props: {
     c: Conversation,
     change: Pick<Conversation, "pinned" | "archived" | "projectId" | "title">,
   ) => void;
+  /** Deletes the saved chat after the row menu's confirmation; the entry is shown only when given. */
+  onDelete?: (c: Conversation) => void;
 }) {
   const {
     open,
@@ -73,10 +77,25 @@ export function WorkspaceNavigation(props: {
     onScheduled,
     backgroundActive,
     onOrganize,
+    onDelete,
     syncIndicator,
     maxSection,
   } = props;
   const t = useText(workspaceText);
+  const ma = useText(messageActionsText);
+  // Rename in place: the row becomes a field. The ref ends it once (Enter, Escape or leaving the field).
+  const [renaming, setRenaming] = useState<string>();
+  const [renameDraft, setRenameDraft] = useState("");
+  const renameRef = useRef<string | undefined>(undefined);
+  const [deleting, setDeleting] = useState<Conversation>();
+  const finishRename = (c: Conversation, save: boolean, refocus: boolean) => {
+    if (renameRef.current !== c.id) return;
+    renameRef.current = undefined;
+    setRenaming(undefined);
+    const title = renameDraft.trim();
+    if (save && title && title !== conversationTitle(c)) onOrganize(c, { title });
+    if (refocus) requestAnimationFrame(() => document.getElementById(`chat-row-${c.id}`)?.focus());
+  };
   const pt = useText(projectText);
   const groups = useText(savedListText);
   const st = useText(scheduledText);
@@ -359,21 +378,55 @@ export function WorkspaceNavigation(props: {
                       <h3 className="chat-group">{groups[groupOf(c)]}</h3>
                     )}
                   <div className="chat-list-row">
-                    <button
-                      disabled={busy}
-                      aria-current={c.id === currentId ? "page" : undefined}
-                      onClick={() => onOpen(c)}
-                    >
-                      {c.pinned && <Icon name="pin" />}
-                      <span>{conversationTitle(c)}</span>
-                    </button>
+                    {renaming === c.id ? (
+                      <input
+                        className="chat-rename"
+                        autoFocus
+                        aria-label={ma.chatName(conversationTitle(c))}
+                        value={renameDraft}
+                        maxLength={120}
+                        onFocus={(e) => e.currentTarget.select()}
+                        onChange={(e) => setRenameDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key !== "Enter" && e.key !== "Escape") return;
+                          // Escape cancels here only: it must not close the drawer or a menu.
+                          e.preventDefault();
+                          e.stopPropagation();
+                          finishRename(c, e.key === "Enter", true);
+                        }}
+                        onBlur={() => finishRename(c, true, false)}
+                      />
+                    ) : (
+                      <button
+                        id={`chat-row-${c.id}`}
+                        disabled={busy}
+                        aria-current={c.id === currentId ? "page" : undefined}
+                        onClick={() => onOpen(c)}
+                      >
+                        {c.pinned && <Icon name="pin" />}
+                        <span>{conversationTitle(c)}</span>
+                      </button>
+                    )}
                     <details className="chat-item-menu">
                       <summary
+                        id={`chat-menu-${c.id}`}
                         aria-label={t.chatActions(conversationTitle(c))}
                       >
                         <Icon name="more" />
                       </summary>
                       <div className="chat-item-actions">
+                        <button
+                          disabled={busy}
+                          onClick={(e) => {
+                            e.currentTarget.closest("details")!.open = false;
+                            renameRef.current = c.id;
+                            setRenameDraft(conversationTitle(c));
+                            setRenaming(c.id);
+                          }}
+                        >
+                          <Icon name="edit" />
+                          {ma.rename}
+                        </button>
                         <button
                           disabled={busy}
                           onClick={() =>
@@ -423,9 +476,21 @@ export function WorkspaceNavigation(props: {
                             onNavigate("Saved");
                           }}
                         >
-                          <Icon name="edit" />
-                          {t.renameManage}
+                          <Icon name="archive" />
+                          {ma.manageHistory}
                         </button>
+                        {onDelete && (
+                          <button
+                            disabled={busy}
+                            onClick={(e) => {
+                              e.currentTarget.closest("details")!.open = false;
+                              setDeleting(c);
+                            }}
+                          >
+                            <Icon name="trash" />
+                            {ma.delete}
+                          </button>
+                        )}
                       </div>
                     </details>
                   </div>
@@ -443,6 +508,23 @@ export function WorkspaceNavigation(props: {
             {t.unlockHistory}
           </button>
         </div>
+      )}
+      {deleting && onDelete && (
+        <ConfirmDialog
+          title={groups.deleteTitle}
+          text={groups.deleteText(conversationTitle(deleting))}
+          confirmLabel={groups.deleteConfirm}
+          cancelLabel={t.cancel}
+          // Kept: back to the row's "…"; deleted: to the search field.
+          fallback={() =>
+            document.getElementById(`chat-menu-${deleting.id}`) ??
+            document.querySelector<HTMLElement>(".history-search input")
+          }
+          onClose={(confirmed) => {
+            setDeleting(undefined);
+            if (confirmed) onDelete(deleting);
+          }}
+        />
       )}
       {maxSection}
       <nav aria-label={t.workspace} className="sidebar-bottom">
