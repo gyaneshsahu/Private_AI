@@ -3856,3 +3856,20 @@
     min-height: 44px;
   }
 }
+/* round 3 projects and help 16 Nov */
+/* Help: Getting started, Privacy policy, Imprint and Keyboard shortcuts in one wrapping line under the intro. */
+.chat-design .help-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0 0 16px;
+}
+.chat-design .help-contact a {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .chat-design .help-links .text-button,
+  .chat-design .account-popover button {
+    min-height: 44px;
+  }
+}
