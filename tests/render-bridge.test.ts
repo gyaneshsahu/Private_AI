@@ -260,6 +260,17 @@ describe.runIf(!!process.env.PRIVATEAI_SYNTHETIC_PG)(
       expect((await call(item, { data: "x".repeat(2 * 1024 * 1024) })).body).not.toBe("Request too large.");
       const big = await call(item, { data: "x".repeat(6 * 1024 * 1024 + 1) });
       expect([big.status, big.body]).toEqual([413, "Request too large."]);
+      // Secure mode has the same shapes under /api/secure: items up to 6 MB, file blobs up to 32 MB, other paths 1 MB.
+      const secureItem = "/api/secure/items/00000000-0000-4000-8000-000000000000";
+      expect((await call(secureItem, { data: "x".repeat(2 * 1024 * 1024) })).body).not.toBe("Request too large.");
+      const secureBig = await call(secureItem, { data: "x".repeat(6 * 1024 * 1024 + 1) });
+      expect([secureBig.status, secureBig.body]).toEqual([413, "Request too large."]);
+      const secureBlob = "/api/secure/blobs/00000000-0000-4000-8000-000000000000";
+      expect((await call(secureBlob, { data: "x".repeat(8 * 1024 * 1024) })).body).not.toBe("Request too large.");
+      const secureHuge = await call(secureBlob, { data: "x".repeat(32 * 1024 * 1024 + 1) });
+      expect([secureHuge.status, secureHuge.body]).toEqual([413, "Request too large."]);
+      const secureKey = await call("/api/secure/key", { data: "x".repeat(1024 * 1024 + 1) });
+      expect(secureKey.status).toBe(413);
       const bad = createRenderBridge({
         port: upstreamPort,
         ...tls.proxy,

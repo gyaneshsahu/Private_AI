@@ -538,6 +538,8 @@ export interface AppStatus {
   accountId?: string;
   accountEmail?: string;
   accessEpoch?: string;
+  /** With Secure on: when this session signed in (ms), for the recent-sign-in gate of Reset Secure Max. */
+  signedInAt?: number;
   csrf: string;
   inference: {
     ready: boolean;

@@ -450,6 +450,7 @@ export function createApp(config: Config) {
         ? {
             accountId: res.locals.accountId,
             accessEpoch: res.locals.accessEpoch,
+            ...(config.secureStore && Number.isFinite(res.locals.signedInAt) ? { signedInAt: res.locals.signedInAt as number } : {}),
             ...(res.locals.accountEmail
               ? { accountEmail: res.locals.accountEmail }
               : {}),

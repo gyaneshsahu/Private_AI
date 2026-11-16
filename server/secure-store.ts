@@ -66,9 +66,9 @@ export function secureRoutes(settings: SecureSettings, accountOf: (res: express.
   const guard =
     (work: (req: express.Request, res: express.Response, ctx: ContentCtx) => Promise<void>): express.RequestHandler =>
     async (req, res) => {
+      res.setHeader("Cache-Control", "no-store");
       const account = accountOf(res);
       if (!account) return fail(res, 401, "signed-out");
-      res.setHeader("Cache-Control", "no-store");
       try {
         await work(req, res, { account, now: clock() });
       } catch {
