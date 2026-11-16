@@ -3431,3 +3431,22 @@
     min-height: 44px;
   }
 }
+
+/* Data controls (docs/data-controls-20261116.md): export and delete-all buttons, 44 px on phones. */
+.chat-design .data-controls-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chat-design .data-controls-actions button {
+  min-height: 36px;
+}
+.chat-design .data-controls-message:empty {
+  display: none;
+}
+@media (max-width: 640px) {
+  .chat-design .data-controls-actions button {
+    min-height: 44px;
+    flex: 1 1 100%;
+  }
+}
