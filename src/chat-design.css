@@ -3956,7 +3956,8 @@
   min-height: 24px;
 }
 @media (max-width: 760px) {
-  .chat-design .search-next button {
+  .chat-design .search-next button,
+  .chat-design .search-suggestion .row button {
     min-height: 44px;
   }
 }
