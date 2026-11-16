@@ -27,7 +27,7 @@ export function isApple(): boolean {
 type Key = Pick<KeyboardEvent, "key" | "code" | "shiftKey" | "ctrlKey" | "altKey" | "metaKey" | "isComposing" | "keyCode" | "repeat">;
 /** The shortcut this key press means, or undefined. Exactly the platform's modifier; Alt never (AltGr is Ctrl+Alt). */
 export function shortcutFor(event: Key, apple: boolean): ShortcutId | undefined {
-  if (event.isComposing || event.keyCode === 229 || event.repeat || event.altKey) return;
+  if (event.isComposing || event.keyCode === 229 || event.altKey) return;
   const mod = apple ? event.metaKey && !event.ctrlKey : event.ctrlKey && !event.metaKey;
   if (!mod && (event.ctrlKey || event.metaKey)) return;
   // Letters by key (Dvorak), by position when the layout has no Latin letters; Shift+; is ":" on US keyboards.
@@ -41,7 +41,7 @@ export function shortcutFor(event: Key, apple: boolean): ShortcutId | undefined 
 
 /** Runs the shortcut's action. Returns true when it ran, so the caller blocks the browser's own use of the key. */
 export function runShortcut(
-  event: Key & Pick<KeyboardEvent, "defaultPrevented">,
+  event: Key & Pick<KeyboardEvent, "defaultPrevented" | "repeat">,
   actions: ShortcutActions,
   apple: boolean,
   root: Pick<Document, "querySelector"> = document,
@@ -54,6 +54,8 @@ export function runShortcut(
   if (root.querySelector("dialog[open]:not(.shortcut-help):not(.navigation-drawer)")) return false;
   // While the help is open only its own shortcut works (to close it): the page behind it is inert.
   if (id !== "help" && root.querySelector("dialog.shortcut-help[open]")) return false;
+  // A held key runs the action once but keeps the browser's use of the key blocked (developer tools, bookmarks).
+  if (event.repeat) return true;
   return action() !== false;
 }
 

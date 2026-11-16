@@ -8,8 +8,8 @@ export function lastAnswer(messages: readonly Message[]): Message | undefined {
 }
 
 /**
- * The text of the last fenced code block in markdown, as the answer's Copy code button copies it
- * (without the final line break). A fence left open runs to the end, as in CommonMark.
+ * The text of the last fenced code block in markdown, without the fences and without a final line
+ * break. A fence left open runs to the end, as in CommonMark.
  * shortcut: only fences at the start of a line (up to 3 spaces), not inside lists or quotes, and no
  * indented code blocks; upgrade to the markdown parser's tree if models start nesting code there.
  */

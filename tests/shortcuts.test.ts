@@ -55,10 +55,9 @@ describe("shortcutFor", () => {
     expect(shortcutFor(press("s", { ctrlKey: true }), false)).toBeUndefined();
     expect(shortcutFor(press(";", { ctrlKey: true }), false)).toBeUndefined();
   });
-  it("ignores composing, held keys and Alt (AltGr is Ctrl+Alt)", () => {
+  it("ignores composing and Alt (AltGr is Ctrl+Alt)", () => {
     expect(shortcutFor(press("k", { ctrlKey: true, isComposing: true }), false)).toBeUndefined();
     expect(shortcutFor(press("k", { ctrlKey: true, keyCode: 229 }), false)).toBeUndefined();
-    expect(shortcutFor(press("O", { ctrlKey: true, shiftKey: true, repeat: true }), false)).toBeUndefined();
     expect(shortcutFor(press("/", { ctrlKey: true, altKey: true }), false)).toBeUndefined();
   });
 });
@@ -89,6 +88,11 @@ describe("runShortcut", () => {
     expect(runShortcut(press("K", { ctrlKey: true }), actions, false, page())).toBe(false);
     expect(runShortcut(press("t", { ctrlKey: true }), actions, false, page())).toBe(false);
     expect(runShortcut({ ...newChat, defaultPrevented: true }, actions, false, page())).toBe(false);
+  });
+  it("a held key runs nothing again but stays blocked", () => {
+    ran.length = 0;
+    expect(runShortcut({ ...newChat, repeat: true }, actions, false, page())).toBe(true);
+    expect(ran).toEqual([]);
   });
   it("another open dialog blocks every shortcut; the sidebar drawer does not", () => {
     ran.length = 0;

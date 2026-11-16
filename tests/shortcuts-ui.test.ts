@@ -123,21 +123,40 @@ for (const lang of LANGS)
     }, 60_000);
 
 it("each key reaches its action; the default is blocked only when one ran; dialogs block the rest", async () => {
-  const page = await open(1280, "en");
+  const page = await open(375, "en");
   try {
     await page.keyboard.press("Control+Shift+O");
+    // Search opens the sidebar drawer (a modal dialog) and focuses its search box, also again while it is open.
+    const search = page.locator(".history-search input");
+    const drawer = page.locator("dialog.navigation-drawer");
     await page.keyboard.press("Control+k");
-    await ui(page.locator(".history-search input")).toBeFocused();
+    await ui(drawer).toHaveAttribute("open");
+    await ui(search).toBeFocused();
+    await page.getByRole("button", { name: "Close navigation" }).focus();
+    await page.keyboard.press("Control+k");
+    await ui(search).toBeFocused();
+    // The sidebar key closes the drawer; Shift+Escape goes to the message box.
     await page.keyboard.press("Control+Shift+S");
+    await ui(drawer).not.toHaveAttribute("open");
     await page.keyboard.press("Shift+Escape");
     await ui(page.locator("#message-input")).toBeFocused();
     // Typing into the message box still works, and the copy shortcut works from there.
     await page.keyboard.type("hello");
     await page.keyboard.press("Control+Shift+C");
     await ui(page.locator("#message-input")).toHaveValue("hello");
-    expect(await ran(page)).toEqual(["newChat", "search", "sidebar", "composer", "copyAnswer"]);
-    // 4 key presses, 5 typed letters, then the copy: only the shortcuts were blocked.
-    expect(await blocked(page)).toEqual([true, true, true, true, false, false, false, false, false, true]);
+    expect(await ran(page)).toEqual(["newChat", "search", "search", "sidebar", "composer", "copyAnswer"]);
+    // 5 key presses, 5 typed letters, then the copy: only the shortcuts were blocked.
+    expect(await blocked(page)).toEqual([true, true, true, true, true, false, false, false, false, false, true]);
+    // A held key: one action, every repeat still blocked.
+    await page.keyboard.down("Control");
+    await page.keyboard.down("Shift");
+    await page.keyboard.down("C");
+    await page.keyboard.down("C");
+    await page.keyboard.up("C");
+    await page.keyboard.up("Shift");
+    await page.keyboard.up("Control");
+    expect(await ran(page)).toEqual(["copyAnswer"]);
+    expect(await blocked(page)).toEqual([true, true]);
     // Nothing to copy (the action returned false) and Meta on Windows: the browser keeps the key.
     await page.keyboard.press("Control+Shift+Semicolon");
     await page.keyboard.press("Meta+Shift+O");

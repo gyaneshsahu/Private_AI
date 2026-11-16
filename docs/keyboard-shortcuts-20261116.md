@@ -27,10 +27,10 @@ German labels in the help: Strg and Umschalt (as printed on German keyboards). T
 ## Rules
 
 - Exactly the platform's modifier: Cmd on Apple devices (from `navigator.userAgentData.platform` or `navigator.platform`), Ctrl elsewhere. Ctrl on a Mac does nothing (it keeps the system's text-editing keys). Alt never counts, because AltGr on Windows is Ctrl + Alt.
-- Ignored: text being composed by an input method, held keys (repeat), and key presses another handler already took (for example Escape closing a menu).
+- Ignored: text being composed by an input method, and key presses another handler already took (for example Escape closing a menu). A held key runs its action once; the repeats stay blocked, so holding Ctrl + Shift + C never opens the developer tools.
 - Letters match by the character typed, so Dvorak works; on a layout without Latin letters they match by key position.
 - Copy code: `;` and `:` both count, because Shift + ; gives ":" on US keyboards and ";" is Shift + , on German ones. Help: "/" with or without Shift, because "/" is Shift + 7 on German keyboards.
-- The browser keeps its own use of a key unless an action ran. An action returns `false` when it did nothing.
+- The browser keeps its own use of a key unless an action ran. An action returns `false` when it did nothing. The copy actions should not: with nothing to copy they show a notice ("There is no complete answer to copy yet.") and keep the key, or Ctrl + Shift + C would open the developer tools.
 - Another open modal dialog (a confirmation, the source viewer, Settings) blocks every shortcut. Two exceptions: the sidebar drawer (on phones and when the sidebar is collapsed it is a modal dialog; without the exception Ctrl + K and Ctrl + Shift + S could not work there) and the help itself. While the help is open, only Ctrl + / works, to close it; the page behind it cannot take focus.
 - Copy the last answer copies what the answer's own Copy button copies (`answerCopyText`: numbered citations and the source list). Nothing is copied while the last answer is incomplete, failed or empty, the same rule that switches its Copy button off.
 - Copy the last code block takes the last fenced block (``` or ~~~) of that same answer. Not covered: fences inside lists or quotes, and indented code blocks (noted in the code).
@@ -51,7 +51,7 @@ If a browser reserves one of these, the browser wins and the shortcut does nothi
 
 ## Tests
 
-- `tests/shortcuts.test.ts` (20): every combination on both platforms, the other platform's modifier, Shift must match, composing, held keys, Alt, the dialog rules, and the copy helpers (several blocks, longer fences, tilde fences, an open fence, CRLF, inline code).
-- `tests/shortcuts-ui.test.ts` (10): the help at 375, 768 and 1280 px in English and German (labels, keys, focus, Escape, Close, 44 px Close on phones, no sideways scroll), the keys reaching their actions with the default blocked only then, a confirmation blocking every key, and Mac keys. Nothing leaves 127.0.0.1.
+- `tests/shortcuts.test.ts` (21): every combination on both platforms, the other platform's modifier, Shift must match, composing, Alt, held keys, the dialog rules, and the copy helpers (several blocks, longer fences, tilde fences, an open fence, CRLF, inline code).
+- `tests/shortcuts-ui.test.ts` (10): the help at 375, 768 and 1280 px in English and German (labels, keys, focus, Escape, Close, 44 px Close on phones, no sideways scroll), the keys reaching their actions with the default blocked only then, a held key, a modal sidebar drawer at 375 px (Ctrl + K opens it and focuses its search box, also while it is open; Ctrl + Shift + S closes it), a confirmation blocking every key, and Mac keys. Nothing leaves 127.0.0.1.
 
 Not verified: the wiring in App.tsx, real browsers' own shortcuts, Safari, Firefox, phones with a hardware keyboard.
