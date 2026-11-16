@@ -1,38 +1,79 @@
+/* Design tokens (docs/ui-redesign-plan-20261116.md, section 2). Provisional palette: option C of
+   evaluation/ui-redesign/palettes.json. Colours live ONLY in these two blocks; swap them here. */
+:root,
 .chat-design {
-  --canvas: #fbfbfc;
-  --surface: #fff;
-  --sidebar: #f0f0f4;
-  --subtle: #f0eff4;
-  --ink: #20232b;
-  --muted: #626773;
-  --line: #dddde5;
-  --accent: #6b4bb0;
-  --accent-hover: #583993;
-  --focus: #6b4bb0;
-  --shadow: 0 5px 18px #3524190a;
-  background: var(--canvas);
-  color: var(--ink);
-  font:
-    16px/1.65 ui-sans-serif,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    sans-serif;
-  min-height: 100dvh;
+  --bg: #fbfcfe;
+  --sidebar: #f2f5fa;
+  --surface: #ffffff;
+  --hover: #e6ebf4;
+  --ink: #101828;
+  --ink2: #525d76;
+  --ink3: #667089;
+  --line: #dfe5ef;
+  --accent: #2456e6;
+  --primary: #2456e6;
+  --primary-ink: #ffffff;
+  --bubble: #e9f0ff;
+  --code: #f2f5fa;
+  --danger: #b42318;
+  --glow: radial-gradient(60% 70% at 50% 60%, #7fb2ff40, #6fe0d018 55%, transparent 75%);
+  --scrim: #10182866;
+  --shadow-1: 0 1px 2px #0000000a, 0 8px 28px -12px #00000024;
+  --shadow-2: 0 2px 4px #00000014, 0 16px 56px -12px #00000048;
+  /* Old names, kept as aliases until every rule is moved over. */
+  --canvas: var(--bg);
+  --subtle: var(--hover);
+  --muted: var(--ink2);
+  --focus: var(--accent);
+  --accent-hover: var(--accent);
+  --shadow: none;
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Consolas, monospace;
+  --r-sm: 7px;
+  --r-row: 9px;
+  --r-card: 12px;
+  --r-menu: 14px;
+  --r-composer: 24px;
+  --r-pill: 999px;
+  --fast: 120ms;
+  --base: 180ms;
+  --slow: 260ms;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .chat-design[data-theme="dark"] {
   color-scheme: dark;
-  --canvas: #191c1f;
-  --surface: #22262b;
-  --sidebar: #222528;
-  --subtle: #2b2f34;
-  --ink: #f1f1f2;
-  --muted: #b5bac3;
-  --line: #41464e;
-  --accent: #c3adf5;
-  --accent-hover: #dbccfb;
-  --focus: #c3adf5;
-  --shadow: 0 5px 18px #0003;
+  --bg: #0b0f17;
+  --sidebar: #070a10;
+  --surface: #141a26;
+  --hover: #1b2333;
+  --ink: #e8ecf4;
+  --ink2: #a5b0c6;
+  --ink3: #8b96ad;
+  --line: #222b3c;
+  --accent: #86adff;
+  --primary: #3565e8;
+  --primary-ink: #ffffff;
+  --bubble: #162138;
+  --code: #070a10;
+  --danger: #ff9189;
+  --glow: radial-gradient(55% 65% at 50% 60%, #2f6bff3d, #19c5b01a 55%, transparent 78%);
+  --scrim: #000000a6;
+  --shadow-1: 0 1px 2px #00000040, 0 8px 28px -12px #000000a0;
+  --shadow-2: 0 2px 4px #00000060, 0 16px 56px -12px #000000d0;
+}
+.chat-design {
+  background: var(--bg);
+  color: var(--ink);
+  font: 15.5px/1.6 var(--font);
+  min-height: 100dvh;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-design *,
+  .chat-design *::before,
+  .chat-design *::after {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 .chat-design button,
 .chat-design input:not([type="checkbox"]),
@@ -44,17 +85,20 @@
   min-height: 40px;
 }
 .chat-design button {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
   transition:
-    background 140ms ease,
-    border-color 140ms ease;
+    background var(--fast) var(--ease),
+    color var(--fast) var(--ease),
+    border-color var(--fast) var(--ease);
 }
 .chat-design button:hover:not(:disabled) {
-  background: var(--subtle);
-  border-color: var(--muted);
+  background: var(--hover);
 }
 .chat-design :is(button, a, input, textarea, select, summary):focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 3px;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 .chat-design .sidebar {
   background: var(--sidebar);
@@ -71,17 +115,11 @@
   position: relative;
   width: 40px;
   height: 42px;
-  border: 1px solid #b66a42;
-  border-radius: 45% 45% 48% 48%;
-  color: #542c1e;
-  background: linear-gradient(145deg, #ffddb3, #e79a6c);
-  box-shadow:
-    inset 2px 3px 4px #fff8,
-    inset -2px -3px 4px #934a352f,
-    0 3px 4px #42220f16;
-  font:
-    600 22px/1 Georgia,
-    serif;
+  border: 0;
+  border-radius: var(--r-card);
+  color: var(--primary-ink);
+  background: var(--primary);
+  font: 620 18px/1 var(--font);
 }
 .chat-design .clay-leaf {
   position: absolute;
@@ -90,26 +128,22 @@
   width: 13px;
   height: 8px;
   border-radius: 100% 0 100% 0;
-  background: #64834a;
-  transform: rotate(-15deg);
+  display: none;
 }
 .chat-design .sidebar > .eyebrow {
   margin-top: 30px;
 }
 .chat-design .new-chat,
 .chat-design .primary {
-  color: #fff;
-  border-color: #6849a6;
-  background: linear-gradient(#8063bb, #6849a6);
-  box-shadow:
-    inset 0 1px 1px #fff5,
-    0 3px 5px #743e2420;
-  font-weight: 600;
+  color: var(--primary-ink);
+  border-color: transparent;
+  background: var(--primary);
+  font-weight: 500;
 }
 .chat-design .new-chat:hover:not(:disabled),
 .chat-design .primary:hover:not(:disabled) {
-  color: #fff;
-  background: #593b96;
+  color: var(--primary-ink);
+  background: color-mix(in srgb, var(--primary) 88%, var(--ink));
 }
 .chat-design .nav-item {
   background: transparent;
@@ -288,7 +322,7 @@
   max-width: 100%;
 }
 .chat-design .message-text code {
-  font-family: ui-monospace, Consolas, monospace;
+  font-family: var(--mono);
   font-size: 0.88em;
 }
 .chat-design .answer-table {
@@ -399,13 +433,8 @@
   }
 }
 .chat-design :is(h1, h2, h3) {
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    sans-serif;
-  letter-spacing: -0.035em;
+  font-family: var(--font);
+  letter-spacing: -0.01em;
 }
 .chat-design .connection-banner strong {
   color: var(--ink);
@@ -472,15 +501,8 @@
 .chat-design .brand-mark {
   width: 32px;
   height: 34px;
-  background: linear-gradient(145deg, #e4d8fa, #b39adf);
-  border-color: #9e83ca;
-  color: #483467;
-  border-radius: 12px;
-  font: 650 18px/1 system-ui;
-  box-shadow:
-    inset 2px 2px 3px #fff8,
-    inset -2px -2px 3px #63478935,
-    0 2px 4px #0001;
+  border-radius: var(--r-row);
+  font: 620 17px/1 var(--font);
 }
 .chat-design .icon-button {
   min-width: 40px;
@@ -602,7 +624,7 @@
   padding: 8px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  box-shadow: 0 8px 32px #0002;
+  box-shadow: var(--shadow-1);
   background: var(--surface);
 }
 .chat-design .menu-surface button {
@@ -677,9 +699,7 @@
   margin: 0;
   padding: 12px 14px;
   border-radius: 22px;
-  box-shadow:
-    0 3px 12px #0000000a,
-    inset 0 1px 1px #ffffff14;
+  box-shadow: var(--shadow-1);
 }
 .chat-design .composer textarea {
   min-height: 42px;
@@ -768,7 +788,7 @@
   width: min(600px, calc(100vw - 24px));
 }
 .chat-design dialog::backdrop {
-  background: #10121880;
+  background: var(--scrim);
 }
 .chat-design dialog h2 {
   font-size: 21px;
@@ -1137,7 +1157,7 @@
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--surface);
-  box-shadow: 0 10px 35px #0003;
+  box-shadow: var(--shadow-1);
 }
 .chat-design .account-popover button {
   width: 100%;
@@ -1214,8 +1234,8 @@
   gap: 6px;
 }
 .chat-design .voice-input-button.recording {
-  color: var(--surface);
-  background: var(--accent);
+  color: var(--primary-ink);
+  background: var(--primary);
   border-radius: 16px;
   padding: 5px 10px;
 }
@@ -1443,9 +1463,9 @@
   color: var(--ink);
 }
 .account-shell .account-preview-actions .account-preview-primary {
-  background: linear-gradient(#8063bb, #6849a6);
-  border-color: #6849a6;
-  color: white;
+  background: var(--primary);
+  border-color: transparent;
+  color: var(--primary-ink);
 }
 .account-shell .account-preview-brand {
   color: var(--ink);
@@ -1458,11 +1478,8 @@
   height: 34px;
   margin-right: 10px;
   border-radius: 12px;
-  background: linear-gradient(145deg, #e4d8fa, #b39adf);
-  color: #483467;
-  box-shadow:
-    inset 2px 2px 3px #fff8,
-    0 2px 4px #0001;
+  background: var(--primary);
+  color: var(--primary-ink);
   font-size: 18px;
 }
 .account-shell .account-preview-card :is(input, button, select) {
@@ -1492,7 +1509,7 @@
   max-width: 448px;
   padding: 36px 32px 28px;
   border-radius: 24px;
-  box-shadow: 0 16px 48px #0000000a;
+  box-shadow: var(--shadow-2);
 }
 .account-shell .account-entry h1 {
   font-size: 25px;
@@ -1617,14 +1634,14 @@
   background: var(--line);
 }
 .account-shell .account-login-page .account-preview-primary {
-  background: #101010;
-  border-color: #101010;
-  color: white;
+  background: var(--primary);
+  border-color: transparent;
+  color: var(--primary-ink);
 }
 .account-shell[data-theme="dark"] .account-login-page .account-preview-primary {
-  background: #f5f5f5;
-  border-color: #f5f5f5;
-  color: #101010;
+  background: var(--primary);
+  border-color: transparent;
+  color: var(--primary-ink);
 }
 .account-shell .account-entry-extras {
   max-width: 448px;
@@ -1653,14 +1670,14 @@
 .account-shell
   .account-login-page
   .account-preview-primary:hover:not(:disabled) {
-  background: #252525;
-  color: white;
+  background: color-mix(in srgb, var(--primary) 88%, var(--ink));
+  color: var(--primary-ink);
 }
 .account-shell[data-theme="dark"]
   .account-login-page
   .account-preview-primary:hover:not(:disabled) {
-  background: #dedede;
-  color: #101010;
+  background: color-mix(in srgb, var(--primary) 88%, var(--ink));
+  color: var(--primary-ink);
 }
 
 .chat-design .photo-dialog {
@@ -1802,7 +1819,7 @@
 .chat-design .image-redact-chosen {
   position: absolute;
   box-sizing: border-box;
-  border: 2px dashed #fff;
+  border: 2px dashed var(--surface);
   outline: 2px solid var(--accent);
   pointer-events: none;
 }
@@ -1878,7 +1895,7 @@
 }
 
 .chat-design .panel.danger {
-  border: 1px solid #b4452a66;
+  border: 1px solid var(--danger);
   margin-top: 1rem;
 }
 .chat-design .panel.danger h3 {
@@ -1931,15 +1948,15 @@
   gap: 10px;
 }
 .chat-design .danger-button {
-  color: #fff;
-  background: #a32020;
-  border-color: #a32020;
+  color: var(--bg);
+  background: var(--danger);
+  border-color: transparent;
   font-weight: 600;
 }
 .chat-design .danger-button:hover:not(:disabled) {
-  color: #fff;
-  background: #7f1818;
-  border-color: #7f1818;
+  color: var(--bg);
+  background: color-mix(in srgb, var(--danger) 85%, var(--ink));
+  border-color: transparent;
 }
 .chat-design .copy-status {
   font-size: 12px;
@@ -2011,7 +2028,7 @@
   color: var(--ink);
   font-size: 20px;
   line-height: 1;
-  box-shadow: 0 2px 8px #0000001f;
+  box-shadow: var(--shadow-1);
 }
 @media (max-width: 760px) {
   .chat-design .jump-latest {
@@ -2232,7 +2249,7 @@
   content: "\25CB";
   position: absolute;
   left: 4px;
-  color: var(--muted, #5d6858);
+  color: var(--muted);
 }
 .chat-design .research-steps li[data-state="running"]::before {
   content: "\25CF";
@@ -2273,8 +2290,8 @@
 }
 .chat-design .deep-research .approval h4:focus-visible,
 .chat-design .deep-research .research-result h4:focus-visible {
-  outline: 3px solid #7c9c74;
-  outline-offset: 3px;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 @media (max-width: 760px) {
   .chat-design .deep-research button {
@@ -2341,7 +2358,7 @@
   width: 100%;
   min-height: 45vh;
   resize: vertical;
-  font: 14px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+  font: 14px/1.5 var(--mono);
   padding: 10px;
   box-sizing: border-box;
 }
@@ -2441,8 +2458,8 @@
   color: var(--muted);
 }
 .chat-design .live-voice-open[aria-expanded="true"] {
-  color: var(--surface);
-  background: var(--accent);
+  color: var(--primary-ink);
+  background: var(--primary);
   border-radius: 16px;
 }
 .chat-design .live-voice {
@@ -2936,7 +2953,7 @@
   font-weight: 600;
 }
 .chat-design .schedule-search-text {
-  font-family: ui-monospace, Consolas, monospace;
+  font-family: var(--mono);
   overflow-wrap: anywhere;
 }
 .chat-design .scheduled-entry {
@@ -2960,8 +2977,8 @@
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
-  background: var(--accent);
-  color: var(--surface);
+  background: var(--primary);
+  color: var(--primary-ink);
 }
 @media (max-width: 760px) {
   .chat-design :is(.scheduled-dialog, .scheduled-form-dialog, .due-strip, .schedule-card) :is(button, select, input:not([type="checkbox"]):not([type="radio"])) {
@@ -3023,7 +3040,7 @@
 .usage-meter .usage-table th,
 .usage-meter .usage-table td {
   padding: 0.3rem 0.4rem;
-  border-bottom: 1px solid var(--line, #ccc);
+  border-bottom: 1px solid var(--line);
   text-align: right;
   vertical-align: top;
 }
@@ -3104,7 +3121,7 @@
   padding: 0;
 }
 .chat-design .recovery-key li {
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: var(--mono);
   font-size: 1.3rem;
   letter-spacing: 0.08em;
   padding: 0.3rem 0.5rem;
@@ -3113,20 +3130,20 @@
   background: var(--surface);
 }
 .chat-design .recovery-key-input {
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: var(--mono);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   width: 100%;
 }
 .chat-design .pairing-code {
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: var(--mono);
   font-size: clamp(2.2rem, 11vw, 3.2rem);
   font-weight: 600;
   letter-spacing: 0.12em;
   margin: 0.4rem 0;
 }
 .chat-design .pairing-code-input {
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: var(--mono);
   font-size: 1.4rem;
   letter-spacing: 0.2em;
   max-width: 12rem;
@@ -3979,9 +3996,9 @@
   min-height: 44px;
 }
 .account-preview .danger-button {
-  color: #fff;
-  background: #a32020;
-  border-color: #a32020;
+  color: var(--bg);
+  background: var(--danger);
+  border-color: transparent;
   font-weight: 600;
 }
 /* round 4 settings 16 Nov */
