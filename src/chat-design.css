@@ -3857,9 +3857,14 @@
   }
 }
 
-/* Very short screens: the message box (with its jump-to-latest button above it) sits over the sticky header, so the button stays reachable. */
+/* Very short screens: the jump-to-latest button sits inside the top corner of the message area, not above it under the sticky header. */
 @media (max-height: 520px) {
-  .chat-design .composer-dock {
-    z-index: 7;
+  .chat-design .jump-latest {
+    bottom: auto;
+    top: 4px;
+    left: auto;
+    right: 4px;
+    transform: none;
+    z-index: 1;
   }
 }
