@@ -19,6 +19,21 @@ Account page links go to `/account#account-access`, `#account-sessions`, `#accou
 
 Other changes: in Secure the sidebar says "Loading your chats…" while the store opens (never "Unlock your local vault" or "Temporary session"); the plan page's vault note follows the mode; the Secure Max set-up heading is "Set up Secure Max" / "Secure Max einrichten"; the German skip link is "Zum Nachrichtenfeld springen"; the picture-declined note points to "Settings, Data controls".
 
+## First load (SS-13)
+
+Measured with `npx vite build` (Vite's own sizes; gzip as Vite prints it). First-load JS is the entry chunk plus the chunks it imports statically.
+
+| | Entry chunk | First-load JS (entry + static imports) |
+|---|---|---|
+| Before (after the Settings change, same base) | 1,242.36 kB / 396.01 kB gzip | 1,266.25 kB / 402.73 kB gzip (3 files) |
+| After | 869.12 kB / 273.55 kB gzip | 1,123.77 kB / 363.60 kB gzip (19 files) |
+
+The lead's earlier figure (1,209.76 kB / 389.65 kB gzip) was measured on an older base. The first-load totals use gzip level 9, so they differ slightly from Vite's per-chunk gzip.
+
+Loaded on demand through `lazyNamed` (src/LoadBoundary.tsx: `retryLazy`, `importFresh`, a LoadBoundary and Suspense; offline, a part never fetched shows the retry line): the Settings body, plan and usage, the Scheduled screen (moved to src/ScheduledScreen.tsx), the project screen (its hooks moved to src/project-hooks.ts), canvas, deep research (mounted when Research is first opened, then kept), live voice, the picture question and its note, photo capture, keyboard shortcuts, the device vault unlock, sync set-up and the sync screens. The Memory screen moved to src/MemorySettings.tsx and loads with Settings. The idle prefetch in src/main.tsx also fetches the Settings body.
+
+Not split: the arithmetic checks and decimal.js (called inside the send path's state update, and imported by the message list and saved-chat code; not a clean change), all texts in both languages (about 267 kB of the entry), react-dom (207 kB), the sync engine and vault logic the app calls directly.
+
 ## Not changed (owner or legal)
 
 - `shared/health-consent.ts` (draft consent, versioned) still says "Settings, Privacy & data" / "Einstellungen, Datenschutz & Daten". Proposed: "Settings, Data controls" / "Einstellungen, Datenverwaltung", with a version bump.

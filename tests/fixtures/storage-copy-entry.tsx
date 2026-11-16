@@ -4,7 +4,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { LangProvider } from "../../src/i18n";
 import { holdMemories } from "../../src/memory";
-import { MemorySettings } from "../../src/MemoryPanel";
+import { MemorySettings } from "../../src/MemorySettings";
 import { ProjectPanel } from "../../src/ProjectPanel";
 import type { Storage } from "../../src/text/mode-copy";
 import type { Vault } from "../../src/vault";

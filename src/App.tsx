@@ -65,7 +65,6 @@ import {
 import { expireMessages, type DisappearAfter } from "./conversation";
 import { textFor, useLang } from "./i18n";
 import { researchText } from "./text/research";
-import { DeepResearch } from "./DeepResearch";
 import { answerCopyText } from "./conversation-text";
 import { deepResearchText } from "./text/deep-research";
 import { RESEARCH_MIN_SOURCE_CHARACTERS, researchSourceRoom } from "../shared/deep-research";
@@ -76,10 +75,7 @@ import { privacyPolicyText } from "../shared/privacy-policy";
 import { disclosedProvider } from "../shared/provider-disclosure";
 import { imprintText } from "../shared/legal-identity";
 import { importDocuments, type ImportOutcome } from "./document-import";
-import { PhotoCapture } from "./PhotoCapture";
 import { VoiceInput } from "./VoiceInput";
-import { LiveVoice } from "./LiveVoice";
-import { AttachedImageNote, ImageQuestion } from "./ImageQuestion";
 import type { AttachedImage } from "./image-upload";
 import { imageText } from "./text/images";
 import { fitHeight, isSendKey, limitState, MESSAGE_LIMIT, sendBlocked, touchDevice } from "./composer-keys";
@@ -103,9 +99,6 @@ import { secureStoreText } from "./text/secure-store";
 import { mergeConversation } from "./sync/merge";
 import { holdProjects } from "./projects";
 import { VaultBackup } from "./VaultBackup";
-import { VaultUnlock } from "./VaultUnlock";
-import { SyncSetup } from "./SyncSetup";
-import { AlsoDeleteSynced, LocalPassphraseDialog, PairingPrompt, SyncGate, SyncIndicator } from "./SyncScreens";
 import { syncText, vaultUnlockText } from "./text/sync";
 import { syncHardeningText } from "./text/sync-hardening";
 import {
@@ -124,7 +117,7 @@ import { ConfirmDialog } from "./ConfirmDialog";
 import { questionText } from "./text/questions";
 import { sessionExpiryText } from "./text/session-expiry";
 import { developerView } from "./developer-view";
-import { loadInference } from "./LoadBoundary";
+import { lazyNamed, loadInference } from "./LoadBoundary";
 import { attachLimitText } from "./text/attach-limits";
 import { fileCount, FILE_LIMIT, SCREENSHOT_LIMIT, screenshotCount, withResearch } from "./attachment-limits";
 import { holdTasks } from "./scheduled";
@@ -133,7 +126,7 @@ import { VaultSecurity } from "./VaultSecurity";
 import { BACKUP_MAX_BYTES } from "./vault-backup";
 import { containsTemporaryResearch, keepLiveSearch } from "./saved-conversation";
 import { WorkspaceNavigation } from "./WorkspaceNavigation";
-import { SettingsBody, type AccountPart } from "./SettingsBody";
+import type { AccountPart } from "./SettingsBody";
 import { readAppearance, saveAppearance } from "./appearance";
 import { ConversationLibrary } from "./ConversationLibrary";
 import { CopyConversationButton } from "./CopyConversationButton";
@@ -142,10 +135,8 @@ import { ConversationBranches } from "./ConversationBranches";
 import { branchConversation, switchBranch } from "./conversation-branches";
 import { ContextReview } from "./ContextReview";
 import { correctSource } from "./source-history";
-import { AccountUsage } from "./AccountUsage";
 import { SupportPanel } from "./SupportPanel";
 import { useShortcuts } from "./use-shortcuts";
-import { ShortcutHelp } from "./ShortcutHelp";
 import { lastAnswer, lastCodeBlock } from "./shortcut-copy";
 import { shortcutsText } from "./text/shortcuts";
 import { skipLinkText } from "./text/skip-link";
@@ -156,7 +147,6 @@ import { stopReading } from "./read-aloud";
 import { PdfExportButton } from "./PdfExportButton";
 import { canvasEnabled, liveVoiceEnabled, memoryEnabled, projectSpacesEnabled, readAloudEnabled } from "./device-features";
 import { CANVAS_LIMITS, keepForUndo, proposedText, withCanvas, withoutEarlierCanvas } from "./canvas";
-import { CanvasPanel } from "./CanvasPanel";
 import { canvasText } from "./text/canvas";
 import { addMemory, memoriesFor, rememberRequest } from "./memory";
 import {
@@ -172,7 +162,7 @@ import {
 import { memoryText } from "./text/memory";
 import { AttestationBusyError, DeploymentChangedError } from "./providers/inference-client";
 import { projectInstructionsBlock } from "./projects";
-import { ProjectPanel, useHeldProjects, useProjectVault } from "./ProjectPanel";
+import { useHeldProjects, useProjectVault } from "./project-hooks";
 import { projectText } from "./text/projects";
 import { chatErrorText } from "./text/chat-errors";
 import { abortable, withDeadline } from "./abortable";
@@ -187,7 +177,6 @@ import {
   RunSearchChoice,
   runMode,
   ScheduleCard,
-  ScheduledPanel,
   useBackgroundResults,
   useScheduledVault,
   type TaskDraft,
@@ -203,6 +192,29 @@ import {
 type Tab =
   "Conversation" | "Context" | "Research" | "Saved" | "Account" | "Help";
 /** "Open CometRow in Secure Max" on this device; no content, only the choice. */
+// Rarely used screens load on demand (SS-13, docs/settings-structure-20261116.md); offline, a part
+// that was never loaded shows the retry line (src/LoadBoundary.tsx). The composer, the message list
+// and everything on the first screen stay in the first file.
+const SettingsBody = lazyNamed(() => import("./SettingsBody"), "SettingsBody");
+const AccountUsage = lazyNamed(() => import("./AccountUsage"), "AccountUsage");
+const ScheduledPanel = lazyNamed(() => import("./ScheduledScreen"), "ScheduledPanel");
+const ProjectPanel = lazyNamed(() => import("./ProjectPanel"), "ProjectPanel");
+const CanvasPanel = lazyNamed(() => import("./CanvasPanel"), "CanvasPanel");
+const DeepResearch = lazyNamed(() => import("./DeepResearch"), "DeepResearch");
+const LiveVoice = lazyNamed(() => import("./LiveVoice"), "LiveVoice");
+const ImageQuestion = lazyNamed(() => import("./ImageQuestion"), "ImageQuestion");
+const AttachedImageNote = lazyNamed(() => import("./ImageQuestion"), "AttachedImageNote");
+const PhotoCapture = lazyNamed(() => import("./PhotoCapture"), "PhotoCapture");
+const ShortcutHelp = lazyNamed(() => import("./ShortcutHelp"), "ShortcutHelp");
+// Sync and the device vault's own screens: only with sync on, or in Saved.
+const VaultUnlock = lazyNamed(() => import("./VaultUnlock"), "VaultUnlock");
+const SyncSetup = lazyNamed(() => import("./SyncSetup"), "SyncSetup");
+const AlsoDeleteSynced = lazyNamed(() => import("./SyncScreens"), "AlsoDeleteSynced");
+const LocalPassphraseDialog = lazyNamed(() => import("./SyncScreens"), "LocalPassphraseDialog");
+const PairingPrompt = lazyNamed(() => import("./SyncScreens"), "PairingPrompt");
+const SyncGate = lazyNamed(() => import("./SyncScreens"), "SyncGate");
+const SyncIndicator = lazyNamed(() => import("./SyncScreens"), "SyncIndicator");
+
 const START_KEY = "cometrow.openInSecureMax";
 /** SS-14: the unsent message of a session that ended, for this tab only. */
 const EXPIRED_DRAFT_KEY = "cometrow.expired-draft";
@@ -314,6 +326,9 @@ export function App() {
       ? "Account"
       : "Conversation",
   );
+  // Deep research loads when Research is first opened and then stays mounted (a run keeps going on other tabs).
+  const researchUsed = useRef(false);
+  if (tab === "Research") researchUsed.current = true;
   const [conversation, setConversation] =
     useState<Conversation>(emptyConversation);
   // The conversation as it is now, for a deep research run that outlives the render it started in.
@@ -3934,7 +3949,7 @@ export function App() {
             }
           />
         )}
-        {status?.research && status.search && status.inference.ready && !(status.healthConsentDraft && !healthConsent) && (
+        {researchUsed.current && status?.research && status.search && status.inference.ready && !(status.healthConsentDraft && !healthConsent) && (
           <DeepResearch
             hidden={tab !== "Research"}
             limits={status.research}

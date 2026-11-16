@@ -11,7 +11,7 @@ import type { HealthConsentChoice, HealthConsentRecord } from "./health-consent"
 import { HealthConsentSetting } from "./HealthConsent";
 import { germanEnabled, LanguageSwitch, useLang } from "./i18n";
 import { Icon } from "./Icon";
-import { MemorySettings } from "./MemoryPanel";
+import { MemorySettings } from "./MemorySettings";
 import { LockIcon } from "./ModeBadge";
 import { SecureMaxResetSetting } from "./SecureMaxResetSetting";
 import { SecureMaxStartSetting } from "./SecureMaxStartSetting";

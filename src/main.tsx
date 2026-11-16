@@ -60,5 +60,7 @@ if (!lab && pageUrl.pathname !== "/account" && !isAccountPreview(pageUrl) && nav
   idle(() => {
     preloadAnswer();
     loadInference().catch(() => {});
+    // Settings, the most used part that loads on demand (SS-13): fetched now so it opens at once, also offline later.
+    import("./SettingsBody").catch(() => {});
   });
 }

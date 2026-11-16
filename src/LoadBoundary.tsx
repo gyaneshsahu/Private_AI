@@ -1,7 +1,7 @@
 // Parts of the page that load on demand (the answer renderer, PDF export, the account page) and
 // what happens when one cannot be fetched, for example offline before it was ever loaded. Without
 // a boundary a failed load unmounts the whole app; with one, only that part shows a retry line.
-import { Component, lazy, type ComponentProps, type ComponentType, type ReactNode } from "react";
+import { Component, lazy, Suspense, type ComponentProps, type ComponentType, type ReactNode } from "react";
 import { useText } from "./i18n";
 import { loadRetryText } from "./text/load-retry";
 
@@ -159,4 +159,20 @@ export class LoadBoundary extends Component<
       </>
     );
   }
+}
+
+/**
+ * One named export of a module, loaded on first render (rarely used screens, SS-13): nothing shows
+ * while it loads, and the retry line if it cannot, never a blank app. Used like the component itself.
+ */
+// any: the same bound as React's lazy().
+export function lazyNamed<M extends Record<K, ComponentType<any>>, K extends keyof M & string>(load: () => Promise<M>, name: K) {
+  const Part = retryLazy(() => importFresh(load).then((module) => ({ default: module[name] })));
+  return (props: ComponentProps<M[K]>) => (
+    <LoadBoundary>
+      <Suspense fallback={null}>
+        <Part {...props} />
+      </Suspense>
+    </LoadBoundary>
+  );
 }
