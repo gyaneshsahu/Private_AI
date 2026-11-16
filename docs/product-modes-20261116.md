@@ -67,7 +67,7 @@ Status: proposal plus texts. Nothing here is switched on. The legal read of ever
 
 **Paragraph (EN):** In Secure Max, what you save here (your chats, files and memories) is encrypted on your device with a key only you hold. Our server keeps only an encrypted copy, so CometRow cannot read the content. We can still see your account, when you use it, how many items you have saved and how large they are, and how many devices you use and when.
 
-**Paragraph (DE):** In Secure Max wird alles, was Sie hier speichern (Chats, Dateien und Erinnerungen), auf Ihrem Gerät mit einem Schlüssel verschlüsselt, den nur Sie haben. Unser Server bewahrt nur eine verschlüsselte Kopie auf. CometRow kann den Inhalt deshalb nicht lesen. Sichtbar bleiben für uns Ihr Konto, die Zeiten der Nutzung Anzahl und Größe der gespeicherten Einträge sowie die Anzahl Ihrer Geräte und wann sie zuletzt genutzt wurden.
+**Paragraph (DE):** In Secure Max wird alles, was Sie hier speichern (Chats, Dateien und Erinnerungen), auf Ihrem Gerät mit einem Schlüssel verschlüsselt, den nur Sie haben. Unser Server bewahrt nur eine verschlüsselte Kopie auf. CometRow kann den Inhalt deshalb nicht lesen. Sichtbar bleiben für uns Ihr Konto, die Zeiten der Nutzung, Anzahl und Größe der gespeicherten Einträge sowie die Anzahl Ihrer Geräte und wann sie zuletzt genutzt wurden.
 
 **What is different (EN):**
 - If you lose all your devices and your recovery key, this data is gone for good. Our support cannot recover it.
