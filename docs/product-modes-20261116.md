@@ -27,7 +27,7 @@ Status: proposal plus texts. Nothing here is switched on. The legal read of ever
 | Can CometRow read saved content | Technically yes; access is restricted and logged | No |
 | What we see in any case | Account, times, number and size of items | The same, plus the list of devices |
 | Saving | Automatic, every chat except temporary ones | Automatic once Secure Max is unlocked on the device |
-| New device | Sign in: everything is there | Approve with an 8-character code from a device already in use, or the recovery key |
+| New device | Sign in: everything is there | Approve on a device already in use by typing the 8-character code the new device shows, or use the recovery key |
 | Forgotten or lost | Sign in again | Recovery key; without devices and recovery key the data is gone, support cannot help |
 | Memory | One memory for Secure chats | A separate memory, used only in Secure Max chats (decision 4) |
 | Projects | A project has one mode; its chats and files inherit it | The same |
@@ -62,13 +62,13 @@ Status: proposal plus texts. Nothing here is switched on. The legal read of ever
 
 **Title:** Use Secure Max? / Secure Max verwenden?
 
-**Paragraph (EN):** In Secure Max, what you save here (your chats, files and memories) is encrypted on your device with a key only you hold. Our server keeps only an encrypted copy, so CometRow cannot read the content. We can still see your account, when you use it, how many items you have saved and how large they are.
+**Paragraph (EN):** In Secure Max, what you save here (your chats, files and memories) is encrypted on your device with a key only you hold. Our server keeps only an encrypted copy, so CometRow cannot read the content. We can still see your account, when you use it, how many items you have saved and how large they are, and how many devices you use and when.
 
-**Paragraph (DE):** In Secure Max wird alles, was Sie hier speichern (Chats, Dateien und Erinnerungen), auf Ihrem Gerät mit einem Schlüssel verschlüsselt, den nur Sie haben. Unser Server bewahrt nur eine verschlüsselte Kopie auf. CometRow kann den Inhalt deshalb nicht lesen. Sichtbar bleiben für uns Ihr Konto, die Zeiten der Nutzung sowie Anzahl und Größe der gespeicherten Einträge.
+**Paragraph (DE):** In Secure Max wird alles, was Sie hier speichern (Chats, Dateien und Erinnerungen), auf Ihrem Gerät mit einem Schlüssel verschlüsselt, den nur Sie haben. Unser Server bewahrt nur eine verschlüsselte Kopie auf. CometRow kann den Inhalt deshalb nicht lesen. Sichtbar bleiben für uns Ihr Konto, die Zeiten der Nutzung Anzahl und Größe der gespeicherten Einträge sowie die Anzahl Ihrer Geräte und wann sie zuletzt genutzt wurden.
 
 **What is different (EN):**
 - If you lose all your devices and your recovery key, this data is gone for good. Our support cannot recover it.
-- A new device must be approved with a code from a device you already use, or with your recovery key.
+- A new device must be approved on a device you already use, by typing the code the new device shows, or with your recovery key.
 - Removing a device stops it syncing. It does not erase what is already on that device.
 - Scheduled tasks run only while CometRow is open on your device.
 - Search covers these chats only on a device where Secure Max is unlocked.
@@ -77,7 +77,7 @@ Status: proposal plus texts. Nothing here is switched on. The legal read of ever
 
 **Was anders ist (DE):**
 - Wenn Sie alle Ihre Geräte und Ihren Wiederherstellungsschlüssel verlieren, sind diese Daten endgültig verloren. Unser Support kann sie nicht wiederherstellen.
-- Ein neues Gerät muss mit einem Code von einem bereits genutzten Gerät oder mit Ihrem Wiederherstellungsschlüssel freigegeben werden.
+- Ein neues Gerät muss auf einem bereits genutzten Gerät freigegeben werden, indem Sie dort den Code eingeben, den das neue Gerät anzeigt, oder mit Ihrem Wiederherstellungsschlüssel.
 - Wenn Sie ein Gerät entfernen, wird es nicht mehr synchronisiert. Was bereits auf dem Gerät liegt, wird dadurch nicht gelöscht.
 - Geplante Aufgaben laufen nur, solange CometRow auf Ihrem Gerät geöffnet ist.
 - Die Suche erfasst diese Chats nur auf einem Gerät, auf dem Secure Max entsperrt ist.
@@ -122,7 +122,7 @@ Not said anywhere about Secure: "private", "only you", "we cannot read", "zero k
 
 1. One engine with a server-held key for Secure, instead of a separate plaintext store [yes].
 2. First version of Secure: the server only stores and hands out; no server feature reads content yet [yes].
-3. Secure Max always with sync and a recovery key; no device-only vault as a choice [yes].
+3. Secure Max always with sync and a recovery key; no device-only vault as a choice, and always with file sync on, so that "files" in the dialog is true [yes].
 4. Memory: separate per mode in the first version [yes]; later, optionally let Secure Max chats read Secure memories (never the other way) [later].
 5. On sign-out, the local copy of Secure data on that device is deleted [yes: shared computers].
 6. Secure Max in the paid plan, first for professional testers [yes].
