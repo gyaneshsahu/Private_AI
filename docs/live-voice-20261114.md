@@ -105,7 +105,7 @@ The microphone is never open while the answer is read. It opens only after speec
 
 ## Android
 
-**Decision: not offered on Android.** Read aloud never speaks there (the page cannot check that the phone's voices stay on the device), so a voice conversation would be voice in, text out, with a manual Resume after every answer. The button is shown disabled with a sentence saying why. Voice input (dictation) still works there.
+**Decision: not offered on Android.** Read aloud never speaks there (the page cannot check that the phone's voices stay on the device), so a voice conversation would be voice in, text out, with a manual Resume after every answer. No button is shown there (16 November: the disabled button was half-working UI). Voice input (dictation) still works there.
 
 ## Sounds
 

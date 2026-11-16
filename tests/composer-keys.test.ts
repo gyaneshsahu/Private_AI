@@ -87,6 +87,11 @@ it("follows until the user moves up, and again at the end", () => {
   expect(nextFollowing(false, 380, 400, 0)).toBe(true);
   // The page got shorter and the browser clamped the position to the end.
   expect(nextFollowing(true, 400, 350, 0)).toBe(true);
+  // CI, 16 Nov 2026: the clamp (2649 to 2647) is handled only after the next text arrived (43 px).
+  // Compared with the position before the clamp it looks like the user moving up; the hook takes
+  // the clamped position as `lastTop` when it happens, and then following goes on.
+  expect(nextFollowing(true, 2649, 2647, 43)).toBe(false);
+  expect(nextFollowing(true, 2647, 2647, 43)).toBe(true);
 });
 
 it("has every label in English and German, and they differ", () => {

@@ -9,6 +9,9 @@ const SLACK = 48;
  * Whether to keep following after a scroll event. `distance` is how far the view is from the end.
  * Any move up away from the end stops it (wheel, keys, touch, scrollbar). Our own scrolling only
  * moves down, so it never stops it. Arriving at the end starts it again.
+ * The browser also moves the view up when the page gets shorter at the end (it clamps). Text that
+ * arrives before the scroll event then makes that look like a move away from the end, so
+ * useFollowScroll takes `lastTop` from every change that leaves the view at the end.
  */
 export function nextFollowing(
   following: boolean,
@@ -85,9 +88,18 @@ export function useFollowScroll(end: RefObject<HTMLElement | null>, jumpKey: str
     });
     grown.observe(marker.parentElement!);
     if (marker.parentElement!.parentElement) grown.observe(marker.parentElement!.parentElement);
+    // After each change on the page, before the next scroll event: a position at the end is never
+    // the user moving away from it. (The dots giving way to the first text shrank the answer by
+    // 2 px; the next text arrived before the scroll event and following stopped, CI 16 Nov 2026.)
+    const changed = new MutationObserver(() => {
+      if (scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight <= 2)
+        lastTop = scroller.scrollTop;
+    });
+    changed.observe(scroller, { childList: true, subtree: true, characterData: true });
     scroller.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       grown.disconnect();
+      changed.disconnect();
       scroller.removeEventListener("scroll", onScroll);
     };
     // jumpKey: the marker is mounted again when the conversation view comes back.

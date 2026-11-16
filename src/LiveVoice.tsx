@@ -286,12 +286,8 @@ export function LiveVoice(props: {
     }
   };
 
-  if (android)
-    return (
-      <button type="button" className="live-voice-open" disabled aria-label={t.androidOff} title={t.androidOff}>
-        <Icon name="voice" />
-      </button>
-    );
+  // Read aloud never speaks on Android (src/read-aloud.ts), so live voice cannot work there: no button.
+  if (android) return null;
 
   const { phase } = snap;
   const active = !["idle", "paused", "ended"].includes(phase);
