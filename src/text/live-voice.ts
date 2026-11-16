@@ -8,8 +8,6 @@ const clock = (seconds: number) =>
 export const liveVoiceText = defineText({
   en: {
     open: "Live voice conversation",
-    androidOff:
-      "Live voice is not available on Android: CometRow cannot check that the phone's voices stay on the device, so it does not read answers aloud there.",
     title: "Live voice",
     what: "Turn by turn: you speak, CometRow turns it into text, sends it, reads the answer aloud, then listens again. One side speaks at a time. This is not a real-time voice model: to interrupt the answer, tap Interrupt and speak.",
     note: "Your recording goes encrypted to the protected speech model in the EU and is dropped once it is text. Numbers you say aloud, such as a bank or ID number, are part of the recording: masking works on the text only. The text is masked as usual before it goes to the chat.",
@@ -67,8 +65,6 @@ export const liveVoiceText = defineText({
   },
   de: {
     open: "Gespräch per Stimme",
-    androidOff:
-      "Gespräch per Stimme gibt es auf Android nicht: CometRow kann dort nicht prüfen, ob die Stimmen des Telefons auf dem Gerät bleiben, und liest Antworten dort nicht vor.",
     title: "Gespräch per Stimme",
     what: "Abwechselnd: Sie sprechen, CometRow macht daraus Text, sendet ihn, liest die Antwort vor und hört dann wieder zu. Es spricht immer nur eine Seite. Das ist kein Echtzeit-Sprachmodell: Um die Antwort zu unterbrechen, tippen Sie auf „Unterbrechen und sprechen“.",
     note: "Ihre Aufnahme geht verschlüsselt an das geschützte Sprachmodell in der EU und wird verworfen, sobald sie Text ist. Nummern, die Sie laut sagen, etwa eine Konto- oder Ausweisnummer, sind Teil der Aufnahme: Die Platzhalter wirken nur beim Text. Der Text wird wie immer verborgen, bevor er an den Chat geht.",

@@ -8,6 +8,7 @@ import { chromium, expect as ui, type Browser, type Page } from "@playwright/tes
 import { createServer, type ViteDevServer } from "vite";
 import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
+import { appText } from "../src/text/app";
 import { liveVoiceText } from "../src/text/live-voice";
 import { voiceText } from "../src/text/voice";
 
@@ -72,8 +73,9 @@ afterAll(async () => {
   await vite?.close();
 });
 
-async function open(lang: "en" | "de", width: number) {
+async function open(lang: "en" | "de", width: number, userAgent?: string) {
   const context = await browser.newContext({
+    userAgent,
     locale: lang === "de" ? "de-DE" : "en-US",
     viewport: { width, height: width < 700 ? 812 : 900 },
     reducedMotion: lang === "de" ? "reduce" : "no-preference",
@@ -225,6 +227,29 @@ for (const lang of ["en", "de"] as const)
         await page.keyboard.press("Escape");
         await ui(panel).toHaveCount(0);
         await ui(trigger).toBeFocused();
+      } finally {
+        await context.close();
+      }
+    }, 90_000);
+
+const ANDROID = "Mozilla/5.0 (Linux; Android 15; SM-A525F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0 Mobile Safari/537.36";
+for (const lang of ["en", "de"] as const)
+  for (const width of [375, 768, 1280])
+    it(`live voice at ${width} px, ${lang}: on Android there is no live voice button at all`, async () => {
+      const { context, page } = await open(lang, width, ANDROID);
+      try {
+        // The part is loaded and the composer drawn (dictation still works on Android) ...
+        await page.waitForLoadState("networkidle");
+        await ui(page.locator(".voice-input-button")).toBeVisible();
+        await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+        await ui(page.locator(".load-retry")).toHaveCount(0); // absent because it loaded, not because it failed
+        // ... and live voice renders nothing: no button, not even a disabled one, and no panel.
+        await ui(page.locator(".live-voice-open")).toHaveCount(0);
+        await ui(page.getByRole("button", { name: liveVoiceText[lang].open, exact: true })).toHaveCount(0);
+        await ui(page.getByRole("button", { name: appText[lang].sendLabel, exact: true })).toBeVisible();
+        expect(
+          await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
+        ).toBe(true);
       } finally {
         await context.close();
       }
