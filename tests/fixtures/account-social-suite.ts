@@ -1,3 +1,4 @@
+import { answerIfAsked } from "./app-questions";
 import { workspaceControl } from "../../evaluation/workspace-navigation";
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { Pool } from "pg";
@@ -451,6 +452,7 @@ export function accountSocialSuite(production = false) {
           await workspaceControl(page, "Account").click();
           page.once("dialog", (dialog) => dialog.accept());
           await page.getByRole("button", { name: /Manage sign-in/ }).click();
+          await answerIfAsked(page, true); // the app asks before leaving an unsent draft (16 November)
           await browserExpect(
             page.getByRole("heading", { name: "Your account", exact: true }),
           ).toBeVisible();
