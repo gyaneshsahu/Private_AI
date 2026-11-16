@@ -90,10 +90,9 @@ import { AnswerAnnouncement, ConnectionBanner } from "./ConnectionBanner";
 import { composerText } from "./text/composer";
 import { Vault, VaultConflictError } from "./vault";
 import type { Mode } from "../shared/modes";
-import { assignMode, closeSecure, flushSecure, modeOf, openSecure, readAvailable, readProjects, saveDefaultMode, secureVault, useSecureState, vaultFor } from "./stores";
-import { ModeToggle } from "./ModeToggle";
-import { ModeBadge } from "./ModeBadge";
-import { ModeDefaultSetting } from "./ModeDefaultSetting";
+import { assignMode, closeSecure, flushSecure, modeOf, openSecure, readAvailable, readProjects, secureVault, useSecureState, vaultFor } from "./stores";
+import { SecureMaxSection } from "./SecureMaxSection";
+import { SecureMaxLists } from "./SecureMaxLists";
 import { resetSecureMaxConfirmed } from "./SecureMaxDialog";
 import { modesText } from "./text/modes";
 import { secureStoreText } from "./text/secure-store";
@@ -186,6 +185,7 @@ import {
 
 type Tab =
   "Conversation" | "Context" | "Research" | "Saved" | "Account" | "Help";
+const SECTION_KEY = "cometrow.section";
 export function App() {
   const { lang } = useLang();
   const t = appText[lang];
@@ -473,11 +473,27 @@ export function App() {
   // Secure Max is offered only when the encrypted sync, with files, is on.
   const maxAvailable = secureOn && !!status?.vaultSync?.files;
   const st = secureStoreText[lang];
-  const [draftMode, setDraftMode] = useState<Mode>("secure");
-  const [projectMode, setProjectMode] = useState<Mode>("secure");
-  const [maxStored, setMaxStored] = useState<number>();
-  // A chat's mode is the store that holds it; a project's chats inherit the project's; a new chat has the toggle's.
-  const mode: Mode = !secureOn ? "max" : (modeOf(conversation.id) ?? modeOf(conversation.projectId) ?? (maxAvailable ? draftMode : "secure"));
+  // The section the user is in (owner, 16 November): the normal app is Secure; Secure Max is its own
+  // section of the sidebar. Kept per device, forgotten at sign-out.
+  const [sectionState, setSectionState] = useState<Mode>(() => {
+    try {
+      return localStorage.getItem(SECTION_KEY) === "max" ? "max" : "secure";
+    } catch {
+      return "secure";
+    }
+  });
+  const section: Mode = maxAvailable ? sectionState : "secure";
+  const setSection = (next: Mode) => {
+    setSectionState(next);
+    try {
+      if (secureOn) localStorage.setItem(SECTION_KEY, next);
+    } catch {
+      /* storage blocked: the app starts in the normal section */
+    }
+  };
+  const inMax = (id?: string) => modeOf(id) === "max";
+  // A chat's mode is the store that holds it; a project's chats inherit the project's; a new chat has the section's.
+  const mode: Mode = !secureOn ? "max" : (modeOf(conversation.id) ?? modeOf(conversation.projectId) ?? section);
   // Memory, project files and tasks are held for ONE mode at a time: the open project screen's, else the open chat's.
   const heldMode: Mode = !secureOn ? "max" : ((openProject && modeOf(openProject)) || mode);
   const heldVault = heldMode === "max" ? vault.current : (secureVault() ?? null);
@@ -494,9 +510,6 @@ export function App() {
   // What the last automatic save wrote, so an unchanged chat is not written again.
   const autoSaved = useRef("");
   const plain = (c: Conversation) => JSON.stringify({ ...c, draft: undefined });
-  useEffect(() => {
-    if (!modeOf(conversation.id)) setDraftMode(secure.defaultMode);
-  }, [conversation.id, secure.defaultMode]);
   useMemoryVault(heldVault, heldReady);
   useProjectVault(projects, heldVault, heldReady);
   // Scheduled tasks (docs/scheduled-20261115.md): held only while the vault is unlocked.
@@ -824,10 +837,24 @@ export function App() {
       );
     return result;
   }
+  /** "Unlock Secure Max" in its section: the screen that fits this device. */
+  function unlockMax() {
+    setNavigationOpen(false);
+    setSection("max");
+    // A device that is not approved yet: the code from this device, or the recovery key.
+    if (syncState.phase === "needs-approval") return setSyncDismissed(false);
+    // Otherwise this device's own form: unlock, or (first use) create the vault; its sync is turned on in Settings.
+    setTab("Saved");
+  }
   /** Sign-out with Secure on: the local Secure databases on this device are deleted (the account keeps its copy). */
   async function leaveSecure() {
     if (!secureOn) return;
     resetSecureMaxConfirmed();
+    try {
+      localStorage.removeItem(SECTION_KEY);
+    } catch {
+      /* nothing was kept */
+    }
     await closeSecure(true, status!.accountId);
   }
   async function signOutConsumer() {
@@ -1666,20 +1693,6 @@ export function App() {
   useEffect(() => {
     if (secureOn) setSyncDismissed(true);
   }, [secureOn]);
-  // While Secure Max is locked here: whether it exists, and how many chats this device holds (a count, no titles).
-  useEffect(() => {
-    if (!secureOn || unlocked) return setMaxStored(undefined);
-    let active = true;
-    void (async () => {
-      const store = vault.current;
-      const exists = (await store?.exists().catch(() => false)) || syncState.phase === "needs-approval" || syncState.phase === "locked";
-      const count = exists ? ((await store?.storedCount().catch(() => 0)) ?? 0) : 0;
-      if (active) setMaxStored(exists ? count : undefined);
-    })();
-    return () => {
-      active = false;
-    };
-  }, [secureOn, unlocked, syncState.phase, status?.accountId]);
   /** Saves the open chat by itself at message boundaries (never while an answer streams); no notice, no busy state. */
   async function autoSave() {
     const store = vaultFor(mode, vault.current);
@@ -1882,18 +1895,16 @@ export function App() {
       fail(t.signOutFailed);
     }
   }
-  async function createProject(name: string): Promise<string | undefined> {
+  async function createProject(name: string, into: Mode = secureOn ? "secure" : "max"): Promise<string | undefined> {
     const current = epoch.current;
     setBusy(t.creatingProject);
     try {
-      const into: Mode = !secureOn ? "max" : maxAvailable && unlocked ? projectMode : "secure";
       const next = await vaultFor(into, vault.current)!.createProject(name);
       const id = next.at(-1)?.id;
       if (id) assignMode(id, into);
       const all = secureOn ? await readProjects(vault.current) : next;
       if (current !== epoch.current) return;
       setProjects(all);
-      setProjectMode("secure");
       setNotice(t.projectCreated);
       return id;
     } catch (error) {
@@ -2012,6 +2023,7 @@ export function App() {
     if (!allowReplace()) return;
     reset();
     savedBase.current = c;
+    if (secureOn) setSection(modeOf(c.id) ?? "secure");
     const expired = expireMessages(c);
     autoSaved.current = plain(expired.conversation);
     setConversation(structuredClone(expired.conversation));
@@ -2051,8 +2063,9 @@ export function App() {
           setNavigationCollapsed(false);
           setNavigationOpen(false);
         }}
-        conversations={saved}
-        projects={projects}
+        // With Secure on, the normal lists hold Secure only; Secure Max lives in its own section below.
+        conversations={secureOn ? saved.filter((c) => !inMax(c.id)) : saved}
+        projects={secureOn ? projects.filter((p) => !inMax(p.id)) : projects}
         status={status}
         onSignOut={() => void signOut()}
         onCreateProject={createProject}
@@ -2063,24 +2076,37 @@ export function App() {
         }}
         onOrganize={(c, change) => void organizeChat(c, change)}
         unlocked={anyStore}
-        modeOf={secureOn ? modeOf : undefined}
-        projectExtra={<ModeToggle mode={projectMode} onChange={setProjectMode} maxAvailable={maxAvailable && unlocked} />}
-        lockedRow={
-          secureOn && !unlocked && maxStored !== undefined ? (
-            <p className="sidebar-hint mode-locked-row">
-              <ModeBadge mode="max" locked /> {st.lockedRow(maxStored)}{" "}
-              <button
-                className="text-button"
-                onClick={() => {
+        maxSection={
+          maxAvailable ? (
+            <SecureMaxSection
+              locked={!unlocked}
+              onUnlock={unlockMax}
+              onLock={() => {
+                vault.current?.lock();
+                vault.current?.onInvalidate?.();
+              }}
+            >
+              <SecureMaxLists
+                conversations={saved.filter((c) => inMax(c.id))}
+                projects={projects.filter((p) => inMax(p.id))}
+                currentId={conversation.id}
+                busy={!!busy}
+                projectsEnabled={projectSpacesEnabled()}
+                onNewChat={() => {
+                  if (!allowReplace()) return;
+                  reset();
+                  setSection("max");
+                  setTab("Conversation");
                   setNavigationOpen(false);
-                  // A device that is not in the encrypted sync yet gets the new-device screen; otherwise the unlock form.
-                  if (syncOn && syncState.phase === "needs-approval") setSyncDismissed(false);
-                  else setTab("Saved");
                 }}
-              >
-                {st.unlockMax}
-              </button>
-            </p>
+                onNewProject={(name) => createProject(name, "max")}
+                onOpen={openSaved}
+                onOpenProject={(id) => {
+                  setNavigationOpen(false);
+                  setOpenProject(id);
+                }}
+              />
+            </SecureMaxSection>
           ) : undefined
         }
         busy={!!busy}
@@ -2090,6 +2116,7 @@ export function App() {
         onNew={(projectId) => {
           if (!allowReplace()) return;
           reset();
+          setSection("secure");
           if (projectId) setConversation({ ...emptyConversation(), projectId });
           setTab("Conversation");
           setNavigationOpen(false);
@@ -2226,6 +2253,7 @@ export function App() {
           onNewChat={() => {
             if (!allowReplace()) return;
             reset();
+            if (secureOn) setSection(modeOf(openProject) ?? "secure");
             setConversation({ ...emptyConversation(), projectId: openProject });
             setTab("Conversation");
             setOpenProject(undefined);
@@ -2331,16 +2359,7 @@ export function App() {
               <>
                 <h3>{t.sectionPrivacy}</h3>
                 <p>{privacySummary(lang)}</p>
-                {secureOn && (
-                  <>
-                    <p>{modesText[lang].secureLong}</p>
-                    <ModeDefaultSetting
-                      value={secure.defaultMode}
-                      maxAvailable={maxAvailable}
-                      onChange={(next) => void saveDefaultMode(next, status!.csrf).then((ok) => !ok && fail(st.defaultFailed))}
-                    />
-                  </>
-                )}
+                {secureOn && <p>{modesText[lang].secureLong}</p>}
                 {status?.healthConsentDraft && (
                   <HealthConsentSetting
                     record={healthConsent}
@@ -2650,7 +2669,6 @@ export function App() {
             {!conversation.messages.length && (
               <div className="welcome">
                 <div className="welcome-mark">✳</div>
-                <ModeToggle mode={mode} onChange={setDraftMode} maxAvailable={maxAvailable && !conversation.incognito && !conversation.projectId && !modeOf(conversation.id)} />
                 <p className="eyebrow">{t.eyebrow}</p>
                 <h2>
                   {t.welcomeA}
@@ -3765,8 +3783,11 @@ export function App() {
             <p role="status">
               {unsaved ? t.unsavedChanges : t.noUnsavedChanges} {t.reloadClears}
             </p>
-            {secureReady && !unlocked && <ConversationLibrary conversations={saved} busy={!!busy} onOpen={openSaved} onDelete={(c) => void deleteSnapshot(c)} />}
-            {!unlocked ? (
+            {secureReady && section === "secure" && (
+              <ConversationLibrary conversations={saved.filter((c) => !inMax(c.id))} busy={!!busy} onOpen={openSaved} onDelete={(c) => void deleteSnapshot(c)} />
+            )}
+            {/* The vault's own screens: inside the Secure Max section, or as before where Secure Max is not offered. */}
+            {maxAvailable && section === "secure" ? null : !unlocked ? (
               <VaultUnlock
                 vault={vault.current}
                 scope={status?.accountId}
@@ -3854,7 +3875,7 @@ export function App() {
                   <p className="empty-note">{t.noSaved}</p>
                 )}
                 <ConversationLibrary
-                  conversations={saved}
+                  conversations={secureOn ? saved.filter((c) => inMax(c.id)) : saved}
 
                   busy={!!busy}
                   onOpen={openSaved}

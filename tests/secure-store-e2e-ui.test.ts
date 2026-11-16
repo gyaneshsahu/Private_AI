@@ -128,15 +128,16 @@ const databases = (page: Page) => page.evaluate(async () => (await indexedDB.dat
 const noSidewaysScroll = async (page: Page) =>
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
 async function ask(page: Page, lang: "en" | "de", text: string) {
+  const before = await page.locator(':text("Synthetic answer."):visible').count();
   await page.getByLabel(appText[lang].messageInput).fill(text);
-  await page.keyboard.press("Enter");
-  await ui(page.getByText("Synthetic answer.").last()).toBeVisible();
+  await page.getByRole("button", { name: appText[lang].sendLabel, exact: true }).click();
+  await ui(page.locator(':text("Synthetic answer."):visible')).not.toHaveCount(before);
 }
-/** The saved chats and projects in the navigation (opened first on a phone). */
+/** The saved chats and projects of the normal lists (Secure only), with the navigation opened first on a phone. */
 async function navigation(page: Page, lang: "en" | "de") {
   const openNavigation = page.getByRole("button", { name: appText[lang].openNavigation });
   if (await openNavigation.isVisible()) await openNavigation.click();
-  return page.locator(".chat-list-row, .project-row");
+  return page.locator(".navigation-history").locator(".chat-list-row, .project-row");
 }
 async function menuItem(page: Page, name: string) {
   const menu = page.locator(".conversation-menu");
@@ -149,15 +150,16 @@ async function openSettings(page: Page, lang: "en" | "de", section: string) {
   await settings(page).getByRole("button", { name: section, exact: true }).click();
 }
 const closeSettings = (page: Page, lang: "en" | "de") => settings(page).getByRole("button", { name: appText[lang].closeSettings }).click();
+/** The Secure Max section of the sidebar. */
+const maxSection = (page: Page) => page.getByRole("region", { name: modesText.en.maxLabel });
 const focus = (page: Page) => page.evaluate(() => void window.dispatchEvent(new Event("focus")));
 
-it("1280 px, English: a chat saves by itself, a second device has everything after sign-in, edits travel, sign-out deletes the local copy, Secure Max stays locked and apart", async () => {
+it("1280 px, English: a chat saves by itself, a second device has everything after sign-in, edits travel, sign-out deletes the local copy, the Secure Max section stays locked and apart", async () => {
   const s = await site({ secure: true, sync: true });
   const account = randomUUID();
   const a = appText.en;
   const w = workspaceText.en;
   const st = secureStoreText.en;
-  const m = modesText.en;
   const t = syncText.en;
 
   // A signs in and types. Nothing else: no passphrase, no dialog, no save button.
@@ -175,14 +177,14 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   await A.getByRole("button", { name: w.createProject }).click();
   await A.getByLabel(w.projectName).fill("SYNTHETIC SECURE PROJECT");
   await A.getByRole("button", { name: w.create, exact: true }).click();
-  await ui((await navigation(A, "en")).filter({ hasText: "SYNTHETIC SECURE PROJECT" })).toBeVisible();
+  await ui((await navigation(A, "en")).filter({ hasText: "SYNTHETIC SECURE PROJECT" }).first()).toBeVisible();
   await focus(A); // sends what the 2-second timer has not sent yet
   await expect.poll(async () => (await s.stores.secure.usage(account)).cursor, { timeout: 20_000 }).toBeGreaterThanOrEqual(3);
 
   // B signs in: the chat, the memory and the project are there. No passphrase, code or key anywhere.
   const B = await device(s, account);
   await ui((await navigation(B, "en")).filter({ hasText: "SYNTHETIC SECURE QUESTION" })).toBeVisible();
-  await ui((await navigation(B, "en")).filter({ hasText: "SYNTHETIC SECURE PROJECT" })).toBeVisible();
+  await ui((await navigation(B, "en")).filter({ hasText: "SYNTHETIC SECURE PROJECT" }).first()).toBeVisible();
   await ui(B.getByRole("dialog")).toHaveCount(0);
   await ui(B.locator('input[type="password"]')).toHaveCount(0);
   await openSettings(B, "en", memoryText.en.title);
@@ -206,12 +208,16 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
 
   // Sign-out on B deletes its local Secure databases.
   expect((await databases(B)).filter((n) => n.startsWith("cometrow-secure")).sort()).toEqual([`cometrow-secure-${account}`, `cometrow-secure-sync-${account}`]);
-  await B.getByRole("button", { name: w.signOut }).first().dispatchEvent("click");
+  await B.locator("button", { hasText: w.signOut }).first().dispatchEvent("click");
   await B.waitForURL(/\/auth$/);
   expect((await databases(B)).filter((n) => n.startsWith("cometrow-secure"))).toEqual([]);
   await B.context().close();
 
   // Secure Max on A: the encrypted sync is set up with its recovery key, then a Secure Max chat.
+  await maxSection(A).getByRole("button", { name: st.unlockMax }).click();
+  await A.getByLabel(a.passphrase, { exact: true }).fill("synthetic secure max passphrase");
+  await A.getByRole("button", { name: a.createOrUnlock }).click();
+  await ui(maxSection(A).getByRole("button", { name: st.newMaxChat })).toBeVisible();
   await openSettings(A, "en", t.section);
   await settings(A).getByRole("button", { name: t.turnOn }).click();
   await settings(A).getByLabel(t.deviceName).fill("Laptop");
@@ -224,19 +230,14 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   await settings(A).getByRole("button", { name: t.confirmButton }).click();
   await ui(settings(A).getByText(t.onDone).first()).toBeVisible();
   await closeSettings(A, "en");
-  await A.getByRole("button", { name: w.newChat, exact: true }).first().click();
-  const toggle = A.getByRole("switch", { name: m.maxLabel });
-  await toggle.click();
-  const explain = A.getByRole("dialog", { name: m.maxDialogTitle });
-  await explain.getByRole("checkbox", { name: m.maxUnderstand }).check();
-  await explain.getByRole("button", { name: m.maxConfirm }).click();
-  await ui(toggle).toHaveAttribute("aria-checked", "true");
+  // The section is unlocked on A now; a chat made inside it is a Secure Max chat.
+  await maxSection(A).getByRole("button", { name: st.newMaxChat }).click();
   await ui(A.getByText(st.captionMax)).toBeVisible();
   await ask(A, "en", "SYNTHETIC MAX QUESTION");
-  const rowsA = await navigation(A, "en");
-  // The lock marks the Secure Max chat and only it: a chat's mode is the store that holds it.
-  await ui(rowsA.filter({ hasText: "SYNTHETIC MAX QUESTION" }).getByRole("img", { name: m.maxLabel })).toBeVisible();
-  await ui(rowsA.filter({ hasText: "SYNTHETIC SECURE QUESTION" }).getByRole("img", { name: m.maxLabel })).toHaveCount(0);
+  // It is listed inside the section and nowhere else; the Secure chat is never inside the section.
+  await ui(maxSection(A).getByText("SYNTHETIC MAX QUESTION")).toBeVisible();
+  await ui((await navigation(A, "en")).filter({ hasText: "SYNTHETIC MAX QUESTION" })).toHaveCount(0);
+  await ui(maxSection(A).getByText("SYNTHETIC SECURE QUESTION")).toHaveCount(0);
   const secureItems = (await s.stores.secure.usage(account)).cursor;
   await openSettings(A, "en", t.section);
   await settings(A).getByRole("button", { name: t.syncNow }).click();
@@ -245,15 +246,14 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   // The Secure Max chat went to the encrypted sync only: the Secure store got nothing new.
   expect((await s.stores.secure.usage(account)).cursor).toBe(secureItems);
 
-  // A new device C: Secure is there at once; Secure Max is locked, without a title, until it is approved.
+  // A new device C: Secure is there at once; the Secure Max section is locked, without a title, until it is approved.
   const C = await device(s, account);
-  const rowsC = await navigation(C, "en");
-  await ui(rowsC.filter({ hasText: "SYNTHETIC SECURE QUESTION" })).toBeVisible();
-  await ui(C.getByText(st.lockedRow(0))).toBeVisible();
+  await ui((await navigation(C, "en")).filter({ hasText: "SYNTHETIC SECURE QUESTION" })).toBeVisible();
+  await ui(maxSection(C).getByText(st.maxLocked)).toBeVisible();
   await ui(C.getByText("SYNTHETIC MAX QUESTION")).toHaveCount(0);
   await ui(C.getByRole("dialog")).toHaveCount(0); // nothing is asked at sign-in
   await noSidewaysScroll(C);
-  await C.getByRole("button", { name: st.unlockMax }).click();
+  await maxSection(C).getByRole("button", { name: st.unlockMax }).click();
   const welcome = C.getByRole("dialog", { name: t.newHeading });
   await welcome.getByRole("button", { name: t.approveFromOther }).click();
   const code = ((await welcome.locator(".pairing-code [aria-hidden]").textContent()) ?? "").replace(/[\s-]/g, "");
@@ -265,10 +265,10 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   await prompt.getByLabel(t.promptName).fill("Phone");
   await prompt.getByRole("button", { name: t.approve }).click();
   await ui(welcome).toHaveCount(0, { timeout: 25_000 });
-  const approved = await navigation(C, "en");
-  await ui(approved.filter({ hasText: "SYNTHETIC MAX QUESTION" }).getByRole("img", { name: m.maxLabel })).toBeVisible({ timeout: 25_000 });
-  await ui(approved.filter({ hasText: "SYNTHETIC SECURE QUESTION" }).getByRole("img", { name: m.maxLabel })).toHaveCount(0);
-  await ui(C.getByText(st.lockedRow(0))).toHaveCount(0);
+  await ui(maxSection(C).getByText("SYNTHETIC MAX QUESTION")).toBeVisible({ timeout: 25_000 });
+  await ui(maxSection(C).getByText(st.maxLocked)).toHaveCount(0);
+  await ui(maxSection(C).getByText("SYNTHETIC SECURE QUESTION")).toHaveCount(0);
+  await ui((await navigation(C, "en")).filter({ hasText: "SYNTHETIC MAX QUESTION" })).toHaveCount(0);
   for (const page of [A, C]) await page.context().close();
 }, 300_000);
 
@@ -277,15 +277,15 @@ it("375 px, German: the Secure wiring fits a phone", async () => {
   const account = randomUUID();
   const page = await device(s, account, "de", 375);
   await ui(page.getByText(secureStoreText.de.captionSecure)).toBeVisible();
-  await ui(page.getByRole("switch", { name: modesText.de.maxLabel })).toBeVisible();
   await noSidewaysScroll(page);
   await ask(page, "de", "SYNTHETISCHE FRAGE");
   await ui((await navigation(page, "de")).filter({ hasText: "SYNTHETISCHE FRAGE" })).toBeVisible();
+  // The Secure Max section: there, locked, with its unlock button.
+  await ui(maxSection(page).getByRole("button", { name: secureStoreText.de.unlockMax })).toBeVisible();
   await noSidewaysScroll(page);
   await page.keyboard.press("Escape");
   await openSettings(page, "de", appText.de.sectionPrivacy);
   await ui(settings(page).getByText(modesText.de.secureLong)).toBeVisible();
-  await ui(settings(page).getByRole("group", { name: modesText.de.defaultHeading })).toBeVisible();
   await noSidewaysScroll(page);
   await page.context().close();
 }, 180_000);
@@ -295,7 +295,7 @@ it("768 px, English, the switch absent: no Secure request, no Secure database, t
   const account = randomUUID();
   const page = await device(s, account, "en", 768);
   await ui(page.getByText(appText.en.captionTemporary)).toBeVisible();
-  await ui(page.getByRole("switch", { name: modesText.en.maxLabel })).toHaveCount(0);
+  await ui(maxSection(page)).toHaveCount(0);
   await ask(page, "en", "SYNTHETIC QUESTION WITHOUT SECURE");
   // Not saved by itself: the old explicit save is the only way.
   await menuItem(page, appText.en.renameSave);

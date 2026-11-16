@@ -15,8 +15,6 @@ CREATE TABLE custody_keys (
   seq bigint NOT NULL DEFAULT 0 CHECK (seq >= 0),
   used_bytes bigint NOT NULL DEFAULT 0 CHECK (used_bytes >= 0),
   blob_bytes bigint NOT NULL DEFAULT 0 CHECK (blob_bytes >= 0),
-  -- The account's default for new chats: a preference the server may see, not content.
-  default_mode text NOT NULL DEFAULT 'secure' CHECK (default_mode IN ('secure', 'max')),
   created_at bigint NOT NULL CHECK (created_at >= 0)
 );
 -- Same shape and checks as sync_items (migration 0023).

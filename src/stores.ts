@@ -18,7 +18,6 @@ import { FILES_OFF, bindFileActions, publishFiles } from "./sync/files";
 import { Vault } from "./vault";
 
 const VAULT_PREFIX = "cometrow-secure";
-const DEFAULT_KEY = "cometrow.defaultMode";
 interface Open {
   vault: Vault;
   engine: SyncEngine;
@@ -26,12 +25,10 @@ interface Open {
 export interface SecureState {
   /** The Secure store is open on this device (signed in, key received). */
   ready: boolean;
-  /** The account's default for new chats; from the server, with this browser's last known value as fallback. */
-  defaultMode: Mode;
 }
 let current: Open | undefined;
 let opening = 0;
-let state: SecureState = { ready: false, defaultMode: "secure" };
+let state: SecureState = { ready: false };
 const listeners = new Set<() => void>();
 const modes = new Map<string, Mode>();
 const set = (patch: Partial<SecureState>) => {
@@ -39,21 +36,6 @@ const set = (patch: Partial<SecureState>) => {
   listeners.forEach((l) => l());
 };
 const within = <T>(work: Promise<T>, ms: number) => Promise.race([work, new Promise<void>((resolve) => setTimeout(resolve, ms))]);
-const remembered = (): Mode => {
-  try {
-    return localStorage.getItem(DEFAULT_KEY) === "max" ? "max" : "secure";
-  } catch {
-    return "secure";
-  }
-};
-const remember = (mode?: Mode) => {
-  try {
-    if (mode) localStorage.setItem(DEFAULT_KEY, mode);
-    else localStorage.removeItem(DEFAULT_KEY);
-  } catch {
-    /* storage blocked: the server's value is asked again at the next sign-in */
-  }
-};
 
 export function useSecureState(): SecureState {
   return useSyncExternalStore(
@@ -93,8 +75,7 @@ async function eraseDatabases(open: Open | undefined, accountId: string) {
  */
 export async function openSecure(o: { accountId: string; csrf: () => string; onApplied: () => void; fetch?: Fetcher }): Promise<boolean> {
   const turn = ++opening;
-  set({ defaultMode: remembered() });
-  let body: { key?: unknown; accountId?: unknown; defaultMode?: unknown };
+  let body: { key?: unknown; accountId?: unknown };
   try {
     const r = await fetch("/api/secure/key", { cache: "no-store", credentials: "same-origin" });
     if (!r.ok) return false;
@@ -130,13 +111,11 @@ export async function openSecure(o: { accountId: string; csrf: () => string; onA
   current = { vault, engine };
   // Locked from another tab (its sign-out): this tab has no Secure store any more.
   vault.onInvalidate = () => current?.vault === vault && set({ ready: false });
-  const defaultMode: Mode = body.defaultMode === "max" ? "max" : "secure";
-  remember(defaultMode);
   // The first pull; a failure (offline) still opens what this device already holds.
   await engine.init().catch(() => {});
   if (current?.vault !== vault) return false;
   engine.start();
-  set({ ready: true, defaultMode });
+  set({ ready: true });
   return true;
 }
 /** Before sign-out, while the session still works: one bounded attempt to send what is not sent yet. */
@@ -145,7 +124,7 @@ export async function flushSecure() {
 }
 /**
  * Stops the Secure store. `erase` (sign-out, another account): the local Secure databases on this
- * device are deleted, with this browser's remembered default; the server copy stays with the account.
+ * device are deleted; the server copy stays with the account.
  */
 export async function closeSecure(erase: boolean, accountId?: string) {
   opening++;
@@ -156,29 +135,10 @@ export async function closeSecure(erase: boolean, accountId?: string) {
   for (const [id, mode] of modes) if (mode === "secure") modes.delete(id);
   if (state.ready) set({ ready: false });
   if (erase) {
-    remember(undefined);
     if (open || accountId) await eraseDatabases(open, accountId ?? "");
   } else open?.engine.detach();
   open?.vault.close(false);
 }
-/** Stores the account's default mode on the server (so it follows the user) and in this browser. */
-export async function saveDefaultMode(mode: Mode, csrf: string): Promise<boolean> {
-  try {
-    const r = await fetch("/api/secure/default-mode", {
-      method: "PUT",
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/json", "X-PrivateAI-CSRF": csrf },
-      body: JSON.stringify({ mode }),
-    });
-    if (r.status !== 204) return false;
-  } catch {
-    return false;
-  }
-  remember(mode);
-  set({ defaultMode: mode });
-  return true;
-}
-
 const sources = (max: Vault | null): [Mode, Vault][] => {
   const secure = secureVault();
   return [...(secure ? [["secure", secure] as [Mode, Vault]] : []), ...(max?.unlocked ? [["max", max] as [Mode, Vault]] : [])];

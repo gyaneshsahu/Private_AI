@@ -44,7 +44,7 @@ export function accountPrivilegePlan(input: {
     // Secure mode (migration 0025): the runtime creates an account's wrapped key once and updates only its
     // counters, never the key columns; items and file blobs as in sync.
     `GRANT SELECT,INSERT ON ${table("custody_keys")} TO ${runtime}`,
-    `GRANT UPDATE (seq,used_bytes,blob_bytes,default_mode) ON ${table("custody_keys")} TO ${runtime}`,
+    `GRANT UPDATE (seq,used_bytes,blob_bytes) ON ${table("custody_keys")} TO ${runtime}`,
     `GRANT SELECT,INSERT,UPDATE,DELETE ON ${table("secure_items")} TO ${runtime}`,
     `GRANT SELECT,INSERT,DELETE ON ${table("secure_blobs")} TO ${runtime}`,
     `GRANT SELECT,INSERT ON ${table("account_security_event")} TO ${runtime}`,

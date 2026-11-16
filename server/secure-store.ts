@@ -5,8 +5,6 @@
 // version no route decrypts content. It never logs keys or content: fixed counts only. Mounted only
 // while `inference.secureStore` is on, behind the app's origin, session and CSRF checks.
 import express from "express";
-import { z } from "zod";
-import type { Mode } from "../shared/modes";
 import { count } from "./counters";
 import { newAccountKey, unwrapAccountKey, wrapAccountKey, type CustodyMaster } from "./custody";
 import { MemorySyncStore, bodyErrors, contentRoutes, type ContentCtx, type SetupInput, type SyncStore } from "./vault-sync";
@@ -16,16 +14,12 @@ export interface CustodyRow {
   wrappedKey: Buffer;
   masterKeyId: string;
   createdAt: number;
-  /** The account's default for new chats (a plain preference, not content); absent means "secure". */
-  defaultMode?: Mode;
 }
 /** Items as in sync, plus the account's wrapped key. The custody row is the account row: no row, no items. */
 export interface SecureStore extends Pick<SyncStore, "items" | "putItem" | "usage"> {
   custody(accountId: string): Promise<CustodyRow | undefined>;
   /** Stores the row unless one exists, and returns the stored one: two first sign-ins at once get the same key. */
   createCustody(accountId: string, row: CustodyRow): Promise<CustodyRow>;
-  /** False when the account has no custody row yet. */
-  setDefaultMode(accountId: string, mode: Mode): Promise<boolean>;
 }
 export interface SecureSettings {
   quotaBytes: number;
@@ -59,11 +53,6 @@ export class MemorySecureStore implements SecureStore {
     }
     return this.rows.get(accountId)!;
   }
-  async setDefaultMode(accountId: string, mode: Mode) {
-    const row = this.rows.get(accountId);
-    if (row) row.defaultMode = mode;
-    return !!row;
-  }
   items: SecureStore["items"] = (...a) => this.inner.items(...a);
   putItem: SecureStore["putItem"] = (...a) => this.inner.putItem(...a);
   usage: SecureStore["usage"] = (...a) => this.inner.usage(...a);
@@ -96,19 +85,7 @@ export function secureRoutes(settings: SecureSettings, accountOf: (res: express.
         (await settings.store.createCustody(account, { wrappedKey: wrapAccountKey(settings.master, account, newAccountKey()), masterKeyId: settings.master.id, createdAt: now }));
       const key = unwrapAccountKey(settings.master, account, row.masterKeyId, row.wrappedKey);
       count("secure.key");
-      res.json({ key: key.toString("base64"), accountId: account, defaultMode: row.defaultMode ?? "secure" });
-    }),
-  );
-  // The account's default mode for new chats, so it follows the user to every device. The server sees
-  // this one choice (it is not content); a Secure Max default on one device only would be a trap.
-  router.put(
-    `${base}/default-mode`,
-    express.json({ limit: "1kb" }),
-    guard(async (req, res, { account }) => {
-      const body = z.object({ mode: z.enum(["secure", "max"]) }).strict().safeParse(req.body);
-      if (!body.success) return fail(res, 400, "invalid");
-      if (!(await settings.store.setDefaultMode(account, body.data.mode))) return fail(res, 404, "not-set-up");
-      res.status(204).end();
+      res.json({ key: key.toString("base64"), accountId: account});
     }),
   );
   // The part of sync's /state the engine needs: quotas and the change cursor. No devices exist here.

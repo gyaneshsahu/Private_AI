@@ -11,8 +11,6 @@ import { workspaceText } from "./text/workspace";
 import { projectText } from "./text/projects";
 import { projectSpacesEnabled } from "./device-features";
 import { scheduledText } from "./text/scheduled";
-import type { Mode } from "../shared/modes";
-import { ModeBadge } from "./ModeBadge";
 
 export function WorkspaceNavigation(props: {
   open: boolean;
@@ -43,12 +41,8 @@ export function WorkspaceNavigation(props: {
   backgroundActive?: boolean;
   /** The quiet sync status (src/SyncScreens.tsx), only when the deployment has sync. */
   syncIndicator?: ReactNode;
-  /** Secure wiring (src/stores.ts): the mode of a saved chat or project; absent while Secure is off. */
-  modeOf?: (id?: string) => Mode | undefined;
-  /** Shown in the New project form (the Secure Max toggle). */
-  projectExtra?: ReactNode;
-  /** Shown above the lists while Secure Max is locked on this device. */
-  lockedRow?: ReactNode;
+  /** The Secure Max section (src/SecureMaxSection.tsx with src/SecureMaxLists.tsx), below the normal lists; absent while it is not offered. */
+  maxSection?: ReactNode;
   onOrganize: (
     c: Conversation,
     change: Pick<Conversation, "pinned" | "archived" | "projectId" | "title">,
@@ -80,9 +74,7 @@ export function WorkspaceNavigation(props: {
     backgroundActive,
     onOrganize,
     syncIndicator,
-    modeOf,
-    projectExtra,
-    lockedRow,
+    maxSection,
   } = props;
   const t = useText(workspaceText);
   const pt = useText(projectText);
@@ -214,7 +206,6 @@ export function WorkspaceNavigation(props: {
               placeholder={t.searchPlaceholder}
             />
           </label>
-          {lockedRow}
           <div className="navigation-history">
             <div className="section-heading">
               <h2>{t.projects}</h2>
@@ -258,7 +249,6 @@ export function WorkspaceNavigation(props: {
                     onChange={(e) => setProjectName(e.target.value)}
                   />
                 </label>
-                {!editingProject && projectExtra}
                 <div className="row">
                   <button type="submit" disabled={busy || !projectName.trim()}>
                     {editingProject ? t.saveProjectName : t.create}
@@ -279,7 +269,6 @@ export function WorkspaceNavigation(props: {
                   >
                     <Icon name="folder" />
                     <span>{p.name}</span>
-                    {modeOf && <ModeBadge mode={modeOf(p.id) ?? "secure"} />}
                     <small>
                       {
                         conversations.filter(
@@ -377,7 +366,6 @@ export function WorkspaceNavigation(props: {
                     >
                       {c.pinned && <Icon name="pin" />}
                       <span>{conversationTitle(c)}</span>
-                      {modeOf && <ModeBadge mode={modeOf(c.id) ?? "secure"} />}
                     </button>
                     <details className="chat-item-menu">
                       <summary
@@ -421,8 +409,7 @@ export function WorkspaceNavigation(props: {
                             }
                           >
                             <option value="">{t.noProject}</option>
-                            {/* A chat stays in its mode: only projects of the same mode are offered. */}
-                            {projects.filter((p) => !modeOf || modeOf(p.id) === modeOf(c.id)).map((p) => (
+                            {projects.map((p) => (
                               <option key={p.id} value={p.id}>
                                 {p.name}
                               </option>
@@ -457,6 +444,7 @@ export function WorkspaceNavigation(props: {
           </button>
         </div>
       )}
+      {maxSection}
       <nav aria-label={t.workspace} className="sidebar-bottom">
         <details className="account-menu">
           <summary aria-label={t.accountMenu}>

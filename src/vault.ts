@@ -211,16 +211,6 @@ export class Vault {
     if (typeof indexedDB.databases !== "function") return true; // Old browsers: fall back to opening.
     return (await indexedDB.databases()).some((d) => d.name === this.databaseName);
   }
-  /** How many chats this device holds for the account, readable while locked (a count, no titles). */
-  async storedCount(): Promise<number> {
-    if (!(await this.present())) return 0;
-    const database = await db(this.databaseName);
-    try {
-      return await database.count("conversations");
-    } finally {
-      database.close();
-    }
-  }
   /** Whether this device holds a vault for the selected account (false: unlock creates one). */
   async exists(): Promise<boolean> {
     if (!(await this.present())) return false;

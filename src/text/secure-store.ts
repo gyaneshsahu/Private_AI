@@ -7,28 +7,34 @@ export const secureStoreText = defineText({
     captionSecure: "Secure · Saved to your account automatically",
     captionMax: "Secure Max · Saved automatically while unlocked",
     captionMaxLocked: "Secure Max · Not saved until Secure Max is unlocked",
-    lockedRow: (count: number) =>
-      count > 0
-        ? `${count} Secure Max ${count === 1 ? "chat is" : "chats are"} locked on this device.`
-        : "Secure Max chats are locked on this device.",
+    maxLocked: "Locked on this device.",
     unlockMax: "Unlock Secure Max",
+    lockNow: "Lock now",
+    newMaxChat: "New Secure Max chat",
+    newMaxProject: "New Secure Max project",
+    searchMax: "Search Secure Max chats",
+    maxProjects: "Secure Max projects",
+    maxChats: "Secure Max chats",
+    maxEmpty: "No Secure Max chats yet.",
     otherMode: "A chat stays in its mode. It cannot move to a project in the other mode.",
     unavailable: "Your saved chats could not be loaded. Check the connection and reload the page.",
     saveFailed: "This chat could not be saved yet. CometRow will try again after the next message.",
-    defaultFailed: "The default could not be saved. Try again.",
   },
   de: {
     captionSecure: "Secure · Wird automatisch in Ihrem Konto gespeichert",
     captionMax: "Secure Max · Wird automatisch gespeichert, solange entsperrt",
     captionMaxLocked: "Secure Max · Wird erst gespeichert, wenn Secure Max entsperrt ist",
-    lockedRow: (count: number) =>
-      count > 0
-        ? `${count} Secure-Max-${count === 1 ? "Chat ist" : "Chats sind"} auf diesem Gerät gesperrt.`
-        : "Secure-Max-Chats sind auf diesem Gerät gesperrt.",
+    maxLocked: "Auf diesem Gerät gesperrt.",
     unlockMax: "Secure Max entsperren",
+    lockNow: "Jetzt sperren",
+    newMaxChat: "Neuer Secure-Max-Chat",
+    newMaxProject: "Neues Secure-Max-Projekt",
+    searchMax: "Secure-Max-Chats durchsuchen",
+    maxProjects: "Secure-Max-Projekte",
+    maxChats: "Secure-Max-Chats",
+    maxEmpty: "Noch keine Secure-Max-Chats.",
     otherMode: "Ein Chat bleibt in seinem Modus. Er kann nicht in ein Projekt des anderen Modus verschoben werden.",
     unavailable: "Ihre gespeicherten Chats konnten nicht geladen werden. Prüfen Sie die Verbindung und laden Sie die Seite neu.",
     saveFailed: "Dieser Chat konnte noch nicht gespeichert werden. CometRow versucht es nach der nächsten Nachricht erneut.",
-    defaultFailed: "Der Standard konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
   },
 });
