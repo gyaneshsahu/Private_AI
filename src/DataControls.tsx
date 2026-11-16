@@ -4,13 +4,18 @@
 import { useRef, useState } from "react";
 import type { Conversation } from "../shared/contracts";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { containsTemporaryResearch, stripLiveSearch } from "./saved-conversation";
 import { useText } from "./i18n";
 import { dataControlsText } from "./text/data-controls";
 
 type Labels = { you: string; untitled: string };
 
-/** Saved chats only: incognito chats are never saved, so they are never exported. */
-const saved = (conversations: Conversation[]) => conversations.filter((c) => !c.incognito);
+/**
+ * What the vault would store (src/vault.ts save): never incognito or temporary-research chats, and
+ * live search results stripped, so an export never holds more than saving would.
+ */
+const saved = (conversations: Conversation[]) =>
+  conversations.filter((c) => !c.incognito && !containsTemporaryResearch(c)).map((c) => stripLiveSearch(c));
 
 /** Readable export: one section per chat, oldest first, the written messages only. */
 export function chatsMarkdown(conversations: Conversation[], t: Labels, exportedAt = new Date()): string {
