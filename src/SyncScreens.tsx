@@ -298,6 +298,10 @@ export function SyncSettings({
         {setup ? (
           <SyncSetup
             onCancel={() => setSetup(false)}
+            onAlreadySetUp={() => {
+              setSetup(false);
+              setJoining(true);
+            }}
             onDone={(remember) => {
               setSetup(false);
               setMessage(t.onDone);

@@ -8,7 +8,16 @@ import { RecoveryKeyGroups, RememberChoice, defaultDeviceName, normalizeRecovery
 
 type Step = "explain" | "key" | "confirm";
 
-export function SyncSetup({ onDone, onCancel }: { onDone: (remember: boolean) => void; onCancel: () => void }) {
+export function SyncSetup({
+  onDone,
+  onCancel,
+  onAlreadySetUp,
+}: {
+  onDone: (remember: boolean) => void;
+  onCancel: () => void;
+  /** Another device set sync up again meanwhile: join it by approval instead. */
+  onAlreadySetUp?: () => void;
+}) {
   const t = useText(syncText);
   const [step, setStep] = useState<Step>("explain");
   const [label, setLabel] = useState(defaultDeviceName);
@@ -42,8 +51,9 @@ export function SyncSetup({ onDone, onCancel }: { onDone: (remember: boolean) =>
             const { recoveryKey } = await setUpSync({ deviceLabel: label.trim() || defaultDeviceName(), rememberDevice: remember });
             setKey(recoveryKey);
             setStep("key");
-          } catch {
-            setError(t.setupFailed);
+          } catch (error) {
+            if ((error as { code?: string } | null)?.code === "already-set-up" && onAlreadySetUp) onAlreadySetUp();
+            else setError(t.setupFailed);
           } finally {
             setBusy(false);
           }

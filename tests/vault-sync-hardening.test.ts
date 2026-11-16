@@ -634,7 +634,7 @@ describe("wiring findings", () => {
     await a.engine.refresh();
     expect(a.engine.getState()).toMatchObject({ pairingRequested: true });
     expect(Date.parse(a.engine.getState().pairingRequestedAt!)).toBeGreaterThan(Date.now() - 60_000);
-    await a.engine.setRememberDevice(false);
+    await a.engine.setRememberDevice(true);
     expect(a.engine.getState().remembered).toBe(false);
   }, 60_000);
 
@@ -700,4 +700,23 @@ describe("texts (src/text/sync-hardening.ts)", () => {
     }
     expect(t.en.detachedResetElsewhere.toLowerCase()).toContain("reset");
   });
+});
+describe("token loaded on demand (wiring finding: right after an unlock)", () => {
+  it("remember, revoke and reset work before the unlock event has loaded the token", async () => {
+    const { origin } = await serve();
+    const a = await device(origin, "a");
+    const b = await device(origin, "b");
+    await populate(a.vault);
+    await setUp(a);
+    await b.vault.unlock(PASS);
+    await pair(a, b);
+    const unloaded = (d: Device) => ((d.engine as unknown as { token?: string }).token = undefined);
+    unloaded(a);
+    await a.engine.setRememberDevice(true);
+    unloaded(a);
+    const bId = b.engine.getState().devices.find((d) => d.thisDevice)!.deviceId;
+    await a.engine.revokeDevice(bId);
+    unloaded(a);
+    await a.engine.resetSync("DELETE SYNCED DATA");
+  }, 60_000);
 });

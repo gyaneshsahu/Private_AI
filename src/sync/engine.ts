@@ -652,6 +652,8 @@ export class SyncEngine {
    */
   async approvePairing(code: string, deviceLabel: string): Promise<"approved" | "wrong-code" | "expired"> {
     const ak = this.o.vault.accountKey();
+    // Right after an unlock the token may not be loaded yet (the unlock event runs later).
+    if (ak) await this.loadToken(ak);
     if (!ak || !this.active()) throw new SyncError("locked");
     const secret = k.decodePairingCode(code);
     if (!secret) return "wrong-code";
@@ -746,6 +748,8 @@ export class SyncEngine {
   /** "Remember this device" on or off for a device that already syncs. */
   async setRememberDevice(remember: boolean) {
     const ak = this.o.vault.accountKey();
+    // Right after an unlock the token may not be loaded yet (the unlock event runs later).
+    if (ak) await this.loadToken(ak);
     if (!ak || !this.active()) throw new SyncError("locked");
     await this.register(ak, this.device!.label, remember);
     this.set({});
@@ -753,6 +757,8 @@ export class SyncEngine {
   /** Removes a device; needs this device unlocked (a fresh proof of AK, review H4). */
   async revokeDevice(deviceId: string) {
     const ak = this.o.vault.accountKey();
+    // Right after an unlock the token may not be loaded yet (the unlock event runs later).
+    if (ak) await this.loadToken(ak);
     if (!ak || !this.active()) throw new SyncError("locked");
     const r = await this.call("POST", `/devices/${deviceId}/revoke`, { accountProof: await k.accountProof(ak, this.o.accountId) });
     if (r.status !== 204 && r.status !== 404) throw new SyncError("server");
@@ -762,6 +768,7 @@ export class SyncEngine {
   /** The reset proof: this unlocked device (token and AK proof), or the recovery key when every device is lost. */
   private async resetBody(recoveryKey?: string) {
     const ak = this.o.vault.accountKey();
+    if (ak) await this.loadToken(ak);
     if (ak && this.active()) return { confirm: RESET_CONFIRMATION, accountProof: await k.accountProof(ak, this.o.accountId) };
     if (recoveryKey !== undefined) {
       const rk = k.decodeRecoveryKey(recoveryKey);
