@@ -26,7 +26,7 @@ export const supportSymptomsDe = {
 
 export const supportGuidanceDe = {
   conversation: [
-    "Eine fehlende oder abgebrochene Antwort ist keine fertige Antwort. Ein neuer Versuch startet eine neue Anfrage und kann Ihr Kontingent erneut belasten; CometRow wiederholt nicht automatisch.",
+    "Eine fehlende oder abgebrochene Antwort ist keine fertige Antwort. Kam noch kein Antworttext an, versucht CometRow es einmal selbst mit dem Ersatzmodell und sagt das an. Ihr eigener neuer Versuch ist eine neue Anfrage und verbraucht Ihr Kontingent erneut.",
     "Prüfen Sie wichtige Antworten anhand verlässlicher Belege. Bei akuter Gefahr wenden Sie sich an den örtlichen Notruf oder eine Vertrauensperson; diese App kann keine Hilfe für Sie rufen.",
   ],
   research: [
