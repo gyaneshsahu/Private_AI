@@ -422,6 +422,18 @@ export class PostgresSecureStore extends PostgresSyncStore implements SecureStor
     ]);
     return (await this.custody(accountId))!;
   }
+  async clearItems(accountId: string) {
+    // Under the account's row lock, like every item write; seq stays so device cursors never go back.
+    await locked(
+      this.database,
+      accountId,
+      async (c) => {
+        await c.query("DELETE FROM secure_items WHERE account_id=$1", [accountId]);
+        await c.query("UPDATE custody_keys SET used_bytes=0 WHERE account_id=$1", [accountId]);
+      },
+      "custody_keys",
+    );
+  }
 }
 /** Secure project files: rows in secure_blobs (no object storage in this version), counted on custody_keys.blob_bytes. */
 export const secureBlobStore = (database: Pool) => new PostgresBlobStore(database, undefined, { accounts: "custody_keys", blobs: "secure_blobs" });

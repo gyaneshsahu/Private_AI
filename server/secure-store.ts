@@ -20,6 +20,8 @@ export interface SecureStore extends Pick<SyncStore, "items" | "putItem" | "usag
   custody(accountId: string): Promise<CustodyRow | undefined>;
   /** Stores the row unless one exists, and returns the stored one: two first sign-ins at once get the same key. */
   createCustody(accountId: string, row: CustodyRow): Promise<CustodyRow>;
+  /** Deletes every item of the account. The key and the change counter stay: device cursors never go back. */
+  clearItems(accountId: string): Promise<void>;
 }
 export interface SecureSettings {
   quotaBytes: number;
@@ -56,6 +58,7 @@ export class MemorySecureStore implements SecureStore {
   items: SecureStore["items"] = (...a) => this.inner.items(...a);
   putItem: SecureStore["putItem"] = (...a) => this.inner.putItem(...a);
   usage: SecureStore["usage"] = (...a) => this.inner.usage(...a);
+  clearItems: SecureStore["clearItems"] = (...a) => this.inner.clearItems(...a);
 }
 
 export function secureRoutes(settings: SecureSettings, accountOf: (res: express.Response) => string | undefined, clock: () => number = Date.now) {
@@ -99,6 +102,18 @@ export function secureRoutes(settings: SecureSettings, accountOf: (res: express.
         files: { count: files.count, usedBytes: files.usedBytes, limitBytes: settings.filesQuotaBytes, maxFileBytes },
         cursor: String(usage.cursor),
       });
+    }),
+  );
+  // "Delete all chats" (docs/data-controls-20261116.md): every item and file of the account, at once.
+  // The key and the change counter stay. Hard delete, no tombstones (the server cannot make them),
+  // so another device keeps its local copy until it signs out (closeSecure erases it then).
+  router.delete(
+    `${base}/items`,
+    guard(async (_req, res, { account }) => {
+      await settings.store.clearItems(account);
+      await settings.blobs.deleteAll(account);
+      count("secure.erase");
+      res.status(204).end();
     }),
   );
   contentRoutes(router, {

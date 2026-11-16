@@ -289,6 +289,10 @@ export class MemorySyncStore implements SyncStore {
   async reset(accountId: string) {
     this.accounts.delete(accountId);
   }
+  /** Every item of the account; the change counter stays, so no device's cursor goes back (Secure "Delete all"). */
+  async clearItems(accountId: string) {
+    this.accounts.get(accountId)?.items.clear();
+  }
 }
 
 // Strict input: canonical base64 of a bounded decoded size, uuids, fixed shapes.
