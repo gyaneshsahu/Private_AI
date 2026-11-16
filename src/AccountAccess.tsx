@@ -121,7 +121,7 @@ export default function AccountAccess({
   }
   return (
     <section aria-label={t.heading}>
-      <h2>{t.heading}</h2>
+      <h2 id="account-access">{t.heading}</h2>
       <p className="account-preview-small">{t.sessionsNote}</p>
       <button
         className="account-access-refresh"
@@ -141,7 +141,7 @@ export default function AccountAccess({
       </button>
       {access && (
         <>
-          <h3>{t.activeSessions}</h3>
+          <h3 id="account-sessions">{t.activeSessions}</h3>
           <ul>
             {access.sessions.map((session) => (
               <li key={session.id}>

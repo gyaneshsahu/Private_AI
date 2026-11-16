@@ -16,6 +16,7 @@ import { syncHardeningText } from "../src/text/sync-hardening";
 import { decodeVaultBackupContent } from "../src/vault-backup";
 import { encodeRecoveryKey } from "../src/sync/crypto";
 import { answerQuestions } from "./fixtures/app-questions";
+import { openSettingsMenu } from "./fixtures/open-settings";
 
 // The engine's recovery key format (src/sync/crypto.ts): 28 Crockford base32 characters in 7 groups of 4.
 const normalizeRecoveryKey = (key: string) => key.toUpperCase().replace(/[\s-]/g, "").replace(/O/g, "0").replace(/[IL]/g, "1");
@@ -375,7 +376,7 @@ for (const width of WIDTHS)
       const account = fakeAccount();
       const settings = (page: Page) => page.locator("dialog.settings-dialog");
       const openSync = async (page: Page) => {
-        await menuItem(page, a.settings);
+        await openSettingsMenu(page, lang);
         await settings(page).getByRole("button", { name: s.section, exact: true }).click();
       };
       const closeSettings = (page: Page) => settings(page).getByRole("button", { name: a.closeSettings }).click();

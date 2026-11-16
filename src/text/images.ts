@@ -35,7 +35,7 @@ export const imageText = defineText({
     healthYes: "Yes, it does",
     healthNo: "No, it does not",
     healthDeclined:
-      "The picture was not attached, because you did not allow health or other sensitive details. Nothing was sent. You can change your choice in Settings, Privacy & data.",
+      "The picture was not attached, because you did not allow health or other sensitive details. Nothing was sent. You can change your choice in Settings, Data controls.",
     // The cover-up tool.
     redactIntro:
       "Drag on the picture to draw a black box over anything private. The boxes become part of the picture: what is under them is not sent.",
@@ -124,7 +124,7 @@ export const imageText = defineText({
     healthYes: "Ja",
     healthNo: "Nein",
     healthDeclined:
-      "Das Bild wurde nicht angehängt, weil Sie Gesundheitsangaben oder andere sensible Angaben nicht erlaubt haben. Es wurde nichts gesendet. Sie können Ihre Wahl unter Einstellungen, Datenschutz & Daten ändern.",
+      "Das Bild wurde nicht angehängt, weil Sie Gesundheitsangaben oder andere sensible Angaben nicht erlaubt haben. Es wurde nichts gesendet. Sie können Ihre Wahl unter Einstellungen, Datenverwaltung ändern.",
     redactIntro:
       "Ziehen Sie auf dem Bild, um einen schwarzen Kasten über Privates zu legen. Die Kästen werden Teil des Bildes: Der Bereich darunter wird nicht gesendet.",
     canvasLabel: (width: number, height: number, boxes: number) =>

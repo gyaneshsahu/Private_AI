@@ -23,6 +23,8 @@ import { memoryText } from "../src/text/memory";
 import { projectText } from "../src/text/projects";
 import { workspaceText } from "../src/text/workspace";
 import { answerQuestions } from "./fixtures/app-questions";
+import { openSettingsMenu } from "./fixtures/open-settings";
+import { settingsText } from "../src/text/settings";
 
 // Generous waits: PBKDF2 and several browsers at once are slow on a busy machine; nothing here polls a clock.
 const ui = playwrightExpect.configure({ timeout: 20_000 });
@@ -123,7 +125,7 @@ async function menuItem(page: Page, name: string) {
 }
 const settings = (page: Page) => page.locator("dialog.settings-dialog");
 async function openSettings(page: Page, lang: "en" | "de", section: string) {
-  await menuItem(page, appText[lang].settings);
+  await openSettingsMenu(page, lang);
   await settings(page).getByRole("button", { name: section, exact: true }).click();
 }
 const closeSettings = (page: Page, lang: "en" | "de") => settings(page).getByRole("button", { name: appText[lang].closeSettings }).click();
@@ -161,7 +163,7 @@ const DATA: Data = {
 async function expectData(page: Page, lang: "en" | "de", data: Data, chat = data.chat) {
   await menuItem(page, appText[lang].renameSave);
   await ui(page.getByRole("article", { name: chat })).toBeVisible();
-  await openSettings(page, lang, memoryText[lang].title);
+  await openSettings(page, lang, settingsText[lang].personalization);
   await ui(settings(page).getByText(data.memory, { exact: true })).toBeVisible();
   await closeSettings(page, lang);
   const openNavigation = page.getByRole("button", { name: appText[lang].openNavigation });
@@ -247,7 +249,7 @@ it("1280 px, English: setup, pairing, edits both ways, recovery key on a third d
   await B.getByLabel(a.titleLabel).fill("SYNTHETIC CHAT RENAMED ON B");
   await B.getByRole("button", { name: a.saveSnapshot }).click();
   await ui(B.getByRole("article", { name: "SYNTHETIC CHAT RENAMED ON B" })).toBeVisible();
-  await openSettings(B, "en", memoryText.en.title);
+  await openSettings(B, "en", settingsText.en.personalization);
   await settings(B).getByLabel(memoryText.en.addLabel).fill("SYNTHETIC MEMORY FROM B");
   await settings(B).getByRole("button", { name: memoryText.en.add, exact: true }).click();
   await ui(settings(B).getByText("SYNTHETIC MEMORY FROM B", { exact: true })).toBeVisible();
@@ -256,7 +258,7 @@ it("1280 px, English: setup, pairing, edits both ways, recovery key on a third d
   await ui(settings(B).getByText(t.pending(0))).toBeVisible();
   await closeSettings(B, "en");
   // A syncs on focus (as on every visit); B's push may still be on its way, so try again until it lands.
-  await openSettings(A, "en", memoryText.en.title);
+  await openSettings(A, "en", settingsText.en.personalization);
   await ui(async () => {
     await A.evaluate(() => window.dispatchEvent(new Event("focus")));
     await ui(settings(A).getByText("SYNTHETIC MEMORY FROM B", { exact: true })).toBeVisible({ timeout: 3000 });

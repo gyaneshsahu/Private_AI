@@ -3,5 +3,5 @@ import { defineText } from "./core";
 
 export const skipLinkText = defineText({
   en: { toMessageBox: "Skip to message box" },
-  de: { toMessageBox: "Zum Eingabefeld springen" },
+  de: { toMessageBox: "Zum Nachrichtenfeld springen" },
 });

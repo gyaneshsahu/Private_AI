@@ -294,6 +294,28 @@ for (const lang of LANGS)
       }
     }, 60_000);
 
+// Settings links to these sections (src/SettingsBody.tsx): the heading takes the focus once it has rendered.
+for (const lang of LANGS)
+  for (const width of WIDTHS)
+    it(`${lang} at ${width} px: a link from Settings lands on its section of the account page`, async () => {
+      const a = accountAccessText[lang];
+      for (const [hash, name] of [
+        ["account-access", a.heading],
+        ["account-sessions", a.activeSessions],
+        ["account-export", accountExportText[lang].heading],
+        ["account-delete", accountDeletionText[lang].titleClose],
+      ] as const) {
+        const page = await open(`/account#${hash}`, width, lang);
+        try {
+          await ui(page.getByRole("heading", { name, exact: true })).toBeFocused();
+          await ui(page.getByRole("heading", { name, exact: true })).toBeInViewport();
+          await noSidewaysScroll(page);
+        } finally {
+          await page.context().close();
+        }
+      }
+    }, 90_000);
+
 it("sent nothing outside this machine", () => {
   expect(outside).toEqual([]);
 });

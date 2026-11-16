@@ -13,6 +13,8 @@ import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { appText } from "../src/text/app";
 import { loadRetryText } from "../src/text/load-retry";
+import { settingsText } from "../src/text/settings";
+import { openSettingsMenu } from "./fixtures/open-settings";
 
 type Lang = "en" | "de";
 const fakeInference: Plugin = {
@@ -126,6 +128,38 @@ for (const lang of ["en", "de"] as const)
     it(`dev server at ${width} px, ${lang}: a failed answer renderer shows a retry line and recovers`, async () => {
       const page = await failThenRecover(origin, lang, width, (path) => path === "/src/Answer.tsx");
       await page.context().close();
+    }, 120_000);
+
+// Settings loads on demand (SS-13): offline before it was ever fetched, the dialog shows the retry
+// line instead of its tabs, the app stays usable, and Retry brings the tabs once the file loads.
+for (const lang of ["en", "de"] as const)
+  for (const width of [375, 768, 1280])
+    it(`dev server at ${width} px, ${lang}: Settings that cannot load shows a retry line and recovers`, async () => {
+      const t = appText[lang];
+      const rt = loadRetryText[lang];
+      const { context, page, origins, gate } = await open(origin, lang, width, (path) => path === "/src/SettingsBody.tsx");
+      try {
+        await openSettingsMenu(page, lang);
+        const settings = page.getByRole("dialog", { name: t.settings });
+        await ui(settings.getByText(rt.failed)).toBeVisible();
+        const retry = settings.locator(".load-retry").getByRole("button", { name: rt.retry, exact: true });
+        const size = (await retry.boundingBox())!;
+        expect(Math.min(size.width, size.height)).toBeGreaterThanOrEqual(width <= 760 ? 44 : 24);
+        // Still blocked: Retry fails again and the focus comes back to the button.
+        await retry.focus();
+        await page.keyboard.press("Enter");
+        await ui(settings.locator(".load-retry").getByRole("button", { name: rt.retry, exact: true })).toBeFocused();
+        gate.open = true;
+        await page.keyboard.press("Enter");
+        await ui(settings.getByRole("heading", { name: settingsText[lang].general, level: 3 })).toBeVisible();
+        await ui(settings.getByText(rt.failed)).toHaveCount(0);
+        // Closing returns to a working app.
+        await page.keyboard.press("Escape");
+        await ui(page.getByLabel(t.messageInput)).toBeVisible();
+        expect([...origins]).toEqual([origin]);
+      } finally {
+        await context.close();
+      }
     }, 120_000);
 
 it("production build: the chunk and its stylesheet fail, the fonts are files, Retry recovers with styles", async () => {

@@ -10,6 +10,7 @@ import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { appText } from "../src/text/app";
 import { memoryText } from "../src/text/memory";
 import { workspaceText } from "../src/text/workspace";
+import { settingsText } from "../src/text/settings";
 import { answerQuestions } from "./fixtures/app-questions";
 
 let vite: ViteDevServer;
@@ -17,6 +18,16 @@ let browser: Browser;
 let origin = "";
 const WIDTHS = [375, 768, 1280];
 const LANGS = ["en", "de"] as const;
+
+/** Settings opens from the account menu only (SS-15), in the drawer on phones. */
+async function openSettings(page: Page, lang: (typeof LANGS)[number]) {
+  const w = workspaceText[lang];
+  const toggle = page.getByRole("button", { name: appText[lang].openNavigation });
+  if (await toggle.isVisible()) await toggle.click();
+  const account = page.locator(".account-menu");
+  if (!(await account.evaluate((el) => (el as HTMLDetailsElement).open))) await page.getByLabel(w.accountMenu, { exact: true }).click();
+  await page.getByRole("navigation", { name: w.workspace }).getByRole("button", { name: w.settings, exact: true }).click();
+}
 
 async function serve(memory: boolean) {
   // A build setting (src/device-features.ts): on for this server only.
@@ -148,9 +159,8 @@ for (const width of WIDTHS)
         if (!(await menu.getAttribute("open") !== null)) await menu.locator("summary").click();
       };
       const openMemory = async () => {
-        await openMenu();
-        await menu.getByRole("button", { name: a.settings, exact: true }).click();
-        await settings.getByRole("button", { name: m.title, exact: true }).click();
+        await openSettings(page, lang);
+        await settings.getByRole("button", { name: settingsText[lang].personalization, exact: true }).click();
       };
       const closeSettings = () => settings.getByRole("button", { name: a.closeSettings }).click();
       const toChat = async () => {
@@ -340,8 +350,8 @@ for (const width of WIDTHS)
         await openMenu();
         await ui(menu.getByRole("checkbox", { name: m.chatSwitch })).toHaveCount(0);
         // Nothing was saved from the incognito chat.
-        await menu.getByRole("button", { name: a.settings, exact: true }).click();
-        await settings.getByRole("button", { name: m.title, exact: true }).click();
+        await page.keyboard.press("Escape");
+        await openMemory();
         await ui(list.getByRole("listitem")).toHaveCount(2);
 
         // Forget all asks first, then nothing is left.
@@ -381,10 +391,11 @@ it("with the switch off there is no Memory section, no question to save and no R
     await ui(page.getByRole("button", { name: m.rememberThis })).toHaveCount(0);
     await menu.locator("summary").click();
     await ui(menu.getByRole("checkbox", { name: m.chatSwitch })).toHaveCount(0);
-    await menu.getByRole("button", { name: a.settings, exact: true }).click();
+    await page.keyboard.press("Escape");
+    await openSettings(page, "en");
     const settings = page.locator("dialog.settings-dialog");
-    await ui(settings.getByRole("button", { name: a.sectionPrivacy, exact: true })).toBeVisible();
-    await ui(settings.getByRole("button", { name: m.title, exact: true })).toHaveCount(0);
+    await ui(settings.getByRole("button", { name: settingsText.en.dataControls, exact: true })).toBeVisible();
+    await ui(settings.getByRole("button", { name: settingsText.en.personalization, exact: true })).toHaveCount(0);
     await page.context().close();
   } finally {
     await off.server.close();

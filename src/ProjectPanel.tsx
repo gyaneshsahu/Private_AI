@@ -8,7 +8,6 @@ import { conversationTitle } from "./conversation-library";
 import { containDialogFocus } from "./dialog-focus";
 import { Icon } from "./Icon";
 import { useLang } from "./i18n";
-import { projectSpacesEnabled } from "./device-features";
 import { DOCUMENT_ACCEPT } from "./document-formats";
 import { extract } from "./documents";
 import {
@@ -35,28 +34,6 @@ const FILE_ACCEPT = DOCUMENT_ACCEPT.replace(/,\.(png|jpe?g)\b/g, "");
 
 export const projectProblem = (error: unknown) =>
   error instanceof ProjectError ? error.problem : "failed";
-
-/**
- * Holds the app's project list for src/conversation.ts (instructions go with questions from what
- * is held). The app empties its list on lock, sign-out and account switch, so nothing stays held.
- */
-export const useHeldProjects = () => useSyncExternalStore(watchProjects, heldProjects);
-export function useProjectVault(projects: readonly Project[], vault: Vault | null, unlocked: boolean) {
-  useEffect(() => {
-    // Files of a project that is gone are dropped from the page too.
-    const files = heldProjects().files;
-    holdProjects({
-      projects,
-      files: Object.fromEntries(projects.flatMap((p) => (files[p.id] ? [[p.id, files[p.id]]] : []))),
-    });
-  }, [projects]);
-  useEffect(() => {
-    if (!unlocked || !vault || !projectSpacesEnabled()) return;
-    // A vault that locked in between, or an unreadable record: no project file is held or sent.
-    vault.readProjectFiles().then((files) => holdProjects({ files }), () => {});
-    return () => holdProjects({ files: {} });
-  }, [vault, unlocked]);
-}
 
 export function ProjectPanel({
   vault,

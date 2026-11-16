@@ -65,9 +65,9 @@ it("asks once before the first message, holds the message until a choice, rememb
     await ask(off.page, "Synthetic question without the flag");
     await ui(off.page.locator("article.assistant").last()).toContainText("SYNTHETIC REPLY 1");
     await ui(prompt(off.page)).toHaveCount(0);
-    await workspaceControl(off.page, "Settings").click();
-    await off.page.getByRole("button", { name: "Privacy & data" }).click();
-    await off.page.getByRole("button", { name: "Privacy policy ↗" }).click();
+    // The legal links are in Help (SS-15), not in Settings.
+    await workspaceControl(off.page, "Help").click();
+    await off.page.getByRole("button", { name: "Privacy policy", exact: true }).click();
     await ui(off.page.getByText("Who is responsible")).toBeVisible();
     await ui(off.page.getByText("Who processes your messages")).toHaveCount(0);
     await off.context.close();
@@ -94,14 +94,17 @@ it("asks once before the first message, holds the message until a choice, rememb
 
     // Withdrawn in Settings: the reminder appears and chatting still works.
     await workspaceControl(page, "Settings").click();
-    await page.getByRole("button", { name: "Privacy & data" }).click();
+    await page.getByRole("button", { name: "Data controls" }).click();
     await page.getByRole("button", { name: "Withdraw permission" }).click();
     await ui(page.getByText("You chose not to allow health and other sensitive details.")).toBeVisible();
+    await page.getByRole("button", { name: "Close settings" }).click();
     // The draft provider section appears in the policy only with its flag.
-    await page.getByRole("button", { name: "Privacy policy ↗" }).click();
+    await workspaceControl(page, "Help").click();
+    await page.getByRole("button", { name: "Privacy policy", exact: true }).click();
     await ui(page.getByText("Who processes your messages")).toBeVisible();
     await ui(page.getByText(/processes them in the United States/)).toBeVisible();
     await page.keyboard.press("Escape");
+    await workspaceControl(page, "Conversation").click();
     await ui(page.getByRole("note")).toContainText(HEALTH_CONSENT.declinedNote);
     await on.context.close();
   } finally {

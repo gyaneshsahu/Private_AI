@@ -286,6 +286,8 @@ export const syncText = defineText({
       "Your chats, memory, projects and tasks are on all your devices as soon as you sign in. The settings below are for Secure Max only.",
     explainWhat_max:
       "What syncs: your Secure Max chats, memory, projects with their instructions and files, scheduled tasks and settings. Never: incognito chats.",
+    // FE-02, owner default of 16 November: setting up sync with Secure on sets up Secure Max.
+    explainHeading_max: "Set up Secure Max",
   },
   de: {
     section: "Geräte und Synchronisierung",
@@ -450,5 +452,6 @@ export const syncText = defineText({
       "Ihre Chats, Erinnerungen, Projekte und Aufgaben sind nach der Anmeldung auf allen Ihren Geräten. Die Einstellungen hier betreffen nur Secure Max.",
     explainWhat_max:
       "Was synchronisiert wird: Ihre Secure-Max-Chats, Erinnerungen, Projekte mit Anweisungen und Dateien, geplante Aufgaben und Einstellungen. Nie: Inkognito-Chats.",
+    explainHeading_max: "Secure Max einrichten",
   },
 });

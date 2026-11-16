@@ -27,7 +27,7 @@ export default function AccountDeletion({
   const [uncertain, setUncertain] = useState(false);
   return (
     <section aria-label={title}>
-      <h2>{title}</h2>
+      <h2 id="account-delete">{title}</h2>
       <p>{t.intro}</p>
       <p className="account-preview-small">{t.retention(purgeDays)}</p>
       <form

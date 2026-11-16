@@ -111,10 +111,9 @@ async function conversationMenu(c: Ctx, item?: string) {
   if (item) await vis(c.page.locator(".conversation-menu").getByRole("button", { name: c.tr(item), exact: true })).click(), c.clicked.push(item);
   await pause(c.page, 400);
 }
+/** Settings opens from the account menu only (SS-15). */
 async function settings(c: Ctx, section?: string) {
-  await c.label("Conversation actions").click();
-  await vis(c.page.locator(".conversation-menu").getByRole("button", { name: c.tr("Settings"), exact: true })).click();
-  c.clicked.push("Settings");
+  await accountMenu(c, "Settings");
   if (section) await c.click(section);
   await pause(c.page, 500);
 }
@@ -422,7 +421,7 @@ const STEPS: Step[] = [
     await c.nav();
     await c.shot("secure-max-section-unlocked");
     await c.page.keyboard.press("Escape");
-    await settings(c, "Devices and sync");
+    await settings(c, "Secure Max");
     await c.shot("settings-devices-sync-vault-unlocked");
     // Turn on sync (the server's memory store): the explanation, then the step after confirming.
     await c.click("Turn on sync");
@@ -444,26 +443,27 @@ const STEPS: Step[] = [
     await pause(c.page, 600);
     await c.shot("manage-history");
   }],
-  ["settings-appearance", async (c) => { await c.fresh(); await settings(c, "Appearance"); await c.shot("settings-appearance"); }],
+  ["settings-appearance", async (c) => { await c.fresh(); await settings(c, "General"); await c.shot("settings-appearance"); }],
   ["settings-dark", async (c) => {
     await c.fresh();
-    await settings(c, "Appearance");
+    await settings(c, "General");
     await vis(c.page.getByRole("combobox", { name: c.tr("Appearance") })).selectOption({ index: 2 });
     c.clicked.push("Appearance: Dark");
     await c.click("Close settings");
     await pause(c.page, 500);
     await c.shot("dark-theme-chat");
-    await settings(c, "Appearance");
+    await settings(c, "General");
     await vis(c.page.getByRole("combobox", { name: c.tr("Appearance") })).selectOption({ index: 0 });
   }],
-  ["settings-getting-started", async (c) => { await c.fresh(); await settings(c, "Appearance"); await c.click("Getting started"); await pause(c.page, 500); await c.shot("onboarding-getting-started"); }],
-  ["settings-trial-scope", async (c) => { await c.fresh(); await settings(c, "Appearance"); await c.click("Trial scope and safety"); await pause(c.page, 500); await c.shot("trial-scope"); }],
-  ["settings-account-security", async (c) => { await c.fresh(); await settings(c, "Account & security"); await c.shot("settings-account-security"); }],
-  ["settings-privacy-data", async (c) => { await c.fresh(); await settings(c, "Privacy & data"); await c.shot("settings-privacy-data"); }],
-  ["settings-plan-usage", async (c) => { await c.fresh(); await settings(c, "Plan & usage"); await c.shot("settings-plan-usage"); }],
-  ["settings-memory", async (c) => { await c.fresh(); await settings(c, "Memory"); await c.shot("settings-memory"); }, "on"],
-  ["settings-devices-sync", async (c) => { await c.fresh(); await settings(c, "Devices and sync"); await c.shot("settings-devices-sync"); }, "on"],
-  ["privacy-boundaries", async (c) => { await c.fresh(); await settings(c, "Appearance"); await c.click("Privacy boundaries ↗"); await pause(c.page, 800); await c.shot("privacy-boundaries"); }],
+  // The guides moved from Settings to Help (SS-15).
+  ["settings-getting-started", async (c) => { await c.fresh(); await accountMenu(c, "Help"); await c.click("Getting started"); await pause(c.page, 500); await c.shot("onboarding-getting-started"); }],
+  ["settings-trial-scope", async (c) => { await c.fresh(); await accountMenu(c, "Help"); await c.click("Trial scope and safety"); await pause(c.page, 500); await c.shot("trial-scope"); }],
+  ["settings-account-security", async (c) => { await c.fresh(); await settings(c, "Security"); await c.shot("settings-account-security"); }],
+  ["settings-privacy-data", async (c) => { await c.fresh(); await settings(c, "Data controls"); await c.shot("settings-privacy-data"); }],
+  ["settings-plan-usage", async (c) => { await c.fresh(); await settings(c, "Account"); await c.shot("settings-plan-usage"); }],
+  ["settings-memory", async (c) => { await c.fresh(); await settings(c, "Personalization"); await c.shot("settings-memory"); }, "on"],
+  ["settings-devices-sync", async (c) => { await c.fresh(); await settings(c, "Secure Max"); await c.shot("settings-devices-sync"); }, "on"],
+  ["privacy-boundaries", async (c) => { await c.fresh(); await accountMenu(c, "Help"); await c.click("Your privacy boundaries"); await pause(c.page, 800); await c.shot("privacy-boundaries"); }],
   ["privacy-details", async (c) => { await c.fresh(); await vis(c.page.getByText(c.tr("Privacy details"), { exact: true })).click(); c.clicked.push("Privacy details"); await pause(c.page, 600); await c.shot("privacy-details"); }],
   ["account-usage", async (c) => { await c.fresh(); await accountMenu(c); await c.shot("account-menu"); await c.fresh(); await accountMenu(c, "Account & usage"); await c.shot("account-usage"); }],
   ["saved-data-controls", async (c) => { await c.fresh(); await accountMenu(c, "Saved · Data controls"); await c.shot("saved-data-controls"); }],
@@ -473,10 +473,10 @@ const STEPS: Step[] = [
     await c.shot("help");
   }],
   ["legal", async (c) => {
-    // The legal links sit in Settings, Privacy & data.
-    for (const link of ["Privacy policy ↗", "Imprint ↗"]) {
+    // The legal links sit in Help (SS-15).
+    for (const link of ["Privacy policy", "Imprint"]) {
       await c.fresh();
-      await settings(c, "Privacy & data");
+      await accountMenu(c, "Help");
       await vis(c.page.getByRole("button", { name: c.tr(link) }).or(c.page.getByRole("link", { name: c.tr(link) }))).click();
       c.clicked.push(link);
       await pause(c.page, 800);

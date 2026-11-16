@@ -20,7 +20,7 @@ export default function AccountExport({ storage = "local" }: { storage?: Storage
   const t = accountExportText[lang];
   return (
     <section aria-label={t.heading}>
-      <h2>{t.heading}</h2>
+      <h2 id="account-export">{t.heading}</h2>
       <p>{storage === "secure" ? modeCopyText[lang].exportBody_secure : t.body}</p>
       <button
         disabled={busy}

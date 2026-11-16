@@ -3984,3 +3984,49 @@
   border-color: #a32020;
   font-weight: 600;
 }
+/* round 4 settings 16 Nov */
+/* Settings tabs (src/SettingsBody.tsx): the tab icon (Secure Max's lock) sits beside its name. */
+.chat-design .settings-layout nav button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+}
+.chat-design .settings-content h4 {
+  margin: 18px 0 4px;
+}
+.chat-design .settings-content > button:not(.text-button) {
+  margin: 4px 0 12px;
+}
+.chat-design .settings-content > button .icon,
+.chat-design .settings-content > button svg {
+  margin-right: 6px;
+}
+.chat-design .settings-links {
+  list-style: none;
+  margin: 8px 0 16px;
+  padding: 0;
+}
+.chat-design .settings-links li + li {
+  margin-top: 6px;
+}
+.chat-design .settings-max-line .mode-lock {
+  margin-right: 2px;
+}
+/* Phones: Settings fills the screen; tabs and their actions are 44 px targets. */
+@media (max-width: 600px) {
+  .chat-design .settings-dialog {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border-radius: 0;
+  }
+  .chat-design .settings-layout nav button,
+  .chat-design .settings-content > button,
+  .chat-design .settings-content > p > button,
+  .chat-design .settings-links button {
+    min-height: 44px;
+  }
+}

@@ -47,7 +47,7 @@ export function HealthConsentPrompt({
   );
 }
 
-/** Settings, Privacy & data: shows and changes the current choice. */
+/** Settings, Data controls: shows and changes the current choice. */
 export function HealthConsentSetting({
   record,
   onChoose,

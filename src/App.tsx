@@ -51,7 +51,7 @@ import {
   writeHealthConsent,
   type HealthConsentChoice,
 } from "./health-consent";
-import { HealthConsentPrompt, HealthConsentSetting } from "./HealthConsent";
+import { HealthConsentPrompt } from "./HealthConsent";
 import {
   checkArithmetic,
 } from "./arithmetic/check";
@@ -63,23 +63,19 @@ import {
   GERMAN_RULES,
 } from "./german-rules";
 import { expireMessages, type DisappearAfter } from "./conversation";
-import { germanEnabled, LanguageSwitch, textFor, useLang } from "./i18n";
+import { textFor, useLang } from "./i18n";
 import { researchText } from "./text/research";
-import { DeepResearch } from "./DeepResearch";
 import { answerCopyText } from "./conversation-text";
 import { deepResearchText } from "./text/deep-research";
 import { RESEARCH_MIN_SOURCE_CHARACTERS, researchSourceRoom } from "../shared/deep-research";
 import { serverMessage } from "./server-messages";
 import { appText } from "./text/app";
-import { privacySummary, privacyText } from "../shared/privacy-copy";
+import { privacyText } from "../shared/privacy-copy";
 import { privacyPolicyText } from "../shared/privacy-policy";
 import { disclosedProvider } from "../shared/provider-disclosure";
 import { imprintText } from "../shared/legal-identity";
 import { importDocuments, type ImportOutcome } from "./document-import";
-import { PhotoCapture } from "./PhotoCapture";
 import { VoiceInput } from "./VoiceInput";
-import { LiveVoice } from "./LiveVoice";
-import { AttachedImageNote, ImageQuestion } from "./ImageQuestion";
 import type { AttachedImage } from "./image-upload";
 import { imageText } from "./text/images";
 import { fitHeight, isSendKey, limitState, MESSAGE_LIMIT, sendBlocked, touchDevice } from "./composer-keys";
@@ -95,8 +91,6 @@ import { Vault, VaultConflictError } from "./vault";
 import type { Mode } from "../shared/modes";
 import { assignMode, closeSecure, flushSecure, securePending, modeOf, openSecure, readAvailable, readProjects, secureVault, useSecureState, vaultFor } from "./stores";
 import { SecureMaxSection, SecureMaxSidebarEntry, shouldShowSecureMaxIntro } from "./SecureMaxSection";
-import { SecureMaxResetSetting } from "./SecureMaxResetSetting";
-import { SecureMaxStartSetting } from "./SecureMaxStartSetting";
 import { SecureMaxLists } from "./SecureMaxLists";
 import { resetSecureMaxConfirmed } from "./SecureMaxDialog";
 import { modesText } from "./text/modes";
@@ -105,9 +99,6 @@ import { secureStoreText } from "./text/secure-store";
 import { mergeConversation } from "./sync/merge";
 import { holdProjects } from "./projects";
 import { VaultBackup } from "./VaultBackup";
-import { VaultUnlock } from "./VaultUnlock";
-import { SyncSetup } from "./SyncSetup";
-import { AlsoDeleteSynced, LocalPassphraseDialog, PairingPrompt, SyncGate, SyncIndicator, SyncSettings } from "./SyncScreens";
 import { syncText, vaultUnlockText } from "./text/sync";
 import { syncHardeningText } from "./text/sync-hardening";
 import {
@@ -123,11 +114,10 @@ import {
   useSyncState,
 } from "./sync";
 import { ConfirmDialog } from "./ConfirmDialog";
-import { DataControls } from "./DataControls";
 import { questionText } from "./text/questions";
 import { sessionExpiryText } from "./text/session-expiry";
 import { developerView } from "./developer-view";
-import { loadInference } from "./LoadBoundary";
+import { lazyNamed, loadInference } from "./LoadBoundary";
 import { attachLimitText } from "./text/attach-limits";
 import { fileCount, FILE_LIMIT, SCREENSHOT_LIMIT, screenshotCount, withResearch } from "./attachment-limits";
 import { holdTasks } from "./scheduled";
@@ -136,6 +126,7 @@ import { VaultSecurity } from "./VaultSecurity";
 import { BACKUP_MAX_BYTES } from "./vault-backup";
 import { containsTemporaryResearch, keepLiveSearch } from "./saved-conversation";
 import { WorkspaceNavigation } from "./WorkspaceNavigation";
+import type { AccountPart } from "./SettingsBody";
 import { readAppearance, saveAppearance } from "./appearance";
 import { ConversationLibrary } from "./ConversationLibrary";
 import { CopyConversationButton } from "./CopyConversationButton";
@@ -144,10 +135,8 @@ import { ConversationBranches } from "./ConversationBranches";
 import { branchConversation, switchBranch } from "./conversation-branches";
 import { ContextReview } from "./ContextReview";
 import { correctSource } from "./source-history";
-import { AccountUsage } from "./AccountUsage";
 import { SupportPanel } from "./SupportPanel";
 import { useShortcuts } from "./use-shortcuts";
-import { ShortcutHelp } from "./ShortcutHelp";
 import { lastAnswer, lastCodeBlock } from "./shortcut-copy";
 import { shortcutsText } from "./text/shortcuts";
 import { skipLinkText } from "./text/skip-link";
@@ -158,7 +147,6 @@ import { stopReading } from "./read-aloud";
 import { PdfExportButton } from "./PdfExportButton";
 import { canvasEnabled, liveVoiceEnabled, memoryEnabled, projectSpacesEnabled, readAloudEnabled } from "./device-features";
 import { CANVAS_LIMITS, keepForUndo, proposedText, withCanvas, withoutEarlierCanvas } from "./canvas";
-import { CanvasPanel } from "./CanvasPanel";
 import { canvasText } from "./text/canvas";
 import { addMemory, memoriesFor, rememberRequest } from "./memory";
 import {
@@ -167,7 +155,6 @@ import {
   MemoryChatSwitch,
   MemoryNote,
   memoryProblem,
-  MemorySettings,
   RememberDialog,
   useMemories,
   useMemoryVault,
@@ -175,7 +162,7 @@ import {
 import { memoryText } from "./text/memory";
 import { AttestationBusyError, DeploymentChangedError } from "./providers/inference-client";
 import { projectInstructionsBlock } from "./projects";
-import { ProjectPanel, useHeldProjects, useProjectVault } from "./ProjectPanel";
+import { useHeldProjects, useProjectVault } from "./project-hooks";
 import { projectText } from "./text/projects";
 import { chatErrorText } from "./text/chat-errors";
 import { abortable, withDeadline } from "./abortable";
@@ -190,7 +177,6 @@ import {
   RunSearchChoice,
   runMode,
   ScheduleCard,
-  ScheduledPanel,
   useBackgroundResults,
   useScheduledVault,
   type TaskDraft,
@@ -206,6 +192,29 @@ import {
 type Tab =
   "Conversation" | "Context" | "Research" | "Saved" | "Account" | "Help";
 /** "Open CometRow in Secure Max" on this device; no content, only the choice. */
+// Rarely used screens load on demand (SS-13, docs/settings-structure-20261116.md); offline, a part
+// that was never loaded shows the retry line (src/LoadBoundary.tsx). The composer, the message list
+// and everything on the first screen stay in the first file.
+const SettingsBody = lazyNamed(() => import("./SettingsBody"), "SettingsBody");
+const AccountUsage = lazyNamed(() => import("./AccountUsage"), "AccountUsage");
+const ScheduledPanel = lazyNamed(() => import("./ScheduledScreen"), "ScheduledPanel");
+const ProjectPanel = lazyNamed(() => import("./ProjectPanel"), "ProjectPanel");
+const CanvasPanel = lazyNamed(() => import("./CanvasPanel"), "CanvasPanel");
+const DeepResearch = lazyNamed(() => import("./DeepResearch"), "DeepResearch");
+const LiveVoice = lazyNamed(() => import("./LiveVoice"), "LiveVoice");
+const ImageQuestion = lazyNamed(() => import("./ImageQuestion"), "ImageQuestion");
+const AttachedImageNote = lazyNamed(() => import("./ImageQuestion"), "AttachedImageNote");
+const PhotoCapture = lazyNamed(() => import("./PhotoCapture"), "PhotoCapture");
+const ShortcutHelp = lazyNamed(() => import("./ShortcutHelp"), "ShortcutHelp");
+// Sync and the device vault's own screens: only with sync on, or in Saved.
+const VaultUnlock = lazyNamed(() => import("./VaultUnlock"), "VaultUnlock");
+const SyncSetup = lazyNamed(() => import("./SyncSetup"), "SyncSetup");
+const AlsoDeleteSynced = lazyNamed(() => import("./SyncScreens"), "AlsoDeleteSynced");
+const LocalPassphraseDialog = lazyNamed(() => import("./SyncScreens"), "LocalPassphraseDialog");
+const PairingPrompt = lazyNamed(() => import("./SyncScreens"), "PairingPrompt");
+const SyncGate = lazyNamed(() => import("./SyncScreens"), "SyncGate");
+const SyncIndicator = lazyNamed(() => import("./SyncScreens"), "SyncIndicator");
+
 const START_KEY = "cometrow.openInSecureMax";
 /** SS-14: the unsent message of a session that ended, for this tab only. */
 const EXPIRED_DRAFT_KEY = "cometrow.expired-draft";
@@ -225,8 +234,10 @@ export function App() {
   );
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [navigationCollapsed, setNavigationCollapsed] = useState(false);
+  // The Secure store could not open: the sidebar says so instead of "Loading your chats".
+  const [secureFailed, setSecureFailed] = useState(false);
   const [shortcutHelp, setShortcutHelp] = useState(false);
-  const [settingsSection, setSettingsSection] = useState("appearance");
+  const [settingsSection, setSettingsSection] = useState("general");
   const [projects, setProjects] = useState<Project[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
@@ -250,12 +261,15 @@ export function App() {
     return () => {
       dialog?.close();
       if (trigger?.checkVisibility()) trigger.focus();
-      else
-        document
-          .querySelector<HTMLElement>(".conversation-menu summary")
-          ?.focus();
+      // Opened from the account menu, which may have closed (a phone's drawer): its visible opener.
+      else [...document.querySelectorAll<HTMLElement>(".account-menu summary, .navigation-toggle")].find((e) => e.checkVisibility())?.focus();
     };
   }, [settingsOpen]);
+  // Settings' content mounts on first opening and then stays, so a step in progress (a recovery key shown) survives closing.
+  const settingsUsed = useRef(false);
+  if (settingsOpen) settingsUsed.current = true;
+  // Archived chats from Settings: the sidebar's own Archived filter.
+  const [showArchived, setShowArchived] = useState(0);
   useEffect(() => {
     if (!contextOpen) return;
     const dialog = contextDialog.current;
@@ -314,6 +328,9 @@ export function App() {
       ? "Account"
       : "Conversation",
   );
+  // Deep research loads when Research is first opened and then stays mounted (a run keeps going on other tabs).
+  const researchUsed = useRef(false);
+  if (tab === "Research") researchUsed.current = true;
   const [conversation, setConversation] =
     useState<Conversation>(emptyConversation);
   // The conversation as it is now, for a deep research run that outlives the render it started in.
@@ -1891,6 +1908,7 @@ export function App() {
     let active = true;
     void openSecure({ accountId: status!.accountId!, csrf: () => syncCsrf.current, onApplied: () => void refreshRef.current() }).then((ok) => {
       if (!active) return;
+      setSecureFailed(!ok);
       if (ok) void refreshRef.current();
       else setNotice(secureStoreText[lang].unavailable);
     });
@@ -2079,6 +2097,12 @@ export function App() {
     } finally {
       if (current === epoch.current) setBusy("");
     }
+  }
+  /** A section of the account page (src/AccountLab.tsx), leaving the app as "Manage account" does. */
+  async function openAccountPage(part: AccountPart) {
+    if (!(await allowReplace())) return;
+    accessNavigation.current = true;
+    window.location.assign(`/account#${part}`);
   }
   async function signOut() {
     if (!status?.accountId) return;
@@ -2452,6 +2476,8 @@ export function App() {
           setNavigationOpen(false);
           setSettingsOpen(true);
         }}
+        showArchived={showArchived}
+        loadingNote={secureFailed ? secureStoreText[lang].unavailable : undefined}
         onScheduled={
           scheduledEnabled()
             ? () => {
@@ -2625,186 +2651,53 @@ export function App() {
             ×
           </button>
         </div>
-        <div className="settings-layout">
-          <nav aria-label={t.settingsSections}>
-            {(
-              [
-                ["appearance", "sun", t.sectionAppearance],
-                ["account", "user", t.sectionAccount],
-                ["privacy", "shield", t.sectionPrivacy],
-                ["usage", "usage", t.sectionUsage],
-                ...(memoryEnabled() ? ([["memory", "pin", memoryText[lang].title]] as const) : []),
-                ...(syncOn ? ([["sync", "shield", syncText[lang].section]] as const) : []),
-              ] as const
-            ).map(([id, icon, label]) => (
-              <button
-                key={id}
-                aria-current={settingsSection === id ? "page" : undefined}
-                onClick={() => setSettingsSection(id)}
-              >
-                <Icon name={icon} />
-                {label}
-              </button>
-            ))}
-          </nav>
-          <section className="settings-content">
-            {settingsSection === "appearance" && (
-              <>
-                <label htmlFor="chat-appearance">{t.sectionAppearance}</label>
-                <select
-                  id="chat-appearance"
-                  value={appearance}
-                  onChange={(event) =>
-                    setAppearance(event.target.value as typeof appearance)
-                  }
-                >
-                  <option value="system">{t.themeSystem}</option>
-                  <option value="light">{t.themeLight}</option>
-                  <option value="dark">{t.themeDark}</option>
-                </select>
-                <p className="muted">{tm("settings").appearanceNote}</p>
-                {germanEnabled() && (
-                  <>
-                    <h3>{t.languageLabel}</h3>
-                    <LanguageSwitch className="language-switch settings-language" />
-                    <p className="muted">{t.languageNote}</p>
-                  </>
-                )}
-              </>
-            )}
-            {settingsSection === "account" && (
-              <>
-                <h3>{t.sectionAccount}</h3>
-                <p>
-                  {status?.accountEmail ??
-                    (status?.accountId
-                      ? t.signedInAccount(status.accountId)
-                      : t.localSession)}
-                </p>
-                <p>{t.recoverySeparate}</p>
-                <button
-                  onClick={() => {
-                    setSettingsOpen(false);
-                    setTab("Account");
-                  }}
-                >
-                  {t.accountAndUsage}
-                </button>
-              </>
-            )}
-            {settingsSection === "privacy" && (
-              <>
-                <h3>{t.sectionPrivacy}</h3>
-                {/* SS-01: the binding summary says "we never can" read: only true without Secure. */}
-                <p>{secureOn ? modeCopyText[lang].privacySummary_secure : privacySummary(lang)}</p>
-                {secureOn && <p>{modesText[lang].secureLong}</p>}
-                {/* Export and delete of the Secure chats (SS-03). Secure Max and the device vault keep their own controls. */}
-                {secureReady && (
-                  <DataControls conversations={saved.filter((c) => !inMax(c.id))} onDeleteAll={deleteAllSecure} erasesEverything={false} busy={!!busy} />
-                )}
-                {status?.healthConsentDraft && (
-                  <HealthConsentSetting
-                    record={healthConsent}
-                    onChoose={chooseHealthConsent}
-                  />
-                )}
-                <button
-                  className="text-button"
-                  onClick={() => {
-                    setSettingsOpen(false);
-                    setSource({
-                      id: "privacy-policy",
-                      title: t.privacyPolicy,
-                      text: privacyPolicyText(disclosedProvider(status), lang),
-                    });
-                  }}
-                >
-                  {t.privacyPolicyLink}
-                </button>
-                <button
-                  className="text-button"
-                  onClick={() => {
-                    setSettingsOpen(false);
-                    setSource({
-                      id: "imprint",
-                      title: t.imprint,
-                      text: imprintText(undefined, lang),
-                    });
-                  }}
-                >
-                  {t.imprintLink}
-                </button>
-                <p>{t.privateChatGated}</p>
-                <p>{tm("settings").projectsNote}</p>
-                <button
-                  onClick={() => {
-                    setSettingsOpen(false);
-                    setTab("Saved");
-                  }}
-                >
-                  {t.historyControls}
-                </button>
-              </>
-            )}
-            {settingsSection === "usage" && (
-              <AccountUsage allowance={status?.requestAllowance} metering={!!status?.metering} refresh={status} chatReady={status?.inference.ready} />
-            )}
-            {settingsSection === "memory" && memoryEnabled() && (
-              <MemorySettings vault={heldVault} unlocked={heldReady} storage={storageOf(heldMode)} />
-            )}
-            {settingsSection === "sync" && syncOn && (
-              <SyncSettings storage={secureOn ? "secure" : "local"} unlocked={unlocked} vault={vault.current} onNotice={setNotice} onOpened={(remember) => void syncOpened(remember)} />
-            )}
-            {settingsSection === "sync" && maxAvailable && (
-              <>
-                <h3>{modesText[lang].maxLabel}</h3>
-                <SecureMaxStartSetting value={startInMax} onChange={setStartInMax} />
-                {/* Only while unlocked here: the reset needs this device's proof (locked: Forgot passphrase with the recovery key).
-                    recentSignIn is a screen gate only. */}
-                {unlocked && <SecureMaxResetSetting onReset={resetMax} recentSignIn={recentSignIn()} />}
-              </>
-            )}
-          </section>
-        </div>
-        <div className="workspace-help">
-          <button
-            className="text-button"
-            onClick={() => {
-              setSource({
-                id: "workspace-guide",
-                title: t.guideTitle,
-                text: t.guideText,
-              });
+        {settingsUsed.current && (
+          <SettingsBody
+            section={settingsSection}
+            onSection={setSettingsSection}
+            appearance={appearance}
+            onAppearance={setAppearance}
+            status={status}
+            secureOn={secureOn}
+            secureReady={secureReady}
+            syncOn={syncOn}
+            maxAvailable={maxAvailable}
+            unlocked={unlocked}
+            secureChats={saved.filter((c) => !inMax(c.id))}
+            onDeleteAllSecure={deleteAllSecure}
+            busy={!!busy}
+            healthConsent={healthConsent}
+            onHealthConsent={chooseHealthConsent}
+            memoryVault={heldVault}
+            memoryReady={heldReady}
+            memoryStorage={storageOf(heldMode)}
+            vault={vault.current}
+            onNotice={setNotice}
+            onSyncOpened={(remember) => void syncOpened(remember)}
+            startInMax={startInMax}
+            onStartInMax={setStartInMax}
+            onResetMax={resetMax}
+            recentSignIn={recentSignIn()}
+            onSavedTab={() => {
+              setSettingsOpen(false);
+              setTab("Saved");
             }}
-          >
-            {t.gettingStarted}
-          </button>
-          <button
-            className="text-button"
-            onClick={() => {
-              setSource({
-                id: "trial-safety",
-                title: t.safetyTitle,
-                text: t.safetyText,
-              });
+            onArchived={!(secureReady || unlocked) ? undefined : () => {
+              setSettingsOpen(false);
+              setShowArchived((n) => n + 1);
+              // Only where the sidebar is a drawer; open stays false where it is always shown.
+              if (navigationCollapsed || matchMedia("(max-width: 760px)").matches) setNavigationOpen(true);
             }}
-          >
-            {t.safetyTitle}
-          </button>
-          <button
-            className="text-button"
-            onClick={() => {
-              setSource({
-                id: "privacy",
-                title: t.privacyBoundariesTitle,
-                // The statement for the provider in use (Privatemode's is a D17 draft).
-                text: privacyText(disclosedProvider(status), lang),
-              });
+            onAccountPage={(part) => {
+              setSettingsOpen(false);
+              void openAccountPage(part);
             }}
-          >
-            {t.privacyBoundariesLink}
-          </button>
-        </div>
+            onSignOut={() => {
+              setSettingsOpen(false);
+              void signOut();
+            }}
+          />
+        )}
       </dialog>
       <main>
         {syncOn && <PairingPrompt />}
@@ -2839,7 +2732,6 @@ export function App() {
               </p>
             )}
           </div>
-          <LanguageSwitch />
           <details className="conversation-menu" {...menuKeys}>
             <summary aria-label={t.conversationActions}>
               <Icon name="more" />
@@ -2911,10 +2803,6 @@ export function App() {
                   )
                 }
               />
-              <button onClick={() => setSettingsOpen(true)}>
-                <Icon name="settings" />
-                {t.settings}
-              </button>
             </div>
           </details>
         </header>
@@ -4056,12 +3944,17 @@ export function App() {
                   ? { id, title: t.imprint, text: imprintText(undefined, lang) }
                   : id === "privacy-policy"
                     ? { id, title: t.privacyPolicy, text: privacyPolicyText(disclosedProvider(status), lang) }
-                    : { id, title: t.guideTitle, text: t.guideText },
+                    : id === "trial-safety"
+                      ? { id, title: t.safetyTitle, text: t.safetyText }
+                      : id === "privacy"
+                        ? // The statement for the provider in use (Privatemode's is a D17 draft).
+                          { id, title: t.privacyBoundariesTitle, text: privacyText(disclosedProvider(status), lang) }
+                        : { id, title: t.guideTitle, text: t.guideText },
               )
             }
           />
         )}
-        {status?.research && status.search && status.inference.ready && !(status.healthConsentDraft && !healthConsent) && (
+        {researchUsed.current && status?.research && status.search && status.inference.ready && !(status.healthConsentDraft && !healthConsent) && (
           <DeepResearch
             hidden={tab !== "Research"}
             limits={status.research}
@@ -4120,6 +4013,7 @@ export function App() {
               </button>
             )}
             <AccountUsage
+              storage={secureOn ? "secure" : "local"}
               chatReady={status?.inference.ready}
               allowance={status?.requestAllowance}
               metering={!!status?.metering}
