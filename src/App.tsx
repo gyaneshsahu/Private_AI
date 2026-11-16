@@ -1041,8 +1041,10 @@ export function App() {
   const emptyChat =
     tab === "Conversation" && !conversation.messages.length && conversation.title === "New conversation";
   const online = useOnline();
-  // SS-22: developer screens (calculator, token and dollar figures) only in a development build opened with ?developmentTools.
-  const developmentTools = developerView();
+  // The on-device decimal calculator stays reachable with ?developmentTools (it reads and sends nothing; the end-to-end
+  // tests use it on the production build). Token and dollar figures need a development build too (SS-22).
+  const developmentTools = new URLSearchParams(location.search).has("developmentTools");
+  const developerFigures = developerView();
   // An answer is streaming: its request runs and the newest answer is open with no failure yet.
   // (Imports and searches also hold `controller`, but they add no open answer.)
   const answering =
@@ -3542,7 +3544,7 @@ export function App() {
               </details>
             )}
             {/* Token and dollar figures are for development only, never for users. */}
-            {developmentTools && conversation.usage.length > 0 && (
+            {developerFigures && conversation.usage.length > 0 && (
               <p className="muted">
                 {t.usage(
                   conversation.usage.reduce((n, u) => n + u.total, 0),
