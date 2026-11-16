@@ -4039,7 +4039,7 @@ export function App() {
                       : id === "privacy"
                         ? // The statement for the provider in use (Privatemode's is a D17 draft).
                           { id, title: t.privacyBoundariesTitle, text: privacyText(disclosedProvider(status), lang) }
-                        : { id, title: t.guideTitle, text: t.guideText },
+                        : { id, title: t.guideTitle, text: tm("settings").guideText },
               )
             }
           />
