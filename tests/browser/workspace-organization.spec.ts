@@ -164,7 +164,7 @@ test("projects, pin/archive, account menus and isolation through the rendered wo
     await page.keyboard.press("Escape");
   }
   await workspaceControl(page, "Settings").click();
-  for (const name of ["Account & security", "Privacy & data", "Plan & usage"]) {
+  for (const name of ["General", "Data controls", "Security", "Account"]) {
     await page
       .getByRole("navigation", { name: "Settings sections" })
       .getByRole("button", { name, exact: true })

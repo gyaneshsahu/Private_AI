@@ -99,11 +99,7 @@ test("representative themes, long history, source and responsive keyboard contro
       .getByRole("button", { name: "Copy answer" }),
   ).toBeDisabled();
   const settings = async (theme: string) => {
-    await page.getByLabel("Conversation actions", { exact: true }).click();
-    await page
-      .locator(".conversation-menu")
-      .getByRole("button", { name: "Settings", exact: true })
-      .click();
+    await workspaceControl(page, "Settings").click();
     await page.getByLabel("Appearance", { exact: true }).selectOption(theme);
     await page.getByRole("button", { name: "Close settings" }).click();
   };

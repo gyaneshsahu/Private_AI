@@ -11,7 +11,7 @@ test("trial boundaries are readable on a narrow screen with keyboard dismissal a
       external.push(request.url());
   });
   await page.goto("/");
-  await workspaceControl(page, "Settings").click();
+  await workspaceControl(page, "Help").click();
   const trigger = page.getByRole("button", {
     name: "Trial scope and safety",
     exact: true,
@@ -33,6 +33,8 @@ test("trial boundaries are readable on a narrow screen with keyboard dismissal a
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
   await expect(trigger).toBeFocused();
+  // Help replaces the conversation view; nothing was sent or drafted on return.
+  await workspaceControl(page, "Conversation").click();
   await expect(
     page.getByRole("button", { name: "Send message", exact: true }),
   ).toBeDisabled();

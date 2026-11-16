@@ -64,9 +64,9 @@ test("new session clears calculator and dialog keyboard focus stays inside", asy
   await workspaceControl(page, "New conversation").click();
   await expect(page.getByLabel("First number")).toHaveValue("");
   await expect(page.locator("output")).toHaveText("");
-  await workspaceControl(page, "Settings").click();
+  await workspaceControl(page, "Help").click();
   await page
-    .getByRole("button", { name: "Privacy boundaries", exact: false })
+    .getByRole("button", { name: "Your privacy boundaries", exact: true })
     .click();
   await expect(page.getByRole("dialog", { name: "Your privacy boundaries" })).toBeVisible();
   await page.keyboard.press("Shift+Tab");
@@ -81,12 +81,12 @@ test("short desktop with enlarged text can reach sidebar privacy controls", asyn
   await page.setViewportSize({ width: 1100, height: 450 });
   await page.goto("/?developmentTools");
   await page.addStyleTag({ content: "html {font-size:200%}" });
-  await workspaceControl(page, "Settings").click();
-  const privacy = page.getByRole("button", { name: "Privacy boundaries", exact: false });
+  await workspaceControl(page, "Help").click();
+  const privacy = page.getByRole("button", { name: "Your privacy boundaries", exact: true });
   await privacy.click();
   await expect(page.getByRole("dialog", { name: "Your privacy boundaries" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(privacy).toBeFocused();
   await expect(privacy).toBeInViewport();
-  await expect(page.getByRole("dialog", { name: "Settings", exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Help and problem reporting", exact: true })).toBeVisible();
 });

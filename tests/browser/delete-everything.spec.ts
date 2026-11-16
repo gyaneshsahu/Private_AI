@@ -60,9 +60,8 @@ test("delete everything on this device removes the vault database, states what i
   await expect(
     page.getByText("No saved conversations yet.", { exact: false }),
   ).toBeVisible();
-  // The privacy policy page is reachable from settings and carries the deletion and contact sections.
-  await workspaceControl(page, "Settings").click();
-  await page.getByRole("button", { name: "Privacy & data" }).click();
+  // The privacy policy page is reachable from Help and carries the deletion and contact sections.
+  await workspaceControl(page, "Help").click();
   await page
     .getByRole("button", { name: "Privacy policy", exact: false })
     .click();
@@ -73,8 +72,7 @@ test("delete everything on this device removes the vault database, states what i
   // The imprint opens from the same section and carries the operator identity
   // placeholders until the owner fills deployment/legal-identity.json.
   await policy.getByRole("button", { name: "Close source" }).click();
-  await workspaceControl(page, "Settings").click();
-  await page.getByRole("button", { name: "Privacy & data" }).click();
+  await workspaceControl(page, "Help").click();
   await page.getByRole("button", { name: "Imprint", exact: false }).click();
   const imprint = page.getByRole("dialog", { name: "Imprint" });
   await expect(imprint).toContainText("Service provider");

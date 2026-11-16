@@ -226,7 +226,7 @@ test("workspace guide preserves a draft and supports keyboard dismissal without 
   await page.getByLabel("Message CometRow").fill("SYNTHETIC guide draft");
   for (const width of [1440, 360]) {
     await page.setViewportSize({ width, height: 900 });
-    await workspaceControl(page, "Settings").click();
+    await workspaceControl(page, "Help").click();
     await page
       .getByRole("button", { name: "Getting started", exact: true })
       .click();
@@ -239,13 +239,14 @@ test("workspace guide preserves a draft and supports keyboard dismissal without 
     });
     await page.keyboard.press("Escape");
     await expect(guide).toHaveCount(0);
-    await expect(page.getByLabel("Message CometRow")).toHaveValue(
-      "SYNTHETIC guide draft",
-    );
     await expect(
       page.getByRole("button", { name: "Getting started", exact: true }),
     ).toBeFocused();
-    await page.getByRole("button", { name: "Close settings" }).click();
+    // Help replaces the conversation view; the draft is still there on return.
+    await workspaceControl(page, "Conversation").click();
+    await expect(page.getByLabel("Message CometRow")).toHaveValue(
+      "SYNTHETIC guide draft",
+    );
   }
   expect(disclosures).toEqual([]);
 });
