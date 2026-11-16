@@ -3412,3 +3412,89 @@
 .secure-max-mount {
   display: contents;
 }
+
+/* chat core App.tsx fixes 16 Nov */
+/* The protection status: one small line, not a full-width bar. "Privacy details" opens it. */
+.chat-design .connection-banner:not([open]) {
+  border-color: transparent;
+  background: transparent;
+  padding: 2px 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.chat-design .connection-banner:not([open]) summary span {
+  display: inline;
+  margin-left: 8px;
+  text-decoration: underline;
+}
+.chat-design .connection-banner summary {
+  min-height: 24px;
+}
+@media (max-width: 760px) {
+  /* One line on a phone too; the whole line opens the details. */
+  .chat-design .connection-banner:not([open]) summary {
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+/* Notices, the offline line and "not available yet" just above the message box. */
+.chat-design .composer-dock > :is(.dock-notice, .offline-banner, .connection-banner) {
+  margin: 0 auto 8px;
+  max-width: 800px;
+  font-size: 13px;
+  text-align: left;
+}
+.chat-design .composer-dock > .dock-notice button {
+  flex-shrink: 0;
+  min-width: 24px;
+  min-height: 24px;
+}
+/* The context count stays one line; on a phone it shortens with "…" (its full text is its name). */
+.chat-design .composer-footer .context-count {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+@media (max-width: 760px) {
+  .chat-design .composer-footer .context-count {
+    flex: 0 1 auto;
+    max-width: none;
+  }
+  .chat-design .composer-dock > .dock-notice button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+/* Sidebar: "New chat" on one line across the full width; Incognito below as a smaller secondary button. */
+.chat-design .new-chat-row {
+  flex-wrap: wrap;
+}
+.chat-design .new-chat-row .new-chat:not(.new-incognito) {
+  flex: 1 1 100%;
+  white-space: nowrap;
+}
+.chat-design .new-chat-row .new-incognito {
+  flex: 0 1 auto;
+  min-height: 36px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  background: transparent;
+  border-color: var(--line);
+  box-shadow: none;
+  white-space: nowrap;
+  opacity: 1;
+}
+.chat-design .new-chat-row .new-incognito:hover:not(:disabled) {
+  color: var(--ink);
+  background: var(--subtle);
+}
+@media (max-width: 760px) {
+  .chat-design .new-chat-row .new-incognito {
+    min-height: 44px;
+  }
+}

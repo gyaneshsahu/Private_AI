@@ -8,8 +8,6 @@ const clock = (seconds: number) =>
 export const liveVoiceText = defineText({
   en: {
     open: "Live voice conversation",
-    menuNote:
-      "Photo to text reads printed text on this device and asks for the camera only when you press Use camera; it is not general image understanding. Dictation and live voice ask for the microphone only when you press their buttons. Image creation and sharing are not connected: no permissions or media are collected for them.",
     androidOff:
       "Live voice is not available on Android: CometRow cannot check that the phone's voices stay on the device, so it does not read answers aloud there.",
     title: "Live voice",
@@ -69,8 +67,6 @@ export const liveVoiceText = defineText({
   },
   de: {
     open: "Gespräch per Stimme",
-    menuNote:
-      "Foto zu Text liest gedruckten Text auf diesem Gerät und fragt erst nach der Kamera, wenn Sie „Kamera verwenden“ drücken; Bilder werden darüber hinaus nicht verstanden. Diktieren und Gespräche per Stimme fragen erst nach dem Mikrofon, wenn Sie ihre Tasten drücken. Bilderstellung und Teilen sind nicht angebunden: Dafür werden keine Berechtigungen oder Medien erfasst.",
     androidOff:
       "Gespräch per Stimme gibt es auf Android nicht: CometRow kann dort nicht prüfen, ob die Stimmen des Telefons auf dem Gerät bleiben, und liest Antworten dort nicht vor.",
     title: "Gespräch per Stimme",

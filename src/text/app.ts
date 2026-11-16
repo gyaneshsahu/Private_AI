@@ -2,21 +2,8 @@
 // The English must stay exactly as before; UI tests match it.
 import { defineText } from "../i18n";
 import type { DisappearAfter } from "../conversation";
-
-const failuresEn: Record<string, string> = {
-  stopped: "Stopped by you",
-  timeout: "Response timed out",
-  incomplete: "Response ended incomplete",
-  unavailable: "Protected response unavailable",
-  empty: "No answer received",
-};
-const failuresDe: Record<string, string> = {
-  stopped: "Von Ihnen gestoppt",
-  timeout: "Zeitüberschreitung bei der Antwort",
-  incomplete: "Antwort unvollständig beendet",
-  unavailable: "Geschützte Antwort nicht verfügbar",
-  empty: "Keine Antwort erhalten",
-};
+import { failureSentence } from "../chat-failures";
+import { chatCoreText } from "./chat-core";
 
 export const appText = defineText({
   en: {
@@ -58,7 +45,7 @@ export const appText = defineText({
     timedOut: (retried: boolean) =>
       `Response timed out. Partial answers are excluded from future context. This request’s cost remains unknown. ${retried ? "One automatic retry with the backup model was made." : "No automatic retry was made."}`,
     protectedUnavailable: (retried: boolean) =>
-      `Protected response unavailable. ${retried ? "One automatic retry with the backup model was made." : "No weaker fallback or automatic retry was used."} Check provider verification and service access.`,
+      `Protected response unavailable. ${retried ? "One automatic retry with the backup model was made." : "No weaker fallback or automatic retry was used."} ${chatCoreText.en.tryAgainHelp}`,
     tooManyAttachments:
       "Use at most five attachments, including three screenshots, per conversation.",
     readingOnDevice: "Reading on your device…",
@@ -181,8 +168,7 @@ export const appText = defineText({
 
     // Header and banners
     openNavigation: "Open navigation",
-    messageCount: (n: number) => `${n} messages ·`,
-    comingLater: "Coming later",
+    messageCount: (n: number) => `${n} ${n === 1 ? "message" : "messages"}`,
     conversationActions: "Conversation actions",
     renameSave: "Rename, save & manage history",
     includedContext: "Included context",
@@ -236,8 +222,7 @@ export const appText = defineText({
     noAnswer: "No answer received",
     keptNote:
       "Placeholders went to the secure server instead; the values were put back here. Not every number is recognised, least of all in photos and scans.",
-    failure: (kind: string) =>
-      `${failuresEn[kind]}. This attempt is not a completed answer and is excluded from future context.`,
+    failure: (kind: string) => failureSentence(kind, "en"),
     sourcesChanged: "Sources changed since this answer",
     sourcesChangedText:
       "Reference material changed or was removed after this answer. Its citations open the earlier captured version. Review this answer before using it in a follow-up; deselect the message in Included context to exclude it without deleting it.",
@@ -260,21 +245,9 @@ export const appText = defineText({
     photoToText: "Photo to text",
     reviewContext: "Review context",
     selectedCount: (n: number) => `${n} selected`,
-    planned: "Planned capabilities",
-    createImage: "Create image",
-    dictation: "Microphone dictation",
-    liveVoice: "Live voice conversation",
-    photoNote:
-      "Photo to text reads printed text on this device and asks for the camera only when you press Use camera; it is not general image understanding. Dictation, live voice, image creation and sharing are not connected: no permissions or media are collected for them.",
-    photoNoteVoice:
-      "Photo to text reads printed text on this device and asks for the camera only when you press Use camera; it is not general image understanding. Dictation asks for the microphone only when you press the microphone button. Live voice, image creation and sharing are not connected: no permissions or media are collected for them.",
-    filesNote:
-      "Files are read on this device. Review extracted text before sending.",
     answerMode: "Answer mode",
     contextCount: (messages: number, files: number) =>
-      `${messages} messages included · ${files} files`,
-    dictationLater: "Microphone dictation — Coming later",
-    liveVoiceLater: "Live voice — Coming later",
+      `${messages} ${messages === 1 ? "message" : "messages"} included · ${files} ${files === 1 ? "file" : "files"}`,
     stopResponse: "Stop response",
     sendLabel: "Send ↑",
     send: "Send",
@@ -459,7 +432,7 @@ export const appText = defineText({
     timedOut: (retried: boolean) =>
       `Zeitüberschreitung bei der Antwort. Unvollständige Antworten werden nicht in den weiteren Kontext übernommen. Die Kosten dieser Anfrage bleiben unbekannt. ${retried ? "Es wurde einmal automatisch mit dem Ersatzmodell wiederholt." : "Es wurde nicht automatisch wiederholt."}`,
     protectedUnavailable: (retried: boolean) =>
-      `Geschützte Antwort nicht verfügbar. ${retried ? "Es wurde einmal automatisch mit dem Ersatzmodell wiederholt." : "Es wurde weder auf eine schwächere Lösung ausgewichen noch automatisch wiederholt."} Prüfen Sie die Überprüfung des Anbieters und den Zugang zum Dienst.`,
+      `Geschützte Antwort nicht verfügbar. ${retried ? "Es wurde einmal automatisch mit dem Ersatzmodell wiederholt." : "Es wurde weder auf eine schwächere Lösung ausgewichen noch automatisch wiederholt."} ${chatCoreText.de.tryAgainHelp}`,
     tooManyAttachments:
       "Verwenden Sie höchstens fünf Anhänge pro Unterhaltung, davon höchstens drei Bildschirmfotos.",
     readingOnDevice: "Wird auf Ihrem Gerät gelesen …",
@@ -584,8 +557,7 @@ export const appText = defineText({
     privacyBoundariesLink: "Datenschutzgrenzen ↗",
 
     openNavigation: "Navigation öffnen",
-    messageCount: (n: number) => `${n} Nachrichten ·`,
-    comingLater: "Folgt später",
+    messageCount: (n: number) => `${n} ${n === 1 ? "Nachricht" : "Nachrichten"}`,
     conversationActions: "Aktionen für die Unterhaltung",
     renameSave: "Umbenennen, speichern & Verlauf verwalten",
     includedContext: "Einbezogener Kontext",
@@ -638,8 +610,7 @@ export const appText = defineText({
     noAnswer: "Keine Antwort erhalten",
     keptNote:
       "Stattdessen gingen Platzhalter an den sicheren Server; die Werte wurden hier wieder eingesetzt. Nicht jede Zahl wird erkannt, am wenigsten in Fotos und Scans.",
-    failure: (kind: string) =>
-      `${failuresDe[kind]}. Dieser Versuch ist keine vollständige Antwort und wird nicht in den weiteren Kontext übernommen.`,
+    failure: (kind: string) => failureSentence(kind, "de"),
     sourcesChanged: "Quellen seit dieser Antwort geändert",
     sourcesChangedText:
       "Das Referenzmaterial wurde nach dieser Antwort geändert oder entfernt. Ihre Quellenangaben öffnen die früher erfasste Fassung. Prüfen Sie diese Antwort, bevor Sie sie in einer Folgefrage verwenden; wählen Sie die Nachricht unter Einbezogener Kontext ab, um sie auszuschließen, ohne sie zu löschen.",
@@ -661,21 +632,9 @@ export const appText = defineText({
     photoToText: "Foto zu Text",
     reviewContext: "Kontext prüfen",
     selectedCount: (n: number) => `${n} ausgewählt`,
-    planned: "Geplante Funktionen",
-    createImage: "Bild erstellen",
-    dictation: "Diktieren per Mikrofon",
-    liveVoice: "Gespräch per Stimme",
-    photoNote:
-      "Foto zu Text liest gedruckten Text auf diesem Gerät und fragt erst nach der Kamera, wenn Sie „Kamera verwenden“ drücken; Bilder werden darüber hinaus nicht verstanden. Diktieren, Gespräche per Stimme, Bilderstellung und Teilen sind nicht angebunden: Dafür werden keine Berechtigungen oder Medien erfasst.",
-    photoNoteVoice:
-      "Foto zu Text liest gedruckten Text auf diesem Gerät und fragt erst nach der Kamera, wenn Sie „Kamera verwenden“ drücken; Bilder werden darüber hinaus nicht verstanden. Das Diktieren fragt erst nach dem Mikrofon, wenn Sie die Mikrofon-Taste drücken. Gespräche per Stimme, Bilderstellung und Teilen sind nicht angebunden: Dafür werden keine Berechtigungen oder Medien erfasst.",
-    filesNote:
-      "Dateien werden auf diesem Gerät gelesen. Prüfen Sie den ausgelesenen Text vor dem Senden.",
     answerMode: "Antwortmodus",
     contextCount: (messages: number, files: number) =>
-      `${messages} Nachrichten einbezogen · ${files} Dateien`,
-    dictationLater: "Diktieren per Mikrofon – folgt später",
-    liveVoiceLater: "Gespräch per Stimme – folgt später",
+      `${messages} ${messages === 1 ? "Nachricht" : "Nachrichten"} einbezogen · ${files} ${files === 1 ? "Datei" : "Dateien"}`,
     stopResponse: "Antwort stoppen",
     sendLabel: "Senden ↑",
     send: "Senden",
