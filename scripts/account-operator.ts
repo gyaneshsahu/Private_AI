@@ -5,7 +5,7 @@ import { z } from "zod";
 /**
  * Prints one SQL transaction for the owner to review and run in psql as the
  * schema owner. Never connects to a database. Tables come from
- * server/migrations/0001-0024; keep this list in step with new migrations.
+ * server/migrations/0001-0025; keep this list in step with new migrations.
  */
 export const commands = ["show", "suspend", "unsuspend", "erase"] as const;
 export type Command = (typeof commands)[number];
@@ -54,6 +54,9 @@ const tables = (literal: string): [string, string][] => [
   ["sync_items", `account_id IN ${target}`],
   ["sync_blobs", `account_id IN ${target}`],
   ["sync_accounts", `account_id IN ${target}`],
+  ["secure_items", `account_id IN ${target}`],
+  ["secure_blobs", `account_id IN ${target}`],
+  ["custody_keys", `account_id IN ${target}`],
   ["account_closure", `"userId" IN ${target}`],
 ];
 
@@ -94,6 +97,10 @@ export function operatorSql(command: Command, email: string): string {
         "sync_items",
         "sync_blobs",
         "sync_accounts",
+        // Secure mode (migration 0025): stored items and file blobs, then the account's wrapped key.
+        "secure_items",
+        "secure_blobs",
+        "custody_keys",
         "usage_metrics",
         "usage_records",
         "usage_requests",

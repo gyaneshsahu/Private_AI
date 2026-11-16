@@ -1,6 +1,7 @@
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
 import type { DeviceRow, PairingResult, PairingRow, PutResult, SetupInput, SyncStore } from "./vault-sync";
+import type { CustodyRow, SecureStore } from "./secure-store";
 import type { BlobPut, BlobStore, ObjectStorage } from "./vault-sync-blobs";
 
 const deviceFrom = (r: Record<string, unknown>): DeviceRow => ({
@@ -30,11 +31,11 @@ const same = (a: Buffer, b: Buffer) => a.length === b.length && timingSafeEqual(
 type AccountRow = { used_bytes: string | number; blob_bytes?: string | number };
 
 /** Runs `work` in a transaction holding the account's row lock; undefined when the account has no sync. */
-async function locked<T>(database: Pool, accountId: string, work: (c: PoolClient, account: AccountRow) => Promise<T>): Promise<T | undefined> {
+async function locked<T>(database: Pool, accountId: string, work: (c: PoolClient, account: AccountRow) => Promise<T>, accounts = "sync_accounts"): Promise<T | undefined> {
   const client = await database.connect();
   try {
     await client.query("BEGIN");
-    const found = await client.query("SELECT * FROM sync_accounts WHERE account_id=$1 FOR UPDATE", [accountId]);
+    const found = await client.query(`SELECT * FROM ${accounts} WHERE account_id=$1 FOR UPDATE`, [accountId]);
     const result = found.rowCount ? await work(client, found.rows[0] as AccountRow) : undefined;
     await client.query("COMMIT");
     return result;
@@ -48,9 +49,13 @@ async function locked<T>(database: Pool, accountId: string, work: (c: PoolClient
 
 /** Sync storage in PostgreSQL (migration 0023). Writes for one account hold a row lock on sync_accounts. */
 export class PostgresSyncStore implements SyncStore {
-  constructor(private database: Pool) {}
+  /** `t`: the account and item tables (fixed names from this file, never input); Secure passes its own. */
+  constructor(
+    protected database: Pool,
+    private t = { accounts: "sync_accounts", items: "sync_items" },
+  ) {}
   private locked<T>(accountId: string, work: (c: PoolClient, account: AccountRow) => Promise<T>) {
-    return locked(this.database, accountId, work);
+    return locked(this.database, accountId, work, this.t.accounts);
   }
   async proofs(accountId: string) {
     const row = (await this.database.query("SELECT auth_hash,recovery_hash FROM sync_accounts WHERE account_id=$1", [accountId])).rows[0];
@@ -159,7 +164,7 @@ export class PostgresSyncStore implements SyncStore {
     // The running sum stops a page at about maxBytes of ciphertext (review M8); at least one row.
     const rows = (
       await this.database.query(
-        "SELECT item_id,version,ciphertext,deleted,seq,updated_at, sum(size) OVER (ORDER BY seq) AS running FROM sync_items WHERE account_id=$1 AND seq>$2 ORDER BY seq LIMIT $3",
+        `SELECT item_id,version,ciphertext,deleted,seq,updated_at, sum(size) OVER (ORDER BY seq) AS running FROM ${this.t.items} WHERE account_id=$1 AND seq>$2 ORDER BY seq LIMIT $3`,
         [accountId, since, limit + 1],
       )
     ).rows;
@@ -180,7 +185,7 @@ export class PostgresSyncStore implements SyncStore {
   async putItem(accountId: string, itemId: string, baseVersion: number, ciphertext: Buffer, deleted: boolean, quotaBytes: number, now: number, purgeBefore: number) {
     return (
       (await this.locked(accountId, async (c, account): Promise<PutResult> => {
-        const current = (await c.query("SELECT version,ciphertext,deleted,updated_at,size FROM sync_items WHERE account_id=$1 AND item_id=$2", [accountId, itemId])).rows[0];
+        const current = (await c.query(`SELECT version,ciphertext,deleted,updated_at,size FROM ${this.t.items} WHERE account_id=$1 AND item_id=$2`, [accountId, itemId])).rows[0];
         if ((current?.version ?? 0) !== baseVersion)
           return {
             status: "conflict",
@@ -188,19 +193,19 @@ export class PostgresSyncStore implements SyncStore {
           };
         // Old tombstones go (review M8), a hundred at a time, never the row being written.
         const purged = await c.query(
-          "DELETE FROM sync_items WHERE account_id=$1 AND item_id IN (SELECT item_id FROM sync_items WHERE account_id=$1 AND deleted AND updated_at<$2 AND item_id<>$3 LIMIT 100) RETURNING size",
+          `DELETE FROM ${this.t.items} WHERE account_id=$1 AND item_id IN (SELECT item_id FROM ${this.t.items} WHERE account_id=$1 AND deleted AND updated_at<$2 AND item_id<>$3 LIMIT 100) RETURNING size`,
           [accountId, purgeBefore, itemId],
         );
         const freed = purged.rows.reduce((n, r) => n + Number(r.size), 0);
         const used = Number(account.used_bytes) - freed - Number(current?.size ?? 0) + ciphertext.length;
         // A tombstone is always accepted: it frees space.
         if (!deleted && used > quotaBytes) {
-          if (freed) await c.query("UPDATE sync_accounts SET used_bytes=used_bytes-$2 WHERE account_id=$1", [accountId, freed]);
+          if (freed) await c.query(`UPDATE ${this.t.accounts} SET used_bytes=used_bytes-$2 WHERE account_id=$1`, [accountId, freed]);
           return { status: "quota" };
         }
-        const seq = Number((await c.query("UPDATE sync_accounts SET seq=seq+1, used_bytes=$2 WHERE account_id=$1 RETURNING seq", [accountId, used])).rows[0].seq);
+        const seq = Number((await c.query(`UPDATE ${this.t.accounts} SET seq=seq+1, used_bytes=$2 WHERE account_id=$1 RETURNING seq`, [accountId, used])).rows[0].seq);
         await c.query(
-          `INSERT INTO sync_items(account_id,item_id,version,ciphertext,size,seq,updated_at,deleted) VALUES($1,$2,$3,$4,$5,$6,$7,$8)
+          `INSERT INTO ${this.t.items}(account_id,item_id,version,ciphertext,size,seq,updated_at,deleted) VALUES($1,$2,$3,$4,$5,$6,$7,$8)
           ON CONFLICT (account_id,item_id) DO UPDATE SET version=EXCLUDED.version,ciphertext=EXCLUDED.ciphertext,size=EXCLUDED.size,seq=EXCLUDED.seq,updated_at=EXCLUDED.updated_at,deleted=EXCLUDED.deleted`,
           [accountId, itemId, baseVersion + 1, ciphertext, ciphertext.length, seq, now, deleted],
         );
@@ -209,7 +214,7 @@ export class PostgresSyncStore implements SyncStore {
     );
   }
   async usage(accountId: string) {
-    const r = (await this.database.query("SELECT seq, used_bytes FROM sync_accounts WHERE account_id=$1", [accountId])).rows[0];
+    const r = (await this.database.query(`SELECT seq, used_bytes FROM ${this.t.accounts} WHERE account_id=$1`, [accountId])).rows[0];
     return { usedBytes: Number(r?.used_bytes ?? 0), cursor: Number(r?.seq ?? 0) };
   }
   async createPairing(accountId: string, row: PairingRow, maxPending: number, now: number) {
@@ -317,21 +322,25 @@ export class PostgresBlobStore implements BlobStore {
   constructor(
     private database: Pool,
     private objects?: ObjectStorage,
+    private t = { accounts: "sync_accounts", blobs: "sync_blobs" },
   ) {
     // An erase by the operator SQL or the inactive-account purge queues keys without this process.
     if (objects) setInterval(() => void this.sweep().catch(() => {}), 3_600_000).unref();
   }
+  private locked<T>(accountId: string, work: (c: PoolClient, account: AccountRow) => Promise<T>) {
+    return locked(this.database, accountId, work, this.t.accounts);
+  }
   async put(accountId: string, blobId: string, data: Buffer, quotaBytes: number, now: number): Promise<BlobPut> {
-    const result = await locked(this.database, accountId, async (c, account): Promise<BlobPut> => {
-      const existing = (await c.query("SELECT size FROM sync_blobs WHERE account_id=$1 AND blob_id=$2", [accountId, blobId])).rows[0];
+    const result = await this.locked(accountId, async (c, account): Promise<BlobPut> => {
+      const existing = (await c.query(`SELECT size FROM ${this.t.blobs} WHERE account_id=$1 AND blob_id=$2`, [accountId, blobId])).rows[0];
       const used = Number(account.blob_bytes ?? 0) - Number(existing?.size ?? 0);
       if (used + data.length > quotaBytes) return "quota";
       const key = this.objects ? randomUUID().replaceAll("-", "") : null;
       // shortcut: an object stored here whose transaction then fails stays in the bucket unreferenced; rare, add a listing sweep if it matters.
       if (key) await this.objects!.put(key, data);
       // A replaced blob's old object key is queued for the sweep by the delete trigger.
-      await c.query("DELETE FROM sync_blobs WHERE account_id=$1 AND blob_id=$2", [accountId, blobId]);
-      await c.query("INSERT INTO sync_blobs(account_id,blob_id,size,data,object_key,created_at) VALUES($1,$2,$3,$4,$5,$6)", [
+      await c.query(`DELETE FROM ${this.t.blobs} WHERE account_id=$1 AND blob_id=$2`, [accountId, blobId]);
+      await c.query(`INSERT INTO ${this.t.blobs}(account_id,blob_id,size,data,object_key,created_at) VALUES($1,$2,$3,$4,$5,$6)`, [
         accountId,
         blobId,
         data.length,
@@ -339,7 +348,7 @@ export class PostgresBlobStore implements BlobStore {
         key,
         now,
       ]);
-      await c.query("UPDATE sync_accounts SET blob_bytes=$2 WHERE account_id=$1", [accountId, used + data.length]);
+      await c.query(`UPDATE ${this.t.accounts} SET blob_bytes=$2 WHERE account_id=$1`, [accountId, used + data.length]);
       return "ok";
     });
     if (result === undefined) return "no-account";
@@ -347,14 +356,14 @@ export class PostgresBlobStore implements BlobStore {
     return result;
   }
   async get(accountId: string, blobId: string) {
-    const row = (await this.database.query("SELECT data,object_key FROM sync_blobs WHERE account_id=$1 AND blob_id=$2", [accountId, blobId])).rows[0];
+    const row = (await this.database.query(`SELECT data,object_key FROM ${this.t.blobs} WHERE account_id=$1 AND blob_id=$2`, [accountId, blobId])).rows[0];
     if (!row) return undefined;
     return row.data ? (row.data as Buffer) : this.objects?.get(row.object_key as string);
   }
   async delete(accountId: string, blobId: string) {
-    const gone = await locked(this.database, accountId, async (c) => {
-      const r = await c.query("DELETE FROM sync_blobs WHERE account_id=$1 AND blob_id=$2 RETURNING size", [accountId, blobId]);
-      if (r.rowCount) await c.query("UPDATE sync_accounts SET blob_bytes=greatest(blob_bytes-$2,0) WHERE account_id=$1", [accountId, Number(r.rows[0].size)]);
+    const gone = await this.locked(accountId, async (c) => {
+      const r = await c.query(`DELETE FROM ${this.t.blobs} WHERE account_id=$1 AND blob_id=$2 RETURNING size`, [accountId, blobId]);
+      if (r.rowCount) await c.query(`UPDATE ${this.t.accounts} SET blob_bytes=greatest(blob_bytes-$2,0) WHERE account_id=$1`, [accountId, Number(r.rows[0].size)]);
       return r.rowCount === 1;
     });
     await this.sweep().catch(() => {});
@@ -363,16 +372,16 @@ export class PostgresBlobStore implements BlobStore {
   async usage(accountId: string) {
     const r = (
       await this.database.query(
-        "SELECT (SELECT count(*) FROM sync_blobs b WHERE b.account_id=a.account_id) AS n, a.blob_bytes AS used FROM sync_accounts a WHERE a.account_id=$1",
+        `SELECT (SELECT count(*) FROM ${this.t.blobs} b WHERE b.account_id=a.account_id) AS n, a.blob_bytes AS used FROM ${this.t.accounts} a WHERE a.account_id=$1`,
         [accountId],
       )
     ).rows[0];
     return { count: Number(r?.n ?? 0), usedBytes: Number(r?.used ?? 0) };
   }
   async deleteAll(accountId: string) {
-    await locked(this.database, accountId, async (c) => {
-      await c.query("DELETE FROM sync_blobs WHERE account_id=$1", [accountId]);
-      await c.query("UPDATE sync_accounts SET blob_bytes=0 WHERE account_id=$1", [accountId]);
+    await this.locked(accountId, async (c) => {
+      await c.query(`DELETE FROM ${this.t.blobs} WHERE account_id=$1`, [accountId]);
+      await c.query(`UPDATE ${this.t.accounts} SET blob_bytes=0 WHERE account_id=$1`, [accountId]);
     });
     await this.sweep().catch(() => {});
   }
@@ -389,3 +398,30 @@ export class PostgresBlobStore implements BlobStore {
     return keys.length;
   }
 }
+
+/**
+ * Secure mode (migration 0025, docs/secure-store-20261116.md): the same item code on the tables
+ * custody_keys (the account row, with the wrapped key) and secure_items. The runtime role may
+ * insert a custody row and update its counters, never its wrapped key (server/account-privileges.ts).
+ */
+export class PostgresSecureStore extends PostgresSyncStore implements SecureStore {
+  constructor(database: Pool) {
+    super(database, { accounts: "custody_keys", items: "secure_items" });
+  }
+  async custody(accountId: string): Promise<CustodyRow | undefined> {
+    const r = (await this.database.query("SELECT wrapped_key,master_key_id,created_at FROM custody_keys WHERE account_id=$1", [accountId])).rows[0];
+    return r ? { wrappedKey: r.wrapped_key as Buffer, masterKeyId: r.master_key_id as string, createdAt: Number(r.created_at) } : undefined;
+  }
+  async createCustody(accountId: string, row: CustodyRow) {
+    // Two first sign-ins at once: one row wins, both read it back.
+    await this.database.query("INSERT INTO custody_keys(account_id,wrapped_key,master_key_id,created_at) VALUES($1,$2,$3,$4) ON CONFLICT (account_id) DO NOTHING", [
+      accountId,
+      row.wrappedKey,
+      row.masterKeyId,
+      row.createdAt,
+    ]);
+    return (await this.custody(accountId))!;
+  }
+}
+/** Secure project files: rows in secure_blobs (no object storage in this version), counted on custody_keys.blob_bytes. */
+export const secureBlobStore = (database: Pool) => new PostgresBlobStore(database, undefined, { accounts: "custody_keys", blobs: "secure_blobs" });

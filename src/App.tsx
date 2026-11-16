@@ -89,6 +89,17 @@ import { useFollowScroll } from "./follow-scroll";
 import { AnswerAnnouncement, ConnectionBanner } from "./ConnectionBanner";
 import { composerText } from "./text/composer";
 import { Vault, VaultConflictError } from "./vault";
+import type { Mode } from "../shared/modes";
+import { assignMode, closeSecure, flushSecure, securePending, modeOf, openSecure, readAvailable, readProjects, secureVault, useSecureState, vaultFor } from "./stores";
+import { SecureMaxSection, SecureMaxSidebarEntry, shouldShowSecureMaxIntro } from "./SecureMaxSection";
+import { SecureMaxResetSetting } from "./SecureMaxResetSetting";
+import { SecureMaxStartSetting } from "./SecureMaxStartSetting";
+import { SecureMaxLists } from "./SecureMaxLists";
+import { resetSecureMaxConfirmed } from "./SecureMaxDialog";
+import { modesText } from "./text/modes";
+import { secureStoreText } from "./text/secure-store";
+import { mergeConversation } from "./sync/merge";
+import { holdProjects } from "./projects";
 import { VaultBackup } from "./VaultBackup";
 import { VaultUnlock } from "./VaultUnlock";
 import { AlsoDeleteSynced, LocalPassphraseDialog, PairingPrompt, SyncGate, SyncIndicator, SyncSettings } from "./SyncScreens";
@@ -176,6 +187,8 @@ import {
 
 type Tab =
   "Conversation" | "Context" | "Research" | "Saved" | "Account" | "Help";
+/** "Open CometRow in Secure Max" on this device; no content, only the choice. */
+const START_KEY = "cometrow.openInSecureMax";
 export function App() {
   const { lang } = useLang();
   const t = appText[lang];
@@ -454,10 +467,74 @@ export function App() {
   const [calculation, setCalculation] = useState("");
   const controller = useRef<AbortController | null>(null);
   const vault = useRef<Vault | null>(null);
-  useMemoryVault(vault.current, unlocked);
-  useProjectVault(projects, vault.current, unlocked);
+  // Secure and Secure Max (docs/secure-store-20261116.md). `vault` above stays the Secure Max vault;
+  // src/stores.ts holds the Secure one and routes by mode. Inert while status.secureStore is absent:
+  // every mode is then "max" and every value below equals what it replaced.
+  const secureOn = !!status?.secureStore && !!status?.accountId;
+  const secure = useSecureState();
+  const secureReady = secureOn && secure.ready;
+  // Secure Max is offered only when the encrypted sync, with files, is on.
+  const maxAvailable = secureOn && !!status?.vaultSync?.files;
+  const st = secureStoreText[lang];
+  // The section the user is in (owner, 16 November): the normal app is Secure; Secure Max is its own
+  // section of the sidebar, opened from its one entry. The app starts in the normal section unless
+  // "Open CometRow in Secure Max" is on for this account on this device (Settings) and the explanation
+  // was already confirmed here: nothing is asked at sign-in.
+  const storedStart = () => {
+    try {
+      return localStorage.getItem(START_KEY);
+    } catch {
+      return null;
+    }
+  };
+  const [startInMax, setStartInMaxState] = useState(false);
+  const setStartInMax = (on: boolean) => {
+    setStartInMaxState(on);
+    try {
+      if (on && status?.accountId) localStorage.setItem(START_KEY, status.accountId);
+      else localStorage.removeItem(START_KEY);
+    } catch {
+      /* storage blocked: the app starts in the normal section */
+    }
+  };
+  const [sectionState, setSection] = useState<Mode>("secure");
+  useEffect(() => {
+    const on = maxAvailable && storedStart() === status?.accountId;
+    setStartInMaxState(on);
+    if (on && !shouldShowSecureMaxIntro()) setSection("max");
+  }, [maxAvailable, status?.accountId]);
+  const section: Mode = maxAvailable ? sectionState : "secure";
+  const sectionRef = useRef(section);
+  sectionRef.current = section;
+  const secureOnRef = useRef(secureOn);
+  secureOnRef.current = secureOn;
+  /** Set when the user opens the section from its entry: focus moves into it once it is mounted. */
+  const focusSection = useRef(false);
+  /** The name form of "New Secure Max project" is open. */
+  const [maxCreating, setMaxCreating] = useState(false);
+  const inMax = (id?: string) => modeOf(id) === "max";
+  // A chat's mode is the store that holds it; a project's chats inherit the project's; a new chat has the section's.
+  const mode: Mode = !secureOn ? "max" : (modeOf(conversation.id) ?? modeOf(conversation.projectId) ?? section);
+  // Memory, project files and tasks are held for ONE mode at a time: the open project screen's, else the open chat's.
+  const heldMode: Mode = !secureOn ? "max" : ((openProject && modeOf(openProject)) || mode);
+  const heldVault = heldMode === "max" ? vault.current : (secureVault() ?? null);
+  const heldReady = heldMode === "max" ? unlocked : secureReady;
+  const anyStore = unlocked || secureReady;
+  const storeOf = (id: string) => vaultFor(modeOf(id) ?? "max", vault.current)!;
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
+  const heldModeRef = useRef(heldMode);
+  heldModeRef.current = heldMode;
+  const conversationRef = useRef(conversation);
+  conversationRef.current = conversation;
+  const refreshRef = useRef(async () => {});
+  // What the last automatic save wrote, so an unchanged chat is not written again.
+  const autoSaved = useRef("");
+  const plain = (c: Conversation) => JSON.stringify({ ...c, draft: undefined });
+  useMemoryVault(heldVault, heldReady);
+  useProjectVault(projects, heldVault, heldReady);
   // Scheduled tasks (docs/scheduled-20261115.md): held only while the vault is unlocked.
-  const scheduledTasks = useScheduledVault(vault.current, unlocked);
+  const scheduledTasks = useScheduledVault(heldVault, heldReady);
   const [scheduledOpen, setScheduledOpen] = useState<{ draft?: TaskDraft }>();
   const [scheduleCard, setScheduleCard] = useState<{ text: string; found: DetectedSchedule }>();
   const [runSearch, setRunSearch] = useState<ScheduledTask>();
@@ -467,7 +544,7 @@ export function App() {
     status,
     onSaved: (count) => {
       setNotice(scheduledText[lang].resultSaved(count));
-      void vault.current?.readAvailable().then((snapshots) => setSaved(snapshots.conversations), () => {});
+      void readAvailable(vault.current).then((snapshots) => setSaved(snapshots.conversations), () => {});
     },
   });
   const epoch = useRef(0);
@@ -487,6 +564,8 @@ export function App() {
   const unsaved = useMemo(() => {
     // An incognito chat is meant to be lost; never warn about discarding it.
     if (conversation.incognito) return false;
+    // Saved automatically (Secure wiring): nothing to warn about.
+    if (secureOn && vaultFor(mode, vault.current)?.unlocked) return false;
     const previous = saved.find((item) => item.id === conversation.id);
     if (!previous)
       return !!(
@@ -499,7 +578,7 @@ export function App() {
       JSON.stringify({ ...conversation, draft: input }) !==
       JSON.stringify({ ...previous, draft: previous.draft ?? "" })
     );
-  }, [conversation, input, saved]);
+  }, [conversation, input, saved, secureOn, secureReady, unlocked, mode]);
   useEffect(() => {
     if (!unsaved) return;
     const warn = (event: BeforeUnloadEvent) => {
@@ -575,6 +654,13 @@ export function App() {
     const store = new Vault();
     vault.current = store;
     store.onInvalidate = () => {
+      // Secure Max locked while Secure is open: an open Secure chat and the Secure lists stay.
+      if (secureVault() && modeRef.current === "secure") {
+        setUnlocked(false);
+        setPassphrase("");
+        void refreshRef.current();
+        return;
+      }
       savedBase.current = null;
       setSaveConflict(false);
       controller.current?.abort();
@@ -600,9 +686,12 @@ export function App() {
       setRunSearch(undefined);
       setScheduledOpen(undefined);
       setNotice(textFor(appText).vaultChangedElsewhere);
+      if (secureVault()) void refreshRef.current();
     };
     let timer: ReturnType<typeof setTimeout>;
-    const resetTimer = () => {
+    const resetTimer = (event?: Event) => {
+      // With Secure on, only activity in Secure Max (its section or one of its chats) keeps it unlocked.
+      if (event && secureOnRef.current && sectionRef.current !== "max" && modeRef.current !== "max") return;
       clearTimeout(timer);
       timer = setTimeout(
         () => {
@@ -714,6 +803,11 @@ export function App() {
         ) {
           vault.current?.close(false);
           vault.current?.onInvalidate?.();
+          // Signed out or another account: this device's Secure copy goes.
+          if (status.secureStore && status.accountId) {
+            resetSecureMaxConfirmed();
+            await closeSecure(true, status.accountId);
+          }
           accessNavigation.current = true;
           window.location.assign(response.status === 401 ? "/auth" : "/");
         } else if (next) {
@@ -757,6 +851,11 @@ export function App() {
     if (response.status === 401 && status.accountId) {
       vault.current?.lock();
       vault.current?.onInvalidate?.();
+      // The session ended: this device's Secure copy goes, as at sign-out.
+      if (status.secureStore) {
+        resetSecureMaxConfirmed();
+        await closeSecure(true, status.accountId);
+      }
       accessNavigation.current = true;
       window.location.assign("/auth");
     }
@@ -766,11 +865,35 @@ export function App() {
       );
     return result;
   }
+  /** "Unlock Secure Max" in its section: the screen that fits this device. */
+  function unlockMax() {
+    setNavigationOpen(false);
+    setSection("max");
+    // A device that is not approved yet: the code from this device, or the recovery key.
+    if (syncState.phase === "needs-approval") return setSyncDismissed(false);
+    // Otherwise this device's own form: unlock, or (first use) create the vault; its sync is turned on in Settings.
+    setTab("Saved");
+  }
+  /** Before sign-out: one bounded send; if Secure changes are still not on the account, the user decides. */
+  async function readyToLeaveSecure() {
+    if (!secureOn) return true;
+    await flushSecure();
+    return (await securePending()) === 0 || window.confirm(st.unsentSignOut);
+  }
+  /** Sign-out with Secure on: the local Secure databases on this device are deleted (the account keeps its copy). */
+  async function leaveSecure() {
+    if (!secureOn) return;
+    resetSecureMaxConfirmed();
+    setStartInMax(false); // a shared computer starts the next person in the normal section
+    await closeSecure(true, status!.accountId);
+  }
   async function signOutConsumer() {
     if (!status?.consumerWorkspace || busy || !allowReplace()) return;
     setBusy(t.signingOut);
     try {
+      if (!(await readyToLeaveSecure())) return setBusy("");
       await api("/api/auth/sign-out", {});
+      await leaveSecure();
       detachSync();
       vault.current?.lock();
       vault.current?.onInvalidate?.();
@@ -1436,7 +1559,7 @@ export function App() {
       ? searchThenAnswer(task.searchText!, "tap", false, asked)
       : send(asked.base, asked.text, false, false, asked.mode);
     void run.then((answered) => {
-      if (answered && vault.current?.unlocked) changeTasks(vault.current, markRun(task.id)).catch(() => {});
+      if (answered && heldVault?.unlocked) changeTasks(heldVault, markRun(task.id)).catch(() => {});
     });
   }
   // remember: true or false is the device choice; "remembered" opens with the key this device keeps.
@@ -1466,8 +1589,8 @@ export function App() {
             .then(() => setRememberDevice(remember))
             .catch(() => (note = syncText[lang].actionFailed));
       }
-      const snapshots = await store.readAvailable();
-      const projectList = await store.readProjects();
+      const snapshots = await readAvailable(store);
+      const projectList = await readProjects(store);
       if (current !== epoch.current) return;
       setUnlocked(true);
       setSaved(snapshots.conversations);
@@ -1497,6 +1620,21 @@ export function App() {
     await deleteEverythingOnThisDevice({ alsoDeleteSyncedData: alsoDeleteSynced, ...(recoveryKey ? { recoveryKey } : {}) });
     setSyncRound((n) => n + 1);
   }
+  /** Signed in within the last 5 minutes (as account closure asks); false when the server did not say. */
+  const recentSignIn = () => !!status?.signedInAt && Date.now() - status.signedInAt < 5 * 60_000;
+  /**
+   * Settings, "Reset Secure Max": the synced copy on the server and this device's Secure Max data go
+   * (the hardened sync reset, which needs this unlocked device's proof), and Unlock Secure Max then
+   * starts a fresh one. A locked device uses "Forgot passphrase" with the recovery key instead.
+   */
+  async function resetMax() {
+    if (!unlocked || !recentSignIn()) throw new Error("locked");
+    if (modeRef.current === "max") controller.current?.abort();
+    await eraseThisDevice(true);
+    vault.current?.lock();
+    vault.current?.onInvalidate?.();
+    setNotice(st.maxResetDone);
+  }
   // A remembered device opens by itself on each visit (docs/vault-sync-screens-20261115.md).
   const openIfRemembered = () =>
     void vault.current?.isRemembered().then((yes) => {
@@ -1513,15 +1651,18 @@ export function App() {
     const current = epoch.current;
     vaultOpening.current = true;
     try {
-      const snapshots = await store.readAvailable();
-      const projectList = await store.readProjects();
+      const snapshots = await readAvailable(store);
+      const projectList = await readProjects(store);
       if (current !== epoch.current || !store.unlocked) return;
       setUnlocked(true);
       setSaved(snapshots.conversations);
       setProjects(projectList);
       setUnreadableSnapshots(snapshots.unreadable);
-      await loadMemories(store);
-      if (scheduledEnabled()) holdTasks(await store.readTasks());
+      // Only while this mode's memory and tasks are the held ones (a Secure chat keeps Secure's).
+      if (heldModeRef.current === "max") {
+        await loadMemories(store);
+        if (scheduledEnabled()) holdTasks(await store.readTasks());
+      }
     } catch {
       /* Locked in between: the lock screen shows. */
     } finally {
@@ -1551,6 +1692,90 @@ export function App() {
       detachSync();
     };
   }, [syncOn, status?.accountId, syncRound]);
+  /** Secure wiring: both stores read into the lists; a change from another device reaches the open chat. */
+  async function showLists() {
+    const current = epoch.current;
+    try {
+      const snapshots = await readAvailable(vault.current);
+      const projectList = await readProjects(vault.current);
+      if (current !== epoch.current) return;
+      setSaved(snapshots.conversations);
+      setProjects(projectList);
+      setUnreadableSnapshots(snapshots.unreadable);
+      const shown = conversationRef.current;
+      const fresh = snapshots.conversations.find((c) => c.id === shown.id);
+      // Only when nothing here waits to be saved and no answer is streaming: otherwise the next save merges.
+      if (fresh && !controller.current && plain(shown) === autoSaved.current && plain(fresh) !== autoSaved.current) {
+        savedBase.current = fresh;
+        autoSaved.current = plain(fresh);
+        setConversation(structuredClone(fresh));
+      }
+      const held = heldModeRef.current === "secure" ? secureVault() : undefined;
+      if (held) {
+        await loadMemories(held);
+        if (scheduledEnabled()) holdTasks(await held.readTasks());
+        if (projectSpacesEnabled()) holdProjects({ files: await held.readProjectFiles() });
+      }
+    } catch {
+      /* A store closed in between: the next refresh shows it. */
+    }
+  }
+  refreshRef.current = showLists;
+  useEffect(() => {
+    if (!secureOn) return;
+    let active = true;
+    void openSecure({ accountId: status!.accountId!, csrf: () => syncCsrf.current, onApplied: () => void refreshRef.current() }).then((ok) => {
+      if (!active) return;
+      if (ok) void refreshRef.current();
+      else setNotice(secureStoreText[lang].unavailable);
+    });
+    return () => {
+      active = false;
+      void closeSecure(false);
+    };
+  }, [secureOn, status?.accountId]);
+  // Nothing is asked at sign-in: the new-device screen of Secure Max opens only from "Unlock Secure Max".
+  useEffect(() => {
+    if (secureOn) setSyncDismissed(true);
+  }, [secureOn]);
+  /** Saves the open chat by itself at message boundaries (never while an answer streams); no notice, no busy state. */
+  async function autoSave() {
+    const store = vaultFor(mode, vault.current);
+    if (!store?.unlocked) return;
+    const current = epoch.current;
+    const text = plain(conversation);
+    try {
+      let snapshot: Conversation;
+      try {
+        snapshot = await store.save({ ...conversation, draft: input }, savedBase.current);
+      } catch (error) {
+        if (!(error instanceof VaultConflictError)) throw error;
+        // Changed on another device since: merge the three versions as the sync engine does.
+        const theirs = (await store.readAvailable()).conversations.find((c) => c.id === conversation.id);
+        if (!theirs) return;
+        snapshot = await store.save({ ...mergeConversation(savedBase.current ?? undefined, conversation, theirs), draft: input }, theirs);
+        if (current !== epoch.current) return;
+        autoSaved.current = plain(snapshot);
+        savedBase.current = snapshot;
+        setConversation(structuredClone(snapshot));
+        assignMode(snapshot.id, mode);
+        return void showLists();
+      }
+      if (current !== epoch.current) return;
+      savedBase.current = snapshot;
+      autoSaved.current = text;
+      assignMode(snapshot.id, mode);
+      await showLists();
+    } catch {
+      if (current === epoch.current) setNotice(st.saveFailed);
+    }
+  }
+  useEffect(() => {
+    if (!secureOn || busy || conversation.incognito || !(conversation.messages.length || conversation.attachments.length)) return;
+    if (!vaultFor(mode, vault.current)?.unlocked || plain(conversation) === autoSaved.current) return;
+    const timer = setTimeout(() => void autoSave(), 300);
+    return () => clearTimeout(timer);
+  }, [conversation, busy, secureOn, secureReady, unlocked, mode]);
   /** Sync opened this device (set up, approved, recovery key) with the user's "Remember this device" choice. */
   async function syncOpened(remember: boolean) {
     const store = vault.current;
@@ -1589,6 +1814,7 @@ export function App() {
       setConversation(emptyConversation());
       setInput("");
       setNotice(t.erased);
+      if (secureReady) void showLists();
     } catch {
       if (current === epoch.current)
         fail(t.eraseFailed);
@@ -1604,7 +1830,7 @@ export function App() {
     const current = epoch.current;
     setBusy(t.encrypting);
     try {
-      const snapshot = await vault.current!.save(
+      const snapshot = await vaultFor(mode, vault.current)!.save(
         {
           ...conversation,
           ...(asCopy
@@ -1620,10 +1846,12 @@ export function App() {
       );
       if (current !== epoch.current) return;
       savedBase.current = snapshot;
+      assignMode(snapshot.id, mode);
+      autoSaved.current = plain(snapshot);
       setSaveConflict(false);
       if (asCopy) setConversation(snapshot);
-      const snapshots = await vault.current!.readAvailable();
-      const projectList = await vault.current!.readProjects();
+      const snapshots = await readAvailable(vault.current);
+      const projectList = await readProjects(vault.current);
       if (current !== epoch.current) return;
       setSaved(snapshots.conversations);
       setProjects(projectList);
@@ -1674,8 +1902,8 @@ export function App() {
       const count = await vault.current!.restoreBackup(text, secret);
       if (current !== epoch.current) return;
       await loadMemories(vault.current!);
-      const snapshots = await vault.current!.readAvailable();
-      const projectList = await vault.current!.readProjects();
+      const snapshots = await readAvailable(vault.current);
+      const projectList = await readProjects(vault.current);
       if (current !== epoch.current) return;
       setSaved(snapshots.conversations);
       setProjects(projectList);
@@ -1696,6 +1924,7 @@ export function App() {
       return;
     }
     if (!allowReplace()) return;
+    if (!(await readyToLeaveSecure())) return;
     detachSync();
     vault.current?.lock();
     vault.current?.onInvalidate?.();
@@ -1704,21 +1933,25 @@ export function App() {
         method: "POST",
       });
       if (!response.ok) throw new Error();
+      await leaveSecure();
       accessNavigation.current = true;
       window.location.assign("/auth");
     } catch {
       fail(t.signOutFailed);
     }
   }
-  async function createProject(name: string): Promise<string | undefined> {
+  async function createProject(name: string, into: Mode = secureOn ? "secure" : "max"): Promise<string | undefined> {
     const current = epoch.current;
     setBusy(t.creatingProject);
     try {
-      const next = await vault.current!.createProject(name);
+      const next = await vaultFor(into, vault.current)!.createProject(name);
+      const id = next.at(-1)?.id;
+      if (id) assignMode(id, into);
+      const all = secureOn ? await readProjects(vault.current) : next;
       if (current !== epoch.current) return;
-      setProjects(next);
+      setProjects(all);
       setNotice(t.projectCreated);
-      return next.at(-1)?.id;
+      return id;
     } catch (error) {
       if (current === epoch.current)
         fail(
@@ -1734,9 +1967,9 @@ export function App() {
     const current = epoch.current;
     setBusy(t.updatingProject);
     try {
-      await vault.current!.editProject(id, name);
-      const available = await vault.current!.readAvailable();
-      const next = await vault.current!.readProjects();
+      await storeOf(id).editProject(id, name);
+      const available = await readAvailable(vault.current);
+      const next = await readProjects(vault.current);
       if (current !== epoch.current) return false;
       setSaved(available.conversations);
       setProjects(next);
@@ -1764,7 +1997,7 @@ export function App() {
       setBusy(t.deletingSnapshot);
       try {
         for (const c of saved.filter((s) => s.projectId === id)) {
-          await vault.current!.delete(c.id);
+          await storeOf(c.id).delete(c.id);
           if (conversation.id === c.id) reset();
         }
       } catch {
@@ -1780,13 +2013,15 @@ export function App() {
     c: Conversation,
     change: Pick<Conversation, "pinned" | "archived" | "projectId" | "title">,
   ) {
+    if (secureOn && change.projectId && modeOf(change.projectId) !== modeOf(c.id)) return fail(st.otherMode);
     const current = epoch.current;
     setBusy(t.updatingOrganization);
     try {
-      const snapshot = await vault.current!.save({ ...c, ...change }, c);
+      const snapshot = await storeOf(c.id).save({ ...c, ...change }, c);
       if (current !== epoch.current) return;
       if (conversation.id === c.id) {
         savedBase.current = snapshot;
+        autoSaved.current = plain({ ...conversation, pinned: snapshot.pinned, archived: snapshot.archived, projectId: snapshot.projectId });
         setConversation((previous) => ({
           ...previous,
           pinned: snapshot.pinned,
@@ -1794,7 +2029,7 @@ export function App() {
           projectId: snapshot.projectId,
         }));
       }
-      const available = await vault.current!.readAvailable();
+      const available = await readAvailable(vault.current);
       if (current !== epoch.current) return;
       setSaved(available.conversations);
       setUnreadableSnapshots(available.unreadable);
@@ -1810,11 +2045,32 @@ export function App() {
       if (current === epoch.current) setBusy("");
     }
   }
+  async function deleteSnapshot(c: Conversation) {
+    const current = epoch.current;
+    setBusy(t.deletingSnapshot);
+    try {
+      await storeOf(c.id).delete(c.id);
+      const snapshots = await readAvailable(vault.current);
+      const projectList = await readProjects(vault.current);
+      if (current !== epoch.current) return;
+      setSaved(snapshots.conversations);
+      setProjects(projectList);
+      setUnreadableSnapshots(snapshots.unreadable);
+      if (conversation.id === c.id) reset();
+      setNotice(t.snapshotDeleted);
+    } catch {
+      if (current === epoch.current) fail(t.deleteFailed);
+    } finally {
+      if (current === epoch.current) setBusy("");
+    }
+  }
   const openSaved = (c: Conversation) => {
     if (!allowReplace()) return;
     reset();
     savedBase.current = c;
+    if (secureOn) setSection(modeOf(c.id) ?? "secure");
     const expired = expireMessages(c);
+    autoSaved.current = plain(expired.conversation);
     setConversation(structuredClone(expired.conversation));
     setInput(c.draft ?? "");
     setTab("Conversation");
@@ -1824,7 +2080,7 @@ export function App() {
         t.openedPruned(expired.removed, t.disappearLabel(c.disappearAfter!)),
       );
       // Persist the pruned copy so the deleted messages do not survive in the vault.
-      void vault.current
+      void storeOf(c.id)
         ?.save(expired.conversation, c)
         .then((snapshot) => {
           savedBase.current = snapshot;
@@ -1852,8 +2108,9 @@ export function App() {
           setNavigationCollapsed(false);
           setNavigationOpen(false);
         }}
-        conversations={saved}
-        projects={projects}
+        // With Secure on, the normal lists hold Secure only; Secure Max lives in its own section below.
+        conversations={secureOn ? saved.filter((c) => !inMax(c.id)) : saved}
+        projects={secureOn ? projects.filter((p) => !inMax(p.id)) : projects}
         status={status}
         onSignOut={() => void signOut()}
         onCreateProject={createProject}
@@ -1863,7 +2120,77 @@ export function App() {
           setOpenProject(id);
         }}
         onOrganize={(c, change) => void organizeChat(c, change)}
-        unlocked={unlocked}
+        unlocked={anyStore}
+        maxSection={
+          !maxAvailable ? undefined : section !== "max" ? (
+            // The one entry; the section replaces it while open (src/SecureMaxSection.tsx looks for it after Cancel).
+            <SecureMaxSidebarEntry
+              locked={!unlocked}
+              onOpen={() => {
+                focusSection.current = true;
+                setSection("max");
+              }}
+            />
+          ) : (
+            <div
+              className="secure-max-mount"
+              ref={(element) => {
+                if (element && !element.dataset.focusWatch) {
+                  element.dataset.focusWatch = "1";
+                  // After Confirm on the explanation its opener (the entry) is gone: focus moves into the section.
+                  // Capture: a dialog's close event does not bubble.
+                  element.addEventListener(
+                    "close",
+                    () =>
+                      requestAnimationFrame(() => {
+                        if (element.isConnected && (!document.activeElement || document.activeElement === document.body))
+                          element.querySelector<HTMLElement>("button")?.focus();
+                      }),
+                    true,
+                  );
+                }
+                // Opened from the entry: focus moves into the section, unless the explanation took it.
+                if (!element || !focusSection.current) return;
+                focusSection.current = false;
+                if (!shouldShowSecureMaxIntro()) element.querySelector<HTMLElement>("button")?.focus();
+              }}
+            >
+              <SecureMaxSection
+                locked={!unlocked}
+                onUnlock={unlockMax}
+                onLock={() => {
+                  vault.current?.lock();
+                  vault.current?.onInvalidate?.();
+                }}
+                onNewChat={() => {
+                  if (!allowReplace()) return;
+                  reset();
+                  setSection("max");
+                  setTab("Conversation");
+                  setNavigationOpen(false);
+                }}
+                onNewProject={() => setMaxCreating(true)}
+                onCancelIntro={() => setSection("secure")}
+              >
+                <SecureMaxLists
+                  conversations={saved.filter((c) => inMax(c.id))}
+                  projects={projects.filter((p) => inMax(p.id))}
+                  currentId={conversation.id}
+                  busy={!!busy}
+                  projectsEnabled={projectSpacesEnabled()}
+                  creating={maxCreating}
+                  onCreateClose={() => setMaxCreating(false)}
+                  onNewProject={(name) => createProject(name, "max")}
+                  onOpen={openSaved}
+                  onOpenProject={(id) => {
+                    setNavigationOpen(false);
+                    setOpenProject(id);
+                  }}
+                />
+              </SecureMaxSection>
+            </div>
+          )
+        }
         busy={!!busy}
         newDisabled={!!busy && !controller.current}
         currentId={conversation.id}
@@ -1871,6 +2198,7 @@ export function App() {
         onNew={(projectId) => {
           if (!allowReplace()) return;
           reset();
+          setSection("secure");
           if (projectId) setConversation({ ...emptyConversation(), projectId });
           setTab("Conversation");
           setNavigationOpen(false);
@@ -1966,8 +2294,8 @@ export function App() {
       )}
       {scheduledEnabled() && scheduledOpen && (
         <ScheduledPanel
-          vault={vault.current}
-          unlocked={unlocked}
+          vault={heldVault}
+          unlocked={heldReady}
           status={status}
           busy={!!busy}
           draft={scheduledOpen.draft}
@@ -1978,14 +2306,14 @@ export function App() {
       {remember && (
         <RememberDialog
           text={remember.text}
-          canSave={unlocked}
+          canSave={heldReady}
           canSend={remember.draft}
           onClose={(result) => {
             const asked = remember;
             setRemember(undefined);
             if (result === "send") void send();
             else if (result)
-              changeMemories(vault.current!, addMemory(result.save)).then(
+              changeMemories(heldVault!, addMemory(result.save)).then(
                 () => {
                   if (asked.draft) setInput("");
                   setNotice(memoryText[lang].added);
@@ -1995,10 +2323,11 @@ export function App() {
           }}
         />
       )}
-      {unlocked && projectSpacesEnabled() && projects.some((p) => p.id === openProject) && (
+      {anyStore && projectSpacesEnabled() && projects.some((p) => p.id === openProject) && (
         <ProjectPanel
           key={openProject}
-          vault={vault.current!}
+          vault={storeOf(openProject!)}
+          fileSlot={modeOf(openProject) === "secure" ? "secure" : "max"}
           project={projects.find((p) => p.id === openProject)!}
           chats={saved.filter((c) => c.projectId === openProject)}
           busy={!!busy}
@@ -2006,6 +2335,7 @@ export function App() {
           onNewChat={() => {
             if (!allowReplace()) return;
             reset();
+            if (secureOn) setSection(modeOf(openProject) ?? "secure");
             setConversation({ ...emptyConversation(), projectId: openProject });
             setTab("Conversation");
             setOpenProject(undefined);
@@ -2016,7 +2346,10 @@ export function App() {
           }}
           onRename={(name) => editProject(openProject!, name)}
           onDelete={(withChats) => deleteProject(openProject!, withChats)}
-          onChange={async (change) => setProjects(await vault.current!.changeProjects(change))}
+          onChange={async (change) => {
+            const own = await storeOf(openProject!).changeProjects(change);
+            setProjects(secureOn ? await readProjects(vault.current) : own);
+          }}
         />
       )}
       <dialog
@@ -2108,6 +2441,7 @@ export function App() {
               <>
                 <h3>{t.sectionPrivacy}</h3>
                 <p>{privacySummary(lang)}</p>
+                {secureOn && <p>{modesText[lang].secureLong}</p>}
                 {status?.healthConsentDraft && (
                   <HealthConsentSetting
                     record={healthConsent}
@@ -2156,10 +2490,19 @@ export function App() {
               <AccountUsage allowance={status?.requestAllowance} metering={!!status?.metering} refresh={status} />
             )}
             {settingsSection === "memory" && memoryEnabled() && (
-              <MemorySettings vault={vault.current} unlocked={unlocked} />
+              <MemorySettings vault={heldVault} unlocked={heldReady} />
             )}
             {settingsSection === "sync" && syncOn && (
               <SyncSettings unlocked={unlocked} vault={vault.current} onNotice={setNotice} onOpened={(remember) => void syncOpened(remember)} />
+            )}
+            {settingsSection === "sync" && maxAvailable && (
+              <>
+                <h3>{modesText[lang].maxLabel}</h3>
+                <SecureMaxStartSetting value={startInMax} onChange={setStartInMax} />
+                {/* Only while unlocked here: the reset needs this device's proof (locked: Forgot passphrase with the recovery key).
+                    recentSignIn is a screen gate only. */}
+                {unlocked && <SecureMaxResetSetting onReset={resetMax} recentSignIn={recentSignIn()} />}
+              </>
             )}
           </section>
         </div>
@@ -2294,7 +2637,7 @@ export function App() {
               </label>
               <MemoryChatSwitch
                 conversation={conversation}
-                unlocked={unlocked}
+                unlocked={heldReady}
                 disabled={!!busy}
                 onChange={(on) =>
                   setConversation(({ memoryOff: _off, ...c }) =>
@@ -2392,7 +2735,7 @@ export function App() {
             problems={background.problems}
             onRun={(task) => runTask(task)}
             onSkip={(task) =>
-              changeTasks(vault.current!, skipTask(task.id)).then(
+              changeTasks(heldVault!, skipTask(task.id)).then(
                 () => setNotice(scheduledText[lang].skipped),
                 (error) => fail(scheduledText[lang].problem(taskProblem(error))),
               )
@@ -2654,10 +2997,10 @@ export function App() {
                 <ScheduleCard
                   key={input}
                   found={scheduleCard.found}
-                  unlocked={unlocked}
+                  unlocked={heldReady}
                   onCreate={(fields) => {
                     // Create stores a Manual task in the vault. Nothing is sent to the model.
-                    changeTasks(vault.current!, addTask(newTask(fields))).then(
+                    changeTasks(heldVault!, addTask(newTask(fields))).then(
                       () => {
                         setScheduleCard(undefined);
                         setInput("");
@@ -2964,7 +3307,18 @@ export function App() {
                 </ul>
               )}
               <p className="composer-caption">
-                {unlocked ? t.captionVault : t.captionTemporary} {t.captionAi}
+                {secureOn && !conversation.incognito
+                  ? mode === "secure"
+                    ? secureReady
+                      ? st.captionSecure
+                      : t.captionTemporary
+                    : unlocked
+                      ? st.captionMax
+                      : st.captionMaxLocked
+                  : unlocked
+                    ? t.captionVault
+                    : t.captionTemporary}{" "}
+                {t.captionAi}
                 <span className="composer-hint"> · {ct.enterHint}</span>
               </p>
             </div>
@@ -3520,7 +3874,11 @@ export function App() {
             <p role="status">
               {unsaved ? t.unsavedChanges : t.noUnsavedChanges} {t.reloadClears}
             </p>
-            {!unlocked ? (
+            {secureReady && section === "secure" && (
+              <ConversationLibrary conversations={saved.filter((c) => !inMax(c.id))} busy={!!busy} onOpen={openSaved} onDelete={(c) => void deleteSnapshot(c)} />
+            )}
+            {/* The vault's own screens: inside the Secure Max section, or as before where Secure Max is not offered. */}
+            {maxAvailable && section === "secure" ? null : !unlocked ? (
               <VaultUnlock
                 vault={vault.current}
                 scope={status?.accountId}
@@ -3568,6 +3926,7 @@ export function App() {
                       setUnreadableSnapshots(0);
                       reset();
                       setPassphrase("");
+                      if (secureReady) void showLists();
                     }}
                   >
                     {t.lockAndClear}
@@ -3607,30 +3966,11 @@ export function App() {
                   <p className="empty-note">{t.noSaved}</p>
                 )}
                 <ConversationLibrary
-                  conversations={saved}
+                  conversations={secureOn ? saved.filter((c) => inMax(c.id)) : saved}
 
                   busy={!!busy}
                   onOpen={openSaved}
-                  onDelete={async (c) => {
-                    const current = epoch.current;
-                    setBusy(t.deletingSnapshot);
-                    try {
-                      await vault.current!.delete(c.id);
-                      const snapshots = await vault.current!.readAvailable();
-                      const projectList = await vault.current!.readProjects();
-                      if (current !== epoch.current) return;
-                      setSaved(snapshots.conversations);
-                      setProjects(projectList);
-                      setUnreadableSnapshots(snapshots.unreadable);
-                      if (conversation.id === c.id) reset();
-                      setNotice(t.snapshotDeleted);
-                    } catch {
-                      if (current === epoch.current)
-                        fail(t.deleteFailed);
-                    } finally {
-                      if (current === epoch.current) setBusy("");
-                    }
-                  }}
+                  onDelete={(c) => void deleteSnapshot(c)}
                 />
                 <VaultSecurity
                   busy={!!busy}

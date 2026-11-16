@@ -858,11 +858,25 @@ function createAccountAuth(
       const [user] = await rows(
         'SELECT id,email,"emailVerified","createdAt","updatedAt" FROM "user" WHERE id=$1',
       );
+      // Secure mode (migration 0025): what is stored for the account, by size and time. The content is
+      // ciphertext under the account's key; this route never unwraps that key.
+      const custody = single(await rows("SELECT created_at,used_bytes,blob_bytes FROM custody_keys WHERE account_id=$1"));
       const bundle = {
         format: "cometrow-account-export",
         version: 1,
         exportedAt: new Date().toISOString(),
-        note: "Records this service holds about your account. Secret keys, tokens, passphrases, conversations, documents and search text are never held and are not included.",
+        note: custody
+          ? "Records this service holds about your account. Sign-in tokens, passphrases and search text are never held and are not included. Content you saved in Secure mode (chats, memories, projects, files and tasks) is held encrypted under a key CometRow keeps for your account (the key is not included): secureStore lists it by size and time, and the content itself is shown in the app after sign-in. Content saved in Secure Max or only on your devices is not held in readable form and is not included."
+          : "Records this service holds about your account. Secret keys, tokens, passphrases, conversations, documents and search text are never held and are not included.",
+        secureStore: custody
+          ? {
+              keyCreatedAt: custody.created_at,
+              itemBytes: custody.used_bytes,
+              fileBytes: custody.blob_bytes,
+              items: await rows("SELECT item_id,version,size,updated_at,deleted FROM secure_items WHERE account_id=$1 ORDER BY seq"),
+              files: await rows("SELECT blob_id,size,created_at FROM secure_blobs WHERE account_id=$1 ORDER BY created_at,blob_id"),
+            }
+          : null,
         account: user ?? null,
         signInMethods: await rows(
           'SELECT "providerId","createdAt" FROM account WHERE "userId"=$1 ORDER BY "createdAt",id',

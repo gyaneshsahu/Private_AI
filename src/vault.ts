@@ -149,13 +149,14 @@ export class Vault {
   /** True while this vault was opened with the recovery key (security review L2). */
   private recovered = false;
   private databaseName = "privateai-vault";
-  selectAccount(id?: string) {
+  /** `prefix`: the Secure store keeps its own database beside the vault's (src/stores.ts). */
+  selectAccount(id?: string, prefix = "privateai-vault") {
     if (this.unlocked)
       throw new Error(textFor(vaultText).lockBeforeSwitch);
     if (id !== undefined && !/^[a-f0-9-]{36}$/.test(id))
       throw new Error(textFor(vaultText).invalidScope);
     this.lock(false);
-    this.databaseName = id ? `privateai-vault-${id}` : "privateai-vault";
+    this.databaseName = id ? `${prefix}-${id}` : prefix;
     this.connectChannel();
   }
   private key?: CryptoKey;

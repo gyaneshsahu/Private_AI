@@ -1,4 +1,5 @@
 import { readFile, stat } from "node:fs/promises";
+import { custodyMasterFromEnv } from "./custody";
 import { isAbsolute } from "node:path";
 import { z } from "zod";
 import { parseSocialCredentials } from "./account-social";
@@ -184,6 +185,20 @@ const schema = z
           })
           .strict()
           .optional(),
+        /**
+         * Secure mode, its own switch, off unless enabled (docs/secure-store-20261116.md): saved
+         * content is stored for the account under a key the server holds, wrapped under the master
+         * key from the environment (PRIVATEAI_CUSTODY_KEY), never this file. `quotaMb` for items,
+         * `filesQuotaMb` for project files, per account.
+         */
+        secureStore: z
+          .object({
+            enabled: z.boolean(),
+            quotaMb: z.number().int().min(10).max(2000).default(200),
+            filesQuotaMb: z.number().int().min(10).max(10240).default(1024),
+          })
+          .strict()
+          .optional(),
         backgroundTasks: z
           .object({
             enabled: z.boolean(),
@@ -319,6 +334,11 @@ export function blobSettings(
   return { ...base, s3: { ...b.s3, accessKeyId, secretAccessKey } };
 }
 
+/** Secure mode settings in bytes. The master key comes from the environment only; a missing or malformed one stops the start. */
+export function secureStoreSettings(s: { quotaMb: number; filesQuotaMb: number }, env: Record<string, string | undefined>) {
+  return { quotaBytes: s.quotaMb * 1024 * 1024, filesQuotaBytes: s.filesQuotaMb * 1024 * 1024, master: custodyMasterFromEnv(env) };
+}
+
 async function boundedFile(file: string) {
   if (!isAbsolute(file)) throw Error("Invalid file path.");
   const info = await stat(file);
@@ -419,6 +439,7 @@ export async function loadDeploymentConfig(file: string) {
                     },
                   }
                 : {}),
+              ...(inference.secureStore?.enabled ? { secureStore: secureStoreSettings(inference.secureStore, process.env) } : {}),
               // Background tasks need the Privatemode client in the server (the report's provider).
               ...(inference.backgroundTasks?.enabled
                 ? await (async (bg) => {

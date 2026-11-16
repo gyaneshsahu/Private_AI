@@ -3407,3 +3407,8 @@
     min-height: 44px;
   }
 }
+
+/* Secure wiring (docs/secure-store-20261116.md): the wrapper that moves focus into the Secure Max section adds no box. */
+.secure-max-mount {
+  display: contents;
+}

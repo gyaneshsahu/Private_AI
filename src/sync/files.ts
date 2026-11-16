@@ -88,31 +88,35 @@ interface FileActions {
   removeRemoteFile(fileId: string): Promise<void>;
   ensureProjectFiles(projectId: string): Promise<boolean>;
 }
-let actions: FileActions | undefined;
-export const bindFileActions = (next?: FileActions) => void (actions = next);
+/** One engine per mode: "max" is the encrypted sync, "secure" the server-held key (src/stores.ts). */
+export type FileSlot = "max" | "secure";
+const actions: Partial<Record<FileSlot, FileActions>> = {};
+export const bindFileActions = (next?: FileActions, slot: FileSlot = "max") => void (actions[slot] = next);
 /** Downloads a file another device listed (the project screen's Download button). */
-export const downloadProjectFile = (fileId: string): Promise<DownloadResult> => actions?.downloadFile(fileId) ?? Promise.resolve("gone");
+export const downloadProjectFile = (fileId: string, slot: FileSlot = "max"): Promise<DownloadResult> => actions[slot]?.downloadFile(fileId) ?? Promise.resolve("gone");
 /** Removes a file another device listed and this device never downloaded; its blob goes after the next sync. */
-export const removeSyncedProjectFile = (fileId: string) => actions?.removeRemoteFile(fileId) ?? Promise.resolve();
+export const removeSyncedProjectFile = (fileId: string, slot: FileSlot = "max") => actions[slot]?.removeRemoteFile(fileId) ?? Promise.resolve();
 /**
  * Before a question in a project chat: downloads the project's files not downloaded here yet.
  * True when every file is here (at once without file sync); false: the question would go without some.
  */
-export const ensureProjectFiles = (projectId: string) => actions?.ensureProjectFiles(projectId) ?? Promise.resolve(true);
+export const ensureProjectFiles = async (projectId: string) =>
+  // A project lives in one mode; the other engine lists no file for it and answers true.
+  (await Promise.all(Object.values(actions).map((a) => a?.ensureProjectFiles(projectId) ?? true))).every(Boolean);
 
-let view = FILES_OFF;
+const views: Record<FileSlot, FilesView> = { max: FILES_OFF, secure: FILES_OFF };
 const listeners = new Set<() => void>();
-export function publishFiles(next: FilesView) {
-  view = next;
+export function publishFiles(next: FilesView, slot: FileSlot = "max") {
+  views[slot] = next;
   listeners.forEach((l) => l());
 }
-export function useSyncFiles(): FilesView {
+export function useSyncFiles(slot: FileSlot = "max"): FilesView {
   return useSyncExternalStore(
     (l) => {
       listeners.add(l);
       return () => listeners.delete(l);
     },
-    () => view,
-    () => view,
+    () => views[slot],
+    () => views[slot],
   );
 }

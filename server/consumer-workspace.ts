@@ -12,7 +12,7 @@ import { createApp } from "./app";
 import { PostgresUsageLedger } from "./usage-postgres";
 import { PostgresUsageRecords } from "./usage-records-postgres";
 import { PostgresBackgroundStore } from "./background-store";
-import { PostgresBlobStore, PostgresSyncStore } from "./vault-sync-postgres";
+import { PostgresBlobStore, PostgresSecureStore, PostgresSyncStore, secureBlobStore } from "./vault-sync-postgres";
 import { S3Objects } from "./vault-sync-blobs";
 import { productionAccountTarget } from "../shared/account-design";
 import { productionOperations } from "./production-operations";
@@ -86,6 +86,8 @@ export interface ProductionInferenceConfig {
   metering?: { plan: string; weightsVersion?: number };
   /** End-to-end encrypted vault sync limits; absent means off. */
   vaultSync?: { quotaBytes: number; maxDevices: number; blobs?: import("./vault-sync").BlobSettings & { s3?: import("./vault-sync-blobs").S3Settings } };
+  /** Secure mode limits and the master key from the environment (docs/secure-store-20261116.md); absent means off. */
+  secureStore?: { quotaBytes: number; filesQuotaBytes: number; master: import("./custody").CustodyMaster };
   /** Background tasks (Auto mode of Scheduled); absent means off. */
   backgroundTasks?: {
     maxAutoTasks: number;
@@ -159,6 +161,9 @@ export function createProductionConsumerCandidate(
                     : {}),
                 },
               }
+            : {}),
+          ...(inference.secureStore
+            ? { secureStore: { ...inference.secureStore, store: new PostgresSecureStore(config.database), blobs: secureBlobStore(config.database) } }
             : {}),
           ...(inference.backgroundTasks
             ? {

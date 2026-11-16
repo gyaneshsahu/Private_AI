@@ -52,6 +52,7 @@ import type { BackgroundKeyRing } from "./background-crypto";
 import { REQUEST_ID_HEADER } from "../shared/usage-config";
 import { chatFeature, createMetering, meteringWeights, withWeights, type MeteringConfig } from "./usage-metering";
 import { syncRoutes, type SyncSettings, type SyncStore } from "./vault-sync";
+import { secureRoutes, type SecureSettings } from "./secure-store";
 
 export interface Config {
   origin: string;
@@ -106,6 +107,8 @@ export interface Config {
   noticeFile?: string;
   /** End-to-end encrypted vault sync (docs/vault-sync-20261115.md); absent means off. */
   vaultSync?: SyncSettings & { store: SyncStore };
+  /** Secure mode: saved content stored under a server-held key (docs/secure-store-20261116.md); absent means off. */
+  secureStore?: SecureSettings;
   /** Background tasks, the Auto mode of Scheduled (docs/background-tasks-20261115.md); absent means off. */
   backgroundTasks?: {
     maxAutoTasks: number;
@@ -447,6 +450,7 @@ export function createApp(config: Config) {
         ? {
             accountId: res.locals.accountId,
             accessEpoch: res.locals.accessEpoch,
+            ...(config.secureStore && Number.isFinite(res.locals.signedInAt) ? { signedInAt: res.locals.signedInAt as number } : {}),
             ...(res.locals.accountEmail
               ? { accountEmail: res.locals.accountEmail }
               : {}),
@@ -493,7 +497,8 @@ export function createApp(config: Config) {
       ...(ready && search && researchAllowed(config.research, res.locals.accountEmail)
         ? { research: { cost: config.research.cost, dailyRuns: config.research.dailyRuns } }
         : {}),
-      ...(config.vaultSync ? { vaultSync: { quotaBytes: config.vaultSync.quotaBytes, maxDevices: config.vaultSync.maxDevices } } : {}),
+      ...(config.vaultSync ? { vaultSync: { quotaBytes: config.vaultSync.quotaBytes, maxDevices: config.vaultSync.maxDevices, ...(config.vaultSync.blobs ? { files: true } : {}) } } : {}),
+      ...(config.secureStore ? { secureStore: { quotaBytes: config.secureStore.quotaBytes, filesQuotaBytes: config.secureStore.filesQuotaBytes } } : {}),
       ...(config.backgroundTasks
         ? {
             backgroundTasks: {
@@ -1025,6 +1030,8 @@ export function createApp(config: Config) {
   // Before the 8 KB body parser: an encrypted sync item can be up to 4 MB.
   if (config.vaultSync)
     app.use(syncRoutes(config.vaultSync.store, config.vaultSync, (res) => res.locals.accountId ?? (config.dev ? "local-development" : undefined)));
+  if (config.secureStore)
+    app.use(secureRoutes(config.secureStore, (res) => res.locals.accountId ?? (config.dev ? "local-development" : undefined)));
   app.use("/api", express.json({ limit: "8kb" }));
   if (config.consumer?.billingRouter) app.use(config.consumer.billingRouter);
   if (metering) app.use(metering.router);

@@ -21,7 +21,7 @@ const FILES_SOURCE = readFileSync(new URL("../src/sync/files.ts", import.meta.ur
 // Appended to src/sync/files.ts for this test only: publish a view and act as the engine.
 const HOOKS = `
 import { heldProjects as __held, holdProjects as __hold } from "../projects";
-(window as any).__syncFiles = { publish: (patch: object) => publishFiles({ ...view, ...patch }), view: () => view, bind: bindFileActions, held: __held, hold: __hold };
+(window as any).__syncFiles = { publish: (patch: object) => publishFiles({ ...views.max, ...patch }), view: () => views.max, bind: bindFileActions, held: __held, hold: __hold };
 `;
 
 let vite: ViteDevServer;

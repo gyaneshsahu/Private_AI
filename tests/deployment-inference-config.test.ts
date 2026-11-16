@@ -2,6 +2,7 @@ import { afterEach, expect, it } from "vitest";
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { randomBytes } from "node:crypto";
 import { loadDeploymentConfig } from "../server/deployment-config";
 
 const roots: string[] = [];
@@ -208,6 +209,51 @@ it("loads production chat only when the inference section is present and enabled
   ]) {
     await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, vaultSync: bad } }));
     await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+  }
+  // Secure mode: its own switch, off when absent or disabled; defaults 200 MB and 1024 MB; strict
+  // bounds; the master key only from the environment (the strict schema refuses it in the file).
+  const custodyBefore = process.env.PRIVATEAI_CUSTODY_KEY;
+  try {
+    const custodyKey = randomBytes(32).toString("base64");
+    process.env.PRIVATEAI_CUSTODY_KEY = custodyKey;
+    const withSecure = (secureStore: unknown) => writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, secureStore } }));
+    await writeFile(configFile, JSON.stringify({ ...config, inference }));
+    expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("secureStore");
+    await withSecure({ enabled: false });
+    expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("secureStore");
+    await withSecure({ enabled: true });
+    const secure = (await loadDeploymentConfig(configFile)).inference?.secureStore;
+    expect(secure).toMatchObject({ quotaBytes: 200 * 1024 * 1024, filesQuotaBytes: 1024 * 1024 * 1024 });
+    expect(secure?.master.key.toString("base64")).toBe(custodyKey);
+    expect(secure?.master.id).toMatch(/^[0-9a-f]{16}$/);
+    await withSecure({ enabled: true, quotaMb: 10, filesQuotaMb: 10240 });
+    expect((await loadDeploymentConfig(configFile)).inference?.secureStore).toMatchObject({ quotaBytes: 10 * 1024 * 1024, filesQuotaBytes: 10240 * 1024 * 1024 });
+    for (const bad of [
+      { enabled: true, quotaMb: 9 },
+      { enabled: true, quotaMb: 2001 },
+      { enabled: true, quotaMb: 1.5 },
+      { enabled: true, filesQuotaMb: 9 },
+      { enabled: true, filesQuotaMb: 10241 },
+      { enabled: true, masterKey: custodyKey },
+      { enabled: true, extra: true },
+      { quotaMb: 200 },
+    ]) {
+      await withSecure(bad);
+      await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+    }
+    // Switched on without a usable master key: the start stops.
+    for (const key of [undefined, "", "c2hvcnQ=", randomBytes(32).toString("hex")]) {
+      if (key === undefined) delete process.env.PRIVATEAI_CUSTODY_KEY;
+      else process.env.PRIVATEAI_CUSTODY_KEY = key;
+      await withSecure({ enabled: true });
+      await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+      // Switched off, the key is not needed.
+      await withSecure({ enabled: false });
+      expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("secureStore");
+    }
+  } finally {
+    if (custodyBefore === undefined) delete process.env.PRIVATEAI_CUSTODY_KEY;
+    else process.env.PRIVATEAI_CUSTODY_KEY = custodyBefore;
   }
   // Stage 3, project files as blobs: absent means off; defaults 1024 MB and 10 MB; S3 keys only from the environment.
   const withBlobs = (blobs: unknown) => writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, vaultSync: { ...vaultSync, blobs } } }));

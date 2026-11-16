@@ -21,6 +21,7 @@ const names = [
   "0022-usage-records.sql",
   "0023-vault-sync.sql",
   "0024-vault-sync-blobs.sql",
+  "0025-secure-store.sql",
 ] as const;
 interface Migration {
   name: string;

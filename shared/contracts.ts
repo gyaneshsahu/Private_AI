@@ -538,6 +538,8 @@ export interface AppStatus {
   accountId?: string;
   accountEmail?: string;
   accessEpoch?: string;
+  /** With Secure on: when this session signed in (ms), for the recent-sign-in gate of Reset Secure Max. */
+  signedInAt?: number;
   csrf: string;
   inference: {
     ready: boolean;
@@ -570,7 +572,10 @@ export interface AppStatus {
   /** Draft provider section for the privacy policy (shared/provider-disclosure.ts); off unless set. */
   providerDisclosureDraft?: "tinfoil" | "privatemode";
   /** End-to-end encrypted sync is switched on (.local/sync-contract.md); absent means no sync screens. */
-  vaultSync?: { quotaBytes: number; maxDevices: number };
+  /** `files`: project files sync too (Stage 3); Secure Max is offered only then (docs/secure-store-20261116.md). */
+  vaultSync?: { quotaBytes: number; maxDevices: number; files?: boolean };
+  /** Secure mode is switched on (docs/secure-store-20261116.md); absent means the app behaves as before. */
+  secureStore?: { quotaBytes: number; filesQuotaBytes: number };
 }
 export type RequestAllowance =
   | { state: "unavailable" }

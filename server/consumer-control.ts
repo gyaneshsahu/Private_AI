@@ -75,6 +75,8 @@ export function consumerControl(config: {
       res.locals.accountId = current.user.id;
       res.locals.accountEmail = current.user.email;
       res.locals.accessEpoch = fingerprint("privateai-consumer-epoch-v1", id);
+      // When this session signed in (Reset Secure Max asks for a recent sign-in; a UI gate only).
+      res.locals.signedInAt = new Date(current.session.createdAt).getTime();
       next();
     } catch {
       res.status(503).json({

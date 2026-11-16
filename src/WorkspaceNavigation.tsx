@@ -41,6 +41,8 @@ export function WorkspaceNavigation(props: {
   backgroundActive?: boolean;
   /** The quiet sync status (src/SyncScreens.tsx), only when the deployment has sync. */
   syncIndicator?: ReactNode;
+  /** The Secure Max section (src/SecureMaxSection.tsx with src/SecureMaxLists.tsx), below the normal lists; absent while it is not offered. */
+  maxSection?: ReactNode;
   onOrganize: (
     c: Conversation,
     change: Pick<Conversation, "pinned" | "archived" | "projectId" | "title">,
@@ -72,6 +74,7 @@ export function WorkspaceNavigation(props: {
     backgroundActive,
     onOrganize,
     syncIndicator,
+    maxSection,
   } = props;
   const t = useText(workspaceText);
   const pt = useText(projectText);
@@ -441,6 +444,7 @@ export function WorkspaceNavigation(props: {
           </button>
         </div>
       )}
+      {maxSection}
       <nav aria-label={t.workspace} className="sidebar-bottom">
         <details className="account-menu">
           <summary aria-label={t.accountMenu}>
@@ -494,8 +498,9 @@ export function WorkspaceNavigation(props: {
       onKeyDown={containDialogFocus}
       className="navigation-drawer"
       aria-label={t.navigation}
-      onCancel={onClose}
-      onClose={onClose}
+      // Only the drawer's own events: React passes a nested dialog's close and cancel (the Secure Max explanation) up the tree.
+      onCancel={(event) => event.target === event.currentTarget && onClose()}
+      onClose={(event) => event.target === event.currentTarget && onClose()}
     >
       {body}
     </dialog>

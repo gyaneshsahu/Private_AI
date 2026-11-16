@@ -4,6 +4,9 @@ export const FILES_OFF = { enabled: false, remote: [], states: {} };
 const view = { enabled: true, remote: [], states: {} };
 export const useSyncFiles = () => view;
 export const bindFileActions = () => {};
+// The real engine (imported by src/stores.ts for Secure mode, unused here) needs these names to load.
+export const fileRecordSchema = undefined;
+export const projectsDataSchema = undefined;
 export const publishFiles = () => {};
 export const downloadProjectFile = async () => "gone";
 export const removeSyncedProjectFile = async () => {};

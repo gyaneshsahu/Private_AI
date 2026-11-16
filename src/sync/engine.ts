@@ -115,6 +115,12 @@ export interface EngineOptions {
   onApplied?: () => void;
   /** Project files' sync view (Stage 3); default: the shared one the project screen reads. */
   onFiles?: (view: FilesView) => void;
+  /**
+   * Secure mode (docs/secure-store-20261116.md): the same items, merges and blobs against
+   * /api/secure, with no device, token, wrapper, pairing or proof. The signed-in session is the only
+   * gate, and the vault was opened with the key the server handed out. Give it its own onFiles.
+   */
+  custodial?: boolean;
 }
 type FileQuota = NonNullable<FilesView["quota"]>;
 
@@ -203,7 +209,7 @@ export class SyncEngine {
   private view: FilesView = FILES_OFF;
   constructor(private o: EngineOptions) {
     this.fetcher = o.fetch ?? realFetch;
-    this.storeName = o.storeName ?? `cometrow-sync-${o.accountId}`;
+    this.storeName = o.storeName ?? `cometrow-${o.custodial ? "secure-sync" : "sync"}-${o.accountId}`;
   }
 
   // Local storage of sync: this device's key and sealed token, the merge bases and the cursor.
@@ -252,9 +258,11 @@ export class SyncEngine {
   }
   /** This device takes part in sync now: a record, not detached, its token unsealed. */
   private active() {
+    if (this.o.custodial) return !!this.o.vault.accountKey();
     return !!this.device && !this.device.detached && !!this.token;
   }
   private header() {
+    if (this.o.custodial) return undefined;
     return this.active() && this.o.vault.accountKey() ? `${this.device!.deviceId}.${this.token}` : undefined;
   }
   private async forgetSyncState() {
@@ -288,7 +296,7 @@ export class SyncEngine {
     let r: Awaited<ReturnType<Fetcher>>;
     const raw = body instanceof Uint8Array;
     try {
-      r = await this.fetcher(`/api/sync${path}`, {
+      r = await this.fetcher(`${this.o.custodial ? "/api/secure" : "/api/sync"}${path}`, {
         method,
         headers: {
           ...(method === "GET" ? {} : { "X-PrivateAI-CSRF": this.o.csrf() }),
@@ -381,7 +389,7 @@ export class SyncEngine {
     const every = setInterval(tick, 60_000);
     // A light poll (state only) so a waiting new device is noticed within seconds.
     const light = setInterval(() => {
-      if (document.visibilityState === "visible" && this.o.vault.accountKey()) void this.refresh().catch(() => {});
+      if (document.visibilityState === "visible" && this.o.vault.accountKey() && !this.o.custodial) void this.refresh().catch(() => {});
     }, 10_000);
     window.addEventListener("focus", tick);
     this.stop = () => {
@@ -398,6 +406,13 @@ export class SyncEngine {
   }
   get vault() {
     return this.o.vault;
+  }
+  /** Sign-out in Secure mode: stops and deletes this engine's local database (merge bases, cursor). Never hangs on another tab. */
+  async eraseLocal() {
+    this.detach();
+    if (this.db) (await this.store().catch(() => undefined))?.close();
+    this.db = undefined;
+    await deleteDB(this.storeName, { blocked() {} });
   }
   detach() {
     this.stop();
@@ -488,7 +503,7 @@ export class SyncEngine {
       quota: { usedBytes: number; limitBytes: number };
       files?: FileQuota;
     };
-    this.hasWrappers = s.hasWrappers;
+    this.hasWrappers = !!s.hasWrappers;
     this.files = s.files;
     // Only with this device's own header: without one (locked) "unknown" means nothing.
     if (header && before && this.device === before && !before.detached) {
@@ -497,7 +512,7 @@ export class SyncEngine {
     }
     const ak = this.o.vault.accountKey();
     const devices = await Promise.all(
-      s.devices.map(async (d) => ({
+      (s.devices ?? []).map(async (d) => ({
         deviceId: d.deviceId,
         label: ak ? await k.decryptLabel(ak, this.o.accountId, d.deviceId, d.labelCiphertext).catch(() => "") : "",
         createdAt: d.createdAt,
@@ -512,6 +527,7 @@ export class SyncEngine {
   }
   private phase(): SyncPhase {
     if (!this.serverOn || this.optedOut) return "off";
+    if (this.o.custodial) return !this.o.vault.accountKey() ? "locked" : this.state.phase === "error" || this.state.phase === "syncing" ? this.state.phase : "idle";
     const d = this.device;
     if (d?.detached === "removed" || d?.detached === "reset-elsewhere") return "error";
     if (!d || d.detached) return this.hasWrappers ? "needs-approval" : "off";
@@ -1334,7 +1350,7 @@ export class SyncEngine {
   }
   private publishView() {
     this.view =
-      this.files && this.device && !this.device.detached && !this.optedOut
+      this.files && (this.o.custodial ? this.active() : this.device && !this.device.detached) && !this.optedOut
         ? { enabled: true, quota: this.files, remote: this.o.vault.accountKey() ? this.remote : [], states: { ...this.fileStates } }
         : FILES_OFF;
     // The engine attached for the app serves the project screen's buttons.

@@ -10,6 +10,8 @@ import { scheduleManifestCheck } from "./manifest-watch";
 import { SqliteUsageRecords } from "./usage-records";
 import { MemorySyncStore } from "./vault-sync";
 import { MemoryBlobStore } from "./vault-sync-blobs";
+import { MemorySecureStore } from "./secure-store";
+import { ephemeralCustodyMaster } from "./custody";
 const port = Number(process.env.PORT ?? "4173");
 if (!Number.isInteger(port) || port < 1024 || port > 65535)
   throw new Error("Invalid PORT");
@@ -88,6 +90,19 @@ const app = createApp({
           ...(process.env.PRIVATEAI_VAULT_SYNC_FILES === "1"
             ? { blobs: { quotaBytes: 1024 * 1024 * 1024, maxFileBytes: 10 * 1024 * 1024, store: new MemoryBlobStore() } }
             : {}),
+        },
+      }
+    : {}),
+  // Secure mode on the development server: off unless "1". Memory store and a random master key, so
+  // everything stored is gone at restart (docs/secure-store-20261116.md).
+  ...(process.env.PRIVATEAI_SECURE_STORE === "1"
+    ? {
+        secureStore: {
+          quotaBytes: 200 * 1024 * 1024,
+          filesQuotaBytes: 1024 * 1024 * 1024,
+          master: ephemeralCustodyMaster(),
+          store: new MemorySecureStore(),
+          blobs: new MemoryBlobStore(),
         },
       }
     : {}),

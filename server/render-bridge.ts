@@ -101,9 +101,10 @@ export function createRenderBridge(config: {
     // Sync bodies are ciphertext the app limits itself: items up to 4 MB (as base64 JSON),
     // project-file blobs up to the configured file size. Everything else stays at 1 MB.
     const path = req.url.split("?")[0];
-    const limit = path.startsWith("/api/sync/blobs/")
+    // Secure mode uses the same shapes under /api/secure (docs/secure-store-20261116.md).
+    const limit = /^\/api\/(sync|secure)\/blobs\//.test(path)
       ? 32 * 1024 * 1024 // maxFileMb is at most 25
-      : path.startsWith("/api/sync/items/")
+      : /^\/api\/(sync|secure)\/items\//.test(path)
         ? 6 * 1024 * 1024
         : 1024 * 1024;
     let bytes = 0;
