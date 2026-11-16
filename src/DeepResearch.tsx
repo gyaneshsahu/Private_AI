@@ -2,7 +2,10 @@
 // of the search texts, the visible step list with its Stop button, and the result. The pipeline
 // is src/deep-research.ts; the app passes the ways out (model request, its own POST, the send).
 // Stays mounted while another tab is shown, so a run keeps its progress.
+// `inline` (docs/deep-research-in-chat-20261116.md): the same steps as a card in the conversation
+// for the sent draft; every ending closes the card and the answer is already in the chat.
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Source } from "../shared/contracts";
 import { RESEARCH_LIMITS, researchWeights } from "../shared/deep-research";
 import { preloadAnswer } from "./ChatMessage";
@@ -11,6 +14,7 @@ import { useText } from "./i18n";
 import { IncompleteReplyError } from "./reply-stream";
 import { SearchSuggestionField } from "./SearchSuggestionField";
 import { deepResearchText } from "./text/deep-research";
+import { researchNextText } from "./text/research-next";
 import { editedSearchText, WHEN_TO_SEARCH } from "./when-to-search";
 
 type Step = "plan" | RunStep;
@@ -49,11 +53,19 @@ export function DeepResearch(props: {
   /** Keeps sources of a run that ended early in the conversation. */
   keep: (sources: Source[], queries: string[]) => void;
   showAnswer: () => void;
+  /**
+   * In the conversation: `question` is the sent draft, the card is drawn into `slot` (null: the
+   * chat is not shown, the run goes on). `close` ends it with a line for the app's notice ("" none).
+   */
+  inline?: { question: string; slot: HTMLElement | null; close: (note: string) => void };
 }) {
   const t = useText(deepResearchText);
+  const rn = useText(researchNextText);
   const weights = researchWeights(props.limits.cost);
-  const [question, setQuestion] = useState("");
-  const [phase, setPhase] = useState<"idle" | "planning" | "approve" | "running" | "ended">("idle");
+  const inline = props.inline;
+  const ids = inline ? "deep-research-inline" : "deep-research";
+  const [question, setQuestion] = useState(inline?.question ?? "");
+  const [phase, setPhase] = useState<"idle" | "planning" | "approve" | "running" | "writing" | "ended">("idle");
   const [problem, setProblem] = useState("");
   const [rows, setRows] = useState<{ id: number; text: string }[]>([]);
   const [steps, setSteps] = useState(fresh);
@@ -63,7 +75,10 @@ export function DeepResearch(props: {
   const resultHeading = useRef<HTMLHeadingElement>(null);
   const approveButton = useRef<HTMLButtonElement>(null);
   const questionField = useRef<HTMLTextAreaElement>(null);
+  const planButton = useRef<HTMLButtonElement>(null);
   const step = (name: Step, view: StepView) => setSteps((all) => ({ ...all, [name]: view }));
+  // Gone (another chat, the switch off): nothing more is sent for this run.
+  useEffect(() => () => abort.current?.abort(), []);
 
   // Another conversation (or a lock): the run belongs to the one it started in.
   const first = useRef(true);
@@ -78,18 +93,28 @@ export function DeepResearch(props: {
   // Each new stage takes the focus, so keyboard and screen-reader users land on it.
   useEffect(() => {
     if (props.hidden) return;
+    if (phase === "idle" && inline) planButton.current?.focus();
     if (phase === "approve") approveHeading.current?.focus();
     if (phase === "ended") resultHeading.current?.focus();
   }, [phase, props.hidden]);
 
   const finish = (text: string, used: string, extra: { kept?: string; show?: string } = {}) => {
+    if (inline) {
+      // The run is over: closing must not abort the answer's controller (it is the send's own).
+      abort.current = undefined;
+      return inline.close([text, used, extra.kept].filter(Boolean).join(" "));
+    }
     setResult({ text, used, ...extra });
     setPhase("ended");
   };
 
   async function start() {
     const asked = question.trim();
-    const reason = props.busy ? t.busy : props.blocked(asked);
+    const reason = props.busy
+      ? t.busy
+      : asked.length > RESEARCH_LIMITS.questionCharacters
+        ? rn.tooLong(RESEARCH_LIMITS.questionCharacters)
+        : props.blocked(asked);
     setProblem(reason ?? "");
     if (reason || !asked) return;
     const stop = (abort.current = new AbortController());
@@ -140,6 +165,8 @@ export function DeepResearch(props: {
         answer: (sources, tally) => {
           // From here the app's own send shows the progress and owns Stop (the same controller).
           props.hold("");
+          // In the chat the answer itself is the progress: the card steps aside for it.
+          if (inline) setPhase("writing");
           return props.answer(asked, tally.queries, sources, researchNote(tally), stop);
         },
       },
@@ -211,14 +238,41 @@ export function DeepResearch(props: {
     read: t.stepRead,
     write: t.stepWrite,
   };
-  return (
-    <section className="content-view deep-research" hidden={props.hidden} aria-labelledby="deep-research-heading">
+  // Cancel before the plan or at the approval: back to the message box, the draft untouched.
+  const cancel = () =>
+    phase === "idle" ? inline?.close("") : finish(t.resultCancelled, t.used(weights.plan, props.limits.cost));
+  if (inline && (phase === "writing" || !inline.slot)) return null;
+  const card = (
+    <section
+      className={inline ? "deep-research deep-research-inline" : "content-view deep-research"}
+      hidden={props.hidden}
+      aria-labelledby={`${ids}-heading`}
+      onKeyDown={(event) => {
+        if (!inline || event.key !== "Escape" || (phase !== "idle" && phase !== "approve")) return;
+        event.preventDefault();
+        cancel();
+      }}
+    >
       <div className="panel">
-        <h3 id="deep-research-heading">{t.heading}</h3>
+        <h3 id={`${ids}-heading`}>{t.heading}</h3>
         <p className="muted">
           {t.intro(props.limits.cost, RESEARCH_LIMITS.searches, RESEARCH_LIMITS.pages, props.limits.dailyRuns)}
         </p>
-        {phase === "idle" ? (
+        {phase === "idle" && inline ? (
+          <>
+            <p className="research-question">{question.trim()}</p>
+            <p className="muted">{t.planNote}</p>
+            {problem && (
+              <p className="warning" role="alert">
+                {problem}
+              </p>
+            )}
+            <button className="primary" ref={planButton} disabled={props.busy} onClick={() => void start()}>
+              {t.plan}
+            </button>
+            <button onClick={cancel}>{t.cancel}</button>
+          </>
+        ) : phase === "idle" ? (
           <>
             <label>
               {t.question}
@@ -274,18 +328,18 @@ export function DeepResearch(props: {
           </button>
         )}
         {phase === "approve" && (
-          <div className="approval search-suggestion" role="group" aria-labelledby="deep-research-approve">
-            <h4 id="deep-research-approve" tabIndex={-1} ref={approveHeading}>
+          <div className="approval search-suggestion" role="group" aria-labelledby={`${ids}-approve`}>
+            <h4 id={`${ids}-approve`} tabIndex={-1} ref={approveHeading}>
               {t.approveHeading}
             </h4>
             {rows.map((row, index) => (
               <div className="research-query" key={row.id}>
-                <span id={`deep-research-label-${row.id}`} className="muted">
+                <span id={`${ids}-label-${row.id}`} className="muted">
                   {t.field(index + 1)}
                 </span>
                 <SearchSuggestionField
-                  labelledBy={`deep-research-label-${row.id}`}
-                  sentId={`deep-research-sent-${row.id}`}
+                  labelledBy={`${ids}-label-${row.id}`}
+                  sentId={`${ids}-sent-${row.id}`}
                   text={row.text}
                   sent={masked[index].value}
                   problem={masked[index].problem}
@@ -314,7 +368,7 @@ export function DeepResearch(props: {
             >
               {t.approve(Math.max(1, approvedTexts.length))}
             </button>
-            <button onClick={() => finish(t.resultCancelled, t.used(weights.plan, props.limits.cost))}>
+            <button onClick={cancel}>
               {t.cancel}
             </button>
           </div>
@@ -347,4 +401,5 @@ export function DeepResearch(props: {
       </div>
     </section>
   );
+  return inline?.slot ? createPortal(card, inline.slot) : card;
 }
