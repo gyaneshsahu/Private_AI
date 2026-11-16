@@ -109,6 +109,8 @@ export interface Config {
   vaultSync?: SyncSettings & { store: SyncStore };
   /** Secure mode: saved content stored under a server-held key (docs/secure-store-20261116.md); absent means off. */
   secureStore?: SecureSettings;
+  /** Closed-account purge days, for the status only (docs/account-purge-20261116.md); absent means off. */
+  accountPurge?: { graceDays: number };
   /** Background tasks, the Auto mode of Scheduled (docs/background-tasks-20261115.md); absent means off. */
   backgroundTasks?: {
     maxAutoTasks: number;
@@ -499,6 +501,7 @@ export function createApp(config: Config) {
         : {}),
       ...(config.vaultSync ? { vaultSync: { quotaBytes: config.vaultSync.quotaBytes, maxDevices: config.vaultSync.maxDevices, ...(config.vaultSync.blobs ? { files: true } : {}) } } : {}),
       ...(config.secureStore ? { secureStore: { quotaBytes: config.secureStore.quotaBytes, filesQuotaBytes: config.secureStore.filesQuotaBytes } } : {}),
+      ...(config.accountPurge ? { accountPurge: { graceDays: config.accountPurge.graceDays } } : {}),
       ...(config.backgroundTasks
         ? {
             backgroundTasks: {

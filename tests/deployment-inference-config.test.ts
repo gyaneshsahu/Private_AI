@@ -210,6 +210,20 @@ it("loads production chat only when the inference section is present and enabled
     await writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, vaultSync: bad } }));
     await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
   }
+  // Closed-account purge: its own switch, off when absent or disabled; 30 days by default; 7 to 365.
+  const withPurge = (accountPurge: unknown) => writeFile(configFile, JSON.stringify({ ...config, inference: { ...inference, accountPurge } }));
+  await writeFile(configFile, JSON.stringify({ ...config, inference }));
+  expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("accountPurge");
+  await withPurge({ enabled: false, graceDays: 30 });
+  expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("accountPurge");
+  await withPurge({ enabled: true });
+  expect((await loadDeploymentConfig(configFile)).inference?.accountPurge).toEqual({ graceDays: 30 });
+  await withPurge({ enabled: true, graceDays: 7 });
+  expect((await loadDeploymentConfig(configFile)).inference?.accountPurge).toEqual({ graceDays: 7 });
+  for (const bad of [{ enabled: true, graceDays: 6 }, { enabled: true, graceDays: 366 }, { enabled: true, graceDays: 7.5 }, { enabled: true, extra: 1 }, { graceDays: 30 }]) {
+    await withPurge(bad);
+    await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+  }
   // Secure mode: its own switch, off when absent or disabled; defaults 200 MB and 1024 MB; strict
   // bounds; the master key only from the environment (the strict schema refuses it in the file).
   const custodyBefore = process.env.PRIVATEAI_CUSTODY_KEY;

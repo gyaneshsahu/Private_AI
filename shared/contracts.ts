@@ -576,6 +576,8 @@ export interface AppStatus {
   vaultSync?: { quotaBytes: number; maxDevices: number; files?: boolean };
   /** Secure mode is switched on (docs/secure-store-20261116.md); absent means the app behaves as before. */
   secureStore?: { quotaBytes: number; filesQuotaBytes: number };
+  /** Closed accounts are deleted this many days after the request (docs/account-purge-20261116.md); absent means off. */
+  accountPurge?: { graceDays: number };
 }
 export type RequestAllowance =
   | { state: "unavailable" }

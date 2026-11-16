@@ -3,6 +3,7 @@ import { loadDeploymentConfig } from "./deployment-config";
 import { prepareProductionRuntime } from "./production-runtime";
 import { createRenderBridge } from "./render-bridge";
 import { scheduleRequestPurge } from "./request-retention";
+import { scheduleAccountPurge } from "./account-purge";
 import { scheduleExpiryWarnings } from "./app";
 import { scheduleCountsLog } from "./counters";
 import { scheduleModelCheck } from "./model-watch";
@@ -17,6 +18,7 @@ export async function startDeployment(render = false) {
   let bridge: ReturnType<typeof createRenderBridge> | undefined;
   let audit: AttestationAuditState | undefined;
   let stopPurge: (() => void) | undefined;
+  let stopAccountPurge: (() => void) | undefined;
 
   let database: Pool | undefined;
   let runtime: Awaited<ReturnType<typeof prepareProductionRuntime>> | undefined;
@@ -28,6 +30,7 @@ export async function startDeployment(render = false) {
     try {
       audit?.stop();
       stopPurge?.();
+      stopAccountPurge?.();
       if (bridge) {
         bridge.close();
         bridge.closeIdleConnections();
@@ -118,6 +121,11 @@ export async function startDeployment(render = false) {
     stopPurge = scheduleRequestPurge(database, (line) =>
       process.stdout.write(line),
     );
+    // Closed accounts are deleted after the owner's retention period (inference.accountPurge, off by default).
+    if (config.inference?.accountPurge)
+      stopAccountPurge = scheduleAccountPurge(database, config.inference.accountPurge.graceDays, (line) =>
+        process.stdout.write(line),
+      );
     // Content-free counts (refusals, busy answers, outcomes per mode), one line an hour.
     if (config.inference) scheduleCountsLog((line) => process.stdout.write(`${line}\n`));
     // The weekly report and the key stop chat for everyone when they expire: warn hourly ahead.

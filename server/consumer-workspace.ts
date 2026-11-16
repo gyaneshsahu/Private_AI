@@ -88,6 +88,8 @@ export interface ProductionInferenceConfig {
   vaultSync?: { quotaBytes: number; maxDevices: number; blobs?: import("./vault-sync").BlobSettings & { s3?: import("./vault-sync-blobs").S3Settings } };
   /** Secure mode limits and the master key from the environment (docs/secure-store-20261116.md); absent means off. */
   secureStore?: { quotaBytes: number; filesQuotaBytes: number; master: import("./custody").CustodyMaster };
+  /** Closed accounts are deleted this many days after the request (docs/account-purge-20261116.md); absent means off. */
+  accountPurge?: { graceDays: number };
   /** Background tasks (Auto mode of Scheduled); absent means off. */
   backgroundTasks?: {
     maxAutoTasks: number;
@@ -165,6 +167,8 @@ export function createProductionConsumerCandidate(
           ...(inference.secureStore
             ? { secureStore: { ...inference.secureStore, store: new PostgresSecureStore(config.database), blobs: secureBlobStore(config.database) } }
             : {}),
+          // Shown in the status for the deletion text; the job itself runs in server/deployment-process.ts.
+          ...(inference.accountPurge ? { accountPurge: inference.accountPurge } : {}),
           ...(inference.backgroundTasks
             ? {
                 backgroundTasks: {

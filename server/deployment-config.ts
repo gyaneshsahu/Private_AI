@@ -199,6 +199,18 @@ const schema = z
           })
           .strict()
           .optional(),
+        /**
+         * Closed-account purge, its own switch, off unless enabled (docs/account-purge-20261116.md):
+         * `graceDays` after a closure request the account and everything stored with it are deleted
+         * (server/account-purge.ts). The retention period is the owner's decision; 7 is the table's minimum.
+         */
+        accountPurge: z
+          .object({
+            enabled: z.boolean(),
+            graceDays: z.number().int().min(7).max(365).default(30),
+          })
+          .strict()
+          .optional(),
         backgroundTasks: z
           .object({
             enabled: z.boolean(),
@@ -440,6 +452,7 @@ export async function loadDeploymentConfig(file: string) {
                   }
                 : {}),
               ...(inference.secureStore?.enabled ? { secureStore: secureStoreSettings(inference.secureStore, process.env) } : {}),
+              ...(inference.accountPurge?.enabled ? { accountPurge: { graceDays: inference.accountPurge.graceDays } } : {}),
               // Background tasks need the Privatemode client in the server (the report's provider).
               ...(inference.backgroundTasks?.enabled
                 ? await (async (bg) => {
