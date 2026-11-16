@@ -3413,7 +3413,6 @@
   display: contents;
 }
 
-<<<<<<< HEAD
 /* A part that could not be loaded (src/LoadBoundary.tsx): the line and its retry button. */
 .load-retry {
   display: flex;
@@ -3451,7 +3450,7 @@
     flex: 1 1 100%;
   }
 }
-=======
+
 /* chat core App.tsx fixes 16 Nov */
 /* The protection status: one small line, not a full-width bar. "Privacy details" opens it. */
 .chat-design .connection-banner:not([open]) {
@@ -3544,4 +3543,3 @@
 .chat-design .composer-footer > :is(.voice-input, .live-voice-open) ~ :is(.voice-input, .live-voice-open, .primary) {
   margin-left: 0;
 }
->>>>>>> worktree-agent-a10ebcacf13338819
