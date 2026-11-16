@@ -496,7 +496,7 @@ export function createApp(config: Config) {
       ...(ready && search && researchAllowed(config.research, res.locals.accountEmail)
         ? { research: { cost: config.research.cost, dailyRuns: config.research.dailyRuns } }
         : {}),
-      ...(config.vaultSync ? { vaultSync: { quotaBytes: config.vaultSync.quotaBytes, maxDevices: config.vaultSync.maxDevices } } : {}),
+      ...(config.vaultSync ? { vaultSync: { quotaBytes: config.vaultSync.quotaBytes, maxDevices: config.vaultSync.maxDevices, ...(config.vaultSync.blobs ? { files: true } : {}) } } : {}),
       ...(config.secureStore ? { secureStore: { quotaBytes: config.secureStore.quotaBytes, filesQuotaBytes: config.secureStore.filesQuotaBytes } } : {}),
       ...(config.backgroundTasks
         ? {

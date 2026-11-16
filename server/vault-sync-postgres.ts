@@ -409,8 +409,8 @@ export class PostgresSecureStore extends PostgresSyncStore implements SecureStor
     super(database, { accounts: "custody_keys", items: "secure_items" });
   }
   async custody(accountId: string): Promise<CustodyRow | undefined> {
-    const r = (await this.database.query("SELECT wrapped_key,master_key_id,created_at FROM custody_keys WHERE account_id=$1", [accountId])).rows[0];
-    return r ? { wrappedKey: r.wrapped_key as Buffer, masterKeyId: r.master_key_id as string, createdAt: Number(r.created_at) } : undefined;
+    const r = (await this.database.query("SELECT wrapped_key,master_key_id,created_at,default_mode FROM custody_keys WHERE account_id=$1", [accountId])).rows[0];
+    return r ? { wrappedKey: r.wrapped_key as Buffer, masterKeyId: r.master_key_id as string, createdAt: Number(r.created_at), defaultMode: r.default_mode as CustodyRow["defaultMode"] } : undefined;
   }
   async createCustody(accountId: string, row: CustodyRow) {
     // Two first sign-ins at once: one row wins, both read it back.
@@ -421,6 +421,9 @@ export class PostgresSecureStore extends PostgresSyncStore implements SecureStor
       row.createdAt,
     ]);
     return (await this.custody(accountId))!;
+  }
+  async setDefaultMode(accountId: string, mode: "secure" | "max") {
+    return (await this.database.query("UPDATE custody_keys SET default_mode=$2 WHERE account_id=$1", [accountId, mode])).rowCount === 1;
   }
 }
 /** Secure project files: rows in secure_blobs (no object storage in this version), counted on custody_keys.blob_bytes. */

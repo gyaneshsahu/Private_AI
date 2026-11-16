@@ -59,6 +59,11 @@ it.skipIf(!process.env.PRIVATEAI_SYNTHETIC_PG)(
       expect(keyA).toHaveLength(32);
       expect((await store.createCustody(a, row(a))).wrappedKey.equals(first.wrappedKey)).toBe(true);
       await store.createCustody(b, row(b));
+      expect((await store.custody(a))!.defaultMode).toBe("secure");
+      expect(await store.setDefaultMode(a, "max")).toBe(true);
+      expect((await store.custody(a))!.defaultMode).toBe("max");
+      expect((await store.custody(b))!.defaultMode).toBe("secure");
+      expect(await store.setDefaultMode(randomUUID(), "max")).toBe(false);
       // A row moved to another account does not open (the account id is in the AAD).
       expect(() => unwrapAccountKey(master, b, first.masterKeyId, first.wrappedKey)).toThrow();
 

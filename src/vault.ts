@@ -149,13 +149,14 @@ export class Vault {
   /** True while this vault was opened with the recovery key (security review L2). */
   private recovered = false;
   private databaseName = "privateai-vault";
-  selectAccount(id?: string) {
+  /** `prefix`: the Secure store keeps its own database beside the vault's (src/stores.ts). */
+  selectAccount(id?: string, prefix = "privateai-vault") {
     if (this.unlocked)
       throw new Error(textFor(vaultText).lockBeforeSwitch);
     if (id !== undefined && !/^[a-f0-9-]{36}$/.test(id))
       throw new Error(textFor(vaultText).invalidScope);
     this.lock(false);
-    this.databaseName = id ? `privateai-vault-${id}` : "privateai-vault";
+    this.databaseName = id ? `${prefix}-${id}` : prefix;
     this.connectChannel();
   }
   private key?: CryptoKey;
@@ -209,6 +210,16 @@ export class Vault {
   private async present(): Promise<boolean> {
     if (typeof indexedDB.databases !== "function") return true; // Old browsers: fall back to opening.
     return (await indexedDB.databases()).some((d) => d.name === this.databaseName);
+  }
+  /** How many chats this device holds for the account, readable while locked (a count, no titles). */
+  async storedCount(): Promise<number> {
+    if (!(await this.present())) return 0;
+    const database = await db(this.databaseName);
+    try {
+      return await database.count("conversations");
+    } finally {
+      database.close();
+    }
   }
   /** Whether this device holds a vault for the selected account (false: unlock creates one). */
   async exists(): Promise<boolean> {

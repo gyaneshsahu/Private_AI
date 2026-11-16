@@ -104,10 +104,18 @@ describe("secure routes", () => {
     expect(first.headers.get("cache-control")).toBe("no-store");
     const body = (await first.json()) as { key: string; accountId: string };
     expect(body.accountId).toBe(a);
+    // The default mode follows the account: "secure" at first, changed only by a strict body, per account.
+    expect((body as { defaultMode?: string }).defaultMode).toBe("secure");
+    expect((await s.call(a, "PUT", "/default-mode", { mode: "other" })).status).toBe(400);
+    expect((await s.call(a, "PUT", "/default-mode", { mode: "max", extra: 1 })).status).toBe(400);
+    expect((await s.call(randomUUID(), "PUT", "/default-mode", { mode: "max" })).status).toBe(404);
+    expect((await s.call(a, "PUT", "/default-mode", { mode: "max" })).status).toBe(204);
+    expect(((await (await s.call(a, "GET", "/key")).json()) as { defaultMode: string }).defaultMode).toBe("max");
     expect(Buffer.from(body.key, "base64")).toHaveLength(32);
     expect(await s.key(a)).toBe(body.key);
     // Two first sign-ins at once get the same key.
     const [x, y] = await Promise.all([s.key(b), s.key(b)]);
+    expect(((await (await s.call(b, "GET", "/key")).json()) as { defaultMode: string }).defaultMode).toBe("secure");
     expect(x).toBe(y);
     expect(x).not.toBe(body.key);
     // The store holds the key only wrapped.
