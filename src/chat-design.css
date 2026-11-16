@@ -3856,3 +3856,10 @@
     min-height: 44px;
   }
 }
+
+/* Very short screens: the message box (with its jump-to-latest button above it) sits over the sticky header, so the button stays reachable. */
+@media (max-height: 520px) {
+  .chat-design .composer-dock {
+    z-index: 7;
+  }
+}

@@ -94,7 +94,7 @@ async function failThenRecover(at: string, lang: Lang, width: number, blocked: (
     await ui(answer.getByText(rt.failed)).toBeVisible();
     await ui(answer).toContainText("Synthetic **bold** answer.");
     await ui(box).toBeVisible();
-    const retry = answer.getByRole("button", { name: rt.retry, exact: true });
+    const retry = answer.locator(".load-retry").getByRole("button", { name: rt.retry, exact: true });
     const size = (await retry.boundingBox())!;
     expect(Math.min(size.width, size.height)).toBeGreaterThanOrEqual(width <= 760 ? 44 : 24);
     expect(size.x + size.width).toBeLessThanOrEqual(width);
@@ -105,7 +105,7 @@ async function failThenRecover(at: string, lang: Lang, width: number, blocked: (
     // Still blocked: Retry fails again and the focus comes back to the button.
     await retry.focus();
     await page.keyboard.press("Enter");
-    await ui(answer.getByRole("button", { name: rt.retry, exact: true })).toBeFocused();
+    await ui(answer.locator(".load-retry").getByRole("button", { name: rt.retry, exact: true })).toBeFocused();
 
     // The file can be fetched again: Retry from the keyboard renders the answer.
     gate.open = true;

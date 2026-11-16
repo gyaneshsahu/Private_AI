@@ -345,7 +345,7 @@ it.skipIf(!enabled)(
         exact: true,
       });
       await browserExpect(region).toContainText(
-        "no automatic purge or backup deletion is active",
+        "automatic deletion is not switched on yet",
       );
       await browserExpect(
         region.getByRole("button", { name: "Close test account" }),
