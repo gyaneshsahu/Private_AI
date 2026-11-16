@@ -1,7 +1,7 @@
 {
   "F": {
     "name": "C light + A dark, cosmic background",
-    "note": "Light theme from option C, dark theme from option A. An even, faded cosmic wash behind the whole workspace (not the sidebar); a stronger, slowly moving one on the login screen; flowing lines of light for live voice.",
+    "note": "Light theme from option C, dark theme from option A. An even, faded cosmic wash behind the workspace; a blended cosmic glow on the login screen; a round, glassy orb for live voice.",
     "light": {
       "bg": "#fbfcfe",
       "sidebar": "#f2f5fa",
@@ -19,7 +19,7 @@
       "danger": "#a3261d",
       "light": "#2456e6",
       "glow": "linear-gradient(155deg, #e8f0ff 0%, #f5f8ff 30%, #ecf9f6 62%, #f0efff 100%)",
-      "cosmos": "radial-gradient(38% 42% at 24% 28%, #7fb2ff99, transparent 70%), radial-gradient(36% 40% at 78% 22%, #6fe0d080, transparent 70%), radial-gradient(40% 44% at 66% 80%, #a9b8ff99, transparent 70%), radial-gradient(34% 38% at 18% 82%, #ffd0a880, transparent 70%)",
+      "cosmos": "radial-gradient(60% 60% at 30% 30%, #8fb4ffb0, transparent 72%), radial-gradient(55% 55% at 72% 38%, #b9a8ff90, transparent 72%), radial-gradient(60% 55% at 55% 78%, #ffb8dc80, transparent 72%), radial-gradient(50% 50% at 20% 80%, #9fe8e070, transparent 72%)",
       "w2": "#2bbfae",
       "w3": "#8f9bff"
     },
@@ -40,7 +40,7 @@
       "danger": "#ff9c92",
       "light": "#8fb4ff",
       "glow": "radial-gradient(70% 55% at 50% 40%, #5b8cff26, transparent 70%), radial-gradient(45% 40% at 80% 15%, #3fd0c016, transparent 70%), radial-gradient(40% 40% at 15% 88%, #8f9bff18, transparent 70%)",
-      "cosmos": "radial-gradient(38% 42% at 24% 28%, #3b6cf070, transparent 70%), radial-gradient(36% 40% at 78% 22%, #19c5b050, transparent 70%), radial-gradient(40% 44% at 66% 80%, #7c8cf060, transparent 70%), radial-gradient(34% 38% at 18% 82%, #f0a25a38, transparent 70%)",
+      "cosmos": "radial-gradient(60% 60% at 30% 30%, #2f5fe078, transparent 72%), radial-gradient(55% 55% at 72% 38%, #6a55d860, transparent 72%), radial-gradient(60% 55% at 55% 78%, #c0489050, transparent 72%), radial-gradient(50% 50% at 20% 80%, #1fa8a040, transparent 72%)",
       "w2": "#3fd0c0",
       "w3": "#8f9bff"
     }

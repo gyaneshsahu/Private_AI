@@ -122,7 +122,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .sel{display:inline-flex;align-items:center;gap:4px;color:var(--ink2);font-size:14px}
 /* ---------- login ---------- */
 .login{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden}
-.login::before{content:"";position:absolute;inset:-25%;background:var(--cosmos);filter:blur(30px);pointer-events:none}
+.login::before{content:"";position:absolute;inset:-25%;background:var(--cosmos);filter:blur(70px);pointer-events:none}
 .run .login::before{animation:drift 26s ease-in-out infinite alternate}
 @keyframes drift{to{transform:translate(4%,-3%) rotate(8deg) scale(1.08)}}
 .login>*{position:relative}
@@ -139,12 +139,14 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .g{width:18px;height:18px;stroke-width:2.2}
 /* ---------- live voice: a comet on its orbit ---------- */
 .voice{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:24px 24px 6vh}
-.waves{width:min(360px,84vw);height:130px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent);mask-image:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent)}
-.waves svg{width:100%;height:100%;stroke-width:2.2;overflow:hidden}
-.w1{stroke:var(--accent)}.w2{stroke:var(--w2);opacity:.8}.w3{stroke:var(--w3);opacity:.65}
-.still .w2{transform:translateX(-90px)}.still .w3{transform:translateX(-40px)}
-.run .w{animation:flow 9s linear infinite}.run .w2{animation-duration:6.500s}.run .w3{animation-duration:4.500s}
-@keyframes flow{to{transform:translateX(-800px)}}
+.orb{width:172px;height:172px;position:relative;border-radius:50%;overflow:hidden;isolation:isolate;box-shadow:0 18px 50px -18px #5b6cf099,inset 0 0 0 1px #ffffff40}
+.orb i{position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 20deg,#3b6cf0,#8f6bff,#ff7ac8,#ffb37a,#4fe0d0,#3b6cf0);filter:blur(22px)}
+.orb::before{content:"";position:absolute;inset:0;z-index:1;border-radius:50%;background:radial-gradient(circle at 32% 26%,#ffffffd9 0,#ffffff40 16%,transparent 34%),radial-gradient(circle at 68% 78%,#ffffff38,transparent 30%)}
+.orb::after{content:"";position:absolute;inset:0;z-index:2;border-radius:50%;box-shadow:inset 0 -18px 34px -8px #0b103866,inset 0 10px 24px -10px #ffffff80}
+.run .orb{animation:morph 7s ease-in-out infinite alternate}
+.run .orb i{animation:swirl 11s linear infinite}
+@keyframes morph{0%{border-radius:50%;transform:scale(1)}50%{border-radius:54% 46% 52% 48%/47% 53% 46% 54%;transform:scale(1.035)}100%{border-radius:47% 53% 46% 54%/53% 47% 54% 46%;transform:scale(.985)}}
+@keyframes swirl{to{transform:rotate(360deg)}}
 .paused *{animation-play-state:paused!important}
 .voice p{font-size:16px;color:var(--ink2)}
 .voice .said{font-size:16px;color:var(--ink);max-width:420px;text-align:center;line-height:1.5}
@@ -282,7 +284,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
     </div>
 
     <section class="voice" data-s="voice">
-      <div class="waves"><svg viewBox="0 0 800 160" preserveAspectRatio="none"><g class="w w1"><path d="M0 80 Q100 26 200 80 T400 80 T600 80 T800 80 T1000 80 T1200 80 T1400 80 T1600 80"/></g><g class="w w2"><path d="M0 80 Q66.6667 42 133.333 80 T266.667 80 T400 80 T533.333 80 T666.667 80 T800 80 T933.333 80 T1066.67 80 T1200 80 T1333.33 80 T1466.67 80 T1600 80 T1733.33 80"/></g><g class="w w3"><path d="M0 80 Q50 56 100 80 T200 80 T300 80 T400 80 T500 80 T600 80 T700 80 T800 80 T900 80 T1000 80 T1100 80 T1200 80 T1300 80 T1400 80 T1500 80 T1600 80"/></g></svg></div>
+      <div class="orb"><i></i></div>
       <p>Listening</p>
       <div class="said">“Remind me to water the plants on Tuesday.”</div>
       <div class="vbtns"><span class="vb"><svg><use href="#i-mic"/></svg></span><span class="vb end"><svg><use href="#i-x"/></svg></span></div>
