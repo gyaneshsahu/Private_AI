@@ -12,6 +12,8 @@ import { useLang } from "./i18n";
 import { shouldCollapse } from "./message-collapse";
 import { MessageMeta } from "./MessageMeta";
 import { MemoryNote } from "./MemoryPanel";
+import { MenuButton, type MenuItem } from "./MenuButton";
+import { messageActionsText } from "./text/message-actions";
 import { memoryText } from "./text/memory";
 import { canvasText } from "./text/canvas";
 import { projectText } from "./text/projects";
@@ -24,8 +26,6 @@ import { arithmeticText } from "./text/arithmetic";
 import { composerText } from "./text/composer";
 import { imageText } from "./text/images";
 import { messageText } from "./text/message";
-import { messageActionsText } from "./text/message-actions";
-import { MenuButton, type MenuItem } from "./MenuButton";
 
 // Once loaded, the renderer is used directly: a lazy component suspends on its first render even
 // when its module is already loaded, and its placeholder shows raw Markdown and source codes.

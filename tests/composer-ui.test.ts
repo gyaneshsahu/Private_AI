@@ -310,6 +310,20 @@ for (const lang of ["en", "de"] as const)
         // Touch targets of the composer controls.
         const sendBox = (await send.boundingBox())!;
         expect(Math.min(sendBox.width, sendBox.height)).toBeGreaterThanOrEqual(24);
+        // "+", DE/EN, microphone and voice: 44 px on phones (CC-19); the header title on one line (CC-18).
+        const controls = [
+          page.getByLabel(t.tools, { exact: true }),
+          ...(await page.locator(".conversation-header .language-switch button").all()),
+          // The disabled "coming later" voice buttons are hidden on phones.
+          ...(await page.locator(".composer-footer :is(.future-voice, .voice-input-button, .live-voice-open):visible").all()),
+        ];
+        expect(controls.length).toBeGreaterThanOrEqual(3);
+        for (const control of controls) {
+          const b = (await control.boundingBox())!;
+          expect(Math.min(b.width, b.height)).toBeGreaterThanOrEqual(width < 760 ? 44 : 24);
+        }
+        if (width < 760)
+          expect(await page.locator(".conversation-header h1").evaluate((el) => getComputedStyle(el).whiteSpace)).toBe("nowrap");
         // Four sends were intended; the fake received four.
         expect(await calls(page)).toEqual([
           "First line\nsecond line\nthird line",

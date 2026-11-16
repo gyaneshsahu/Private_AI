@@ -334,6 +334,9 @@ for (const width of WIDTHS)
           await target(menu.getByRole("button", { name, exact: true }), width);
         const box = (await menu.boundingBox())!;
         expect(box.x + box.width).toBeLessThanOrEqual(width);
+        // Create project and the drawer's close button: 44 px on phones (CC-19).
+        await target(side.getByRole("button", { name: w.createProject, exact: true }), width);
+        if (width < 760) await target(side.getByRole("button", { name: w.closeNavigation, exact: true }), width);
         expect(await menu.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
 
         // Rename in place: Escape keeps the name and returns focus to the row.
