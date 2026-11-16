@@ -28,8 +28,10 @@ Full list of what was found and built: `docs/launch-readiness-final.md`. The man
 18. **Fine print removed from "+":** the menu no longer has the two paragraphs about future features; they also held present-tense camera, microphone and file statements, which the dialogs now explain when used [keep removed].
 19. **Saved format:** answers can now carry the failure kinds "busy" and "error"; an older app version cannot read a chat saved with them [accept, pre-alpha].
 20. **Health consent text** (`shared/health-consent.ts`, versioned draft) still says "Settings, Privacy & data"; Settings now calls it "Data controls" [update the wording with a version bump, after the legal read].
-21. **Getting started and Trial scope texts** need a rewrite for Secure and for a live chat (they still say "evaluation" and "no cloud sync") [the agent drafts English and German for your legal read].
-22. **Built later, not now:** a "< 2/2 >" switcher per message, chat search with text excerpts, account-wide custom instructions, a global memory switch, alerts when a scheduled task is due (Web Push later, by your decision), syntax colours in code blocks [after launch].
+21. **Getting started and Trial scope texts** are rewritten (English and German, a Secure version of the guide; real limits; "112 in the EU" added; the title keeps "Trial scope" while the alpha runs) [approve after the legal read; texts in `docs/secure-copy-draft-20261116.md`].
+22. **Deep research in the chat** keeps a separate "Plan the research" click after Send, because the plan already counts 5 units; failure notices no longer say "this request's cost remains unknown" [keep both].
+23. **Live voice on Android** shows no button at all (dictation still works); no explanation in the app [accept for the alpha; one line in Help later if wanted].
+24. **Built later, not now:** a "< 2/2 >" switcher per message, chat search with text excerpts, account-wide custom instructions, a global memory switch, alerts when a scheduled task is due (Web Push later, by your decision), syntax colours in code blocks [after launch].
 
 ## What needs you before the alpha, in order (updated 13 November)
 

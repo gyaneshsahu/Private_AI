@@ -26,7 +26,7 @@ Status words: **done** = built and tested in this run; **later** = not now, with
 | CC-03 = FE-15 | Dead "Coming later" controls in production | done | |
 | CC-04 | Token and dollar line shown to users | done | Development builds only. |
 | CC-05 | Seven text buttons under each answer | done | Icon row, Retry menu with cost text, More menu. |
-| CC-06 | Technical error text in the chat | done | One plain sentence per failure kind, Retry beside it, details folded. The longer notice above the message box still shows too (tests match it); shorten later. |
+| CC-06 | Technical error text in the chat | done | One plain sentence per failure kind, Retry beside it, details folded; the duplicate long notice above the message box is gone (screen readers still hear the reason). |
 | CC-07 | No in-place Rename or Delete in the sidebar | done | Share link: skip. |
 | CC-08 | Chats sorted by creation date | done | Last activity. |
 | CC-09 | No "< 2/2 >" switcher per message | later | Branches are per conversation; data-model change. |
@@ -49,7 +49,7 @@ Status words: **done** = built and tested in this run; **later** = not now, with
 | CC-28..30 | Send name, starter-card arrows, logo "P" | done | |
 | CC-31 | Coarse date groups | later | |
 | SS-01 | "…and we never can" while Secure is on | done / owner | New sentence; legal read. |
-| SS-02 = FE-04 | About 25 texts false in Secure | partly / owner | Per-mode texts; draft `docs/secure-copy-draft-20261116.md`. Not yet: the Getting started guide ("no cloud sync", "evaluation") and the Trial scope ending, in English and German. |
+| SS-02 = FE-04 | About 25 texts false in Secure | done / owner | Per-mode texts, including the rewritten Getting started guide and Trial scope; draft for the legal read: `docs/secure-copy-draft-20261116.md`. |
 | SS-03 = FE-03 | No export or delete-all for Secure content | done | Export built in the browser. |
 | SS-04 | Account deletion and closed accounts | done / owner | German phrase, honest text, purge switch off; closure path and retention are the owner's. |
 | SS-05, SS-15 | Settings structure | done | Six tabs (section 3). |
@@ -65,7 +65,7 @@ Status words: **done** = built and tested in this run; **later** = not now, with
 | SS-18, FE-13 | Account-wide custom instructions; global memory switch | later | |
 | SS-20..23 | Account headings, favicon, `?developmentTools`, skip link | done | The on-device calculator stays behind `?developmentTools`; figures only in development builds. |
 | FE-06 | Every search counted toward the 5-file cap | done | 5 searches per chat, oldest replaced. |
-| FE-07 | Search and deep research left the chat | partly | "+" > Search the web uses the in-chat approval card. Deep research still runs on the Research page. |
+| FE-07 | Search and deep research left the chat | done | "+" > Search the web and "+" > Deep research run inside the chat; every search text is still approved first; the Research page stays for its other uses. |
 | FE-08 | Projects hidden behind "···" | done | Row opens the project screen. |
 | FE-10 | Drops on the files page swallowed | done | |
 | FE-12 | A file attached but not sent was stored | done | |
@@ -113,12 +113,10 @@ Design: `docs/settings-structure-20261116.md`.
 ## 6. Known risks
 
 - Nothing was checked on a real phone, in Safari or Firefox on a device, with a screen reader, or on the hosted server.
-- Several browser tests time out under heavy load on this machine and pass when rerun alone (lazy-retry, chat-message, canvas, secure-store session expiry, i18n screens, account-recovery once). Two failed in CI more than once and were fixed at the cause (a test server that discovered dependencies late; a stylesheet retry that blocked sending). `chat-recovery.test.ts` once lost focus on a code block in CI and passed locally: watch it.
+- Several browser tests time out under heavy load on this machine and pass when rerun alone (lazy-retry, chat-message, canvas, secure-store session expiry, i18n screens, account-recovery once). Two failed in CI more than once and were fixed at the cause (a test server that discovered dependencies late; a stylesheet retry that blocked sending). `chat-recovery.test.ts` once lost focus on a code block in CI and passed locally: watch it. The German-only follow-scroll failure in `chat-message-ui.test.ts` was a real race (a 2 px shrink when the first text replaced the typing dots) and is fixed with its own test.
 - Lazy loading: the sync indicator, gate and pairing prompt load on demand although they show on the first screen when sync is on; offline before they were ever fetched, each shows a retry line.
 - Keyboard shortcuts may collide with a browser's own keys (T-147).
 - `shared/health-consent.ts` (a versioned draft) still points to "Settings, Privacy & data"; it should say "Settings, Data controls" with a version bump.
-- The Getting started guide and the Trial scope text are long, partly outdated ("evaluation", "no cloud sync", PDF page limits) and not mode-aware; they need a rewrite in English and German before Secure goes on.
-- On Android, live voice still shows a disabled button where it is not supported (`src/LiveVoice.tsx`).
 - The audit harness captured one blank page (account usage, English, 375 px) during the full run; the step passed on a rerun.
 - The external cryptography review of sync is still open (earlier decision D1).
 

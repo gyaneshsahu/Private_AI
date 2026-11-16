@@ -493,7 +493,7 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 
 - [ ] **T-105 Live voice: phone and screen reader.**
   Do: open the app on an Android phone and on an iPhone. On the computer, try the panel with a screen reader (NVDA or VoiceOver) and the keyboard only.
-  Expect: Android shows the button greyed out with the reason. On the iPhone it works or says why not. The screen reader announces each new state once; Tab reaches every button; Escape closes the panel.
+  Expect: on Android there is no live voice button (dictation still works). On the iPhone it works or says why not. The screen reader announces each new state once; Tab reaches every button; Escape closes the panel.
   Tell the agent: per device what happened.
 
 - [ ] **T-106 Decide: live voice on for the alpha, and the recordings per day.**
