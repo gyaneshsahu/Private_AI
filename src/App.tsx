@@ -149,6 +149,8 @@ import { useShortcuts } from "./use-shortcuts";
 import { ShortcutHelp } from "./ShortcutHelp";
 import { lastAnswer, lastCodeBlock } from "./shortcut-copy";
 import { shortcutsText } from "./text/shortcuts";
+import { skipLinkText } from "./text/skip-link";
+import { searchNextText } from "./text/search-next";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { stopReading } from "./read-aloud";
@@ -386,8 +388,18 @@ export function App() {
   };
   const [searchSent, setSearchSent] = useState("");
   useEffect(() => setSearchSent(""), [conversation.id]);
+  // FE-07: "+" > "Search the web" arms the next Send (`searchNext`); that Send opens the approval
+  // card for exactly the typed text (`searchFor`). Nothing is searched until the card's button.
+  const [searchNext, setSearchNext] = useState(false);
+  const [searchFor, setSearchFor] = useState<string>();
+  useEffect(() => {
+    setSearchNext(false);
+    setSearchFor(undefined);
+  }, [conversation.id]);
+  const forced = searchFor !== undefined && searchFor === input && !!input.trim();
   const suggestion = useMemo(() => {
     if (!status?.search || !status.inference.ready) return undefined;
+    if (forced) return { ...prepareSearchQuery(input.replace(/\s+/g, " ")), rules: false, again: false };
     if (input.trim()) {
       const draft = searchSuggestion(input);
       return draft && { ...draft, again: false };
@@ -412,7 +424,7 @@ export function App() {
       !!last.uncheckedFigures,
     );
     return again && { ...again, again: true };
-  }, [status?.search, status?.inference.ready, input, conversation]);
+  }, [status?.search, status?.inference.ready, input, conversation, forced]);
   // The user may edit the shown search text. The edit belongs to one suggestion for one draft:
   // changing the question, sending or another conversation drops it. It is masked again here,
   // and `shown.value` is what a tap sends. The automatic paths keep the unedited suggestion.
@@ -428,7 +440,8 @@ export function App() {
     ...suggestion,
     ...(searchEdit?.for === editFor
       ? editedSearchText(searchEdit.text, suggestion.removed)
-      : { problem: undefined }),
+      : // Any typed text can be searched from the menu: its length is checked as an edited text is.
+        { problem: forced ? editedSearchText(suggestion.value).problem : undefined }),
   };
   // Search first for German rules (docs/german-rules-20261113.md): Send shows the choice for
   // exactly this draft; editing the draft or Escape drops it, and nothing is remembered.
@@ -443,8 +456,9 @@ export function App() {
   const choosing = askFirst && choiceFor === input;
   const choiceButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    if (choosing) choiceButton.current?.focus();
-  }, [choosing]);
+    if (choosing || forced) choiceButton.current?.focus();
+  }, [choosing, forced]);
+  const sn = searchNextText[lang];
   const [proposalNote, setProposalNote] = useState<{
     note: string;
     warning: boolean;
@@ -1647,6 +1661,14 @@ export function App() {
   }
   // The composer's Send. `asIs`: the user chose "Just send" on the scheduled-task card.
   function submitDraft(asIs = false) {
+    // FE-07: armed from the "+" menu, Send shows the approval card for this text (also with
+    // automatic search on: the menu is a request to search, the card is the approval).
+    // While that card is open, Send changes nothing: the card's buttons decide.
+    if (forced || (searchNext && status?.search && status.inference.ready && !attachedImage && !busy)) {
+      setSearchNext(false);
+      setSearchFor(input);
+      return;
+    }
     // "Remember that ...": ask to save it as a memory. Nothing is sent unless the user says so.
     const wanted =
       memoryEnabled() && !conversation.incognito && !attachedImage && !busy
@@ -2273,6 +2295,17 @@ export function App() {
         appearance === "system" ? (systemDark ? "dark" : "light") : appearance
       }
     >
+      {/* SS-23: first in the tab order; works from every tab (the message box exists on Conversation only). */}
+      <a
+        className="skip-link"
+        href="#message-input"
+        onClick={(event) => {
+          event.preventDefault();
+          goToMessageBox();
+        }}
+      >
+        {skipLinkText[lang].toMessageBox}
+      </a>
       <WorkspaceNavigation
         onDelete={(c) => void deleteSnapshot(c)}
         open={navigationOpen}
@@ -3083,15 +3116,24 @@ export function App() {
                   ↓
                 </button>
               )}
-              {suggestion && shown && !autoSearch && !(autoRules && !choosing) && !busy && (
+              {searchNext && !forced && !busy && (
+                <div className="notice composer-note search-next">
+                  <span>{sn.armed}</span>
+                  <button type="button" className="text-button" onClick={() => setSearchNext(false)}>
+                    {sn.cancel}
+                  </button>
+                </div>
+              )}
+              {suggestion && shown && (forced || (!autoSearch && !(autoRules && !choosing))) && !busy && (
                 <div
                   className="notice composer-note search-suggestion"
                   role="region"
                   aria-label={t.searchSuggestion}
                   onKeyDown={(event) => {
-                    if (!choosing || event.key !== "Escape") return;
+                    if (!(choosing || forced) || event.key !== "Escape") return;
                     event.preventDefault();
                     setChoiceFor(undefined);
+                    setSearchFor(undefined);
                     document.getElementById("message-input")?.focus();
                   }}
                 >
@@ -3099,7 +3141,9 @@ export function App() {
                     <strong>
                       {suggestion.again
                         ? WHEN_TO_SEARCH.againHeading
-                        : choosing
+                        : forced
+                          ? sn.heading
+                          : choosing
                           ? GERMAN_RULES.choiceHeading
                           : suggestion.rules
                             ? GERMAN_RULES.heading
@@ -3124,7 +3168,7 @@ export function App() {
                   <p className="muted">
                     {suggestion.again
                       ? WHEN_TO_SEARCH.againExplanation
-                      : askFirst
+                      : askFirst || forced
                         ? GERMAN_RULES.explanation
                         : WHEN_TO_SEARCH.explanation}
                   </p>
@@ -3136,6 +3180,7 @@ export function App() {
                       disabled={!!shown.problem}
                       onClick={() => {
                         setChoiceFor(undefined);
+                        setSearchFor(undefined);
                         void searchThenAnswer(
                           shown.value,
                           "tap",
@@ -3147,15 +3192,16 @@ export function App() {
                         ? WHEN_TO_SEARCH.againButton
                         : WHEN_TO_SEARCH.button}
                     </button>
-                    {choosing && (
+                    {(choosing || forced) && (
                       <button
                         type="button"
                         onClick={() => {
                           setChoiceFor(undefined);
+                          setSearchFor(undefined);
                           void send();
                         }}
                       >
-                        {GERMAN_RULES.without}
+                        {forced ? sn.without : GERMAN_RULES.without}
                       </button>
                     )}
                   </div>
@@ -3282,7 +3328,7 @@ export function App() {
                         busy: !!busy,
                         text: input,
                         ready: !!status?.inference.ready && online,
-                        waiting: choosing || !!consentPending,
+                        waiting: choosing || forced || !!consentPending,
                       })
                     )
                       event.currentTarget.form?.requestSubmit();
@@ -3371,6 +3417,22 @@ export function App() {
                           )}
                         </span>
                       </button>
+                      {status?.search && status.inference.ready && (
+                        <button
+                          type="button"
+                          className="text-button"
+                          aria-pressed={searchNext}
+                          disabled={!!busy}
+                          onClick={() => {
+                            setSearchNext((on) => !on);
+                            // The menu closes on the click (closeMenus); typing goes on in the message box.
+                            requestAnimationFrame(() => document.getElementById("message-input")?.focus());
+                          }}
+                        >
+                          <Icon name="search" />
+                          {sn.menu}
+                        </button>
+                      )}
                       <button
                         type="button"
                         className="text-button"
