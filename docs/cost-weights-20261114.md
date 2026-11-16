@@ -1,5 +1,28 @@
 # Cost weights from real token figures (14 November 2026)
 
+## Update 16 November: billing is on, and prices are versioned and applied per model
+
+**Owner-reported, 16 November 2026 (not verified):** Pay-As-You-Go is on (individual account; business with VAT ID after registration); a EUR 50 monthly cost cap is set on the CometRow API key; the key shows 100 requests per minute, 400K prompt tokens and 20K completion tokens; the owner holds the price list (input, cached input and output per 1M tokens per model, audio per minute). The figures below are still those of the owner's notes of 11 November and wait for the owner's confirmation (`docs/owner-walkthrough.md`, step 1).
+
+| Model | Input | Cached input | Output |
+| --- | ---: | ---: | ---: |
+| `glm-5.3` (Thinking) | 1.55 | 0.15 | 5.74 |
+| `glm-5.3-flash` (Fast) | 0.20 | 0.05 | 0.65 |
+| `gpt-oss-120b` (not used) | 0.20 | 0.04 | 0.65 |
+
+Speech-to-text, EUR per audio minute: `whisper-large-v3` 0.014, `voxtral-mini-3b` 0.004.
+
+What was checked and changed in the code (16 November):
+
+- **Checked:** the weekly reconciliation (`scripts/usage-metering.ts`, over the per-request records the browser reports) already priced input, cached input and output apart, per model. No blended number there.
+- **Changed, prices are versioned:** `prices` in `shared/usage-weights.json` is now a dated list like the weights (version 1, in force from 11 November). `pricesAt(time)` picks the list in force when a record was made, so a later price change never re-prices older records. A new price is a new version, never an edit.
+- **Changed, one function for the three prices:** `chatEuros` in `shared/usage-config.ts` (non-cached input, cached input, output; each at the model's own price). The script and the ledger both use it.
+- **Fixed, the ledger's cost of a background run:** `costOf` (`server/background-tasks.ts`) used the report's single input and output price for every model and knew no cached price. It now uses the model's own three prices, converted at the report's EUR to USD rate (the old way remains only when a model has no listed price or the report has no rate).
+- **Not changed, and you should know:** an ordinary chat request has no cost in the older ledger table (`usage_metrics.cost_usd`): its usage is encrypted, the server cannot read it. Its tokens come from the browser's report (`usage_records`) and are priced by the weekly script. The spend guard still books every request at the worst case; that is a safety ceiling and your decision.
+- **Test:** `tests/usage-metering.test.ts`, "prices: input, cached input and output are priced apart per model".
+
+**The EUR 50 cap in requests** (list prices before VAT, token figures from the table below): a Fast message of about 1,000 tokens costs about EUR 0.0003 to 0.0005; a Thinking message of about 1,900 tokens about EUR 0.005 to 0.01; a deep research run about EUR 0.02 to 0.04. Real use by a few invitees stays far below EUR 50; the worst case booked by the spend guard (EUR 0.11 to 0.14 per request) would reach it after about 360 to 450 requests.
+
 Each request costs allowance units (Fast 1, Thinking 5, and the feature weights below). This note compares those weights with what each request actually used in the live runs of 13 and 14 November, so the owner can decide before switching features on. Nothing was changed in the code: the weights are owner decisions.
 
 Two currencies matter:

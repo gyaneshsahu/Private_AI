@@ -40,18 +40,18 @@ This is everything only you can test, do or decide, from the start of the projec
 
 No deploy needed. T-01 to T-22 block the first invitee.
 
-- [ ] **T-01 Privatemode paid billing (VAT ID question).**
+- [x] **T-01 Privatemode paid billing (VAT ID question).** Done 16 November (owner-reported): Pay-As-You-Go enabled as "An individual (private use)". Still to do after the business registration: switch to "A business or organization" and add the VAT ID.
   Answer received 16 November (owner-reported, Privatemode support): until CometRow is registered, choose "An individual (private use)"; pay-as-you-go works without a VAT ID; German VAT applies either way, so the price is the same. After registration, switch to "A business or organization" and add the VAT ID under billing information; later invoices carry the business details.
   Do: in the portal choose "An individual (private use)" and enable pay-as-you-go. After the business registration, switch to "A business or organization" and add the VAT ID.
   Expect: paid billing is active.
   Tell the agent: "billing on", or paste support's answer (no account numbers).
 
-- [ ] **T-02 Top up and set the spend budget.**
+- [x] **T-02 Top up and set the spend budget.** Done 16 November (owner-reported), with a different value: a EUR 50 monthly cost cap on the CometRow API key, not EUR 200. No alert value was reported. EUR 50 is enough for the first 2 to 4 invitees and should be raised before 10 (`docs/owner-decisions.md`, 16 November item 25).
   Do: top up. Set a budget of EUR 200 per month with an alert at 90 % (decisions doc, step 3).
   Expect: the portal shows the budget and the alert.
   Tell the agent: the budget and the alert value.
 
-- [ ] **T-03 Alpha key, separate from the development key.**
+- [ ] **T-03 Alpha key, separate from the development key.** Reported 16 November for "the CometRow API key": EUR 50 cap, 100 requests per minute, 400K prompt tokens, 20K completion tokens. Still open: whether this is a separate alpha key, and its expiry date.
   Do: create a new key in the Privatemode portal with a rate limit, an expiry date (alpha end plus 2 weeks) and a spend limit. Keep it for Render only (T-31). The development key stays in Credential Manager.
   Expect: two keys in the portal.
   Tell the agent: the rate limit and the expiry date. Never the key.

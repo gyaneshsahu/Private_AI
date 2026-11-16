@@ -109,6 +109,7 @@ Design: `docs/settings-structure-20261116.md`.
 - Audit harness, final run: every switch on 558 screenshots, every switch off 366, no request beyond localhost, no page overflow inside the app, no untranslated labels. The three tour steps that still expected the old behaviour (send while offline, Secure Max first use) were updated and pass; the harness build now keeps fonts as files like the real build.
 - Firefox and WebKit, audit harness on 17 key screens at 375 and 1280 px in English and German (207 screenshots): no overflow, no request beyond localhost; two page loads timed out once and passed on a rerun. Remaining console messages: Firefox reports the CSP blocking a harmless eval probe in a library; the local server's bare 404 (the branded page runs only in production) blocks its own icon and style. The new UI tests themselves run in Chromium only.
 - Provider spend this run: Privatemode 0, Tinfoil 0, Brave 0. No live calls were made.
+- **Rerun on the evening of 16 November, after billing was switched on** (results in `.local/rerun-20261116/`): screen tour with every switch on 564 screenshots, every switch off 378, 0 failed steps, no request beyond localhost. The step that once showed a blank page (`account-usage`, English, 375 px) was run six more times alone: 6 of 6 passed. Local unit run: 2,245 of 2,250 passed. One failure was a queue test that still expected the old start rate (fixed). Four browser tests timed out while the machine was overloaded; alone, two passed, and two (`context-review`, `source-history-ui`) pass only with a longer limit (34 s against their 25 s) while a second development server was running on the machine. The local end-to-end run did not start because port 4173 was in use by that server; CI runs it. Provider spend: 12 attestation checks at Privatemode, 0 tokens; Tinfoil 0, Brave 0.
 
 ## 6. Known risks
 
@@ -124,7 +125,7 @@ Design: `docs/settings-structure-20261116.md`.
 
 - **Manual and device tests:** T-142 to T-157 in `docs/owner-test-list.md` (phone, tablet, offline, shortcuts, Secure on two devices, Secure Max first use, hosted error pages, export and delete all), plus the earlier device items.
 - **Legal reads:** `docs/secure-copy-draft-20261116.md` (Secure and Secure Max texts, the Privacy & data sentence), the deletion texts, the footer, the Help contact line, the background-task consent sentence for Secure (T-155).
-- **Billing and tax:** paid Privatemode billing and the VAT question (T-01).
+- **Billing and tax:** done 16 November (owner-reported): Pay-As-You-Go as an individual, EUR 50 monthly cap on the key, limits 100 requests per minute, 400K prompt tokens, 20K completion tokens. Later: switch to business with the VAT ID after registration; raise the cap before 10 invitees; confirm the price list (`docs/owner-walkthrough.md`, step 1).
 - **Master key:** `PRIVATEAI_CUSTODY_KEY` before Secure goes on (T-142).
 - **Database steps:** migrations 0023 to 0025 and the privilege SQL before the next deploy (T-143).
 - **Manifest approval:** Privatemode's new deployment manifest (T-120).
@@ -135,4 +136,5 @@ Design: `docs/settings-structure-20261116.md`.
 
 ## Run log
 
+- 16 November, evening: billing recorded as owner-reported; prices versioned and applied per model (`shared/usage-weights.json`, `chatEuros`); a cap or rate limit at Privatemode now shows "CometRow has reached its capacity for now. Please try again later." with no backup retry; attestation queue starts at 30 a minute after 12 of 12 verifications passed; `docs/owner-walkthrough.md` written (46 steps).
 - 16 November: harness, three audits, nine build rounds, three test-fix rounds; about 100 commits on `codex/development-handoff`, all pushed. Test fixes at the end: test servers warm every component and use a fixed dependency list where a part loads on demand, so a first use no longer reloads the page mid-test.
