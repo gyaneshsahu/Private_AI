@@ -194,7 +194,7 @@
   margin: 6px 0 0;
 }
 .chat-design .text-button {
-  color: var(--accent);
+  color: var(--ink);
   background: transparent;
 }
 .chat-design .appearance-controls {
@@ -310,12 +310,28 @@
   overflow: hidden;
 }
 .chat-design .code-block-toolbar {
-  background: var(--subtle);
-  padding: 8px 14px;
-  color: var(--muted);
+  background: var(--code);
+  border-bottom: 1px solid var(--line);
+  padding: 3px 6px 3px 14px;
+  color: var(--ink2);
+  font-size: 12px;
+}
+/* Copy code: a small quiet text button in the code header. */
+.chat-design .code-block-toolbar button {
+  min-height: 28px;
+  padding: 2px 8px;
+  border: 0;
+  border-radius: var(--r-sm);
+  color: var(--ink2);
+  font-size: 12px;
+  font-weight: 500;
+}
+.chat-design .code-block-toolbar button:hover:not(:disabled) {
+  color: var(--ink);
 }
 .chat-design .message-text pre {
-  background: var(--surface);
+  background: var(--code);
+  border-radius: 0;
   color: var(--ink);
   margin: 0;
   padding: 16px;
@@ -540,8 +556,8 @@
   padding: 10px;
 }
 .chat-design .recent-chats button[aria-current] {
-  background: var(--surface);
-  color: var(--accent);
+  background: var(--hover);
+  color: var(--ink);
 }
 .chat-design .history-locked {
   flex: 1;
@@ -985,8 +1001,8 @@
   color: var(--muted);
 }
 .chat-design .project-list .selected {
-  background: var(--surface);
-  color: var(--accent);
+  background: var(--hover);
+  color: var(--ink);
 }
 .chat-design .sidebar-hint {
   font-size: 12px;
@@ -1021,8 +1037,8 @@
   background: transparent;
 }
 .chat-design .history-filters button[aria-pressed="true"] {
-  color: var(--accent);
-  background: var(--surface);
+  color: var(--ink);
+  background: var(--hover);
 }
 .chat-design .recent-chats {
   overflow: visible;
@@ -1190,8 +1206,8 @@
   font-size: 13px;
 }
 .chat-design .settings-layout nav button[aria-current] {
-  background: var(--subtle);
-  color: var(--accent);
+  background: var(--hover);
+  color: var(--ink);
 }
 .chat-design .settings-content {
   min-width: 0;
@@ -1535,7 +1551,7 @@
   box-shadow: none;
 }
 .account-shell .account-entry .account-preview-primary:hover:not(:disabled) {
-  opacity: 0.88;
+  background: color-mix(in srgb, var(--primary) 88%, var(--ink));
 }
 .account-shell .account-social {
   display: flex;
@@ -1877,7 +1893,6 @@
 }
 .chat-design .new-chat-row .new-incognito {
   flex: 0 0 auto;
-  opacity: 0.9;
 }
 .chat-design .incognito-banner {
   border-style: dashed;
@@ -3342,7 +3357,7 @@
   font-weight: 600;
 }
 .chat-design .secure-max-heading .mode-lock {
-  color: var(--accent);
+  color: var(--ink2);
 }
 .chat-design .secure-max-line {
   margin: -4px 0 0;

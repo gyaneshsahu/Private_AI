@@ -12,7 +12,7 @@
   font-size: 25px;
   font-weight: 650;
   text-decoration: none;
-  letter-spacing: -0.8px;
+  letter-spacing: -0.01em;
 }
 .account-preview-brand span {
   font-weight: 350;
@@ -47,7 +47,7 @@
 .account-preview-card h1 {
   font-size: 1.65rem;
   line-height: 1.25;
-  letter-spacing: -0.6px;
+  letter-spacing: -0.01em;
   text-align: center;
   margin: 0;
 }
@@ -74,10 +74,10 @@
 .account-preview-actions .account-preview-primary {
   background: var(--primary);
   color: var(--primary-ink);
-  border-color: var(--primary);
+  border-color: transparent;
 }
 .account-preview-actions .account-preview-primary:hover {
-  background: var(--primary);
+  background: color-mix(in srgb, var(--primary) 88%, var(--ink));
 }
 .account-preview-passkey {
   border-color: transparent;
@@ -168,8 +168,8 @@
   cursor: pointer;
 }
 .account-language button[aria-pressed="true"] {
-  background: var(--primary);
-  color: var(--primary-ink);
+  background: var(--hover);
+  color: var(--ink);
 }
 
 /* Section headings inside the account card stay below the card's h1 (1.65rem); the global h2 is 42 px (SS-20). */
