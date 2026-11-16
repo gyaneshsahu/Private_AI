@@ -4,6 +4,14 @@
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
 import { MAX_DIFFERENCES, modesText, SECTION_4_KEYS } from "../src/text/modes";
+import { canvasText } from "../src/text/canvas";
+import { memoryText } from "../src/text/memory";
+import { forStorage, modeCopyText, type Storage } from "../src/text/mode-copy";
+import { projectText } from "../src/text/projects";
+import { savedListText } from "../src/text/saved-list";
+import { scheduledText } from "../src/text/scheduled";
+import { syncText } from "../src/text/sync";
+import { syncFilesText } from "../src/text/sync-files";
 
 type Key = keyof typeof modesText.en;
 const keys = Object.keys(modesText.en) as Key[];
@@ -47,4 +55,80 @@ it("matches the owner's texts in section 4 word for word", () => {
 
 it("translates every text except the product names", () => {
   for (const key of keys) if (key !== "maxLabel" && key !== "secureLabel") expect(text("de", key), key).not.toBe(text("en", key));
+});
+
+// Texts per storage mode (src/text/mode-copy.ts, docs/secure-copy-draft-20261116.md): what each
+// component shows for "local" (the device vault, production today), "secure" and "max".
+type Block = Record<string, unknown>;
+const STORAGE_MODULES: Record<string, { en: Block; de: Block }> = {
+  memoryText,
+  projectText,
+  canvasText,
+  scheduledText,
+  savedListText,
+  syncFilesText,
+};
+const MODE_KEY = /_(secure|max|pictures)$/;
+// Shown in Secure must never say the data is only here, unreadable by us, or end-to-end protected.
+const BANNED_IN_SECURE =
+  /only on this device|this device['’]s|server stores none|cannot read|can['’]t read|never can|we never|(stored|kept|saved) (only )?(on|in) (this device|your encrypted vault)|(deleted|removed) from this device|nicht lesen|nur auf diesem Gerät|dieses Geräts|speichert keine|wir nie|auf diesem Gerät gespeichert|von diesem Gerät (gelöscht|entfernt)|verschlüsselten Tresor|vault|Tresor|\bnobody\b|\bniemand\b|only you|nur Sie|end[- ]to[- ]end|ende[- ]zu[- ]ende/i;
+// Keys checked by hand, with the reason they are true or not shown with Secure on.
+const EXEMPT_IN_SECURE: Record<string, string> = {
+  "projectText.locked": "not rendered anywhere",
+  "scheduledText.consentBody": "end to end means the way to the AI; the Secure storage sentence is an owner question in docs/secure-copy-draft-20261116.md",
+};
+/** Every text a block shows in one mode, functions called with sample arguments. */
+function shown(block: Block, storage: Storage) {
+  const view = forStorage(block, storage);
+  return Object.entries(view)
+    .filter(([key]) => !MODE_KEY.test(key))
+    .flatMap(([key, value]) => {
+      if (typeof value === "string") return [[key, value] as const];
+      try {
+        const out = (value as (...args: unknown[]) => unknown)("Alpha", 2, 3, "4", "5");
+        return typeof out === "string" ? [[key, out] as const] : [];
+      } catch {
+        return [];
+      }
+    });
+}
+
+it("storage modes: every per-mode key replaces a key of the same kind, in both languages", () => {
+  for (const [name, block] of Object.entries(STORAGE_MODULES))
+    for (const lang of ["en", "de"] as const) {
+      expect(forStorage(block[lang])).toBe(block[lang]);
+      for (const [key, value] of Object.entries(block[lang])) {
+        if (!MODE_KEY.test(key)) continue;
+        const base = key.replace(MODE_KEY, "");
+        expect(Object.keys(block[lang]), `${name}.${key}`).toContain(base);
+        expect(typeof value, `${name}.${key}`).toBe(typeof block[lang][base]);
+      }
+    }
+  // The texts for files this change did not own are all per mode (or the pictures switch).
+  for (const key of Object.keys(modeCopyText.en)) expect(key).toMatch(MODE_KEY);
+});
+
+it("storage modes: Secure never claims device-only storage or that we cannot read; only Secure Max says 'cannot read'", () => {
+  for (const [name, block] of Object.entries(STORAGE_MODULES))
+    for (const lang of ["en", "de"] as const) {
+      const hits = shown(block[lang], "secure").filter(([key, text]) => !EXEMPT_IN_SECURE[`${name}.${key}`] && BANNED_IN_SECURE.test(text));
+      expect(hits, `secure ${lang} ${name}`).toEqual([]);
+      for (const [key, text] of shown(block[lang], "local")) expect(text, `local ${lang} ${name}.${key}`).not.toMatch(CANNOT_READ);
+      for (const [key, value] of Object.entries(block[lang]))
+        if (typeof value === "string" && CANNOT_READ.test(value)) expect(key, `${lang} ${name}`).toMatch(/_max$/);
+    }
+  // Settings with Secure on: the sync intro is the account's; the screens after it set up Secure Max.
+  for (const lang of ["en", "de"] as const) {
+    expect(forStorage(syncText[lang], "secure").offIntro).not.toMatch(BANNED_IN_SECURE);
+    expect(forStorage(syncText[lang], "max").explainWhat).toContain("Secure");
+    for (const [key, value] of Object.entries(modeCopyText[lang]))
+      if (key.endsWith("_secure")) expect(value, `${lang} modeCopyText.${key}`).not.toMatch(BANNED_IN_SECURE);
+      else if (CANNOT_READ.test(value)) expect(key).toMatch(/_max$/);
+    // The claim is made where it is true.
+    expect(forStorage(memoryText[lang], "max").intro).toMatch(CANNOT_READ);
+    expect(forStorage(memoryText[lang], "secure").intro).toMatch(/CometRow (holds the key|verwahrt den Schlüssel)/);
+  }
+  // Secure has no encrypted backup file: the project screen leaves that line out.
+  expect(forStorage(projectText.en, "secure").notInBackup).toBe("");
+  expect(forStorage(projectText.en, "max").notInBackup).toBe(projectText.en.notInBackup);
 });

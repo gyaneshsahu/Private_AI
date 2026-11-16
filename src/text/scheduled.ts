@@ -249,6 +249,23 @@ export const scheduledText = defineText({
     cardCreated: (name: string) => `Scheduled task created: ${name}. Nothing was sent.`,
     trigger: triggerEn,
     weekdayName: (day: number) => EN_DAYS[day],
+    // Per storage mode (forStorage in ./mode-copy): the texts above are the device vault's.
+    intro_secure:
+      "A Manual task is saved to your account, encrypted while stored, and is on all your devices after sign-in. When it is due, CometRow shows it here and above the chat, and you tap Run now. Nothing runs while CometRow is closed.",
+    intro_max:
+      "A Manual task is kept in Secure Max, encrypted with a key only you hold. When it is due, CometRow shows it here and above the chat, and you tap Run now. Nothing runs while CometRow is closed.",
+    locked_secure: "Scheduled tasks are not available right now: your account's saved data has not loaded. Try again in a moment.",
+    locked_max: "Unlock Secure Max to see and create its scheduled tasks.",
+    deleteText_secure: "The task is deleted on all your devices. This cannot be undone.",
+    deleteText_max: "The task is deleted on all your devices. This cannot be undone.",
+    deleteBackgroundText_secure:
+      "The task is deleted on all your devices, and its copy and any waiting results are deleted from our server. This cannot be undone.",
+    deleteBackgroundText_max:
+      "The task is deleted on all your devices, and its copy and any waiting results are deleted from our server. This cannot be undone.",
+    modeManualText_secure: "CometRow shows the task when it is due and you tap Run now. Saved to your account.",
+    modeManualText_max: "CometRow shows the task when it is due and you tap Run now. Saved in Secure Max.",
+    cardLocked_secure: "Scheduled tasks are not available right now. Try again in a moment, or send this as a normal message.",
+    cardLocked_max: "Scheduled tasks in Secure Max need Secure Max unlocked. Unlock it first, or send this as a normal message.",
   },
   de: {
     menu: "Geplant",
@@ -465,5 +482,24 @@ export const scheduledText = defineText({
     cardCreated: (name: string) => `Geplante Aufgabe angelegt: ${name}. Nichts wurde gesendet.`,
     trigger: triggerDe,
     weekdayName: (day: number) => DE_DAYS[day],
+    intro_secure:
+      "Eine manuelle Aufgabe wird in Ihrem Konto gespeichert, verschlüsselt abgelegt, und ist nach der Anmeldung auf allen Ihren Geräten. Wenn sie fällig ist, zeigt CometRow sie hier und über dem Chat, und Sie tippen auf „Jetzt ausführen“. Solange CometRow geschlossen ist, läuft nichts.",
+    intro_max:
+      "Eine manuelle Aufgabe wird in Secure Max gespeichert, mit einem Schlüssel verschlüsselt, den nur Sie haben. Wenn sie fällig ist, zeigt CometRow sie hier und über dem Chat, und Sie tippen auf „Jetzt ausführen“. Solange CometRow geschlossen ist, läuft nichts.",
+    locked_secure:
+      "Geplante Aufgaben sind gerade nicht verfügbar: Die gespeicherten Daten Ihres Kontos sind noch nicht geladen. Versuchen Sie es gleich noch einmal.",
+    locked_max: "Entsperren Sie Secure Max, um seine geplanten Aufgaben zu sehen und anzulegen.",
+    deleteText_secure: "Die Aufgabe wird auf allen Ihren Geräten gelöscht. Das lässt sich nicht rückgängig machen.",
+    deleteText_max: "Die Aufgabe wird auf allen Ihren Geräten gelöscht. Das lässt sich nicht rückgängig machen.",
+    deleteBackgroundText_secure:
+      "Die Aufgabe wird auf allen Ihren Geräten gelöscht, und ihre Kopie und wartende Ergebnisse werden von unserem Server gelöscht. Das lässt sich nicht rückgängig machen.",
+    deleteBackgroundText_max:
+      "Die Aufgabe wird auf allen Ihren Geräten gelöscht, und ihre Kopie und wartende Ergebnisse werden von unserem Server gelöscht. Das lässt sich nicht rückgängig machen.",
+    modeManualText_secure: "CometRow zeigt die Aufgabe, wenn sie fällig ist, und Sie tippen auf „Jetzt ausführen“. In Ihrem Konto gespeichert.",
+    modeManualText_max: "CometRow zeigt die Aufgabe, wenn sie fällig ist, und Sie tippen auf „Jetzt ausführen“. In Secure Max gespeichert.",
+    cardLocked_secure:
+      "Geplante Aufgaben sind gerade nicht verfügbar. Versuchen Sie es gleich noch einmal oder senden Sie dies als normale Nachricht.",
+    cardLocked_max:
+      "Geplante Aufgaben in Secure Max brauchen ein entsperrtes Secure Max. Entsperren Sie es zuerst oder senden Sie dies als normale Nachricht.",
   },
 });

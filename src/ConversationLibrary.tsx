@@ -4,6 +4,7 @@ import { ConfirmDialog } from "./ConfirmDialog";
 import { conversationTitle, findConversations } from "./conversation-library";
 import { useLang } from "./i18n";
 import { libraryText } from "./text/conversation-ui";
+import { forStorage, type Storage } from "./text/mode-copy";
 import { savedListText } from "./text/saved-list";
 
 export function ConversationLibrary({
@@ -11,11 +12,14 @@ export function ConversationLibrary({
   busy,
   onOpen,
   onDelete,
+  storage,
 }: {
   conversations: Conversation[];
   busy: boolean;
   onOpen: (conversation: Conversation) => void;
   onDelete: (conversation: Conversation) => void;
+  /** Where these chats are kept; decides what the delete question promises (src/text/mode-copy.ts). */
+  storage?: Storage;
 }) {
   const { lang } = useLang();
   const t = libraryText[lang];
@@ -24,7 +28,7 @@ export function ConversationLibrary({
   // Deleting asks first (owner, 14 November 2026): the conversation waiting for an answer.
   const [deleting, setDeleting] = useState<Conversation>();
   const section = useRef<HTMLElement>(null);
-  const c = savedListText[lang];
+  const c = forStorage(savedListText[lang], storage);
   const visible = useMemo(
     () => findConversations(conversations, query, order),
     [conversations, query, order],

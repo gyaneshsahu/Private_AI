@@ -51,6 +51,9 @@ export const canvasText = defineText({
         noInstruction: "Say what should change first.",
         tableFull: "A canvas table has at most 200 rows and 30 columns.",
       })[p],
+    // Per storage mode (forStorage in ./mode-copy): `note` above is the device vault's.
+    note_secure: "Saved with the conversation. Sent to the AI only when you ask for changes.",
+    note_max: "Saved with the conversation. Sent to the AI only when you ask for changes.",
   },
   de: {
     open: "Im Canvas öffnen",
@@ -100,5 +103,7 @@ export const canvasText = defineText({
         noInstruction: "Sagen Sie zuerst, was sich ändern soll.",
         tableFull: "Eine Canvas-Tabelle hat höchstens 200 Zeilen und 30 Spalten.",
       })[p],
+    note_secure: "Wird mit der Unterhaltung gespeichert. Nur an die KI gesendet, wenn Sie Änderungen anfordern.",
+    note_max: "Wird mit der Unterhaltung gespeichert. Nur an die KI gesendet, wenn Sie Änderungen anfordern.",
   },
 });

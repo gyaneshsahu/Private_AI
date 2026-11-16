@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useText } from "./i18n";
 import { syncText } from "./text/sync";
+import { forStorage, type Storage } from "./text/mode-copy";
 import { confirmRecoveryKeySaved, setUpSync } from "./sync";
 import { RecoveryKeyGroups, RememberChoice, defaultDeviceName, normalizeRecoveryKey } from "./SyncRecoveryKey";
 
@@ -12,13 +13,16 @@ export function SyncSetup({
   onDone,
   onCancel,
   onAlreadySetUp,
+  storage,
 }: {
   onDone: (remember: boolean) => void;
   onCancel: () => void;
   /** Another device set sync up again meanwhile: join it by approval instead. */
   onAlreadySetUp?: () => void;
+  /** "max" when this sets up Secure Max (src/text/mode-copy.ts). */
+  storage?: Storage;
 }) {
-  const t = useText(syncText);
+  const t = forStorage(useText(syncText), storage);
   const [step, setStep] = useState<Step>("explain");
   const [label, setLabel] = useState(defaultDeviceName);
   const [remember, setRemember] = useState(true);

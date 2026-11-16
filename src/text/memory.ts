@@ -73,6 +73,37 @@ export const memoryText = defineText({
     // Added to the existing backup and "delete everything" texts while memory is switched on.
     backupAlso: "Your memories are included.",
     eraseAlso: "Your memories are deleted too.",
+    // Per storage mode (forStorage in ./mode-copy): the texts above are the device vault's.
+    intro_secure:
+      "CometRow can remember what you ask it to remember, for all your chats. Memories are saved to your account, encrypted while stored. CometRow holds the key. They are never used to train AI or for advertising.",
+    intro_max:
+      "CometRow can remember what you ask it to remember, for your Secure Max chats. Memories are encrypted with a key only you hold. CometRow cannot read them.",
+    notUsed_secure:
+      "Memory is not used in incognito chats. You can also switch it off for one chat in that chat's menu.",
+    notUsed_max:
+      "Memory is not used in incognito chats or while Secure Max is locked. You can also switch it off for one chat in that chat's menu.",
+    locked_secure:
+      "Memory is not available right now: your account's saved data has not loaded. Until then no memory is read, saved or sent.",
+    locked_max: "Unlock Secure Max to use its memory. Until then no memory is read, saved or sent.",
+    deleteText_secure: "It is deleted on all your devices. This cannot be undone.",
+    deleteText_max: "It is deleted on all your devices. This cannot be undone.",
+    forgetAllText_secure: (count: number) =>
+      `${count === 1 ? "Your 1 memory is" : `All ${count} memories are`} deleted on all your devices. This cannot be undone. Your chats stay as they are.`,
+    forgetAllText_max: (count: number) =>
+      `${count === 1 ? "Your 1 memory is" : `All ${count} memories are`} deleted on all your devices. This cannot be undone. Your chats stay as they are.`,
+    added_secure: "Saved to memory.",
+    added_max: "Saved to memory.",
+    forgotten_secure: "All memories are deleted.",
+    forgotten_max: "All memories are deleted.",
+    rememberText_secure:
+      "It is saved to your account, encrypted while stored. It is sent to the protected model with questions it fits. You can change the words first.",
+    rememberText_max:
+      "It is saved in Secure Max, encrypted with a key only you hold. It is sent to the protected model with questions it fits. You can change the words first.",
+    rememberLocked_secure: "Memory is not available right now, so nothing can be saved. Try again in a moment.",
+    rememberLocked_max:
+      "Memory in Secure Max needs Secure Max unlocked, so nothing can be saved now. Unlock Secure Max and try again.",
+    usedGone_secure: "Not available: deleted, or not loaded yet.",
+    usedGone_max: "Not available: deleted, or Secure Max is locked.",
   },
   de: {
     title: "Gedächtnis",
@@ -143,5 +174,37 @@ export const memoryText = defineText({
     contextRow: "Erinnerungen",
     backupAlso: "Ihre Erinnerungen sind enthalten.",
     eraseAlso: "Ihre Erinnerungen werden ebenfalls gelöscht.",
+    intro_secure:
+      "CometRow kann sich für alle Ihre Chats merken, was Sie ihm zum Merken geben. Erinnerungen werden in Ihrem Konto gespeichert, verschlüsselt abgelegt. CometRow verwahrt den Schlüssel. Sie werden nie für KI-Training oder Werbung genutzt.",
+    intro_max:
+      "CometRow kann sich für Ihre Secure-Max-Chats merken, was Sie ihm zum Merken geben. Erinnerungen werden mit einem Schlüssel verschlüsselt, den nur Sie haben. CometRow kann sie nicht lesen.",
+    notUsed_secure:
+      "Das Gedächtnis wird in Inkognito-Chats nicht verwendet. Sie können es auch für einen einzelnen Chat im Menü dieses Chats ausschalten.",
+    notUsed_max:
+      "Das Gedächtnis wird in Inkognito-Chats und bei gesperrtem Secure Max nicht verwendet. Sie können es auch für einen einzelnen Chat im Menü dieses Chats ausschalten.",
+    locked_secure:
+      "Das Gedächtnis ist gerade nicht verfügbar: Die gespeicherten Daten Ihres Kontos sind noch nicht geladen. Bis dahin wird keine Erinnerung gelesen, gespeichert oder gesendet.",
+    locked_max:
+      "Entsperren Sie Secure Max, um sein Gedächtnis zu nutzen. Bis dahin wird keine Erinnerung gelesen, gespeichert oder gesendet.",
+    deleteText_secure: "Sie wird auf allen Ihren Geräten gelöscht. Das lässt sich nicht rückgängig machen.",
+    deleteText_max: "Sie wird auf allen Ihren Geräten gelöscht. Das lässt sich nicht rückgängig machen.",
+    forgetAllText_secure: (count: number) =>
+      `${count === 1 ? "Ihre 1 Erinnerung wird" : `Alle ${count} Erinnerungen werden`} auf allen Ihren Geräten gelöscht. Das lässt sich nicht rückgängig machen. Ihre Chats bleiben, wie sie sind.`,
+    forgetAllText_max: (count: number) =>
+      `${count === 1 ? "Ihre 1 Erinnerung wird" : `Alle ${count} Erinnerungen werden`} auf allen Ihren Geräten gelöscht. Das lässt sich nicht rückgängig machen. Ihre Chats bleiben, wie sie sind.`,
+    added_secure: "Im Gedächtnis gespeichert.",
+    added_max: "Im Gedächtnis gespeichert.",
+    forgotten_secure: "Alle Erinnerungen sind gelöscht.",
+    forgotten_max: "Alle Erinnerungen sind gelöscht.",
+    rememberText_secure:
+      "Sie wird in Ihrem Konto gespeichert, verschlüsselt abgelegt. Sie wird mit Fragen, zu denen sie passt, an das geschützte Modell gesendet. Sie können den Wortlaut vorher ändern.",
+    rememberText_max:
+      "Sie wird in Secure Max gespeichert, mit einem Schlüssel verschlüsselt, den nur Sie haben. Sie wird mit Fragen, zu denen sie passt, an das geschützte Modell gesendet. Sie können den Wortlaut vorher ändern.",
+    rememberLocked_secure:
+      "Das Gedächtnis ist gerade nicht verfügbar. Deshalb kann jetzt nichts gespeichert werden. Versuchen Sie es gleich noch einmal.",
+    rememberLocked_max:
+      "Das Gedächtnis in Secure Max braucht ein entsperrtes Secure Max. Deshalb kann jetzt nichts gespeichert werden. Entsperren Sie Secure Max und versuchen Sie es noch einmal.",
+    usedGone_secure: "Nicht verfügbar: gelöscht oder noch nicht geladen.",
+    usedGone_max: "Nicht verfügbar: gelöscht, oder Secure Max ist gesperrt.",
   },
 });

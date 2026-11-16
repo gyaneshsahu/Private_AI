@@ -4,6 +4,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { useLang, useText } from "./i18n";
 import { syncText, vaultUnlockText } from "./text/sync";
+import { forStorage, type Storage } from "./text/mode-copy";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { containDialogFocus } from "./dialog-focus";
 import { syncHardeningText } from "./text/sync-hardening";
@@ -222,6 +223,7 @@ export function SyncSettings({
   vault,
   onNotice,
   onOpened,
+  storage,
 }: {
   unlocked: boolean;
   /** This account's vault: whether a detached device still needs a local passphrase. */
@@ -229,8 +231,12 @@ export function SyncSettings({
   onNotice: (text: string) => void;
   /** Sync was turned on (or on again) here, with this device's "Remember this device" choice. */
   onOpened?: (remember: boolean) => void;
+  /** "secure": Settings with Secure on; this sync is then Secure Max's (src/text/mode-copy.ts). */
+  storage?: Storage;
 }) {
-  const t = useText(syncText);
+  const t = forStorage(useText(syncText), storage);
+  // Turning sync on with Secure on sets up Secure Max.
+  const setupStorage: Storage = storage === "secure" ? "max" : (storage ?? "local");
   const h = useText(syncHardeningText);
   const vaultUnlock = useText(vaultUnlockText);
   const { lang } = useLang();
@@ -297,6 +303,7 @@ export function SyncSettings({
         <h3 id={headingId}>{t.section}</h3>
         {setup ? (
           <SyncSetup
+            storage={setupStorage}
             onCancel={() => setSetup(false)}
             onAlreadySetUp={() => {
               setSetup(false);
@@ -373,6 +380,7 @@ export function SyncSettings({
         <h3 id={headingId}>{t.section}</h3>
         {setup ? (
           <SyncSetup
+            storage={setupStorage}
             onCancel={() => setSetup(false)}
             onDone={(remember) => {
               setSetup(false);

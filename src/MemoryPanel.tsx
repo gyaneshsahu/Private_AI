@@ -20,6 +20,7 @@ import {
   watchMemories,
   type Memory,
 } from "./memory";
+import { forStorage, type Storage } from "./text/mode-copy";
 import { memoryText } from "./text/memory";
 import type { Vault } from "./vault";
 
@@ -52,9 +53,18 @@ const submitOnEnter = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
   event.currentTarget.form?.requestSubmit();
 };
 
-export function MemorySettings({ vault, unlocked }: { vault: Vault | null; unlocked: boolean }) {
+export function MemorySettings({
+  vault,
+  unlocked,
+  storage,
+}: {
+  vault: Vault | null;
+  unlocked: boolean;
+  /** Where the memories are kept; decides what the texts promise (src/text/mode-copy.ts). */
+  storage?: Storage;
+}) {
   const { lang } = useLang();
-  const t = memoryText[lang];
+  const t = forStorage(memoryText[lang], storage);
   const memories = useMemories();
   const [draft, setDraft] = useState("");
   const [query, setQuery] = useState("");
@@ -256,15 +266,17 @@ export function RememberDialog({
   text,
   canSave,
   canSend,
+  storage,
   onClose,
 }: {
   text: string;
   canSave: boolean;
   canSend: boolean;
+  storage?: Storage;
   onClose: (result?: { save: string } | "send") => void;
 }) {
   const { lang } = useLang();
-  const t = memoryText[lang];
+  const t = forStorage(memoryText[lang], storage);
   const dialog = useRef<HTMLDialogElement>(null);
   const id = useId();
   const [words, setWords] = useState(text);
@@ -343,9 +355,9 @@ export function RememberDialog({
 }
 
 /** Under an answer: which memories went with its question. Only ids are kept with the answer. */
-export function MemoryNote({ ids }: { ids: readonly string[] }) {
+export function MemoryNote({ ids, storage }: { ids: readonly string[]; storage?: Storage }) {
   const { lang } = useLang();
-  const t = memoryText[lang];
+  const t = forStorage(memoryText[lang], storage);
   const memories = useMemories();
   if (!memoryEnabled() || !ids.length) return null;
   return (
