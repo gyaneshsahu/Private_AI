@@ -9,6 +9,7 @@ import type { Browser, BrowserContext, BrowserType, Locator, Page } from "@playw
 import { randomUUID } from "node:crypto";
 import { appText } from "../src/text/app";
 import { deepResearchText } from "../src/text/deep-research";
+import { WHEN_TO_SEARCH_TEXT } from "../src/when-to-search";
 import { installFakes, type AnswerName, type AuditConfig, type Fakes } from "./audit-fakes";
 
 type Lang = "en" | "de";
@@ -30,6 +31,8 @@ export interface Entry {
   outside: string[];
   /** Elements whose content is wider than their box: cut off (hidden/clip) or scrolling sideways (auto/scroll). */
   wide: string[];
+  /** How far the scrolling area (main, or an open dialog) continues below the screenshot. */
+  belowFoldPx: number;
   germanOff?: boolean;
 }
 
@@ -62,9 +65,13 @@ const MEASURE = `(() => {
   const name = (el) => el.tagName.toLowerCase() + (el.id ? "#" + el.id : "") + (typeof el.className === "string" && el.className.trim() ? "." + el.className.trim().split(/\\s+/).slice(0, 2).join(".") : "") + ' "' + (el.textContent || "").trim().slice(0, 40) + '"';
   const outside = [...document.querySelectorAll("body *")].filter((el) => visible(el) && !clipped(el)).filter((el) => { const r = el.getBoundingClientRect(); return r.right > vw + 1 || r.left < -1; }).map(name);
   const wide = [...document.querySelectorAll("body *")]
-    .filter((el) => !["TEXTAREA", "INPUT", "SELECT"].includes(el.tagName) && !el.closest(".sr-only, .katex-mathml") && visible(el) && el.scrollWidth > el.clientWidth + 1 && el.clientWidth > 0)
+    .filter((el) => !["TEXTAREA", "INPUT", "SELECT", "DETAILS", "PRE"].includes(el.tagName) && !el.closest(".sr-only, .katex, pre, .answer-table") && getComputedStyle(el).textOverflow !== "ellipsis" && visible(el) && el.scrollWidth > el.clientWidth + 1 && el.clientWidth > 0)
     .map((el) => name(el) + " +" + (el.scrollWidth - el.clientWidth) + "px " + getComputedStyle(el).overflowX);
-  return { overflowPx: document.documentElement.scrollWidth - vw, outside: [...new Set(outside)].slice(0, 10), wide: [...new Set(wide)].slice(0, 12) };
+  // The app scrolls inside <main> (and inside an open dialog), not the document: measure all three.
+  const boxes = [document.documentElement, document.querySelector("main"), ...document.querySelectorAll("dialog[open]")].filter(Boolean);
+  const overflowPx = Math.max(...boxes.map((el) => el.scrollWidth - el.clientWidth));
+  const scroller = [...document.querySelectorAll("dialog[open]")].at(-1) || document.querySelector("main") || document.documentElement;
+  return { overflowPx, outside: [...new Set(outside)].slice(0, 10), wide: [...new Set(wide)].slice(0, 12), belowFoldPx: Math.max(0, scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight) };
 })()`;
 
 interface Ctx {
@@ -85,9 +92,11 @@ interface Ctx {
   click: (name: string, role?: "button" | "link" | "checkbox" | "tab" | "menuitem") => Promise<void>;
   label: (name: string) => Locator;
   fresh: (path?: string) => Promise<void>;
-  nav: () => Promise<void>;
+  /** Opens the navigation drawer on narrow screens; unlocks the local vault unless `unlock` is false. */
+  nav: (unlock?: boolean) => Promise<void>;
   send: (text: string, answer?: AnswerName, wait?: boolean) => Promise<void>;
-  shot: (screen: string) => Promise<void>;
+  /** fullPage for pages that scroll the document (outside the app shell). */
+  shot: (screen: string, fullPage?: boolean) => Promise<void>;
   clicked: string[];
 }
 type Step = [screen: string, run: (c: Ctx) => Promise<void>, only?: AuditConfig];
@@ -291,6 +300,20 @@ const STEPS: Step[] = [
     await c.send("What does the source say? audit:citations", undefined, true);
     await c.shot("answer-citations");
   }, "on"], // search needs a search key: off in a build without switches
+  ["search-suggestion", async (c) => {
+    // A time-sensitive question: the composer offers a one-tap search with the exact text.
+    const t = WHEN_TO_SEARCH_TEXT[c.germanOff() ? "en" : c.lang];
+    await c.fresh();
+    await c.label("Message CometRow").fill(c.lang === "de" && !c.germanOff() ? "Wer ist aktuell Bundeskanzler?" : "Who is the current chancellor of Germany?");
+    await pause(c.page, 800);
+    await c.shot("search-suggestion");
+    await vis(c.page.getByRole("button", { name: t.button, exact: true })).click();
+    c.clicked.push(t.button);
+    const agree = vis(c.page.getByRole("button", { name: c.tr("I agree"), exact: true }));
+    if (await agree.waitFor({ timeout: 1500 }).then(() => true, () => false)) await agree.click(), c.clicked.push("I agree");
+    await pause(c.page, 2500);
+    await c.shot("search-suggestion-answer");
+  }, "on"],
   ["deep-research", async (c) => {
     await c.fresh();
     await tools(c, "Research");
@@ -390,6 +413,20 @@ const STEPS: Step[] = [
     await c.shot("secure-max-unlocked");
     await c.nav();
     await c.shot("secure-max-section-unlocked");
+    await c.page.keyboard.press("Escape");
+    await settings(c, "Devices and sync");
+    await c.shot("settings-devices-sync-vault-unlocked");
+    // Turn on sync (the server's memory store): the explanation, then the step after confirming.
+    await c.click("Turn on sync");
+    await pause(c.page, 800);
+    await c.shot("sync-turn-on");
+    const confirm = vis(c.page.getByRole("button", { name: c.tr("Turn on sync"), exact: true }));
+    if (await confirm.isVisible().catch(() => false)) {
+      await confirm.click();
+      c.clicked.push("Turn on sync (confirm)");
+      await pause(c.page, 2500);
+      await c.shot("sync-turned-on");
+    }
   }, "on"],
   ["conversation-menu", async (c) => { await c.fresh(); await conversationMenu(c); await c.shot("conversation-menu"); }],
   ["manage-history", async (c) => {
@@ -439,7 +476,7 @@ const STEPS: Step[] = [
     }
   }],
   ["development-tools", async (c) => { await c.fresh("/?developmentTools"); await c.shot("development-tools"); }],
-  ["navigation-drawer", async (c) => { await c.fresh(); await c.nav(); await c.shot("navigation"); }],
+  ["navigation-drawer", async (c) => { await c.fresh(); await c.nav(false); await c.shot("navigation"); }],
   ["offline-first-send", async (c) => {
     await c.fresh();
     await c.fakes.setOffline(true);
@@ -483,7 +520,7 @@ const STEPS: Step[] = [
       c.fakes.setReady(true);
     }
   }],
-  ["not-found", async (c) => { await c.page.goto(c.origin + "/no-such-page"); c.clicked.push("goto /no-such-page"); await c.shot("not-found-404"); }],
+  ["not-found", async (c) => { await c.page.goto(c.origin + "/no-such-page"); c.clicked.push("goto /no-such-page"); await c.shot("not-found-404", true); }],
   ["account-lab", async (c) => {
     const now = "2026-11-16T09:00:00.000Z";
     let signedIn = false;
@@ -500,15 +537,15 @@ const STEPS: Step[] = [
       await c.page.goto(c.origin + "/?account-lab=1");
       c.clicked.push("goto /?account-lab=1");
       await pause(c.page, 1500);
-      await c.shot("account-lab-sign-in");
+      await c.shot("account-lab-sign-in", true);
       signedIn = true;
       await c.page.reload();
       await pause(c.page, 1500);
-      await c.shot("account-lab-signed-in");
+      await c.shot("account-lab-signed-in", true);
       await c.page.goto(c.origin + "/?account-preview=1");
       c.clicked.push("goto /?account-preview=1");
       await pause(c.page, 1500);
-      await c.shot("account-preview");
+      await c.shot("account-preview", true);
     } finally {
       await c.page.unroute("**/api/{account,auth}/**");
     }
@@ -522,12 +559,13 @@ const STEPS: Step[] = [
       await page.goto(c.origin);
       await page.locator(".app-shell").waitFor({ timeout: 30000 });
       await pause(page, 800);
+      // This context's log goes into the shot's entry (and its non-local requests into the hard failures).
+      for (const [k, v] of Object.entries(fakes.log)) (c.fakes.log as unknown as Record<string, unknown[]>)[k].push(...(v as unknown[]).splice(0));
       const own = c.page;
       c.page = page;
-      await c.shot("signed-out-home");
+      await c.shot("signed-out-home", true);
       c.page = own;
     } finally {
-      for (const [k, v] of Object.entries(fakes.log)) (c.fakes.log as unknown as Record<string, unknown[]>)[k].push(...(v as unknown[]));
       await context.close();
     }
   }],
@@ -594,12 +632,12 @@ export async function runTour(o: {
               await pause(c.page, 600);
               if (lang === "de" && (await c.page.locator("html").getAttribute("lang")) !== "de") germanOff = true;
             },
-            async nav() {
+            async nav(unlockVault = true) {
               const toggle = vis(c.page.getByRole("button", { name: tr("Open navigation"), exact: true }));
               if (await toggle.isVisible().catch(() => false)) await toggle.click(), c.clicked.push("Open navigation"), await pause(c.page, 400);
               // Without Secure (config off) history sits in the local vault: unlock it with the synthetic passphrase.
               const unlock = vis(c.page.getByRole("button", { name: tr("Unlock history"), exact: true }));
-              if (!(await unlock.isVisible().catch(() => false))) return;
+              if (!unlockVault || !(await unlock.isVisible().catch(() => false))) return;
               await unlock.click();
               await c.label("Vault passphrase").fill("synthetic secure max passphrase");
               await c.click("Create or unlock vault");
@@ -625,11 +663,11 @@ export async function runTour(o: {
               await vis(c.page.getByRole("button", { name: tr("Stop response"), exact: true })).waitFor({ state: "hidden", timeout: 30000 }).catch(() => {});
               await pause(c.page, 500);
             },
-            async shot(screen) {
+            async shot(screen, fullPage = false) {
               const file = `${String(++n).padStart(2, "0")}-${screen}-${lang}-${width}-${engineName}.png`;
               let error: string | undefined;
-              await c.page.screenshot({ path: `${o.out}/${file}`, fullPage: false, timeout: 15000 }).catch((e) => (error = `screenshot: ${String(e.message).slice(0, 200)}`));
-              const m = (await c.page.evaluate(MEASURE).catch(() => ({ overflowPx: -1, outside: [], wide: [] }))) as { overflowPx: number; outside: string[]; wide: string[] };
+              await c.page.screenshot({ path: `${o.out}/${file}`, fullPage, timeout: 15000 }).catch((e) => (error = `screenshot: ${String(e.message).slice(0, 200)}`));
+              const m = (await c.page.evaluate(MEASURE).catch(() => ({ overflowPx: -1, outside: [], wide: [], belowFoldPx: -1 }))) as { overflowPx: number; outside: string[]; wide: string[]; belowFoldPx: number };
               const log = fakes.log;
               entries.push({
                 n, screen, browser: engineName, width, lang, file, url: c.page.url(), clicked: [...c.clicked],
@@ -655,6 +693,11 @@ export async function runTour(o: {
             hardFailures += fresh.filter((e) => e.nonLocal.length).length;
             console.log(`${engineName} ${lang} ${width} ${name}: ${fresh.map((e) => e.error ? `FAILED (${e.error.slice(0, 80)})` : "ok").join(", ")}${fresh.some((e) => e.consoleErrors.length || e.pageErrors.length || e.failedRequests.length) ? " [errors logged]" : ""}`);
           }
+          // Anything logged after the last shot goes into the last entry, so nothing escapes the index.
+          const last = entries.at(-1);
+          if (last)
+            for (const [k, from] of [["consoleErrors", "console"], ["pageErrors", "pageErrors"], ["failedRequests", "failed"], ["nonLocal", "nonLocal"]] as const)
+              last[k].push(...fakes.log[from].splice(0));
           await context.close();
         }
     } finally {
@@ -666,5 +709,7 @@ export async function runTour(o: {
   const reached = (combo: string) => new Set(entries.filter((e) => `${e.browser} ${e.lang} ${e.width}` === combo && !e.error).map((e) => e.screen));
   const first = reached(combos[0] ?? "");
   const missingScreens = Object.fromEntries(combos.slice(1).map((combo) => [combo, [...first].filter((s) => !reached(combo).has(s))]).filter(([, list]) => list.length));
-  return { config: o.config, origin: o.origin, generated: new Date().toISOString(), hardFailures, untranslatedLabels: [...missing], missingScreens, entries };
+  hardFailures = entries.filter((e) => e.nonLocal.length).length;
+  const failedSteps = entries.filter((e) => e.error).length;
+  return { config: o.config, origin: o.origin, generated: new Date().toISOString(), hardFailures, failedSteps, untranslatedLabels: [...missing], missingScreens, entries };
 }

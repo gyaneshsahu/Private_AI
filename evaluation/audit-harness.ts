@@ -171,7 +171,7 @@ CometRow audit server (${config}) at ${origin}
     });
     failures = result.hardFailures;
     await writeFile(`${out}/index.json`, JSON.stringify(result, null, 2));
-    console.log(`written ${out}/index.json: ${result.entries.length} screenshots, ${result.hardFailures} hard failures`);
+    console.log(`written ${out}/index.json: ${result.entries.length} screenshots, ${result.failedSteps} failed steps, ${result.hardFailures} hard failures (non-local requests)`);
   } finally {
     server.close();
   }
