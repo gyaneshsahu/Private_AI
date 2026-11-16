@@ -1,4 +1,4 @@
-// "+" > "Search the web" (FE-07, docs/search-in-chat-20261116.md): the next Send opens the in-chat
+// "+" > "Search the web" (FE-07, docs/round3-wiring-20261116.md): the next Send opens the in-chat
 // approval card for exactly the typed text, instead of leaving the chat for the Research page.
 import { defineText } from "./core";
 
