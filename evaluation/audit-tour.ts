@@ -290,7 +290,7 @@ const STEPS: Step[] = [
     await pause(c.page, 800);
     await c.send("What does the source say? audit:citations", undefined, true);
     await c.shot("answer-citations");
-  }],
+  }, "on"], // search needs a search key: off in a build without switches
   ["deep-research", async (c) => {
     await c.fresh();
     await tools(c, "Research");
@@ -420,7 +420,7 @@ const STEPS: Step[] = [
   ["settings-devices-sync", async (c) => { await c.fresh(); await settings(c, "Devices and sync"); await c.shot("settings-devices-sync"); }, "on"],
   ["privacy-boundaries", async (c) => { await c.fresh(); await settings(c, "Appearance"); await c.click("Privacy boundaries ↗"); await pause(c.page, 800); await c.shot("privacy-boundaries"); }],
   ["privacy-details", async (c) => { await c.fresh(); await vis(c.page.getByText(c.tr("Privacy details"), { exact: true })).click(); c.clicked.push("Privacy details"); await pause(c.page, 600); await c.shot("privacy-details"); }],
-  ["account-usage", async (c) => { await accountMenu(c); await c.shot("account-menu"); await c.page.keyboard.press("Escape"); await c.fresh(); await accountMenu(c, "Account & usage"); await c.shot("account-usage"); }],
+  ["account-usage", async (c) => { await c.fresh(); await accountMenu(c); await c.shot("account-menu"); await c.fresh(); await accountMenu(c, "Account & usage"); await c.shot("account-usage"); }],
   ["saved-data-controls", async (c) => { await c.fresh(); await accountMenu(c, "Saved · Data controls"); await c.shot("saved-data-controls"); }],
   ["help", async (c) => {
     await c.fresh();
@@ -597,6 +597,15 @@ export async function runTour(o: {
             async nav() {
               const toggle = vis(c.page.getByRole("button", { name: tr("Open navigation"), exact: true }));
               if (await toggle.isVisible().catch(() => false)) await toggle.click(), c.clicked.push("Open navigation"), await pause(c.page, 400);
+              // Without Secure (config off) history sits in the local vault: unlock it with the synthetic passphrase.
+              const unlock = vis(c.page.getByRole("button", { name: tr("Unlock history"), exact: true }));
+              if (!(await unlock.isVisible().catch(() => false))) return;
+              await unlock.click();
+              await c.label("Vault passphrase").fill("synthetic secure max passphrase");
+              await c.click("Create or unlock vault");
+              c.clicked.push("Unlock history (synthetic passphrase)");
+              await pause(c.page, 1500);
+              if (await toggle.isVisible().catch(() => false)) await toggle.click(), await pause(c.page, 400);
             },
             async send(text, name, wait = true) {
               if (name) fakes.answer(name);
