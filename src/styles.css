@@ -281,7 +281,7 @@ h2 em {
 .composer {
   margin: 15px auto 0;
   border: 1px solid var(--line);
-  background: white;
+  background: var(--surface);
   border-radius: 15px;
   padding: 13px 17px;
   max-width: 920px;
