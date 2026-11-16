@@ -122,7 +122,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
         .last()
         .getByRole("button", { name: "Copy answer" }),
     ).toBeDisabled();
-    await page.getByRole("button", { name: "Stop", exact: true }).click();
+    await page.getByRole("button", { name: "Stop response", exact: true }).click();
     await ui(
       page.getByText("Response stopped.", { exact: false }),
     ).toBeVisible();
@@ -269,7 +269,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     await page.getByRole("button", { name: "Send ↑", exact: true }).click();
     await ui(page.locator("article.assistant")).toHaveCount(2);
     await ui(
-      page.getByRole("button", { name: "Stop", exact: true }),
+      page.getByRole("button", { name: "Stop response", exact: true }),
     ).toHaveCount(0);
     const followup = await page.evaluate(
       () =>
@@ -299,7 +299,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       .click();
     await ui(page.locator("article.assistant")).toHaveCount(1);
     await ui(
-      page.getByRole("button", { name: "Stop", exact: true }),
+      page.getByRole("button", { name: "Stop response", exact: true }),
     ).toHaveCount(0);
     const branch = await page.evaluate(
       () =>
@@ -463,7 +463,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     await page.getByLabel("Message CometRow").fill("TEST shortened question");
     await page.getByRole("button", { name: "Send ↑", exact: true }).click();
     await ui(
-      page.getByRole("button", { name: "Stop", exact: true }),
+      page.getByRole("button", { name: "Stop response", exact: true }),
     ).toHaveCount(0);
     expect(
       await page.evaluate(

@@ -97,7 +97,7 @@ it("keeps citations tied to captured evidence through correction, removal and en
       .getByRole("dialog")
       .getByRole("button", { name: "Close", exact: true })
       .click();
-    await page.getByRole("button", { name: /messages included/ }).click();
+    await page.getByRole("button", { name: /included ·/ }).click();
     await page
       .locator(".context-review")
       .getByRole("checkbox", { name: /Earlier captured answer/ })
@@ -122,7 +122,7 @@ it("keeps citations tied to captured evidence through correction, removal and en
     ).toBeVisible();
     await page.getByRole("button", { name: "Remove", exact: true }).click();
     await tab("Conversation").click();
-    await page.getByRole("button", { name: /messages included/ }).click();
+    await page.getByRole("button", { name: /included ·/ }).click();
     await ui(
       page
         .locator(".context-review")

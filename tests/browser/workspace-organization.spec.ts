@@ -182,17 +182,8 @@ test("projects, pin/archive, account menus and isolation through the rendered wo
       .locator(".tools-menu")
       .getByRole("button", { name: "Photo to text", exact: true }),
   ).toBeEnabled();
-  for (const name of [
-    "Create image",
-    "Microphone dictation",
-    "Live voice conversation",
-  ]) {
-    const b = page
-      .locator(".coming-later-list")
-      .getByRole("button", { name: new RegExp(name.replace("/", "\\/")) });
-    await expect(b).toBeDisabled();
-    await expect(b).toContainText("Coming later");
-  }
+  // Features that are off show nothing (16 November): no disabled "Coming later" rows.
+  await expect(page.locator(".coming-later-list, .future-voice")).toHaveCount(0);
   await page.keyboard.press("Escape");
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("button", { name: "Open navigation" }).click();

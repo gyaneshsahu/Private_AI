@@ -264,8 +264,10 @@ const STEPS: Step[] = [
   }, "on"],
   ["context-review", async (c) => {
     await c.fresh();
-    await vis(c.page.getByRole("button", { name: appText[c.germanOff() ? "en" : c.lang].contextCount(0, 0), exact: true })).click();
-    c.clicked.push("Context count");
+    // An empty chat shows no context count (16 November): the review opens from "+".
+    await tools(c);
+    await vis(c.page.locator(".tools-menu").getByRole("button", { name: new RegExp(`^${appText[c.germanOff() ? "en" : c.lang].reviewContext}`) })).click();
+    c.clicked.push("Review context");
     await c.shot("context-review");
   }],
   ["conversation-files", async (c) => { await c.fresh(); await tools(c, "Conversation files"); await c.shot("conversation-files"); }],

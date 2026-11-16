@@ -245,7 +245,7 @@ test("representative themes, long history, source and responsive keyboard contro
     animations: "disabled",
   });
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: /messages included/ }).click();
+  await page.getByRole("button", { name: /included ·/ }).click();
   await expect(
     page.getByRole("dialog", { name: "Included context", exact: true }),
   ).toContainText("synthetic.txt");
