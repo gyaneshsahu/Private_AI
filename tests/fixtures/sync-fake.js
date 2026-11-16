@@ -78,4 +78,4 @@ export const openLocalVault = async () => false;
 export const unlockThisDevice = async () => "not-remembered";
 export const setRememberDevice = async () => {};
 export const deleteEverythingOnThisDevice = async () => {};
-export { encodeRecoveryKey, decodeRecoveryKey } from "/src/sync/crypto.ts";
+export { encodeRecoveryKey, decodeRecoveryKey, PAIRING_CODE_LENGTH, formatPairingCode, normalizePairingCode } from "/src/sync/crypto.ts";

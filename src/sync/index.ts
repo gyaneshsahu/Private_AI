@@ -60,7 +60,7 @@ export const approvePairing = (code: string, deviceLabel: string) => need().appr
 export const unlockWithRecoveryKey = (recoveryKey: string, opts: { deviceLabel: string; rememberDevice: boolean }) =>
   need().unlockWithRecoveryKey(recoveryKey, opts);
 export const revokeDevice = (deviceId: string) => need().revokeDevice(deviceId);
-export const resetSync = (confirm: string, opts?: { localPassphrase?: string }) => need().resetSync(confirm, opts);
+export const resetSync = (confirm: string, opts?: { localPassphrase?: string; recoveryKey?: string }) => need().resetSync(confirm, opts);
 export const syncNow = () => need().syncNow();
 /** A remembered device opens its vault again after a lock; see openLocalVault. */
 export const unlockThisDevice = () => need().unlockThisDevice();
@@ -68,7 +68,8 @@ export const turnOffSyncOnThisDevice = (opts?: { localPassphrase?: string }) => 
 /** "Remember this device" on or off while sync is on here. */
 export const setRememberDevice = (remember: boolean) => need().setRememberDevice(remember);
 /** "Delete everything on this device"; the screen asks whether to delete the synced copy too. */
-export const deleteEverythingOnThisDevice = (opts: { alsoDeleteSyncedData: boolean }) => need().deleteEverythingOnThisDevice(opts);
+/** With the synced copy, a locked device passes the recovery key (docs/vault-sync-20261115.md, 15.3). */
+export const deleteEverythingOnThisDevice = (opts: { alsoDeleteSyncedData: boolean; recoveryKey?: string }) => need().deleteEverythingOnThisDevice(opts);
 /**
  * Sets, replaces or (null) removes the optional local passphrase of a synced vault. After a
  * recovery-key unlock no current passphrase is needed: that is how a forgotten one is replaced.

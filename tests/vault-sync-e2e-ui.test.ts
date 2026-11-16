@@ -16,6 +16,9 @@ import { createApp } from "../server/app";
 import { MemorySyncStore } from "../server/vault-sync";
 import { appText } from "../src/text/app";
 import { syncText, vaultUnlockText } from "../src/text/sync";
+import { syncHardeningText } from "../src/text/sync-hardening";
+
+const h = syncHardeningText.en;
 import { memoryText } from "../src/text/memory";
 import { projectText } from "../src/text/projects";
 import { workspaceText } from "../src/text/workspace";
@@ -200,7 +203,7 @@ async function turnOnAndPair(s: Site, account: string, lang: "en" | "de", width:
   await ui(welcome).toBeVisible();
   await welcome.getByRole("button", { name: t.approveFromOther }).click();
   const code = ((await welcome.locator(".pairing-code [aria-hidden]").textContent()) ?? "").replace(/[\s-]/g, "");
-  expect(code).toMatch(/^\d{6}$/);
+  expect(code).toMatch(/^[0-9A-HJKMNP-TV-Z]{8}$/);
   await noSidewaysScroll(B);
   // A's quiet notice appears by itself (the engine checks every 10 seconds); the user opens it.
   const prompt = A.getByRole("region", { name: t.promptHeading });
@@ -332,14 +335,21 @@ it("1280 px, English: setup, pairing, edits both ways, recovery key on a third d
   await A.evaluate(() => window.dispatchEvent(new Event("focus")));
   await ui(A.locator(".sync-indicator")).toHaveText(t.stateSynced, { timeout: 25_000 });
 
-  // (f) A removes B; B's next sync shows the revoked text.
+  // (f) A removes B; B's next sync says so, keeps its data open, and is not asked to join as new.
   await openSettings(A, "en", t.section);
   await settings(A).getByRole("button", { name: t.revoke("Phone") }).click();
   await A.getByRole("dialog", { name: t.revokeTitle("Phone") }).getByRole("button", { name: t.revokeConfirm }).click();
   await ui(settings(A).locator(".sync-devices").getByRole("listitem").filter({ hasText: "Phone" })).toContainText(t.revoked);
   await closeSettings(A, "en");
   await B.evaluate(() => window.dispatchEvent(new Event("focus")));
-  await ui(B.getByRole("dialog", { name: t.newHeading }).getByText(t.errorRevoked)).toBeVisible({ timeout: 25_000 });
+  await ui(B.locator(".sync-indicator")).toHaveText(t.stateApproval, { timeout: 25_000 });
+  await openSettings(B, "en", t.section);
+  await ui(settings(B).getByText(h.detachedRemoved)).toBeVisible();
+  await ui(settings(B).getByRole("button", { name: h.syncAgain })).toBeVisible();
+  await closeSettings(B, "en");
+  await ui(B.getByRole("dialog", { name: t.newHeading })).toHaveCount(0);
+  await menuItem(B, a.renameSave);
+  await ui(B.getByRole("article", { name: renamed.chat })).toBeVisible();
 
   // Delete everything on C, without the synced copy: C leaves sync, A keeps syncing and lists C as removed.
   await menuItem(C, a.renameSave);
@@ -355,6 +365,34 @@ it("1280 px, English: setup, pairing, edits both ways, recovery key on a third d
   await ui(settings(A).locator(".sync-error")).toHaveCount(0);
   for (const page of [A, B, C]) await page.context().close();
 }, 420_000);
+
+it("1280 px, English: A resets sync; B says it was reset elsewhere and still opens its data, also after a reload", async () => {
+  const s = await site(true);
+  const account = randomUUID();
+  const a = appText.en;
+  const t = syncText.en;
+  const { A, B } = await turnOnAndPair(s, account, "en", 1280);
+  await openSettings(A, "en", t.section);
+  await settings(A).getByRole("button", { name: t.reset }).click();
+  const reset = A.getByRole("dialog", { name: t.resetTitle });
+  await reset.getByLabel(t.resetTypeLabel(t.resetPhrase)).fill(t.resetPhrase);
+  await reset.getByRole("button", { name: t.resetConfirm }).click();
+  await ui(settings(A).getByText(t.resetDone).first()).toBeVisible();
+  await closeSettings(A, "en");
+  await B.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await ui(B.locator(".sync-indicator")).toHaveText(t.stateApproval, { timeout: 25_000 });
+  await openSettings(B, "en", t.section);
+  await ui(settings(B).getByText(h.detachedResetElsewhere)).toBeVisible();
+  await ui(settings(B).locator(".sync-settings .danger-button")).toHaveCount(0);
+  await closeSettings(B, "en");
+  await menuItem(B, a.renameSave);
+  await ui(B.getByRole("article", { name: DATA.chat })).toBeVisible();
+  await B.reload();
+  await menuItem(B, a.renameSave);
+  await ui(B.getByRole("article", { name: DATA.chat })).toBeVisible({ timeout: 25_000 });
+  await ui(B.getByRole("dialog", { name: t.newHeading })).toHaveCount(0);
+  for (const page of [A, B]) await page.context().close();
+}, 240_000);
 
 it("Stage 0: a vault remembered without sync, then sync turned on, opens after a reload through the device key", async () => {
   const s = await site(true);

@@ -215,15 +215,11 @@ export const syncText = defineText({
     approveNew: "Approve a new device",
     pairingNotice: (time: string) => `A device asked to join your account at ${time}. Approve only a device you are holding.`,
     reviewRequest: "Review the request",
-    promptRequestedAt: (time: string) => `Requested at ${time}.`,
     holdingLabel: "I am holding this device",
     deviceAddedHeading: "New device added",
     deviceAdded: (name: string, time: string) => `A new device was added: ${name}, ${time}.`,
     closeNotice: "Close",
     keyCopyRisk: "Copied text can stay in your clipboard history, and downloads can sync to other clouds. Printing or writing it down is safest.",
-    errorReset:
-      "Sync was reset from another device. Your saved data is still on this device, but it no longer syncs. To sync again, turn sync on.",
-    notNowRevoked: "Not now keeps the saved data that is on this device, without sync.",
     fetchingFiles: "Getting project files…",
     missingFilesTitle: "Send without some project files?",
     missingFilesText: "Some project files are not on this device yet; they could not be downloaded. Send without them?",
@@ -270,8 +266,6 @@ export const syncText = defineText({
     errorRevoked: "This device was removed from sync on another device. Your saved data stays here, but it no longer syncs.",
     errorConflict: "The same item changed on two devices. Both versions were kept: look for the conflict copy.",
     errorServer: "Our server did not answer as expected. Your changes stay on this device and sync is tried again by itself.",
-    errorRateLimited: "Too many sync requests in a short time. Sync tries again by itself in a few minutes.",
-    errorItemTooLarge: "One saved chat is larger than 4 MB, the limit for sync. It stays on this device and is not synced. Shorten it or remove large attachments.",
     errorOther: "Sync stopped because of a problem. Try Sync now.",
     // Delete everything, and a local passphrase for a synced device
     alsoDeleteSynced: "Also delete the synced copy on our server",
@@ -379,16 +373,12 @@ export const syncText = defineText({
     pairingNotice: (time: string) =>
       `Ein Gerät hat am ${time} angefragt, Ihrem Konto beizutreten. Bestätigen Sie nur ein Gerät, das Sie in der Hand halten.`,
     reviewRequest: "Anfrage prüfen",
-    promptRequestedAt: (time: string) => `Angefragt am ${time}.`,
     holdingLabel: "Ich halte dieses Gerät in der Hand",
     deviceAddedHeading: "Neues Gerät hinzugefügt",
     deviceAdded: (name: string, time: string) => `Ein neues Gerät wurde hinzugefügt: ${name}, ${time}.`,
     closeNotice: "Schließen",
     keyCopyRisk:
       "Kopierter Text kann im Verlauf der Zwischenablage bleiben, und Downloads können in andere Clouds synchronisiert werden. Am sichersten ist es, den Schlüssel auszudrucken oder aufzuschreiben.",
-    errorReset:
-      "Die Synchronisierung wurde auf einem anderen Gerät zurückgesetzt. Ihre gespeicherten Daten sind weiter auf diesem Gerät, werden aber nicht mehr synchronisiert. Um wieder zu synchronisieren, schalten Sie die Synchronisierung ein.",
-    notNowRevoked: "Mit Nicht jetzt behalten Sie die gespeicherten Daten auf diesem Gerät, ohne Synchronisierung.",
     fetchingFiles: "Projektdateien werden geholt…",
     missingFilesTitle: "Ohne einige Projektdateien senden?",
     missingFilesText:
@@ -438,8 +428,6 @@ export const syncText = defineText({
     errorConflict:
       "Derselbe Eintrag wurde auf zwei Geräten geändert. Beide Fassungen wurden behalten: Suchen Sie nach der Konfliktkopie.",
     errorServer: "Unser Server hat nicht wie erwartet geantwortet. Ihre Änderungen bleiben auf diesem Gerät, und die Synchronisierung wird von selbst erneut versucht.",
-    errorRateLimited: "Zu viele Synchronisierungsanfragen in kurzer Zeit. Die Synchronisierung versucht es in einigen Minuten von selbst erneut.",
-    errorItemTooLarge: "Ein gespeicherter Chat ist größer als 4 MB, die Grenze für die Synchronisierung. Er bleibt auf diesem Gerät und wird nicht synchronisiert. Kürzen Sie ihn oder entfernen Sie große Anhänge.",
     errorOther: "Die Synchronisierung wurde wegen eines Problems angehalten. Versuchen Sie Jetzt synchronisieren.",
     alsoDeleteSynced: "Auch die synchronisierte Kopie auf unserem Server löschen",
     alsoDeleteSyncedNote: "Ihre anderen Geräte behalten, was sie schon haben, synchronisieren aber nicht mehr, und Ihr Wiederherstellungsschlüssel funktioniert nicht mehr. Ohne dieses Häkchen wird nur dieses Gerät aus der Synchronisierung entfernt.",

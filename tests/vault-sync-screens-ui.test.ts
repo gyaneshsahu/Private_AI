@@ -12,12 +12,14 @@ import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { appText } from "../src/text/app";
 import { vaultBackupText } from "../src/text/vault-ui";
 import { backupPartsText, syncText, vaultUnlockText } from "../src/text/sync";
+import { syncHardeningText } from "../src/text/sync-hardening";
 import { decodeVaultBackupContent } from "../src/vault-backup";
 import { encodeRecoveryKey } from "../src/sync/crypto";
 
 // The engine's recovery key format (src/sync/crypto.ts): 28 Crockford base32 characters in 7 groups of 4.
 const normalizeRecoveryKey = (key: string) => key.toUpperCase().replace(/[\s-]/g, "").replace(/O/g, "0").replace(/[IL]/g, "1");
 const recoveryKeyGroups = (key: string) => normalizeRecoveryKey(key).match(/.{1,4}/g) ?? [];
+const CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 const makeRecoveryKey = () => normalizeRecoveryKey(encodeRecoveryKey(crypto.getRandomValues(new Uint8Array(16))));
 
 const WIDTHS = [375, 768, 1280] as const;
@@ -84,7 +86,7 @@ function fakeAccount() {
     pendingKey: "",
     pendingLabel: "",
     devices: [] as Device[],
-    pairing: undefined as undefined | { code: string; device: string; result: string },
+    pairing: undefined as undefined | { code: string; device: string; result: string; at: string },
     override: {} as Record<string, unknown>,
     lastSyncAt: undefined as string | undefined,
   };
@@ -97,7 +99,7 @@ function stateFor(account: Account, device: string) {
   const devices = account.devices.map((d) => ({ ...d, thisDevice: d.deviceId === device }));
   if (!account.on || (!me && account.devices.length === 0)) return { phase: "off", pending: 0, devices: [] };
   if (!me) return { phase: "needs-approval", pending: 0, devices: [] };
-  if (me.revoked) return { phase: "error", error: "revoked", pending: 0, devices };
+  if (me.revoked) return { phase: "error", error: "removed", detached: "removed", remembered: true, pending: 0, devices };
   return {
     phase: "idle",
     pending: 0,
@@ -105,6 +107,7 @@ function stateFor(account: Account, device: string) {
     quota: { usedBytes: 12_500_000, limitBytes: 200_000_000 },
     devices,
     pairingRequested: account.pairing?.result === "waiting",
+    pairingRequestedAt: account.pairing?.result === "waiting" ? account.pairing.at : undefined,
     ...account.override,
   };
 }
@@ -128,13 +131,19 @@ function operate(account: Account, operation: string, body: Record<string, any>)
       add(body.device, account.pendingLabel);
       return true;
     case "pair-start":
-      account.pairing = { code: String(100000 + Math.floor(Math.random() * 900000)), device: body.device, result: "waiting" };
+      // The engine's code: 8 Crockford base32 characters.
+      account.pairing = {
+        code: Array.from({ length: 8 }, () => CROCKFORD[Math.floor(Math.random() * 32)]).join(""),
+        device: body.device,
+        result: "waiting",
+        at: now,
+      };
       return { code: account.pairing.code };
     case "pair-result":
       return account.pairing?.device === body.device ? account.pairing!.result : "expired";
     case "pair-approve":
       if (!account.pairing || account.pairing.result !== "waiting") return "expired";
-      if (body.code !== account.pairing.code) return "wrong-code";
+      if (normalizeRecoveryKey(body.code) !== account.pairing.code) return "wrong-code";
       add(account.pairing.device, body.deviceLabel);
       account.pairing.result = "approved";
       return "approved";
@@ -360,6 +369,7 @@ for (const width of WIDTHS)
     it(`${width} px, ${lang}: sync: turn on with the recovery key, a new device approved by code, the recovery key with a typo, devices, revoke, status, forgotten passphrase, reset`, async () => {
       const a = appText[lang];
       const s = syncText[lang];
+      const h = syncHardeningText[lang];
       const v = vaultUnlockText[lang];
       const account = fakeAccount();
       const settings = (page: Page) => page.locator("dialog.settings-dialog");
@@ -429,8 +439,8 @@ for (const width of WIDTHS)
       await target(approveButton, width);
       await approveButton.click();
       await ui(welcome.getByText(s.codeSteps)).toBeVisible();
-      await ui(welcome.locator(".pairing-code")).toContainText(account.pairing!.code.slice(0, 3));
-      const shown = (await welcome.locator(".pairing-code [aria-hidden]").textContent())!.replace(/\D/g, "");
+      await ui(welcome.locator(".pairing-code")).toContainText(`${account.pairing!.code.slice(0, 4)}-${account.pairing!.code.slice(4)}`);
+      const shown = (await welcome.locator(".pairing-code [aria-hidden]").textContent())!.replace(/[\s-]/g, "");
       expect(shown).toBe(account.pairing!.code);
       await noSidewaysScroll(B);
 
@@ -444,15 +454,15 @@ for (const width of WIDTHS)
       await noSidewaysScroll(A);
       await prompt.getByRole("button", { name: s.reviewRequest }).click();
       await ui(prompt.getByText(s.promptWarning)).toBeVisible();
-      await ui(prompt.getByText(new RegExp(`^${s.promptRequestedAt("").split(" ")[0]} `))).toBeVisible();
+      await ui(prompt.getByText(new RegExp(`^${h.pairingRequestedAt("").split(" ")[0]} `))).toBeVisible();
       await ui(prompt.getByLabel(s.promptCode)).toBeDisabled();
       await prompt.getByRole("checkbox", { name: s.holdingLabel }).check();
       await noSidewaysScroll(A);
-      const wrong = String((Number(shown[0]) + 1) % 10) + shown.slice(1);
+      const wrong = CROCKFORD[(CROCKFORD.indexOf(shown[0]) + 1) % 32] + shown.slice(1);
       await prompt.getByLabel(s.promptCode).fill(wrong);
       await prompt.getByRole("button", { name: s.approve }).click();
       await ui(prompt.getByText(s.wrongCode)).toBeVisible();
-      await prompt.getByLabel(s.promptCode).fill(`${shown.slice(0, 3)} ${shown.slice(3)}`);
+      await prompt.getByLabel(s.promptCode).fill(`${shown.slice(0, 4)}-${shown.slice(4)}`.toLowerCase());
       await prompt.getByLabel(s.promptName).fill("Phone");
       await prompt.getByRole("button", { name: s.approve }).click();
       await ui(prompt.getByText(s.approvedOther)).toBeVisible();
@@ -520,7 +530,7 @@ for (const width of WIDTHS)
       await off.getByRole("button", { name: s.turnOffConfirm }).click();
       // The engine needs a local passphrase before sync goes off here: asked, then retried.
       const offPassphrase = C.getByRole("dialog", { name: v.newPassphraseHeading });
-      await ui(offPassphrase.getByText(s.localPassphraseNeeded)).toBeVisible();
+      await ui(offPassphrase.getByText(h.turnOffNeedsPassphrase)).toBeVisible();
       await offPassphrase.getByLabel(v.newPassphrase).fill("synthetic local passphrase C2");
       await offPassphrase.getByRole("button", { name: v.newPassphraseSave }).click();
       await ui(settings(C).getByText(s.turnedOff).first()).toBeVisible();
@@ -537,6 +547,14 @@ for (const width of WIDTHS)
       await revoke.getByRole("button", { name: s.revokeConfirm }).click();
       await ui(list.getByRole("listitem").filter({ hasText: "Phone" })).toContainText(s.revoked);
       await ui(settings(A).getByRole("button", { name: s.revoke("Phone") })).toHaveCount(0);
+      // The removed device says what happened and that its data stays; no deletion is offered there.
+      await ui(B.getByRole("dialog", { name: s.newHeading })).toHaveCount(0);
+      await openSync(B);
+      await ui(settings(B).getByText(h.detachedRemoved)).toBeVisible();
+      await target(settings(B).getByRole("button", { name: h.syncAgain }), width);
+      await ui(settings(B).locator(".sync-settings .danger-button")).toHaveCount(0);
+      await noSidewaysScroll(B);
+      await closeSettings(B);
 
       // Errors in plain words.
       account.override = { phase: "error", error: "offline" };
@@ -545,7 +563,7 @@ for (const width of WIDTHS)
       await ui(settings(A).getByText(s.errorQuota)).toBeVisible();
       account.override = { error: "conflict-copies" };
       await ui(settings(A).getByText(s.errorConflict)).toBeVisible();
-      for (const [code, text] of [["server", s.errorServer], ["rate-limited", s.errorRateLimited], ["item-too-large", s.errorItemTooLarge]] as const) {
+      for (const [code, text] of [["server", s.errorServer], ["rate-limited", h.rateLimited], ["item-too-large", h.itemTooLarge], ["needs-upgrade", h.needsUpgrade(1)]] as const) {
         account.override = { phase: "error", error: code };
         await ui(settings(A).getByText(text)).toBeVisible();
       }
