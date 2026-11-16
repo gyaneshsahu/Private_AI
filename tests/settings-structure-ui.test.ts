@@ -10,6 +10,7 @@ import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { openSettingsMenu } from "./fixtures/open-settings";
 import { appText } from "../src/text/app";
+import { secureStoreText } from "../src/text/secure-store";
 import { modeCopyText } from "../src/text/mode-copy";
 import { modesText } from "../src/text/modes";
 import { settingsText } from "../src/text/settings";
@@ -41,7 +42,8 @@ afterAll(async () => {
   await vite?.close();
 });
 
-async function open(width: number, lang: "en" | "de", secure = false) {
+/** secure: "loading" holds the Secure store's requests, "failed" refuses them. */
+async function open(width: number, lang: "en" | "de", secure: false | "loading" | "failed" = false) {
   const context = await browser.newContext({ locale: lang === "de" ? "de-DE" : "en-US", viewport: { width, height: 900 }, hasTouch: width < 760 });
   context.setDefaultTimeout(15_000);
   const page = await context.newPage();
@@ -63,8 +65,8 @@ async function open(width: number, lang: "en" | "de", secure = false) {
           ...(secure ? { secureStore: { quotaBytes: 1, filesQuotaBytes: 1 } } : {}),
         },
       });
-    // Secure: the store never answers, so it stays "loading".
-    if (secure && url.pathname.startsWith("/api/secure")) return;
+    // Secure: the store never answers (it stays "loading"), or it fails.
+    if (secure === "loading" && url.pathname.startsWith("/api/secure")) return;
     if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/auth")) return route.abort();
     return route.continue();
   });
@@ -141,13 +143,27 @@ for (const lang of LANGS)
         await ui(settings).toBeHidden();
         expect(await page.evaluate(() => !!document.activeElement?.closest(".account-menu, .navigation-toggle"))).toBe(true);
 
-        // Archived chats: Settings closes and the sidebar shows its Archived filter.
+        // Archived chats: offered only while a chat list is open. Locked, nothing to filter.
+        await openSettingsMenu(page, lang);
+        await tabs.filter({ hasText: s.dataControls }).click();
+        await ui(settings.getByRole("button", { name: w.archivedChats })).toHaveCount(0);
+        await page.keyboard.press("Escape");
+        // Unlocked (a new local vault): Settings closes and the sidebar shows Archived, with the focus.
+        await page.getByLabel(a.conversationActions, { exact: true }).click();
+        await page.locator(".conversation-menu").getByRole("button", { name: a.renameSave, exact: true }).click();
+        await page.getByLabel(a.passphrase, { exact: true }).fill("synthetic settings passphrase 4821");
+        await page.getByRole("button", { name: a.createOrUnlock }).click();
+        await ui(page.getByRole("button", { name: a.lockAndClear })).toBeVisible();
         await openSettingsMenu(page, lang);
         await tabs.filter({ hasText: s.dataControls }).click();
         await settings.getByRole("button", { name: w.archivedChats }).click();
         await ui(settings).toBeHidden();
-        // The sidebar (the drawer on phones) is shown; without an unlocked vault it asks to unlock first.
-        await ui(page.locator(".history-locked")).toBeVisible();
+        const archived = page.locator(".history-filters").getByRole("button", { name: w.archived, exact: true });
+        await ui(archived).toHaveAttribute("aria-pressed", "true");
+        await ui(archived).toBeFocused();
+        await ui(page.getByRole("heading", { name: w.archivedChats })).toBeVisible();
+        // A drawer only where the sidebar is one.
+        await ui(page.locator("dialog.navigation-drawer[open]")).toHaveCount(width < 760 ? 1 : 0);
 
         // Help has the guides and legal texts that left Settings; they open over Help.
         const toggle = page.getByRole("button", { name: a.openNavigation });
@@ -172,12 +188,12 @@ for (const lang of LANGS)
     }, 90_000);
 
 for (const lang of LANGS)
-  for (const width of [375, 1280])
+  for (const width of WIDTHS)
     it(`${lang} at ${width} px, Secure while the store loads: no "unlock your local vault", no "temporary session", the Secure notes`, async () => {
       const a = appText[lang];
       const s = settingsText[lang];
       const w = workspaceText[lang];
-      const { page, outside } = await open(width, lang, true);
+      const { page, outside } = await open(width, lang, "loading");
       try {
         const toggle = page.getByRole("button", { name: a.openNavigation });
         if (await toggle.isVisible()) await toggle.click();
@@ -204,3 +220,16 @@ for (const lang of LANGS)
         await page.context().close();
       }
     }, 90_000);
+
+for (const lang of LANGS)
+  it(`${lang} at 375 px, Secure that cannot open: the sidebar says so instead of "loading"`, async () => {
+    const { page } = await open(375, lang, "failed");
+    try {
+      await page.getByRole("button", { name: appText[lang].openNavigation }).click();
+      await ui(page.locator(".history-locked")).toContainText(secureStoreText[lang].unavailable);
+      await ui(page.locator(".history-locked")).not.toContainText(settingsText[lang].loadingChats);
+      await ui(page.locator(".sidebar-bottom > p")).not.toContainText(settingsText[lang].loadingChats);
+    } finally {
+      await page.context().close();
+    }
+  }, 60_000);

@@ -38,6 +38,8 @@ export function WorkspaceNavigation(props: {
   onSettings: () => void;
   /** Counts up when Settings asks for the archived chats: the list switches to Archived. */
   showArchived?: number;
+  /** Secure only: replaces "Loading your chats" when the store could not open. */
+  loadingNote?: string;
   onSignOut: () => void;
   onCreateProject: (name: string) => Promise<string | undefined>;
   onEditProject: (id: string, name?: string) => Promise<boolean>;
@@ -85,6 +87,7 @@ export function WorkspaceNavigation(props: {
     onNavigate,
     onSettings,
     showArchived,
+    loadingNote,
     onSignOut,
     onCreateProject,
     onEditProject,
@@ -535,7 +538,7 @@ export function WorkspaceNavigation(props: {
           <h2>{t.yourConversations}</h2>
           {/* Secure opens by itself after sign-in: nothing to unlock, only a short wait. */}
           {storage === "secure" ? (
-            <p>{settingsText[lang].loadingChats}</p>
+            <p>{loadingNote ?? settingsText[lang].loadingChats}</p>
           ) : (
             <>
               <p>{t.unlockNote}</p>
@@ -641,7 +644,7 @@ export function WorkspaceNavigation(props: {
             )}
           </div>
         </details>
-        <p>{[unlocked ? t.vaultUnlocked : storage === "secure" ? settingsText[lang].loadingChats : t.temporarySession, t.thisDevice].filter(Boolean).join(" · ")}</p>
+        <p>{[unlocked ? t.vaultUnlocked : storage === "secure" ? (loadingNote ? "" : settingsText[lang].loadingChats) : t.temporarySession, t.thisDevice].filter(Boolean).join(" · ")}</p>
         {syncIndicator}
       </nav>
     </aside>

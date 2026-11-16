@@ -234,6 +234,8 @@ export function App() {
   );
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [navigationCollapsed, setNavigationCollapsed] = useState(false);
+  // The Secure store could not open: the sidebar says so instead of "Loading your chats".
+  const [secureFailed, setSecureFailed] = useState(false);
   const [shortcutHelp, setShortcutHelp] = useState(false);
   const [settingsSection, setSettingsSection] = useState("general");
   const [projects, setProjects] = useState<Project[]>([]);
@@ -1906,6 +1908,7 @@ export function App() {
     let active = true;
     void openSecure({ accountId: status!.accountId!, csrf: () => syncCsrf.current, onApplied: () => void refreshRef.current() }).then((ok) => {
       if (!active) return;
+      setSecureFailed(!ok);
       if (ok) void refreshRef.current();
       else setNotice(secureStoreText[lang].unavailable);
     });
@@ -2474,6 +2477,7 @@ export function App() {
           setSettingsOpen(true);
         }}
         showArchived={showArchived}
+        loadingNote={secureFailed ? secureStoreText[lang].unavailable : undefined}
         onScheduled={
           scheduledEnabled()
             ? () => {
@@ -2678,10 +2682,11 @@ export function App() {
               setSettingsOpen(false);
               setTab("Saved");
             }}
-            onArchived={() => {
+            onArchived={!(secureReady || unlocked) ? undefined : () => {
               setSettingsOpen(false);
               setShowArchived((n) => n + 1);
-              setNavigationOpen(true);
+              // Only where the sidebar is a drawer; open stays false where it is always shown.
+              if (navigationCollapsed || matchMedia("(max-width: 760px)").matches) setNavigationOpen(true);
             }}
             onAccountPage={(part) => {
               setSettingsOpen(false);

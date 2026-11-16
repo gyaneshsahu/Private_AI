@@ -8,7 +8,7 @@ One modal, tabs on the left, full screen under 600 px. It opens only from the ac
 
 - General / Allgemein: theme (its label stays "Appearance"), language. The DE/EN switch left the app header at every width; the account page and sign-in page keep theirs.
 - Personalization / Personalisierung: memory (only while memory is on).
-- Data controls / Datenverwaltung: where chats are saved (one sentence per mode, plus the Secure Max line when offered), the privacy summary for the mode, Archived chats (switches the sidebar to Archived), Export my chats and Delete all chats (Secure), "History & data controls" (the device or Secure Max vault controls in Saved), Download account data (account page), health and sensitive details, "No advertising. No training on your data."
+- Data controls / Datenverwaltung: where chats are saved (one sentence per mode, plus the Secure Max line when offered), the privacy summary for the mode, Archived chats (while a chat list is open; switches the sidebar to Archived), Export my chats and Delete all chats (Secure), "History & data controls" (the device or Secure Max vault controls in Saved), Download account data (account page), health and sensitive details, "No advertising. No training on your data."
 - Security / Sicherheit: Sign-in methods and Active sessions (account page sections), Sign out. The local-vault passphrase note shows only without Secure.
 - Secure Max (lock icon, only when offered): Open CometRow in Secure Max, Devices and sync, Reset. Without Secure but with sync the tab keeps the name "Devices and sync".
 - Account / Konto: e-mail, plan and usage, Delete account (account page section).
@@ -17,7 +17,7 @@ Help (account menu) now also holds Trial scope and safety and Your privacy bound
 
 Account page links go to `/account#account-access`, `#account-sessions`, `#account-export`, `#account-delete`; the page moves the focus to that heading once it has rendered. Leaving the app asks first when there are unsaved changes, as "Manage account" does.
 
-Other changes: in Secure the sidebar says "Loading your chats…" while the store opens (never "Unlock your local vault" or "Temporary session"); the plan page's vault note follows the mode; the Secure Max set-up heading is "Set up Secure Max" / "Secure Max einrichten"; the German skip link is "Zum Nachrichtenfeld springen"; the picture-declined note points to "Settings, Data controls".
+Other changes: in Secure the sidebar says "Loading your chats…" while the store opens, and "could not be loaded" if it fails (never "Unlock your local vault" or "Temporary session"); the plan page's vault note follows the mode; the Secure Max set-up heading is "Set up Secure Max" / "Secure Max einrichten"; the German skip link is "Zum Nachrichtenfeld springen"; the picture-declined note points to "Settings, Data controls".
 
 ## First load (SS-13)
 
@@ -26,7 +26,7 @@ Measured with `npx vite build` (Vite's own sizes; gzip as Vite prints it). First
 | | Entry chunk | First-load JS (entry + static imports) |
 |---|---|---|
 | Before (after the Settings change, same base) | 1,242.36 kB / 396.01 kB gzip | 1,266.25 kB / 402.73 kB gzip (3 files) |
-| After | 869.12 kB / 273.55 kB gzip | 1,123.77 kB / 363.60 kB gzip (19 files) |
+| After | 869.43 kB / 273.72 kB gzip | 1,124.08 kB / 363.75 kB gzip (19 files) |
 
 The lead's earlier figure (1,209.76 kB / 389.65 kB gzip) was measured on an older base. The first-load totals use gzip level 9, so they differ slightly from Vite's per-chunk gzip.
 

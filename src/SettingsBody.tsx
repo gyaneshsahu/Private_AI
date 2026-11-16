@@ -88,7 +88,8 @@ export function SettingsBody({
   recentSignIn: boolean;
   /** These close Settings first. */
   onSavedTab: () => void;
-  onArchived: () => void;
+  /** Absent while no chat list is open (nothing to filter yet). */
+  onArchived?: () => void;
   onAccountPage: (part: AccountPart) => void;
   onSignOut: () => void;
 }) {
@@ -158,9 +159,13 @@ export function SettingsBody({
             {/* SS-01: the binding summary says "we never can" read: only true without Secure. */}
             <p>{secureOn ? modeCopyText[lang].privacySummary_secure : privacySummary(lang)}</p>
             {secureOn && <p className="muted">{modes.secureLong}</p>}
-            <button type="button" className="text-button" onClick={onArchived}>
-              {workspaceText[lang].archivedChats}
-            </button>
+            {onArchived && (
+              <p>
+                <button type="button" className="text-button" onClick={onArchived}>
+                  {workspaceText[lang].archivedChats}
+                </button>
+              </p>
+            )}
             {/* Export and delete of the Secure chats (SS-03). Secure Max and the device vault keep their own controls in Saved. */}
             {secureReady && <DataControls conversations={secureChats} onDeleteAll={onDeleteAllSecure} erasesEverything={false} busy={busy} />}
             <p>
