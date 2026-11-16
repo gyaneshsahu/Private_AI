@@ -8,6 +8,14 @@ export function conversationTitle(conversation: Conversation): string {
     : conversation.title;
 }
 
+/** When the chat was last used: its newest message time, else when it was created. */
+export function lastActivity(conversation: Conversation): string {
+  let latest = conversation.createdAt;
+  for (const message of conversation.messages)
+    if (message.at && (Date.parse(message.at) || 0) > (Date.parse(latest) || 0)) latest = message.at;
+  return latest;
+}
+
 /** Where a saved chat falls in the sidebar's date groups. The week starts on Monday. */
 export function dateGroup(
   iso: string,
@@ -53,7 +61,7 @@ export function findConversations(
           a.id.localeCompare(b.id)
         );
       const time =
-        (Date.parse(a.createdAt) || 0) - (Date.parse(b.createdAt) || 0);
+        (Date.parse(lastActivity(a)) || 0) - (Date.parse(lastActivity(b)) || 0);
       return (order === "oldest" ? time : -time) || a.id.localeCompare(b.id);
     });
 }

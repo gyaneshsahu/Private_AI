@@ -2,7 +2,7 @@ import { UsageMeter } from "./UsageMeter";
 import { containDialogFocus } from "./dialog-focus";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { AppStatus, Conversation } from "../shared/contracts";
-import { conversationTitle, dateGroup, findConversations } from "./conversation-library";
+import { conversationTitle, dateGroup, findConversations, lastActivity } from "./conversation-library";
 import type { Project } from "./projects";
 import { Icon } from "./Icon";
 import { useText } from "./i18n";
@@ -80,8 +80,8 @@ export function WorkspaceNavigation(props: {
   const pt = useText(projectText);
   const groups = useText(savedListText);
   const st = useText(scheduledText);
-  // Pinned chats first under their own heading, the rest by the day they were created.
-  const groupOf = (c: Conversation) => (c.pinned ? "pinned" : dateGroup(c.createdAt));
+  // Pinned chats first under their own heading, the rest by the day they were last used.
+  const groupOf = (c: Conversation) => (c.pinned ? "pinned" : dateGroup(lastActivity(c)));
   const dialog = useRef<HTMLDialogElement>(null);
   const [narrow, setNarrow] = useState(
     () => matchMedia("(max-width: 760px)").matches,
