@@ -1,4 +1,5 @@
 import { workspaceControl } from "./workspace-navigation";
+import { answerQuestion } from "../fixtures/app-questions";
 import { test, expect } from "@playwright/test";
 
 test("mixed code/data imports recover from a bad file without disclosure or execution", async ({
@@ -153,7 +154,7 @@ test("rejects oversized and disguised binary files and accepts a later valid fil
       .getByRole("list", { name: "Conversation attachments" })
       .getByRole("listitem"),
   ).toHaveCount(1);
-  page.once("dialog", (dialog) => dialog.accept());
   await workspaceControl(page, "New conversation").click();
+  await answerQuestion(page, true);
   await expect(results).toHaveCount(0);
 });

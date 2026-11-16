@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { workspaceControl } from "./workspace-navigation";
+import { answerQuestion } from "../fixtures/app-questions";
 
 test("delete everything on this device removes the vault database, states what it cannot delete, and the privacy policy page opens", async ({
   page,
@@ -27,17 +28,17 @@ test("delete everything on this device removes the vault database, states what i
   await expect(region).toContainText("cannot delete");
   await expect(region).toContainText("short-term working memory");
   // Cancelling the confirmation deletes nothing.
-  page.once("dialog", (dialog) => void dialog.dismiss());
   await region
     .getByRole("button", { name: "Delete everything on this device" })
     .click();
+  await answerQuestion(page, false);
   await expect(
     page.getByText("Local vault unlocked", { exact: false }),
   ).toBeVisible();
-  page.once("dialog", (dialog) => void dialog.accept());
   await region
     .getByRole("button", { name: "Delete everything on this device" })
     .click();
+  await answerQuestion(page, true);
   await expect(
     page
       .getByRole("status")

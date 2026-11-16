@@ -1,4 +1,5 @@
 import { workspaceControl } from "./workspace-navigation";
+import { answerQuestion } from "../fixtures/app-questions";
 import { test, expect } from "@playwright/test";
 import { Buffer } from "node:buffer";
 
@@ -56,8 +57,8 @@ test("draft and corrected document survive explicit encrypted save; switching pr
   await expect(
     page.getByRole("button", { name: "Send message", exact: true }),
   ).toBeDisabled();
-  page.once("dialog", (dialog) => dialog.dismiss());
   await workspaceControl(page, "New conversation").click();
+  await answerQuestion(page, false);
   await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "DRAFT CANARY 732: compare this bill",
   );
@@ -129,15 +130,15 @@ test("draft and corrected document survive explicit encrypted save; switching pr
   await tab("Conversation").click();
   await page.getByLabel("Message CometRow").fill("UNSAVED replacement draft");
   await tab("Saved").click();
-  page.once("dialog", (dialog) => dialog.dismiss());
   await page.getByRole("button", { name: "Open", exact: true }).click();
+  await answerQuestion(page, false);
   await tab("Conversation").click();
   await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "UNSAVED replacement draft",
   );
   await tab("Saved").click();
-  page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Open", exact: true }).click();
+  await answerQuestion(page, true);
   await expect(page.getByLabel("Message CometRow")).toHaveValue(
     "DRAFT CANARY 732: compare this bill",
   );

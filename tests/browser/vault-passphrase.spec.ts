@@ -1,4 +1,5 @@
 import { workspaceControl } from "./workspace-navigation";
+import { answerQuestion } from "../fixtures/app-questions";
 import { test, expect, type Page } from "@playwright/test";
 const oldSecret = "synthetic original browser passphrase";
 const nextSecret = "synthetic replacement browser passphrase";
@@ -90,10 +91,10 @@ test("passphrase change preserves history across tabs and older backups retain t
     .fill("SYNTHETIC latest saved draft");
   await tab(page, "Saved").click();
   await fillChange(page);
-  page.once("dialog", (dialog) => void dialog.dismiss());
   await page
     .getByRole("button", { name: "Change passphrase and lock" })
     .click();
+  await answerQuestion(page, false);
   await expect(
     page.getByRole("button", { name: "Lock and clear workspace" }),
   ).toBeVisible();

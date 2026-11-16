@@ -16,6 +16,7 @@ import { experimentInferenceLimit, validateExperiment } from "./experiment";
 import { claimExperiment } from "./run-claim";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { auditResearchAnswer } from "../src/research-audit";
+import { answerQuestions } from "../tests/fixtures/app-questions";
 import workspaceFixtures from "./cases/research-workspace.json";
 import assistedFixtures from "./cases/research-assisted.json";
 import toolFixtures from "./cases/research-tools.json";
@@ -541,7 +542,8 @@ try {
         pageErrors.push(error.name);
         if (dry) console.log(error.message);
       });
-      page.on("dialog", (d) => d.accept());
+      // Accepts the browser's and the app's own questions alike, as d.accept() did before 16 November.
+      await answerQuestions(page);
       await page.addInitScript((p) => {
         (window as any).__workspaceEvaluation = { permit: p, results: [] };
       }, permit);
