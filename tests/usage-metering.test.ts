@@ -5,7 +5,9 @@ import { expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import {
   activeWeights,
+  chatEuros,
   planFor,
+  pricesAt,
   usagePlans,
   usageWeights,
   weightsFileSchema,
@@ -22,6 +24,7 @@ import { implausible, SqliteUsageRecords, type UsageRecord } from "../server/usa
 import { usageReportBody } from "../src/usage-report";
 import { audioSecondsOf, reconcile, suggestWeights, quotaTokens, euros, formatReconciliation, formatSuggestion } from "../scripts/usage-metering";
 import { privatemodeReport } from "./fixtures/privatemode-report";
+import { costOf } from "../server/background-tasks";
 
 it("version 1 carries today's weights unchanged: report draft, code credit, background extras, research", () => {
   const v1 = usageWeights.versions[0];
@@ -224,12 +227,37 @@ function syntheticWeek() {
   return rows;
 }
 
+it("prices: input, cached input and output are priced apart per model, by the list in force at the record's time", () => {
+  const prices = pricesAt();
+  // The same tokens, half of the prompt cached: each model at its own three prices, never a blend.
+  const thinking = chatEuros(prices, "glm-5.3", 1e6, 1e6, 5e5)!;
+  const fast = chatEuros(prices, "glm-5.3-flash", 1e6, 1e6, 5e5)!;
+  expect(thinking).toBeCloseTo(0.5 * 1.55 + 0.5 * 0.15 + 5.74);
+  expect(fast).toBeCloseTo(0.5 * 0.2 + 0.5 * 0.05 + 0.65);
+  expect(chatEuros(prices, "glm-5.3", 1e6, 1e6)! - thinking).toBeCloseTo(0.5 * (1.55 - 0.15));
+  expect(chatEuros(prices, "unknown-model", 1, 1)).toBeUndefined();
+  // A later list applies only from its date on; older records keep the list they were made under.
+  const later = { ...prices, version: 2, effectiveFrom: "2027-01-01T00:00:00.000Z", models: { "glm-5.3": { inputPerMillion: 2, outputPerMillion: 6, cachedPerMillion: 0.2 } } };
+  const file = { ...usageWeights, prices: [prices, later] };
+  expect(weightsFileSchema.safeParse(file).success).toBe(true);
+  expect(weightsFileSchema.safeParse({ ...usageWeights, prices: [later, prices] }).success).toBe(false);
+  expect(pricesAt(Date.parse("2026-12-31T23:59:59Z"), file).version).toBe(1);
+  expect(pricesAt(Date.parse("2027-01-01T00:00:00Z"), file).version).toBe(2);
+  // The ledger's cost of a background run: the model's own prices at the report's rate, not one report-wide price.
+  const q = validateQualification(privatemodeReport());
+  const usage = { promptTokens: 1e6, completionTokens: 1e6, cachedTokens: 5e5 };
+  const rate = q.privatemode!.priceConversion.usdPerEUR;
+  expect(Number(costOf(q, usage, "glm-5.3"))).toBeCloseTo(thinking * rate);
+  expect(Number(costOf(q, usage, "glm-5.3-flash"))).toBeCloseTo(fast * rate);
+  expect(costOf(q, usage, "glm-5.3")).not.toBe(costOf(q, usage, "glm-5.3-flash"));
+});
+
 it("reconciliation: totals per feature in portal tokens and euros, estimates for unreported requests, the gap to the portal", () => {
-  const prices = usageWeights.prices;
+  const prices = pricesAt();
   expect(quotaTokens(record({ report: "accepted", promptTokens: 1000, completionTokens: 100, cachedTokens: 500 }), prices)).toBe(1000 - 500 + 125 + 100);
   expect(euros(record({ report: "accepted", promptTokens: 1e6, completionTokens: 1e6 }), prices)).toBeCloseTo(0.85);
   expect(quotaTokens(record({ feature: "voice", audioSeconds: 120 }), prices)).toBe(5600);
-  const result = reconcile(syntheticWeek(), prices, { tokens: 300_000, eur: 1 });
+  const result = reconcile(syntheticWeek(), { tokens: 300_000, eur: 1 });
   const fast = result.features.find((f) => f.feature === "chat-fast")!;
   expect(fast).toMatchObject({ requests: 62, units: 62, reported: 60, unreported: 1, incomplete: 1, quotaTokens: 30 * 1000 + 30 * 1200 });
   expect(result.total.quotaTokens).toBe(30 * (1000 + 2000 + 3600));
@@ -282,7 +310,7 @@ it("version 2 is version 1 except voice (1 unit per chunk); version 1 stays; it 
 });
 
 it("voice records: audio seconds from the chunk's 2-second units in the request ID, only for a transcribed chunk", () => {
-  const prices = usageWeights.prices;
+  const prices = pricesAt();
   const voice = (units: number, over: Partial<UsageRecord> = {}) =>
     record({ requestId: voiceRequestId(units, `u${units}${over.outcome ?? ""}`), feature: "voice", model: "whisper-large-v3", units: 1, weightVersion: 2, ...over });
   expect(audioSecondsOf(voice(15))).toBe(30);
@@ -297,7 +325,7 @@ it("voice records: audio seconds from the chunk's 2-second units in the request 
 });
 
 it("reconciliation across weights versions: units as charged per record, a line per version, estimates from the record's own version", () => {
-  const prices = usageWeights.prices;
+  const prices = pricesAt();
   const rows: UsageRecord[] = [];
   const add = (over: Partial<UsageRecord>) => rows.push(record({ requestId: `r${rows.length}`, createdAt: rows.length, ...over }));
   // Before the switch: two chunks under version 1 at 2 units each; after: three under version 2 at 1.
@@ -310,7 +338,7 @@ it("reconciliation across weights versions: units as charged per record, a line 
   add({ feature: "chat-fast", weightVersion: 2 }); // complete, not reported
   // Nothing measured for images: estimated from the record's own version's basis.
   add({ feature: "image", units: 2, weightVersion: 1 });
-  const result = reconcile(rows, prices);
+  const result = reconcile(rows);
   const voice = result.features.find((f) => f.feature === "voice")!;
   expect(voice).toMatchObject({ requests: 7, units: 2 + 2 + 1 + 1 + 1 + 0 + 1, reported: 6, incomplete: 1, unreported: 0 });
   // 30 + 10 + 30 + 30 + 20 + 8 seconds at 2,800 tokens a minute.
@@ -325,7 +353,7 @@ it("reconciliation across weights versions: units as charged per record, a line 
   expect(text).toContain("Charged by weights version: version 1: 4 requests, 7 units; version 2: 6 requests, 5 units.");
   // A voice record with nothing measured: version 1's basis is a whole recording, version 2's one chunk.
   const unmeasured = (version: number) =>
-    reconcile([record({ feature: "voice", requestId: "voice-x", model: "whisper-large-v3", weightVersion: version })], prices).total.estimatedTokens;
+    reconcile([record({ feature: "voice", requestId: "voice-x", model: "whisper-large-v3", weightVersion: version })]).total.estimatedTokens;
   expect(unmeasured(1)).toBe(5600);
   expect(unmeasured(2)).toBe(1400);
 });

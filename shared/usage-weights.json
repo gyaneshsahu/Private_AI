@@ -1,17 +1,21 @@
 {
   "note": "Allowance units per feature (docs/usage-metering-20261115.md). The relay charges the newest version whose effectiveFrom has passed, while metering is switched on (inference.metering). Every usage record keeps the version it was charged under. Change a weight only by adding a new version: run scripts/usage-metering.ts suggest, then the owner approves the proposal and the agent appends it here. Never edit an existing version.",
-  "prices": {
-    "source": "Privatemode pricing page as copied in docs/privatemode-master-notes.md section 6 (owner's notes, read 11 November 2026). EUR, before VAT. Used by the scripts for euro estimates only; never charged to users.",
-    "currency": "EUR",
-    "audioTokensPerMinute": 2800,
-    "models": {
-      "glm-5.3": { "inputPerMillion": 1.55, "outputPerMillion": 5.74, "cachedPerMillion": 0.15 },
-      "glm-5.3-flash": { "inputPerMillion": 0.2, "outputPerMillion": 0.65, "cachedPerMillion": 0.05 },
-      "gpt-oss-120b": { "inputPerMillion": 0.2, "outputPerMillion": 0.65, "cachedPerMillion": 0.04 },
-      "whisper-large-v3": { "perAudioMinute": 0.014 },
-      "voxtral-mini-3b": { "perAudioMinute": 0.004 }
+  "prices": [
+    {
+      "version": 1,
+      "effectiveFrom": "2026-11-11T00:00:00.000Z",
+      "source": "Privatemode pricing page as copied in docs/privatemode-master-notes.md section 6 (owner's notes, read 11 November 2026). EUR, before VAT. Used for euro estimates by the scripts and for the cost figure of a background run in the ledger; never charged to users. Owner-reported on 16 November 2026: the portal shows a price list with input, cached input and output per 1M tokens per model and audio per minute; the figures here are still those of 11 November until the owner confirms they match. A changed price is a new version here, never an edit.",
+      "currency": "EUR",
+      "audioTokensPerMinute": 2800,
+      "models": {
+        "glm-5.3": { "inputPerMillion": 1.55, "outputPerMillion": 5.74, "cachedPerMillion": 0.15 },
+        "glm-5.3-flash": { "inputPerMillion": 0.2, "outputPerMillion": 0.65, "cachedPerMillion": 0.05 },
+        "gpt-oss-120b": { "inputPerMillion": 0.2, "outputPerMillion": 0.65, "cachedPerMillion": 0.04 },
+        "whisper-large-v3": { "perAudioMinute": 0.014 },
+        "voxtral-mini-3b": { "perAudioMinute": 0.004 }
+      }
     }
-  },
+  ],
   "versions": [
     {
       "version": 1,

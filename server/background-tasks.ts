@@ -16,6 +16,7 @@ import { count } from "./counters";
 import { imageDayCount } from "./image-admission";
 import type { SearchProvider } from "./providers/search";
 import type { UsageLedger } from "./usage-contract";
+import { chatEuros, pricesAt } from "../shared/usage-config";
 
 const DAY = 86_400_000;
 export const BACKGROUND_LIMITS = {
@@ -337,7 +338,7 @@ export function createBackgroundTasks(deps: BackgroundDeps) {
               row.accountId,
               requestId,
               reply ? "transport_complete" : "uncertain",
-              reply?.usage ? { ...reply.usage, model: usedModel, costUsd: costOf(q, reply.usage) } : undefined,
+              reply?.usage ? { ...reply.usage, model: usedModel, costUsd: costOf(q, reply.usage, usedModel) } : undefined,
             ),
           )
           .catch(() => {
@@ -513,8 +514,20 @@ export function createBackgroundTasks(deps: BackgroundDeps) {
 export type BackgroundTasks = ReturnType<typeof createBackgroundTasks>;
 
 /** The report's published price for the tokens a run used, as the ledger's decimal string. */
-export function costOf(q: Qualification, usage: { promptTokens: number; completionTokens: number }) {
-  const usd = (usage.promptTokens * q.pricing.inputPerMillion + usage.completionTokens * q.pricing.outputPerMillion) / 1e6;
+export function costOf(
+  q: Qualification,
+  usage: { promptTokens: number; completionTokens: number; cachedTokens?: number },
+  model?: string,
+  now = Date.now(),
+) {
+  // The model's own list price (input, cached input and output apart) in euros, converted at the
+  // report's rate. Without a listed price or a rate: the report's one published price, as before.
+  const eur = model === undefined ? undefined : chatEuros(pricesAt(now), model, usage.promptTokens, usage.completionTokens, usage.cachedTokens);
+  const rate = q.privatemode?.priceConversion.usdPerEUR;
+  const usd =
+    eur !== undefined && rate !== undefined
+      ? eur * rate
+      : (usage.promptTokens * q.pricing.inputPerMillion + usage.completionTokens * q.pricing.outputPerMillion) / 1e6;
   return usd.toFixed(12);
 }
 

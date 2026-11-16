@@ -20,13 +20,12 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Pool } from "pg";
-import { activeWeights, usageWeights, weightsVersion, type Feature, type WeightsFile, type WeightsVersion } from "../shared/usage-config";
+import { activeWeights, chatEuros, pricesAt, usageWeights, weightsVersion, type Feature, type Prices, type WeightsFile, type WeightsVersion } from "../shared/usage-config";
 import { VOICE_UNIT_SECONDS } from "../shared/voice";
 import { voiceUnitsOf } from "../server/usage-contract";
 import type { UsageRecord } from "../server/usage-records";
 import { PostgresUsageRecords } from "../server/usage-records-postgres";
 
-type Prices = WeightsFile["prices"];
 const DAY = 86_400_000;
 
 export function median(values: number[]): number | undefined {
@@ -68,12 +67,7 @@ export function euros(r: UsageRecord, prices: Prices): number | undefined {
   if (!price) return undefined;
   const audio = audioSecondsOf(r);
   if (audio !== undefined) return price.perAudioMinute === undefined ? undefined : (audio / 60) * price.perAudioMinute;
-  if (!reported(r) || price.inputPerMillion === undefined || price.outputPerMillion === undefined) return undefined;
-  const cached = r.cachedTokens ?? 0;
-  return (
-    ((r.promptTokens! - cached) * price.inputPerMillion + cached * (price.cachedPerMillion ?? price.inputPerMillion) + r.completionTokens! * price.outputPerMillion) /
-    1e6
-  );
+  return reported(r) ? chatEuros(prices, r.model!, r.promptTokens!, r.completionTokens!, r.cachedTokens) : undefined;
 }
 
 export interface FeatureTotals {
@@ -102,7 +96,6 @@ const empty = (feature: FeatureTotals["feature"]): FeatureTotals => ({
 
 export function reconcile(
   records: UsageRecord[],
-  prices: Prices,
   portal: { tokens?: number; eur?: number } = {},
   weights: WeightsVersion = activeWeights(),
   file: WeightsFile = usageWeights,
@@ -110,7 +103,7 @@ export function reconcile(
   const byFeature = new Map<Feature, FeatureTotals>();
   const medians = new Map<Feature, number>();
   for (const feature of new Set(records.map((r) => r.feature))) {
-    const m = median(records.filter((r) => r.feature === feature).map((r) => quotaTokens(r, prices)).filter((n): n is number => n !== undefined));
+    const m = median(records.filter((r) => r.feature === feature).map((r) => quotaTokens(r, pricesAt(r.createdAt, file))).filter((n): n is number => n !== undefined));
     if (m !== undefined) medians.set(feature, m);
   }
   // Nothing measured for a feature: the basis of the version the record was charged under (a voice
@@ -127,7 +120,7 @@ export function reconcile(
     row.requests++;
     row.units += r.units;
     if (r.report === "flagged") row.flagged++;
-    const tokens = quotaTokens(r, prices);
+    const tokens = quotaTokens(r, pricesAt(r.createdAt, file));
     if (tokens !== undefined) {
       row.reported++;
       row.prompt += r.promptTokens ?? 0;
@@ -135,7 +128,7 @@ export function reconcile(
       row.cached += r.cachedTokens ?? 0;
       row.reasoning += r.reasoningTokens ?? 0;
       row.quotaTokens += tokens;
-      row.eur += euros(r, prices) ?? 0;
+      row.eur += euros(r, pricesAt(r.createdAt, file)) ?? 0;
     } else if (r.outcome === "complete") {
       row.unreported++;
       row.estimatedTokens += estimate(r);
@@ -213,13 +206,12 @@ export function suggestWeights(
   file: WeightsFile = usageWeights,
   options: { basis?: "euros" | "tokens"; minUses?: number; now?: number; weightsVersion?: number } = {},
 ) {
-  const prices = file.prices;
   const current = activeWeights(options.now ?? Date.now(), file, options.weightsVersion);
   const minUses = options.minUses ?? 20;
   const complete = records.filter((r) => r.outcome === "complete");
   const cost = (group: UsageRecord[]) => {
-    const tokens = group.map((r) => quotaTokens(r, prices));
-    const eur = group.map((r) => euros(r, prices));
+    const tokens = group.map((r) => quotaTokens(r, pricesAt(r.createdAt, file)));
+    const eur = group.map((r) => euros(r, pricesAt(r.createdAt, file)));
     return tokens.every((t) => t !== undefined) && eur.every((e) => e !== undefined)
       ? { tokens: tokens.reduce((a, b) => a! + b!, 0)!, eur: eur.reduce((a, b) => a! + b!, 0)! }
       : undefined;
@@ -334,7 +326,7 @@ export async function main(argv: string[]) {
       ...(argument(args, "--portal-tokens") ? { tokens: Number(argument(args, "--portal-tokens")) } : {}),
       ...(argument(args, "--portal-eur") ? { eur: Number(argument(args, "--portal-eur")) } : {}),
     };
-    return formatReconciliation(reconcile(records, usageWeights.prices, portal), from!, to!, portal);
+    return formatReconciliation(reconcile(records, portal), from!, to!, portal);
   } finally {
     await database.end();
   }

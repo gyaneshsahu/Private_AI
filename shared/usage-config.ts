@@ -65,24 +65,50 @@ const price = z
 export const weightsFileSchema = z
   .object({
     note: z.string(),
+    // Dated versions, like the weights: a record is priced by the list in force when it was made.
     prices: z
-      .object({
-        source: z.string(),
-        currency: z.literal("EUR"),
-        audioTokensPerMinute: z.number().positive(),
-        models: z.record(z.string(), price),
-      })
-      .strict(),
+      .array(
+        z
+          .object({
+            version: z.number().int().min(1),
+            effectiveFrom: z.iso.datetime(),
+            source: z.string(),
+            currency: z.literal("EUR"),
+            audioTokensPerMinute: z.number().positive(),
+            models: z.record(z.string(), price),
+          })
+          .strict(),
+      )
+      .min(1),
     versions: z.array(versionSchema).min(1),
   })
   .strict()
   .refine(
-    (file) => file.versions.every((v, i) => v.version === i + 1 && (i === 0 || v.effectiveFrom > file.versions[i - 1].effectiveFrom)),
+    (file) =>
+      [file.versions, file.prices].every((list) =>
+        list.every((v, i) => v.version === i + 1 && (i === 0 || v.effectiveFrom > list[i - 1].effectiveFrom)),
+      ),
     "Versions must count up from 1 with later effective dates.",
   );
 export type WeightsVersion = z.infer<typeof versionSchema>;
 export type WeightsFile = z.infer<typeof weightsFileSchema>;
 export const usageWeights: WeightsFile = weightsFileSchema.parse(rawWeights);
+export type Prices = WeightsFile["prices"][number];
+/** The price list in force at `at` (a record's own time): the newest whose date has passed, the first before any. */
+export function pricesAt(at = Date.now(), file: WeightsFile = usageWeights): Prices {
+  return [...file.prices].reverse().find((p) => Date.parse(p.effectiveFrom) <= at) ?? file.prices[0];
+}
+/** List-price euros (before VAT) for chat tokens on one model: input, cached input and output each at its own price. */
+export function chatEuros(prices: Prices, model: string, promptTokens: number, completionTokens: number, cachedTokens = 0): number | undefined {
+  const price = prices.models[model];
+  if (price?.inputPerMillion === undefined || price.outputPerMillion === undefined) return undefined;
+  return (
+    ((promptTokens - cachedTokens) * price.inputPerMillion +
+      cachedTokens * (price.cachedPerMillion ?? price.inputPerMillion) +
+      completionTokens * price.outputPerMillion) /
+    1e6
+  );
+}
 
 /**
  * The version in force at `now`: the newest whose effective date has passed (version 1 before any),
