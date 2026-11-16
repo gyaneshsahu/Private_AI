@@ -3798,3 +3798,14 @@
     height: 44px;
   }
 }
+
+/* Short screens (phone landscape, small windows): the whole sidebar scrolls instead of squeezing the chat list to nothing under the account menu. */
+@media (max-height: 640px) {
+  .chat-design .sidebar {
+    overflow-y: auto;
+  }
+  .chat-design .navigation-history {
+    flex: none;
+    overflow: visible;
+  }
+}

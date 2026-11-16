@@ -82,7 +82,7 @@ test("built workspace restores, edits, switches and saves branches without any i
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Copy answer", exact: true }),
-  ).toBeDisabled();
+  ).toBeEnabled(); // a partial answer with text can be copied (CC-14, 16 November)
   await page.getByRole("button", { name: "Edit into a new branch" }).click();
   await expect(page.getByLabel("Edited message")).toBeFocused();
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
