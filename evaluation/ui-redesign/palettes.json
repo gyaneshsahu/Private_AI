@@ -1,14 +1,122 @@
 {
-  "D": {
-    "name": "D · Night sky",
-    "note": "Warm white by day, deep night by night. Ink is a dark navy, the comet light is a soft gold. Gold appears only as light: the trail, the logo head, and the one main button in the dark theme.",
-    "light": { "bg": "#f8f7f3", "sidebar": "#efede6", "surface": "#ffffff", "hover": "#e4e1d8", "ink": "#151a2d", "ink2": "#4d5266", "ink3": "#5d6275", "line": "#dcd9cf", "accent": "#2a3566", "primary": "#171d3a", "primaryInk": "#ffffff", "light": "#d99a2b", "bubble": "#e9e7e0", "code": "#efede6", "danger": "#a3261d" },
-    "dark": { "bg": "#0c0f1d", "sidebar": "#080a15", "surface": "#141830", "hover": "#1c2140", "ink": "#e9eaf2", "ink2": "#a9adc2", "ink3": "#8e93ab", "line": "#232847", "accent": "#f0c27a", "primary": "#f0c27a", "primaryInk": "#1a1304", "light": "#f0c27a", "bubble": "#181d38", "code": "#080a15", "danger": "#ff9c92" }
+  "A1": {
+    "name": "A1 · Graphite with comet glow (ice)",
+    "note": "Option A as before (neutral greys, black buttons). A soft ice-white light around the message box.",
+    "light": {
+      "bg": "#ffffff",
+      "sidebar": "#f7f7f8",
+      "surface": "#ffffff",
+      "hover": "#ececee",
+      "ink": "#18181b",
+      "ink2": "#5c5c66",
+      "ink3": "#6f6f7a",
+      "line": "#e4e4e7",
+      "accent": "#2459d6",
+      "primary": "#18181b",
+      "primaryInk": "#ffffff",
+      "bubble": "#f1f1f3",
+      "code": "#f7f7f8",
+      "danger": "#a3261d",
+      "light": "#4f8dff",
+      "halo": "0 0 0 1px #4f8dff66, 0 8px 28px -8px #4f8dff77, 0 0 80px -12px #4f8dff55"
+    },
+    "dark": {
+      "bg": "#161618",
+      "sidebar": "#101012",
+      "surface": "#222226",
+      "hover": "#2b2b30",
+      "ink": "#ededf0",
+      "ink2": "#b1b1ba",
+      "ink3": "#9a9aa5",
+      "line": "#33333a",
+      "accent": "#8fb4ff",
+      "primary": "#ededf0",
+      "primaryInk": "#18181b",
+      "bubble": "#27272c",
+      "code": "#101012",
+      "danger": "#ff9c92",
+      "light": "#a9d4ff",
+      "halo": "0 0 0 1px #a9d4ffaa, 0 0 20px -2px #a9d4ff88, 0 0 90px -8px #a9d4ff55"
+    }
   },
-  "E": {
-    "name": "E · Deep water",
-    "note": "Calm green-grey tones, like still water. Ink is a very dark pine, the comet light is a pale sea-green. No gold, no blue.",
-    "light": { "bg": "#f4f7f6", "sidebar": "#e9eeec", "surface": "#ffffff", "hover": "#dde5e2", "ink": "#0e1f1d", "ink2": "#475855", "ink3": "#566764", "line": "#d5dedb", "accent": "#0b5d55", "primary": "#0f4640", "primaryInk": "#ffffff", "light": "#2fbfa5", "bubble": "#e0e9e6", "code": "#e9eeec", "danger": "#a3261d" },
-    "dark": { "bg": "#0a1413", "sidebar": "#070e0d", "surface": "#111f1d", "hover": "#192b28", "ink": "#e4eeeb", "ink2": "#a2b4af", "ink3": "#869892", "line": "#1d302d", "accent": "#74d6c3", "primary": "#74d6c3", "primaryInk": "#062019", "light": "#74d6c3", "bubble": "#162926", "code": "#070e0d", "danger": "#ff9c92" }
+  "A2": {
+    "name": "A2 · Graphite with comet glow (violet)",
+    "note": "Option A as before (neutral greys, black buttons). The violet light of your reference pictures. Only the glow is violet; nothing else is.",
+    "light": {
+      "bg": "#ffffff",
+      "sidebar": "#f7f7f8",
+      "surface": "#ffffff",
+      "hover": "#ececee",
+      "ink": "#18181b",
+      "ink2": "#5c5c66",
+      "ink3": "#6f6f7a",
+      "line": "#e4e4e7",
+      "accent": "#2459d6",
+      "primary": "#18181b",
+      "primaryInk": "#ffffff",
+      "bubble": "#f1f1f3",
+      "code": "#f7f7f8",
+      "danger": "#a3261d",
+      "light": "#8a63f0",
+      "halo": "0 0 0 1px #8a63f066, 0 8px 28px -8px #8a63f077, 0 0 80px -12px #8a63f055"
+    },
+    "dark": {
+      "bg": "#161618",
+      "sidebar": "#101012",
+      "surface": "#222226",
+      "hover": "#2b2b30",
+      "ink": "#ededf0",
+      "ink2": "#b1b1ba",
+      "ink3": "#9a9aa5",
+      "line": "#33333a",
+      "accent": "#8fb4ff",
+      "primary": "#ededf0",
+      "primaryInk": "#18181b",
+      "bubble": "#27272c",
+      "code": "#101012",
+      "danger": "#ff9c92",
+      "light": "#b99cff",
+      "halo": "0 0 0 1px #b99cffaa, 0 0 20px -2px #b99cff88, 0 0 90px -8px #b99cff55"
+    }
+  },
+  "A3": {
+    "name": "A3 · Graphite with comet glow (gold)",
+    "note": "Option A as before (neutral greys, black buttons). A warm gold light, like a comet seen at dusk.",
+    "light": {
+      "bg": "#ffffff",
+      "sidebar": "#f7f7f8",
+      "surface": "#ffffff",
+      "hover": "#ececee",
+      "ink": "#18181b",
+      "ink2": "#5c5c66",
+      "ink3": "#6f6f7a",
+      "line": "#e4e4e7",
+      "accent": "#2459d6",
+      "primary": "#18181b",
+      "primaryInk": "#ffffff",
+      "bubble": "#f1f1f3",
+      "code": "#f7f7f8",
+      "danger": "#a3261d",
+      "light": "#e0a23a",
+      "halo": "0 0 0 1px #e0a23a66, 0 8px 28px -8px #e0a23a77, 0 0 80px -12px #e0a23a55"
+    },
+    "dark": {
+      "bg": "#161618",
+      "sidebar": "#101012",
+      "surface": "#222226",
+      "hover": "#2b2b30",
+      "ink": "#ededf0",
+      "ink2": "#b1b1ba",
+      "ink3": "#9a9aa5",
+      "line": "#33333a",
+      "accent": "#8fb4ff",
+      "primary": "#ededf0",
+      "primaryInk": "#18181b",
+      "bubble": "#27272c",
+      "code": "#101012",
+      "danger": "#ff9c92",
+      "light": "#f2c57c",
+      "halo": "0 0 0 1px #f2c57caa, 0 0 20px -2px #f2c57c88, 0 0 90px -8px #f2c57c55"
+    }
   }
 }
