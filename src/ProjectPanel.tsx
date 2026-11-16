@@ -25,7 +25,7 @@ import {
 import { projectText } from "./text/projects";
 import { syncFilesText } from "./text/sync-files";
 // From src/sync/files.ts, not the whole sync API: the screen works the same without sync.
-import { downloadProjectFile, removeSyncedProjectFile, useSyncFiles, type FileState } from "./sync/files";
+import { downloadProjectFile, removeSyncedProjectFile, useSyncFiles, type FileSlot, type FileState } from "./sync/files";
 import type { Vault } from "./vault";
 
 // Pictures are not project files in this pass.
@@ -58,6 +58,7 @@ export function useProjectVault(projects: readonly Project[], vault: Vault | nul
 
 export function ProjectPanel({
   vault,
+  fileSlot = "max",
   project,
   chats,
   busy,
@@ -69,6 +70,8 @@ export function ProjectPanel({
   onChange,
 }: {
   vault: Vault;
+  /** Which sync serves this project's files: the encrypted sync, or Secure (src/stores.ts). */
+  fileSlot?: FileSlot;
   project: Project;
   /** The saved chats of this project, archived ones included. */
   chats: Conversation[];
@@ -97,7 +100,7 @@ export function ProjectPanel({
   const held = useSyncExternalStore(watchProjects, heldProjects);
   const files = held.files[project.id] ?? [];
   // Synced project files (Stage 3), only while file sync is on for this device.
-  const sync = useSyncFiles();
+  const sync = useSyncFiles(fileSlot);
   const f = syncFilesText[lang];
   const remote = sync.enabled ? sync.remote.filter((entry) => entry.projectId === project.id) : [];
   const remoteCharacters = (projectId?: string) =>
@@ -121,7 +124,7 @@ export function ProjectPanel({
     return state.state === "uploading" ? f.uploading : f.waiting;
   };
   const download = async (id: string, name: string) => {
-    const result = await downloadProjectFile(id).catch(() => "server" as const);
+    const result = await downloadProjectFile(id, fileSlot).catch(() => "server" as const);
     setStatus(result === "ok" ? f.downloaded(name) : f.error(result));
   };
   const [reading, setReading] = useState<AbortController>();
@@ -401,7 +404,7 @@ export function ProjectPanel({
           onClose={(confirmed) => {
             setRemoving(undefined);
             if (confirmed && removing.remote)
-              void removeSyncedProjectFile(removing.id).then(
+              void removeSyncedProjectFile(removing.id, fileSlot).then(
                 () => setStatus(t.fileRemoved),
                 () => setStatus(t.problem("failed")),
               );
