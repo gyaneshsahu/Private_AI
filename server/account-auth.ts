@@ -797,16 +797,7 @@ function createAccountAuth(
     "/api/account/close",
     express.json({ limit: "2kb" }),
     async (req, res) => {
-      if (
-        !z
-          .object({
-            confirmation: z.literal(
-              config.synthetic ? "DELETE TEST ACCOUNT" : "DELETE ACCOUNT",
-            ),
-          })
-          .strict()
-          .safeParse(req.body).success
-      ) {
+      if (!closureConfirmed(req.body, config.synthetic)) {
         res
           .status(400)
           .json({ error: "Exact deletion confirmation required." });
@@ -987,6 +978,23 @@ function createAccountAuth(
     }
   });
   return { auth, router, ingress: config.ingress };
+}
+
+/** The typed deletion phrase: English or German (the German page asks for it), "Ö" in composed form. */
+export function closureConfirmed(body: unknown, synthetic: boolean) {
+  const phrases = synthetic
+    ? ["DELETE TEST ACCOUNT", "TESTKONTO LÖSCHEN"]
+    : ["DELETE ACCOUNT", "KONTO LÖSCHEN"];
+  return z
+    .object({
+      confirmation: z
+        .string()
+        .max(64)
+        .transform((value) => value.trim().normalize("NFC"))
+        .refine((value) => phrases.includes(value)),
+    })
+    .strict()
+    .safeParse(body).success;
 }
 
 function isFresh(createdAt: Date): boolean {

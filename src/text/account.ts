@@ -58,8 +58,12 @@ export const accountLabText = defineText({
     signOutOtherTest: "Sign out other test sessions",
     signedOut: "Signed out.",
     signOut: "Sign out",
-    accountClosed: (synthetic: boolean) =>
-      `${synthetic ? "Test account" : "Account"} closed; all sessions were signed out. Credential purge is not scheduled. Local saved history and retained usage records were not erased.`,
+    accountClosed: (synthetic: boolean, purgeDays?: number) =>
+      `${synthetic ? "Test account" : "Account"} closed; all sessions were signed out. ${
+        purgeDays
+          ? `The account and the content saved with it will be deleted from our server in ${purgeDays} days.`
+          : "Credential purge is not scheduled; content saved with the account stays on our server until it is deleted on request."
+      } Copies on your devices and usage records were not erased.`,
     verifyEmailNotice:
       "Sign in with an email code, then remove the affected method under Account access.",
     useTestEmail: "Use a synthetic .test email address.",
@@ -149,8 +153,12 @@ export const accountLabText = defineText({
     signOutOtherTest: "Andere Testsitzungen abmelden",
     signedOut: "Abgemeldet.",
     signOut: "Abmelden",
-    accountClosed: (synthetic: boolean) =>
-      `${synthetic ? "Testkonto" : "Konto"} geschlossen; alle Sitzungen wurden abgemeldet. Eine Löschung der Anmeldedaten ist nicht geplant. Der lokal gespeicherte Verlauf und aufbewahrte Nutzungsdaten wurden nicht gelöscht.`,
+    accountClosed: (synthetic: boolean, purgeDays?: number) =>
+      `${synthetic ? "Testkonto" : "Konto"} geschlossen; alle Sitzungen wurden abgemeldet. ${
+        purgeDays
+          ? `Das Konto und die damit gespeicherten Inhalte werden in ${purgeDays} Tagen von unserem Server gelöscht.`
+          : "Eine Löschung der Anmeldedaten ist nicht geplant; mit dem Konto gespeicherte Inhalte bleiben auf unserem Server, bis sie auf Anfrage gelöscht werden."
+      } Kopien auf Ihren Geräten und Nutzungsdaten wurden nicht gelöscht.`,
     verifyEmailNotice:
       "Melden Sie sich mit einem E-Mail-Code an und entfernen Sie dann die betroffene Methode unter „Kontozugang“.",
     useTestEmail: "Verwenden Sie eine synthetische .test-E-Mail-Adresse.",
@@ -274,8 +282,12 @@ export const accountDeletionText = defineText({
     titleClose: "Close account",
     intro:
       "This closes account access and signs out every session. Verify your email again first. Account reopening is not available.",
-    retention:
-      "Credential deletion is prepared for a seven-day retention period, but no automatic purge or backup deletion is active. Usage records remain for reconciliation. Saved conversations in this browser, other devices, exports and provider records are not erased here. Delete local snapshots in Saved before closing the account. No real subscription is connected here yet.",
+    retention: (purgeDays?: number) =>
+      purgeDays
+        ? `Sign-in stops at once. ${purgeDays} days later your account and everything saved with it on our server (chats, memories, projects, files and tasks) are deleted. Copies in database backups are not removed by this step. Usage records without your email address remain for reconciliation. Copies in this browser, on other devices and in exports are not erased here.`
+        : "Sign-in stops at once. Content saved with your account on our server (chats, memories, projects, files and tasks) stays stored, encrypted, until it is deleted on request: automatic deletion is not switched on yet. Usage records remain for reconciliation. Copies in this browser, on other devices and in exports are not erased here.",
+    phrase: "DELETE ACCOUNT",
+    phraseTest: "DELETE TEST ACCOUNT",
     reauth: "Sign out and sign in with a new email code before closing the account.",
     inProgress: "Another account change is in progress. Refresh before retrying.",
     unconfirmed:
@@ -291,8 +303,12 @@ export const accountDeletionText = defineText({
     titleClose: "Konto schließen",
     intro:
       "Damit wird der Zugang zum Konto geschlossen und jede Sitzung abgemeldet. Bestätigen Sie vorher Ihre E-Mail-Adresse erneut. Ein geschlossenes Konto kann nicht wieder geöffnet werden.",
-    retention:
-      "Die Löschung der Anmeldedaten ist für eine Aufbewahrungsfrist von sieben Tagen vorbereitet, aber weder eine automatische Löschung noch die Löschung von Sicherungen ist aktiv. Nutzungsdaten bleiben für den Abgleich erhalten. Gespeicherte Unterhaltungen in diesem Browser, auf anderen Geräten, Exporte und Daten beim Anbieter werden hier nicht gelöscht. Löschen Sie lokale Stände unter „Gespeichert“, bevor Sie das Konto schließen. Hier ist noch kein echtes Abonnement verbunden.",
+    retention: (purgeDays?: number) =>
+      purgeDays
+        ? `Die Anmeldung endet sofort. ${purgeDays} Tage später werden Ihr Konto und alles, was damit auf unserem Server gespeichert ist (Chats, Erinnerungen, Projekte, Dateien und Aufgaben), gelöscht. Kopien in Datenbanksicherungen entfernt dieser Schritt nicht. Nutzungsdaten ohne Ihre E-Mail-Adresse bleiben für den Abgleich erhalten. Kopien in diesem Browser, auf anderen Geräten und in Exporten werden hier nicht gelöscht.`
+        : "Die Anmeldung endet sofort. Inhalte, die mit Ihrem Konto auf unserem Server gespeichert sind (Chats, Erinnerungen, Projekte, Dateien und Aufgaben), bleiben verschlüsselt gespeichert, bis sie auf Anfrage gelöscht werden: Die automatische Löschung ist noch nicht eingeschaltet. Nutzungsdaten bleiben für den Abgleich erhalten. Kopien in diesem Browser, auf anderen Geräten und in Exporten werden hier nicht gelöscht.",
+    phrase: "KONTO LÖSCHEN",
+    phraseTest: "TESTKONTO LÖSCHEN",
     reauth:
       "Melden Sie sich ab und mit einem neuen E-Mail-Code wieder an, bevor Sie das Konto schließen.",
     inProgress:
@@ -414,7 +430,8 @@ export const usageText = defineText({
     tokensLabel: "Tokens and cost",
     tokensHeading: "Tokens and cost this period",
     paidNotEnabled: "Paid subscriptions are not enabled.",
-    heading: "Account and usage",
+    // The same name as the Settings tab (text/app.ts sectionUsage).
+    heading: "Plan & usage",
     manageNote:
       "Manage your sign-in methods and account access. Paid subscriptions are not enabled.",
     manage: "Manage sign-in methods",
@@ -451,7 +468,7 @@ export const usageText = defineText({
     tokensLabel: "Tokens und Kosten",
     tokensHeading: "Tokens und Kosten in diesem Zeitraum",
     paidNotEnabled: "Bezahlte Abonnements sind nicht aktiviert.",
-    heading: "Konto und Nutzung",
+    heading: "Tarif & Nutzung",
     manageNote:
       "Verwalten Sie Ihre Anmeldemethoden und den Zugang zu Ihrem Konto. Bezahlte Abonnements sind nicht aktiviert.",
     manage: "Anmeldemethoden verwalten",
