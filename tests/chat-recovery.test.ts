@@ -121,9 +121,9 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
     await ui(page.locator("article.assistant").last().locator(".message-actions")).toHaveCount(0);
     await ui(page.locator("article.assistant").last().getByText("Incomplete · excluded from context")).toHaveCount(0);
     await page.getByRole("button", { name: "Stop response", exact: true }).click();
-    await ui(
-      page.getByText("Response stopped.", { exact: false }),
-    ).toBeVisible();
+    // CC-06: the message says why in one sentence; no second, longer notice above the message box.
+    await ui(page.locator("article.assistant").last().locator(".failure-note")).toContainText("Stopped by you.");
+    await ui(page.getByText("Response stopped.", { exact: false })).toHaveCount(0);
     await ui(page.getByText("TEST_LATE_OUTPUT", { exact: false })).toHaveCount(
       0,
     );
@@ -472,9 +472,14 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       ),
     ).toBe(callsBeforeLimit + 1);
     await ui(page.getByLabel("Message CometRow")).toHaveValue("");
+    // CC-06: the sentence is in the message; the notice repeats it for screen readers only.
+    await ui(page.locator("article.assistant").last().locator(".failure-note")).toContainText(
+      "Response timed out. Try again in a minute.",
+    );
     await ui(
       page.getByRole("status").filter({ hasText: "Response timed out." }),
-    ).toBeVisible();
+    ).toHaveClass("sr-only");
+    await ui(page.getByText("No automatic retry was made.", { exact: false })).toHaveCount(0);
     await ui(
       page.getByText("PRIVATE_PROVIDER_DETAIL", { exact: false }),
     ).toHaveCount(0);
@@ -515,17 +520,14 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
         .getByLabel("Message CometRow")
         .fill("TEST unavailable service");
       await page.getByRole("button", { name: "Send message", exact: true }).click();
-      await ui(
-        page.getByRole("status").filter({
-          hasText:
-            mode === "http-limited"
-              ? "limiting requests"
-              : "service is unavailable",
-        }),
-      ).toBeVisible();
-      await ui(
-        page.getByRole("status").filter({ hasText: "cost remains unknown" }),
-      ).toBeVisible();
+      // CC-06: why it failed is the message's own sentence (announced once, not shown twice).
+      const why =
+        mode === "http-limited"
+          ? "The service is busy right now. Try again in a minute."
+          : "The service is not available right now. Try again in a minute.";
+      await ui(page.locator("article.assistant").last().locator(".failure-note")).toContainText(why);
+      await ui(page.getByRole("status").filter({ hasText: why })).toHaveClass("sr-only");
+      await ui(page.getByText("cost remains unknown", { exact: false })).toHaveCount(0);
       await ui(
         page.getByText("PRIVATE_PROVIDER_BODY", { exact: false }),
       ).toHaveCount(0);

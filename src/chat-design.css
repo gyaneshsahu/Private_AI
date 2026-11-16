@@ -4030,3 +4030,15 @@
     min-height: 44px;
   }
 }
+/* deep research in chat 16 Nov */
+/* FE-07 (src/DeepResearch.tsx `inline`): the deep research steps as a card in the conversation. */
+.chat-design .deep-research.deep-research-inline {
+  margin: 8px 0 16px;
+}
+.chat-design .deep-research-inline .panel {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.chat-design .deep-research-inline .panel > button {
+  margin: 6px 10px 0 0;
+}

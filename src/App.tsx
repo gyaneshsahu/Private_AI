@@ -82,7 +82,7 @@ import { fitHeight, isSendKey, limitState, MESSAGE_LIMIT, sendBlocked, touchDevi
 import { filesFrom, routeFiles, useFileDrop } from "./file-drop";
 import { useFollowScroll } from "./follow-scroll";
 import { AnswerAnnouncement, ConnectionBanner, useOnline } from "./ConnectionBanner";
-import { failureKind } from "./chat-failures";
+import { failureKind, failureSentence } from "./chat-failures";
 import { chatCoreText } from "./text/chat-core";
 import { titleFrom } from "./title-from";
 import { useMenuKeys } from "./use-menu-keys";
@@ -141,6 +141,7 @@ import { lastAnswer, lastCodeBlock } from "./shortcut-copy";
 import { shortcutsText } from "./text/shortcuts";
 import { skipLinkText } from "./text/skip-link";
 import { searchNextText } from "./text/search-next";
+import { researchNextText } from "./text/research-next";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { stopReading } from "./read-aloud";
@@ -410,10 +411,20 @@ export function App() {
   // card for exactly the typed text (`searchFor`). Nothing is searched until the card's button.
   const [searchNext, setSearchNext] = useState(false);
   const [searchFor, setSearchFor] = useState<string>();
+  // FE-07: "+" > "Deep research" arms the next Send the same way (`researchNext`); that Send opens
+  // the deep research card in the conversation for this text (`researchFor`), drawn into
+  // `researchSlot`. Nothing is planned before its button, nothing searched before the approval.
+  const [researchNext, setResearchNext] = useState(false);
+  const [researchFor, setResearchFor] = useState<string>();
+  const [researchSlot, setResearchSlot] = useState<HTMLDivElement | null>(null);
   useEffect(() => {
     setSearchNext(false);
     setSearchFor(undefined);
+    setResearchNext(false);
+    setResearchFor(undefined);
   }, [conversation.id]);
+  const researchReady =
+    !!status?.research && !!status.search && !!status.inference.ready && !(status.healthConsentDraft && !healthConsent);
   const forced = searchFor !== undefined && searchFor === input && !!input.trim();
   const suggestion = useMemo(() => {
     if (!status?.search || !status.inference.ready) return undefined;
@@ -1430,16 +1441,21 @@ export function App() {
           );
         if (!abort.signal.aborted && error instanceof AttestationBusyError && error.retryAt)
           setVerifyWaitUntil(error.retryAt);
+        // CC-06: the message shows the plain sentence with Retry and the folded explanation. The
+        // notice says only what that sentence does not: the verification wait, a changed deployment,
+        // a reason without its own sentence (kind "error"), the backup retry. Otherwise it repeats the
+        // sentence for screen readers only (noticeLine renders it hidden).
+        const kind = failureKind(error, abort.signal.aborted);
         setNotice(
           abort.signal.aborted
-            ? t.responseStopped
+            ? ""
             : error instanceof AttestationBusyError || error instanceof DeploymentChangedError
               ? passed(error.message)
-              : error instanceof IncompleteReplyError
-                ? `${passed(error.message)} ${error.usage ? t.usageRetained : t.costUnknown}`
-                : error instanceof Error && error.name === "TimeoutError"
-                  ? t.timedOut(retried)
-                  : t.protectedUnavailable(retried),
+              : error instanceof IncompleteReplyError && kind === "error"
+                ? passed(error.message)
+                : retried
+                  ? t.retriedOnce
+                  : failureSentence(kind, lang),
         );
       }
     } finally {
@@ -1692,6 +1708,13 @@ export function App() {
   }
   // The composer's Send. `asIs`: the user chose "Just send" on the scheduled-task card.
   function submitDraft(asIs = false) {
+    // While the deep research card is open, its buttons decide; armed, Send opens it for this text.
+    if (researchFor !== undefined) return;
+    if (researchNext && researchReady && !attachedImage && !busy) {
+      setResearchNext(false);
+      setResearchFor(input.trim());
+      return;
+    }
     // FE-07: armed from the "+" menu, Send shows the approval card for this text (also with
     // automatic search on: the menu is a request to search, the card is the approval).
     // While that card is open, Send changes nothing: the card's buttons decide.
@@ -2318,7 +2341,47 @@ export function App() {
       </div>
     </details>
   );
-  const noticeLine = notice && (
+  // Deep research's ways out, shared by the Research page and the card in the chat (FE-07).
+  const researchProps = !researchReady ? undefined : {
+    limits: status!.research!,
+    busy: !!busy,
+    conversationId: conversation.id,
+    blocked: researchBlocked,
+    sourceRoom: researchRoom,
+    hold: (label: string, abort?: AbortController) => {
+      controller.current = label && abort ? abort : null;
+      setBusy(label);
+    },
+    plan: planResearch,
+    api,
+    answer: async (question: string, queries: string[], sources: Source[], note: string, abort: AbortController) =>
+      !!(await send(
+        {
+          ...conversationNow.current,
+          temporarySearch: true,
+          attachments: withResearch(conversationNow.current.attachments, researchAttachment(sources, queries)),
+        },
+        question,
+        false,
+        false,
+        "thinking",
+        { note, abort },
+      )),
+    keep: (sources: Source[], queries: string[]) =>
+      setConversation((c) => ({
+        ...c,
+        temporarySearch: true,
+        attachments: withResearch(c.attachments, researchAttachment(sources, queries)),
+      })),
+    showAnswer: () => setTab("Conversation"),
+  };
+  // The failed answer's own sentence is in the message already: announced, not shown twice (CC-06).
+  const failed = conversation.messages.at(-1)?.failure;
+  const noticeLine = notice && failed && notice === failureSentence(failed, lang) ? (
+    <div role="status" className="sr-only">
+      {notice}
+    </div>
+  ) : notice && (
     <div role="status" className={inDock ? "notice composer-note dock-notice" : "notice"}>
       {notice}
       <button aria-label={t.dismissNotice} onClick={() => setNotice("")}>
@@ -2906,7 +2969,7 @@ export function App() {
               takeFiles(files);
             }}
           >
-            {!conversation.messages.length && (
+            {!conversation.messages.length && researchFor === undefined && (
               <div className="welcome">
                 <div className="welcome-mark">✳</div>
                 <p className="eyebrow">{t.eyebrow}</p>
@@ -3000,6 +3063,8 @@ export function App() {
                   onResize={follow.hold}
                 />
               ))}
+              {/* The deep research card of this chat (FE-07) is drawn here; it lives outside the tab. */}
+              <div ref={setResearchSlot} />
               <div ref={outputEnd} />
             </div>
             <div className="composer-dock">
@@ -3026,7 +3091,15 @@ export function App() {
                   </button>
                 </div>
               )}
-              {suggestion && shown && (forced || (!autoSearch && !(autoRules && !choosing))) && !busy && (
+              {researchNext && researchFor === undefined && !busy && status?.research && (
+                <div className="notice composer-note search-next">
+                  <span>{researchNextText[lang].armed(status.research.cost)}</span>
+                  <button type="button" className="text-button" onClick={() => setResearchNext(false)}>
+                    {researchNextText[lang].cancel}
+                  </button>
+                </div>
+              )}
+              {suggestion && shown && (forced || (!autoSearch && !(autoRules && !choosing))) && !busy && researchFor === undefined && (
                 <div
                   className="notice composer-note search-suggestion"
                   role="region"
@@ -3231,7 +3304,7 @@ export function App() {
                         busy: !!busy,
                         text: input,
                         ready: !!status?.inference.ready && online,
-                        waiting: choosing || forced || !!consentPending,
+                        waiting: choosing || forced || !!consentPending || researchFor !== undefined,
                       })
                     )
                       event.currentTarget.form?.requestSubmit();
@@ -3328,12 +3401,29 @@ export function App() {
                           disabled={!!busy}
                           onClick={() => {
                             setSearchNext((on) => !on);
+                            setResearchNext(false);
                             // The menu closes on the click (closeMenus); typing goes on in the message box.
                             requestAnimationFrame(() => document.getElementById("message-input")?.focus());
                           }}
                         >
                           <Icon name="search" />
                           {sn.menu}
+                        </button>
+                      )}
+                      {researchReady && (
+                        <button
+                          type="button"
+                          className="text-button"
+                          aria-pressed={researchNext}
+                          disabled={!!busy || researchFor !== undefined}
+                          onClick={() => {
+                            setResearchNext((on) => !on);
+                            setSearchNext(false);
+                            requestAnimationFrame(() => document.getElementById("message-input")?.focus());
+                          }}
+                        >
+                          <Icon name="globe" />
+                          {deepResearchText[lang].heading}
                         </button>
                       )}
                       <button
@@ -3954,44 +4044,27 @@ export function App() {
             }
           />
         )}
-        {researchUsed.current && status?.research && status.search && status.inference.ready && !(status.healthConsentDraft && !healthConsent) && (
+        {researchReady && researchFor !== undefined && (
           <DeepResearch
-            hidden={tab !== "Research"}
-            limits={status.research}
-            busy={!!busy}
-            conversationId={conversation.id}
-            blocked={researchBlocked}
-            sourceRoom={researchRoom}
-            hold={(label, abort) => {
-              controller.current = label && abort ? abort : null;
-              setBusy(label);
+            {...researchProps!}
+            hidden={!researchSlot}
+            answer={(...args) => {
+              // The question becomes the user message: the draft it came from is used up.
+              setInput((draft) => (draft.trim() === researchFor ? "" : draft));
+              return researchProps!.answer(...args);
             }}
-            plan={planResearch}
-            api={api}
-            answer={async (question, queries, sources, note, abort) =>
-              !!(await send(
-                {
-                  ...conversationNow.current,
-                  temporarySearch: true,
-                  attachments: withResearch(conversationNow.current.attachments, researchAttachment(sources, queries)),
-                },
-                question,
-                false,
-                false,
-                "thinking",
-                { note, abort },
-              ))
-            }
-            keep={(sources, queries) =>
-              setConversation((c) => ({
-                ...c,
-                temporarySearch: true,
-                attachments: withResearch(c.attachments, researchAttachment(sources, queries)),
-              }))
-            }
-            showAnswer={() => setTab("Conversation")}
+            inline={{
+              question: researchFor,
+              slot: researchSlot,
+              close: (note) => {
+                setResearchFor(undefined);
+                if (note) setNotice(note);
+                focusComposer();
+              },
+            }}
           />
         )}
+        {researchUsed.current && researchReady && <DeepResearch {...researchProps!} hidden={tab !== "Research"} />}
         {tab === "Account" && (
           <>
             {status?.accountId && !status.consumerWorkspace && (

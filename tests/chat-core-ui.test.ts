@@ -218,8 +218,8 @@ for (const lang of ["en", "de"] as const)
         await ui(page.getByRole("region", { name: t.importResults })).toHaveCount(0);
         expect(await calls(page)).toEqual([]);
 
-        // A failed answer: one plain sentence in the message, the notice just above the message
-        // box and below the header. The title is the first line cut at a word.
+        // A failed answer: one plain sentence in the message; the notice above the message box does
+        // not repeat it (CC-06), screen readers hear it once. The title is the first line cut at a word.
         const first =
           "TIMEOUT please write a friendly but firm message to my landlord about the heating\nsecond line";
         await box.fill(first);
@@ -230,15 +230,14 @@ for (const lang of ["en", "de"] as const)
         await ui(heading).toHaveText(titleFrom(first));
         await ui(heading).not.toHaveClass(/sr-only/);
         const notice = page.locator(".composer-dock > .dock-notice");
-        await ui(notice).toContainText(t.timedOut(false).split(".")[0]);
-        await belowHeader(page, notice);
+        await ui(notice).toHaveCount(0);
+        await ui(page.getByRole("status").filter({ hasText: cc.failureTimeout })).toHaveClass("sr-only");
+        await ui(page.getByText(t.timedOut(false).split(".")[1].trim(), { exact: false })).toHaveCount(0);
         await ui(page.locator(".conversation-meta")).toHaveText(t.messageCount(2));
         // The count says "1 message", on one line.
         const count = page.locator(".context-count");
         await ui(count).toHaveText(t.contextCount(1, 0));
         expect(await textLines(count)).toBe(1);
-        await notice.getByRole("button", { name: t.dismissNotice }).click();
-        await ui(notice).toHaveCount(0);
         await noSidewaysScroll(page);
 
         // Offline: Send is off and says why; Enter sends nothing; the draft stays; back online it works.
@@ -285,6 +284,11 @@ for (const lang of ["en", "de"] as const)
         await ui(page.locator("article.message")).toHaveCount(0);
         await ui(stop).toHaveCount(0);
         await ui(heading).toHaveClass(/sr-only/);
+        // A notice that adds something sits just above the message box, below the header (CC-26).
+        await ui(notice).toContainText(t.newTemporary);
+        await belowHeader(page, notice);
+        await notice.getByRole("button", { name: t.dismissNotice }).click();
+        await ui(notice).toHaveCount(0);
 
         // The sidebar's New chat is one line (at 375 it is in the drawer, checked there too).
         const toggle = page.getByRole("button", { name: t.openNavigation });
