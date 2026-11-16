@@ -345,6 +345,152 @@ class Bucket {
   }
 }
 
+const fail = (res: express.Response, status: number, code: string) => void res.status(status).json({ error: code, code });
+const parse = <T>(schema: z.ZodType<T>, value: unknown, res: express.Response): T | undefined => {
+  const r = schema.safeParse(value);
+  if (!r.success) fail(res, 400, "invalid");
+  return r.success ? r.data : undefined;
+};
+/** Body-parser errors (bad JSON, too large) end here, never in Express's default handler, which logs the body in production. */
+export const bodyErrors = (error: { type?: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) =>
+  fail(res, error?.type === "entity.too.large" ? 413 : 400, "invalid");
+
+export type ContentCtx = { account: string; now: number };
+export interface ContentRoutes {
+  /** "/api/sync" or "/api/secure". */
+  base: string;
+  /** Prefix of the content-free counts: "sync" or "secure". */
+  counts: string;
+  store: Pick<SyncStore, "items" | "putItem">;
+  quotaBytes: number;
+  blobs?: BlobSettings & { store: BlobStore };
+  pageBytes?: number;
+  writeBurst?: number;
+  writesPerSecond?: number;
+  /** Who may call: sync checks the device token, Secure the signed-in session only. */
+  guard: (work: (req: express.Request, res: express.Response, ctx: ContentCtx) => Promise<void>) => express.RequestHandler;
+}
+/**
+ * The item and blob routes of the hardened sync (pages by bytes, version checks, quota, the
+ * per-account write limit, strict input), shared by Secure Max (device token) and Secure (session).
+ */
+export function contentRoutes(router: express.Router, o: ContentRoutes) {
+  const base = o.base;
+  // A 4 MB item is 5.6 MB of base64 plus the JSON around it.
+  const large = express.json({ limit: Math.ceil(SYNC_LIMITS.itemBytes / 3) * 4 + 1024 });
+  const writes = new Bucket(o.writeBurst ?? SYNC_LIMITS.writeBurst, o.writesPerSecond ?? SYNC_LIMITS.writesPerSecond);
+  const pageBytes = o.pageBytes ?? SYNC_LIMITS.pageBytes;
+  /** Per-account write limit (items and blobs); false has answered 429. */
+  const writeAllowed = (res: express.Response, ctx: ContentCtx) => {
+    if (writes.take(ctx.account, ctx.now)) return true;
+    fail(res, 429, "rate-limited");
+    return false;
+  };
+  router.get(
+    `${base}/items`,
+    o.guard(async (req, res, { account }) => {
+      const since = Number(req.query.since ?? 0);
+      const limit = Math.min(Number(req.query.limit ?? SYNC_LIMITS.pageItems), SYNC_LIMITS.pageItems);
+      if (!Number.isSafeInteger(since) || since < 0 || !Number.isInteger(limit) || limit < 1) return fail(res, 400, "invalid");
+      const page = await o.store.items(account, since, limit, pageBytes);
+      count(`${o.counts}.pull`);
+      res.json({
+        items: page.items.map((i) => ({
+          itemId: i.itemId,
+          version: i.version,
+          ciphertext: i.ciphertext.toString("base64"),
+          deleted: i.deleted,
+          seq: i.seq,
+          updatedAt: new Date(i.updatedAt).toISOString(),
+        })),
+        cursor: String(page.items.at(-1)?.seq ?? since),
+        more: page.more,
+      });
+    }),
+  );
+  // One write route for content and tombstones: a delete is a PUT of an encrypted tombstone.
+  router.put(
+    `${base}/items/:itemId`,
+    o.guard(async (req, res, ctx) => {
+      if (!uuid.safeParse(req.params.itemId).success) return fail(res, 400, "invalid");
+      // The size check before parsing: an oversized item is 413 "too-large", never "quota" (review M6).
+      if (Number(req.headers["content-length"] ?? 0) > Math.ceil(SYNC_LIMITS.itemBytes / 3) * 4 + 1024) return fail(res, 413, "too-large");
+      if (!writeAllowed(res, ctx)) return;
+      const error = await new Promise<unknown>((resolve) => large(req, res, resolve));
+      if (error) return (error as { type?: string }).type === "entity.too.large" ? fail(res, 413, "too-large") : fail(res, 400, "invalid");
+      const b = parse(putBody, req.body, res);
+      if (!b) return;
+      const r = await o.store.putItem(ctx.account, String(req.params.itemId), b.baseVersion, b.ciphertext, !!b.deleted, o.quotaBytes, ctx.now, ctx.now - SYNC_LIMITS.tombstoneMs);
+      if (r === "no-account") return fail(res, 404, "not-set-up");
+      if (r.status === "quota") return fail(res, 413, "quota");
+      if (r.status === "conflict") {
+        count(`${o.counts}.conflict`);
+        return void res.status(409).json({
+          code: "conflict",
+          current: {
+            version: r.current.version,
+            ciphertext: r.current.ciphertext ? r.current.ciphertext.toString("base64") : null,
+            deleted: r.current.deleted,
+            ...(r.current.version ? { updatedAt: new Date(r.current.updatedAt).toISOString() } : {}),
+          },
+        });
+      }
+      count(`${o.counts}.${b.deleted ? "delete" : "push"}`);
+      res.json({ version: r.version });
+    }),
+  );
+
+  // Stage 3: project files as encrypted blobs, raw bytes, under the device token like items.
+  const blobs = o.blobs;
+  if (blobs) {
+    const maxBody = blobs.maxFileBytes + BLOB_OVERHEAD;
+    const raw = express.raw({ type: () => true, limit: maxBody });
+    const blobIdOf = (req: express.Request) => (uuid.safeParse(req.params.blobId).success ? String(req.params.blobId) : undefined);
+    router.put(
+      `${base}/blobs/:blobId`,
+      o.guard(async (req, res, ctx) => {
+        const blobId = blobIdOf(req);
+        if (!blobId) return fail(res, 400, "invalid");
+        if (Number(req.headers["content-length"] ?? 0) > maxBody) return fail(res, 413, "too-large");
+        if (!writeAllowed(res, ctx)) return;
+        const error = await new Promise<unknown>((resolve) => raw(req, res, resolve));
+        const tooLarge = (error as { type?: string } | undefined)?.type === "entity.too.large";
+        if (error) return tooLarge ? fail(res, 413, "too-large") : fail(res, 400, "invalid");
+        const body = req.body as unknown;
+        if (!Buffer.isBuffer(body) || body.length < BLOB_OVERHEAD) return fail(res, 400, "invalid");
+        const r = await blobs.store.put(ctx.account, blobId, body, blobs.quotaBytes, ctx.now);
+        if (r === "quota") return fail(res, 413, "quota");
+        if (r === "no-account") return fail(res, 404, "not-set-up");
+        count(`${o.counts}.blob.put`);
+        res.status(204).end();
+      }),
+    );
+    router.get(
+      `${base}/blobs/:blobId`,
+      o.guard(async (req, res, { account }) => {
+        const blobId = blobIdOf(req);
+        if (!blobId) return fail(res, 400, "invalid");
+        const data = await blobs.store.get(account, blobId);
+        if (!data) return fail(res, 404, "unknown");
+        count(`${o.counts}.blob.get`);
+        // shortcut: the whole blob is read into memory (at most maxFileMb plus 28 bytes); stream from object storage if files grow.
+        res.type("application/octet-stream").send(data);
+      }),
+    );
+    router.delete(
+      `${base}/blobs/:blobId`,
+      o.guard(async (req, res, ctx) => {
+        const blobId = blobIdOf(req);
+        if (!blobId) return fail(res, 400, "invalid");
+        if (!writeAllowed(res, ctx)) return;
+        if (!(await blobs.store.delete(ctx.account, blobId))) return fail(res, 404, "unknown");
+        count(`${o.counts}.blob.delete`);
+        res.status(204).end();
+      }),
+    );
+  }
+}
+
 export function syncRoutes(
   store: SyncStore,
   settings: SyncSettings,
@@ -353,17 +499,12 @@ export function syncRoutes(
 ) {
   const router = express.Router();
   const small = express.json({ limit: "16kb" });
-  // A 4 MB item is 5.6 MB of base64 plus the JSON around it.
-  const large = express.json({ limit: Math.ceil(SYNC_LIMITS.itemBytes / 3) * 4 + 1024 });
   // shortcut: rate limits live in this process's memory; with several instances move them to the database.
   const pairingCreations = new Window(SYNC_LIMITS.pairingsPerHour, 3_600_000);
   const approvals = new Window(SYNC_LIMITS.approvalsPer10Min, 600_000);
   const lookups = new Window(SYNC_LIMITS.lookupsPer10Min, 600_000);
-  const writes = new Bucket(settings.writeBurst ?? SYNC_LIMITS.writeBurst, settings.writesPerSecond ?? SYNC_LIMITS.writesPerSecond);
-  const pageBytes = settings.pageBytes ?? SYNC_LIMITS.pageBytes;
   const base = "/api/sync";
   type Ctx = { account: string; now: number; device?: DeviceRow; token?: { deviceId: string; hash: Buffer } };
-  const fail = (res: express.Response, status: number, code: string) => void res.status(status).json({ error: code, code });
   /** The X-Sync-Device header "<deviceId>.<token>", parsed; the token is never stored, only its hash. */
   const tokenOf = (req: express.Request) => {
     const m = deviceHeader.exec(String(req.headers["x-sync-device"] ?? ""));
@@ -394,21 +535,10 @@ export function syncRoutes(
         if (!res.headersSent) fail(res, 503, "unavailable");
       }
     };
-  const parse = <T>(schema: z.ZodType<T>, value: unknown, res: express.Response): T | undefined => {
-    const r = schema.safeParse(value);
-    if (!r.success) fail(res, 400, "invalid");
-    return r.success ? r.data : undefined;
-  };
   /** A fresh proof of AK (review H4): needed for revocation, approval and reset, never stored by a device. */
   const provesAccountKey = async (account: string, accountProof: Buffer) => {
     const proofs = await store.proofs(account);
     return !!proofs && same(proofs.auth, sha256(accountProof));
-  };
-  /** Per-account write limit (items and blobs); false has answered 429. */
-  const writeAllowed = (res: express.Response, ctx: Ctx) => {
-    if (writes.take(ctx.account, ctx.now)) return true;
-    fail(res, 429, "rate-limited");
-    return false;
   };
   const newDevice = (b: z.infer<typeof registration>, tokenHash: Buffer, now: number): DeviceRow => ({
     deviceId: b.deviceId,
@@ -527,60 +657,6 @@ export function syncRoutes(
       res.status(204).end();
     }),
   );
-  router.get(
-    `${base}/items`,
-    handle(true, async (req, res, { account }) => {
-      const since = Number(req.query.since ?? 0);
-      const limit = Math.min(Number(req.query.limit ?? SYNC_LIMITS.pageItems), SYNC_LIMITS.pageItems);
-      if (!Number.isSafeInteger(since) || since < 0 || !Number.isInteger(limit) || limit < 1) return fail(res, 400, "invalid");
-      const page = await store.items(account, since, limit, pageBytes);
-      count("sync.pull");
-      res.json({
-        items: page.items.map((i) => ({
-          itemId: i.itemId,
-          version: i.version,
-          ciphertext: i.ciphertext.toString("base64"),
-          deleted: i.deleted,
-          seq: i.seq,
-          updatedAt: new Date(i.updatedAt).toISOString(),
-        })),
-        cursor: String(page.items.at(-1)?.seq ?? since),
-        more: page.more,
-      });
-    }),
-  );
-  // One write route for content and tombstones: a delete is a PUT of an encrypted tombstone.
-  router.put(
-    `${base}/items/:itemId`,
-    handle(true, async (req, res, ctx) => {
-      if (!uuid.safeParse(req.params.itemId).success) return fail(res, 400, "invalid");
-      // The size check before parsing: an oversized item is 413 "too-large", never "quota" (review M6).
-      if (Number(req.headers["content-length"] ?? 0) > Math.ceil(SYNC_LIMITS.itemBytes / 3) * 4 + 1024) return fail(res, 413, "too-large");
-      if (!writeAllowed(res, ctx)) return;
-      const error = await new Promise<unknown>((resolve) => large(req, res, resolve));
-      if (error) return (error as { type?: string }).type === "entity.too.large" ? fail(res, 413, "too-large") : fail(res, 400, "invalid");
-      const b = parse(putBody, req.body, res);
-      if (!b) return;
-      const r = await store.putItem(ctx.account, String(req.params.itemId), b.baseVersion, b.ciphertext, !!b.deleted, settings.quotaBytes, ctx.now, ctx.now - SYNC_LIMITS.tombstoneMs);
-      if (r === "no-account") return fail(res, 404, "not-set-up");
-      if (r.status === "quota") return fail(res, 413, "quota");
-      if (r.status === "conflict") {
-        count("sync.conflict");
-        return void res.status(409).json({
-          code: "conflict",
-          current: {
-            version: r.current.version,
-            ciphertext: r.current.ciphertext ? r.current.ciphertext.toString("base64") : null,
-            deleted: r.current.deleted,
-            ...(r.current.version ? { updatedAt: new Date(r.current.updatedAt).toISOString() } : {}),
-          },
-        });
-      }
-      count(b.deleted ? "sync.delete" : "sync.push");
-      res.json({ version: r.version });
-    }),
-  );
-
   // Pairing (review H1). The new device (session only, with its own fresh token) asks with its key
   // and a commitment; an existing device lists the waiting requests, finds the one whose commitment
   // matches the code the user typed, and approves it with AK wrapped to that key plus a tag only the
@@ -702,59 +778,8 @@ export function syncRoutes(
       res.status(204).end();
     }),
   );
-  // Stage 3: project files as encrypted blobs, raw bytes, under the device token like items.
-  const blobs = settings.blobs;
-  if (blobs) {
-    const maxBody = blobs.maxFileBytes + BLOB_OVERHEAD;
-    const raw = express.raw({ type: () => true, limit: maxBody });
-    const blobIdOf = (req: express.Request) => (uuid.safeParse(req.params.blobId).success ? String(req.params.blobId) : undefined);
-    router.put(
-      `${base}/blobs/:blobId`,
-      handle(true, async (req, res, ctx) => {
-        const blobId = blobIdOf(req);
-        if (!blobId) return fail(res, 400, "invalid");
-        if (Number(req.headers["content-length"] ?? 0) > maxBody) return fail(res, 413, "too-large");
-        if (!writeAllowed(res, ctx)) return;
-        const error = await new Promise<unknown>((resolve) => raw(req, res, resolve));
-        const tooLarge = (error as { type?: string } | undefined)?.type === "entity.too.large";
-        if (error) return tooLarge ? fail(res, 413, "too-large") : fail(res, 400, "invalid");
-        const body = req.body as unknown;
-        if (!Buffer.isBuffer(body) || body.length < BLOB_OVERHEAD) return fail(res, 400, "invalid");
-        const r = await blobs.store.put(ctx.account, blobId, body, blobs.quotaBytes, ctx.now);
-        if (r === "quota") return fail(res, 413, "quota");
-        if (r === "no-account") return fail(res, 404, "not-set-up");
-        count("sync.blob.put");
-        res.status(204).end();
-      }),
-    );
-    router.get(
-      `${base}/blobs/:blobId`,
-      handle(true, async (req, res, { account }) => {
-        const blobId = blobIdOf(req);
-        if (!blobId) return fail(res, 400, "invalid");
-        const data = await blobs.store.get(account, blobId);
-        if (!data) return fail(res, 404, "unknown");
-        count("sync.blob.get");
-        // shortcut: the whole blob is read into memory (at most maxFileMb plus 28 bytes); stream from object storage if files grow.
-        res.type("application/octet-stream").send(data);
-      }),
-    );
-    router.delete(
-      `${base}/blobs/:blobId`,
-      handle(true, async (req, res, ctx) => {
-        const blobId = blobIdOf(req);
-        if (!blobId) return fail(res, 400, "invalid");
-        if (!writeAllowed(res, ctx)) return;
-        if (!(await blobs.store.delete(ctx.account, blobId))) return fail(res, 404, "unknown");
-        count("sync.blob.delete");
-        res.status(204).end();
-      }),
-    );
-  }
-  // Body-parser errors (bad JSON, too large) end here, never in the default handler, which would
-  // log the request body in production.
-  router.use((error: { type?: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) =>
-    fail(res, error?.type === "entity.too.large" ? 413 : 400, "invalid"),
-  );
+  // Items and project-file blobs: the same code serves Secure (server/secure-store.ts) without a device.
+  contentRoutes(router, { ...settings, base, counts: "sync", store, guard: (work) => handle(true, work) });
+  router.use(bodyErrors);
   return router;
 }

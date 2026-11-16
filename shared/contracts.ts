@@ -571,6 +571,8 @@ export interface AppStatus {
   providerDisclosureDraft?: "tinfoil" | "privatemode";
   /** End-to-end encrypted sync is switched on (.local/sync-contract.md); absent means no sync screens. */
   vaultSync?: { quotaBytes: number; maxDevices: number };
+  /** Secure mode is switched on (docs/secure-store-20261116.md); absent means the app behaves as before. */
+  secureStore?: { quotaBytes: number; filesQuotaBytes: number };
 }
 export type RequestAllowance =
   | { state: "unavailable" }
