@@ -10,7 +10,7 @@ Status words: **done** = built and tested in this run; **later** = not now, with
 
 **A. Production today (all switches off).** Fixed: math fonts blocked by the CSP; offline first send blanked the app; a failed answer stylesheet stopped every later send; dead "Coming later" controls; a token and dollar line under every chat; technical error texts; bare 404 and "Invalid request" for server failures; layouts too wide on phone and tablet; chats sorted by creation date; outdated "evaluation" and "provider qualification" texts; Settings in one long page with no security section.
 
-**B. Switching Secure on (`inference.secureStore`).** Fixed: web search results thrown away by autosave (FE-01); first Secure Max use without sync and recovery key (FE-02); a file attached but not sent stored as a chat (FE-12); texts false in Secure ("we never can", "only on this device"; SS-01, SS-02, FE-04); no export and no delete-all for Secure content (SS-03); account deletion silent about server content (SS-04). Still needed before Secure goes on: the master key, the database steps, the legal read of the new texts and the device checks (section 6).
+**B. Switching Secure on (`inference.secureStore`).** Fixed: web search results thrown away by autosave (FE-01); first Secure Max use without sync and recovery key (FE-02); a file attached but not sent stored as a chat (FE-12); texts false in Secure ("we never can", "only on this device"; SS-01, SS-02, FE-04; except the long Getting started guide and the Trial scope text, see section 6); no export and no delete-all for Secure content (SS-03); account deletion silent about server content (SS-04). Still needed before Secure goes on: the master key, the database steps, the legal read of the new texts and the device checks (section 6).
 
 ## 2. Gap list
 
@@ -26,7 +26,7 @@ Status words: **done** = built and tested in this run; **later** = not now, with
 | CC-03 = FE-15 | Dead "Coming later" controls in production | done | |
 | CC-04 | Token and dollar line shown to users | done | Development builds only. |
 | CC-05 | Seven text buttons under each answer | done | Icon row, Retry menu with cost text, More menu. |
-| CC-06 | Technical error text in the chat | done | One plain sentence per failure kind, Retry beside it, details folded. |
+| CC-06 | Technical error text in the chat | done | One plain sentence per failure kind, Retry beside it, details folded. The longer notice above the message box still shows too (tests match it); shorten later. |
 | CC-07 | No in-place Rename or Delete in the sidebar | done | Share link: skip. |
 | CC-08 | Chats sorted by creation date | done | Last activity. |
 | CC-09 | No "< 2/2 >" switcher per message | later | Branches are per conversation; data-model change. |
@@ -49,14 +49,14 @@ Status words: **done** = built and tested in this run; **later** = not now, with
 | CC-28..30 | Send name, starter-card arrows, logo "P" | done | |
 | CC-31 | Coarse date groups | later | |
 | SS-01 | "…and we never can" while Secure is on | done / owner | New sentence; legal read. |
-| SS-02 = FE-04 | About 25 texts false in Secure | done / owner | Per-mode texts; draft `docs/secure-copy-draft-20261116.md`. |
+| SS-02 = FE-04 | About 25 texts false in Secure | partly / owner | Per-mode texts; draft `docs/secure-copy-draft-20261116.md`. Not yet: the Getting started guide ("no cloud sync", "evaluation") and the Trial scope ending, in English and German. |
 | SS-03 = FE-03 | No export or delete-all for Secure content | done | Export built in the browser. |
 | SS-04 | Account deletion and closed accounts | done / owner | German phrase, honest text, purge switch off; closure path and retention are the owner's. |
 | SS-05, SS-15 | Settings structure | done | Six tabs (section 3). |
 | SS-06 | Passkey sign-in lab-only | owner | "Add passkey" hidden in production per the 20 October decision. |
 | SS-07, SS-09 | "Chat not available", "provider qualification", developer text | done | |
 | SS-08 | Help: no contact, test-phase wording | done / owner | Contact shown from the legal identity file; is the mailbox watched? |
-| SS-10 | Production 404 and 500, favicon | done | |
+| SS-10 | Production 404 and 500, favicon | done | Tested at the server level; the branded pages were never seen in a browser (the local harness serves only "/"). T-151. |
 | SS-11 | Every server error answered as 400 | done | 400/413 for bad requests, 503 otherwise. |
 | SS-13 | First-load JS | done | 1,266 to 1,124 kB raw, 403 to 364 kB gzip; entry chunk 869 kB / 274 kB gzip. Texts of both languages (267 kB) and react-dom stay in the entry. |
 | SS-14 | Session expiry was silent | done | Reason shown at sign-in; draft kept for the tab. |
@@ -65,7 +65,7 @@ Status words: **done** = built and tested in this run; **later** = not now, with
 | SS-18, FE-13 | Account-wide custom instructions; global memory switch | later | |
 | SS-20..23 | Account headings, favicon, `?developmentTools`, skip link | done | The on-device calculator stays behind `?developmentTools`; figures only in development builds. |
 | FE-06 | Every search counted toward the 5-file cap | done | 5 searches per chat, oldest replaced. |
-| FE-07 | Search and deep research left the chat | done | "+" > Search the web uses the in-chat approval card; Research page kept. |
+| FE-07 | Search and deep research left the chat | partly | "+" > Search the web uses the in-chat approval card. Deep research still runs on the Research page. |
 | FE-08 | Projects hidden behind "···" | done | Row opens the project screen. |
 | FE-10 | Drops on the files page swallowed | done | |
 | FE-12 | A file attached but not sent was stored | done | |
@@ -112,10 +112,13 @@ Design: `docs/settings-structure-20261116.md`.
 ## 6. Known risks
 
 - Nothing was checked on a real phone, in Safari or Firefox on a device, with a screen reader, or on the hosted server.
-- Several browser tests time out under heavy load on this machine and pass when rerun alone; CI has not shown them failing twice in a row.
+- Several browser tests time out under heavy load on this machine and pass when rerun alone (lazy-retry, chat-message, canvas, secure-store session expiry, i18n screens, account-recovery once). Two failed in CI more than once and were fixed at the cause (a test server that discovered dependencies late; a stylesheet retry that blocked sending). `chat-recovery.test.ts` once lost focus on a code block in CI and passed locally: watch it.
 - Lazy loading: the sync indicator, gate and pairing prompt load on demand although they show on the first screen when sync is on; offline before they were ever fetched, each shows a retry line.
 - Keyboard shortcuts may collide with a browser's own keys (T-147).
 - `shared/health-consent.ts` (a versioned draft) still points to "Settings, Privacy & data"; it should say "Settings, Data controls" with a version bump.
+- The Getting started guide and the Trial scope text are long, partly outdated ("evaluation", "no cloud sync", PDF page limits) and not mode-aware; they need a rewrite in English and German before Secure goes on.
+- On Android, live voice still shows a disabled button where it is not supported (`src/LiveVoice.tsx`).
+- The audit harness captured one blank page (account usage, English, 375 px) during the full run; the step passed on a rerun.
 - The external cryptography review of sync is still open (earlier decision D1).
 
 ## 7. What only the owner can do

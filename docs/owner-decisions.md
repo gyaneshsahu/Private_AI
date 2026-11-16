@@ -25,6 +25,10 @@ Full list of what was found and built: `docs/launch-readiness-final.md`. The man
 15. **Keyboard shortcuts** use ChatGPT's keys; German key names Strg and Umschalt; a browser may keep a key for itself (T-147) [keep].
 16. **Chat titles** are cut at a word boundary on the device; no AI-written titles, because that would be a second paid request [keep].
 17. **Not built because of your rules:** shared links, thumbs stored on the server, automatic memory, server search over chats, a training toggle (we never train), a "/" command menu (ChatGPT has none) [keep as is].
+19. **Fine print removed from "+":** the menu no longer has the two paragraphs about future features; they also held present-tense camera, microphone and file statements, which the dialogs now explain when used [keep removed].
+20. **Saved format:** answers can now carry the failure kinds "busy" and "error"; an older app version cannot read a chat saved with them [accept, pre-alpha].
+21. **Health consent text** (`shared/health-consent.ts`, versioned draft) still says "Settings, Privacy & data"; Settings now calls it "Data controls" [update the wording with a version bump, after the legal read].
+22. **Getting started and Trial scope texts** need a rewrite for Secure and for a live chat (they still say "evaluation" and "no cloud sync") [the agent drafts English and German for your legal read].
 18. **Built later, not now:** a "< 2/2 >" switcher per message, chat search with text excerpts, account-wide custom instructions, a global memory switch, alerts when a scheduled task is due (Web Push later, by your decision), syntax colours in code blocks [after launch].
 
 ## What needs you before the alpha, in order (updated 13 November)
