@@ -310,14 +310,15 @@ for (const lang of ["en", "de"] as const)
         // Touch targets of the composer controls.
         const sendBox = (await send.boundingBox())!;
         expect(Math.min(sendBox.width, sendBox.height)).toBeGreaterThanOrEqual(24);
-        // "+", DE/EN, microphone and voice: 44 px on phones (CC-19); the header title on one line (CC-18).
+        // "+", microphone and voice: 44 px on phones (CC-19); the header title on one line (CC-18).
+        // The DE/EN switch left the header for Settings (SS-15).
+        await ui(page.locator(".conversation-header .language-switch")).toHaveCount(0);
         const controls = [
           page.getByLabel(t.tools, { exact: true }),
-          ...(await page.locator(".conversation-header .language-switch button").all()),
           // The disabled "coming later" voice buttons are hidden on phones.
           ...(await page.locator(".composer-footer :is(.future-voice, .voice-input-button, .live-voice-open):visible").all()),
         ];
-        expect(controls.length).toBeGreaterThanOrEqual(3);
+        expect(controls.length).toBeGreaterThanOrEqual(1);
         for (const control of controls) {
           const b = (await control.boundingBox())!;
           expect(Math.min(b.width, b.height)).toBeGreaterThanOrEqual(width < 760 ? 44 : 24);

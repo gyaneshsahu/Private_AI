@@ -2,6 +2,7 @@ import type { RequestAllowance } from "../shared/contracts";
 import { AccountBilling } from "./AccountBilling";
 import { useLang } from "./i18n";
 import { usageText } from "./text/account";
+import { modeCopyText, type Storage } from "./text/mode-copy";
 import { UsageMeter } from "./UsageMeter";
 import { developerView } from "./developer-view";
 import {
@@ -71,7 +72,10 @@ export function AccountUsagePage({
   metering,
   refresh,
   chatReady,
+  storage,
 }: {
+  /** Where saved chats are kept: decides what the note about them promises (src/text/mode-copy.ts). */
+  storage?: Storage;
   /** status.inference.ready: the provider note shows only when chat is not available. */
   chatReady?: boolean;
   /** Usage metering is on: the meter with features and the latest requests (docs/usage-metering-20261115.md). */
@@ -84,7 +88,8 @@ export function AccountUsagePage({
   onManage?: () => void;
   billing?: { csrf: string; onNavigate: (url: string) => void };
 }) {
-  const t = usageText[useLang().lang];
+  const { lang } = useLang();
+  const t = usageText[lang];
   return (
     <section className="content-view" aria-label={t.heading}>
       <h2>{t.heading}</h2>
@@ -113,7 +118,7 @@ export function AccountUsagePage({
       ) : (
         <NoActivePlan />
       )}
-      <p>{t.vaultNote}</p>
+      <p>{storage === "secure" ? modeCopyText[lang].vaultNote_secure : t.vaultNote}</p>
       {chatReady === false && <p className="muted">{t.providerNote}</p>}
     </section>
   );

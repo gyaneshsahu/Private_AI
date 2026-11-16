@@ -25,6 +25,7 @@ import { syncText, vaultUnlockText } from "../src/text/sync";
 import { workspaceText } from "../src/text/workspace";
 import { dataControlsText } from "../src/text/data-controls";
 import { modeCopyText } from "../src/text/mode-copy";
+import { settingsText } from "../src/text/settings";
 import { privacySummary } from "../shared/privacy-copy";
 
 const ui = playwrightExpect.configure({ timeout: 20_000 });
@@ -154,8 +155,13 @@ async function menuItem(page: Page, name: string) {
   await menu.getByRole("button", { name, exact: true }).click();
 }
 const settings = (page: Page) => page.locator("dialog.settings-dialog");
+/** Settings opens from the account menu only (SS-15). */
 async function openSettings(page: Page, lang: "en" | "de", section: string) {
-  await menuItem(page, appText[lang].settings);
+  const w = workspaceText[lang];
+  await navigation(page, lang);
+  const account = page.locator(".account-menu");
+  if (!(await account.evaluate((el) => (el as HTMLDetailsElement).open))) await account.locator("summary").click();
+  await page.getByRole("navigation", { name: w.workspace }).getByRole("button", { name: w.settings, exact: true }).click();
   await settings(page).getByRole("button", { name: section, exact: true }).click();
 }
 const closeSettings = (page: Page, lang: "en" | "de") => settings(page).getByRole("button", { name: appText[lang].closeSettings }).click();
@@ -177,15 +183,15 @@ async function openMax(page: Page, lang: "en" | "de" = "en") {
   await expect.poll(() => page.evaluate(() => !!document.activeElement?.closest(".secure-max-section")), { timeout: 5000 }).toBe(true);
 }
 async function memories(page: Page) {
-  await openSettings(page, "en", memoryText.en.title);
+  await openSettings(page, "en", settingsText.en.personalization);
   const texts = await settings(page).locator("li").allTextContents();
   await closeSettings(page, "en");
   return texts.join("\n");
 }
 const focus = (page: Page) => page.evaluate(() => void window.dispatchEvent(new Event("focus")));
-/** Settings > Privacy & data in Secure: the Secure summary, never the binding "we never can", and the data controls. */
+/** Settings > Data controls in Secure: the Secure summary, never the binding "we never can", and the data controls. */
 async function privacy(page: Page, lang: "en" | "de") {
-  await openSettings(page, lang, appText[lang].sectionPrivacy);
+  await openSettings(page, lang, settingsText[lang].dataControls);
   await ui(settings(page).getByText(modeCopyText[lang].privacySummary_secure)).toBeVisible();
   await ui(settings(page).getByText(privacySummary(lang))).toHaveCount(0);
   await ui(settings(page).getByRole("region", { name: dataControlsText[lang].heading })).toBeVisible();
@@ -211,7 +217,7 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   await ui(A.locator(".sidebar-bottom > p")).toHaveText(modeCopyText.en.vaultUnlocked_secure);
   await ui(A.locator("button.new-incognito")).toHaveAttribute("title", workspaceText.en.incognitoTitle_secure);
   // A memory and a project, both in Secure.
-  await openSettings(A, "en", memoryText.en.title);
+  await openSettings(A, "en", settingsText.en.personalization);
   await settings(A).getByLabel(memoryText.en.addLabel).fill("SYNTHETIC SECURE MEMORY");
   await settings(A).getByRole("button", { name: memoryText.en.add }).click();
   await ui(settings(A).getByText("SYNTHETIC SECURE MEMORY", { exact: true })).toBeVisible();
@@ -233,7 +239,7 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   await ui((await navigation(B, "en")).filter({ hasText: "SYNTHETIC SECURE PROJECT" }).first()).toBeVisible();
   await ui(B.getByRole("dialog")).toHaveCount(0);
   await ui(B.locator('input[type="password"]')).toHaveCount(0);
-  await openSettings(B, "en", memoryText.en.title);
+  await openSettings(B, "en", settingsText.en.personalization);
   await ui(settings(B).getByText("SYNTHETIC SECURE MEMORY", { exact: true })).toBeVisible();
   await closeSettings(B, "en");
 
@@ -269,7 +275,7 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   await openMax(A);
   // FE-02: the first Unlock sets up the encrypted sync (device name, recovery key), never a passphrase-only vault.
   await maxSection(A).getByRole("button", { name: m.maxUnlock }).click();
-  await ui(A.getByRole("heading", { name: t.explainHeading })).toBeVisible();
+  await ui(A.getByRole("heading", { name: t.explainHeading_max })).toBeVisible();
   await ui(A.locator('input[type="password"]')).toHaveCount(0);
   await ui(A.getByRole("button", { name: a.createOrUnlock })).toHaveCount(0);
   await A.getByLabel(t.deviceName).fill("Laptop");
@@ -290,7 +296,7 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   await ui(A.getByText(st.captionMax)).toBeVisible();
   await ask(A, "en", "SYNTHETIC MAX QUESTION");
   // A memory added while working in Secure Max is Secure Max's: the normal section never shows it.
-  await openSettings(A, "en", memoryText.en.title);
+  await openSettings(A, "en", settingsText.en.personalization);
   await settings(A).getByLabel(memoryText.en.addLabel).fill("SYNTHETIC MAX MEMORY");
   await settings(A).getByRole("button", { name: memoryText.en.add }).click();
   await ui(settings(A).getByText("SYNTHETIC MAX MEMORY", { exact: true })).toBeVisible();
@@ -301,7 +307,7 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   await ui((await navigation(A, "en")).filter({ hasText: "SYNTHETIC MAX QUESTION" })).toHaveCount(0);
   await ui(maxSection(A).getByText("SYNTHETIC SECURE QUESTION")).toHaveCount(0);
   const secureItems = (await s.stores.secure.usage(account)).cursor;
-  await openSettings(A, "en", t.section);
+  await openSettings(A, "en", modesText.en.maxLabel);
   await settings(A).getByRole("button", { name: t.syncNow }).click();
   await expect.poll(async () => (await s.stores.sync.usage(account)).usedBytes, { timeout: 20_000 }).toBeGreaterThan(0);
   await closeSettings(A, "en");
@@ -360,7 +366,7 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   expect(normal).not.toContain("SYNTHETIC MAX MEMORY");
   // Reset Secure Max (a recent sign-in, the typed phrase): the synced copy on the server and this device's Secure Max data go; Secure stays.
   expect(await s.stores.sync.proofs(account)).toBeDefined();
-  await openSettings(A, "en", t.section);
+  await openSettings(A, "en", modesText.en.maxLabel);
   await settings(A).getByRole("button", { name: m.maxResetLabel }).click();
   const confirm = A.getByRole("dialog", { name: m.maxResetLabel });
   await confirm.getByLabel(m.maxResetTypeLabel(m.maxResetPhrase)).fill(m.maxResetPhrase);
@@ -436,7 +442,7 @@ it("1280 px, English: an approved search keeps its results in Secure, also after
   // B never had the results: they were not stored.
   await ui(B.getByText("SYNTHETIC RESULT TEXT")).toHaveCount(0);
 
-  // Settings > Privacy & data in Secure: the Secure summary (SS-01) and Delete all chats (item 11),
+  // Settings > Data controls in Secure: the Secure summary (SS-01) and Delete all chats (item 11),
   // which reaches B too.
   await privacy(A, "en");
   const d = dataControlsText.en;
@@ -501,21 +507,21 @@ it("375 px, German: the Secure wiring fits a phone", async () => {
   await noSidewaysScroll(page);
   // FE-02: the first Unlock offers the sync set-up (with its recovery key), not a passphrase; Cancel creates nothing.
   await page.getByRole("region", { name: modesText.de.maxLabel }).getByRole("button", { name: modesText.de.maxUnlock }).click();
-  await ui(page.getByRole("heading", { name: syncText.de.explainHeading })).toBeVisible();
+  await ui(page.getByRole("heading", { name: syncText.de.explainHeading_max })).toBeVisible();
   await ui(page.getByText(syncText.de.explainRecovery)).toBeVisible();
   await ui(page.locator('input[type="password"]')).toHaveCount(0);
   await noSidewaysScroll(page);
   const setUpButtons = page.locator(".sync-step .sync-actions button");
   for (const box of await Promise.all((await setUpButtons.all()).map((b) => b.boundingBox()))) expect(box!.height).toBeGreaterThanOrEqual(44);
   await page.getByRole("button", { name: syncText.de.cancel, exact: true }).click();
-  await ui(page.getByRole("heading", { name: syncText.de.explainHeading })).toHaveCount(0);
+  await ui(page.getByRole("heading", { name: syncText.de.explainHeading_max })).toHaveCount(0);
   expect(await s.stores.sync.proofs(account)).toBeUndefined();
   await page.keyboard.press("Escape");
   await privacy(page, "de");
   await ui(settings(page).getByText(modesText.de.secureLong)).toBeVisible();
   await noSidewaysScroll(page);
   // Settings for Secure Max: Open in Secure Max; Reset only where Secure Max is unlocked (not here).
-  await settings(page).getByRole("button", { name: syncText.de.section, exact: true }).click();
+  await settings(page).getByRole("button", { name: modesText.de.maxLabel, exact: true }).click();
   await ui(settings(page).getByRole("switch", { name: modesText.de.maxStartLabel })).toBeVisible();
   await ui(settings(page).getByRole("button", { name: modesText.de.maxResetLabel })).toHaveCount(0);
   await noSidewaysScroll(page);
@@ -555,7 +561,7 @@ it.each([
   const page = await device(s, randomUUID(), lang, width);
   await openMax(page, lang);
   await page.getByRole("region", { name: modesText[lang].maxLabel }).getByRole("button", { name: modesText[lang].maxUnlock }).click();
-  await ui(page.getByRole("heading", { name: syncText[lang].explainHeading })).toBeVisible();
+  await ui(page.getByRole("heading", { name: syncText[lang].explainHeading_max })).toBeVisible();
   await ui(page.getByText(syncText[lang].explainRecovery)).toBeVisible();
   await ui(page.getByLabel(syncText[lang].deviceName)).toBeVisible();
   await ui(page.locator('input[type="password"]')).toHaveCount(0);

@@ -156,14 +156,20 @@ try {
       for (const [vpName, viewport] of Object.entries(VIEWPORTS)) {
         for (const view of VIEWS) {
           const context = await browser.newContext({ viewport, hasTouch: vpName === "phone" && engine !== "firefox", ...(german ? { locale: "de-DE" } : {}) });
-          // Navigate with the English controls first; the DE switch is clicked after opening the view.
+          // Navigate with the English controls first; German is chosen after opening the view.
           if (german) await context.addInitScript(() => localStorage.setItem("cometrow.language", "en"));
           const page = await context.newPage();
           const errors: string[] = [];
           page.on("pageerror", (e) => errors.push(String(e.message).slice(0, 120)));
           try {
             await open(page, view);
-            if (german) await page.getByRole("button", { name: "Deutsch", exact: true }).first().click();
+            if (german) {
+              // The app's DE/EN switch is in Settings (SS-15); the account lab keeps its own.
+              const viaSettings = view !== "Settings" && view !== "Account lab";
+              if (viaSettings) await workspaceControl(page, "Settings").click();
+              await page.getByRole("button", { name: "Deutsch", exact: true }).first().click();
+              if (viaSettings) await page.keyboard.press("Escape");
+            }
             await page.waitForTimeout(600);
             // tsx adds a __name helper the page lacks; define it inside the evaluated script.
             const m = (await page.evaluate(`(() => { const __name = (f) => f; return (${measure.toString()})(${vpName === "phone"}); })()`)) as ReturnType<typeof measure>;

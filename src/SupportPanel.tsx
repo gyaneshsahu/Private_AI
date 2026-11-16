@@ -12,7 +12,7 @@ import {
 } from "./support-report";
 
 /** The documents Help links to; the app shows them in its document viewer, as Settings does. */
-export type HelpDocument = "workspace-guide" | "privacy-policy" | "imprint";
+export type HelpDocument = "workspace-guide" | "privacy-policy" | "imprint" | "trial-safety" | "privacy";
 
 export function SupportPanel({
   initialArea = "conversation",
@@ -24,7 +24,7 @@ export function SupportPanel({
   initialArea?: SupportArea;
   /** Set when opened from "Report a problem" on an answer: only this choice is pre-set, nothing about the conversation. */
   initialSymptom?: SupportSymptom;
-  /** Getting started, Privacy policy and Imprint are offered only when given. */
+  /** Getting started, Privacy policy, Imprint, Trial scope and Privacy boundaries are offered only when given. */
   onDocument?: (id: HelpDocument) => void;
   /** Opens the keyboard shortcuts list; the button is offered only when given. */
   onShortcuts?: () => void;
@@ -57,6 +57,13 @@ export function SupportPanel({
               </button>
               <button type="button" className="text-button" onClick={() => onDocument("imprint")}>
                 {a.imprint}
+              </button>
+              {/* Moved here from Settings (SS-15): guides open over Help, never over Settings. */}
+              <button type="button" className="text-button" onClick={() => onDocument("trial-safety")}>
+                {a.safetyTitle}
+              </button>
+              <button type="button" className="text-button" onClick={() => onDocument("privacy")}>
+                {a.privacyBoundariesTitle}
               </button>
             </>
           )}

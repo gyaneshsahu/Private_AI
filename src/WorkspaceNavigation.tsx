@@ -16,6 +16,7 @@ import { ConfirmDialog } from "./ConfirmDialog";
 import { ProjectDeleteDialog } from "./ProjectDeleteDialog";
 import { shortcutsText } from "./text/shortcuts";
 import { forStorage, modeCopyText, type Storage } from "./text/mode-copy";
+import { settingsText } from "./text/settings";
 
 export function WorkspaceNavigation(props: {
   open: boolean;
@@ -35,6 +36,8 @@ export function WorkspaceNavigation(props: {
   onNewIncognito: () => void;
   onNavigate: (tab: "Saved" | "Account" | "Help") => void;
   onSettings: () => void;
+  /** Counts up when Settings asks for the archived chats: the list switches to Archived. */
+  showArchived?: number;
   onSignOut: () => void;
   onCreateProject: (name: string) => Promise<string | undefined>;
   onEditProject: (id: string, name?: string) => Promise<boolean>;
@@ -81,6 +84,7 @@ export function WorkspaceNavigation(props: {
     onNewIncognito,
     onNavigate,
     onSettings,
+    showArchived,
     onSignOut,
     onCreateProject,
     onEditProject,
@@ -161,6 +165,13 @@ export function WorkspaceNavigation(props: {
       setProjectName("");
     }
   }, [unlocked]);
+  useEffect(() => {
+    if (!showArchived) return;
+    setQuery("");
+    setFilter("archived");
+    // After Settings has closed and given the focus back: the Archived filter takes it.
+    requestAnimationFrame(() => document.querySelector<HTMLElement>(".history-filters button:nth-child(2)")?.focus());
+  }, [showArchived]);
   const identity =
     status?.accountEmail ??
     (status?.accountId
@@ -522,11 +533,18 @@ export function WorkspaceNavigation(props: {
       ) : (
         <div className="history-locked">
           <h2>{t.yourConversations}</h2>
-          <p>{t.unlockNote}</p>
-          <button onClick={() => onNavigate("Saved")}>
-            <Icon name="shield" />
-            {t.unlockHistory}
-          </button>
+          {/* Secure opens by itself after sign-in: nothing to unlock, only a short wait. */}
+          {storage === "secure" ? (
+            <p>{settingsText[lang].loadingChats}</p>
+          ) : (
+            <>
+              <p>{t.unlockNote}</p>
+              <button onClick={() => onNavigate("Saved")}>
+                <Icon name="shield" />
+                {t.unlockHistory}
+              </button>
+            </>
+          )}
         </div>
       )}
       {deleting && onDelete && (
@@ -623,7 +641,7 @@ export function WorkspaceNavigation(props: {
             )}
           </div>
         </details>
-        <p>{[unlocked ? t.vaultUnlocked : t.temporarySession, t.thisDevice].filter(Boolean).join(" · ")}</p>
+        <p>{[unlocked ? t.vaultUnlocked : storage === "secure" ? settingsText[lang].loadingChats : t.temporarySession, t.thisDevice].filter(Boolean).join(" · ")}</p>
         {syncIndicator}
       </nav>
     </aside>

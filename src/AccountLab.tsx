@@ -171,6 +171,30 @@ export default function AccountLab({
   }, [sent]);
   // Chat readiness needs a signed-in session; signed out, or when the check fails, nothing is claimed.
   const userId = session?.user.id;
+  // Settings links to a section heading (/account#account-sessions, src/SettingsBody.tsx): it renders
+  // after the session (and the sessions list) load, so the focus moves there once it exists.
+  useEffect(() => {
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    if (!id || !userId) return;
+    const show = () => {
+      const target = document.getElementById(id);
+      if (!target) return false;
+      target.tabIndex = -1;
+      target.focus();
+      return true;
+    };
+    show();
+    // The list can render again after a refresh, which drops the focus: take it once more, unless the user moved it.
+    const watch = new MutationObserver(() => {
+      if (document.activeElement === document.body) show();
+    });
+    watch.observe(document.body, { childList: true, subtree: true });
+    const stop = setTimeout(() => watch.disconnect(), 10_000);
+    return () => {
+      watch.disconnect();
+      clearTimeout(stop);
+    };
+  }, [userId]);
   useEffect(() => {
     setStatus(undefined);
     if (synthetic || !userId || !workspaceEnabled) return;
