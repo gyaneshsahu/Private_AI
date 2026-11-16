@@ -2,7 +2,30 @@
 
 Running list kept while the owner is away (from 12 November 2026). Each entry names the decision, the safe default the agent applied, and where it matters. Nothing here is decided until the owner says so.
 
-**How to read this file (14 November 2026):** the block "Decisions waiting for you, 14 November 2026" below is the current list. The table "All decisions, by number" at the end is current for D1 to D19. Everything between them is older (13 November and before) and kept as history; where it disagrees with the 14 November block, `docs/owner-test-list.md` or `docs/wake-up-report-20261114.md`, those win. Already decided by the owner: Thinking counts 5; the first invite waits for paid Privatemode billing; breach deputy: owner only (risk noted); large-document path on, from 20,000 characters; 10 MB file limit until the phone test; OCR data kept in the browser; German OCR data added; "Germany" added to the suggested search text (now editable); allowance 150 per 7 days with a daily cap; search on (Brave); free, invite-only, one server; 3 chats at once; Privatemode primary, Tinfoil backup, switching manual and announced; German interface off until the legal read (`VITE_GERMAN_UI`).
+**How to read this file (16 November 2026):** the block "Launch-readiness run, 16 November 2026" below is the newest list; then the block "Decisions waiting for you, 14 November 2026" below is the current list. The table "All decisions, by number" at the end is current for D1 to D19. Everything between them is older (13 November and before) and kept as history; where it disagrees with the 14 November block, `docs/owner-test-list.md` or `docs/wake-up-report-20261114.md`, those win. Already decided by the owner: Thinking counts 5; the first invite waits for paid Privatemode billing; breach deputy: owner only (risk noted); large-document path on, from 20,000 characters; 10 MB file limit until the phone test; OCR data kept in the browser; German OCR data added; "Germany" added to the suggested search text (now editable); allowance 150 per 7 days with a daily cap; search on (Brave); free, invite-only, one server; 3 chats at once; Privatemode primary, Tinfoil backup, switching manual and announced; German interface off until the legal read (`VITE_GERMAN_UI`).
+
+## Launch-readiness run, 16 November 2026 (newest; agent's recommended default in brackets)
+
+Full list of what was found and built: `docs/launch-readiness-final.md`. The manual checks are T-142 to T-157 in `docs/owner-test-list.md`.
+
+1. **Delayed self-service Secure Max reset** for someone who lost every device and the recovery key (asked 16 November, unanswered): not built; support erases on request with the operator script [build a 7-day delayed reset later; small].
+2. **Closing an account in production:** closure needs an e-mail code and e-mail sending is off, so nobody can close an account today (T-153) [turn on e-mail codes for closure only, or support closes on request until then].
+3. **Automatic deletion of closed accounts:** built behind `inference.accountPurge`, off; needs the privilege SQL re-run (T-143) [30 days].
+4. **Passkey sign-in:** your 20 October decision (Google and e-mail only) is kept; "Add passkey" is hidden in production (T-156) [keep for the alpha].
+5. **Privacy & data sentence for Secure:** the old "...and we never can" is replaced in Secure by a new sentence; two versions in `docs/secure-copy-draft-20261116.md` [the longer one, after the legal read].
+6. **Promise in the Secure memory text:** "never used to train AI or for advertising" [yes, it is a red line in both modes].
+7. **Footer** is now "No advertising. No training on your data." in every mode (was "Built for a bounded evaluation.") [keep].
+8. **Background-task consent text** says the answer is deleted from our server once saved on your device; in Secure it is saved with the account. The lawyer should add one sentence [lawyer adds it].
+9. **Support address:** Help shows support@cometrow.com from the legal identity file; `docs/PRD.md` says the contact is not named yet [show it only if the mailbox is watched].
+10. **Terms of use page:** none exists (T-157) [add one before launch].
+11. **Searches per chat:** a chat keeps 5 web searches; a new one replaces the oldest; searches no longer count toward the 5 files [yes].
+12. **Unsent draft after the session ends:** kept in the browser tab (sessionStorage) and restored after sign-in; never for incognito or Secure Max [yes].
+13. **A Secure chat with files but no message is not saved** (it was saved under the file's name before) [yes].
+14. **"+" keeps both** "Search the web" (in the chat) and "Research" (the page) [keep both for the alpha].
+15. **Keyboard shortcuts** use ChatGPT's keys; German key names Strg and Umschalt; a browser may keep a key for itself (T-147) [keep].
+16. **Chat titles** are cut at a word boundary on the device; no AI-written titles, because that would be a second paid request [keep].
+17. **Not built because of your rules:** shared links, thumbs stored on the server, automatic memory, server search over chats, a training toggle (we never train), a "/" command menu (ChatGPT has none) [keep as is].
+18. **Built later, not now:** a "< 2/2 >" switcher per message, chat search with text excerpts, account-wide custom instructions, a global memory switch, alerts when a scheduled task is due (Web Push later, by your decision), syntax colours in code blocks [after launch].
 
 ## What needs you before the alpha, in order (updated 13 November)
 

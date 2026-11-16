@@ -656,6 +656,70 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
   Expect: nothing changes until the config says `"store": "s3"`.
   Tell the agent: "bucket ready" with the bucket name and location (never the keys).
 
+## 5. Launch-readiness run (16 November 2026)
+
+What the 16 November run built or changed and only you can check. Everything was tested offline in Chromium at phone, tablet and desktop widths in English and German; nothing here was checked on a real phone, in Safari or Firefox on a device, or on the hosted server. Full list: `docs/launch-readiness-final.md`. Items already in this list are not repeated: paid billing and tax (T-01), Safe Browsing (T-15), support mailbox and invitee list (T-17), manifest approval (T-120), Hetzner (T-141).
+
+- [ ] **T-142 Secure mode master key (before Secure is switched on anywhere).**
+  Do: read `docs/secure-store-20261116.md`; generate the master key as it says and set `PRIVATEAI_CUSTODY_KEY` in Render yourself; keep one copy offline.
+  Expect: nothing changes until `inference.secureStore` is on.
+  Tell the agent: "master key set" (never the key).
+- [ ] **T-143 Database steps before the next deploy.**
+  Do: apply migrations 0023 to 0025 and re-run the account privilege SQL (`accountPrivilegePlan`; it also installs the closed-account purge function) on the production database.
+  Expect: the deploy starts without migration or permission errors.
+  Tell the agent: "migrations done" and the deploy log line, or the error.
+- [ ] **T-144 Secure on two devices (test deploy, Secure switched on).**
+  Do: sign in on a laptop and a phone; chat on one; ask a question that needs web search, approve it, wait for the answer with sources.
+  Expect: the chat appears on the other device after sign-in; the answer keeps its sources and shows no raw ids such as `[synthetic-0002]`; Settings never says "we never can" read it.
+  Tell the agent: what you saw, with a screenshot of any wrong text.
+- [ ] **T-145 Secure Max first use on a phone.**
+  Do: open Secure Max for the first time with sync on.
+  Expect: it sets up sync with a device name and a recovery key (you type its last group back), then opens the section; Lock now and the 15-minute lock work; a second device unlocks only by approval or the recovery key.
+  Tell the agent: the result and anything confusing.
+- [ ] **T-146 Reset Secure Max and Open in Secure Max.**
+  Do: in Settings > Secure Max try "Open CometRow in Secure Max" and "Reset Secure Max" (test data only).
+  Expect: both ask first and do what they say.
+  Tell the agent: the result.
+- [ ] **T-147 Keyboard shortcuts in real browsers.**
+  Do: in Chrome, Edge, Firefox and Safari press Ctrl (Cmd on a Mac) + Shift + O, Ctrl + K, Ctrl + Shift + S, Shift + Esc, Ctrl + Shift + C, Ctrl + Shift + ; and Ctrl + /.
+  Expect: each does its CometRow action, or nothing if the browser keeps the key for itself.
+  Tell the agent: which keys a browser takes.
+- [ ] **T-148 Phone pass (iPhone Safari and an Android phone).**
+  Do: new chat, send, stop, retry, edit, copy; the answer's icon row and its Retry and More menus; paste a screenshot (with pictures on); the sidebar drawer, rename and delete a chat; turn the phone sideways.
+  Expect: nothing is cut off or too small to tap; notices show above the message box; the drawer scrolls on a short screen.
+  Tell the agent: screenshots of anything that looks wrong.
+- [ ] **T-149 Tablet portrait (768 px wide) in German.**
+  Do: open the app on a tablet held upright, in German.
+  Expect: the composer fits on one screen width and Senden is fully visible.
+  Tell the agent: a screenshot.
+- [ ] **T-150 Offline.**
+  Do: open the app online, answer one question, switch to flight mode, type a message.
+  Expect: Send is off with the reason shown, the draft stays, old answers still show; back online, Send works again.
+  Tell the agent: the result.
+- [ ] **T-151 Hosted error pages.**
+  Do: open `/no-such-page` on the hosted app, in English and German browsers.
+  Expect: a CometRow page with a link back, not "Cannot GET"; the tab shows the CometRow icon.
+  Tell the agent: a screenshot.
+- [ ] **T-152 Export and delete all chats (Secure on).**
+  Do: Settings > Data controls: export my chats as Markdown and JSON; then delete all chats on a test account with two devices.
+  Expect: the files open and hold your test chats only; after deleting, both devices show no chats.
+  Tell the agent: the result.
+- [ ] **T-153 Closing an account in production.**
+  Do: decide how a Google-only user closes the account: today closure needs an e-mail code and e-mail sending is off, so nobody can close an account in production.
+  Tell the agent: your choice (for example: turn on e-mail codes for closure only, or support closes on request).
+- [ ] **T-154 Automatic deletion of closed accounts.**
+  Do: decide the grace period (agent default 30 days, allowed 7 to 365) and when to switch `inference.accountPurge` on (after T-143).
+  Tell the agent: "purge on, N days" or "not yet".
+- [ ] **T-155 Legal read of the new texts.**
+  Do: read `docs/secure-copy-draft-20261116.md` (Secure and Secure Max texts, the new Privacy & data sentence), the account deletion texts in `src/text/account.ts`, the footer "No advertising. No training on your data." and the Help contact line.
+  Tell the agent: "approved" or changes.
+- [ ] **T-156 Passkey sign-in.**
+  Do: decide whether production keeps sign-in by Google and e-mail only (your 20 October decision; "Add passkey" is now hidden in production) or also allows passkeys.
+  Tell the agent: "keep" or "allow passkeys".
+- [ ] **T-157 Terms page.**
+  Do: decide whether a Terms of use page is needed before launch (none exists; Help links Privacy policy and Imprint only).
+  Tell the agent: the decision; the agent adds the link when the page exists.
+
 ## Changes
 
 - 14 November 2026: first version. 81 items. Sources: handoff, decisions doc, checklist, deploy doc, alpha plan, week-one monitoring, and the feature docs of 13 and 14 November. Where docs disagreed, the newest was used (decisions doc and `docs/READINESS.md` of 14 November).
@@ -679,3 +743,4 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 - 15 November 2026: added T-121 to T-128 (voice chunks, second device and backup, passkey support, Scheduled Manual and chat detection).
 - 15 November 2026: added T-129 to T-139 (vault Stage 0 fixes, encrypted sync on two and three devices, recovery key, forgotten passphrase, removing a device, project files).
 - 15 November 2026: added T-140 and T-141 (synced project files: the decisions VS-6 to VS-9, the Hetzner bucket). A file on two devices is T-139.
+- 16 November 2026: added T-142 to T-157 (launch-readiness run: master key, database steps, Secure on two devices, Secure Max first use, shortcuts, phone and tablet passes, offline, error pages, export and delete all, account closure and purge, legal read, passkeys, Terms).
