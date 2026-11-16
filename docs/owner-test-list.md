@@ -41,7 +41,8 @@ This is everything only you can test, do or decide, from the start of the projec
 No deploy needed. T-01 to T-22 block the first invitee.
 
 - [ ] **T-01 Privatemode paid billing (VAT ID question).**
-  Do: get support's answer on billing without a VAT ID, or do the business and tax registration. Then enable pay-as-you-go in the portal.
+  Answer received 16 November (owner-reported, Privatemode support): until CometRow is registered, choose "An individual (private use)"; pay-as-you-go works without a VAT ID; German VAT applies either way, so the price is the same. After registration, switch to "A business or organization" and add the VAT ID under billing information; later invoices carry the business details.
+  Do: in the portal choose "An individual (private use)" and enable pay-as-you-go. After the business registration, switch to "A business or organization" and add the VAT ID.
   Expect: paid billing is active.
   Tell the agent: "billing on", or paste support's answer (no account numbers).
 

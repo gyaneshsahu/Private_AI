@@ -1,5 +1,7 @@
 # Privatemode attestation limit: a capacity decision for the alpha (12 November 2026)
 
+**16 November 2026, support answer (owner-reported, not verified):** Privatemode says there is no limit on attestation verification; limits apply only to token throughput and to requests to the inference API. The 429 responses measured on 12 and 13 November therefore count against the request limit (attest and secret calls go to the same API), not a separate attestation limit. No change to the built design: one verified session per browser, re-verified after 10 minutes, with the attestation queue. Open question for support if needed: the request limit per minute for our key.
+
 **Status: finding measured; owner accepted option B ("Option 1", 12 November); built on branch `privatemode-session-verify` (see "Built" below). Attestation queue built and checked live on 13 November (see "Queue (built)" below): it stops the 429 storm, but five sessions starting together still fail when Privatemode's allowance is used up. Option A (higher limit) is still open and now the main fix.**
 
 ## What was measured
