@@ -1,14 +1,16 @@
 import { AccountTheme } from "./AccountTheme";
-import React, { lazy, Suspense } from "react";
+import React, { Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";
 import { LangProvider, useText } from "./i18n";
 import { themeText } from "./text/account";
 import { AccountPreview } from "./AccountPreview";
+import { preloadAnswer } from "./ChatMessage";
+import { importFresh, LoadBoundary, loadInference, retryLazy } from "./LoadBoundary";
 import { isAccountPreview } from "../shared/account-design";
 import "./styles.css";
 import "./chat-design.css";
-const AccountLab = lazy(() => import("./AccountLab"));
+const AccountLab = retryLazy(() => importFresh(() => import("./AccountLab")));
 const LoadingAccount = () => <p role="status">{useText(themeText).loadingAccount}</p>;
 const pageUrl = new URL(window.location.href);
 const lab =
@@ -35,7 +37,9 @@ createRoot(document.getElementById("root")!).render(
             </main>
           }
         >
-          <AccountLab synthetic={lab} />
+          <LoadBoundary>
+            <AccountLab synthetic={lab} />
+          </LoadBoundary>
         </Suspense>
       </AccountTheme>
     ) : isAccountPreview(new URL(window.location.href)) ? (
@@ -48,3 +52,13 @@ createRoot(document.getElementById("root")!).render(
     </LangProvider>
   </React.StrictMode>,
 );
+
+// Once the chat is up and idle, fetch the parts the first answer needs, so a connection lost later
+// does not leave the app unable to show answers. Not while offline: a failed fetch is kept.
+if (!lab && pageUrl.pathname !== "/account" && !isAccountPreview(pageUrl) && navigator.onLine) {
+  const idle = window.requestIdleCallback ?? ((run: () => void) => setTimeout(run, 2000));
+  idle(() => {
+    preloadAnswer();
+    loadInference().catch(() => {});
+  });
+}

@@ -3412,3 +3412,22 @@
 .secure-max-mount {
   display: contents;
 }
+
+/* A part that could not be loaded (src/LoadBoundary.tsx): the line and its retry button. */
+.load-retry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  color: var(--muted);
+}
+.load-retry button {
+  min-height: 24px;
+  min-width: 24px;
+}
+@media (max-width: 760px) {
+  .load-retry button {
+    min-height: 44px;
+  }
+}

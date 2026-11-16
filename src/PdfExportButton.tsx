@@ -1,10 +1,11 @@
-import { lazy, Suspense, useState } from "react";
+import { Suspense, useState } from "react";
 import type { Conversation } from "../shared/contracts";
 import { pdfExportEnabled } from "./device-features";
 import { useText } from "./i18n";
+import { importFresh, LoadBoundary, retryLazy } from "./LoadBoundary";
 import { deviceText } from "./text/device-features";
 
-const PdfExport = lazy(() => import("./pdf-export"));
+const PdfExport = retryLazy(() => importFresh(() => import("./pdf-export")));
 
 /**
  * "Export as PDF". With `answer` (an index into the messages) it exports that answer and the
@@ -36,15 +37,17 @@ export function PdfExportButton({
         {answer === undefined ? t.exportConversation : t.exportPdf}
       </button>
       {run > 0 && (
-        <Suspense>
-          <PdfExport
-            key={run}
-            title={conversation.title}
-            createdAt={conversation.createdAt}
-            messages={messages}
-            done={() => setRun((n) => -n)}
-          />
-        </Suspense>
+        <LoadBoundary>
+          <Suspense>
+            <PdfExport
+              key={run}
+              title={conversation.title}
+              createdAt={conversation.createdAt}
+              messages={messages}
+              done={() => setRun((n) => -n)}
+            />
+          </Suspense>
+        </LoadBoundary>
       )}
     </>
   );

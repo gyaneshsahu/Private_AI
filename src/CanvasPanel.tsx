@@ -1,7 +1,7 @@
 // Canvas (docs/canvas-20261114.md): the panel beside the chat (a full-screen sheet below 1100 px).
 // It edits conversation.canvas only. "Ask for changes" calls back into App, which sends through
 // the one send path; nothing here talks to the network.
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Conversation } from "../shared/contracts";
 import {
   CANVAS_LIMITS,
@@ -24,11 +24,14 @@ import {
   type Grid,
 } from "./canvas";
 import { useText } from "./i18n";
+import { importFresh, LoadBoundary, retryLazy } from "./LoadBoundary";
 import { messageText } from "./text/message";
 import { canvasText } from "./text/canvas";
 
-const Answer = lazy(() => import("./Answer").then((module) => ({ default: module.Answer })));
-const PdfExport = lazy(() => import("./pdf-export"));
+const Answer = retryLazy(() =>
+  importFresh(() => import("./Answer")).then((module) => ({ default: module.Answer })),
+);
+const PdfExport = retryLazy(() => importFresh(() => import("./pdf-export")));
 
 /** Below this width the panel covers the chat; the page behind it is made inert. */
 export const CANVAS_OVERLAY = "(max-width: 1099px)";
@@ -276,9 +279,11 @@ export function CanvasPanel({
         {shown === "preview" && (
           <div className="canvas-preview">
             {text.trim() ? (
-              <Suspense fallback={<div className="message-text">{text}</div>}>
-                <Answer text={text} complete sources={[]} open={() => {}} />
-              </Suspense>
+              <LoadBoundary placeholder={<div className="message-text">{text}</div>}>
+                <Suspense fallback={<div className="message-text">{text}</div>}>
+                  <Answer text={text} complete sources={[]} open={() => {}} />
+                </Suspense>
+              </LoadBoundary>
             ) : (
               <p className="muted">{t.emptyPreview}</p>
             )}
@@ -302,9 +307,11 @@ export function CanvasPanel({
             ) : proposal.status === "complete" && proposal.text ? (
               <>
                 <div className="canvas-preview">
-                  <Suspense fallback={<div className="message-text">{proposal.text}</div>}>
-                    <Answer text={proposedText(proposal.text)} complete sources={[]} open={() => {}} />
-                  </Suspense>
+                  <LoadBoundary placeholder={<div className="message-text">{proposal.text}</div>}>
+                    <Suspense fallback={<div className="message-text">{proposal.text}</div>}>
+                      <Answer text={proposedText(proposal.text)} complete sources={[]} open={() => {}} />
+                    </Suspense>
+                  </LoadBoundary>
                 </div>
                 <div className="canvas-actions">
                   <button
@@ -420,16 +427,18 @@ export function CanvasPanel({
         </div>
       </div>
       {printing > 0 && (
-        <Suspense>
-          <PdfExport
-            key={printing}
-            title={conversation.title}
-            createdAt={conversation.createdAt}
-            messages={[{ id: "canvas", role: "assistant", text, status: "complete", included: true, createdAt: conversation.createdAt } as never]}
-            plain
-            done={() => setPrinting((n) => -n)}
-          />
-        </Suspense>
+        <LoadBoundary>
+          <Suspense>
+            <PdfExport
+              key={printing}
+              title={conversation.title}
+              createdAt={conversation.createdAt}
+              messages={[{ id: "canvas", role: "assistant", text, status: "complete", included: true, createdAt: conversation.createdAt } as never]}
+              plain
+              done={() => setPrinting((n) => -n)}
+            />
+          </Suspense>
+        </LoadBoundary>
       )}
     </aside>
   );

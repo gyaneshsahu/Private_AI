@@ -1,13 +1,14 @@
 // One message in the conversation (docs/chat-feature-gaps-20261114.md, packages C and D): the
 // user's own text as plain text and collapsed when long, edit and send in place, retry with its
 // cost in the label, and the report entry. Sending itself stays in App: this file only calls back.
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { AnswerMode, Conversation, Message, Source } from "../shared/contracts";
 import { completenessWarning } from "./arithmetic/completeness";
 import { CodeRuns } from "./CodeRuns";
 import { isSendKey, MESSAGE_LIMIT, touchDevice } from "./composer-keys";
 import { GERMAN_RULES } from "./german-rules";
 import { Icon } from "./Icon";
+import { importFresh, LoadBoundary, retryLazy } from "./LoadBoundary";
 import { useLang } from "./i18n";
 import { shouldCollapse } from "./message-collapse";
 import { MessageMeta } from "./MessageMeta";
@@ -28,8 +29,8 @@ import { messageText } from "./text/message";
 // Once loaded, the renderer is used directly: a lazy component suspends on its first render even
 // when its module is already loaded, and its placeholder shows raw Markdown and source codes.
 let answerModule: typeof import("./Answer") | undefined;
-const loadAnswer = () => import("./Answer").then((module) => (answerModule = module));
-const LazyAnswer = lazy(() => loadAnswer().then((module) => ({ default: module.Answer })));
+const loadAnswer = () => importFresh(() => import("./Answer")).then((module) => (answerModule = module));
+const LazyAnswer = retryLazy(() => loadAnswer().then((module) => ({ default: module.Answer })));
 /** Loads the answer renderer before an answer is first shown (deep research writes it while the conversation is hidden). */
 export const preloadAnswer = () => void loadAnswer().catch(() => {});
 
@@ -285,14 +286,16 @@ export function ChatMessage({
       ) : user ? (
         <UserText message={message} onResize={onResize} />
       ) : (
-        <Suspense fallback={<div className="message-text">{message.text}</div>}>
-          <Answer
-            text={message.text}
-            complete={message.status === "complete"}
-            sources={message.sourceSnapshot ?? []}
-            open={openSource}
-          />
-        </Suspense>
+        <LoadBoundary placeholder={<div className="message-text">{message.text}</div>}>
+          <Suspense fallback={<div className="message-text">{message.text}</div>}>
+            <Answer
+              text={message.text}
+              complete={message.status === "complete"}
+              sources={message.sourceSnapshot ?? []}
+              open={openSource}
+            />
+          </Suspense>
+        </LoadBoundary>
       )}
       {sourceHistoryStatus(message, sourceHistory) === "changed" && (
         <details className="source-history-note">
