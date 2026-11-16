@@ -33,6 +33,10 @@ export function MenuButton({
   const trigger = useRef<HTMLButtonElement>(null);
   const list = useRef<HTMLDivElement>(null);
   const id = useId();
+  // A request started elsewhere disables the button: its menu closes too.
+  useEffect(() => {
+    if (disabled) setOpen(false);
+  }, [disabled]);
   const entries = () => [...(list.current?.querySelectorAll<HTMLButtonElement>("[role=menuitem]:not(:disabled)") ?? [])];
   useEffect(() => {
     if (!open) return;
