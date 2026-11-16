@@ -12,6 +12,7 @@ import { MemorySyncStore } from "./vault-sync";
 import { MemoryBlobStore } from "./vault-sync-blobs";
 import { MemorySecureStore } from "./secure-store";
 import { ephemeralCustodyMaster } from "./custody";
+import { ACCOUNT_PURGE_DEFAULT_DAYS } from "./account-purge";
 const port = Number(process.env.PORT ?? "4173");
 if (!Number.isInteger(port) || port < 1024 || port > 65535)
   throw new Error("Invalid PORT");
@@ -106,6 +107,9 @@ const app = createApp({
         },
       }
     : {}),
+  // Closed-account purge on the development server: off unless "1". Status and deletion text only;
+  // the development server has no account database, so no purge job runs (docs/account-purge-20261116.md).
+  ...(process.env.PRIVATEAI_ACCOUNT_PURGE === "1" ? { accountPurge: { graceDays: ACCOUNT_PURGE_DEFAULT_DAYS } } : {}),
   // Brave Goggle for German-rules searches (docs/german-rules-20261113.md); off unless "1".
   searchGoggles: process.env.PRIVATEAI_SEARCH_GOGGLES === "1",
   // Background tasks on the development server: off unless "1". Memory store and a random key, so

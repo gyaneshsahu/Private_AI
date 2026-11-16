@@ -3,6 +3,7 @@ import { AccountBilling } from "./AccountBilling";
 import { useLang } from "./i18n";
 import { usageText } from "./text/account";
 import { UsageMeter } from "./UsageMeter";
+import { developerView } from "./developer-view";
 import {
   isActiveAllowance,
   meteredTokensSentence,
@@ -69,7 +70,10 @@ export function AccountUsagePage({
   billing,
   metering,
   refresh,
+  chatReady,
 }: {
+  /** status.inference.ready: the provider note shows only when chat is not available. */
+  chatReady?: boolean;
   /** Usage metering is on: the meter with features and the latest requests (docs/usage-metering-20261115.md). */
   metering?: boolean;
   /** Changes when the app's status reloads, so the meter reloads with it. */
@@ -103,13 +107,14 @@ export function AccountUsagePage({
       {isActiveAllowance(allowance) ? (
         <>
           <PlanAllowance allowance={allowance} />
-          <MeteredUsage allowance={allowance} />
+          {/* Provider tokens and cost are developer details, not the user's allowance. */}
+          {developerView() && <MeteredUsage allowance={allowance} />}
         </>
       ) : (
         <NoActivePlan />
       )}
       <p>{t.vaultNote}</p>
-      <p className="muted">{t.providerNote}</p>
+      {chatReady === false && <p className="muted">{t.providerNote}</p>}
     </section>
   );
 }

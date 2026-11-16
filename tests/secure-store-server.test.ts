@@ -217,6 +217,39 @@ describe("secure routes", () => {
     expect((await s.call(a, "GET", `/blobs/${blob}`)).status).toBe(404);
   });
 
+  it("deletes all of the caller's items and files at once, keeps the key and the cursor, and leaves other accounts alone", async () => {
+    const s = await bare();
+    const a = randomUUID(),
+      b = randomUUID();
+    const keyA = await s.key(a);
+    await s.key(b);
+    expect((await s.call(undefined, "DELETE", "/items")).status).toBe(401);
+    for (let i = 0; i < 3; i++) expect((await s.call(a, "PUT", `/items/${randomUUID()}`, { baseVersion: 0, ciphertext: b64(60) })).status).toBe(200);
+    expect((await s.call(a, "PUT", `/blobs/${randomUUID()}`, new Uint8Array(randomBytes(100)))).status).toBe(204);
+    const kept = randomUUID();
+    expect((await s.call(b, "PUT", `/items/${kept}`, { baseVersion: 0, ciphertext: b64(60) })).status).toBe(200);
+    expect((await s.call(b, "PUT", `/blobs/${randomUUID()}`, new Uint8Array(randomBytes(100)))).status).toBe(204);
+    const before = (await (await s.call(a, "GET", "/state")).json()) as { cursor: string };
+    const erased = await s.call(a, "DELETE", "/items");
+    expect([erased.status, erased.headers.get("cache-control")]).toEqual([204, "no-store"]);
+    const after = (await (await s.call(a, "GET", "/state")).json()) as { quota: { usedBytes: number }; files: { count: number; usedBytes: number }; cursor: string };
+    expect(after.quota.usedBytes).toBe(0);
+    expect(after.files).toMatchObject({ count: 0, usedBytes: 0 });
+    expect(after.cursor).toBe(before.cursor);
+    expect(((await (await s.call(a, "GET", "/items?since=0")).json()) as { items: unknown[] }).items).toEqual([]);
+    // The same key, and a new write gets a later change number than any before.
+    expect(await s.key(a)).toBe(keyA);
+    expect((await s.call(a, "PUT", `/items/${randomUUID()}`, { baseVersion: 0, ciphertext: b64(60) })).status).toBe(200);
+    const next = (await (await s.call(a, "GET", `/items?since=${before.cursor}`)).json()) as { items: { seq: number }[] };
+    expect(next.items).toHaveLength(1);
+    expect(next.items[0].seq).toBeGreaterThan(Number(before.cursor));
+    expect((await s.call(a, "PUT", `/blobs/${randomUUID()}`, new Uint8Array(randomBytes(100)))).status).toBe(204);
+    // Account b is untouched.
+    const other = (await (await s.call(b, "GET", "/items?since=0")).json()) as { items: { itemId: string }[] };
+    expect(other.items.map((i) => i.itemId)).toEqual([kept]);
+    expect(((await (await s.call(b, "GET", "/state")).json()) as { files: { count: number } }).files.count).toBe(1);
+  });
+
   it("logs nothing but fixed counts, also for bad bodies in production mode", async () => {
     const output: string[] = [];
     for (const method of ["log", "info", "warn", "error", "debug"] as const) vi.spyOn(console, method).mockImplementation((...a) => void output.push(a.join(" ")));
@@ -290,6 +323,13 @@ describe("secure routes", () => {
       });
     expect((await put()).status).toBe(403);
     expect((await put(on.status.csrf)).status).toBe(200);
+    // Delete all: the same session, origin and CSRF checks; absent without the switch.
+    const eraseAll = (base: string, cookie: string, headers: Record<string, string> = {}) =>
+      fetch(`${base}/api/secure/items`, { method: "DELETE", headers: { cookie, origin: base, ...headers } });
+    expect((await eraseAll(off.origin, off.cookie, { "x-privateai-csrf": off.status.csrf })).status).toBe(404);
+    expect((await eraseAll(on.origin, on.cookie)).status).toBe(403);
+    expect((await eraseAll(on.origin, on.cookie, { "x-privateai-csrf": on.status.csrf, origin: "https://elsewhere.example" })).status).toBe(403);
+    expect((await eraseAll(on.origin, on.cookie, { "x-privateai-csrf": on.status.csrf })).status).toBe(204);
   });
 
   it("is covered by the operator erase, children before the key", () => {

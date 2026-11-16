@@ -7,15 +7,21 @@ export default function AccountDeletion({
   emailEnabled,
   closed,
   synthetic = true,
+  purgeDays,
 }: {
   emailEnabled: boolean;
   closed: () => Promise<void>;
   synthetic?: boolean;
+  /** Days until a closed account is deleted (status.accountPurge); absent while the purge is off. */
+  purgeDays?: number;
 }) {
-  const phrase = synthetic ? "DELETE TEST ACCOUNT" : "DELETE ACCOUNT";
   const t = useText(accountDeletionText);
+  // The phrase in the page's language; the server accepts the English and the German one.
+  const phrase = synthetic ? t.phraseTest : t.phrase;
   const title = synthetic ? t.titleTest : t.titleClose;
   const [confirmation, setConfirmation] = useState("");
+  // "Ö" may arrive decomposed (some keyboards): compare and send the composed form.
+  const typed = confirmation.trim().normalize("NFC");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [uncertain, setUncertain] = useState(false);
@@ -23,11 +29,11 @@ export default function AccountDeletion({
     <section aria-label={title}>
       <h2>{title}</h2>
       <p>{t.intro}</p>
-      <p className="account-preview-small">{t.retention}</p>
+      <p className="account-preview-small">{t.retention(purgeDays)}</p>
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          if (!emailEnabled || busy || uncertain || confirmation !== phrase)
+          if (!emailEnabled || busy || uncertain || typed !== phrase)
             return;
           setBusy(true);
           setMessage("");
@@ -38,7 +44,7 @@ export default function AccountDeletion({
                 {
                   method: "POST",
                   headers: { "content-type": "application/json" },
-                  body: JSON.stringify({ confirmation }),
+                  body: JSON.stringify({ confirmation: typed }),
                 },
                 async (response) => {
                   await response.body?.cancel();
@@ -78,7 +84,7 @@ export default function AccountDeletion({
         <button
           type="submit"
           disabled={
-            !emailEnabled || busy || uncertain || confirmation !== phrase
+            !emailEnabled || busy || uncertain || typed !== phrase
           }
         >
           {synthetic ? t.closeTest : t.close}

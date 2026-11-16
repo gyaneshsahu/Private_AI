@@ -109,6 +109,8 @@ export interface Config {
   vaultSync?: SyncSettings & { store: SyncStore };
   /** Secure mode: saved content stored under a server-held key (docs/secure-store-20261116.md); absent means off. */
   secureStore?: SecureSettings;
+  /** Closed-account purge days, for the status only (docs/account-purge-20261116.md); absent means off. */
+  accountPurge?: { graceDays: number };
   /** Background tasks, the Auto mode of Scheduled (docs/background-tasks-20261115.md); absent means off. */
   backgroundTasks?: {
     maxAutoTasks: number;
@@ -499,6 +501,7 @@ export function createApp(config: Config) {
         : {}),
       ...(config.vaultSync ? { vaultSync: { quotaBytes: config.vaultSync.quotaBytes, maxDevices: config.vaultSync.maxDevices, ...(config.vaultSync.blobs ? { files: true } : {}) } } : {}),
       ...(config.secureStore ? { secureStore: { quotaBytes: config.secureStore.quotaBytes, filesQuotaBytes: config.secureStore.filesQuotaBytes } } : {}),
+      ...(config.accountPurge ? { accountPurge: { graceDays: config.accountPurge.graceDays } } : {}),
       ...(config.backgroundTasks
         ? {
             backgroundTasks: {
@@ -1122,15 +1125,27 @@ export function createApp(config: Config) {
   app.use("/api", (_req, res) => {
     res.status(404).json({ error: "Unsupported operation." });
   });
-  app.use(
-    (
-      err: unknown,
-      _req: express.Request,
-      res: express.Response,
-      _next: express.NextFunction,
-    ) => {
-      if (err) res.status(400).json({ error: "Invalid request." });
-    },
-  );
+  app.use(finalErrorHandler);
   return app;
+}
+
+/**
+ * Last handler: client mistakes (body-parser and other 4xx errors) stay 400, a too-large body is
+ * 413, anything else is our fault and answers 503 without details (never the error text or stack).
+ */
+export function finalErrorHandler(
+  err: unknown,
+  _req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) {
+  if (res.headersSent) return next(err);
+  const e = (err ?? {}) as { status?: unknown; statusCode?: unknown; type?: unknown };
+  const status = Number(e.status ?? e.statusCode);
+  if (e.type === "entity.too.large" || status === 413)
+    res.status(413).json({ error: "The request is too large. Nothing was sent." });
+  // A schema check that throws (research cancel parses its body unguarded) is the client's input too.
+  else if (e.type === "entity.parse.failed" || err instanceof z.ZodError || (status >= 400 && status < 500))
+    res.status(400).json({ error: "Invalid request." });
+  else res.status(503).json({ error: "Service temporarily unavailable. No new request was started." });
 }

@@ -97,6 +97,21 @@ it.skipIf(!process.env.PRIVATEAI_SYNTHETIC_PG)(
       expect(await blobs.usage(a)).toEqual({ count: 1, usedBytes: 300 });
       expect(await blobs.delete(b, blob)).toBe(false);
 
+      // Delete all (DELETE /api/secure/items) under the runtime role: items and blobs go, the key and
+      // the change counter stay, account b keeps everything (added 16 November, not yet run by the lead).
+      const cursorBefore = (await store.usage(a)).cursor;
+      const bItems = (await store.items(b, 0, 200, 8_000_000)).items.length;
+      await store.clearItems(a);
+      await blobs.deleteAll(a);
+      expect(await store.usage(a)).toEqual({ usedBytes: 0, cursor: cursorBefore });
+      expect(await blobs.usage(a)).toEqual({ count: 0, usedBytes: 0 });
+      expect((await store.items(a, 0, 200, 8_000_000)).items).toEqual([]);
+      expect((await store.custody(a))!.wrappedKey.equals(first.wrappedKey)).toBe(true);
+      expect((await store.items(b, 0, 200, 8_000_000)).items).toHaveLength(bItems);
+      expect(await store.putItem(a, randomUUID(), 0, randomBytes(40), false, 250, 45, 0)).toMatchObject({ status: "ok", version: 1 });
+      expect((await store.usage(a)).cursor).toBe(cursorBefore + 1);
+      expect(await blobs.put(a, blob, bytes, 500, 46)).toBe("ok");
+
       // Secure and sync share nothing.
       expect(Number((await db.pool.query("SELECT count(*) AS n FROM sync_accounts")).rows[0].n)).toBe(0);
       expect(Number((await db.pool.query("SELECT count(*) AS n FROM sync_items")).rows[0].n)).toBe(0);

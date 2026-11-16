@@ -1,3 +1,4 @@
+import { accountPurgeFunctionSql } from "./account-purge";
 import { requestPurgeFunctionSql } from "./request-retention";
 import { autoAllowanceFunctionSql } from "./usage-postgres";
 
@@ -57,6 +58,10 @@ export function accountPrivilegePlan(input: {
     requestPurgeFunctionSql(schema),
     `REVOKE ALL ON FUNCTION ${schema}.purge_expired_requests() FROM PUBLIC`,
     `GRANT EXECUTE ON FUNCTION ${schema}.purge_expired_requests() TO ${runtime}`,
+    // Closed-account purge (inference.accountPurge): the only way the runtime erases an account.
+    accountPurgeFunctionSql(schema),
+    `REVOKE ALL ON FUNCTION ${schema}.purge_closed_accounts(integer) FROM PUBLIC`,
+    `GRANT EXECUTE ON FUNCTION ${schema}.purge_closed_accounts(integer) TO ${runtime}`,
     // Owner-set automatic allowance (13 November): the runtime may start a bounded period, never insert rows itself.
     autoAllowanceFunctionSql(schema),
     `REVOKE ALL ON FUNCTION ${schema}.start_auto_allowance(text, integer, integer) FROM PUBLIC`,

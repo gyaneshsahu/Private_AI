@@ -44,6 +44,11 @@ const noticesSchema = z.object({
     }),
   ),
 });
+// The parts of /api/status this page shows: chat readiness and the closed-account purge.
+const statusSchema = z.object({
+  inference: z.object({ ready: z.boolean() }),
+  accountPurge: z.object({ graceDays: z.number().int().positive() }).optional(),
+});
 const noticeKeys = {
   pending: "noticePending",
   dispatching: "noticeDispatching",
@@ -78,6 +83,7 @@ export default function AccountLab({
   const [emailEnabled, setEmailEnabled] = useState(false);
   const [workspaceEnabled, setWorkspaceEnabled] = useState(false);
   const [accessRevision, setAccessRevision] = useState(0);
+  const [status, setStatus] = useState<z.infer<typeof statusSchema>>();
   const [notices, setNotices] = useState<
     z.infer<typeof noticesSchema>["notices"]
   >([]);
@@ -154,6 +160,24 @@ export default function AccountLab({
   useEffect(() => {
     if (sent) codeInput.current?.focus();
   }, [sent]);
+  // Chat readiness needs a signed-in session; signed out, or when the check fails, nothing is claimed.
+  const userId = session?.user.id;
+  useEffect(() => {
+    setStatus(undefined);
+    if (synthetic || !userId || !workspaceEnabled) return;
+    let live = true;
+    fetch("/api/status", { cache: "no-store", credentials: "same-origin", redirect: "error" })
+      .then(async (response) => (response.ok ? statusSchema.parse(await response.json()) : undefined))
+      .then(
+        (next) => live && setStatus(next),
+        () => {},
+      );
+    return () => {
+      live = false;
+    };
+  }, [synthetic, userId, workspaceEnabled]);
+  const chatUnavailable = !!session && (!workspaceEnabled || status?.inference.ready === false);
+  const purgeDays = status?.accountPurge?.graceDays;
   async function action(run: () => Promise<void>) {
     if (!ready || busy || uncertain) return;
     setBusy(true);
@@ -275,9 +299,11 @@ export default function AccountLab({
         Comet<span>Row</span>
       </a>
       <LanguageSwitch className="language-switch account-language" />
-      <aside className="account-preview-banner">
-        {synthetic ? t.bannerSynthetic : t.bannerEarly}
-      </aside>
+      {(synthetic || chatUnavailable) && (
+        <aside className="account-preview-banner">
+          {synthetic ? t.bannerSynthetic : t.bannerEarly}
+        </aside>
+      )}
       <section
         className={`account-preview-card ${!session ? "account-entry" : ""}`}
       >
@@ -373,26 +399,25 @@ export default function AccountLab({
                 </ul>
               </section>
             )}
-            <button
-              disabled={busy || uncertain}
-              onClick={() =>
-                action(async () => {
-                  await passkey(() =>
-                    client.passkey.addPasskey({
-                      name: synthetic
-                        ? "CometRow synthetic passkey"
-                        : "CometRow passkey",
-                    }),
-                  );
-                  setNotice(
-                    synthetic ? t.testPasskeyAdded : t.passkeyAdded,
-                  );
-                  await refresh();
-                })
-              }
-            >
-              {synthetic ? t.addTestPasskey : t.addPasskey}
-            </button>
+            {/* Production sign-in offers Google and email only (owner, 20 October): a passkey
+                added there could not be used to sign in, so adding one is lab-only. Existing
+                passkeys stay listed and removable under Account access. */}
+            {synthetic && (
+              <button
+                disabled={busy || uncertain}
+                onClick={() =>
+                  action(async () => {
+                    await passkey(() =>
+                      client.passkey.addPasskey({ name: "CometRow synthetic passkey" }),
+                    );
+                    setNotice(t.testPasskeyAdded);
+                    await refresh();
+                  })
+                }
+              >
+                {t.addTestPasskey}
+              </button>
+            )}
             {synthetic && (
               <button
                 disabled={busy || uncertain}
@@ -425,11 +450,13 @@ export default function AccountLab({
             <AccountDeletion
               emailEnabled={emailEnabled}
               synthetic={synthetic}
+              purgeDays={purgeDays}
               closed={async () => {
+                const days = purgeDays;
                 await refresh();
                 setCode("");
                 setSent(false);
-                setNotice(t.accountClosed(synthetic));
+                setNotice(t.accountClosed(synthetic, days));
               }}
             />
             <AccountAccess

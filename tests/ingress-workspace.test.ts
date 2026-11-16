@@ -480,12 +480,10 @@ describe.runIf(
         await browserExpect(
           page.getByRole("heading", { name: "Your account", exact: true }),
         ).toBeVisible();
-        await page
-          .getByRole("button", { name: "Add passkey", exact: true })
-          .click();
+        // Production login has no passkey sign-in, so adding a passkey is lab-only (SS-06, 16 November).
         await browserExpect(
-          page.getByRole("status").filter({ hasText: "Passkey added." }),
-        ).toBeVisible();
+          page.getByRole("button", { name: "Add passkey", exact: true }),
+        ).toHaveCount(0);
         // Production login offers only Google and email since 20 October, so the
         // journey stays signed in here; the absence of passkey entry is asserted
         // on the login page after the final sign-out. A second email code at this

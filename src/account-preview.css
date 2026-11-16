@@ -171,3 +171,21 @@
   background: #243a32;
   color: #f7f8f5;
 }
+
+/* Section headings inside the account card stay below the card's h1 (1.65rem); the global h2 is 42 px (SS-20). */
+.account-preview-card h2 {
+  font-family: inherit;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  line-height: 1.3;
+  margin: 20px 0 8px;
+}
+.account-preview-card h3 {
+  font-size: 1rem;
+  margin: 14px 0 6px;
+}
+/* The app's phone rule (.chat-design h1, 17 px) must not shrink the signed-in card heading below its sections. */
+.account-preview .account-preview-card:not(.account-entry) h1 {
+  font-size: 1.65rem;
+}

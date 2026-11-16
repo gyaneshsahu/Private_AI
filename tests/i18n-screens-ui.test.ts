@@ -155,7 +155,7 @@ it("signed-in account lab: access, notices, export with a German server message,
     await ui(page.getByRole("button", { name: "Test-Passkey hinzufügen" })).toBeVisible();
     await ui(page.getByRole("button", { name: "Abmelden", exact: true })).toBeVisible();
     const closure = page.getByRole("region", { name: "Testkonto löschen" });
-    await ui(closure.getByLabel("Geben Sie zur Bestätigung DELETE TEST ACCOUNT ein")).toBeVisible();
+    await ui(closure.getByLabel("Geben Sie zur Bestätigung TESTKONTO LÖSCHEN ein")).toBeVisible();
     await ui(closure.getByRole("button", { name: "Testkonto schließen" })).toBeDisabled();
     const exporter = page.getByRole("region", { name: "Ihre Kontodaten herunterladen" });
     await exporter.getByRole("button", { name: "Kontodaten herunterladen" }).click();
@@ -211,16 +211,15 @@ it("usage page and billing rehearsal: German counts, dates, prices and server re
     return route.abort();
   });
   try {
-    await ui(page.getByRole("heading", { name: "Konto und Nutzung" })).toBeVisible();
+    await ui(page.getByRole("heading", { name: "Tarif & Nutzung" })).toBeVisible();
     const plan = page.locator(`[aria-label="Tarif und Anfragen"]`);
     await ui(plan.getByRole("heading", { name: "42 Anfragen übrig" })).toBeVisible();
     await ui(plan).toContainText("8 von 50 Anfragen in diesem Zeitraum reserviert oder versucht.");
     await ui(plan).toContainText(/Zeitraum endet: 20\.11\.2026.*\. Ein neues Kontingent ist nicht garantiert\./);
     await ui(plan).toContainText("1 ausstehend oder vor der Abrechnung abgebrochen; 2 mit unsicherem Übertragungsergebnis.");
-    const tokens = page.locator(`[aria-label="Tokens und Kosten"]`);
-    await ui(tokens).toContainText("5 abgeschlossene Anfragen wurden gemessen: 12.345 Prompt-Tokens und 678 Antwort-Tokens.");
-    await ui(tokens).toContainText("Veröffentlichte Kosten bisher: 0,0123 USD.");
-    await ui(tokens).toContainText("3 abgerechnete Anfragen haben keine Messung");
+    // Provider tokens and cost are developer details (SS-09), and chat readiness is not passed here.
+    await ui(page.locator(`[aria-label="Tokens und Kosten"]`)).toHaveCount(0);
+    await ui(page.getByText(/muss der Anbieter noch geprüft werden/)).toHaveCount(0);
     await ui(page.getByRole("button", { name: "Anmeldemethoden verwalten" })).toBeVisible();
     const billing = page.getByRole("region", { name: "Probelauf für Abonnements" });
     await ui(billing).toContainText("9,99 € / Monat — nur ein synthetischer Preis, kein Angebot zum Start.");

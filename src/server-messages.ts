@@ -85,6 +85,7 @@ const GERMAN: Record<string, string> = {
     "Die Abmeldung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.",
   "Unsupported operation.": "Dieser Vorgang wird nicht unterstützt.",
   "Invalid request.": "Ungültige Anfrage.",
+  "The request is too large. Nothing was sent.": `Die Anfrage ist zu groß. ${NOTHING_SENT}`,
   "HTTPS application origin required.": "Die Anwendung muss über HTTPS aufgerufen werden.",
   "Restricted development deployment.": "Eingeschränkte Entwicklungsumgebung.",
   "Authenticated HTTPS ingress required.": "Ein authentifizierter HTTPS-Zugang ist erforderlich.",
