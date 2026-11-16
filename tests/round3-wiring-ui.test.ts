@@ -162,6 +162,14 @@ for (const lang of ["en", "de"] as const)
         await page.keyboard.press("Escape");
         await ui(help).toHaveCount(0);
 
+        // The keys themselves work in the app: Ctrl+/ opens the list, Shift+Escape goes to the message box.
+        await page.keyboard.press("Control+/");
+        await ui(help).toBeVisible();
+        await page.keyboard.press("Escape");
+        await ui(help).toHaveCount(0);
+        await page.keyboard.press("Shift+Escape");
+        await ui(page.getByLabel(t.messageInput)).toBeFocused();
+
         // Help: its links open the shortcuts list and the documents.
         await accountMenu(page, lang);
         await page.getByRole("button", { name: w.help, exact: true }).click();
@@ -255,6 +263,30 @@ for (const lang of ["en", "de"] as const)
         await page.context().close();
       }
     }, 120_000);
+
+it("1280 px, en, automatic search on: Search the web still asks before searching (rule 7)", async () => {
+  const t = appText.en;
+  const sn = searchNextText.en;
+  const { page, searched } = await open("en", 1280);
+  try {
+    await page.evaluate(() => localStorage.setItem("privateai.autoSearch", "on"));
+    await page.reload();
+    await page.getByLabel(t.tools, { exact: true }).click();
+    await page.locator(".tools-menu").getByRole("button", { name: sn.menu, exact: true }).click();
+    await page.getByLabel(t.messageInput).fill("SYNTHETIC PLAIN QUESTION WITH AUTOMATIC SEARCH ON");
+    await page.getByRole("button", { name: t.sendLabel, exact: true }).click();
+    const card = page.getByRole("region", { name: t.searchSuggestion });
+    await ui(card).toContainText(sn.heading);
+    await page.waitForTimeout(500);
+    expect(searched).toEqual([]);
+    await ui(page.locator("article.assistant")).toHaveCount(0);
+    await card.getByRole("button", { name: WHEN_TO_SEARCH_TEXT.en.button }).click();
+    await ui(page.locator("article.assistant").last()).toContainText("Synthetic answer with 1 sources.");
+    expect(searched).toEqual(["SYNTHETIC PLAIN QUESTION WITH AUTOMATIC SEARCH ON"]);
+  } finally {
+    await page.context().close();
+  }
+}, 120_000);
 
 it("sent nothing outside this machine", () => {
   expect(outside).toEqual([]);

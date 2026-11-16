@@ -963,8 +963,9 @@ export function App() {
   const [maxFirst, setMaxFirst] = useState(false);
   useEffect(() => {
     let active = true;
-    if (!maxAvailable || unlocked || syncState.phase !== "off" || syncState.detached) setMaxFirst(false);
-    else vault.current?.mode().then((m) => active && setMaxFirst(m === "none"), () => {});
+    if (!maxAvailable || unlocked || syncState.phase === "needs-approval" || syncState.detached) setMaxFirst(false);
+    // Other phases come and go while the set-up itself runs: the screen stays until it is done.
+    else if (syncState.phase === "off") vault.current?.mode().then((m) => active && setMaxFirst(m === "none"), () => {});
     return () => {
       active = false;
     };
@@ -3194,6 +3195,7 @@ export function App() {
                       onClick={() => {
                         setChoiceFor(undefined);
                         setSearchFor(undefined);
+                        setSearchNext(false); // this search is the one the menu asked for
                         void searchThenAnswer(
                           shown.value,
                           "tap",
@@ -4180,7 +4182,7 @@ export function App() {
                 // Not now: back to the normal section; nothing was created.
                 onCancel={() => {
                   setSection("secure");
-                  setTab("Conversation");
+                  goToMessageBox();
                 }}
                 // Set up meanwhile on another device: this one joins by approval.
                 onAlreadySetUp={() => setSyncDismissed(false)}
