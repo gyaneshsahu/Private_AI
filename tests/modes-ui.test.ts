@@ -1,7 +1,8 @@
-// Secure and Secure Max screens (docs/product-modes-20261116.md sections 3 and 4) in a real browser
-// at phone, tablet and desktop width, in English and German: the lock switch, its dialog, the
-// badges and the Settings choice. Offline: a fixture page with the components only.
-// MODES_UI_SHOTS=<folder> also writes screenshots there for a look by eye.
+// Secure Max screens (docs/product-modes-20261116.md, owner decision of 16 November: a separate
+// sidebar section) in a real browser at phone, tablet and desktop width, in English and German:
+// the sidebar entry, the section with its band and buttons, the explanation on first open, the
+// locked state, the badges, the start switch and the reset with its typed confirmation. Offline:
+// a fixture page with the components only. MODES_UI_SHOTS=<folder> also writes screenshots.
 import { afterAll, beforeAll, expect, it } from "vitest";
 import { chromium, expect as ui, type Browser, type Page } from "@playwright/test";
 import { createServer, type ViteDevServer } from "vite";
@@ -36,7 +37,7 @@ afterAll(async () => {
   await vite?.close();
 });
 
-async function open(width: number, lang: "en" | "de", { height = 900, dark = false } = {}) {
+async function open(width: number, lang: "en" | "de", query = "", height = 900) {
   const context = await browser.newContext({ locale: lang === "de" ? "de-DE" : "en-US", viewport: { width, height }, hasTouch: width < 760 });
   context.setDefaultTimeout(15_000);
   const page = await context.newPage();
@@ -53,7 +54,7 @@ async function open(width: number, lang: "en" | "de", { height = 900, dark = fal
       });
     return route.continue();
   });
-  await page.goto(origin + "/modes" + (dark ? "?theme=dark" : ""), { timeout: 30_000 });
+  await page.goto(origin + "/modes" + query, { timeout: 30_000 });
   await ui(page.locator("html")).toHaveAttribute("lang", lang);
   return page;
 }
@@ -65,194 +66,202 @@ const shot = async (page: Page, name: string) => {
 // Everything a person can read or hear on the page right now: the text and the accessible names.
 const readable = (page: Page) =>
   page.evaluate(() => document.body.innerText + "\n" + [...document.querySelectorAll("[aria-label]")].map((e) => e.getAttribute("aria-label")).join("\n"));
+const tall = async (page: Page, locator: ReturnType<Page["locator"]>) => {
+  for (const element of await locator.all()) expect((await element.boundingBox())!.height, await element.innerText()).toBeGreaterThanOrEqual(44);
+};
 
 for (const lang of LANGS)
   for (const width of WIDTHS)
-    it(`${lang} at ${width} px: switch, dialog, badges and the Settings choice`, async () => {
+    it(`${lang} at ${width} px: entry, intro once, section, lock, badges, settings`, async () => {
       const t = modesText[lang];
+      const phone = width < 760;
       const page = await open(width, lang);
       const seen: string[] = [];
       try {
-        const area = page.locator("#toggle");
-        const toggle = area.getByRole("switch", { name: t.maxLabel });
-        const dialog = page.getByRole("dialog", { name: t.maxDialogTitle, exact: true });
-        const confirm = dialog.getByRole("button", { name: t.maxConfirm, exact: true });
+        const sidebar = page.locator("#side");
+        const entry = sidebar.getByRole("button", { name: t.maxLabel, exact: true });
+        const section = sidebar.getByRole("region", { name: t.maxLabel });
+        const intro = page.getByRole("dialog", { name: t.maxIntroTitle, exact: true });
+        const log = page.locator("#log");
 
-        // Off by default, and off shows nothing more. Not offered: nothing at all.
-        await ui(toggle).toHaveAttribute("aria-checked", "false");
-        await ui(area.getByText(t.maxLine)).toHaveCount(0);
-        expect((await area.innerText()).trim()).toBe(t.maxLabel);
-        expect(await page.locator("#unavailable").innerHTML()).toBe("");
-        await ui(page.locator("#disabled").getByRole("switch")).toBeDisabled();
-        if (width < 760) expect((await toggle.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-        await shot(page, `${lang}-${width}-page`);
-
-        // Turning it on opens the dialog at its top: focus on the heading, confirm off until the box is ticked.
-        await toggle.click();
-        await ui(dialog).toBeVisible();
-        await ui(dialog.getByRole("heading", { name: t.maxDialogTitle, exact: true })).toBeFocused();
-        await ui(dialog.getByRole("heading", { name: t.maxDialogTitle, exact: true })).toBeInViewport();
+        // The entry opens the section; the first time the explanation comes first, focus on its heading.
+        await ui(entry).toBeVisible();
+        if (phone) await tall(page, entry);
+        await shot(page, `${lang}-${width}-entry`);
+        await entry.click();
+        await ui(intro).toBeVisible();
+        await ui(intro.getByRole("heading", { name: t.maxIntroTitle, exact: true })).toBeFocused();
+        await ui(intro.getByText(t.maxDialogParagraph)).toBeVisible();
+        await ui(intro.getByRole("list", { name: t.maxDifferentHeading }).getByRole("listitem")).toHaveText(MAX_DIFFERENCES.map((key) => t[key]));
+        const confirm = intro.getByRole("button", { name: t.maxConfirm, exact: true });
         await ui(confirm).toBeDisabled();
-        await ui(dialog.getByText(t.maxDialogParagraph)).toBeVisible();
-        const list = dialog.getByRole("list", { name: t.maxDifferentHeading });
-        await ui(list.getByRole("listitem")).toHaveText(MAX_DIFFERENCES.map((key) => t[key]));
-        const box = (await dialog.boundingBox())!;
+        const box = (await intro.boundingBox())!;
         expect(box.x).toBeGreaterThanOrEqual(0);
         expect(box.x + box.width).toBeLessThanOrEqual(width);
-        expect(box.y + box.height).toBeLessThanOrEqual(900);
-        if (width < 760)
-          for (const button of await dialog.getByRole("button").all()) expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+        if (phone) await tall(page, intro.getByRole("button"));
+        seen.push(await readable(page));
+        await shot(page, `${lang}-${width}-intro`);
+
+        // Cancel hands back to the normal sidebar: the entry is there again, with the focus.
+        await intro.getByRole("button", { name: t.cancel }).click();
+        await ui(intro).toHaveCount(0);
+        await ui(log).toHaveText("cancel-intro");
+        await ui(entry).toBeVisible();
+        await ui(section).toHaveCount(0);
+        await ui(entry).toBeFocused();
+        // Escape does the same.
+        await entry.click();
+        await page.keyboard.press("Escape");
+        await ui(log).toHaveText("cancel-intro,cancel-intro");
+        await ui(entry).toBeVisible();
+
+        // Confirm: the section with its header, band, buttons and lists.
+        await entry.click();
+        await intro.getByRole("checkbox", { name: t.maxUnderstand }).check();
+        await confirm.click();
+        await ui(intro).toHaveCount(0);
+        await ui(section).toBeVisible();
+        await ui(section.getByRole("heading", { name: t.maxLabel, exact: true })).toBeVisible();
+        expect(await section.evaluate((element) => getComputedStyle(element).borderLeftWidth)).toBe("4px");
+        await ui(section.getByRole("heading").locator("svg")).toBeVisible();
+        const newChat = section.getByRole("button", { name: t.maxNewChat, exact: true });
+        const newProject = section.getByRole("button", { name: t.maxNewProject, exact: true });
+        const lockNow = section.getByRole("button", { name: t.maxLockNow, exact: true });
+        await ui(section.locator("#max-list")).toBeVisible();
+        await ui(section.getByRole("button", { name: t.maxUnlock })).toHaveCount(0);
+        if (phone) await tall(page, section.getByRole("button"));
+        await newChat.click();
+        await newProject.click();
+        await ui(log).toHaveText("cancel-intro,cancel-intro,new-chat,new-project");
         await noSidewaysScroll(page);
         seen.push(await readable(page));
-        await shot(page, `${lang}-${width}-dialog`);
+        await shot(page, `${lang}-${width}-section`);
 
-        // Cancel and Escape leave it off and give the focus back to the switch.
-        await dialog.getByRole("button", { name: t.cancel }).click();
-        await ui(dialog).toHaveCount(0);
-        await ui(toggle).toHaveAttribute("aria-checked", "false");
-        await ui(toggle).toBeFocused();
-        await toggle.click();
-        await ui(dialog).toBeVisible();
-        await page.keyboard.press("Escape");
-        await ui(dialog).toHaveCount(0);
-        await ui(toggle).toHaveAttribute("aria-checked", "false");
-        await ui(toggle).toBeFocused();
+        // Lock now: only "Secure Max is locked" and the one Unlock button; the lists are gone.
+        await lockNow.click();
+        await ui(log).toHaveText("cancel-intro,cancel-intro,new-chat,new-project,lock");
+        await ui(section.getByText(t.maxIsLocked)).toBeVisible();
+        const unlock = section.getByRole("button", { name: t.maxUnlock, exact: true });
+        await ui(section.getByRole("button")).toHaveCount(1);
+        await ui(unlock).toHaveClass(/primary/);
+        await ui(section.locator("#max-list")).toHaveCount(0);
+        if (phone) await tall(page, unlock);
+        seen.push(await readable(page));
+        await shot(page, `${lang}-${width}-locked`);
+        await unlock.click();
+        await ui(newChat).toBeVisible();
 
-        // The box is not remembered from the cancelled try. Ticking it allows the confirm.
-        await page.keyboard.press("Enter");
-        await ui(confirm).toBeDisabled();
-        await dialog.getByRole("checkbox", { name: t.maxUnderstand }).check();
-        await confirm.click();
-        await ui(dialog).toHaveCount(0);
-        await ui(toggle).toHaveAttribute("aria-checked", "true");
-        await ui(toggle).toBeFocused();
-        await ui(area.getByText(t.maxLine)).toBeVisible();
-        await ui(toggle).toHaveAccessibleDescription(t.maxLine);
-
-        // The second time there is no dialog.
-        await toggle.click();
-        await ui(toggle).toHaveAttribute("aria-checked", "false");
-        await ui(area.getByText(t.maxLine)).toHaveCount(0);
-        await toggle.click();
-        await ui(toggle).toHaveAttribute("aria-checked", "true");
-        await ui(page.getByRole("dialog")).toHaveCount(0);
-
-        // Badges: a lock with a name for Secure Max, another name when locked, nothing for Secure.
+        // Badges: a lock named for Secure Max, another name when locked, nothing for Secure.
+        await ui(section.getByRole("img", { name: t.maxLabel, exact: true })).toBeVisible();
         const badges = page.locator("#badges");
-        await ui(badges.getByRole("img")).toHaveCount(2);
-        await ui(badges.getByRole("img", { name: t.maxLabel, exact: true })).toBeVisible();
+        await ui(badges.getByRole("img")).toHaveCount(1);
         await ui(badges.getByRole("img", { name: t.maxLocked, exact: true })).toBeVisible();
 
-        // Settings: two options, Secure chosen and recommended; Secure Max always through the dialog.
-        const settings = page.locator("#settings").getByRole("group", { name: t.defaultHeading });
-        const secure = settings.getByRole("radio", { name: `${t.secureLabel} (${t.recommended})`, exact: true });
-        const max = settings.getByRole("radio", { name: t.maxLabel, exact: true });
-        await ui(secure).toBeChecked();
-        await ui(secure).toHaveAccessibleDescription(t.secureLine);
-        await ui(max).toHaveAccessibleDescription(t.maxLine);
-        const defaultDialog = page.getByRole("dialog", { name: t.maxDialogTitleDefault, exact: true });
-        await max.click();
-        await ui(defaultDialog).toBeVisible();
-        await ui(defaultDialog.getByText(t.maxDialogParagraph)).toBeVisible();
-        seen.push(await readable(page));
-        await page.keyboard.press("Escape");
-        await ui(defaultDialog).toHaveCount(0);
-        await ui(secure).toBeChecked();
-        await ui(max).toBeFocused();
-        await max.click();
-        await defaultDialog.getByRole("checkbox", { name: t.maxUnderstand }).check();
-        await defaultDialog.getByRole("button", { name: t.maxConfirm, exact: true }).click();
-        await ui(max).toBeChecked();
-        await secure.click();
-        await ui(secure).toBeChecked();
-        await ui(page.getByRole("dialog")).toHaveCount(0);
-        if (width < 760)
-          for (const label of await settings.locator("label").all()) expect((await label.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+        // The start switch and its one line.
+        const settings = page.locator("#settings");
+        const start = settings.getByRole("switch", { name: t.maxStartLabel, exact: true });
+        await ui(start).not.toBeChecked();
+        await ui(start).toHaveAccessibleDescription(t.maxStartLine);
+        await start.click();
+        await ui(start).toBeChecked();
+        await ui(page.locator("#start")).toHaveText("true");
+        if (phone) await tall(page, settings.locator(".secure-max-start label"));
 
-        // Without Secure Max: what Secure means, and no choice.
-        const only = page.locator("#settings-secure-only");
-        await ui(only.getByText(t.secureLine)).toBeVisible();
-        await ui(only.getByRole("radio")).toHaveCount(0);
-        await ui(only.getByText(t.maxLabel)).toHaveCount(0);
+        // Reset: the warning on the screen, a typed confirmation, the red button off until it matches.
+        await ui(settings.getByText(t.maxResetWarning)).toBeVisible();
+        await ui(settings.getByText(t.maxResetSignInFirst)).toHaveCount(0);
+        const resetButton = settings.getByRole("button", { name: t.maxResetLabel, exact: true });
+        await resetButton.click();
+        const resetDialog = page.getByRole("dialog", { name: t.maxResetLabel, exact: true });
+        await ui(resetDialog).toBeVisible();
+        await ui(resetDialog.getByRole("button", { name: t.cancel })).toBeFocused();
+        const resetConfirm = resetDialog.getByRole("button", { name: t.maxResetLabel, exact: true });
+        await ui(resetConfirm).toBeDisabled();
+        await ui(resetConfirm).toHaveClass(/danger-button/);
+        const field = resetDialog.getByLabel(t.maxResetTypeLabel(t.maxResetPhrase));
+        await field.fill("wrong");
+        await ui(resetConfirm).toBeDisabled();
+        await field.fill(t.maxResetPhrase.toLowerCase());
+        await ui(resetConfirm).toBeEnabled();
+        seen.push(await readable(page));
+        await shot(page, `${lang}-${width}-reset`);
+        await resetDialog.getByRole("button", { name: t.cancel }).click();
+        await ui(resetDialog).toHaveCount(0);
+        await ui(log).not.toContainText("reset");
+        await resetButton.click();
+        await field.fill(t.maxResetPhrase);
+        await resetConfirm.click();
+        await ui(resetDialog).toHaveCount(0);
+        await ui(log).toContainText("reset");
+
+        // Second open: no explanation.
+        await page.reload();
+        await ui(entry).toBeVisible();
+        await entry.click();
+        await ui(section).toBeVisible();
+        await ui(page.getByRole("dialog")).toHaveCount(0);
 
         // No always-present notice (end-to-end tests look for THE one role=status), nothing too wide.
         await ui(page.getByRole("status")).toHaveCount(0);
         await noSidewaysScroll(page);
         seen.push(await readable(page));
-        await shot(page, `${lang}-${width}-after`);
 
         // Every text of this language was shown; nothing of the other language was.
         const all = seen.join("\n");
         const other = modesText[lang === "de" ? "en" : "de"];
         for (const key of Object.keys(t) as (keyof typeof t)[]) {
-          expect(all, key).toContain(t[key]);
-          if (other[key] !== t[key]) expect(all, `other language: ${key}`).not.toContain(other[key]);
+          const mine = t[key];
+          const theirs = other[key];
+          const [a, b] = typeof mine === "function" && typeof theirs === "function" ? [mine(t.maxResetPhrase), theirs(other.maxResetPhrase)] : [mine, theirs];
+          expect(all, key).toContain(a);
+          if (a !== b) expect(all, `other language: ${key}`).not.toContain(b);
         }
       } finally {
         await page.context().close();
       }
-    }, 60_000);
+    }, 90_000);
 
-it("German dialog on a short phone screen stays inside the screen and scrolls to its buttons; dark theme renders", async () => {
+it("locked from the start, sidebar entry says so; stale sign-in blocks the reset; a failed reset says so; dark theme", async () => {
   const t = modesText.de;
-  const page = await open(375, "de", { height: 560, dark: true });
+  const page = await open(375, "de", "?locked=1&stale=1&fail=1&theme=dark", 560);
   try {
-    await page.locator("#toggle").getByRole("switch").click();
-    const dialog = page.getByRole("dialog", { name: t.maxDialogTitle, exact: true });
-    const box = (await dialog.boundingBox())!;
-    expect(box.y).toBeGreaterThanOrEqual(0);
+    const sidebar = page.locator("#side");
+    const entry = sidebar.getByRole("button", { name: t.maxLocked, exact: true });
+    await ui(entry).toBeVisible();
+    await ui(entry.locator("rect")).toHaveAttribute("fill", "currentColor");
+    await entry.click();
+    const intro = page.getByRole("dialog", { name: t.maxIntroTitle, exact: true });
+    const box = (await intro.boundingBox())!;
     expect(box.y + box.height).toBeLessThanOrEqual(560);
-    expect(await dialog.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(0);
-    await ui(dialog.getByRole("heading", { name: t.maxDialogTitle, exact: true })).toBeInViewport();
-    await shot(page, "de-375-short-dark-dialog");
-    // Keyboard only: Tab stays inside the dialog and reaches the box and both buttons.
-    await page.keyboard.press("Tab");
-    await ui(dialog.getByRole("checkbox")).toBeFocused();
-    await page.keyboard.press("Tab");
-    await ui(dialog.getByRole("button", { name: t.cancel })).toBeFocused();
-    await page.keyboard.press("Tab");
-    await ui(dialog.getByRole("checkbox")).toBeFocused();
-    await dialog.getByRole("checkbox", { name: t.maxUnderstand }).check();
-    await dialog.getByRole("button", { name: t.maxConfirm, exact: true }).click();
-    await ui(page.locator("#toggle").getByRole("switch")).toHaveAttribute("aria-checked", "true");
-    // Dark theme: the page really is dark, and the text is light on it.
+    await shot(page, "de-375-short-dark-intro");
+    await intro.getByRole("checkbox").check();
+    await intro.getByRole("button", { name: t.maxConfirm, exact: true }).click();
+    const section = sidebar.getByRole("region", { name: t.maxLabel });
+    await ui(section.getByText(t.maxIsLocked)).toBeVisible();
+    await ui(section.getByRole("button")).toHaveText([t.maxUnlock]);
     expect(await page.locator(".chat-design").evaluate((element) => getComputedStyle(element).backgroundColor)).toBe("rgb(25, 28, 31)");
-    await shot(page, "de-375-short-dark-after");
+    await shot(page, "de-375-short-dark-locked");
+
+    const settings = page.locator("#settings");
+    await ui(settings.getByText(t.maxResetSignInFirst)).toBeVisible();
+    await ui(settings.getByRole("button", { name: t.maxResetLabel, exact: true })).toBeDisabled();
+    await noSidewaysScroll(page);
   } finally {
     await page.context().close();
   }
 }, 60_000);
 
-it("inside Settings (a modal dialog with a form): opens on top, Escape closes only the explanation, nothing submits the form", async () => {
+it("a reset that fails says so and deletes nothing in the interface", async () => {
   const t = modesText.en;
-  const page = await open(375, "en");
+  const page = await open(768, "en", "?fail=1");
   try {
-    await page.locator("#open-nested").click();
-    const outer = page.locator("#nested");
-    const inner = page.getByRole("dialog", { name: t.maxDialogTitleDefault, exact: true });
-    const max = outer.getByRole("radio", { name: t.maxLabel, exact: true });
-    await max.click();
-    await ui(inner).toBeVisible();
-    await shot(page, "en-375-nested-dialog");
-    await page.keyboard.press("Escape");
-    await ui(inner).toHaveCount(0);
-    await ui(outer).toBeVisible();
-    await ui(max).not.toBeChecked();
-    await ui(max).toBeFocused();
-    // Keyboard only: Space opens it, Enter on the box and on the heading submit nothing.
-    await page.keyboard.press("Space");
-    await ui(inner).toBeVisible();
-    await page.keyboard.press("Enter");
-    await page.keyboard.press("Tab");
-    await page.keyboard.press("Enter");
-    await page.keyboard.press("Space");
-    await ui(inner.getByRole("checkbox")).toBeChecked();
-    await inner.getByRole("button", { name: t.maxConfirm, exact: true }).click();
-    await ui(inner).toHaveCount(0);
-    await ui(max).toBeChecked();
-    await ui(outer).toBeVisible();
-    await ui(page.locator("#submits")).toHaveText("0");
-    await shot(page, "en-375-nested-after");
+    const settings = page.locator("#settings");
+    await settings.getByRole("button", { name: t.maxResetLabel, exact: true }).click();
+    const dialog = page.getByRole("dialog", { name: t.maxResetLabel, exact: true });
+    await dialog.getByLabel(t.maxResetTypeLabel(t.maxResetPhrase)).fill(t.maxResetPhrase);
+    await dialog.getByRole("button", { name: t.maxResetLabel, exact: true }).click();
+    await ui(settings.getByRole("alert")).toHaveText(t.maxResetFailed);
+    await ui(settings.getByRole("button", { name: t.maxResetLabel, exact: true })).toBeEnabled();
   } finally {
     await page.context().close();
   }
