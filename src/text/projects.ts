@@ -72,6 +72,21 @@ export const projectText = defineText({
     // Added to existing texts while the switch is on.
     removeAlso: "Its instructions and files are deleted.",
     eraseAlso: "Project instructions and files are deleted too.",
+    // Per storage mode (forStorage in ./mode-copy): the texts above are the device vault's.
+    deleteText_secure:
+      "The project's instructions and files are deleted on all your devices. This cannot be undone. Choose what happens to its chats.",
+    deleteText_max:
+      "The project's instructions and files are deleted on all your devices. This cannot be undone. Choose what happens to its chats.",
+    instructionsIntro_secure:
+      "Sent with every question in this project's chats. Email addresses, bank details and similar identifiers in them are masked first, like in any message. Not sent in incognito chats or after a chat is moved out of the project. Saved to your account, encrypted while stored.",
+    instructionsIntro_max:
+      "Sent with every question in this project's chats. Email addresses, bank details and similar identifiers in them are masked first, like in any message. Not sent in incognito chats or after a chat is moved out of the project. Encrypted with a key only you hold.",
+    filesIntro_secure:
+      "Text documents only. The text is read on this device and saved to your account, encrypted while stored. For each question, the passages that match it best are sent with it. Pictures cannot be project files.",
+    filesIntro_max:
+      "Text documents only. The text is read on this device and encrypted with a key only you hold. For each question, the passages that match it best are sent with it. Pictures cannot be project files.",
+    // Secure has no encrypted backup file: the line is not shown.
+    notInBackup_secure: "",
   },
   de: {
     open: "Projekt öffnen",
@@ -140,5 +155,18 @@ export const projectText = defineText({
     contextRow: "Projektanweisungen",
     removeAlso: "Seine Anweisungen und Dateien werden gelöscht.",
     eraseAlso: "Projektanweisungen und -dateien werden ebenfalls gelöscht.",
+    deleteText_secure:
+      "Die Anweisungen und Dateien des Projekts werden auf allen Ihren Geräten gelöscht. Das lässt sich nicht rückgängig machen. Wählen Sie, was mit seinen Chats geschieht.",
+    deleteText_max:
+      "Die Anweisungen und Dateien des Projekts werden auf allen Ihren Geräten gelöscht. Das lässt sich nicht rückgängig machen. Wählen Sie, was mit seinen Chats geschieht.",
+    instructionsIntro_secure:
+      "Werden mit jeder Frage in den Chats dieses Projekts gesendet. E-Mail-Adressen, Bankdaten und ähnliche Kennungen darin werden vorher verborgen, wie in jeder Nachricht. Nicht in Inkognito-Chats und nicht mehr, wenn ein Chat aus dem Projekt verschoben wurde. In Ihrem Konto gespeichert, verschlüsselt abgelegt.",
+    instructionsIntro_max:
+      "Werden mit jeder Frage in den Chats dieses Projekts gesendet. E-Mail-Adressen, Bankdaten und ähnliche Kennungen darin werden vorher verborgen, wie in jeder Nachricht. Nicht in Inkognito-Chats und nicht mehr, wenn ein Chat aus dem Projekt verschoben wurde. Mit einem Schlüssel verschlüsselt, den nur Sie haben.",
+    filesIntro_secure:
+      "Nur Textdokumente. Der Text wird auf diesem Gerät gelesen und in Ihrem Konto gespeichert, verschlüsselt abgelegt. Zu jeder Frage werden die passendsten Abschnitte mitgesendet. Bilder können keine Projektdateien sein.",
+    filesIntro_max:
+      "Nur Textdokumente. Der Text wird auf diesem Gerät gelesen und mit einem Schlüssel verschlüsselt, den nur Sie haben. Zu jeder Frage werden die passendsten Abschnitte mitgesendet. Bilder können keine Projektdateien sein.",
+    notInBackup_secure: "",
   },
 });

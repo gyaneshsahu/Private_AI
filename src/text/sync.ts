@@ -280,6 +280,12 @@ export const syncText = defineText({
     stateError: "Sync problem",
     stateLocked: "Locked",
     stateApproval: "Not synced here",
+    // Per storage mode (forStorage in ./mode-copy). With Secure on, Settings shows these screens for
+    // the account ("secure": the intro), and turning sync on sets up Secure Max ("max").
+    offIntro_secure:
+      "Your chats, memory, projects and tasks are on all your devices as soon as you sign in. The settings below are for Secure Max only.",
+    explainWhat_max:
+      "What syncs: your Secure Max chats, memory, projects with their instructions and files, scheduled tasks and settings. Never: incognito chats.",
   },
   de: {
     section: "Geräte und Synchronisierung",
@@ -440,5 +446,9 @@ export const syncText = defineText({
     stateError: "Problem bei der Synchronisierung",
     stateLocked: "Gesperrt",
     stateApproval: "Hier nicht synchronisiert",
+    offIntro_secure:
+      "Ihre Chats, Erinnerungen, Projekte und Aufgaben sind nach der Anmeldung auf allen Ihren Geräten. Die Einstellungen hier betreffen nur Secure Max.",
+    explainWhat_max:
+      "Was synchronisiert wird: Ihre Secure-Max-Chats, Erinnerungen, Projekte mit Anweisungen und Dateien, geplante Aufgaben und Einstellungen. Nie: Inkognito-Chats.",
   },
 });

@@ -30,6 +30,9 @@ export const syncFilesText = defineText({
         full: "This project already has as many files as it can hold on this device.",
       })[reason],
     removeText: "It is removed from all your devices. Answers that already used it stay as they are.",
+    // Secure (forStorage in ./mode-copy): the account's store, CometRow holds the key.
+    intro_secure:
+      "Files are saved to your account, encrypted while stored, and are on all your devices after sign-in. Another device downloads a file when it is opened or used in a chat.",
   },
   de: {
     intro:
@@ -56,5 +59,7 @@ export const syncFilesText = defineText({
         full: "Dieses Projekt hat auf diesem Gerät schon so viele Dateien, wie es aufnehmen kann.",
       })[reason],
     removeText: "Sie wird von all Ihren Geräten entfernt. Antworten, die sie schon verwendet haben, bleiben, wie sie sind.",
+    intro_secure:
+      "Dateien werden in Ihrem Konto gespeichert, verschlüsselt abgelegt, und sind nach der Anmeldung auf allen Ihren Geräten. Ein anderes Gerät lädt eine Datei herunter, wenn sie geöffnet oder in einem Chat verwendet wird.",
   },
 });

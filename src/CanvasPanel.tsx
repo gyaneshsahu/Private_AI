@@ -27,6 +27,7 @@ import { useText } from "./i18n";
 import { importFresh, LoadBoundary, retryLazy } from "./LoadBoundary";
 import { messageText } from "./text/message";
 import { canvasText } from "./text/canvas";
+import { forStorage, type Storage } from "./text/mode-copy";
 
 const Answer = retryLazy(() =>
   importFresh(() => import("./Answer")).then((module) => ({ default: module.Answer })),
@@ -165,6 +166,7 @@ export function CanvasPanel({
   onAsk,
   onNotice,
   onClose,
+  storage,
 }: {
   conversation: Conversation;
   update: Update;
@@ -176,8 +178,10 @@ export function CanvasPanel({
   onAsk: (message: string) => void;
   onNotice: (text: string) => void;
   onClose: () => void;
+  /** Where the conversation is kept; decides what the note promises (src/text/mode-copy.ts). */
+  storage?: Storage;
 }) {
-  const t = useText(canvasText);
+  const t = forStorage(useText(canvasText), storage);
   const mt = useText(messageText);
   const panel = useRef<HTMLElement>(null);
   const text = conversation.canvas?.text ?? "";

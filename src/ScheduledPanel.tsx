@@ -42,6 +42,7 @@ import {
   type TaskFields,
 } from "./scheduled";
 import { calendarFile, downloadCalendar } from "./scheduled-ics";
+import { forStorage, type Storage } from "./text/mode-copy";
 import { RESULT_RETENTION_DAYS, scheduledText } from "./text/scheduled";
 import { editedSearchText } from "./when-to-search";
 import type { TaskMasks, Vault } from "./vault";
@@ -145,6 +146,7 @@ export function ScheduledPanel({
   draft,
   onClose,
   onRun,
+  storage,
 }: {
   vault: Vault | null;
   unlocked: boolean;
@@ -154,9 +156,11 @@ export function ScheduledPanel({
   draft?: TaskDraft;
   onClose: () => void;
   onRun: (task: ScheduledTask) => void;
+  /** Where the tasks are kept; decides what the texts promise (src/text/mode-copy.ts). */
+  storage?: Storage;
 }) {
   const { lang } = useLang();
-  const t = scheduledText[lang];
+  const t = forStorage(scheduledText[lang], storage);
   const tasks = useScheduledTasks();
   const dialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -449,6 +453,7 @@ export function ScheduledPanel({
           )}
           {form && (
             <TaskForm
+              storage={storage}
               draft={form}
               existing={editing}
               status={status}
@@ -493,6 +498,7 @@ function TaskForm({
   loadMasks,
   onClose,
   onSubmit,
+  storage,
 }: {
   draft: TaskDraft;
   existing?: ScheduledTask;
@@ -502,9 +508,10 @@ function TaskForm({
   loadMasks: () => Promise<KeptIdentifier[]>;
   onClose: () => void;
   onSubmit: (fields: TaskFields, extra: FormExtra) => Promise<boolean>;
+  storage?: Storage;
 }) {
   const { lang } = useLang();
-  const t = scheduledText[lang];
+  const t = forStorage(scheduledText[lang], storage);
   const id = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const start = fieldsOf(draft);
@@ -1048,6 +1055,7 @@ export function ScheduleCard({
   onEdit,
   onSend,
   onClose,
+  storage,
 }: {
   found: DetectedSchedule;
   unlocked: boolean;
@@ -1055,9 +1063,10 @@ export function ScheduleCard({
   onEdit: (draft: TaskDraft) => void;
   onSend: () => void;
   onClose: () => void;
+  storage?: Storage;
 }) {
   const { lang } = useLang();
-  const t = scheduledText[lang];
+  const t = forStorage(scheduledText[lang], storage);
   const id = useId();
   const [time, setTime] = useState(found.time ?? found.suggestedTime);
   const draft = draftFromDetection(found, /^([01]\d|2[0-3]):[0-5]\d$/.test(time) ? time : found.suggestedTime, t.fallbackName);

@@ -22,6 +22,7 @@ import {
   watchProjects,
   type Project,
 } from "./projects";
+import { forStorage, type Storage } from "./text/mode-copy";
 import { projectText } from "./text/projects";
 import { syncFilesText } from "./text/sync-files";
 // From src/sync/files.ts, not the whole sync API: the screen works the same without sync.
@@ -59,6 +60,7 @@ export function useProjectVault(projects: readonly Project[], vault: Vault | nul
 export function ProjectPanel({
   vault,
   fileSlot = "max",
+  storage,
   project,
   chats,
   busy,
@@ -72,6 +74,8 @@ export function ProjectPanel({
   vault: Vault;
   /** Which sync serves this project's files: the encrypted sync, or Secure (src/stores.ts). */
   fileSlot?: FileSlot;
+  /** Where the project is kept; decides what the texts promise (src/text/mode-copy.ts). */
+  storage?: Storage;
   project: Project;
   /** The saved chats of this project, archived ones included. */
   chats: Conversation[];
@@ -86,7 +90,7 @@ export function ProjectPanel({
   onChange: (change: (projects: Project[]) => Project[]) => Promise<void>;
 }) {
   const { lang } = useLang();
-  const t = projectText[lang];
+  const t = forStorage(projectText[lang], storage);
   const locale = lang === "de" ? "de-DE" : "en-GB";
   const dialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -101,7 +105,7 @@ export function ProjectPanel({
   const files = held.files[project.id] ?? [];
   // Synced project files (Stage 3), only while file sync is on for this device.
   const sync = useSyncFiles(fileSlot);
-  const f = syncFilesText[lang];
+  const f = forStorage(syncFilesText[lang], storage);
   const remote = sync.enabled ? sync.remote.filter((entry) => entry.projectId === project.id) : [];
   const remoteCharacters = (projectId?: string) =>
     sync.enabled ? sync.remote.filter((e) => projectId === undefined || e.projectId === projectId).reduce((n, e) => n + e.characters, 0) : 0;
@@ -297,7 +301,7 @@ export function ProjectPanel({
       <section className="project-section" aria-labelledby={`${id}-files`}>
         <h3 id={`${id}-files`}>{t.files}</h3>
         <p className="muted">{t.filesIntro}</p>
-        <p className="muted">{t.notInBackup}</p>
+        {t.notInBackup && <p className="muted">{t.notInBackup}</p>}
         {sync.enabled && <p className="muted">{f.intro}</p>}
         {sync.enabled && sync.quota && (
           <p className="muted">

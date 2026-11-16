@@ -21,6 +21,11 @@ export const savedListText = defineText({
     yesterday: "Yesterday",
     week: "Earlier this week",
     older: "Older",
+    // Per storage mode (forStorage in ./mode-copy): `deleteText` above is the device vault's.
+    deleteText_secure: (title: string) =>
+      `“${title}” will be deleted with all its branches, on all your devices. This cannot be undone.`,
+    deleteText_max: (title: string) =>
+      `“${title}” will be deleted with all its branches, on all your devices. This cannot be undone.`,
   },
   de: {
     deleteTitle: "Diese Unterhaltung löschen?",
@@ -40,5 +45,9 @@ export const savedListText = defineText({
     yesterday: "Gestern",
     week: "Früher in dieser Woche",
     older: "Älter",
+    deleteText_secure: (title: string) =>
+      `„${title}“ wird mit allen Zweigen auf allen Ihren Geräten gelöscht. Das lässt sich nicht rückgängig machen.`,
+    deleteText_max: (title: string) =>
+      `„${title}“ wird mit allen Zweigen auf allen Ihren Geräten gelöscht. Das lässt sich nicht rückgängig machen.`,
   },
 });
