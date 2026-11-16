@@ -91,7 +91,9 @@ import { composerText } from "./text/composer";
 import { Vault, VaultConflictError } from "./vault";
 import type { Mode } from "../shared/modes";
 import { assignMode, closeSecure, flushSecure, modeOf, openSecure, readAvailable, readProjects, secureVault, useSecureState, vaultFor } from "./stores";
-import { SecureMaxSection } from "./SecureMaxSection";
+import { SecureMaxSection, SecureMaxSidebarEntry, shouldShowSecureMaxIntro } from "./SecureMaxSection";
+import { SecureMaxResetSetting } from "./SecureMaxResetSetting";
+import { SecureMaxStartSetting } from "./SecureMaxStartSetting";
 import { SecureMaxLists } from "./SecureMaxLists";
 import { resetSecureMaxConfirmed } from "./SecureMaxDialog";
 import { modesText } from "./text/modes";
@@ -185,7 +187,8 @@ import {
 
 type Tab =
   "Conversation" | "Context" | "Research" | "Saved" | "Account" | "Help";
-const SECTION_KEY = "cometrow.section";
+/** "Open CometRow in Secure Max" on this device; no content, only the choice. */
+const START_KEY = "cometrow.openInSecureMax";
 export function App() {
   const { lang } = useLang();
   const t = appText[lang];
@@ -474,23 +477,34 @@ export function App() {
   const maxAvailable = secureOn && !!status?.vaultSync?.files;
   const st = secureStoreText[lang];
   // The section the user is in (owner, 16 November): the normal app is Secure; Secure Max is its own
-  // section of the sidebar. Kept per device, forgotten at sign-out.
-  const [sectionState, setSectionState] = useState<Mode>(() => {
+  // section of the sidebar, opened from its one entry. The app starts in the normal section unless
+  // "Open CometRow in Secure Max" is on for this device (Settings).
+  const [startInMax, setStartInMaxState] = useState(() => {
     try {
-      return localStorage.getItem(SECTION_KEY) === "max" ? "max" : "secure";
+      return localStorage.getItem(START_KEY) === "1";
     } catch {
-      return "secure";
+      return false;
     }
   });
-  const section: Mode = maxAvailable ? sectionState : "secure";
-  const setSection = (next: Mode) => {
-    setSectionState(next);
+  const setStartInMax = (on: boolean) => {
+    setStartInMaxState(on);
     try {
-      if (secureOn) localStorage.setItem(SECTION_KEY, next);
+      if (on) localStorage.setItem(START_KEY, "1");
+      else localStorage.removeItem(START_KEY);
     } catch {
       /* storage blocked: the app starts in the normal section */
     }
   };
+  const [sectionState, setSection] = useState<Mode>(() => (startInMax ? "max" : "secure"));
+  const section: Mode = maxAvailable ? sectionState : "secure";
+  const sectionRef = useRef(section);
+  sectionRef.current = section;
+  const secureOnRef = useRef(secureOn);
+  secureOnRef.current = secureOn;
+  /** Set when the user opens the section from its entry: focus moves into it once it is mounted. */
+  const focusSection = useRef(false);
+  /** The name form of "New Secure Max project" is open. */
+  const [maxCreating, setMaxCreating] = useState(false);
   const inMax = (id?: string) => modeOf(id) === "max";
   // A chat's mode is the store that holds it; a project's chats inherit the project's; a new chat has the section's.
   const mode: Mode = !secureOn ? "max" : (modeOf(conversation.id) ?? modeOf(conversation.projectId) ?? section);
@@ -668,7 +682,9 @@ export function App() {
       if (secureVault()) void refreshRef.current();
     };
     let timer: ReturnType<typeof setTimeout>;
-    const resetTimer = () => {
+    const resetTimer = (event?: Event) => {
+      // With Secure on, only activity in Secure Max (its section or one of its chats) keeps it unlocked.
+      if (event && secureOnRef.current && sectionRef.current !== "max" && modeRef.current !== "max") return;
       clearTimeout(timer);
       timer = setTimeout(
         () => {
@@ -828,6 +844,11 @@ export function App() {
     if (response.status === 401 && status.accountId) {
       vault.current?.lock();
       vault.current?.onInvalidate?.();
+      // The session ended: this device's Secure copy goes, as at sign-out.
+      if (status.secureStore) {
+        resetSecureMaxConfirmed();
+        await closeSecure(true, status.accountId);
+      }
       accessNavigation.current = true;
       window.location.assign("/auth");
     }
@@ -850,11 +871,6 @@ export function App() {
   async function leaveSecure() {
     if (!secureOn) return;
     resetSecureMaxConfirmed();
-    try {
-      localStorage.removeItem(SECTION_KEY);
-    } catch {
-      /* nothing was kept */
-    }
     await closeSecure(true, status!.accountId);
   }
   async function signOutConsumer() {
@@ -1590,6 +1606,21 @@ export function App() {
     await deleteEverythingOnThisDevice({ alsoDeleteSyncedData: alsoDeleteSynced, ...(recoveryKey ? { recoveryKey } : {}) });
     setSyncRound((n) => n + 1);
   }
+  /** Signed in within the last 5 minutes (as account closure asks); false when the server did not say. */
+  const recentSignIn = () => !!status?.signedInAt && Date.now() - status.signedInAt < 5 * 60_000;
+  /**
+   * Settings, "Reset Secure Max": the synced copy on the server and this device's Secure Max data go
+   * (the hardened sync reset, which needs this unlocked device's proof), and Unlock Secure Max then
+   * starts a fresh one. A locked device uses "Forgot passphrase" with the recovery key instead.
+   */
+  async function resetMax() {
+    if (!unlocked || !recentSignIn()) throw new Error("locked");
+    if (modeRef.current === "max") controller.current?.abort();
+    await eraseThisDevice(true);
+    vault.current?.lock();
+    vault.current?.onInvalidate?.();
+    setNotice(t.erased);
+  }
   // A remembered device opens by itself on each visit (docs/vault-sync-screens-20261115.md).
   const openIfRemembered = () =>
     void vault.current?.isRemembered().then((yes) => {
@@ -2077,21 +2108,32 @@ export function App() {
         onOrganize={(c, change) => void organizeChat(c, change)}
         unlocked={anyStore}
         maxSection={
-          maxAvailable ? (
-            <SecureMaxSection
+          !maxAvailable ? undefined : section !== "max" ? (
+            // The one entry; the section replaces it while open (src/SecureMaxSection.tsx looks for it after Cancel).
+            <SecureMaxSidebarEntry
               locked={!unlocked}
-              onUnlock={unlockMax}
-              onLock={() => {
-                vault.current?.lock();
-                vault.current?.onInvalidate?.();
+              onOpen={() => {
+                focusSection.current = true;
+                setSection("max");
+              }}
+            />
+          ) : (
+            <div
+              className="secure-max-mount"
+              ref={(element) => {
+                // Opened from the entry: focus moves into the section, unless the explanation took it.
+                if (!element || !focusSection.current) return;
+                focusSection.current = false;
+                if (!shouldShowSecureMaxIntro()) element.querySelector<HTMLElement>("button")?.focus();
               }}
             >
-              <SecureMaxLists
-                conversations={saved.filter((c) => inMax(c.id))}
-                projects={projects.filter((p) => inMax(p.id))}
-                currentId={conversation.id}
-                busy={!!busy}
-                projectsEnabled={projectSpacesEnabled()}
+              <SecureMaxSection
+                locked={!unlocked}
+                onUnlock={unlockMax}
+                onLock={() => {
+                  vault.current?.lock();
+                  vault.current?.onInvalidate?.();
+                }}
                 onNewChat={() => {
                   if (!allowReplace()) return;
                   reset();
@@ -2099,15 +2141,27 @@ export function App() {
                   setTab("Conversation");
                   setNavigationOpen(false);
                 }}
-                onNewProject={(name) => createProject(name, "max")}
-                onOpen={openSaved}
-                onOpenProject={(id) => {
-                  setNavigationOpen(false);
-                  setOpenProject(id);
-                }}
-              />
-            </SecureMaxSection>
-          ) : undefined
+                onNewProject={() => setMaxCreating(true)}
+                onCancelIntro={() => setSection("secure")}
+              >
+                <SecureMaxLists
+                  conversations={saved.filter((c) => inMax(c.id))}
+                  projects={projects.filter((p) => inMax(p.id))}
+                  currentId={conversation.id}
+                  busy={!!busy}
+                  projectsEnabled={projectSpacesEnabled()}
+                  creating={maxCreating}
+                  onCreateClose={() => setMaxCreating(false)}
+                  onNewProject={(name) => createProject(name, "max")}
+                  onOpen={openSaved}
+                  onOpenProject={(id) => {
+                    setNavigationOpen(false);
+                    setOpenProject(id);
+                  }}
+                />
+              </SecureMaxSection>
+            </div>
+          )
         }
         busy={!!busy}
         newDisabled={!!busy && !controller.current}
@@ -2412,6 +2466,14 @@ export function App() {
             )}
             {settingsSection === "sync" && syncOn && (
               <SyncSettings unlocked={unlocked} vault={vault.current} onNotice={setNotice} onOpened={(remember) => void syncOpened(remember)} />
+            )}
+            {settingsSection === "sync" && maxAvailable && (
+              <>
+                <h3>{modesText[lang].maxLabel}</h3>
+                <SecureMaxStartSetting value={startInMax} onChange={setStartInMax} />
+                {/* recentSignIn is a screen gate only; the reset itself needs this unlocked Secure Max (the sync reset proof). */}
+                <SecureMaxResetSetting onReset={resetMax} recentSignIn={recentSignIn()} />
+              </>
             )}
           </section>
         </div>

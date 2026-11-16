@@ -97,7 +97,8 @@ describe("secure routes", () => {
     const s = await bare();
     const a = randomUUID(),
       b = randomUUID();
-    expect((await s.call(undefined, "GET", "/key")).status).toBe(401);
+    const signedOut = await s.call(undefined, "GET", "/key");
+    expect([signedOut.status, signedOut.headers.get("cache-control")]).toEqual([401, "no-store"]);
     expect((await s.call(undefined, "GET", "/items?since=0")).status).toBe(401);
     const first = await s.call(a, "GET", "/key");
     expect(first.status).toBe(200);

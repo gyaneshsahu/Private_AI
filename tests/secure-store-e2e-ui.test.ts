@@ -21,7 +21,7 @@ import { appText } from "../src/text/app";
 import { memoryText } from "../src/text/memory";
 import { modesText } from "../src/text/modes";
 import { secureStoreText } from "../src/text/secure-store";
-import { syncText } from "../src/text/sync";
+import { syncText, vaultUnlockText } from "../src/text/sync";
 import { workspaceText } from "../src/text/workspace";
 
 const ui = playwrightExpect.configure({ timeout: 20_000 });
@@ -152,6 +152,25 @@ async function openSettings(page: Page, lang: "en" | "de", section: string) {
 const closeSettings = (page: Page, lang: "en" | "de") => settings(page).getByRole("button", { name: appText[lang].closeSettings }).click();
 /** The Secure Max section of the sidebar. */
 const maxSection = (page: Page) => page.getByRole("region", { name: modesText.en.maxLabel });
+/** Opens the section from its one entry; the first time in this browser, the explanation is confirmed. */
+async function openMax(page: Page, lang: "en" | "de" = "en") {
+  const m = modesText[lang];
+  if (!(await page.locator(".secure-max-entry").isVisible())) await navigation(page, lang);
+  await page.locator(".secure-max-entry").click();
+  const intro = page.getByRole("dialog", { name: m.maxIntroTitle });
+  if (await intro.waitFor({ timeout: 3000 }).then(() => true, () => false)) {
+    await intro.getByRole("checkbox", { name: m.maxUnderstand }).check();
+    await intro.getByRole("button", { name: m.maxConfirm }).click();
+  }
+  await ui(maxSection(page)).toBeVisible();
+  await ui(page.locator(".secure-max-entry")).toHaveCount(0);
+}
+async function memories(page: Page) {
+  await openSettings(page, "en", memoryText.en.title);
+  const texts = await settings(page).locator("li").allTextContents();
+  await closeSettings(page, "en");
+  return texts.join("\n");
+}
 const focus = (page: Page) => page.evaluate(() => void window.dispatchEvent(new Event("focus")));
 
 it("1280 px, English: a chat saves by itself, a second device has everything after sign-in, edits travel, sign-out deletes the local copy, the Secure Max section stays locked and apart", async () => {
@@ -161,6 +180,7 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   const w = workspaceText.en;
   const st = secureStoreText.en;
   const t = syncText.en;
+  const m = modesText.en;
 
   // A signs in and types. Nothing else: no passphrase, no dialog, no save button.
   const A = await device(s, account);
@@ -214,10 +234,17 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   await B.context().close();
 
   // Secure Max on A: the encrypted sync is set up with its recovery key, then a Secure Max chat.
-  await maxSection(A).getByRole("button", { name: st.unlockMax }).click();
+  // The section is one entry until opened; Cancel on the first explanation returns to the normal sidebar.
+  await ui(maxSection(A)).toHaveCount(0);
+  await A.locator(".secure-max-entry").click();
+  await A.getByRole("dialog", { name: m.maxIntroTitle }).getByRole("button", { name: m.cancel }).click();
+  await ui(maxSection(A)).toHaveCount(0);
+  await ui(A.locator(".secure-max-entry")).toBeFocused();
+  await openMax(A);
+  await maxSection(A).getByRole("button", { name: m.maxUnlock }).click();
   await A.getByLabel(a.passphrase, { exact: true }).fill("synthetic secure max passphrase");
   await A.getByRole("button", { name: a.createOrUnlock }).click();
-  await ui(maxSection(A).getByRole("button", { name: st.newMaxChat })).toBeVisible();
+  await ui(maxSection(A).getByRole("button", { name: m.maxNewChat })).toBeVisible();
   await openSettings(A, "en", t.section);
   await settings(A).getByRole("button", { name: t.turnOn }).click();
   await settings(A).getByLabel(t.deviceName).fill("Laptop");
@@ -231,9 +258,16 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   await ui(settings(A).getByText(t.onDone).first()).toBeVisible();
   await closeSettings(A, "en");
   // The section is unlocked on A now; a chat made inside it is a Secure Max chat.
-  await maxSection(A).getByRole("button", { name: st.newMaxChat }).click();
+  await maxSection(A).getByRole("button", { name: m.maxNewChat }).click();
   await ui(A.getByText(st.captionMax)).toBeVisible();
   await ask(A, "en", "SYNTHETIC MAX QUESTION");
+  // A memory added while working in Secure Max is Secure Max's: the normal section never shows it.
+  await openSettings(A, "en", memoryText.en.title);
+  await settings(A).getByLabel(memoryText.en.addLabel).fill("SYNTHETIC MAX MEMORY");
+  await settings(A).getByRole("button", { name: memoryText.en.add }).click();
+  await ui(settings(A).getByText("SYNTHETIC MAX MEMORY", { exact: true })).toBeVisible();
+  expect(await settings(A).getByText("SYNTHETIC SECURE MEMORY", { exact: true }).count()).toBe(0);
+  await closeSettings(A, "en");
   // It is listed inside the section and nowhere else; the Secure chat is never inside the section.
   await ui(maxSection(A).getByText("SYNTHETIC MAX QUESTION")).toBeVisible();
   await ui((await navigation(A, "en")).filter({ hasText: "SYNTHETIC MAX QUESTION" })).toHaveCount(0);
@@ -249,11 +283,14 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   // A new device C: Secure is there at once; the Secure Max section is locked, without a title, until it is approved.
   const C = await device(s, account);
   await ui((await navigation(C, "en")).filter({ hasText: "SYNTHETIC SECURE QUESTION" })).toBeVisible();
-  await ui(maxSection(C).getByText(st.maxLocked)).toBeVisible();
-  await ui(C.getByText("SYNTHETIC MAX QUESTION")).toHaveCount(0);
   await ui(C.getByRole("dialog")).toHaveCount(0); // nothing is asked at sign-in
+  await ui(C.getByRole("button", { name: m.maxLocked })).toBeVisible(); // the entry says it is locked
+  expect(await memories(C)).not.toContain("SYNTHETIC MAX MEMORY");
+  await openMax(C);
+  await ui(maxSection(C).getByText(m.maxIsLocked)).toBeVisible();
+  await ui(C.getByText("SYNTHETIC MAX QUESTION")).toHaveCount(0);
   await noSidewaysScroll(C);
-  await maxSection(C).getByRole("button", { name: st.unlockMax }).click();
+  await maxSection(C).getByRole("button", { name: m.maxUnlock }).click();
   const welcome = C.getByRole("dialog", { name: t.newHeading });
   await welcome.getByRole("button", { name: t.approveFromOther }).click();
   const code = ((await welcome.locator(".pairing-code [aria-hidden]").textContent()) ?? "").replace(/[\s-]/g, "");
@@ -266,10 +303,34 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   await prompt.getByRole("button", { name: t.approve }).click();
   await ui(welcome).toHaveCount(0, { timeout: 25_000 });
   await ui(maxSection(C).getByText("SYNTHETIC MAX QUESTION")).toBeVisible({ timeout: 25_000 });
-  await ui(maxSection(C).getByText(st.maxLocked)).toHaveCount(0);
+  await ui(maxSection(C).getByText(m.maxIsLocked)).toHaveCount(0);
   await ui(maxSection(C).getByText("SYNTHETIC SECURE QUESTION")).toHaveCount(0);
   await ui((await navigation(C, "en")).filter({ hasText: "SYNTHETIC MAX QUESTION" })).toHaveCount(0);
-  for (const page of [A, C]) await page.context().close();
+  await C.context().close();
+
+  // Lock now on A: the Secure Max titles and the open Secure Max chat go; what is typed next is saved nowhere.
+  await maxSection(A).getByRole("button", { name: m.maxLockNow }).click();
+  await ui(maxSection(A).getByText(m.maxIsLocked)).toBeVisible();
+  await ui(A.getByText("SYNTHETIC MAX QUESTION")).toHaveCount(0);
+  const before = { secure: (await s.stores.secure.usage(account)).cursor, sync: (await s.stores.sync.usage(account)).cursor };
+  await ui(A.getByText(st.captionMaxLocked)).toBeVisible();
+  await ask(A, "en", "TYPED WHILE LOCKED");
+  await focus(A);
+  await A.waitForTimeout(1500);
+  expect({ secure: (await s.stores.secure.usage(account)).cursor, sync: (await s.stores.sync.usage(account)).cursor }).toEqual(before);
+  await ui((await navigation(A, "en")).filter({ hasText: "TYPED WHILE LOCKED" })).toHaveCount(0);
+  // Unlocking again on the same device (remembered for sync here) brings the chat back inside the section.
+  await maxSection(A).getByRole("button", { name: m.maxUnlock }).click();
+  await A.getByRole("button", { name: vaultUnlockText.en.openRemembered }).click();
+  await ui(maxSection(A).getByText("SYNTHETIC MAX QUESTION")).toBeVisible();
+  // Back in the normal section (New chat), Settings shows Secure's memory, never Secure Max's.
+  await navigation(A, "en");
+  await A.locator("button.new-chat:not(.new-incognito)").click();
+  await ui(maxSection(A)).toHaveCount(0);
+  const normal = await memories(A);
+  expect(normal).toContain("SYNTHETIC SECURE MEMORY");
+  expect(normal).not.toContain("SYNTHETIC MAX MEMORY");
+  await A.context().close();
 }, 300_000);
 
 it("375 px, German: the Secure wiring fits a phone", async () => {
@@ -280,8 +341,10 @@ it("375 px, German: the Secure wiring fits a phone", async () => {
   await noSidewaysScroll(page);
   await ask(page, "de", "SYNTHETISCHE FRAGE");
   await ui((await navigation(page, "de")).filter({ hasText: "SYNTHETISCHE FRAGE" })).toBeVisible();
-  // The Secure Max section: there, locked, with its unlock button.
-  await ui(maxSection(page).getByRole("button", { name: secureStoreText.de.unlockMax })).toBeVisible();
+  // The Secure Max section: one entry, then (after the explanation) the locked section with its unlock button.
+  await ui(page.getByRole("button", { name: modesText.de.maxLocked })).toBeVisible();
+  await openMax(page, "de");
+  await ui(page.getByRole("region", { name: modesText.de.maxLabel }).getByRole("button", { name: modesText.de.maxUnlock })).toBeVisible();
   await noSidewaysScroll(page);
   await page.keyboard.press("Escape");
   await openSettings(page, "de", appText.de.sectionPrivacy);
@@ -296,6 +359,7 @@ it("768 px, English, the switch absent: no Secure request, no Secure database, t
   const page = await device(s, account, "en", 768);
   await ui(page.getByText(appText.en.captionTemporary)).toBeVisible();
   await ui(maxSection(page)).toHaveCount(0);
+  await ui(page.locator(".secure-max-entry")).toHaveCount(0);
   await ask(page, "en", "SYNTHETIC QUESTION WITHOUT SECURE");
   // Not saved by itself: the old explicit save is the only way.
   await menuItem(page, appText.en.renameSave);

@@ -498,8 +498,9 @@ export function WorkspaceNavigation(props: {
       onKeyDown={containDialogFocus}
       className="navigation-drawer"
       aria-label={t.navigation}
-      onCancel={onClose}
-      onClose={onClose}
+      // Only the drawer's own events: React passes a nested dialog's close and cancel (the Secure Max explanation) up the tree.
+      onCancel={(event) => event.target === event.currentTarget && onClose()}
+      onClose={(event) => event.target === event.currentTarget && onClose()}
     >
       {body}
     </dialog>
