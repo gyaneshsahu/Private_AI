@@ -13,11 +13,16 @@ export type Storage = "local" | "secure" | "max";
  */
 export function forStorage<T extends object>(text: T, storage: Storage = "local"): T {
   if (storage === "local") return text;
+  // One object per block and mode, so a render gets the same `t` every time.
+  const kept = cache.get(text)?.[storage];
+  if (kept) return kept as T;
   const suffix = `_${storage}`;
   const out: Record<string, unknown> = { ...(text as Record<string, unknown>) };
   for (const [key, value] of Object.entries(text)) if (key.endsWith(suffix)) out[key.slice(0, -suffix.length)] = value;
+  cache.set(text, { ...cache.get(text), [storage]: out });
   return out as T;
 }
+const cache = new WeakMap<object, Partial<Record<Storage, object>>>();
 
 /**
  * Per-mode replacements for texts in files this change did not own (src/text/app.ts,

@@ -38,7 +38,8 @@ Alternative (shorter, the approved one-liner from product-modes section 4): "Sav
 1. The privacy summary for Secure: the longer sentence above, or the one-liner [the longer sentence: it keeps the masking and secure-server facts].
 2. Secure memory intro says "They are never used to train AI or for advertising." Confirm this is a promise we keep for all stored content [yes, it is a red line in both modes].
 3. Account export text for Secure says saved items are listed by number, size and time without content. Check against the Secure export (FE-03) once built [recheck then].
-4. Footer: "No advertising. No training on your data." instead of "Built for a bounded evaluation." [yes].
+4. The background-task consent (`scheduledText.consentBody`, unchanged) says the answer waits on our server "until CometRow saves it on your device" and is then deleted from our server. In Secure the saved copy is on our server too. It is a consent text, so it was not rewritten here [the lawyer adds one Secure sentence, for example: "In Secure, the saved answer is then kept with your account like any chat."].
+5. Footer: "No advertising. No training on your data." instead of "Built for a bounded evaluation." [yes].
 ## The texts, screen by screen
 
 ### Memory (src/text/memory.ts, MemorySettings, RememberDialog, MemoryNote)
@@ -229,9 +230,9 @@ Alternative (shorter, the approved one-liner from product-modes section 4): "Sav
 
 - Today (device vault, stays for "local"): “Title” will be deleted from this device, with all its branches. This cannot be undone.
 - Secure EN: “Title” will be deleted with all its branches, on all your devices. This cannot be undone.
-- Secure DE: “Title” wird mit allen Zweigen auf allen Ihren Geräten gelöscht. Das lässt sich nicht rückgängig machen.
+- Secure DE: „Titel“ wird mit allen Zweigen auf allen Ihren Geräten gelöscht. Das lässt sich nicht rückgängig machen.
 - Secure Max EN: “Title” will be deleted with all its branches, on all your devices. This cannot be undone.
-- Secure Max DE: “Title” wird mit allen Zweigen auf allen Ihren Geräten gelöscht. Das lässt sich nicht rückgängig machen.
+- Secure Max DE: „Titel“ wird mit allen Zweigen auf allen Ihren Geräten gelöscht. Das lässt sich nicht rückgängig machen.
 
 ### Devices and sync (src/text/sync.ts, SyncSettings, SyncSetup)
 

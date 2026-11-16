@@ -75,7 +75,7 @@ const BANNED_IN_SECURE =
 // Keys checked by hand, with the reason they are true or not shown with Secure on.
 const EXEMPT_IN_SECURE: Record<string, string> = {
   "projectText.locked": "not rendered anywhere",
-  "scheduledText.consentBody": "end to end means the way to the AI, the same in both modes",
+  "scheduledText.consentBody": "end to end means the way to the AI; the Secure storage sentence is an owner question in docs/secure-copy-draft-20261116.md",
 };
 /** Every text a block shows in one mode, functions called with sample arguments. */
 function shown(block: Block, storage: Storage) {
