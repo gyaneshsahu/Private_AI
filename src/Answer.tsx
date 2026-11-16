@@ -116,7 +116,7 @@ export function Answer({
             ) : (
               <span>
                 {children}
-                {href && !href.startsWith("#source-") && children !== href
+                {href && !href.startsWith("#source-") && children !== href && `mailto:${children}` !== href
                   ? ` (${href})`
                   : ""}
               </span>
