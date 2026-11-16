@@ -90,7 +90,7 @@ async function site(o: { secure: boolean; sync: boolean }) {
     if (path.startsWith("/api/sync")) counts.sync++;
     if (path.startsWith("/api/") || path.startsWith("/auth")) {
       const account = /(?:^|;\s*)test-account=([a-f0-9-]{36})/.exec(req.headers.cookie ?? "")?.[1];
-      (res as unknown as { locals: object }).locals = account ? { accountId: account, accessEpoch: "synthetic" } : {};
+      (res as unknown as { locals: object }).locals = account ? { accountId: account, accessEpoch: "synthetic", signedInAt: Date.now() } : {};
       return app(req, res);
     }
     vite.middlewares(req, res);
@@ -330,6 +330,20 @@ it("1280 px, English: a chat saves by itself, a second device has everything aft
   const normal = await memories(A);
   expect(normal).toContain("SYNTHETIC SECURE MEMORY");
   expect(normal).not.toContain("SYNTHETIC MAX MEMORY");
+  // Reset Secure Max (a recent sign-in, the typed phrase): the synced copy on the server and this device's Secure Max data go; Secure stays.
+  expect(await s.stores.sync.proofs(account)).toBeDefined();
+  await openSettings(A, "en", t.section);
+  await settings(A).getByRole("button", { name: m.maxResetLabel }).click();
+  const confirm = A.getByRole("dialog", { name: m.maxResetLabel });
+  await confirm.getByLabel(m.maxResetTypeLabel(m.maxResetPhrase)).fill(m.maxResetPhrase);
+  await confirm.getByRole("button", { name: m.maxResetLabel }).click();
+  await expect.poll(async () => s.stores.sync.proofs(account), { timeout: 20_000 }).toBeUndefined();
+  await closeSettings(A, "en");
+  await ui(A.locator(".secure-max-entry")).toHaveAttribute("aria-label", m.maxLocked);
+  // The Secure chat is still there (the list was filtered to the new project since it was created).
+  await navigation(A, "en");
+  await A.locator("aside").getByRole("button", { name: w.recent, exact: true }).click();
+  await ui((await navigation(A, "en")).filter({ hasText: "SYNTHETIC SECURE QUESTION" })).toBeVisible();
   await A.context().close();
 }, 300_000);
 
@@ -349,6 +363,11 @@ it("375 px, German: the Secure wiring fits a phone", async () => {
   await page.keyboard.press("Escape");
   await openSettings(page, "de", appText.de.sectionPrivacy);
   await ui(settings(page).getByText(modesText.de.secureLong)).toBeVisible();
+  await noSidewaysScroll(page);
+  // Settings for Secure Max: Open in Secure Max; Reset only where Secure Max is unlocked (not here).
+  await settings(page).getByRole("button", { name: syncText.de.section, exact: true }).click();
+  await ui(settings(page).getByRole("switch", { name: modesText.de.maxStartLabel })).toBeVisible();
+  await ui(settings(page).getByRole("button", { name: modesText.de.maxResetLabel })).toHaveCount(0);
   await noSidewaysScroll(page);
   await page.context().close();
 }, 180_000);

@@ -2471,8 +2471,9 @@ export function App() {
               <>
                 <h3>{modesText[lang].maxLabel}</h3>
                 <SecureMaxStartSetting value={startInMax} onChange={setStartInMax} />
-                {/* recentSignIn is a screen gate only; the reset itself needs this unlocked Secure Max (the sync reset proof). */}
-                <SecureMaxResetSetting onReset={resetMax} recentSignIn={recentSignIn()} />
+                {/* Only while unlocked here: the reset needs this device's proof (locked: Forgot passphrase with the recovery key).
+                    recentSignIn is a screen gate only. */}
+                {unlocked && <SecureMaxResetSetting onReset={resetMax} recentSignIn={recentSignIn()} />}
               </>
             )}
           </section>
