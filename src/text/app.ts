@@ -262,6 +262,7 @@ export const appText = defineText({
     answerThinking: "Answer again with Thinking",
     captionVault: "Local vault unlocked · Save explicitly to keep changes",
     captionTemporary: "Temporary chat · Not saved",
+    captionIncognito: "Incognito chat · Not saved",
     captionAi: "· Answers come from an AI, not a person · Check important answers.",
 
     // Included context dialog
@@ -379,8 +380,7 @@ export const appText = defineText({
     unreadable: (n: number) =>
       `${n} saved ${n === 1 ? "snapshot could" : "snapshots could"} not be read. Unreadable records remain stored unchanged. Other snapshots are available. Do not clear this browser's storage if you want to preserve them.`,
     noSaved: "No saved conversations yet. Saving is always your choice.",
-    footer: "Personal help. Sharing under your control.",
-    footerNote: "Built for a bounded evaluation.",
+    footerNote: "No advertising. No training on your data.",
 
     // Source dialog
     closeSource: "Close source",
@@ -651,6 +651,7 @@ export const appText = defineText({
     captionVault:
       "Lokaler Tresor entsperrt · Speichern Sie ausdrücklich, um Änderungen zu behalten",
     captionTemporary: "Vorübergehender Chat · Nicht gespeichert",
+    captionIncognito: "Inkognito-Chat · Nicht gespeichert",
     captionAi:
       "· Antworten stammen von einer KI, nicht von einem Menschen · Prüfen Sie wichtige Antworten.",
 
@@ -765,8 +766,7 @@ export const appText = defineText({
       `${n} ${n === 1 ? "Speicherstand konnte" : "Speicherstände konnten"} nicht gelesen werden. Unlesbare Einträge bleiben unverändert gespeichert. Andere Speicherstände sind verfügbar. Leeren Sie den Speicher dieses Browsers nicht, wenn Sie sie erhalten möchten.`,
     noSaved:
       "Noch keine gespeicherten Unterhaltungen. Ob Sie speichern, entscheiden immer Sie.",
-    footer: "Persönliche Hilfe. Teilen unter Ihrer Kontrolle.",
-    footerNote: "Gebaut für eine begrenzte Erprobung.",
+    footerNote: "Keine Werbung. Kein Training mit Ihren Daten.",
 
     closeSource: "Quelle schließen",
     sourceUrl: "Quelladresse:",

@@ -3501,7 +3501,9 @@ export function App() {
                 </ul>
               )}
               <p className="composer-caption">
-                {secureOn && !conversation.incognito
+                {conversation.incognito
+                  ? t.captionIncognito
+                  : secureOn
                   ? mode === "secure"
                     ? secureReady
                       ? st.captionSecure
@@ -4213,7 +4215,6 @@ export function App() {
         )}
         {tab !== "Conversation" && (
           <footer>
-            {t.footer}
             <span>{tm(mode).footerNote}</span>
           </footer>
         )}
