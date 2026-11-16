@@ -42,8 +42,11 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
             return consumeResearchReply(events(), {inputPerMillion:1,outputPerMillion:1,currency:'USD'}, signal,
               [{id:'notice-001',title:'Synthetic notice',text:'Collection is scheduled for June 19.'}], chunk);
           }
-          if (window.fixtureMode === 'http-unavailable' || window.fixtureMode === 'http-limited') {
-            const response = new Response('PRIVATE_PROVIDER_BODY', {status:window.fixtureMode==='http-limited'?429:503});
+          if (window.fixtureMode === 'http-unavailable' || window.fixtureMode === 'http-limited' || window.fixtureMode === 'http-capacity') {
+            // http-capacity: what the relay sends when the provider refuses for a spend cap or rate limit.
+            const response = window.fixtureMode === 'http-capacity'
+              ? new Response('PRIVATE_PROVIDER_BODY', {status:502, headers:{'X-PrivateAI-Upstream':'capacity'}})
+              : new Response('PRIVATE_PROVIDER_BODY', {status:window.fixtureMode==='http-limited'?429:503});
             return consumeReply(completionEvents(response, signal), {currency:'USD',inputPerMillion:1,outputPerMillion:1}, signal, chunk);
           }
           if (window.fixtureMode === 'timeout') throw new DOMException('PRIVATE_PROVIDER_DETAIL', 'TimeoutError');
@@ -508,7 +511,7 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
         () => (window as unknown as FixtureWindow).fixtureCalls.length,
       ),
     ).toBe(callsBeforeLimit + 2);
-    for (const mode of ["http-unavailable", "http-limited"]) {
+    for (const mode of ["http-unavailable", "http-limited", "http-capacity"]) {
       const before = await page.evaluate(
         () => (window as unknown as FixtureWindow).fixtureCalls.length,
       );
@@ -522,7 +525,9 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       await page.getByRole("button", { name: "Send message", exact: true }).click();
       // CC-06: why it failed is the message's own sentence (announced once, not shown twice).
       const why =
-        mode === "http-limited"
+        mode === "http-capacity"
+          ? "CometRow has reached its capacity for now. Please try again later."
+          : mode === "http-limited"
           ? "The service is busy right now. Try again in a minute."
           : "The service is not available right now. Try again in a minute.";
       await ui(page.locator("article.assistant").last().locator(".failure-note")).toContainText(why);
