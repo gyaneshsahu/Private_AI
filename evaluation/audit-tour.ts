@@ -34,19 +34,21 @@ export interface Entry {
 }
 
 /** English label -> German label, from every src/text module and the health consent text. */
-async function dictionary(): Promise<Map<string, string>> {
-  const map = new Map<string, string>();
+export async function dictionary(): Promise<Map<string, string[]>> {
+  // An English label can have several German texts in different modules: keep them all.
+  const map = new Map<string, string[]>();
+  const add = (en: string, de: string) => map.set(en, [...new Set([...(map.get(en) ?? []), de])]);
   const files = readdirSync("src/text").filter((f) => f.endsWith(".ts")).map((f) => `src/text/${f}`);
   // The health consent keeps its two languages in two exports.
   const { HEALTH_CONSENT, HEALTH_CONSENT_DE } = await import("../shared/health-consent");
-  for (const key of ["title", "accept", "decline"] as const) map.set(HEALTH_CONSENT[key], HEALTH_CONSENT_DE[key]);
+  for (const key of ["title", "accept", "decline"] as const) add(HEALTH_CONSENT[key], HEALTH_CONSENT_DE[key]);
   for (const file of files) {
     const module = (await import(pathToFileURL(resolve(file)).href)) as Record<string, unknown>;
     for (const value of Object.values(module)) {
       const v = value as { en?: Record<string, unknown>; de?: Record<string, unknown> } | null;
       if (!v || typeof v !== "object" || typeof v.en !== "object" || typeof v.de !== "object") continue;
       for (const [key, en] of Object.entries(v.en!))
-        if (typeof en === "string" && typeof v.de![key] === "string" && !map.has(en)) map.set(en, v.de![key] as string);
+        if (typeof en === "string" && typeof v.de![key] === "string") add(en, v.de![key] as string);
     }
   }
   return map;
@@ -74,7 +76,10 @@ interface Ctx {
   config: AuditConfig;
   lang: Lang;
   width: number;
-  tr: (en: string) => string;
+  /** The label in the page's language: a string, or an exact-match pattern when German has several texts. */
+  tr: (en: string) => string | RegExp;
+  /** Every text the label may have in the page's language. */
+  alts: (en: string) => string[];
   /** The language the page really shows ("en" when the build has no German). */
   germanOff: () => boolean;
   click: (name: string, role?: "button" | "link" | "checkbox" | "tab" | "menuitem") => Promise<void>;
@@ -170,7 +175,7 @@ const STEPS: Step[] = [
     await c.click("Copy answer");
     await pause(c.page, 300);
     await c.shot("message-copied");
-    await vis(c.page.getByRole("button", { name: new RegExp("^" + c.tr("Retry last response")) })).click();
+    await vis(c.page.getByRole("button", { name: new RegExp(`^(${c.alts("Retry last response").join("|")})`) })).click();
     c.clicked.push("Retry last response");
     await pause(c.page, 2000);
     await c.shot("message-retried-versions");
@@ -182,7 +187,7 @@ const STEPS: Step[] = [
   ["answer-again-thinking", async (c) => {
     await c.fresh();
     await c.send("Quick one. audit:plain", undefined, true);
-    await vis(c.page.getByRole("button", { name: new RegExp("^" + c.tr("Answer again with Thinking")) })).click();
+    await vis(c.page.getByRole("button", { name: new RegExp(`^(${c.alts("Answer again with Thinking").join("|")})`) })).click();
     await pause(c.page, 2000);
     await c.shot("answer-again-thinking");
   }],
@@ -359,7 +364,7 @@ const STEPS: Step[] = [
     await c.click("Scheduled");
     await pause(c.page, 800);
     await c.shot("scheduled");
-    await vis(c.page.getByRole("button", { name: new RegExp(c.tr("New task") + "$") })).click();
+    await vis(c.page.getByRole("button", { name: new RegExp(`(${c.alts("New task").join("|")})$`) })).click();
     c.clicked.push("New task");
     await pause(c.page, 600);
     await c.shot("scheduled-new-task");
@@ -569,9 +574,14 @@ export async function runTour(o: {
           let n = 0;
           let germanOff = false;
           // A build without German shows English: then the English labels are the right ones.
-          const tr = (en: string) => (lang !== "de" || germanOff ? en : (de.has(en) || missing.add(en), de.get(en) ?? en));
+          const alts = (en: string) => (lang !== "de" || germanOff ? [en] : (de.has(en) || missing.add(en), de.get(en) ?? [en]));
+          const escape = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          const tr = (en: string) => {
+            const all = alts(en);
+            return all.length === 1 ? all[0] : new RegExp(`^(${all.map(escape).join("|")})$`);
+          };
           const c: Ctx = {
-            page, context, browser, fakes, origin: o.origin, config: o.config, lang, width, tr, clicked: [],
+            page, context, browser, fakes, origin: o.origin, config: o.config, lang, width, tr, alts, clicked: [],
             germanOff: () => germanOff,
             async click(name, role = "button") {
               await vis(c.page.getByRole(role, { name: tr(name), exact: true })).click();
