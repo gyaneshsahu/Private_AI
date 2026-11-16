@@ -72,7 +72,7 @@ export const supportGuidance: Record<SupportArea, readonly string[]> = {
   ],
   documents: [
     "Review extracted text and correct mistakes before sending it. Importing a file does not send it to the model.",
-    "Supported formats and limits are shown in Context. Try a small synthetic file to reproduce an import problem; do not attach your original document to a report.",
+    "Supported formats and limits are shown in Context. To show an import problem, try a small file without private content; do not attach your original document to a report.",
   ],
   saved: [
     "Do not clear browser storage while investigating missing saved work. Temporary drafts are not saved snapshots; save explicitly before leaving when saving is available.",
@@ -84,14 +84,14 @@ export const supportGuidance: Record<SupportArea, readonly string[]> = {
   ],
   billing: [
     "A request allowance counts attempts, not guaranteed completed answers or a monetary balance. Interrupted requests may remain counted.",
-    "For a pending or uncertain payment, do not repeatedly retry checkout. Review account status and ask the evaluation coordinator to investigate. Do not send card details.",
+    "For a pending or uncertain payment, do not repeatedly retry checkout. Review your account status and ask support to look into it. Do not send card details.",
   ],
   accessibility: [
-    "Describe the control and task using a synthetic example. If useful, voluntarily tell the coordinator your browser, screen reader and device; this note does not collect them.",
+    "Describe the control and the task with an example that has no private details. If it helps, you can tell support your browser, screen reader and device; this note does not collect them.",
     "Changing workspace sections preserves your draft. Locking the vault clears unsaved work; review the warning before confirming.",
   ],
   privacy: [
     "Stop the affected action if you suspect unintended disclosure. Do not send the exposed content, keys or tokens in a report.",
-    "Tell the evaluation coordinator which action occurred and approximately when, without private content. Locking does not erase content already copied to your clipboard or downloaded.",
+    "Tell support which action happened and roughly when, without private content. Locking does not erase content already copied to your clipboard or downloaded.",
   ],
 };

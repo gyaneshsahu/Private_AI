@@ -35,7 +35,7 @@ export const supportGuidanceDe = {
   ],
   documents: [
     "Prüfen Sie den extrahierten Text und korrigieren Sie Fehler, bevor Sie ihn senden. Das Importieren einer Datei sendet sie nicht an das Modell.",
-    "Unterstützte Formate und Grenzen sehen Sie unter „Kontext“. Versuchen Sie, ein Importproblem mit einer kleinen synthetischen Datei nachzustellen; hängen Sie Ihr Originaldokument nicht an eine Meldung an.",
+    "Unterstützte Formate und Grenzen sehen Sie unter „Kontext“. Versuchen Sie, ein Importproblem mit einer kleinen Datei ohne private Inhalte nachzustellen; hängen Sie Ihr Originaldokument nicht an eine Meldung an.",
   ],
   saved: [
     "Löschen Sie den Browserspeicher nicht, während Sie fehlende gespeicherte Arbeit untersuchen. Vorübergehende Entwürfe sind keine gespeicherten Stände; speichern Sie ausdrücklich, bevor Sie gehen, wenn Speichern verfügbar ist.",
@@ -47,15 +47,15 @@ export const supportGuidanceDe = {
   ],
   billing: [
     "Ein Kontingent zählt Versuche, nicht garantiert fertige Antworten und kein Guthaben in Geld. Abgebrochene Anfragen können gezählt bleiben.",
-    "Bei einer ausstehenden oder unsicheren Zahlung wiederholen Sie den Bezahlvorgang nicht mehrfach. Prüfen Sie den Kontostatus und bitten Sie die Koordination der Erprobung, es zu prüfen. Senden Sie keine Kartendaten.",
+    "Bei einer ausstehenden oder unsicheren Zahlung wiederholen Sie den Bezahlvorgang nicht mehrfach. Prüfen Sie den Kontostatus und bitten Sie den Support, es zu prüfen. Senden Sie keine Kartendaten.",
   ],
   accessibility: [
-    "Beschreiben Sie das Bedienelement und die Aufgabe mit einem synthetischen Beispiel. Wenn es hilft, können Sie der Koordination freiwillig Browser, Screenreader und Gerät nennen; diese Notiz erfasst sie nicht.",
+    "Beschreiben Sie das Bedienelement und die Aufgabe mit einem Beispiel ohne private Angaben. Wenn es hilft, können Sie dem Support freiwillig Browser, Screenreader und Gerät nennen; diese Notiz erfasst sie nicht.",
     "Ein Wechsel zwischen Bereichen des Arbeitsbereichs behält Ihren Entwurf. Das Sperren des Tresors verwirft nicht gespeicherte Arbeit; lesen Sie die Warnung, bevor Sie bestätigen.",
   ],
   privacy: [
     "Brechen Sie die betroffene Aktion ab, wenn Sie eine ungewollte Offenlegung vermuten. Senden Sie den offengelegten Inhalt, Schlüssel oder Tokens nicht in einer Meldung.",
-    "Teilen Sie der Koordination der Erprobung ohne private Inhalte mit, welche Aktion wann ungefähr stattfand. Das Sperren löscht keine Inhalte, die Sie bereits in die Zwischenablage kopiert oder heruntergeladen haben.",
+    "Teilen Sie dem Support ohne private Inhalte mit, welche Aktion wann ungefähr stattfand. Das Sperren löscht keine Inhalte, die Sie bereits in die Zwischenablage kopiert oder heruntergeladen haben.",
   ],
 } satisfies Record<SupportArea, readonly string[]>;
 
@@ -63,7 +63,7 @@ export const supportText = defineText({
   en: {
     notSelected: "Not selected",
     note: (area: string, symptom: string) =>
-      `CometRow support note (format 1)\nArea: ${area}\nProblem: ${symptom}\n\nThis note contains selected categories only. No conversation, source, document, account identifier, credential or device details are attached. It has not been submitted.\n\nWhen contacting the evaluation coordinator, describe the steps using a synthetic example. Do not include passwords, verification codes, payment details, private transcripts or temporary search content.`,
+      `CometRow support note\nArea: ${area}\nProblem: ${symptom}\n\nThis note contains selected categories only. No conversation, source, document, account identifier, credential or device details are attached. It has not been submitted.\n\nWhen you contact support, describe the steps without private details. Do not include passwords, verification codes, payment details, private transcripts or temporary search content.`,
     heading: "Help and problem reporting",
     intro:
       "Find a recovery step or prepare a note to share. Nothing here sends a report or attaches your workspace.",
@@ -76,13 +76,14 @@ export const supportText = defineText({
     copyFailed:
       "Copy was unavailable. Select the note above and copy it manually. Nothing was submitted.",
     copy: "Copy support note",
-    contact:
-      "A staffed support contact and response times have not been published. During this restricted evaluation, share the reviewed note with the person coordinating your access. This is not an emergency or monitored reporting service.",
+    contact: "Contact support:",
+    contactHow: "Paste the copied note into your email. This is not an emergency service.",
+    links: "Guides and policies",
   },
   de: {
     notSelected: "Nicht ausgewählt",
     note: (area: string, symptom: string) =>
-      `CometRow Support-Notiz (Format 1)\nBereich: ${area}\nProblem: ${symptom}\n\nDiese Notiz enthält nur die ausgewählten Kategorien. Es sind keine Unterhaltung, Quelle, kein Dokument, keine Kontokennung, keine Anmeldedaten und keine Geräteangaben angehängt. Sie wurde nicht übermittelt.\n\nWenn Sie sich an die Koordination der Erprobung wenden, beschreiben Sie die Schritte mit einem synthetischen Beispiel. Geben Sie keine Passwörter, Bestätigungscodes, Zahlungsdaten, privaten Verläufe oder vorübergehenden Suchinhalte an.`,
+      `CometRow Support-Notiz\nBereich: ${area}\nProblem: ${symptom}\n\nDiese Notiz enthält nur die ausgewählten Kategorien. Es sind keine Unterhaltung, Quelle, kein Dokument, keine Kontokennung, keine Anmeldedaten und keine Geräteangaben angehängt. Sie wurde nicht übermittelt.\n\nWenn Sie sich an den Support wenden, beschreiben Sie die Schritte ohne private Angaben. Geben Sie keine Passwörter, Bestätigungscodes, Zahlungsdaten, privaten Verläufe oder vorübergehenden Suchinhalte an.`,
     heading: "Hilfe und Problemmeldung",
     intro:
       "Finden Sie einen Schritt zur Behebung oder bereiten Sie eine Notiz zum Teilen vor. Hier wird keine Meldung gesendet und Ihr Arbeitsbereich nicht angehängt.",
@@ -95,7 +96,8 @@ export const supportText = defineText({
     copyFailed:
       "Kopieren war nicht möglich. Markieren Sie die Notiz oben und kopieren Sie sie von Hand. Es wurde nichts übermittelt.",
     copy: "Support-Notiz kopieren",
-    contact:
-      "Ein besetzter Support-Kontakt und Antwortzeiten wurden noch nicht veröffentlicht. Teilen Sie die geprüfte Notiz während dieser eingeschränkten Erprobung mit der Person, die Ihren Zugang koordiniert. Dies ist kein Notruf und kein überwachter Meldedienst.",
+    contact: "Support kontaktieren:",
+    contactHow: "Fügen Sie die kopierte Notiz in Ihre E-Mail ein. Dies ist kein Notruf.",
+    links: "Anleitungen und Rechtliches",
   },
 });
