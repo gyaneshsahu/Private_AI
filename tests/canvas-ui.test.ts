@@ -232,6 +232,24 @@ for (const width of [375, 768, 1280])
         await asked.getByRole("button", { name: q.cancel }).click();
         await ui(page.getByRole("button", { name: t.edit, exact: true })).toBeVisible();
         await ui(page.getByLabel(t.textLabel)).toHaveCount(0); // a table opens in the table view
+        // Remove asks in the app's dialog (no window.confirm): Cancel keeps the canvas, Remove deletes it.
+        await panel.getByRole("button", { name: t.remove, exact: true }).click();
+        const removal = page.getByRole("dialog", { name: t.remove });
+        await ui(removal).toContainText(t.removeConfirm);
+        await ui(removal.getByRole("button", { name: q.cancel })).toBeFocused();
+        for (const button of await removal.getByRole("button").all())
+          expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(width < 760 ? 44 : 24);
+        await removal.getByRole("button", { name: q.cancel }).click();
+        await ui(removal).toHaveCount(0);
+        await ui(panel).toBeVisible();
+        await panel.getByRole("button", { name: t.remove, exact: true }).click();
+        await page.getByRole("dialog", { name: t.remove }).getByRole("button", { name: q.remove, exact: true }).click();
+        await ui(panel).toHaveCount(0);
+        await ui(page.getByLabel(a.messageInput)).toBeFocused();
+        // Gone: opening from an answer again asks nothing (there is no canvas to replace).
+        await page.getByRole("button", { name: t.open }).first().click();
+        await ui(page.getByRole("dialog", { name: q.canvasTitle })).toHaveCount(0);
+        await ui(panel).toBeVisible();
         await page.getByRole("button", { name: overlay ? `← ${t.back}` : t.close }).click();
         await ui(panel).toHaveCount(0);
         expect(outside).toEqual([]);

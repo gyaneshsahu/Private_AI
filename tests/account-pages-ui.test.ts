@@ -9,7 +9,10 @@ import { chromium, expect as ui, type Browser, type Page } from "@playwright/tes
 import { createServer, type ViteDevServer } from "vite";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { warmDevServer } from "./fixtures/dev-server-warmup";
-import { accountDeletionText, accountLabText, usageText } from "../src/text/account";
+import { accountAccessText, accountDeletionText, accountExportText, accountLabText, usageText } from "../src/text/account";
+import { accountConfirmText } from "../src/text/account-confirm";
+import { modeCopyText } from "../src/text/mode-copy";
+import { questionText } from "../src/text/questions";
 import { dataControlsText } from "../src/text/data-controls";
 import { sessionExpiryText } from "../src/text/session-expiry";
 
@@ -43,8 +46,10 @@ afterAll(async () => {
   await vite?.close();
 });
 
-type Options = { signedIn?: boolean; ready?: boolean; purgeDays?: number };
+type Options = { signedIn?: boolean; ready?: boolean; purgeDays?: number; secure?: boolean };
 const outside: string[] = [];
+/** Session sign-outs the page asked for. */
+const revoked: string[] = [];
 
 async function open(path: string, width: number, lang: "en" | "de", o: Options = {}) {
   const context = await browser.newContext({ locale: lang === "de" ? "de-DE" : "en-US", viewport: { width, height: 900 }, hasTouch: width < 760 });
@@ -76,7 +81,11 @@ async function open(path: string, width: number, lang: "en" | "de", o: Options =
           inference: { ready: o.ready ?? true, reason: "OFFLINE ONLY" },
           search: false,
           ...(o.purgeDays ? { accountPurge: { graceDays: o.purgeDays } } : {}),
+          ...(o.secure ? { secureStore: { quotaBytes: 1, filesQuotaBytes: 1 } } : {}),
         });
+      case "/api/account/access/revoke":
+        revoked.push(route.request().postDataJSON().id);
+        return route.fulfill({ status: 204 });
       case "/data-controls":
         return route.fulfill({
           contentType: "text/html",
@@ -239,6 +248,51 @@ it("a failed delete-all says so and keeps the chats", async () => {
     await page.context().close();
   }
 }, 60_000);
+
+for (const lang of LANGS)
+  for (const width of WIDTHS)
+    it(`${lang} at ${width} px: with Secure the page says chats are kept with the account; sign-out and removal ask in the app's dialog`, async () => {
+      const t = accountLabText[lang];
+      const a = accountAccessText[lang];
+      const q = questionText[lang];
+      const m = modeCopyText[lang];
+      const page = await open("/account", width, lang, { secure: true });
+      try {
+        await ui(page.getByText(m.introSession_secure)).toBeVisible();
+        await ui(page.getByText(t.introSession, { exact: true })).toHaveCount(0);
+        await ui(page.getByText(m.exportBody_secure)).toBeVisible();
+        await ui(page.getByText(accountExportText[lang].body, { exact: true })).toHaveCount(0);
+        // Sign out this session: the app's question, Cancel first and keeps it; the button gets the focus back.
+        const signOut = page.getByRole("button", { name: a.signOutThis, exact: true });
+        await signOut.click();
+        const dialog = page.getByRole("dialog", { name: a.confirmThis });
+        await ui(dialog).toContainText(accountConfirmText[lang].signOutText);
+        await ui(dialog.getByRole("button", { name: q.cancel })).toBeFocused();
+        for (const button of await dialog.getByRole("button").all())
+          expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(width < 760 ? 44 : 24);
+        const box = (await dialog.boundingBox())!;
+        expect(box.x).toBeGreaterThanOrEqual(0);
+        expect(box.x + box.width).toBeLessThanOrEqual(width);
+        await dialog.getByRole("button", { name: q.cancel }).click();
+        await ui(dialog).toHaveCount(0);
+        await ui(signOut).toBeFocused();
+        expect(revoked).toEqual([]);
+        // Remove a passkey: its own question; Escape keeps it.
+        await page.getByRole("button", { name: a.removeLabel(a.unnamedPasskey) }).click();
+        const remove = page.getByRole("dialog", { name: accountConfirmText[lang].removeTitle });
+        await ui(remove).toContainText(a.confirmRemove(a.unnamedPasskey));
+        await page.keyboard.press("Escape");
+        await ui(remove).toHaveCount(0);
+        // Confirm signs the session out (one request).
+        await signOut.click();
+        await page.getByRole("dialog", { name: a.confirmThis }).getByRole("button", { name: q.signOut }).click();
+        await expect.poll(() => revoked.length).toBe(1);
+        revoked.length = 0;
+        await noSidewaysScroll(page);
+      } finally {
+        await page.context().close();
+      }
+    }, 60_000);
 
 it("sent nothing outside this machine", () => {
   expect(outside).toEqual([]);
