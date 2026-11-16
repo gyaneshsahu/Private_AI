@@ -1,10 +1,24 @@
-import { textFor } from "./text/core";
+import { textFor, uiLang, type Lang } from "./text/core";
+import { messageActionsText } from "./text/message-actions";
 import { chatErrorText } from "./text/chat-errors";
 import type { Conversation, ConversationBranch } from "../shared/contracts";
 import { newMessage } from "./conversation";
 import { containsTemporaryResearch } from "./saved-conversation";
 
 export const MAX_BRANCHES = 20;
+
+/**
+ * Branch names are stored as language-neutral tokens, kind plus number ("Original", "Retry 2",
+ * "Edit 3"), the same strings older versions saved, so saved and synced chats need no migration.
+ * They are shown in the interface language; any other stored name is shown as it is.
+ */
+export function branchLabel(stored: string, lang: Lang = uiLang()): string {
+  const t = messageActionsText[lang];
+  if (stored === "Original") return t.branchOriginal;
+  const match = /^(Retry|Edit) (\d+)$/.exec(stored);
+  if (!match) return stored;
+  return (match[1] === "Retry" ? t.branchRetry : t.branchEdit)(Number(match[2]));
+}
 
 function snapshot(c: Conversation, draft: string): ConversationBranch {
   return structuredClone({
