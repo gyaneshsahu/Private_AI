@@ -31,10 +31,10 @@ export interface Entry {
 /** English label -> German label, from every src/text module and the health consent text. */
 async function dictionary(): Promise<Map<string, string>> {
   const map = new Map<string, string>();
-  const files = [
-    ...readdirSync("src/text").filter((f) => f.endsWith(".ts")).map((f) => `src/text/${f}`),
-    "shared/health-consent.ts",
-  ];
+  const files = readdirSync("src/text").filter((f) => f.endsWith(".ts")).map((f) => `src/text/${f}`);
+  // The health consent keeps its two languages in two exports.
+  const { HEALTH_CONSENT, HEALTH_CONSENT_DE } = await import("../shared/health-consent");
+  for (const key of ["title", "accept", "decline"] as const) map.set(HEALTH_CONSENT[key], HEALTH_CONSENT_DE[key]);
   for (const file of files) {
     const module = (await import(pathToFileURL(resolve(file)).href)) as Record<string, unknown>;
     for (const value of Object.values(module)) {
@@ -79,11 +79,6 @@ type Step = [screen: string, run: (c: Ctx) => Promise<void>, only?: AuditConfig]
 
 const vis = (l: Locator) => l.filter({ visible: true }).first();
 const pause = (page: Page, ms: number) => page.waitForTimeout(ms);
-/** A one-pixel PNG and a small PNG test pattern, a text file and a CSV: synthetic files only. */
-const PNG = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAJ0lEQVR4nGP8z4AKGBkYGP4zMDAwMDIyMjIwMPxnYGBg+M/AwMAAAJ8kBAHt4zN0AAAAAElFTkSuQmCC",
-  "base64",
-);
 
 /** The "···" conversation menu: a <summary> with an aria-label, not a button role. */
 async function conversationMenu(c: Ctx, item?: string) {
@@ -128,7 +123,11 @@ const STEPS: Step[] = [
     await pause(c.page, 800);
     await c.shot("first-send-consent");
     const agree = vis(c.page.getByRole("button", { name: c.tr("I agree"), exact: true }));
-    if (await agree.isVisible()) await agree.click();
+    if (await agree.isVisible()) {
+      const reached = await agree.click({ timeout: 3000 }).then(() => true, () => false);
+      if (!reached) await agree.dispatchEvent("click");
+      c.clicked.push(reached ? "I agree" : "I agree (NOT CLICKABLE: dispatched a click event)");
+    }
   }],
   ["answer-markdown", (c) => answer(c, "markdown")],
   ["answer-code", (c) => answer(c, "code")],
@@ -213,7 +212,17 @@ const STEPS: Step[] = [
     await c.click("Choose a picture");
     const chooser = c.page.waitForEvent("filechooser", { timeout: 5000 });
     await c.click("Choose photo");
-    await (await chooser).setFiles([{ name: "synthetic-pattern.png", mimeType: "image/png", buffer: PNG }]);
+    // A real PNG drawn in the page: a coloured square and printed synthetic text.
+    const png = await c.page.evaluate(() => {
+      const canvas = document.createElement("canvas");
+      [canvas.width, canvas.height] = [480, 300];
+      const g = canvas.getContext("2d")!;
+      g.fillStyle = "#fff"; g.fillRect(0, 0, 480, 300);
+      g.fillStyle = "#3366cc"; g.fillRect(40, 60, 160, 160);
+      g.fillStyle = "#000"; g.font = "28px sans-serif"; g.fillText("SYNTHETIC 12345", 220, 150);
+      return canvas.toDataURL("image/png").split(",")[1];
+    });
+    await (await chooser).setFiles([{ name: "synthetic-pattern.png", mimeType: "image/png", buffer: Buffer.from(png, "base64") }]);
     await pause(c.page, 1500);
     await c.shot("image-question-crop");
     // The steps after cropping; each only if the app shows it.
@@ -487,9 +496,13 @@ export async function runTour(o: {
   browsers: (readonly [string, BrowserType | undefined])[];
   widths: number[];
   langs: Lang[];
+  /** Run only these steps (names as in STEPS); all when absent. */
+  only?: string[];
 }) {
   const de = await dictionary();
   const entries: Entry[] = [];
+  /** Tour labels with no German text found (the German step then looks for the English label). */
+  const missing = new Set<string>();
   let hardFailures = 0;
   for (const [engineName, engine] of o.browsers) {
     if (!engine) throw Error(`Unknown browser ${engineName}`);
@@ -514,7 +527,7 @@ export async function runTour(o: {
           page.on("dialog", (d) => void d.dismiss().catch(() => {}));
           let n = 0;
           let germanOff = false;
-          const tr = (en: string) => (lang === "de" ? de.get(en) ?? en : en);
+          const tr = (en: string) => (lang === "de" && !de.has(en) && missing.add(en), lang === "de" ? de.get(en) ?? en : en);
           const c: Ctx = {
             page, context, browser, fakes, origin: o.origin, config: o.config, lang, width, tr, clicked: [],
             async click(name, role = "button") {
@@ -538,7 +551,12 @@ export async function runTour(o: {
               await c.label("Message CometRow").fill(text);
               await c.click("Send ↑");
               const agree = vis(c.page.getByRole("button", { name: tr("I agree"), exact: true }));
-              if (await agree.waitFor({ timeout: 700 }).then(() => true, () => false)) await agree.click(), c.clicked.push("I agree");
+              if (await agree.waitFor({ timeout: 1500 }).then(() => true, () => false)) {
+                // German at 375 px pushed this button out of reach (16 November): note it and go on.
+                const reached = await agree.click({ timeout: 3000 }).then(() => true, () => false);
+                if (!reached) await agree.dispatchEvent("click");
+                c.clicked.push(reached ? "I agree" : "I agree (NOT CLICKABLE: dispatched a click event)");
+              }
               if (!wait) return;
               await c.page.waitForFunction((n) => document.querySelectorAll("article.assistant").length > n, before, { timeout: 30000 });
               // Finished when the Stop button is gone (or after 30 s).
@@ -562,7 +580,7 @@ export async function runTour(o: {
             },
           };
           for (const [name, run, only] of STEPS) {
-            if (only && only !== o.config) continue;
+            if ((only && only !== o.config) || (o.only && !o.only.includes(name))) continue;
             const started = entries.length;
             try {
               await run(c);
@@ -581,5 +599,5 @@ export async function runTour(o: {
       await browser.close();
     }
   }
-  return { config: o.config, origin: o.origin, generated: new Date().toISOString(), hardFailures, entries };
+  return { config: o.config, origin: o.origin, generated: new Date().toISOString(), hardFailures, untranslatedLabels: [...missing], entries };
 }

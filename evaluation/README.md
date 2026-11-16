@@ -5,13 +5,13 @@
 `evaluation/audit-harness.ts` shows every screen of CometRow on this machine, with every feature on (or none), the AI's answers faked and nothing sent beyond localhost. It never builds into or serves `dist/`.
 
 ```
-npx tsx evaluation/audit-harness.ts [--config on|off] [--out <folder>] [--browsers chromium,firefox,webkit] [--widths 375,768,1280] [--lang en,de] [--serve]
+npx tsx evaluation/audit-harness.ts [--config on|off] [--out <folder>] [--browsers chromium,firefox,webkit] [--widths 375,768,1280] [--lang en,de] [--steps <name,...>] [--serve]
 ```
 
 - `--config on`: the client is built with every `VITE_*` switch set to "1" and the server has every development switch of `server/index.ts` on (voice, images, code, research, metering, vault sync with files, Secure, background tasks, health consent draft, provider disclosure draft, Goggles; `dev` mode). `--config off`: no switch, as production today. German exists only in the `on` build (`VITE_GERMAN_UI`); in `off` a German run shows English and each entry says `germanOff: true`.
 - The build goes to `.local/audit-build/<config>/`. The server is composed in-process (`createApp`) on a free port at `http://localhost:<port>`, with no keys and no provider report. A cookie `audit-account` signs in a synthetic account (`AUDIT_ACCOUNT`), the same test-only pattern as `tests/secure-store-e2e-ui.test.ts`.
 - Output (default `.local/audit/<config>/`, ignored by git): `<nn>-<screen>-<lang>-<width>-<browser>.png` and `index.json` (screen, URL, what was clicked, console errors, page errors, failed requests, requests to other hosts, page overflow, elements outside the viewport, a step's error). A request to any host other than localhost is aborted, recorded and makes the run exit 1. Browsers also run behind a dead proxy for every other host, so a missed route cannot reach the network.
-- Default: Chromium, 375, 768 and 1280 px, English and German. About 20 minutes per config in Chromium.
+- Default: Chromium, 375, 768 and 1280 px, English and German. About 35 minutes for `on` and 25 for `off` in Chromium. `--steps image-question,canvas` reruns only those steps (names in `STEPS`, `evaluation/audit-tour.ts`); give it its own `--out`, since numbering and `index.json` start again.
 
 **How the AI is faked.** Chat is attested and encrypted end to end in the browser, so a reply cannot be faked by route interception alone. The harness build replaces `src/inference.ts` with `evaluation/audit-inference.ts` (as the `*-ui` tests do with a Vite plugin). It asks the same origin for the answer (`POST /__audit/reply`) and runs it through the app's real stream parser (`completionEvents`, `consumeReply`), so errors, drops and stops show the app's own wording. Voice transcription in the harness build calls `/__audit/transcribe`. Everything else is route interception in `evaluation/audit-fakes.ts`: the status (the server's real answer, with chat ready and the provider-dependent fields added), search and deep research results, transcription. The app's source is unchanged.
 
