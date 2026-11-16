@@ -43,7 +43,9 @@ it("a German browser gets the German main screen at phone and desktop width; the
     await ui(page.getByText("ETWAS KLARHEIT, NACH IHREN REGELN")).toBeVisible();
     await ui(page.getByRole("button", { name: /Schreiben oder überarbeiten/ })).toBeVisible();
     await ui(page.getByText(/Vorübergehender Chat · Nicht gespeichert/)).toBeVisible();
-    await ui(page.getByText(/0 Nachrichten einbezogen · 0 Dateien/)).toBeVisible();
+    // An empty chat shows no context count (16 November); the "+" menu's review is German.
+    await ui(page.locator(".context-count")).toHaveCount(0);
+    await ui(page.locator(".tools-menu .menu-surface")).toContainText("Kontext prüfen");
     const shown = await page.locator("main").innerText();
     // Whole words only: "Send" is part of "Senden".
     const left = english.filter((text) =>

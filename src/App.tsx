@@ -90,7 +90,6 @@ import { failureKind } from "./chat-failures";
 import { chatCoreText } from "./text/chat-core";
 import { titleFrom } from "./title-from";
 import { useMenuKeys } from "./use-menu-keys";
-import { documentText } from "./text/documents";
 import { composerText } from "./text/composer";
 import { Vault, VaultConflictError } from "./vault";
 import type { Mode } from "../shared/modes";
@@ -2755,8 +2754,9 @@ export function App() {
                     {item.name} — {item.status}
                   </span>
                   {item.detail && <p>{item.detail}</p>}
-                  {/* A picture with no printed text: point to the picture question instead. */}
-                  {item.detail === documentText[lang].noText &&
+                  {/* A picture the text reader could not use (no printed text, or unreadable):
+                      point to the picture question instead. */}
+                  {item.status === "failed" &&
                     /\.(png|jpe?g)$/i.test(item.name) &&
                     status?.images &&
                     status.inference.ready && (

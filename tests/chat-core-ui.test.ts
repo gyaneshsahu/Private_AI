@@ -313,7 +313,8 @@ for (const lang of ["en", "de"] as const)
           const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), "image/png"));
           return [...new Uint8Array(await blob.arrayBuffer())];
         });
-        // Through the file picker (not a paste): the text reader reads it and finds no text.
+        // Through the file picker (not a paste): the text reader cannot use it (no printed text;
+        // in this test server its OCR cannot load, so it fails as unreadable).
         await page.getByLabel(t.attachFiles).setInputFiles({ name: "blank.png", mimeType: "image/png", buffer: Buffer.from(png) });
         const results = page.getByRole("region", { name: t.importResults });
         const hint = results.getByRole("button", { name: im.menu, exact: true });
