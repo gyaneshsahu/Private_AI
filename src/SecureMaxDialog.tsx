@@ -35,7 +35,7 @@ export function SecureMaxDialog({
   onConfirm,
   onCancel,
 }: {
-  subject: "chat" | "project" | "default" | "section";
+  subject: "chat" | "project" | "section";
   onConfirm: () => void;
   onCancel: () => void;
 }) {

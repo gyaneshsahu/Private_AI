@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useText } from "./i18n";
 import { LockIcon } from "./ModeBadge";
 import { SecureMaxDialog, secureMaxConfirmed } from "./SecureMaxDialog";
@@ -46,6 +46,13 @@ export function SecureMaxSection({
 }) {
   const t = useText(modesText);
   const [intro, setIntro] = useState(shouldShowSecureMaxIntro);
+  // Lock now, Unlock and the confirmed intro remove the control that had the focus: move it to the one primary button.
+  const primary = useRef<HTMLButtonElement>(null);
+  const mounted = useRef(false);
+  useEffect(() => {
+    if (mounted.current && !intro) primary.current?.focus();
+    mounted.current = true;
+  }, [locked, intro]);
   return (
     <section className="secure-max-section" aria-labelledby="secure-max-heading">
       <h2 id="secure-max-heading" className="secure-max-heading">
@@ -56,14 +63,14 @@ export function SecureMaxSection({
       {locked ? (
         <div className="secure-max-locked">
           <p>{t.maxIsLocked}</p>
-          <button type="button" className="primary" onClick={onUnlock}>
+          <button ref={primary} type="button" className="primary" onClick={onUnlock}>
             {t.maxUnlock}
           </button>
         </div>
       ) : (
         <>
           <div className="secure-max-actions">
-            <button type="button" className="primary" onClick={onNewChat}>
+            <button ref={primary} type="button" className="primary" onClick={onNewChat}>
               {t.maxNewChat}
             </button>
             <button type="button" onClick={onNewProject}>

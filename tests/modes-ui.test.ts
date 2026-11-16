@@ -128,6 +128,7 @@ for (const lang of LANGS)
         const newProject = section.getByRole("button", { name: t.maxNewProject, exact: true });
         const lockNow = section.getByRole("button", { name: t.maxLockNow, exact: true });
         await ui(section.locator("#max-list")).toBeVisible();
+        await ui(newChat).toBeFocused();
         await ui(section.getByRole("button", { name: t.maxUnlock })).toHaveCount(0);
         if (phone) await tall(page, section.getByRole("button"));
         await newChat.click();
@@ -145,11 +146,12 @@ for (const lang of LANGS)
         await ui(section.getByRole("button")).toHaveCount(1);
         await ui(unlock).toHaveClass(/primary/);
         await ui(section.locator("#max-list")).toHaveCount(0);
+        await ui(unlock).toBeFocused();
         if (phone) await tall(page, unlock);
         seen.push(await readable(page));
         await shot(page, `${lang}-${width}-locked`);
         await unlock.click();
-        await ui(newChat).toBeVisible();
+        await ui(newChat).toBeFocused();
 
         // Badges: a lock named for Secure Max, another name when locked, nothing for Secure.
         await ui(section.getByRole("img", { name: t.maxLabel, exact: true })).toBeVisible();
@@ -171,6 +173,7 @@ for (const lang of LANGS)
         await ui(settings.getByText(t.maxResetWarning)).toBeVisible();
         await ui(settings.getByText(t.maxResetSignInFirst)).toHaveCount(0);
         const resetButton = settings.getByRole("button", { name: t.maxResetLabel, exact: true });
+        if (phone) await tall(page, resetButton);
         await resetButton.click();
         const resetDialog = page.getByRole("dialog", { name: t.maxResetLabel, exact: true });
         await ui(resetDialog).toBeVisible();
@@ -178,6 +181,7 @@ for (const lang of LANGS)
         const resetConfirm = resetDialog.getByRole("button", { name: t.maxResetLabel, exact: true });
         await ui(resetConfirm).toBeDisabled();
         await ui(resetConfirm).toHaveClass(/danger-button/);
+        if (phone) await tall(page, resetDialog.getByRole("button"));
         const field = resetDialog.getByLabel(t.maxResetTypeLabel(t.maxResetPhrase));
         await field.fill("wrong");
         await ui(resetConfirm).toBeDisabled();
@@ -242,6 +246,10 @@ for (const lang of LANGS)
     const section = sidebar.getByRole("region", { name: t.maxLabel });
     await ui(section.getByText(t.maxIsLocked)).toBeVisible();
     await ui(section.getByRole("button")).toHaveText([t.maxUnlock]);
+    // The band in the dark theme: the 4 px edge in a colour other than the background.
+    const band = await section.evaluate((element) => [getComputedStyle(element).borderLeftWidth, getComputedStyle(element).borderLeftColor, getComputedStyle(element).backgroundColor]);
+    expect(band[0]).toBe("4px");
+    expect(band[1]).not.toBe(band[2]);
     expect(await page.locator(".chat-design").evaluate((element) => getComputedStyle(element).backgroundColor)).toBe("rgb(25, 28, 31)");
     await shot(page, `${lang}-375-short-dark-locked`);
 
