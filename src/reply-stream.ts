@@ -127,6 +127,9 @@ export async function consumeReply(
                 error.code === "HTTP_UPSTREAM_REJECTED"
               ? textFor(chatErrorText).rejected
               : error instanceof StreamProtocolError &&
+                  error.code === "HTTP_CAPACITY_REACHED"
+                ? textFor(chatErrorText).capacity
+              : error instanceof StreamProtocolError &&
                   error.code === "HTTP_MODEL_NOT_FOUND"
                 ? textFor(chatErrorText).modelNotFound
                 : textFor(chatErrorText).incomplete;

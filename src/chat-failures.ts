@@ -23,6 +23,8 @@ export function failureKind(error: unknown, aborted: boolean): FailureKind {
   if (error instanceof IncompleteReplyError) {
     const code = error.diagnostic?.code;
     if (code === "HTTP_RATE_LIMITED") return "busy";
+    // The provider refused for a spend cap or rate limit (relay class "capacity"): not "busy", which says a minute.
+    if (code === "HTTP_CAPACITY_REACHED") return "capacity";
     if (code === "HTTP_SERVICE_UNAVAILABLE" || code === "HTTP_MODEL_NOT_FOUND") return "unavailable";
     if (code === "TIMED_OUT") return "timeout";
     // The answer stopped coming: the connection broke, the stream ended early or hit its length.
@@ -38,6 +40,7 @@ const sentences: Record<FailureKind, keyof (typeof chatCoreText)["en"]> = {
   stopped: "failureStopped",
   timeout: "failureTimeout",
   busy: "failureBusy",
+  capacity: "failureCapacity",
   unavailable: "failureUnavailable",
   incomplete: "failureIncomplete",
   empty: "failureEmpty",

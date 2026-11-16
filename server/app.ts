@@ -900,9 +900,14 @@ export function createApp(config: Config) {
           // Only the class of failure is exposed, so the client can decide on its one
           // retry with the mode's backup model; nothing else leaks. A retired or unknown model
           // is its own class: the client fails closed (no backup retry) and the owner is alerted.
+          // 429 or 402 upstream: the organisation's rate limit or spend cap (the exact status of a
+          // cap hit at Privatemode is unverified, 16 November). Its own class, so the browser says
+          // "capacity" and makes no backup retry against the same limit.
           const failure = (await modelNotFound(reply.statusCode, upstream.body))
             ? "model-not-found"
-            : relay.classifyFailure(reply);
+            : reply.statusCode === 429 || reply.statusCode === 402
+              ? "capacity"
+              : relay.classifyFailure(reply);
           if (failure === "model-not-found") alertModelNotFound(admission.model, reply.statusCode);
           if (accountId && dispatched) retryCredit.set(accountId, { mode: creditKind, expires: Date.now() + 60_000 });
           // Nothing was answered: the image does not count toward the day.

@@ -34,6 +34,7 @@ it.each([
     "did not accept this request",
     { "X-PrivateAI-Upstream": "rejected" },
   ],
+  [502, "HTTP_CAPACITY_REACHED", "reached its capacity", { "X-PrivateAI-Upstream": "capacity" }],
   [503, "HTTP_SERVICE_UNAVAILABLE", "service is unavailable"],
   [504, "HTTP_SERVICE_UNAVAILABLE", "service is unavailable"],
   [401, "HTTP_RESPONSE_INVALID", "Response incomplete"],

@@ -228,8 +228,10 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
         // Never reflect upstream errors. Only the class is exposed, as for chat.
         const failure = (await modelNotFound(upstream.statusCode, upstream.body))
           ? "model-not-found"
-          : upstream.statusCode >= 400 && upstream.statusCode < 500
-            ? "rejected"
+          : upstream.statusCode === 429 || upstream.statusCode === 402
+            ? "capacity"
+            : upstream.statusCode >= 400 && upstream.statusCode < 500
+              ? "rejected"
             : "unavailable";
         if (failure === "model-not-found") alertModelNotFound(speech.model, upstream.statusCode);
         // Nothing was transcribed: the same account's next recording within a minute is not counted again.

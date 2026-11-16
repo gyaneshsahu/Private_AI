@@ -439,6 +439,20 @@ it("a browser that hangs up frees its account slot at once, so the automatic ret
   usage.close();
 });
 
+it("a cap or rate limit at Privatemode (HTTP 429 or 402) is its own class, capacity, with nothing of the upstream body", async () => {
+  upstream
+    .mockImplementationOnce(async () => new Response("budget exceeded", { status: 429 }))
+    .mockImplementationOnce(async () => new Response("payment required", { status: 402 }));
+  const root = await listen();
+  const { status, cookie } = await session(root);
+  for (const model of ["glm-5.3", "glm-5.3-flash"]) {
+    const refused = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf, model, "thinking"));
+    expect(refused.status).toBe(502);
+    expect(refused.headers.get("x-privateai-upstream")).toBe("capacity");
+    expect(await refused.text()).not.toMatch(/budget|payment/);
+  }
+});
+
 it("a Privatemode failure stays at Privatemode: classified for the same-provider backup, never sent to Tinfoil", async () => {
   upstream
     .mockImplementationOnce(async () => new Response("quota", { status: 403 }))
@@ -620,8 +634,8 @@ it("attestation goes through one queue: a full queue answers 503 attestation_bus
   );
   const root = await listen();
   const { status, cookie } = await session(root);
-  // 14 different browser sessions, one attest call each (one session alone is capped first).
-  const others = await Promise.all(Array.from({ length: 14 }, () => session(root)));
+  // 24 different browser sessions, one attest call each (one session alone is capped first).
+  const others = await Promise.all(Array.from({ length: 24 }, () => session(root)));
   const controller = new AbortController();
   const answered: Response[] = [];
   for (const other of others)
@@ -631,7 +645,7 @@ it("attestation goes through one queue: a full queue answers 503 attestation_bus
       body: new Uint8Array(32).fill(7),
       signal: controller.signal,
     }).then((r) => answered.push(r), () => {});
-  // 6 sent at once, 1 or 2 waiting; the rest cannot be sent within 20 s and are refused at once.
+  // 6 sent at once, about 10 waiting (30 a minute for 20 s); the rest cannot be sent within 20 s and are refused at once.
   await vi.waitFor(() => expect(answered.length).toBeGreaterThanOrEqual(2), { timeout: 3000 });
   expect(upstream.mock.calls.filter(([url]) => String(url).endsWith("/attest"))).toHaveLength(6);
   for (const refused of answered) {
@@ -647,7 +661,7 @@ it("attestation goes through one queue: a full queue answers 503 attestation_bus
   expect(Date.now() - started).toBeLessThan(1000);
   expect(upstream.mock.calls.filter(([url]) => String(url).endsWith("/attest"))).toHaveLength(6);
   // The log line carries counts only.
-  expect(warn.mock.calls.flat().filter((line) => String(line).startsWith("Privatemode attestation")).join(" ")).toMatch(/^Privatemode attestation queue: \{"sent":6,"waited":[12],"waitedMs":0,"limited429":0,"busy":\d+,"perMinute":6,"lastPauseMs":0\}/);
+  expect(warn.mock.calls.flat().filter((line) => String(line).startsWith("Privatemode attestation")).join(" ")).toMatch(/^Privatemode attestation queue: \{"sent":6,"waited":(9|10),"waitedMs":0,"limited429":0,"busy":\d+,"perMinute":30,"lastPauseMs":0\}/);
   expect(warn.mock.calls.flat().join(" ")).not.toMatch(/csrf|cookie|Bearer|TEST_KEY/i);
   controller.abort();
   warn.mockRestore();

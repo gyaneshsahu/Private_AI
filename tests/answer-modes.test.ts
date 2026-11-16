@@ -314,6 +314,10 @@ describe("one retry on the backup model", () => {
       expect(shouldRetryOnBackup(new AttestationBusyError(), false, false, FULL, mode)).toBe(false);
   });
 
+  it("never retries a cap or rate limit at the provider: the backup shares the same limit", () => {
+    expect(shouldRetryOnBackup(failure("HTTP_CAPACITY_REACHED"), false, false, FULL, "thinking")).toBe(false);
+  });
+
   it("never retries after partial text, a stop, the relay's own limits or a broken answer", () => {
     expect(shouldRetryOnBackup(failure("HTTP_UPSTREAM_REJECTED"), false, true, FULL, "thinking")).toBe(false);
     expect(shouldRetryOnBackup(failure("TIMED_OUT", 12), false, false, FULL, "thinking")).toBe(false);

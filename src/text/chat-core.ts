@@ -13,6 +13,7 @@ export const chatCoreText = defineText({
     failureStopped: "Stopped by you.",
     failureTimeout: "Response timed out. Try again in a minute.",
     failureBusy: "The service is busy right now. Try again in a minute.",
+    failureCapacity: "CometRow has reached its capacity for now. Please try again later.",
     failureUnavailable: "The service is not available right now. Try again in a minute.",
     failureIncomplete: "The answer was cut off before it finished.",
     failureEmpty: "No answer came back. Try again.",
@@ -30,6 +31,7 @@ export const chatCoreText = defineText({
     failureStopped: "Von Ihnen gestoppt.",
     failureTimeout: "Zeitüberschreitung bei der Antwort. Versuchen Sie es in einer Minute erneut.",
     failureBusy: "Der Dienst ist gerade ausgelastet. Versuchen Sie es in einer Minute erneut.",
+    failureCapacity: "CometRow hat vorerst seine Kapazitätsgrenze erreicht. Bitte versuchen Sie es später erneut.",
     failureUnavailable:
       "Der Dienst ist gerade nicht erreichbar. Versuchen Sie es in einer Minute erneut.",
     failureIncomplete: "Die Antwort brach ab, bevor sie fertig war.",

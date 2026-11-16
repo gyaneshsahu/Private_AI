@@ -418,7 +418,7 @@ export interface Message {
   status: "complete" | "partial" | "error";
   included: boolean;
   sourceSnapshot?: Source[];
-  failure?: "stopped" | "timeout" | "incomplete" | "unavailable" | "empty" | "busy" | "error";
+  failure?: "stopped" | "timeout" | "incomplete" | "unavailable" | "empty" | "busy" | "capacity" | "error";
   /** For an answer about a large document: which of its passages were sent, and that the rest was not. */
   passagesUsed?: string;
   /** For an answer: the ids of the memories sent with its question. Ids only, so a deleted memory leaves no text here. */

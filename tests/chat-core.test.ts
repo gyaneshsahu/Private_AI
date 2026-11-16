@@ -41,6 +41,7 @@ describe("failure kinds", () => {
     expect(failureKind(new Error("x"), true)).toBe("stopped");
     expect(failureKind(new AttestationBusyError(), false)).toBe("busy");
     expect(failureKind(incomplete("HTTP_RATE_LIMITED"), false)).toBe("busy");
+    expect(failureKind(incomplete("HTTP_CAPACITY_REACHED"), false)).toBe("capacity");
     expect(failureKind(incomplete("HTTP_SERVICE_UNAVAILABLE"), false)).toBe("unavailable");
     expect(failureKind(incomplete("HTTP_MODEL_NOT_FOUND"), false)).toBe("unavailable");
     expect(failureKind(new DeploymentChangedError(), false)).toBe("unavailable");
@@ -58,13 +59,14 @@ describe("failure kinds", () => {
   it("has one plain sentence per kind in both languages, the generic one for unknown kinds", () => {
     for (const lang of ["en", "de"] as const) {
       const seen = new Set<string>();
-      for (const kind of ["stopped", "timeout", "busy", "unavailable", "incomplete", "empty", "error"]) {
+      for (const kind of ["stopped", "timeout", "busy", "capacity", "unavailable", "incomplete", "empty", "error"]) {
         const sentence = failureSentence(kind, lang);
         expect(sentence).toBeTruthy();
         expect(sentence).not.toContain("undefined");
         seen.add(sentence);
       }
-      expect(seen.size).toBe(7);
+      expect(seen.size).toBe(8);
+      expect(failureSentence("capacity", lang)).not.toMatch(/minute/i);
       expect(failureSentence("from-a-newer-version", lang)).toBe(chatCoreText[lang].failureError);
       expect(appText[lang].failure("stopped")).toBe(chatCoreText[lang].failureStopped);
     }

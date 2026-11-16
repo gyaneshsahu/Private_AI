@@ -31,6 +31,7 @@ export const chatErrorText = defineText({
     outputLimit: "The response reached its output limit before completing.",
     rateLimited:
       "The protected service is limiting requests. No answer was received.",
+    capacity: "The protected service has reached its capacity for now. No answer was received.",
     unavailable: "The protected service is unavailable. No answer was received.",
     rejected:
       "The protected service did not accept this request and gave no answer.",
@@ -109,6 +110,7 @@ export const chatErrorText = defineText({
     timedOut: "Zeitüberschreitung bei der Antwort.",
     outputLimit: "Die Antwort hat ihre Längengrenze erreicht, bevor sie fertig war.",
     rateLimited: "Der geschützte Dienst begrenzt gerade die Anfragen. Es kam keine Antwort.",
+    capacity: "Der geschützte Dienst hat vorerst seine Kapazitätsgrenze erreicht. Es kam keine Antwort.",
     unavailable: "Der geschützte Dienst ist nicht erreichbar. Es kam keine Antwort.",
     rejected:
       "Der geschützte Dienst hat diese Anfrage nicht angenommen und keine Antwort gegeben.",

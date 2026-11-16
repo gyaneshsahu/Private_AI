@@ -19,6 +19,9 @@ export async function* completionEvents(
             response.headers.get("x-privateai-upstream") === "rejected"
           ? "HTTP_UPSTREAM_REJECTED"
           : response.status === 502 &&
+              response.headers.get("x-privateai-upstream") === "capacity"
+            ? "HTTP_CAPACITY_REACHED"
+          : response.status === 502 &&
               response.headers.get("x-privateai-upstream") === "model-not-found"
             ? "HTTP_MODEL_NOT_FOUND"
           : [502, 503, 504].includes(response.status)
