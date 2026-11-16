@@ -136,7 +136,7 @@ export function WorkspaceNavigation(props: {
       <div className="sidebar-heading">
         <a className="brand" href="/" aria-label={t.home}>
           <span className="brand-mark" aria-hidden="true">
-            P
+            C
           </span>
           Comet<span>Row</span>
         </a>
