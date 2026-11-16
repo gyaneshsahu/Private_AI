@@ -413,6 +413,8 @@ const STEPS: Step[] = [
     await c.click("Unlock Secure Max");
     await pause(c.page, 1000);
     await c.shot("secure-max-unlock");
+    // First use with sync on now sets up Secure Max with a recovery key (FE-02, 16 November): that screen is the end of this step.
+    if (!(await c.page.getByLabel(c.tr("Vault passphrase")).count())) return;
     // The synthetic passphrase of tests/secure-store-e2e-ui.test.ts (a test value, this machine only).
     await c.label("Vault passphrase").fill("synthetic secure max passphrase");
     await c.click("Create or unlock vault");
@@ -492,7 +494,8 @@ const STEPS: Step[] = [
     try {
       await pause(c.page, 1000);
       await c.shot("offline-before-first-send");
-      await c.send("Sent while offline. audit:plain", undefined, false);
+      // Send is off while offline (16 November): the draft is typed and kept, nothing is sent.
+      await c.label("Message CometRow").fill("Sent while offline. audit:plain");
       await pause(c.page, 2500);
       await c.shot("offline-first-send");
     } finally {
@@ -510,7 +513,7 @@ const STEPS: Step[] = [
     try {
       await pause(c.page, 1000);
       await c.shot("offline-after-answer");
-      await c.send("Sent while offline. audit:plain", undefined, false);
+      await c.label("Message CometRow").fill("Sent while offline. audit:plain");
       await pause(c.page, 2500);
       await c.shot("offline-after-answer-send");
     } finally {
