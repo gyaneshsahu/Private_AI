@@ -82,7 +82,7 @@ import { fitHeight, isSendKey, limitState, MESSAGE_LIMIT, sendBlocked, touchDevi
 import { filesFrom, routeFiles, useFileDrop } from "./file-drop";
 import { useFollowScroll } from "./follow-scroll";
 import { AnswerAnnouncement, ConnectionBanner, useOnline } from "./ConnectionBanner";
-import { failureKind } from "./chat-failures";
+import { failureKind, failureSentence } from "./chat-failures";
 import { chatCoreText } from "./text/chat-core";
 import { titleFrom } from "./title-from";
 import { useMenuKeys } from "./use-menu-keys";
@@ -1430,16 +1430,21 @@ export function App() {
           );
         if (!abort.signal.aborted && error instanceof AttestationBusyError && error.retryAt)
           setVerifyWaitUntil(error.retryAt);
+        // CC-06: the message shows the plain sentence with Retry and the folded explanation. The
+        // notice says only what that sentence does not: the verification wait, a changed deployment,
+        // a reason without its own sentence (kind "error"), the backup retry. Otherwise it repeats the
+        // sentence for screen readers only (noticeLine renders it hidden).
+        const kind = failureKind(error, abort.signal.aborted);
         setNotice(
           abort.signal.aborted
-            ? t.responseStopped
+            ? ""
             : error instanceof AttestationBusyError || error instanceof DeploymentChangedError
               ? passed(error.message)
-              : error instanceof IncompleteReplyError
-                ? `${passed(error.message)} ${error.usage ? t.usageRetained : t.costUnknown}`
-                : error instanceof Error && error.name === "TimeoutError"
-                  ? t.timedOut(retried)
-                  : t.protectedUnavailable(retried),
+              : error instanceof IncompleteReplyError && kind === "error"
+                ? passed(error.message)
+                : retried
+                  ? t.retriedOnce
+                  : failureSentence(kind, lang),
         );
       }
     } finally {
@@ -2318,7 +2323,13 @@ export function App() {
       </div>
     </details>
   );
-  const noticeLine = notice && (
+  // The failed answer's own sentence is in the message already: announced, not shown twice (CC-06).
+  const failed = conversation.messages.at(-1)?.failure;
+  const noticeLine = notice && failed && notice === failureSentence(failed, lang) ? (
+    <div role="status" className="sr-only">
+      {notice}
+    </div>
+  ) : notice && (
     <div role="status" className={inDock ? "notice composer-note dock-notice" : "notice"}>
       {notice}
       <button aria-label={t.dismissNotice} onClick={() => setNotice("")}>
