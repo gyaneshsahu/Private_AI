@@ -1,7 +1,7 @@
 {
   "F": {
     "name": "C light + A dark, cosmic background",
-    "note": "Light theme from option C, dark theme from option A. An even, faded cosmic wash behind the workspace; a blended cosmic glow on the login screen; a round, glassy orb for live voice.",
+    "note": "Light theme from option C, dark theme from option A. An even, faded cosmic wash behind the workspace; a blended cosmic glow on login (faded in dark mode); a flat planet with a slowly moving surface for live voice.",
     "light": {
       "bg": "#fbfcfe",
       "sidebar": "#f2f5fa",
@@ -40,7 +40,7 @@
       "danger": "#ff9c92",
       "light": "#8fb4ff",
       "glow": "radial-gradient(70% 55% at 50% 40%, #5b8cff26, transparent 70%), radial-gradient(45% 40% at 80% 15%, #3fd0c016, transparent 70%), radial-gradient(40% 40% at 15% 88%, #8f9bff18, transparent 70%)",
-      "cosmos": "radial-gradient(60% 60% at 30% 30%, #2f5fe078, transparent 72%), radial-gradient(55% 55% at 72% 38%, #6a55d860, transparent 72%), radial-gradient(60% 55% at 55% 78%, #c0489050, transparent 72%), radial-gradient(50% 50% at 20% 80%, #1fa8a040, transparent 72%)",
+      "cosmos": "radial-gradient(60% 60% at 30% 30%, #2f5fe030, transparent 72%), radial-gradient(55% 55% at 72% 38%, #6a55d822, transparent 72%), radial-gradient(60% 55% at 55% 78%, #8f9bff1c, transparent 72%), radial-gradient(50% 50% at 20% 80%, #1fa8a018, transparent 72%)",
       "w2": "#3fd0c0",
       "w3": "#8f9bff"
     }
