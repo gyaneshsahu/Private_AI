@@ -239,7 +239,9 @@ const STEPS: Step[] = [
     await c.click("Ask about a picture");
     await pause(c.page, 500);
     await c.shot("image-question-consent");
-    await c.click("Choose a picture");
+    // Since 17 November the dialog opens straight at the choice (no intro step); older builds had one.
+    const intro = vis(c.page.getByRole("button", { name: c.tr("Choose a picture"), exact: true }));
+    if (await intro.waitFor({ timeout: 1500 }).then(() => true, () => false)) await intro.click();
     const chooser = c.page.waitForEvent("filechooser", { timeout: 5000 });
     await c.click("Choose photo");
     // A real PNG drawn in the page: a coloured square and printed synthetic text.
@@ -283,7 +285,9 @@ const STEPS: Step[] = [
     await c.shot("voice-note");
     // Chromium only: a fake microphone (launch flags); the transcription is faked.
     if (c.browser.browserType().name() !== "chromium") return;
-    await c.click("Start recording");
+    // Since 17 November dictation starts at once (no note with a Start button); older builds had one.
+    const start = vis(c.page.getByRole("button", { name: c.tr("Start recording"), exact: true }));
+    if (await start.waitFor({ timeout: 1500 }).then(() => true, () => false)) await start.click();
     await pause(c.page, 2500);
     await c.shot("voice-recording");
     await c.click("Stop recording");
@@ -466,7 +470,8 @@ const STEPS: Step[] = [
   ["settings-memory", async (c) => { await c.fresh(); await settings(c, "Personalization"); await c.shot("settings-memory"); }, "on"],
   ["settings-devices-sync", async (c) => { await c.fresh(); await settings(c, "Secure Max"); await c.shot("settings-devices-sync"); }, "on"],
   ["privacy-boundaries", async (c) => { await c.fresh(); await accountMenu(c, "Help"); await c.click("Your privacy boundaries"); await pause(c.page, 800); await c.shot("privacy-boundaries"); }],
-  ["privacy-details", async (c) => { await c.fresh(); await vis(c.page.getByText(c.tr("Privacy details"), { exact: true })).click(); c.clicked.push("Privacy details"); await pause(c.page, 600); await c.shot("privacy-details"); }],
+  // The chip itself: below 1,000 px it shows only the status, not the words "Privacy details" (17 November).
+  ["privacy-details", async (c) => { await c.fresh(); await vis(c.page.locator(".connection-banner > summary")).click(); c.clicked.push("Privacy details"); await pause(c.page, 600); await c.shot("privacy-details"); }],
   ["account-usage", async (c) => { await c.fresh(); await accountMenu(c); await c.shot("account-menu"); await c.fresh(); await accountMenu(c, "Account & usage"); await c.shot("account-usage"); }],
   ["saved-data-controls", async (c) => { await c.fresh(); await accountMenu(c, "Saved · Data controls"); await c.shot("saved-data-controls"); }],
   ["help", async (c) => {
