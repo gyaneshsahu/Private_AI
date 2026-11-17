@@ -1,0 +1,495 @@
+{
+  "summary": {
+    "model": "glm-5.3-flash",
+    "ruleTokens": 58,
+    "ruleEurosPerRequest": 0.0000116,
+    "correct": 16,
+    "of": 20,
+    "chartAsked": 10,
+    "chartGiven": 6,
+    "noChartAsked": 10,
+    "noChartKept": 10,
+    "totalEuros": 0.00989,
+    "verifications": 1
+  },
+  "rows": [
+    {
+      "lang": "en",
+      "expected": true,
+      "gotBlock": false,
+      "drawable": false,
+      "correct": false,
+      "ms": 10500,
+      "usage": {
+        "prompt_tokens": 754,
+        "total_tokens": 1654,
+        "completion_tokens": 900,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 900
+        }
+      },
+      "question": "How did Germany's population change from 2015 to 2023? Give the yearly figures.",
+      "answer": ""
+    },
+    {
+      "lang": "en",
+      "expected": true,
+      "gotBlock": false,
+      "drawable": false,
+      "correct": false,
+      "ms": 15838,
+      "usage": {
+        "prompt_tokens": 751,
+        "total_tokens": 1651,
+        "completion_tokens": 900,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 900
+        }
+      },
+      "question": "Compare the average monthly rent per square metre in Berlin, Munich, Hamburg and Cologne.",
+      "answer": ""
+    },
+    {
+      "lang": "en",
+      "expected": true,
+      "gotBlock": true,
+      "drawable": true,
+      "type": "line",
+      "points": 5,
+      "source": "User-provided bills",
+      "correct": true,
+      "ms": 8218,
+      "usage": {
+        "prompt_tokens": 763,
+        "total_tokens": 1486,
+        "completion_tokens": 723,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 508
+        }
+      },
+      "question": "My electricity bills were 82, 91, 77, 95 and 88 euros from January to May. How did they develop?",
+      "answer": "Your bills fluctuated rather than moving steadily in one direction:\n\n- **January → February:** 82 → 91 € (+9 €, up ~11%)\n- **February → March:** 91 → 77 € (−14 €, down ~15%)\n- **March → April:** 77 → 95 € (+18 €, up ~23%, the peak)\n- **April → May:** 95 → 88 € (−7 €, down ~7%)\n\n**Overall:** from 82 € in January to 88 € in May — a rise of 6 € (~7%). The average across the five months was 86.60 €, with a range of 18 € between the lowest (77 €) and highest (95 €) bills.\n\n```chart\n{\"type\":\"line\",\"title\":\"Electricity bills, January–May\",\"unit\":\"EUR\",\"labels\":[\"Jan\",\"Feb\",\"Mar\",\"Apr\",\"May\"],\"values\""
+    },
+    {
+      "lang": "en",
+      "expected": true,
+      "gotBlock": true,
+      "drawable": true,
+      "type": "line",
+      "points": 5,
+      "source": "Apple 10-K filings",
+      "correct": true,
+      "ms": 10220,
+      "usage": {
+        "prompt_tokens": 749,
+        "total_tokens": 1567,
+        "completion_tokens": 818,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 607
+        }
+      },
+      "question": "What were Apple's annual revenues from 2019 to 2023?",
+      "answer": "Apple's fiscal year ends in late September, so these are fiscal-year figures (from its 10-K filings):\n\n| Fiscal year | Revenue |\n|---|---|\n| 2019 | $260.2 billion |\n| 2020 | $274.5 billion |\n| 2021 | $365.8 billion |\n| 2022 | $394.3 billion |\n| 2023 | $383.3 billion |\n\nRevenue grew sharply through 2022, then dipped slightly in 2023 — the first annual decline in over two decades, driven mainly by weaker Mac and iPad sales after the pandemic-era surge.\n\n```chart\n{\"type\":\"line\",\"title\":\"Apple Annual Revenue by Fiscal Year\",\"unit\":\"USD billions\",\"labels\":[\"FY2019\",\"FY2020\",\"FY2021\",\"FY2022\",\"FY202"
+    },
+    {
+      "lang": "en",
+      "expected": true,
+      "gotBlock": true,
+      "drawable": true,
+      "type": "bar",
+      "points": 4,
+      "source": "USDA approximate values",
+      "correct": true,
+      "ms": 5734,
+      "usage": {
+        "prompt_tokens": 750,
+        "total_tokens": 1242,
+        "completion_tokens": 492,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 307
+        }
+      },
+      "question": "Compare the calories in an apple, a banana, an orange and a pear.",
+      "answer": "Here's a comparison based on typical medium-sized fruits (USDA-style averages):\n\n| Fruit (medium) | Calories |\n|---|---|\n| Orange (~130 g) | ~62 kcal |\n| Apple (~180 g) | ~95 kcal |\n| Pear (~180 g) | ~100 kcal |\n| Banana (~120 g) | ~105 kcal |\n\nThe orange is lowest mainly because it's smaller and juicier (more water). Per 100 g, they're fairly close: orange ~47, apple ~52, pear ~57, banana ~89 kcal — banana is the most calorie-dense because it's starchier and less juicy.\n\n```chart\n{\"type\":\"bar\",\"title\":\"Calories per medium fruit\",\"unit\":\"kcal\",\"labels\":[\"Orange\",\"Apple\",\"Pear\",\"Banana\"],\"value"
+    },
+    {
+      "lang": "en",
+      "expected": false,
+      "gotBlock": false,
+      "drawable": false,
+      "correct": true,
+      "ms": 2679,
+      "usage": {
+        "prompt_tokens": 748,
+        "total_tokens": 919,
+        "completion_tokens": 171,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 66
+        }
+      },
+      "question": "Write a short thank-you note to my neighbour for watering my plants.",
+      "answer": "Here's a short note you can use:\n\n---\n\nDear [neighbour's name],\n\nThank you so much for watering my plants while I was away. It's such a relief knowing they were in good hands, and I really appreciate you taking the time. It's wonderful to have such a kind neighbour.\n\nThanks again!\n\nWarm regards,\n[Your name]\n\n---\n\nFeel free to tell me their name or add a personal detail (like which plants, or how long you were away), and I can tailor it further."
+    },
+    {
+      "lang": "en",
+      "expected": false,
+      "gotBlock": false,
+      "drawable": false,
+      "correct": true,
+      "ms": 988,
+      "usage": {
+        "prompt_tokens": 741,
+        "total_tokens": 814,
+        "completion_tokens": 73,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 33
+        }
+      },
+      "question": "What is the capital of Australia?",
+      "answer": "The capital of Australia is **Canberra**. It's located in the Australian Capital Territory (ACT), between Sydney and Melbourne — it was chosen as a compromise between the two rival cities."
+    },
+    {
+      "lang": "en",
+      "expected": false,
+      "gotBlock": false,
+      "drawable": false,
+      "correct": true,
+      "ms": 845,
+      "usage": {
+        "prompt_tokens": 744,
+        "total_tokens": 805,
+        "completion_tokens": 61,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 49
+        }
+      },
+      "question": "How much is 15% of 240?",
+      "answer": "15% of 240 is **36**."
+    },
+    {
+      "lang": "en",
+      "expected": false,
+      "gotBlock": false,
+      "drawable": false,
+      "correct": true,
+      "ms": 3318,
+      "usage": {
+        "prompt_tokens": 745,
+        "total_tokens": 1027,
+        "completion_tokens": 282,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 47
+        }
+      },
+      "question": "Explain how a heat pump works in simple words.",
+      "answer": "A heat pump moves heat from one place to another instead of creating it by burning fuel.\n\nThink of it like a fridge running in reverse:\n\n1. **Collecting heat** – It takes in heat from outside (air, ground, or water), even when it's cold out, because there's always some heat energy there.\n2. **Compressing** – A special fluid inside absorbs that warmth, then a compressor squeezes it. Squeezing makes the fluid much hotter.\n3. **Releasing heat** – The hot fluid passes through your home's heating system (radiator, underfloor heating, or hot water), giving its warmth to your house.\n4. **Repeating** "
+    },
+    {
+      "lang": "en",
+      "expected": false,
+      "gotBlock": false,
+      "drawable": false,
+      "correct": true,
+      "ms": 3068,
+      "usage": {
+        "prompt_tokens": 742,
+        "total_tokens": 1011,
+        "completion_tokens": 269,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 88
+        }
+      },
+      "question": "Give me three tips for sleeping better.",
+      "answer": "Here are three solid, evidence-based tips for better sleep:\n\n1. **Keep a consistent schedule.** Go to bed and get up at roughly the same time every day — including weekends. This anchors your body clock and makes falling asleep easier.\n\n2. **Watch light and caffeine.** Get bright light (ideally daylight) in the morning, and dim the lights in the evening. Avoid caffeine from the afternoon onward — it can stay in your system for 8+ hours.\n\n3. **Make the bedroom a sleep-only zone.** Keep it cool, dark and quiet, and park screens outside the last hour before bed. If you can't sleep after ~20 minut"
+    },
+    {
+      "lang": "de",
+      "expected": true,
+      "gotBlock": false,
+      "drawable": false,
+      "correct": false,
+      "ms": 9870,
+      "usage": {
+        "prompt_tokens": 760,
+        "total_tokens": 1660,
+        "completion_tokens": 900,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 900
+        }
+      },
+      "question": "Wie hat sich die Inflationsrate in Deutschland von 2019 bis 2024 entwickelt? Bitte mit Jahreswerten.",
+      "answer": ""
+    },
+    {
+      "lang": "de",
+      "expected": true,
+      "gotBlock": true,
+      "drawable": true,
+      "type": "bar",
+      "points": 4,
+      "source": "Statistische Ämter, ungefähre Werte aus Trainingsdaten",
+      "correct": true,
+      "ms": 12319,
+      "usage": {
+        "prompt_tokens": 753,
+        "total_tokens": 1636,
+        "completion_tokens": 883,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 601
+        }
+      },
+      "question": "Vergleiche die Einwohnerzahlen von Berlin, Hamburg, München und Köln.",
+      "answer": "Hier ein Vergleich der Einwohnerzahlen (ungefähre Werte, Stand Ende 2023, aus meinen Trainingsdaten – die aktuellen Zahlen können leicht abweichen):\n\n- **Berlin:** ca. 3,77 Mio. Einwohner\n- **Hamburg:** ca. 1,91 Mio.\n- **München:** ca. 1,51 Mio.\n- **Köln:** ca. 1,09 Mio.\n\nBerlin hat damit rund doppelt so viele Einwohner wie Hamburg und mehr als München und Köln zusammen. München und Köln sind die einzigen beiden Städte unter den vier, die unterhalb der 2-Mio.-Marke liegen, wobei Köln als einzige keine Millionenstadt im engeren Sinne von über 1,5 Mio. ist.\n\n```chart\n{\"type\":\"bar\",\"title\":\"Einwo"
+    },
+    {
+      "lang": "de",
+      "expected": true,
+      "gotBlock": true,
+      "drawable": true,
+      "type": "line",
+      "points": 4,
+      "source": "Nutzerangaben",
+      "correct": true,
+      "ms": 8334,
+      "usage": {
+        "prompt_tokens": 783,
+        "total_tokens": 1392,
+        "completion_tokens": 609,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 345
+        }
+      },
+      "question": "Meine Heizkosten lagen 2021 bei 950, 2022 bei 1.420, 2023 bei 1.180 und 2024 bei 1.050 Euro. Wie haben sie sich entwickelt?",
+      "answer": "Deine Heizkosten sind zuerst stark gestiegen und haben sich danach wieder deutlich erholt, liegen aber noch über dem Niveau von 2021:\n\n- **2021 → 2022:** Anstieg von 950 auf 1.420 € – das sind **+470 € (rund +49 %)**, vermutlich getrieben durch die Energiepreiskrise.\n- **2022 → 2023:** Rückgang auf 1.180 € – **−240 € (rund −17 %)**.\n- **2023 → 2024:** weiterer Rückgang auf 1.050 € – **−130 € (rund −11 %)**.\n- **2024 gegenüber 2021:** insgesamt **+100 € (rund +11 %)** über dem Ausgangswert.\n\nKurz gesagt: Ein kräftiger Peak 2022, danach zwei Jahre sinkende Kosten – aber das Niveau von 2021 ist n"
+    },
+    {
+      "lang": "de",
+      "expected": true,
+      "gotBlock": false,
+      "drawable": false,
+      "correct": false,
+      "ms": 11933,
+      "usage": {
+        "prompt_tokens": 756,
+        "total_tokens": 1656,
+        "completion_tokens": 900,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 731
+        }
+      },
+      "question": "Wie viele Stunden Sonnenschein haben Hamburg, Frankfurt, München und Freiburg im Jahr ungefähr?",
+      "answer": "Hier sind grobe Langzeitmittel der Sonnenscheindauer (die genauen Werte schwanken je nach Messstation und Zeitraum um einige Stunden):\n\n- **Hamburg:** ca. 1.600 Stunden pro Jahr – eine der sonnenärmeren Großstädte\n- **Frankfurt am Main:** ca. 1.700 Stunden\n- **München:** ca. 1.700–1.800 Stunden\n- **Freiburg im Breisgau:** ca. 1.800–1.900 Stunden – gilt als sonnenreichste Großstadt Deutschlands, begünstigt durch die Lage am Oberrhein und am Rand des Schwarzwalds\n\nZum Vergleich: Der deutsche Durchschnitt liegt bei etwa 1.600–1.700 Stunden pro Jahr.\n\n```chart"
+    },
+    {
+      "lang": "de",
+      "expected": true,
+      "gotBlock": true,
+      "drawable": true,
+      "type": "bar",
+      "points": 4,
+      "source": "Typische Nährwertdatenbanken (USDA/BLS), gerundet",
+      "correct": true,
+      "ms": 10357,
+      "usage": {
+        "prompt_tokens": 765,
+        "total_tokens": 1601,
+        "completion_tokens": 836,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 481
+        }
+      },
+      "question": "Vergleiche den Proteingehalt von Linsen, Kichererbsen, Tofu und Quark pro 100 Gramm.",
+      "answer": "Gerne! Hier ein Vergleich (gerundete typische Werte, gekocht bzw. verzehrsfertig):\n\n| Lebensmittel | Protein pro 100 g |\n|---|---|\n| Linsen (gekocht) | ca. 9 g |\n| Kichererbsen (gekocht) | ca. 8–9 g |\n| Tofu | ca. 13–15 g |\n| Magerquark | ca. 12 g |\n\n**Hinweise:**\n- **Rohe Linsen** (ca. 24 g) und **rohe Kichererbsen** (ca. 19 g) enthalten deutlich mehr Protein – sie werden aber gekocht gegessen und nehmen dabei Wasser auf, daher sinkt der Wert pro 100 g.\n- Bei Tofu schwankt der Gehalt je nach Sorte (seiden vs. fest).\n- Quark: Magerquark hat ca. 12 g, Speisequark mit Fettstufe 20 % eher 10–11 g"
+    },
+    {
+      "lang": "de",
+      "expected": false,
+      "gotBlock": false,
+      "drawable": false,
+      "correct": true,
+      "ms": 3413,
+      "usage": {
+        "prompt_tokens": 753,
+        "total_tokens": 1083,
+        "completion_tokens": 330,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 127
+        }
+      },
+      "question": "Schreib mir eine kurze Absage für ein Vorstellungsgespräch am Freitag.",
+      "answer": "Gerne, hier eine kurze Vorlage mit Platzhaltern:\n\n**Betreff:** Absage Vorstellungsgespräch am [Datum] – [Position]\n\nSehr geehrte/r Frau/Herr [Name],\n\nvielen Dank für die Einladung zum Vorstellungsgespräch am [Datum] für die Position als [Position]. Leider muss ich das Gespräch absagen, da sich meine Situation kurzfristig geändert hat.\n\nIch bedauere die Umstände und danke Ihnen für Ihr Verständnis. Für die Zukunft würde ich mich freuen, wieder in Kontakt zu kommen.\n\nMit freundlichen Grüßen\n[Ihr Name]\n\n**Tipp:** Wenn Sie stattdessen einen neuen Termin möchten, ersetzen Sie den Satz mit der Absag"
+    },
+    {
+      "lang": "de",
+      "expected": false,
+      "gotBlock": false,
+      "drawable": false,
+      "correct": true,
+      "ms": 1720,
+      "usage": {
+        "prompt_tokens": 743,
+        "total_tokens": 873,
+        "completion_tokens": 130,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 69
+        }
+      },
+      "question": "Was ist die Hauptstadt von Kanada?",
+      "answer": "Die Hauptstadt von Kanada ist **Ottawa**. Sie liegt in der Provinz Ontario, direkt an der Grenze zu Québec. Oft wird fälschlich Toronto oder Montreal angenommen – die größte Stadt Kanadas ist Toronto, aber Regierungssitz ist Ottawa."
+    },
+    {
+      "lang": "de",
+      "expected": false,
+      "gotBlock": false,
+      "drawable": false,
+      "correct": true,
+      "ms": 720,
+      "usage": {
+        "prompt_tokens": 742,
+        "total_tokens": 803,
+        "completion_tokens": 61,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 50
+        }
+      },
+      "question": "Was sind 7 mal 8?",
+      "answer": "7 mal 8 ist **56**."
+    },
+    {
+      "lang": "de",
+      "expected": false,
+      "gotBlock": false,
+      "drawable": false,
+      "correct": true,
+      "ms": 5766,
+      "usage": {
+        "prompt_tokens": 745,
+        "total_tokens": 1306,
+        "completion_tokens": 561,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 289
+        }
+      },
+      "question": "Erkläre einfach, was eine Steuer-ID ist.",
+      "answer": "## Steuer-ID – kurz erklärt\n\nDie **Steuer-ID** (offiziell: Steuer-Identifikationsnummer) ist eine **11-stellige Nummer**, die jede Person in Deutschland einmalig und **lebenslang** bekommt.\n\n**Das Wichtigste:**\n- Sie wird vom **Bundeszentralamt für Steuern** vergeben – automatisch, z. B. bei der Geburt oder nach dem Einwohnermeldeamt-Termin (Anmeldung).\n- Du bekommst sie **per Post** zugeschickt.\n- Sie bleibt dein Leben lang gleich, auch bei Umzug oder Namensänderung.\n- Sie dient dazu, dich beim Finanzamt **eindeutig zu identifizieren** – z. B. für die Steuererklärung, beim Gehaltsabrechnen du"
+    },
+    {
+      "lang": "de",
+      "expected": false,
+      "gotBlock": false,
+      "drawable": false,
+      "correct": true,
+      "ms": 2818,
+      "usage": {
+        "prompt_tokens": 747,
+        "total_tokens": 1002,
+        "completion_tokens": 255,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 49
+        }
+      },
+      "question": "Gib mir drei Ideen für ein Abendessen ohne Fleisch.",
+      "answer": "Hier sind drei Ideen für ein fleischloses Abendessen:\n\n1. **Gemüse-Frittata**: Eier mit geriebenem Käse verquirlen, gebratenes Gemüse (z. B. Zucchini, Paprika, Kartoffeln) unterheben und im Ofen oder in der Pfanne stocken lassen. Dazu Salat.\n\n2. **Linsen-Bolognese mit Pasta**: Rote Linsen mit passierten Tomaten, Zwiebel, Knoblauch und italienischen Kräutern köcheln lassen – schnell fertig und sehr sättigend.\n\n3. **Ofengemüse mit Halloumi und Quinoa**: Brokkoli, Süßkartoffeln und Paprika mit Olivenöl und Gewürzen im Ofen rösten, mit gebratenem Halloumi und Quinoa oder Couscous servieren.\n\nSoll "
+    }
+  ]
+}

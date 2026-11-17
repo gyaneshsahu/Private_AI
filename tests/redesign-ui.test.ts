@@ -354,8 +354,12 @@ describe.each([375, 1280])("answers at %i px", (width) => {
       const chart = answer.locator("figure.answer-chart");
       await ui(chart).toHaveCount(1);
       await ui(chart.locator("figcaption")).toContainText("Savings at year end");
-      await ui(chart.locator("rect.bar")).toHaveCount(5);
-      await ui(chart.locator("rect.bar.top")).toHaveCount(1);
+      // A line over time, its highest point marked, the source under it.
+      await ui(chart).toHaveAttribute("data-type", "line");
+      await ui(chart.locator("polyline.line")).toHaveCount(1);
+      await ui(chart.locator("circle.dot")).toHaveCount(5);
+      await ui(chart.locator("circle.dot.top")).toHaveCount(1);
+      await ui(chart.locator(".answer-chart-source")).toHaveText("Source: your uploaded bank statements");
       await ui(chart.locator("table.sr-only tr")).toHaveCount(5);
       await ui(chart.locator("table.sr-only")).toContainText("9,850");
       // The invalid block (a negative number) is shown as code, not drawn.

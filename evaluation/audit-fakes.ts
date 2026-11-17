@@ -134,7 +134,7 @@ const TEXT: Record<Exclude<AnswerName, "long" | "stop" | "error-429" | "error-50
     "Your savings grew from **4,200** to **9,850** EUR.",
     "",
     "```chart",
-    '{"title": "Savings at year end", "unit": "EUR", "labels": ["2022", "2023", "2024", "2025", "2026"], "values": [4200, 5480, 7150, 8600, 9850]}',
+    '{"type": "line", "title": "Savings at year end", "unit": "EUR", "labels": ["2022", "2023", "2024", "2025", "2026"], "values": [4200, 5480, 7150, 8600, 9850], "source": "your uploaded bank statements"}',
     "```",
     "",
     "A broken chart block stays code:",

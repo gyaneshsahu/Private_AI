@@ -1,0 +1,92 @@
+{
+  "summary": {
+    "model": "glm-5.3-flash",
+    "ruleTokens": 58,
+    "ruleEurosPerRequest": 0.0000116,
+    "correct": 2,
+    "of": 3,
+    "chartAsked": 3,
+    "chartGiven": 2,
+    "noChartAsked": 0,
+    "noChartKept": 0,
+    "totalEuros": 0.00348,
+    "verifications": 1
+  },
+  "rows": [
+    {
+      "lang": "en",
+      "expected": true,
+      "gotBlock": false,
+      "drawable": false,
+      "correct": false,
+      "ms": 22796,
+      "usage": {
+        "prompt_tokens": 754,
+        "total_tokens": 3254,
+        "completion_tokens": 2500,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 2500
+        }
+      },
+      "question": "How did Germany's population change from 2015 to 2023? Give the yearly figures.",
+      "answer": ""
+    },
+    {
+      "lang": "en",
+      "expected": true,
+      "gotBlock": true,
+      "drawable": true,
+      "type": "bar",
+      "points": 4,
+      "source": "Training-data approximation (~2024/25); portal asking rents, midpoints of typical ranges",
+      "correct": true,
+      "ms": 8237,
+      "usage": {
+        "prompt_tokens": 751,
+        "total_tokens": 1623,
+        "completion_tokens": 872,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 526
+        }
+      },
+      "question": "Compare the average monthly rent per square metre in Berlin, Munich, Hamburg and Cologne.",
+      "answer": "Here's a rough comparison based on my training data (which has an unpublished end date and may be out of date — I can run a web search for current figures if you like).\n\n**Asking rents for new leases (cold rent, €/m²/month), approximate:**\n\n- **Munich:** ~€20–22 — by far the most expensive large German city\n- **Berlin:** ~€15–17 — rose sharply in recent years\n- **Hamburg:** ~€14–15\n- **Cologne:** ~€13–14 — typically the cheapest of these four\n\nA few caveats:\n\n- These are **asking rents for new tenancies**; average *existing* rents (Bestandsmieten) are considerably lower in all four cities, esp"
+    },
+    {
+      "lang": "de",
+      "expected": true,
+      "gotBlock": true,
+      "drawable": true,
+      "type": "line",
+      "points": 6,
+      "source": "Statistisches Bundesamt (Destatis)",
+      "correct": true,
+      "ms": 11935,
+      "usage": {
+        "prompt_tokens": 760,
+        "total_tokens": 2038,
+        "completion_tokens": 1278,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "created_cache_tokens": 0,
+          "multimodal_tokens": null
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 827
+        }
+      },
+      "question": "Wie hat sich die Inflationsrate in Deutschland von 2019 bis 2024 entwickelt? Bitte mit Jahreswerten.",
+      "answer": "Die Inflationsrate in Deutschland (Veränderung des Verbraucherpreisindexes gegenüber dem Vorjahr, Jahresdurchschnitt laut Destatis) entwickelte sich so:\n\n| Jahr | Inflationsrate |\n|------|----------------|\n| 2019 | +1,4 % |\n| 2020 | +0,5 % |\n| 2021 | +3,1 % |\n| 2022 | +6,9 % |\n| 2023 | +5,9 % |\n| 2024 | +2,2 % |\n\n**Verlauf in Kürze:**\n- **2019/2020:** Niedrige Inflation; 2020 zusätzlich gedämpft durch die Konjunkturschwäche in der Coronapandemie und die temporäre Mehrwertsteuersenkung.\n- **2021:** Beginnender Anstieg durch Lieferengpässe, gestiegene Rohstoff- und Energiepreise sowie Nachholeff"
+    }
+  ]
+}

@@ -12,6 +12,18 @@ State on 18 November: every item of the redesign list is built, tested and pushe
 
 Known flaky or slow tests: `chat-recovery` (focus on a code block) and `invite-browser` under heavy local load; `context-review`, `source-history-ui`, `optional-calculator-ui` exceed their own 25 to 30 s limits on this machine but pass in CI.
 
+## 18 November 2026: charts
+
+Details: `docs/charts-20261118.md`. Tests: `tests/answer-chart.test.ts`, `tests/redesign-ui.test.ts` (chart case), `tests/answer-policy.test.ts`.
+
+| Feature | Result | What broke | What was fixed |
+| --- | --- | --- | --- |
+| One rule in the AI's instructions | pass | the prompt-size limit (3,400 characters) | raised to 3,700 (the rule is 58 tokens, approved up to about 300) |
+| Line and bar charts from the answer's numbers, source line under them | pass | - | - |
+| Invalid blocks stay code | pass | - | - |
+| The model follows the rule (live, 20 questions, EN and DE) | 10 of 10 without a chart correct; 8 of 10 with a chart drawn | 3 answers were empty at 900 tokens (reasoning used them all) | rerun at 2,500: 2 of 3 then drew a chart; the third never answered |
+| Live spend | EUR 0.013 | - | - |
+
 ## 18 November 2026: voice conversation
 
 Details and the delay report: `docs/voice-conversation-20261118.md`. Tests: `live-voice` (48), `live-voice-ui` (12), `read-aloud`, `redesign-ui` (107 in all, pass).

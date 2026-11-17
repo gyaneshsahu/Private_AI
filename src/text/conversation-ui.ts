@@ -28,6 +28,7 @@ export const answerText = defineText({
     imageOmitted: (alt: string) => `[Image omitted${alt ? `: ${alt}` : ""}]`,
     table: "Answer table",
     chart: "Chart",
+    chartSource: "Source",
   },
   de: {
     evidence: (unknown: number, lines: number, verbatim: number, cited: number) =>
@@ -38,6 +39,7 @@ export const answerText = defineText({
     imageOmitted: (alt: string) => `[Bild ausgelassen${alt ? `: ${alt}` : ""}]`,
     table: "Antworttabelle",
     chart: "Diagramm",
+    chartSource: "Quelle",
   },
 });
 
