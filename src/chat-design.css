@@ -123,16 +123,6 @@
   letter-spacing: -0.7px;
   gap: 0;
 }
-.chat-design .brand-mark {
-  position: relative;
-  width: 40px;
-  height: 42px;
-  border: 0;
-  border-radius: var(--r-card);
-  color: var(--primary-ink);
-  background: var(--primary);
-  font: 620 18px/1 var(--font);
-}
 .chat-design .clay-leaf {
   position: absolute;
   top: -6px;
@@ -533,12 +523,6 @@
 }
 .chat-design .brand {
   font-size: 21px;
-}
-.chat-design .brand-mark {
-  width: 32px;
-  height: 34px;
-  border-radius: var(--r-row);
-  font: 620 17px/1 var(--font);
 }
 .chat-design .icon-button {
   min-width: 40px;
@@ -4416,20 +4400,6 @@
   color: var(--ink);
   text-decoration: none;
 }
-.chat-design .sidebar .brand-mark {
-  width: 22px;
-  height: 22px;
-  background: none;
-  border-radius: 0;
-  box-shadow: none;
-  flex: none;
-}
-.chat-design .brand-mark .brand-tail {
-  fill: var(--ink);
-}
-.chat-design .brand-mark .brand-head {
-  fill: var(--accent);
-}
 .chat-design .sidebar :is(.new-chat-row .new-chat, .scheduled-entry, .project-row > button, .history-filters button) {
   min-height: 40px;
   padding: 0 10px;
@@ -4939,20 +4909,6 @@
 }
 .account-shell .account-preview-brand span {
   font-weight: inherit;
-}
-.account-shell .brand-mark,
-.chat-design.account-shell .brand-mark {
-  width: 28px;
-  height: 28px;
-  background: none;
-  border-radius: 0;
-  box-shadow: none;
-}
-.account-shell .brand-mark .brand-tail {
-  fill: var(--ink);
-}
-.account-shell .brand-mark .brand-head {
-  fill: var(--accent);
 }
 .account-shell .account-preview-card {
   background: color-mix(in srgb, var(--surface) 88%, transparent);
@@ -5565,4 +5521,38 @@
   margin: 6px 0 0;
   font-size: 12px;
   color: var(--ink3);
+}
+
+/* ---------- Brand: the official logo kit (public/logo, 18 November) ----------
+   Dark artwork on light themes, light artwork on dark themes; never recoloured. */
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}
+.brand-logo img {
+  display: block;
+  height: 100%;
+  width: auto;
+}
+.brand-logo .brand-logo-light {
+  display: none;
+}
+.chat-design[data-theme="dark"] .brand-logo .brand-logo-dark {
+  display: none;
+}
+.chat-design[data-theme="dark"] .brand-logo .brand-logo-light {
+  display: block;
+}
+.chat-design .sidebar .brand {
+  gap: 0;
+}
+.chat-design .sidebar .brand .brand-logo {
+  height: 24px;
+}
+.account-shell .account-preview-brand .brand-logo {
+  height: 30px;
+}
+.chat-design .brand-icon {
+  height: 22px;
 }

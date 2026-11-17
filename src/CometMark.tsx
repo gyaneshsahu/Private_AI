@@ -1,10 +1,24 @@
-/** The CometRow mark: a round head of light with a two-part tail (evaluation/ui-redesign/mock.html). */
-export function CometMark({ className = "brand-mark" }: { className?: string }) {
+// The CometRow logo from the official kit (public/logo; never redrawn or recoloured, see its
+// README.txt). Two images, one per theme: "dark" artwork on light backgrounds, "light" artwork on
+// dark ones; the CSS shows the one that matches the page's theme (src/chat-design.css).
+const KIT = "/logo/svg/cometrow-A-";
+
+/** The horizontal lockup (mark and name): headers, the menu, sign-in. The name is in the artwork. */
+export function BrandLockup({ label = "CometRow" }: { label?: string }) {
   return (
-    <svg className={className} viewBox="0 0 22 22" aria-hidden="true">
-      <path className="brand-tail" d="M13.2 8.8 1.6 20.4 10.4 6.9z" opacity=".3" />
-      <path className="brand-tail" d="M14.6 10.2 1.6 20.4 11.8 7.4z" opacity=".55" />
-      <circle className="brand-head" cx="15.5" cy="6.5" r="4.5" />
-    </svg>
+    <span className="brand-logo" role="img" aria-label={label}>
+      <img className="brand-logo-dark" src={`${KIT}lockup-horizontal-dark.svg`} alt="" draggable={false} />
+      <img className="brand-logo-light" src={`${KIT}lockup-horizontal-light.svg`} alt="" draggable={false} />
+    </span>
+  );
+}
+
+/** The mark alone: a collapsed menu, avatars, loading. */
+export function CometMark() {
+  return (
+    <span className="brand-logo brand-icon" aria-hidden="true">
+      <img className="brand-logo-dark" src={`${KIT}icon-dark.svg`} alt="" draggable={false} />
+      <img className="brand-logo-light" src={`${KIT}icon-light.svg`} alt="" draggable={false} />
+    </span>
   );
 }

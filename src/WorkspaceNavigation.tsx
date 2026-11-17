@@ -1,4 +1,4 @@
-import { CometMark } from "./CometMark";
+import { BrandLockup } from "./CometMark";
 import { UsageMeter } from "./UsageMeter";
 import { containDialogFocus } from "./dialog-focus";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -190,8 +190,7 @@ export function WorkspaceNavigation(props: {
     <aside className="sidebar" aria-label={t.chatNavigation}>
       <div className="sidebar-heading">
         <a className="brand" href="/" aria-label={t.home}>
-          <CometMark />
-          CometRow
+          <BrandLockup />
         </a>
         <button
           className="icon-button"
@@ -226,7 +225,7 @@ export function WorkspaceNavigation(props: {
           aria-label={t.newIncognito}
           title={t.incognitoTitle}
         >
-          <Icon name="shield" />
+          <Icon name="incognito" />
           {t.incognito}
         </button>
       </div>
@@ -621,7 +620,7 @@ export function WorkspaceNavigation(props: {
               {t.settings}
             </button>
             <button onClick={() => onNavigate("Saved")}>
-              <Icon name="archive" />
+              <Icon name="drive" />
               {t.savedData}
             </button>
             <button onClick={() => onNavigate("Help")}>
@@ -630,7 +629,7 @@ export function WorkspaceNavigation(props: {
             </button>
             {onShortcuts && (
               <button type="button" onClick={onShortcuts}>
-                <Icon name="help" />
+                <Icon name="keyboard" />
                 {sk.menuEntry}
               </button>
             )}

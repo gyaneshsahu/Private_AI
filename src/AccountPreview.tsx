@@ -1,4 +1,4 @@
-import { CometMark } from "./CometMark";
+import { BrandLockup } from "./CometMark";
 import { useEffect, useRef, useState } from "react";
 import "./account-preview.css";
 import { useText } from "./i18n";
@@ -23,8 +23,7 @@ export function AccountPreview() {
         href="/"
         aria-label={t.brandLabel}
       >
-        <CometMark />
-        CometRow
+        <BrandLockup label={t.brandLabel} />
       </a>
       <aside className="account-preview-banner" aria-label={t.previewStatus}>
         {t.banner}

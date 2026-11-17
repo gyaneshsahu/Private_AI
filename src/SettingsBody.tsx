@@ -102,8 +102,8 @@ export function SettingsBody({
   const signedIn = !!status?.accountId;
   const tabs: [string, ReactNode, string][] = [
     ["general", <Icon name="sun" />, s.general],
-    ...(memoryEnabled() ? [["personal", <Icon name="pin" />, s.personalization] as [string, ReactNode, string]] : []),
-    ["data", <Icon name="file" />, s.dataControls],
+    ...(memoryEnabled() ? [["personal", <Icon name="sparkle" />, s.personalization] as [string, ReactNode, string]] : []),
+    ["data", <Icon name="sliders" />, s.dataControls],
     ["security", <Icon name="shield" />, s.security],
     // Secure Max gets the lock and its name; sync of the local vault (no Secure) keeps its own name.
     ...(maxAvailable

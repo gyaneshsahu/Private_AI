@@ -12,6 +12,20 @@ State on 18 November: every item of the redesign list is built, tested and pushe
 
 Known flaky or slow tests: `chat-recovery` (focus on a code block) and `invite-browser` under heavy local load; `context-review`, `source-history-ui`, `optional-calculator-ui` exceed their own 25 to 30 s limits on this machine but pass in CI.
 
+## 18 November 2026: logo, favicons, icons
+
+Source: the owner's official logo kit, `public/logo` (README there), used as-is. Tests: `tests/redesign-ui.test.ts` (logo, one icon per meaning), `tests/browser/redesign-sign-in.spec.ts` (logo on sign-in; brand files served and linked), `tests/email-template.test.ts`, `tests/error-pages.test.ts`. End-to-end 64 of 64.
+
+| Feature | Result | What broke | What was fixed |
+| --- | --- | --- | --- |
+| Menu and sign-in: the kit's horizontal lockup, dark artwork on light, light artwork on dark | pass | - | - |
+| Favicon (ICO and SVG from the kit), apple-touch-icon 180, PWA icons 192 and 512 from the kit | pass (served and linked) | - | - |
+| Maskable 512 icon and 1200x630 social image | built by `scripts/brand-assets.mjs` from the kit's SVGs (placed, not changed) | the kit has neither | - |
+| Web app manifest with name and theme colours; theme-color for light and dark | pass | - | - |
+| 404 and 500 pages: kit logo and the new colours | pass | still purple and the old text logo | updated |
+| Sign-in email template with the kit's PNG logo (light and dark) | pass (not sent: sending is off) | first draft said codes last 10 minutes | they last 5 (server/account-auth.ts); text fixed |
+| One icon per meaning | pass | "Review context" and "Search the web" shared the magnifier; Deep research and Research shared the globe; Conversation files and Projects the folder; Incognito and Security the shield; Shortcuts and Help the question mark | new icons in the same style: layers, globe, book, compass, files, incognito, sliders, drive, sparkle, keyboard |
+
 ## 18 November 2026: charts
 
 Details: `docs/charts-20261118.md`. Tests: `tests/answer-chart.test.ts`, `tests/redesign-ui.test.ts` (chart case), `tests/answer-policy.test.ts`.

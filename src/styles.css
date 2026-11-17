@@ -99,19 +99,6 @@ input[type="checkbox"] {
   font-weight: 600;
   letter-spacing: -1px;
 }
-.brand > span:last-child {
-  font-weight: 350;
-}
-.brand-mark {
-  display: inline-grid;
-  place-items: center;
-  margin-right: 10px;
-  width: 34px;
-  height: 38px;
-  border: 1px solid var(--primary);
-  border-radius: 50% 50% 12px 12px;
-  font-weight: 620;
-}
 .eyebrow {
   font-size: 0.66rem;
   font-weight: 500;
@@ -606,10 +593,6 @@ footer {
   }
   .brand {
     font-size: 21px;
-  }
-  .brand-mark {
-    width: 28px;
-    height: 30px;
   }
   .sidebar > .eyebrow,
   .sidebar-note,

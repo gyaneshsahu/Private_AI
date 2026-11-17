@@ -2818,12 +2818,12 @@ export function App() {
               />
               {tab === "Conversation" && (
                 <button onClick={() => setContextOpen(true)}>
-                  <Icon name="search" />
+                  <Icon name="layers" />
                   {t.includedContext}
                 </button>
               )}
               <button onClick={() => setTab("Context")}>
-                <Icon name="folder" />
+                <Icon name="files" />
                 {t.conversationFiles}
               </button>
               <label className="menu-select">
@@ -3373,7 +3373,7 @@ export function App() {
                         className="text-button"
                         onClick={() => setContextOpen(true)}
                       >
-                        <Icon name="search" />
+                        <Icon name="layers" />
                         {t.reviewContext}{" "}
                         {/* The count left the message box for this row (17 November: one-line box). */}
                         {conversation.messages.length > 0 || conversation.attachments.length > 0 ? (
@@ -3404,7 +3404,7 @@ export function App() {
                             requestAnimationFrame(() => document.getElementById("message-input")?.focus());
                           }}
                         >
-                          <Icon name="search" />
+                          <Icon name="globe" />
                           {sn.menu}
                         </button>
                       )}
@@ -3420,7 +3420,7 @@ export function App() {
                             requestAnimationFrame(() => document.getElementById("message-input")?.focus());
                           }}
                         >
-                          <Icon name="globe" />
+                          <Icon name="book" />
                           {deepResearchText[lang].heading}
                         </button>
                       )}
@@ -3429,7 +3429,7 @@ export function App() {
                         className="text-button"
                         onClick={() => setTab("Research")}
                       >
-                        <Icon name="globe" />
+                        <Icon name="compass" />
                         {t.tabResearch}
                       </button>
                       <button
@@ -3437,7 +3437,7 @@ export function App() {
                         className="text-button"
                         onClick={() => setTab("Context")}
                       >
-                        <Icon name="folder" />
+                        <Icon name="files" />
                         {t.conversationFiles}
                       </button>
                     </div>

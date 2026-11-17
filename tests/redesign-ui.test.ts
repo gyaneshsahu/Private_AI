@@ -179,6 +179,9 @@ describe.each([375, 1280])("chat screen and message box at %i px", (width) => {
       await ui(panel).toBeVisible();
       const rows = panel.locator(":scope > button");
       await ui(page.locator(".composer .context-count")).toHaveCount(0);
+      // One icon per meaning: no two rows of the menu share a drawing (owner, 18 November).
+      const drawings = await rows.evaluateAll((all) => all.map((b) => b.querySelector("svg path")?.getAttribute("d")));
+      expect(new Set(drawings).size).toBe(drawings.length);
       expect(await rows.count()).toBeGreaterThanOrEqual(4);
       for (const name of ["Attach file", "Photo to text", "Conversation files"])
         await ui(panel.getByRole("button", { name, exact: false })).toBeVisible();
@@ -231,8 +234,13 @@ describe.each([375, 1280])("left menu at %i px", (width) => {
       await send(page, "SYNTHETIC zebracanary lighthouse question");
       const side = await menu(page);
       // The logo is the comet drawing, not the old "C" square.
-      await ui(side.locator(".brand svg.brand-mark circle")).toHaveCount(1);
-      await ui(side.locator(".brand")).toHaveText("CometRow");
+      // The official logo kit's lockup (dark artwork on the light theme), loaded and visible.
+      const logo = side.locator(".brand .brand-logo-dark");
+      await ui(logo).toBeVisible();
+      await ui(logo).toHaveAttribute("src", "/logo/svg/cometrow-A-lockup-horizontal-dark.svg");
+      expect(await logo.evaluate((img) => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+      await ui(side.locator(".brand .brand-logo-light")).toBeHidden();
+      await ui(side.getByRole("img", { name: "CometRow" })).toHaveCount(1);
       // Secure Max sits right under Incognito chat, above Scheduled (owner, 18 November).
       const ys = await Promise.all([".new-incognito", ".secure-max-entry", ".scheduled-entry"].map((sel) => side.locator(sel).first().boundingBox()));
       expect(ys[0]!.y).toBeLessThan(ys[1]!.y);

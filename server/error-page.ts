@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import type express from "express";
 import { finalErrorHandler } from "./app";
 
-const style = `*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f7f8f5;color:#243a32;font:16px/1.5 system-ui,sans-serif}main{max-width:30rem;padding:2rem 1rem;text-align:center}.brand{font-size:1.5rem;font-weight:650;letter-spacing:-.03em;margin:0 0 1.5rem}.brand span{font-weight:350}h1{font-size:1.5rem;margin:0 0 .5rem}p{margin:0 0 1.5rem;color:#536359}a.home{display:inline-block;min-height:44px;padding:.65rem 1.25rem;border-radius:999px;background:#6b4bb0;color:#fff;text-decoration:none;font-weight:600}a.home:focus-visible{outline:3px solid #c3adf5;outline-offset:3px}@media(prefers-color-scheme:dark){body{background:#17181c;color:#ecebf2}p{color:#b8b6c4}a.home{background:#c3adf5;color:#17181c}}`;
+const style = `*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fbfcfe;color:#101828;font:16px/1.5 system-ui,sans-serif}main{max-width:30rem;padding:2rem 1rem;text-align:center}.brand{display:block;margin:0 auto 1.75rem;height:32px}.brand img{height:32px;width:auto}.brand .on-dark{display:none}h1{font-size:1.5rem;font-weight:600;margin:0 0 .5rem}p{margin:0 0 1.5rem;color:#525d76}a.home{display:inline-block;min-height:44px;padding:.65rem 1.25rem;border-radius:999px;background:#2456e6;color:#fff;text-decoration:none;font-weight:600}a.home:focus-visible{outline:3px solid #8fb4ff;outline-offset:3px}@media(prefers-color-scheme:dark){body{background:#1b1b1e;color:#ededf0}p{color:#b1b1ba}a.home{background:#ededf0;color:#18181b}.brand .on-light{display:none}.brand .on-dark{display:inline}}`;
 const styleHash = createHash("sha256").update(style).digest("base64");
 
 const copy = {
@@ -38,7 +38,7 @@ export function sendErrorPage(req: express.Request, res: express.Response, statu
     .status(status)
     .type("html")
     .send(
-      `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><title>${t[status].title} · CometRow</title><style>${style}</style></head><body><main><p class="brand">Comet<span>Row</span></p><h1>${t[status].heading}</h1><p>${t[status].body}</p><a class="home" href="/">${t.home}</a></main></body></html>`,
+      `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><title>${t[status].title} · CometRow</title><style>${style}</style></head><body><main><p class="brand"><img class="on-light" src="/logo/svg/cometrow-A-lockup-horizontal-dark.svg" alt="CometRow"><img class="on-dark" src="/logo/svg/cometrow-A-lockup-horizontal-light.svg" alt="CometRow"></p><h1>${t[status].heading}</h1><p>${t[status].body}</p><a class="home" href="/">${t.home}</a></main></body></html>`,
     );
 }
 
