@@ -12,6 +12,14 @@ State at the end of 17 November: steps 1 and 2 are in the app; CI green on `2596
 
 Known flaky test: `tests/chat-recovery.test.ts` line 429 (focus on a code block) failed twice in CI on unrelated changes and passed on a rerun. Look into it if it fails again.
 
+## 18 November 2026: leftovers
+
+| Feature | Result | What broke | What was fixed |
+| --- | --- | --- | --- |
+| "Protected connection available · Privacy details" as a small lock chip; it still opens its details | pass (`chat-core-ui`, 14 of 14) | - | - |
+| Colours change smoothly when the theme switches | built | - | - |
+| "Usage unavailable · No active plan shown" in the menu | not changed | it is what the test build says without a plan; the hosted app shows the remaining requests | none |
+
 ## 18 November 2026: errors, dialogs, Secure Max in the menu
 
 Tests: `tests/redesign-ui.test.ts`, "states and dialogs" and the left-menu order check; older files rerun (31 files, then 9 files with 126 checks). Screenshots: `.local/ui-redesign/step-10`, `step-11`.
