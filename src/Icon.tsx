@@ -47,6 +47,17 @@ const paths = {
   speaker: "M11 5 6 9H3v6h3l5 4V5ZM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13",
   pause: "M9 5v14M15 5v14",
   trash: "M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3",
+  // Whiteboard (17 November): its tools, undo, the menu row, and the right-hand panel button.
+  pen: "M4 20c4-1 6-3 9-7l5-5-3-3-5 5c-4 3-6 5-6 10Z",
+  eraser: "M16 4l4 4-10 10H6v-4L16 4ZM3 21h18",
+  square: "M6 6h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z",
+  "arrow-tool": "M5 19 19 5M11 5h8v8",
+  "text-tool": "M5 7V4h14v3M12 4v16M9 20h6",
+  note: "M5 4h14v11l-5 5H5ZM14 20v-5h5",
+  undo: "M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3",
+  whiteboard: "M3 4h18v13H3ZM8 21l4-4 4 4M7 13l3-3 2 2 4-4",
+  panel: "M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2ZM15 4v16",
+  open: "M14 4h6v6M20 4l-9 9M18 14v6H4V6h6",
 } as const;
 export type IconName = keyof typeof paths;
 export function Icon({ name }: { name: IconName }) {

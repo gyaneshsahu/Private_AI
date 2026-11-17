@@ -10,6 +10,15 @@ import { prepareSearchQuery } from "./identifier-masking";
 import { imageCreationText } from "./text/image-creation";
 
 export type CreatedImage = NonNullable<Message["createdImage"]>;
+/**
+ * Created images live inside the saved chat, and a synced chat is at most 4 MiB on the server
+ * (server/vault-sync.ts). This leaves room for the text and a whiteboard (1 MB at most); a 1 MP JPEG
+ * is roughly 0.2 to 0.5 MB as base64. shortcut: one chat holds about 4 to 10 images; blobs like
+ * project files would lift this (owner decision).
+ */
+export const CHAT_IMAGE_BUDGET = 2_000_000;
+export const chatImageCharacters = (messages: readonly Message[]) =>
+  messages.reduce((sum, m) => sum + (m.createdImage?.data.length ?? 0), 0);
 type Failure = "refusedRealPerson" | "refusedMinors" | "refusedProvider" | "limit" | "capacity" | "unavailable" | "signin";
 
 /** Calls the server once. Throws a failure key the dialog turns into a sentence. */
@@ -120,15 +129,18 @@ export function CreateImageDialog(props: {
 /** A created image in the chat: the picture, Download, Regenerate, and a small info icon to Privacy. */
 export function CreatedImageCard(props: { image: CreatedImage; onRegenerate?(prompt: string): void; onPrivacy?(): void }) {
   const t = useText(imageCreationText);
-  const url = useMemo(() => {
+  // Made in an effect, not a memo: StrictMode's second mount would otherwise keep a revoked URL.
+  const [url, setUrl] = useState<string>();
+  useEffect(() => {
     const bytes = Uint8Array.from(atob(props.image.data), (c) => c.charCodeAt(0));
-    return URL.createObjectURL(new Blob([bytes], { type: props.image.type }));
+    const made = URL.createObjectURL(new Blob([bytes], { type: props.image.type }));
+    setUrl(made);
+    return () => URL.revokeObjectURL(made);
   }, [props.image.data, props.image.type]);
-  useEffect(() => () => URL.revokeObjectURL(url), [url]);
   const extension = props.image.type === "image/png" ? "png" : props.image.type === "image/webp" ? "webp" : "jpg";
   return (
     <figure className="created-image">
-      <img src={url} alt={t.alt(props.image.prompt)} />
+      {url && <img src={url} alt={t.alt(props.image.prompt)} />}
       <figcaption>
         <span className="created-image-prompt">{props.image.prompt}</span>
         <span className="created-image-actions">

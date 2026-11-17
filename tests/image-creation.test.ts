@@ -129,3 +129,16 @@ it("a created image is saved with the conversation as base64 (the vault still re
   const dataUrl = { ...saved, messages: [{ ...saved.messages[0], createdImage: { ...image, data: "data:image/png;base64,iVBORw0KGgo=" } }] };
   expect(savedConversationSchema.safeParse(dataUrl).success).toBe(false);
 });
+
+it("a chat full of created images plus the largest whiteboard still fits in one synced chat", async () => {
+  const { CHAT_IMAGE_BUDGET, chatImageCharacters } = await import("../src/CreateImage");
+  const { SYNC_LIMITS } = await import("../server/vault-sync");
+  const { BOARD_LIMITS } = await import("../shared/whiteboard");
+  const image = (n: number) => ({ ...newMessage("assistant", "[Created image: lake]"), status: "complete" as const, createdImage: { type: "image/jpeg" as const, data: "A".repeat(n), model: "m", prompt: "lake" } });
+  // The last image allowed starts just under the budget; a large 1 MP JPEG is about 0.5 MB as base64.
+  const messages = [image(CHAT_IMAGE_BUDGET - 1), image(500_000)];
+  expect(chatImageCharacters(messages.slice(0, 1))).toBeLessThan(CHAT_IMAGE_BUDGET);
+  expect(chatImageCharacters(messages)).toBeGreaterThanOrEqual(CHAT_IMAGE_BUDGET);
+  const worst = JSON.stringify({ ...emptyConversation(), messages, board: { pad: "x".repeat(BOARD_LIMITS.jsonCharacters) }, text: "y".repeat(400_000) });
+  expect(new TextEncoder().encode(worst).byteLength).toBeLessThan(SYNC_LIMITS.itemBytes);
+});

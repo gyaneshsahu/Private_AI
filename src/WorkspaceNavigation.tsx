@@ -1,3 +1,4 @@
+import { sidePanelsText } from "./text/side-panels";
 import { BrandLockup } from "./CometMark";
 import { UsageMeter } from "./UsageMeter";
 import { containDialogFocus } from "./dialog-focus";
@@ -56,6 +57,8 @@ export function WorkspaceNavigation(props: {
   onShortcuts?: () => void;
   /** The Scheduled screen (docs/scheduled-20261115.md); absent while its switch is off. */
   onScheduled?: () => void;
+  /** Whiteboard: a new chat with the board open (absent when the whiteboard is off). */
+  onWhiteboard?: () => void;
   /** A background task exists: the entry keeps its badge. */
   backgroundActive?: boolean;
   /** The quiet sync status (src/SyncScreens.tsx), only when the deployment has sync. */
@@ -126,6 +129,7 @@ export function WorkspaceNavigation(props: {
   const pt = useText(projectText);
   const groups = useText(savedListText);
   const st = useText(scheduledText);
+  const sp = useText(sidePanelsText);
   // Pinned chats first under their own heading, the rest by the day they were last used.
   const groupOf = (c: Conversation) => (c.pinned ? "pinned" : dateGroup(lastActivity(c)));
   const dialog = useRef<HTMLDialogElement>(null);
@@ -231,6 +235,12 @@ export function WorkspaceNavigation(props: {
       </div>
       {/* Secure Max sits with the other ways to start a chat (owner, 17 November), not at the bottom. */}
       {maxSection}
+      {props.onWhiteboard && (
+        <button className="whiteboard-entry" onClick={props.onWhiteboard} disabled={newDisabled} aria-label={sp.newWhiteboard}>
+          <Icon name="whiteboard" />
+          <span>{sp.whiteboard}</span>
+        </button>
+      )}
       {onScheduled && (
         <button
           className="scheduled-entry"

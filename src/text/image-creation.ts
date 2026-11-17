@@ -25,6 +25,7 @@ export const imageCreationText = defineText({
     capacity: "Image creation has reached its capacity for now. Please try again later.",
     unavailable: "The image could not be created. Please try again.",
     signin: "Sign in to create images.",
+    chatFull: "This chat has no room for more images. Start a new chat to create more.",
   },
   de: {
     menu: "Bild erstellen",
@@ -49,5 +50,6 @@ export const imageCreationText = defineText({
     capacity: "Die Bilderstellung hat vorerst ihre Kapazitätsgrenze erreicht. Bitte versuchen Sie es später erneut.",
     unavailable: "Das Bild konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
     signin: "Melden Sie sich an, um Bilder zu erstellen.",
+    chatFull: "In diesem Chat ist kein Platz für weitere Bilder. Starten Sie einen neuen Chat, um weitere zu erstellen.",
   },
 });

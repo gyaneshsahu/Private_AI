@@ -4,11 +4,29 @@ One line per check, newest first. "Test" names the Playwright file that keeps th
 
 ## Next (kept current, so work can resume after a break)
 
-State, 17 November evening: voice conversation, charts, logo kit and icons, the one first-start notice, the whiteboard study and image creation (behind its switch, off, provider mocked) are done and tested.
+State, 17 November evening: the owner approved the whiteboard next to the chat (mock `evaluation/ui-redesign/whiteboard-side-mock.html`) with changes: no send button on the board (it goes with the next question by itself, as a removable chip), a card in the chat that opens the board again, and a top-right "In this chat" panel listing the board, canvas, created images and files.
 
-1. **Whiteboard next to the chat:** owner's new brief (17 November): "Whiteboard" in the left menu with Incognito and Secure Max, also in "+" and during a chat; chat on the left, board on the right; light and dark. Mock sent for approval (`evaluation/ui-redesign/whiteboard-side-mock.html`; on a phone a Chat | Whiteboard switch). **Wait for the owner's OK before building.**
-2. **Waiting for the owner:** image provider choice and contract checklist (`docs/image-creation-20261117.md`); shorter texts (`docs/ui-text-shortening-proposal.md`); first-start notice and privacy partners draft for the legal read (`docs/notices-inventory-20261117.md`, `docs/privacy-partners-draft-20261117.md`); whiteboard decisions (`docs/whiteboard-study-20261117.md`).
-3. Owner asked: send a screenshot of every finished UI piece.
+1. **Whiteboard, in progress:** storage done and committed (`shared/whiteboard.ts`, saved with the chat, sync merge, `tests/whiteboard.test.ts`). App wiring written, not yet run (`src/App.tsx` side state `side`, `src/text/side-panels.ts`, chip, card in `src/ChatMessage.tsx`, menu row in `src/WorkspaceNavigation.tsx`, switch `VITE_WHITEBOARD`, styles at the end of `src/chat-design.css`, browser tests "whiteboard next to the chat" in `tests/redesign-ui.test.ts`). Being built by helpers: `src/Whiteboard.tsx` + `src/whiteboard-render.ts` (drawing surface, picture), `src/OutputsPanel.tsx` + `src/outputs.ts` ("In this chat"). Then: type-check, run all tests, screenshots in light and dark, commit, CI.
+2. **CI is red on `npm audit` only:** picomatch advisory GHSA-fc5q-39xc-vjpf (no fixed version), reached through vite/vitest (counted as production because better-auth lists vitest as an optional peer). Owner to decide: allow this one advisory in CI until a fix ships, or wait.
+3. **Created images:** a per-chat budget (`CHAT_IMAGE_BUDGET`, 2 million base64 characters) keeps a chat under the 4 MiB sync limit; moving images to encrypted blobs like project files would lift it (owner decision).
+4. **Waiting for the owner:** image provider choice and contract checklist (`docs/image-creation-20261117.md`); shorter texts (`docs/ui-text-shortening-proposal.md`); first-start notice and privacy partners draft for the legal read; whiteboard study decisions (`docs/whiteboard-study-20261117.md`).
+5. Owner asked: send a screenshot of every finished UI piece.
+
+## 17 November 2026: whiteboard next to the chat, "In this chat"
+
+Details: `docs/whiteboard-20261117.md`. Built by me (storage, app wiring, layout) and two helpers in parallel (drawing surface; "In this chat" panel), each with its own tests. Tests: `tests/whiteboard.test.ts` 5, `tests/whiteboard-render.test.ts` 3, `tests/whiteboard-ui.test.ts` 11, `tests/outputs.test.ts` 6, `tests/outputs-panel-ui.test.ts` 7, `tests/redesign-ui.test.ts` "whiteboard" 5 (375 and 1,280 px, dark).
+
+| Feature | Result | What broke | What was fixed |
+| --- | --- | --- | --- |
+| Whiteboard in the left menu: a new chat with the board open | pass | on a phone the board closed again (a new chat changes its id twice) | the board stays open for the chat it was opened with |
+| The board goes with the next question as a picture, once; the chip's "x" skips it | pass | - | - |
+| Card on the question opens the board | pass | on a phone the card was under the board | the card always shows the board |
+| "+" opens the board in an ongoing chat; "In this chat" lists it and opens it | pass | - | - |
+| Chat beside the board at 1,280 px | pass after fix | the chat was about 320 px wide, the first-start notice a thin column | the board takes about 56 % of the space; the notice's buttons go under its text |
+| Undo after switching chats | fixed before testing (helper's review) | the board's undo history could cross into another chat | the panel is reset per chat |
+| Created image card in development mode | fixed (helper's review) | a revoked picture link after React's double mount | the link is made in an effect |
+| Image creation browser test, first request | fixed (test setup) | 403 "Request authorization failed" in 2 of 5 runs: the fake status passed the server's reply on, but the browser did not keep its session cookie, so the page's token could belong to another session (not the app: it asks for its status once and the browser keeps the cookie) | the fakes open one server session for the browser before the page loads; 5 of 5, and all 44 checks in the file pass |
+| Five older screen tests (context review, sources, calculator, continuation, invitations) | fixed (test setup) | timed out at 25 to 30 s on this machine: Vite's file watcher scanned the whole checkout (old agent worktrees 2.8 GB, `.local` 1.8 GB), each file load waited up to 11 s; warm-up 28 s against 1 s in a clean copy | the shared warm-up closes the watcher (tests never reload on changes); 5 of 5 |
 
 ## 17 November 2026: image creation (provider mocked)
 

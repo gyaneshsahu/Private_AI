@@ -604,6 +604,95 @@ describe.each([375, 1280])("image creation at %i px (provider mocked)", (width) 
   });
 });
 
+/** Draws one short stroke with the pen across the middle of the board. */
+async function scribble(page: Page) {
+  const box = (await page.locator(".whiteboard-panel svg.wb-svg").boundingBox())!;
+  await page.mouse.move(box.x + box.width * 0.3, box.y + box.height * 0.4);
+  await page.mouse.down();
+  for (let i = 1; i <= 8; i++) await page.mouse.move(box.x + box.width * (0.3 + i * 0.04), box.y + box.height * (0.4 + (i % 2) * 0.05));
+  await page.mouse.up();
+}
+
+describe.each([375, 1280])("whiteboard next to the chat at %i px", (width) => {
+  const phone = width < 1100;
+  it("Whiteboard in the left menu starts a chat with the board; the board goes with the next question as a picture, once; its card opens it again", async () => {
+    const { context, page, fakes } = await open(width);
+    try {
+      if (phone) await page.getByLabel("Open navigation", { exact: true }).click();
+      await page.getByRole("button", { name: "New chat with a whiteboard", exact: true }).click();
+      const board = page.locator("aside.whiteboard-panel");
+      await ui(board).toBeVisible();
+      await scribble(page);
+      if (phone) {
+        // The switch shows the chat while the board stays open.
+        await page.locator(".side-switch").getByRole("button", { name: "Chat", exact: true }).click();
+        await ui(board).toBeHidden();
+      } else await ui(page.locator("main")).toBeVisible();
+      const chip = page.locator(".board-chip");
+      await ui(chip).toHaveText(/Whiteboard goes with your question/);
+      await send(page, "Does this sketch make sense?");
+      const asked = fakes.log.replies.at(-1)!.request;
+      expect(asked.image).toBe(true);
+      await ui(chip).toBeHidden();
+      // Sent once: the next question goes without it until the board changes.
+      await send(page, "Thanks audit:plain");
+      expect(fakes.log.replies.at(-1)!.request.image).toBe(false);
+      const card = page.locator("article.user").first().getByRole("button", { name: "Open the whiteboard" });
+      await ui(card).toBeVisible();
+      if (!phone) await page.getByRole("button", { name: "Close whiteboard", exact: true }).click();
+      if (!phone) await ui(board).toBeHidden();
+      await card.click();
+      await ui(board).toBeVisible();
+      expect(await board.locator("svg.wb-svg :is(path, polyline)").count()).toBeGreaterThan(0);
+      expect(await noSidewaysScroll(page)).toBeLessThanOrEqual(0);
+      await page.screenshot({ path: `.local/ui-redesign/whiteboard-app-${width}.png` });
+    } finally {
+      await context.close();
+    }
+  });
+
+  it("\"+\" opens the board in an ongoing chat; the chip can be removed; \"In this chat\" lists the board and opens it", async () => {
+    const { context, page, fakes } = await open(width);
+    try {
+      await send(page, "Plan a small office audit:plain");
+      await page.getByLabel("Attachments and tools", { exact: true }).click();
+      await page.locator(".tools-menu .menu-surface").getByRole("button", { name: "Whiteboard", exact: true }).click();
+      const board = page.locator("aside.whiteboard-panel");
+      await ui(board).toBeVisible();
+      await scribble(page);
+      if (phone) await page.locator(".side-switch").getByRole("button", { name: "Chat", exact: true }).click();
+      await page.getByRole("button", { name: "Don't send the whiteboard with this question" }).click();
+      await ui(page.locator(".board-chip")).toBeHidden();
+      await send(page, "Without the board this time audit:plain");
+      expect(fakes.log.replies.at(-1)!.request.image).toBe(false);
+      // "In this chat" at the top right.
+      await page.getByRole("button", { name: "Show everything in this chat" }).click();
+      const outputs = page.locator("aside.outputs-panel");
+      await ui(outputs).toBeVisible();
+      await ui(outputs.getByText("Whiteboard").first()).toBeVisible();
+      expect(await noSidewaysScroll(page)).toBeLessThanOrEqual(0);
+      await page.screenshot({ path: `.local/ui-redesign/outputs-app-${width}.png` });
+      await outputs.getByRole("button", { name: /open/i }).first().click();
+      await ui(board).toBeVisible();
+      await ui(outputs).toBeHidden();
+    } finally {
+      await context.close();
+    }
+  });
+});
+
+it("whiteboard in the dark theme", async () => {
+  const { context, page } = await open(1280, "dark");
+  try {
+    await page.getByRole("button", { name: "New chat with a whiteboard", exact: true }).click();
+    await ui(page.locator("aside.whiteboard-panel")).toBeVisible();
+    await scribble(page);
+    await page.screenshot({ path: ".local/ui-redesign/whiteboard-app-dark.png" });
+  } finally {
+    await context.close();
+  }
+});
+
 it("dark theme: the same screen renders with the dark tokens and stays readable", async () => {
   const { context, page } = await open(1280, "dark");
   try {

@@ -1,4 +1,4 @@
-import { CreateImageDialog } from "./CreateImage";
+import { CHAT_IMAGE_BUDGET, chatImageCharacters, CreateImageDialog } from "./CreateImage";
 import { imageCreationText } from "./text/image-creation";
 import { Icon } from "./Icon";
 import type { Project } from "./projects";
@@ -148,7 +148,9 @@ import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
 import { stopReading } from "./read-aloud";
 import { PdfExportButton } from "./PdfExportButton";
-import { canvasEnabled, liveVoiceEnabled, memoryEnabled, projectSpacesEnabled, readAloudEnabled } from "./device-features";
+import { canvasEnabled, liveVoiceEnabled, memoryEnabled, projectSpacesEnabled, readAloudEnabled, whiteboardEnabled } from "./device-features";
+import { sidePanelsText } from "./text/side-panels";
+import { boardText, boardUnsent, emptyBoard } from "../shared/whiteboard";
 import { CANVAS_LIMITS, keepForUndo, proposedText, withCanvas, withoutEarlierCanvas } from "./canvas";
 import { canvasText } from "./text/canvas";
 import { addMemory, memoriesFor, rememberRequest } from "./memory";
@@ -203,6 +205,8 @@ const AccountUsage = lazyNamed(() => import("./AccountUsage"), "AccountUsage");
 const ScheduledPanel = lazyNamed(() => import("./ScheduledScreen"), "ScheduledPanel");
 const ProjectPanel = lazyNamed(() => import("./ProjectPanel"), "ProjectPanel");
 const CanvasPanel = lazyNamed(() => import("./CanvasPanel"), "CanvasPanel");
+const WhiteboardPanel = lazyNamed(() => import("./Whiteboard"), "WhiteboardPanel");
+const OutputsPanel = lazyNamed(() => import("./OutputsPanel"), "OutputsPanel");
 const DeepResearch = lazyNamed(() => import("./DeepResearch"), "DeepResearch");
 const LiveVoice = lazyNamed(() => import("./LiveVoice"), "LiveVoice");
 const ImageQuestion = lazyNamed(() => import("./ImageQuestion"), "ImageQuestion");
@@ -253,6 +257,9 @@ export function App() {
   const [imageOpen, setImageOpen] = useState(false);
   // Image creation: the dialog's starting description, or undefined while it is closed.
   const [createImageFor, setCreateImageFor] = useState<string>();
+  // A chat's created images must fit in it when it syncs (CHAT_IMAGE_BUDGET): checked before any cost.
+  const startImage = (prompt: string) =>
+    chatImageCharacters(conversation.messages) >= CHAT_IMAGE_BUDGET ? fail(imageCreationText[lang].chatFull) : setCreateImageFor(prompt);
   // A pasted or dropped picture that opened the same steps (it starts at turn and crop).
   const [imageFile, setImageFile] = useState<File>();
   const [attachedImage, setAttachedImage] = useState<AttachedImage>();
@@ -538,9 +545,26 @@ export function App() {
   const [saved, setSaved] = useState<Conversation[]>([]);
   const [unreadableSnapshots, setUnreadableSnapshots] = useState(0);
   const [editId, setEditId] = useState<string>();
-  // Canvas (docs/canvas-20261114.md): whether its panel is open. Another conversation closes it.
-  const [canvasOpen, setCanvasOpen] = useState(false);
-  useEffect(() => setCanvasOpen(false), [conversation.id]);
+  // The right-hand panel (canvas, whiteboard or "In this chat"); one at a time. Another conversation
+  // closes it, except the chat it was opened with (Whiteboard in the menu starts a chat with it).
+  const [side, setSide] = useState<"canvas" | "board" | "outputs">();
+  const sideChat = useRef("");
+  useEffect(() => {
+    if (sideChat.current !== conversation.id) setSide(undefined);
+  }, [conversation.id]);
+  const canvasOpen = side === "canvas";
+  const setCanvasOpen = (open: boolean) => setSide(open ? "canvas" : undefined);
+  // Below 1,100 px the whiteboard covers the chat; this switches to the chat while it stays open.
+  const [boardChatView, setBoardChatView] = useState(false);
+  useEffect(() => setBoardChatView(false), [side]);
+  // The board goes with the next question once it changed; "x" on its chip skips this version.
+  const [boardSkipped, setBoardSkipped] = useState<string>();
+  const boardGoes =
+    whiteboardEnabled() && !!status?.images && !attachedImage && boardUnsent(conversation.board) && boardSkipped !== conversation.board.changedAt;
+  const openBoard = () => {
+    setSide("board");
+    setBoardChatView(false);
+  };
   async function openCanvas(answer: string) {
     const text = proposedText(answer);
     const old = conversation.canvas?.text;
@@ -551,6 +575,16 @@ export function App() {
     if (!replace) return;
     keepForUndo(conversation.id, old);
     setConversation((c) => withCanvas(c, text));
+  }
+  // "In this chat": the whiteboard as a picture file, dark on white.
+  async function downloadBoard() {
+    if (!conversation.board) return;
+    try {
+      const picture = await (await import("./whiteboard-render")).boardPicture(conversation.board, 8_000_000);
+      Object.assign(document.createElement("a"), { href: picture.dataUrl, download: "cometrow-whiteboard.jpg" }).click();
+    } catch {
+      fail(sidePanelsText[lang].boardFailed);
+    }
   }
   const [operandA, setOperandA] = useState("");
   const [operandB, setOperandB] = useState("");
@@ -1201,7 +1235,17 @@ export function App() {
     research?: { note: string; abort: AbortController },
   ): Promise<boolean | void> {
     // A picture goes with a message typed in the composer only, never with "ask again".
-    const image = consumeDraft && status?.images ? attachedImage : undefined;
+    // The whiteboard goes as a picture the same way when it changed since it last went.
+    const board = consumeDraft && boardGoes ? base.board : undefined;
+    let boardImage: AttachedImage | undefined;
+    if (board && status?.images && text.trim() && !busy) {
+      try {
+        boardImage = await (await import("./whiteboard-render")).boardPicture(board, status.images.maxBytes);
+      } catch {
+        return fail(sidePanelsText[lang].boardFailed);
+      }
+    }
+    const image = consumeDraft && status?.images ? (attachedImage ?? boardImage) : undefined;
     if (image && !text.trim()) return fail(imageText[lang].needQuestion);
     if (busy || !status?.inference.ready || !text.trim()) return;
     if (status.healthConsentDraft && !healthConsent && !consentChosen) {
@@ -1224,7 +1268,15 @@ export function App() {
         (base.messages.length || base.title !== "New conversation")
           ? base.title
           : titleFrom(text),
-      messages: [...base.messages, { ...newMessage("user", text.trim()), ...(image ? { image: true as const } : {}) }],
+      messages: [
+        ...base.messages,
+        {
+          ...newMessage("user", text.trim()),
+          ...(image ? { image: true as const } : {}),
+          ...(boardImage && board ? { board: { ...(boardText(board) ? { text: boardText(board) } : {}) } } : {}),
+        },
+      ],
+      ...(boardImage && board ? { board: { ...board, sentAt: new Date().toISOString() } } : {}),
     };
     try {
       composeContext(
@@ -1731,7 +1783,8 @@ export function App() {
   function submitDraft(asIs = false) {
     // While the deep research card is open, its buttons decide; armed, Send opens it for this text.
     if (researchFor !== undefined) return;
-    if (researchNext && researchReady && !attachedImage && !busy) {
+    const picture = !!attachedImage || boardGoes;
+    if (researchNext && researchReady && !picture && !busy) {
       setResearchNext(false);
       setResearchFor(input.trim());
       return;
@@ -1739,25 +1792,25 @@ export function App() {
     // FE-07: armed from the "+" menu, Send shows the approval card for this text (also with
     // automatic search on: the menu is a request to search, the card is the approval).
     // While that card is open, Send changes nothing: the card's buttons decide.
-    if (forced || (searchNext && status?.search && status.inference.ready && !attachedImage && !busy)) {
+    if (forced || (searchNext && status?.search && status.inference.ready && !picture && !busy)) {
       setSearchNext(false);
       setSearchFor(input);
       return;
     }
     // "Remember that ...": ask to save it as a memory. Nothing is sent unless the user says so.
     const wanted =
-      memoryEnabled() && !conversation.incognito && !attachedImage && !busy
+      memoryEnabled() && !conversation.incognito && !picture && !busy
         ? rememberRequest(input)
         : undefined;
     // "Every day at 10, give me ...": offer a scheduled task. Nothing is sent unless the user says so.
     const planned =
-      !wanted && !asIs && scheduledEnabled() && !conversation.incognito && !attachedImage && !busy
+      !wanted && !asIs && scheduledEnabled() && !conversation.incognito && !picture && !busy
         ? detectSchedule(input)
         : undefined;
     if (wanted) setRemember({ text: wanted, draft: true });
     else if (planned) setScheduleCard({ text: input, found: planned });
     // A picture question goes straight to the model: no search step in between.
-    else if (attachedImage && status?.images) void send();
+    else if (picture && status?.images) void send();
     else if ((autoSearch || autoRules) && suggestion)
       void searchThenAnswer(suggestion.value, "auto");
     else if (askFirst) setChoiceFor(input);
@@ -2412,7 +2465,7 @@ export function App() {
   );
   return (
     <div
-      className={`app-shell chat-design ${navigationCollapsed ? "navigation-collapsed" : ""}${canvasOpen && tab === "Conversation" ? " canvas-open" : ""}`}
+      className={`app-shell chat-design ${navigationCollapsed ? "navigation-collapsed" : ""}${side && tab === "Conversation" ? ` side-open side-${side}${side === "board" && boardChatView ? " board-chat-view" : ""}` : ""}`}
       data-theme={
         appearance === "system" ? (systemDark ? "dark" : "light") : appearance
       }
@@ -2541,6 +2594,21 @@ export function App() {
           setTab("Conversation");
           setNavigationOpen(false);
         }}
+        onWhiteboard={
+          whiteboardEnabled()
+            ? async () => {
+                if (!(await allowNew())) return;
+                reset();
+                setSection("secure");
+                const next = emptyConversation();
+                sideChat.current = next.id;
+                setConversation(next);
+                setSide("board");
+                setTab("Conversation");
+                setNavigationOpen(false);
+              }
+            : undefined
+        }
         onNewIncognito={async () => {
           if (!(await allowNew())) return;
           reset();
@@ -2816,6 +2884,18 @@ export function App() {
               </p>
             )}
           </div>
+          {whiteboardEnabled() && tab === "Conversation" && (
+            <button
+              type="button"
+              className="outputs-toggle icon-action"
+              aria-label={sidePanelsText[lang].outputsOpen}
+              title={sidePanelsText[lang].outputs}
+              aria-pressed={side === "outputs"}
+              onClick={() => setSide(side === "outputs" ? undefined : "outputs")}
+            >
+              <Icon name="panel" />
+            </button>
+          )}
           <details className="conversation-menu" {...menuKeys}>
             <summary aria-label={t.conversationActions}>
               <Icon name="more" />
@@ -3071,10 +3151,11 @@ export function App() {
                   // Image creation on a short answer: the dialog opens with the answer's start as the description.
                   onCreateImage={
                     status?.imageCreation && message.role === "assistant" && message.text.length <= 600
-                      ? () => setCreateImageFor(message.text.replace(/[#*_`>|]/g, "").replace(/\s+/g, " ").trim().slice(0, 300))
+                      ? () => startImage(message.text.replace(/[#*_`>|]/g, "").replace(/\s+/g, " ").trim().slice(0, 300))
                       : undefined
                   }
-                  onRegenerateImage={status?.imageCreation ? (prompt) => setCreateImageFor(prompt) : undefined}
+                  onRegenerateImage={status?.imageCreation ? (prompt) => startImage(prompt) : undefined}
+                  onOpenBoard={whiteboardEnabled() && conversation.board ? openBoard : undefined}
                   onImagePrivacy={() =>
                     setSource({ id: "privacy-policy", title: t.privacyPolicy, text: privacyPolicyText(disclosedProvider(status), lang) })
                   }
@@ -3244,6 +3325,21 @@ export function App() {
                     {healthConsentCopy(lang).declinedNote}
                   </p>
                 )}
+              {boardGoes && (
+                <p className="board-chip" role="status">
+                  <Icon name="whiteboard" />
+                  <span>{sidePanelsText[lang].chip}</span>
+                  <button
+                    type="button"
+                    className="icon-action"
+                    aria-label={sidePanelsText[lang].chipRemove}
+                    title={sidePanelsText[lang].chipRemove}
+                    onClick={() => setBoardSkipped(conversation.board?.changedAt)}
+                  >
+                    <Icon name="close" />
+                  </button>
+                </p>
+              )}
               {attachedImage && status?.images && (
                 <AttachedImageNote
                   image={attachedImage}
@@ -3425,8 +3521,14 @@ export function App() {
                           {imageText[lang].menu}
                         </button>
                       )}
+                      {whiteboardEnabled() && (
+                        <button type="button" className="text-button" onClick={openBoard}>
+                          <Icon name="whiteboard" />
+                          {sidePanelsText[lang].whiteboard}
+                        </button>
+                      )}
                       {status?.imageCreation && (
-                        <button type="button" className="text-button" disabled={!!busy} onClick={() => setCreateImageFor("")}>
+                        <button type="button" className="text-button" disabled={!!busy} onClick={() => startImage("")}>
                           <Icon name="sparkle" />
                           {imageCreationText[lang].menu}
                         </button>
@@ -4334,6 +4436,41 @@ export function App() {
           </footer>
         )}
       </main>
+      {whiteboardEnabled() && side === "board" && tab === "Conversation" && (
+        <>
+          <div className="side-switch" role="group" aria-label={sidePanelsText[lang].switchLabel}>
+            <button type="button" aria-pressed={boardChatView} onClick={() => setBoardChatView(true)}>
+              {sidePanelsText[lang].switchChat}
+            </button>
+            <button type="button" aria-pressed={!boardChatView} onClick={() => setBoardChatView(false)}>
+              {sidePanelsText[lang].whiteboard}
+            </button>
+          </div>
+          <WhiteboardPanel
+            key={conversation.id}
+            board={conversation.board ?? emptyBoard(conversation.createdAt)}
+            onChange={(next) => setConversation((c) => ({ ...c, board: next }))}
+            onClose={() => setSide(undefined)}
+          />
+        </>
+      )}
+      {whiteboardEnabled() && side === "outputs" && tab === "Conversation" && (
+        <OutputsPanel
+          conversation={conversation}
+          onOpenBoard={openBoard}
+          onDownloadBoard={() => void downloadBoard()}
+          onOpenCanvas={() => setSide("canvas")}
+          onShowMessage={(id) => {
+            if (matchMedia("(max-width: 1099px)").matches) setSide(undefined);
+            document.querySelector(`article[data-message-id="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "center" });
+          }}
+          onOpenFiles={() => {
+            setSide(undefined);
+            setTab("Context");
+          }}
+          onClose={() => setSide(undefined)}
+        />
+      )}
       {canvasEnabled() && canvasOpen && tab === "Conversation" && (
         <CanvasPanel
           storage={storageOf(mode)}

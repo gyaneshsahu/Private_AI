@@ -2329,7 +2329,7 @@
 }
 
 /* Canvas (docs/canvas-20261114.md): a panel at the right from 1100 px, a full-screen sheet below. */
-.chat-design .canvas-panel {
+.chat-design :is(.canvas-panel, .side-panel) {
   position: fixed;
   inset: 0;
   z-index: 20;
@@ -2451,19 +2451,19 @@
   padding-top: 10px;
 }
 @media (min-width: 1100px) {
-  .chat-design.canvas-open {
+  .chat-design.side-open {
     --canvas-panel-width: clamp(380px, 38vw, 620px);
   }
-  .chat-design .canvas-panel {
+  .chat-design :is(.canvas-panel, .side-panel) {
     left: auto;
     width: var(--canvas-panel-width);
     border-left: 1px solid var(--line);
   }
-  .chat-design.canvas-open main {
+  .chat-design.side-open main {
     width: calc(100% - 272px - var(--canvas-panel-width));
     padding: 0 24px;
   }
-  .chat-design.canvas-open.navigation-collapsed main {
+  .chat-design.side-open.navigation-collapsed main {
     width: calc(100% - var(--canvas-panel-width));
   }
   .chat-design .canvas-back {
@@ -2985,7 +2985,7 @@
   font-family: var(--mono);
   overflow-wrap: anywhere;
 }
-.chat-design .scheduled-entry {
+.chat-design :is(.scheduled-entry, .whiteboard-entry) {
   display: flex;
   align-items: center;
   gap: 9px;
@@ -3014,6 +3014,7 @@
     min-height: 44px;
   }
   .chat-design .scheduled-entry,
+  .chat-design .whiteboard-entry,
   .chat-design .scheduled-check,
   .chat-design .scheduled-choice {
     min-height: 44px;
@@ -3783,7 +3784,7 @@
 }
 /* Canvas open (1100 px and up): main's padding is 24 px, so the sticky header bleeds 24 px, not 32. */
 @media (min-width: 1100px) {
-  .chat-design.canvas-open .conversation-header {
+  .chat-design.side-open .conversation-header {
     margin: 0 -24px;
     padding-left: 24px;
     padding-right: 24px;
@@ -4400,7 +4401,7 @@
   color: var(--ink);
   text-decoration: none;
 }
-.chat-design .sidebar :is(.new-chat-row .new-chat, .scheduled-entry, .project-row > button, .history-filters button) {
+.chat-design .sidebar :is(.new-chat-row .new-chat, .scheduled-entry, .whiteboard-entry, .project-row > button, .history-filters button) {
   min-height: 40px;
   padding: 0 10px;
   gap: 11px;
@@ -4414,10 +4415,10 @@
   justify-content: flex-start;
   transition: background var(--fast) var(--ease);
 }
-.chat-design .sidebar :is(.new-chat-row .new-chat, .scheduled-entry, .project-row > button, .history-filters button):hover:not(:disabled) {
+.chat-design .sidebar :is(.new-chat-row .new-chat, .scheduled-entry, .whiteboard-entry, .project-row > button, .history-filters button):hover:not(:disabled) {
   background: var(--hover);
 }
-.chat-design .sidebar :is(.new-chat-row .new-chat, .scheduled-entry, .project-row > button, .history-filters button) svg {
+.chat-design .sidebar :is(.new-chat-row .new-chat, .scheduled-entry, .whiteboard-entry, .project-row > button, .history-filters button) svg {
   width: 18px;
   height: 18px;
   color: var(--ink2);
@@ -4432,7 +4433,7 @@
   width: 100%;
   margin: 0;
 }
-.chat-design .sidebar .scheduled-entry {
+.chat-design .sidebar :is(.scheduled-entry, .whiteboard-entry) {
   width: 100%;
   margin: 0;
 }
@@ -4596,7 +4597,7 @@
   margin: 2px 8px 0;
 }
 @media (max-width: 760px) {
-  .chat-design .sidebar :is(.new-chat-row .new-chat, .scheduled-entry, .project-row > button, .chat-list-row > button) {
+  .chat-design .sidebar :is(.new-chat-row .new-chat, .scheduled-entry, .whiteboard-entry, .project-row > button, .chat-list-row > button) {
     min-height: 44px;
   }
   /* 44 px touch targets on phones (CC-19), the small "+" of Projects included. */
@@ -5685,4 +5686,113 @@
   margin: 6px 4px 0;
   font-size: 12.5px;
   color: var(--ink2);
+}
+
+/* ---------- Right-hand panels (17 November): whiteboard and "In this chat" next to the chat ----------
+   The canvas's panel layout for every panel; the whiteboard takes more room. Below 1,100 px a panel
+   covers the chat; for the whiteboard a Chat | Whiteboard switch shows one or the other. */
+@media (min-width: 1100px) {
+  .chat-design.side-open.side-board {
+    /* About 56 % of the space beside the menu, as in the approved mock; the chat keeps the rest. */
+    --canvas-panel-width: clamp(440px, calc((100vw - 272px) * 0.56), 1000px);
+  }
+  .chat-design.side-open.side-outputs {
+    --canvas-panel-width: clamp(360px, 28vw, 420px);
+  }
+  .chat-design .side-switch {
+    display: none;
+  }
+}
+@media (max-width: 1099px) {
+  .chat-design .side-switch {
+    position: fixed;
+    top: max(8px, env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 21;
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 12px;
+    background: var(--subtle);
+    box-shadow: var(--shadow-1, 0 4px 14px -8px #0004);
+  }
+  .chat-design .side-switch button {
+    min-width: 110px;
+    min-height: 40px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--ink2);
+    font-weight: 600;
+  }
+  .chat-design .side-switch button[aria-pressed="true"] {
+    background: var(--surface);
+    color: var(--ink);
+  }
+  .chat-design.side-board:not(.board-chat-view) .whiteboard-panel {
+    padding-top: 56px;
+  }
+  .chat-design.side-board.board-chat-view .whiteboard-panel {
+    display: none;
+  }
+  .chat-design.side-board.board-chat-view main {
+    padding-top: 52px;
+  }
+}
+.chat-design .side-panel {
+  background: var(--bg);
+}
+.chat-design .outputs-toggle[aria-pressed="true"] {
+  background: var(--subtle);
+  color: var(--ink);
+}
+.chat-design .board-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  padding: 4px 4px 4px 12px;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink2);
+  font-size: 13px;
+}
+.chat-design .board-chip svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+.chat-design .board-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 0 auto;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13px;
+}
+.chat-design .board-card:hover {
+  border-color: var(--accent);
+}
+.chat-design .board-card svg {
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+}
+/* Next to an open panel the chat is narrow: the first-start notice's buttons go under its text. */
+@media (min-width: 1100px) {
+  .chat-design.side-open .first-start-notice {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .chat-design.side-open .first-start-actions {
+    justify-content: flex-end;
+  }
 }

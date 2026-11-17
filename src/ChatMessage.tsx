@@ -30,6 +30,7 @@ import { arithmeticText } from "./text/arithmetic";
 import { composerText } from "./text/composer";
 import { imageText } from "./text/images";
 import { messageText } from "./text/message";
+import { sidePanelsText } from "./text/side-panels";
 import type { Storage } from "./text/mode-copy";
 
 // Once loaded, the renderer is used directly: a lazy component suspends on its first render even
@@ -137,6 +138,7 @@ export function ChatMessage({
   onCreateImage,
   onRegenerateImage,
   onImagePrivacy,
+  onOpenBoard,
   onResize,
   streaming,
   storage,
@@ -166,6 +168,8 @@ export function ChatMessage({
   /** A created image's Regenerate and its small info icon (absent when image creation is off). */
   onRegenerateImage?: (prompt: string) => void;
   onImagePrivacy?: () => void;
+  /** The whiteboard card on a question that had the board with it (absent when the whiteboard is off). */
+  onOpenBoard?: () => void;
   onReport: () => void;
   onResize: () => void;
   /** This answer is still arriving: no status label and no actions; dots until its first text. */
@@ -177,6 +181,7 @@ export function ChatMessage({
   const t = appText[lang];
   const mt = messageText[lang];
   const ma = messageActionsText[lang];
+  const sp = sidePanelsText[lang];
   const Answer = answerModule?.Answer ?? LazyAnswer;
   const user = message.role === "user";
   const [draft, setDraft] = useState(message.text);
@@ -226,6 +231,7 @@ export function ChatMessage({
   return (
     <article
       className={`message ${message.role}`}
+      data-message-id={message.id}
       aria-label={t.messageLabel(user, index + 1)}
     >
       <div className="message-heading">
@@ -319,7 +325,15 @@ export function ChatMessage({
           </div>
         </form>
       ) : user ? (
-        <UserText message={message} onResize={onResize} />
+        <>
+          <UserText message={message} onResize={onResize} />
+          {message.board && onOpenBoard && (
+            <button type="button" className="board-card" onClick={onOpenBoard} aria-label={sp.cardOpen}>
+              <Icon name="whiteboard" />
+              <span>{sp.card}</span>
+            </button>
+          )}
+        </>
       ) : streaming && !message.text ? (
         // Before the first text: moving dots for the eye, a sentence for screen readers.
         <div className="message-text message-waiting">

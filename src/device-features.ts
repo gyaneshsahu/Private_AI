@@ -16,6 +16,8 @@ export const memoryEnabled = () => on("VITE_MEMORY");
 export const canvasEnabled = () => on("VITE_CANVAS");
 /** Live voice conversation (docs/live-voice-20261114.md): also needs voice input and read aloud. */
 export const liveVoiceEnabled = () => on("VITE_LIVE_VOICE");
+/** Whiteboard next to the chat and the "In this chat" panel (owner, 17 November). */
+export const whiteboardEnabled = () => on("VITE_WHITEBOARD");
 /**
  * Project instructions and project files (docs/projects-20261114.md): kept in the vault on the
  * device, no server part. Grouping chats by project works without this switch.
