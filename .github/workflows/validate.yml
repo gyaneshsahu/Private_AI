@@ -21,7 +21,13 @@ jobs:
       # Supply chain (A18): registry signatures and provenance of every installed package,
       # and no known high or critical vulnerability in production dependencies.
       - run: npm audit signatures
-      - run: npm audit --omit=dev --audit-level=high
+      # `npm audit --omit=dev`, failing on any high or critical advisory except the ones listed by exact
+      # ID in scripts/audit-check.mjs. Today one: GHSA-fc5q-39xc-vjpf (picomatch, 17 November 2026). The
+      # production-only audit reports it only through better-auth's optional vitest peer; the production
+      # server never imports vite, vitest or picomatch and the client bundle has no picomatch code, so it
+      # is not in the shipped app's running code. Remove it when a fixed version ships
+      # (docs/dependency-exceptions.md; checked weekly and at each dependency update).
+      - run: node scripts/audit-check.mjs
       # Threat model A9 / D18: no credential-shaped string in any tracked file.
       - run: node scripts/secret-scan.mjs
       - name: Install distribution age for encrypted recovery verification
