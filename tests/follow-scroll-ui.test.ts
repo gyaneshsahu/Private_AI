@@ -105,7 +105,7 @@ for (const lang of ["en", "de"] as const)
         await box.fill("SLOW stream");
         await sendButton.click();
         await ui(answers.last()).toContainText("Synthetic line 59.", { timeout: 15000 });
-        await ui(sendButton).toBeVisible({ timeout: 15000 });
+        await ui(page.getByRole("button", { name: a.stopResponse, exact: true })).toHaveCount(0, { timeout: 15000 }); // answer finished (Send itself hides while the box is empty)
         await expect.poll(() => fromEnd(page)).toBeLessThanOrEqual(4);
 
         // --- The CI failure of 16 Nov 2026, made certain: at the end, the page gets shorter (the
@@ -151,7 +151,7 @@ for (const lang of ["en", "de"] as const)
         await expect.poll(() => fromEnd(page), { timeout: 8000 }).toBeLessThanOrEqual(50);
         await ui(jump).toHaveCount(0);
         await ui(answers.last()).toContainText("Synthetic line 149.", { timeout: 30000 });
-        await ui(sendButton).toBeVisible({ timeout: 15000 });
+        await ui(page.getByRole("button", { name: a.stopResponse, exact: true })).toHaveCount(0, { timeout: 15000 }); // answer finished (Send itself hides while the box is empty)
         await expect.poll(() => fromEnd(page)).toBeLessThanOrEqual(4);
         await ui(jump).toHaveCount(0);
 

@@ -126,10 +126,9 @@ for (const lang of ["en", "de"] as const)
         const done = page.locator("p.answer-announcement");
         await ui(box).toBeVisible();
         await noSidewaysScroll(page);
-        // The hint is shown only where there is a keyboard and room.
-        const hint = page.getByText(ct.enterHint);
-        if (width > 760) await ui(hint).toBeVisible();
-        else await ui(hint).toBeHidden();
+        // The Enter hint is not shown (17 November redesign: less text under the box); Send appears with text.
+        await ui(page.getByText(ct.enterHint)).toBeHidden();
+        await ui(send).toBeHidden();
         const oneLine = await box.evaluate((el) => el.clientHeight);
 
         // Enter with nothing, or only spaces, sends nothing and adds no line.
@@ -193,7 +192,7 @@ for (const lang of ["en", "de"] as const)
         await ui(page.getByRole("button", { name: t.stopResponse })).toBeVisible();
         expect(await focusedId(page)).toBe("message-input");
         await page.getByRole("button", { name: t.stopResponse }).click();
-        await ui(send).toBeVisible();
+        await ui(send).toBeHidden(); // the box is empty again, so the microphone stands in for Send
         expect(await focusedId(page)).toBe("message-input");
         await ui(done).toHaveText("");
 

@@ -351,6 +351,9 @@ for (const lang of ["en", "de"] as const)
       await ui(page.locator("main > .connection-banner")).toHaveCount(0);
       await belowHeader(page, line);
       expect((await line.boundingBox())!.height).toBeLessThanOrEqual(48);
+      // Empty box: no Send at all; with text, Send is there but off while chat is not ready.
+      await ui(page.getByRole("button", { name: t.sendLabel, exact: true })).toBeHidden();
+      await page.getByLabel(t.messageInput).fill("SYNTHETIC not ready yet");
       await ui(page.getByRole("button", { name: t.sendLabel, exact: true })).toBeDisabled();
       await noSidewaysScroll(page);
       expect(external).toEqual([]);

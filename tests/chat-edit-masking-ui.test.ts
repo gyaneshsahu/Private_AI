@@ -80,7 +80,8 @@ it("masks an email address in an edited message and sends exactly one request fo
     await ui(page.getByText("Conversation branches · 2 · Edit 1", { exact: true })).toBeVisible();
     await ui(page.locator("article.assistant")).toHaveCount(1);
     await ui(page.locator("article.assistant").last()).toContainText("Synthetic masked-path answer.");
-    await ui(page.getByRole("button", { name: "Send message", exact: true })).toBeVisible();
+    // The box is empty after sending, so Send is hidden until there is text again.
+    await ui(page.getByRole("button", { name: "Send message", exact: true })).toBeHidden();
 
     // Exactly one more request, and the address is not in it; the rest of the edited text is.
     const sent = await bodies();

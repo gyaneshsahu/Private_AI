@@ -159,7 +159,7 @@ for (const lang of ["en", "de"] as const)
         const answers = page.locator("article.assistant");
         const idle = async (sent: number) => {
           await expect.poll(async () => (await calls(page)).length).toBe(sent);
-          await ui(sendButton).toBeVisible({ timeout: 15000 });
+          await ui(page.getByRole("button", { name: a.stopResponse, exact: true })).toHaveCount(0, { timeout: 15000 }); // answer finished (Send itself hides while the box is empty)
         };
         let sent = 0;
         const ask = async (text: string) => {

@@ -233,13 +233,6 @@ h1 {
   text-align: center;
   padding: 45px 0 30px;
 }
-.welcome-mark {
-  color: var(--ink2);
-  font-size: 39px;
-}
-.welcome > .eyebrow {
-  margin-top: 17px;
-}
 h2 {
   font-weight: 620;
   font-size: 30px;
@@ -251,11 +244,6 @@ h2 em {
   font-style: normal;
   font-weight: inherit;
   color: var(--ink2);
-}
-.welcome > p:not(.eyebrow) {
-  font-size: 0.91rem;
-  color: var(--ink2);
-  line-height: 1.9;
 }
 .starter-grid {
   display: grid;
@@ -272,11 +260,6 @@ h2 em {
 .starter-grid span {
   font-size: 0.83rem;
   font-weight: 550;
-}
-.starter-grid p {
-  font-size: 0.76rem;
-  color: var(--ink2);
-  margin-bottom: 0;
 }
 .composer {
   margin: 15px auto 0;
@@ -592,9 +575,6 @@ footer {
   }
   .starter-grid {
     grid-template-columns: 1fr;
-  }
-  .starter-grid p {
-    margin-top: 3px;
   }
   .welcome {
     padding: 25px 0;

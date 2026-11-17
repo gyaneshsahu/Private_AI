@@ -3843,7 +3843,10 @@
   .chat-design .project-row > button {
     width: calc(100% - 44px);
   }
-  .chat-design .chat-list-row .chat-rename {
+  .chat-design .chat-list-row .chat-rename,
+  .chat-design .chat-list-row > button,
+  .chat-design .project-row > button {
+    /* Same height as the 44 px "…" beside it, whatever the font's line box comes to. */
     min-height: 44px;
   }
   .chat-design details.chat-item-menu:not([open]),
@@ -4116,4 +4119,259 @@
 }
 .chat-design .deep-research-inline .panel > button {
   margin: 6px 10px 0 0;
+}
+
+/* ---------- Redesign step 2 (17 November): start screen, message box, "+" menu, sidebar ----------
+   docs/ui-redesign-plan-20261116.md and evaluation/ui-redesign/mock.html. Last in the file on purpose:
+   it replaces the earlier rounds for these parts. */
+.chat-design .welcome {
+  padding: clamp(40px, 16vh, 160px) 0 20px;
+}
+.chat-design .welcome h2 {
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.022em;
+  margin: 0;
+}
+.chat-design .starter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 22px auto 0;
+  max-width: 740px;
+}
+.chat-design .starter-grid button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  color: var(--ink2);
+  font-size: 13.5px;
+  font-weight: 450;
+  box-shadow: none;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.chat-design .starter-grid button:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+.chat-design .starter-grid svg {
+  width: 16px;
+  height: 16px;
+}
+.chat-design .starter-grid span {
+  font-size: inherit;
+  font-weight: inherit;
+}
+/* The message box: one rounded surface, text on top, one quiet row below. */
+.chat-design .composer {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-composer);
+  box-shadow: var(--shadow-1);
+  padding: 12px 10px 8px 16px;
+}
+.chat-design .composer:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+.chat-design .composer textarea {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 3px 2px 10px;
+  font-size: 16px;
+  min-height: 0;
+}
+.chat-design .composer textarea:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.chat-design .composer-footer {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: -8px;
+  flex-wrap: nowrap;
+}
+.chat-design .composer-footer > .tools-menu {
+  margin-right: auto;
+}
+.chat-design .tools-menu summary,
+.chat-design .composer-footer :is(.voice-input-button, .live-voice-open) {
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-row);
+  background: transparent;
+  color: var(--ink2);
+  display: grid;
+  place-items: center;
+  box-shadow: none;
+  transition: background var(--fast) var(--ease), transform var(--fast) var(--ease);
+}
+.chat-design .tools-menu summary:hover,
+.chat-design .composer-footer :is(.voice-input-button, .live-voice-open):hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--ink);
+}
+.chat-design .tools-menu summary:active,
+.chat-design .composer-footer :is(.voice-input-button, .live-voice-open):active {
+  transform: scale(0.94);
+}
+/* Mode: a small text control, not a box. */
+.chat-design .mode-select {
+  border: 0;
+  background-color: transparent;
+  color: var(--ink2);
+  font-size: 13.5px;
+  padding: 6px 22px 6px 8px;
+  min-height: 34px;
+  border-radius: var(--r-row);
+  box-shadow: none;
+  width: auto;
+  min-width: 0;
+  flex: 0 0 auto;
+  /* As wide as the chosen name, not a fixed box. */
+  field-sizing: content;
+}
+.chat-design .mode-select:hover {
+  background-color: var(--hover);
+  color: var(--ink);
+}
+.chat-design .composer-footer .context-count {
+  border: 0;
+  background: transparent;
+  color: var(--ink3);
+  font-size: 12.5px;
+  padding: 6px 8px;
+  min-height: 0;
+  box-shadow: none;
+}
+/* Send: a round arrow that appears once there is something to send; the microphone stands in before. */
+.chat-design .composer-footer > .send-button {
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  min-width: 0;
+  padding: 0;
+  margin-left: 4px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--primary);
+  color: var(--primary-ink);
+  animation: send-in var(--base) var(--ease);
+}
+.chat-design .composer-footer > .send-button svg {
+  stroke-width: 2.2;
+}
+.chat-design .composer-footer[data-empty] > .send-button {
+  display: none;
+}
+@keyframes send-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+.chat-design .composer-caption {
+  font-size: 12.5px;
+  color: var(--ink3);
+  text-align: center;
+  margin-top: 8px;
+}
+.chat-design .composer-hint {
+  display: none;
+}
+/* "+" menu: a light panel, a dark icon and a dark label per row. */
+.chat-design .tools-menu .menu-surface {
+  min-width: 270px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-menu);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+  animation: menu-in var(--base) var(--ease);
+}
+.chat-design .tools-menu .menu-surface > button {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--r-row);
+  background: transparent;
+  color: var(--ink);
+  font-size: 14.5px;
+  font-weight: 450;
+  text-align: left;
+  text-decoration: none;
+}
+.chat-design .tools-menu .menu-surface > button:hover:not(:disabled) {
+  background: var(--hover);
+}
+.chat-design .tools-menu .menu-surface > button svg {
+  width: 18px;
+  height: 18px;
+  color: var(--ink2);
+}
+.chat-design .tools-menu .menu-surface > button > span {
+  margin-left: auto;
+  color: var(--ink3);
+  font-size: 12.5px;
+}
+.chat-design .tools-menu .menu-surface > button[aria-pressed="true"] {
+  background: var(--hover);
+}
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+/* Sidebar: quiet rows instead of a filled button. */
+.chat-design .new-chat-row .new-chat:not(.new-incognito),
+.chat-design .new-chat-row .new-incognito {
+  background: transparent;
+  color: var(--ink);
+  border: 0;
+  box-shadow: none;
+  font-weight: 500;
+  justify-content: flex-start;
+}
+.chat-design .new-chat-row .new-chat:not(.new-incognito):hover:not(:disabled),
+.chat-design .new-chat-row .new-incognito:hover:not(:disabled) {
+  background: var(--hover);
+}
+@media (max-width: 650px) {
+  .chat-design .welcome h2 {
+    font-size: 24px;
+  }
+  .chat-design .starter-grid {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    scrollbar-width: none;
+  }
+  .chat-design .starter-grid button {
+    flex: none;
+  }
+  .chat-design .composer {
+    border-radius: 22px;
+    padding: 10px 8px 6px 14px;
+  }
+  .chat-design .tools-menu summary,
+  .chat-design .composer-footer :is(.voice-input-button, .live-voice-open),
+  .chat-design .composer-footer > .send-button {
+    width: 44px;
+    height: 44px;
+  }
 }

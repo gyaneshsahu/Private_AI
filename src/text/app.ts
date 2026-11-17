@@ -250,20 +250,13 @@ export const appText = defineText({
     dismissImports: "Dismiss import results",
 
     // Empty state
-    eyebrow: "A LITTLE CLARITY, ON YOUR TERMS",
-    welcomeA: "Make room for",
-    welcomeB: "what’s on your mind.",
-    welcomeLine1: "Think through a decision. Understand a document.",
-    welcomeLine2: "Find the words you’ve been looking for.",
+    greeting: "What’s on your mind?",
     writeTitle: "Write or revise",
-    writeDescription: "Find clear words for what you want to say.",
     writeDraft:
       "Help me write a clear, friendly message. Here’s what I want to say: ",
     planTitle: "Plan something",
-    planDescription: "Turn a goal and constraints into next steps.",
     planDraft: "Help me make a practical plan. My goal and constraints are: ",
     documentTitle: "Understand a document",
-    documentDescription: "Bring a bill, a letter or a few notes.",
 
     // Messages
     messageLabel: (user: boolean, n: number) =>
@@ -289,7 +282,7 @@ export const appText = defineText({
     // Composer
     searchSuggestion: "Search suggestion",
     messageInput: "Message CometRow",
-    placeholder: "What would you like to work through?",
+    placeholder: "Ask anything",
     attachFiles: "Attach files to this conversation",
     tools: "Attachments and tools",
     attachFile: "Attach file",
@@ -638,21 +631,14 @@ export const appText = defineText({
     importResults: "Ergebnisse des Dateiimports",
     dismissImports: "Importergebnisse schließen",
 
-    eyebrow: "ETWAS KLARHEIT, NACH IHREN REGELN",
-    welcomeA: "Raum schaffen für das,",
-    welcomeB: "was Sie beschäftigt.",
-    welcomeLine1: "Eine Entscheidung durchdenken. Ein Dokument verstehen.",
-    welcomeLine2: "Die Worte finden, nach denen Sie suchen.",
+    greeting: "Was beschäftigt Sie?",
     writeTitle: "Schreiben oder überarbeiten",
-    writeDescription: "Klare Worte für das finden, was Sie sagen möchten.",
     writeDraft:
       "Ich möchte eine klare, freundliche Nachricht schreiben. Das möchte ich sagen: ",
     planTitle: "Etwas planen",
-    planDescription: "Aus einem Ziel und Rahmenbedingungen nächste Schritte machen.",
     planDraft:
       "Ich brauche einen praktischen Plan. Mein Ziel und meine Rahmenbedingungen: ",
     documentTitle: "Ein Dokument verstehen",
-    documentDescription: "Eine Rechnung, einen Brief oder ein paar Notizen mitbringen.",
 
     messageLabel: (user: boolean, n: number) =>
       `${user ? "Ihre Nachricht" : "Antwort von CometRow"} ${n}`,
@@ -676,7 +662,7 @@ export const appText = defineText({
 
     searchSuggestion: "Suchvorschlag",
     messageInput: "Nachricht an CometRow",
-    placeholder: "Was möchten Sie durchdenken?",
+    placeholder: "Fragen Sie etwas",
     attachFiles: "Dateien an diese Unterhaltung anhängen",
     tools: "Anhänge und Werkzeuge",
     attachFile: "Datei anhängen",

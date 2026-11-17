@@ -37,11 +37,11 @@ it("a German browser gets the German main screen at phone, tablet and desktop wi
     await ui(page.getByRole("heading", { level: 1 })).toHaveText("Unterhaltung");
     await ui(page.getByLabel("Nachricht an CometRow")).toHaveAttribute(
       "placeholder",
-      "Was möchten Sie durchdenken?",
+      "Fragen Sie etwas",
     );
-    await ui(page.getByRole("button", { name: "Nachricht senden", exact: true })).toBeVisible();
+    await ui(page.getByRole("button", { name: "Nachricht senden", exact: true })).toBeHidden();
     await ui(page.getByLabel("Anhänge und Werkzeuge", { exact: true })).toBeVisible();
-    await ui(page.getByText("ETWAS KLARHEIT, NACH IHREN REGELN")).toBeVisible();
+    await ui(page.getByText("Was beschäftigt Sie?")).toBeVisible();
     await ui(page.getByRole("button", { name: /Schreiben oder überarbeiten/ })).toBeVisible();
     await ui(page.getByText(/Vorübergehender Chat · Nicht gespeichert/)).toBeVisible();
     // An empty chat shows no context count (16 November); the "+" menu's review is German.
@@ -76,10 +76,11 @@ it("a German browser gets the German main screen at phone, tablet and desktop wi
     await ui(page.getByRole("heading", { level: 1 })).toHaveText("Conversation");
     await ui(page.getByLabel("Message CometRow")).toHaveAttribute(
       "placeholder",
-      "What would you like to work through?",
+      "Ask anything",
     );
-    await ui(page.getByRole("button", { name: "Send message", exact: true })).toBeVisible();
-    await ui(page.getByText("A LITTLE CLARITY, ON YOUR TERMS")).toBeVisible();
+    // Send appears once there is text; the empty box shows the greeting.
+    await ui(page.getByRole("button", { name: "Send message", exact: true })).toBeHidden();
+    await ui(page.getByText("What’s on your mind?")).toBeVisible();
   };
   try {
     for (const viewport of [

@@ -250,7 +250,7 @@ for (const lang of ["en", "de"] as const)
         // ... and live voice renders nothing: no button, not even a disabled one, and no panel.
         await ui(page.locator(".live-voice-open")).toHaveCount(0);
         await ui(page.getByRole("button", { name: liveVoiceText[lang].open, exact: true })).toHaveCount(0);
-        await ui(page.getByRole("button", { name: appText[lang].sendLabel, exact: true })).toBeVisible();
+        await ui(page.getByRole("button", { name: appText[lang].sendLabel, exact: true })).toBeHidden(); // empty box: no Send yet
         expect(
           await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
         ).toBe(true);

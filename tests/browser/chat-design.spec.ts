@@ -90,9 +90,10 @@ test("representative themes, long history, source and responsive keyboard contro
   ).toBeVisible();
   await expect(page.getByLabel("javascript code block")).toBeVisible();
   await page.getByRole("button", { name: "Dismiss notice" }).click();
+  // The box is empty, so there is no Send button (17 November redesign).
   await expect(
     page.getByRole("button", { name: "Send message", exact: true }),
-  ).toBeDisabled();
+  ).toBeHidden();
   await expect(
     page
       .getByRole("article", { name: "CometRow reply 4", exact: true })

@@ -2971,24 +2971,15 @@ export function App() {
           >
             {!conversation.messages.length && researchFor === undefined && (
               <div className="welcome">
-                <div className="welcome-mark">✳</div>
-                <p className="eyebrow">{t.eyebrow}</p>
-                <h2>
-                  {t.welcomeA}
-                  <br />
-                  <em>{t.welcomeB}</em>
-                </h2>
-                <p>
-                  {t.welcomeLine1}
-                  <br />
-                  {t.welcomeLine2}
-                </p>
+                <h2>{t.greeting}</h2>
                 <div className="starter-grid">
-                  {[
-                    [t.writeTitle, t.writeDescription, t.writeDraft],
-                    [t.planTitle, t.planDescription, t.planDraft],
-                    [t.documentTitle, t.documentDescription, ""],
-                  ].map(([title, description, target]) => (
+                  {(
+                    [
+                      [t.writeTitle, "edit", t.writeDraft],
+                      [t.planTitle, "check", t.planDraft],
+                      [t.documentTitle, "file", ""],
+                    ] as const
+                  ).map(([title, icon, target]) => (
                     <button
                       key={title}
                       onClick={() => {
@@ -3003,8 +2994,8 @@ export function App() {
                         }
                       }}
                     >
+                      <Icon name={icon} />
                       <span>{title}</span>
-                      <p>{description}</p>
                     </button>
                   ))}
                 </div>
@@ -3318,7 +3309,7 @@ export function App() {
                     {ct.remaining(limit.remaining.toLocaleString(lang))}
                   </p>
                 )}
-                <div className="composer-footer">
+                <div className="composer-footer" data-empty={input.trim() ? undefined : ""}>
                   <input
                     ref={chatFileInput}
                     type="file"
@@ -3517,7 +3508,7 @@ export function App() {
                     </button>
                   ) : (
                     <button
-                      className="primary"
+                      className="primary send-button"
                       disabled={sendBlocked({
                         busy: !!busy,
                         text: input,
@@ -3528,7 +3519,7 @@ export function App() {
                       // Offline: the banner just above says why Send is off.
                       aria-describedby={online ? undefined : "offline-reason"}
                     >
-                      {t.send} <Icon name="send" />
+                      <Icon name="arrow-up" />
                     </button>
                   )}
                 </div>
