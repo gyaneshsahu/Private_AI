@@ -12,6 +12,20 @@ State at the end of 17 November: steps 1 and 2 are in the app; CI green on `2596
 
 Known flaky test: `tests/chat-recovery.test.ts` line 429 (focus on a code block) failed twice in CI on unrelated changes and passed on a rerun. Look into it if it fails again.
 
+## 18 November 2026: live voice ball
+
+Test: `tests/redesign-ui.test.ts`, "live voice" (375 and 1280 px, plus a motion case). Screenshots: `.local/ui-redesign/step-9`.
+
+| Feature | Result | What broke | What was fixed |
+| --- | --- | --- | --- |
+| Round colour ball at the top of the live-voice panel | pass | - | - |
+| It rests until a turn starts; it swirls while listening, transcribing, answering or speaking | pass | - | - |
+| Under reduced motion it stands still | pass | - | - |
+| Panel: centred, round buttons, quieter intro text; Escape closes | pass | - | - |
+| Shorter live-voice texts | waiting for the owner | - | added to `docs/ui-text-shortening-proposal.md` |
+
+Not checked: a real turn with a microphone (the test sets the phase directly), and how smooth the swirl is on a slow phone.
+
 ## 18 November 2026: upload screens
 
 Test: `tests/redesign-ui.test.ts`, "upload screens" (375 and 1280 px), plus the older `image-app-ui`, `health-consent-ui` and photo tests (41 of 41 pass). Screenshots: `.local/ui-redesign/step-8`, `step-8b`.

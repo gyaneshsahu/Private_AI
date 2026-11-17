@@ -5267,3 +5267,96 @@
   font-size: 14.5px;
   line-height: 1.55;
 }
+
+/* ---------- Redesign: live voice ball (18 November) ----------
+   A round ball of slowly swirling colour (evaluation/ui-redesign/mock.html). Only opacity, transform and
+   border-radius move; it rests unless listening, transcribing, answering or speaking. */
+.chat-design .live-voice-orb {
+  width: 132px;
+  height: 132px;
+  margin: 6px auto 4px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  isolation: isolate;
+  box-shadow: 0 16px 44px -18px #5b6cf099, inset 0 0 0 1px #ffffff40;
+}
+.chat-design .live-voice-orb i {
+  position: absolute;
+  inset: -30%;
+  border-radius: 50%;
+  background: conic-gradient(from 20deg, #3b6cf0, #8f6bff, #ff7ac8, #ffb37a, #4fe0d0, #3b6cf0);
+  filter: blur(18px);
+}
+.chat-design .live-voice-orb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 26%, #ffffffd9 0, #ffffff40 16%, transparent 34%),
+    radial-gradient(circle at 68% 78%, #ffffff38, transparent 30%);
+}
+.chat-design .live-voice-orb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: 50%;
+  box-shadow: inset 0 -16px 30px -8px #0b103866, inset 0 10px 22px -10px #ffffff80;
+}
+.chat-design .live-voice-orb:is([data-phase="listening"], [data-phase="transcribing"], [data-phase="answering"], [data-phase="speaking"]) {
+  animation: orb-morph 7s ease-in-out infinite alternate;
+}
+.chat-design .live-voice-orb:is([data-phase="listening"], [data-phase="transcribing"], [data-phase="answering"], [data-phase="speaking"]) i {
+  animation: orb-swirl 11s linear infinite;
+}
+.chat-design .live-voice-orb[data-phase="speaking"] i {
+  animation-duration: 6s;
+}
+.chat-design .live-voice-orb:is([data-phase="idle"], [data-phase="ended"], [data-phase="paused"]) {
+  opacity: 0.85;
+}
+@keyframes orb-morph {
+  50% {
+    border-radius: 54% 46% 52% 48% / 47% 53% 46% 54%;
+    transform: scale(1.035);
+  }
+  100% {
+    border-radius: 47% 53% 46% 54% / 53% 47% 54% 46%;
+    transform: scale(0.985);
+  }
+}
+@keyframes orb-swirl {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.chat-design .live-voice {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+  text-align: center;
+}
+.chat-design .live-voice h2 {
+  font-size: 17px;
+  font-weight: 620;
+}
+.chat-design .live-voice-state {
+  color: var(--ink2);
+  font-size: 15px;
+}
+.chat-design .live-voice-actions {
+  justify-content: center;
+}
+.chat-design .live-voice-actions button {
+  min-height: 44px;
+  border-radius: 999px;
+  padding: 0 18px;
+}
+.chat-design .live-voice > p:not(.muted):not(.live-voice-state):not(.sr-only) {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink2);
+}

@@ -453,6 +453,47 @@ describe.each([375, 1280])("upload screens at %i px", (width) => {
   });
 });
 
+describe.each([375, 1280])("live voice at %i px", (width) => {
+  it("the panel shows the round colour ball, resting until a turn starts; it closes again", async () => {
+    const { context, page } = await open(width);
+    try {
+      await page.getByRole("button", { name: "Live voice conversation", exact: true }).click();
+      const panel = page.locator("section.live-voice");
+      await ui(panel).toBeVisible();
+      const orb = panel.locator(".live-voice-orb");
+      await ui(orb).toBeVisible();
+      const box = (await orb.boundingBox())!;
+      expect(Math.abs(box.width - box.height)).toBeLessThanOrEqual(1);
+      expect(box.width).toBeGreaterThanOrEqual(100);
+      expect(await orb.evaluate((el) => getComputedStyle(el).borderRadius)).toBe("50%");
+      // At rest before a turn: no moving parts.
+      expect(await orb.evaluate((el) => el.getAnimations({ subtree: true }).length)).toBe(0);
+      const p = (await panel.boundingBox())!;
+      expect(p.x).toBeGreaterThanOrEqual(0);
+      expect(p.x + p.width).toBeLessThanOrEqual(width);
+      await page.keyboard.press("Escape");
+      await ui(panel).toHaveCount(0);
+    } finally {
+      await context.close();
+    }
+  });
+});
+
+it("live voice ball: it moves while listening and stands still under reduced motion", async () => {
+  const { context, page } = await open(1280);
+  try {
+    await page.getByRole("button", { name: "Live voice conversation", exact: true }).click();
+    const orb = page.locator("section.live-voice .live-voice-orb");
+    await ui(orb).toBeVisible();
+    await orb.evaluate((el) => el.setAttribute("data-phase", "listening"));
+    expect(await orb.evaluate((el) => el.getAnimations({ subtree: true }).length)).toBeGreaterThan(0);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    expect(await orb.evaluate((el) => el.getAnimations({ subtree: true }).length)).toBe(0);
+  } finally {
+    await context.close();
+  }
+});
+
 it("dark theme: the same screen renders with the dark tokens and stays readable", async () => {
   const { context, page } = await open(1280, "dark");
   try {

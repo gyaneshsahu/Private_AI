@@ -30,6 +30,14 @@ German versions follow once the English ones are approved.
 | `healthDeclined` | The picture was not attached, because you did not allow health or other sensitive details. Nothing was sent. You can change your choice in Settings, Data controls. | Not attached: sensitive details are off. Change in Settings. | Required (explains the refusal); short wording needs the legal read |
 | `redactIntro` | Drag on the picture to draw a black box over anything private. The boxes become part of the picture: what is under them is not sent. | Drag to cover anything private. | Instruction |
 
+## Live voice (`src/text/live-voice.ts`)
+
+| Key | Today | Proposal | Kind |
+| --- | --- | --- | --- |
+| `what` | Turn by turn: you speak, CometRow turns it into text, sends it, reads the answer aloud, then listens again. One side speaks at a time. This is not a real-time voice model: to interrupt the answer, tap Interrupt and speak. | Speak, then listen. Tap Interrupt to cut in. | Instruction |
+| `note` | Your recording goes encrypted to the protected speech model in the EU and is dropped once it is text. Numbers you say aloud, such as a bank or ID number, are part of the recording: masking works on the text only. The text is masked as usual before it goes to the chat. | Your voice is sent encrypted, turned into text in the EU and then dropped. Numbers you say are in the recording. | Required (Art. 13 transparency; the masking limit is a real risk to tell) |
+| `cost` | Each turn uses about 2 units (Fast: speech to text plus the answer). A session stops after 15 turns or 15 minutes. | About 2 units a turn · up to 15 turns | Our caution |
+
 ## What the agent does now, without waiting
 
 - Restyles these screens (spacing, type, buttons) with the texts unchanged.

@@ -350,6 +350,11 @@ export function LiveVoice(props: {
           }}
         >
           <h2 id="live-voice-title">{t.title}</h2>
+          {/* The colour ball (UI redesign, 18 November): it moves while listening, thinking or speaking
+              and rests otherwise. CSS only; off under reduced motion. */}
+          <div className="live-voice-orb" data-phase={phase} aria-hidden="true">
+            <i />
+          </div>
           <p className="live-voice-state" data-phase={phase}>
             {stateLine}
           </p>
