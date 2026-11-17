@@ -17,8 +17,8 @@
     },
     {
       "version": 2,
-      "effectiveFrom": "2026-11-18T00:00:00.000Z",
-      "source": "Version 1 unchanged, plus image creation (docs/image-creation-20261118.md, 18 November 2026): per-image list prices from public pages, converted from USD at 1.08 and rounded up, to confirm in the provider contract before any live use: FLUX.2 [klein] USD 0.015, FLUX.2 [pro] USD 0.03, Imagen 4 Fast USD 0.02. The mock is free.",
+      "effectiveFrom": "2026-11-17T00:00:00.000Z",
+      "source": "Version 1 unchanged, plus image creation (docs/image-creation-20261117.md, 17 November 2026; not yet used anywhere when its start was set to today): per-image list prices from public pages, converted from USD at 1.08 and rounded up, to confirm in the provider contract before any live use: FLUX.2 [klein] USD 0.015, FLUX.2 [pro] USD 0.03, Imagen 4 Fast USD 0.02. The mock is free.",
       "currency": "EUR",
       "audioTokensPerMinute": 2800,
       "models": {

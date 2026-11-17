@@ -242,7 +242,7 @@ test("the camera is requested only from Use camera, prefers the rear camera, sto
   ).toEqual([
     { video: { facingMode: { ideal: "environment" } }, audio: false },
   ]);
-  // No camera note in the dialog (owner, 18 November: details are on the privacy page).
+  // No camera note in the dialog (owner, 17 November: details are on the privacy page).
   await expect(dialog).not.toContainText("The camera stays on only while this preview is open");
   const take = dialog.getByRole("button", { name: "Take photo", exact: true });
   await expect(take).toBeEnabled({ timeout: 15000 });

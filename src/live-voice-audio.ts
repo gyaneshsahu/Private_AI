@@ -40,7 +40,7 @@ export function watchSpeech(
 }
 
 /**
- * Talk-over detection while the answer is spoken (voice conversation, 18 November). The microphone
+ * Talk-over detection while the answer is spoken (voice conversation, 17 November). The microphone
  * opens with the browser's echo cancellation; the first 400 ms set the level of what the speaker
  * leaks back, and the user counts as talking once the level stays at 2.5 times that (and at least
  * `minLevel`) for `holdMs`. Reports once. Limit: on loudspeakers without good echo cancellation the

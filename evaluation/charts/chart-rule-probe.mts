@@ -1,8 +1,8 @@
-// Live check of the chart rule (docs/charts-20261118.md): the exact prompt tokens the rule adds, and
+// Live check of the chart rule (docs/charts-20261117.md): the exact prompt tokens the rule adds, and
 // whether GLM-5.3-Flash follows it on 20 questions (10 English, 10 German; half should get a chart).
 // Synthetic questions only. Key from Windows Credential Manager, never printed:
 //   Invoke-WithPrivateAiSecret -Name PRIVATEMODE_API_KEY -Action { npx tsx evaluation/charts/chart-rule-probe.mts }
-// Writes evaluation/charts/results-20261118.json (answers cut to 600 characters).
+// Writes evaluation/charts/results-20261117.json (answers cut to 600 characters).
 import { writeFileSync } from "node:fs";
 import { PrivatemodeAI } from "privatemode-ai";
 import { composeContext, newMessage } from "../../src/conversation";
@@ -57,7 +57,7 @@ const add = (u?: { prompt_tokens?: number; completion_tokens?: number }) => {
 const full = systemFor("hi", "en");
 const without = full.map((m, i) => (i === 0 ? { ...m, content: m.content.replace(/ Add a chart only when[\s\S]*?"source"\}\./, "") } : m));
 if (without[0].content === full[0].content || !full[0].content.includes(RULE_START)) throw Error("rule not found in the prompt");
-let ruleTokens = 58; // measured 18 November
+let ruleTokens = 58; // measured 17 November
 if (!process.argv.includes("--only")) {
   const a = await client.chat.completions.create({ model: MODEL, max_tokens: 1, messages: full });
   const b = await client.chat.completions.create({ model: MODEL, max_tokens: 1, messages: without });
@@ -68,7 +68,7 @@ if (!process.argv.includes("--only")) {
 }
 
 // 2. Does the model follow the rule? `--only 0,1,10` reruns some; `--max 2500` gives more room
-// (900 was too little for three questions on 18 November: the answer stayed empty while reasoning).
+// (900 was too little for three questions on 17 November: the answer stayed empty while reasoning).
 const flag = (name: string) => (process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1] : undefined);
 const only = flag("--only")?.split(",").map(Number);
 const maxTokens = Number(flag("--max") ?? 900);
@@ -113,5 +113,5 @@ const summary = {
   verifications: 1,
 };
 console.log(JSON.stringify({ step: "summary", ...summary }));
-writeFileSync(only ? "evaluation/charts/results-20261118-rerun.json" : "evaluation/charts/results-20261118.json", JSON.stringify({ summary, rows }, null, 2));
+writeFileSync(only ? "evaluation/charts/results-20261117-rerun.json" : "evaluation/charts/results-20261117.json", JSON.stringify({ summary, rows }, null, 2));
 process.exit(0);

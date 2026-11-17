@@ -224,7 +224,7 @@ export function VoiceInput({
         onClick={() => {
           if (transcribing) queue.current?.cancel();
           else if (recording) recorder.stop();
-          else begin(); // Owner, 18 November: no per-feature cautions; the first-start notice and the privacy page cover this.
+          else begin(); // Owner, 17 November: no per-feature cautions; the first-start notice and the privacy page cover this.
         }}
       >
         <Icon name={transcribing ? "close" : "mic"} />

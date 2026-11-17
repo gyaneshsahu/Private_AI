@@ -1,4 +1,4 @@
-// Chart blocks in answers (docs/charts-20261118.md): what is drawn and what stays code.
+// Chart blocks in answers (docs/charts-20261117.md): what is drawn and what stays code.
 import { expect, it } from "vitest";
 import { parseChart } from "../src/AnswerChart";
 

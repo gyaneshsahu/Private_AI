@@ -98,7 +98,7 @@ it("keeps citations tied to captured evidence through correction, removal and en
       .getByRole("dialog")
       .getByRole("button", { name: "Close", exact: true })
       .click();
-    // The count lives in the "+" menu since 18 November (one-line message box).
+    // The count lives in the "+" menu since 17 November (one-line message box).
     await page.getByLabel("Attachments and tools", { exact: true }).click();
     await page.getByRole("button", { name: /included ·/ }).click();
     await page
@@ -125,7 +125,7 @@ it("keeps citations tied to captured evidence through correction, removal and en
     ).toBeVisible();
     await page.getByRole("button", { name: "Remove", exact: true }).click();
     await tab("Conversation").click();
-    // The count lives in the "+" menu since 18 November (one-line message box).
+    // The count lives in the "+" menu since 17 November (one-line message box).
     await page.getByLabel("Attachments and tools", { exact: true }).click();
     await page.getByRole("button", { name: /included ·/ }).click();
     await ui(

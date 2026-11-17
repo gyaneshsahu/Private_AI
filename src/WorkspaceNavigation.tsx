@@ -229,7 +229,7 @@ export function WorkspaceNavigation(props: {
           {t.incognito}
         </button>
       </div>
-      {/* Secure Max sits with the other ways to start a chat (owner, 18 November), not at the bottom. */}
+      {/* Secure Max sits with the other ways to start a chat (owner, 17 November), not at the bottom. */}
       {maxSection}
       {onScheduled && (
         <button

@@ -1,6 +1,6 @@
-# Voice conversation (18 November 2026)
+# Voice conversation (17 November 2026)
 
-Owner's brief, 18 November: make live voice feel real-time without changing the turn-based design; call it "Voice conversation"; keep the daily voice metering as decided. Earlier design: `docs/live-voice-20261114.md` (still valid apart from what this note changes).
+Owner's brief, 17 November: make live voice feel real-time without changing the turn-based design; call it "Voice conversation"; keep the daily voice metering as decided. Earlier design: `docs/live-voice-20261114.md` (still valid apart from what this note changes).
 
 ## What changed
 
@@ -23,7 +23,7 @@ Measured parts:
 | Part | Time | Source |
 | --- | --- | --- |
 | End-of-speech detection | 1.0 s (fixed setting) | `SILENCE_DEFAULTS` |
-| Transcription of the last chunk, 3.6 s of speech | Whisper 405 ms, Voxtral 252 ms | live, 18 November, one synthetic sentence ("What is a good name for a small grey cat?", Windows speech), `evaluation/privatemode/voice-probe.ts` |
+| Transcription of the last chunk, 3.6 s of speech | Whisper 405 ms, Voxtral 252 ms | live, 17 November, one synthetic sentence ("What is a good name for a small grey cat?", Windows speech), `evaluation/privatemode/voice-probe.ts` |
 | First token of the answer, Fast | median 558 ms, max 1,672 ms | `docs/parity-matrix-20261112.md` (12 November, 18 turns) |
 | First sentence written, then picked up | about 0.3 s plus up to 0.2 s polling | estimate |
 | Speech engine starts | about 0.1 to 0.3 s | estimate (local voice) |
@@ -41,7 +41,7 @@ Limit: on loudspeakers without good echo cancellation, the answer itself can tri
 
 ## Spend
 
-18 November: one voice probe, one verification, two transcriptions of 3.6 s (Whisper and Voxtral) and one short chat call. About EUR 0.001.
+17 November: one voice probe, one verification, two transcriptions of 3.6 s (Whisper and Voxtral) and one short chat call. About EUR 0.001.
 
 ## Tests
 

@@ -1,4 +1,4 @@
-// Renders the 15 synthetic whiteboard samples of docs/whiteboard-study-20261118.md.
+// Renders the 15 synthetic whiteboard samples of docs/whiteboard-study-20261117.md.
 // Each sample is a scene list (the data a real whiteboard would keep): hand strokes, shapes,
 // arrows, handwriting and typed text. The scene is drawn as rough SVG in headless Chromium and
 // saved as a PNG of 1,500 px on the long side, next to a JSON with the typed text, the question,

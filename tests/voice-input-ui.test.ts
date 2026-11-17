@@ -125,7 +125,7 @@ for (const lang of ["en", "de"] as const)
         await page.goto(origin, { timeout: 90000 });
         await ui(page.locator("html")).toHaveAttribute("lang", lang);
 
-        // The first tap starts recording at once (owner, 18 November: no "Before you dictate" note).
+        // The first tap starts recording at once (owner, 17 November: no "Before you dictate" note).
         const mic = page.getByRole("button", { name: t.start, exact: true });
         await mic.click();
         await ui(page.getByRole("group", { name: t.noteTitle })).toHaveCount(0);

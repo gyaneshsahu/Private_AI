@@ -179,7 +179,7 @@ describe.each([375, 1280])("chat screen and message box at %i px", (width) => {
       await ui(panel).toBeVisible();
       const rows = panel.locator(":scope > button");
       await ui(page.locator(".composer .context-count")).toHaveCount(0);
-      // One icon per meaning: no two rows of the menu share a drawing (owner, 18 November).
+      // One icon per meaning: no two rows of the menu share a drawing (owner, 17 November).
       const drawings = await rows.evaluateAll((all) => all.map((b) => b.querySelector("svg path")?.getAttribute("d")));
       expect(new Set(drawings).size).toBe(drawings.length);
       expect(await rows.count()).toBeGreaterThanOrEqual(4);
@@ -241,7 +241,7 @@ describe.each([375, 1280])("left menu at %i px", (width) => {
       expect(await logo.evaluate((img) => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
       await ui(side.locator(".brand .brand-logo-light")).toBeHidden();
       await ui(side.getByRole("img", { name: "CometRow" })).toHaveCount(1);
-      // Secure Max sits right under Incognito chat, above Scheduled (owner, 18 November).
+      // Secure Max sits right under Incognito chat, above Scheduled (owner, 17 November).
       const ys = await Promise.all([".new-incognito", ".secure-max-entry", ".scheduled-entry"].map((sel) => side.locator(sel).first().boundingBox()));
       expect(ys[0]!.y).toBeLessThan(ys[1]!.y);
       expect(ys[1]!.y).toBeLessThan(ys[2]!.y);

@@ -1,4 +1,4 @@
-# Whiteboard study (run 17 November 2026, for the owner's request of 18 November)
+# Whiteboard study (run 17 November 2026, for the owner's request of 17 November)
 
 Owner's goal: a drawing board opened from the "+" menu, called "Whiteboard". Pen with thickness and colour, eraser, shapes, arrows, text, sticky notes, undo. Sending to the AI: a picture of the board at about 1,500 px on the long side, plus the typed text as plain text. Stored in the encrypted vault per conversation, never on the server.
 
@@ -6,7 +6,7 @@ This is a study only. Nothing in the app was changed. The machine clock said 17 
 
 Labels used below: **measured** = a live call or a local run on 17 November; **estimated** = my judgement, not measured.
 
-**Lead agent's note (18 November):** the study agent wrote both the ground truth and the scores, and every arm scored 100 %. That means these synthetic boards were too easy to separate "image only" from "image plus text", not that the model is perfect. Treat the accuracy as an upper bound; the real check is real handwriting from alpha users (open decision 1). The 13 "Connection error." calls in the main run happened while the lead agent ran a large local test suite on the same PC; whether they were billed is unknown and is not in the EUR 0.0449 total.
+**Lead agent's note (17 November):** the study agent wrote both the ground truth and the scores, and every arm scored 100 %. That means these synthetic boards were too easy to separate "image only" from "image plus text", not that the model is perfect. Treat the accuracy as an upper bound; the real check is real handwriting from alpha users (open decision 1). The 13 "Connection error." calls in the main run happened while the lead agent ran a large local test suite on the same PC; whether they were billed is unknown and is not in the EUR 0.0449 total.
 
 ## Summary
 

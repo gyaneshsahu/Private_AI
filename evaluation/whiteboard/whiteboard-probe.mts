@@ -1,4 +1,4 @@
-// Live whiteboard study (docs/whiteboard-study-20261118.md): one question per synthetic sample to
+// Live whiteboard study (docs/whiteboard-study-20261117.md): one question per synthetic sample to
 // glm-5.3-flash through the Privatemode SDK, ONE verification for the whole run.
 //   a = image only
 //   b = image + the typed text elements as plain text

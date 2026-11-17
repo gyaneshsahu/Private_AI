@@ -245,7 +245,7 @@ export const appText = defineText({
       `Messages older than ${after} are deleted from this device while the chat is open or when you open it again, including from its saved copy.`,
     operatorNoticeTitle: "Notice from CometRow:",
     dismissNotice: "Dismiss notice",
-    // The one general notice, shown once at first start (owner, 18 November; for the legal read).
+    // The one general notice, shown once at first start (owner, 17 November; for the legal read).
     firstStart: (partnerExample: string) =>
       `CometRow protects your chats with sealed, encrypted processing in the EU. A few features, such as ${partnerExample}, use a trusted partner instead, because they rarely involve personal details. Details are in Privacy.`,
     firstStartImages: "image creation",

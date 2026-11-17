@@ -31,7 +31,7 @@ const paths = {
   send: "m3 11 18-8-8 18-2-8-8-2ZM11 13 21 3",
   "arrow-up": "M12 19V5M6 11l6-6 6 6",
   stop: "M8 8h8v8H8Z",
-  // 18 November: one icon per meaning (owner: no duplicate icons for different actions).
+  // 17 November: one icon per meaning (owner: no duplicate icons for different actions).
   layers: "m12 3 9 4.5-9 4.5-9-4.5L12 3ZM3 12l9 4.5 9-4.5M3 16.5 12 21l9-4.5",
   book: "M3 5h6a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H3ZM21 5h-6a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h7Z",
   compass: "M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0ZM16 8l-2.5 5.5L8 16l2.5-5.5L16 8Z",

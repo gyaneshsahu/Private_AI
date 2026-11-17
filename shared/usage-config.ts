@@ -18,7 +18,7 @@ export const FEATURES = [
   "background-run",
   "search",
   "page-fetch",
-  // A created image (docs/image-creation-20261118.md): its own daily limit, no chat allowance units.
+  // A created image (docs/image-creation-20261117.md): its own daily limit, no chat allowance units.
   "image-create",
 ] as const;
 export type Feature = (typeof FEATURES)[number];

@@ -1,8 +1,8 @@
-# Privacy page: which features use which partner (DRAFT for the legal read, 18 November 2026)
+# Privacy page: which features use which partner (DRAFT for the legal read, 17 November 2026)
 
-Owner's correction, 18 November: one general notice at first start; everything else goes into the privacy policy and the Help page, written clearly; the privacy page must list honestly which features use a partner; nothing untrue ("everything is sealed", "nothing leaves your device") unless it is exactly true for that feature.
+Owner's correction, 17 November: one general notice at first start; everything else goes into the privacy policy and the Help page, written clearly; the privacy page must list honestly which features use a partner; nothing untrue ("everything is sealed", "nothing leaves your device") unless it is exactly true for that feature.
 
-This is a draft section to add to the privacy policy (`shared/privacy-policy.ts`, EN and DE) after the lawyer has read it. **Not yet in the app.** The first-start notice (`docs/notices-inventory-20261118.md`) points here.
+This is a draft section to add to the privacy policy (`shared/privacy-policy.ts`, EN and DE) after the lawyer has read it. **Not yet in the app.** The first-start notice (`docs/notices-inventory-20261117.md`) points here.
 
 ## Draft text (EN)
 
@@ -36,5 +36,5 @@ To be translated after the English version is approved (the German legal texts f
 
 1. Is this table plus the first-start notice enough information at the time of collection (GDPR Art. 13), or does any feature need a line in context (we think not: the browser asks for camera and microphone itself)?
 2. Partners as processors: DPAs with Privatemode (in place), Brave (to check), the image provider (to sign), the email provider (when switched on).
-3. Image creation: AI Act Art. 50 labelling of generated images (see `docs/image-creation-20261118.md`).
+3. Image creation: AI Act Art. 50 labelling of generated images (see `docs/image-creation-20261117.md`).
 4. Wording of "sealed": precise enough, or add "confidential computing" in brackets?

@@ -1,4 +1,4 @@
-// Image creation (docs/image-creation-20261118.md) with the provider mocked: our refusals, the route
+// Image creation (docs/image-creation-20261117.md) with the provider mocked: our refusals, the route
 // (limit, refusal, capacity, nothing kept, only the description sent, a ledger record per image), and
 // the Black Forest Labs adapter against a fake API. No network.
 import { createServer } from "node:http";

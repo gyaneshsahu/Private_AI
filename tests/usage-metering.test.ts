@@ -237,12 +237,12 @@ it("prices: input, cached input and output are priced apart per model, by the li
   expect(chatEuros(prices, "glm-5.3", 1e6, 1e6)! - thinking).toBeCloseTo(0.5 * (1.55 - 0.15));
   expect(chatEuros(prices, "unknown-model", 1, 1)).toBeUndefined();
   // A later list applies only from its date on; older records keep the list they were made under.
-  const later = { ...prices, version: 2, effectiveFrom: "2027-01-01T00:00:00.000Z", models: { "glm-5.3": { inputPerMillion: 2, outputPerMillion: 6, cachedPerMillion: 0.2 } } };
-  const file = { ...usageWeights, prices: [prices, later] };
+  const later = { ...prices, version: prices.version + 1, effectiveFrom: "2027-01-01T00:00:00.000Z", models: { "glm-5.3": { inputPerMillion: 2, outputPerMillion: 6, cachedPerMillion: 0.2 } } };
+  const file = { ...usageWeights, prices: [...usageWeights.prices, later] };
   expect(weightsFileSchema.safeParse(file).success).toBe(true);
-  expect(weightsFileSchema.safeParse({ ...usageWeights, prices: [later, prices] }).success).toBe(false);
-  expect(pricesAt(Date.parse("2026-12-31T23:59:59Z"), file).version).toBe(1);
-  expect(pricesAt(Date.parse("2027-01-01T00:00:00Z"), file).version).toBe(2);
+  expect(weightsFileSchema.safeParse({ ...usageWeights, prices: [later, ...usageWeights.prices] }).success).toBe(false);
+  expect(pricesAt(Date.parse("2026-12-31T23:59:59Z"), file).version).toBe(prices.version);
+  expect(pricesAt(Date.parse("2027-01-01T00:00:00Z"), file).version).toBe(prices.version + 1);
   // The ledger's cost of a background run: the model's own prices at the report's rate, not one report-wide price.
   const q = validateQualification(privatemodeReport());
   const usage = { promptTokens: 1e6, completionTokens: 1e6, cachedTokens: 5e5 };

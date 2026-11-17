@@ -4,15 +4,15 @@ One line per check, newest first. "Test" names the Playwright file that keeps th
 
 ## Next (kept current, so work can resume after a break)
 
-State, 18 November evening: voice conversation, charts, logo kit and icons, the one first-start notice, the whiteboard study and image creation (behind its switch, off, provider mocked) are done and tested.
+State, 17 November evening: voice conversation, charts, logo kit and icons, the one first-start notice, the whiteboard study and image creation (behind its switch, off, provider mocked) are done and tested.
 
-1. **Whiteboard next to the chat:** owner's new brief (18 November): "Whiteboard" in the left menu with Incognito and Secure Max, also in "+" and during a chat; chat on the left, board on the right; light and dark. Mock sent for approval (`evaluation/ui-redesign/whiteboard-side-mock.html`; on a phone a Chat | Whiteboard switch). **Wait for the owner's OK before building.**
-2. **Waiting for the owner:** image provider choice and contract checklist (`docs/image-creation-20261118.md`); shorter texts (`docs/ui-text-shortening-proposal.md`); first-start notice and privacy partners draft for the legal read (`docs/notices-inventory-20261118.md`, `docs/privacy-partners-draft-20261118.md`); whiteboard decisions (`docs/whiteboard-study-20261118.md`).
+1. **Whiteboard next to the chat:** owner's new brief (17 November): "Whiteboard" in the left menu with Incognito and Secure Max, also in "+" and during a chat; chat on the left, board on the right; light and dark. Mock sent for approval (`evaluation/ui-redesign/whiteboard-side-mock.html`; on a phone a Chat | Whiteboard switch). **Wait for the owner's OK before building.**
+2. **Waiting for the owner:** image provider choice and contract checklist (`docs/image-creation-20261117.md`); shorter texts (`docs/ui-text-shortening-proposal.md`); first-start notice and privacy partners draft for the legal read (`docs/notices-inventory-20261117.md`, `docs/privacy-partners-draft-20261117.md`); whiteboard decisions (`docs/whiteboard-study-20261117.md`).
 3. Owner asked: send a screenshot of every finished UI piece.
 
-## 18 November 2026: image creation (provider mocked)
+## 17 November 2026: image creation (provider mocked)
 
-Details: `docs/image-creation-20261118.md`. Tests: `tests/image-creation.test.ts` (5), `tests/redesign-ui.test.ts` "image creation" (4: 2 cases at 375 and 1,280 px), then the older tests on messages, saved chats and metering. No live call, no key.
+Details: `docs/image-creation-20261117.md`. Tests: `tests/image-creation.test.ts` (5), `tests/redesign-ui.test.ts` "image creation" (4: 2 cases at 375 and 1,280 px), then the older tests on messages, saved chats and metering. No live call, no key.
 
 | Feature | Result | What broke | What was fixed |
 | --- | --- | --- | --- |
@@ -22,9 +22,9 @@ Details: `docs/image-creation-20261118.md`. Tests: `tests/image-creation.test.ts
 | Saved with the chat as base64; picture data URLs still refused | pass | - | - |
 | "+" menu, dialog with images left today, refusal sentence, card with Download and Regenerate, answer button | pass (3 of 3 repeats; 1 earlier run showed "could not be created" once on the first request, not reproduced) | the card had no styles; under it the empty "Original sources unavailable" line and the answer's copy/read-aloud/retry row; Download used the share icon | card and dialog styled like the chart card and other dialogs; those rows hidden for created images; a download icon added (one icon per meaning) |
 
-## 18 November 2026: one notice, no per-feature cautions
+## 17 November 2026: one notice, no per-feature cautions
 
-Details: `docs/notices-inventory-20261118.md`, `docs/privacy-partners-draft-20261118.md`. Tests: 21 older test files rerun, then end-to-end.
+Details: `docs/notices-inventory-20261117.md`, `docs/privacy-partners-draft-20261117.md`. Tests: 21 older test files rerun, then end-to-end.
 
 | Feature | Result | What broke | What was fixed |
 | --- | --- | --- | --- |
@@ -33,7 +33,7 @@ Details: `docs/notices-inventory-20261118.md`, `docs/privacy-partners-draft-2026
 | Memory and Canvas texts made true in Secure mode | done | they said "only on this device" | memory: "stored encrypted, with your saved chats"; canvas line removed |
 | Protected-connection chip on German phones | pass | "Details zum Datenschutz" was cut | only the status is shown below 1,000 px |
 
-## 18 November 2026: logo, favicons, icons
+## 17 November 2026: logo, favicons, icons
 
 Source: the owner's official logo kit, `public/logo` (README there), used as-is. Tests: `tests/redesign-ui.test.ts` (logo, one icon per meaning), `tests/browser/redesign-sign-in.spec.ts` (logo on sign-in; brand files served and linked), `tests/email-template.test.ts`, `tests/error-pages.test.ts`. End-to-end 64 of 64.
 
@@ -47,9 +47,9 @@ Source: the owner's official logo kit, `public/logo` (README there), used as-is.
 | Sign-in email template with the kit's PNG logo (light and dark) | pass (not sent: sending is off) | first draft said codes last 10 minutes | they last 5 (server/account-auth.ts); text fixed |
 | One icon per meaning | pass | "Review context" and "Search the web" shared the magnifier; Deep research and Research shared the globe; Conversation files and Projects the folder; Incognito and Security the shield; Shortcuts and Help the question mark | new icons in the same style: layers, globe, book, compass, files, incognito, sliders, drive, sparkle, keyboard |
 
-## 18 November 2026: charts
+## 17 November 2026: charts
 
-Details: `docs/charts-20261118.md`. Tests: `tests/answer-chart.test.ts`, `tests/redesign-ui.test.ts` (chart case), `tests/answer-policy.test.ts`.
+Details: `docs/charts-20261117.md`. Tests: `tests/answer-chart.test.ts`, `tests/redesign-ui.test.ts` (chart case), `tests/answer-policy.test.ts`.
 
 | Feature | Result | What broke | What was fixed |
 | --- | --- | --- | --- |
@@ -59,9 +59,9 @@ Details: `docs/charts-20261118.md`. Tests: `tests/answer-chart.test.ts`, `tests/
 | The model follows the rule (live, 20 questions, EN and DE) | 10 of 10 without a chart correct; 8 of 10 with a chart drawn | 3 answers were empty at 900 tokens (reasoning used them all) | rerun at 2,500: 2 of 3 then drew a chart; the third never answered |
 | Live spend | EUR 0.013 | - | - |
 
-## 18 November 2026: voice conversation
+## 17 November 2026: voice conversation
 
-Details and the delay report: `docs/voice-conversation-20261118.md`. Tests: `live-voice` (48), `live-voice-ui` (12), `read-aloud`, `redesign-ui` (107 in all, pass).
+Details and the delay report: `docs/voice-conversation-20261117.md`. Tests: `live-voice` (48), `live-voice-ui` (12), `read-aloud`, `redesign-ui` (107 in all, pass).
 
 | Feature | Result | What broke | What was fixed |
 | --- | --- | --- | --- |
@@ -74,7 +74,7 @@ Details and the delay report: `docs/voice-conversation-20261118.md`. Tests: `liv
 | Delay measured each turn | pass (3rd run) | the test's fake engine never reported a start; the delay was cleared when the next turn began | fake reports a start like real engines (plus a fallback at the end); the last delay stays until the next turn has its own |
 | Live spend | about EUR 0.001 | - | one probe: Whisper 405 ms, Voxtral 252 ms on 3.6 s of synthetic speech |
 
-## 18 November 2026: final pass over every feature together
+## 17 November 2026: final pass over every feature together
 
 Run on `7468eee` plus the fix below. Results: `.local/ui-redesign/final-pass/`.
 
@@ -87,7 +87,7 @@ Run on `7468eee` plus the fix below. Results: `.local/ui-redesign/final-pass/`.
 | Screen tour, every feature off | 378 screenshots, 0 failed steps | - | - |
 | CI on `7468eee` (Linux fonts) | 2 failed, then fixed | the German protected-connection chip wrapped to two lines at 768 px (52 px, limit 40); in `context-review` at very large text, the opened connection details ran past the screen edge | the chip stays one line and shows only the status below 1,000 px; the opened details wrap inside the screen |
 
-## 18 November 2026: leftovers
+## 17 November 2026: leftovers
 
 | Feature | Result | What broke | What was fixed |
 | --- | --- | --- | --- |
@@ -95,7 +95,7 @@ Run on `7468eee` plus the fix below. Results: `.local/ui-redesign/final-pass/`.
 | Colours change smoothly when the theme switches | built | - | - |
 | "Usage unavailable · No active plan shown" in the menu | not changed | it is what the test build says without a plan; the hosted app shows the remaining requests | none |
 
-## 18 November 2026: errors, dialogs, Secure Max in the menu
+## 17 November 2026: errors, dialogs, Secure Max in the menu
 
 Tests: `tests/redesign-ui.test.ts`, "states and dialogs" and the left-menu order check; older files rerun (31 files, then 9 files with 126 checks). Screenshots: `.local/ui-redesign/step-10`, `step-11`.
 
@@ -103,13 +103,13 @@ Tests: `tests/redesign-ui.test.ts`, "states and dialogs" and the left-menu order
 | --- | --- | --- | --- |
 | A failed answer is a calm rounded note; "What this means" opens | pass | - | - |
 | Every dialog: one rounded panel, dimmed backdrop, fade-in | pass (3rd run) | the open animation also scaled dialogs to 99 %; the phone menu drawer is a dialog, so 44 px buttons measured 43.6 px in 6 older test files | fade only, no size change, and not on the menu drawer |
-| Secure Max moved from the bottom of the menu to right under Incognito chat (owner, 18 November) | pass | - | - |
+| Secure Max moved from the bottom of the menu to right under Incognito chat (owner, 17 November) | pass | - | - |
 | Secure Max section keeps its 4 px band | pass (2nd run) | my dialog pass had removed the band that `modes-ui` checks | band kept |
 | Secure Max dialog: button waits for the tick, Cancel closes | pass | - | - |
 | CI on the live-voice commit (7c7909e) | fail, then fixed | my code-block test read the Copy button's size while the block re-rendered | the test waits for a stable size |
 | A run of older tests while files were being edited | discarded | some tests read the source files live | rerun on the finished code |
 
-## 18 November 2026: live voice ball
+## 17 November 2026: live voice ball
 
 Test: `tests/redesign-ui.test.ts`, "live voice" (375 and 1280 px, plus a motion case). Screenshots: `.local/ui-redesign/step-9`.
 
@@ -123,7 +123,7 @@ Test: `tests/redesign-ui.test.ts`, "live voice" (375 and 1280 px, plus a motion 
 
 Not checked: a real turn with a microphone (the test sets the phase directly), and how smooth the swirl is on a slow phone.
 
-## 18 November 2026: upload screens
+## 17 November 2026: upload screens
 
 Test: `tests/redesign-ui.test.ts`, "upload screens" (375 and 1280 px), plus the older `image-app-ui`, `health-consent-ui` and photo tests (41 of 41 pass). Screenshots: `.local/ui-redesign/step-8`, `step-8b`.
 
@@ -133,7 +133,7 @@ Test: `tests/redesign-ui.test.ts`, "upload screens" (375 and 1280 px), plus the 
 | Ask about a picture: calm dialog, paragraphs closer together, round buttons | built (screenshots) | the note's paragraphs had large gaps | 10 px between paragraphs |
 | Shorter texts on these screens | waiting for the owner | - | proposals per text in `docs/ui-text-shortening-proposal.md`, marked Required, Our caution or Instruction; nothing changed |
 
-## 18 November 2026: answers, phone, sign-in, Settings
+## 17 November 2026: answers, phone, sign-in, Settings
 
 Tests: `tests/redesign-ui.test.ts` ("answers", "phone", "settings" cases, 375 and 1280 px) and `tests/browser/redesign-sign-in.spec.ts` (real production build). Screenshots: `.local/ui-redesign/step-4` (answers), `step-5` (phone), `step-6` (sign-in), `step-7` (Settings).
 
@@ -156,7 +156,7 @@ Tests: `tests/redesign-ui.test.ts` ("answers", "phone", "settings" cases, 375 an
 | `chat-recovery` focus check, `invite-browser`, `redesign-ui` sidebar case | pass alone | timed out or lost focus only while 48 files ran at once | none (machine load); watch in CI |
 | `source-history-ui`, `optional-calculator-ui`, `context-review` | local timeout only | their own 25 to 30 s limits on this machine | none; they pass in CI |
 
-## 18 November 2026: left menu
+## 17 November 2026: left menu
 
 Test: `tests/redesign-ui.test.ts`, "left menu at 375/1280 px" (3 cases each). Screenshots: `.local/ui-redesign/step-3/`.
 
@@ -174,7 +174,7 @@ Test: `tests/redesign-ui.test.ts`, "left menu at 375/1280 px" (3 cases each). Sc
 
 Still old in the menu: the "Secure Max" row and the "Saved to your account" line keep their look; the account line still says "Usage unavailable · No active plan shown" in the test build.
 
-## 18 November 2026: message box on one line
+## 17 November 2026: message box on one line
 
 Test: `tests/redesign-ui.test.ts`, case "message box on one line" (375 and 1280 px).
 

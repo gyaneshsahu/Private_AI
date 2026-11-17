@@ -57,7 +57,7 @@ it("the picture entry exists only while the server says pictures are on; an atta
 
     const page = await open(true);
     await page.getByRole("button", { name: en.menu }).click();
-    // Owner, 18 November: no first-use notice; the picture dialog opens at once.
+    // Owner, 17 November: no first-use notice; the picture dialog opens at once.
     const png = await page.evaluate(async () => {
       const canvas = document.createElement("canvas");
       canvas.width = 400;

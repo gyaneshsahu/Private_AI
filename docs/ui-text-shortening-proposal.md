@@ -1,6 +1,6 @@
-# Upload screens: proposed shorter texts (18 November 2026)
+# Upload screens: proposed shorter texts (17 November 2026)
 
-**Update, 18 November (owner's correction on notices):** one general first-start notice replaces per-feature cautions (`docs/notices-inventory-20261118.md`). Already removed from the screens: the photo-to-text intro and camera notes, the whole "Before you send a picture" note (`note1` to `note4`), the picture `pickIntro`, the dictation note, the voice-conversation `note`, and the research caution. Their facts move to the privacy page (`docs/privacy-partners-draft-20261118.md`). Still open below: the health-consent wording (legal read and version bump), `healthDeclined`, `redactIntro`, `chooseHint`, `pickExtraction`, and the live-voice `what` and `cost` lines.
+**Update, 17 November (owner's correction on notices):** one general first-start notice replaces per-feature cautions (`docs/notices-inventory-20261117.md`). Already removed from the screens: the photo-to-text intro and camera notes, the whole "Before you send a picture" note (`note1` to `note4`), the picture `pickIntro`, the dictation note, the voice-conversation `note`, and the research caution. Their facts move to the privacy page (`docs/privacy-partners-draft-20261117.md`). Still open below: the health-consent wording (legal read and version bump), `healthDeclined`, `redactIntro`, `chooseHint`, `pickExtraction`, and the live-voice `what` and `cost` lines.
 
 For the owner's decision. Nothing here is changed in the app yet. Point 5 of the UI brief asks for short labels instead of explanations; point 6 asks that legally required notices stay, shown once, in one short sentence, at the moment they matter.
 

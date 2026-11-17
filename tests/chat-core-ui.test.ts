@@ -208,7 +208,7 @@ for (const lang of ["en", "de"] as const)
           data.items.add(new File([blob], "pasted.png", { type: "image/png" }));
           el.dispatchEvent(new ClipboardEvent("paste", { clipboardData: data, bubbles: true, cancelable: true }));
         });
-        // Owner, 18 November: no first-use notice; the picture dialog opens at once.
+        // Owner, 17 November: no first-use notice; the picture dialog opens at once.
         // The picture is already chosen: the dialog opens at turn and crop (loaded on demand: the dev server compiles it on first use).
         await ui(page.getByRole("button", { name: im.pickUse })).toBeEnabled({ timeout: 30_000 });
         await noSidewaysScroll(page);
@@ -335,7 +335,7 @@ for (const lang of ["en", "de"] as const)
         expect((await hint.boundingBox())!.height).toBeGreaterThanOrEqual(24);
         await noSidewaysScroll(page);
         await hint.click();
-        // Owner, 18 November: no first-use notice; the picture dialog opens at once.
+        // Owner, 17 November: no first-use notice; the picture dialog opens at once.
         await ui(page.getByRole("heading", { name: im.pickTitle })).toBeVisible({ timeout: 30_000 }); // loaded on demand: the dev server compiles it on first use
         expect(await calls(page)).toEqual([]);
         expect(external).toEqual([]);

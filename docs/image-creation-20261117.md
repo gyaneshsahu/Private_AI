@@ -1,12 +1,12 @@
-# Image creation (18 November 2026)
+# Image creation (17 November 2026)
 
-Owner's brief, 18 November: "Create image" behind a switch, off by default, in the new design. Only the user's description goes to the image provider (never chat history, never uploaded photos, no editing of user photos). The result shows in the chat with Download and Regenerate. Provider behind an interface; prices and model names as versioned configuration; key only on the server. Own daily allowance per plan; metered with the measured cost; clear messages when used up or refused. Provider moderation plus our own refusals (real people, minors). Generated images are stored with the conversation in the encrypted vault, never kept on the server beyond the request. No popup, no tag: the one first-start notice and the privacy page cover it (owner's correction of the same day). Tests with the provider mocked; no live call until the owner approves a key and a small spend.
+Owner's brief, 17 November: "Create image" behind a switch, off by default, in the new design. Only the user's description goes to the image provider (never chat history, never uploaded photos, no editing of user photos). The result shows in the chat with Download and Regenerate. Provider behind an interface; prices and model names as versioned configuration; key only on the server. Own daily allowance per plan; metered with the measured cost; clear messages when used up or refused. Provider moderation plus our own refusals (real people, minors). Generated images are stored with the conversation in the encrypted vault, never kept on the server beyond the request. No popup, no tag: the one first-start notice and the privacy page cover it (owner's correction of the same day). Tests with the provider mocked; no live call until the owner approves a key and a small spend.
 
-Status (18 November): **built behind the switch and tested with the provider mocked** (`tests/image-creation.test.ts`: refusals, the route, the ledger, the Black Forest Labs adapter against a fake API, saving in the vault; `tests/redesign-ui.test.ts`: the "+" menu entry, dialog, refusal, card with Download and Regenerate, the answer button, at 375 and 1,280 px). Off by default. No provider account, no key, no live call.
+Status (17 November): **built behind the switch and tested with the provider mocked** (`tests/image-creation.test.ts`: refusals, the route, the ledger, the Black Forest Labs adapter against a fake API, saving in the vault; `tests/redesign-ui.test.ts`: the "+" menu entry, dialog, refusal, card with Download and Regenerate, the answer button, at 375 and 1,280 px). Off by default. No provider account, no key, no live call.
 
 ## Provider choice
 
-The owner allowed changing his first suggestion (FLUX by Black Forest Labs) if something fits better. What was checked on 18 November (public pages; to be confirmed in the contract):
+The owner allowed changing his first suggestion (FLUX by Black Forest Labs) if something fits better. What was checked on 17 November (public pages; to be confirmed in the contract):
 
 | | Black Forest Labs API (FLUX) | Microsoft Foundry, FLUX.2 [pro], EU Data Zone | Google Vertex AI, Imagen 4 in an EU region |
 | --- | --- | --- | --- |

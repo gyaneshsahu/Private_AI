@@ -87,7 +87,7 @@ export interface LiveVoiceDeps {
   speaker: {
     /**
      * Optional: called when the question is sent, so the answer can be read sentence by sentence
-     * while it is still being written (voice conversation, 18 November). speak() then reads the rest.
+     * while it is still being written (voice conversation, 17 November). speak() then reads the rest.
      */
     follow?(): void;
     /** Resolves when the answer was read. Calls `started` with a generous length for the time-out. */
@@ -396,7 +396,7 @@ export const SILENCE_DEFAULTS = {
   minThreshold: 0.015,
   maxThreshold: 0.06,
   minSpeechMs: 150,
-  // 1 s (was 1.5 s until 18 November): the reply starts sooner; a longer thinking pause can end
+  // 1 s (was 1.5 s until 17 November): the reply starts sooner; a longer thinking pause can end
   // a turn early, which "Always ask before sending" and Edit cover.
   silenceMs: 1000,
   noSpeechMs: 8000,

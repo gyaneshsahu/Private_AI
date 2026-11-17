@@ -205,7 +205,7 @@ for (const lang of ["en", "de"] as const)
         await page.waitForTimeout(1000);
         await loud(page, false);
         await ui(panel).toContainText("What time is it", { timeout: 6000 });
-        // Voice conversation (18 November): sent at once, no countdown.
+        // Voice conversation (17 November): sent at once, no countdown.
         await ui(panel).toContainText("Synthetic answer about the time.", { timeout: 8000 });
         // The answer was read aloud, then the microphone opened again.
         await ui(done).toBeVisible({ timeout: 8000 });

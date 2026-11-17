@@ -73,7 +73,7 @@ const app = createApp({
   ...(process.env.PRIVATEAI_VOICE === "1" ? { voice: { chunkSeconds: 30, maxTurnSeconds: 180, dailyUnits: 150 } } : {}),
   // Image questions on the development server: off unless "1" (they also need `vision` in the report).
   ...(process.env.PRIVATEAI_IMAGES === "1" ? { images: { maxBytes: 280_000, dailyImages: 10 } } : {}),
-  // Image creation (docs/image-creation-20261118.md): off unless "1". With IMAGE_API_KEY the Black
+  // Image creation (docs/image-creation-20261117.md): off unless "1". With IMAGE_API_KEY the Black
   // Forest Labs adapter (EU endpoint, IMAGE_MODEL, default flux-2-klein); without a key only on the
   // development server, with the mock provider. IMAGE_DAILY: images per account a day (default 3).
   ...(process.env.PRIVATEAI_IMAGE_CREATION === "1" && (process.env.IMAGE_API_KEY || dev)

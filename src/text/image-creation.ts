@@ -1,4 +1,4 @@
-// Image creation (docs/image-creation-20261118.md): the dialog, the image card and its messages.
+// Image creation (docs/image-creation-20261117.md): the dialog, the image card and its messages.
 import { defineText } from "./core";
 
 export const imageCreationText = defineText({

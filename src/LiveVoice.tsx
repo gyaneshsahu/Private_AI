@@ -46,7 +46,7 @@ function readPrefs(): Prefs {
   }
 }
 /**
- * Seconds the transcript is shown before it is sent by itself: none since 18 November (voice
+ * Seconds the transcript is shown before it is sent by itself: none since 17 November (voice
  * conversation), so the reply starts sooner. "Always ask before sending" still waits for a tap.
  */
 const REVIEW_SECONDS = 0;
@@ -398,7 +398,7 @@ export function LiveVoice(props: {
           }}
         >
           <h2 id="live-voice-title">{t.title}</h2>
-          {/* The colour ball (UI redesign, 18 November): it moves while listening, thinking or speaking
+          {/* The colour ball (UI redesign, 17 November): it moves while listening, thinking or speaking
               and rests otherwise. CSS only; off under reduced motion. */}
           <div className="live-voice-orb" data-phase={phase} aria-hidden="true">
             <i />
@@ -510,7 +510,7 @@ export function LiveVoice(props: {
 
 /**
  * Reads the newest answer aloud sentence by sentence while it is still being written (voice
- * conversation, 18 November). It watches the answer the send creates (the next assistant message),
+ * conversation, 17 November). It watches the answer the send creates (the next assistant message),
  * speaks every finished sentence with the best local voice, and `finish()` reads the rest once the
  * answer is complete. `onSound` runs at the first spoken word. Same local-voice rule as read aloud:
  * no local voice, no speech.

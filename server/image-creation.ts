@@ -1,4 +1,4 @@
-// Image creation (docs/image-creation-20261118.md): off unless configured. Only the user's typed
+// Image creation (docs/image-creation-20261117.md): off unless configured. Only the user's typed
 // description goes to the image provider, never chat history or photos. The server keeps neither the
 // description nor the image: the bytes are passed straight to the browser, which saves them with the
 // conversation in the encrypted vault. The provider sits behind an interface; prices and model names

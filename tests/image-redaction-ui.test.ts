@@ -266,12 +266,12 @@ for (const [name, viewport] of [["phone", phone], ["desktop", desktop]] as const
 it("the whole flow in German at phone width: the picture, the health question, and the consent card; saying no attaches nothing", async () => {
   const de = imageText.de;
   const page = await open("view=flow&consent", phone, "de-DE");
-  // Owner, 18 November: no first-use notice; the picture dialog opens at once.
+  // Owner, 17 November: no first-use notice; the picture dialog opens at once.
   const dialog = page.getByRole("dialog");
   for (const text of [de.note1, de.note2, de.note3, de.note4]) await ui(dialog.getByText(text)).toHaveCount(0);
   // The existing photo dialog with picture wording.
   await ui(page.getByRole("heading", { name: de.pickTitle })).toBeVisible();
-  await ui(page.getByText(de.pickIntro)).toHaveCount(0); // no explanation paragraph (owner, 18 November)
+  await ui(page.getByText(de.pickIntro)).toHaveCount(0); // no explanation paragraph (owner, 17 November)
   const png = await page.evaluate(async () => {
     const canvas = document.createElement("canvas");
     canvas.width = 600;

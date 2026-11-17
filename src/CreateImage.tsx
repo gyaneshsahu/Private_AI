@@ -1,4 +1,4 @@
-// Image creation (docs/image-creation-20261118.md): the dialog that sends ONLY the typed description
+// Image creation (docs/image-creation-20261117.md): the dialog that sends ONLY the typed description
 // (identifiers removed on this device first) and the card that shows a created image in the chat.
 // The server keeps nothing; the image is saved with the conversation in the vault as base64 (not as a
 // data URL: the vault refuses those, which keeps picture questions out of saved chats).

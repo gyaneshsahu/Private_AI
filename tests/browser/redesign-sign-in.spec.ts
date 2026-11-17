@@ -1,4 +1,4 @@
-// UI redesign (18 November): the real sign-in page (/account, production build), clicked through like
+// UI redesign (17 November): the real sign-in page (/account, production build), clicked through like
 // a user: comet mark and name, outlined Google button, email, code, signed in. Account answers are faked
 // in the page; nothing leaves the machine. Log: docs/ui-redesign-log.md.
 import { test, expect } from "@playwright/test";

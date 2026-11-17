@@ -4378,7 +4378,7 @@
   }
 }
 
-/* ---------- Redesign: left menu (18 November) ----------
+/* ---------- Redesign: left menu (17 November) ----------
    Comet logo, quiet rows of one height, a slim search field, small grey headings, a compact account
    line. Last in the file on purpose: it replaces the earlier rounds for the sidebar. */
 .chat-design .sidebar {
@@ -4607,7 +4607,7 @@
   }
 }
 
-/* ---------- Redesign: answers (18 November) ----------
+/* ---------- Redesign: answers (17 November) ----------
    Your message is a soft bubble on the right with no name above it; answers are plain text on the page.
    Headings, lists, quotes, tables and code as in evaluation/ui-redesign/mock.html. Last on purpose. */
 .chat-design .message.user {
@@ -4871,8 +4871,8 @@
   }
 }
 
-/* ---------- Redesign: phone (18 November) ----------
-   The "+" menu stays the small panel above "+" on phones too (owner's choice, 18 November: it covers
+/* ---------- Redesign: phone (17 November) ----------
+   The "+" menu stays the small panel above "+" on phones too (owner's choice, 17 November: it covers
    only what it needs). Taps give a short press feedback; the box keeps clear of the home bar. */
 @media (max-width: 650px) {
   .chat-design .tools-menu .menu-surface {
@@ -4892,7 +4892,7 @@
   }
 }
 
-/* ---------- Redesign: sign-in and account pages (18 November) ----------
+/* ---------- Redesign: sign-in and account pages (17 November) ----------
    The comet mark and name above a calm form: Google as an outlined button, one email field, one
    main button, a short line of links below. The cosmic glow behind is in the token block. */
 .account-shell .account-preview-brand {
@@ -4993,7 +4993,7 @@
   font-size: 13px;
 }
 
-/* ---------- Redesign: Settings (18 November) ----------
+/* ---------- Redesign: Settings (17 November) ----------
    A calm two-column dialog: sections as quiet rows on the left, content on the right with clear
    headings; actions as small outlined buttons instead of bare text. Texts are unchanged. */
 .chat-design .settings-dialog {
@@ -5112,7 +5112,7 @@
   line-height: 28px;
 }
 
-/* ---------- Redesign: upload screens (18 November) ----------
+/* ---------- Redesign: upload screens (17 November) ----------
    Photo to text and Ask about a picture: a calm dialog, the two ways in as tiles side by side, hints
    small and grey. Texts are unchanged until the owner decides (docs/ui-text-shortening-proposal.md). */
 .chat-design .photo-dialog {
@@ -5224,7 +5224,7 @@
   line-height: 1.55;
 }
 
-/* ---------- Redesign: live voice ball (18 November) ----------
+/* ---------- Redesign: live voice ball (17 November) ----------
    A round ball of slowly swirling colour (evaluation/ui-redesign/mock.html). Only opacity, transform and
    border-radius move; it rests unless listening, transcribing, answering or speaking. */
 .chat-design .live-voice-orb {
@@ -5317,7 +5317,7 @@
   color: var(--ink2);
 }
 
-/* ---------- Redesign: states and dialogs (18 November) ----------
+/* ---------- Redesign: states and dialogs (17 November) ----------
    Errors read as a calm note, not a banner; every dialog has the same rounded panel; the Secure Max
    box in the menu is quieter. Texts unchanged. */
 .chat-design .failure-note {
@@ -5387,7 +5387,7 @@
     min-height: 44px;
   }
 }
-/* Secure Max under Incognito: the same quiet row as New chat and Incognito (owner, 18 November). */
+/* Secure Max under Incognito: the same quiet row as New chat and Incognito (owner, 17 November). */
 .chat-design .sidebar .secure-max-entry {
   display: flex;
   align-items: center;
@@ -5422,7 +5422,7 @@
   }
 }
 
-/* ---------- Redesign: leftovers (18 November) ----------
+/* ---------- Redesign: leftovers (17 November) ----------
    The protected-connection line becomes a small lock chip (its details still open on click); colours
    change smoothly when the theme switches. Texts unchanged. */
 .chat-design .connection-banner {
@@ -5500,7 +5500,7 @@
     display: none;
   }
 }
-/* Line charts and the source line under a chart (18 November). */
+/* Line charts and the source line under a chart (17 November). */
 .chat-design .answer-chart .line {
   fill: none;
   stroke: var(--accent);
@@ -5524,7 +5524,7 @@
   color: var(--ink3);
 }
 
-/* ---------- Brand: the official logo kit (public/logo, 18 November) ----------
+/* ---------- Brand: the official logo kit (public/logo, 17 November) ----------
    Dark artwork on light themes, light artwork on dark themes; never recoloured. */
 .brand-logo {
   display: inline-flex;
@@ -5558,7 +5558,7 @@
   height: 22px;
 }
 
-/* The one general notice at first start (owner, 18 November): a calm card above the message box. */
+/* The one general notice at first start (owner, 17 November): a calm card above the message box. */
 .chat-design .first-start-notice {
   width: 100%;
   max-width: 740px;
@@ -5607,7 +5607,7 @@
   }
 }
 
-/* ---------- Image creation (18 November): the describe dialog and the image card ---------- */
+/* ---------- Image creation (17 November): the describe dialog and the image card ---------- */
 .chat-design dialog.create-image-dialog {
   width: min(480px, calc(100vw - 32px));
   padding: 20px;

@@ -99,7 +99,7 @@ export interface Config {
   /** Image questions; absent means off. It also needs the report's `vision` model. */
   images?: ImageSettings;
   /**
-   * Image creation (docs/image-creation-20261118.md); absent means off. Only the typed description
+   * Image creation (docs/image-creation-20261117.md); absent means off. Only the typed description
    * goes to `provider`; the server keeps neither it nor the image. `dailyImages`: per account a day.
    */
   imageCreation?: { provider: ImageProvider; dailyImages: number };

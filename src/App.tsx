@@ -221,7 +221,7 @@ const SyncIndicator = lazyNamed(() => import("./SyncScreens"), "SyncIndicator");
 const START_KEY = "cometrow.openInSecureMax";
 /** SS-14: the unsent message of a session that ended, for this tab only. */
 const EXPIRED_DRAFT_KEY = "cometrow.expired-draft";
-/** The one general notice was seen in this browser (owner, 18 November). */
+/** The one general notice was seen in this browser (owner, 17 November). */
 export const FIRST_START_KEY = "cometrow.first-start-notice";
 
 export function App() {
@@ -3295,7 +3295,7 @@ export function App() {
                 />
               )}
               {noticeLine}
-              {/* The one general notice (owner, 18 November): once, at first start, never again. */}
+              {/* The one general notice (owner, 17 November): once, at first start, never again. */}
               {!firstStartSeen && (
                 <div className="first-start-notice" role="note">
                   <p>{t.firstStart(status?.imageCreation ? t.firstStartImages : t.firstStartSearch)}</p>

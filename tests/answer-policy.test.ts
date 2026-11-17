@@ -219,7 +219,7 @@ it("product prompt (14 November cut): safety sentences verbatim, situational rul
   const head = product.slice(0, product.indexOf("add unsupported specifications.") + 31);
   for (const later of [withDocument, withWeb, scoped]) expect(later.startsWith(head)).toBe(true);
   // 3,608 characters on 14 November before the cut, under 3,400 after it; the chart rule (owner,
-  // 18 November: up to about 300 tokens approved) adds about 260 characters.
+  // 17 November: up to about 300 tokens approved) adds about 260 characters.
   expect(product.length).toBeLessThan(3700);
   expect(product).toContain("Add a chart only when the answer has 3 or more numbers over time or across categories; otherwise none.");
 });

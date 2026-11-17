@@ -511,7 +511,7 @@ it("gives slow voices enough time", () => {
   expect(speechTimeoutMs(1000)).toBe(160_000);
 });
 
-// Voice conversation (18 November): talk-over, reading while the answer is written, reply delay.
+// Voice conversation (17 November): talk-over, reading while the answer is written, reply delay.
 import { createTalkOverDetector } from "../src/live-voice-audio";
 
 describe("voice conversation", () => {

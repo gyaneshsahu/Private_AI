@@ -1,6 +1,6 @@
-# Notices: one general notice, everything else listed (18 November 2026)
+# Notices: one general notice, everything else listed (17 November 2026)
 
-Owner's correction, 18 November: show exactly one general notice, once, at first start, with "Got it", never again. No per-feature cautions, popups or "less secure" tags. Keep only what must stay, each shown once: the health and sensitive-data consent (legally required) and the Secure Max confirmation. List every other notice and remove it or move it to the privacy page; mark anything where the law may require an in-context notice. Never write anything untrue.
+Owner's correction, 17 November: show exactly one general notice, once, at first start, with "Got it", never again. No per-feature cautions, popups or "less secure" tags. Keep only what must stay, each shown once: the health and sensitive-data consent (legally required) and the Secure Max confirmation. List every other notice and remove it or move it to the privacy page; mark anything where the law may require an in-context notice. Never write anything untrue.
 
 ## The first-start notice (built; for the legal read)
 
@@ -20,7 +20,7 @@ Shown once per browser above the message box, with "Privacy" (opens the privacy 
 | "Answers come from an AI, not a person. Check important answers." | the line under the message box | **May be legally required in context**: EU AI Act Art. 50(1) (people must be informed that they interact with an AI system unless obvious). Ask the lawyer; until then it stays |
 | Search approval ("Search the web for: ...") | before a web search runs | Not a notice: it is the user's choice of what is sent to the search partner |
 
-## Removed from the screens on 18 November (now covered by the first-start notice and the privacy page)
+## Removed from the screens on 17 November (now covered by the first-start notice and the privacy page)
 
 | Notice (text key) | Where it was | What it said, in short |
 | --- | --- | --- |
@@ -31,7 +31,7 @@ Shown once per browser above the message box, with "Privacy" (opens the privacy 
 | `appText.researchNote` | Research page | results only for this session; "use public, non-sensitive queries only" |
 | second sentence of `incognitoBanner`, `disappearingBanner` | banners of incognito and disappearing chats | "This does not change what the secure server keeps for a short time or the request records we hold." |
 
-All of these facts belong on the privacy page (see `docs/privacy-partners-draft-20261118.md`); the number masking limit of voice is listed there explicitly.
+All of these facts belong on the privacy page (see `docs/privacy-partners-draft-20261117.md`); the number masking limit of voice is listed there explicitly.
 
 ## Corrected because they were not true in every mode
 
@@ -51,4 +51,4 @@ All of these facts belong on the privacy page (see `docs/privacy-partners-draft-
 | Sync and recovery-key warnings | `sync.keyWarning`, `promptWarning`, `modes.maxResetWarning` | keep: they prevent data loss in Secure Max |
 | Footer | `footerNote` "No advertising. No training on your data." | keep, true |
 
-Possible in-context legal duties to ask the lawyer about: the AI disclosure line (AI Act Art. 50(1)); labelling of generated images (AI Act Art. 50(2) and (4), see `docs/image-creation-20261118.md`); whether the microphone and camera need a short in-context line beyond the browser's own permission prompt (we think the browser prompt plus the privacy page suffice).
+Possible in-context legal duties to ask the lawyer about: the AI disclosure line (AI Act Art. 50(1)); labelling of generated images (AI Act Art. 50(2) and (4), see `docs/image-creation-20261117.md`); whether the microphone and camera need a short in-context line beyond the browser's own permission prompt (we think the browser prompt plus the privacy page suffice).

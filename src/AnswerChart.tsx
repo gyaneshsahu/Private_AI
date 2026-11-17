@@ -1,5 +1,5 @@
-// A chart drawn in the browser from a ```chart block in an answer (UI redesign 18 November; the
-// AI's rule is in src/conversation.ts, design in docs/charts-20261118.md). The model writes a few
+// A chart drawn in the browser from a ```chart block in an answer (UI redesign 17 November; the
+// AI's rule is in src/conversation.ts, design in docs/charts-20261117.md). The model writes a few
 // numbers as JSON; nothing is fetched and no library is used. Anything that does not parse as the
 // shape below stays an ordinary code block.
 import { useText } from "./i18n";

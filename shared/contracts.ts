@@ -439,7 +439,7 @@ export interface Message {
    */
   image?: true;
   /**
-   * An image CometRow created from the user's description (docs/image-creation-20261118.md): saved
+   * An image CometRow created from the user's description (docs/image-creation-20261117.md): saved
    * with the conversation, as base64 (never a data URL). The model sees only `[Created image: prompt]`.
    */
   createdImage?: {
@@ -569,7 +569,7 @@ export interface AppStatus {
   /** Image questions are switched on for this deployment; absent means no image upload. */
   images?: { maxBytes: number };
   /**
-   * Image creation is switched on for this deployment (off by default; docs/image-creation-20261118.md).
+   * Image creation is switched on for this deployment (off by default; docs/image-creation-20261117.md).
    * `limit`: images a day on this plan; `used`: in the last 24 hours (absent when unknown).
    */
   imageCreation?: { limit: number; used?: number };
