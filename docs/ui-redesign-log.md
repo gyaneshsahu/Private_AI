@@ -22,6 +22,7 @@ Test: `tests/redesign-ui.test.ts` (real app with every feature on, fake AI answe
 | Sidebar: New chat is a quiet row and starts a fresh chat | pass | - | - |
 | Dark theme: dark colours, send and answer work | pass | - | - |
 | Existing tests touched by the change (`composer-ui`, `chat-core-ui`, `i18n-app-ui`, `image-app-ui`, `chat-edit-masking-ui`) | pass after update | they expected Send always visible, the old greeting, the old placeholder and the Enter hint | updated to the new behaviour (Send hidden when empty; greeting and placeholder texts; Enter hint hidden) |
+| `tests/browser/chat-design.spec.ts` (CI run 43996321415, offline job) | fail, then fixed | I had changed its Send check to "hidden", but the box holds a draft there, so Send is shown and off | check put back to "disabled" |
 | `projects-help-ui` at 375 px (CI on the step-1 merge, run 43986832917) | fail, then pass | the project row was 0.2 px shorter than its 44 px "…" after the font change | rows on phones get a 44 px minimum height |
 
 Looked at (screenshots, step-2): start screen EN 1280, "+" menu EN 375, long answer EN 1280. Open points: the "Auto" control is still wider than its text; the comet logo, the sidebar search box and the answer styling are later steps.
