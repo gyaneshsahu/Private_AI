@@ -5155,3 +5155,115 @@
   min-height: 28px;
   line-height: 28px;
 }
+
+/* ---------- Redesign: upload screens (18 November) ----------
+   Photo to text and Ask about a picture: a calm dialog, the two ways in as tiles side by side, hints
+   small and grey. Texts are unchanged until the owner decides (docs/ui-text-shortening-proposal.md). */
+.chat-design .photo-dialog {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow-2);
+  padding: 18px 20px 20px;
+}
+.chat-design .photo-dialog > .row {
+  align-items: center;
+}
+.chat-design .photo-dialog > .row h2 {
+  font-size: 18px;
+  font-weight: 620;
+  margin: 0;
+}
+.chat-design .photo-dialog > .row button {
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink2);
+  box-shadow: none;
+}
+.chat-design .photo-dialog > .row button:hover {
+  background: var(--hover);
+}
+.chat-design .photo-dialog p.muted {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink3);
+}
+.chat-design .photo-paths {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+.chat-design .photo-path {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.chat-design .photo-path > button {
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  min-height: 96px;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--hover);
+  color: var(--ink);
+  font-size: 14.5px;
+  font-weight: 520;
+  box-shadow: none;
+  transition: background var(--fast) var(--ease);
+}
+.chat-design .photo-path > button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--hover) 70%, var(--line));
+}
+.chat-design .photo-path > button svg {
+  width: 24px;
+  height: 24px;
+}
+.chat-design .photo-path > small {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ink3);
+  text-align: center;
+}
+.chat-design .photo-actions {
+  gap: 8px;
+}
+.chat-design .photo-actions button {
+  min-height: 40px;
+  border-radius: 999px;
+  padding: 0 16px;
+}
+.chat-design .photo-preview,
+.chat-design .photo-video {
+  border-radius: 12px;
+}
+.chat-design .health-consent {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+@media (max-width: 760px) {
+  .chat-design .photo-actions button,
+  .chat-design .photo-dialog > .row button {
+    min-height: 44px;
+  }
+}
+.chat-design .photo-dialog .photo-stage {
+  display: grid;
+  gap: 10px;
+}
+.chat-design .photo-dialog .photo-stage > p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+}

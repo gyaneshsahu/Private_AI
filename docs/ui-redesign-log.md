@@ -12,6 +12,16 @@ State at the end of 17 November: steps 1 and 2 are in the app; CI green on `2596
 
 Known flaky test: `tests/chat-recovery.test.ts` line 429 (focus on a code block) failed twice in CI on unrelated changes and passed on a rerun. Look into it if it fails again.
 
+## 18 November 2026: upload screens
+
+Test: `tests/redesign-ui.test.ts`, "upload screens" (375 and 1280 px), plus the older `image-app-ui`, `health-consent-ui` and photo tests (41 of 41 pass). Screenshots: `.local/ui-redesign/step-8`, `step-8b`.
+
+| Feature | Result | What broke | What was fixed |
+| --- | --- | --- | --- |
+| Photo to text: camera and photo as two tiles side by side, hints small and grey, Escape closes | pass | - | - |
+| Ask about a picture: calm dialog, paragraphs closer together, round buttons | built (screenshots) | the note's paragraphs had large gaps | 10 px between paragraphs |
+| Shorter texts on these screens | waiting for the owner | - | proposals per text in `docs/ui-text-shortening-proposal.md`, marked Required, Our caution or Instruction; nothing changed |
+
 ## 18 November 2026: answers, phone, sign-in, Settings
 
 Tests: `tests/redesign-ui.test.ts` ("answers", "phone", "settings" cases, 375 and 1280 px) and `tests/browser/redesign-sign-in.spec.ts` (real production build). Screenshots: `.local/ui-redesign/step-4` (answers), `step-5` (phone), `step-6` (sign-in), `step-7` (Settings).

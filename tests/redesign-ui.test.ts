@@ -428,6 +428,31 @@ describe.each([375, 1280])("settings at %i px", (width) => {
   });
 });
 
+describe.each([375, 1280])("upload screens at %i px", (width) => {
+  it("Photo to text: camera and photo as two tiles side by side; Escape closes", async () => {
+    const { context, page } = await open(width);
+    try {
+      await page.getByLabel("Attachments and tools", { exact: true }).click();
+      await page.locator(".tools-menu .menu-surface").getByRole("button", { name: "Photo to text", exact: false }).click();
+      const dialog = page.getByRole("dialog").filter({ hasText: "Photo to text" });
+      await ui(dialog).toBeVisible();
+      const camera = dialog.getByRole("button", { name: "Use camera", exact: true });
+      const photo = dialog.getByRole("button", { name: "Choose photo", exact: true });
+      const [a, b] = [(await camera.boundingBox())!, (await photo.boundingBox())!];
+      expect(Math.abs(a.y - b.y)).toBeLessThanOrEqual(1);
+      expect(a.x + a.width).toBeLessThanOrEqual(b.x);
+      expect(a.height).toBeGreaterThanOrEqual(80);
+      const d = (await dialog.boundingBox())!;
+      expect(d.x).toBeGreaterThanOrEqual(0);
+      expect(d.x + d.width).toBeLessThanOrEqual(width);
+      await page.keyboard.press("Escape");
+      await ui(dialog).toBeHidden();
+    } finally {
+      await context.close();
+    }
+  });
+});
+
 it("dark theme: the same screen renders with the dark tokens and stays readable", async () => {
   const { context, page } = await open(1280, "dark");
   try {
