@@ -85,13 +85,14 @@ it("counts schema overhead before sending a paid request", async () => {
   // The limit sits between the context with its contract (fits) and the context plus the schema
   // (does not); raise it if the product prompt grows (13 Nov: the answer-language rule). 14 Nov:
   // the prompt cut brought the context with its contract to 6,258, so the limit came down from 6,900.
+  // 18 Nov: the chart rule (58 tokens) raised it to about 6,560; back to 6,900 (the schema still does not fit at 7,500).
   vi.stubGlobal("location", { host: "localhost", origin: "http://localhost" });
   const c = emptyConversation();
   c.messages.push(newMessage("user", "Synthetic check"));
   await expect(
     streamVerifiedConversation(
       c,
-      { ...policy, maxInputCharacters: 6400 },
+      { ...policy, maxInputCharacters: 6900 },
       "synthetic",
       new AbortController().signal,
       () => {},

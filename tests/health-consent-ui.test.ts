@@ -105,7 +105,8 @@ it("asks once before the first message, holds the message until a choice, rememb
     await ui(page.getByText(/processes them in the United States/)).toBeVisible();
     await page.keyboard.press("Escape");
     await workspaceControl(page, "Conversation").click();
-    await ui(page.getByRole("note")).toContainText(HEALTH_CONSENT.declinedNote);
+    // The first-start notice is a note too (18 Nov); this is the composer's.
+    await ui(page.getByRole("note").filter({ hasText: HEALTH_CONSENT.declinedNote })).toBeVisible();
     await on.context.close();
   } finally {
     await browser.close();

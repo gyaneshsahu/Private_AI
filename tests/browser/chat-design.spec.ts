@@ -151,6 +151,10 @@ test("representative themes, long history, source and responsive keyboard contro
     "data-theme",
     "dark",
   );
+  // On a 420 px high phone at 200 % text the first-start notice and the message box fill the screen;
+  // a user presses "Got it" first.
+  const gotIt = page.getByRole("button", { name: "Got it", exact: true });
+  if (await gotIt.isVisible()) await gotIt.click();
   await page.evaluate(() => (document.documentElement.style.fontSize = "200%"));
   expect(
     await page.evaluate(
