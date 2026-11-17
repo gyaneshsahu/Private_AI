@@ -5520,3 +5520,26 @@
   transition-duration: var(--base);
   transition-timing-function: var(--ease);
 }
+/* The chip stays one line; on narrower screens it shows only the status (it still opens on click).
+   The opened details wrap inside the screen, also with very large text. */
+.chat-design .connection-banner {
+  max-width: 100%;
+}
+.chat-design .connection-banner > summary {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chat-design .connection-banner > div,
+.chat-design .connection-banner > div :is(strong, p) {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+@media (max-width: 1000px) {
+  .chat-design .connection-banner > summary span {
+    display: none;
+  }
+}

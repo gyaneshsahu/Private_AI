@@ -4,13 +4,26 @@ One line per check, newest first. "Test" names the Playwright file that keeps th
 
 ## Next (kept current, so work can resume after a break)
 
-State at the end of 17 November: steps 1 and 2 are in the app; CI green on `2596726` (run 43999425325). Nothing is half done.
+State on 18 November: every item of the redesign list is built, tested and pushed; the final pass ran (below). Open, all waiting for the owner:
 
-1. **Done 18 November** (see below). Message box on one line, as agreed on 17 November: "+", "Ask anything", the answer mode (Auto, Fast, Thinking) where ChatGPT has "Think", the microphone, and one round button at the end. That end button is live voice while the box is empty and turns into the arrow (↑, a symbol, never the word "Send") once there is text. If live voice is off or its allowance is used up, the arrow sits there greyed until there is text, and live voice comes back when the allowance does. Long text grows the box upwards with the buttons on the bottom row. The "N messages included · N files" count moves into the "+" menu next to "Review context". Update `tests/redesign-ui.test.ts` and this log.
-2. **Done 18 November** (see below). Left menu: comet logo, New chat, Search, Projects, Scheduled, Recent list, small account line, as in `evaluation/ui-redesign/mock.html`.
-3. Owner, 18 November: work through the whole list without stopping (answers, phone, sign-in, settings, upload screens, live voice, Secure Max and states, leftovers, final pass). Then answers, phone layout, sign-in layout, settings, upload screens, live voice ball, Secure Max and states (plan, section 5), each with its browser test and a section here; at the end one full pass over every feature.
+1. **Shorter texts** on the upload and live-voice screens: approve rows in `docs/ui-text-shortening-proposal.md` (rows marked Required also wait for the legal read).
+2. **Charts:** whether the AI is told to write chart blocks (it would take the product prompt over the 3,400-character limit of 14 November). The app already draws any chart block.
+3. Not checked by a person yet: real phones (iPhone, Android), the swirl of the live-voice ball on a slow phone, and German screens beyond the tests.
 
-Known flaky test: `tests/chat-recovery.test.ts` line 429 (focus on a code block) failed twice in CI on unrelated changes and passed on a rerun. Look into it if it fails again.
+Known flaky or slow tests: `chat-recovery` (focus on a code block) and `invite-browser` under heavy local load; `context-review`, `source-history-ui`, `optional-calculator-ui` exceed their own 25 to 30 s limits on this machine but pass in CI.
+
+## 18 November 2026: final pass over every feature together
+
+Run on `7468eee` plus the fix below. Results: `.local/ui-redesign/final-pass/`.
+
+| Check | Result | What broke | What was fixed |
+| --- | --- | --- | --- |
+| Production build | pass | - | - |
+| End-to-end, production build (63 tests) | 63 of 63 pass | - | - |
+| Full unit suite (2,468 tests) | 2,283 pass, 2 local timeouts, 183 skipped | `context-review` and `source-history-ui` over their 25 s limit on this machine | none; they pass in CI |
+| Screen tour, every feature on | 564 screenshots, 0 failed steps, nothing left the machine | - | - |
+| Screen tour, every feature off | 378 screenshots, 0 failed steps | - | - |
+| CI on `7468eee` (Linux fonts) | 2 failed, then fixed | the German protected-connection chip wrapped to two lines at 768 px (52 px, limit 40); in `context-review` at very large text, the opened connection details ran past the screen edge | the chip stays one line and shows only the status below 1,000 px; the opened details wrap inside the screen |
 
 ## 18 November 2026: leftovers
 
