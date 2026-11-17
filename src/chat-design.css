@@ -5606,3 +5606,83 @@
     min-height: 44px;
   }
 }
+
+/* ---------- Image creation (18 November): the describe dialog and the image card ---------- */
+.chat-design dialog.create-image-dialog {
+  width: min(480px, calc(100vw - 32px));
+  padding: 20px;
+}
+.chat-design .create-image-dialog form {
+  display: grid;
+  gap: 10px;
+}
+.chat-design .create-image-dialog h2 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+.chat-design .create-image-dialog label {
+  font-size: 13.5px;
+  color: var(--ink2);
+}
+.chat-design .create-image-dialog textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+.chat-design .create-image-dialog p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink2);
+}
+.chat-design .create-image-dialog .create-image-failure {
+  color: var(--ink);
+}
+.chat-design .create-image-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+.chat-design .created-image {
+  margin: 4px 0 12px;
+  max-width: 420px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.chat-design .created-image img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 10px;
+}
+.chat-design .created-image figcaption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 4px 0;
+  font-size: 13px;
+  color: var(--ink2);
+}
+.chat-design .created-image-prompt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chat-design .created-image-actions {
+  display: flex;
+  flex: none;
+}
+.chat-design .created-image-note {
+  margin: 6px 4px 0;
+  font-size: 12.5px;
+  color: var(--ink2);
+}

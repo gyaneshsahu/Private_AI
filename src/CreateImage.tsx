@@ -133,7 +133,7 @@ export function CreatedImageCard(props: { image: CreatedImage; onRegenerate?(pro
         <span className="created-image-prompt">{props.image.prompt}</span>
         <span className="created-image-actions">
           <a className="icon-action" href={url} download={`cometrow-image.${extension}`} aria-label={t.download} title={t.download}>
-            <Icon name="share" />
+            <Icon name="download" />
           </a>
           {props.onRegenerate && (
             <button type="button" className="icon-action" aria-label={t.regenerate} title={t.regenerate} onClick={() => props.onRegenerate!(props.image.prompt)}>

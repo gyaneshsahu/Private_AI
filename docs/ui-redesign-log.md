@@ -4,11 +4,23 @@ One line per check, newest first. "Test" names the Playwright file that keeps th
 
 ## Next (kept current, so work can resume after a break)
 
-State at the usage-limit checkpoint, 18 November: voice conversation, charts, logo kit and icons, the one first-start notice, the whiteboard study are done and pushed. Image creation is built behind its switch (off) and type-checks, but is NOT tested yet.
+State, 18 November evening: voice conversation, charts, logo kit and icons, the one first-start notice, the whiteboard study and image creation (behind its switch, off, provider mocked) are done and tested.
 
-1. **Image creation, finish:** write tests with the provider mocked: server (`server/image-creation.ts` refusals, BFL adapter with a fake fetch, the route: limit, refusal, capacity, ledger record, nothing kept) and browser (`tests/redesign-ui.test.ts`: "+" menu entry, dialog, card with Download and Regenerate, the answer button, saved in the vault). Turn it on in the audit harness "on" build with `mockImageProvider()` and take screenshots. Then run the older tests that touch messages and the saved-chat schema, and CI.
-2. **Waiting for the owner:** provider choice and contract checklist (`docs/image-creation-20261118.md`); shorter texts (`docs/ui-text-shortening-proposal.md`); first-start notice and privacy partners draft for the legal read (`docs/notices-inventory-20261118.md`, `docs/privacy-partners-draft-20261118.md`); whiteboard decisions (`docs/whiteboard-study-20261118.md`, not built).
+1. **Whiteboard next to the chat:** owner's new brief (18 November): "Whiteboard" in the left menu with Incognito and Secure Max, also in "+" and during a chat; chat on the left, board on the right; light and dark. Mock sent for approval (`evaluation/ui-redesign/whiteboard-side-mock.html`; on a phone a Chat | Whiteboard switch). **Wait for the owner's OK before building.**
+2. **Waiting for the owner:** image provider choice and contract checklist (`docs/image-creation-20261118.md`); shorter texts (`docs/ui-text-shortening-proposal.md`); first-start notice and privacy partners draft for the legal read (`docs/notices-inventory-20261118.md`, `docs/privacy-partners-draft-20261118.md`); whiteboard decisions (`docs/whiteboard-study-20261118.md`).
 3. Owner asked: send a screenshot of every finished UI piece.
+
+## 18 November 2026: image creation (provider mocked)
+
+Details: `docs/image-creation-20261118.md`. Tests: `tests/image-creation.test.ts` (5), `tests/redesign-ui.test.ts` "image creation" (4: 2 cases at 375 and 1,280 px), then the older tests on messages, saved chats and metering. No live call, no key.
+
+| Feature | Result | What broke | What was fixed |
+| --- | --- | --- | --- |
+| Our refusals (real, named people; minors) before any provider call | pass | - | - |
+| Route: only the description sent, image back, daily limit, refusal and capacity give the count back, nothing kept, one ledger record per attempt, no description in the ledger | pass | the test read the ledger wrongly | test fixed |
+| Black Forest Labs adapter against a fake API: EU endpoint, key only to the API (not the download host), poll, moderation, 402 | pass | - | - |
+| Saved with the chat as base64; picture data URLs still refused | pass | - | - |
+| "+" menu, dialog with images left today, refusal sentence, card with Download and Regenerate, answer button | pass (3 of 3 repeats; 1 earlier run showed "could not be created" once on the first request, not reproduced) | the card had no styles; under it the empty "Original sources unavailable" line and the answer's copy/read-aloud/retry row; Download used the share icon | card and dialog styled like the chart card and other dialogs; those rows hidden for created images; a download icon added (one icon per meaning) |
 
 ## 18 November 2026: one notice, no per-feature cautions
 

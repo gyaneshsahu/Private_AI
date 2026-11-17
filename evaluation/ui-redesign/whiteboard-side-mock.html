@@ -1,0 +1,124 @@
+<!doctype html>
+<!-- Whiteboard next to the chat (owner, 18 November): chat on the left, board on the right. A picture of the idea only; not built. ?dark and ?phone switch the view. -->
+<html><head><meta charset="utf-8"><style>
+:root{--bg:#fbfcfe;--side:#f2f5fa;--surface:#fff;--ink:#101828;--ink2:#525d76;--line:#dfe5ef;--accent:#2456e6;--soft:#e9f0ff;--row:#e6ebf4;--bubble:#eef2f8;--dots:#dfe5ef;--stroke:#1d2b55;--sticky:#fff6c7;--stickyInk:#3b3300;
+--glow:radial-gradient(60% 50% at 80% 0%,#dfe8ff 0,transparent 70%),radial-gradient(50% 40% at 10% 100%,#f1e8ff 0,transparent 70%)}
+.dark{--bg:#1b1b1e;--side:#141416;--surface:#26262a;--ink:#ededf0;--ink2:#b1b1ba;--line:#35353b;--accent:#8fb4ff;--soft:#2b3550;--row:#2a2a30;--bubble:#2e2e34;--dots:#3a3a42;--stroke:#dfe6ff;--sticky:#4a4320;--stickyInk:#fff3b0;
+--glow:radial-gradient(60% 50% at 80% 0%,#23283a 0,transparent 70%),radial-gradient(50% 40% at 10% 100%,#2a2333 0,transparent 70%)}
+*{box-sizing:border-box;margin:0}
+body{font:14px "Segoe UI",system-ui,sans-serif;color:var(--ink);background:var(--bg);height:100vh;display:flex;overflow:hidden}
+.side{width:248px;flex:none;background:var(--side);padding:16px 10px;display:flex;flex-direction:column;gap:2px}
+.brand{display:flex;align-items:center;gap:8px;padding:4px 8px 16px;font-weight:600;font-size:15px}
+.brand i{width:20px;height:20px;border-radius:50%;border:3px solid var(--accent);border-right-color:transparent}
+.row{display:flex;align-items:center;gap:11px;padding:0 10px;height:40px;border-radius:10px;color:var(--ink)}
+.row.on{background:var(--row);font-weight:600}
+.row svg,.t svg,.btn svg,.pm svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.new{position:relative}.new b{margin-left:auto;font-size:11px;font-weight:600;color:var(--accent);background:var(--soft);padding:2px 7px;border-radius:999px}
+.search{margin:12px 0 10px;height:36px;border-radius:10px;background:var(--row);display:flex;align-items:center;padding:0 12px;color:var(--ink2)}
+.label{font-size:12.5px;color:var(--ink2);padding:10px 10px 6px}
+.chatrow{padding:8px 10px;border-radius:10px;color:var(--ink2)}.chatrow.on{background:var(--row);color:var(--ink)}
+.work{flex:1;display:flex;background:var(--glow),var(--bg);min-width:0}
+.chat{flex:0 0 42%;display:flex;flex-direction:column;padding:18px 22px 14px;min-width:0;border-right:1px solid var(--line)}
+.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.head h1{font-size:16px}.head span{color:var(--ink2);font-size:12.5px}
+.msgs{flex:1;display:flex;flex-direction:column;gap:14px;overflow:hidden}
+.me{align-self:flex-end;max-width:85%;background:var(--bubble);padding:10px 14px;border-radius:18px 18px 4px 18px}
+.ai{line-height:1.55}.ai p+p{margin-top:8px}.ai ul{margin:6px 0 0 18px}
+.boardchip{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--ink2);padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.boardchip i{width:26px;height:18px;border-radius:3px;background:var(--bg);border:1px solid var(--line)}
+.dock{margin-top:12px;display:flex;align-items:center;gap:8px;padding:7px 7px 7px 10px;background:var(--surface);border:1px solid var(--line);border-radius:28px;box-shadow:0 6px 20px -12px #0003}
+.dock .pm{width:32px;height:32px;display:grid;place-items:center;color:var(--ink2)}
+.dock .txt{flex:1;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dock .chip{display:inline-flex;gap:6px;align-items:center;padding:4px 9px 4px 5px;border-radius:9px;background:var(--row);font-size:12px;color:var(--ink2);flex:none}
+.dock .chip i{width:26px;height:18px;border-radius:4px;background:var(--surface);border:1px solid var(--line)}
+.go{flex:none;width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--bg);display:grid;place-items:center;font-size:17px;font-weight:700}
+.foot{text-align:center;font-size:11.5px;color:var(--ink2);margin-top:8px}
+.boardpane{flex:1;display:flex;flex-direction:column;padding:14px 16px 16px;min-width:0}
+.bhead{display:flex;align-items:center;gap:8px;margin-bottom:10px}.bhead h2{font-size:15px;margin-right:auto}
+.btn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 13px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:13px;color:var(--ink)}
+.btn.p{background:var(--accent);color:var(--bg);border-color:transparent;font-weight:600}
+.btn.i{width:34px;padding:0;justify-content:center}
+.board{flex:1;position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;background-image:radial-gradient(var(--dots) 1px,transparent 1px);background-size:22px 22px}
+.tools{position:absolute;left:12px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:2px;padding:5px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 6px 20px -10px #0004}
+.t{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--ink2)}.t.on{background:var(--soft);color:var(--accent)}
+.sep{height:1px;background:var(--line);margin:4px 6px}
+.dot{width:16px;height:16px;border-radius:50%;margin:5px auto;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line)}
+.sticky{position:absolute;width:150px;padding:12px;background:var(--sticky);color:var(--stickyInk);border-radius:4px;box-shadow:0 4px 10px -4px #0004;font:15px "Segoe Print",cursive;transform:rotate(-2deg)}
+.hand{position:absolute;font:19px "Segoe Print","Ink Free",cursive;color:var(--stroke)}
+.type{position:absolute;font:600 14px "Segoe UI";color:var(--ink)}
+.zoom{position:absolute;right:12px;bottom:12px;display:flex;gap:2px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;font-size:12.5px;color:var(--ink2);align-items:center}
+.zoom span{padding:4px 8px}
+/* phone */
+.phone .side{display:none}.phone .chat{display:none}.phone .boardpane{padding:10px 12px 12px}
+.tabs{display:none}
+.phone .tabs{display:flex;gap:4px;padding:4px;background:var(--row);border-radius:12px;margin-bottom:10px}
+.phone .tabs span{flex:1;text-align:center;padding:7px;border-radius:9px;color:var(--ink2);font-weight:600}.phone .tabs span.on{background:var(--surface);color:var(--ink);box-shadow:0 2px 6px -3px #0003}
+.phone .bhead .wide{display:none}
+.phone .tools{top:auto;bottom:12px;left:50%;transform:translateX(-50%);flex-direction:row}.phone .sep{width:1px;height:auto;margin:6px 4px}.phone .dot{margin:9px 3px}
+.phone .zoom{display:none}
+.phone .pdock{display:flex}
+.pdock{display:none}
+</style></head><body>
+<nav class="side">
+ <div class="brand"><i></i>CometRow</div>
+ <div class="row"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New chat</div>
+ <div class="row"><svg viewBox="0 0 24 24"><path d="M3 12s3-6 9-6 9 6 9 6-3 6-9 6-9-6-9-6zM4 4l16 16"/></svg>Incognito chat</div>
+ <div class="row"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Secure Max</div>
+ <div class="row on new"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21l4-4 4 4M7 13l3-3 2 2 4-4"/></svg>Whiteboard</div>
+ <div class="row"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Scheduled</div>
+ <div class="search">Search chats</div>
+ <div class="label">Recent</div>
+ <div class="chatrow on">Room plan for the office</div>
+ <div class="chatrow">Holiday budget</div>
+ <div class="chatrow">German letter to the landlord</div>
+</nav>
+<main class="work">
+ <section class="chat">
+  <div class="head"><div><h1>Room plan for the office</h1><span>4 messages</span></div><span>···</span></div>
+  <div class="msgs">
+   <div class="me">We are moving to a 60 m² office. Can 6 desks and a meeting room fit?</div>
+   <div class="ai"><p>Yes, if the meeting room takes about 15 m². Six desks need roughly 6 × 5 m² with walkways, about 30 m², which leaves room for a small kitchen.</p><p>Sketch the rooms on the board and I'll check the layout.</p></div>
+   <div class="me">Here is my sketch. Does it work?<br><span class="boardchip"><i></i>Board · 3 rooms, 1 note</span></div>
+   <div class="ai"><p>Mostly. Three things from your board:</p><ul><li>The meeting room is fine at about 4 × 4 m.</li><li>Six desks along one wall leave only 80 cm to walk; put them in two rows of three.</li><li>The €4,000 budget covers 6 desks and chairs (about €450 each) plus a table.</li></ul></div>
+  </div>
+  <div class="dock"><span class="pm"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><span class="chip"><i></i>Board</span><span class="txt">Ask about the board or anything else…</span><span class="go">↑</span></div>
+  <div class="foot">Secure · Saved to your account automatically</div>
+ </section>
+ <section class="boardpane">
+  <div class="tabs"><span>Chat</span><span class="on">Whiteboard</span></div>
+  <div class="bhead"><h2>Whiteboard</h2>
+   <span class="btn i wide" title="Undo"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg></span>
+   <span class="btn i wide" title="Clear"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></span>
+   <span class="btn p"><svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>Add to message</span>
+   <span class="btn i" title="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+  </div>
+  <div class="board">
+   <div class="tools">
+    <span class="t on" title="Pen"><svg viewBox="0 0 24 24"><path d="M4 20c4-1 6-3 9-7l5-5-3-3-5 5c-4 3-6 5-6 10z"/></svg></span>
+    <span class="t" title="Eraser"><svg viewBox="0 0 24 24"><path d="M16 4l4 4-10 10H6v-4zM3 21h18"/></svg></span>
+    <span class="t" title="Box"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="2"/></svg></span>
+    <span class="t" title="Arrow"><svg viewBox="0 0 24 24"><path d="M5 19L19 5M11 5h8v8"/></svg></span>
+    <span class="t" title="Text"><svg viewBox="0 0 24 24"><path d="M5 6h14M12 6v13M9 19h6"/></svg></span>
+    <span class="t" title="Note"><svg viewBox="0 0 24 24"><path d="M5 4h14v11l-5 5H5zM14 20v-5h5"/></svg></span>
+    <span class="sep"></span>
+    <span class="dot" style="background:var(--stroke)"></span><span class="dot" style="background:#2456e6"></span><span class="dot" style="background:#e5484d"></span><span class="dot" style="background:#30a46c"></span>
+   </div>
+   <svg width="100%" height="100%" style="position:absolute;inset:0" viewBox="0 0 760 700" preserveAspectRatio="xMidYMid meet">
+    <g fill="none" stroke="var(--stroke)" stroke-width="2.6" stroke-linecap="round">
+     <path d="M120 120 L560 118 L562 470 L122 474 Z"/>
+     <path d="M330 120 L331 290 M122 290 L330 292"/>
+     <path d="M600 260 C650 250 690 280 700 330" stroke="var(--accent)"/><path d="M684 312 L701 334 L676 334" stroke="var(--accent)"/>
+     <g stroke-width="2"><rect x="380" y="330" width="34" height="22" rx="3"/><rect x="430" y="330" width="34" height="22" rx="3"/><rect x="480" y="330" width="34" height="22" rx="3"/><rect x="380" y="400" width="34" height="22" rx="3"/><rect x="430" y="400" width="34" height="22" rx="3"/><rect x="480" y="400" width="34" height="22" rx="3"/></g>
+    </g>
+    <text x="160" y="200" font-family="Segoe UI" font-weight="600" font-size="16" fill="var(--ink)">Meeting room</text>
+    <text x="390" y="200" font-family="Segoe UI" font-weight="600" font-size="16" fill="var(--ink)">Kitchen</text>
+    <text x="150" y="390" font-family="Segoe Print, cursive" font-size="20" fill="var(--stroke)">desks × 6</text>
+    <text x="580" y="240" font-family="Segoe Print, cursive" font-size="18" fill="var(--stroke)">window</text>
+    <foreignObject x="160" y="510" width="200" height="110"><div xmlns="http://www.w3.org/1999/xhtml" class="sticky" style="position:static">Budget max €4,000 for furniture</div></foreignObject>
+   </svg>
+   <div class="zoom"><span>−</span><span>100 %</span><span>+</span></div>
+  </div>
+  <div class="dock pdock"><span class="pm"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><span class="chip"><i></i>Board</span><span class="txt">Ask about the board…</span><span class="go">↑</span></div>
+ </section>
+</main>
+<script>const q=location.search;if(q.includes("dark"))document.documentElement.classList.add("dark");if(q.includes("phone"))document.body.classList.add("phone");</script>
+</body></html>

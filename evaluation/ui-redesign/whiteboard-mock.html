@@ -1,0 +1,58 @@
+<!doctype html>
+<!-- Whiteboard design mock (docs/whiteboard-study-20261118.md). Not built; a picture of the idea only. -->
+<html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0}body{font:14px system-ui,"Segoe UI",sans-serif;color:#101828;background:#fbfcfe;height:100vh;display:flex}
+.side{width:240px;background:#f2f5fa;padding:14px 10px}.side b{display:block;padding:6px 8px 16px;font-size:15px}
+.row{padding:9px 10px;border-radius:10px}.row.on{background:#e6ebf4}
+.main{flex:1;display:flex;flex-direction:column;padding:16px 28px;gap:12px}
+.top{display:flex;justify-content:space-between;align-items:center}.top h1{font-size:16px;font-weight:600}
+.btn{padding:8px 14px;border-radius:999px;border:1px solid #dfe5ef;background:#fff;font-size:13.5px}.btn.p{background:#2456e6;color:#fff;border-color:transparent}
+.board{flex:1;position:relative;background:#fff;border:1px solid #dfe5ef;border-radius:16px;box-shadow:0 8px 28px -14px #0003;overflow:hidden;
+background-image:radial-gradient(#dfe5ef 1px,transparent 1px);background-size:22px 22px}
+.tools{position:absolute;left:50%;top:14px;transform:translateX(-50%);display:flex;gap:2px;padding:5px;background:#fff;border:1px solid #dfe5ef;border-radius:14px;box-shadow:0 6px 20px -10px #0004}
+.t{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:#525d76}.t.on{background:#e9f0ff;color:#2456e6}
+.t svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.sep{width:1px;background:#dfe5ef;margin:6px 4px}
+.dot{width:16px;height:16px;border-radius:50%;margin:11px 4px}
+.sticky{position:absolute;width:150px;padding:12px;background:#fff6c7;border-radius:4px;box-shadow:0 4px 10px -4px #0003;font:15px "Segoe Print",cursive;transform:rotate(-2deg)}
+.hand{position:absolute;font:20px "Segoe Print","Ink Free",cursive;color:#1d2b55}
+.type{position:absolute;font:600 15px system-ui;color:#101828}
+.dock{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 16px;background:#fff;border:1px solid #dfe5ef;border-radius:28px;box-shadow:0 6px 20px -12px #0003}
+.dock>span:not(.chip):not(.go){flex:1;color:#667089}.chip{display:inline-flex;gap:6px;align-items:center;padding:5px 10px 5px 6px;border-radius:10px;background:#f2f5fa;font-size:12.5px;color:#525d76;flex:none}
+.chip i{width:34px;height:24px;border-radius:5px;background:#fff;border:1px solid #dfe5ef}
+.go{flex:none;width:36px;height:36px;border-radius:50%;background:#2456e6;color:#fff;display:grid;place-items:center;font-size:18px}
+</style></head><body>
+<div class="side"><b>CometRow</b><div class="row">New chat</div><div class="row">Incognito chat</div><div class="row">Secure Max</div><div class="row on">Room plan for the office</div></div>
+<div class="main">
+ <div class="top"><h1>Whiteboard · Room plan for the office</h1><div style="display:flex;gap:6px"><span class="btn">Undo</span><span class="btn">Clear</span><span class="btn p">Ask about this board</span></div></div>
+ <div class="board">
+  <div class="tools">
+   <span class="t on"><svg viewBox="0 0 24 24"><path d="M4 20c4-1 6-3 9-7l5-5-3-3-5 5c-4 3-6 5-6 10z"/></svg></span>
+   <span class="t"><svg viewBox="0 0 24 24"><path d="M16 4l4 4-10 10H6v-4z M3 21h18"/></svg></span>
+   <span class="t"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="2"/></svg></span>
+   <span class="t"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/></svg></span>
+   <span class="t"><svg viewBox="0 0 24 24"><path d="M5 19L19 5M11 5h8v8"/></svg></span>
+   <span class="t"><svg viewBox="0 0 24 24"><path d="M5 6h14M12 6v13M9 19h6"/></svg></span>
+   <span class="t"><svg viewBox="0 0 24 24"><path d="M5 4h14v11l-5 5H5z M14 20v-5h5"/></svg></span>
+   <span class="sep"></span>
+   <span class="dot" style="background:#101828"></span><span class="dot" style="background:#2456e6"></span><span class="dot" style="background:#e5484d"></span><span class="dot" style="background:#30a46c"></span>
+   <span class="sep"></span>
+   <span class="t" style="font-size:12px">2 px</span>
+  </div>
+  <svg width="100%" height="100%" style="position:absolute;inset:0">
+   <g fill="none" stroke="#1d2b55" stroke-width="2.6" stroke-linecap="round">
+    <path d="M140 150 L520 148 L522 420 L142 424 Z"/>
+    <path d="M330 150 L331 300 M142 300 L330 302"/>
+    <path d="M610 230 C680 220 720 250 760 300" stroke="#2456e6"/><path d="M745 280 L762 302 L736 304" stroke="#2456e6"/>
+   </g>
+   <rect x="780" y="300" width="170" height="80" rx="10" fill="#e9f0ff" stroke="#2456e6" stroke-width="2"/>
+  </svg>
+  <div class="type" style="left:190px;top:210px">Meeting room</div>
+  <div class="type" style="left:380px;top:210px">Kitchen</div>
+  <div class="hand" style="left:200px;top:340px">desks x 6</div>
+  <div class="hand" style="left:600px;top:180px">window side?</div>
+  <div class="type" style="left:808px;top:328px">Storage</div>
+  <div class="sticky" style="left:600px;top:400px">Budget max €4,000 for furniture</div>
+ </div>
+ <div class="dock"><span class="chip"><i></i>Board attached · 1,500 px</span><span>Does this layout fit 6 desks and a meeting room?</span><span class="go">↑</span></div>
+</div></body></html>

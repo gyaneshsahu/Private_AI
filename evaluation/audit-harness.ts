@@ -21,6 +21,7 @@ import { build } from "vite";
 import react from "@vitejs/plugin-react";
 import { chromium, firefox, webkit } from "@playwright/test";
 import { createApp } from "../server/app";
+import { mockImageProvider } from "../server/image-creation";
 import { MemoryBackgroundStore } from "../server/background-store";
 import { ephemeralKeyRing } from "../server/background-crypto";
 import { SqliteUsageRecords } from "../server/usage-records";
@@ -93,6 +94,7 @@ export async function startServer(config: AuditConfig, client: string): Promise<
     ...(on ? { voice: { chunkSeconds: 30, maxTurnSeconds: 180, dailyUnits: 150 } } : {}),
     ...(on ? { images: { maxBytes: 280_000, dailyImages: 10 } } : {}),
     ...(on ? { code: true } : {}),
+    ...(on ? { imageCreation: { provider: mockImageProvider(), dailyImages: 3 } } : {}),
     ...(on ? { research: { cost: 15, dailyRuns: 3, dailySearches: 24 } } : {}),
     ...(on ? { metering: { plan: "alpha", records: new SqliteUsageRecords(":memory:") } } : {}),
     ...(on

@@ -352,13 +352,13 @@ export function ChatMessage({
           <p>{t.sourcesChangedText}</p>
         </details>
       )}
-      {!!message.text && sourceHistoryStatus(message, sourceHistory) === "unrecorded" && (
+      {!!message.text && !message.createdImage && sourceHistoryStatus(message, sourceHistory) === "unrecorded" && (
         <details className="source-history-note">
           <summary>{t.sourcesUnrecorded}</summary>
           <p>{t.sourcesUnrecordedText}</p>
         </details>
       )}
-      {!(user && editing) && !streaming && (
+      {!(user && editing) && !streaming && !message.createdImage && (
         <div className="message-actions compact-actions">
           {user && (
             <button

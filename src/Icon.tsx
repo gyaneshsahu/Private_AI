@@ -25,6 +25,7 @@ const paths = {
   camera: "M3 6h4l2-3h6l2 3h4v15H3V6ZM16 13a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z",
   image: "M3 3h18v18H3ZM3 17l6-6 4 4 3-3 5 5M8 7h.01",
   share: "M12 15V2M7 7l5-5 5 5M5 11H3v11h18V11h-2",
+  download: "M12 2v13M7 10l5 5 5-5M3 17v4h18v-4",
   copy: "M8 8h13v13H8ZM16 4V2H2v14h2",
   edit: "m15 3 6 6-12 12H3v-6L15 3ZM12 6l6 6",
   send: "m3 11 18-8-8 18-2-8-8-2ZM11 13 21 3",

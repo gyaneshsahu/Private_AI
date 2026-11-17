@@ -553,6 +553,57 @@ describe.each([375, 1280])("states and dialogs at %i px", (width) => {
   });
 });
 
+describe.each([375, 1280])("image creation at %i px (provider mocked)", (width) => {
+  it("\"+\" menu: Create image opens a dialog; the card shows the image with Download and Regenerate; a real person is refused", async () => {
+    const { context, page } = await open(width);
+    try {
+      await page.getByLabel("Attachments and tools", { exact: true }).click();
+      await page.locator(".tools-menu .menu-surface").getByRole("button", { name: "Create image", exact: true }).click();
+      const dialog = page.getByRole("dialog", { name: "Create image" });
+      await ui(dialog).toBeVisible();
+      await ui(dialog.getByText("3 of 3 images left today")).toBeVisible();
+      // A real, named person: one calm sentence, nothing created.
+      await dialog.getByLabel("Describe the image").fill("A photo of Angela Merkel");
+      await dialog.getByRole("button", { name: "Create", exact: true }).click();
+      await ui(dialog.getByRole("alert")).toHaveText(/real, named people/);
+      await dialog.getByLabel("Describe the image").fill("A calm lake at sunrise, watercolour");
+      await dialog.getByRole("button", { name: "Create", exact: true }).click();
+      await ui(dialog).toBeHidden();
+      const card = page.locator("figure.created-image");
+      await ui(card).toBeVisible();
+      await ui(page.locator("article.user").last()).toContainText("Create image: A calm lake at sunrise, watercolour");
+      expect(await card.locator("img").evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+      await ui(card.getByRole("link", { name: "Download" })).toHaveAttribute("download", "cometrow-image.png");
+      expect(await noSidewaysScroll(page)).toBeLessThanOrEqual(0);
+      await page.screenshot({ path: `.local/ui-redesign/image-creation-${width}.png` });
+      // Regenerate opens the dialog again with the same description and one image fewer left.
+      await card.getByRole("button", { name: "Regenerate" }).click();
+      await ui(dialog).toBeVisible();
+      await ui(dialog.getByLabel("Describe the image")).toHaveValue("A calm lake at sunrise, watercolour");
+      await ui(dialog.getByText("2 of 3 images left today")).toBeVisible();
+      await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
+      await ui(dialog).toBeHidden();
+    } finally {
+      await context.close();
+    }
+  });
+
+  it("a short answer offers Create image, with the answer as the starting description", async () => {
+    const { context, page } = await open(width);
+    try {
+      await send(page, "Describe a lighthouse audit:plain");
+      const answer = page.locator("article.assistant").last();
+      await answer.getByRole("button", { name: "Create an image from this answer" }).click();
+      const dialog = page.getByRole("dialog", { name: "Create image" });
+      await ui(dialog.getByLabel("Describe the image")).toHaveValue("Synthetic answer.");
+      await page.keyboard.press("Escape");
+      await ui(dialog).toBeHidden();
+    } finally {
+      await context.close();
+    }
+  });
+});
+
 it("dark theme: the same screen renders with the dark tokens and stays readable", async () => {
   const { context, page } = await open(1280, "dark");
   try {
