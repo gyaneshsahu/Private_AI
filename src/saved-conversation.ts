@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Conversation } from "../shared/contracts";
 import { QUANTITY_KEYS } from "./arithmetic/completeness";
+import { boardSchema } from "../shared/whiteboard";
 
 const source = z.object({
   id: z.string(),
@@ -31,6 +32,8 @@ const conversationBody = z.object({
     .object({ text: z.string().max(18000), resolved: z.string().max(100).optional() })
     .strict()
     .optional(),
+  // Whiteboard: absent in conversations saved before it existed.
+  board: boardSchema.optional(),
   messages: z.array(
     z.object({
       id: z.string(),
@@ -50,6 +53,8 @@ const conversationBody = z.object({
       mode: z.enum(["fast", "thinking"]).optional(),
       // Only the fact that a picture was asked about. There is no field that could hold a picture.
       image: z.literal(true).optional(),
+      // The picture was the whiteboard; its typed words as sent (BOARD_LIMITS.sentText).
+      board: z.object({ text: z.string().max(2000).optional() }).strict().optional(),
       // A created image (base64, not a data URL); about 3 MB at most.
       createdImage: z
         .object({

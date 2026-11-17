@@ -9,6 +9,7 @@ import {
 } from "./german-rules";
 import type { Lang } from "./i18n";
 import { choosePassages } from "./passage-retrieval";
+import { boardNote } from "../shared/whiteboard";
 import { memoriesFor, memoryBlock } from "./memory";
 import { isProjectFile, projectInstructionsBlock, withProjectFiles } from "./projects";
 
@@ -298,7 +299,7 @@ export function composeContext(
     });
   for (const m of conversation.messages)
     if (m.included && m.status === "complete")
-      messages.push({ role: m.role, content: m.image ? IMAGE_GONE_NOTE + m.text : m.text });
+      messages.push({ role: m.role, content: m.image ? IMAGE_GONE_NOTE + (m.board ? boardNote(m.board.text) : "") + m.text : m.text });
   // Memory (docs/memory-20261114.md): the notes chosen on this device stand in front of the latest
   // question, so the instructions and earlier turns stay as they were. Product path only.
   // Project instructions (docs/projects-20261114.md) go first, for the same reason; the order is

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Board } from "./whiteboard";
 
 export const checks = [
   "browserVerification",
@@ -438,6 +439,8 @@ export interface Message {
    * part of a conversation, is not saved and is not sent again in later turns.
    */
   image?: true;
+  /** The picture was the chat's whiteboard (shared/whiteboard.ts), with its typed words as sent. */
+  board?: { text?: string };
   /**
    * An image CometRow created from the user's description (docs/image-creation-20261117.md): saved
    * with the conversation, as base64 (never a data URL). The model sees only `[Created image: prompt]`.
@@ -534,6 +537,8 @@ export interface Conversation {
    * Sent only inside a change request the user makes. `resolved` is the answer already applied or discarded.
    */
   canvas?: { text: string; resolved?: string };
+  /** Whiteboard (shared/whiteboard.ts): one board per chat, a vector scene kept with the conversation. */
+  board?: Board;
   /** Optional for snapshots saved before draft support. Never part of sent context. */
   draft?: string;
   /** Inactive versions are local history, never implicitly model context. */
