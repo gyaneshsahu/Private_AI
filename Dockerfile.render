@@ -22,6 +22,8 @@ ARG VITE_GERMAN_UI=
 # Read aloud and PDF export: each off unless built with its variable set to 1 (src/device-features.ts).
 ARG VITE_READ_ALOUD=
 ARG VITE_PDF_EXPORT=
+# Whiteboard and "In this chat" (docs/whiteboard-20261117.md): off unless built with it set to 1.
+ARG VITE_WHITEBOARD=
 RUN npm run build
 
 # Supplier CLI for the relay-side attestation audit (server/attestation-audit.ts).

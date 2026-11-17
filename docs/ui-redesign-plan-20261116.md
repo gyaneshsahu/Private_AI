@@ -105,6 +105,10 @@ One branch for the redesign (`ui-redesign`), merged into `codex/development-hand
 
 To avoid collisions the style file is split after step 1 into one file per area (`src/styles/tokens.css`, `base.css`, `chat.css`, `answer.css`, `account.css`, `upload.css`), so parallel agents never edit the same file.
 
+## Build later (owner, 17 November 2026)
+
+- **Pinch-zoom and pan on the whiteboard.** Today the board keeps one fixed size that fits the panel, so on a phone typed text is small (about 8 px at 375 px wide) and a tall panel has empty space above and below the board. Two fingers zoom and move the board; one finger keeps drawing. Needs a zoom control for the mouse too, and the picture that goes with a question stays the whole board. Details: `docs/whiteboard-20261117.md`, "Not verified / later".
+
 ## 6. Open decisions for the owner
 
 1. Palette: A, B or C (`.local/ui-redesign/step-1/option-A.png`, `-B`, `-C`).

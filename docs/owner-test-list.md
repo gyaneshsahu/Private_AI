@@ -352,6 +352,27 @@ Most need the live site (after T-31). Use made-up content. For each: say the dev
 
 ---
 
+- [ ] **T-158 Whiteboard on a real iPhone, Safari: drawing with a finger and undo.**
+  Before: a build with the whiteboard switched on (Render build argument `VITE_WHITEBOARD=1`, with the other steps of the deploy doc). Made-up content only.
+  Do: sign in on the iPhone in Safari. Open the left menu and tap "Whiteboard". With the pen, draw three short lines with one finger. Tap the box tool and drag a box; tap the text tool, tap the board, type "Kitchen", tap Done or Return. Tap Undo three times, one tap at a time.
+  Expect: each line follows your finger without the page scrolling or zooming. The box and the word appear where you put them, and the keyboard opens when you tap with the text tool. Each Undo takes away exactly one thing, the last one first (the word, then the box, then the last line).
+  Tell the agent: pass or fail per step, the iPhone model and iOS version; if the page scrolled, zoomed or the keyboard did not open, say which step.
+
+- [ ] **T-159 Whiteboard on a real iPhone: sending the board with a question.**
+  Do: draw something new on the board (one line is enough). Tap "Chat" at the top. Check the line above the message box, type "What is on my whiteboard?" and send. Then send a second question, "Thanks", without touching the board.
+  Expect: above the message box: "Whiteboard goes with your question". The answer describes your drawing. Your first question shows a "Whiteboard" card; the second question has no card and the line above the message box is gone.
+  Tell the agent: pass or fail, and whether the answer matched the drawing.
+
+- [ ] **T-160 Whiteboard on a real iPhone: the Chat | Whiteboard switch and the card.**
+  Do: tap "Whiteboard" at the top, then "Chat", twice each. Then in the chat, tap the "Whiteboard" card on your first question. Turn the phone sideways and back.
+  Expect: each tap shows the other view straight away, and the drawing is still there every time. The card opens the board. Nothing is cut off sideways in either orientation.
+  Tell the agent: pass or fail, and a screenshot if something was cut off.
+
+- [ ] **T-161 Whiteboard in Safari on a Mac.**
+  Do: same steps as T-158 to T-160 with the mouse (the switch is not shown on a wide window: the board sits next to the chat). Also press Cmd+Z after drawing.
+  Expect: as on the iPhone; Cmd+Z undoes the last thing on the board.
+  Tell the agent: pass or fail per step, and the macOS and Safari versions.
+
 ## 4. Needs a decision
 
 Say "T-xx: yes" to take the agent's default, or give your own value.
@@ -744,4 +765,5 @@ What the 16 November run built or changed and only you can check. Everything was
 - 15 November 2026: added T-121 to T-128 (voice chunks, second device and backup, passkey support, Scheduled Manual and chat detection).
 - 15 November 2026: added T-129 to T-139 (vault Stage 0 fixes, encrypted sync on two and three devices, recovery key, forgotten passphrase, removing a device, project files).
 - 15 November 2026: added T-140 and T-141 (synced project files: the decisions VS-6 to VS-9, the Hetzner bucket). A file on two devices is T-139.
+- 17 November 2026: added T-158 to T-161 (whiteboard on a real iPhone and in Safari on a Mac: finger drawing and undo, sending the board, the Chat | Whiteboard switch and the card). The agent tested Chromium only.
 - 16 November 2026: added T-142 to T-157 (launch-readiness run: master key, database steps, Secure on two devices, Secure Max first use, shortcuts, phone and tablet passes, offline, error pages, export and delete all, account closure and purge, legal read, passkeys, Terms).

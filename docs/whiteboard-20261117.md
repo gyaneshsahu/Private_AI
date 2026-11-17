@@ -19,6 +19,6 @@ Status: **built behind the build switch `VITE_WHITEBOARD` (off unless set), test
 ## Not verified / later
 
 - Safari and iPhone not tested (typing into text and notes on the board, drawing the board into a picture). Only Chromium.
-- No zoom or pan: on a phone, board text is small. The board keeps its 16:10 shape, so a tall panel has empty space above and below.
+- No zoom or pan: on a phone, board text is small. Pinch-zoom is on the build-later list (`docs/ui-redesign-plan-20261116.md`, "Build later"); real-device checks are T-158 to T-161 in `docs/owner-test-list.md`. The board keeps its 16:10 shape, so a tall panel has empty space above and below.
 - If the board was changed on two devices at the same time, the later sync wins whole (as with the canvas).
 - Created images still live inside the chat (a budget of about 4 to 10 images per chat keeps it under the 4 MiB sync limit); storing them as encrypted blobs like project files would lift that (owner decision).
