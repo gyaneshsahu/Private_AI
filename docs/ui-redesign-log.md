@@ -8,7 +8,7 @@ State at the end of 17 November: steps 1 and 2 are in the app; CI green on `2596
 
 1. **Done 18 November** (see below). Message box on one line, as agreed on 17 November: "+", "Ask anything", the answer mode (Auto, Fast, Thinking) where ChatGPT has "Think", the microphone, and one round button at the end. That end button is live voice while the box is empty and turns into the arrow (↑, a symbol, never the word "Send") once there is text. If live voice is off or its allowance is used up, the arrow sits there greyed until there is text, and live voice comes back when the allowance does. Long text grows the box upwards with the buttons on the bottom row. The "N messages included · N files" count moves into the "+" menu next to "Review context". Update `tests/redesign-ui.test.ts` and this log.
 2. **Done 18 November** (see below). Left menu: comet logo, New chat, Search, Projects, Scheduled, Recent list, small account line, as in `evaluation/ui-redesign/mock.html`.
-3. Then answers, phone layout, sign-in layout, settings, upload screens, live voice ball, Secure Max and states (plan, section 5), each with its browser test and a section here; at the end one full pass over every feature.
+3. Owner, 18 November: work through the whole list without stopping (answers, phone, sign-in, settings, upload screens, live voice, Secure Max and states, leftovers, final pass). Then answers, phone layout, sign-in layout, settings, upload screens, live voice ball, Secure Max and states (plan, section 5), each with its browser test and a section here; at the end one full pass over every feature.
 
 Known flaky test: `tests/chat-recovery.test.ts` line 429 (focus on a code block) failed twice in CI on unrelated changes and passed on a rerun. Look into it if it fails again.
 
@@ -25,6 +25,7 @@ Test: `tests/redesign-ui.test.ts`, "left menu at 375/1280 px" (3 cases each). Sc
 | "Group saved chats by project." removed | pass | - | - |
 | Projects: "+" creates a project, it opens its screen | pass (2nd run) | the test looked for the name in the closed phone drawer | the test checks the project screen's heading |
 | Account line opens its menu with Settings; phone drawer closes | pass | - | - |
+| CI on the left menu (run 44030943426) | 3 failed, then fixed | `context-review`, `source-history-ui` and the end-to-end `chat-design` clicked the message count, which moved into the "+" menu | they open "+" first; locally the two pass with a longer limit (their own 25 s limit is too short on this machine) and all 61 end-to-end tests pass |
 | Older tests (17 files that touch the sidebar) | 6 failed, then pass | on phones the Projects "+" was 28 px (needs 44); on desktop a row (38 px) was shorter than its "…" (40 px) | Projects "+" 44 px on phones; rows 40 px on desktop, 44 px on phones |
 
 Still old in the menu: the "Secure Max" row and the "Saved to your account" line keep their look; the account line still says "Usage unavailable · No active plan shown" in the test build.

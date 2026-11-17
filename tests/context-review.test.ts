@@ -73,6 +73,8 @@ it("reviews and changes bounded context in the actual workspace, preserves encry
       .click();
     await tab("Conversation").click();
     const summary = page.locator(".context-review summary");
+    // The count lives in the "+" menu since 18 November (one-line message box).
+    await page.getByLabel("Attachments and tools", { exact: true }).click();
     await page.getByRole("button", { name: /included ·/ }).click();
     const review = page.locator(".context-review");
     await ui(review).toContainText("Over the sending limit by");
@@ -106,6 +108,8 @@ it("reviews and changes bounded context in the actual workspace, preserves encry
       .getByRole("button", { name: "Open", exact: true })
       .click();
     await tab("Conversation").click();
+    // The count lives in the "+" menu since 18 November (one-line message box).
+    await page.getByLabel("Attachments and tools", { exact: true }).click();
     await page.getByRole("button", { name: /included ·/ }).click();
     await ui(
       review.getByRole("checkbox", { name: /Earlier date/ }),
