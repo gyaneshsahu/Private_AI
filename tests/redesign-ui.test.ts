@@ -79,16 +79,33 @@ describe.each([375, 1280])("chat screen and message box at %i px", (width) => {
     }
   });
 
-  it("message box: microphone when empty, round Send once there is text; sending answers and clears the start screen", async () => {
+  it("message box on one line: live voice at the end while empty, the arrow in its place once there is text; sending answers and clears the start screen", async () => {
     const { context, page } = await open(width);
     try {
       const box = page.getByLabel("Message CometRow", { exact: true });
       const sendButton = page.getByRole("button", { name: "Send message", exact: true });
+      const live = page.getByRole("button", { name: "Live voice conversation", exact: true });
+      const plus = page.getByLabel("Attachments and tools", { exact: true });
       await ui(box).toHaveAttribute("placeholder", "Ask anything");
       await ui(sendButton).toBeHidden();
+      await ui(live).toBeVisible();
       await ui(page.getByRole("button", { name: "Dictate with the microphone", exact: true })).toBeVisible();
+      // One row: "+", the text, the mode and the end button share a line, in that order.
+      const row = await Promise.all([plus, box, page.getByLabel("Answer mode", { exact: true }), live].map((l) => l.boundingBox()));
+      const middles = row.map((b) => b!.y + b!.height / 2);
+      expect(Math.max(...middles) - Math.min(...middles)).toBeLessThanOrEqual(12);
+      expect(row[0]!.x).toBeLessThan(row[1]!.x);
+      expect(row[1]!.x).toBeLessThan(row[2]!.x);
+      expect(row[2]!.x).toBeLessThan(row[3]!.x);
+      const liveBox = row[3]!;
       await box.fill("SYNTHETIC hello");
       await ui(sendButton).toBeVisible();
+      await ui(live).toBeHidden();
+      // The arrow takes live voice's place.
+      await sendButton.evaluate((el) => Promise.all(el.getAnimations().map((x) => x.finished)));
+      const arrowAt = (await sendButton.boundingBox())!;
+      expect(Math.abs(arrowAt.x + arrowAt.width - (liveBox.x + liveBox.width))).toBeLessThanOrEqual(2);
+      await ui(sendButton).not.toContainText("Send");
       // Measured after its short appear animation (it grows in from 85 %).
       await sendButton.evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
       const round = (await sendButton.boundingBox())!;
@@ -96,8 +113,22 @@ describe.each([375, 1280])("chat screen and message box at %i px", (width) => {
       expect(round.width).toBeGreaterThanOrEqual(width < 700 ? 44 : 32);
       await box.fill("");
       await ui(sendButton).toBeHidden();
+      await ui(live).toBeVisible();
+      // Long text grows the box upwards; the buttons stay on its bottom row.
+      await box.fill("SYNTHETIC line one\nline two\nline three\nline four");
+      const tall = (await box.boundingBox())!;
+      expect(tall.height).toBeGreaterThan(60);
+      const plusAfter = (await plus.boundingBox())!;
+      expect(Math.abs(plusAfter.y + plusAfter.height - (tall.y + tall.height))).toBeLessThanOrEqual(12);
+      await box.fill("");
 
-      await send(page, "SYNTHETIC what is two plus two?");
+      // While the answer streams, Stop is a round square in the same place.
+      await box.fill("SYNTHETIC what is two plus two?");
+      await sendButton.click();
+      const agree = page.getByRole("button", { name: "I agree", exact: true });
+      if (await agree.waitFor({ timeout: 1500 }).then(() => true, () => false)) await agree.click();
+      await page.waitForFunction(() => document.querySelectorAll("article.assistant").length > 0, undefined, { timeout: 30_000 });
+      await page.getByRole("button", { name: "Stop response", exact: true }).waitFor({ state: "hidden", timeout: 30_000 });
       await ui(page.locator("article.assistant").last()).not.toBeEmpty();
       await ui(page.getByRole("heading", { name: "What’s on your mind?" })).toHaveCount(0);
       await ui(page.locator(".starter-grid")).toHaveCount(0);
@@ -147,6 +178,7 @@ describe.each([375, 1280])("chat screen and message box at %i px", (width) => {
       const panel = page.locator(".tools-menu .menu-surface");
       await ui(panel).toBeVisible();
       const rows = panel.locator(":scope > button");
+      await ui(page.locator(".composer .context-count")).toHaveCount(0);
       expect(await rows.count()).toBeGreaterThanOrEqual(4);
       for (const name of ["Attach file", "Photo to text", "Conversation files"])
         await ui(panel.getByRole("button", { name, exact: false })).toBeVisible();

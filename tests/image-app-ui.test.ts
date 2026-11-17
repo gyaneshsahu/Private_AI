@@ -86,8 +86,8 @@ it("the picture entry exists only while the server says pictures are on; an atta
     await ui(question.getByText(en.notKept)).toBeVisible();
     // The picture left the composer when the message was sent, and it does not come back.
     await ui(attached).toHaveCount(0);
-    // The box is empty after sending, so Send is hidden until there is text again.
-    await ui(page.getByRole("button", { name: "Send message", exact: true })).toBeHidden();
+    // Without live voice the arrow sits at the end of the box, off until there is text (17 November).
+    await ui(page.getByRole("button", { name: "Send message", exact: true })).toBeVisible();
     await ui(attached).toHaveCount(0);
     // Nothing of the picture is anywhere in the page or in browser storage.
     ui(await page.evaluate(() => document.documentElement.innerHTML.includes("data:image/jpeg"))).toBe(false);

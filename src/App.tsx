@@ -280,10 +280,8 @@ export function App() {
       dialog?.close();
       if (trigger?.checkVisibility()) trigger.focus();
       else
-        (
-          document.querySelector<HTMLElement>(".context-count") ??
-          document.querySelector<HTMLElement>(".tools-menu summary")
-        )?.focus();
+        // The count is now a line inside the "+" menu; focus returns to "+".
+        document.querySelector<HTMLElement>(".tools-menu summary")?.focus();
     };
   }, [contextOpen]);
   useEffect(() => {
@@ -3377,12 +3375,21 @@ export function App() {
                       >
                         <Icon name="search" />
                         {t.reviewContext}{" "}
-                        <span>
-                          {t.selectedCount(
-                            conversation.attachments.filter((a) => a.selected)
-                              .length,
-                          )}
-                        </span>
+                        {/* The count left the message box for this row (17 November: one-line box). */}
+                        {conversation.messages.length > 0 || conversation.attachments.length > 0 ? (
+                          <span className="context-count">
+                            {t.contextCount(
+                              selectedContextSize.includedMessages,
+                              conversation.attachments.filter((a) => a.selected).length,
+                            )}
+                          </span>
+                        ) : (
+                          <span>
+                            {t.selectedCount(
+                              conversation.attachments.filter((a) => a.selected).length,
+                            )}
+                          </span>
+                        )}
                       </button>
                       {status?.search && status.inference.ready && (
                         <button
@@ -3453,19 +3460,6 @@ export function App() {
                       ))}
                     </select>
                   )}
-                  {/* Nothing to count in an empty chat; "+" > Review context still opens the review. */}
-                  {(conversation.messages.length > 0 || conversation.attachments.length > 0) && (
-                    <button
-                      type="button"
-                      className="context-count"
-                      onClick={() => setContextOpen(true)}
-                    >
-                      {t.contextCount(
-                        selectedContextSize.includedMessages,
-                        conversation.attachments.filter((a) => a.selected).length,
-                      )}
-                    </button>
-                  )}
                   {status?.voice && status.inference.ready && (
                     <VoiceInput
                       status={status}
@@ -3498,13 +3492,15 @@ export function App() {
                   {controller.current ? (
                     <button
                       type="button"
-                      className="primary"
+                      className="primary stop-button"
+                      aria-label={t.stopResponse}
+                      title={t.stopResponse}
                       onClick={() => {
                         controller.current?.abort();
                         focusComposer();
                       }}
                     >
-                      {t.stopResponse}
+                      <Icon name="stop" />
                     </button>
                   ) : (
                     <button

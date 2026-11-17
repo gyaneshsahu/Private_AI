@@ -234,10 +234,13 @@ for (const lang of ["en", "de"] as const)
         await ui(page.getByRole("status").filter({ hasText: cc.failureTimeout })).toHaveClass("sr-only");
         await ui(page.getByText(t.timedOut(false).split(".")[1].trim(), { exact: false })).toHaveCount(0);
         await ui(page.locator(".conversation-meta")).toHaveText(t.messageCount(2));
-        // The count says "1 message", on one line.
-        const count = page.locator(".context-count");
+        // The count says "1 message", on one line, in the "+" menu next to Review context (17 November).
+        await page.getByLabel(t.tools, { exact: true }).click();
+        const count = page.locator(".tools-menu .context-count");
         await ui(count).toHaveText(t.contextCount(1, 0));
+        await ui(count).toBeVisible();
         expect(await textLines(count)).toBe(1);
+        await page.keyboard.press("Escape");
         await noSidewaysScroll(page);
 
         // Offline: Send is off and says why; Enter sends nothing; the draft stays; back online it works.
@@ -351,8 +354,8 @@ for (const lang of ["en", "de"] as const)
       await ui(page.locator("main > .connection-banner")).toHaveCount(0);
       await belowHeader(page, line);
       expect((await line.boundingBox())!.height).toBeLessThanOrEqual(48);
-      // Empty box: no Send at all; with text, Send is there but off while chat is not ready.
-      await ui(page.getByRole("button", { name: t.sendLabel, exact: true })).toBeHidden();
+      // No live voice here, so the arrow is at the end of the box, off while chat is not ready.
+      await ui(page.getByRole("button", { name: t.sendLabel, exact: true })).toBeDisabled();
       await page.getByLabel(t.messageInput).fill("SYNTHETIC not ready yet");
       await ui(page.getByRole("button", { name: t.sendLabel, exact: true })).toBeDisabled();
       await noSidewaysScroll(page);

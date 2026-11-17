@@ -35,9 +35,8 @@ test("trial boundaries are readable on a narrow screen with keyboard dismissal a
   await expect(trigger).toBeFocused();
   // Help replaces the conversation view; nothing was sent or drafted on return.
   await workspaceControl(page, "Conversation").click();
-  // Nothing drafted: the empty box shows no Send button (17 November redesign).
   await expect(
     page.getByRole("button", { name: "Send message", exact: true }),
-  ).toBeHidden();
+  ).toBeDisabled();
   expect(external).toEqual([]);
 });

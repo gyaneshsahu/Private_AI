@@ -4171,9 +4171,14 @@
 .chat-design .composer {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--r-composer);
+  border-radius: 28px;
   box-shadow: var(--shadow-1);
-  padding: 12px 10px 8px 16px;
+  padding: 7px 8px;
+  /* One line: "+", the text, then mode, microphone and one round button (17 November). */
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  position: relative;
 }
 .chat-design .composer:focus-within {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
@@ -4182,23 +4187,37 @@
   border: 0;
   background: transparent;
   box-shadow: none;
-  padding: 3px 2px 10px;
+  padding: 8px 6px;
   font-size: 16px;
-  min-height: 0;
+  line-height: 22px;
+  min-height: 38px;
+  max-height: 200px;
+  flex: 1 1 auto;
+  min-width: 0;
+  order: 1;
+  resize: none;
 }
 .chat-design .composer textarea:focus-visible {
   outline: none;
   box-shadow: none;
 }
+/* The footer's controls join the text's row; "+" goes first, the rest after the text. */
 .chat-design .composer-footer {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  margin-left: -8px;
-  flex-wrap: nowrap;
+  display: contents;
+}
+.chat-design .composer-footer > * {
+  order: 2;
 }
 .chat-design .composer-footer > .tools-menu {
-  margin-right: auto;
+  order: 0;
+}
+.chat-design .composer > .composer-limit {
+  position: absolute;
+  left: 18px;
+  bottom: calc(100% + 4px);
+}
+.chat-design .composer-footer > :is(.mode-select, .voice-input) {
+  align-self: center;
 }
 .chat-design .tools-menu summary,
 .chat-design .composer-footer :is(.voice-input-button, .live-voice-open) {
@@ -4230,7 +4249,7 @@
   background-color: transparent;
   color: var(--ink2);
   font-size: 13.5px;
-  padding: 6px 22px 6px 8px;
+  padding: 6px 2px 6px 8px;
   min-height: 34px;
   border-radius: var(--r-row);
   box-shadow: none;
@@ -4244,17 +4263,10 @@
   background-color: var(--hover);
   color: var(--ink);
 }
-.chat-design .composer-footer .context-count {
-  border: 0;
-  background: transparent;
-  color: var(--ink3);
-  font-size: 12.5px;
-  padding: 6px 8px;
-  min-height: 0;
-  box-shadow: none;
-}
-/* Send: a round arrow that appears once there is something to send; the microphone stands in before. */
-.chat-design .composer-footer > .send-button {
+/* The end button: live voice while the box is empty, the arrow once there is text. Without live
+   voice the arrow stays, off until there is text. Stop takes the same place while an answer streams. */
+.chat-design .composer-footer > :is(.send-button, .stop-button),
+.chat-design .composer-footer > .live-voice-open {
   width: 36px;
   height: 36px;
   min-height: 36px;
@@ -4268,10 +4280,29 @@
   color: var(--primary-ink);
   animation: send-in var(--base) var(--ease);
 }
-.chat-design .composer-footer > .send-button svg {
+.chat-design .composer-footer > .live-voice-open {
+  background: var(--primary);
+  color: var(--primary-ink);
+  animation: none;
+}
+.chat-design .composer-footer > .live-voice-open:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 86%, var(--ink));
+  color: var(--primary-ink);
+}
+.chat-design .composer-footer > :is(.send-button, .stop-button) svg {
   stroke-width: 2.2;
 }
-.chat-design .composer-footer[data-empty] > .send-button {
+.chat-design .composer-footer > .stop-button svg {
+  fill: currentColor;
+}
+.chat-design .composer-footer > .send-button:disabled {
+  opacity: 1;
+  background: var(--hover);
+  color: var(--ink3);
+}
+.chat-design .composer-footer[data-empty]:has(> .live-voice-open) > .send-button,
+.chat-design .composer-footer:not([data-empty]) > .live-voice-open:not([aria-expanded="true"]),
+.chat-design .composer-footer:has(> .stop-button) > .live-voice-open:not([aria-expanded="true"]) {
   display: none;
 }
 @keyframes send-in {
@@ -4365,12 +4396,12 @@
     flex: none;
   }
   .chat-design .composer {
-    border-radius: 22px;
-    padding: 10px 8px 6px 14px;
+    border-radius: 26px;
+    padding: 4px 4px;
   }
   .chat-design .tools-menu summary,
-  .chat-design .composer-footer :is(.voice-input-button, .live-voice-open),
-  .chat-design .composer-footer > .send-button {
+  .chat-design .composer-footer .voice-input-button,
+  .chat-design .composer-footer > :is(.send-button, .stop-button, .live-voice-open) {
     width: 44px;
     height: 44px;
   }

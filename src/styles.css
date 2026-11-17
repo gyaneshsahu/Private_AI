@@ -687,9 +687,6 @@ footer {
   .composer {
     padding: 10px;
   }
-  .composer-footer span {
-    display: none;
-  }
   .composer-note {
     font-size: 0.64rem;
   }

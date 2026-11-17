@@ -39,7 +39,8 @@ it("a German browser gets the German main screen at phone, tablet and desktop wi
       "placeholder",
       "Fragen Sie etwas",
     );
-    await ui(page.getByRole("button", { name: "Nachricht senden", exact: true })).toBeHidden();
+    // Without live voice the arrow sits at the end of the box, off until there is text (17 November).
+    await ui(page.getByRole("button", { name: "Nachricht senden", exact: true })).toBeDisabled();
     await ui(page.getByLabel("Anhänge und Werkzeuge", { exact: true })).toBeVisible();
     await ui(page.getByText("Was beschäftigt Sie?")).toBeVisible();
     await ui(page.getByRole("button", { name: /Schreiben oder überarbeiten/ })).toBeVisible();
@@ -78,8 +79,8 @@ it("a German browser gets the German main screen at phone, tablet and desktop wi
       "placeholder",
       "Ask anything",
     );
-    // Send appears once there is text; the empty box shows the greeting.
-    await ui(page.getByRole("button", { name: "Send message", exact: true })).toBeHidden();
+    // Without live voice the arrow sits at the end of the box, off until there is text (17 November).
+    await ui(page.getByRole("button", { name: "Send message", exact: true })).toBeDisabled();
     await ui(page.getByText("What’s on your mind?")).toBeVisible();
   };
   try {

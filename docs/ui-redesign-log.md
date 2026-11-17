@@ -6,11 +6,27 @@ One line per check, newest first. "Test" names the Playwright file that keeps th
 
 State at the end of 17 November: steps 1 and 2 are in the app; CI green on `2596726` (run 43999425325). Nothing is half done.
 
-1. **Message box on one line** (agreed with the owner on 17 November, not started): "+", "Ask anything", the answer mode (Auto, Fast, Thinking) where ChatGPT has "Think", the microphone, and one round button at the end. That end button is live voice while the box is empty and turns into the arrow (↑, a symbol, never the word "Send") once there is text. If live voice is off or its allowance is used up, the arrow sits there greyed until there is text, and live voice comes back when the allowance does. Long text grows the box upwards with the buttons on the bottom row. The "N messages included · N files" count moves into the "+" menu next to "Review context". Update `tests/redesign-ui.test.ts` and this log.
+1. **Done 18 November** (see below). Message box on one line, as agreed on 17 November: "+", "Ask anything", the answer mode (Auto, Fast, Thinking) where ChatGPT has "Think", the microphone, and one round button at the end. That end button is live voice while the box is empty and turns into the arrow (↑, a symbol, never the word "Send") once there is text. If live voice is off or its allowance is used up, the arrow sits there greyed until there is text, and live voice comes back when the allowance does. Long text grows the box upwards with the buttons on the bottom row. The "N messages included · N files" count moves into the "+" menu next to "Review context". Update `tests/redesign-ui.test.ts` and this log.
 2. **Left menu** (owner asked for it next after the message box): comet logo, New chat, Search, Projects, Scheduled, Recent list, small account line, as in `evaluation/ui-redesign/mock.html`.
 3. Then answers, phone layout, sign-in layout, settings, upload screens, live voice ball, Secure Max and states (plan, section 5), each with its browser test and a section here; at the end one full pass over every feature.
 
 Known flaky test: `tests/chat-recovery.test.ts` line 429 (focus on a code block) failed twice in CI on unrelated changes and passed on a rerun. Look into it if it fails again.
+
+## 18 November 2026: message box on one line
+
+Test: `tests/redesign-ui.test.ts`, case "message box on one line" (375 and 1280 px).
+
+| Feature | Result | What broke | What was fixed |
+| --- | --- | --- | --- |
+| "+", text, mode, microphone and end button on one row, in that order | pass | - | - |
+| End button: live voice while empty; the arrow in its place with text; Stop (round square) in the same place while answering | pass (2nd run) | the arrow measured 3 px off live voice's place | measured mid appear-animation; the test waits for it |
+| Long text grows the box upwards, buttons stay on the bottom row | pass | - | - |
+| Message count moved into the "+" menu next to Review context | pass (3rd run) | hidden on phones | an old phone rule hid every text span in the box's footer, which now holds the "+" menu; rule removed (it was for the old "Send" label) |
+| Closing Review context returns focus | fixed | focus went to the count, which is no longer a button | focus returns to "+" |
+| Without live voice (older tests' builds, Android): the arrow sits there, off until there is text | pass after update | 8 older test files expected Send hidden on an empty box (my 17 November edit) | set to "off" (disabled) as agreed with the owner |
+| `context-review` | local timeout only | 25 s limit on this machine, as on 17 November | none; passes in CI |
+
+Not done: "allowance used up" has no signal in the browser today, so live voice stays shown until the server refuses; the arrow then stands in only when live voice is switched off.
 
 ## 17 November 2026: step 2, chat screen and message box
 
