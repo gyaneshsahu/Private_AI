@@ -556,6 +556,11 @@ export interface AppStatus {
   voice?: import("./voice").VoiceLimits & { usedUnits?: number };
   /** Image questions are switched on for this deployment; absent means no image upload. */
   images?: { maxBytes: number };
+  /**
+   * Image creation is switched on for this deployment (off by default; docs/image-creation-20261118.md).
+   * `limit`: images a day on this plan; `used`: in the last 24 hours (absent when unknown).
+   */
+  imageCreation?: { limit: number; used?: number };
   /** Code execution on the device is switched on for this deployment (docs/code-execution-20261114.md). */
   code?: true;
   /** Usage metering is on (docs/usage-metering-20261115.md): the plan and the weights version charging now. */

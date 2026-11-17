@@ -438,8 +438,9 @@ export function ImageQuestion({
   notify(text: string): void;
 }) {
   const t = useText(imageText);
+  // Owner, 18 November: no per-feature cautions; the first-start notice and the privacy page cover this.
   const [step, setStep] = useState<"note" | "pick" | "health" | "consent" | "redact">(() =>
-    noteSeen() ? "pick" : "note",
+    "pick",
   );
   const [file, setFile] = useState<File>();
   const picked = useRef(false);

@@ -125,15 +125,10 @@ for (const lang of ["en", "de"] as const)
         await page.goto(origin, { timeout: 90000 });
         await ui(page.locator("html")).toHaveAttribute("lang", lang);
 
-        // The first tap shows the note with today's voice time.
+        // The first tap starts recording at once (owner, 18 November: no "Before you dictate" note).
         const mic = page.getByRole("button", { name: t.start, exact: true });
         await mic.click();
-        const note = page.getByRole("group", { name: t.noteTitle });
-        await ui(note).toContainText(t.today("4:36", "0:24"));
-        const noteBox = (await note.boundingBox())!;
-        expect(noteBox.x).toBeGreaterThanOrEqual(0);
-        expect(noteBox.x + noteBox.width).toBeLessThanOrEqual(width);
-        await note.getByRole("button", { name: t.noteStart }).click();
+        await ui(page.getByRole("group", { name: t.noteTitle })).toHaveCount(0);
 
         // Recording: the start notice says how much is left; 22 s at most, so the warning comes at 2 s.
         const stop = page.getByRole("button", { name: t.stop, exact: true });

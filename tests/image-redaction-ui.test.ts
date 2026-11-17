@@ -263,17 +263,15 @@ for (const [name, viewport] of [["phone", phone], ["desktop", desktop]] as const
     await done(page);
   });
 
-it("the whole flow in German at phone width: notice first, then the picture, the health question, and the consent card; saying no attaches nothing", async () => {
+it("the whole flow in German at phone width: the picture, the health question, and the consent card; saying no attaches nothing", async () => {
   const de = imageText.de;
   const page = await open("view=flow&consent", phone, "de-DE");
-  // The first-upload notice, with its limits, before any picture is chosen.
+  // Owner, 18 November: no first-use notice; the picture dialog opens at once.
   const dialog = page.getByRole("dialog");
-  await ui(dialog.getByRole("heading", { name: de.noteTitle })).toBeVisible();
-  for (const text of [de.note1, de.note2, de.note3, de.note4]) await ui(dialog.getByText(text)).toBeVisible();
-  await dialog.getByRole("button", { name: de.noteContinue }).click();
+  for (const text of [de.note1, de.note2, de.note3, de.note4]) await ui(dialog.getByText(text)).toHaveCount(0);
   // The existing photo dialog with picture wording.
   await ui(page.getByRole("heading", { name: de.pickTitle })).toBeVisible();
-  await ui(page.getByText(de.pickIntro)).toBeVisible();
+  await ui(page.getByText(de.pickIntro)).toHaveCount(0); // no explanation paragraph (owner, 18 November)
   const png = await page.evaluate(async () => {
     const canvas = document.createElement("canvas");
     canvas.width = 600;
@@ -294,8 +292,8 @@ it("the whole flow in German at phone width: notice first, then the picture, the
   await ui(page.getByTestId("consent")).toHaveText("declined");
   await ui(page.getByRole("dialog")).toHaveCount(0);
   await ui(page.getByRole("group", { name: de.attachedLabel })).toHaveCount(0);
-  // The notice is remembered, and nothing else is.
-  expect(await page.evaluate(() => Object.entries(localStorage).filter(([key]) => key !== "cometrow.language"))).toEqual([["cometrow.images.note-seen", "1"]]);
+  // Nothing about the picture is remembered in the browser.
+  expect(await page.evaluate(() => Object.entries(localStorage).filter(([key]) => key !== "cometrow.language" && key !== "cometrow.first-start-notice"))).toEqual([]);
   expect(page.blocked).toEqual([]);
   await done(page);
 });
@@ -303,7 +301,6 @@ it("the whole flow in German at phone width: notice first, then the picture, the
 it("the flow when the picture is not a health picture, or consent was already given: straight to covering; Escape discards the picture", async () => {
   for (const query of ["view=flow&consent", "view=flow&consent&choice=accepted", "view=flow"]) {
     const page = await open(query);
-    await page.getByRole("button", { name: en.noteContinue }).click();
     await page.locator('input[type="file"]').setInputFiles({
       name: "synthetic.png",
       mimeType: "image/png",

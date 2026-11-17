@@ -412,7 +412,6 @@ export function LiveVoice(props: {
           {phase === "idle" && (
             <>
               <p>{t.what}</p>
-              <p className="muted">{t.note}</p>
               <p className="muted">
                 {t.cost(speechCost + props.messageCost, props.modeName, LIVE_VOICE_CAPS.maxTurns, LIVE_VOICE_CAPS.maxMs / 60_000)}
               </p>

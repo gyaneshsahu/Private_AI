@@ -219,6 +219,9 @@ const SyncIndicator = lazyNamed(() => import("./SyncScreens"), "SyncIndicator");
 const START_KEY = "cometrow.openInSecureMax";
 /** SS-14: the unsent message of a session that ended, for this tab only. */
 const EXPIRED_DRAFT_KEY = "cometrow.expired-draft";
+/** The one general notice was seen in this browser (owner, 18 November). */
+export const FIRST_START_KEY = "cometrow.first-start-notice";
+
 export function App() {
   const { lang } = useLang();
   const t = appText[lang];
@@ -408,6 +411,22 @@ export function App() {
   // FE-07: "+" > "Search the web" arms the next Send (`searchNext`); that Send opens the approval
   // card for exactly the typed text (`searchFor`). Nothing is searched until the card's button.
   const [searchNext, setSearchNext] = useState(false);
+  // The first-start notice is seen once per browser; without storage it shows until "Got it".
+  const [firstStartSeen, setFirstStartSeen] = useState(() => {
+    try {
+      return localStorage.getItem(FIRST_START_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const seeFirstStart = () => {
+    setFirstStartSeen(true);
+    try {
+      localStorage.setItem(FIRST_START_KEY, "1");
+    } catch {
+      /* storage blocked: it stays away for this page */
+    }
+  };
   const [searchFor, setSearchFor] = useState<string>();
   // FE-07: "+" > "Deep research" arms the next Send the same way (`researchNext`); that Send opens
   // the deep research card in the conversation for this text (`researchFor`), drawn into
@@ -3262,6 +3281,30 @@ export function App() {
                 />
               )}
               {noticeLine}
+              {/* The one general notice (owner, 18 November): once, at first start, never again. */}
+              {!firstStartSeen && (
+                <div className="first-start-notice" role="note">
+                  <p>{t.firstStart(status?.imageCreation ? t.firstStartImages : t.firstStartSearch)}</p>
+                  <div className="first-start-actions">
+                    <button
+                      type="button"
+                      className="text-button"
+                      onClick={() =>
+                        setSource({
+                          id: "privacy-policy",
+                          title: t.privacyPolicy,
+                          text: privacyPolicyText(disclosedProvider(status), lang),
+                        })
+                      }
+                    >
+                      {t.firstStartPrivacy}
+                    </button>
+                    <button type="button" className="primary" onClick={seeFirstStart}>
+                      {t.gotIt}
+                    </button>
+                  </div>
+                </div>
+              )}
               <ConnectionBanner />
               {!status?.inference.ready && connectionStatus}
               <form
@@ -3844,7 +3887,6 @@ export function App() {
             <p className="intro">
               {WHEN_TO_SEARCH.researchIntro}
             </p>
-            <p className="muted">{t.researchNote}</p>
             <div className="panel">
               <label>
                 <input

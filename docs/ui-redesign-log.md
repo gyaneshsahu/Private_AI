@@ -12,6 +12,17 @@ State on 18 November: every item of the redesign list is built, tested and pushe
 
 Known flaky or slow tests: `chat-recovery` (focus on a code block) and `invite-browser` under heavy local load; `context-review`, `source-history-ui`, `optional-calculator-ui` exceed their own 25 to 30 s limits on this machine but pass in CI.
 
+## 18 November 2026: one notice, no per-feature cautions
+
+Details: `docs/notices-inventory-20261118.md`, `docs/privacy-partners-draft-20261118.md`. Tests: 21 older test files rerun, then end-to-end.
+
+| Feature | Result | What broke | What was fixed |
+| --- | --- | --- | --- |
+| First-start notice, once, "Privacy" and "Got it" (EN, DE); names image creation only when it is on | pass | on a 420 px high phone at 200 % text it covered the chat (`chat-design.spec`) | it scrolls inside itself, at most a third of the screen |
+| Removed: dictation note, picture notice, photo intro and camera notes, voice-conversation note, research caution, banner second sentences | pass after test updates | 22 checks in 5 older files expected these popups, plus `photo-to-text.spec` | tests now check they are gone |
+| Memory and Canvas texts made true in Secure mode | done | they said "only on this device" | memory: "stored encrypted, with your saved chats"; canvas line removed |
+| Protected-connection chip on German phones | pass | "Details zum Datenschutz" was cut | only the status is shown below 1,000 px |
+
 ## 18 November 2026: logo, favicons, icons
 
 Source: the owner's official logo kit, `public/logo` (README there), used as-is. Tests: `tests/redesign-ui.test.ts` (logo, one icon per meaning), `tests/browser/redesign-sign-in.spec.ts` (logo on sign-in; brand files served and linked), `tests/email-template.test.ts`, `tests/error-pages.test.ts`. End-to-end 64 of 64.

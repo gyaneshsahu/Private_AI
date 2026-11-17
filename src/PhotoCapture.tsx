@@ -293,7 +293,6 @@ export function PhotoCapture({
           ×
         </button>
       </div>
-      <p className="muted">{t.intro}</p>
       {error && (
         <p className="photo-error" role="alert">
           {error}
@@ -310,7 +309,6 @@ export function PhotoCapture({
               <Icon name="camera" />
               {starting ? t.starting : t.useCamera}
             </button>
-            <small>{t.cameraHint}</small>
           </div>
           <div className="photo-path">
             <button type="button" onClick={() => fileInput.current?.click()}>
@@ -348,7 +346,6 @@ export function PhotoCapture({
               setCameraReady(event.currentTarget.videoWidth > 0)
             }
           />
-          <p className="muted">{t.cameraNote}</p>
           <div className="photo-actions">
             <button
               type="button"

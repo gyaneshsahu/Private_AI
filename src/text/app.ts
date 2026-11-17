@@ -239,12 +239,19 @@ export const appText = defineText({
       "You can still read documents and open your saved chats. Nothing is sent to the AI until chat is connected.",
     incognitoBannerTitle: "Incognito chat.",
     incognitoBanner:
-      "Nothing from this chat is saved on this device; it is gone when you start another chat, lock, reload or sign out. This does not change what the secure server keeps for a short time or the request records we hold.",
+      "Nothing from this chat is saved on this device; it is gone when you start another chat, lock, reload or sign out.",
     disappearingBannerTitle: "Disappearing messages.",
     disappearingBanner: (after: string) =>
-      `Messages older than ${after} are deleted from this device while the chat is open or when you open it again, including from its saved copy. This does not change what the secure server keeps for a short time or the request records we hold.`,
+      `Messages older than ${after} are deleted from this device while the chat is open or when you open it again, including from its saved copy.`,
     operatorNoticeTitle: "Notice from CometRow:",
     dismissNotice: "Dismiss notice",
+    // The one general notice, shown once at first start (owner, 18 November; for the legal read).
+    firstStart: (partnerExample: string) =>
+      `CometRow protects your chats with sealed, encrypted processing in the EU. A few features, such as ${partnerExample}, use a trusted partner instead, because they rarely involve personal details. Details are in Privacy.`,
+    firstStartImages: "image creation",
+    firstStartSearch: "web search",
+    firstStartPrivacy: "Privacy",
+    gotIt: "Got it",
     stop: "Stop",
     importResults: "File import results",
     dismissImports: "Dismiss import results",
@@ -621,12 +628,18 @@ export const appText = defineText({
       "Sie können weiterhin Dokumente lesen und Ihre gespeicherten Chats öffnen. An die KI wird nichts gesendet, bis der Chat verbunden ist.",
     incognitoBannerTitle: "Inkognito-Chat.",
     incognitoBanner:
-      "Nichts aus diesem Chat wird auf diesem Gerät gespeichert; er ist weg, sobald Sie einen anderen Chat beginnen, sperren, neu laden oder sich abmelden. Das ändert nichts daran, was der sichere Server kurzzeitig behält, und nichts an unseren Aufzeichnungen über Anfragen.",
+      "Nichts aus diesem Chat wird auf diesem Gerät gespeichert; er ist weg, sobald Sie einen anderen Chat beginnen, sperren, neu laden oder sich abmelden.",
     disappearingBannerTitle: "Selbstlöschende Nachrichten.",
     disappearingBanner: (after: string) =>
-      `Nachrichten, die älter als ${after} sind, werden von diesem Gerät gelöscht, solange der Chat geöffnet ist oder wenn Sie ihn wieder öffnen, auch aus der gespeicherten Kopie. Das ändert nichts daran, was der sichere Server kurzzeitig behält, und nichts an unseren Aufzeichnungen über Anfragen.`,
+      `Nachrichten, die älter als ${after} sind, werden von diesem Gerät gelöscht, solange der Chat geöffnet ist oder wenn Sie ihn wieder öffnen, auch aus der gespeicherten Kopie.`,
     operatorNoticeTitle: "Hinweis von CometRow:",
     dismissNotice: "Hinweis schließen",
+    firstStart: (partnerExample: string) =>
+      `CometRow schützt Ihre Chats mit versiegelter, verschlüsselter Verarbeitung in der EU. Einige Funktionen, etwa ${partnerExample}, nutzen stattdessen einen vertrauenswürdigen Partner, weil dabei selten persönliche Angaben vorkommen. Einzelheiten unter Datenschutz.`,
+    firstStartImages: "die Bilderstellung",
+    firstStartSearch: "die Websuche",
+    firstStartPrivacy: "Datenschutz",
+    gotIt: "Verstanden",
     stop: "Stoppen",
     importResults: "Ergebnisse des Dateiimports",
     dismissImports: "Importergebnisse schließen",

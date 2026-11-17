@@ -5495,7 +5495,8 @@
   white-space: normal;
 }
 @media (max-width: 1000px) {
-  .chat-design .connection-banner > summary span {
+  .chat-design .connection-banner > summary span,
+  .chat-design .connection-banner:not([open]) > summary span {
     display: none;
   }
 }
@@ -5555,4 +5556,53 @@
 }
 .chat-design .brand-icon {
   height: 22px;
+}
+
+/* The one general notice at first start (owner, 18 November): a calm card above the message box. */
+.chat-design .first-start-notice {
+  width: 100%;
+  max-width: 740px;
+  margin: 0 auto 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  animation: message-in var(--slow) var(--ease);
+  /* On a short screen with large text it never covers the chat: it scrolls inside itself. */
+  max-height: 34dvh;
+  overflow-y: auto;
+}
+.chat-design .first-start-notice p {
+  margin: 0;
+  flex: 1;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink2);
+}
+.chat-design .first-start-actions {
+  display: flex;
+  gap: 4px;
+  flex: none;
+}
+.chat-design .first-start-actions button {
+  min-height: 36px;
+  border-radius: 999px;
+  padding: 0 14px;
+  font-size: 13.5px;
+}
+@media (max-width: 650px) {
+  .chat-design .first-start-notice {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .chat-design .first-start-actions {
+    justify-content: flex-end;
+  }
+  .chat-design .first-start-actions button {
+    min-height: 44px;
+  }
 }

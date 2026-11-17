@@ -300,7 +300,7 @@ export function CanvasPanel({
         )}
         {shown === "table" && <TableEditor text={text} update={update} fail={fail} />}
         <p className="muted canvas-count">
-          {t.count(text.length, CANVAS_LIMITS.characters)} · {t.note}
+          {t.count(text.length, CANVAS_LIMITS.characters)}
         </p>
         {problem && (
           <p className="warning" role="alert">

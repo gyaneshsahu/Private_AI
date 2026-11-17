@@ -6,7 +6,7 @@ export const memoryText = defineText({
   en: {
     title: "Memory",
     intro:
-      "CometRow can remember what you ask it to remember, for all your chats. Memories are stored only on this device, inside your encrypted vault. Our server stores none of them and keeps no profile of you.",
+      "CometRow can remember what you ask it to remember, for all your chats. Memories are stored encrypted, with your saved chats.",
     sentNote:
       "When a memory fits your question, it is sent to the protected model together with that question. Email addresses, phone numbers, bank details and similar identifiers in a memory are masked first, like in any message. Under each answer you can see which memories were sent. Think twice before you save health details or other very personal facts.",
     notUsed:
@@ -108,7 +108,7 @@ export const memoryText = defineText({
   de: {
     title: "Gedächtnis",
     intro:
-      "CometRow kann sich für alle Ihre Chats merken, was Sie ihm zum Merken geben. Erinnerungen werden nur auf diesem Gerät gespeichert, in Ihrem verschlüsselten Tresor. Unser Server speichert keine davon und führt kein Profil über Sie.",
+      "CometRow kann sich für alle Ihre Chats merken, was Sie ihm zum Merken geben. Erinnerungen werden verschlüsselt gespeichert, zusammen mit Ihren gespeicherten Chats.",
     sentNote:
       "Passt eine Erinnerung zu Ihrer Frage, wird sie zusammen mit dieser Frage an das geschützte Modell gesendet. E-Mail-Adressen, Telefonnummern, Bankdaten und ähnliche Kennungen in einer Erinnerung werden vorher verborgen, wie in jeder Nachricht. Unter jeder Antwort sehen Sie, welche Erinnerungen gesendet wurden. Überlegen Sie gut, bevor Sie Gesundheitsdaten oder andere sehr persönliche Angaben speichern.",
     notUsed:
