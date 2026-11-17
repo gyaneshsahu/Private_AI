@@ -230,6 +230,8 @@ export function WorkspaceNavigation(props: {
           {t.incognito}
         </button>
       </div>
+      {/* Secure Max sits with the other ways to start a chat (owner, 18 November), not at the bottom. */}
+      {maxSection}
       {onScheduled && (
         <button
           className="scheduled-entry"
@@ -594,7 +596,6 @@ export function WorkspaceNavigation(props: {
           />
         );
       })()}
-      {maxSection}
       <nav aria-label={t.workspace} className="sidebar-bottom">
         <details className="account-menu">
           <summary aria-label={t.accountMenu}>

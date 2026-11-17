@@ -5360,3 +5360,108 @@
   line-height: 1.55;
   color: var(--ink2);
 }
+
+/* ---------- Redesign: states and dialogs (18 November) ----------
+   Errors read as a calm note, not a banner; every dialog has the same rounded panel; the Secure Max
+   box in the menu is quieter. Texts unchanged. */
+.chat-design .failure-note {
+  margin: 2px 0 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--danger) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 18%, transparent);
+}
+.chat-design .failure-note > p {
+  margin: 0;
+  color: var(--ink);
+}
+.chat-design .failure-note details {
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.chat-design .failure-note summary {
+  font-size: 13px;
+  color: var(--ink2);
+  cursor: pointer;
+}
+.chat-design .failure-note details p {
+  font-size: 13px;
+  color: var(--ink2);
+  margin: 6px 0 0;
+}
+.chat-design dialog:not(.navigation-drawer):not(.settings-dialog):not(.photo-dialog) {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-2);
+}
+.chat-design dialog::backdrop {
+  background: var(--scrim);
+}
+/* Fade in only: no size change, so nothing measures smaller while it opens. Not the menu drawer. */
+.chat-design dialog[open]:not(.navigation-drawer) {
+  animation: dialog-in var(--base) var(--ease);
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+  }
+}
+.chat-design dialog .primary,
+.chat-design dialog button.danger {
+  border-radius: 999px;
+  min-height: 40px;
+  padding: 0 18px;
+}
+.chat-design .secure-max-section .primary {
+  border-radius: 999px;
+  min-height: 38px;
+}
+.chat-design .typing-dots span {
+  animation-duration: 1.2s;
+}
+@media (max-width: 760px) {
+  .chat-design dialog .primary,
+  .chat-design dialog button.danger,
+  .chat-design .secure-max-section .primary {
+    min-height: 44px;
+  }
+}
+/* Secure Max under Incognito: the same quiet row as New chat and Incognito (owner, 18 November). */
+.chat-design .sidebar .secure-max-entry {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 40px;
+  margin: 0;
+  padding: 0 10px;
+  gap: 11px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14.5px;
+  font-weight: 450;
+  box-shadow: none;
+  justify-content: flex-start;
+}
+.chat-design .sidebar .secure-max-entry:hover {
+  background: var(--hover);
+}
+.chat-design .sidebar .secure-max-entry svg {
+  width: 18px;
+  height: 18px;
+  color: var(--ink2);
+}
+.chat-design .sidebar .secure-max-mount {
+  margin: 2px 0 6px;
+}
+@media (max-width: 760px) {
+  .chat-design .sidebar .secure-max-entry {
+    min-height: 44px;
+  }
+}

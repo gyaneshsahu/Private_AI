@@ -233,6 +233,11 @@ describe.each([375, 1280])("left menu at %i px", (width) => {
       // The logo is the comet drawing, not the old "C" square.
       await ui(side.locator(".brand svg.brand-mark circle")).toHaveCount(1);
       await ui(side.locator(".brand")).toHaveText("CometRow");
+      // Secure Max sits right under Incognito chat, above Scheduled (owner, 18 November).
+      const ys = await Promise.all([".new-incognito", ".secure-max-entry", ".scheduled-entry"].map((sel) => side.locator(sel).first().boundingBox()));
+      expect(ys[0]!.y).toBeLessThan(ys[1]!.y);
+      expect(ys[1]!.y).toBeLessThan(ys[2]!.y);
+      expect(ys[1]!.y - (ys[0]!.y + ys[0]!.height)).toBeLessThanOrEqual(8);
       // The old explanatory line is gone; the Recent heading is only for screen readers.
       await ui(side.getByText("Group saved chats by project", { exact: false })).toHaveCount(0);
       // Rows are quiet: no fill until hover.
@@ -325,7 +330,8 @@ describe.each([375, 1280])("answers at %i px", (width) => {
       const block = page.locator("article.assistant").last().locator(".code-block").first();
       const copy = block.locator(".code-block-toolbar button");
       await ui(copy).toBeVisible();
-      expect((await copy.boundingBox())!.height).toBeLessThanOrEqual(30);
+      // The block re-renders once the answer is complete: read its size when it is there.
+      await expect.poll(async () => (await copy.boundingBox())?.height ?? 999).toBeLessThanOrEqual(30);
       await ui(block.locator(".code-block-toolbar span").first()).not.toBeEmpty();
       await send(page, "SYNTHETIC a table please. audit:table");
       const cell = page.locator("article.assistant").last().locator(".answer-table td").first();
@@ -492,6 +498,47 @@ it("live voice ball: it moves while listening and stands still under reduced mot
   } finally {
     await context.close();
   }
+});
+
+describe.each([375, 1280])("states and dialogs at %i px", (width) => {
+  it("a failed answer is a calm rounded note; What this means opens", async () => {
+    const { context, page } = await open(width);
+    try {
+      await send(page, "SYNTHETIC busy please. audit:error-429");
+      const note = page.locator("article.assistant").last().locator(".failure-note");
+      await ui(note).toContainText("The service is busy right now");
+      expect(await note.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).toBe("12px");
+      await note.getByText("What this means", { exact: true }).click();
+      await ui(note.locator("details")).toHaveAttribute("open", "");
+      expect(await noSidewaysScroll(page)).toBeLessThanOrEqual(0);
+    } finally {
+      await context.close();
+    }
+  });
+
+  it("Secure Max opens as a rounded dialog; its button waits for the tick; Cancel closes", async () => {
+    const { context, page } = await open(width);
+    try {
+      const toggle = page.getByRole("button", { name: "Open navigation", exact: true });
+      if (await toggle.isVisible().catch(() => false)) await toggle.click();
+      await page.locator(".secure-max-entry").first().click();
+      // On a phone the menu drawer is a dialog too and holds this one: take the innermost.
+      const dialog = page.getByRole("dialog").filter({ has: page.getByRole("heading", { name: "Open Secure Max?" }) }).last();
+      await ui(dialog).toBeVisible();
+      expect(await dialog.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).toBe("18px");
+      const use = dialog.getByRole("button", { name: "Use Secure Max", exact: true });
+      await ui(use).toBeDisabled();
+      await dialog.getByRole("checkbox", { name: "I understand that CometRow cannot recover this data for me." }).check();
+      await ui(use).toBeEnabled();
+      const d = (await dialog.boundingBox())!;
+      expect(d.x).toBeGreaterThanOrEqual(0);
+      expect(d.x + d.width).toBeLessThanOrEqual(width);
+      await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
+      await ui(dialog).toBeHidden();
+    } finally {
+      await context.close();
+    }
+  });
 });
 
 it("dark theme: the same screen renders with the dark tokens and stays readable", async () => {

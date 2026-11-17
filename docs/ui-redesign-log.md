@@ -12,6 +12,20 @@ State at the end of 17 November: steps 1 and 2 are in the app; CI green on `2596
 
 Known flaky test: `tests/chat-recovery.test.ts` line 429 (focus on a code block) failed twice in CI on unrelated changes and passed on a rerun. Look into it if it fails again.
 
+## 18 November 2026: errors, dialogs, Secure Max in the menu
+
+Tests: `tests/redesign-ui.test.ts`, "states and dialogs" and the left-menu order check; older files rerun (31 files, then 9 files with 126 checks). Screenshots: `.local/ui-redesign/step-10`, `step-11`.
+
+| Feature | Result | What broke | What was fixed |
+| --- | --- | --- | --- |
+| A failed answer is a calm rounded note; "What this means" opens | pass | - | - |
+| Every dialog: one rounded panel, dimmed backdrop, fade-in | pass (3rd run) | the open animation also scaled dialogs to 99 %; the phone menu drawer is a dialog, so 44 px buttons measured 43.6 px in 6 older test files | fade only, no size change, and not on the menu drawer |
+| Secure Max moved from the bottom of the menu to right under Incognito chat (owner, 18 November) | pass | - | - |
+| Secure Max section keeps its 4 px band | pass (2nd run) | my dialog pass had removed the band that `modes-ui` checks | band kept |
+| Secure Max dialog: button waits for the tick, Cancel closes | pass | - | - |
+| CI on the live-voice commit (7c7909e) | fail, then fixed | my code-block test read the Copy button's size while the block re-rendered | the test waits for a stable size |
+| A run of older tests while files were being edited | discarded | some tests read the source files live | rerun on the finished code |
+
 ## 18 November 2026: live voice ball
 
 Test: `tests/redesign-ui.test.ts`, "live voice" (375 and 1280 px, plus a motion case). Screenshots: `.local/ui-redesign/step-9`.
