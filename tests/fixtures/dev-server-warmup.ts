@@ -13,6 +13,9 @@ import type { ViteDevServer } from "vite";
  * dependency late and reload the page in the middle of a test.
  */
 export async function warmDevServer(vite: ViteDevServer): Promise<void> {
+  // Tests never reload on file changes; a watcher scanning the whole checkout (old agent worktrees,
+  // .local evidence: several GB on 17 November) made each file load wait up to 11 s.
+  await vite.watcher.close();
   await vite.warmupRequest("/src/main.tsx");
   for (const file of await readdir("src")) if (file.endsWith(".tsx")) await vite.warmupRequest(`/src/${file}`);
   await vite.waitForRequestsIdle();

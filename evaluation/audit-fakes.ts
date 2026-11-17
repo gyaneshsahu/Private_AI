@@ -322,6 +322,11 @@ export async function installFakes(context: BrowserContext, options: FakeOptions
       log.failed.push(`${r.request().method()} ${r.url().slice(0, 200)} ${r.status()}`);
   });
 
+  // One server session for the whole context, opened before the page loads: the browser does not keep
+  // a Set-Cookie from a response the fake status passes on, so the page's first requests would each
+  // open a session of their own and its CSRF token could belong to another (seen as a 403 on POSTs).
+  await context.request.get(`${options.origin}/api/status`);
+
   return {
     log,
     /** Queue the next replies by name (first in, first out); then the default or the message's audit:<name>. */
