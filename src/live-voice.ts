@@ -59,6 +59,8 @@ export interface LiveSnapshot {
   units: number;
   /** Whole seconds until the transcript is sent by itself; undefined while it waits for a tap. */
   reviewLeft?: number;
+  /** This turn's delay from the end of speech to the first spoken word of the answer, in ms. */
+  replyDelayMs?: number;
 }
 
 export type SendOutcome = "answered" | "consent" | "choice" | "failed";
@@ -83,6 +85,11 @@ export interface LiveVoiceDeps {
    */
   send(text: string, signal: AbortSignal): Promise<SendOutcome>;
   speaker: {
+    /**
+     * Optional: called when the question is sent, so the answer can be read sentence by sentence
+     * while it is still being written (voice conversation, 18 November). speak() then reads the rest.
+     */
+    follow?(): void;
     /** Resolves when the answer was read. Calls `started` with a generous length for the time-out. */
     speak(started: (expectedMs: number) => void): Promise<"spoken" | { refused: string }>;
     cancel(): void;
@@ -114,6 +121,12 @@ export function createLiveVoice(deps: LiveVoiceDeps, options: LiveVoiceOptions) 
   let startedAt = 0;
   let abort: AbortController | undefined;
   let timer: unknown;
+  /** When this turn's speech ended (tap or silence), for the reply delay. */
+  let heardAt: number | undefined;
+  /** The user talked over the answer while it was still being written: do not read the rest. */
+  let talkedOver = false;
+  /** This turn's first sound was already timed. */
+  let soundTimed = false;
   const set = (next: Partial<LiveSnapshot>) => {
     snapshot = { ...snapshot, ...next };
     deps.onChange(snapshot);
@@ -144,6 +157,10 @@ export function createLiveVoice(deps: LiveVoiceDeps, options: LiveVoiceOptions) 
     const stop = deps.blocked();
     if (stop) return stopFor(stop, "blocked");
     const mine = ++run;
+    heardAt = undefined;
+    talkedOver = false;
+    soundTimed = false;
+    // replyDelayMs stays: the last turn's delay until this turn has its own.
     set({ phase: "starting", reason: undefined, transcript: "", reviewLeft: undefined });
     // Before the microphone opens, so the tone is not part of the room's noise measurement.
     deps.earcon?.("listen");
@@ -203,6 +220,7 @@ export function createLiveVoice(deps: LiveVoiceDeps, options: LiveVoiceOptions) 
     abort = new AbortController();
     deps.earcon?.("sent");
     set({ phase: "answering", turns: snapshot.turns + 1, reviewLeft: undefined });
+    deps.speaker.follow?.();
     let outcome: SendOutcome;
     try {
       outcome = await deps.send(snapshot.transcript, abort.signal);
@@ -215,6 +233,11 @@ export function createLiveVoice(deps: LiveVoiceDeps, options: LiveVoiceOptions) 
       return halt("ended", { key: outcome === "consent" ? "consent" : "searchChoice" });
     }
     if (outcome === "failed") return halt("paused", { key: "sendFailed" });
+    // Talked over while the answer was still being written: straight back to listening.
+    if (talkedOver) {
+      set({ units: snapshot.units + options.messageCost });
+      return void listen();
+    }
     set({ phase: "speaking", units: snapshot.units + options.messageCost });
     // The microphone stays closed while the answer is spoken, so the answer is never recorded.
     const next = () => {
@@ -262,7 +285,25 @@ export function createLiveVoice(deps: LiveVoiceDeps, options: LiveVoiceOptions) 
     },
     /** The user's tap, or the silence detector: the question is complete. */
     doneSpeaking() {
-      if (snapshot.phase === "listening") deps.recorder.stop();
+      if (snapshot.phase !== "listening") return;
+      heardAt = deps.clock.now();
+      deps.recorder.stop();
+    },
+    /** The first sound of the answer: records this turn's reply delay once. */
+    firstSound() {
+      if (heardAt === undefined || soundTimed) return;
+      soundTimed = true;
+      set({ replyDelayMs: deps.clock.now() - heardAt });
+    },
+    /**
+     * The user talked over the answer (barge-in by voice). While it is spoken: stop and listen, as
+     * the Interrupt button does. While it is still being written: stop reading; listen once it is done.
+     */
+    bargeIn() {
+      if (snapshot.phase === "speaking") return this.skipSpeech();
+      if (snapshot.phase !== "answering") return;
+      talkedOver = true;
+      deps.speaker.cancel();
     },
     /** The silence detector heard nothing at all: nothing is sent or transcribed. */
     noSpeech() {
@@ -355,7 +396,9 @@ export const SILENCE_DEFAULTS = {
   minThreshold: 0.015,
   maxThreshold: 0.06,
   minSpeechMs: 150,
-  silenceMs: 1500,
+  // 1 s (was 1.5 s until 18 November): the reply starts sooner; a longer thinking pause can end
+  // a turn early, which "Always ask before sending" and Edit cover.
+  silenceMs: 1000,
   noSpeechMs: 8000,
 };
 

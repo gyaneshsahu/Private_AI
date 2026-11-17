@@ -84,7 +84,7 @@ describe.each([375, 1280])("chat screen and message box at %i px", (width) => {
     try {
       const box = page.getByLabel("Message CometRow", { exact: true });
       const sendButton = page.getByRole("button", { name: "Send message", exact: true });
-      const live = page.getByRole("button", { name: "Live voice conversation", exact: true });
+      const live = page.getByRole("button", { name: "Voice conversation", exact: true });
       const plus = page.getByLabel("Attachments and tools", { exact: true });
       await ui(box).toHaveAttribute("placeholder", "Ask anything");
       await ui(sendButton).toBeHidden();
@@ -463,7 +463,7 @@ describe.each([375, 1280])("live voice at %i px", (width) => {
   it("the panel shows the round colour ball, resting until a turn starts; it closes again", async () => {
     const { context, page } = await open(width);
     try {
-      await page.getByRole("button", { name: "Live voice conversation", exact: true }).click();
+      await page.getByRole("button", { name: "Voice conversation", exact: true }).click();
       const panel = page.locator("section.live-voice");
       await ui(panel).toBeVisible();
       const orb = panel.locator(".live-voice-orb");
@@ -488,7 +488,7 @@ describe.each([375, 1280])("live voice at %i px", (width) => {
 it("live voice ball: it moves while listening and stands still under reduced motion", async () => {
   const { context, page } = await open(1280);
   try {
-    await page.getByRole("button", { name: "Live voice conversation", exact: true }).click();
+    await page.getByRole("button", { name: "Voice conversation", exact: true }).click();
     const orb = page.locator("section.live-voice .live-voice-orb");
     await ui(orb).toBeVisible();
     await orb.evaluate((el) => el.setAttribute("data-phase", "listening"));

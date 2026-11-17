@@ -7,9 +7,9 @@ const clock = (seconds: number) =>
 
 export const liveVoiceText = defineText({
   en: {
-    open: "Live voice conversation",
-    title: "Live voice",
-    what: "Turn by turn: you speak, CometRow turns it into text, sends it, reads the answer aloud, then listens again. One side speaks at a time. This is not a real-time voice model: to interrupt the answer, tap Interrupt and speak.",
+    open: "Voice conversation",
+    title: "Voice conversation",
+    what: "Talk, then listen: CometRow answers aloud and listens again. Talk over the answer to interrupt it.",
     note: "Your recording goes encrypted to the protected speech model in the EU and is dropped once it is text. Numbers you say aloud, such as a bank or ID number, are part of the recording: masking works on the text only. The text is masked as usual before it goes to the chat.",
     cost: (perTurn: number, mode: string, turns: number, minutes: number) =>
       `Each turn uses about ${perTurn} units (${mode}: speech to text plus the answer). A session stops after ${turns} turns or ${minutes} minutes.`,
@@ -26,6 +26,7 @@ export const liveVoiceText = defineText({
     skip: "Interrupt and speak",
     alwaysAsk: "Always ask before sending",
     sounds: "Sounds",
+    talkOver: "Interrupt by talking",
     heard: "You said",
     answer: "Answer",
     starting: "Opening the microphone…",
@@ -37,7 +38,7 @@ export const liveVoiceText = defineText({
     answering: "Waiting for the answer…",
     speaking: "Reading the answer aloud…",
     paused: "Paused.",
-    ended: "Live voice ended.",
+    ended: "Voice conversation ended.",
     used: (turn: number, max: number, units: number) => `Questions sent: ${turn} of ${max} · about ${units} units used`,
     // Why it paused or ended.
     stopped: "You ended the session. Nothing more is sent.",
@@ -54,9 +55,9 @@ export const liveVoiceText = defineText({
     transcribeFailed: "The recording could not be turned into text. Nothing was sent.",
     cancelled: "Cancelled. Nothing was sent.",
     edit_: "The text is in the message box. Edit it and press Send.",
-    consent: "Live voice ended: please answer the health data question on screen first.",
+    consent: "Voice conversation ended: please answer the health data question on screen first.",
     searchChoice:
-      "Live voice ended: this question is about current facts or German rules. It is in the message box, so you can choose whether to search first.",
+      "Voice conversation ended: this question is about current facts or German rules. It is in the message box, so you can choose whether to search first.",
     sendFailed: "The answer did not arrive. The message line says why.",
     offline: "You are offline. Press Resume when you are back online.",
     verifyWait: "The connection check is busy. Wait for the countdown, then press Resume.",
@@ -64,9 +65,9 @@ export const liveVoiceText = defineText({
       `Not enough allowance for another turn: it needs ${cost} units and ${left} are left.`,
   },
   de: {
-    open: "Gespräch per Stimme",
-    title: "Gespräch per Stimme",
-    what: "Abwechselnd: Sie sprechen, CometRow macht daraus Text, sendet ihn, liest die Antwort vor und hört dann wieder zu. Es spricht immer nur eine Seite. Das ist kein Echtzeit-Sprachmodell: Um die Antwort zu unterbrechen, tippen Sie auf „Unterbrechen und sprechen“.",
+    open: "Sprachgespräch",
+    title: "Sprachgespräch",
+    what: "Sprechen, dann zuhören: CometRow antwortet laut und hört wieder zu. Sprechen Sie dazwischen, um die Antwort zu unterbrechen.",
     note: "Ihre Aufnahme geht verschlüsselt an das geschützte Sprachmodell in der EU und wird verworfen, sobald sie Text ist. Nummern, die Sie laut sagen, etwa eine Konto- oder Ausweisnummer, sind Teil der Aufnahme: Die Platzhalter wirken nur beim Text. Der Text wird wie immer verborgen, bevor er an den Chat geht.",
     cost: (perTurn: number, mode: string, turns: number, minutes: number) =>
       `Jede Runde verbraucht etwa ${perTurn} Einheiten (${mode}: Sprache zu Text plus Antwort). Eine Sitzung endet nach ${turns} Runden oder ${minutes} Minuten.`,
@@ -83,6 +84,7 @@ export const liveVoiceText = defineText({
     skip: "Unterbrechen und sprechen",
     alwaysAsk: "Vor dem Senden immer fragen",
     sounds: "Töne",
+    talkOver: "Durch Sprechen unterbrechen",
     heard: "Sie sagten",
     answer: "Antwort",
     starting: "Mikrofon wird geöffnet …",
@@ -94,7 +96,7 @@ export const liveVoiceText = defineText({
     answering: "Warten auf die Antwort …",
     speaking: "Die Antwort wird vorgelesen …",
     paused: "Pausiert.",
-    ended: "Gespräch per Stimme beendet.",
+    ended: "Sprachgespräch beendet.",
     used: (turn: number, max: number, units: number) => `Gesendete Fragen: ${turn} von ${max} · etwa ${units} Einheiten verbraucht`,
     stopped: "Sie haben die Sitzung beendet. Es wird nichts mehr gesendet.",
     pausedByYou: "Drücken Sie auf Fortsetzen, wenn Sie weitersprechen möchten.",
@@ -110,9 +112,9 @@ export const liveVoiceText = defineText({
     transcribeFailed: "Die Aufnahme konnte nicht in Text umgewandelt werden. Es wurde nichts gesendet.",
     cancelled: "Abgebrochen. Es wurde nichts gesendet.",
     edit_: "Der Text steht im Nachrichtenfeld. Bearbeiten Sie ihn und drücken Sie auf Senden.",
-    consent: "Gespräch per Stimme beendet: Bitte beantworten Sie zuerst die Frage zu Gesundheitsdaten auf dem Bildschirm.",
+    consent: "Sprachgespräch beendet: Bitte beantworten Sie zuerst die Frage zu Gesundheitsdaten auf dem Bildschirm.",
     searchChoice:
-      "Gespräch per Stimme beendet: Diese Frage betrifft aktuelle Fakten oder deutsche Regeln. Sie steht im Nachrichtenfeld, damit Sie wählen können, ob zuerst gesucht wird.",
+      "Sprachgespräch beendet: Diese Frage betrifft aktuelle Fakten oder deutsche Regeln. Sie steht im Nachrichtenfeld, damit Sie wählen können, ob zuerst gesucht wird.",
     sendFailed: "Die Antwort ist nicht angekommen. Die Meldungszeile nennt den Grund.",
     offline: "Sie sind offline. Drücken Sie auf Fortsetzen, wenn Sie wieder online sind.",
     verifyWait: "Die Verbindungsprüfung ist ausgelastet. Warten Sie den Countdown ab und drücken Sie dann auf Fortsetzen.",

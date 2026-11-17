@@ -102,6 +102,7 @@ async function open(lang: "en" | "de", width: number, userAgent?: string) {
       },
     });
     class Utterance {
+      onstart: (() => void) | null = null;
       onend: (() => void) | null = null;
       onerror: (() => void) | null = null;
       constructor(public text: string) {}
@@ -118,6 +119,7 @@ async function open(lang: "en" | "de", width: number, userAgent?: string) {
         removeEventListener() {},
         speak(u: Utterance) {
           fake.spoken.push(u.text);
+          setTimeout(() => u.onstart?.(), 20);
           setTimeout(() => u.onend?.(), 150);
         },
         cancel() {},
@@ -203,11 +205,16 @@ for (const lang of ["en", "de"] as const)
         await page.waitForTimeout(1000);
         await loud(page, false);
         await ui(panel).toContainText("What time is it", { timeout: 6000 });
-        await ui(panel.getByRole("button", { name: t.sendNow })).toBeVisible(); // the countdown before sending
+        // Voice conversation (18 November): sent at once, no countdown.
         await ui(panel).toContainText("Synthetic answer about the time.", { timeout: 8000 });
         // The answer was read aloud, then the microphone opened again.
         await ui(done).toBeVisible({ timeout: 8000 });
         expect((await fake(page)).spoken.join(" ")).toContain("Synthetic answer about the time.");
+        // The delay from the end of speech to the first spoken word is measured each turn. Here the
+        // transcription and the answer are fakes, so it is the app's own share: well under 1.5 s.
+        const delay = Number(await panel.getAttribute("data-reply-delay-ms"));
+        expect(delay).toBeGreaterThan(0);
+        expect(delay).toBeLessThan(1500);
         expect(await calls(page)).toEqual(["What time is it"]);
         await ui(panel).toContainText(t.used(1, 15, 2));
         await ui(page.locator("article.assistant").last()).toContainText("Synthetic answer about the time.");
@@ -216,7 +223,8 @@ for (const lang of ["en", "de"] as const)
         expect(heard).toHaveLength(1);
         expect(heard[0]).toBeGreaterThan(1000);
 
-        // Turn 2: tap to stop speaking, then End during the countdown. Nothing more is sent.
+        // Turn 2, with "Always ask before sending": tap to stop speaking, then End at the review. Nothing more is sent.
+        await panel.getByRole("checkbox", { name: t.alwaysAsk }).check();
         await loud(page, true);
         await page.waitForTimeout(400);
         await done.click();

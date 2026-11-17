@@ -15,7 +15,7 @@ import {
   type LiveStop,
   type SendOutcome,
 } from "./live-voice";
-import { playEarcon, watchSpeech } from "./live-voice-audio";
+import { playEarcon, watchSpeech, watchTalkOver } from "./live-voice-audio";
 import { AttestationBusyError } from "./providers/inference-client";
 import { chooseVoice, loadVoices, pageReader, speechChunks, spokenText } from "./read-aloud";
 import { textFor, uiLang } from "./text/core";
@@ -36,17 +36,20 @@ import { useVoiceUsed, voiceToday } from "./VoiceInput";
 import { focusOrigin } from "./focus-origin";
 
 const PREFS_KEY = "cometrow.live-voice";
-type Prefs = { ask: boolean; sounds: boolean };
+type Prefs = { ask: boolean; sounds: boolean; talkOver: boolean };
 function readPrefs(): Prefs {
   try {
     const saved = JSON.parse(localStorage.getItem(PREFS_KEY) ?? "{}") as Partial<Prefs>;
-    return { ask: saved.ask === true, sounds: saved.sounds !== false };
+    return { ask: saved.ask === true, sounds: saved.sounds !== false, talkOver: saved.talkOver !== false };
   } catch {
-    return { ask: false, sounds: true }; // storage blocked: defaults each time
+    return { ask: false, sounds: true, talkOver: true }; // storage blocked: defaults each time
   }
 }
-/** Seconds the transcript is shown before it is sent by itself. */
-const REVIEW_SECONDS = 3;
+/**
+ * Seconds the transcript is shown before it is sent by itself: none since 18 November (voice
+ * conversation), so the reply starts sooner. "Always ask before sending" still waits for a tap.
+ */
+const REVIEW_SECONDS = 0;
 const READER_ID = "live-voice";
 /** Seconds before the turn maximum when the warning shows. */
 const WARN_SECONDS = 20;
@@ -93,6 +96,32 @@ export function LiveVoice(props: {
   const live = useMemo(() => {
     let unwatch = () => {};
     let queue: ChunkQueue | undefined;
+    // Reading while the answer is written: each finished sentence of the newest answer is spoken at once.
+    let follower: ReturnType<typeof followAnswer> | undefined;
+    // The microphone that listens for talk-over while the answer is read.
+    let stopTalkOver: (() => void) | undefined;
+    const endTalkOver = () => {
+      stopTalkOver?.();
+      stopTalkOver = undefined;
+    };
+    const listenForTalkOver = () => {
+      if (!prefsRef.current.talkOver || stopTalkOver) return;
+      let stopped = false;
+      stopTalkOver = () => {
+        stopped = true;
+      };
+      void watchTalkOver(() => {
+        endTalkOver();
+        machine.bargeIn();
+      })
+        .then((stop) => {
+          if (stopped) stop();
+          else stopTalkOver = stop;
+        })
+        .catch(() => {
+          stopTalkOver = undefined; // no microphone: the Interrupt button still works
+        });
+    };
     const recorder = createVoiceRecorder({
       get maxSeconds() {
         return turnSeconds(latest.current.voice, latest.current.used);
@@ -173,7 +202,21 @@ export function LiveVoice(props: {
         },
         send: (text, signal) => latest.current.send(text, signal),
         speaker: {
+          follow() {
+            follower?.cancel();
+            follower = followAnswer(() => {
+              machine.firstSound();
+              listenForTalkOver();
+            });
+          },
           async speak(started) {
+            if (follower) {
+              const f = follower;
+              const result = await f.finish((expectedMs) => started(expectedMs));
+              setSpoken(f.text());
+              endTalkOver();
+              return result;
+            }
             // The newest answer as the chat shows it, once React has rendered the finished text.
             await frame();
             await frame();
@@ -201,6 +244,9 @@ export function LiveVoice(props: {
             });
           },
           cancel() {
+            follower?.cancel();
+            follower = undefined;
+            endTalkOver();
             const reader = pageReader();
             if (reader?.state()?.id === READER_ID) reader.stop();
           },
@@ -343,6 +389,8 @@ export function LiveVoice(props: {
           role="region"
           aria-labelledby="live-voice-title"
           lang={lang}
+          // The last turn's delay from the end of speech to the first spoken word (measured, for tests and support).
+          data-reply-delay-ms={snap.replyDelayMs}
           onKeyDown={(event: KeyboardEvent) => {
             if (event.key !== "Escape") return;
             event.preventDefault();
@@ -450,9 +498,109 @@ export function LiveVoice(props: {
               <input type="checkbox" checked={prefs.sounds} onChange={(e) => save({ ...prefs, sounds: e.target.checked })} />
               {t.sounds}
             </label>
+            <label>
+              <input type="checkbox" checked={prefs.talkOver} onChange={(e) => save({ ...prefs, talkOver: e.target.checked })} />
+              {t.talkOver}
+            </label>
           </div>
         </section>
       )}
     </>
   );
+}
+
+/**
+ * Reads the newest answer aloud sentence by sentence while it is still being written (voice
+ * conversation, 18 November). It watches the answer the send creates (the next assistant message),
+ * speaks every finished sentence with the best local voice, and `finish()` reads the rest once the
+ * answer is complete. `onSound` runs at the first spoken word. Same local-voice rule as read aloud:
+ * no local voice, no speech.
+ */
+function followAnswer(onSound: () => void) {
+  const index = document.querySelectorAll("article.message.assistant").length;
+  const element = () => document.querySelectorAll("article.message.assistant")[index]?.querySelector(".message-text");
+  let queued = 0; // characters of the spoken text already handed to the speech engine
+  let pending = 0;
+  let spokeOnce = false;
+  let cancelled = false;
+  let latestText = "";
+  let voice: SpeechSynthesisVoice | "none" | "unverifiable" | undefined;
+  let answerLang = uiLang();
+  const waiters: (() => void)[] = [];
+  const settle = () => {
+    if (pending > 0) return;
+    waiters.splice(0).forEach((resolve) => resolve());
+  };
+  const say = (piece: string) => {
+    if (cancelled || !piece.trim() || !voice || typeof voice === "string") return;
+    for (const chunk of speechChunks(piece)) {
+      const utterance = new SpeechSynthesisUtterance(chunk);
+      utterance.voice = voice;
+      utterance.lang = voice.lang;
+      pending++;
+      utterance.onstart = () => {
+        if (spokeOnce) return;
+        spokeOnce = true;
+        onSound();
+      };
+      utterance.onend = utterance.onerror = () => {
+        // An engine that never reports a start still marks the first sound by its end.
+        if (!spokeOnce) utterance.onstart?.(new Event("start") as SpeechSynthesisEvent);
+        pending--;
+        settle();
+      };
+      speechSynthesis.speak(utterance);
+    }
+  };
+  /** Hands every sentence finished so far (or, at the end, everything) to the speech engine. */
+  const pump = (all: boolean) => {
+    const shown = element();
+    if (!shown) return;
+    const text = spokenText(shown, deviceText[answerLang]);
+    latestText = text;
+    let end = text.length;
+    if (!all) {
+      const ends = [...text.matchAll(/[.!?…:](?=\s)|\n/g)];
+      end = ends.length ? ends[ends.length - 1].index! + 1 : 0;
+    }
+    if (end <= queued) return;
+    say(text.slice(queued, end));
+    queued = end;
+  };
+  const ready = (async () => {
+    pageReader()?.stop(); // one voice at a time
+    // The first words decide the language and so the voice; the interface language until then.
+    for (let i = 0; i < 40 && !cancelled && !element()?.textContent?.trim(); i++)
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    answerLang = languageOf(element()?.textContent ?? "") ?? uiLang();
+    voice =
+      typeof speechSynthesis === "undefined" ? "unverifiable" : chooseVoice(await loadVoices(speechSynthesis), answerLang);
+  })();
+  const timer = setInterval(() => void ready.then(() => pump(false)), 200);
+  return {
+    text: () => latestText,
+    async finish(started: (expectedMs: number) => void): Promise<"spoken" | { refused: string }> {
+      clearInterval(timer);
+      await ready;
+      await frame();
+      await frame();
+      const dt = textFor(deviceText);
+      if (voice === "none") return { refused: dt.noVoice(answerLang) };
+      if (voice === "unverifiable" || !voice) return { refused: dt.voiceUnknown };
+      pump(true);
+      started(speechTimeoutMs(latestText.length));
+      if (cancelled) return "spoken";
+      return new Promise((resolve) => {
+        waiters.push(() => resolve("spoken"));
+        settle();
+      });
+    },
+    cancel() {
+      cancelled = true;
+      clearInterval(timer);
+      pending = 0;
+      if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
+      settle();
+    },
+  };
 }

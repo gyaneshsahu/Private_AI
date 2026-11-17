@@ -290,7 +290,7 @@ const STEPS: Step[] = [
     await pause(c.page, 2000);
     await c.shot("voice-transcribed");
   }, "on"],
-  ["live-voice", async (c) => { await c.fresh(); await c.click("Live voice conversation"); await pause(c.page, 800); await c.shot("live-voice"); }, "on"],
+  ["live-voice", async (c) => { await c.fresh(); await c.click("Voice conversation"); await pause(c.page, 800); await c.shot("live-voice"); }, "on"],
   ["research-panel", async (c) => { await c.fresh(); await tools(c, "Research"); await c.shot("research-panel"); }],
   ["search-approval", async (c) => {
     await c.fresh();

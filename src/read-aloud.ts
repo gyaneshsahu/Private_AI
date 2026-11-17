@@ -35,7 +35,14 @@ export function chooseVoice(
       new RegExp(`^${lang}([-_]|$)`, "i").test(voice.lang) &&
       !NETWORK_MARK.test(`${voice.name} ${voice.voiceURI}`),
   );
-  return usable.find((voice) => voice.default) ?? usable[0] ?? "none";
+  // The best local voice first: the operating systems' higher-quality voices carry these words
+  // (Apple "Premium" and "Enhanced", Siri). Then the default, then the first.
+  return (
+    usable.find((voice) => /premium|enhanced|siri/i.test(voice.name)) ??
+    usable.find((voice) => voice.default) ??
+    usable[0] ??
+    "none"
+  );
 }
 
 /** Chrome fills the voice list late: wait for `voiceschanged` once, for a short time. */

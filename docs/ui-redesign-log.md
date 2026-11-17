@@ -12,6 +12,21 @@ State on 18 November: every item of the redesign list is built, tested and pushe
 
 Known flaky or slow tests: `chat-recovery` (focus on a code block) and `invite-browser` under heavy local load; `context-review`, `source-history-ui`, `optional-calculator-ui` exceed their own 25 to 30 s limits on this machine but pass in CI.
 
+## 18 November 2026: voice conversation
+
+Details and the delay report: `docs/voice-conversation-20261118.md`. Tests: `live-voice` (48), `live-voice-ui` (12), `read-aloud`, `redesign-ui` (107 in all, pass).
+
+| Feature | Result | What broke | What was fixed |
+| --- | --- | --- | --- |
+| Renamed "Voice conversation" / "Sprachgespräch" | pass | - | - |
+| Sent at once (no 3 s countdown); "Always ask before sending" still reviews | pass (2nd run) | the old test waited for the countdown | test: sent at once in turn 1, review checked with the setting in turn 2 |
+| End of speech after 1 s of silence | pass | - | - |
+| Read sentence by sentence while the answer is written | pass | - | - |
+| Talk over the answer to interrupt (on by default; button stays) | pass (unit, synthetic levels) | - | - |
+| Best local voice first | pass | - | - |
+| Delay measured each turn | pass (3rd run) | the test's fake engine never reported a start; the delay was cleared when the next turn began | fake reports a start like real engines (plus a fallback at the end); the last delay stays until the next turn has its own |
+| Live spend | about EUR 0.001 | - | one probe: Whisper 405 ms, Voxtral 252 ms on 3.6 s of synthetic speech |
+
 ## 18 November 2026: final pass over every feature together
 
 Run on `7468eee` plus the fix below. Results: `.local/ui-redesign/final-pass/`.

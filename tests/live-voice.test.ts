@@ -510,3 +510,99 @@ it("gives slow voices enough time", () => {
   expect(speechTimeoutMs(0)).toBe(10_000);
   expect(speechTimeoutMs(1000)).toBe(160_000);
 });
+
+// Voice conversation (18 November): talk-over, reading while the answer is written, reply delay.
+import { createTalkOverDetector } from "../src/live-voice-audio";
+
+describe("voice conversation", () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  it("sends at once without a review countdown, and asks the speaker to follow the answer", async () => {
+    const s = setup({ review: 0 });
+    const follow = vi.fn();
+    (s.deps.speaker as { follow?: () => void }).follow = follow;
+    s.live.start();
+    await flush();
+    s.live.doneSpeaking();
+    await flush();
+    expect(s.deps.send).toHaveBeenCalledWith("What is the time?", expect.anything());
+    expect(follow).toHaveBeenCalledTimes(1);
+    // No countdown: the transcript passes through review for no time at all.
+    expect(s.live.snapshot().reviewLeft).toBeUndefined();
+    expect(["answering", "speaking"]).toContain(s.live.snapshot().phase);
+  });
+
+  it("measures the delay from the end of speech to the first spoken word, once per turn", async () => {
+    const s = setup({ review: 0 });
+    s.live.start();
+    await flush();
+    s.live.doneSpeaking();
+    await vi.advanceTimersByTimeAsync(1700);
+    s.live.firstSound();
+    await vi.advanceTimersByTimeAsync(500);
+    s.live.firstSound(); // a second sound does not change it
+    expect(s.live.snapshot().replyDelayMs).toBe(1700);
+  });
+
+  it("talking over the spoken answer stops it and listens again", async () => {
+    const s = setup({ review: 0 });
+    await reach(s, "speaking");
+    expect(s.live.snapshot().phase).toBe("speaking");
+    s.live.bargeIn();
+    await flush();
+    expect(s.deps.speaker.cancel).toHaveBeenCalled();
+    expect(s.live.snapshot().phase).toBe("listening");
+  });
+
+  it("talking over while the answer is still written stops the reading; once it is done, it listens without reading", async () => {
+    const s = setup({ review: 0 });
+    let finish: (o: SendOutcome) => void = () => {};
+    s.deps.send.mockImplementationOnce(() => new Promise<SendOutcome>((resolve) => (finish = resolve)));
+    s.live.start();
+    await flush();
+    s.live.doneSpeaking();
+    await flush();
+    expect(s.live.snapshot().phase).toBe("answering");
+    s.live.bargeIn();
+    expect(s.deps.speaker.cancel).toHaveBeenCalled();
+    finish("answered");
+    await flush();
+    expect(s.deps.speaker.speak).not.toHaveBeenCalled();
+    expect(s.live.snapshot().phase).toBe("listening");
+    expect(s.live.snapshot().units).toBe(2); // the transcription and the message were still counted
+  });
+
+  it("ends a turn after 1 s of silence (was 1.5 s)", () => {
+    expect(SILENCE_DEFAULTS.silenceMs).toBe(1000);
+  });
+});
+
+describe("talk-over detector", () => {
+  const feed = (levels: [number, number][]) => {
+    const d = createTalkOverDetector();
+    return levels.findIndex(([level, at]) => d.push(level, at));
+  };
+  it("ignores the answer leaking back from the speaker", () => {
+    const echo: [number, number][] = Array.from({ length: 60 }, (_, i) => [0.03 + (i % 3) * 0.005, i * 50]);
+    expect(feed(echo)).toBe(-1);
+  });
+  it("fires once the user talks over it for 350 ms", () => {
+    const levels: [number, number][] = [
+      ...Array.from({ length: 10 }, (_, i): [number, number] => [0.02, i * 50]),
+      ...Array.from({ length: 12 }, (_, i): [number, number] => [0.2, 500 + i * 50]),
+    ];
+    const at = feed(levels);
+    expect(at).toBeGreaterThan(10);
+    expect(levels[at][1] - 500).toBeGreaterThanOrEqual(350);
+  });
+  it("a short click does not interrupt", () => {
+    const levels: [number, number][] = [
+      ...Array.from({ length: 10 }, (_, i): [number, number] => [0.02, i * 50]),
+      [0.3, 500],
+      [0.3, 550],
+      ...Array.from({ length: 20 }, (_, i): [number, number] => [0.02, 600 + i * 50]),
+    ];
+    expect(feed(levels)).toBe(-1);
+  });
+});
