@@ -216,6 +216,86 @@ describe.each([375, 1280])("chat screen and message box at %i px", (width) => {
   });
 });
 
+describe.each([375, 1280])("left menu at %i px", (width) => {
+  const menu = async (page: Page) => {
+    const toggle = page.getByRole("button", { name: "Open navigation", exact: true });
+    if (await toggle.isVisible().catch(() => false)) await toggle.click();
+    const side = page.locator(".sidebar").first();
+    await ui(side).toBeVisible();
+    return side;
+  };
+
+  it("comet logo, quiet rows, slim search; search finds a chat and Recent/Archived switch", async () => {
+    const { context, page } = await open(width);
+    try {
+      await send(page, "SYNTHETIC zebracanary lighthouse question");
+      const side = await menu(page);
+      // The logo is the comet drawing, not the old "C" square.
+      await ui(side.locator(".brand svg.brand-mark circle")).toHaveCount(1);
+      await ui(side.locator(".brand")).toHaveText("CometRow");
+      // The old explanatory line is gone; the Recent heading is only for screen readers.
+      await ui(side.getByText("Group saved chats by project", { exact: false })).toHaveCount(0);
+      // Rows are quiet: no fill until hover.
+      const bg = await side.locator(".scheduled-entry").evaluate((el) => getComputedStyle(el).backgroundColor);
+      expect(bg === "rgba(0, 0, 0, 0)" || bg === "transparent").toBe(true);
+      // The current chat is marked.
+      const current = side.locator('.chat-list-row > button[aria-current="page"]');
+      await ui(current).toHaveCount(1);
+      expect(await current.evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe("rgba(0, 0, 0, 0)");
+      // Search: a slim field that filters the list.
+      const search = side.getByLabel("Search chats", { exact: true });
+      const h = (await search.boundingBox())!.height;
+      expect(h).toBeLessThanOrEqual(40);
+      await search.fill("zebracanary");
+      await ui(side.locator(".chat-list-row")).toHaveCount(1);
+      await search.fill("nothing-like-this-exists");
+      await ui(side.getByText("No matching conversations.", { exact: true })).toBeVisible();
+      await search.fill("");
+      // Recent and Archived are two small tabs.
+      await side.getByRole("button", { name: "Archived", exact: true }).click();
+      await ui(side.getByRole("button", { name: "Archived", exact: true })).toHaveAttribute("aria-pressed", "true");
+      await ui(side.locator(".chat-list-row")).toHaveCount(0);
+      await side.getByRole("button", { name: "Recent", exact: true }).click();
+      await ui(side.locator(".chat-list-row")).toHaveCount(1);
+      expect(await noSidewaysScroll(page)).toBeLessThanOrEqual(0);
+    } finally {
+      await context.close();
+    }
+  });
+
+  it("projects: + creates a project, which appears as a row and opens its screen", async () => {
+    const { context, page } = await open(width);
+    try {
+      const side = await menu(page);
+      await side.getByRole("button", { name: "Create project", exact: true }).click();
+      await side.getByLabel("Project name", { exact: true }).fill("SYNTHETIC tax 2026");
+      await side.getByRole("button", { name: "Create", exact: true }).click();
+      await ui(page.locator(".project-row").filter({ hasText: "SYNTHETIC tax 2026" })).toHaveCount(1);
+      // The new project opens its own screen, titled with its name.
+      await ui(page.getByRole("heading", { name: "SYNTHETIC tax 2026" }).first()).toBeVisible();
+    } finally {
+      await context.close();
+    }
+  });
+
+  it("account line opens its menu with Settings; on a phone the menu is a drawer that closes", async () => {
+    const { context, page } = await open(width);
+    try {
+      const side = await menu(page);
+      await side.getByRole("button", { name: "Account menu", exact: true }).or(side.getByLabel("Account menu", { exact: true })).first().click();
+      await ui(side.getByRole("button", { name: "Settings", exact: true })).toBeVisible();
+      await page.keyboard.press("Escape");
+      if (width < 700) {
+        const close = page.getByRole("button", { name: "Close navigation", exact: true });
+        if (await close.isVisible().catch(() => false)) await close.click();
+        await ui(page.locator("dialog.navigation-drawer[open]")).toHaveCount(0);
+      }
+    } finally {
+      await context.close();
+    }
+  });
+});
+
 it("dark theme: the same screen renders with the dark tokens and stays readable", async () => {
   const { context, page } = await open(1280, "dark");
   try {

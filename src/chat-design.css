@@ -4406,3 +4406,246 @@
     height: 44px;
   }
 }
+
+/* ---------- Redesign: left menu (18 November) ----------
+   Comet logo, quiet rows of one height, a slim search field, small grey headings, a compact account
+   line. Last in the file on purpose: it replaces the earlier rounds for the sidebar. */
+.chat-design .sidebar {
+  background: var(--sidebar);
+  padding: 10px 8px 8px;
+  gap: 2px;
+}
+.chat-design .sidebar-heading {
+  padding: 4px 4px 10px 8px;
+  align-items: center;
+}
+.chat-design .sidebar .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 16.5px;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+.chat-design .sidebar .brand-mark {
+  width: 22px;
+  height: 22px;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  flex: none;
+}
+.chat-design .brand-mark .brand-tail {
+  fill: var(--ink);
+}
+.chat-design .brand-mark .brand-head {
+  fill: var(--accent);
+}
+.chat-design .sidebar :is(.new-chat-row .new-chat, .scheduled-entry, .project-row > button, .history-filters button) {
+  min-height: 40px;
+  padding: 0 10px;
+  gap: 11px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14.5px;
+  font-weight: 450;
+  box-shadow: none;
+  justify-content: flex-start;
+  transition: background var(--fast) var(--ease);
+}
+.chat-design .sidebar :is(.new-chat-row .new-chat, .scheduled-entry, .project-row > button, .history-filters button):hover:not(:disabled) {
+  background: var(--hover);
+}
+.chat-design .sidebar :is(.new-chat-row .new-chat, .scheduled-entry, .project-row > button, .history-filters button) svg {
+  width: 18px;
+  height: 18px;
+  color: var(--ink2);
+}
+.chat-design .new-chat-row {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+.chat-design .new-chat-row .new-chat:not(.new-incognito),
+.chat-design .new-chat-row .new-incognito {
+  width: 100%;
+  margin: 0;
+}
+.chat-design .sidebar .scheduled-entry {
+  width: 100%;
+  margin: 0;
+}
+/* Search: one slim field with its icon inside; the label stays for screen readers. */
+.chat-design .history-search {
+  position: relative;
+  display: block;
+  margin: 8px 0 4px;
+}
+.chat-design .history-search > span {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  font-size: 0;
+  color: var(--ink3);
+  pointer-events: none;
+}
+.chat-design .history-search > span svg {
+  width: 16px;
+  height: 16px;
+}
+.chat-design .history-search input {
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 10px 0 34px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--hover);
+  color: var(--ink);
+  font-size: 14px;
+  box-shadow: none;
+}
+.chat-design .history-search input:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: var(--surface);
+  outline: none;
+}
+/* Small grey headings. */
+.chat-design .sidebar .section-heading {
+  margin: 14px 0 2px;
+  padding: 0 4px 0 10px;
+  min-height: 28px;
+}
+.chat-design .sidebar :is(.section-heading h2, .recent-chats > h2, .chat-group) {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink3);
+  letter-spacing: 0;
+  text-transform: none;
+  margin: 0;
+}
+.chat-design .sidebar .recent-chats > h2:not(.sr-only),
+.chat-design .sidebar .chat-group {
+  padding: 12px 10px 4px;
+}
+.chat-design .sidebar .section-heading .icon-button {
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
+  border: 0;
+  background: transparent;
+  color: var(--ink3);
+}
+.chat-design .sidebar .section-heading .icon-button:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+/* Recent and Archived: two small text tabs. */
+.chat-design .sidebar .history-filters {
+  display: flex;
+  gap: 2px;
+  margin: 10px 0 0;
+  padding: 0 2px;
+}
+.chat-design .sidebar .history-filters button {
+  min-height: 30px;
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: var(--ink2);
+  padding: 0 10px;
+}
+.chat-design .sidebar .history-filters button svg {
+  display: none;
+}
+.chat-design .sidebar .history-filters button[aria-pressed="true"] {
+  background: var(--hover);
+  color: var(--ink);
+  font-weight: 550;
+}
+/* Chat rows: one line, plain text, the "…" only on hover or focus (always on touch). */
+.chat-design .sidebar .chat-list-row > button {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 400;
+  box-shadow: none;
+}
+.chat-design .sidebar .chat-list-row > button:hover {
+  background: var(--hover);
+}
+.chat-design .sidebar .chat-list-row > button[aria-current="page"],
+.chat-design .sidebar .chat-list-row > button.selected,
+.chat-design .sidebar .project-row > button.selected {
+  background: var(--hover);
+  font-weight: 500;
+}
+@media (hover: hover) {
+  .chat-design .sidebar .chat-list-row:not(:hover, :focus-within) .chat-item-menu:not([open]) summary {
+    opacity: 0;
+  }
+}
+.chat-design .sidebar-hint {
+  font-size: 13px;
+  color: var(--ink3);
+  padding: 2px 10px;
+}
+/* Bottom: Secure Max as a quiet row, then a compact account line and one small status line. */
+.chat-design .sidebar-bottom {
+  border-top: 1px solid var(--line);
+  padding-top: 6px;
+  margin-top: 6px;
+}
+.chat-design .account-menu summary {
+  min-height: 48px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  gap: 10px;
+}
+.chat-design .account-menu summary:hover {
+  background: var(--hover);
+}
+.chat-design .account-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--hover);
+  color: var(--ink2);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.chat-design .account-label strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.chat-design .account-label small {
+  font-size: 12px;
+  color: var(--ink3);
+}
+.chat-design .sidebar-bottom > p {
+  font-size: 12px;
+  color: var(--ink3);
+  margin: 2px 8px 0;
+}
+@media (max-width: 760px) {
+  .chat-design .sidebar :is(.new-chat-row .new-chat, .scheduled-entry, .project-row > button, .chat-list-row > button) {
+    min-height: 44px;
+  }
+  /* 44 px touch targets on phones (CC-19), the small "+" of Projects included. */
+  .chat-design .sidebar .section-heading .icon-button {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+}

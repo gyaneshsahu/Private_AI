@@ -189,10 +189,13 @@ export function WorkspaceNavigation(props: {
     <aside className="sidebar" aria-label={t.chatNavigation}>
       <div className="sidebar-heading">
         <a className="brand" href="/" aria-label={t.home}>
-          <span className="brand-mark" aria-hidden="true">
-            C
-          </span>
-          Comet<span>Row</span>
+          {/* The comet: a round head of light with a two-part tail (evaluation/ui-redesign/mock.html). */}
+          <svg className="brand-mark" viewBox="0 0 22 22" aria-hidden="true">
+            <path className="brand-tail" d="M13.2 8.8 1.6 20.4 10.4 6.9z" opacity=".3" />
+            <path className="brand-tail" d="M14.6 10.2 1.6 20.4 11.8 7.4z" opacity=".55" />
+            <circle className="brand-head" cx="15.5" cy="6.5" r="4.5" />
+          </svg>
+          CometRow
         </a>
         <button
           className="icon-button"
@@ -372,9 +375,6 @@ export function WorkspaceNavigation(props: {
                 </div>
               ))}
             </div>
-            {!projects.length && (
-              <p className="sidebar-hint">{t.groupHint}</p>
-            )}
             <div className="history-filters">
               <button
                 aria-pressed={filter === "recent"}
@@ -392,7 +392,8 @@ export function WorkspaceNavigation(props: {
               </button>
             </div>
             <div className="recent-chats">
-              <h2>
+              {/* Recent or Archived is already said by the pressed tab above: the heading is for screen readers then. */}
+              <h2 className={!query && (filter === "recent" || filter === "archived") ? "sr-only" : undefined}>
                 {query
                   ? t.searchResults
                   : (projects.find((p) => p.id === filter)?.name ??
