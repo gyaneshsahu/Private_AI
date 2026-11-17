@@ -1,0 +1,137 @@
+{
+  "id": "05-flowchart",
+  "category": "diagram",
+  "question": "Follow the flowchart on my whiteboard. What happens when the temperature is 25?",
+  "groundTruth": "25 is not above 30, so the No branch: wait 5 min, then go back to Read temperature (a loop). The fan is not turned on.",
+  "width": 1500,
+  "height": 1200,
+  "pngBytes": 69759,
+  "typedText": [
+    "Start",
+    "Read temperature",
+    "Temp > 30?",
+    "Turn on fan",
+    "Wait 5 min",
+    "End"
+  ],
+  "scene": [
+    {
+      "t": "ellipse",
+      "id": "s",
+      "x": 600,
+      "y": 60,
+      "w": 300,
+      "h": 110,
+      "label": "Start"
+    },
+    {
+      "t": "rect",
+      "id": "r",
+      "x": 560,
+      "y": 260,
+      "w": 380,
+      "h": 120,
+      "label": "Read temperature"
+    },
+    {
+      "t": "diamond",
+      "id": "d",
+      "x": 570,
+      "y": 470,
+      "w": 360,
+      "h": 260,
+      "label": "Temp > 30?"
+    },
+    {
+      "t": "rect",
+      "id": "f",
+      "x": 1060,
+      "y": 540,
+      "w": 340,
+      "h": 120,
+      "label": "Turn on fan"
+    },
+    {
+      "t": "rect",
+      "id": "w",
+      "x": 100,
+      "y": 540,
+      "w": 340,
+      "h": 120,
+      "label": "Wait 5 min"
+    },
+    {
+      "t": "arrow",
+      "from": "s",
+      "to": "r"
+    },
+    {
+      "t": "arrow",
+      "from": "r",
+      "to": "d"
+    },
+    {
+      "t": "arrow",
+      "from": [
+        930,
+        600
+      ],
+      "to": "f"
+    },
+    {
+      "t": "arrow",
+      "from": [
+        570,
+        600
+      ],
+      "to": "w"
+    },
+    {
+      "t": "arrow",
+      "from": [
+        270,
+        540
+      ],
+      "to": [
+        560,
+        320
+      ],
+      "via": [
+        [
+          270,
+          320
+        ]
+      ]
+    },
+    {
+      "t": "hand",
+      "text": "yes",
+      "x": 960,
+      "y": 570,
+      "size": 54,
+      "color": "#2e7d32"
+    },
+    {
+      "t": "hand",
+      "text": "no",
+      "x": 470,
+      "y": 570,
+      "size": 54,
+      "color": "#c62828"
+    },
+    {
+      "t": "ellipse",
+      "id": "e",
+      "x": 1080,
+      "y": 860,
+      "w": 300,
+      "h": 110,
+      "label": "End"
+    },
+    {
+      "t": "arrow",
+      "from": "f",
+      "to": "e"
+    }
+  ]
+}

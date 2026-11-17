@@ -1,0 +1,43 @@
+{
+  "id": "01-equation-linear",
+  "category": "equation",
+  "question": "Solve the equation on my whiteboard. Give the value of x.",
+  "groundTruth": "x = 6 (2x = 12).",
+  "width": 1500,
+  "height": 1000,
+  "pngBytes": 30632,
+  "typedText": [],
+  "scene": [
+    {
+      "t": "hand",
+      "text": "2x + 5 = 17",
+      "x": 330,
+      "y": 420,
+      "size": 150,
+      "color": "#1d4ed8"
+    },
+    {
+      "t": "hand",
+      "text": "x = ?",
+      "x": 560,
+      "y": 700,
+      "size": 120,
+      "color": "#1d4ed8"
+    },
+    {
+      "t": "stroke",
+      "points": [
+        [
+          300,
+          470
+        ],
+        [
+          1250,
+          480
+        ]
+      ],
+      "color": "#1d4ed8",
+      "width": 3
+    }
+  ]
+}

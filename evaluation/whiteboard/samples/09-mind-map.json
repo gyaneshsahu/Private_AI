@@ -1,0 +1,128 @@
+{
+  "id": "09-mind-map",
+  "category": "diagram",
+  "question": "In the mind map on my whiteboard, which items belong to the Transport branch?",
+  "groundTruth": "Train and Bike (Picnic is under Food, EUR 200 under Budget).",
+  "width": 1500,
+  "height": 1000,
+  "pngBytes": 75722,
+  "typedText": [
+    "Food",
+    "Trip planning",
+    "Bike",
+    "Transport",
+    "Picnic",
+    "Train",
+    "Budget",
+    "€200"
+  ],
+  "scene": [
+    {
+      "t": "ellipse",
+      "id": "fd",
+      "x": 1080,
+      "y": 120,
+      "w": 260,
+      "h": 110,
+      "label": "Food"
+    },
+    {
+      "t": "ellipse",
+      "id": "c",
+      "x": 560,
+      "y": 430,
+      "w": 380,
+      "h": 150,
+      "label": "Trip planning"
+    },
+    {
+      "t": "rect",
+      "id": "bike",
+      "x": 60,
+      "y": 700,
+      "w": 200,
+      "h": 90,
+      "label": "Bike"
+    },
+    {
+      "t": "ellipse",
+      "id": "tr",
+      "x": 180,
+      "y": 120,
+      "w": 300,
+      "h": 110,
+      "label": "Transport"
+    },
+    {
+      "t": "rect",
+      "id": "pic",
+      "x": 1180,
+      "y": 380,
+      "w": 220,
+      "h": 90,
+      "label": "Picnic"
+    },
+    {
+      "t": "rect",
+      "id": "train",
+      "x": 40,
+      "y": 380,
+      "w": 200,
+      "h": 90,
+      "label": "Train"
+    },
+    {
+      "t": "ellipse",
+      "id": "bu",
+      "x": 1040,
+      "y": 760,
+      "w": 260,
+      "h": 110,
+      "label": "Budget"
+    },
+    {
+      "t": "rect",
+      "id": "eur",
+      "x": 700,
+      "y": 820,
+      "w": 220,
+      "h": 90,
+      "label": "€200"
+    },
+    {
+      "t": "line",
+      "from": "c",
+      "to": "tr"
+    },
+    {
+      "t": "line",
+      "from": "c",
+      "to": "fd"
+    },
+    {
+      "t": "line",
+      "from": "c",
+      "to": "bu"
+    },
+    {
+      "t": "line",
+      "from": "tr",
+      "to": "train"
+    },
+    {
+      "t": "line",
+      "from": "train",
+      "to": "bike"
+    },
+    {
+      "t": "line",
+      "from": "fd",
+      "to": "pic"
+    },
+    {
+      "t": "line",
+      "from": "bu",
+      "to": "eur"
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "id": "08-bar-sketch",
+  "category": "chart",
+  "question": "Read the bar sketch on my whiteboard. Which day has the highest value, and what is the total of all four days?",
+  "groundTruth": "Wednesday is highest (15). Total 12 + 7 + 15 + 9 = 43.",
+  "width": 1500,
+  "height": 1100,
+  "pngBytes": 61027,
+  "typedText": [
+    "Cups sold per day",
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu"
+  ],
+  "scene": [
+    {
+      "t": "text",
+      "text": "Cups sold per day",
+      "x": 750,
+      "y": 90,
+      "size": 46
+    },
+    {
+      "t": "line",
+      "from": [
+        200,
+        950
+      ],
+      "to": [
+        200,
+        150
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        200,
+        950
+      ],
+      "to": [
+        1350,
+        950
+      ]
+    },
+    {
+      "t": "rect",
+      "x": 280,
+      "y": 374,
+      "w": 180,
+      "h": 576,
+      "fill": "#93c5fd"
+    },
+    {
+      "t": "rect",
+      "x": 540,
+      "y": 614,
+      "w": 180,
+      "h": 336,
+      "fill": "#93c5fd"
+    },
+    {
+      "t": "rect",
+      "x": 800,
+      "y": 230,
+      "w": 180,
+      "h": 720,
+      "fill": "#93c5fd"
+    },
+    {
+      "t": "rect",
+      "x": 1060,
+      "y": 518,
+      "w": 180,
+      "h": 432,
+      "fill": "#93c5fd"
+    },
+    {
+      "t": "text",
+      "text": "Mon",
+      "x": 370,
+      "y": 1000,
+      "size": 38
+    },
+    {
+      "t": "text",
+      "text": "Tue",
+      "x": 630,
+      "y": 1000,
+      "size": 38
+    },
+    {
+      "t": "text",
+      "text": "Wed",
+      "x": 890,
+      "y": 1000,
+      "size": 38
+    },
+    {
+      "t": "text",
+      "text": "Thu",
+      "x": 1150,
+      "y": 1000,
+      "size": 38
+    },
+    {
+      "t": "hand",
+      "text": "12",
+      "x": 335,
+      "y": 354,
+      "size": 60,
+      "color": "#c62828"
+    },
+    {
+      "t": "hand",
+      "text": "7",
+      "x": 610,
+      "y": 594,
+      "size": 60,
+      "color": "#c62828"
+    },
+    {
+      "t": "hand",
+      "text": "15",
+      "x": 855,
+      "y": 210,
+      "size": 60,
+      "color": "#c62828"
+    },
+    {
+      "t": "hand",
+      "text": "9",
+      "x": 1130,
+      "y": 498,
+      "size": 60,
+      "color": "#c62828"
+    }
+  ]
+}

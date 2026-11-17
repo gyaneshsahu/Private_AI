@@ -1,0 +1,92 @@
+{
+  "id": "06-architecture",
+  "category": "diagram",
+  "question": "In the architecture sketch on my whiteboard, which parts does the browser talk to directly, and where is the data stored?",
+  "groundTruth": "The browser talks only to the API server (over HTTPS). The server talks to the database (stores the data) and to the cache; the browser never reaches the database directly.",
+  "width": 1500,
+  "height": 1000,
+  "pngBytes": 49734,
+  "typedText": [
+    "Database",
+    "Browser",
+    "API server",
+    "Cache"
+  ],
+  "scene": [
+    {
+      "t": "rect",
+      "id": "db",
+      "x": 1100,
+      "y": 200,
+      "w": 300,
+      "h": 150,
+      "label": "Database"
+    },
+    {
+      "t": "rect",
+      "id": "b",
+      "x": 80,
+      "y": 380,
+      "w": 300,
+      "h": 150,
+      "label": "Browser"
+    },
+    {
+      "t": "rect",
+      "id": "s",
+      "x": 600,
+      "y": 380,
+      "w": 300,
+      "h": 150,
+      "label": "API server"
+    },
+    {
+      "t": "rect",
+      "id": "c",
+      "x": 1100,
+      "y": 620,
+      "w": 300,
+      "h": 150,
+      "label": "Cache"
+    },
+    {
+      "t": "arrow",
+      "from": "b",
+      "to": "s"
+    },
+    {
+      "t": "arrow",
+      "from": "s",
+      "to": "db"
+    },
+    {
+      "t": "arrow",
+      "from": "s",
+      "to": "c"
+    },
+    {
+      "t": "hand",
+      "text": "HTTPS",
+      "x": 410,
+      "y": 430,
+      "size": 48,
+      "color": "#1d4ed8"
+    },
+    {
+      "t": "hand",
+      "text": "SQL",
+      "x": 930,
+      "y": 330,
+      "size": 48,
+      "color": "#1d4ed8"
+    },
+    {
+      "t": "hand",
+      "text": "sessions",
+      "x": 930,
+      "y": 660,
+      "size": 48,
+      "color": "#1d4ed8"
+    }
+  ]
+}

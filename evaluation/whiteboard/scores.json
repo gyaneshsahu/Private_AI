@@ -1,0 +1,386 @@
+{
+  "01-equation-linear/a": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "01-equation-linear/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "02-equation-fraction/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "02-equation-fraction/a": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "03-equation-quadratic/a": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "03-equation-quadratic/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "09-mind-map/a": {
+    "score": "correct",
+    "reason": "Train and Bike; notes Bike hangs under Train, which is what the board shows."
+  },
+  "09-mind-map/b": {
+    "score": "correct",
+    "reason": "Train and Bike; notes Bike hangs under Train, which is what the board shows."
+  },
+  "09-mind-map/c": {
+    "score": "correct",
+    "reason": "Train and Bike; notes Bike hangs under Train, which is what the board shows."
+  },
+  "10-hand-table/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "10-hand-table/a": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "11-timeline/a": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "11-timeline/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "11-timeline/c": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "12-sticky-notes/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "12-sticky-notes/a": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "12-sticky-notes/c": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "13-equation-system/a": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "13-equation-system/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "14-circle-area/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "14-circle-area/a": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "15-venn/a": {
+    "score": "correct",
+    "reason": "8 is right. Side remark is wrong: says cats are tied and invents a class (cats total 11)."
+  },
+  "15-venn/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "15-venn/c": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "04-right-triangle/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "04-right-triangle/a": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "05-flowchart/a": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "05-flowchart/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "05-flowchart/c": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "06-architecture/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "06-architecture/a": {
+    "score": "correct",
+    "reason": "Browser only to API server over HTTPS; database (SQL) and cache (sessions). Read the handwritten arrow labels."
+  },
+  "06-architecture/c": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "07-messy-notes/a": {
+    "score": "correct",
+    "reason": "Call plumber and fix bike tyre; saw both strike-throughs."
+  },
+  "07-messy-notes/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "08-bar-sketch/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "08-bar-sketch/a": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "08-bar-sketch/c": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "01-equation-linear/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "02-equation-fraction/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "03-equation-quadratic/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "04-right-triangle/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "05-flowchart/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "06-architecture/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "07-messy-notes/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "08-bar-sketch/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "09-mind-map/a1000": {
+    "score": "correct",
+    "reason": "Train and Bike; notes Bike hangs under Train, which is what the board shows."
+  },
+  "10-hand-table/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "11-timeline/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "12-sticky-notes/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "13-equation-system/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "14-circle-area/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "15-venn/a1000": {
+    "score": "correct",
+    "reason": "8 is right. Side remark is wrong: cat total given as 8 (it is 11)."
+  },
+  "s1-cursive-note/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s1-cursive-note/a": {
+    "score": "correct",
+    "reason": "Thursday 14:30, room 2B, 48,250 (local OCR read room 23 and 8,250)."
+  },
+  "s1-cursive-note/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s2-faint-marker/a": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s2-faint-marker/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s2-faint-marker/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s3-crossing-arrows/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s3-crossing-arrows/a": {
+    "score": "correct",
+    "reason": "Billing to Login, Cart into Email; followed both crossing arrows and their heads."
+  },
+  "s3-crossing-arrows/c": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s3-crossing-arrows/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s4-small-table/a": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s4-small-table/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s4-small-table/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s5-long-list/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s5-long-list/a": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s5-long-list/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s6-angles/a": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s6-angles/b": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s6-angles/a1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "01-equation-linear/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "02-equation-fraction/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "03-equation-quadratic/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "04-right-triangle/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "05-flowchart/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "06-architecture/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "07-messy-notes/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "08-bar-sketch/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "09-mind-map/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "10-hand-table/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "11-timeline/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "12-sticky-notes/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "13-equation-system/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "14-circle-area/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "15-venn/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s1-cursive-note/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s2-faint-marker/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s3-crossing-arrows/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s4-small-table/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s5-long-list/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s6-angles/j1000": {
+    "score": "correct",
+    "reason": "Matches the ground truth."
+  },
+  "s7-dense-small/a": {
+    "score": "correct",
+    "reason": "3,450 EUR; Release notes; x = 16."
+  },
+  "s7-dense-small/b": {
+    "score": "correct",
+    "reason": "3,450 EUR; Release notes; x = 16."
+  },
+  "s7-dense-small/a1000": {
+    "score": "correct",
+    "reason": "All three right, but read the comma as \"3.450\" before explaining it as 3,450: first sign of blur at 1,000 px."
+  },
+  "s7-dense-small/j1000": {
+    "score": "correct",
+    "reason": "All three right, but read \"3.450\" (then 3,450): same blur sign as a1000."
+  }
+}

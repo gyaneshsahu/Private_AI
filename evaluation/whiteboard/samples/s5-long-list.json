@@ -1,0 +1,106 @@
+{
+  "id": "s5-long-list",
+  "category": "stress",
+  "question": "On my whiteboard list, how many items are NOT crossed out, and which item is crossed out?",
+  "groundTruth": "9 items are not crossed out; 'paint fence' is crossed out (10 items in all).",
+  "width": 1100,
+  "height": 1500,
+  "pngBytes": 96625,
+  "typedText": [],
+  "scene": [
+    {
+      "t": "hand",
+      "text": "1. oil change",
+      "x": 120,
+      "y": 150,
+      "size": 50,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "2. renew passport",
+      "x": 120,
+      "y": 275,
+      "size": 50,
+      "font": "'Ink Free', 'Segoe Print', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "3. paint fence",
+      "x": 120,
+      "y": 400,
+      "size": 50,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "4. book dentist",
+      "x": 120,
+      "y": 525,
+      "size": 50,
+      "font": "'Ink Free', 'Segoe Print', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "5. water plants",
+      "x": 120,
+      "y": 650,
+      "size": 50,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "6. pay rent",
+      "x": 120,
+      "y": 775,
+      "size": 50,
+      "font": "'Ink Free', 'Segoe Print', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "7. sort photos",
+      "x": 120,
+      "y": 900,
+      "size": 50,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "8. clean gutters",
+      "x": 120,
+      "y": 1025,
+      "size": 50,
+      "font": "'Ink Free', 'Segoe Print', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "9. buy stamps",
+      "x": 120,
+      "y": 1150,
+      "size": 50,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "10. fix tap",
+      "x": 120,
+      "y": 1275,
+      "size": 50,
+      "font": "'Ink Free', 'Segoe Print', cursive"
+    },
+    {
+      "t": "stroke",
+      "points": [
+        [
+          120,
+          385
+        ],
+        [
+          560,
+          375
+        ]
+      ],
+      "width": 5
+    }
+  ]
+}

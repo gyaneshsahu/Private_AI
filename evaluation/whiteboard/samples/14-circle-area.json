@@ -1,0 +1,64 @@
+{
+  "id": "14-circle-area",
+  "category": "geometry",
+  "question": "What is the area of the circle on my whiteboard?",
+  "groundTruth": "Radius 5 cm, so area = 25π ≈ 78.5 cm².",
+  "width": 1500,
+  "height": 1500,
+  "pngBytes": 57164,
+  "typedText": [
+    "Area?"
+  ],
+  "scene": [
+    {
+      "t": "ellipse",
+      "x": 300,
+      "y": 350,
+      "w": 900,
+      "h": 900
+    },
+    {
+      "t": "stroke",
+      "points": [
+        [
+          750,
+          800
+        ],
+        [
+          1200,
+          800
+        ]
+      ],
+      "width": 4
+    },
+    {
+      "t": "stroke",
+      "points": [
+        [
+          740,
+          790
+        ],
+        [
+          760,
+          810
+        ]
+      ],
+      "width": 6
+    },
+    {
+      "t": "hand",
+      "text": "r = 5 cm",
+      "x": 820,
+      "y": 770,
+      "size": 70,
+      "color": "#c62828"
+    },
+    {
+      "t": "text",
+      "text": "Area?",
+      "x": 750,
+      "y": 200,
+      "size": 56
+    }
+  ]
+}

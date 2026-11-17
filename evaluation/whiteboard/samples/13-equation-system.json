@@ -1,0 +1,52 @@
+{
+  "id": "13-equation-system",
+  "category": "equation",
+  "question": "Solve the two equations on my whiteboard for x and y.",
+  "groundTruth": "x = 7, y = 3.",
+  "width": 1500,
+  "height": 1000,
+  "pngBytes": 37377,
+  "typedText": [],
+  "scene": [
+    {
+      "t": "hand",
+      "text": "x + y = 10",
+      "x": 420,
+      "y": 380,
+      "size": 130,
+      "color": "#222",
+      "font": "'Segoe Print', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "x − y = 4",
+      "x": 420,
+      "y": 640,
+      "size": 130,
+      "color": "#222",
+      "font": "'Segoe Print', 'Ink Free', cursive"
+    },
+    {
+      "t": "stroke",
+      "points": [
+        [
+          360,
+          270
+        ],
+        [
+          330,
+          420
+        ],
+        [
+          345,
+          560
+        ],
+        [
+          360,
+          690
+        ]
+      ],
+      "width": 5
+    }
+  ]
+}

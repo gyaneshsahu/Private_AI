@@ -1,0 +1,90 @@
+{
+  "id": "02-equation-fraction",
+  "category": "equation",
+  "question": "Work out the sum written on my whiteboard. Give the result as a fraction in lowest terms.",
+  "groundTruth": "3/4 + 2/3 = 17/12 (= 1 5/12, about 1.417).",
+  "width": 1500,
+  "height": 1000,
+  "pngBytes": 26776,
+  "typedText": [],
+  "scene": [
+    {
+      "t": "hand",
+      "text": "3",
+      "x": 400,
+      "y": 400,
+      "size": 150,
+      "color": "#222"
+    },
+    {
+      "t": "stroke",
+      "points": [
+        [
+          360,
+          450
+        ],
+        [
+          520,
+          455
+        ]
+      ],
+      "color": "#222",
+      "width": 7
+    },
+    {
+      "t": "hand",
+      "text": "4",
+      "x": 400,
+      "y": 610,
+      "size": 150,
+      "color": "#222"
+    },
+    {
+      "t": "hand",
+      "text": "+",
+      "x": 600,
+      "y": 520,
+      "size": 150,
+      "color": "#222"
+    },
+    {
+      "t": "hand",
+      "text": "2",
+      "x": 800,
+      "y": 400,
+      "size": 150,
+      "color": "#222"
+    },
+    {
+      "t": "stroke",
+      "points": [
+        [
+          760,
+          455
+        ],
+        [
+          920,
+          450
+        ]
+      ],
+      "color": "#222",
+      "width": 7
+    },
+    {
+      "t": "hand",
+      "text": "3",
+      "x": 800,
+      "y": 610,
+      "size": 150,
+      "color": "#222"
+    },
+    {
+      "t": "hand",
+      "text": "= ?",
+      "x": 1010,
+      "y": 520,
+      "size": 150,
+      "color": "#222"
+    }
+  ]
+}

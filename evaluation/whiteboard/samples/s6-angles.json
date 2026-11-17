@@ -1,0 +1,79 @@
+{
+  "id": "s6-angles",
+  "category": "stress",
+  "question": "What is the missing angle in the triangle on my whiteboard?",
+  "groundTruth": "180 - 90 - 35 = 55 degrees.",
+  "width": 1500,
+  "height": 1000,
+  "pngBytes": 36721,
+  "typedText": [],
+  "scene": [
+    {
+      "t": "line",
+      "from": [
+        250,
+        850
+      ],
+      "to": [
+        1250,
+        850
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        250,
+        850
+      ],
+      "to": [
+        250,
+        200
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        250,
+        200
+      ],
+      "to": [
+        1250,
+        850
+      ]
+    },
+    {
+      "t": "stroke",
+      "points": [
+        [
+          250,
+          800
+        ],
+        [
+          300,
+          800
+        ],
+        [
+          300,
+          850
+        ]
+      ],
+      "width": 3
+    },
+    {
+      "t": "hand",
+      "text": "35°",
+      "x": 1040,
+      "y": 820,
+      "size": 48,
+      "color": "#1d4ed8"
+    },
+    {
+      "t": "hand",
+      "text": "?",
+      "x": 280,
+      "y": 300,
+      "size": 60,
+      "color": "#c62828"
+    }
+  ]
+}

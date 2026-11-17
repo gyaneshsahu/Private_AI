@@ -1,0 +1,29 @@
+{
+  "id": "03-equation-quadratic",
+  "category": "equation",
+  "question": "Solve the equation on my whiteboard. Give all solutions.",
+  "groundTruth": "x = 2 and x = 3 ((x - 2)(x - 3) = 0).",
+  "width": 1500,
+  "height": 1000,
+  "pngBytes": 33626,
+  "typedText": [
+    "Solve for x"
+  ],
+  "scene": [
+    {
+      "t": "text",
+      "text": "Solve for x",
+      "x": 750,
+      "y": 180,
+      "size": 54
+    },
+    {
+      "t": "hand",
+      "text": "x² − 5x + 6 = 0",
+      "x": 220,
+      "y": 520,
+      "size": 140,
+      "color": "#2e7d32"
+    }
+  ]
+}

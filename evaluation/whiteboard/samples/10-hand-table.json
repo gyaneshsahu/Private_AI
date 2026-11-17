@@ -1,0 +1,199 @@
+{
+  "id": "10-hand-table",
+  "category": "table",
+  "question": "Using the table on my whiteboard, what is the total cost of the shopping (quantity times price, all rows)?",
+  "groundTruth": "3 x 0.50 + 1 x 2.20 + 2 x 3.10 = 1.50 + 2.20 + 6.20 = 9.90.",
+  "width": 1500,
+  "height": 1000,
+  "pngBytes": 77337,
+  "typedText": [
+    "Item",
+    "Qty",
+    "Price each"
+  ],
+  "scene": [
+    {
+      "t": "line",
+      "from": [
+        150,
+        200
+      ],
+      "to": [
+        1350,
+        200
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        150,
+        350
+      ],
+      "to": [
+        1350,
+        350
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        150,
+        500
+      ],
+      "to": [
+        1350,
+        500
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        150,
+        650
+      ],
+      "to": [
+        1350,
+        650
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        150,
+        800
+      ],
+      "to": [
+        1350,
+        800
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        150,
+        200
+      ],
+      "to": [
+        150,
+        800
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        650,
+        200
+      ],
+      "to": [
+        650,
+        800
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        950,
+        200
+      ],
+      "to": [
+        950,
+        800
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        1350,
+        200
+      ],
+      "to": [
+        1350,
+        800
+      ]
+    },
+    {
+      "t": "text",
+      "text": "Item",
+      "x": 400,
+      "y": 275,
+      "size": 46
+    },
+    {
+      "t": "text",
+      "text": "Qty",
+      "x": 800,
+      "y": 275,
+      "size": 46
+    },
+    {
+      "t": "text",
+      "text": "Price each",
+      "x": 1150,
+      "y": 275,
+      "size": 46
+    },
+    {
+      "t": "hand",
+      "text": "Apples",
+      "x": 200,
+      "y": 450,
+      "size": 70
+    },
+    {
+      "t": "hand",
+      "text": "3",
+      "x": 780,
+      "y": 450,
+      "size": 70
+    },
+    {
+      "t": "hand",
+      "text": "0.50",
+      "x": 1080,
+      "y": 450,
+      "size": 70
+    },
+    {
+      "t": "hand",
+      "text": "Bread",
+      "x": 200,
+      "y": 600,
+      "size": 70
+    },
+    {
+      "t": "hand",
+      "text": "1",
+      "x": 780,
+      "y": 600,
+      "size": 70
+    },
+    {
+      "t": "hand",
+      "text": "2.20",
+      "x": 1080,
+      "y": 600,
+      "size": 70
+    },
+    {
+      "t": "hand",
+      "text": "Cheese",
+      "x": 200,
+      "y": 750,
+      "size": 70
+    },
+    {
+      "t": "hand",
+      "text": "2",
+      "x": 780,
+      "y": 750,
+      "size": 70
+    },
+    {
+      "t": "hand",
+      "text": "3.10",
+      "x": 1080,
+      "y": 750,
+      "size": 70
+    }
+  ]
+}

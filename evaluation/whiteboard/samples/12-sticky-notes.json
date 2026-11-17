@@ -1,0 +1,99 @@
+{
+  "id": "12-sticky-notes",
+  "category": "sticky",
+  "question": "Which tasks on my whiteboard are in the Done column?",
+  "groundTruth": "Set up repo and Draft budget.",
+  "width": 1500,
+  "height": 1000,
+  "pngBytes": 51685,
+  "typedText": [
+    "Set up repo",
+    "To do",
+    "Write tests",
+    "Design logo",
+    "Done",
+    "Fix login bug",
+    "Doing",
+    "Draft budget"
+  ],
+  "scene": [
+    {
+      "t": "sticky",
+      "x": 1100,
+      "y": 250,
+      "text": "Set up repo",
+      "color": "#fde68a"
+    },
+    {
+      "t": "text",
+      "text": "To do",
+      "x": 250,
+      "y": 120,
+      "size": 50
+    },
+    {
+      "t": "sticky",
+      "x": 135,
+      "y": 250,
+      "text": "Write tests",
+      "color": "#fde68a"
+    },
+    {
+      "t": "sticky",
+      "x": 620,
+      "y": 250,
+      "text": "Design logo",
+      "color": "#bbf7d0"
+    },
+    {
+      "t": "text",
+      "text": "Done",
+      "x": 1215,
+      "y": 120,
+      "size": 50
+    },
+    {
+      "t": "sticky",
+      "x": 135,
+      "y": 560,
+      "text": "Fix login bug",
+      "color": "#fbcfe8"
+    },
+    {
+      "t": "text",
+      "text": "Doing",
+      "x": 735,
+      "y": 120,
+      "size": 50
+    },
+    {
+      "t": "sticky",
+      "x": 1100,
+      "y": 560,
+      "text": "Draft budget",
+      "color": "#bfdbfe"
+    },
+    {
+      "t": "line",
+      "from": [
+        500,
+        80
+      ],
+      "to": [
+        500,
+        940
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        1000,
+        80
+      ],
+      "to": [
+        1000,
+        940
+      ]
+    }
+  ]
+}

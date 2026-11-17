@@ -1,0 +1,99 @@
+{
+  "id": "07-messy-notes",
+  "category": "handwriting",
+  "question": "Which tasks on my whiteboard notes are still open, that is, not crossed out?",
+  "groundTruth": "Call plumber and fix bike tyre are open. Buy milk and return library book are crossed out.",
+  "width": 1100,
+  "height": 1500,
+  "pngBytes": 75906,
+  "typedText": [],
+  "scene": [
+    {
+      "t": "hand",
+      "text": "To do sat",
+      "x": 120,
+      "y": 200,
+      "size": 90,
+      "color": "#222",
+      "font": "'Segoe Print', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "- buy milk",
+      "x": 140,
+      "y": 420,
+      "size": 72,
+      "color": "#222"
+    },
+    {
+      "t": "stroke",
+      "points": [
+        [
+          150,
+          400
+        ],
+        [
+          300,
+          395
+        ],
+        [
+          520,
+          405
+        ]
+      ],
+      "color": "#222",
+      "width": 6
+    },
+    {
+      "t": "hand",
+      "text": "- call plumber",
+      "x": 140,
+      "y": 620,
+      "size": 72,
+      "color": "#222"
+    },
+    {
+      "t": "hand",
+      "text": "- return library book",
+      "x": 140,
+      "y": 820,
+      "size": 72,
+      "color": "#222"
+    },
+    {
+      "t": "stroke",
+      "points": [
+        [
+          150,
+          800
+        ],
+        [
+          500,
+          790
+        ],
+        [
+          860,
+          805
+        ]
+      ],
+      "color": "#222",
+      "width": 6
+    },
+    {
+      "t": "hand",
+      "text": "- fix bike tyre!!",
+      "x": 140,
+      "y": 1020,
+      "size": 72,
+      "color": "#222"
+    },
+    {
+      "t": "hand",
+      "text": "(before 4)",
+      "x": 600,
+      "y": 1150,
+      "size": 56,
+      "color": "#555"
+    }
+  ]
+}

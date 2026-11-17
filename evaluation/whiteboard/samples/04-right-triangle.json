@@ -1,0 +1,88 @@
+{
+  "id": "04-right-triangle",
+  "category": "geometry",
+  "question": "How long is side c in the triangle on my whiteboard?",
+  "groundTruth": "c = 10 cm (hypotenuse; 6² + 8² = 100).",
+  "width": 1500,
+  "height": 1100,
+  "pngBytes": 37940,
+  "typedText": [
+    "a = 6 cm",
+    "b = 8 cm"
+  ],
+  "scene": [
+    {
+      "t": "line",
+      "from": [
+        300,
+        900
+      ],
+      "to": [
+        300,
+        300
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        300,
+        900
+      ],
+      "to": [
+        1100,
+        900
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        300,
+        300
+      ],
+      "to": [
+        1100,
+        900
+      ]
+    },
+    {
+      "t": "stroke",
+      "points": [
+        [
+          300,
+          840
+        ],
+        [
+          360,
+          840
+        ],
+        [
+          360,
+          900
+        ]
+      ],
+      "width": 3
+    },
+    {
+      "t": "text",
+      "text": "a = 6 cm",
+      "x": 180,
+      "y": 600,
+      "size": 40
+    },
+    {
+      "t": "text",
+      "text": "b = 8 cm",
+      "x": 700,
+      "y": 960,
+      "size": 40
+    },
+    {
+      "t": "hand",
+      "text": "c = ?",
+      "x": 760,
+      "y": 560,
+      "size": 80,
+      "color": "#c62828"
+    }
+  ]
+}

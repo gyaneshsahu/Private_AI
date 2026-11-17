@@ -1,0 +1,58 @@
+{
+  "id": "s1-cursive-note",
+  "category": "stress",
+  "question": "According to the note on my whiteboard, when and where is the meeting now, and what revenue figure is mentioned?",
+  "groundTruth": "Thursday 14:30 in room 2B; revenue 48,250.",
+  "width": 1500,
+  "height": 1000,
+  "pngBytes": 71319,
+  "typedText": [],
+  "scene": [
+    {
+      "t": "hand",
+      "text": "Meeting moved to Thursday 14:30,",
+      "x": 90,
+      "y": 300,
+      "size": 46,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "room 2B (not 3A any more).",
+      "x": 90,
+      "y": 400,
+      "size": 46,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "Bring the Q3 numbers - revenue 48,250",
+      "x": 90,
+      "y": 500,
+      "size": 46,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "and the hiring plan.",
+      "x": 90,
+      "y": 600,
+      "size": 46,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "stroke",
+      "points": [
+        [
+          700,
+          400
+        ],
+        [
+          880,
+          405
+        ]
+      ],
+      "width": 4
+    }
+  ]
+}

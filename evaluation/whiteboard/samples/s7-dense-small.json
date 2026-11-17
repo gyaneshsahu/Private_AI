@@ -1,0 +1,235 @@
+{
+  "id": "s7-dense-small",
+  "category": "stress",
+  "question": "Three things on my whiteboard: what budget cap is written in the bottom-right note, which box does the arrow from QA review point to, and what is x in the small equation at the bottom left?",
+  "groundTruth": "Budget cap 3,450. QA review points to Release notes. 3x - 7 = 2x + 9 gives x = 16.",
+  "width": 1500,
+  "height": 1000,
+  "pngBytes": 89560,
+  "typedText": [
+    "Kick-off",
+    "Scope draft",
+    "Vendor list",
+    "Risk log",
+    "Design spec",
+    "API stubs",
+    "QA review",
+    "Load test",
+    "Release notes",
+    "Training",
+    "Go-live",
+    "Retro",
+    "Q1 plan"
+  ],
+  "scene": [
+    {
+      "t": "rect",
+      "id": "b0",
+      "x": 60,
+      "y": 60,
+      "w": 230,
+      "h": 90,
+      "label": "Kick-off",
+      "size": 18
+    },
+    {
+      "t": "rect",
+      "id": "b1",
+      "x": 420,
+      "y": 60,
+      "w": 230,
+      "h": 90,
+      "label": "Scope draft",
+      "size": 18
+    },
+    {
+      "t": "rect",
+      "id": "b2",
+      "x": 780,
+      "y": 60,
+      "w": 230,
+      "h": 90,
+      "label": "Vendor list",
+      "size": 18
+    },
+    {
+      "t": "rect",
+      "id": "b3",
+      "x": 1140,
+      "y": 60,
+      "w": 230,
+      "h": 90,
+      "label": "Risk log",
+      "size": 18
+    },
+    {
+      "t": "rect",
+      "id": "b4",
+      "x": 60,
+      "y": 290,
+      "w": 230,
+      "h": 90,
+      "label": "Design spec",
+      "size": 18
+    },
+    {
+      "t": "rect",
+      "id": "b5",
+      "x": 420,
+      "y": 290,
+      "w": 230,
+      "h": 90,
+      "label": "API stubs",
+      "size": 18
+    },
+    {
+      "t": "rect",
+      "id": "b6",
+      "x": 780,
+      "y": 290,
+      "w": 230,
+      "h": 90,
+      "label": "QA review",
+      "size": 18
+    },
+    {
+      "t": "rect",
+      "id": "b7",
+      "x": 1140,
+      "y": 290,
+      "w": 230,
+      "h": 90,
+      "label": "Load test",
+      "size": 18
+    },
+    {
+      "t": "rect",
+      "id": "b8",
+      "x": 60,
+      "y": 520,
+      "w": 230,
+      "h": 90,
+      "label": "Release notes",
+      "size": 18
+    },
+    {
+      "t": "rect",
+      "id": "b9",
+      "x": 420,
+      "y": 520,
+      "w": 230,
+      "h": 90,
+      "label": "Training",
+      "size": 18
+    },
+    {
+      "t": "rect",
+      "id": "b10",
+      "x": 780,
+      "y": 520,
+      "w": 230,
+      "h": 90,
+      "label": "Go-live",
+      "size": 18
+    },
+    {
+      "t": "rect",
+      "id": "b11",
+      "x": 1140,
+      "y": 520,
+      "w": 230,
+      "h": 90,
+      "label": "Retro",
+      "size": 18
+    },
+    {
+      "t": "arrow",
+      "from": "b0",
+      "to": "b1",
+      "width": 2
+    },
+    {
+      "t": "arrow",
+      "from": "b1",
+      "to": "b5",
+      "width": 2
+    },
+    {
+      "t": "arrow",
+      "from": "b6",
+      "to": "b8",
+      "width": 2
+    },
+    {
+      "t": "arrow",
+      "from": "b4",
+      "to": "b9",
+      "width": 2
+    },
+    {
+      "t": "arrow",
+      "from": "b7",
+      "to": "b10",
+      "width": 2
+    },
+    {
+      "t": "hand",
+      "text": "ask Ola re: vendor",
+      "x": 1100,
+      "y": 190,
+      "size": 26,
+      "color": "#1d4ed8"
+    },
+    {
+      "t": "hand",
+      "text": "risk: late API",
+      "x": 470,
+      "y": 420,
+      "size": 26,
+      "color": "#c62828"
+    },
+    {
+      "t": "hand",
+      "text": "3x − 7 = 2x + 9",
+      "x": 70,
+      "y": 820,
+      "size": 28
+    },
+    {
+      "t": "hand",
+      "text": "x = ?",
+      "x": 100,
+      "y": 870,
+      "size": 28
+    },
+    {
+      "t": "rect",
+      "x": 1150,
+      "y": 760,
+      "w": 300,
+      "h": 180,
+      "fill": "#fde68a"
+    },
+    {
+      "t": "hand",
+      "text": "budget cap:",
+      "x": 1175,
+      "y": 820,
+      "size": 28
+    },
+    {
+      "t": "hand",
+      "text": "3,450 EUR",
+      "x": 1175,
+      "y": 880,
+      "size": 28
+    },
+    {
+      "t": "text",
+      "text": "Q1 plan",
+      "x": 750,
+      "y": 960,
+      "size": 20
+    }
+  ]
+}

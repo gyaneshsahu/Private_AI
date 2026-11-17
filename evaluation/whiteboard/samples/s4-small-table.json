@@ -1,0 +1,218 @@
+{
+  "id": "s4-small-table",
+  "category": "stress",
+  "question": "Add up the Hours column in the table on my whiteboard.",
+  "groundTruth": "14 + 27 + 9 + 33 + 18 = 101.",
+  "width": 1500,
+  "height": 1000,
+  "pngBytes": 67700,
+  "typedText": [],
+  "scene": [
+    {
+      "t": "line",
+      "from": [
+        300,
+        150
+      ],
+      "to": [
+        1200,
+        150
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        300,
+        280
+      ],
+      "to": [
+        1200,
+        280
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        300,
+        410
+      ],
+      "to": [
+        1200,
+        410
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        300,
+        540
+      ],
+      "to": [
+        1200,
+        540
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        300,
+        670
+      ],
+      "to": [
+        1200,
+        670
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        300,
+        800
+      ],
+      "to": [
+        1200,
+        800
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        300,
+        930
+      ],
+      "to": [
+        1200,
+        930
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        300,
+        150
+      ],
+      "to": [
+        300,
+        930
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        800,
+        150
+      ],
+      "to": [
+        800,
+        930
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        1200,
+        150
+      ],
+      "to": [
+        1200,
+        930
+      ]
+    },
+    {
+      "t": "hand",
+      "text": "Task",
+      "x": 340,
+      "y": 235,
+      "size": 44,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "Hours",
+      "x": 840,
+      "y": 235,
+      "size": 44,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "design",
+      "x": 340,
+      "y": 365,
+      "size": 44,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "14",
+      "x": 900,
+      "y": 365,
+      "size": 44,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "build",
+      "x": 340,
+      "y": 495,
+      "size": 44,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "27",
+      "x": 900,
+      "y": 495,
+      "size": 44,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "test",
+      "x": 340,
+      "y": 625,
+      "size": 44,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "9",
+      "x": 900,
+      "y": 625,
+      "size": 44,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "docs",
+      "x": 340,
+      "y": 755,
+      "size": 44,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "33",
+      "x": 900,
+      "y": 755,
+      "size": 44,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "deploy",
+      "x": 340,
+      "y": 885,
+      "size": 44,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    },
+    {
+      "t": "hand",
+      "text": "18",
+      "x": 900,
+      "y": 885,
+      "size": 44,
+      "font": "'Segoe Script', 'Ink Free', cursive"
+    }
+  ]
+}

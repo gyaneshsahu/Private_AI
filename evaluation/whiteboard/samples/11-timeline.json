@@ -1,0 +1,181 @@
+{
+  "id": "11-timeline",
+  "category": "diagram",
+  "question": "On the timeline on my whiteboard, what happened two years after the prototype?",
+  "groundTruth": "First users (2021); the prototype was in 2019.",
+  "width": 1500,
+  "height": 900,
+  "pngBytes": 43316,
+  "typedText": [
+    "Launch",
+    "Prototype",
+    "Funding",
+    "First users"
+  ],
+  "scene": [
+    {
+      "t": "arrow",
+      "from": [
+        100,
+        500
+      ],
+      "to": [
+        1420,
+        500
+      ],
+      "width": 5
+    },
+    {
+      "t": "line",
+      "from": [
+        250,
+        470
+      ],
+      "to": [
+        250,
+        530
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        580,
+        470
+      ],
+      "to": [
+        580,
+        530
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        910,
+        470
+      ],
+      "to": [
+        910,
+        530
+      ]
+    },
+    {
+      "t": "line",
+      "from": [
+        1240,
+        470
+      ],
+      "to": [
+        1240,
+        530
+      ]
+    },
+    {
+      "t": "hand",
+      "text": "2019",
+      "x": 190,
+      "y": 620,
+      "size": 64,
+      "color": "#1d4ed8"
+    },
+    {
+      "t": "hand",
+      "text": "2021",
+      "x": 520,
+      "y": 620,
+      "size": 64,
+      "color": "#1d4ed8"
+    },
+    {
+      "t": "hand",
+      "text": "2023",
+      "x": 850,
+      "y": 620,
+      "size": 64,
+      "color": "#1d4ed8"
+    },
+    {
+      "t": "hand",
+      "text": "2025",
+      "x": 1180,
+      "y": 620,
+      "size": 64,
+      "color": "#1d4ed8"
+    },
+    {
+      "t": "text",
+      "text": "Launch",
+      "x": 1240,
+      "y": 380,
+      "size": 42
+    },
+    {
+      "t": "text",
+      "text": "Prototype",
+      "x": 250,
+      "y": 380,
+      "size": 42
+    },
+    {
+      "t": "text",
+      "text": "Funding",
+      "x": 910,
+      "y": 380,
+      "size": 42
+    },
+    {
+      "t": "text",
+      "text": "First users",
+      "x": 580,
+      "y": 380,
+      "size": 42
+    },
+    {
+      "t": "arrow",
+      "from": [
+        250,
+        410
+      ],
+      "to": [
+        250,
+        465
+      ],
+      "width": 3
+    },
+    {
+      "t": "arrow",
+      "from": [
+        580,
+        410
+      ],
+      "to": [
+        580,
+        465
+      ],
+      "width": 3
+    },
+    {
+      "t": "arrow",
+      "from": [
+        910,
+        410
+      ],
+      "to": [
+        910,
+        465
+      ],
+      "width": 3
+    },
+    {
+      "t": "arrow",
+      "from": [
+        1240,
+        410
+      ],
+      "to": [
+        1240,
+        465
+      ],
+      "width": 3
+    }
+  ]
+}

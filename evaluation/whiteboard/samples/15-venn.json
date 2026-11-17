@@ -1,0 +1,74 @@
+{
+  "id": "15-venn",
+  "category": "diagram",
+  "question": "From the Venn diagram on my whiteboard, how many people like dogs in total?",
+  "groundTruth": "8 (5 dogs only + 3 both).",
+  "width": 1500,
+  "height": 1000,
+  "pngBytes": 73635,
+  "typedText": [
+    "Dogs",
+    "Cats",
+    "Who likes which pet"
+  ],
+  "scene": [
+    {
+      "t": "ellipse",
+      "x": 200,
+      "y": 200,
+      "w": 650,
+      "h": 600,
+      "color": "#1d4ed8"
+    },
+    {
+      "t": "ellipse",
+      "x": 650,
+      "y": 200,
+      "w": 650,
+      "h": 600,
+      "color": "#c62828"
+    },
+    {
+      "t": "text",
+      "text": "Dogs",
+      "x": 1150,
+      "y": 160,
+      "size": 50
+    },
+    {
+      "t": "text",
+      "text": "Cats",
+      "x": 350,
+      "y": 160,
+      "size": 50
+    },
+    {
+      "t": "hand",
+      "text": "8",
+      "x": 400,
+      "y": 540,
+      "size": 110
+    },
+    {
+      "t": "hand",
+      "text": "3",
+      "x": 720,
+      "y": 540,
+      "size": 110
+    },
+    {
+      "t": "hand",
+      "text": "5",
+      "x": 1050,
+      "y": 540,
+      "size": 110
+    },
+    {
+      "t": "text",
+      "text": "Who likes which pet",
+      "x": 750,
+      "y": 900,
+      "size": 40
+    }
+  ]
+}
