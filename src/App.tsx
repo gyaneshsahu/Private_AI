@@ -1,3 +1,5 @@
+import { CreateImageDialog } from "./CreateImage";
+import { imageCreationText } from "./text/image-creation";
 import { Icon } from "./Icon";
 import type { Project } from "./projects";
 import { containDialogFocus } from "./dialog-focus";
@@ -249,6 +251,8 @@ export function App() {
   // Image questions: the picture for the next message. Memory only; gone once it was sent,
   // removed, or another conversation is opened. It is never part of `conversation`.
   const [imageOpen, setImageOpen] = useState(false);
+  // Image creation: the dialog's starting description, or undefined while it is closed.
+  const [createImageFor, setCreateImageFor] = useState<string>();
   // A pasted or dropped picture that opened the same steps (it starts at turn and crop).
   const [imageFile, setImageFile] = useState<File>();
   const [attachedImage, setAttachedImage] = useState<AttachedImage>();
@@ -3064,6 +3068,16 @@ export function App() {
                       : undefined
                   }
                   onCanvas={canvasEnabled() ? () => openCanvas(message.text) : undefined}
+                  // Image creation on a short answer: the dialog opens with the answer's start as the description.
+                  onCreateImage={
+                    status?.imageCreation && message.role === "assistant" && message.text.length <= 600
+                      ? () => setCreateImageFor(message.text.replace(/[#*_`>|]/g, "").replace(/\s+/g, " ").trim().slice(0, 300))
+                      : undefined
+                  }
+                  onRegenerateImage={status?.imageCreation ? (prompt) => setCreateImageFor(prompt) : undefined}
+                  onImagePrivacy={() =>
+                    setSource({ id: "privacy-policy", title: t.privacyPolicy, text: privacyPolicyText(disclosedProvider(status), lang) })
+                  }
                   onReport={() => {
                     setReporting(true);
                     setTab("Help");
@@ -3409,6 +3423,12 @@ export function App() {
                         >
                           <Icon name="image" />
                           {imageText[lang].menu}
+                        </button>
+                      )}
+                      {status?.imageCreation && (
+                        <button type="button" className="text-button" disabled={!!busy} onClick={() => setCreateImageFor("")}>
+                          <Icon name="sparkle" />
+                          {imageCreationText[lang].menu}
                         </button>
                       )}
                       <button
@@ -4333,6 +4353,31 @@ export function App() {
         <PhotoCapture
           onClose={() => setPhotoOpen(false)}
           onUse={(file) => void importFiles([file])}
+        />
+      )}
+      {status?.imageCreation && createImageFor !== undefined && (
+        <CreateImageDialog
+          open
+          initial={createImageFor}
+          csrf={status.csrf}
+          limit={status.imageCreation.limit}
+          used={status.imageCreation.used}
+          onClose={() => setCreateImageFor(undefined)}
+          onCreated={(image) => {
+            setCreateImageFor(undefined);
+            const at = new Date().toISOString();
+            // The request and the result, so later questions know an image was made; the model sees only its description.
+            setConversation((current) => ({
+              ...current,
+              messages: [
+                ...current.messages,
+                { ...newMessage("user", `${imageCreationText[lang].menu}: ${image.prompt}`), at },
+                { ...newMessage("assistant", imageCreationText[lang].context(image.prompt)), at, status: "complete", createdImage: image },
+              ],
+            }));
+            // One more used today (the server counts too; this keeps the dialog's count right until the next status).
+            setStatus((s) => (s?.imageCreation ? { ...s, imageCreation: { ...s.imageCreation, used: (s.imageCreation.used ?? 0) + 1 } } : s));
+          }}
         />
       )}
       {imageOpen && status?.images && (

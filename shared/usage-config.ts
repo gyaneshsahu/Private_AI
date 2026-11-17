@@ -18,6 +18,8 @@ export const FEATURES = [
   "background-run",
   "search",
   "page-fetch",
+  // A created image (docs/image-creation-20261118.md): its own daily limit, no chat allowance units.
+  "image-create",
 ] as const;
 export type Feature = (typeof FEATURES)[number];
 /** Set by the relay on a metered reply: the browser reports the reply's decrypted token counts under this id. */
@@ -60,6 +62,7 @@ const price = z
     outputPerMillion: z.number().nonnegative().optional(),
     cachedPerMillion: z.number().nonnegative().optional(),
     perAudioMinute: z.number().nonnegative().optional(),
+    perImage: z.number().nonnegative().optional(),
   })
   .strict();
 export const weightsFileSchema = z

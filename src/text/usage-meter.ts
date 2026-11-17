@@ -18,6 +18,7 @@ const featuresEn: Record<Feature, string> = {
   "background-run": "Background task",
   search: "Web search",
   "page-fetch": "Web page read",
+  "image-create": "Created image",
 };
 const featuresDe: Record<Feature, string> = {
   "chat-fast": "Nachricht in „Schnell“",
@@ -31,6 +32,7 @@ const featuresDe: Record<Feature, string> = {
   "background-run": "Hintergrundaufgabe",
   search: "Websuche",
   "page-fetch": "Webseite gelesen",
+  "image-create": "Erstelltes Bild",
 };
 
 export const usageMeterText = defineText({

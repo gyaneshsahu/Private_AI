@@ -50,6 +50,17 @@ const conversationBody = z.object({
       mode: z.enum(["fast", "thinking"]).optional(),
       // Only the fact that a picture was asked about. There is no field that could hold a picture.
       image: z.literal(true).optional(),
+      // A created image (base64, not a data URL); about 3 MB at most.
+      createdImage: z
+        .object({
+          type: z.enum(["image/jpeg", "image/png", "image/webp"]),
+          data: z.string().max(4_000_000).regex(/^[A-Za-z0-9+/]+=*$/),
+          model: z.string().max(64),
+          prompt: z.string().max(1000),
+          maskedNote: z.string().max(300).optional(),
+        })
+        .strict()
+        .optional(),
       at: z.string().datetime().optional(),
       arithmeticCheck: z
         .object({

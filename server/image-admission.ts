@@ -60,6 +60,10 @@ export function imageDayCount(perDay: number) {
       starts.set(who, [...recent, now]);
       return true;
     },
+    /** How many `who` used in the last day. */
+    used(who: string, now = Date.now()) {
+      return (starts.get(who) ?? []).filter((t) => now - t < DAY).length;
+    },
     /** Takes the latest count back: the provider refused the request before any answer. */
     giveBack(who: string) {
       starts.get(who)?.pop();

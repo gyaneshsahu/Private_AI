@@ -35,6 +35,7 @@ import { privatemodeKeyExpiryWarning } from "./providers/privatemode-relay";
 import { manifestPaused, PROVIDER_UPDATE_PAUSE } from "./manifest-watch";
 import { VOICE_PATH, voiceRoute, voiceUsage, type VoiceSettings } from "./providers/privatemode-voice";
 import { declaredImage, imageDayCount, imageModelAdmitted, type ImageSettings } from "./image-admission";
+import { IMAGE_PROMPT_MAX, ImageCapacity, ImageRefused, refuseImagePrompt, type ImageProvider } from "./image-creation";
 import { CONTINUATION_HEADER, ContinuationCredits } from "./continuation-credit";
 import { declaredResearch, researchAllowed, ResearchTickets, type ResearchSettings } from "./research-admission";
 import { RESEARCH_KINDS } from "../shared/deep-research";
@@ -97,6 +98,11 @@ export interface Config {
   voice?: VoiceSettings;
   /** Image questions; absent means off. It also needs the report's `vision` model. */
   images?: ImageSettings;
+  /**
+   * Image creation (docs/image-creation-20261118.md); absent means off. Only the typed description
+   * goes to `provider`; the server keeps neither it nor the image. `dailyImages`: per account a day.
+   */
+  imageCreation?: { provider: ImageProvider; dailyImages: number };
   /** Code execution on the user's device: the status says so and follow-up requests get their credit; absent means off. */
   code?: boolean;
   /** Deep research (docs/deep-research-20261114.md); absent means off. It also needs search. */
@@ -491,6 +497,10 @@ export function createApp(config: Config) {
         : {}),
       ...(config.images && ready && q?.vision ? { images: { maxBytes: config.images.maxBytes } } : {}),
       ...(config.code && ready ? { code: true } : {}),
+      // Its own partner and allowance: not tied to the chat provider being ready.
+      ...(config.imageCreation && (res.locals.accountId || config.dev)
+        ? { imageCreation: { limit: config.imageCreation.dailyImages, used: createDay.used(String(res.locals.accountId ?? "local-development")) } }
+        : {}),
       // Only where records are kept (a signed-in account), so the meter has something to show.
       ...(metering && meterAccount(res)
         ? { metering: { plan: metering.plan.id, weightsVersion: metering.weights().version } }
@@ -600,6 +610,7 @@ export function createApp(config: Config) {
   const imageDay = imageDayCount(config.images?.dailyImages ?? 0);
   // Deep research: runs and searches per account in any 24 hours (the same in-memory day count).
   const researchDay = imageDayCount(config.research?.dailyRuns ?? 0);
+  const createDay = imageDayCount(config.imageCreation?.dailyImages ?? 0);
   const searchDay = imageDayCount(config.research?.dailySearches ?? 0);
   const researchTickets = new ResearchTickets();
   app.post(
@@ -1048,6 +1059,38 @@ export function createApp(config: Config) {
     const who = meterAccount(res);
     if (metering && who) metering.record({ requestId: randomUUID(), accountId: who, feature, units: 0, outcome: "complete" });
   };
+  // Image creation: the description only, our refusals first, its own daily limit, one ledger record
+  // per created image (feature "image-create", priced from the versioned price list). Nothing is kept.
+  if (config.imageCreation) {
+    const creation = config.imageCreation;
+    app.post("/api/images/create", async (req, res) => {
+      res.setHeader("Cache-Control", "no-store");
+      const who = res.locals.accountId ?? (config.dev ? "local-development" : undefined);
+      if (!who) return void res.status(401).json({ error: "signin" });
+      const parsed = z.object({ prompt: z.string().trim().min(1).max(IMAGE_PROMPT_MAX) }).strict().safeParse(req.body);
+      if (!parsed.success) return void res.status(400).json({ error: "invalid" });
+      const refusal = refuseImagePrompt(parsed.data.prompt);
+      if (refusal) return void res.status(422).json({ error: "refused", reason: refusal });
+      if (!createDay.take(String(who))) return void res.status(429).json({ error: "limit", limit: creation.dailyImages });
+      const abort = new AbortController();
+      res.on("close", () => abort.abort());
+      const requestId = randomUUID();
+      const meter = meterAccount(res);
+      try {
+        const image = await creation.provider.generate(parsed.data.prompt, abort.signal);
+        if (metering && meter)
+          metering.record({ requestId, accountId: meter, feature: "image-create", units: 0, outcome: "complete", model: image.model });
+        res.json({ type: image.type, data: Buffer.from(image.bytes).toString("base64"), model: image.model });
+      } catch (error) {
+        createDay.giveBack(String(who));
+        if (metering && meter)
+          metering.record({ requestId, accountId: meter, feature: "image-create", units: 0, outcome: "refused", model: creation.provider.model });
+        if (error instanceof ImageRefused) return void res.status(422).json({ error: "refused", reason: "provider" });
+        if (error instanceof ImageCapacity) return void res.status(503).json({ error: "capacity" });
+        if (!res.headersSent) res.status(502).json({ error: "unavailable" });
+      }
+    });
+  }
   app.post("/api/research/prepare", async (req, res) => {
     try {
       res.json(await approvals.issue(res.locals.session, req.body));

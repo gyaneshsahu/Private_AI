@@ -65,6 +65,7 @@ export function quotaTokens(r: UsageRecord, prices: Prices): number | undefined 
 export function euros(r: UsageRecord, prices: Prices): number | undefined {
   const price = prices.models[r.model ?? ""];
   if (!price) return undefined;
+  if (r.feature === "image-create") return r.outcome === "complete" ? price.perImage : 0;
   const audio = audioSecondsOf(r);
   if (audio !== undefined) return price.perAudioMinute === undefined ? undefined : (audio / 60) * price.perAudioMinute;
   return reported(r) ? chatEuros(prices, r.model!, r.promptTokens!, r.completionTokens!, r.cachedTokens) : undefined;

@@ -439,6 +439,18 @@ export interface Message {
    */
   image?: true;
   /**
+   * An image CometRow created from the user's description (docs/image-creation-20261118.md): saved
+   * with the conversation, as base64 (never a data URL). The model sees only `[Created image: prompt]`.
+   */
+  createdImage?: {
+    type: "image/jpeg" | "image/png" | "image/webp";
+    data: string;
+    model: string;
+    prompt: string;
+    /** "1 email address removed before the description was sent." when identifiers were found. */
+    maskedNote?: string;
+  };
+  /**
    * Local-only result of recalculating the arithmetic the reply writes out
    * (src/arithmetic/postcheck.ts): how many stated relations were checked and
    * how many did not add up. Never model context, never sent anywhere.

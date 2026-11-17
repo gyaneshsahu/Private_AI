@@ -1,6 +1,8 @@
 // One message in the conversation (docs/chat-feature-gaps-20261114.md, packages C and D): the
 // user's own text as plain text and collapsed when long, edit and send in place, retry with its
 // cost in the label, and the report entry. Sending itself stays in App: this file only calls back.
+import { CreatedImageCard } from "./CreateImage";
+import { imageCreationText } from "./text/image-creation";
 import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { AnswerMode, Conversation, Message, Source } from "../shared/contracts";
 import { completenessWarning } from "./arithmetic/completeness";
@@ -132,6 +134,9 @@ export function ChatMessage({
   onReport,
   onRemember,
   onCanvas,
+  onCreateImage,
+  onRegenerateImage,
+  onImagePrivacy,
   onResize,
   streaming,
   storage,
@@ -156,6 +161,11 @@ export function ChatMessage({
   onRemember?: () => void;
   /** Canvas: offered on a completed answer when the canvas is on (absent otherwise). */
   onCanvas?: () => void;
+  /** Image creation: offered on a short completed answer when it is on (absent otherwise). */
+  onCreateImage?: () => void;
+  /** A created image's Regenerate and its small info icon (absent when image creation is off). */
+  onRegenerateImage?: (prompt: string) => void;
+  onImagePrivacy?: () => void;
   onReport: () => void;
   onResize: () => void;
   /** This answer is still arriving: no status label and no actions; dots until its first text. */
@@ -321,6 +331,9 @@ export function ChatMessage({
           <span className="sr-only">{ma.writing}</span>
         </div>
       ) : (
+        message.createdImage ? (
+          <CreatedImageCard image={message.createdImage} onRegenerate={onRegenerateImage} onPrivacy={onImagePrivacy} />
+        ) : (
         <LoadBoundary placeholder={<div className="message-text">{message.text}</div>}>
           <Suspense fallback={<div className="message-text">{message.text}</div>}>
             <Answer
@@ -331,6 +344,7 @@ export function ChatMessage({
             />
           </Suspense>
         </LoadBoundary>
+        )
       )}
       {sourceHistoryStatus(message, sourceHistory) === "changed" && (
         <details className="source-history-note">
@@ -385,6 +399,17 @@ export function ChatMessage({
               </button>
               <ReadAloudButton id={message.id} disabled={incomplete} />
               <PdfExportButton conversation={conversation} answer={index} disabled={incomplete} />
+              {onCreateImage && !message.createdImage && (
+                <button
+                  className="icon-action"
+                  disabled={incomplete}
+                  aria-label={imageCreationText[lang].onAnswer}
+                  title={imageCreationText[lang].onAnswer}
+                  onClick={onCreateImage}
+                >
+                  <Icon name="sparkle" />
+                </button>
+              )}
               {onCanvas && (
                 <button
                   className="icon-action"

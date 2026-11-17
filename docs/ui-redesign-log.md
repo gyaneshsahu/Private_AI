@@ -4,13 +4,11 @@ One line per check, newest first. "Test" names the Playwright file that keeps th
 
 ## Next (kept current, so work can resume after a break)
 
-State on 18 November: every item of the redesign list is built, tested and pushed; the final pass ran (below). Open, all waiting for the owner:
+State at the usage-limit checkpoint, 18 November: voice conversation, charts, logo kit and icons, the one first-start notice, the whiteboard study are done and pushed. Image creation is built behind its switch (off) and type-checks, but is NOT tested yet.
 
-1. **Shorter texts** on the upload and live-voice screens: approve rows in `docs/ui-text-shortening-proposal.md` (rows marked Required also wait for the legal read).
-2. **Charts:** whether the AI is told to write chart blocks (it would take the product prompt over the 3,400-character limit of 14 November). The app already draws any chart block.
-3. Not checked by a person yet: real phones (iPhone, Android), the swirl of the live-voice ball on a slow phone, and German screens beyond the tests.
-
-Known flaky or slow tests: `chat-recovery` (focus on a code block) and `invite-browser` under heavy local load; `context-review`, `source-history-ui`, `optional-calculator-ui` exceed their own 25 to 30 s limits on this machine but pass in CI.
+1. **Image creation, finish:** write tests with the provider mocked: server (`server/image-creation.ts` refusals, BFL adapter with a fake fetch, the route: limit, refusal, capacity, ledger record, nothing kept) and browser (`tests/redesign-ui.test.ts`: "+" menu entry, dialog, card with Download and Regenerate, the answer button, saved in the vault). Turn it on in the audit harness "on" build with `mockImageProvider()` and take screenshots. Then run the older tests that touch messages and the saved-chat schema, and CI.
+2. **Waiting for the owner:** provider choice and contract checklist (`docs/image-creation-20261118.md`); shorter texts (`docs/ui-text-shortening-proposal.md`); first-start notice and privacy partners draft for the legal read (`docs/notices-inventory-20261118.md`, `docs/privacy-partners-draft-20261118.md`); whiteboard decisions (`docs/whiteboard-study-20261118.md`, not built).
+3. Owner asked: send a screenshot of every finished UI piece.
 
 ## 18 November 2026: one notice, no per-feature cautions
 
