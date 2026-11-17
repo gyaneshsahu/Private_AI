@@ -414,10 +414,24 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
         },
       }),
     );
+    // The button says "Copied" for 2 seconds and one announcement is made for screen readers. Both are
+    // recorded the moment they appear, so a slow runner cannot miss the 2-second window.
+    await page.evaluate(() => {
+      const seen = { copied: false, statusClasses: [] as string[] };
+      (window as unknown as { copySeen: typeof seen }).copySeen = seen;
+      new MutationObserver(() => {
+        if ([...document.querySelectorAll("button")].some((b) => (b.getAttribute("aria-label") ?? b.textContent?.trim()) === "Copied")) seen.copied = true;
+        for (const n of document.querySelectorAll('[role="status"]'))
+          if (n.textContent?.includes("Code copied. Review before running it.") && !seen.statusClasses.includes(n.className)) seen.statusClasses.push(n.className);
+      }).observe(document.body, { subtree: true, childList: true, attributes: true, characterData: true });
+    });
     await page.getByRole("button", { name: "Copy code", exact: true }).click();
-    // The button says "Copied" for 2 seconds; the one announcement is for screen readers.
-    await ui(page.getByRole("button", { name: "Copied", exact: true })).toBeVisible();
-    await ui(page.getByRole("status").filter({ hasText: "Code copied. Review before running it." })).toHaveClass("sr-only");
+    await page.waitForFunction(() => {
+      const seen = (window as unknown as { copySeen: { copied: boolean; statusClasses: string[] } }).copySeen;
+      return seen.copied && seen.statusClasses.length > 0;
+    });
+    const seen = await page.evaluate(() => (window as unknown as { copySeen: { copied: boolean; statusClasses: string[] } }).copySeen);
+    expect(seen.statusClasses).toEqual(["sr-only"]);
     await ui(page.getByRole("button", { name: "Copy code", exact: true })).toBeVisible({ timeout: 4000 });
     await ui(page.getByText("Code copied. Review before running it.")).toHaveCount(0);
     expect(
@@ -426,7 +440,9 @@ it("real conversation UI stops partial output, retries explicitly, preserves sou
       ),
     ).toBe("LONG_CODE_".repeat(40) + "\n");
     await page.getByLabel("text code block", { exact: true }).focus();
-    await ui(page.getByLabel("text code block", { exact: true })).toBeFocused();
+    // The code block takes focus (tabindex 0). Checked as the active element: toBeFocused also needs
+    // the window to have focus, which a busy runner does not always give.
+    expect(await page.getByLabel("text code block", { exact: true }).evaluate((el) => document.activeElement === el)).toBe(true);
     await ui(
       page.locator(
         "article.assistant img, article.assistant script, article.assistant a",
