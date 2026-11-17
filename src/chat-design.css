@@ -1,4 +1,4 @@
-/* Design tokens (docs/ui-redesign-plan-20261116.md, section 2). Provisional palette: option C of
+/* Design tokens (docs/ui-redesign-plan-20261116.md, section 2). Final palette (17 November): light from option C, dark from option A,
    evaluation/ui-redesign/palettes.json. Colours live ONLY in these two blocks; swap them here. */
 :root,
 .chat-design {
@@ -16,7 +16,10 @@
   --bubble: #e9f0ff;
   --code: #f2f5fa;
   --danger: #b42318;
-  --glow: radial-gradient(60% 70% at 50% 60%, #7fb2ff40, #6fe0d018 55%, transparent 75%);
+  --glow: linear-gradient(155deg, #e8f0ff 0%, #f5f8ff 30%, #ecf9f6 62%, #f0efff 100%);
+  --cosmos:
+    radial-gradient(60% 60% at 30% 30%, #8fb4ffb0, transparent 72%), radial-gradient(55% 55% at 72% 38%, #b9a8ff90, transparent 72%),
+    radial-gradient(60% 55% at 55% 78%, #ffb8dc80, transparent 72%), radial-gradient(50% 50% at 20% 80%, #9fe8e070, transparent 72%);
   --scrim: #10182866;
   --shadow-1: 0 1px 2px #0000000a, 0 8px 28px -12px #00000024;
   --shadow-2: 0 2px 4px #00000014, 0 16px 56px -12px #00000048;
@@ -41,21 +44,26 @@
 }
 .chat-design[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0b0f17;
-  --sidebar: #070a10;
-  --surface: #141a26;
-  --hover: #1b2333;
-  --ink: #e8ecf4;
-  --ink2: #a5b0c6;
-  --ink3: #8b96ad;
-  --line: #222b3c;
-  --accent: #86adff;
-  --primary: #3565e8;
-  --primary-ink: #ffffff;
-  --bubble: #162138;
-  --code: #070a10;
+  --bg: #1b1b1e;
+  --sidebar: #141416;
+  --surface: #26262a;
+  --hover: #2e2e33;
+  --ink: #ededf0;
+  --ink2: #b1b1ba;
+  --ink3: #9a9aa5;
+  --line: #35353b;
+  --accent: #8fb4ff;
+  --primary: #ededf0;
+  --primary-ink: #18181b;
+  --bubble: #2a2a2f;
+  --code: #141416;
   --danger: #ff9189;
-  --glow: radial-gradient(55% 65% at 50% 60%, #2f6bff3d, #19c5b01a 55%, transparent 78%);
+  --glow:
+    radial-gradient(70% 55% at 50% 40%, #5b8cff26, transparent 70%), radial-gradient(45% 40% at 80% 15%, #3fd0c016, transparent 70%),
+    radial-gradient(40% 40% at 15% 88%, #8f9bff18, transparent 70%);
+  --cosmos:
+    radial-gradient(60% 60% at 30% 30%, #2f5fe030, transparent 72%), radial-gradient(55% 55% at 72% 38%, #6a55d822, transparent 72%),
+    radial-gradient(60% 55% at 55% 78%, #8f9bff1c, transparent 72%), radial-gradient(50% 50% at 20% 80%, #1fa8a018, transparent 72%);
   --scrim: #000000a6;
   --shadow-1: 0 1px 2px #00000040, 0 8px 28px -12px #000000a0;
   --shadow-2: 0 2px 4px #00000060, 0 16px 56px -12px #000000d0;
@@ -176,6 +184,10 @@
   border-color: var(--line);
 }
 .chat-design main {
+  /* The faded cosmic wash sits behind the workspace only, never the sidebar. */
+  background-color: var(--bg);
+  background-image: var(--glow);
+  background-attachment: fixed;
   margin-left: 252px;
   width: calc(100% - 252px);
   max-width: none;
@@ -596,7 +608,10 @@
   z-index: 6;
   margin: 0 -32px;
   padding: 18px 32px 12px;
-  background: var(--canvas);
+  /* Same fixed wash as the workspace, so this band blends in while still covering what scrolls under it. */
+  background-color: var(--bg);
+  background-image: var(--glow);
+  background-attachment: fixed;
   align-items: center;
   flex-wrap: nowrap;
   border: 0;
@@ -713,7 +728,10 @@
   position: sticky;
   bottom: 0;
   z-index: 5;
-  background: var(--canvas);
+  /* Same fixed wash as the workspace, so this band blends in while still covering what scrolls under it. */
+  background-color: var(--bg);
+  background-image: var(--glow);
+  background-attachment: fixed;
   padding: 12px 0 8px;
   width: 100%;
   max-width: 800px;
@@ -1446,6 +1464,23 @@
   height: auto;
   min-height: 100dvh;
   overflow: visible;
+  isolation: isolate;
+}
+/* Sign-in and account pages: a blended cosmic glow that drifts slowly (transform only; off under reduced motion). */
+.account-shell.chat-design::before {
+  content: "";
+  position: fixed;
+  inset: -25%;
+  z-index: -1;
+  background: var(--cosmos);
+  filter: blur(70px);
+  pointer-events: none;
+  animation: cosmos-drift 26s ease-in-out infinite alternate;
+}
+@keyframes cosmos-drift {
+  to {
+    transform: translate(4%, -3%) rotate(8deg) scale(1.08);
+  }
 }
 .account-shell.chat-design main.account-preview {
   margin: 0;
@@ -1453,7 +1488,7 @@
   height: auto;
   min-height: calc(100dvh - 70px);
   padding: 18px 20px 40px;
-  background: var(--canvas);
+  background: transparent;
   color: var(--ink);
 }
 .account-shell .account-appearance {
