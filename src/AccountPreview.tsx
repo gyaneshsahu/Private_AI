@@ -1,3 +1,4 @@
+import { CometMark } from "./CometMark";
 import { useEffect, useRef, useState } from "react";
 import "./account-preview.css";
 import { useText } from "./i18n";
@@ -22,7 +23,8 @@ export function AccountPreview() {
         href="/"
         aria-label={t.brandLabel}
       >
-        Comet<span>Row</span>
+        <CometMark />
+        CometRow
       </a>
       <aside className="account-preview-banner" aria-label={t.previewStatus}>
         {t.banner}

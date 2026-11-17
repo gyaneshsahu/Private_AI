@@ -27,6 +27,7 @@ export const answerText = defineText({
     lineUnverified: " · line reference unverified",
     imageOmitted: (alt: string) => `[Image omitted${alt ? `: ${alt}` : ""}]`,
     table: "Answer table",
+    chart: "Chart",
   },
   de: {
     evidence: (unknown: number, lines: number, verbatim: number, cited: number) =>
@@ -36,6 +37,7 @@ export const answerText = defineText({
     lineUnverified: " · Zeilenverweis ungeprüft",
     imageOmitted: (alt: string) => `[Bild ausgelassen${alt ? `: ${alt}` : ""}]`,
     table: "Antworttabelle",
+    chart: "Diagramm",
   },
 });
 

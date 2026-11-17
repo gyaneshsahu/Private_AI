@@ -1,3 +1,4 @@
+import { CometMark } from "./CometMark";
 import { UsageMeter } from "./UsageMeter";
 import { containDialogFocus } from "./dialog-focus";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -189,12 +190,7 @@ export function WorkspaceNavigation(props: {
     <aside className="sidebar" aria-label={t.chatNavigation}>
       <div className="sidebar-heading">
         <a className="brand" href="/" aria-label={t.home}>
-          {/* The comet: a round head of light with a two-part tail (evaluation/ui-redesign/mock.html). */}
-          <svg className="brand-mark" viewBox="0 0 22 22" aria-hidden="true">
-            <path className="brand-tail" d="M13.2 8.8 1.6 20.4 10.4 6.9z" opacity=".3" />
-            <path className="brand-tail" d="M14.6 10.2 1.6 20.4 11.8 7.4z" opacity=".55" />
-            <circle className="brand-head" cx="15.5" cy="6.5" r="4.5" />
-          </svg>
+          <CometMark />
           CometRow
         </a>
         <button

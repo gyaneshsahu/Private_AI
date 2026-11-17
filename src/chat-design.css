@@ -1529,18 +1529,6 @@
 .account-shell .account-preview-brand {
   color: var(--ink);
 }
-.account-shell .account-preview-brand::before {
-  content: "P";
-  display: inline-grid;
-  place-items: center;
-  width: 32px;
-  height: 34px;
-  margin-right: 10px;
-  border-radius: 12px;
-  background: var(--primary);
-  color: var(--primary-ink);
-  font-size: 18px;
-}
 .account-shell .account-preview-card :is(input, button, select) {
   max-width: 100%;
 }
@@ -1645,7 +1633,6 @@
   flex-direction: column;
   justify-content: center;
 }
-.account-login-page > .account-preview-brand,
 .account-login-page > .account-preview-banner {
   display: none;
 }
@@ -4648,4 +4635,523 @@
     height: 44px;
     min-height: 44px;
   }
+}
+
+/* ---------- Redesign: answers (18 November) ----------
+   Your message is a soft bubble on the right with no name above it; answers are plain text on the page.
+   Headings, lists, quotes, tables and code as in evaluation/ui-redesign/mock.html. Last on purpose. */
+.chat-design .message.user {
+  background: var(--bubble);
+  border: 0;
+  border-radius: 20px 20px 6px 20px;
+  padding: 10px 16px 8px;
+  box-shadow: none;
+  max-width: min(78%, 620px);
+}
+.chat-design .message.user > .message-heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.chat-design .message.user .user-text {
+  font-size: 15.5px;
+  line-height: 1.6;
+}
+.chat-design .message.assistant {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+.chat-design .message.assistant > .message-heading {
+  font-size: 12.5px;
+  color: var(--ink3);
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.chat-design .message.assistant > .message-heading strong {
+  font-weight: 550;
+  color: var(--ink2);
+}
+.chat-design .message .answered-by {
+  font-size: 12px;
+  color: var(--ink3);
+  margin: 0 0 6px;
+}
+.chat-design .message-text {
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: var(--ink);
+}
+.chat-design .message-text > :first-child {
+  margin-top: 0;
+}
+.chat-design .message-text :is(h1, h2) {
+  font-size: 19px;
+  font-weight: 620;
+  letter-spacing: -0.012em;
+  line-height: 1.35;
+  margin: 24px 0 8px;
+}
+.chat-design .message-text :is(h3, h4) {
+  font-size: 16.5px;
+  font-weight: 620;
+  line-height: 1.4;
+  margin: 20px 0 6px;
+}
+.chat-design .message-text p {
+  margin: 0 0 12px;
+}
+.chat-design .message-text :is(ul, ol) {
+  margin: 0 0 14px;
+  padding-left: 22px;
+}
+.chat-design .message-text li {
+  margin: 4px 0;
+}
+.chat-design .message-text li::marker {
+  color: var(--ink3);
+}
+.chat-design .message-text blockquote {
+  margin: 0 0 14px;
+  padding: 2px 0 2px 14px;
+  border-left: 3px solid var(--line);
+  color: var(--ink2);
+}
+.chat-design .message-text hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 20px 0;
+}
+.chat-design .message-text a,
+.chat-design .message-text .citation {
+  color: var(--accent);
+}
+.chat-design .message-text .citation {
+  font-size: 12.5px;
+  padding: 1px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--hover);
+  min-height: 0;
+  vertical-align: 1px;
+}
+.chat-design .message-text :not(pre) > code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  background: var(--code);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 1px 5px;
+}
+/* Code: a thin header with the language left and a small Copy right. */
+.chat-design .code-block {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--code);
+  margin: 6px 0 16px;
+  box-shadow: none;
+}
+.chat-design .code-block-toolbar {
+  min-height: 34px;
+  padding: 0 6px 0 14px;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  font-size: 12.5px;
+  color: var(--ink2);
+}
+.chat-design .code-block-toolbar button {
+  min-height: 26px;
+  height: 26px;
+  padding: 0 8px;
+  gap: 5px;
+  font-size: 12.5px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink2);
+  box-shadow: none;
+}
+.chat-design .code-block-toolbar button:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--ink);
+}
+.chat-design .code-block-toolbar button svg {
+  width: 14px;
+  height: 14px;
+}
+.chat-design .code-block pre {
+  background: transparent;
+  padding: 12px 14px;
+  font: 13.5px/1.65 var(--mono);
+}
+/* Tables: lines only, numbers right-aligned in the reader's eye. */
+.chat-design .answer-table {
+  border: 0;
+  border-radius: 0;
+  margin: 6px 0 16px;
+}
+.chat-design .answer-table table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14.5px;
+}
+.chat-design .answer-table th {
+  background: transparent;
+  font-weight: 560;
+  font-size: 13px;
+  color: var(--ink2);
+  text-align: left;
+}
+.chat-design .answer-table :is(th, td) {
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 9px 12px;
+  font-variant-numeric: tabular-nums;
+}
+.chat-design .answer-table tr:last-child td {
+  border-bottom: 0;
+}
+/* Charts drawn from a chart block. */
+.chat-design .answer-chart {
+  margin: 6px 0 16px;
+  padding: 14px 16px 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.chat-design .answer-chart figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--ink2);
+  margin-bottom: 6px;
+}
+.chat-design .answer-chart svg {
+  display: block;
+  width: 100%;
+  height: 170px;
+}
+.chat-design .answer-chart .bar {
+  fill: var(--ink3);
+  opacity: 0.45;
+}
+.chat-design .answer-chart .bar.top {
+  fill: var(--accent);
+  opacity: 1;
+}
+.chat-design .answer-chart text {
+  font: 11px var(--font);
+  fill: var(--ink3);
+}
+/* Actions under a message: small, quiet icons. */
+.chat-design .message-actions.compact-actions {
+  gap: 0;
+  margin-top: 2px;
+}
+.chat-design .message-actions .icon-action {
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink3);
+  box-shadow: none;
+}
+.chat-design .message-actions .icon-action:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--ink);
+}
+.chat-design .message-actions .icon-action svg {
+  width: 16px;
+  height: 16px;
+}
+.chat-design .message-time {
+  font-size: 12px;
+  color: var(--ink3);
+}
+/* A new message rises in gently (off under reduced motion, see the token block). */
+.chat-design .message {
+  animation: message-in var(--slow) var(--ease);
+}
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@media (max-width: 760px) {
+  .chat-design .message.user {
+    max-width: 88%;
+  }
+  .chat-design .message-text :is(h1, h2) {
+    font-size: 18px;
+  }
+  .chat-design .message-actions .icon-action {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+}
+
+/* ---------- Redesign: phone (18 November) ----------
+   The "+" menu stays the small panel above "+" on phones too (owner's choice, 18 November: it covers
+   only what it needs). Taps give a short press feedback; the box keeps clear of the home bar. */
+@media (max-width: 650px) {
+  .chat-design .tools-menu .menu-surface {
+    width: min(300px, calc(100vw - 32px));
+    max-height: 70dvh;
+    overflow-y: auto;
+  }
+  .chat-design .tools-menu .menu-surface > button {
+    min-height: 44px;
+  }
+  .chat-design .composer-dock {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .chat-design :is(button, summary):active:not(:disabled) {
+    transform: scale(0.96);
+    transition: transform 80ms var(--ease);
+  }
+}
+
+/* ---------- Redesign: sign-in and account pages (18 November) ----------
+   The comet mark and name above a calm form: Google as an outlined button, one email field, one
+   main button, a short line of links below. The cosmic glow behind is in the token block. */
+.account-shell .account-preview-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: fit-content;
+  margin: 0 auto 22px;
+  font-size: 21px;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.account-shell .account-preview-brand span {
+  font-weight: inherit;
+}
+.account-shell .brand-mark,
+.chat-design.account-shell .brand-mark {
+  width: 28px;
+  height: 28px;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+.account-shell .brand-mark .brand-tail {
+  fill: var(--ink);
+}
+.account-shell .brand-mark .brand-head {
+  fill: var(--accent);
+}
+.account-shell .account-preview-card {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: var(--shadow-1);
+  backdrop-filter: blur(6px);
+}
+.account-shell .account-login-page .account-entry {
+  max-width: 400px;
+  padding: 30px 30px 24px;
+}
+.account-shell .account-login-page .account-entry h1,
+.account-shell .account-entry h1 {
+  font-size: 22px;
+  font-weight: 560;
+  letter-spacing: -0.018em;
+  text-align: center;
+}
+.account-shell .account-preview-intro {
+  text-align: center;
+  color: var(--ink2);
+  font-size: 14px;
+}
+.account-shell .account-social {
+  width: 100%;
+  min-height: 46px;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 520;
+  box-shadow: none;
+}
+.account-shell .account-social:hover:not(:disabled) {
+  background: var(--hover);
+}
+.account-shell .account-social:disabled {
+  color: var(--ink3);
+}
+.account-shell .account-entry input {
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 15px;
+  padding: 0 14px;
+}
+.account-shell .account-entry input:focus-visible {
+  border-color: var(--accent);
+  outline: 2px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  outline-offset: 1px;
+}
+.account-shell .account-preview-primary {
+  min-height: 46px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 560;
+}
+.account-shell .account-preview-divider {
+  color: var(--ink3);
+  font-size: 12px;
+  text-transform: none;
+}
+.account-shell .account-entry-extras {
+  max-width: 400px;
+  text-align: center;
+  color: var(--ink3);
+  font-size: 12.5px;
+}
+.account-shell .account-entry-extras summary {
+  display: inline-block;
+  list-style: none;
+}
+.account-shell .account-entry-extras summary::-webkit-details-marker {
+  display: none;
+}
+.account-shell .account-appearance select,
+.account-shell .language-switch {
+  font-size: 13px;
+}
+
+/* ---------- Redesign: Settings (18 November) ----------
+   A calm two-column dialog: sections as quiet rows on the left, content on the right with clear
+   headings; actions as small outlined buttons instead of bare text. Texts are unchanged. */
+.chat-design .settings-dialog {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow-2);
+  padding: 18px 20px 20px;
+}
+.chat-design .settings-dialog > .row {
+  align-items: center;
+  margin-bottom: 8px;
+}
+.chat-design .settings-dialog > .row h2 {
+  font-size: 19px;
+  font-weight: 620;
+  margin: 0;
+}
+.chat-design .settings-dialog > .row button {
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink2);
+  font-size: 20px;
+  box-shadow: none;
+}
+.chat-design .settings-dialog > .row button:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+.chat-design .settings-layout > nav button {
+  min-height: 40px;
+  gap: 11px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14.5px;
+  font-weight: 450;
+  box-shadow: none;
+}
+.chat-design .settings-layout > nav button:hover {
+  background: var(--hover);
+}
+.chat-design .settings-layout > nav button[aria-current="page"] {
+  background: var(--hover);
+  font-weight: 550;
+}
+.chat-design .settings-layout > nav button svg {
+  width: 18px;
+  height: 18px;
+  color: var(--ink2);
+}
+.chat-design .settings-content > h3 {
+  font-size: 17px;
+  font-weight: 620;
+  margin: 4px 0 14px;
+}
+.chat-design .settings-content :is(h4, h5) {
+  font-size: 14.5px;
+  font-weight: 600;
+  margin: 20px 0 6px;
+}
+.chat-design .settings-content p {
+  font-size: 14px;
+  line-height: 1.55;
+}
+.chat-design .settings-content p.muted {
+  font-size: 12.5px;
+  color: var(--ink3);
+}
+.chat-design .settings-content select {
+  max-width: 260px;
+  min-height: 38px;
+  border-radius: 10px;
+}
+.chat-design .settings-content .text-button,
+.chat-design .settings-content button:not(.primary):not(.danger):not([role="switch"]) {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-decoration: none;
+  box-shadow: none;
+}
+.chat-design .settings-content .text-button:hover:not(:disabled),
+.chat-design .settings-content button:not(.primary):not(.danger):not([role="switch"]):hover:not(:disabled) {
+  background: var(--hover);
+}
+.chat-design .settings-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+@media (max-width: 760px) {
+  /* 44 px touch targets on phones (CC-19). */
+  .chat-design .settings-content .text-button,
+  .chat-design .settings-content button:not(.primary):not(.danger):not([role="switch"]),
+  .chat-design .settings-layout > nav button {
+    min-height: 44px;
+  }
+}
+/* Notes under an answer ("Memory used", source history): at least 28 px to tap or click. */
+.chat-design .message > details > summary {
+  min-height: 28px;
+  line-height: 28px;
 }

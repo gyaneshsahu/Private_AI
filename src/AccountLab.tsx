@@ -1,3 +1,4 @@
+import { CometMark } from "./CometMark";
 import { SignInIcon } from "./SignInIcon";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createAuthClient } from "better-auth/client";
@@ -329,7 +330,8 @@ export default function AccountLab({
       className={`account-preview ${!session && !synthetic ? "account-login-page" : ""}`}
     >
       <a className="account-preview-brand" href="/">
-        Comet<span>Row</span>
+        <CometMark />
+        CometRow
       </a>
       <LanguageSwitch className="language-switch account-language" />
       {(synthetic || chatUnavailable) && (

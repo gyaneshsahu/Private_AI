@@ -12,6 +12,29 @@ State at the end of 17 November: steps 1 and 2 are in the app; CI green on `2596
 
 Known flaky test: `tests/chat-recovery.test.ts` line 429 (focus on a code block) failed twice in CI on unrelated changes and passed on a rerun. Look into it if it fails again.
 
+## 18 November 2026: answers, phone, sign-in, Settings
+
+Tests: `tests/redesign-ui.test.ts` ("answers", "phone", "settings" cases, 375 and 1280 px) and `tests/browser/redesign-sign-in.spec.ts` (real production build). Screenshots: `.local/ui-redesign/step-4` (answers), `step-5` (phone), `step-6` (sign-in), `step-7` (Settings).
+
+| Feature | Result | What broke | What was fixed |
+| --- | --- | --- | --- |
+| Your message: soft bubble, no "You" above it (kept for screen readers) | pass | - | - |
+| Answers: headings 19 px, quiet list markers, quote with a left line, inline code chip, citations as small chips | pass | - | - |
+| Code: thin header, language left, small Copy (26 px) | pass | - | - |
+| Tables: lines only, no grid | pass | - | - |
+| Charts: a ```chart block with numbers is drawn as bars, the numbers also in a hidden table for screen readers; an invalid block stays code | pass (first run) | - | - |
+| Charts: the instruction that asks the AI to write chart blocks | not added | it would take the product prompt over the 3,400-character limit set on 14 November (`tests/answer-policy.test.ts`) | left as an owner decision; the app draws charts as soon as an answer contains one |
+| A new message rises in gently; off under reduced motion | built | - | - |
+| Phone "+" menu | changed back | I first built a bottom sheet with Camera/Photos/Files tiles; the owner preferred the small panel above "+" (it covers only what it needs) | small panel kept on phones, 44 px rows; test checks it sits above "+", inside the screen, and closes on a tap outside |
+| Phone: tap feedback (short press), box clear of the home bar | built | - | - |
+| Sign-in: comet mark and name instead of the "P" square, outlined Google button, 46 px fields | pass | the comet sat on an old blue square | old square style removed |
+| Sign-in: email code signs in, nothing leaves the machine | pass | - | - |
+| Settings: quiet section rows, clear headings, actions as outlined buttons; texts unchanged | pass | - | - |
+| Settings: theme changes at once; Escape closes | pass | - | - |
+| Older tests (48 files on answers, 51 on settings and memory) | 4 real faults fixed | Settings buttons 34 px on phones (needs 44); the "Memory used" note under an answer 23.99 px on desktop (needs 24) | Settings buttons 44 px on phones; notes under answers 28 px |
+| `chat-recovery` focus check, `invite-browser`, `redesign-ui` sidebar case | pass alone | timed out or lost focus only while 48 files ran at once | none (machine load); watch in CI |
+| `source-history-ui`, `optional-calculator-ui`, `context-review` | local timeout only | their own 25 to 30 s limits on this machine | none; they pass in CI |
+
 ## 18 November 2026: left menu
 
 Test: `tests/redesign-ui.test.ts`, "left menu at 375/1280 px" (3 cases each). Screenshots: `.local/ui-redesign/step-3/`.

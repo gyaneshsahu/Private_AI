@@ -8,6 +8,7 @@ import { displayMath, sourceCitations } from "./answer-format";
 import { auditResearchAnswer } from "./research-audit";
 import { isValidElement, type ReactNode } from "react";
 import { CodeBlock } from "./CodeBlock";
+import { AnswerChart, parseChart } from "./AnswerChart";
 import { useText } from "./i18n";
 import { answerText } from "./text/conversation-ui";
 
@@ -67,6 +68,9 @@ export function Answer({
             const language =
               /^language-([\w+#.-]{1,32})$/.exec(code?.className ?? "")?.[1] ??
               "";
+            // A finished ```chart block with valid numbers is drawn; anything else stays code.
+            const chart = language === "chart" && complete ? parseChart(text) : undefined;
+            if (chart) return <AnswerChart chart={chart} />;
             return (
               <CodeBlock text={text} language={language} complete={complete}>
                 {children}

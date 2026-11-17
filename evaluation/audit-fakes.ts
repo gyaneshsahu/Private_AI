@@ -23,7 +23,7 @@ export const AUDIT_ACCOUNT = "a0d17000-0000-4000-8000-000000000001";
 /** The named answers. Type `audit:<name>` in a message, or queue one with `fakes.answer(name)`. */
 export const ANSWERS = [
   "markdown", "code", "math", "table", "citations", "long", "slow", "error-429", "error-500",
-  "error-503", "dropped", "stop", "python", "image", "plain",
+  "error-503", "dropped", "stop", "python", "image", "plain", "chart",
 ] as const;
 export type AnswerName = (typeof ANSWERS)[number];
 
@@ -130,6 +130,19 @@ const TEXT: Record<Exclude<AnswerName, "long" | "stop" | "error-429" | "error-50
   dropped: "This answer starts normally and then the connection drops before",
   python: "The VAT on 6,420 EUR at 19 % is **1,219.80 EUR**.",
   image: "The picture shows a synthetic test pattern: a coloured square on a white background.",
+  chart: [
+    "Your savings grew from **4,200** to **9,850** EUR.",
+    "",
+    "```chart",
+    '{"title": "Savings at year end", "unit": "EUR", "labels": ["2022", "2023", "2024", "2025", "2026"], "values": [4200, 5480, 7150, 8600, 9850]}',
+    "```",
+    "",
+    "A broken chart block stays code:",
+    "",
+    "```chart",
+    '{"labels": ["a"], "values": [-1]}',
+    "```",
+  ].join("\n"),
 };
 const LONG = Array.from(
   { length: 60 },

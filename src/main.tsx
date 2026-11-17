@@ -1,3 +1,4 @@
+import { CometMark } from "./CometMark";
 import { AccountTheme } from "./AccountTheme";
 import React, { Suspense } from "react";
 import { createRoot } from "react-dom/client";
@@ -30,7 +31,8 @@ createRoot(document.getElementById("root")!).render(
               aria-busy="true"
             >
               <span className="account-preview-brand">
-                Comet<span>Row</span>
+                <CometMark />
+                CometRow
               </span>
               <section className="account-preview-card account-entry">
                 <LoadingAccount />

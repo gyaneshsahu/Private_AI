@@ -296,6 +296,138 @@ describe.each([375, 1280])("left menu at %i px", (width) => {
   });
 });
 
+describe.each([375, 1280])("answers at %i px", (width) => {
+  it("your message is a bubble without a name; answers have clean headings, lists and quotes", async () => {
+    const { context, page } = await open(width);
+    try {
+      await send(page, "SYNTHETIC show me the markdown answer. audit:markdown");
+      const mine = page.locator("article.user").last();
+      await ui(mine).toContainText("SYNTHETIC show me the markdown answer");
+      // "You" is for screen readers only; the bubble is the right-hand soft shape.
+      const you = await mine.locator(".message-heading").evaluate((el) => el.getBoundingClientRect().width);
+      expect(you).toBeLessThanOrEqual(1);
+      const answer = page.locator("article.assistant").last();
+      const h = answer.locator(".message-text h2").first();
+      await ui(h).toBeVisible();
+      expect(Number.parseFloat(await h.evaluate((el) => getComputedStyle(el).fontSize))).toBeLessThanOrEqual(19);
+      await ui(answer.locator("blockquote")).toBeVisible();
+      expect(await answer.locator("blockquote").evaluate((el) => getComputedStyle(el).borderLeftWidth)).toBe("3px");
+      expect(await noSidewaysScroll(page)).toBeLessThanOrEqual(0);
+    } finally {
+      await context.close();
+    }
+  });
+
+  it("code: a thin header with the language and a small Copy; tables are lines only", async () => {
+    const { context, page } = await open(width);
+    try {
+      await send(page, "SYNTHETIC code please. audit:code");
+      const block = page.locator("article.assistant").last().locator(".code-block").first();
+      const copy = block.locator(".code-block-toolbar button");
+      await ui(copy).toBeVisible();
+      expect((await copy.boundingBox())!.height).toBeLessThanOrEqual(30);
+      await ui(block.locator(".code-block-toolbar span").first()).not.toBeEmpty();
+      await send(page, "SYNTHETIC a table please. audit:table");
+      const cell = page.locator("article.assistant").last().locator(".answer-table td").first();
+      const borders = await cell.evaluate((el) => {
+        const s = getComputedStyle(el);
+        return [s.borderLeftWidth, s.borderRightWidth, s.borderBottomWidth];
+      });
+      expect(borders).toEqual(["0px", "0px", "1px"]);
+      expect(await noSidewaysScroll(page)).toBeLessThanOrEqual(0);
+    } finally {
+      await context.close();
+    }
+  });
+
+  it("a chart block becomes a bar chart with the numbers for screen readers; a broken one stays code", async () => {
+    const { context, page } = await open(width);
+    try {
+      await send(page, "SYNTHETIC how did my savings grow? audit:chart");
+      const answer = page.locator("article.assistant").last();
+      const chart = answer.locator("figure.answer-chart");
+      await ui(chart).toHaveCount(1);
+      await ui(chart.locator("figcaption")).toContainText("Savings at year end");
+      await ui(chart.locator("rect.bar")).toHaveCount(5);
+      await ui(chart.locator("rect.bar.top")).toHaveCount(1);
+      await ui(chart.locator("table.sr-only tr")).toHaveCount(5);
+      await ui(chart.locator("table.sr-only")).toContainText("9,850");
+      // The invalid block (a negative number) is shown as code, not drawn.
+      await ui(answer.locator(".code-block")).toHaveCount(1);
+      const box = (await chart.boundingBox())!;
+      expect(box.x + box.width).toBeLessThanOrEqual(width);
+    } finally {
+      await context.close();
+    }
+  });
+});
+
+describe("phone", () => {
+  it("the \"+\" menu is a small panel above \"+\" (not a full-width sheet); rows are 44 px; it works and closes", async () => {
+    const { context, page } = await open(375);
+    try {
+      const plus = page.getByLabel("Attachments and tools", { exact: true });
+      await plus.click();
+      const panel = page.locator(".tools-menu .menu-surface");
+      await ui(panel).toBeVisible();
+      await panel.evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
+      const box = (await panel.boundingBox())!;
+      const plusBox = (await plus.boundingBox())!;
+      expect(box.width).toBeLessThanOrEqual(300);
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(375);
+      expect(box.y + box.height).toBeLessThanOrEqual(plusBox.y);
+      for (const row of await panel.locator(":scope > button").all()) expect((await row.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+      await panel.getByRole("button", { name: "Photo to text", exact: false }).click();
+      await ui(page.getByRole("dialog").filter({ hasText: "Photo to text" })).toBeVisible();
+      await page.keyboard.press("Escape");
+      await plus.click();
+      await ui(panel).toBeVisible();
+      await page.mouse.click(180, 150);
+      await ui(panel).toBeHidden();
+      expect(await noSidewaysScroll(page)).toBeLessThanOrEqual(0);
+    } finally {
+      await context.close();
+    }
+  });
+});
+
+describe.each([375, 1280])("settings at %i px", (width) => {
+  it("opens from the account line, switches sections, changes the theme at once and closes", async () => {
+    const { context, page } = await open(width);
+    try {
+      const toggle = page.getByRole("button", { name: "Open navigation", exact: true });
+      if (await toggle.isVisible().catch(() => false)) await toggle.click();
+      await page.getByLabel("Account menu", { exact: true }).first().click();
+      await page.getByRole("button", { name: "Settings", exact: true }).click();
+      const dialog = page.locator("dialog.settings-dialog[open]");
+      await ui(dialog).toBeVisible();
+      const nav = dialog.locator(".settings-layout > nav");
+      for (const name of ["Data controls", "Security", "General"]) {
+        await nav.getByRole("button", { name, exact: true }).click();
+        await ui(nav.getByRole("button", { name, exact: true })).toHaveAttribute("aria-current", "page");
+        await ui(dialog.locator(".settings-content > h3")).toHaveText(name);
+      }
+      // Actions look like buttons, not bare text.
+      await nav.getByRole("button", { name: "Data controls", exact: true }).click();
+      const download = dialog.getByRole("button", { name: "Download as Markdown", exact: true });
+      await ui(download).toBeVisible();
+      expect(await download.evaluate((el) => getComputedStyle(el).borderTopWidth)).toBe("1px");
+      // The theme changes at once.
+      await nav.getByRole("button", { name: "General", exact: true }).click();
+      await dialog.getByLabel("Appearance", { exact: true }).selectOption("dark");
+      await ui(page.locator(".chat-design.app-shell")).toHaveAttribute("data-theme", "dark");
+      await dialog.getByLabel("Appearance", { exact: true }).selectOption("light");
+      await ui(page.locator(".chat-design.app-shell")).toHaveAttribute("data-theme", "light");
+      await page.keyboard.press("Escape");
+      await ui(dialog).toHaveCount(0);
+      expect(await noSidewaysScroll(page)).toBeLessThanOrEqual(0);
+    } finally {
+      await context.close();
+    }
+  });
+});
+
 it("dark theme: the same screen renders with the dark tokens and stays readable", async () => {
   const { context, page } = await open(1280, "dark");
   try {
