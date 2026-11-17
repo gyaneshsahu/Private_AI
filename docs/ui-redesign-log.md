@@ -4,9 +4,13 @@ One line per check, newest first. "Test" names the Playwright file that keeps th
 
 ## Next (kept current, so work can resume after a break)
 
-1. Finish step 2: read the result of the wide test run (`.local/ui-redesign/step2-tests.log`), fix any test that still expects the old Send button or texts, commit, push, check CI.
-2. Step 3: answer rendering (headings, lists, tables, code blocks, quotes, links, chart card, source cards), with its own cases in `tests/redesign-ui.test.ts` and a section here.
-3. Then steps 4 to 7 of the plan (`docs/ui-redesign-plan-20261116.md`, section 5), the same way; at the end one full pass over every feature.
+State at the end of 17 November: steps 1 and 2 are in the app; CI green on `2596726` (run 43999425325). Nothing is half done.
+
+1. **Message box on one line** (agreed with the owner on 17 November, not started): "+", "Ask anything", the answer mode (Auto, Fast, Thinking) where ChatGPT has "Think", the microphone, and one round button at the end. That end button is live voice while the box is empty and turns into the arrow (↑, a symbol, never the word "Send") once there is text. If live voice is off or its allowance is used up, the arrow sits there greyed until there is text, and live voice comes back when the allowance does. Long text grows the box upwards with the buttons on the bottom row. The "N messages included · N files" count moves into the "+" menu next to "Review context". Update `tests/redesign-ui.test.ts` and this log.
+2. **Left menu** (owner asked for it next after the message box): comet logo, New chat, Search, Projects, Scheduled, Recent list, small account line, as in `evaluation/ui-redesign/mock.html`.
+3. Then answers, phone layout, sign-in layout, settings, upload screens, live voice ball, Secure Max and states (plan, section 5), each with its browser test and a section here; at the end one full pass over every feature.
+
+Known flaky test: `tests/chat-recovery.test.ts` line 429 (focus on a code block) failed twice in CI on unrelated changes and passed on a rerun. Look into it if it fails again.
 
 ## 17 November 2026: step 2, chat screen and message box
 
@@ -22,6 +26,7 @@ Test: `tests/redesign-ui.test.ts` (real app with every feature on, fake AI answe
 | Sidebar: New chat is a quiet row and starts a fresh chat | pass | - | - |
 | Dark theme: dark colours, send and answer work | pass | - | - |
 | Existing tests touched by the change (`composer-ui`, `chat-core-ui`, `i18n-app-ui`, `image-app-ui`, `chat-edit-masking-ui`) | pass after update | they expected Send always visible, the old greeting, the old placeholder and the Enter hint | updated to the new behaviour (Send hidden when empty; greeting and placeholder texts; Enter hint hidden) |
+| CI on the test fix (run 43997791816) | fail, then pass on the next run (43999425325) | `chat-recovery` focus check, a timing flake seen before | nothing changed; noted under Next |
 | `tests/browser/chat-design.spec.ts` (CI run 43996321415, offline job) | fail, then fixed | I had changed its Send check to "hidden", but the box holds a draft there, so Send is shown and off | check put back to "disabled" |
 | `projects-help-ui` at 375 px (CI on the step-1 merge, run 43986832917) | fail, then pass | the project row was 0.2 px shorter than its 44 px "…" after the font change | rows on phones get a 44 px minimum height |
 
