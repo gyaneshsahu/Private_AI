@@ -1,4 +1,4 @@
-// Renders the design mock in the candidate palettes (light and dark) into .local/ui-redesign/step-1h/.
+// Renders the design mock in the candidate palettes (light and dark) into .local/ui-redesign/final/.
 //   node evaluation/ui-redesign/render.mjs      (from the repository root)
 import { chromium } from "@playwright/test";
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
@@ -6,7 +6,7 @@ import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 
 const P = JSON.parse(readFileSync(new URL("./palettes.json", import.meta.url)));
-const out = resolve(".local/ui-redesign/step-1h");
+const out = resolve(".local/ui-redesign/final");
 mkdirSync(out, { recursive: true });
 
 // WCAG contrast, so the choice is not made by eye.

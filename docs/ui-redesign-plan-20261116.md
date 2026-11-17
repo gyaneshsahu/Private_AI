@@ -2,9 +2,19 @@
 
 Owner's brief, 16 November: the app looks cheap; the UI is where CometRow must stand out. Target: clean, calm, professional, on the level of ChatGPT, Claude and Gemini, with its own look. Reference pictures: `docs/ui-reference/` (owner's folder, not committed). Rules as always: no behaviour, privacy, legal-text or consent change without telling the owner; English and German; contrast, focus and keyboard; 375, 768 and 1280 px; tests green; no deploy; files staged by name; small commits.
 
-**Status:** step 1 in progress. Three palette options are rendered; the owner chooses one. Nothing in `src/` is changed until then, except on a separate branch.
+**Status (17 November):** the look is chosen and step 1 (design system) is merged. Step 2 (chat screen and composer) is next.
 
 Why the old look passed: the screen tours checked failed steps, overflow, untranslated labels and requests leaving the machine. Nobody judged how a screen looks. From now on every step ends with the agent opening the screenshots and comparing them with the references before the owner sees them.
+
+## Final look, chosen by the owner on 17 November 2026
+
+- **Colours:** light theme from option C (cool white, dark navy text, one blue accent that is also the main button); dark theme from option A (neutral graphite, white main button, pale blue for links). Values: `evaluation/ui-redesign/palettes.json` (entry F) and the token block at the top of `src/chat-design.css`.
+- **Background:** an even, faded cosmic wash behind the whole workspace, never the sidebar (`--glow`); light is one smooth wash, dark is a faint glow. No glow or light line on the message box.
+- **Sign-in and account pages:** a blended multi-colour cosmic glow that drifts slowly (`--cosmos`); full in light mode, faded in dark mode.
+- **Live voice:** a round colour orb with slowly swirling colour (in the mock; not yet in the app). The planet and the flowing lines were tried and dropped.
+- **Motion:** plain CSS, transform and opacity only, off under reduced motion. No motion library is installed; Framer Motion would need the owner to add it to `package.json`.
+- **Applied to the app so far (step 1, merged):** tokens, one font, no purple or gradients, small Copy button, workspace wash, sign-in glow. **Not yet applied:** everything about layout from the mock (start screen, composer, "+" menu, phone sheet, answer cards and chart, settings, login layout, live voice orb, comet logo). That is step 2 onward in section 5.
+- Mock and live preview: `evaluation/ui-redesign/mock.html`; `node evaluation/ui-redesign/render.mjs` writes the sheets to `.local/ui-redesign/final/`.
 
 ## 1. What makes the reference products feel professional (notes)
 

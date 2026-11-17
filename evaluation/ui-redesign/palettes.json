@@ -1,7 +1,7 @@
 {
   "F": {
-    "name": "C light + A dark, cosmic background",
-    "note": "Light theme from option C, dark theme from option A. An even, faded cosmic wash behind the workspace; a blended cosmic glow on login (faded in dark mode); a flat planet with a slowly moving surface for live voice.",
+    "name": "Final: C light + A dark, cosmic background",
+    "note": "Light theme from option C, dark theme from option A. An even, faded cosmic wash behind the workspace; a blended cosmic glow on login (faded in dark mode); a round colour orb for live voice.",
     "light": {
       "bg": "#fbfcfe",
       "sidebar": "#f2f5fa",
