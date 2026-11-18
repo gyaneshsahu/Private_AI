@@ -98,7 +98,7 @@ it("lets a request within the approved spend continue to the allowance check", a
   const response = await send();
   // No signed-in account in this plain setup, so the allowance refuses; spend did not.
   expect(response.status).toBe(429);
-  expect((await response.json()).error).toContain("No request allowance");
+  expect((await response.json()).error).toBe("Limit reached.");
   expect(usage.spend).toHaveBeenCalledOnce();
   expect(upstream).not.toHaveBeenCalled();
 });

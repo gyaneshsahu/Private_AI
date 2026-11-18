@@ -3,7 +3,8 @@ import { deploymentAccess } from "./deployment";
 import { inviteAccess } from "./invite-access";
 import type { InviteRegistry } from "./invite-registry";
 import { createHmac, randomBytes, randomUUID } from "node:crypto";
-import type { UsageLedger } from "./usage-contract";
+import { runRequestId, type UsageLedger } from "./usage-contract";
+import { chargeStart, limitMessage } from "./usage-charge";
 import { spendAllows } from "./spend-guard";
 import { productionAccountTarget } from "../shared/account-design";
 import { once } from "node:events";
@@ -33,12 +34,12 @@ import { braveSearchProvider, type SearchProvider } from "./providers/search";
 import "./providers/tinfoil-relay";
 import { privatemodeKeyExpiryWarning } from "./providers/privatemode-relay";
 import { manifestPaused, PROVIDER_UPDATE_PAUSE } from "./manifest-watch";
-import { VOICE_PATH, voiceRoute, voiceUsage, type VoiceSettings } from "./providers/privatemode-voice";
+import { takeVoiceAnswer, VOICE_PATH, voiceRoute, voiceUsage, type VoiceSettings, type VoiceTurns } from "./providers/privatemode-voice";
 import { declaredImage, imageDayCount, imageModelAdmitted, type ImageSettings } from "./image-admission";
 import { IMAGE_PROMPT_MAX, ImageCapacity, ImageRefused, refuseImagePrompt, type ImageProvider } from "./image-creation";
 import { CONTINUATION_HEADER, ContinuationCredits } from "./continuation-credit";
 import { declaredResearch, researchAllowed, ResearchTickets, type ResearchSettings } from "./research-admission";
-import { RESEARCH_KINDS } from "../shared/deep-research";
+import { RESEARCH_KINDS, RESEARCH_LIMITS } from "../shared/deep-research";
 import {
   serviceDispatcher,
   proxyConfigured,
@@ -417,6 +418,7 @@ export function createApp(config: Config) {
   );
   // Voice units per account in any 24 hours, shown in the status and enforced by the voice route.
   const voiceBudget = voiceUsage(config.usage);
+  const voiceTurns: VoiceTurns = new Map();
   app.get("/api/status", async (_req, res) => {
     const q = parseQualification();
     const stopped = !!config.inferenceStopped?.();
@@ -582,6 +584,7 @@ export function createApp(config: Config) {
     app.post(
       "/api/inference" + VOICE_PATH,
       ...voiceRoute({
+        turns: voiceTurns,
         settings: config.voice,
         budget: voiceBudget,
         ...(metering ? { metering: { accountOf: meterAccount, record: metering.record } } : {}),
@@ -726,19 +729,37 @@ export function createApp(config: Config) {
         });
         return;
       }
-      if (research.step === "answer" && !researchTickets.claim(who)) {
+      // A run needs at least one of the day's searches left to start (its searches are taken when it starts).
+      if (research.step === "plan" && config.research && searchDay.used(who) >= config.research.dailySearches) {
+        researchDay.giveBack(who);
+        res.locals.outcome = "refused_search_daily";
+        res.status(429).json({ error: "The daily search limit is reached. It frees up within 24 hours. No request was forwarded." });
+        return;
+      }
+      const claimed = research.step === "answer" && researchTickets.claim(who);
+      if (research.step === "answer" && !claimed) {
         res.locals.outcome = "refused_no_run";
         res.status(400).json({
           error: "This deep research run is no longer open. Start a new one. No request was forwarded.",
         });
         return;
       }
-      // Taken back when nothing was answered: the run does not count, the answer may be sent again.
+      // Searches the run did not use go back to the day.
+      if (claimed) for (let i = 0; i < claimed.unusedSearches; i++) searchDay.giveBack(who);
+      // A voice conversation's answer belongs to the recording it answers (counted at its first part).
+      const voiceAnswer =
+        !research.step && !declared.image && takeVoiceAnswer(voiceTurns, who, req.headers["x-privateai-voice-turn"]);
+      // Taken back when nothing was answered: the run does not count, the answer may be sent again
+      // (a voice conversation's answer too).
       const researchBack = () => {
         if (research.step === "plan") researchDay.giveBack(who);
         else if (research.step === "answer") researchTickets.grant(who);
+        const turn = voiceAnswer && voiceTurns.get(who);
+        if (turn) turn.answer = true;
       };
-      const requestId = randomUUID();
+      // A continuation of a counted run (the deep research answer, a voice turn's answer): a `run-` row, never an allowance unit.
+      const continuation = research.step === "answer" || voiceAnswer;
+      const requestId = continuation ? runRequestId(randomUUID()) : randomUUID();
       // Claim the local slots before awaiting shared admission.
       active++;
       if (accountId)
@@ -749,6 +770,8 @@ export function createApp(config: Config) {
       let metrics: UsageMetrics | undefined;
       // For the usage record: why nothing was charged, and what the relay itself measured.
       let free: "code-followup" | "retry" | undefined;
+      // Units this request was actually charged (at most what was left; 0 for a continuation).
+      let charged = 0;
       let startedAt = 0;
       let responseBytes = 0;
       const abort = new AbortController();
@@ -819,55 +842,33 @@ export function createApp(config: Config) {
         } else if (config.usage) {
           await ensureAllowance(accountId);
           try {
-            // Daily cap beside the period allowance (owner, 13 November): a rolling 24 hours, so
-            // no time zone is involved. An unknown count refuses, like unknown allowance.
-            const daily = config.autoAllowance?.dailyLimit;
-            if (
-              daily &&
-              accountId &&
-              (!config.usage.usedInLast ||
-                // A plan is admitted only when the whole run still fits the day.
-                (await config.usage.usedInLast(accountId, 86_400_000)) +
-                  (research.step === "plan" ? research.total : cost) >
-                  daily)
-            ) {
-              res.locals.outcome = "refused_daily";
-              res.status(429).json({
-                error: "The daily request limit is reached. It frees up within 24 hours. No request was forwarded.",
-              });
+            // The allowance is checked only here, at the start (owner, 18 November): a start needs 1 unit
+            // left in the period and in the rolling day (owner, 13 November), and is charged its cost or
+            // what is left, never below 0. Deep research is charged whole at its plan request; its answer
+            // belongs to that counted run (the ticket above) and is a continuation, never refused for allowance.
+            if (!accountId) {
+              res.locals.outcome = "refused_allowance";
+              res.status(429).json({ error: limitMessage(), code: "limit" });
               return;
             }
-            // A run cannot start without allowance for all of it: the plan is refused unless the
-            // plan and the answer both fit. Only the plan's units are reserved now; the answer
-            // reserves its own, so a run stopped after the plan costs the plan only.
-            const wholeRun =
-              research.step !== "plan" ||
-              (!!accountId &&
-                (await (async () => {
-                  const left = await config.usage!.summary(accountId);
-                  return left.state === "active" && left.remaining >= research.total;
-                })()));
-            if (
-              !accountId ||
-              !wholeRun ||
-              !(await config.usage.reserve(
+            if (continuation) {
+              if (!(await config.usage.reserveContinuation?.(accountId, requestId))) throw Error("no period");
+            } else {
+              const charge = await chargeStart(
+                config.usage,
                 accountId,
                 requestId,
-                cost,
-              ))
-            ) {
-              res.locals.outcome = "refused_allowance";
-              res.status(429).json({
-                error:
-                  research.step
-                    ? `Not enough request allowance: deep research counts as ${research.total} requests. No request was forwarded.`
-                    : declared.image && cost > 1
-                    ? `Not enough request allowance: a picture question counts as ${cost} requests. No request was forwarded.`
-                    : cost > 1
-                    ? `Not enough request allowance: this mode counts as ${cost} requests. No request was forwarded.`
-                    : "No request allowance is available. No request was forwarded.",
-              });
-              return;
+                research.step === "plan" ? research.total : cost,
+                config.autoAllowance?.dailyLimit,
+              );
+              if (!charge.units) {
+                if ("reason" in charge && charge.reason === "unavailable") throw Error("allowance unavailable");
+                res.locals.outcome = "reason" in charge && charge.reason === "daily" ? "refused_daily" : "refused_allowance";
+                const at = "resetsAt" in charge ? charge.resetsAt : undefined;
+                res.status(429).json({ error: limitMessage(at), code: "limit", ...(at ? { resetsAt: at } : {}) });
+                return;
+              }
+              charged = charge.units;
             }
             if (abort.signal.aborted) return;
             await config.usage.dispatch(accountId, requestId);
@@ -941,7 +942,12 @@ export function createApp(config: Config) {
         // Granted when the provider accepts the paid request, not when it ends: the browser sends
         // its follow-up the moment it has read the reply. A follow-up on credit grants nothing.
         if (config.code && accountId && !toolCredit) continuationCredits.grant(accountId, mode);
-        if (research.step === "plan") researchTickets.grant(who);
+        if (research.step === "plan") {
+          // The run's searches are counted toward the day now, at its start, so none is refused mid-run.
+          let searches = 0;
+          while (searches < RESEARCH_LIMITS.searches && searchDay.take(who)) searches++;
+          researchTickets.grant(who, Date.now(), searches);
+        }
         for await (const chunk of upstream.body) {
           if (hungUp) abort.abort();
           if (abort.signal.aborted) break;
@@ -975,7 +981,7 @@ export function createApp(config: Config) {
             requestId,
             accountId: recordFor,
             feature: free ?? chatFeature(research.step, declared.image, mode),
-            units: free ? 0 : cost,
+            units: free || continuation ? 0 : config.usage ? charged : research.step === "plan" ? research.total : cost,
             outcome: transportComplete ? "complete" : String(res.locals.outcome).startsWith("upstream_") ? "refused" : "interrupted",
             model: admission.model,
             requestBytes: req.body.length,
@@ -1140,7 +1146,9 @@ export function createApp(config: Config) {
       // Each search costs money at the search provider: with deep research on, every account has
       // a number of searches per 24 hours (ordinary approved searches count too).
       const who = String(res.locals.accountId ?? res.locals.session);
-      if (config.research && !searchDay.take(who)) {
+      // A started research run's searches were counted at its start; others count now.
+      const runSearch = researchTickets.useSearch(who);
+      if (!runSearch && config.research && !searchDay.take(who)) {
         count("search.refused_daily");
         res.status(429).json({
           error: "The daily search limit is reached. It frees up within 24 hours. No query was sent.",
@@ -1149,8 +1157,9 @@ export function createApp(config: Config) {
       }
       count("search.executed");
       const sources = await search!.search(request.value, abort.signal).catch((error) => {
-        // The provider gave no results: the search does not count toward the day.
-        if (config.research) searchDay.giveBack(who);
+        // The provider gave no results: the search does not count toward the day (or the run).
+        if (runSearch) researchTickets.returnSearch(who);
+        else if (config.research) searchDay.giveBack(who);
         throw error;
       });
       recordTool(res, "search");

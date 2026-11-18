@@ -37,12 +37,3 @@ export const RESEARCH_MIN_SOURCE_CHARACTERS = 4_000;
 export const researchSourceRoom = (maxInputCharacters: number, contextCharacters: number) =>
   Math.min(RESEARCH_LIMITS.sourceCharacters, maxInputCharacters - contextCharacters - RESEARCH_OVERHEAD);
 
-/**
- * The usage ledger takes 1 to 10 units per request (server/usage-contract.ts), so a run's cost is
- * split over its two requests: the answer carries as much as it can, the plan the rest.
- * 15 becomes plan 5 + answer 10.
- */
-export function researchWeights(cost: number): Record<ResearchStep, number> {
-  const answer = Math.min(10, cost - 1);
-  return { plan: cost - answer, answer };
-}

@@ -136,7 +136,7 @@ it("sizes the spend check with the mode's own output limit", async () => {
   expect((await thinking.json()).error).toContain("approved spending limit");
   const fast = await send("TEST_A", "fast");
   // Spend allowed it; this plain setup has no signed-in account, so the allowance refuses.
-  expect((await fast.json()).error).toContain("No request allowance");
+  expect((await fast.json())).toMatchObject({ error: "Limit reached.", code: "limit" });
   expect(upstream).not.toHaveBeenCalled();
 });
 
@@ -189,13 +189,15 @@ it("a Thinking request uses its allowance cost; spend counts it once", async () 
   expect(thinking.status).toBe(200);
   await thinking.arrayBuffer();
   await vi.waitFor(() => expect(usage.summary(invite.id)).toMatchObject({ used: 3, pending: 0 }));
-  // 3 used of 4: a second Thinking request (3 more) is refused, a Fast one (1) fits.
-  const refused = await send("thinking");
+  // 3 used of 4: a start needs only 1 unit left, so a second Thinking request runs and is charged the
+  // last unit (owner, 18 November: the balance stops at 0); the next start is refused calmly.
+  const last = await send("thinking");
+  expect(last.status).toBe(200);
+  await last.arrayBuffer();
+  await vi.waitFor(() => expect(usage.summary(invite.id)).toMatchObject({ pending: 0 }));
+  const refused = await send("fast");
   expect(refused.status).toBe(429);
-  expect((await refused.json()).error).toContain("this mode counts as 3 requests");
-  const fast = await send("fast");
-  expect(fast.status).toBe(200);
-  await fast.arrayBuffer();
+  expect(await refused.json()).toMatchObject({ code: "limit", error: expect.stringMatching(/^Limit reached\. It resets at /) });
   await vi.waitFor(() =>
     expect(usage.summary(invite.id)).toMatchObject({
       state: "exhausted",

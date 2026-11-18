@@ -210,7 +210,7 @@ it("allowance and one request per account apply to Privatemode chat; usage settl
   // No allowance yet: refused before upstream.
   const none = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf));
   expect(none.status).toBe(429);
-  expect((await none.json()).error).toContain("No request allowance");
+  expect(await none.json()).toEqual({ error: "Limit reached.", code: "limit" });
   expect(upstream).not.toHaveBeenCalled();
   usage.createAllowance({
     accountId: account.accountId,
@@ -237,11 +237,17 @@ it("allowance and one request per account apply to Privatemode chat; usage settl
       unmeteredRequests: 1,
     }),
   );
-  // Thinking costs 3 units: refused with 1 left.
+  // Thinking costs 3 units, and 1 left is enough to start: it runs and takes that last unit.
   const thinking = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf, "glm-5.3", "thinking"));
-  expect(thinking.status).toBe(429);
-  expect((await thinking.json()).error).toContain("this mode counts as 3 requests");
-  expect(upstream).toHaveBeenCalledTimes(1);
+  expect(thinking.status).toBe(200);
+  const reading = thinking.text();
+  release(); // this stream also waits to be released
+  await reading;
+  await vi.waitFor(() => expect(usage.summary(account.accountId)).toMatchObject({ used: 2, remaining: 0, pending: 0 }));
+  const after = await post(root, "/v1/chat/completions", chatHeaders(cookie, status.csrf));
+  expect(after.status).toBe(429);
+  expect((await after.json()).code).toBe("limit");
+  expect(upstream).toHaveBeenCalledTimes(2);
   usage.close();
 });
 
@@ -290,7 +296,8 @@ it("a daily cap beside the period allowance: Thinking's cost counts, the refusal
   const sent = upstream.mock.calls.length;
   const capped = await send("glm-5.3-flash", "fast");
   expect(capped.status).toBe(429);
-  expect(capped.body).toContain("daily request limit");
+  // The calm message names when the day frees up, with no unit counts.
+  expect(JSON.parse(capped.body)).toMatchObject({ code: "limit", error: expect.stringMatching(/^Limit reached\. It resets at .+\.$/) });
   expect(upstream).toHaveBeenCalledTimes(sent);
   // The period allowance is far from used up: only the day is full.
   expect(usage.summary(account.accountId)).toMatchObject({ state: "active", used: 4 });

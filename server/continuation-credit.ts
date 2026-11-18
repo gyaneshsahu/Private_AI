@@ -12,7 +12,14 @@
 /** Declared by the browser on a follow-up request; the only accepted value is "tool". */
 export const CONTINUATION_HEADER = "x-privateai-continuation";
 export const CONTINUATIONS = 2;
-export const CREDIT_MS = 90_000;
+/**
+ * A started message always finishes (owner, 18 November): every follow-up the browser may make for
+ * one message (src/tool-loop.ts MAX_TOOL_ROUNDS) is covered, within the longest message time limit
+ * (Thinking, 300 s) plus a margin. Before that rule the follow-ups beyond CONTINUATIONS were charged
+ * and could be refused halfway through a calculation.
+ */
+export const FOLLOW_UPS = 3;
+export const CREDIT_MS = 310_000;
 
 export class ContinuationCredits {
   private readonly credits = new Map<string, { mode: string | undefined; left: number; expires: number }>();
@@ -23,8 +30,7 @@ export class ContinuationCredits {
   grant(accountId: string, mode: string | undefined, now = Date.now()) {
     if (this.credits.size > 10_000)
       for (const [id, credit] of this.credits) if (credit.expires <= now) this.credits.delete(id);
-    if (this.perPaid > 0) this.credits.set(accountId, { mode, left: this.perPaid, expires: now + CREDIT_MS });
-    else this.credits.delete(accountId);
+    this.credits.set(accountId, { mode, left: Math.max(this.perPaid, FOLLOW_UPS), expires: now + CREDIT_MS });
   }
 
   /** Takes one follow-up from the account's credit; false means the request is charged normally. */

@@ -188,26 +188,35 @@ it("charges the image price, not the mode's text price, and bounds image questio
 
 it("refuses without enough allowance and at the daily unit cap, and such a refusal does not use up one of the day's images", async () => {
   upstream.mockImplementation(async () => answer());
-  // Two units left in the period: a text message fits, an image question (3 units) does not.
+  // Two units left in the period: an image question (3 units) may start, since 1 unit left is enough,
+  // and takes the 2 left (owner, 18 November: the balance stops at 0). Later starts are refused calmly,
+  // and the refusals give the day's image back: with 1 of 2 images left, both say "limit", not "pictures".
   const tight = await signedIn({ autoAllowance: { requestLimit: 2, days: 7 } });
-  for (let i = 0; i < 3; i++) {
+  const started = await post(tight.root, headers(tight.cookie, tight.status.csrf));
+  expect(started.status).toBe(200);
+  await started.text();
+  await tight.settled();
+  expect(tight.usage.summary(tight.accountId)).toMatchObject({ used: 2, remaining: 0 });
+  for (let i = 0; i < 2; i++) {
     const refused = await post(tight.root, headers(tight.cookie, tight.status.csrf));
     expect(refused.status).toBe(429);
-    expect((await refused.json()).error).toBe(
-      "Not enough request allowance: a picture question counts as 3 requests. No request was forwarded.",
-    );
+    expect(await refused.json()).toMatchObject({ code: "limit", error: expect.stringMatching(/^Limit reached\. It resets at /) });
   }
-  expect(upstream).not.toHaveBeenCalled();
-  // Daily cap of 4 units: one image question (3) fits, a second would make 6.
+  expect(upstream).toHaveBeenCalledTimes(1);
+  // Daily cap of 4 units: an image question (3) and a text message (the last 1) run; the next is refused.
   const capped = await signedIn({ autoAllowance: { requestLimit: 50, days: 7, dailyLimit: 4 } });
   const first = await post(capped.root, headers(capped.cookie, capped.status.csrf));
   expect(first.status).toBe(200);
   await first.text();
   await capped.settled();
+  const text = await post(capped.root, headers(capped.cookie, capped.status.csrf, { image: false }));
+  expect(text.status).toBe(200);
+  await text.text();
+  await capped.settled();
   const second = await post(capped.root, headers(capped.cookie, capped.status.csrf));
   expect(second.status).toBe(429);
-  expect((await second.json()).error).toContain("daily request limit");
-  expect(takeCounts()).toMatchObject({ "image.refused_allowance": 3, "image.refused_daily": 1 });
+  expect((await second.json()).code).toBe("limit");
+  expect(takeCounts()).toMatchObject({ "image.refused_allowance": 2, "image.refused_daily": 1 });
 });
 
 it("a text message's retry credit never pays for an image question, and a provider refusal gives the day's image back", async () => {

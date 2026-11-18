@@ -18,13 +18,16 @@ import { voiceChunkLimit, voiceChunkUnits, type VoiceLimits } from "../../shared
 import { count } from "../counters";
 import { serviceDispatcher } from "../network";
 import { spendAllows } from "../spend-guard";
-import { voiceRequestId, type UsageLedger } from "../usage-contract";
+import { runRequestId, voiceRequestId, type UsageLedger } from "../usage-contract";
+import { chargeStart, limitMessage } from "../usage-charge";
 import { alertModelNotFound, modelNotFound } from "./inference-relay";
 import { forwardedHeaders, REPLY_HEADERS } from "./privatemode-relay";
 
 export const VOICE_PATH = "/v1/audio/transcriptions";
 /** The browser reports each chunk's voice units (2-second steps, rounded up) in this header. */
 export const VOICE_UNITS_HEADER = "x-privateai-voice-units";
+/** One id per recording (turn), chosen by the browser; later parts of an admitted turn are continuations. */
+export const VOICE_TURN_HEADER = "x-privateai-voice-turn";
 const DAY = 86_400_000;
 
 export type VoiceSettings = VoiceLimits;
@@ -56,6 +59,17 @@ export function voiceUsage(usage?: UsageLedger) {
 }
 export type VoiceUsage = ReturnType<typeof voiceUsage>;
 
+/** A recording admitted at its first part: its later parts, and one answer to it, are continuations. */
+export type VoiceTurns = Map<string, { turn: string; left: number; expires: number; answer: boolean }>;
+
+/** Takes the one answer of `who`'s open turn `turn`; false when there is none. */
+export function takeVoiceAnswer(turns: VoiceTurns, who: string, turn: unknown, now = Date.now()): boolean {
+  const open = turns.get(who);
+  if (typeof turn !== "string" || !open || open.turn !== turn || !open.answer || open.expires <= now) return false;
+  open.answer = false;
+  return true;
+}
+
 export interface VoiceRelayDeps {
   settings: VoiceSettings;
   budget: VoiceUsage;
@@ -70,6 +84,8 @@ export interface VoiceRelayDeps {
   claim: (accountId: string | undefined) => "instance" | "account" | (() => void);
   /** Requests running in this process, this one included (for the spend guard). */
   running: () => number;
+  /** Open recordings per account (shared with chat: a voice conversation's answer belongs to its turn). */
+  turns?: VoiceTurns;
   /** Usage metering (docs/usage-metering-20261115.md); absent while it is off: then nothing is recorded. */
   metering?: {
     accountOf: (res: express.Response) => string | undefined;
@@ -84,6 +100,12 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
   // shortcut: the retry credit lives in this process's memory, like chat's retry credit, so a
   // restart forgets it; move to the ledger with the other single-server limits.
   const retryCredit = new Map<string, number>();
+  // A recording is checked once, at its first part (owner, 18 November: a started task finishes).
+  // The turn is opened only by a counted start and is bounded by the turn's length: at most
+  // maxTurnSeconds of parts, within that time plus two minutes for the last transcription.
+  // shortcut: in this process's memory, like the retry credit; a restart makes the next part a new start.
+  const turns: VoiceTurns = deps.turns ?? new Map();
+  const turnParts = Math.ceil(settings.maxTurnSeconds / settings.chunkSeconds) + 1;
 
   const handler: RequestHandler = async (req, res) => {
     // The reason travels in a header: the SDK hands the browser a refused reply's status and
@@ -126,8 +148,13 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
       return refuse(429, "refused_instance_busy", "Three requests are already running.");
     if (claimed === "account")
       return refuse(429, "refused_account_busy", "A request is already running for this account.");
+    const who = String(accountId ?? res.locals.session);
+    const turn = String(req.headers[VOICE_TURN_HEADER] ?? "");
+    const open = /^[0-9a-f-]{36}$/.test(turn) ? turns.get(who) : undefined;
+    const continuing = !!open && open.turn === turn && open.left > 0 && open.expires > Date.now();
+    if (continuing) open.left--;
     // The units ride in the ledger row's ID: the durable daily voice budget (usage-contract.ts).
-    const requestId = voiceRequestId(units, randomUUID());
+    const requestId = continuing ? runRequestId(voiceRequestId(units, randomUUID())) : voiceRequestId(units, randomUUID());
     let dispatched = false;
     let complete = false;
     // For the usage record: the allowance units this chunk was charged (0 on the retry credit).
@@ -158,11 +185,25 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
             "The approved spending limit for this provider review is reached. No request was forwarded.",
           );
       }
-      const who = String(accountId ?? res.locals.session);
       const now = Date.now();
       const credit = retryCredit.get(who) ?? 0;
       retryCredit.delete(who);
-      if (credit > now) {
+      if (continuing) {
+        // A later part of an admitted recording: counted toward the day's voice time and the spend
+        // guard, never refused for allowance or the daily limits.
+        charged = 0;
+        if (deps.usage) {
+          try {
+            if (!accountId || !(await deps.usage.reserveContinuation?.(accountId, requestId))) throw Error("no period");
+            if (abort.signal.aborted) return;
+            await deps.usage.dispatch(accountId, requestId);
+            dispatched = true;
+          } catch {
+            return refuse(503, "usage_unavailable", "Usage controls unavailable. No request was forwarded.");
+          }
+        }
+        deps.budget.record(who, units);
+      } else if (credit > now) {
         count("voice.retry_not_counted");
         charged = 0;
       } else {
@@ -172,7 +213,8 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
         } catch {
           return refuse(503, "usage_unavailable", "Usage controls unavailable. No request was forwarded.");
         }
-        if (used + units > settings.dailyUnits)
+        // A recording may start while any of the day's voice time is left.
+        if (used >= settings.dailyUnits)
           return refuse(
             429,
             "refused_voice_daily",
@@ -181,25 +223,15 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
         if (deps.usage) {
           await deps.ensureAllowance(accountId);
           try {
-            if (
-              deps.dailyLimit &&
-              accountId &&
-              (!deps.usage.usedInLast ||
-                (await deps.usage.usedInLast(accountId, DAY)) + speech.allowanceCost > deps.dailyLimit)
-            )
-              return refuse(
-                429,
-                "refused_daily",
-                "The daily request limit is reached. It frees up within 24 hours. No request was forwarded.",
-              );
-            if (!accountId || !(await deps.usage.reserve(accountId, requestId, speech.allowanceCost)))
-              return refuse(
-                429,
-                "refused_allowance",
-                speech.allowanceCost > 1
-                  ? `Not enough request allowance: voice input counts as ${speech.allowanceCost} requests. No request was forwarded.`
-                  : "No request allowance is available. No request was forwarded.",
-              );
+            if (!accountId) return refuse(429, "refused_allowance", limitMessage());
+            const charge = await chargeStart(deps.usage, accountId, requestId, speech.allowanceCost, deps.dailyLimit);
+            if (!charge.units) {
+              if ("reason" in charge && charge.reason === "unavailable") throw Error("allowance unavailable");
+              const at = "resetsAt" in charge ? charge.resetsAt : undefined;
+              if (at) res.setHeader("X-PrivateAI-Resets-At", at);
+              return refuse(429, "reason" in charge && charge.reason === "daily" ? "refused_daily" : "refused_allowance", limitMessage(at));
+            }
+            charged = charge.units;
             if (abort.signal.aborted) return;
             await deps.usage.dispatch(accountId, requestId);
             dispatched = true;
@@ -208,6 +240,10 @@ export function voiceRoute(deps: VoiceRelayDeps): (RequestHandler | ErrorRequest
           }
         }
         deps.budget.record(who, units);
+        if (/^[0-9a-f-]{36}$/.test(turn)) {
+          if (turns.size > 5000) for (const [key, t] of turns) if (t.expires <= now) turns.delete(key);
+          turns.set(who, { turn, left: turnParts - 1, expires: now + settings.maxTurnSeconds * 1000 + 120_000, answer: true });
+        }
       }
       if (abort.signal.aborted) return;
       forwarded = true;

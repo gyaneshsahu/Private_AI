@@ -11,7 +11,8 @@ vi.mock("undici", async (importOriginal) => ({
     Promise.resolve(upstream(url, options)).then(asUndiciRequestResult),
 }));
 import { createApp, type Config } from "../server/app";
-import { CONTINUATIONS, CREDIT_MS, ContinuationCredits } from "../server/continuation-credit";
+import { CONTINUATIONS, CREDIT_MS, ContinuationCredits, FOLLOW_UPS } from "../server/continuation-credit";
+import { MAX_TOOL_ROUNDS } from "../src/tool-loop";
 import { takeCounts } from "../server/counters";
 import { InviteRegistry } from "../server/invite-registry";
 import { SqliteUsageLedger } from "../server/usage-ledger";
@@ -90,22 +91,21 @@ async function signedIn(extra: Partial<Config> = {}) {
   return { root, signIn };
 }
 
-it("the credit itself: two follow-ups per grant, same mode only, gone after 90 seconds, one account never uses another's", () => {
-  expect([CONTINUATIONS, CREDIT_MS]).toEqual([2, 90_000]);
+it("the credit itself: every follow-up of one message (3), same mode only, for the longest message time, one account never uses another's", () => {
+  // A started message always finishes (owner, 18 November): all of src/tool-loop.ts's rounds, within Thinking's 300 s.
+  expect([CONTINUATIONS, FOLLOW_UPS, CREDIT_MS]).toEqual([2, MAX_TOOL_ROUNDS, 310_000]);
   const credits = new ContinuationCredits();
   expect(credits.claim("alice", "fast", 0)).toBe(false);
   credits.grant("alice", "fast", 0);
   expect(credits.claim("bob", "fast", 1)).toBe(false);
   expect(credits.claim("alice", "thinking", 1)).toBe(false);
-  expect(credits.claim("alice", "fast", 1)).toBe(true);
-  expect(credits.claim("alice", "fast", 2)).toBe(true);
-  expect(credits.claim("alice", "fast", 3)).toBe(false);
+  expect([1, 2, 3, 4].map((now) => credits.claim("alice", "fast", now))).toEqual([true, true, true, false]);
   credits.grant("alice", "fast", 10);
   expect(credits.claim("alice", "fast", 10 + CREDIT_MS)).toBe(false);
   // A new paid request replaces what was left: credits never add up.
   credits.grant("alice", "fast", 0);
   credits.grant("alice", "fast", 1);
-  expect([1, 2, 3].map((now) => credits.claim("alice", "fast", now))).toEqual([true, true, false]);
+  expect([1, 2, 3, 4].map((now) => credits.claim("alice", "fast", now))).toEqual([true, true, true, false]);
 });
 
 it("the status says code execution is on only with the switch", async () => {
@@ -115,22 +115,21 @@ it("the status says code execution is on only with the switch", async () => {
   expect(off.status).not.toHaveProperty("code");
 });
 
-it("a paid message carries two follow-ups free; the third is charged like a new message, and its own follow-ups are free again", async () => {
+it("a paid message carries all its three follow-ups free; a fourth is charged like a new message, and its own follow-ups are free again", async () => {
   upstream.mockImplementation(async () => ok());
   const { chat, used } = await (await signedIn()).signIn();
   expect(await chat()).toBe(200);
   expect(used()).toBe(1);
-  expect(await chat(true)).toBe(200);
-  expect(await chat(true)).toBe(200);
+  for (let i = 0; i < 3; i++) expect(await chat(true)).toBe(200);
   expect(used()).toBe(1);
-  // No credit left: charged normally. Being paid, it grants two again.
+  // More than one message can make: charged normally. Being paid, it grants three again.
   expect(await chat(true)).toBe(200);
   expect(used()).toBe(2);
   expect(await chat(true)).toBe(200);
   expect(used()).toBe(2);
-  expect(upstream).toHaveBeenCalledTimes(5);
-  // Content-free counts: three follow-ups on credit, by mode.
-  expect(takeCounts()).toMatchObject({ "chat.fast.tool_continuation": 3, "chat.fast.completed": 5 });
+  expect(upstream).toHaveBeenCalledTimes(6);
+  // Content-free counts: four follow-ups on credit, by mode.
+  expect(takeCounts()).toMatchObject({ "chat.fast.tool_continuation": 4, "chat.fast.completed": 6 });
 });
 
 it("a follow-up with no paid message before it, in another mode, or from another account is charged", async () => {
@@ -175,10 +174,12 @@ it("the credit expires: a follow-up after 90 seconds is charged", async () => {
 
 it("the daily cap, the stop switch and the spending limit still apply to follow-ups", async () => {
   upstream.mockImplementation(async () => ok());
-  // Daily cap of 1 unit: the paid message uses it. Its two follow-ups cost nothing and pass;
-  // the third would be charged and is refused.
+  // Daily cap of 1 unit: the paid message uses it. Its three follow-ups cost nothing and pass (a
+  // started message finishes); a fourth would be a new start and is refused.
   const capped = await (await signedIn({ autoAllowance: { requestLimit: 50, days: 7, dailyLimit: 1 } })).signIn();
-  expect([await capped.chat(), await capped.chat(true), await capped.chat(true), await capped.chat(true)]).toEqual([200, 200, 200, 429]);
+  const replies = [await capped.chat()];
+  for (let i = 0; i < 4; i++) replies.push(await capped.chat(true));
+  expect(replies).toEqual([200, 200, 200, 200, 429]);
   expect(capped.used()).toBe(1);
   expect(takeCounts()).toMatchObject({ "chat.fast.refused_daily": 1 });
 
@@ -198,7 +199,7 @@ it("the daily cap, the stop switch and the spending limit still apply to follow-
   spent = "5";
   expect(await limited.chat(true)).toBe(429);
   expect(takeCounts()).toMatchObject({ "chat.fast.refused_spend": 1 });
-  expect(upstream).toHaveBeenCalledTimes(5);
+  expect(upstream).toHaveBeenCalledTimes(6);
 });
 
 it("one request at a time holds for follow-ups", async () => {

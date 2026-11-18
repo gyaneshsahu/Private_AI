@@ -14,7 +14,6 @@ import {
   type WeightsFile,
 } from "../shared/usage-config";
 import { validateQualification } from "../shared/contracts";
-import { researchWeights } from "../shared/deep-research";
 import { BACKGROUND_LIMITS } from "../server/background-tasks";
 import { CONTINUATIONS } from "../server/continuation-credit";
 import { withPlan } from "../server/deployment-config";
@@ -36,8 +35,8 @@ it("version 1 carries today's weights unchanged: report draft, code credit, back
   for (const tier of draft.modes.thinkingCandidates) expect(tier.allowanceCost).toBe(v1.units["chat-thinking"]);
   expect(v1.freeCodeFollowUps).toBe(CONTINUATIONS);
   expect([v1.units["background-search"], v1.units["background-attachment"]]).toEqual([BACKGROUND_LIMITS.searchUnits, BACKGROUND_LIMITS.attachmentUnits]);
-  // 15 = plan 5 + answer 10, as the relay charges a run today.
-  expect(researchWeights(v1.units["research-run"])).toEqual({ plan: 5, answer: 10 });
+  // A whole run is charged at its start (owner, 18 November).
+  expect(v1.units["research-run"]).toBe(15);
 });
 
 it("the newest version whose date has passed is in force; versions must count up with later dates", () => {

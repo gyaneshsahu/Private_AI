@@ -15,7 +15,8 @@ import { inWindow, type BackgroundStore, type ResultRow, type RunWindow, type Ta
 import { count } from "./counters";
 import { imageDayCount } from "./image-admission";
 import type { SearchProvider } from "./providers/search";
-import type { UsageLedger } from "./usage-contract";
+import { runRequestId, type UsageLedger } from "./usage-contract";
+import { chargeStart } from "./usage-charge";
 import { chatEuros, pricesAt } from "../shared/usage-config";
 
 const DAY = 86_400_000;
@@ -235,8 +236,9 @@ export function createBackgroundTasks(deps: BackgroundDeps) {
     if (usage) {
       try {
         await deps.ensureAllowance(row.accountId);
+        // A run starts while 1 unit is left (owner, 18 November); it is charged its cost or what is left.
         const left = await usage.summary(row.accountId);
-        if (left.state !== "active" || left.remaining < units) {
+        if (left.state !== "active" || left.remaining < 1) {
           const skips = row.skips + 1;
           if (skips >= BACKGROUND_LIMITS.skipsBeforePause) {
             count("background.paused_allowance");
@@ -244,7 +246,7 @@ export function createBackgroundTasks(deps: BackgroundDeps) {
           }
           return skip("allowance_exhausted", { skips });
         }
-        if (deps.dailyLimit && (!usage.usedInLast || (await usage.usedInLast(row.accountId, DAY)) + units > deps.dailyLimit))
+        if (deps.dailyLimit && (!usage.usedInLast || (await usage.usedInLast(row.accountId, DAY)) >= deps.dailyLimit))
           return skip("daily_limit");
       } catch {
         return skip("usage_unavailable");
@@ -291,10 +293,17 @@ export function createBackgroundTasks(deps: BackgroundDeps) {
           return "ran";
         }
       }
-      const requestId = `bg-${randomUUID()}`;
+      let requestId = `bg-${randomUUID()}`;
       if (usage) {
         try {
-          if (!(await usage.reserve(row.accountId, requestId, units))) return skip("allowance_exhausted", { skips: row.skips + 1 });
+          // The run has started (checked above, and its search may have run): it is never skipped for
+          // allowance now. If another request took the last units meanwhile, it finishes as a continuation.
+          const charge = await chargeStart(usage, row.accountId, requestId, units, deps.dailyLimit);
+          if (!charge.units) {
+            if ("reason" in charge && charge.reason === "unavailable") return skip("usage_unavailable");
+            requestId = runRequestId(requestId);
+            if (!(await usage.reserveContinuation?.(row.accountId, requestId))) return skip("usage_unavailable");
+          }
           await usage.dispatch(row.accountId, requestId);
         } catch {
           return skip("usage_unavailable");

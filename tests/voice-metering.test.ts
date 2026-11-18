@@ -147,16 +147,16 @@ it("the daily voice budget across chunks and turns; the meter and the status sho
   const meter = await (await alice.meter()).json();
   expect(status.voice).toMatchObject({ dailyUnits: 60, usedUnits: 48 });
   expect(meter.voice).toEqual({ dailyUnits: status.voice.dailyUnits, chunkSeconds: 30, usedUnits: status.voice.usedUnits });
-  // 48 + 15 is over 60: refused before anything is sent, no charge and no record.
-  const over = await alice.chunk(15);
-  expect(over.status).toBe(429);
-  expect(over.headers.get("x-privateai-voice")).toBe("refused_voice_daily");
-  expect(await alice.chunk(12)).toHaveProperty("status", 200);
+  // 48 of 60: a recording starts while any voice time is left (owner, 18 November), so 15 more run
+  // and make 63; the next start is refused before anything is sent, with no charge and no record.
+  expect(await alice.chunk(15)).toHaveProperty("status", 200);
   expect(alice.used()).toBe(6);
   await alice.recorded(6);
-  expect((await (await alice.meter()).json()).voice.usedUnits).toBe(60);
-  expect((await alice.status()).voice.usedUnits).toBe(60);
-  expect((await alice.chunk(1)).status).toBe(429);
+  expect((await (await alice.meter()).json()).voice.usedUnits).toBe(63);
+  expect((await alice.status()).voice.usedUnits).toBe(63);
+  const over = await alice.chunk(1);
+  expect(over.status).toBe(429);
+  expect(over.headers.get("x-privateai-voice")).toBe("refused_voice_daily");
   // The meter's feature table counts chunks and the allowance units they were charged.
   expect((await (await alice.meter()).json()).features).toContainEqual({ feature: "voice", requests: 6, units: 6, tokens: 0, reported: 0 });
 });

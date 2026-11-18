@@ -1,7 +1,7 @@
 // Deep research at the relay (docs/deep-research-20261114.md): off unless switched on; a run is a
-// declared plan request and a declared answer request whose weights add up to the run's cost; a
-// plan is refused unless the whole run fits the allowance and the day; runs and searches are
-// capped per account per day. Upstream and search are test doubles: no key, no provider call.
+// declared plan request, charged the whole run at its start, and a declared answer request that
+// belongs to it and is never refused for allowance; a run starts while 1 unit is left (owner,
+// 18 November); runs and searches are capped per account per day, a run's searches taken at its start. Upstream and search are test doubles: no key, no provider call.
 import { afterEach, expect, it, vi } from "vitest";
 import { createServer, type Server } from "node:http";
 import { asUndiciRequestResult } from "./fixtures/undici-request";
@@ -21,8 +21,7 @@ import {
   TICKET_MS,
 } from "../server/research-admission";
 import { SqliteUsageLedger } from "../server/usage-ledger";
-import { usageUnits } from "../server/usage-contract";
-import { RESEARCH_KINDS, researchWeights } from "../shared/deep-research";
+import { RESEARCH_KINDS } from "../shared/deep-research";
 import { fakeManifest, privatemodeReport } from "./fixtures/privatemode-report";
 
 const RESEARCH = { cost: 15, dailyRuns: 3, dailySearches: 24 };
@@ -118,22 +117,13 @@ async function signedIn(extra: Partial<Config> = {}) {
   return { root, signIn };
 }
 
-it("the weights: every allowed cost splits into two charges the ledger accepts, and 15 is 5 for the plan and 10 for the answer", () => {
-  expect(researchWeights(15)).toEqual({ plan: 5, answer: 10 });
-  for (let cost = 2; cost <= 20; cost++) {
-    const { plan, answer } = researchWeights(cost);
-    expect(plan + answer).toBe(cost);
-    expect(usageUnits.safeParse(plan).success && usageUnits.safeParse(answer).success).toBe(true);
-  }
-});
-
 it("the declaration: only the two kinds, only with the switch, only for a listed account when there is a list", () => {
   const header = (kind: string) => ({ "x-privateai-kind": kind });
   expect(declaredResearch({}, RESEARCH, undefined)).toEqual({ step: undefined });
   // Another kind (the image feature's) is not research.
   expect(declaredResearch(header("image"), RESEARCH, undefined)).toEqual({ step: undefined });
-  expect(declaredResearch(header("research-plan"), RESEARCH, undefined)).toEqual({ step: "plan", cost: 5, total: 15 });
-  expect(declaredResearch(header("research-answer"), RESEARCH, undefined)).toEqual({ step: "answer", cost: 10, total: 15 });
+  expect(declaredResearch(header("research-plan"), RESEARCH, undefined)).toEqual({ step: "plan", cost: 15, total: 15 });
+  expect(declaredResearch(header("research-answer"), RESEARCH, undefined)).toEqual({ step: "answer", cost: 0, total: 15 });
   expect(declaredResearch(header("research-plan"), undefined, undefined)).toEqual({ refused: "off" });
   const listed = { ...RESEARCH, allowedEmails: ["Premium@example.test"] };
   expect(researchAllowed(listed, "premium@example.test")).toBe(true);
@@ -147,10 +137,20 @@ it("the ticket: one answer per plan, gone after its time, one account never uses
   expect(tickets.claim("alice", 0)).toBe(false);
   tickets.grant("alice", 0);
   expect(tickets.claim("bob", 1)).toBe(false);
-  expect(tickets.claim("alice", 1)).toBe(true);
+  expect(tickets.claim("alice", 1)).toEqual({ unusedSearches: 0 });
   expect(tickets.claim("alice", 2)).toBe(false);
   tickets.grant("alice", 0);
   expect(tickets.claim("alice", TICKET_MS)).toBe(false);
+  // The run's searches: used one by one, a failed one returned, the rest reported at the answer.
+  tickets.grant("alice", 0, 2);
+  expect(tickets.useSearch("bob", 1)).toBe(false);
+  expect(tickets.useSearch("alice", 1)).toBe(true);
+  tickets.returnSearch("alice");
+  expect(tickets.useSearch("alice", 1) && tickets.useSearch("alice", 1)).toBe(true);
+  expect(tickets.useSearch("alice", 1)).toBe(false);
+  tickets.grant("alice", 0, 3);
+  tickets.useSearch("alice", 1);
+  expect(tickets.claim("alice", 2)).toEqual({ unusedSearches: 2 });
 });
 
 it("the status shows deep research only with the switch, with search, and to an account on the list", async () => {
@@ -164,11 +164,11 @@ it("the status shows deep research only with the switch, with search, and to an 
   expect(upstream).not.toHaveBeenCalled();
 });
 
-it("a run costs 15: the plan 5 in Fast, the answer 10 in Thinking; one answer per plan", async () => {
+it("a run costs 15, all charged at its start; its answer is a continuation that is never charged; one answer per plan", async () => {
   upstream.mockImplementation(async () => ok());
   const { chat, used } = await (await signedIn()).signIn();
   expect((await chat("plan")).status).toBe(200);
-  expect(used()).toBe(5);
+  expect(used()).toBe(15);
   expect((await chat("answer")).status).toBe(200);
   expect(used()).toBe(15);
   // The run is closed: another answer needs another plan.
@@ -180,6 +180,18 @@ it("a run costs 15: the plan 5 in Fast, the answer 10 in Thinking; one answer pe
   expect(takeCounts()).toMatchObject({ "research.plan.completed": 1, "research.answer.completed": 1 });
 });
 
+it("an answer is never refused for allowance: the run was counted at its start, even if the rest was spent meanwhile", async () => {
+  upstream.mockImplementation(async () => ok());
+  const { chat, used } = await (await signedIn({ autoAllowance: { requestLimit: 16, days: 7, dailyLimit: 16 } })).signIn();
+  expect((await chat("plan")).status).toBe(200);
+  // Another tab spends the last unit while the run is searching.
+  expect((await chat()).status).toBe(200);
+  expect(used()).toBe(16);
+  expect((await chat()).status).toBe(429);
+  expect((await chat("answer")).status).toBe(200);
+  expect(used()).toBe(16);
+});
+
 it("an answer without a plan, a plan in Thinking and an answer in Fast are refused and nothing is forwarded", async () => {
   upstream.mockImplementation(async () => ok());
   const { chat, used } = await (await signedIn()).signIn();
@@ -187,7 +199,7 @@ it("an answer without a plan, a plan in Thinking and an answer in Fast are refus
   expect((await chat("plan", "thinking")).status).toBe(400);
   expect((await chat("plan")).status).toBe(200);
   expect((await chat("answer", "fast")).status).toBe(400);
-  expect(used()).toBe(5);
+  expect(used()).toBe(15);
   expect(upstream).toHaveBeenCalledTimes(1);
 });
 
@@ -202,31 +214,30 @@ it("with the switch off a declared research request is refused; ordinary chat is
   expect(used()).toBe(1);
 });
 
-it("a run cannot start without allowance for all of it: 14 left refuses the plan, 15 admits it", async () => {
+it("a run starts while 1 unit is left and is charged what is left; at 0 it is refused calmly with the reset time", async () => {
   upstream.mockImplementation(async () => ok());
-  const short = await (await signedIn({ autoAllowance: { requestLimit: 14, days: 7 } })).signIn();
+  const short = await (await signedIn({ autoAllowance: { requestLimit: 3, days: 7 } })).signIn();
+  expect((await short.chat("plan")).status).toBe(200);
+  expect(short.used()).toBe(3);
+  expect((await short.chat("answer")).status).toBe(200);
+  expect(short.used()).toBe(3);
   const refused = await short.chat("plan");
   expect(refused.status).toBe(429);
-  expect(refused.body).toContain("deep research counts as 15 requests");
-  expect(short.used()).toBe(0);
-  expect(upstream).not.toHaveBeenCalled();
-  // The refused plan did not use one of the day's runs.
-  const exact = await (await signedIn({ autoAllowance: { requestLimit: 15, days: 7 }, research: { ...RESEARCH, dailyRuns: 1 } })).signIn();
-  expect((await exact.chat("plan")).status).toBe(200);
-  expect((await exact.chat("answer")).status).toBe(200);
-  expect(exact.used()).toBe(15);
+  expect(JSON.parse(refused.body)).toMatchObject({ code: "limit", error: expect.stringMatching(/^Limit reached\. It resets at /) });
+  expect(refused.body).not.toMatch(/\d+ requests/);
+  expect(upstream).toHaveBeenCalledTimes(2);
 });
 
-it("the daily request limit counts the whole run at the plan", async () => {
+it("the daily request limit: a run starts while 1 unit of the day is left and takes what the day has left", async () => {
   upstream.mockImplementation(async () => ok());
   const { chat, used } = await (await signedIn({ autoAllowance: { requestLimit: 50, days: 7, dailyLimit: 16 } })).signIn();
-  // Two ordinary messages leave 14 of the day's 16: not enough for a run.
   await chat();
   await chat();
-  const refused = await chat("plan");
+  expect((await chat("plan")).status).toBe(200);
+  expect(used()).toBe(16);
+  const refused = await chat();
   expect(refused.status).toBe(429);
-  expect(refused.body).toContain("daily request limit");
-  expect(used()).toBe(2);
+  expect(JSON.parse(refused.body).code).toBe("limit");
 });
 
 it("runs per day: the plan over the cap is refused before anything is forwarded or counted", async () => {
@@ -238,7 +249,7 @@ it("runs per day: the plan over the cap is refused before anything is forwarded 
   const third = await alice.chat("plan");
   expect(third.status).toBe(429);
   expect(third.body).toContain("daily deep research limit");
-  expect(alice.used()).toBe(2);
+  expect(alice.used()).toBe(4);
   expect(upstream).toHaveBeenCalledTimes(2);
   // Another account has its own count.
   expect((await (await signIn()).chat("plan")).status).toBe(200);
@@ -251,7 +262,34 @@ it("a plan the provider refused does not count as a run, and its repeat is not c
   expect((await chat("plan")).status).toBe(502);
   expect((await chat("answer")).status).toBe(400);
   expect((await chat("plan")).status).toBe(200);
-  expect(used()).toBe(5);
+  expect(used()).toBe(15);
+});
+
+it("a run's searches are counted at its start: with the day otherwise full, the run still has its 4", async () => {
+  upstream.mockImplementation(async () => ok());
+  const search = searchDouble();
+  const { chat, search: find } = await (await signedIn({ search, research: { ...RESEARCH, dailySearches: 4 } })).signIn();
+  expect((await chat("plan")).status).toBe(200);
+  for (const n of [1, 2, 3, 4]) expect((await find(`synthetic ${n}`)).status).toBe(200);
+  expect((await find("synthetic 5")).status).toBe(429);
+  expect((await chat("answer")).status).toBe(200);
+});
+
+it("unused run searches go back at the answer, and a run cannot start with no search left in the day", async () => {
+  upstream.mockImplementation(async () => ok());
+  const search = searchDouble();
+  const { chat, search: find, used } = await (await signedIn({ search, research: { ...RESEARCH, dailySearches: 5 } })).signIn();
+  expect((await chat("plan")).status).toBe(200);
+  expect((await find("synthetic 1")).status).toBe(200);
+  expect((await chat("answer")).status).toBe(200);
+  // 1 used; the run's 3 unused went back: 4 more fit, then the day is full.
+  for (const n of [2, 3, 4, 5]) expect((await find(`synthetic ${n}`)).status).toBe(200);
+  expect((await find("synthetic 6")).status).toBe(429);
+  const refused = await chat("plan");
+  expect(refused.status).toBe(429);
+  expect(refused.body).toContain("daily search limit");
+  expect(used()).toBe(15);
+  expect(upstream).toHaveBeenCalledTimes(2);
 });
 
 it("searches per day: every approved search counts, the one over the cap is refused before the provider is called", async () => {

@@ -219,12 +219,15 @@ it("keeps the daily voice budget in the usage ledger: units add up, the status s
     expect(usage.summary(accountId)).toMatchObject({ used: 4 });
     const fresh = await (await fetch(root + "/api/status", { headers: { Cookie: cookie } })).json();
     expect(fresh.voice.usedUnits).toBe(19);
-    // 2 more units would make 21 of 20: refused, nothing forwarded or charged. 1 more fits.
-    const over = await post(root, PATH, headers(cookie, status.csrf, SPEECH.model, "2"));
+    // 19 of 20: a recording starts while any of the day's voice time is left (owner, 18 November),
+    // so 2 more units run and make 21; the next start is refused, nothing forwarded or charged.
+    const last = await post(root, PATH, headers(cookie, status.csrf, SPEECH.model, "2"));
+    expect(last.status).toBe(200);
+    await last.text();
+    await settled();
+    const over = await post(root, PATH, headers(cookie, status.csrf, SPEECH.model, "1"));
     expect(over.status).toBe(429);
     expect(over.headers.get("x-privateai-voice")).toBe("refused_voice_daily");
-    expect((await post(root, PATH, headers(cookie, status.csrf, SPEECH.model, "1"))).status).toBe(200);
-    await settled();
     expect(upstream).toHaveBeenCalledTimes(3);
     expect(usage.summary(accountId)).toMatchObject({ used: 6 });
 
@@ -238,7 +241,7 @@ it("keeps the daily voice budget in the usage ledger: units add up, the status s
       body: new URLSearchParams({ id: accountId, password: "SYNTHETIC account password" }),
     });
     const again = await session(root2, login.headers.get("set-cookie")!.split(";")[0]);
-    expect(again.status.voice.usedUnits).toBe(20);
+    expect(again.status.voice.usedUnits).toBe(21);
     const refused = await post(root2, PATH, headers(again.cookie, again.status.csrf, SPEECH.model, "1"));
     expect(refused.headers.get("x-privateai-voice")).toBe("refused_voice_daily");
     expect(upstream).toHaveBeenCalledTimes(3);
@@ -257,17 +260,18 @@ it("refuses without allowance, at the chat allowance's daily cap, and at the spe
   const noAllowance = await post(none.root, PATH, headers(none.cookie, none.status.csrf));
   expect(noAllowance.status).toBe(429);
   expect(noAllowance.headers.get("x-privateai-voice")).toBe("refused_allowance");
-  expect((await noAllowance.json()).error).toBe(
-    "Not enough request allowance: voice input counts as 2 requests. No request was forwarded.",
-  );
-  // Daily cap of 3 units: one recording (2 units) fits, the second would make 4.
+  expect((await noAllowance.json()).error).toBe("Limit reached.");
+  // Daily cap of 3 units: one recording (2 units) runs, a second starts with the 1 left, the third is refused.
   const capped = await signedIn({ autoAllowance: { requestLimit: 50, days: 7, dailyLimit: 3 } });
-  const first = await post(capped.root, PATH, headers(capped.cookie, capped.status.csrf));
-  expect(first.status).toBe(200);
-  await first.text();
-  await capped.settled();
-  const second = await post(capped.root, PATH, headers(capped.cookie, capped.status.csrf));
-  expect(second.headers.get("x-privateai-voice")).toBe("refused_daily");
+  for (let i = 0; i < 2; i++) {
+    const ran = await post(capped.root, PATH, headers(capped.cookie, capped.status.csrf));
+    expect(ran.status).toBe(200);
+    await ran.text();
+    await capped.settled();
+  }
+  const third = await post(capped.root, PATH, headers(capped.cookie, capped.status.csrf));
+  expect(third.headers.get("x-privateai-voice")).toBe("refused_daily");
+  expect((await third.json()).error).toMatch(/^Limit reached\. It resets at /);
   // Spend guard: an approved spend below one request's worst case refuses.
   const poor = await signedIn({
     autoAllowance: { requestLimit: 50, days: 7 },
@@ -278,8 +282,48 @@ it("refuses without allowance, at the chat allowance's daily cap, and at the spe
   const spend = await post(poor.root, PATH, headers(poor.cookie, poor.status.csrf));
   expect(spend.status).toBe(429);
   expect(spend.headers.get("x-privateai-voice")).toBe("refused_spend");
-  expect(upstream).toHaveBeenCalledTimes(1);
+  expect(upstream).toHaveBeenCalledTimes(2);
   expect(takeCounts()).toMatchObject({ "voice.refused_allowance": 1, "voice.refused_daily": 1 });
+});
+
+it("a recording is checked at its first part only: later parts and one answer to it continue at 0, a new recording is refused", async () => {
+  upstream.mockImplementation(async () => transcript());
+  // The speech cost is 2 and the allowance 2: the first part takes all of it.
+  const { root, usage, accountId, status, cookie, settled } = await signedIn({ autoAllowance: { requestLimit: 2, days: 7 } });
+  const turn = "0b8a3c2e-1f4d-4a5b-9c6d-7e8f9a0b1c2d";
+  const part = async (id: string) => {
+    const reply = await post(root, PATH, { ...headers(cookie, status.csrf), "x-privateai-voice-turn": id });
+    const body = await reply.text();
+    await settled();
+    return { status: reply.status, body, voice: reply.headers.get("x-privateai-voice") };
+  };
+  expect((await part(turn)).status).toBe(200);
+  expect(usage.summary(accountId)).toMatchObject({ used: 2, remaining: 0 });
+  // Later parts of the same recording: transcribed, not charged.
+  for (let i = 0; i < 3; i++) expect((await part(turn)).status).toBe(200);
+  expect(usage.summary(accountId)).toMatchObject({ used: 2, remaining: 0, pending: 0 });
+  // The voice conversation's question about it: answered once, not charged.
+  const ask = () =>
+    post(root, "/v1/chat/completions", {
+      ...headers(cookie, status.csrf, "glm-5.3-flash"),
+      "Content-Type": "application/json",
+      "X-PrivateAI-Mode": "fast",
+      "X-PrivateAI-Voice-Turn": turn,
+    });
+  const answered = await ask();
+  expect(answered.status).toBe(200);
+  await answered.text();
+  await settled();
+  expect(usage.summary(accountId)).toMatchObject({ used: 2 });
+  const second = await ask();
+  expect(second.status).toBe(429);
+  expect((await second.json()).code).toBe("limit");
+  // A new recording (another id) is a new start: refused at 0, nothing forwarded.
+  const sent = upstream.mock.calls.length;
+  const fresh = await part("1c9b4d3f-2a5e-4b6c-8d7e-8f9a0b1c2d3e");
+  expect(fresh.status).toBe(429);
+  expect(fresh.voice).toBe("refused_allowance");
+  expect(upstream).toHaveBeenCalledTimes(sent);
 });
 
 it("a recording the provider refuses is not reflected, and the next attempt within a minute is not charged again", async () => {

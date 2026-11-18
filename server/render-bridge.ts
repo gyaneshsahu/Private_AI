@@ -24,6 +24,8 @@ export const BRIDGE_REQUEST_HEADERS = [
   "x-privateai-kind",
   // A voice chunk's length in 2-second units; the relay checks it against the size (docs/voice-to-text-20261114.md).
   "x-privateai-voice-units",
+  // One id per recording: later parts and a voice conversation's answer continue it (owner, 18 November).
+  "x-privateai-voice-turn",
   // Encrypted sync: "<deviceId>.<token>" on every device route (docs/vault-sync-20261115.md).
   "x-sync-device",
   "x-tinfoil-enclave-url",

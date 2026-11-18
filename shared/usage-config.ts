@@ -25,7 +25,7 @@ export type Feature = (typeof FEATURES)[number];
 /** Set by the relay on a metered reply: the browser reports the reply's decrypted token counts under this id. */
 export const REQUEST_ID_HEADER = "x-privateai-request";
 
-/** Charge rules: per request, except research-run (a whole run, split by researchWeights) and the background extras. */
+/** Charge rules: per request, except research-run (a whole run, charged at its start) and the background extras. */
 const unitKeys = [
   "chat-fast",
   "chat-thinking",
