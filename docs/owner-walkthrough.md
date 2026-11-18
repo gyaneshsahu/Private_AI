@@ -1,5 +1,7 @@
 # Owner walkthrough: from today to the first invite (16 November 2026)
 
+> **18 November:** the owner-only live test now starts from `docs/owner-live-test-setup-20261118.md`. It says which steps below to do, in which order, and what changed since: six migrations, `"applied":20`, the everything-on config, image creation and the build switches. The detailed clicks below still apply.
+
 **Purpose:** every set-up and every test only you can do, in the right order, one numbered step at a time. Development is finished; this is the manual part.
 **How to use it:** do one step, then report back with the "Report back" line. The agent ticks `docs/owner-test-list.md`, records decisions in `docs/owner-decisions.md`, and tells you the next step. If you see something other than "Expect", stop and say what you saw.
 **Rules:** never paste a key, a password, a database address or a report file that holds them into chat. Use made-up content in every test. The agent never deploys, pays or signs anything: Render, the Privatemode portal, money and legal texts are yours.
@@ -136,7 +138,7 @@ Only you know which password you called exposed. There are two roles: the owner 
 
 ### 9. Prepare the one-time migration run (T-143, part 1)
 
-The new code needs five database migrations (0021 to 0025; the live database recorded 14, the repository has 19). The service refuses to start while a migration is pending, and the runtime role may not apply migrations. So the migration runs once, as the owner role, as Render's **Pre-Deploy Command** on the new code (deploy doc 3.2; `docs/private/runbook-operational-20261024.md`, roles section, step 7).
+The new code needs six database migrations (0021 to 0026; the live database recorded 14, the repository has 20). The service refuses to start while a migration is pending, and the runtime role may not apply migrations. So the migration runs once, as the owner role, as Render's **Pre-Deploy Command** on the new code (deploy doc 3.2; `docs/private/runbook-operational-20261024.md`, roles section, step 7).
 
 **One-way door:** once these migrations are recorded, the October release `ae439fa` can no longer start (it refuses a migration history it does not know). From here on, "rollback" means the new code with chat off (step 17), never the old release. If the pre-deploy fails, the old release keeps running untouched; nothing was changed in that case, and you paste the pre-deploy output to the agent.
 
@@ -204,7 +206,7 @@ node --import tsx server/deployment-database-entry.ts privileges-check /etc/secr
 
 (d) On the laptop, the two commands from step 10 (d) again. (e) Sign in with Google, open the account page, sign out, sign in again.
 
-**Expect:** `"pending":0` with `"applied":19`. Role `cometrow_runtime`, `"superuser":false`, `"createRole":false`, `"createInSchema":false`, `"restricted":true`. `200` and `HEADER CHECK PASSED`. Sign-in works.
+**Expect:** `"pending":0` with `"applied":20`. Role `cometrow_runtime`, `"superuser":false`, `"createRole":false`, `"createInSchema":false`, `"restricted":true`. `200` and `HEADER CHECK PASSED`. Sign-in works.
 
 **Report back:** paste both Shell output lines (they hold no secrets), and the three results.
 

@@ -6,6 +6,8 @@ This is a map of `docs/` for new sessions and for Graphify. Files dated 11 to 14
 
 | File | What it is |
 | --- | --- |
+| `owner-live-test-setup-20261118.md` | **Current (18 November):** the one list of what the owner does before the owner-only live test on `app.cometrow.com`, then what waits until friends are invited |
+| `owner-live-test-list-20261118.md` | **Current (18 November):** the owner's live test, 31 sections with an index and a findings log |
 | `wake-up-report-20261114.md` | Read first: what was built, verified and spent on 14 November, what is half-done, and the risks |
 | `owner-test-list.md` | Everything the owner must test, do or decide, as a short checklist with ids (T-01 to T-110), kept up to date as features land |
 | `cost-weights-20261114.md` | What each feature really uses in tokens and euros, against its allowance weight; recommendations |
