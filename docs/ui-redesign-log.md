@@ -4,6 +4,8 @@ One line per check, newest first. "Test" names the Playwright file that keeps th
 
 ## Next (kept current, so work can resume after a break)
 
+**18 November, the ChatGPT consent model (done, CI green on b45b71b):** one acceptance at sign-in, recorded with versions (migration 0026); health consent, first-start notice, search approval and per-feature consent cards removed; Terms draft and updated Privacy Policy with public /terms and /privacy; Terms and Privacy links under the message box. Details: `docs/notices-inventory-20261117.md` (top), `docs/legal-read-consent-20261118.md`. Waiting for the owner: the legal read; whether the AI line under the message box stays; whether deep research still shows its plan first.
+
 State, 17 November evening: the owner approved the whiteboard next to the chat (mock `evaluation/ui-redesign/whiteboard-side-mock.html`) with changes: no send button on the board (it goes with the next question by itself, as a removable chip), a card in the chat that opens the board again, and a top-right "In this chat" panel listing the board, canvas, created images and files.
 
 1. **Whiteboard and "In this chat": done** (commit 3237636, `docs/whiteboard-20261117.md`). Full unit suite 2,343 passed (one load flake that passes alone); end-to-end 64 of 64 locally. CI 17 November evening: all tests green except `chat-recovery` "Code copied" announcement once (timing on the slow runner; passes locally) and the audit step below. Not verified: Safari and iPhone.
