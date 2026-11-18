@@ -17,6 +17,12 @@ export const settingsText = defineText({
     deleteAccount: "Delete account",
     accountPageNote: "These links open your account page.",
     loadingChats: "Loading your chats…",
+    signOutEverywhere: "Sign out everywhere",
+    signOutEverywhereTitle: "Sign out everywhere?",
+    signOutEverywhereText:
+      "You are signed out on every device and browser, this one included. Use this if you lost a device or signed in on a computer that is not yours.",
+    signOutEverywhereFailed: "The other devices could not be signed out. Try again in a minute.",
+    cancel: "Cancel",
   },
   de: {
     general: "Allgemein",
@@ -31,5 +37,11 @@ export const settingsText = defineText({
     deleteAccount: "Konto löschen",
     accountPageNote: "Diese Links öffnen Ihre Kontoseite.",
     loadingChats: "Ihre Chats werden geladen…",
+    signOutEverywhere: "Überall abmelden",
+    signOutEverywhereTitle: "Überall abmelden?",
+    signOutEverywhereText:
+      "Sie werden auf allen Geräten und in allen Browsern abgemeldet, auch hier. Nutzen Sie das, wenn Sie ein Gerät verloren haben oder sich an einem fremden Computer angemeldet haben.",
+    signOutEverywhereFailed: "Die anderen Geräte konnten nicht abgemeldet werden. Versuchen Sie es in einer Minute erneut.",
+    cancel: "Abbrechen",
   },
 });

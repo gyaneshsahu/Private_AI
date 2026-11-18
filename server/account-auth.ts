@@ -36,10 +36,12 @@ import {
 } from "../shared/account-design";
 import {
   accountRequestStart,
+  capSessionAge,
   recordSessionAccess,
   removalSchema,
   removeCredential,
   revokeAccountSession,
+  revokeOtherSessions,
   withCredentialEnrollment,
 } from "./account-access";
 
@@ -209,6 +211,10 @@ function createAccountAuth(
           before: async (data) => ({
             data: { ...data, ipAddress: null, userAgent: null },
           }),
+          // However often the 14-day window slides, a session ends SESSION_MAX_DAYS after sign-in.
+          after: async (data) => {
+            if (data?.id) await capSessionAge(config.database, data.id);
+          },
         },
       },
       account: {
@@ -262,9 +268,11 @@ function createAccountAuth(
       storeStateStrategy: "database",
       encryptOAuthTokens: true,
     },
+    // Owner, 18 November: 14 days without use (sliding, extended at most once a day) and at most
+    // SESSION_MAX_DAYS after sign-in (the update hook below caps it). Fresh actions still need 5 minutes.
     session: {
-      expiresIn: 3600,
-      updateAge: 300,
+      expiresIn: 14 * 24 * 3600,
+      updateAge: 24 * 3600,
       freshAge: 300,
       cookieCache: { enabled: false },
     },
@@ -722,9 +730,9 @@ function createAccountAuth(
     "/api/account/access/revoke",
     express.json({ limit: "2kb" }),
     async (req, res) => {
+      // One session by id, or { others: true } for "Sign out everywhere" (the browser then signs this one out).
       const parsed = z
-        .object({ id: z.string().uuid() })
-        .strict()
+        .union([z.object({ id: z.string().uuid() }).strict(), z.object({ others: z.literal(true) }).strict()])
         .safeParse(req.body);
       if (!parsed.success) {
         res.status(400).json({ error: "Session identifier required." });
@@ -738,12 +746,15 @@ function createAccountAuth(
           res.status(401).json({ error: "Sign in again." });
           return;
         }
-        await revokeAccountSession(
-          config.database,
-          current.user.id,
-          current.session.id,
-          parsed.data.id,
-        );
+        if ("others" in parsed.data)
+          await revokeOtherSessions(config.database, current.user.id, current.session.id);
+        else
+          await revokeAccountSession(
+            config.database,
+            current.user.id,
+            current.session.id,
+            parsed.data.id,
+          );
         res.json({ revoked: true });
       } catch {
         res.status(503).json({

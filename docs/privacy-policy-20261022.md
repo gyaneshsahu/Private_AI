@@ -32,7 +32,7 @@ For each feature: what is sent; to whom and where; how long it is kept; who can 
 • Saved chats, memories, projects, files, canvas and whiteboard in Secure (the default): stored encrypted on our servers at Render in Frankfurt, Germany, with a key CometRow holds for your account; until you delete them or close your account; CometRow could technically open them with that key, no feature of the service does so; we see the account, times, and the number and size of items.
 • Saved chats in Secure Max: encrypted end to end on your devices; stored on our servers only as data we cannot open; until you delete them or close your account; only your devices hold the key.
 • Incognito chats: sent like any chat; never saved on your device or on our server; the secure server and our request records treat them like any chat.
-• Sign-in: your email address and, if you use Google, your Google account identifier, and sessions (no IP address or browser string stored); at Render in Frankfurt; sessions 1 hour after last use, the account until it is closed; Google learns that you signed in to CometRow.
+• Sign-in: your email address and, if you use Google, your Google account identifier, and sessions (no IP address or browser string stored); at Render in Frankfurt; sessions 14 days after last use and at most 90 days after sign-in, the account until it is closed; Google learns that you signed in to CometRow.
 • Request records: which account asked, when, how many times and which model, never content; at Render in Frankfurt; 90 days, then deleted; readable by CometRow.
 • Emails to our support address: as long as needed to answer [to confirm: email provider and retention].
 
@@ -56,7 +56,7 @@ Secure is the default. Your saved chats, memories, projects and files are stored
 
 In short; details per feature are in “Where your data goes, feature by feature” and in “What we cannot delete for you”.
 • Your account (email address, Google account identifier, sign-in methods): until you close it. After closure, sign-in stops at once, and the account is deleted after a grace period, so that a mistaken closure can be undone. [To confirm: the grace period; the deletion is built but not yet switched on, and 30 days are proposed.] A closure receipt with an internal identifier and the times, without your email address, stays as proof of the deletion. [To confirm: for how long.]
-• Sign-in sessions: 1 hour after last use.
+• Sign-in sessions: 14 days after last use, and at most 90 days after sign-in.
 • Saved chats, memories, projects and files: until you delete them or your account is deleted. When you delete a synced chat, an encrypted deletion marker without readable content stays on our server for at least 90 days, so that your other devices learn of the deletion. [To confirm: older markers are removed at the account's next change, not on a fixed day.]
 • Request records (no content): 90 days, then deleted. Records that still count in an allowance period that has not ended are deleted once it ends. When an account is deleted, its request records stay until their own deletion date, without the email address.
 • The record of what you accepted at sign-in: deleted with your account. [For the legal read: see “How you agree to this policy”.]
@@ -75,7 +75,7 @@ No system is free of risk, and we cannot rule out every attack. If we learn of a
 ## Cookies and storage on your device
 
 In your browser, CometRow stores only what it needs to work:
-• Sign-in cookies: when you sign in, our server sets a session cookie (privateai-account.session_token, with the prefix __Secure- on the live site) that keeps you signed in; scripts cannot read it, and the session ends 1 hour after last use. A short-lived cookie may also be set while you sign in. [To confirm on the live service: the exact list of cookies.] When you choose “Continue with Google”, Google's page sets Google's own cookies under Google's policies.
+• Sign-in cookies: when you sign in, our server sets a session cookie (privateai-account.session_token, with the prefix __Secure- on the live site) that keeps you signed in; scripts cannot read it, and the session ends 14 days after last use, and at most 90 days after sign-in. A short-lived cookie may also be set while you sign in. [To confirm on the live service: the exact list of cookies.] When you choose “Continue with Google”, Google's page sets Google's own cookies under Google's policies.
 • Settings in local storage (localStorage): your language, the appearance, the answer mode, the automatic-search switches, voice conversation settings, whether you have seen the Secure Max confirmation and a few similar notes, whether the app should open in Secure Max (stored with your account identifier), and the identifiers (not the names) of your devices that sync has seen.
 • Saved chats and keys in IndexedDB: the encrypted store for Secure and Secure Max and, when sync is switched on, this device's key and its sealed token. The language files for reading text in photos also stay in this browser's storage after the first use.
 • Session storage (sessionStorage): if your session expires while you are typing, the unsent text is kept for this browser tab until you sign in again, then removed; it is not encrypted there. Never for Incognito chats and never in Secure Max.

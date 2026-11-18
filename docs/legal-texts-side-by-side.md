@@ -54,7 +54,7 @@ For each feature: what is sent; to whom and where; how long it is kept; who can 
 
 • Incognito chats: sent like any chat; never saved on your device or on our server; the secure server and our request records treat them like any chat.
 
-• Sign-in: your email address and, if you use Google, your Google account identifier, and sessions (no IP address or browser string stored); at Render in Frankfurt; sessions 1 hour after last use, the account until it is closed; Google learns that you signed in to CometRow.
+• Sign-in: your email address and, if you use Google, your Google account identifier, and sessions (no IP address or browser string stored); at Render in Frankfurt; sessions 14 days after last use and at most 90 days after sign-in, the account until it is closed; Google learns that you signed in to CometRow.
 
 • Request records: which account asked, when, how many times and which model, never content; at Render in Frankfurt; 90 days, then deleted; readable by CometRow.
 
@@ -90,7 +90,7 @@ In short; details per feature are in “Where your data goes, feature by feature
 
 • Your account (email address, Google account identifier, sign-in methods): until you close it. After closure, sign-in stops at once, and the account is deleted after a grace period, so that a mistaken closure can be undone. [To confirm: the grace period; the deletion is built but not yet switched on, and 30 days are proposed.] A closure receipt with an internal identifier and the times, without your email address, stays as proof of the deletion. [To confirm: for how long.]
 
-• Sign-in sessions: 1 hour after last use.
+• Sign-in sessions: 14 days after last use, and at most 90 days after sign-in.
 
 • Saved chats, memories, projects and files: until you delete them or your account is deleted. When you delete a synced chat, an encrypted deletion marker without readable content stays on our server for at least 90 days, so that your other devices learn of the deletion. [To confirm: older markers are removed at the account's next change, not on a fixed day.]
 
@@ -120,7 +120,7 @@ No system is free of risk, and we cannot rule out every attack. If we learn of a
 
 In your browser, CometRow stores only what it needs to work:
 
-• Sign-in cookies: when you sign in, our server sets a session cookie (privateai-account.session_token, with the prefix __Secure- on the live site) that keeps you signed in; scripts cannot read it, and the session ends 1 hour after last use. A short-lived cookie may also be set while you sign in. [To confirm on the live service: the exact list of cookies.] When you choose “Continue with Google”, Google's page sets Google's own cookies under Google's policies.
+• Sign-in cookies: when you sign in, our server sets a session cookie (privateai-account.session_token, with the prefix __Secure- on the live site) that keeps you signed in; scripts cannot read it, and the session ends 14 days after last use, and at most 90 days after sign-in. A short-lived cookie may also be set while you sign in. [To confirm on the live service: the exact list of cookies.] When you choose “Continue with Google”, Google's page sets Google's own cookies under Google's policies.
 
 • Settings in local storage (localStorage): your language, the appearance, the answer mode, the automatic-search switches, voice conversation settings, whether you have seen the Secure Max confirmation and a few similar notes, whether the app should open in Secure Max (stored with your account identifier), and the identifiers (not the names) of your devices that sync has seen.
 
@@ -238,7 +238,7 @@ Für jede Funktion: was gesendet wird; an wen und wohin; wie lange es aufbewahrt
 
 • Inkognito-Chats: wie jeder Chat gesendet; nie auf Ihrem Gerät oder unserem Server gespeichert; der sichere Server und unsere Anfrageaufzeichnungen behandeln sie wie jeden Chat.
 
-• Anmeldung: Ihre E-Mail-Adresse und, wenn Sie Google nutzen, Ihre Google-Kontokennung sowie Sitzungen (ohne IP-Adresse oder Browserkennung); bei Render in Frankfurt; Sitzungen 1 Stunde nach der letzten Nutzung, das Konto bis zu seiner Schließung; Google erfährt, dass Sie sich bei CometRow angemeldet haben.
+• Anmeldung: Ihre E-Mail-Adresse und, wenn Sie Google nutzen, Ihre Google-Kontokennung sowie Sitzungen (ohne IP-Adresse oder Browserkennung); bei Render in Frankfurt; Sitzungen 14 Tage nach der letzten Nutzung und höchstens 90 Tage nach der Anmeldung, das Konto bis zu seiner Schließung; Google erfährt, dass Sie sich bei CometRow angemeldet haben.
 
 • Anfrageaufzeichnungen: welches Konto gefragt hat, wann, wie oft und welches Modell, nie Inhalte; bei Render in Frankfurt; 90 Tage, dann gelöscht; lesbar für CometRow.
 
@@ -274,7 +274,7 @@ Kurz gefasst; Einzelheiten je Funktion stehen in „Wohin Ihre Daten gehen, Funk
 
 • Ihr Konto (E-Mail-Adresse, Google-Kontokennung, Anmeldearten): bis Sie es schließen. Nach der Schließung endet die Anmeldung sofort, und das Konto wird nach einer Karenzzeit gelöscht, damit eine versehentliche Schließung rückgängig gemacht werden kann. [Zu bestätigen: die Karenzzeit; die Löschung ist gebaut, aber noch nicht eingeschaltet, vorgeschlagen sind 30 Tage.] Eine Schließungsbestätigung mit einer internen Kennung und den Zeitpunkten, ohne Ihre E-Mail-Adresse, bleibt als Nachweis der Löschung. [Zu bestätigen: wie lange.]
 
-• Anmeldesitzungen: 1 Stunde nach der letzten Nutzung.
+• Anmeldesitzungen: 14 Tage nach der letzten Nutzung, höchstens 90 Tage nach der Anmeldung.
 
 • Gespeicherte Chats, Erinnerungen, Projekte und Dateien: bis Sie sie löschen oder Ihr Konto gelöscht wird. Wenn Sie einen synchronisierten Chat löschen, bleibt eine verschlüsselte Löschmarkierung ohne lesbaren Inhalt mindestens 90 Tage auf unserem Server, damit Ihre anderen Geräte von der Löschung erfahren. [Zu bestätigen: Ältere Markierungen werden bei der nächsten Änderung im Konto entfernt, nicht an einem festen Tag.]
 
@@ -304,7 +304,7 @@ Kein System ist frei von Risiken, und wir können nicht jeden Angriff ausschlie�
 
 CometRow speichert in Ihrem Browser nur, was es zum Funktionieren braucht:
 
-• Anmelde-Cookies: Wenn Sie sich anmelden, setzt unser Server ein Sitzungs-Cookie (privateai-account.session_token, auf der Live-Website mit dem Präfix __Secure-), das Sie angemeldet hält; Skripte können es nicht lesen, und die Sitzung endet 1 Stunde nach der letzten Nutzung. Während der Anmeldung kann zusätzlich ein kurzlebiges Cookie gesetzt werden. [Zu bestätigen auf dem Live-Dienst: die genaue Liste der Cookies.] Wenn Sie „Weiter mit Google“ wählen, setzt die Seite von Google eigene Cookies nach den Richtlinien von Google.
+• Anmelde-Cookies: Wenn Sie sich anmelden, setzt unser Server ein Sitzungs-Cookie (privateai-account.session_token, auf der Live-Website mit dem Präfix __Secure-), das Sie angemeldet hält; Skripte können es nicht lesen, und die Sitzung endet 14 Tage nach der letzten Nutzung, höchstens 90 Tage nach der Anmeldung. Während der Anmeldung kann zusätzlich ein kurzlebiges Cookie gesetzt werden. [Zu bestätigen auf dem Live-Dienst: die genaue Liste der Cookies.] Wenn Sie „Weiter mit Google“ wählen, setzt die Seite von Google eigene Cookies nach den Richtlinien von Google.
 
 • Einstellungen im lokalen Speicher (localStorage): Ihre Sprache, die Darstellung, der Antwortmodus, die Schalter für die automatische Suche, Einstellungen für die Sprachunterhaltung, ob Sie die Bestätigung zu Secure Max und einige ähnliche Hinweise gesehen haben, ob die App in Secure Max öffnen soll (mit Ihrer Kontokennung gespeichert) und die Kennungen (nicht die Namen) Ihrer Geräte, die die Synchronisierung gesehen hat.
 
@@ -428,7 +428,7 @@ For each feature: what is sent; to whom and where; how long it is kept; who can 
 
 • Incognito chats: sent like any chat; never saved on your device or on our server; the secure server and our request records treat them like any chat.
 
-• Sign-in: your email address and, if you use Google, your Google account identifier, and sessions (no IP address or browser string stored); at Render in Frankfurt; sessions 1 hour after last use, the account until it is closed; Google learns that you signed in to CometRow.
+• Sign-in: your email address and, if you use Google, your Google account identifier, and sessions (no IP address or browser string stored); at Render in Frankfurt; sessions 14 days after last use and at most 90 days after sign-in, the account until it is closed; Google learns that you signed in to CometRow.
 
 • Request records: which account asked, when, how many times and which model, never content; at Render in Frankfurt; 90 days, then deleted; readable by CometRow.
 
@@ -464,7 +464,7 @@ In short; details per feature are in “Where your data goes, feature by feature
 
 • Your account (email address, Google account identifier, sign-in methods): until you close it. After closure, sign-in stops at once, and the account is deleted after a grace period, so that a mistaken closure can be undone. [To confirm: the grace period; the deletion is built but not yet switched on, and 30 days are proposed.] A closure receipt with an internal identifier and the times, without your email address, stays as proof of the deletion. [To confirm: for how long.]
 
-• Sign-in sessions: 1 hour after last use.
+• Sign-in sessions: 14 days after last use, and at most 90 days after sign-in.
 
 • Saved chats, memories, projects and files: until you delete them or your account is deleted. When you delete a synced chat, an encrypted deletion marker without readable content stays on our server for at least 90 days, so that your other devices learn of the deletion. [To confirm: older markers are removed at the account's next change, not on a fixed day.]
 
@@ -494,7 +494,7 @@ No system is free of risk, and we cannot rule out every attack. If we learn of a
 
 In your browser, CometRow stores only what it needs to work:
 
-• Sign-in cookies: when you sign in, our server sets a session cookie (privateai-account.session_token, with the prefix __Secure- on the live site) that keeps you signed in; scripts cannot read it, and the session ends 1 hour after last use. A short-lived cookie may also be set while you sign in. [To confirm on the live service: the exact list of cookies.] When you choose “Continue with Google”, Google's page sets Google's own cookies under Google's policies.
+• Sign-in cookies: when you sign in, our server sets a session cookie (privateai-account.session_token, with the prefix __Secure- on the live site) that keeps you signed in; scripts cannot read it, and the session ends 14 days after last use, and at most 90 days after sign-in. A short-lived cookie may also be set while you sign in. [To confirm on the live service: the exact list of cookies.] When you choose “Continue with Google”, Google's page sets Google's own cookies under Google's policies.
 
 • Settings in local storage (localStorage): your language, the appearance, the answer mode, the automatic-search switches, voice conversation settings, whether you have seen the Secure Max confirmation and a few similar notes, whether the app should open in Secure Max (stored with your account identifier), and the identifiers (not the names) of your devices that sync has seen.
 
@@ -616,7 +616,7 @@ Für jede Funktion: was gesendet wird; an wen und wohin; wie lange es aufbewahrt
 
 • Inkognito-Chats: wie jeder Chat gesendet; nie auf Ihrem Gerät oder unserem Server gespeichert; der sichere Server und unsere Anfrageaufzeichnungen behandeln sie wie jeden Chat.
 
-• Anmeldung: Ihre E-Mail-Adresse und, wenn Sie Google nutzen, Ihre Google-Kontokennung sowie Sitzungen (ohne IP-Adresse oder Browserkennung); bei Render in Frankfurt; Sitzungen 1 Stunde nach der letzten Nutzung, das Konto bis zu seiner Schließung; Google erfährt, dass Sie sich bei CometRow angemeldet haben.
+• Anmeldung: Ihre E-Mail-Adresse und, wenn Sie Google nutzen, Ihre Google-Kontokennung sowie Sitzungen (ohne IP-Adresse oder Browserkennung); bei Render in Frankfurt; Sitzungen 14 Tage nach der letzten Nutzung und höchstens 90 Tage nach der Anmeldung, das Konto bis zu seiner Schließung; Google erfährt, dass Sie sich bei CometRow angemeldet haben.
 
 • Anfrageaufzeichnungen: welches Konto gefragt hat, wann, wie oft und welches Modell, nie Inhalte; bei Render in Frankfurt; 90 Tage, dann gelöscht; lesbar für CometRow.
 
@@ -652,7 +652,7 @@ Kurz gefasst; Einzelheiten je Funktion stehen in „Wohin Ihre Daten gehen, Funk
 
 • Ihr Konto (E-Mail-Adresse, Google-Kontokennung, Anmeldearten): bis Sie es schließen. Nach der Schließung endet die Anmeldung sofort, und das Konto wird nach einer Karenzzeit gelöscht, damit eine versehentliche Schließung rückgängig gemacht werden kann. [Zu bestätigen: die Karenzzeit; die Löschung ist gebaut, aber noch nicht eingeschaltet, vorgeschlagen sind 30 Tage.] Eine Schließungsbestätigung mit einer internen Kennung und den Zeitpunkten, ohne Ihre E-Mail-Adresse, bleibt als Nachweis der Löschung. [Zu bestätigen: wie lange.]
 
-• Anmeldesitzungen: 1 Stunde nach der letzten Nutzung.
+• Anmeldesitzungen: 14 Tage nach der letzten Nutzung, höchstens 90 Tage nach der Anmeldung.
 
 • Gespeicherte Chats, Erinnerungen, Projekte und Dateien: bis Sie sie löschen oder Ihr Konto gelöscht wird. Wenn Sie einen synchronisierten Chat löschen, bleibt eine verschlüsselte Löschmarkierung ohne lesbaren Inhalt mindestens 90 Tage auf unserem Server, damit Ihre anderen Geräte von der Löschung erfahren. [Zu bestätigen: Ältere Markierungen werden bei der nächsten Änderung im Konto entfernt, nicht an einem festen Tag.]
 
@@ -682,7 +682,7 @@ Kein System ist frei von Risiken, und wir können nicht jeden Angriff ausschlie�
 
 CometRow speichert in Ihrem Browser nur, was es zum Funktionieren braucht:
 
-• Anmelde-Cookies: Wenn Sie sich anmelden, setzt unser Server ein Sitzungs-Cookie (privateai-account.session_token, auf der Live-Website mit dem Präfix __Secure-), das Sie angemeldet hält; Skripte können es nicht lesen, und die Sitzung endet 1 Stunde nach der letzten Nutzung. Während der Anmeldung kann zusätzlich ein kurzlebiges Cookie gesetzt werden. [Zu bestätigen auf dem Live-Dienst: die genaue Liste der Cookies.] Wenn Sie „Weiter mit Google“ wählen, setzt die Seite von Google eigene Cookies nach den Richtlinien von Google.
+• Anmelde-Cookies: Wenn Sie sich anmelden, setzt unser Server ein Sitzungs-Cookie (privateai-account.session_token, auf der Live-Website mit dem Präfix __Secure-), das Sie angemeldet hält; Skripte können es nicht lesen, und die Sitzung endet 14 Tage nach der letzten Nutzung, höchstens 90 Tage nach der Anmeldung. Während der Anmeldung kann zusätzlich ein kurzlebiges Cookie gesetzt werden. [Zu bestätigen auf dem Live-Dienst: die genaue Liste der Cookies.] Wenn Sie „Weiter mit Google“ wählen, setzt die Seite von Google eigene Cookies nach den Richtlinien von Google.
 
 • Einstellungen im lokalen Speicher (localStorage): Ihre Sprache, die Darstellung, der Antwortmodus, die Schalter für die automatische Suche, Einstellungen für die Sprachunterhaltung, ob Sie die Bestätigung zu Secure Max und einige ähnliche Hinweise gesehen haben, ob die App in Secure Max öffnen soll (mit Ihrer Kontokennung gespeichert) und die Kennungen (nicht die Namen) Ihrer Geräte, die die Synchronisierung gesehen hat.
 
@@ -806,7 +806,7 @@ For each feature: what is sent; to whom and where; how long it is kept; who can 
 
 • Incognito chats: sent like any chat; never saved on your device or on our server; the secure server and our request records treat them like any chat.
 
-• Sign-in: your email address and, if you use Google, your Google account identifier, and sessions (no IP address or browser string stored); at Render in Frankfurt; sessions 1 hour after last use, the account until it is closed; Google learns that you signed in to CometRow.
+• Sign-in: your email address and, if you use Google, your Google account identifier, and sessions (no IP address or browser string stored); at Render in Frankfurt; sessions 14 days after last use and at most 90 days after sign-in, the account until it is closed; Google learns that you signed in to CometRow.
 
 • Request records: which account asked, when, how many times and which model, never content; at Render in Frankfurt; 90 days, then deleted; readable by CometRow.
 
@@ -842,7 +842,7 @@ In short; details per feature are in “Where your data goes, feature by feature
 
 • Your account (email address, Google account identifier, sign-in methods): until you close it. After closure, sign-in stops at once, and the account is deleted after a grace period, so that a mistaken closure can be undone. [To confirm: the grace period; the deletion is built but not yet switched on, and 30 days are proposed.] A closure receipt with an internal identifier and the times, without your email address, stays as proof of the deletion. [To confirm: for how long.]
 
-• Sign-in sessions: 1 hour after last use.
+• Sign-in sessions: 14 days after last use, and at most 90 days after sign-in.
 
 • Saved chats, memories, projects and files: until you delete them or your account is deleted. When you delete a synced chat, an encrypted deletion marker without readable content stays on our server for at least 90 days, so that your other devices learn of the deletion. [To confirm: older markers are removed at the account's next change, not on a fixed day.]
 
@@ -872,7 +872,7 @@ No system is free of risk, and we cannot rule out every attack. If we learn of a
 
 In your browser, CometRow stores only what it needs to work:
 
-• Sign-in cookies: when you sign in, our server sets a session cookie (privateai-account.session_token, with the prefix __Secure- on the live site) that keeps you signed in; scripts cannot read it, and the session ends 1 hour after last use. A short-lived cookie may also be set while you sign in. [To confirm on the live service: the exact list of cookies.] When you choose “Continue with Google”, Google's page sets Google's own cookies under Google's policies.
+• Sign-in cookies: when you sign in, our server sets a session cookie (privateai-account.session_token, with the prefix __Secure- on the live site) that keeps you signed in; scripts cannot read it, and the session ends 14 days after last use, and at most 90 days after sign-in. A short-lived cookie may also be set while you sign in. [To confirm on the live service: the exact list of cookies.] When you choose “Continue with Google”, Google's page sets Google's own cookies under Google's policies.
 
 • Settings in local storage (localStorage): your language, the appearance, the answer mode, the automatic-search switches, voice conversation settings, whether you have seen the Secure Max confirmation and a few similar notes, whether the app should open in Secure Max (stored with your account identifier), and the identifiers (not the names) of your devices that sync has seen.
 
@@ -994,7 +994,7 @@ Für jede Funktion: was gesendet wird; an wen und wohin; wie lange es aufbewahrt
 
 • Inkognito-Chats: wie jeder Chat gesendet; nie auf Ihrem Gerät oder unserem Server gespeichert; der sichere Server und unsere Anfrageaufzeichnungen behandeln sie wie jeden Chat.
 
-• Anmeldung: Ihre E-Mail-Adresse und, wenn Sie Google nutzen, Ihre Google-Kontokennung sowie Sitzungen (ohne IP-Adresse oder Browserkennung); bei Render in Frankfurt; Sitzungen 1 Stunde nach der letzten Nutzung, das Konto bis zu seiner Schließung; Google erfährt, dass Sie sich bei CometRow angemeldet haben.
+• Anmeldung: Ihre E-Mail-Adresse und, wenn Sie Google nutzen, Ihre Google-Kontokennung sowie Sitzungen (ohne IP-Adresse oder Browserkennung); bei Render in Frankfurt; Sitzungen 14 Tage nach der letzten Nutzung und höchstens 90 Tage nach der Anmeldung, das Konto bis zu seiner Schließung; Google erfährt, dass Sie sich bei CometRow angemeldet haben.
 
 • Anfrageaufzeichnungen: welches Konto gefragt hat, wann, wie oft und welches Modell, nie Inhalte; bei Render in Frankfurt; 90 Tage, dann gelöscht; lesbar für CometRow.
 
@@ -1030,7 +1030,7 @@ Kurz gefasst; Einzelheiten je Funktion stehen in „Wohin Ihre Daten gehen, Funk
 
 • Ihr Konto (E-Mail-Adresse, Google-Kontokennung, Anmeldearten): bis Sie es schließen. Nach der Schließung endet die Anmeldung sofort, und das Konto wird nach einer Karenzzeit gelöscht, damit eine versehentliche Schließung rückgängig gemacht werden kann. [Zu bestätigen: die Karenzzeit; die Löschung ist gebaut, aber noch nicht eingeschaltet, vorgeschlagen sind 30 Tage.] Eine Schließungsbestätigung mit einer internen Kennung und den Zeitpunkten, ohne Ihre E-Mail-Adresse, bleibt als Nachweis der Löschung. [Zu bestätigen: wie lange.]
 
-• Anmeldesitzungen: 1 Stunde nach der letzten Nutzung.
+• Anmeldesitzungen: 14 Tage nach der letzten Nutzung, höchstens 90 Tage nach der Anmeldung.
 
 • Gespeicherte Chats, Erinnerungen, Projekte und Dateien: bis Sie sie löschen oder Ihr Konto gelöscht wird. Wenn Sie einen synchronisierten Chat löschen, bleibt eine verschlüsselte Löschmarkierung ohne lesbaren Inhalt mindestens 90 Tage auf unserem Server, damit Ihre anderen Geräte von der Löschung erfahren. [Zu bestätigen: Ältere Markierungen werden bei der nächsten Änderung im Konto entfernt, nicht an einem festen Tag.]
 
@@ -1060,7 +1060,7 @@ Kein System ist frei von Risiken, und wir können nicht jeden Angriff ausschlie�
 
 CometRow speichert in Ihrem Browser nur, was es zum Funktionieren braucht:
 
-• Anmelde-Cookies: Wenn Sie sich anmelden, setzt unser Server ein Sitzungs-Cookie (privateai-account.session_token, auf der Live-Website mit dem Präfix __Secure-), das Sie angemeldet hält; Skripte können es nicht lesen, und die Sitzung endet 1 Stunde nach der letzten Nutzung. Während der Anmeldung kann zusätzlich ein kurzlebiges Cookie gesetzt werden. [Zu bestätigen auf dem Live-Dienst: die genaue Liste der Cookies.] Wenn Sie „Weiter mit Google“ wählen, setzt die Seite von Google eigene Cookies nach den Richtlinien von Google.
+• Anmelde-Cookies: Wenn Sie sich anmelden, setzt unser Server ein Sitzungs-Cookie (privateai-account.session_token, auf der Live-Website mit dem Präfix __Secure-), das Sie angemeldet hält; Skripte können es nicht lesen, und die Sitzung endet 14 Tage nach der letzten Nutzung, höchstens 90 Tage nach der Anmeldung. Während der Anmeldung kann zusätzlich ein kurzlebiges Cookie gesetzt werden. [Zu bestätigen auf dem Live-Dienst: die genaue Liste der Cookies.] Wenn Sie „Weiter mit Google“ wählen, setzt die Seite von Google eigene Cookies nach den Richtlinien von Google.
 
 • Einstellungen im lokalen Speicher (localStorage): Ihre Sprache, die Darstellung, der Antwortmodus, die Schalter für die automatische Suche, Einstellungen für die Sprachunterhaltung, ob Sie die Bestätigung zu Secure Max und einige ähnliche Hinweise gesehen haben, ob die App in Secure Max öffnen soll (mit Ihrer Kontokennung gespeichert) und die Kennungen (nicht die Namen) Ihrer Geräte, die die Synchronisierung gesehen hat.
 
@@ -1360,7 +1360,7 @@ You must be 18 or older to use CometRow. By accepting your invitation and signin
 
 **5. Your account and sign-in**
 
-You sign in with “Continue with Google”, using the email address you were invited with; sign-in with an email code may follow later. Keep access to your sign-in to yourself. A session ends after 1 hour without use. If you think someone else is using your account, tell us at once at security@cometrow.com. [For the legal read: responsibility for use of the account by others.]
+You sign in with “Continue with Google”, using the email address you were invited with; sign-in with an email code may follow later. Keep access to your sign-in to yourself. A session ends after 14 days without use, and at the latest 90 days after you signed in. In Settings, Security, “Sign out everywhere” ends every session at once. If you think someone else is using your account, tell us at once at security@cometrow.com. [For the legal read: responsibility for use of the account by others.]
 
 **6. Acceptable use**
 
@@ -1462,7 +1462,7 @@ Sie müssen mindestens 18 Jahre alt sein, um CometRow zu nutzen. Indem Sie Ihre 
 
 **5. Ihr Konto und die Anmeldung**
 
-Sie melden sich mit „Weiter mit Google“ an, mit der E-Mail-Adresse, mit der Sie eingeladen wurden; die Anmeldung mit einem E-Mail-Code kann später folgen. Behalten Sie den Zugang zu Ihrer Anmeldung für sich. Eine Sitzung endet nach 1 Stunde ohne Nutzung. Wenn Sie glauben, dass jemand anderes Ihr Konto nutzt, sagen Sie es uns sofort unter security@cometrow.com. [Für die rechtliche Prüfung: Verantwortung für die Nutzung des Kontos durch andere.]
+Sie melden sich mit „Weiter mit Google“ an, mit der E-Mail-Adresse, mit der Sie eingeladen wurden; die Anmeldung mit einem E-Mail-Code kann später folgen. Behalten Sie den Zugang zu Ihrer Anmeldung für sich. Eine Sitzung endet nach 14 Tagen ohne Nutzung, spätestens 90 Tage nach der Anmeldung. Unter Einstellungen, Sicherheit beendet „Überall abmelden“ alle Sitzungen auf einmal. Wenn Sie glauben, dass jemand anderes Ihr Konto nutzt, sagen Sie es uns sofort unter security@cometrow.com. [Für die rechtliche Prüfung: Verantwortung für die Nutzung des Kontos durch andere.]
 
 **6. Zulässige Nutzung**
 

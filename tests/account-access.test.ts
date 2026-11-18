@@ -423,6 +423,38 @@ it.skipIf(!enabled)(
   },
 );
 
+// Owner, 18 November: "Sign out everywhere" in Settings, and sessions of 14 days without use, at most 90 after sign-in.
+it.skipIf(!enabled)(
+  "signs out every other session of the account only, and ends a session 90 days after sign-in however often it is used",
+  async () => {
+    const a = await signIn("everywhere-a@example.test"),
+      a2 = await signIn("everywhere-a@example.test"),
+      b = await signIn("everywhere-b@example.test");
+    expect((await call("account/access/revoke", a.cookie, { others: false })).status).toBe(400);
+    expect((await call("account/access/revoke", a.cookie, { others: true })).status).toBe(200);
+    expect(await (await call("auth/get-session", a2.cookie)).json()).toBeNull();
+    // This session stays until the browser signs it out; another account is untouched.
+    expect((await call("account/access", a.cookie)).status).toBe(200);
+    expect((await (await call("auth/get-session", b.cookie)).json()).user.id).toBe(b.userId);
+    // The 14-day window slides at most once a day; each slide is capped at sign-in + 90 days.
+    const slide = async (signedInDaysAgo: number) => {
+      await db.pool.query(
+        `UPDATE session SET "createdAt"=NOW()-make_interval(days => $2), "expiresAt"=NOW()+interval '12 days' WHERE id=$1`,
+        [b.sessionId, signedInDaysAgo],
+      );
+      return call("auth/get-session", b.cookie);
+    };
+    expect((await (await slide(10)).json()).user.id).toBe(b.userId);
+    const fresh = await db.pool.query(`SELECT "expiresAt" > NOW()+interval '13 days' AS slid FROM session WHERE id=$1`, [b.sessionId]);
+    expect(fresh.rows[0].slid).toBe(true);
+    expect((await (await slide(89)).json()).user.id).toBe(b.userId);
+    const capped = await db.pool.query(`SELECT "expiresAt" < NOW()+interval '2 days' AS capped FROM session WHERE id=$1`, [b.sessionId]);
+    expect(capped.rows[0].capped).toBe(true);
+    await slide(91);
+    expect(await (await call("auth/get-session", b.cookie)).json()).toBeNull();
+  },
+);
+
 it.skipIf(!enabled)(
   "requires current email proof, rejects raw endpoint bypasses and isolates account targets",
   async () => {

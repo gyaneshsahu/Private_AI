@@ -38,7 +38,7 @@ function sectionsEn(): TermsSection[] {
     },
     {
       heading: "5. Your account and sign-in",
-      text: `You sign in with “Continue with Google”, using the email address you were invited with; sign-in with an email code may follow later. Keep access to your sign-in to yourself. A session ends after 1 hour without use. If you think someone else is using your account, tell us at once at ${id.incidentContactEmail}. [For the legal read: responsibility for use of the account by others.]`,
+      text: `You sign in with “Continue with Google”, using the email address you were invited with; sign-in with an email code may follow later. Keep access to your sign-in to yourself. A session ends after 14 days without use, and at the latest 90 days after you signed in. In Settings, Security, “Sign out everywhere” ends every session at once. If you think someone else is using your account, tell us at once at ${id.incidentContactEmail}. [For the legal read: responsibility for use of the account by others.]`,
     },
     {
       heading: "6. Acceptable use",
@@ -131,7 +131,7 @@ function sectionsDe(): TermsSection[] {
     },
     {
       heading: "5. Ihr Konto und die Anmeldung",
-      text: `Sie melden sich mit „Weiter mit Google“ an, mit der E-Mail-Adresse, mit der Sie eingeladen wurden; die Anmeldung mit einem E-Mail-Code kann später folgen. Behalten Sie den Zugang zu Ihrer Anmeldung für sich. Eine Sitzung endet nach 1 Stunde ohne Nutzung. Wenn Sie glauben, dass jemand anderes Ihr Konto nutzt, sagen Sie es uns sofort unter ${id.incidentContactEmail}. [Für die rechtliche Prüfung: Verantwortung für die Nutzung des Kontos durch andere.]`,
+      text: `Sie melden sich mit „Weiter mit Google“ an, mit der E-Mail-Adresse, mit der Sie eingeladen wurden; die Anmeldung mit einem E-Mail-Code kann später folgen. Behalten Sie den Zugang zu Ihrer Anmeldung für sich. Eine Sitzung endet nach 14 Tagen ohne Nutzung, spätestens 90 Tage nach der Anmeldung. Unter Einstellungen, Sicherheit beendet „Überall abmelden“ alle Sitzungen auf einmal. Wenn Sie glauben, dass jemand anderes Ihr Konto nutzt, sagen Sie es uns sofort unter ${id.incidentContactEmail}. [Für die rechtliche Prüfung: Verantwortung für die Nutzung des Kontos durch andere.]`,
     },
     {
       heading: "6. Zulässige Nutzung",

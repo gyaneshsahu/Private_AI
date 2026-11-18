@@ -1,7 +1,9 @@
 // The Settings dialog's tabs and their content (SS-05, SS-15; docs/settings-structure-20261116.md).
 // src/App.tsx keeps the <dialog>, its title, close button and focus handling, and closes Settings
 // before anything here leaves it (another tab of the app, the account page, sign out).
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { accountRequest } from "./account-request";
+import { ConfirmDialog } from "./ConfirmDialog";
 import type { AppStatus, Conversation } from "../shared/contracts";
 import { privacySummary } from "../shared/privacy-copy";
 import { AccountUsage } from "./AccountUsage";
@@ -207,6 +209,7 @@ export function SettingsBody({
                 {workspaceText[lang].signOut}
               </button>
             )}
+            {signedIn && <SignOutEverywhere busy={busy} onSignOut={onSignOut} onNotice={onNotice} />}
           </>
         )}
         {current[0] === "sync" && (
@@ -239,5 +242,52 @@ export function SettingsBody({
         )}
       </section>
     </div>
+  );
+}
+
+/** Settings > Security: every other session ends on the server, then this device signs out as usual (owner, 18 November). */
+function SignOutEverywhere({ busy, onSignOut, onNotice }: { busy: boolean; onSignOut: () => void; onNotice: (text: string) => void }) {
+  const s = settingsText[useLang().lang];
+  const [asking, setAsking] = useState(false);
+  const [working, setWorking] = useState(false);
+  async function signOutEverywhere() {
+    setWorking(true);
+    try {
+      const ok = await accountRequest(
+        "/api/account/access/revoke",
+        { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ others: true }) },
+        async (response) => {
+          await response.body?.cancel();
+          return response.ok;
+        },
+      );
+      if (ok) onSignOut();
+      else onNotice(s.signOutEverywhereFailed);
+    } catch {
+      onNotice(s.signOutEverywhereFailed);
+    } finally {
+      setWorking(false);
+    }
+  }
+  return (
+    <>
+      <button type="button" className="sign-out-everywhere" disabled={busy || working} onClick={() => setAsking(true)}>
+        <Icon name="logout" />
+        {s.signOutEverywhere}
+      </button>
+      {asking && (
+        <ConfirmDialog
+          title={s.signOutEverywhereTitle}
+          text={s.signOutEverywhereText}
+          confirmLabel={s.signOutEverywhere}
+          cancelLabel={s.cancel}
+          fallback={() => document.querySelector<HTMLElement>(".sign-out-everywhere")}
+          onClose={(yes) => {
+            setAsking(false);
+            if (yes) void signOutEverywhere();
+          }}
+        />
+      )}
+    </>
   );
 }

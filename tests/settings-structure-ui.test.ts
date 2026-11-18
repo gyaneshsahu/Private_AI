@@ -125,7 +125,8 @@ for (const lang of LANGS)
         await ui(settings.getByRole("heading", { name: s.security, level: 3 })).toBeVisible();
         await ui(settings.getByRole("button", { name: s.signInMethods })).toBeVisible();
         await ui(settings.getByRole("button", { name: s.activeSessions })).toBeVisible();
-        await ui(settings.getByRole("button", { name: w.signOut })).toBeVisible();
+        await ui(settings.getByRole("button", { name: w.signOut, exact: true })).toBeVisible();
+        await ui(settings.getByRole("button", { name: s.signOutEverywhere })).toBeVisible();
         await noSidewaysScroll(page);
 
         // Account: the e-mail, plan and usage, delete account.

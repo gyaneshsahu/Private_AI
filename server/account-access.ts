@@ -172,6 +172,36 @@ export async function removeCredential(
   }
 }
 
+/** Days after sign-in when a session ends, however often it is used (owner, 18 November). */
+export const SESSION_MAX_DAYS = 90;
+export async function capSessionAge(database: Pool, sessionId: string) {
+  await database.query(
+    `UPDATE session SET "expiresAt" = LEAST("expiresAt", "createdAt" + make_interval(days => $2)) WHERE id=$1`,
+    [sessionId, SESSION_MAX_DAYS],
+  );
+}
+
+/** "Sign out everywhere": every other session of the account ends; the caller signs this one out. */
+export async function revokeOtherSessions(database: Pool, userId: string, sessionId: string) {
+  const client = await database.connect();
+  try {
+    await client.query("BEGIN");
+    await lockAccount(client, userId);
+    const current = await client.query(
+      'SELECT id FROM session WHERE id=$1 AND "userId"=$2 AND "expiresAt">clock_timestamp() FOR UPDATE',
+      [sessionId, userId],
+    );
+    if (!current.rowCount) throw Error("Sign in again.");
+    await client.query('DELETE FROM session WHERE "userId"=$1 AND id<>$2', [userId, sessionId]);
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 export async function revokeAccountSession(
   database: Pool,
   userId: string,
