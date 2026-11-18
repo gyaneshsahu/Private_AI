@@ -286,3 +286,50 @@ it("summarises metered totals, exact published cost and unmetered settlements fo
     ledger.close();
   }
 });
+
+it("a start needs 1 unit and is charged at most what is left; continuations of a counted run are not units; the balance stops at 0", async () => {
+  const { chargeStart } = await import("../server/usage-charge");
+  let now = 10;
+  const ledger = new SqliteUsageLedger(":memory:", () => now);
+  try {
+    ledger.createAllowance({ accountId: "alice", periodId: "p", startsAt: 0, endsAt: 1000, requestLimit: 20 });
+    // Deep research costs 15 and is charged whole at its start (up to 20 units in one request).
+    expect(await chargeStart(ledger, "alice", "plan1", 15)).toEqual({ units: 15 });
+    expect(ledger.summary("alice")).toMatchObject({ used: 15, remaining: 5 });
+    // Its answer is a continuation: dispatched and settled like a request, but not a unit.
+    expect(ledger.reserveContinuation("alice", "run-answer1")).toBe(true);
+    ledger.dispatch("alice", "run-answer1");
+    ledger.finish("alice", "run-answer1", "transport_complete");
+    expect(ledger.summary("alice")).toMatchObject({ used: 15, remaining: 5 });
+    expect(ledger.reserveContinuation("alice", "run-answer1")).toBe(false); // never twice
+    expect(() => ledger.reserveContinuation("alice", "answer2")).toThrow("run-");
+    // 5 left: a second run starts and is charged 5, not 15; the balance is 0, never below.
+    expect(await chargeStart(ledger, "alice", "plan2", 15)).toEqual({ units: 5 });
+    expect(ledger.summary("alice")).toMatchObject({ used: 20, remaining: 0, state: "exhausted" });
+    // At 0 the next start is refused with the reset time; a continuation still finishes.
+    expect(await chargeStart(ledger, "alice", "plan3", 1)).toEqual({ units: 0, reason: "period", resetsAt: new Date(1000).toISOString() });
+    expect(ledger.reserveContinuation("alice", "run-answer2")).toBe(true);
+    expect(ledger.summary("alice")).toMatchObject({ used: 20, remaining: 0 });
+    // The rolling day: counted units only, and it frees up 24 hours after the oldest one.
+    expect(ledger.usedInLast("alice", 86_400_000)).toBe(20);
+    expect(ledger.oldestInLast("alice", 86_400_000)).toBe(10);
+  } finally {
+    ledger.close?.();
+  }
+});
+
+it("the daily cap is charged the same way: 1 unit to start, never past the cap", async () => {
+  const { chargeStart } = await import("../server/usage-charge");
+  let now = 100;
+  const ledger = new SqliteUsageLedger(":memory:", () => now);
+  try {
+    ledger.createAllowance({ accountId: "bob", periodId: "p", startsAt: 0, endsAt: 1_000_000_000, requestLimit: 100 });
+    expect(await chargeStart(ledger, "bob", "a", 5, 7)).toEqual({ units: 5 });
+    expect(await chargeStart(ledger, "bob", "b", 5, 7)).toEqual({ units: 2 });
+    expect(await chargeStart(ledger, "bob", "c", 1, 7)).toEqual({ units: 0, reason: "daily", resetsAt: new Date(100 + 86_400_000).toISOString() });
+    now += 86_400_001;
+    expect(await chargeStart(ledger, "bob", "d", 1, 7)).toEqual({ units: 1 });
+  } finally {
+    ledger.close?.();
+  }
+});

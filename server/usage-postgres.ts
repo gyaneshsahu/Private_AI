@@ -8,6 +8,8 @@ import {
   usageUnits,
   unitRowIds,
   NOT_UNIT_ROW,
+  COUNTED_ROW,
+  RUN_PREFIX,
   VOICE_ROWS,
   voiceUnitsOf,
   type UsageLedger,
@@ -158,7 +160,7 @@ export class PostgresUsageLedger implements UsageLedger {
     usageId.parse(accountId);
     const now = await this.now(this.database);
     const result = await this.database.query(
-      `SELECT a.request_limit,a.ends_at,COUNT(r.request_id)::int AS used,
+      `SELECT a.request_limit,a.ends_at,COUNT(*) FILTER (WHERE r.request_id IS NOT NULL AND ${COUNTED_ROW})::int AS used,
       COUNT(*) FILTER (WHERE r.state IN ('reserved','dispatched'))::int AS pending,
       COUNT(*) FILTER (WHERE r.state='uncertain')::int AS uncertain,
       COUNT(m.request_id)::int AS metered,
@@ -194,7 +196,7 @@ export class PostgresUsageLedger implements UsageLedger {
   async usedInLast(accountId: string, windowMs: number): Promise<number> {
     usageId.parse(accountId);
     const result = await this.database.query(
-      "SELECT COUNT(*)::int AS used FROM usage_requests WHERE account_id=$1 AND created_at>$2",
+      `SELECT COUNT(*)::int AS used FROM usage_requests r WHERE r.account_id=$1 AND r.created_at>$2 AND ${COUNTED_ROW}`,
       [accountId, (await this.now(this.database)) - windowMs],
     );
     return result.rows[0].used;
@@ -225,7 +227,7 @@ export class PostgresUsageLedger implements UsageLedger {
       const period = await client.query(
         `SELECT a.period_id FROM usage_allowances a
         WHERE account_id=$1 AND starts_at<=$2 AND ends_at>$2
-        AND (SELECT COUNT(*) FROM usage_requests r WHERE r.period_id=a.period_id)+$3<=a.request_limit`,
+        AND (SELECT COUNT(*) FROM usage_requests r WHERE r.period_id=a.period_id AND ${COUNTED_ROW})+$3<=a.request_limit`,
         [accountId, now, units],
       );
       if (!period.rowCount) return false;
@@ -242,6 +244,35 @@ export class PostgresUsageLedger implements UsageLedger {
           [extra, accountId, period.rows[0].period_id, now],
         );
       return true;
+    });
+  }
+  async oldestInLast(accountId: string, windowMs: number): Promise<number | undefined> {
+    usageId.parse(accountId);
+    const result = await this.database.query(
+      `SELECT MIN(r.created_at) AS at FROM usage_requests r WHERE r.account_id=$1 AND r.created_at>$2 AND ${COUNTED_ROW}`,
+      [accountId, (await this.now(this.database)) - windowMs],
+    );
+    const at = result.rows[0]?.at;
+    return at == null ? undefined : Number(at);
+  }
+  async reserveContinuation(accountId: string, requestId: string): Promise<boolean> {
+    usageId.parse(accountId);
+    usageId.parse(requestId);
+    if (!requestId.startsWith(RUN_PREFIX)) throw Error("A continuation needs a run- request ID.");
+    return this.transaction(async (client) => {
+      const account = await client.query("SELECT account_id FROM usage_accounts WHERE account_id=$1 FOR UPDATE", [accountId]);
+      if (!account.rowCount) return false;
+      const now = await this.now(client);
+      const period = await client.query(
+        "SELECT period_id FROM usage_allowances WHERE account_id=$1 AND starts_at<=$2 AND ends_at>$2",
+        [accountId, now],
+      );
+      if (!period.rowCount) return false;
+      const inserted = await client.query(
+        `INSERT INTO usage_requests VALUES($1,$2,$3,'reserved',$4,$4) ON CONFLICT (request_id) DO NOTHING RETURNING request_id`,
+        [requestId, accountId, period.rows[0].period_id, now],
+      );
+      return inserted.rowCount === 1;
     });
   }
   async dispatch(accountId: string, requestId: string): Promise<void> {

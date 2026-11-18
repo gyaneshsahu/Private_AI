@@ -7,6 +7,8 @@ import {
   usageUnits,
   unitRowIds,
   NOT_UNIT_ROW,
+  COUNTED_ROW,
+  RUN_PREFIX,
   VOICE_ROWS,
   voiceUnitsOf,
   type UsageLedger,
@@ -119,7 +121,7 @@ export class SqliteUsageLedger implements UsageLedger {
     const row = this.db
       .prepare(
         `SELECT a.period_id, a.request_limit, a.ends_at,
-      COUNT(r.request_id) AS used,
+      COUNT(CASE WHEN ${COUNTED_ROW} THEN 1 END) AS used,
       COALESCE(SUM(CASE WHEN r.state IN ('reserved','dispatched') THEN 1 ELSE 0 END),0) AS pending,
       COALESCE(SUM(CASE WHEN r.state='uncertain' THEN 1 ELSE 0 END),0) AS uncertain,
       COUNT(m.request_id) AS metered,
@@ -162,7 +164,7 @@ export class SqliteUsageLedger implements UsageLedger {
     id.parse(accountId);
     return Number(
       this.db
-        .prepare("SELECT COUNT(*) AS used FROM usage_requests WHERE account_id=? AND created_at>?")
+        .prepare(`SELECT COUNT(*) AS used FROM usage_requests r WHERE r.account_id=? AND r.created_at>? AND ${COUNTED_ROW}`)
         .get(accountId, this.now() - windowMs)!.used,
     );
   }
@@ -192,7 +194,7 @@ export class SqliteUsageLedger implements UsageLedger {
         .prepare(
           `SELECT a.period_id FROM usage_allowances a
         WHERE account_id=? AND starts_at<=? AND ends_at>?
-        AND (SELECT COUNT(*) FROM usage_requests r WHERE r.period_id=a.period_id)+?<=a.request_limit`,
+        AND (SELECT COUNT(*) FROM usage_requests r WHERE r.period_id=a.period_id AND ${COUNTED_ROW})+?<=a.request_limit`,
         )
         .get(accountId, now, now, units);
       if (!row) return false;
@@ -202,6 +204,28 @@ export class SqliteUsageLedger implements UsageLedger {
       insert.run(requestId, accountId, String(row.period_id), "reserved", now, now);
       for (const unit of unitRowIds(requestId, units))
         insert.run(unit, accountId, String(row.period_id), "transport_complete", now, now);
+      return true;
+    });
+  }
+  oldestInLast(accountId: string, windowMs: number): number | undefined {
+    id.parse(accountId);
+    const row = this.db
+      .prepare(`SELECT MIN(r.created_at) AS at FROM usage_requests r WHERE r.account_id=? AND r.created_at>? AND ${COUNTED_ROW}`)
+      .get(accountId, this.now() - windowMs);
+    return row?.at == null ? undefined : Number(row.at);
+  }
+  reserveContinuation(accountId: string, requestId: string): boolean {
+    id.parse(accountId);
+    id.parse(requestId);
+    if (!requestId.startsWith(RUN_PREFIX)) throw Error("A continuation needs a run- request ID.");
+    return this.transaction(() => {
+      if (this.db.prepare("SELECT 1 FROM usage_requests WHERE request_id=?").get(requestId)) return false;
+      const now = this.now();
+      const row = this.db
+        .prepare("SELECT period_id FROM usage_allowances WHERE account_id=? AND starts_at<=? AND ends_at>?")
+        .get(accountId, now, now);
+      if (!row) return false;
+      this.db.prepare("INSERT INTO usage_requests VALUES(?,?,?,?,?,?)").run(requestId, accountId, String(row.period_id), "reserved", now, now);
       return true;
     });
   }

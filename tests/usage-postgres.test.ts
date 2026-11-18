@@ -348,3 +348,29 @@ it.skipIf(!enabled)(
     }
   },
 );
+
+it.skipIf(!enabled)(
+  "a start needs 1 unit and is charged at most what is left; continuations of a counted run are not units (PostgreSQL)",
+  async () => {
+    const { chargeStart } = await import("../server/usage-charge");
+    const db = await usageDatabase();
+    try {
+      const ledger = new PostgresUsageLedger(db.pool, () => 10);
+      await ledger.createAllowance({ accountId: "alice", periodId: "p", startsAt: 0, endsAt: 1000, requestLimit: 20 });
+      expect(await chargeStart(ledger, "alice", "plan1", 15)).toEqual({ units: 15 });
+      expect(await ledger.summary("alice")).toMatchObject({ used: 15, remaining: 5 });
+      expect(await ledger.reserveContinuation("alice", "run-answer1")).toBe(true);
+      await ledger.dispatch("alice", "run-answer1");
+      expect(await ledger.summary("alice")).toMatchObject({ used: 15, remaining: 5 });
+      expect(await ledger.reserveContinuation("alice", "run-answer1")).toBe(false);
+      expect(await chargeStart(ledger, "alice", "plan2", 15)).toEqual({ units: 5 });
+      expect(await ledger.summary("alice")).toMatchObject({ used: 20, remaining: 0, state: "exhausted" });
+      expect(await chargeStart(ledger, "alice", "plan3", 1)).toEqual({ units: 0, reason: "period", resetsAt: new Date(1000).toISOString() });
+      expect(await ledger.reserveContinuation("alice", "run-answer2")).toBe(true);
+      expect(await ledger.usedInLast("alice", 86_400_000)).toBe(20);
+      expect(await ledger.oldestInLast("alice", 86_400_000)).toBe(10);
+    } finally {
+      await db.dispose();
+    }
+  },
+);

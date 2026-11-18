@@ -29,7 +29,8 @@ for (const backend of ["sqlite", "postgres"] as const)
         expect(await ledger.reserve("alice", "fast1")).toBe(true);
         expect(await ledger.reserve("alice", "fast2", 1)).toBe(true);
         expect(await ledger.reserve("alice", "fast3")).toBe(false);
-        for (const units of [0, 11, 1.5])
+        // Up to 20: deep research is charged whole at its start (owner, 18 November).
+        for (const units of [0, 21, 1.5])
           await expect(async () => ledger.reserve("alice", "bad", units)).rejects.toThrow();
         await ledger.dispatch("alice", "thinking1");
         await ledger.finish("alice", "thinking1", "transport_complete");
