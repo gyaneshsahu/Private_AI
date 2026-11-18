@@ -1,10 +1,52 @@
-# CometRow privacy policy — 22 October 2026
+# CometRow privacy policy — 18 November 2026
 
 Generated from `shared/privacy-policy.ts`, which the app renders as its Privacy policy page; a test keeps this file identical to it. Owner placeholders are stated as not yet named, never invented.
 
 ## Who is responsible
 
 CometRow is run by Ganesh Sahu, individual (natural person), Germany, Maikottenweg 178C, 48149 Münster, Germany. Privacy requests go to privacy@cometrow.com. Data protection officer: none appointed. The same details are in the imprint.
+
+## Health and other sensitive details in your chats
+
+You may write about your health, sex life, religion, political views, ethnic origin, trade union membership or other special categories of personal data (Art. 9 GDPR), about yourself or about other people. CometRow treats these details like the rest of your message: it is encrypted on your device and sent to the protected service of Privatemode (Edgeless Systems GmbH, Germany) in the EU, which writes the answer. Masking on your device covers identifiers such as email addresses, phone numbers, bank and card numbers and ID numbers. Health details, diagnoses, medicines, names and other facts written in your own words are not masked; they reach the secure server inside the encrypted message. Saved chats that contain them are stored like any other chat, in the mode you chose (see “Secure, Secure Max and Incognito”). We do not use them for advertising or to train any AI, and we do not ask about them separately. If you write about another person's health, make sure you are allowed to. [Legal basis: for the legal read, see “Legal bases”.]
+
+## Who we work with
+
+These companies process data for us, each only for the feature named. [For the legal read: a data processing agreement is in place with Privatemode; for the others it is to be signed or checked.]
+• AI answers, voice to text and questions about pictures: Privatemode (Edgeless Systems GmbH, Germany), sealed and checked processing in the EU.
+• Web search and research: Brave Search (Brave Software), USA. [For the legal read: the basis for the transfer to the USA; Brave states that its data processing agreement does not cover search queries.]
+• Image creation (off unless switched on): the provider is still to be chosen; the candidates are Microsoft (Foundry, EU Data Zone), Google (Vertex AI, EU region) and Black Forest Labs (Germany, EU endpoint). [To confirm before the feature is switched on: provider, region, retention and whether it may train on descriptions.]
+• Sign-in: Google, when you choose “Continue with Google”. [To confirm: which Google company, and where.]
+• Hosting and database: Render, Frankfurt, Germany; Render's network edge is run by Cloudflare. [To confirm: Render's and Cloudflare's transfer bases and log retention.]
+• Project files, when file storage is switched on: Hetzner Object Storage, Germany. [To confirm: whether it is switched on; until then files are kept encrypted in our database at Render.]
+
+## Where your data goes, feature by feature
+
+For each feature: what is sent; to whom and where; how long it is kept; who can read it.
+• Chat (text, files you attach as text, memories and project instructions used in a question): your message after masking, encrypted on your device; to Privatemode (Edgeless Systems GmbH, Germany) in the EU; not kept after the answer, apart from short-term working memory and records without content (see “What the secure server keeps”); readable only inside the sealed server.
+• Questions about a picture, and the whiteboard: the picture once (hidden file data such as the location is removed on your device; the whiteboard is sent as a picture with its typed words), with your question; as for chat; CometRow does not keep the picture sent; readable only inside the sealed server. The whiteboard itself is saved with the chat and encrypted as the chat is.
+• Dictation and voice conversation: the recording of what you say, encrypted, to the speech model of Privatemode (Edgeless Systems GmbH, Germany) in the EU; numbers and other details you say aloud are not masked, because masking works on text only; CometRow keeps no recording, on your device or on our server; readable only inside the sealed server.
+• Read aloud, photo to text, code runs, search within your chats: on your device only; nothing is sent.
+• Web search and research: only the search text you approved, after identifiers were replaced on your device; from our server to Brave Search in the USA; our server also opens the top result page or a page address you approved, and that website sees our server's address, not yours; Brave states it keeps search records for up to 90 days, the page text is not saved; Brave can read the search text.
+• Image creation (when switched on): only the description you typed, with identifiers masked on your device, never your chats or photos; to the image provider [to confirm: name and region]; CometRow keeps neither the description nor the image on its server, the image is saved in your chat; the provider can read the description [to confirm: its retention and training terms].
+• Saved chats, memories, projects, files, canvas and whiteboard in Secure (the default): stored encrypted on our servers at Render in Frankfurt, Germany, with a key CometRow holds for your account; until you delete them or close your account; CometRow could technically open them with that key, no feature of the service does so; we see the account, times, and the number and size of items.
+• Saved chats in Secure Max: encrypted end to end on your devices; stored on our servers only as data we cannot open; until you delete them or close your account; only your devices hold the key.
+• Incognito chats: sent like any chat; never saved on your device or on our server; the secure server and our request records treat them like any chat.
+• Sign-in: your email address and, if you use Google, your Google account identifier, and sessions (no IP address or browser string stored); at Render in Frankfurt; sessions 1 hour after last use, the account until it is closed; Google learns that you signed in to CometRow.
+• Request records: which account asked, when, how many times and which model, never content; at Render in Frankfurt; 90 days, then deleted; readable by CometRow.
+• Emails to our support address: as long as needed to answer [to confirm: email provider and retention].
+
+## Secure, Secure Max and Incognito
+
+Secure is the default. Your saved chats, memories, projects and files are stored encrypted on our servers, with a key CometRow creates for your account and keeps locked under a master key that is not in the database. This lets you use your chats on every device without a passphrase. Because CometRow holds the key, we could technically open this content; no part of the service does so, and our systems log no content. Secure Max is optional: content is encrypted on your devices with a key that only your devices and your recovery key hold. We cannot open it. If you lose your passphrase and your recovery key, nobody can recover it. Incognito chats are not saved anywhere. None of the three modes changes what is sent to the secure server for an answer, or the request records we keep. When your account is deleted, its key and the encrypted copies are deleted with it. [To confirm: whether, and for how long, database backups keep copies.]
+
+## How you agree to this policy
+
+The sign-in page says: “By continuing, you agree to our Terms and Privacy Policy.” When you sign in, we record with your account which version of the Terms and of this policy you accepted (this policy: version 2026-11-18; Terms: version 2026-11-18), the time and the sign-in method. When either text changes in substance, its version changes, and your next sign-in records the new version. The record is deleted with your account. [For the legal read: whether the record must be kept after the account is deleted, as proof (Art. 7(1) GDPR), and for how long.]
+
+## Legal bases and your rights (draft)
+
+[For the legal read: this whole section.] Account, sign-in, answering your questions, saving your chats and the features you use: to perform the contract and provide the service you asked for (Art. 6(1)(b) GDPR). Health and other special categories in your chats: [Legal basis: for the legal read, for example explicit consent given by accepting at sign-up (Art. 9(2)(a) GDPR), or another basis.] Web search and image creation: [for the legal read: contract (Art. 6(1)(b)) or consent]. Request records, limits and security logs: our legitimate interest in running the service safely and controlling its cost (Art. 6(1)(f) GDPR). The record of your acceptance: to prove what you accepted (Art. 6(1)(c) and Art. 7(1) GDPR) [for the legal read]. You may withdraw a consent at any time with effect for the future, by writing to privacy@cometrow.com or by closing your account; processing before the withdrawal is not affected. [For the legal read: whether withdrawal must also be possible in Settings (Art. 7(3) GDPR).] Your rights: access, correction, deletion, restriction of processing, data portability, objection to processing based on legitimate interests, and a complaint to a supervisory authority (Art. 15 to 21 and 77 GDPR).
 
 ## What stays on your device
 

@@ -1,7 +1,6 @@
 // The German legal texts (drafts, binding once approved) against their English sources.
 import { expect, it } from "vitest";
 import { legalTexts } from "../scripts/record-legal-pairs";
-import { HEALTH_CONSENT, HEALTH_CONSENT_DE, healthConsentText } from "../shared/health-consent";
 import {
   IMPRINT_DE_STATUS,
   LEGAL_IDENTITY,
@@ -25,7 +24,6 @@ it("marks every German text as a draft that needs owner approval and a legal rea
     POLICY_DE_STATUS,
     PROVIDER_DISCLOSURE_DE_STATUS,
     IMPRINT_DE_STATUS,
-    HEALTH_CONSENT_DE.status,
   ])
     expect(status).toBe(GERMAN);
 });
@@ -34,7 +32,6 @@ it("keeps today's English output when no language is given", () => {
   expect(privacyCopy()).toBe(PRIVACY_COPY);
   expect(privacyText("privatemode", "en")).toBe(privacyText("privatemode"));
   expect(privacyPolicyText("tinfoil", "en")).toBe(privacyPolicyText("tinfoil"));
-  expect(healthConsentText("en")).toBe(healthConsentText());
   expect(imprintSections(LEGAL_IDENTITY, "en")).toEqual(imprintSections());
 });
 
@@ -51,7 +48,7 @@ it("has the same sections in the same order, and Privatemode changes the same se
     .filter((s, i) => s.text !== privacyCopy("tinfoil", "de")[i].text)
     .map((s) => s.id);
   expect(changed).toEqual(["sealed", "ours", "provider", "limits", "research"]);
-  expect(privacyPolicyText(undefined, "de").split("\n\n")[0]).toBe("CometRow Datenschutzerklärung, 22. Oktober 2026");
+  expect(privacyPolicyText(undefined, "de").split("\n\n")[0]).toBe("CometRow Datenschutzerklärung, 18. November 2026, Version 2026-11-18 (Entwurf für die rechtliche Prüfung)");
   const headings = privacyPolicyText("privatemode", "de").split("\n\n").slice(1, 3).map((b) => b.split("\n")[0]);
   expect(headings).toEqual(["Wer verantwortlich ist", "Wer Ihre Nachrichten verarbeitet"]);
 });
@@ -107,15 +104,4 @@ it("translates the imprint and the identity's free-text fields", () => {
   const text = imprintSections(LEGAL_IDENTITY, "de").map((s) => s.text).join("\n");
   expect(text).toContain("48149 Münster, Deutschland");
   expect(text).toContain("Bis zum 25. Oktober 2026 hieß er PrivateAI");
-});
-
-it("keeps the German health consent provider-neutral, with the same version and the same facts", () => {
-  expect(HEALTH_CONSENT_DE.version).toBe(HEALTH_CONSENT.version);
-  expect(HEALTH_CONSENT_DE.paragraphs.length).toBe(HEALTH_CONSENT.paragraphs.length);
-  const text = `${healthConsentText("de")}\n${HEALTH_CONSENT_DE.declinedNote}`.toLowerCase();
-  for (const forbidden of ["tinfoil", "privatemode", "edgeless", "garant", "100 %", "vollständig"])
-    expect(text, forbidden).not.toContain(forbidden);
-  expect(text).toContain("gesundheitsangaben nicht");
-  expect(text).toContain("sie können nein sagen und cometrow trotzdem nutzen");
-  expect(text).toContain("jederzeit unter einstellungen, datenschutz & daten ändern");
 });

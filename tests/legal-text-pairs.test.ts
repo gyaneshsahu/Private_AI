@@ -6,11 +6,9 @@ import {
   currentHashes,
   legalTexts,
   pairProblems,
-  recordPairs,
   renderReview,
   type PairsRecord,
 } from "../scripts/record-legal-pairs";
-import { HEALTH_CONSENT } from "../shared/health-consent";
 
 const recorded: PairsRecord = JSON.parse(readFileSync(PAIRS_FILE, "utf8"));
 const lf = (path: string) => readFileSync(path, "utf8").replace(/\r\n/g, "\n");
@@ -37,19 +35,6 @@ it("names the language that changed and says the other must be checked and re-re
   expect(pairProblems(recorded, withoutOne)).toEqual([
     expect.stringContaining("acceptableUse: is recorded but no longer exists"),
   ]);
-});
-
-it("refuses to record a changed health consent text under the same version", () => {
-  const current = currentHashes();
-  const older = (version: string): PairsRecord => ({
-    ...recorded,
-    healthConsentVersion: version,
-    texts: { ...recorded.texts, healthConsent: { ...current.healthConsent, de: "0".repeat(64) } },
-  });
-  expect(() => recordPairs(older(HEALTH_CONSENT.version), current)).toThrow(/HEALTH_CONSENT\.version/);
-  expect(recordPairs(older("draft-older"), current).healthConsentVersion).toBe(HEALTH_CONSENT.version);
-  // An unchanged consent text records under any version.
-  expect(() => recordPairs(recorded, current)).not.toThrow();
 });
 
 it("keeps the side-by-side review document current", () => {

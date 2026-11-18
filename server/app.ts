@@ -54,6 +54,7 @@ import { REQUEST_ID_HEADER } from "../shared/usage-config";
 import { chatFeature, createMetering, meteringWeights, withWeights, type MeteringConfig } from "./usage-metering";
 import { syncRoutes, type SyncSettings, type SyncStore } from "./vault-sync";
 import { secureRoutes, type SecureSettings } from "./secure-store";
+import { legalPages } from "./legal-pages";
 
 export interface Config {
   origin: string;
@@ -71,7 +72,6 @@ export interface Config {
   /** Operator stop switch, checked on every request; true refuses chat at once. */
   inferenceStopped?: () => boolean;
   /** Shows the draft health-consent step; never set by the production composition. */
-  healthConsentDraft?: boolean;
   /** Adds the draft provider section to the privacy policy; never set by the production composition. */
   providerDisclosureDraft?: "tinfoil" | "privatemode";
   /** Web search adapter; defaults to Brave from `searchKey`. Tests may inject one. */
@@ -311,6 +311,8 @@ export function createApp(config: Config) {
       productionCandidate ? "direct-tls" : "forwarded",
     ),
   );
+  // Terms and Privacy Policy are public: the sign-in page links to them before any session.
+  app.use(legalPages(() => parseQualification()?.provider ?? config.providerDisclosureDraft));
   if (config.invites) app.use(inviteAccess(config.origin, config.invites));
   const approvals =
     config.consumer?.approvals ??
@@ -433,7 +435,6 @@ export function createApp(config: Config) {
     res.json({
       csrf: res.locals.csrf,
       ...(config.consumer ? { consumerWorkspace: true } : {}),
-      ...(config.healthConsentDraft ? { healthConsentDraft: true } : {}),
       ...(config.providerDisclosureDraft
         ? { providerDisclosureDraft: config.providerDisclosureDraft }
         : {}),

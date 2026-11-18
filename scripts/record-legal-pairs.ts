@@ -5,13 +5,13 @@
 //   node --import tsx scripts/record-legal-pairs.ts
 // Re-record only after checking that both languages still say the same.
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import type { Lang } from "../src/i18n";
-import { HEALTH_CONSENT, healthConsentCopy, healthConsentText } from "../shared/health-consent";
 import { imprintText } from "../shared/legal-identity";
 import { privacySummary, privacyText } from "../shared/privacy-copy";
 import { privacyPolicyText } from "../shared/privacy-policy";
 import { providerDisclosureSection } from "../shared/provider-disclosure";
+import { termsText } from "../shared/terms-of-use";
 
 export const PAIRS_FILE = "shared/legal-text-pairs.json";
 export const REVIEW_FILE = "docs/legal-texts-side-by-side.md";
@@ -25,7 +25,6 @@ export interface Pair {
 }
 export interface PairsRecord {
   note: string;
-  healthConsentVersion: string;
   texts: Record<string, Pair>;
 }
 
@@ -60,13 +59,10 @@ export function legalTexts(): Record<string, Pair> {
     "privacyCopy.tinfoil": both((lang) => privacyText("tinfoil", lang)),
     "privacyCopy.privatemode": both((lang) => privacyText("privatemode", lang)),
     privacySummary: both(privacySummary),
-    healthConsent: both((lang) => {
-      const copy = healthConsentCopy(lang);
-      return [healthConsentText(lang), copy.accept, copy.decline, copy.declinedNote].join("\n\n");
-    }),
     "providerDisclosure.tinfoil": disclosure("tinfoil"),
     "providerDisclosure.privatemode": disclosure("privatemode"),
     imprint: both((lang) => imprintText(undefined, lang)),
+    terms: both(termsText),
     acceptableUse: doc("docs/acceptable-use-de-draft-20261113.md"),
     ageRule: doc("docs/age-rule-de-draft-20261113.md"),
   };
@@ -100,27 +96,13 @@ export function pairProblems(recorded: PairsRecord, current = currentHashes()): 
     else if (de)
       problems.push(`${name}: the German text changed. The English text must be checked and changed to say the same, ${then}`);
   }
-  if (recorded.healthConsentVersion !== HEALTH_CONSENT.version)
-    problems.push(`healthConsent: the version changed from "${recorded.healthConsentVersion}" to "${HEALTH_CONSENT.version}"; ${then}`);
   return problems;
 }
 
-/** The new record. Refuses a changed consent text under an unchanged version (it must be asked again). */
-export function recordPairs(previous?: PairsRecord, current = currentHashes()): PairsRecord {
-  const before = previous?.texts.healthConsent;
-  const now = current.healthConsent;
-  if (
-    previous &&
-    before &&
-    (before.en !== now.en || before.de !== now.de) &&
-    previous.healthConsentVersion === HEALTH_CONSENT.version
-  )
-    throw Error(
-      `The health consent text changed but HEALTH_CONSENT.version is still "${HEALTH_CONSENT.version}". Change the version in shared/health-consent.ts, so consent is asked again, then record.`,
-    );
+/** The new record. */
+export function recordPairs(current = currentHashes()): PairsRecord {
   return {
     note: `SHA-256 of each English and German legal text. tests/legal-text-pairs.test.ts fails when a text no longer matches; check the other language, then re-record with ${RECORD_COMMAND}.`,
-    healthConsentVersion: HEALTH_CONSENT.version,
     texts: current,
   };
 }
@@ -149,11 +131,8 @@ export function renderReview(texts = legalTexts()): string {
 }
 
 if (process.argv[1]?.endsWith("record-legal-pairs.ts")) {
-  const previous: PairsRecord | undefined = existsSync(PAIRS_FILE)
-    ? JSON.parse(readFileSync(PAIRS_FILE, "utf8"))
-    : undefined;
   const texts = legalTexts();
-  writeFileSync(PAIRS_FILE, `${JSON.stringify(recordPairs(previous, currentHashes(texts)), null, 2)}\n`);
+  writeFileSync(PAIRS_FILE, `${JSON.stringify(recordPairs(currentHashes(texts)), null, 2)}\n`);
   writeFileSync(REVIEW_FILE, renderReview(texts));
   console.log(`Recorded ${Object.keys(texts).length} legal text pairs in ${PAIRS_FILE} and wrote ${REVIEW_FILE}.`);
 }
