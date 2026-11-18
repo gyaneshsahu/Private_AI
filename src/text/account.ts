@@ -91,6 +91,12 @@ export const accountLabText = defineText({
     signInTestPasskey: "Sign in with a test passkey",
     signInPasskey: "Sign in with a passkey",
     privacySummary: "Privacy and account recovery",
+    // The one acceptance (owner, 18 November; for the legal read): continuing records it (server/account-consent.ts).
+    agreeBefore: "By continuing, you agree to our ",
+    agreeTerms: "Terms",
+    agreeAnd: " and ",
+    agreePrivacy: "Privacy Policy",
+    agreeAfter: ".",
     privacySynthetic:
       "Social buttons, when available, use synthetic provider fixtures only. ",
     privacyBody:
@@ -188,6 +194,11 @@ export const accountLabText = defineText({
     signInTestPasskey: "Mit einem Test-Passkey anmelden",
     signInPasskey: "Mit einem Passkey anmelden",
     privacySummary: "Datenschutz und Wiederherstellung des Kontos",
+    agreeBefore: "Indem Sie fortfahren, stimmen Sie unseren ",
+    agreeTerms: "Nutzungsbedingungen",
+    agreeAnd: " und unserer ",
+    agreePrivacy: "Datenschutzerklärung",
+    agreeAfter: " zu.",
     privacySynthetic:
       "Die Schaltflächen für Anbieter nutzen, sofern verfügbar, nur synthetische Testdaten. ",
     privacyBody:

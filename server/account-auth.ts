@@ -1,3 +1,4 @@
+import { recordConsent, signInMethod } from "./account-consent";
 import { betterAuth } from "better-auth";
 import {
   APIError,
@@ -200,6 +201,8 @@ function createAccountAuth(
               data,
               ctx?.path === "/sign-in/email-otp",
             );
+            // The one acceptance: the Terms and Privacy versions named on the sign-in page (shared/legal-versions.ts).
+            await recordConsent(config.database, data.userId, signInMethod(ctx?.path));
           },
         },
         update: {
@@ -869,6 +872,10 @@ function createAccountAuth(
             }
           : null,
         account: user ?? null,
+        // The accepted versions of the Terms and Privacy Policy, with time and sign-in method (migration 0026).
+        consents: await rows(
+          "SELECT terms_version,privacy_version,accepted_at,method FROM consent_records WHERE account_id=$1 ORDER BY accepted_at",
+        ),
         signInMethods: await rows(
           'SELECT "providerId","createdAt" FROM account WHERE "userId"=$1 ORDER BY "createdAt",id',
         ),

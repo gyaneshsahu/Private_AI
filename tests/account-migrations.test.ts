@@ -69,7 +69,7 @@ it.skipIf(!enabled)(
             "SELECT count(*)::int n FROM privateai_schema_migrations",
           )
         ).rows[0].n,
-      ).toBe(19);
+      ).toBe(20);
     } finally {
       await db.dispose();
     }
@@ -110,7 +110,7 @@ it.skipIf(!enabled)(
             "SELECT count(*)::int n FROM privateai_schema_migrations",
           )
         ).rows[0].n,
-      ).toBe(18);
+      ).toBe(19);
     } finally {
       await db.dispose();
     }

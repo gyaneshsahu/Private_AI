@@ -1,3 +1,4 @@
+import { PRIVACY_VERSION, TERMS_VERSION } from "../shared/legal-versions";
 import { afterAll, beforeAll, beforeEach, expect, it } from "vitest";
 import { Pool } from "pg";
 import { randomBytes, randomUUID } from "node:crypto";
@@ -845,6 +846,8 @@ it.skipIf(!enabled)(
       billing: { customerBinding: null, operations: [] },
       researchApprovals: [],
     });
+    // The one acceptance at sign-in, with the versions named on the sign-in page (migration 0026).
+    expect(bundle.consents).toMatchObject([{ terms_version: TERMS_VERSION, privacy_version: PRIVACY_VERSION, method: "email" }]);
     expect(bundle.sessions).toHaveLength(1);
     expect(bundle.sessions[0].current).toBe(true);
     // The export carries no session token, verification code, secret or

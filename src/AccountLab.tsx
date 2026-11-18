@@ -641,6 +641,21 @@ export default function AccountLab({
         <p role="status" className="account-preview-notice">
           {busy ? t.working : notice}
         </p>
+        {/* The one acceptance (owner, 18 November): signing in from here records the versions of
+            shared/legal-versions.ts with the time (server/account-consent.ts). For the legal read. */}
+        {!session && (
+          <p className="account-preview-small account-agree">
+            {t.agreeBefore}
+            <a href={`/terms?lang=${lang}`} target="_blank" rel="noopener">
+              {t.agreeTerms}
+            </a>
+            {t.agreeAnd}
+            <a href={`/privacy?lang=${lang}`} target="_blank" rel="noopener">
+              {t.agreePrivacy}
+            </a>
+            {t.agreeAfter}
+          </p>
+        )}
       </section>
       <div className="account-entry-extras">
         {!session && synthetic && (

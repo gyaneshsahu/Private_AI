@@ -57,6 +57,8 @@ const tables = (literal: string): [string, string][] => [
   ["secure_items", `account_id IN ${target}`],
   ["secure_blobs", `account_id IN ${target}`],
   ["custody_keys", `account_id IN ${target}`],
+  // The accepted Terms and Privacy versions (migration 0026).
+  ["consent_records", `account_id IN ${target}`],
   ["account_closure", `"userId" IN ${target}`],
 ];
 
@@ -101,6 +103,8 @@ export function operatorSql(command: Command, email: string): string {
         "secure_items",
         "secure_blobs",
         "custody_keys",
+        // The consent record (migration 0026) goes with the account.
+        "consent_records",
         "usage_metrics",
         "usage_records",
         "usage_requests",

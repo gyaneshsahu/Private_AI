@@ -186,7 +186,7 @@ Copy the whole output. Render dashboard, database **privateai-accounts**, its sh
 SELECT name FROM privateai_schema_migrations ORDER BY name;
 ```
 
-**Expect:** every statement runs without error (a grant on a table repeats harmlessly). The list ends with `0025-secure-store.sql`.
+**Expect:** every statement runs without error (a grant on a table repeats harmlessly). The list ends with `0026-consent-records.sql` (added 18 November: the record of which Terms and Privacy version each account accepted at sign-in; it needs the privileges step again).
 
 **Report back:** "privileges done" and the last three names from the list; or the first error sentence verbatim.
 
