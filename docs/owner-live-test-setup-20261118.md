@@ -29,11 +29,11 @@ Not done by the agent: nothing was deployed, no account was created, no key was 
 | D1 | **Image provider for the owner test** | (a) **Black Forest Labs** direct (`api.eu.bfl.ai`). It works today with no new code, but its standard API terms let BFL train on prompts and pictures (`docs/image-creation-20261117.md`). Fine for your own made-up prompts, **not** for friends. (b) **Microsoft Foundry FLUX.2 [pro], EU**, or (c) **Google Vertex Imagen 4, EU**. Both exclude training in their standard terms, but each needs a new adapter: about half a day of agent work, after you choose. (d) Image creation off for now | (a) for your test; (b) or (c) before friends |
 | D2 | **Which features are on for your test** | Everything (the example file), or a list | Everything |
 | D3 | **German interface for your test** (`VITE_GERMAN_UI`) | On: only you and the test account can sign in, so nobody else sees the unapproved German texts. Off: until the German legal read | On, for your test only |
-| D4 | **Session length for your test** | Keep 1 hour without use (today's value), or the ops proposal of 14 days sliding (`docs/owner-security-ops-20261118.md`, section 4) | Keep 1 hour. The Terms and Privacy Policy say 1 hour, so a change also needs new text |
+| D4 | **Session length** | **Decided 18 November: 14 days without use (the timer restarts each time you use the app), at most 90 days after sign-in, and "Sign out everywhere" in Settings > Security.** Built the same day; the Terms and Privacy Policy say so in English and German (for the legal read) | Done |
 | D5 | **Deep research for everyone or premium only** | Everyone on the list, or `research.allowedEmails` | Everyone (only you and the test account) |
 | D6 | **Allowance for your test** | The alpha plan your friends will get (150 a week, 40 a day), or the premium plan (600 a week, 150 a day, more pictures, voice and research). A full test pass uses more than 40 in a day | Premium for your test: change `"plan": "alpha"` to `"premium"` in the config. Back to alpha before friends |
 
-Reply with, for example, "D1 a, D2 everything, D3 on, D4 keep, D5 everyone, D6 premium".
+**Your answers, 18 November:** D1 Black Forest Labs for your test, D2 everything, D3 German on for your test, D4 as above, D5 everyone, D6 premium.
 
 ---
 

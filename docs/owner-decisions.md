@@ -4,7 +4,21 @@ Running list kept while the owner is away (from 12 November 2026). Each entry na
 
 **How to read this file (16 November 2026):** the block "Launch-readiness run, 16 November 2026" below is the newest list; then the block "Decisions waiting for you, 14 November 2026" below is the current list. The table "All decisions, by number" at the end is current for D1 to D19. Everything between them is older (13 November and before) and kept as history; where it disagrees with the 14 November block, `docs/owner-test-list.md` or `docs/wake-up-report-20261114.md`, those win. Already decided by the owner: Thinking counts 5; the first invite waits for paid Privatemode billing; breach deputy: owner only (risk noted); large-document path on, from 20,000 characters; 10 MB file limit until the phone test; OCR data kept in the browser; German OCR data added; "Germany" added to the suggested search text (now editable); allowance 150 per 7 days with a daily cap; search on (Brave); free, invite-only, one server; 3 chats at once; Privatemode primary, Tinfoil backup, switching manual and announced; German interface off until the legal read (`VITE_GERMAN_UI`).
 
-## Launch-readiness run, 16 November 2026 (newest; agent's recommended default in brackets)
+## Owner live test, 18 November 2026 (newest; owner's answers)
+
+The path, in the owner's words: an owner-only live test on `app.cometrow.com` with every feature on, then fix rounds, then 10 to 20 friends. Steps: `docs/owner-live-test-setup-20261118.md`. Tests: `docs/owner-live-test-list-20261118.md`.
+
+| # | Decision | Owner's answer |
+| --- | --- | --- |
+| D1 | Image provider for the owner test | Black Forest Labs direct, made-up prompts only. Its standard terms allow training, so a provider with a no-training contract is needed before friends |
+| D2 | Features on for the owner test | Everything (`deployment/render-config.owner-test.example.json`) |
+| D3 | German interface for the owner test | On (`VITE_GERMAN_UI=1`); only the owner and the test account can sign in |
+| D4 | Session length | 14 days without use, sliding: the timer restarts with every use, so daily users never reach it. At most 90 days after sign-in: that timer never restarts, so even daily users sign in again after 90 days. "Sign out everywhere" in Settings, as in ChatGPT, for a lost phone; not for regular use. Built 18 November; Terms and Privacy Policy updated (EN, DE) for the legal read |
+| D5 | Deep research | Everyone on the sign-in list |
+| D6 | Allowance for the owner test | The premium plan; back to alpha before friends |
+| D7 | Help, "Your privacy boundaries": "We keep no copy of your conversations" is false in Secure | Must change before anyone sees it. The agent drafts the wording, the owner reviews it with the agent, and the lawyer checks it later |
+
+## Launch-readiness run, 16 November 2026 (agent's recommended default in brackets)
 
 Full list of what was found and built: `docs/launch-readiness-final.md`. The manual checks are T-142 to T-157 in `docs/owner-test-list.md`.
 

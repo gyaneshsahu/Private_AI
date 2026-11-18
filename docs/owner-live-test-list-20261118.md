@@ -97,7 +97,8 @@ Stop and send the findings log whenever something blocks you.
 | 2.3 | Sign out (account menu), then sign in again | Works both ways; after sign-out you are on the sign-in page | |
 | 2.4 | Sign in with B in another browser or profile | Works; B's app is empty | |
 | 2.5 | Sign in with a Google account that is **not** on the list | Refused; no app opens | |
-| 2.6 | Stay signed in but idle for more than 1 hour, then do something | Signed out, with the reason shown on the sign-in page; your unsent draft is kept in that tab | |
+| 2.6 | Close the browser, come back the next day | Still signed in (a session lasts 14 days without use and at most 90 days after sign-in) | |
+| 2.6a | Signed in on PC and phone: Settings > Security > **Sign out everywhere** on the PC | It asks first. Then the PC is on the sign-in page, and the phone asks you to sign in on its next action. B stays signed in | |
 | 2.7 | Account page: the sign-in methods and active sessions | Your sessions are listed; no "Add passkey" button | |
 | 2.8 | Two tabs signed in; sign out in one, use the other | The other tab also asks you to sign in on its next action | |
 | 2.9 | Sign in on the phone while the PC stays signed in | Both stay signed in | |

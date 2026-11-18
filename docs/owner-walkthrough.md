@@ -248,9 +248,9 @@ Use your account (A) and the test account (B). Made-up content only.
 
 ### 15. Two accounts (T-33; deploy doc 6.2, rows 16 to 21)
 
-**Do:** A in one browser, B in another. B opens Saved. `/api/status` in each. Row 18's console line in A's browser. A signs out and opens `/api/status`. A Google account not on the list tries to sign in. Stay idle more than 1 hour.
+**Do:** A in one browser, B in another. B opens Saved. `/api/status` in each. Row 18's console line in A's browser. A signs out and opens `/api/status`. A Google account not on the list tries to sign in. Settings > Security > Sign out everywhere (since 18 November sessions last 14 days without use, at most 90 days).
 
-**Expect:** B sees nothing of A. Different `accountId`. The hint is ignored. 401 or 403 after sign-out. The unlisted account is refused. Idle sign-out after 1 hour.
+**Expect:** B sees nothing of A. Different `accountId`. The hint is ignored. 401 or 403 after sign-out. The unlisted account is refused. Sign out everywhere signs out every device.
 
 **Report back:** pass or fail per row.
 
