@@ -4577,7 +4577,8 @@
 }
 .chat-design .account-label small {
   font-size: 12px;
-  color: var(--ink3);
+  /* ink3 on the open menu's hover tint was under 4.5:1 (axe, 18 November). */
+  color: var(--ink2);
 }
 .chat-design .sidebar-bottom > p {
   font-size: 12px;
@@ -4834,7 +4835,8 @@
 }
 .chat-design .message-time {
   font-size: 12px;
-  color: var(--ink3);
+  /* ink3 on the light-blue user bubble was 4.3:1 (axe, 18 November); ink2 passes 4.5:1. */
+  color: var(--ink2);
 }
 /* A new message rises in gently (off under reduced motion, see the token block). */
 .chat-design .message {

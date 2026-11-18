@@ -2951,7 +2951,8 @@ export function App() {
         {!!imports.length && (
           <section className="import-results" aria-label={t.importResults}>
             <strong>{t.importResults}</strong>
-            <ul role="status" aria-live="polite" aria-relevant="text additions">
+            {/* The live region wraps the list: role="status" on the <ul> itself hid its list items (axe "listitem"). */}
+            <div role="status" aria-live="polite" aria-relevant="text additions"><ul>
               {imports.map((item, index) => (
                 <li key={index}>
                   <span>
@@ -2977,7 +2978,7 @@ export function App() {
                     )}
                 </li>
               ))}
-            </ul>
+            </ul></div>
             {!busy && (
               <button onClick={() => setImports([])}>
                 {t.dismissImports}
