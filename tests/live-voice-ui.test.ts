@@ -180,7 +180,9 @@ for (const lang of ["en", "de"] as const)
         const panel = page.getByRole("region", { name: t.title });
         await ui(panel).toBeVisible();
         await ui(panel).toContainText(t.what);
-        await ui(panel).toContainText(t.cost(2, "Fast", 15, 15).split("(")[0]);
+        // No count of units or turns in the panel (owner, 18 November); its options sit behind one row.
+        await ui(panel).not.toContainText(/units|Einheiten/);
+        await ui(panel.getByRole("checkbox", { name: t.alwaysAsk })).toBeHidden();
         // Today's voice time, from the status.
         await ui(panel).toContainText(voiceText[lang].today("0:20", "4:40"));
         // Focus moves into the panel; it fits the screen; no sideways scroll.
@@ -216,7 +218,7 @@ for (const lang of ["en", "de"] as const)
         expect(delay).toBeGreaterThan(0);
         expect(delay).toBeLessThan(1500);
         expect(await calls(page)).toEqual(["What time is it"]);
-        await ui(panel).toContainText(t.used(1, 15, 2));
+        await ui(panel).not.toContainText(/units|Einheiten/);
         await ui(page.locator("article.assistant").last()).toContainText("Synthetic answer about the time.");
         // The turn went through the chunked recorder: one chunk of the real MediaRecorder, its units reported.
         const heard = await page.evaluate(() => (window as unknown as { __heard: number[] }).__heard);
@@ -224,6 +226,7 @@ for (const lang of ["en", "de"] as const)
         expect(heard[0]).toBeGreaterThan(1000);
 
         // Turn 2, with "Always ask before sending": tap to stop speaking, then End at the review. Nothing more is sent.
+        await panel.getByText(t.options, { exact: true }).click();
         await panel.getByRole("checkbox", { name: t.alwaysAsk }).check();
         await loud(page, true);
         await page.waitForTimeout(400);

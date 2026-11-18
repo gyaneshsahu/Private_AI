@@ -2,7 +2,13 @@
 // that shows the state, what was heard, the answer, and the controls. The loop is src/live-voice.ts;
 // this file wires it to the browser: the voice input recorder, the silence detector, transcription,
 // the app's own send path (given by App), and the page's on-device reader.
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
 import type { AppStatus } from "../shared/contracts";
 import { languageOf } from "./arithmetic/numbers";
 import { Icon } from "./Icon";
@@ -17,7 +23,13 @@ import {
 } from "./live-voice";
 import { playEarcon, watchSpeech, watchTalkOver } from "./live-voice-audio";
 import { AttestationBusyError } from "./providers/inference-client";
-import { chooseVoice, loadVoices, pageReader, speechChunks, spokenText } from "./read-aloud";
+import {
+  chooseVoice,
+  loadVoices,
+  pageReader,
+  speechChunks,
+  spokenText,
+} from "./read-aloud";
 import { textFor, uiLang } from "./text/core";
 import { deviceText } from "./text/device-features";
 import { liveVoiceText } from "./text/live-voice";
@@ -39,8 +51,14 @@ const PREFS_KEY = "cometrow.live-voice";
 type Prefs = { ask: boolean; sounds: boolean; talkOver: boolean };
 function readPrefs(): Prefs {
   try {
-    const saved = JSON.parse(localStorage.getItem(PREFS_KEY) ?? "{}") as Partial<Prefs>;
-    return { ask: saved.ask === true, sounds: saved.sounds !== false, talkOver: saved.talkOver !== false };
+    const saved = JSON.parse(
+      localStorage.getItem(PREFS_KEY) ?? "{}",
+    ) as Partial<Prefs>;
+    return {
+      ask: saved.ask === true,
+      sounds: saved.sounds !== false,
+      talkOver: saved.talkOver !== false,
+    };
   } catch {
     return { ask: false, sounds: true, talkOver: true }; // storage blocked: defaults each time
   }
@@ -53,7 +71,8 @@ const REVIEW_SECONDS = 0;
 const READER_ID = "live-voice";
 /** Seconds before the turn maximum when the warning shows. */
 const WARN_SECONDS = 20;
-const frame = () => new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+const frame = () =>
+  new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
 
 export function LiveVoice(props: {
   status: AppStatus;
@@ -82,7 +101,12 @@ export function LiveVoice(props: {
   latest.current = { ...props, used, refreshUsed };
   const [turnMax, setTurnMax] = useState(0);
   const [open, setOpen] = useState(false);
-  const [snap, setSnap] = useState<LiveSnapshot>({ phase: "idle", transcript: "", turns: 0, units: 0 });
+  const [snap, setSnap] = useState<LiveSnapshot>({
+    phase: "idle",
+    transcript: "",
+    turns: 0,
+    units: 0,
+  });
   const [elapsed, setElapsed] = useState(0);
   const [spoken, setSpoken] = useState("");
   const [prefs, setPrefs] = useState(readPrefs);
@@ -90,7 +114,8 @@ export function LiveVoice(props: {
   prefsRef.current = prefs;
   const trigger = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLElement>(null);
-  const speechCost = props.status.inference.qualification?.speech?.allowanceCost ?? 1;
+  const speechCost =
+    props.status.inference.qualification?.speech?.allowanceCost ?? 1;
   const android = /Android/i.test(navigator.userAgent);
 
   const live = useMemo(() => {
@@ -140,7 +165,11 @@ export function LiveVoice(props: {
       media: {
         async getUserMedia(constraints) {
           const stream = await navigator.mediaDevices.getUserMedia(constraints);
-          stream.getAudioTracks()[0]?.addEventListener("ended", () => machine.pause({ key: "micLost" }));
+          stream
+            .getAudioTracks()[0]
+            ?.addEventListener("ended", () =>
+              machine.pause({ key: "micLost" }),
+            );
           unwatch = watchSpeech(stream, (event) =>
             event === "speechEnd" ? machine.doneSpeaking() : machine.noSpeech(),
           );
@@ -156,7 +185,10 @@ export function LiveVoice(props: {
             queue = createChunkQueue(
               (audio, units, signal) => {
                 const p = latest.current;
-                return (p.transcribe ?? ((a, u, s) => transcribeRecording(a, u, p.status, s)))(audio, units, signal);
+                return (
+                  p.transcribe ??
+                  ((a, u, s) => transcribeRecording(a, u, p.status, s))
+                )(audio, units, signal);
               },
               textFor(voiceText).partMissing,
               // Budget or allowance gone: the turn ends here; the reason comes with its text.
@@ -181,8 +213,12 @@ export function LiveVoice(props: {
           void p.refreshUsed();
           if (result.failed < turn.size) return result;
           const error = result.error;
-          if (error instanceof AttestationBusyError && error.retryAt) p.onVerifyWait(error.retryAt);
-          throw { detail: voiceFailureText(error), end: finalVoiceRefusal(error) } satisfies LiveStop;
+          if (error instanceof AttestationBusyError && error.retryAt)
+            p.onVerifyWait(error.retryAt);
+          throw {
+            detail: voiceFailureText(error),
+            end: finalVoiceRefusal(error),
+          } satisfies LiveStop;
         },
         blocked() {
           const p = latest.current;
@@ -191,13 +227,25 @@ export function LiveVoice(props: {
           if (p.busy) return { detail: lt.otherRequest };
           if (p.verifyWaiting) return { detail: lt.verifyWait };
           // Today's voice time: the next turn needs at least a second of it.
-          if (machine.snapshot().phase !== "review" && turnSeconds(p.voice, p.used) < 1)
+          if (
+            machine.snapshot().phase !== "review" &&
+            turnSeconds(p.voice, p.used) < 1
+          )
             return { detail: textFor(voiceText).usedUp, end: true };
           // Before listening a turn needs both; at review the transcription is already paid.
-          const need = p.messageCost + (machine.snapshot().phase === "review" ? 0 : speechCost);
+          const need =
+            p.messageCost +
+            (machine.snapshot().phase === "review" ? 0 : speechCost);
           const allowance = p.status.requestAllowance;
-          if (allowance && allowance.state !== "unavailable" && allowance.remaining < need)
-            return { detail: lt.allowance(need, allowance.remaining), end: true };
+          if (
+            allowance &&
+            allowance.state !== "unavailable" &&
+            allowance.remaining < need
+          )
+            return {
+              detail: lt.allowance(need, allowance.remaining),
+              end: true,
+            };
           return undefined;
         },
         send: (text, signal) => latest.current.send(text, signal),
@@ -212,7 +260,9 @@ export function LiveVoice(props: {
           async speak(started) {
             if (follower) {
               const f = follower;
-              const result = await f.finish((expectedMs) => started(expectedMs));
+              const result = await f.finish((expectedMs) =>
+                started(expectedMs),
+              );
               setSpoken(f.text());
               endTalkOver();
               return result;
@@ -220,7 +270,11 @@ export function LiveVoice(props: {
             // The newest answer as the chat shows it, once React has rendered the finished text.
             await frame();
             await frame();
-            const shown = [...document.querySelectorAll("article.message.assistant .message-text")].at(-1);
+            const shown = [
+              ...document.querySelectorAll(
+                "article.message.assistant .message-text",
+              ),
+            ].at(-1);
             const answerLang = languageOf(shown?.textContent ?? "") ?? uiLang();
             const text = shown ? spokenText(shown, deviceText[answerLang]) : "";
             setSpoken(text);
@@ -228,7 +282,10 @@ export function LiveVoice(props: {
             const dt = textFor(deviceText);
             if (!reader) return { refused: dt.voiceUnknown };
             if (!text) return "spoken";
-            const voice = chooseVoice(await loadVoices(speechSynthesis), answerLang);
+            const voice = chooseVoice(
+              await loadVoices(speechSynthesis),
+              answerLang,
+            );
             if (voice === "none") return { refused: dt.noVoice(answerLang) };
             if (voice === "unverifiable") return { refused: dt.voiceUnknown };
             started(speechTimeoutMs(text.length));
@@ -254,7 +311,8 @@ export function LiveVoice(props: {
         clock: {
           now: () => Date.now(),
           setTimeout: (run, ms) => setTimeout(run, ms),
-          clearTimeout: (id) => clearTimeout(id as ReturnType<typeof setTimeout>),
+          clearTimeout: (id) =>
+            clearTimeout(id as ReturnType<typeof setTimeout>),
         },
         earcon: (name) => prefsRef.current.sounds && playEarcon(name),
         onChange(next) {
@@ -277,13 +335,17 @@ export function LiveVoice(props: {
   }, [props.voice.chunkSeconds, speechCost]);
 
   // Another conversation or a locked vault ends the session; so does leaving the page.
-  useEffect(() => () => live.end({ key: "conversationChanged" }), [live, props.conversationId]);
+  useEffect(
+    () => () => live.end({ key: "conversationChanged" }),
+    [live, props.conversationId],
+  );
   useEffect(() => {
     if (props.unlocked) return () => live.end({ key: "locked" });
   }, [live, props.unlocked]);
   useEffect(() => {
     // The microphone never stays open unseen, and speech stops with it.
-    const hidden = () => document.visibilityState === "hidden" && live.pause({ key: "hidden" });
+    const hidden = () =>
+      document.visibilityState === "hidden" && live.pause({ key: "hidden" });
     const leave = () => live.stop();
     document.addEventListener("visibilitychange", hidden);
     addEventListener("pagehide", leave);
@@ -314,8 +376,16 @@ export function LiveVoice(props: {
   useEffect(() => {
     if (!open) return;
     const focused = focusOrigin();
-    if (focused && focused !== document.body && panel.current?.isConnected && focused !== trigger.current) return;
-    panel.current?.querySelector<HTMLElement>(".live-voice-actions button")?.focus();
+    if (
+      focused &&
+      focused !== document.body &&
+      panel.current?.isConnected &&
+      focused !== trigger.current
+    )
+      return;
+    panel.current
+      ?.querySelector<HTMLElement>(".live-voice-actions button")
+      ?.focus();
   }, [open, snap.phase]);
 
   const close = () => {
@@ -409,14 +479,7 @@ export function LiveVoice(props: {
           <p className="sr-only" aria-live="polite">
             {announced}
           </p>
-          {phase === "idle" && (
-            <>
-              <p>{t.what}</p>
-              <p className="muted">
-                {t.cost(speechCost + props.messageCost, props.modeName, LIVE_VOICE_CAPS.maxTurns, LIVE_VOICE_CAPS.maxMs / 60_000)}
-              </p>
-            </>
-          )}
+          {phase === "idle" && <p>{t.what}</p>}
           {snap.transcript && (
             <div className="live-voice-text">
               <h3>{t.heard}</h3>
@@ -431,18 +494,30 @@ export function LiveVoice(props: {
           )}
           <div className="live-voice-actions">
             {(phase === "idle" || phase === "ended") && (
-              <button type="button" className="primary" onClick={() => live.start()}>
+              <button
+                type="button"
+                className="primary"
+                onClick={() => live.start()}
+              >
                 {phase === "idle" ? t.start : t.again}
               </button>
             )}
             {phase === "listening" && (
-              <button type="button" className="primary" onClick={() => live.doneSpeaking()}>
+              <button
+                type="button"
+                className="primary"
+                onClick={() => live.doneSpeaking()}
+              >
                 {t.doneSpeaking}
               </button>
             )}
             {phase === "review" && (
               <>
-                <button type="button" className="primary" onClick={() => live.sendNow()}>
+                <button
+                  type="button"
+                  className="primary"
+                  onClick={() => live.sendNow()}
+                >
                   {t.sendNow}
                 </button>
                 <button type="button" onClick={() => live.cancelReview()}>
@@ -465,7 +540,11 @@ export function LiveVoice(props: {
               </button>
             )}
             {phase === "paused" && (
-              <button type="button" className="primary" onClick={() => live.resume()}>
+              <button
+                type="button"
+                className="primary"
+                onClick={() => live.resume()}
+              >
                 {t.resume}
               </button>
             )}
@@ -475,7 +554,11 @@ export function LiveVoice(props: {
               </button>
             )}
             {active || phase === "paused" ? (
-              <button type="button" className="live-voice-end" onClick={() => live.stop()}>
+              <button
+                type="button"
+                className="live-voice-end"
+                onClick={() => live.stop()}
+              >
                 {t.end}
               </button>
             ) : (
@@ -484,24 +567,43 @@ export function LiveVoice(props: {
               </button>
             )}
           </div>
-          {phase !== "idle" && (
-            <p className="muted">{t.used(snap.turns, LIVE_VOICE_CAPS.maxTurns, snap.units)}</p>
+          {used !== undefined && (
+            <p className="muted live-voice-today">
+              {voiceToday(vt, props.voice, used)}
+            </p>
           )}
-          {used !== undefined && <p className="muted live-voice-today">{voiceToday(vt, props.voice, used)}</p>}
-          <div className="live-voice-prefs">
-            <label>
-              <input type="checkbox" checked={prefs.ask} onChange={(e) => save({ ...prefs, ask: e.target.checked })} />
-              {t.alwaysAsk}
-            </label>
-            <label>
-              <input type="checkbox" checked={prefs.sounds} onChange={(e) => save({ ...prefs, sounds: e.target.checked })} />
-              {t.sounds}
-            </label>
-            <label>
-              <input type="checkbox" checked={prefs.talkOver} onChange={(e) => save({ ...prefs, talkOver: e.target.checked })} />
-              {t.talkOver}
-            </label>
-          </div>
+          {/* The settings sit behind one small row (owner, 18 November); the counts of units and turns are gone. */}
+          <details className="live-voice-options">
+            <summary>{t.options}</summary>
+            <div className="live-voice-prefs">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={prefs.ask}
+                  onChange={(e) => save({ ...prefs, ask: e.target.checked })}
+                />
+                {t.alwaysAsk}
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={prefs.sounds}
+                  onChange={(e) => save({ ...prefs, sounds: e.target.checked })}
+                />
+                {t.sounds}
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={prefs.talkOver}
+                  onChange={(e) =>
+                    save({ ...prefs, talkOver: e.target.checked })
+                  }
+                />
+                {t.talkOver}
+              </label>
+            </div>
+          </details>
         </section>
       )}
     </>
@@ -517,7 +619,10 @@ export function LiveVoice(props: {
  */
 function followAnswer(onSound: () => void) {
   const index = document.querySelectorAll("article.message.assistant").length;
-  const element = () => document.querySelectorAll("article.message.assistant")[index]?.querySelector(".message-text");
+  const element = () =>
+    document
+      .querySelectorAll("article.message.assistant")
+      [index]?.querySelector(".message-text");
   let queued = 0; // characters of the spoken text already handed to the speech engine
   let pending = 0;
   let spokeOnce = false;
@@ -531,7 +636,8 @@ function followAnswer(onSound: () => void) {
     waiters.splice(0).forEach((resolve) => resolve());
   };
   const say = (piece: string) => {
-    if (cancelled || !piece.trim() || !voice || typeof voice === "string") return;
+    if (cancelled || !piece.trim() || !voice || typeof voice === "string")
+      return;
     for (const chunk of speechChunks(piece)) {
       const utterance = new SpeechSynthesisUtterance(chunk);
       utterance.voice = voice;
@@ -544,7 +650,8 @@ function followAnswer(onSound: () => void) {
       };
       utterance.onend = utterance.onerror = () => {
         // An engine that never reports a start still marks the first sound by its end.
-        if (!spokeOnce) utterance.onstart?.(new Event("start") as SpeechSynthesisEvent);
+        if (!spokeOnce)
+          utterance.onstart?.(new Event("start") as SpeechSynthesisEvent);
         pending--;
         settle();
       };
@@ -569,23 +676,32 @@ function followAnswer(onSound: () => void) {
   const ready = (async () => {
     pageReader()?.stop(); // one voice at a time
     // The first words decide the language and so the voice; the interface language until then.
-    for (let i = 0; i < 40 && !cancelled && !element()?.textContent?.trim(); i++)
+    for (
+      let i = 0;
+      i < 40 && !cancelled && !element()?.textContent?.trim();
+      i++
+    )
       await new Promise((resolve) => setTimeout(resolve, 50));
     answerLang = languageOf(element()?.textContent ?? "") ?? uiLang();
     voice =
-      typeof speechSynthesis === "undefined" ? "unverifiable" : chooseVoice(await loadVoices(speechSynthesis), answerLang);
+      typeof speechSynthesis === "undefined"
+        ? "unverifiable"
+        : chooseVoice(await loadVoices(speechSynthesis), answerLang);
   })();
   const timer = setInterval(() => void ready.then(() => pump(false)), 200);
   return {
     text: () => latestText,
-    async finish(started: (expectedMs: number) => void): Promise<"spoken" | { refused: string }> {
+    async finish(
+      started: (expectedMs: number) => void,
+    ): Promise<"spoken" | { refused: string }> {
       clearInterval(timer);
       await ready;
       await frame();
       await frame();
       const dt = textFor(deviceText);
       if (voice === "none") return { refused: dt.noVoice(answerLang) };
-      if (voice === "unverifiable" || !voice) return { refused: dt.voiceUnknown };
+      if (voice === "unverifiable" || !voice)
+        return { refused: dt.voiceUnknown };
       pump(true);
       started(speechTimeoutMs(latestText.length));
       if (cancelled) return "spoken";

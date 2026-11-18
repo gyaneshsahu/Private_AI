@@ -11,8 +11,7 @@ export const liveVoiceText = defineText({
     title: "Voice conversation",
     what: "Talk, then listen: CometRow answers aloud and listens again. Talk over the answer to interrupt it.",
     note: "Your recording goes encrypted to the protected speech model in the EU and is dropped once it is text. Numbers you say aloud, such as a bank or ID number, are part of the recording: masking works on the text only. The text is masked as usual before it goes to the chat.",
-    cost: (perTurn: number, mode: string, turns: number, minutes: number) =>
-      `Each turn uses about ${perTurn} units (${mode}: speech to text plus the answer). A session stops after ${turns} turns or ${minutes} minutes.`,
+    options: "Options",
     start: "Start talking",
     end: "End",
     pause: "Pause",
@@ -39,7 +38,6 @@ export const liveVoiceText = defineText({
     speaking: "Reading the answer aloud…",
     paused: "Paused.",
     ended: "Voice conversation ended.",
-    used: (turn: number, max: number, units: number) => `Questions sent: ${turn} of ${max} · about ${units} units used`,
     // Why it paused or ended.
     stopped: "You ended the session. Nothing more is sent.",
     pausedByYou: "Press Resume when you want to talk again.",
@@ -69,8 +67,7 @@ export const liveVoiceText = defineText({
     title: "Sprachgespräch",
     what: "Sprechen, dann zuhören: CometRow antwortet laut und hört wieder zu. Sprechen Sie dazwischen, um die Antwort zu unterbrechen.",
     note: "Ihre Aufnahme geht verschlüsselt an das geschützte Sprachmodell in der EU und wird verworfen, sobald sie Text ist. Nummern, die Sie laut sagen, etwa eine Konto- oder Ausweisnummer, sind Teil der Aufnahme: Die Platzhalter wirken nur beim Text. Der Text wird wie immer verborgen, bevor er an den Chat geht.",
-    cost: (perTurn: number, mode: string, turns: number, minutes: number) =>
-      `Jede Runde verbraucht etwa ${perTurn} Einheiten (${mode}: Sprache zu Text plus Antwort). Eine Sitzung endet nach ${turns} Runden oder ${minutes} Minuten.`,
+    options: "Optionen",
     start: "Sprechen beginnen",
     end: "Beenden",
     pause: "Pause",
@@ -97,7 +94,6 @@ export const liveVoiceText = defineText({
     speaking: "Die Antwort wird vorgelesen …",
     paused: "Pausiert.",
     ended: "Sprachgespräch beendet.",
-    used: (turn: number, max: number, units: number) => `Gesendete Fragen: ${turn} von ${max} · etwa ${units} Einheiten verbraucht`,
     stopped: "Sie haben die Sitzung beendet. Es wird nichts mehr gesendet.",
     pausedByYou: "Drücken Sie auf Fortsetzen, wenn Sie weitersprechen möchten.",
     turnCap: "Die Sitzung hat ihre Rundengrenze erreicht. Beginnen Sie neu für mehr.",

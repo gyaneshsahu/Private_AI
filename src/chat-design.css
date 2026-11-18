@@ -5796,3 +5796,25 @@
     justify-content: flex-end;
   }
 }
+/* Voice conversation: its three settings behind one small "Options" row (owner, 18 November). */
+.chat-design .live-voice-options {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--ink2);
+}
+.chat-design .live-voice-options > summary {
+  width: fit-content;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  cursor: pointer;
+}
+.chat-design .live-voice-options .live-voice-prefs {
+  margin-top: 6px;
+}
+@media (max-width: 760px) {
+  .chat-design .live-voice-options > summary {
+    min-height: 44px;
+  }
+}
