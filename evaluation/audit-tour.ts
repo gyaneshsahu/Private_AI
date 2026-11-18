@@ -97,6 +97,8 @@ interface Ctx {
   send: (text: string, answer?: AnswerName, wait?: boolean) => Promise<void>;
   /** fullPage for pages that scroll the document (outside the app shell). */
   shot: (screen: string, fullPage?: boolean) => Promise<void>;
+  /** Records a part of the step left out on purpose (listed in the report with its reason). */
+  skip: (reason: string) => void;
   clicked: string[];
 }
 type Step = [screen: string, run: (c: Ctx) => Promise<void>, only?: AuditConfig];
@@ -260,7 +262,10 @@ const STEPS: Step[] = [
     // The steps after cropping; each only if the app shows it.
     for (const [name, screen] of [["Next: cover private parts", "image-question-cover"], ["No, it does not", "image-question-health"], ["Next: check the picture", "image-question-check"], ["Attach to my message", "image-question-attached"]]) {
       const button = vis(c.page.getByRole("button", { name: c.tr(name), exact: true }));
-      if (!(await button.waitFor({ timeout: 4000 }).then(() => true, () => false))) continue;
+      if (!(await button.waitFor({ timeout: 4000 }).then(() => true, () => false))) {
+        c.skip(`"${name}" not shown by this build (the picture needs no such step)`);
+        continue;
+      }
       await button.click();
       c.clicked.push(name);
       await pause(c.page, 1200);
@@ -284,7 +289,7 @@ const STEPS: Step[] = [
     await pause(c.page, 600);
     await c.shot("voice-note");
     // Chromium only: a fake microphone (launch flags); the transcription is faked.
-    if (c.browser.browserType().name() !== "chromium") return;
+    if (c.browser.browserType().name() !== "chromium") return c.skip("recording and transcription need Chromium's fake microphone");
     // Since 17 November dictation starts at once (no note with a Start button); older builds had one.
     const start = vis(c.page.getByRole("button", { name: c.tr("Start recording"), exact: true }));
     if (await start.waitFor({ timeout: 1500 }).then(() => true, () => false)) await start.click();
@@ -601,6 +606,13 @@ export async function runTour(o: {
   const entries: Entry[] = [];
   /** Tour labels with no German text found (the German step then looks for the English label). */
   const missing = new Set<string>();
+  /** Steps or parts left out on purpose: "step: reason" -> the combinations it applies to. */
+  const skips = new Map<string, Set<string>>();
+  const skipped = (step: string, reason: string, combo: string) => {
+    const key = `${step}: ${reason}`;
+    if (!skips.has(key)) skips.set(key, new Set());
+    skips.get(key)!.add(combo);
+  };
   let hardFailures = 0;
   for (const [engineName, engine] of o.browsers) {
     if (!engine) throw Error(`Unknown browser ${engineName}`);
@@ -627,6 +639,7 @@ export async function runTour(o: {
           page.on("dialog", (d) => void (d.type() === "beforeunload" ? d.accept() : d.dismiss()).catch(() => {}));
           let n = 0;
           let germanOff = false;
+          let step = "";
           // A build without German shows English: then the English labels are the right ones.
           const alts = (en: string) => (lang !== "de" || germanOff ? [en] : (de.has(en) || missing.add(en), de.get(en) ?? [en]));
           const escape = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -637,6 +650,7 @@ export async function runTour(o: {
           const c: Ctx = {
             page, context, browser, fakes, origin: o.origin, config: o.config, lang, width, tr, alts, clicked: [],
             germanOff: () => germanOff,
+            skip: (reason) => skipped(step, reason, `${engineName} ${lang} ${width}`),
             async click(name, role = "button") {
               await vis(c.page.getByRole(role, { name: tr(name), exact: true })).click();
               c.clicked.push(name);
@@ -696,7 +710,12 @@ export async function runTour(o: {
             },
           };
           for (const [name, run, only] of STEPS) {
-            if ((only && only !== o.config) || (o.only && !o.only.includes(name))) continue;
+            if (o.only && !o.only.includes(name)) continue; // not asked for with --steps
+            step = name;
+            if (only && only !== o.config) {
+              skipped(name, `needs the "${only}" build (features switched ${only})`, `${engineName} ${lang} ${width}`);
+              continue;
+            }
             const started = entries.length;
             try {
               await run(c);
@@ -727,5 +746,7 @@ export async function runTour(o: {
   const missingScreens = Object.fromEntries(combos.slice(1).map((combo) => [combo, [...first].filter((s) => !reached(combo).has(s))]).filter(([, list]) => list.length));
   hardFailures = entries.filter((e) => e.nonLocal.length).length;
   const failedSteps = entries.filter((e) => e.error).length;
-  return { config: o.config, origin: o.origin, generated: new Date().toISOString(), hardFailures, failedSteps, untranslatedLabels: [...missing], missingScreens, entries };
+  const everyCombo = o.browsers.length * o.langs.length * o.widths.length;
+  const skippedSteps = [...skips].map(([what, where]) => ({ what, where: where.size === everyCombo ? "every combination" : [...where].join("; ") }));
+  return { config: o.config, origin: o.origin, generated: new Date().toISOString(), hardFailures, failedSteps, skippedSteps, untranslatedLabels: [...missing], missingScreens, entries };
 }

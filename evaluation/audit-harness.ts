@@ -13,7 +13,7 @@
 //    evaluation/audit-fakes.ts and writes screenshots and index.json to --out.
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { createServer, type Server } from "node:http";
 import { resolve } from "node:path";
 import express from "express";
@@ -29,7 +29,7 @@ import { MemorySyncStore } from "../server/vault-sync";
 import { MemoryBlobStore } from "../server/vault-sync-blobs";
 import { MemorySecureStore } from "../server/secure-store";
 import { ephemeralCustodyMaster } from "../server/custody";
-import { AUDIT_ACCOUNT, type AuditConfig } from "./audit-fakes";
+import { AUDIT_ACCOUNT, createResponder, fakeStatus, type AuditConfig, type FakeReply } from "./audit-fakes";
 
 /** Every build switch (grep import.meta.env.VITE_ in src). */
 export const VITE_SWITCHES = [
@@ -77,9 +77,9 @@ export async function buildClient(config: AuditConfig): Promise<string> {
   return outDir;
 }
 
-export async function startServer(config: AuditConfig, client: string): Promise<{ origin: string; server: Server }> {
+export async function startServer(config: AuditConfig, client: string, fakesInServer = false, port = 0): Promise<{ origin: string; server: Server }> {
   const server = createServer();
-  await new Promise<void>((ok) => server.listen(0, "127.0.0.1", ok));
+  await new Promise<void>((ok) => server.listen(port, "127.0.0.1", ok));
   const address = server.address();
   if (!address || typeof address === "string") throw Error("No local port");
   // localhost, not 127.0.0.1: the account lab opens only on localhost (src/main.tsx).
@@ -126,7 +126,34 @@ export async function startServer(config: AuditConfig, client: string): Promise<
   // As server/index.ts without --dev; sendFile with a root, since this worktree sits under a dot folder.
   app.use(express.static(client, { index: false }));
   app.get("/", (_req, res) => res.sendFile("index.html", { root: client }));
-  server.on("request", (req, res) => {
+  // --serve: the fake answers come from this server, so a plain browser (no test script) gets a full app.
+  const responder = fakesInServer ? createResponder() : undefined;
+  const send = (res: import("node:http").ServerResponse, f: FakeReply) => {
+    res.writeHead(f.status, { "content-type": f.contentType ?? "application/json", "cache-control": "no-store", ...f.headers });
+    res.end(f.body ?? JSON.stringify(f.json));
+  };
+  const readJson = async (req: import("node:http").IncomingMessage) => {
+    const chunks: Buffer[] = [];
+    for await (const chunk of req) chunks.push(chunk as Buffer);
+    return chunks.length ? JSON.parse(Buffer.concat(chunks).toString("utf8")) : undefined;
+  };
+  server.on("request", async (req, res) => {
+    const path = new URL(req.url ?? "/", origin).pathname;
+    if (responder) {
+      // Sign in or out as the synthetic test account (the same one the tour uses).
+      if (path === "/__audit/sign-in" || path === "/__audit/sign-out") {
+        res.writeHead(303, { location: "/", "set-cookie": `audit-account=${path.endsWith("in") ? AUDIT_ACCOUNT : ""}; Path=/; SameSite=Strict${path.endsWith("out") ? "; Max-Age=0" : ""}` });
+        return void res.end();
+      }
+      if (path === "/__audit/reply") return send(res, await responder.reply(await readJson(req)));
+      if (path === "/__audit/transcribe") return send(res, { status: 200, json: { text: "Synthetic dictated text for the audit" } });
+      if (path.startsWith("/api/research/")) return send(res, responder.research(path, await readJson(req)));
+      if (path === "/api/status" && req.method === "GET")
+        // Own property: wins over Express's response prototype, so the real status gets the fake "ready" parts.
+        (res as unknown as { json: (body: Record<string, unknown>) => unknown }).json = function (this: express.Response, body: Record<string, unknown>) {
+          return express.response.json.call(this, fakeStatus(body, config));
+        };
+    }
     const account = /(?:^|;\s*)audit-account=([a-f0-9-]{36})/.exec(req.headers.cookie ?? "")?.[1];
     if (account)
       (res as unknown as { locals: object }).locals = { accountId: account, accessEpoch: "audit", signedInAt: Date.now(), accountEmail: "audit@example.test" };
@@ -143,24 +170,25 @@ if (process.argv[1]?.replaceAll("\\", "/").endsWith("evaluation/audit-harness.ts
   if (!["on", "off"].includes(config)) throw Error("--config must be on or off");
   console.log(`Building the ${config} client into .local/audit-build/${config} ...`);
   const client = await buildClient(config);
-  const { origin, server } = await startServer(config, client);
-  if (process.argv.includes("--serve")) {
+  const serve = process.argv.includes("--serve");
+  const { origin, server } = await startServer(config, client, serve, Number(arg("port", "0")));
+  if (serve) {
     console.log(`
 CometRow audit server (${config}) at ${origin}
-  Chat is ready only with the fakes installed: from your own Playwright script
-    import { installFakes } from "./evaluation/audit-fakes";
-    const fakes = await installFakes(context, { origin: "${origin}", config: "${config}" });
-  Signed in: await context.addCookies([{ name: "audit-account", value: "${AUDIT_ACCOUNT}", url: "${origin}" }]);
-  Pick an answer: type audit:<name> in a message, or fakes.answer("<name>") before sending.
-  Names: markdown code math table citations long slow error-429 error-500 error-503 dropped stop python image plain
-  Account lab: ${origin}/?account-lab=1   (fake /api/account/* and /api/auth/* yourself, see evaluation/audit-tour.ts)
-  In a plain browser chat shows "unavailable" (no fake status). Ctrl+C stops.`);
+  A plain browser works: fake answers, fake search and transcription come from this server; no request leaves the machine.
+  Sign in as the synthetic test account: ${origin}/__audit/sign-in   (sign out: ${origin}/__audit/sign-out)
+  Pick an answer: type audit:<name> in a message.
+  Names: markdown code math table citations long slow error-429 error-500 error-503 dropped stop python image plain chart
+  Account lab: ${origin}/?account-lab=1
+  Ctrl+C stops.`);
     await new Promise(() => {});
   }
   const { runTour } = await import("./audit-tour");
   const engines = { chromium, firefox, webkit };
   const out = resolve(arg("out", `.local/audit/${config}`));
   await mkdir(out, { recursive: true });
+  // Only this run's screenshots in the folder: a "-FAILED" picture is then always a failure of this run.
+  for (const file of await readdir(out)) if (file.endsWith(".png")) await rm(`${out}/${file}`);
   let failures = 0;
   try {
     const result = await runTour({
@@ -175,6 +203,7 @@ CometRow audit server (${config}) at ${origin}
     failures = result.hardFailures;
     await writeFile(`${out}/index.json`, JSON.stringify(result, null, 2));
     console.log(`written ${out}/index.json: ${result.entries.length} screenshots, ${result.failedSteps} failed steps, ${result.hardFailures} hard failures (non-local requests)`);
+    if (result.skippedSteps.length) console.log(`skipped on purpose:\n${result.skippedSteps.map((s) => `  - ${s.what} (${s.where})`).join("\n")}`);
   } finally {
     server.close();
   }

@@ -192,12 +192,19 @@ export interface FakeOptions {
 
 const isLocal = (url: URL) => ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname) || ["data:", "blob:", "about:"].includes(url.protocol);
 
-export async function installFakes(context: BrowserContext, options: FakeOptions) {
+/** One fake answer, independent of how it is delivered (a Playwright route or the serve-mode server). */
+export interface FakeReply {
+  status: number;
+  contentType?: string;
+  headers?: Record<string, string>;
+  body?: string;
+  json?: unknown;
+}
+
+/** The fake model, search and transcription answers, shared by installFakes and `--serve`. */
+export function createResponder() {
   const queue: AnswerName[] = [];
   const log: AuditLog = { console: [], pageErrors: [], failed: [], nonLocal: [], replies: [] };
-  let ready = options.ready ?? true;
-  // Playwright still runs route handlers while the context is offline: the fakes must fail too.
-  let offline = false;
   let serial = 0;
   const source = (url: string, evidenceKind: string) => ({
     id: `synthetic-${String(++serial).padStart(4, "0")}`,
@@ -208,16 +215,14 @@ export async function installFakes(context: BrowserContext, options: FakeOptions
     evidenceKind,
   });
 
-  async function reply(route: Route) {
-    const request = route.request().postDataJSON() as ReplyRequest;
+  async function reply(request: ReplyRequest): Promise<FakeReply> {
     const token = /audit:([a-z0-9-]+)/.exec(request.question)?.[1] as AnswerName | undefined;
     const name: AnswerName | "research-plan" | "research-answer" =
       request.research === "plan" ? "research-plan"
       : request.research === "answer" ? "research-answer"
       : queue.shift() ?? (token && ANSWERS.includes(token) ? token : request.image ? "image" : "markdown");
     log.replies.push({ answer: name, request });
-    const stream = (body: string, headers: Record<string, string> = {}) =>
-      route.fulfill({ status: 200, contentType: "text/event-stream", headers, body }).catch(() => {});
+    const stream = (body: string, headers: Record<string, string> = {}): FakeReply => ({ status: 200, contentType: "text/event-stream", headers, body });
     const cite = request.sources.slice(0, 3);
     switch (name) {
       case "research-plan":
@@ -240,11 +245,11 @@ export async function installFakes(context: BrowserContext, options: FakeOptions
         await new Promise((r) => setTimeout(r, 6000));
         return stream(sse(TEXT.slow));
       case "error-429":
-        return route.fulfill({ status: 429, json: { error: "Synthetic rate limit." } }).catch(() => {});
+        return { status: 429, json: { error: "Synthetic rate limit." } };
       case "error-500":
-        return route.fulfill({ status: 500, json: { error: "Synthetic server error." } }).catch(() => {});
+        return { status: 500, json: { error: "Synthetic server error." } };
       case "error-503":
-        return route.fulfill({ status: 503, json: { error: "Synthetic unavailable." } }).catch(() => {});
+        return { status: 503, json: { error: "Synthetic unavailable." } };
       case "dropped":
         // Content, then the stream ends without a finish frame or [DONE].
         return stream(sse(TEXT.dropped, { done: false }));
@@ -255,27 +260,43 @@ export async function installFakes(context: BrowserContext, options: FakeOptions
     }
   }
 
-  async function research(route: Route, url: URL) {
-    if (url.pathname.endsWith("/prepare")) return route.fulfill({ json: { id: "s".repeat(48) } });
-    if (url.pathname.endsWith("/cancel")) return route.fulfill({ json: {} });
-    const body = route.request().postDataJSON() as { request: { kind: string; value: string } };
+  function research(pathname: string, body?: { request: { kind: string; value: string } }): FakeReply {
+    if (pathname.endsWith("/prepare")) return { status: 200, json: { id: "s".repeat(48) } };
+    if (pathname.endsWith("/cancel") || !body) return { status: 200, json: {} };
     const n = ++serial;
-    return route
-      .fulfill({
-        json:
-          body.request.kind === "page"
-            ? { sources: [source(body.request.value, "page")] }
-            : {
-                sources: [
-                  source(`https://one.example/result-${n}`, "search-excerpt"),
-                  source(`https://two.example/result-${n}`, "search-excerpt"),
-                  source(`https://one.example/result-${n}`, "page"),
-                ],
-                topPage: { url: `https://one.example/result-${n}`, outcome: "read" },
-              },
-      })
-      .catch(() => {});
+    return {
+      status: 200,
+      json:
+        body.request.kind === "page"
+          ? { sources: [source(body.request.value, "page")] }
+          : {
+              sources: [
+                source(`https://one.example/result-${n}`, "search-excerpt"),
+                source(`https://two.example/result-${n}`, "search-excerpt"),
+                source(`https://one.example/result-${n}`, "page"),
+              ],
+              topPage: { url: `https://one.example/result-${n}`, outcome: "read" },
+            },
+    };
   }
+
+  return { log, queue, reply, research };
+}
+
+/** The real /api/status with the fake "chat ready" parts on top. */
+export const fakeStatus = (status: Record<string, unknown>, config: AuditConfig) => ({
+  ...status,
+  inference: { ready: true, reason: "AUDIT HARNESS: synthetic answers only", qualification: config === "on" ? { ...QUALIFICATION, speech: { model: "SYNTHETIC_SPEECH", allowanceCost: 1 }, vision: { model: "SYNTHETIC_FAST", allowanceCost: 2 } } : QUALIFICATION, cacheSalt: "a".repeat(43) },
+  ...(config === "on" ? ON_STATUS : { search: false }),
+});
+
+export async function installFakes(context: BrowserContext, options: FakeOptions) {
+  const { log, queue, reply, research } = createResponder();
+  let ready = options.ready ?? true;
+  // Playwright still runs route handlers while the context is offline: the fakes must fail too.
+  let offline = false;
+  const fulfill = (route: Route, f: FakeReply) =>
+    route.fulfill({ status: f.status, ...(f.contentType ? { contentType: f.contentType } : {}), ...(f.headers ? { headers: f.headers } : {}), ...(f.body !== undefined ? { body: f.body } : { json: f.json }) }).catch(() => {});
 
   await context.route("**/*", async (route) => {
     const url = new URL(route.request().url());
@@ -285,22 +306,14 @@ export async function installFakes(context: BrowserContext, options: FakeOptions
       return route.abort("blockedbyclient");
     }
     if (url.origin !== options.origin) return route.continue();
-    if (url.pathname === "/__audit/reply") return reply(route);
+    if (url.pathname === "/__audit/reply") return fulfill(route, await reply(route.request().postDataJSON() as ReplyRequest));
     if (url.pathname === "/__audit/transcribe")
       return route.fulfill({ json: { text: "Synthetic dictated text for the audit" } });
-    if (url.pathname.startsWith("/api/research/")) return research(route, url);
+    if (url.pathname.startsWith("/api/research/")) return fulfill(route, research(url.pathname, route.request().postDataJSON() ?? undefined));
     if (url.pathname === "/api/status" && ready) {
       const real = await route.fetch();
       if (!real.ok()) return route.fulfill({ response: real });
-      const status = await real.json();
-      return route.fulfill({
-        response: real,
-        json: {
-          ...status,
-          inference: { ready: true, reason: "AUDIT HARNESS: synthetic answers only", qualification: options.config === "on" ? { ...QUALIFICATION, speech: { model: "SYNTHETIC_SPEECH", allowanceCost: 1 }, vision: { model: "SYNTHETIC_FAST", allowanceCost: 2 } } : QUALIFICATION, cacheSalt: "a".repeat(43) },
-          ...(options.config === "on" ? ON_STATUS : { search: false }),
-        },
-      });
+      return route.fulfill({ response: real, json: fakeStatus(await real.json(), options.config) });
     }
     return route.continue();
   });
