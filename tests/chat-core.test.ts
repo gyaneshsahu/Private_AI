@@ -10,6 +10,12 @@ import { chatCoreText } from "../src/text/chat-core";
 import { titleFrom } from "../src/title-from";
 
 describe("titleFrom", () => {
+  it("names a chat begun from a starter chip after the words the user added", () => {
+    const starter = "Help me write a clear, friendly message. Here’s what I want to say: ";
+    expect(titleFrom(`${starter}thanks for dinner, but not Friday.`, 60, [starter])).toBe("thanks for dinner, but not Friday.");
+    expect(titleFrom(starter, 60, [starter])).toBe("Help me write a clear, friendly message. Here’s what I want…");
+    expect(titleFrom("Plan my week", 60, [starter])).toBe("Plan my week");
+  });
   it("keeps a short first line as it is", () => {
     expect(titleFrom("  Plan my week \nwith more detail")).toBe("Plan my week");
   });

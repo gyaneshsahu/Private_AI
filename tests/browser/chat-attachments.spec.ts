@@ -92,7 +92,7 @@ test("attachment limit and unsupported-file errors keep the chat draft and exist
   });
   await expect(
     page.getByRole("region", { name: "File import results" }),
-  ).toContainText("unsupported.html — failed");
+  ).toContainText("unsupported.html — could not be read");
   await expect(input).toBeEnabled();
   await input.setInputFiles(
     Array.from({ length: 5 }, (_, index) => ({

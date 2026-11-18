@@ -114,12 +114,14 @@ describe.each([375, 1280])("chat screen and message box at %i px", (width) => {
       await box.fill("");
       await ui(sendButton).toBeHidden();
       await ui(live).toBeVisible();
-      // Long text grows the box upwards; the buttons stay on its bottom row.
+      // Long text grows the box upwards. Desktop: the buttons stay on its bottom row. Phone: the text takes the
+      // full width and the buttons sit on a row under it (first-user pass, 18 November).
       await box.fill("SYNTHETIC line one\nline two\nline three\nline four");
       const tall = (await box.boundingBox())!;
       expect(tall.height).toBeGreaterThan(60);
       const plusAfter = (await plus.boundingBox())!;
-      expect(Math.abs(plusAfter.y + plusAfter.height - (tall.y + tall.height))).toBeLessThanOrEqual(12);
+      if (width < 700) expect(plusAfter.y).toBeGreaterThanOrEqual(tall.y + tall.height - 2);
+      else expect(Math.abs(plusAfter.y + plusAfter.height - (tall.y + tall.height))).toBeLessThanOrEqual(12);
       await box.fill("");
 
       // While the answer streams, Stop is a round square in the same place.

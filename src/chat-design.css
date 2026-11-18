@@ -1522,7 +1522,10 @@
 .account-shell .account-preview-notice {
   color: var(--ink);
   background: var(--subtle);
-  border-color: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  line-height: 1.45;
 }
 .account-shell .account-preview-card a {
   color: var(--accent);
@@ -5817,4 +5820,247 @@
   .chat-design .live-voice-options > summary {
     min-height: 44px;
   }
+}
+/* First-user pass (18 November): the health question as calm as the other dialogs: compact text, the two
+   buttons together on the right, the primary one a pill. */
+.chat-design .notice.health-consent {
+  padding: 16px 18px;
+  gap: 0;
+}
+.chat-design .notice.health-consent h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+.chat-design .notice.health-consent p {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink2);
+}
+.chat-design .notice.health-consent .row {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.chat-design .notice.health-consent .row .primary {
+  border-radius: 999px;
+  min-height: 36px;
+  padding: 0 18px;
+}
+@media (max-width: 760px) {
+  .chat-design .notice.health-consent .row .primary {
+    min-height: 44px;
+  }
+}
+/* Added files: small chips just above the message box, like the whiteboard chip (first-user pass). */
+.chat-design .composer-dock .composer-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 0;
+  max-height: 96px;
+  overflow-y: auto;
+}
+.chat-design .composer-dock .composer-attachments li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 3px 3px 3px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 13px;
+}
+.chat-design .composer-dock .composer-attachments li > span {
+  flex: 0 1 auto;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chat-design .composer-dock .composer-attachments small {
+  color: var(--ink2);
+  font-size: 12px;
+}
+.chat-design .composer-dock .composer-attachments button {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--subtle);
+  color: var(--ink);
+  font-size: 12.5px;
+}
+@media (max-width: 760px) {
+  .chat-design .composer-dock .composer-attachments button {
+    min-height: 44px;
+  }
+}
+/* The Options row centred like the rest of the voice panel, with a chevron that turns when it opens. */
+.chat-design .live-voice-options {
+  text-align: center;
+}
+.chat-design .live-voice-options > summary {
+  margin: 0 auto;
+  gap: 8px;
+  list-style: none;
+}
+.chat-design .live-voice-options > summary::-webkit-details-marker {
+  display: none;
+}
+.chat-design .live-voice-options > summary::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform var(--fast, 0.15s) ease;
+}
+.chat-design .live-voice-options[open] > summary::after {
+  transform: translateY(1px) rotate(-135deg);
+}
+.chat-design .live-voice-options .live-voice-prefs {
+  display: inline-grid;
+  text-align: left;
+}
+/* The search approval card laid out like the other cards: left-aligned, the question as a heading over a
+   small field label, the two buttons together on the right (first-user pass). Texts unchanged. */
+.chat-design .notice.search-suggestion {
+  padding: 16px 18px;
+  gap: 8px;
+  text-align: left;
+}
+.chat-design .notice.search-suggestion > p:first-child strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 15px;
+  color: var(--ink);
+}
+.chat-design .notice.search-suggestion > p:first-child span {
+  font-size: 13px;
+  color: var(--ink2);
+}
+.chat-design .notice.search-suggestion p {
+  margin: 0;
+}
+.chat-design .notice.search-suggestion .row {
+  display: flex;
+  flex-direction: row-reverse;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.chat-design .notice.search-suggestion .row .primary {
+  border-radius: 999px;
+  min-height: 36px;
+  padding: 0 18px;
+}
+@media (max-width: 760px) {
+  .chat-design .notice.search-suggestion .row .primary {
+    min-height: 44px;
+  }
+}
+/* Phones: the starter chips swipe sideways; a soft fade at the right edge shows there is more, and end
+   padding lets the last chip scroll clear of it (first-user pass). */
+@media (max-width: 650px) {
+  .chat-design .starter-grid {
+    padding-right: 32px;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+  }
+}
+/* Phones: once something is typed, the text takes the box's full width and "+", the mode, the microphone
+   and Send move to a row underneath (as in other mobile chat apps); empty, the box stays one line. */
+@media (max-width: 650px) {
+  .chat-design form.composer:has(textarea:not(:placeholder-shown)) {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+  .chat-design form.composer:has(textarea:not(:placeholder-shown)) textarea {
+    order: -1;
+    flex: 1 0 100%;
+    padding: 8px 10px 0;
+  }
+  .chat-design form.composer:has(textarea:not(:placeholder-shown)) .mode-select {
+    margin-left: auto;
+  }
+  .chat-design form.composer:has(textarea:not(:placeholder-shown)) .voice-input {
+    margin-left: 0;
+  }
+}
+/* Phones: in the "+" menu, the review row's count goes under its label instead of being cut off beside it. */
+@media (max-width: 650px) {
+  .chat-design .tools-menu .menu-surface button:has(.context-count) {
+    flex-wrap: wrap;
+    row-gap: 0;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .chat-design .tools-menu .menu-surface .context-count {
+    flex: 1 0 100%;
+    margin: 0;
+    padding-left: 30px;
+    overflow: visible;
+    white-space: normal;
+    font-size: 12px;
+  }
+}
+/* Phones with the whiteboard open: a solid band behind the Chat | Whiteboard switch, so the chat does not
+   show through around it, and the chat header sits under the band (first-user pass). */
+@media (max-width: 1099px) {
+  .chat-design.side-board .side-switch::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    z-index: -1;
+  }
+  .chat-design.side-board.board-chat-view .conversation-header {
+    top: 60px;
+  }
+  .chat-design.side-board.board-chat-view main {
+    padding-top: 60px;
+  }
+}
+/* File chips stay on one line: the name shortens, and on phones the "included" word is left out. */
+.chat-design .composer-dock .composer-attachments li {
+  flex-wrap: nowrap;
+}
+@media (max-width: 650px) {
+  .chat-design .composer-dock .composer-attachments small:not(.excluded) {
+    display: none;
+  }
+  .chat-design .composer-dock .composer-attachments li > span {
+    max-width: 58vw;
+  }
+}
+/* The switch is centred without a transform: a transform would confine the band's fixed position to the
+   switch's own box. */
+@media (max-width: 1099px) {
+  .chat-design.side-board .side-switch {
+    left: 0;
+    right: 0;
+    width: fit-content;
+    margin: 0 auto;
+    transform: none;
+  }
+}
+/* Settings: the chosen language is the filled one. The general Settings button rule above had turned it
+   round, so the unselected language looked chosen (first-user pass). */
+.chat-design .settings-content .language-switch button[aria-pressed="true"]:not(.primary):not(.danger):not([role="switch"]) {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
 }

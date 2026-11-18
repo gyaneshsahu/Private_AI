@@ -449,7 +449,14 @@ export function WorkspaceNavigation(props: {
                         <span>{conversationTitle(c)}</span>
                       </button>
                     )}
-                    <details className="chat-item-menu">
+                    {/* The menu sits inside the scrolling chat list: opening it scrolls the list so all of it shows. */}
+                    <details
+                      className="chat-item-menu"
+                      onToggle={(event) => {
+                        const menu = event.currentTarget;
+                        if (menu.open) requestAnimationFrame(() => menu.scrollIntoView({ block: "nearest" }));
+                      }}
+                    >
                       <summary
                         id={`chat-menu-${c.id}`}
                         aria-label={t.chatActions(conversationTitle(c))}
@@ -518,7 +525,8 @@ export function WorkspaceNavigation(props: {
                             onNavigate("Saved");
                           }}
                         >
-                          <Icon name="archive" />
+                          {/* Opens Saved, which the account menu marks with the same icon (one icon per meaning). */}
+                          <Icon name="drive" />
                           {ma.manageHistory}
                         </button>
                         {onDelete && (

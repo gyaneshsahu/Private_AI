@@ -370,6 +370,8 @@ export function App() {
   const chooseHealthConsent = (choice: HealthConsentChoice) =>
     setHealthConsent(writeHealthConsent(choice));
   const [notice, setNotice] = useState("");
+  // A notice is a finished sentence in one language: changing the language closes it rather than leave it untranslated.
+  useEffect(() => setNotice(""), [lang]);
   // Verification limit reached: count down to the moment the relay allows the next check.
   const [verifyWaitUntil, setVerifyWaitUntil] = useState(0);
   useEffect(() => {
@@ -561,6 +563,19 @@ export function App() {
   const [boardSkipped, setBoardSkipped] = useState<string>();
   const boardGoes =
     whiteboardEnabled() && !!status?.images && !attachedImage && boardUnsent(conversation.board) && boardSkipped !== conversation.board.changedAt;
+  // The board needs room: on wide screens the left menu folds away while it is open and comes back
+  // afterwards, unless the user had folded it already (first-user pass, 18 November).
+  const foldedForBoard = useRef(false);
+  useEffect(() => {
+    if (side === "board" && !navigationCollapsed && matchMedia("(min-width: 1100px)").matches) {
+      foldedForBoard.current = true;
+      setNavigationCollapsed(true);
+    } else if (side !== "board" && foldedForBoard.current) {
+      foldedForBoard.current = false;
+      setNavigationCollapsed(false);
+    }
+    // Only a change of panel decides; the user's own fold or unfold in between stays as they set it.
+  }, [side]);
   const openBoard = () => {
     setSide("board");
     setBoardChatView(false);
@@ -1267,7 +1282,7 @@ export function App() {
         base.title.trim() &&
         (base.messages.length || base.title !== "New conversation")
           ? base.title
-          : titleFrom(text),
+          : titleFrom(text, 60, [appText.en.writeDraft, appText.en.planDraft, appText.de.writeDraft, appText.de.planDraft]),
       messages: [
         ...base.messages,
         {
@@ -2884,7 +2899,8 @@ export function App() {
               </p>
             )}
           </div>
-          {whiteboardEnabled() && tab === "Conversation" && (
+          {/* Shown once the chat has something to list: on an empty chat it would be an unexplained icon. */}
+          {whiteboardEnabled() && tab === "Conversation" && (conversation.messages.length > 0 || !!conversation.board || side === "outputs") && (
             <button
               type="button"
               className="outputs-toggle icon-action"
@@ -3009,7 +3025,7 @@ export function App() {
               {imports.map((item, index) => (
                 <li key={index}>
                   <span>
-                    {item.name} — {item.status}
+                    {item.name} — {t.importStatus(item.status)}
                   </span>
                   {item.detail && <p>{item.detail}</p>}
                   {/* A picture the text reader could not use (no printed text, or unreadable):
@@ -3392,7 +3408,8 @@ export function App() {
               )}
               {noticeLine}
               {/* The one general notice (owner, 17 November): once, at first start, never again. */}
-              {!firstStartSeen && (
+              {/* One decision at a time: the notice waits while the health question is open. */}
+              {!firstStartSeen && !consentPending && (
                 <div className="first-start-notice" role="note">
                   <p>{t.firstStart}</p>
                   <div className="first-start-actions">
@@ -3417,6 +3434,29 @@ export function App() {
               )}
               <ConnectionBanner />
               {!status?.inference.ready && connectionStatus}
+              {/* Added files sit just above the message box, as chips (first-user pass, 18 November). */}
+              {conversation.attachments.length > 0 && (
+                <ul
+                  className="composer-attachments"
+                  aria-label={t.attachments}
+                >
+                  {conversation.attachments.map((attachment) => (
+                    <li key={attachment.id}>
+                      <span>{attachment.name}</span>
+                      <small className={attachment.selected ? undefined : "excluded"}>
+                        {attachment.selected ? t.included : t.excluded}
+                      </small>
+                      <button
+                        type="button"
+                        onClick={() => setTab("Context")}
+                        aria-label={t.reviewNamed(attachment.name)}
+                      >
+                        {t.review}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <form
                 className="composer"
                 onSubmit={(e) => {
@@ -3685,28 +3725,6 @@ export function App() {
                   )}
                 </div>
               </form>
-              {conversation.attachments.length > 0 && (
-                <ul
-                  className="composer-attachments"
-                  aria-label={t.attachments}
-                >
-                  {conversation.attachments.map((attachment) => (
-                    <li key={attachment.id}>
-                      <span>{attachment.name}</span>
-                      <small>
-                        {attachment.selected ? t.included : t.excluded}
-                      </small>
-                      <button
-                        type="button"
-                        onClick={() => setTab("Context")}
-                        aria-label={t.reviewNamed(attachment.name)}
-                      >
-                        {t.review}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
               <p className="composer-caption">
                 {conversation.incognito
                   ? t.captionIncognito

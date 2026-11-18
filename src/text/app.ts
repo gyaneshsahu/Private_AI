@@ -1,5 +1,7 @@
 // User-facing text of App.tsx in English and German (glossary: docs/i18n-glossary-20261113.md).
 // The English must stay exactly as before; UI tests match it.
+import type { ImportOutcome } from "../document-import";
+type ImportStatus = ImportOutcome["status"];
 import { defineText } from "../i18n";
 import type { DisappearAfter } from "../conversation";
 import { failureSentence } from "../chat-failures";
@@ -251,6 +253,7 @@ export const appText = defineText({
     firstStartPrivacy: "Privacy",
     gotIt: "Got it",
     stop: "Stop",
+    importStatus: (status: ImportStatus) => ({ queued: "waiting", reading: "reading …", added: "added", failed: "could not be read", cancelled: "cancelled" })[status],
     importResults: "File import results",
     dismissImports: "Dismiss import results",
 
@@ -637,6 +640,7 @@ export const appText = defineText({
     firstStartPrivacy: "Datenschutz",
     gotIt: "Verstanden",
     stop: "Stoppen",
+    importStatus: (status: ImportStatus) => ({ queued: "wartet", reading: "wird gelesen …", added: "hinzugefügt", failed: "konnte nicht gelesen werden", cancelled: "abgebrochen" })[status],
     importResults: "Ergebnisse des Dateiimports",
     dismissImports: "Importergebnisse schließen",
 

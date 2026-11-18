@@ -286,7 +286,8 @@ export function ChatMessage({
           </details>
         </div>
       )}
-      {message.image && <p className="muted image-not-kept">{imageText[lang].notKept}</p>}
+      {/* A whiteboard question shows its card instead: the board itself is kept. */}
+      {message.image && !message.board && <p className="muted image-not-kept">{imageText[lang].notKept}</p>}
       {user && editing ? (
         <form
           className="message-edit"

@@ -37,7 +37,7 @@ test("DOCX stays local, exposes omissions, permits correction and preserves encr
   ]);
   const results = page.getByRole("region", { name: "File import results" });
   await expect(results).toContainText("notes.docx — added");
-  await expect(results).toContainText("corrupt.docx — failed");
+  await expect(results).toContainText("corrupt.docx — could not be read");
   await page
     .getByRole("button", { name: "Review notes.docx", exact: true })
     .click();
@@ -93,7 +93,7 @@ test("independent Word package works at phone width and an unsupported file does
       "tests/fixtures/office/handover-python-docx.docx",
     ]);
   const results = page.getByRole("region", { name: "File import results" });
-  await expect(results).toContainText("revision-python-docx.docx — failed");
+  await expect(results).toContainText("revision-python-docx.docx — could not be read");
   await expect(results).toContainText("handover-python-docx.docx — added");
   await page
     .getByRole("button", {

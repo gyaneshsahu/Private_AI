@@ -44,7 +44,7 @@ test("mixed code/data imports recover from a bad file without disclosure or exec
   ]);
   const results = page.getByRole("region", { name: "File import results" });
   await expect(results).toContainText("helper.py — added");
-  await expect(results).toContainText("bad.json — failed");
+  await expect(results).toContainText("bad.json — could not be read");
   await expect(results).toContainText("not UTF-8");
   await expect(
     page
@@ -147,7 +147,7 @@ test("rejects oversized and disguised binary files and accepts a later valid fil
   await expect(results).toContainText("the limit is 60,000");
   await expect(results).toContainText("not plain text");
   await expect(results).toContainText(
-    "unsupported.docx — failed",
+    "unsupported.docx — could not be read",
   );
   await expect(
     page

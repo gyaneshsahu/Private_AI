@@ -264,7 +264,7 @@ for (const lang of ["en", "de"] as const)
         expect(await drag("drop", "dropped-note.txt")).toBe(true);
         await ui(page.getByText(ct.dropHere)).toHaveCount(0);
         const results = page.getByRole("region", { name: t.importResults });
-        await ui(results).toContainText("dropped-note.txt — added", { timeout: 30000 });
+        await ui(results).toContainText(`dropped-note.txt — ${lang === "de" ? "hinzugefügt" : "added"}`, { timeout: 30000 });
         // A pasted file goes the same way; pasted text is left to the browser.
         const paste = (file: boolean) =>
           box.evaluate((el, file) => {
@@ -277,7 +277,7 @@ for (const lang of ["en", "de"] as const)
           }, file);
         expect(await paste(false)).toBe(false);
         expect(await paste(true)).toBe(true);
-        await ui(results).toContainText("pasted-note.txt — added", { timeout: 30000 });
+        await ui(results).toContainText(`pasted-note.txt — ${lang === "de" ? "hinzugefügt" : "added"}`, { timeout: 30000 });
         expect(navigations.length).toBe(before);
         expect(page.url()).toBe(`${origin}/`);
         await noSidewaysScroll(page);
