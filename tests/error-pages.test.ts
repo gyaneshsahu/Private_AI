@@ -2,8 +2,8 @@
 import express from "express";
 import { z } from "zod";
 import type { AddressInfo } from "node:net";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { finalErrorHandler } from "../server/app";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { finalErrorHandler, logServerError } from "../server/app";
 import { errorPage, notFoundPage } from "../server/error-page";
 
 let base = "";
@@ -101,5 +101,18 @@ describe("final API error handler", () => {
     let passed: unknown;
     finalErrorHandler(Error("late"), {} as express.Request, { headersSent: true } as express.Response, (e) => (passed = e));
     expect(passed).toBeInstanceOf(Error);
+  });
+  it("logs a server fault as one content-free line (no message, no ids, no user text)", () => {
+    const lines: string[] = [];
+    const spy = vi.spyOn(process.stderr, "write").mockImplementation((chunk) => (lines.push(String(chunk)), true));
+    try {
+      const err = Object.assign(Error("SECRET_STACK_CANARY user text"), { code: "23505" });
+      logServerError(err, { method: "POST", path: "/api/sync/items/0f3c9a7e-SECRET_ID" });
+      logServerError(Object.assign(Error("x"), { name: "Bad name with spaces", code: "lower" }), { method: "GET", path: "/Private Name" });
+      logServerError(undefined, {} as express.Request);
+    } finally {
+      spy.mockRestore();
+    }
+    expect(lines).toEqual(["server-error POST /api/sync Error 23505\n", "server-error GET /: - -\n", "server-error - - - -\n"]);
   });
 });

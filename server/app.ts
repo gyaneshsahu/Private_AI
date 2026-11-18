@@ -1205,5 +1205,21 @@ export function finalErrorHandler(
   // A schema check that throws (research cancel parses its body unguarded) is the client's input too.
   else if (e.type === "entity.parse.failed" || err instanceof z.ZodError || (status >= 400 && status < 500))
     res.status(400).json({ error: "Invalid request." });
-  else res.status(503).json({ error: "Service temporarily unavailable. No new request was started." });
+  else {
+    logServerError(err, _req);
+    res.status(503).json({ error: "Service temporarily unavailable. No new request was started." });
+  }
+}
+
+/**
+ * Error tracking without personal data (docs/owner-security-ops-20261118.md, item 3): one line per
+ * server fault in the host log. Only the method, the first two path parts, the error class and a
+ * short code (a PostgreSQL SQLSTATE such as 23505); never the message, stack, query, body or headers,
+ * which can hold user text.
+ */
+export function logServerError(err: unknown, req: Pick<express.Request, "method" | "path">) {
+  const e = (err ?? {}) as { name?: unknown; code?: unknown };
+  const safe = (v: unknown, pattern: RegExp) => (typeof v === "string" && pattern.test(v) ? v : "-");
+  const area = typeof req?.path === "string" ? req.path.split("/").slice(0, 3).map((p) => (/^[a-z-]{0,24}$/.test(p) ? p : ":")).join("/") : "-";
+  process.stderr.write(`server-error ${safe(req?.method, /^[A-Z]{3,7}$/)} ${area || "/"} ${safe(e.name, /^[A-Za-z]{1,40}$/)} ${safe(e.code, /^[A-Z0-9_]{1,12}$/)}\n`);
 }

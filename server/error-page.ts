@@ -2,7 +2,7 @@
 // (docs/error-pages-20261116.md). Static HTML, English or German from Accept-Language, no script.
 import { createHash } from "node:crypto";
 import type express from "express";
-import { finalErrorHandler } from "./app";
+import { finalErrorHandler, logServerError } from "./app";
 
 const style = `*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fbfcfe;color:#101828;font:16px/1.5 system-ui,sans-serif}main{max-width:30rem;padding:2rem 1rem;text-align:center}.brand{display:block;margin:0 auto 1.75rem;height:32px}.brand img{height:32px;width:auto}.brand .on-dark{display:none}h1{font-size:1.5rem;font-weight:600;margin:0 0 .5rem}p{margin:0 0 1.5rem;color:#525d76}a.home{display:inline-block;min-height:44px;padding:.65rem 1.25rem;border-radius:999px;background:#2456e6;color:#fff;text-decoration:none;font-weight:600}a.home:focus-visible{outline:3px solid #8fb4ff;outline-offset:3px}@media(prefers-color-scheme:dark){body{background:#1b1b1e;color:#ededf0}p{color:#b1b1ba}a.home{background:#ededf0;color:#18181b}.brand .on-light{display:none}.brand .on-dark{display:inline}}`;
 const styleHash = createHash("sha256").update(style).digest("base64");
@@ -52,5 +52,6 @@ export const errorPage: express.ErrorRequestHandler = (err, req, res, next) => {
   if (!wantsPage(req)) return finalErrorHandler(err, req, res, next);
   // A refused file (express.static answers dotfiles with 403) is "not here" to a visitor.
   const status = Number((err as { status?: unknown } | undefined)?.status);
+  if (!(status >= 400 && status < 500)) logServerError(err, req);
   sendErrorPage(req, res, status >= 400 && status < 500 ? 404 : 500);
 };
