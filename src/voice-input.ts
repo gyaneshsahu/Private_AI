@@ -8,6 +8,7 @@ import { AttestationBusyError, inferenceClientFor } from "./providers/inference-
 import "./providers/privatemode-client";
 import { textFor } from "./text/core";
 import { voiceText } from "./text/voice";
+import { limitSentence } from "./limit-message";
 
 export type VoiceRecorderState = "idle" | "starting" | "recording";
 export type MicrophoneFailure = "unsupported" | "denied" | "noDevice" | "micFailed";
@@ -188,6 +189,7 @@ export async function transcribeRecording(
   units: number,
   status: Pick<AppStatus, "csrf" | "inference">,
   signal: AbortSignal,
+  turn?: string,
 ): Promise<string> {
   const report = status.inference.qualification;
   if (!report?.speech) throw new Error(textFor(voiceText).off);
@@ -198,17 +200,16 @@ export async function transcribeRecording(
     () => {},
   );
   if (!destination.transcribe) throw new Error(textFor(voiceText).off);
-  return (await destination.transcribe(audio, report.speech.model, units, signal)).trim();
+  return (await destination.transcribe(audio, report.speech.model, units, signal, turn)).trim();
 }
 
 /**
- * Longest next turn in seconds: the turn maximum, or less when today's voice budget is nearly used.
- * One unit stays free because the last chunk's length is rounded up to whole units.
+ * Longest next turn in seconds: the turn maximum while any of today's voice time is left, else 0.
+ * A recording that has started always finishes (owner, 18 November): the relay checks the day's
+ * voice time at its first part only, and the turn maximum is the cap for a runaway recording.
  */
 export const turnSeconds = (voice: NonNullable<AppStatus["voice"]>, used = voice.usedUnits) =>
-  used === undefined
-    ? voice.maxTurnSeconds
-    : Math.max(0, Math.min(voice.maxTurnSeconds, (voice.dailyUnits - used - 1) * VOICE_UNIT_SECONDS));
+  used === undefined || used < voice.dailyUnits ? voice.maxTurnSeconds : 0;
 
 /** Relay refusals after which no further chunk can work today; a busy verification also stops. */
 const FINAL = ["refused_voice_daily", "refused_daily", "refused_allowance", "refused_spend", "stopped", "off"];
@@ -235,12 +236,14 @@ export interface TurnText {
  * without sending them and calls `onFinal`, so the caller can stop recording.
  */
 export function createChunkQueue(
-  transcribe: (audio: Blob, units: number, signal: AbortSignal) => Promise<string>,
+  transcribe: (audio: Blob, units: number, signal: AbortSignal, turn: string) => Promise<string>,
   marker: string,
   onFinal: (error: unknown) => void = () => {},
   retryMs = 1000,
 ) {
   const abort = new AbortController();
+  // One recording is one turn: the relay admits its first part and continues the rest.
+  const turn = crypto.randomUUID();
   const parts: string[] = [];
   let tail = Promise.resolve();
   let chunks = 0;
@@ -260,7 +263,7 @@ export function createChunkQueue(
         chunks++;
         for (let attempt = 0; ; attempt++) {
           try {
-            parts[index] = (await transcribe(audio, units, abort.signal)).trim();
+            parts[index] = (await transcribe(audio, units, abort.signal, turn)).trim();
             return;
           } catch (cause) {
             if (abort.signal.aborted) return;
@@ -284,6 +287,8 @@ export function createChunkQueue(
       return { text: parts.filter(Boolean).join(" "), chunks, failed, error };
     },
     cancel: () => abort.abort(),
+    /** This recording's id, sent with each part and with a voice conversation's answer. */
+    turn,
     get size() {
       return parts.length;
     },
@@ -309,6 +314,9 @@ export function voiceFailureText(error: unknown): string {
   if (error instanceof AttestationBusyError) return error.message;
   const { status, headers } = (error ?? {}) as { status?: unknown; headers?: unknown };
   const reason = headers instanceof Headers ? headers.get("x-privateai-voice") : null;
+  // The allowance or the day's request cap at a recording's start: the one calm limit message.
+  if (reason === "refused_allowance" || reason === "refused_daily")
+    return limitSentence((headers as Headers).get("x-privateai-resets-at") ?? undefined);
   const key = (reason && REFUSALS[reason]) || (status === 413 ? "tooLarge" : "failed");
   return t[key] as string;
 }

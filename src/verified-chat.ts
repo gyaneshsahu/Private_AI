@@ -112,6 +112,8 @@ export type VerifiedChatPolicy = Pick<
   image?: string;
   /** A deep research run's plan or answer request (shared/deep-research.ts), declared to the relay. */
   research?: ResearchStep;
+  /** A voice conversation's answer: the recording it answers, admitted at its first part. */
+  voiceTurn?: string;
   answerPolicyVariant?: AnswerPolicyVariant;
   researchEvidenceContract?: boolean;
   checkedResponseContract?: boolean;
@@ -389,6 +391,7 @@ async function streamMaskedConversation(
       // The relay cannot see the encrypted body: this buys the larger size bound at the image price.
       ...(report.image ? { "X-PrivateAI-Kind": "image" } : {}),
       ...(report.research ? { "X-PrivateAI-Kind": RESEARCH_KINDS[report.research] } : {}),
+      ...(report.voiceTurn ? { "X-PrivateAI-Voice-Turn": report.voiceTurn } : {}),
     };
     const destination = await adapter.verify(policy, signal, onStatus);
     onVerified?.(destination.evidence);

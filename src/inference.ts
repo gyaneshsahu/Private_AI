@@ -32,6 +32,8 @@ export async function streamReply(
   code?: CodeRuntime,
   /** A deep research run's plan or answer request: declared to the relay, which charges its weight. */
   research?: ResearchStep,
+  /** A voice conversation's answer: the recording it answers (the relay admitted it at its first part). */
+  voiceTurn?: string,
 ): Promise<Usage | undefined> {
   const report = validateQualification(qualification);
   if (mode && !report.modes) throw Error("No answer modes are qualified.");
@@ -55,6 +57,7 @@ export async function streamReply(
     ...(cacheSalt ? { cacheSalt } : {}),
     ...(image ? { image } : {}),
     ...(research ? { research } : {}),
+    ...(voiceTurn ? { voiceTurn } : {}),
     ...(code && modelChoice === "primary" ? { codeTool: true } : {}),
   };
   return streamVerifiedConversation(

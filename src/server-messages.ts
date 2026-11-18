@@ -12,6 +12,7 @@ const GERMAN: Record<string, string> = {
   "A request is already running for this account.":
     "Für dieses Konto läuft bereits eine Anfrage.",
   "Three requests are already running.": "Es laufen bereits drei Anfragen.",
+  "Limit reached.": "Limit erreicht.",
   "No request allowance is available. No request was forwarded.": `Ihr Kontingent ist aufgebraucht. ${NOTHING_SENT}`,
   "The daily request limit is reached. It frees up within 24 hours. No request was forwarded.": `Das Tageslimit für Anfragen ist erreicht. Es wird innerhalb von 24 Stunden wieder frei. ${NOTHING_SENT}`,
   "This message is too large. No request was forwarded.": `Diese Nachricht ist zu groß. ${NOTHING_SENT}`,
@@ -60,6 +61,7 @@ const GERMAN: Record<string, string> = {
   "The daily deep research limit is reached. It frees up within 24 hours. No request was forwarded.": `Das Tageslimit für die Tiefenrecherche ist erreicht. Es wird innerhalb von 24 Stunden wieder frei. ${NOTHING_SENT}`,
   "This deep research run is no longer open. Start a new one. No request was forwarded.": `Diese Tiefenrecherche ist nicht mehr offen. Starten Sie eine neue. ${NOTHING_SENT}`,
   "Deep research is not switched on for this account. No request was forwarded.": `Die Tiefenrecherche ist für dieses Konto nicht eingeschaltet. ${NOTHING_SENT}`,
+  "The daily search limit is reached. It frees up within 24 hours. No request was forwarded.": `Das Tageslimit für Websuchen ist erreicht. Es wird innerhalb von 24 Stunden wieder frei. ${NOTHING_SENT}`,
   "The daily search limit is reached. It frees up within 24 hours. No query was sent.": "Das Tageslimit für Websuchen ist erreicht. Es wird innerhalb von 24 Stunden wieder frei. Es wurde keine Suchanfrage gesendet.",
   "The daily picture limit is reached. It frees up within 24 hours. No request was forwarded.": `Das Tageslimit für Bilder ist erreicht. Es wird innerhalb von 24 Stunden wieder frei. ${NOTHING_SENT}`,
   "Only encrypted requests to the qualified destination are accepted.":
@@ -220,6 +222,7 @@ const GERMAN: Record<string, string> = {
 
 // Messages with a number in them. Every number is carried over to the German text.
 const PATTERNS: [RegExp, (...groups: string[]) => string][] = [
+  [/^Limit reached\. It resets at (.+)\.$/, (at) => `Limit erreicht. Es wird um ${at} zurückgesetzt.`],
   [
     /^Not enough request allowance: this mode counts as (\d+) requests\. No request was forwarded\.$/,
     (n) => `Ihr Kontingent reicht nicht aus: Dieser Modus zählt als ${n} Anfragen. ${NOTHING_SENT}`,

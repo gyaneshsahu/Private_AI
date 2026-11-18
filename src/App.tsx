@@ -136,6 +136,7 @@ import { searchNextText } from "./text/search-next";
 import { researchNextText } from "./text/research-next";
 import { calculate } from "./calculator";
 import { IncompleteReplyError } from "./reply-stream";
+import { limitAtStart, limitReached } from "./limit-message";
 import { stopReading } from "./read-aloud";
 import { PdfExportButton } from "./PdfExportButton";
 import { canvasEnabled, liveVoiceEnabled, memoryEnabled, projectSpacesEnabled, readAloudEnabled, whiteboardEnabled } from "./device-features";
@@ -1178,6 +1179,8 @@ export function App() {
     modeOverride?: AnswerMode,
     // Deep research's answer request: the note kept on the answer and the run's own stop.
     research?: { note: string; abort: AbortController },
+    // A voice conversation's answer: the recording it answers, already admitted (owner, 18 November).
+    voiceTurn?: string,
   ): Promise<boolean | void> {
     // A picture goes with a message typed in the composer only, never with "ask again".
     // The whiteboard goes as a picture the same way when it changed since it last went.
@@ -1193,6 +1196,10 @@ export function App() {
     const image = consumeDraft && status?.images ? (attachedImage ?? boardImage) : undefined;
     if (image && !text.trim()) return fail(imageText[lang].needQuestion);
     if (busy || !status?.inference.ready || !text.trim()) return;
+    // The allowance is checked only at a start (owner, 18 November): with none left, the one calm
+    // message and the draft stays. A deep research answer belongs to its started run: never checked.
+    const limit = research || voiceTurn ? undefined : limitAtStart(status.requestAllowance, lang);
+    if (limit) return void setNotice(limit);
     // Project files synced from another device are downloaded before a question in their project;
     // without them the question goes only if the user says so.
     if (base.projectId && syncOn && syncFiles.enabled) {
@@ -1335,6 +1342,7 @@ export function App() {
               }
             : undefined,
           research ? "answer" : undefined,
+          voiceTurn,
         );
         abort.signal.throwIfAborted();
         completed = textArrived;
@@ -1424,7 +1432,16 @@ export function App() {
       }
     } catch (error) {
       calculationSession.clear();
-      if (epoch.current === current) {
+      const limit = limitReached(error, lang);
+      if (limit && epoch.current === current) {
+        // Refused at the start, before anything was sent: the message goes back to the draft, the
+        // conversation is as it was, and the one calm message says when the allowance resets.
+        const asked = next.messages.at(-1)!.id;
+        setConversation((c) => ({ ...c, title: base.title, messages: c.messages.filter((m) => m.id !== answer.id && m.id !== asked) }));
+        if (consumeDraft) setInput((draft) => (draft.trim() ? draft : text));
+        if (image) setAttachedImage(image);
+        setNotice(limit);
+      } else if (epoch.current === current) {
         setConversation((c) => ({
           ...c,
           messages: c.messages.map((m) =>
@@ -1485,10 +1502,13 @@ export function App() {
   const liveMode: AnswerMode | undefined = qualified?.modes
     ? modeChoice === "thinking" ? "thinking" : "fast"
     : undefined;
-  const liveVoiceOn =
-    liveVoiceEnabled() && readAloudEnabled() && !!status?.voice && !!status.inference.ready;
-  async function liveSend(text: string, signal: AbortSignal) {
-    const sent = send(conversationNow.current, text, false, liveMode);
+  // The last voice settings stay while the status says not ready (owner, 18 November: a started
+  // recording or voice conversation is never cut off by a status change); new starts wait for ready.
+  const voiceSettings = useRef(status?.voice);
+  if (status?.voice) voiceSettings.current = status.voice;
+  const liveVoiceOn = liveVoiceEnabled() && readAloudEnabled() && !!voiceSettings.current;
+  async function liveSend(text: string, signal: AbortSignal, turn?: string) {
+    const sent = send(conversationNow.current, text, false, liveMode, undefined, turn);
     const running = controller.current;
     signal.addEventListener("abort", () => running?.abort(), { once: true });
     return (await sent) ? ("answered" as const) : ("failed" as const);
@@ -1546,12 +1566,10 @@ export function App() {
       status?.inference.qualification?.maxInputCharacters ?? 100000,
       measureContext(conversationNow.current, question).characters,
     );
-  // Checked before the plan request, so a run that cannot finish costs nothing.
+  // Checked before the plan request: a run starts while 1 unit is left (owner, 18 November).
   function researchBlocked(question: string) {
-    const allowance = status?.requestAllowance;
-    const cost = status?.research?.cost ?? 0;
-    if (allowance && allowance.state !== "unavailable" && allowance.remaining < cost)
-      return deepResearchText[lang].notEnough(cost, allowance.remaining);
+    const limit = limitAtStart(status?.requestAllowance, lang);
+    if (limit) return limit;
     if (researchRoom(question) < RESEARCH_MIN_SOURCE_CHARACTERS) return deepResearchText[lang].tooLong;
     return undefined;
   }
@@ -1690,6 +1708,9 @@ export function App() {
     const text = asked?.text ?? retry?.text ?? input;
     const base = asked?.base ?? retry?.base ?? conversation;
     const draft = !again && !asked;
+    // Search and answer are one start (owner, 18 November): with no allowance left, nothing is searched.
+    const limit = limitAtStart(status?.requestAllowance, lang);
+    if (limit) return void setNotice(limit);
     const outcome = await research({ kind: "search", value }, how);
     if (!outcome || (outcome === "failed" && how === "tap")) return;
     if (outcome === "failed") {
@@ -3423,20 +3444,21 @@ export function App() {
                       ))}
                     </select>
                   )}
-                  {status?.voice && status.inference.ready && (
+                  {status && voiceSettings.current && (
                     <VoiceInput
                       status={status}
-                      voice={status.voice}
+                      voice={voiceSettings.current}
+                      ready={!!status.voice && status.inference.ready}
                       busy={!!busy}
                       setInput={setInput}
                       notify={setNotice}
                       onVerifyWait={setVerifyWaitUntil}
                     />
                   )}
-                  {liveVoiceOn && status?.voice && (
+                  {liveVoiceOn && status && voiceSettings.current && (
                     <LiveVoice
                       status={status}
-                      voice={status.voice}
+                      voice={voiceSettings.current}
                       modeName={MODE_NAMES[liveMode ?? "fast"]}
                       messageCost={qualified ? tierFor(qualified, liveMode).allowanceCost : 1}
                       busy={!!busy}

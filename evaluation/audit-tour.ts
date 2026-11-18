@@ -325,12 +325,12 @@ const STEPS: Step[] = [
     await region.scrollIntoViewIfNeeded();
     await c.shot("deep-research-panel");
     await c.label("Research question").fill("How long is the synthetic notice period, and what is the fee?");
-    await c.click("Plan the research");
-    await vis(c.page.getByRole("group", { name: c.tr("Search the web for these texts?") })).waitFor({ timeout: 20000 });
-    await c.shot("deep-research-approval");
-    await vis(c.page.getByRole("button", { name: deepResearchText[c.germanOff() ? "en" : c.lang].approve(3), exact: true })).click();
-    c.clicked.push("Approve deep research");
-    await pause(c.page, 4000);
+    // It starts at once (owner, 18 November): one progress line with Stop, then the result.
+    await vis(c.page.getByRole("button", { name: deepResearchText[c.germanOff() ? "en" : c.lang].start, exact: true })).click();
+    c.clicked.push("Start research");
+    await pause(c.page, 600);
+    await c.shot("deep-research-progress");
+    await vis(c.page.locator(".research-result h4")).waitFor({ timeout: 30000 });
     await c.shot("deep-research-answer");
   }, "on"],
   ["code-execution", async (c) => {

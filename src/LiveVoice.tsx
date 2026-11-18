@@ -46,6 +46,7 @@ import {
 } from "./voice-input";
 import { useVoiceUsed, voiceToday } from "./VoiceInput";
 import { focusOrigin } from "./focus-origin";
+import { limitAtStart } from "./limit-message";
 
 const PREFS_KEY = "cometrow.live-voice";
 type Prefs = { ask: boolean; sounds: boolean; talkOver: boolean };
@@ -85,13 +86,13 @@ export function LiveVoice(props: {
   conversationId: string;
   unlocked: boolean;
   /** One question through App's send(): masking, allowance, health consent, stop. */
-  send(text: string, signal: AbortSignal): Promise<SendOutcome>;
+  send(text: string, signal: AbortSignal, turn?: string): Promise<SendOutcome>;
   notify(text: string): void;
   onVerifyWait(retryAt: number): void;
   /** Review → Edit: the transcript goes into the message box. */
   onEdit(text: string): void;
   /** Test seam; the attested Privatemode session by default. */
-  transcribe?(audio: Blob, units: number, signal: AbortSignal): Promise<string>;
+  transcribe?(audio: Blob, units: number, signal: AbortSignal, turn?: string): Promise<string>;
 }) {
   const t = useText(liveVoiceText);
   const vt = useText(voiceText);
@@ -183,12 +184,12 @@ export function LiveVoice(props: {
           start: () => {
             setTurnMax(turnSeconds(latest.current.voice, latest.current.used));
             queue = createChunkQueue(
-              (audio, units, signal) => {
+              (audio, units, signal, turn) => {
                 const p = latest.current;
                 return (
                   p.transcribe ??
-                  ((a, u, s) => transcribeRecording(a, u, p.status, s))
-                )(audio, units, signal);
+                  ((a, u, s, id) => transcribeRecording(a, u, p.status, s, id))
+                )(audio, units, signal, turn);
               },
               textFor(voiceText).partMissing,
               // Budget or allowance gone: the turn ends here; the reason comes with its text.
@@ -232,23 +233,14 @@ export function LiveVoice(props: {
             turnSeconds(p.voice, p.used) < 1
           )
             return { detail: textFor(voiceText).usedUp, end: true };
-          // Before listening a turn needs both; at review the transcription is already paid.
-          const need =
-            p.messageCost +
-            (machine.snapshot().phase === "review" ? 0 : speechCost);
-          const allowance = p.status.requestAllowance;
-          if (
-            allowance &&
-            allowance.state !== "unavailable" &&
-            allowance.remaining < need
-          )
-            return {
-              detail: lt.allowance(need, allowance.remaining),
-              end: true,
-            };
+          // The allowance is checked only before listening (owner, 18 November): a turn starts while
+          // 1 unit is left; once recorded, its question is always sent and answered.
+          const limit = machine.snapshot().phase === "review" ? undefined : limitAtStart(p.status.requestAllowance);
+          if (limit) return { detail: limit, end: true };
           return undefined;
         },
-        send: (text, signal) => latest.current.send(text, signal),
+        // The answer belongs to the recording it answers: never refused for allowance after it.
+        send: (text, signal) => latest.current.send(text, signal, queue?.turn),
         speaker: {
           follow() {
             follower?.cancel();

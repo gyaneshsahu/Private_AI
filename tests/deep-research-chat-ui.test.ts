@@ -1,8 +1,8 @@
 // Deep research in the chat (FE-07, docs/deep-research-in-chat-20261116.md) in the actual
 // application, at 375, 768 and 1280 px, in English and German: "+" > "Deep research" arms the next
-// Send, Send opens the plan step in the conversation with the cost, Escape and Cancel return to the
-// message box with the draft kept, nothing is searched before the approval, the progress shows in
-// the card and the answer lands in the conversation without a further click. Offline: a Vite plugin
+// Send, Send starts the research at once in the conversation (owner, 18 November): the plan's texts
+// are masked and searched without an approval, one progress line with Stop shows in the card, and
+// the answer lands in the conversation without a further click. Offline: a Vite plugin
 // replaces src/inference.ts, the status and the research routes are answered here.
 import { afterAll, beforeAll, expect, it } from "vitest";
 import { chromium, expect as ui, type Browser, type Locator, type Page } from "@playwright/test";
@@ -158,7 +158,7 @@ const searched = (posted: { path: string; value?: string }[]) =>
 
 for (const lang of ["en", "de"] as const)
   for (const width of [375, 768, 1280])
-    it(`${width} px, ${lang}: armed from "+", plan and approve in the chat, the answer lands in the conversation`, async () => {
+    it(`${width} px, ${lang}: armed from "+", Send starts the research at once, the answer lands in the conversation`, async () => {
       const t = deepResearchText[lang];
       const rn = researchNextText[lang];
       const a = appText[lang];
@@ -166,91 +166,32 @@ for (const lang of ["en", "de"] as const)
       try {
         const box = page.getByLabel(a.messageInput);
         const send = page.getByRole("button", { name: a.sendLabel, exact: true });
-        const item = page.locator(".tools-menu").getByRole("button", { name: t.heading, exact: true });
-        const arm = async () => {
-          await page.getByLabel(a.tools, { exact: true }).click();
-          await item.click();
-        };
         const card = page.getByRole("region", { name: t.heading });
         const question = "How long is the synthetic notice period, and what is the fee?";
 
-        // "+" > "Deep research": the note says what the next Send does and what it costs.
-        await arm();
+        // "+" > "Deep research": the note says what the next Send does.
+        await page.getByLabel(a.tools, { exact: true }).click();
+        await page.locator(".tools-menu").getByRole("button", { name: t.heading, exact: true }).click();
         await ui(box).toBeFocused();
         const armed = page.locator(".search-next");
         await ui(armed).toContainText(rn.armed(15));
         await tall(width, armed.getByRole("button"));
         await noSidewaysScroll(page);
         await box.fill(question);
-        await send.click();
 
-        // Send opens the plan step in the conversation, with the cost; nothing is requested yet.
-        await ui(card).toBeVisible({ timeout: 30_000 }); // loaded on demand
-        await ui(card).toContainText(t.intro(15, 4, 6, 3));
-        await ui(card).toContainText(question);
-        await ui(card.getByRole("button", { name: t.plan, exact: true })).toBeFocused();
-        await ui(armed).toHaveCount(0);
-        await ui(box).toHaveValue(question);
-        await ui(page.locator("article.message")).toHaveCount(0);
-        await tall(width, card.getByRole("button"));
-        await noSidewaysScroll(page);
-        // Send while the card is open changes nothing.
-        await send.click();
-        expect(await calls(page)).toEqual([]);
-        // Escape: back to the message box, the draft kept, nothing sent.
-        await card.getByRole("button", { name: t.plan, exact: true }).focus();
-        await page.keyboard.press("Escape");
-        await ui(card).toHaveCount(0);
-        await ui(box).toBeFocused();
-        await ui(box).toHaveValue(question);
-        expect(await calls(page)).toEqual([]);
-
-        // Again: Plan (by keyboard) leads to the approval of each search text. Nothing searched.
-        await arm();
-        await send.click();
-        await card.getByRole("button", { name: t.plan, exact: true }).press("Enter");
-        const approval = card.getByRole("group", { name: t.approveHeading });
-        await ui(approval).toBeVisible({ timeout: 20_000 });
-        await ui(page.locator("#deep-research-inline-approve")).toBeFocused();
-        await ui(approval.getByRole("textbox")).toHaveCount(3);
-        await ui(approval.getByRole("textbox", { name: t.field(2) })).not.toHaveValue(/person@example\.test/);
-        expect(posted).toEqual([]);
-        await tall(width, approval.getByRole("button"));
-        await noSidewaysScroll(page);
-        // Another tab and back (the skip link): the run waits at the approval, nothing searched.
-        await page.getByLabel(a.tools, { exact: true }).click();
-        await page.locator(".tools-menu").getByRole("button", { name: a.tabResearch, exact: true }).click();
-        await ui(page.locator(".deep-research-inline")).toHaveCount(0); // the page's own panel shows here
-        await page.getByRole("link", { name: skipLinkText[lang].toMessageBox }).focus();
-        await page.keyboard.press("Enter");
-        await ui(approval.getByRole("textbox")).toHaveCount(3);
-        expect(posted).toEqual([]);
-        // Escape at the approval: closed, the draft kept, the plan's count said, nothing searched.
-        await page.locator("#deep-research-inline-approve").focus();
-        await page.keyboard.press("Escape");
-        await ui(card).toHaveCount(0);
-        await ui(box).toHaveValue(question);
-        await ui(box).toBeFocused();
-        await ui(page.locator(".dock-notice")).toContainText(t.used(5, 15));
-        expect(posted).toEqual([]);
-        expect((await calls(page)).map((c) => c.research)).toEqual(["plan"]);
-
-        // Again, approved: the progress shows in the card, then the answer is in the conversation.
-        await arm();
-        await send.click();
-        await card.getByRole("button", { name: t.plan, exact: true }).click();
-        await ui(approval).toBeVisible({ timeout: 20_000 });
-        await approval.getByRole("textbox", { name: t.field(1) }).fill("synthetic notice period tenancy");
-        await card.getByRole("button", { name: t.remove(3), exact: true }).click();
-        expect(posted).toEqual([]);
+        // Send starts it at once (owner, 18 November): no plan card, no approval; one progress line with Stop.
         const release = hold();
-        await card.getByRole("button", { name: t.approve(2), exact: true }).click();
-        const steps = card.getByRole("list", { name: t.steps });
-        await ui(steps.locator('li[data-state="running"]')).toContainText(t.searching(1, 2));
+        await send.click();
+        await ui(card).toBeVisible({ timeout: 30_000 }); // loaded on demand
+        await ui(card).toContainText(question);
+        await ui(card.locator(".research-progress")).toContainText(t.searching(1, 3), { timeout: 20_000 });
         await ui(card.getByRole("button", { name: t.stop, exact: true })).toBeVisible();
+        await ui(card.getByRole("textbox")).toHaveCount(0);
+        await ui(armed).toHaveCount(0);
         await tall(width, card.getByRole("button"));
         await noSidewaysScroll(page);
         release();
+
         const answer = page.locator("article.assistant").last();
         await ui(answer).toContainText("Synthetic research answer", { timeout: 20_000 });
         await ui(card).toHaveCount(0);
@@ -258,13 +199,13 @@ for (const lang of ["en", "de"] as const)
         await ui(page.locator("article.user").last()).toContainText(question);
         await ui(page.locator("h1")).toHaveText(titleFrom(question)); // this chat, named by the question
         await ui(box).toHaveValue("");
-        await ui(page.locator(".dock-notice")).toContainText(t.used(15, 15));
-        // Exactly the approved texts were searched (the second masked on this device).
+        await ui(page.locator(".dock-notice")).toContainText(t.resultDone);
+        // The plan's texts were searched, masked on this device.
         const texts = searched(posted);
-        expect(texts).toHaveLength(2);
-        expect(texts[0]).toBe("synthetic notice period tenancy");
+        expect(texts).toHaveLength(3);
+        expect(texts[0]).toBe("synthetic notice period");
         expect(JSON.stringify(posted)).not.toContain("person@example.test");
-        expect((await calls(page)).map((c) => c.research)).toEqual(["plan", "plan", "answer"]);
+        expect((await calls(page)).map((c) => c.research)).toEqual(["plan", "answer"]);
         await noSidewaysScroll(page);
 
         // One-shot: the next message is a normal one.
@@ -272,8 +213,8 @@ for (const lang of ["en", "de"] as const)
         await send.click();
         await ui(page.locator("article.assistant").nth(1)).toContainText("Synthetic plain answer.");
         await ui(card).toHaveCount(0);
-        expect((await calls(page)).map((c) => c.research)).toEqual(["plan", "plan", "answer", undefined]);
-        expect(searched(posted)).toHaveLength(2);
+        expect((await calls(page)).map((c) => c.research)).toEqual(["plan", "answer", undefined]);
+        expect(searched(posted)).toHaveLength(3);
       } finally {
         await context.close();
       }
@@ -287,12 +228,10 @@ it("a new chat during the searches stops the run; nothing of it reaches the new 
     await page.getByLabel(a.tools, { exact: true }).click();
     await page.locator(".tools-menu").getByRole("button", { name: t.heading, exact: true }).click();
     await page.getByLabel(a.messageInput).fill("How long is the synthetic notice period?");
+    const release = hold();
     await page.getByRole("button", { name: a.sendLabel, exact: true }).click();
     const card = page.getByRole("region", { name: t.heading });
-    await card.getByRole("button", { name: t.plan, exact: true }).click({ timeout: 30_000 });
-    const release = hold();
-    await card.getByRole("button", { name: t.approve(3), exact: true }).click();
-    await ui(card.getByRole("list", { name: t.steps }).locator('li[data-state="running"]')).toContainText(t.searching(1, 3));
+    await ui(card.locator(".research-progress")).toContainText(t.searching(1, 3), { timeout: 30_000 });
     await page.getByRole("button", { name: workspaceText.en.newConversation, exact: true }).first().click();
     await answerIfAsked(page, true);
     await ui(card).toHaveCount(0);
@@ -308,18 +247,18 @@ it("a new chat during the searches stops the run; nothing of it reaches the new 
   }
 }, 120_000);
 
-it("a question longer than a research question may be is refused with the reason; nothing is sent", async () => {
+it("a question longer than a research question may be is refused with the reason; the draft stays, nothing is sent", async () => {
   const t = deepResearchText.en;
   const a = appText.en;
   const { context, page } = await open("en", 768);
   try {
     await page.getByLabel(a.tools, { exact: true }).click();
     await page.locator(".tools-menu").getByRole("button", { name: t.heading, exact: true }).click();
-    await page.getByLabel(a.messageInput).fill("synthetic question ".repeat(60));
+    const long = "synthetic question ".repeat(60);
+    await page.getByLabel(a.messageInput).fill(long);
     await page.getByRole("button", { name: a.sendLabel, exact: true }).click();
-    const card = page.getByRole("region", { name: t.heading });
-    await card.getByRole("button", { name: t.plan, exact: true }).click({ timeout: 30_000 });
-    await ui(card.getByRole("alert")).toHaveText(researchNextText.en.tooLong(1000));
+    await ui(page.locator(".dock-notice")).toContainText(researchNextText.en.tooLong(1000), { timeout: 30_000 });
+    await ui(page.getByLabel(a.messageInput)).toHaveValue(long);
     expect(await calls(page)).toEqual([]);
   } finally {
     await context.close();

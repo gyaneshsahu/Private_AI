@@ -241,8 +241,10 @@ export async function runResearch(
     step = "write";
     onProgress("write", 1, 1, tally);
     answerSent = true;
-    const complete = await deps.answer(sources, tally, run);
-    run.throwIfAborted();
+    // The time limit stops searching and reading, never the answer once it is written (owner,
+    // 18 November: a started answer is never cut off); only the user's Stop ends it.
+    const complete = await deps.answer(sources, tally, signal);
+    if (signal.aborted) return end("cancelled", sources);
     return end(complete ? "done" : "failed", sources);
   } catch {
     if (signal.aborted) return end("cancelled");

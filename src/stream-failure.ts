@@ -1,6 +1,7 @@
 export type StreamFailureCode =
   | "HTTP_RESPONSE_INVALID"
   | "HTTP_RATE_LIMITED"
+  | "HTTP_LIMIT_REACHED"
   | "HTTP_SERVICE_UNAVAILABLE"
   | "HTTP_UPSTREAM_REJECTED"
   | "HTTP_CAPACITY_REACHED"
@@ -25,7 +26,11 @@ export type StreamFailureCode =
   | "TRANSPORT_OR_DECRYPTION";
 
 export class StreamProtocolError extends Error {
-  constructor(public readonly code: StreamFailureCode) {
+  constructor(
+    public readonly code: StreamFailureCode,
+    /** For HTTP_LIMIT_REACHED: when the allowance frees up, as the server said. */
+    public readonly resetsAt?: string,
+  ) {
     super("Protected response protocol rejected.");
     this.name = "StreamProtocolError";
   }

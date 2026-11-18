@@ -10,6 +10,8 @@ export class IncompleteReplyError extends Error {
     public readonly usage?: Usage,
     public readonly diagnostic?: {
       code: StreamFailureCode;
+      /** For HTTP_LIMIT_REACHED: when the allowance frees up. */
+      resetsAt?: string;
       events: number;
       usageEvents: number;
       textCharacters: number;
@@ -145,6 +147,7 @@ export async function consumeReply(
                 ? "TIMED_OUT"
                 : "ABORTED"
               : "TRANSPORT_OR_DECRYPTION",
+        ...(error instanceof StreamProtocolError && error.resetsAt ? { resetsAt: error.resetsAt } : {}),
         events,
         usageEvents,
         textCharacters,

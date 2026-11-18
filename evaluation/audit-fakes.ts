@@ -23,7 +23,7 @@ export const AUDIT_ACCOUNT = "a0d17000-0000-4000-8000-000000000001";
 /** The named answers. Type `audit:<name>` in a message, or queue one with `fakes.answer(name)`. */
 export const ANSWERS = [
   "markdown", "code", "math", "table", "citations", "long", "slow", "error-429", "error-500",
-  "error-503", "dropped", "stop", "python", "image", "plain", "chart",
+  "error-503", "dropped", "stop", "python", "image", "plain", "chart", "limit",
 ] as const;
 export type AnswerName = (typeof ANSWERS)[number];
 
@@ -45,7 +45,7 @@ const ON_STATUS = {
   research: { cost: 15, dailyRuns: 3 },
 };
 
-const TEXT: Record<Exclude<AnswerName, "long" | "stop" | "error-429" | "error-500" | "error-503">, string> = {
+const TEXT: Record<Exclude<AnswerName, "long" | "stop" | "error-429" | "error-500" | "error-503" | "limit">, string> = {
   plain: "Synthetic answer.",
   markdown: [
     "## Synthetic overview",
@@ -246,6 +246,9 @@ export function createResponder() {
         return stream(sse(TEXT.slow));
       case "error-429":
         return { status: 429, json: { error: "Synthetic rate limit." } };
+      // The relay's calm refusal at a start when the allowance is used up (owner, 18 November).
+      case "limit":
+        return { status: 429, json: { error: "Limit reached.", code: "limit", resetsAt: new Date(Date.now() + 3 * 3600_000).toISOString() } };
       case "error-500":
         return { status: 500, json: { error: "Synthetic server error." } };
       case "error-503":

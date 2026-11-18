@@ -54,6 +54,7 @@ export function VoiceInput({
   status,
   voice,
   busy,
+  ready = true,
   setInput,
   notify,
   onVerifyWait,
@@ -62,6 +63,8 @@ export function VoiceInput({
   voice: NonNullable<AppStatus["voice"]>;
   /** A message is being sent or answered: no recording runs beside it. */
   busy: boolean;
+  /** A new recording may start. A running one always finishes, even when this turns false. */
+  ready?: boolean;
   setInput(value: string): void;
   /** The app's notice line (a live region): start, stop, result and failures are announced there. */
   notify(text: string): void;
@@ -195,7 +198,7 @@ export function VoiceInput({
     setTurnMax(max);
     setElapsed(0);
     queue.current = createChunkQueue(
-      (audio, units, signal) => transcribeRecording(audio, units, latest.current.status, signal),
+      (audio, units, signal, turn) => transcribeRecording(audio, units, latest.current.status, signal, turn),
       t.partMissing,
       // Budget or allowance gone: nothing more can be turned into text, so recording stops.
       () => recorder.stop(),
@@ -220,7 +223,7 @@ export function VoiceInput({
         aria-pressed={recording}
         aria-label={label}
         title={label}
-        disabled={usedUp || state === "starting" || (busy && !recording && !transcribing)}
+        disabled={usedUp || state === "starting" || ((busy || !ready) && !recording && !transcribing)}
         onClick={() => {
           if (transcribing) queue.current?.cancel();
           else if (recording) recorder.stop();

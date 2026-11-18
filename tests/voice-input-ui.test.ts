@@ -117,7 +117,7 @@ for (const lang of ["en", "de"] as const)
                   qualification: { maxInputCharacters: 100000, speech: { model: "synthetic-speech", allowanceCost: 1 } },
                 },
                 search: false,
-                voice: { chunkSeconds: 2, maxTurnSeconds: 180, dailyUnits: 150, usedUnits: USED },
+                voice: { chunkSeconds: 2, maxTurnSeconds: 22, dailyUnits: 150, usedUnits: USED },
               },
             });
           return route.continue();

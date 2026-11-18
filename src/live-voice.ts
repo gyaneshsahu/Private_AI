@@ -83,6 +83,7 @@ export interface LiveVoiceDeps {
    * One question through the app's ordinary send path. "consent" (health consent) and "choice"
    * (search first?): nothing was sent, a choice on screen comes first, so the session ends.
    */
+  /** The question of the turn just recorded, sent with that recording's id. */
   send(text: string, signal: AbortSignal): Promise<SendOutcome>;
   speaker: {
     /**

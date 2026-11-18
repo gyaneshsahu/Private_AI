@@ -260,9 +260,9 @@ async function sendTurn(page: Page, text: string, opts: { tapSuggestion?: boolea
   return { ttftMs, totalMs, text: await answerText(page), suggestionShown, suggestedQuery, suggestionHeading, tapped, choiceShown, choiceHeading, choiceQuery, chose: choiceShown ? choice : undefined, againShown, maxGapMs, tokens };
 }
 
-// One deep research run through the panel in Research. The proposed search texts are approved as
-// they are. Records what was planned, searched and read, the step outcomes and the answer.
-const researchLabel = (key: "question" | "plan" | "approveHeading") => either(deepResearchText.en[key], deepResearchText.de[key]);
+// One deep research run through the panel in Research: it starts at once and sends the masked
+// search texts the plan proposed. Records what was searched and read, the outcome and the answer.
+const researchLabel = (key: "question" | "start") => either(deepResearchText.en[key], deepResearchText.de[key]);
 async function runResearchCase(page: Page, question: string) {
   const sent: { kind: string; value: string }[] = [];
   page.on("request", (r) => {
@@ -273,22 +273,19 @@ async function runResearchCase(page: Page, question: string) {
   if (wait > 0) await page.waitForTimeout(wait);
   const started = (lastSend = Date.now());
   await page.getByLabel(researchLabel("question")).fill(question);
-  await page.getByRole("button", { name: researchLabel("plan") }).click();
-  const approval = page.getByRole("group", { name: researchLabel("approveHeading") });
+  await page.getByRole("button", { name: researchLabel("start") }).click();
   const ended = page.locator(".research-result h4");
-  await approval.or(ended).first().waitFor({ timeout: 120_000 });
-  const planMs = Date.now() - started;
-  let planned: string[] = [];
-  if (await approval.isVisible()) {
-    planned = await approval.getByRole("textbox").evaluateAll((fields) => fields.map((field) => (field as HTMLTextAreaElement).value));
-    lastSend = Date.now();
-    await approval.locator("button.primary").click();
-    await ended.waitFor({ timeout: RESEARCH_LIMITS.wallClockMs + 60_000 });
-  }
+  let planMs: number | undefined;
+  page.on("request", (r) => {
+    if (planMs === undefined && new URL(r.url()).pathname === "/api/research/prepare") planMs = Date.now() - started;
+  });
+  await ended.waitFor({ timeout: RESEARCH_LIMITS.wallClockMs + 180_000 });
+  lastSend = Date.now();
   const totalMs = Date.now() - started;
   const outcome = await ended.innerText();
-  const steps = await page.locator(".research-steps li").allInnerTexts();
-  const counted = await page.locator(".research-result p").first().innerText().catch(() => "");
+  const steps: string[] = [];
+  const counted = "";
+  const planned = sent.filter((s) => s.kind === "search").map((s) => s.value);
   const show = page.locator(".research-result button.primary");
   if (await show.isVisible().catch(() => false)) await show.click();
   // The answer renderer loads on first show; reading at once captured its plain-text placeholder.

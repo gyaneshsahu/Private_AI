@@ -177,7 +177,7 @@ CometRow audit server (${config}) at ${origin}
   A plain browser works: fake answers, fake search and transcription come from this server; no request leaves the machine.
   Sign in as the synthetic test account: ${origin}/__audit/sign-in   (sign out: ${origin}/__audit/sign-out)
   Pick an answer: type audit:<name> in a message.
-  Names: markdown code math table citations long slow error-429 error-500 error-503 dropped stop python image plain chart
+  Names: markdown code math table citations long slow error-429 error-500 error-503 dropped stop python image plain chart limit
   Account lab: ${origin}/?account-lab=1
   Ctrl+C stops.`);
     await new Promise(() => {});

@@ -1,6 +1,7 @@
-// Deep research in the actual application (docs/deep-research-20261114.md): the approval step and
-// the progress list at phone, tablet and desktop width, in English and German; a stop while
-// searching; hidden without the switch. Offline: a Vite plugin replaces src/inference.ts, the
+// Deep research in the actual application (docs/deep-research-20261114.md): it starts at once
+// (owner, 18 November), with one progress line and Stop, at phone, tablet and desktop width, in
+// English and German; the plan's texts are masked before they are sent; a stop while searching;
+// the calm limit message at 0; hidden without the switch. Offline: a Vite plugin replaces src/inference.ts, the
 // status and the two research routes are faked, nothing leaves the machine.
 import { afterAll, beforeAll, expect, it } from "vitest";
 import { chromium, expect as ui, type Browser, type Page } from "@playwright/test";
@@ -10,6 +11,7 @@ import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { appText } from "../src/text/app";
 import { deepResearchText } from "../src/text/deep-research";
 import { WHEN_TO_SEARCH_TEXT } from "../src/when-to-search";
+import { limitSentence } from "../src/limit-message";
 
 type Lang = "en" | "de";
 let vite: ViteDevServer;
@@ -65,7 +67,7 @@ afterAll(async () => {
   await vite?.close();
 });
 
-async function open(lang: Lang, width: number, research = true) {
+async function open(lang: Lang, width: number, research = true, allowance?: Record<string, unknown>) {
   const context = await browser.newContext({
     locale: lang === "de" ? "de-DE" : "en-US",
     viewport: { width, height: width < 700 ? 812 : 900 },
@@ -95,6 +97,7 @@ async function open(lang: Lang, width: number, research = true) {
           inference: { ready: true, reason: "OFFLINE ONLY", qualification },
           search: true,
           ...(research ? { research: { cost: 15, dailyRuns: 3 } } : {}),
+          ...(allowance ? { requestAllowance: allowance } : {}),
         },
       });
     if (url.pathname.startsWith("/api/research/")) {
@@ -153,7 +156,7 @@ const executed = (posted: Awaited<ReturnType<typeof open>>["posted"], kind: stri
 
 for (const lang of ["en", "de"] as const)
   for (const width of [375, 768, 1280])
-    it(`a whole run at ${width} px, ${lang}: plan, edit and approve the texts, visible progress, answer with sources`, async () => {
+    it(`a whole run at ${width} px, ${lang}: starts at once, masked texts, one progress line with Stop, answer with sources`, async () => {
       const t = deepResearchText[lang];
       const { context, page, posted, hold } = await open(lang, width);
       try {
@@ -161,101 +164,60 @@ for (const lang of ["en", "de"] as const)
         await ui(panel).toBeVisible();
         await ui(panel).toContainText(t.intro(15, 4, 6, 3));
         await noSidewaysScroll(page);
-        const plan = page.getByRole("button", { name: t.plan, exact: true });
-        await ui(plan).toBeDisabled();
+        const start = page.getByRole("button", { name: t.start, exact: true });
+        await ui(start).toBeDisabled();
         await page.getByLabel(t.question).fill("How long is the synthetic notice period, and what is the fee?");
-        await tallEnough(page, t.plan, width);
-        // Keyboard: the button is reached and pressed without a pointer.
-        await plan.focus();
-        await page.keyboard.press("Enter");
-
-        // The approval step takes the focus. Nothing was searched yet.
-        const approval = page.getByRole("group", { name: t.approveHeading });
-        // The first plan on a cold dev server also loads the model module: allow for it.
-        await ui(approval).toBeVisible({ timeout: 20000 });
-        await ui(page.locator("#deep-research-approve")).toBeFocused();
-        expect(posted).toEqual([]);
-        await ui(approval.getByRole("textbox")).toHaveCount(3);
-        // The address the model repeated was removed on this device before the text was shown.
-        const second = approval.getByRole("textbox", { name: t.field(2) });
-        await ui(second).toHaveValue(/^synthetic fee for /);
-        await ui(second).not.toHaveValue(/person@example\.test/);
-        // Typed in by the user, it is masked again: the text that will be sent is shown beneath.
-        await second.fill("synthetic fee for person@example.test");
-        await ui(approval.getByText(WHEN_TO_SEARCH_TEXT[lang].willBeSent)).toBeVisible();
-        await ui(approval.locator("pre")).not.toContainText("person@example.test");
-        const sentSecond = (await approval.locator("pre").innerText()).trim();
-        await ui(approval).toContainText(t.approveNote(6));
-        await ui(page.getByRole("button", { name: t.approve(3), exact: true })).toBeVisible();
-        // Edit the first text, remove the third: the button counts what will be searched.
-        await approval.getByRole("textbox", { name: t.field(1) }).fill("synthetic notice period tenancy");
-        await page.getByRole("button", { name: t.remove(3), exact: true }).click();
-        await ui(approval.getByRole("textbox")).toHaveCount(2);
-        // A text that is too short blocks the approval and says why.
-        await second.fill("x");
-        await ui(approval.getByText(WHEN_TO_SEARCH_TEXT[lang].tooShort)).toBeVisible();
-        await ui(page.getByRole("button", { name: t.approve(2), exact: true })).toBeDisabled();
-        await second.fill("synthetic fee for person@example.test");
-        const approve = page.getByRole("button", { name: t.approve(2), exact: true });
-        await ui(approve).toBeEnabled();
-        await tallEnough(page, t.approve(2), width);
-        await tallEnough(page, t.remove(1), width);
-        await noSidewaysScroll(page);
-
-        // Approve: the step list shows the search that is running, with a Stop button.
+        await tallEnough(page, t.start, width);
+        // Keyboard: the button is reached and pressed without a pointer. No approval step follows.
         const release = hold();
-        await approve.click();
-        const steps = page.getByRole("list", { name: t.steps });
-        await ui(steps.locator('li[data-state="running"]')).toContainText(t.searching(1, 2));
-        await ui(steps.locator("li").first()).toContainText(t.planDone(3));
+        await start.focus();
+        await page.keyboard.press("Enter");
+        // One progress line with Stop; the first plan on a cold dev server also loads the model module.
+        const progress = page.locator(".research-progress");
+        await ui(progress).toContainText(t.searching(1, 3), { timeout: 20000 });
         await ui(page.getByRole("button", { name: t.stop, exact: true })).toBeVisible();
+        await ui(page.getByRole("textbox")).toHaveCount(1); // the message box only: no search texts to edit
         await tallEnough(page, t.stop, width);
         await noSidewaysScroll(page);
         release();
 
-        // The end: the result takes the focus; every step is done with its outcome.
+        // The end: the result takes the focus.
         const done = page.getByRole("heading", { name: t.resultDone });
         await ui(done).toBeVisible({ timeout: 20000 });
         await ui(done).toBeFocused();
-        await ui(steps.locator('li[data-state="done"]')).toHaveCount(4);
-        await ui(steps).toContainText(t.searchDone(2, 0));
-        await ui(steps).toContainText(t.readDone(4, 0));
-        await ui(steps).toContainText(t.writeDone);
-        await ui(panel).toContainText(t.used(15, 15));
+        await ui(page.locator(".research-result")).not.toContainText(/\d+ (requests|Anfragen)/);
         await noSidewaysScroll(page);
 
-        // Exactly the two approved, masked texts were searched; pages came from the results.
-        expect(executed(posted, "search")).toEqual(["synthetic notice period tenancy", sentSecond]);
+        // The plan's three texts were searched, masked on this device: the address the model repeated never left it.
+        const searched = executed(posted, "search");
+        expect(searched).toHaveLength(3);
+        expect(searched[0]).toBe("synthetic notice period");
+        expect(searched[1]).toMatch(/^synthetic fee for /);
         expect(JSON.stringify(posted)).not.toContain("person@example.test");
         for (const url of executed(posted, "page")) expect(url).toMatch(/^https:\/\/two\.example\/result-/);
         // Two model requests: the plan in Fast, the answer in Thinking with the sources; no code tool.
-        expect(await calls(page)).toEqual([
-          { research: "plan", mode: "fast", choice: "primary", code: false, sources: 0 },
-          { research: "answer", mode: "thinking", choice: "primary", code: false, sources: 4 },
+        const made = await calls(page);
+        expect(made.map(({ research, mode, choice, code }) => ({ research, mode, choice, code }))).toEqual([
+          { research: "plan", mode: "fast", choice: "primary", code: false },
+          { research: "answer", mode: "thinking", choice: "primary", code: false },
         ]);
+        expect(made[1].sources).toBeGreaterThan(1);
 
         // The answer is in the conversation with its source and the note of what was searched and read.
         await page.getByRole("button", { name: t.showAnswer, exact: true }).click();
         const answer = page.locator("article.assistant").last();
-        // Rendered at once (the renderer was loaded during the run), not the plain-text placeholder
-        // with raw Markdown and codes that the live run read on 14 November. No waiting here.
+        // Rendered at once (the renderer was loaded during the run), not the plain-text placeholder.
         const first = await answer.innerText();
         expect(first).toContain("Synthetic heading");
         expect(first).not.toContain("## Synthetic heading");
         expect(first).not.toContain("[synthetic-");
-        await ui(answer.getByRole("heading", { name: "Synthetic heading" })).toBeVisible();
-        await ui(answer).toContainText("Synthetic research answer");
         await ui(answer.locator("button.citation")).toHaveCount(2);
         await ui(answer).toContainText("(§ 573c Abs. 1 BGB)");
-        await ui(answer).not.toContainText("[synthetic-");
         await ui(answer).not.toContainText("0dffd17f5269");
-        // A button opens its source.
         await answer.locator("button.citation").first().click();
         await ui(page.getByRole("dialog")).toBeVisible();
         await page.keyboard.press("Escape");
-        await ui(answer.locator(".passages-used")).toContainText(
-          t.note(2, 0, 4, 0, `"synthetic notice period tenancy"; "${sentSecond}"`),
-        );
+        await ui(answer.locator(".passages-used")).toContainText('"synthetic notice period"');
         await noSidewaysScroll(page);
       } finally {
         await context.close();
@@ -266,24 +228,20 @@ for (const [lang, width] of [
   ["en", 375],
   ["de", 1280],
 ] as const)
-  it(`stop while searching at ${width} px, ${lang}: it ends at once, says what was counted, and sends nothing more`, async () => {
+  it(`stop while searching at ${width} px, ${lang}: it ends at once and sends nothing more`, async () => {
     const t = deepResearchText[lang];
     const { context, page, posted, hold } = await open(lang, width);
     try {
       await page.getByLabel(t.question).fill("How long is the synthetic notice period?");
-      await page.getByRole("button", { name: t.plan, exact: true }).click();
       const release = hold();
-      await page.getByRole("button", { name: t.approve(3), exact: true }).click();
-      const steps = page.getByRole("list", { name: t.steps });
-      await ui(steps.locator('li[data-state="running"]')).toContainText(t.searching(1, 3));
+      await page.getByRole("button", { name: t.start, exact: true }).click();
+      await ui(page.locator(".research-progress")).toContainText(t.searching(1, 3), { timeout: 20000 });
       // Keyboard stop.
       await page.getByRole("button", { name: t.stop, exact: true }).focus();
       await page.keyboard.press("Enter");
       const stopped = page.getByRole("heading", { name: t.resultCancelled });
       await ui(stopped).toBeVisible();
       await ui(stopped).toBeFocused();
-      await ui(steps.locator('li[data-state="stopped"]')).toHaveCount(1);
-      await ui(page.getByRole("region", { name: t.heading })).toContainText(t.used(5, 15));
       const sentAtStop = posted.length;
       release();
       await page.waitForTimeout(300);
@@ -299,18 +257,21 @@ for (const [lang, width] of [
     }
   }, 120_000);
 
-it("cancel at the approval step searches nothing; without the switch there is no deep research at all", async () => {
+it("at 0 left the one calm limit message, with no unit counts, and nothing is sent; without the switch no deep research", async () => {
   const t = deepResearchText.en;
-  const on = await open("en", 768);
+  const resetsAt = new Date(Date.now() + 3 * 3600_000).toISOString();
+  const empty = { state: "exhausted", limit: 50, used: 50, remaining: 0, pending: 0, uncertain: 0, resetsAt, meteredRequests: 0, promptTokens: 0, completionTokens: 0, unmeteredRequests: 0 };
+  const none = await open("en", 768, true, empty);
   try {
-    await on.page.getByLabel(t.question).fill("How long is the synthetic notice period?");
-    await on.page.getByRole("button", { name: t.plan, exact: true }).click();
-    await on.page.getByRole("group", { name: t.approveHeading }).getByRole("button", { name: t.cancel, exact: true }).click();
-    await ui(on.page.getByRole("heading", { name: t.resultCancelled })).toBeFocused();
-    await ui(on.page.getByRole("region", { name: t.heading })).toContainText(t.used(5, 15));
-    expect(on.posted).toEqual([]);
+    await none.page.getByLabel(t.question).fill("How long is the synthetic notice period?");
+    await none.page.getByRole("button", { name: t.start, exact: true }).click();
+    const alert = none.page.getByRole("region", { name: t.heading }).getByRole("alert");
+    await ui(alert).toHaveText(limitSentence(resetsAt, "en"));
+    await ui(alert).toHaveText(/^Limit reached\. It resets at \d\d:\d\d\.$/);
+    expect(none.posted).toEqual([]);
+    expect(await calls(none.page)).toEqual([]);
   } finally {
-    await on.context.close();
+    await none.context.close();
   }
   const off = await open("en", 768, false);
   try {

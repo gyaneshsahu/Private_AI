@@ -346,10 +346,17 @@ it("our relay's own refusal keeps the verified session and gives a plain message
   serveManifest();
   const refusal = (reason: string, statusCode = 429) =>
     Object.assign(new Error("refused"), { status: statusCode, headers: new Headers({ "x-privateai-voice": reason }) });
+  // The allowance and the day's request cap give the one calm limit message (owner, 18 November).
+  for (const reason of ["refused_daily", "refused_allowance"]) {
+    sdk.transcribe.mockRejectedValueOnce(refusal(reason));
+    const error = await transcribeRecording(recording(), 2, status, signal()).catch((e: unknown) => e);
+    expect(voiceFailureText(error)).toBe("Limit reached.");
+    vi.stubGlobal("document", { documentElement: { lang: "de" } });
+    expect(voiceFailureText(error)).toBe("Limit erreicht.");
+    vi.stubGlobal("document", undefined);
+  }
   for (const [reason, key] of [
     ["refused_voice_daily", "voiceDaily"],
-    ["refused_daily", "daily"],
-    ["refused_allowance", "allowance"],
     ["refused_account_busy", "busy"],
     ["refused_spend", "spend"],
     ["refused_size", "tooLarge"],
@@ -477,11 +484,11 @@ it("cancel aborts the running chunk and finish rejects; nothing more is sent", a
   expect(transcribe).toHaveBeenCalledTimes(1);
 });
 
-it("the next turn's length: the turn maximum, or what is left of today's voice time minus one unit for rounding", () => {
+it("the next turn's length: the turn maximum while any of today's voice time is left (a started recording finishes)", () => {
   const voice = { chunkSeconds: 30, maxTurnSeconds: 180, dailyUnits: 150 };
   expect(turnSeconds(voice)).toBe(180); // usage unknown: the server still enforces the budget
   expect(turnSeconds({ ...voice, usedUnits: 0 })).toBe(180);
-  expect(turnSeconds({ ...voice, usedUnits: 130 })).toBe(38);
-  expect(turnSeconds({ ...voice, usedUnits: 149 })).toBe(0);
+  expect(turnSeconds({ ...voice, usedUnits: 130 })).toBe(180);
+  expect(turnSeconds({ ...voice, usedUnits: 149 })).toBe(180);
   expect(turnSeconds({ ...voice, usedUnits: 150 })).toBe(0);
 });

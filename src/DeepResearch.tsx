@@ -1,31 +1,23 @@
-// Deep research in the Research tab (docs/deep-research-20261114.md): the question, the approval
-// of the search texts, the visible step list with its Stop button, and the result. The pipeline
-// is src/deep-research.ts; the app passes the ways out (model request, its own POST, the send).
+// Deep research in the Research tab (docs/deep-research-20261114.md): the question, one progress
+// line with its Stop button, and the result. A run starts straight away (owner, 18 November): the
+// plan's search texts are masked on this device and sent without an approval step; a text the
+// masking cannot make safe is skipped (src/deep-research.ts parsePlan). The pipeline is
+// src/deep-research.ts; the app passes the ways out (model request, its own POST, the send).
 // Stays mounted while another tab is shown, so a run keeps its progress.
-// `inline` (docs/deep-research-in-chat-20261116.md): the same steps as a card in the conversation
-// for the sent draft; every ending closes the card and the answer is already in the chat.
+// `inline` (docs/deep-research-in-chat-20261116.md): the same progress line as a card in the
+// conversation for the sent draft, started at once; every ending closes the card and the answer is
+// already in the chat.
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Source } from "../shared/contracts";
-import { RESEARCH_LIMITS, researchWeights } from "../shared/deep-research";
+import { RESEARCH_LIMITS } from "../shared/deep-research";
 import { preloadAnswer } from "./ChatMessage";
-import { parsePlan, planPrompt, researchNote, runResearch, type Api, type RunStep } from "./deep-research";
+import { limitReached } from "./limit-message";
+import { parsePlan, planPrompt, researchNote, runResearch, type Api } from "./deep-research";
 import { useText } from "./i18n";
 import { IncompleteReplyError } from "./reply-stream";
-import { SearchSuggestionField } from "./SearchSuggestionField";
 import { deepResearchText } from "./text/deep-research";
 import { researchNextText } from "./text/research-next";
-import { editedSearchText, WHEN_TO_SEARCH } from "./when-to-search";
-
-type Step = "plan" | RunStep;
-type StepView = { state: "waiting" | "running" | "done" | "failed" | "stopped"; detail?: string };
-const ORDER: Step[] = ["plan", "search", "read", "write"];
-const fresh = (): Record<Step, StepView> => ({
-  plan: { state: "waiting" },
-  search: { state: "waiting" },
-  read: { state: "waiting" },
-  write: { state: "waiting" },
-});
 
 export function DeepResearch(props: {
   hidden: boolean;
@@ -61,22 +53,17 @@ export function DeepResearch(props: {
 }) {
   const t = useText(deepResearchText);
   const rn = useText(researchNextText);
-  const weights = researchWeights(props.limits.cost);
   const inline = props.inline;
   const ids = inline ? "deep-research-inline" : "deep-research";
   const [question, setQuestion] = useState(inline?.question ?? "");
-  const [phase, setPhase] = useState<"idle" | "planning" | "approve" | "running" | "writing" | "ended">("idle");
+  const [phase, setPhase] = useState<"idle" | "running" | "writing" | "ended">("idle");
   const [problem, setProblem] = useState("");
-  const [rows, setRows] = useState<{ id: number; text: string }[]>([]);
-  const [steps, setSteps] = useState(fresh);
-  const [result, setResult] = useState<{ text: string; used: string; kept?: string; show?: string }>();
+  /** The one progress line: what the run is doing now. */
+  const [progress, setProgress] = useState("");
+  const [result, setResult] = useState<{ text: string; kept?: string; show?: string }>();
   const abort = useRef<AbortController>(undefined);
-  const approveHeading = useRef<HTMLHeadingElement>(null);
   const resultHeading = useRef<HTMLHeadingElement>(null);
-  const approveButton = useRef<HTMLButtonElement>(null);
   const questionField = useRef<HTMLTextAreaElement>(null);
-  const planButton = useRef<HTMLButtonElement>(null);
-  const step = (name: Step, view: StepView) => setSteps((all) => ({ ...all, [name]: view }));
   // Gone (another chat, the switch off): nothing more is sent, kept or said for this run.
   const gone = useRef(false);
   useEffect(() => {
@@ -86,6 +73,12 @@ export function DeepResearch(props: {
       abort.current?.abort();
     };
   }, []);
+  // In the conversation the run starts at once. A timer, so StrictMode's trial mount sends nothing.
+  useEffect(() => {
+    if (!inline) return;
+    const timer = setTimeout(() => void start());
+    return () => clearTimeout(timer);
+  }, []);
 
   // Another conversation (or a lock): the run belongs to the one it started in.
   const first = useRef(true);
@@ -93,27 +86,26 @@ export function DeepResearch(props: {
     if (first.current) return void (first.current = false);
     abort.current?.abort();
     setPhase("idle");
-    setSteps(fresh());
     setResult(undefined);
     setProblem("");
   }, [props.conversationId]);
-  // Each new stage takes the focus, so keyboard and screen-reader users land on it.
   useEffect(() => {
-    if (props.hidden) return;
-    if (phase === "idle" && inline) planButton.current?.focus();
-    if (phase === "approve") approveHeading.current?.focus();
-    if (phase === "ended") resultHeading.current?.focus();
+    if (!props.hidden && phase === "ended") resultHeading.current?.focus();
   }, [phase, props.hidden]);
 
-  const finish = (text: string, used: string, extra: { kept?: string; show?: string } = {}) => {
+  const finish = (text: string, extra: { kept?: string; show?: string } = {}) => {
     if (gone.current) return;
     if (inline) {
       // The run is over: closing must not abort the answer's controller (it is the send's own).
       abort.current = undefined;
-      return inline.close([text, used, extra.kept].filter(Boolean).join(" "));
+      return inline.close([text, extra.kept].filter(Boolean).join(" "));
     }
-    setResult({ text, used, ...extra });
+    setResult({ text, ...extra });
     setPhase("ended");
+  };
+  const show = (label: string, stop: AbortController) => {
+    setProgress(label);
+    props.hold(label, stop);
   };
 
   async function start() {
@@ -123,100 +115,49 @@ export function DeepResearch(props: {
       : asked.length > RESEARCH_LIMITS.questionCharacters
         ? rn.tooLong(RESEARCH_LIMITS.questionCharacters)
         : props.blocked(asked);
+    if (reason && inline) return finish(reason);
     setProblem(reason ?? "");
     if (reason || !asked) return;
     const stop = (abort.current = new AbortController());
-    setSteps({ ...fresh(), plan: { state: "running" } });
     setResult(undefined);
-    setPhase("planning");
-    props.hold(t.stepPlan, stop);
-    try {
-      const raw = await props.plan(planPrompt(asked), stop.signal);
-      stop.signal.throwIfAborted();
-      const texts = parsePlan(raw, asked);
-      setRows(texts.map((text, id) => ({ id, text })));
-      step("plan", { state: "done", detail: t.planDone(texts.length) });
-      setPhase("approve");
-    } catch (error) {
-      step("plan", { state: stop.signal.aborted ? "stopped" : "failed" });
-      // The plan request may or may not have been counted: say the most it can be.
-      finish(
-        stop.signal.aborted
-          ? t.resultCancelled
-          : error instanceof IncompleteReplyError && error.diagnostic?.code === "HTTP_RATE_LIMITED"
-            ? t.resultPlanRefused
-            : t.resultPlanFailed,
-        t.usedAtMost(weights.plan, props.limits.cost),
-      );
-    } finally {
-      props.hold("");
-    }
-  }
-
-  const masked = rows.map((row) => editedSearchText(row.text));
-  const approvedTexts = [...new Set(masked.map((entry) => entry.value))];
-
-  async function go() {
-    if (props.busy || !rows.length || masked.some((entry) => entry.problem)) return;
-    const asked = question.trim();
-    const stop = (abort.current = new AbortController());
     setPhase("running");
-    props.hold(t.stepSearch, stop);
+    show(t.stepPlan, stop);
+    let texts: string[];
+    try {
+      texts = parsePlan(await props.plan(planPrompt(asked), stop.signal), asked);
+      stop.signal.throwIfAborted();
+    } catch (error) {
+      props.hold("");
+      const limit = error instanceof IncompleteReplyError ? limitReached(error) : undefined;
+      return finish(stop.signal.aborted ? t.resultCancelled : (limit ?? t.resultPlanFailed));
+    }
     // The answer is written while the conversation is hidden: load its renderer now, so "Show
     // answer" never meets the plain-text placeholder (raw Markdown and source codes).
     preloadAnswer();
     const outcome = await runResearch(
       asked,
-      approvedTexts,
+      texts,
       {
         api: props.api,
         answer: (sources, tally) => {
           // From here the app's own send shows the progress and owns Stop (the same controller).
           props.hold("");
+          setProgress(t.stepWrite);
           // In the chat the answer itself is the progress: the card steps aside for it.
           if (inline) setPhase("writing");
           return props.answer(asked, tally.queries, sources, researchNote(tally), stop);
         },
       },
       stop.signal,
-      (name, done, total, tally) => {
-        const label = name === "search" ? t.searching(done, total) : name === "read" ? t.reading(done, total) : undefined;
-        props.hold(label ?? t.stepWrite, stop);
-        setSteps((all) => ({
-          ...all,
-          ...(name !== "search"
-            ? { search: { state: "done", detail: t.searchDone(tally.searches, tally.searchesFailed) } }
-            : {}),
-          ...(name === "write"
-            ? { read: { state: "done", detail: t.readDone(tally.pages - tally.pagesFailed, tally.pagesFailed) } }
-            : {}),
-          [name]: { state: "running", detail: label },
-        }));
+      (name, done, total) => {
+        if (name === "write") return;
+        show(name === "search" ? t.searching(done, total) : t.reading(done, total), stop);
       },
       { ...RESEARCH_LIMITS, sourceCharacters: props.sourceRoom(asked) },
     ).finally(() => props.hold(""));
-    const { tally } = outcome;
-    const ended: StepView["state"] =
-      outcome.status === "done" ? "done" : outcome.status === "failed" ? "failed" : "stopped";
-    const at = ORDER.indexOf(outcome.step);
-    setSteps((all) => ({
-      ...all,
-      search: {
-        state: at > 1 ? "done" : ended,
-        detail: t.searchDone(tally.searches, tally.searchesFailed),
-      },
-      read: {
-        state: at > 2 ? "done" : at === 2 ? ended : "waiting",
-        detail:
-          at >= 2
-            ? `${t.readDone(tally.pages - tally.pagesFailed, tally.pagesFailed)}${tally.outOfTime ? ` ${t.outOfTime}` : ""}`
-            : undefined,
-      },
-      write: { state: at === 3 ? ended : "waiting", detail: outcome.status === "done" ? t.writeDone : undefined },
-    }));
     // Sources of a run that ended before the answer was requested are kept for a normal question.
     const kept = !outcome.answerSent && outcome.sources.length ? outcome.sources : undefined;
-    if (kept && !gone.current) props.keep(kept, tally.queries);
+    if (kept && !gone.current) props.keep(kept, outcome.tally.queries);
     finish(
       outcome.status === "done"
         ? t.resultDone
@@ -227,11 +168,6 @@ export function DeepResearch(props: {
             : outcome.step === "write"
               ? t.resultWriteFailed
               : t.resultSearchFailed,
-      outcome.status === "done"
-        ? t.used(props.limits.cost, props.limits.cost)
-        : outcome.answerSent
-          ? t.usedAtMost(props.limits.cost, props.limits.cost)
-          : t.used(weights.plan, props.limits.cost),
       {
         kept: kept && t.kept(kept.length),
         show: outcome.status === "done" ? t.showAnswer : kept || outcome.answerSent ? t.showConversation : undefined,
@@ -239,48 +175,21 @@ export function DeepResearch(props: {
     );
   }
 
-  const stateLabel = (view: StepView) => t[view.state];
-  const names: Record<Step, string> = {
-    plan: t.stepPlan,
-    search: t.stepSearch,
-    read: t.stepRead,
-    write: t.stepWrite,
-  };
-  // Cancel before the plan or at the approval: back to the message box, the draft untouched.
-  const cancel = () =>
-    phase === "idle" ? inline?.close("") : finish(t.resultCancelled, t.used(weights.plan, props.limits.cost));
-  if (inline && (phase === "writing" || !inline.slot)) return null;
+  if (inline && (phase !== "running" || !inline.slot)) return null;
   const card = (
     <section
       className={inline ? "deep-research deep-research-inline" : "content-view deep-research"}
       hidden={props.hidden}
       aria-labelledby={`${ids}-heading`}
-      onKeyDown={(event) => {
-        if (!inline || event.key !== "Escape" || (phase !== "idle" && phase !== "approve")) return;
-        event.preventDefault();
-        cancel();
-      }}
     >
       <div className="panel">
         <h3 id={`${ids}-heading`}>{t.heading}</h3>
-        <p className="muted">
-          {t.intro(props.limits.cost, RESEARCH_LIMITS.searches, RESEARCH_LIMITS.pages, props.limits.dailyRuns)}
-        </p>
-        {phase === "idle" && inline ? (
-          <>
-            <p className="research-question">{question.trim()}</p>
-            <p className="muted">{t.planNote}</p>
-            {problem && (
-              <p className="warning" role="alert">
-                {problem}
-              </p>
-            )}
-            <button className="primary" ref={planButton} disabled={props.busy} onClick={() => void start()}>
-              {t.plan}
-            </button>
-            <button onClick={cancel}>{t.cancel}</button>
-          </>
-        ) : phase === "idle" ? (
+        {!inline && (
+          <p className="muted">
+            {t.intro(props.limits.cost, RESEARCH_LIMITS.searches, RESEARCH_LIMITS.pages, props.limits.dailyRuns)}
+          </p>
+        )}
+        {phase === "idle" && (
           <>
             <label>
               {t.question}
@@ -295,98 +204,34 @@ export function DeepResearch(props: {
                 }}
               />
             </label>
-            <p className="muted">{t.planNote}</p>
             {problem && (
               <p className="warning" role="alert">
                 {problem}
               </p>
             )}
             <button className="primary" disabled={props.busy || !question.trim()} onClick={() => void start()}>
-              {t.plan}
+              {t.start}
             </button>
           </>
-        ) : (
+        )}
+        {(phase === "running" || phase === "writing") && (
           <>
             <p className="research-question">{question.trim()}</p>
-            <ol className="research-steps" aria-label={t.steps}>
-              {ORDER.map((name) => (
-                <li key={name} data-state={steps[name].state}>
-                  {/* While a step runs, its count stands in for its name ("Searching 2 of 4"). */}
-                  <span className="research-step-name">
-                    {(steps[name].state === "running" && steps[name].detail) || names[name]}
-                  </span>
-                  <span className="sr-only">: {stateLabel(steps[name])}. </span>
-                  {steps[name].state !== "running" && steps[name].detail && (
-                    <span className="muted">{steps[name].detail}</span>
-                  )}
-                </li>
-              ))}
-            </ol>
-            {/* One polite line for screen readers: the step that is running now. */}
-            <p className="sr-only" aria-live="polite">
-              {ORDER.filter((name) => steps[name].state === "running")
-                .map((name) => steps[name].detail ?? names[name])
-                .join("")}
-            </p>
-          </>
-        )}
-        {(phase === "planning" || phase === "running") && (
-          <button className="research-stop" onClick={() => abort.current?.abort()}>
-            {t.stop}
-          </button>
-        )}
-        {phase === "approve" && (
-          <div className="approval search-suggestion" role="group" aria-labelledby={`${ids}-approve`}>
-            <h4 id={`${ids}-approve`} tabIndex={-1} ref={approveHeading}>
-              {t.approveHeading}
-            </h4>
-            {rows.map((row, index) => (
-              <div className="research-query" key={row.id}>
-                <span id={`${ids}-label-${row.id}`} className="muted">
-                  {t.field(index + 1)}
-                </span>
-                <SearchSuggestionField
-                  labelledBy={`${ids}-label-${row.id}`}
-                  sentId={`${ids}-sent-${row.id}`}
-                  text={row.text}
-                  sent={masked[index].value}
-                  problem={masked[index].problem}
-                  onChange={(text) => setRows((all) => all.map((r) => (r.id === row.id ? { ...r, text } : r)))}
-                  onEnter={() => approveButton.current?.click()}
-                />
-                {masked[index].note && <p className="muted">{masked[index].note}</p>}
-                <button
-                  aria-label={t.remove(index + 1)}
-                  onClick={() => {
-                    setRows((all) => all.filter((r) => r.id !== row.id));
-                    approveHeading.current?.focus();
-                  }}
-                >
-                  {t.removeShort}
+            <div className="research-progress">
+              <span aria-live="polite">{progress}</span>
+              {phase === "running" && (
+                <button className="research-stop" onClick={() => abort.current?.abort()}>
+                  {t.stop}
                 </button>
-              </div>
-            ))}
-            {masked.some((entry) => entry.warning) && <p className="warning">{WHEN_TO_SEARCH.warning}</p>}
-            {rows.length ? <p>{t.approveNote(RESEARCH_LIMITS.pages)}</p> : <p className="warning">{t.noneLeft}</p>}
-            <button
-              className="primary"
-              ref={approveButton}
-              disabled={props.busy || !rows.length || masked.some((entry) => entry.problem)}
-              onClick={() => void go()}
-            >
-              {t.approve(Math.max(1, approvedTexts.length))}
-            </button>
-            <button onClick={cancel}>
-              {t.cancel}
-            </button>
-          </div>
+              )}
+            </div>
+          </>
         )}
         {phase === "ended" && result && (
           <div className="research-result">
             <h4 tabIndex={-1} ref={resultHeading}>
               {result.text}
             </h4>
-            <p>{result.used}</p>
             {result.kept && <p>{result.kept}</p>}
             {result.show && (
               <button className="primary" onClick={props.showAnswer}>
@@ -396,7 +241,6 @@ export function DeepResearch(props: {
             <button
               onClick={() => {
                 setPhase("idle");
-                setSteps(fresh());
                 setResult(undefined);
                 setQuestion("");
                 setTimeout(() => questionField.current?.focus());

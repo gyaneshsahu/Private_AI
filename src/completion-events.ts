@@ -11,7 +11,20 @@ export async function* completionEvents(
   signal: AbortSignal,
 ): AsyncGenerator<ChatCompletionChunk> {
   if (!response.ok || !response.body) {
-    await response.body?.cancel();
+    // Our relay's calm refusal at the start of a request (owner, 18 November): { code: "limit", resetsAt }.
+    // Only our relay's own JSON is read; a provider's error body never is.
+    if (response.status === 429 && response.headers.get("content-type")?.startsWith("application/json")) {
+      const refusal = await response
+        .text()
+        .then((body) => (body.length < 2000 ? JSON.parse(body) : undefined))
+        .catch(() => undefined);
+      if (refusal?.code === "limit")
+        throw new StreamProtocolError(
+          "HTTP_LIMIT_REACHED",
+          typeof refusal.resetsAt === "string" && !Number.isNaN(Date.parse(refusal.resetsAt)) ? refusal.resetsAt : undefined,
+        );
+    }
+    await response.body?.cancel().catch(() => {});
     throw new StreamProtocolError(
       response.status === 429
         ? "HTTP_RATE_LIMITED"

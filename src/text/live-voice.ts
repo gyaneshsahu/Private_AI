@@ -59,8 +59,6 @@ export const liveVoiceText = defineText({
     sendFailed: "The answer did not arrive. The message line says why.",
     offline: "You are offline. Press Resume when you are back online.",
     verifyWait: "The connection check is busy. Wait for the countdown, then press Resume.",
-    allowance: (cost: number, left: number) =>
-      `Not enough allowance for another turn: it needs ${cost} units and ${left} are left.`,
   },
   de: {
     open: "Sprachgespräch",
@@ -114,7 +112,5 @@ export const liveVoiceText = defineText({
     sendFailed: "Die Antwort ist nicht angekommen. Die Meldungszeile nennt den Grund.",
     offline: "Sie sind offline. Drücken Sie auf Fortsetzen, wenn Sie wieder online sind.",
     verifyWait: "Die Verbindungsprüfung ist ausgelastet. Warten Sie den Countdown ab und drücken Sie dann auf Fortsetzen.",
-    allowance: (cost: number, left: number) =>
-      `Das Kontingent reicht für keine weitere Runde: Sie braucht ${cost} Einheiten, übrig sind ${left}.`,
   },
 });
