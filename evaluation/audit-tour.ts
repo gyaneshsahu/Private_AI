@@ -33,6 +33,8 @@ export interface Entry {
   /** How far the scrolling area (main, or an open dialog) continues below the screenshot. */
   belowFoldPx: number;
   germanOff?: boolean;
+  /** axe-core violations (--axe): rule id, impact, how many elements, the first selectors. */
+  axe?: { id: string; impact: string | null; nodes: number; targets: string[]; summary?: string }[];
 }
 
 /** English label -> German label, from every src/text module and the health consent text. */
@@ -589,6 +591,8 @@ export async function runTour(o: {
   langs: Lang[];
   /** Run only these steps (names as in STEPS); all when absent. */
   only?: string[];
+  /** axe-core's file: each screenshot also gets an accessibility check (WCAG 2.2 A and AA rules). */
+  axe?: string;
 }) {
   const de = await dictionary();
   const entries: Entry[] = [];
@@ -615,6 +619,8 @@ export async function runTour(o: {
           const context = await browser.newContext({
             viewport: { width, height: width < 700 ? 812 : width < 1000 ? 1024 : 900 },
             locale: lang === "de" ? "de-DE" : "en-US",
+            // axe is injected as a script, which the branded pages' strict CSP would block.
+            ...(o.axe ? { bypassCSP: true } : {}),
             ...(width < 700 && engineName !== "firefox" ? { hasTouch: true, isMobile: engineName === "chromium" } : {}),
           });
           context.setDefaultTimeout(8000);
@@ -679,6 +685,13 @@ export async function runTour(o: {
               let error: string | undefined;
               await c.page.screenshot({ path: `${o.out}/${file}`, fullPage, timeout: 15000 }).catch((e) => (error = `screenshot: ${String(e.message).slice(0, 200)}`));
               const m = (await c.page.evaluate(MEASURE).catch(() => ({ overflowPx: -1, outside: [], wide: [], belowFoldPx: -1 }))) as { overflowPx: number; outside: string[]; wide: string[]; belowFoldPx: number };
+              const axe = o.axe
+                ? await c.page.addScriptTag({ path: o.axe }).then(() => c.page.evaluate(async () => {
+                    const r = await (window as unknown as { axe: { run: (c: unknown, o: unknown) => Promise<{ violations: { id: string; impact: string | null; nodes: { target: string[]; failureSummary?: string }[] }[] }> } })
+                      .axe.run(document, { runOnly: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"] });
+                    return r.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length, targets: v.nodes.slice(0, 3).map((n) => n.target.join(" ")), summary: v.nodes[0]?.failureSummary?.slice(0, 300) }));
+                  })).catch((e) => [{ id: "axe-failed", impact: null, nodes: 0, targets: [String(e.message).slice(0, 120)] }])
+                : undefined;
               const log = fakes.log;
               entries.push({
                 n, screen, browser: engineName, width, lang, file, url: c.page.url(), clicked: [...c.clicked],
@@ -686,6 +699,7 @@ export async function runTour(o: {
                 consoleErrors: log.console.splice(0), pageErrors: log.pageErrors.splice(0), failedRequests: log.failed.splice(0), nonLocal: log.nonLocal.splice(0),
                 ...m,
                 ...(germanOff ? { germanOff } : {}),
+                ...(axe ? { axe } : {}),
               });
               c.clicked = [];
             },

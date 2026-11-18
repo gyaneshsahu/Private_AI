@@ -1,7 +1,9 @@
 // Audit harness (16 November): every screen of CometRow locally, every feature on (or none), the
 // AI's answers faked, no request leaving localhost, dist/ untouched. See evaluation/README.md.
 //   npx tsx evaluation/audit-harness.ts [--config on|off] [--out <folder>] [--browsers chromium,firefox,webkit]
-//     [--widths 375,768,1280] [--lang en,de] [--steps <name,...>] [--serve]
+//     [--widths 375,768,1280] [--lang en,de] [--steps <name,...>] [--serve] [--axe]
+//   --axe: an axe-core accessibility check on every screenshot, into index.json and axe-summary.json.
+//     axe-core is not a dependency yet: npm install --no-save axe-core@4.11.0 first.
 // 1. Builds the client into .local/audit-build/<config>/ with every VITE_ switch "1" (on) or none
 //    (off), with src/inference.ts replaced by evaluation/audit-inference.ts and voice transcription
 //    pointed at /__audit/transcribe (harness build only; the app's source is unchanged).
@@ -198,7 +200,20 @@ CometRow audit server (${config}) at ${origin}
       widths: arg("widths", "375,768,1280").split(",").map(Number),
       langs: arg("lang", "en,de").split(",") as ("en" | "de")[],
       ...(process.argv.includes("--steps") ? { only: arg("steps", "").split(",") } : {}),
+      ...(process.argv.includes("--axe") ? { axe: (await import("node:module")).createRequire(import.meta.url).resolve("axe-core/axe.min.js") } : {}),
     });
+    if (process.argv.includes("--axe")) {
+      // One line per rule: where it fails (screen, width, language) and how many elements.
+      const rules: Record<string, { impact: string | null; screens: string[]; nodes: number; example: string }> = {};
+      for (const e of result.entries)
+        for (const v of e.axe ?? []) {
+          const r = (rules[v.id] ??= { impact: v.impact, screens: [], nodes: 0, example: v.targets[0] ?? "" });
+          r.screens.push(`${e.screen} ${e.lang} ${e.width}`);
+          r.nodes += v.nodes;
+        }
+      await writeFile(`${out}/axe-summary.json`, JSON.stringify(rules, null, 2));
+      console.log(`axe: ${Object.keys(rules).length} rules with violations, written ${out}/axe-summary.json`);
+    }
     failures = result.hardFailures;
     await writeFile(`${out}/index.json`, JSON.stringify(result, null, 2));
     console.log(`written ${out}/index.json: ${result.entries.length} screenshots, ${result.failedSteps} failed steps, ${result.hardFailures} hard failures (non-local requests)`);
