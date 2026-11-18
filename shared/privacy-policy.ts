@@ -3,6 +3,7 @@ import {
   PRIVACY_COPY,
   PRIVACY_COPY_DE,
   privacyCopy,
+  PRIVATEMODE_SECURE_SECTIONS,
   type PrivacySection,
 } from "./privacy-copy";
 import { LEGAL_IDENTITY, identityDe } from "./legal-identity";
@@ -431,7 +432,12 @@ export const PRIVATEMODE_CANNOT_DE =
 export function privacyPolicyText(provider?: DisclosedProvider, lang: Lang = "en"): string {
   const de = lang === "de";
   // For Privatemode, its draft statement sections (D17) and deletion wording replace Tinfoil's.
-  const statement = new Map(privacyCopy(provider, lang).map((s) => [s.id, fixStatement(s, lang)]));
+  const statement = new Map(
+    privacyCopy(provider, lang).map((s) => [
+      s.id,
+      provider === "privatemode" && PRIVATEMODE_SECURE_SECTIONS.includes(s.id) ? s : fixStatement(s, lang),
+    ]),
+  );
   const draft = new Map(draftSections(provider ?? "privatemode", lang).map((s) => [s.id, s]));
   const own = (de ? POLICY_SECTIONS_DE : POLICY_SECTIONS).map((section) =>
     provider === "privatemode" && section.id === "cannot"

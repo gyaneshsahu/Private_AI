@@ -68,11 +68,13 @@ it("keeps the approved Tinfoil statement as the default and mirrors the Privatem
   // The five provider sentences (four sections) and, since 13 November, the automatic-search
   // sentence change; every other section is shared.
   const changed = pm.filter((s, i) => s.text !== PRIVACY_COPY[i].text).map((s) => s.id);
-  expect(changed).toEqual(["sealed", "ours", "provider", "limits", "research"]);
+  expect(changed).toEqual(["sealed", "ours", "provider", "limits", "research", "notyet"]);
   const text = privacyText("privatemode").toLowerCase();
-  expect(text).toContain("a question that looks time-sensitive or is about rules, fees or deadlines is searched");
+  // 18 November: no approval step; automatic search covers time-sensitive and rules questions.
+  expect(text).toContain("automatic search covers questions that look time-sensitive or are about rules, fees or deadlines");
+  expect(text).not.toContain("approve the exact search text");
   // The narrower "always search" setting and the Goggles ranking hint (13 November, proposed).
-  expect(text).toContain("if you switch on only “always search for rules, fees and deadlines”, just those questions are");
+  expect(text).toContain("if you switch on only “always search for rules, fees and deadlines”, just those questions are searched");
   expect(text).toContain("these settings are off until you switch them on");
   expect(text).toContain("rank official sites first, by sending a fixed list of those sites; nothing from you is added");
   expect(privacyText("tinfoil")).not.toContain("rank official sites first");
@@ -92,9 +94,12 @@ it("keeps the approved Tinfoil statement as the default and mirrors the Privatem
     "up to 90 days",
     "token counts per key permanently",
     "does not cover the graphics processor",
-    "reach our systems locked",
+    // Secure mode, 18 November: token counts are shown on the usage page; saved chats are readable by us, Secure Max ones are not.
+    "how many tokens it used",
+    "we never use your saved chats to train ai or for advertising",
+    "we cannot open them",
     "each account's memory is kept apart",
-    "we never see what you asked",
+    "on its way to the ai your message is sealed",
     "there is no anonymous mode",
   ])
     expect(text, claim).toContain(claim);

@@ -47,7 +47,7 @@ it("has the same sections in the same order, and Privatemode changes the same se
   const changed = privacyCopy("privatemode", "de")
     .filter((s, i) => s.text !== privacyCopy("tinfoil", "de")[i].text)
     .map((s) => s.id);
-  expect(changed).toEqual(["sealed", "ours", "provider", "limits", "research"]);
+  expect(changed).toEqual(["sealed", "ours", "provider", "limits", "research", "notyet"]);
   expect(privacyPolicyText(undefined, "de").split("\n\n")[0]).toBe("CometRow Datenschutzerklärung, 18. November 2026, Version 2026-11-18 (Entwurf für die rechtliche Prüfung)");
   const headings = privacyPolicyText("privatemode", "de").split("\n\n").slice(1, 3).map((b) => b.split("\n")[0]);
   expect(headings).toEqual(["Wer verantwortlich ist", "Wer Ihre Nachrichten verarbeitet"]);
@@ -75,7 +75,9 @@ it("carries the key claims and no absolute promise in German", () => {
   for (const claim of [
     "mindestens alle 10 minuten",
     "umfasst nicht den grafikprozessor",
-    "erreichen unsere systeme verschlossen",
+    "wie viele tokens dabei verbraucht wurden",
+    "wir nutzen ihre gespeicherten chats nie zum trainieren von ki",
+    "wir können sie nicht öffnen",
     "der speicher jedes kontos wird",
     "tokenzahlen pro schlüssel dauerhaft",
     "nur in der eu und im europäischen wirtschaftsraum",

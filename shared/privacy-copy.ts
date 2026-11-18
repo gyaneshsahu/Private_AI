@@ -65,29 +65,27 @@ export const PRIVATEMODE_PRIVACY_STATUS = "draft-needs-owner-approval";
 const PRIVATEMODE_SECTIONS: Readonly<Record<string, string>> = {
   sealed:
     "The rest of your question, your selected files and the earlier messages you included are locked in your browser so that only one secure server can open them. The server is a sealed computer with a protected graphics processor. When you start chatting and again at least every 10 minutes, your browser checks the sealed computer against a release we approved; that check is partial: it does not cover the graphics processor, which the company states it checks on its own side before your question can be opened, and we have not yet confirmed whether the browser check notices an approval that was later withdrawn. Our own systems pass the locked package along and cannot open it.",
+  // Secure mode (owner, 18 November): four short lines; the policy shows them unchanged.
   ours:
-    "We can see that your account asked something, when, how many times and which model answered. We do not see how long the question and answer were or what each one cost: your browser shows you those counts, but they reach our systems locked. We never see what you asked or what was answered. There is no anonymous mode: every request comes from a signed-in account, incognito chats included, so we only ever know that your account asked, never what. We keep no copy of your conversations; saved history lives only on your device, locked with a password we do not have.",
+    "We can see that your account asked something, when, how many times, which model answered and how many tokens it used, for your usage page. There is no anonymous mode: every request comes from a signed-in account.\n" +
+    "On its way to the AI your message is sealed, and our systems pass it along without being able to open it.\n" +
+    "What you save is different: your saved chats are stored with your account, encrypted while stored, so they are on all your devices after sign-in. CometRow holds the key to them, so our systems can technically open them. We never use your saved chats to train AI or for advertising.\n" +
+    "Chats in Secure Max are locked on your device with a key only you hold, and we cannot open them. Incognito chats are not saved anywhere.",
   provider:
     "The company that runs the secure server states that it does not keep your question or answer after the reply is sent and does not use them to train any AI. It keeps a short-term working memory inside the sealed server that can hold parts of recent questions; each account's memory is kept apart with its own secret, so another account cannot reuse it or tell what it holds. There is no button that empties it and no promised maximum time. It keeps records such as time and token counts, without content; the company states it keeps these for up to 90 days, and keeps token counts per key permanently for billing. We use one key for all accounts, so those permanent counts are not linked to your account.",
   limits:
     "Your plan allows a set number of requests, and only one request runs at a time per account. We also set limits on our key at the secure server; the company states that it enforces them there, so new requests are refused once a limit is reached.",
-  // 13 November: automatic search also covers German rules, fees and deadlines, and the narrower
-  // "always search" setting covers only those. The approved
-  // Tinfoil text is left unchanged for the owner to approve (docs/german-rules-20261113.md).
-  // Brave Goggles (13 November): the ranking hint is a fixed list of sites, sent only when the
-  // server flag is on, hence "may". Proposed for the owner; the Tinfoil text is unchanged.
-  research: PRIVACY_COPY.find((s) => s.id === "research")!
+  // 18 November: no approval step any more; written for what the app does today.
+  research:
+    "A web search happens only when you choose “Search the web” in the + menu for a message, search a text yourself on the Research page, have switched on automatic search, or start a deep research. Recognised identifiers are removed from each search text on your device first; names and other details written in your own words are not removed. After a search, the exact text that was searched is shown to you. That text is sent from our server to the search provider, which can read it and may keep it for up to 90 days; your own address is not sent. For a question about rules, fees or deadlines, our server may also ask the search provider to rank official sites first, by sending a fixed list of those sites; nothing from you is added. Our server also opens the top result page, preferring an official site, and reads its text; a deep research opens several pages this way. That site sees our server's address, not yours. If the page address contains a recognised personal detail, the page is opened without the part that holds it, or not at all. The page text is used only for answers in that conversation and is never saved. Automatic search covers questions that look time-sensitive or are about rules, fees or deadlines; if you switch on only “Always search for rules, fees and deadlines”, just those questions are searched. These settings are off until you switch them on and are kept only on this device. Search results and their links are shown only during the conversation and are never saved. The written answer built on them is saved with the chat; a reopened conversation says it came from a live search and offers to search again for current sources.",
+  notyet: PRIVACY_COPY.find((s) => s.id === "notyet")!
     .text.replace(
-      "a question that looks time-sensitive is searched without asking each time:",
-      "a question that looks time-sensitive or is about rules, fees or deadlines is searched without asking each time; if you switch on only “Always search for rules, fees and deadlines”, just those questions are:",
+      "If you lose your password, nobody can recover your saved history.",
+      "Your saved chats come back when you sign in again on any device. In Secure Max, if you lose every device and your recovery key, nobody can recover those chats, not even CometRow.",
     )
     .replace(
-      "The setting is off until you switch it on",
-      "These settings are off until you switch them on",
-    )
-    .replace(
-      "your own address is not sent.",
-      "your own address is not sent. For a question about rules, fees or deadlines, our server may also ask the search provider to rank official sites first, by sending a fixed list of those sites; nothing from you is added.",
+      "There is no anonymous mode: we know which account asked, never what was asked.",
+      "There is no anonymous mode: we know which account asked.",
     ),
 };
 
@@ -136,28 +134,32 @@ export const PRIVACY_COPY_DE: readonly PrivacySection[] = [
   },
 ];
 
+/** Privatemode sections written for Secure mode (18 November); the policy page shows them as they are. */
+export const PRIVATEMODE_SECURE_SECTIONS: readonly string[] = ["ours", "notyet", "research"];
+
 /** The German counterparts of PRIVATEMODE_SECTIONS (draft, legal read required, like both). */
 const PRIVATEMODE_SECTIONS_DE: Readonly<Record<string, string>> = {
   sealed:
     "Der Rest Ihrer Frage, Ihre ausgewählten Dateien und die früheren Nachrichten, die Sie einbezogen haben, werden in Ihrem Browser so verschlossen, dass nur ein einziger sicherer Server sie öffnen kann. Der Server ist ein versiegelter Computer mit einem geschützten Grafikprozessor. Wenn Sie zu chatten beginnen und danach mindestens alle 10 Minuten erneut, prüft Ihr Browser den versiegelten Computer anhand einer Version, die wir freigegeben haben; diese Prüfung ist unvollständig: Sie umfasst nicht den Grafikprozessor, den das Unternehmen nach eigenen Angaben auf seiner Seite prüft, bevor Ihre Frage geöffnet werden kann, und wir haben noch nicht bestätigt, ob die Prüfung im Browser eine später zurückgezogene Freigabe bemerkt. Unsere eigenen Systeme reichen das verschlossene Paket weiter und können es nicht öffnen.",
   ours:
-    "Wir können sehen, dass Ihr Konto etwas gefragt hat, wann, wie oft und welches Modell geantwortet hat. Wir sehen nicht, wie lang Frage und Antwort waren oder was sie jeweils gekostet haben: Ihr Browser zeigt Ihnen diese Zahlen, aber sie erreichen unsere Systeme verschlossen. Wir sehen nie, was Sie gefragt haben oder was geantwortet wurde. Es gibt keinen anonymen Modus: Jede Anfrage kommt von einem angemeldeten Konto, auch bei Inkognito-Chats, daher wissen wir immer nur, dass Ihr Konto gefragt hat, nie was. Wir behalten keine Kopie Ihrer Unterhaltungen; der gespeicherte Verlauf liegt nur auf Ihrem Gerät, verschlossen mit einem Passwort, das wir nicht haben.",
+    "Wir sehen, dass Ihr Konto etwas gefragt hat, wann, wie oft, welches Modell geantwortet hat und wie viele Tokens dabei verbraucht wurden, für Ihre Nutzungsübersicht. Einen anonymen Modus gibt es nicht: Jede Anfrage kommt von einem angemeldeten Konto.\n" +
+    "Auf dem Weg zur KI ist Ihre Nachricht versiegelt; unsere Systeme leiten sie weiter, ohne sie öffnen zu können.\n" +
+    "Für Gespeichertes gilt etwas anderes: Ihre gespeicherten Chats werden verschlüsselt in Ihrem Konto gespeichert und sind nach der Anmeldung auf allen Ihren Geräten verfügbar. CometRow verwahrt den Schlüssel dazu, daher können unsere Systeme sie technisch öffnen. Wir nutzen Ihre gespeicherten Chats nie zum Trainieren von KI oder für Werbung.\n" +
+    "Chats in Secure Max werden auf Ihrem Gerät mit einem Schlüssel verschlossen, den nur Sie haben; wir können sie nicht öffnen. Inkognito-Chats werden nirgends gespeichert.",
   provider:
     "Das Unternehmen, das den sicheren Server betreibt, erklärt, dass es Ihre Frage oder Antwort nicht behält, nachdem die Antwort gesendet wurde, und sie nicht zum Training einer KI verwendet. Es hält im versiegelten Server einen Kurzzeitspeicher, der Teile kürzlich gestellter Fragen enthalten kann; der Speicher jedes Kontos wird mit einem eigenen Geheimnis getrennt gehalten, sodass ein anderes Konto ihn nicht wiederverwenden und nicht erkennen kann, was er enthält. Es gibt keine Schaltfläche, die ihn leert, und keine zugesagte Höchstdauer. Es führt Aufzeichnungen wie Zeitpunkt und Tokenzahlen, ohne Inhalt; nach Angaben des Unternehmens bewahrt es diese bis zu 90 Tage auf und bewahrt Tokenzahlen pro Schlüssel dauerhaft für die Abrechnung auf. Wir verwenden einen Schlüssel für alle Konten, daher sind diese dauerhaften Zahlen nicht mit Ihrem Konto verknüpft.",
   limits:
     "Ihr Tarif erlaubt eine festgelegte Zahl von Anfragen, und pro Konto läuft immer nur eine Anfrage gleichzeitig. Wir setzen außerdem Grenzen für unseren Schlüssel am sicheren Server; nach Angaben des Unternehmens setzt es diese dort durch, sodass neue Anfragen abgelehnt werden, sobald eine Grenze erreicht ist.",
-  research: replaceEach(PRIVACY_COPY_DE.find((s) => s.id === "research")!.text, [
+  research:
+    "Eine Websuche findet nur statt, wenn Sie für eine Nachricht im +-Menü „Im Web suchen“ wählen, auf der Seite „Recherche“ selbst einen Text suchen, die automatische Suche eingeschaltet haben oder eine Tiefenrecherche starten. Erkannte Kennungen werden zuerst auf Ihrem Gerät aus jedem Suchtext entfernt; Namen und andere Angaben in Ihren eigenen Worten werden nicht entfernt. Nach einer Suche wird Ihnen der genau gesuchte Text angezeigt. Dieser Text wird von unserem Server an den Suchanbieter gesendet, der ihn lesen und bis zu 90 Tage aufbewahren kann; Ihre eigene Adresse wird nicht gesendet. Bei einer Frage zu Regeln, Gebühren oder Fristen kann unser Server den Suchanbieter außerdem bitten, offizielle Websites zuerst einzuordnen, indem er eine feste Liste dieser Websites sendet; nichts von Ihnen wird hinzugefügt. Unser Server öffnet außerdem die oberste Ergebnisseite, bevorzugt eine offizielle Website, und liest ihren Text; eine Tiefenrecherche öffnet auf diese Weise mehrere Seiten. Diese Website sieht die Adresse unseres Servers, nicht Ihre. Wenn die Seitenadresse eine erkannte persönliche Angabe enthält, wird die Seite ohne den Teil geöffnet, der sie enthält, oder gar nicht. Der Seitentext wird nur für Antworten in dieser Unterhaltung verwendet und nie gespeichert. Die automatische Suche gilt für Fragen, die zeitabhängig wirken oder Regeln, Gebühren oder Fristen betreffen; wenn Sie nur „Bei Regeln, Gebühren und Fristen immer suchen“ einschalten, werden nur diese Fragen gesucht. Diese Einstellungen sind ausgeschaltet, bis Sie sie einschalten, und werden nur auf diesem Gerät gespeichert. Suchergebnisse und ihre Links werden nur während der Unterhaltung angezeigt und nie gespeichert. Die darauf aufgebaute schriftliche Antwort wird mit dem Chat gespeichert; eine wieder geöffnete Unterhaltung sagt, dass sie aus einer Live-Suche stammt, und bietet an, für aktuelle Quellen erneut zu suchen.",
+  notyet: replaceEach(PRIVACY_COPY_DE.find((s) => s.id === "notyet")!.text, [
     [
-      "wird für eine Frage, die zeitabhängig wirkt, gesucht, ohne jedes Mal nachzufragen:",
-      "wird für eine Frage, die zeitabhängig wirkt oder Regeln, Gebühren oder Fristen betrifft, gesucht, ohne jedes Mal nachzufragen; wenn Sie nur „Bei Regeln, Gebühren und Fristen immer suchen“ einschalten, gilt das nur für diese Fragen:",
+      "Wenn Sie Ihr Passwort verlieren, kann niemand Ihren gespeicherten Verlauf wiederherstellen.",
+      "Ihre gespeicherten Chats sind wieder da, wenn Sie sich auf einem beliebigen Gerät erneut anmelden. In Secure Max gilt: Wenn Sie alle Geräte und Ihren Wiederherstellungsschlüssel verlieren, kann niemand diese Chats wiederherstellen, auch CometRow nicht.",
     ],
     [
-      "Die Einstellung ist ausgeschaltet, bis Sie sie einschalten, und wird nur",
-      "Diese Einstellungen sind ausgeschaltet, bis Sie sie einschalten, und werden nur",
-    ],
-    [
-      "Ihre eigene Adresse wird nicht gesendet.",
-      "Ihre eigene Adresse wird nicht gesendet. Bei einer Frage zu Regeln, Gebühren oder Fristen kann unser Server den Suchanbieter außerdem bitten, offizielle Websites zuerst einzuordnen, indem er eine feste Liste dieser Websites sendet; nichts von Ihnen wird hinzugefügt.",
+      "Es gibt keinen anonymen Modus: Wir wissen, welches Konto gefragt hat, nie was gefragt wurde.",
+      "Es gibt keinen anonymen Modus: Wir wissen, welches Konto gefragt hat.",
     ],
   ]),
 };
