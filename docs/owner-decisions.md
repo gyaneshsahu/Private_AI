@@ -4,7 +4,21 @@ Running list kept while the owner is away (from 12 November 2026). Each entry na
 
 **How to read this file (16 November 2026):** the block "Launch-readiness run, 16 November 2026" below is the newest list; then the block "Decisions waiting for you, 14 November 2026" below is the current list. The table "All decisions, by number" at the end is current for D1 to D19. Everything between them is older (13 November and before) and kept as history; where it disagrees with the 14 November block, `docs/owner-test-list.md` or `docs/wake-up-report-20261114.md`, those win. Already decided by the owner: Thinking counts 5; the first invite waits for paid Privatemode billing; breach deputy: owner only (risk noted); large-document path on, from 20,000 characters; 10 MB file limit until the phone test; OCR data kept in the browser; German OCR data added; "Germany" added to the suggested search text (now editable); allowance 150 per 7 days with a daily cap; search on (Brave); free, invite-only, one server; 3 chats at once; Privatemode primary, Tinfoil backup, switching manual and announced; German interface off until the legal read (`VITE_GERMAN_UI`).
 
-## Owner live test, 18 November 2026 (newest; owner's answers)
+## Web search is automatic, 19 November 2026 (newest; final, do not reopen)
+
+**Decision (owner):** search is automatic; approval before search is removed. This replaces the old PRD requirement of explicit approval before any search (`docs/PRD.md`), and every older design with a search approval card, a "search first?" choice, a "+" > "Search the web" item, a Research page for typed searches, or opt-in search switches.
+
+- The app decides when a question needs current information and searches, like ChatGPT. Users never choose or approve a search; most people do not know what "web search" means and do not want to decide it.
+- Recognised identifiers (email, phone, IBAN and similar) are masked on the device before any search text leaves it.
+- One switch in Settings, "Look things up online" ("Online nachschlagen"), **on by default**, lets a user turn searching off.
+- Under the answer: a short "Searched the web" line. Tapping it shows the exact text that was searched and the sources.
+- The Research page (typed searches, page addresses, approval) is removed from the app. Deep research stays a user choice in "+" > Deep research.
+- Voice conversation searches the same way and never stops to ask.
+- Scheduled tasks have no search checkbox. A Manual run searches like a chat message. A background task is decided once, when it is created, from its instruction.
+
+If an older doc, test or text says otherwise, it is out of date: this block wins.
+
+## Owner live test, 18 November 2026 (owner's answers)
 
 The path, in the owner's words: an owner-only live test on `app.cometrow.com` with every feature on, then fix rounds, then 10 to 20 friends. Steps: `docs/owner-live-test-setup-20261118.md`. Tests: `docs/owner-live-test-list-20261118.md`.
 
