@@ -267,7 +267,8 @@ it("at 0 left the one calm limit message, with no unit counts, and nothing is se
     await none.page.getByRole("button", { name: t.start, exact: true }).click();
     const alert = none.page.getByRole("region", { name: t.heading }).getByRole("alert");
     await ui(alert).toHaveText(limitSentence(resetsAt, "en"));
-    await ui(alert).toHaveText(/^Limit reached\. It resets at \d\d:\d\d\.$/);
+    // A clock time today, or the date and time when the reset falls on another day (late evening).
+    await ui(alert).toHaveText(/^Limit reached\. It resets at (?:\d+ \w+, )?\d\d:\d\d\.$/);
     expect(none.posted).toEqual([]);
     expect(await calls(none.page)).toEqual([]);
   } finally {
