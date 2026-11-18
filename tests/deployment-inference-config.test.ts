@@ -1,5 +1,5 @@
 import { afterEach, expect, it } from "vitest";
-import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { randomBytes } from "node:crypto";
@@ -336,5 +336,71 @@ it("loads production chat only when the inference section is present and enabled
   ]) {
     await writeFile(configFile, JSON.stringify(bad));
     await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+  }
+});
+
+// The owner's live test switches every feature on (docs/owner-live-test-setup-20261118.md): the example file must
+// load exactly as written, with each secret path swapped for a synthetic file, so no key name or bound is wrong.
+it("loads deployment/render-config.owner-test.example.json with everything on, image creation included", async () => {
+  const root = await mkdtemp(join(tmpdir(), "privateai-owner-test-config-"));
+  roots.push(root);
+  const example = JSON.parse(await readFile(join(__dirname, "..", "deployment", "render-config.owner-test.example.json"), "utf8"));
+  const contents: Record<string, string> = {
+    "auth-secret": "synthetic-auth-secret-".repeat(3),
+    "database-url": "postgresql://synthetic:synthetic@db.example.test/test",
+    "qualification-privatemode.json": JSON.stringify({ provider: "privatemode" }),
+    "google-social.json": JSON.stringify({ google: { clientId: "synthetic.apps.googleusercontent.com", clientSecret: "synthetic-secret" } }),
+    "background-tasks.key": `k1:${Buffer.alloc(32, 1).toString("base64")}\n`,
+    "image-api.key": "SYNTHETIC_IMAGE_KEY\n",
+  };
+  // Every /etc/secrets path becomes a file in the temporary folder; /app/dist becomes the folder.
+  const swap = async (value: unknown): Promise<unknown> => {
+    if (typeof value === "string" && value.startsWith("/etc/secrets/")) {
+      const name = value.slice("/etc/secrets/".length);
+      const path = join(root, name);
+      await writeFile(path, contents[name] ?? "synthetic");
+      return path;
+    }
+    if (value === "/app/dist") return root;
+    if (typeof value === "string" && value.startsWith("/tmp/")) return join(root, value.slice(5));
+    if (Array.isArray(value)) return Promise.all(value.map(swap));
+    if (value && typeof value === "object")
+      return Object.fromEntries(await Promise.all(Object.entries(value).map(async ([k, v]) => [k, await swap(v)])));
+    return value;
+  };
+  const configFile = join(root, "render-config.json");
+  await writeFile(configFile, JSON.stringify(await swap(example)));
+  const before = process.env.PRIVATEAI_CUSTODY_KEY;
+  process.env.PRIVATEAI_CUSTODY_KEY = Buffer.alloc(32, 7).toString("base64");
+  try {
+    const loaded = await loadDeploymentConfig(configFile);
+    expect(loaded.social).toBeDefined();
+    expect(loaded.inference).toMatchObject({
+      apiKey: "synthetic",
+      searchKey: "synthetic",
+      metering: { plan: "alpha" },
+      imageCreation: { apiKey: "SYNTHETIC_IMAGE_KEY", model: "flux-2-klein", dailyImages: 3 },
+      code: true,
+      research: { cost: 15 },
+      voice: { chunkSeconds: 30 },
+      images: { maxBytes: 280000 },
+    });
+    for (const key of ["secureStore", "vaultSync", "backgroundTasks", "providerManifest", "allowance"])
+      expect(loaded.inference).toHaveProperty(key);
+    // Image creation: disabled means off and the key file is not needed; an unpriced model refuses the file.
+    const parsed = JSON.parse(await readFile(configFile, "utf8"));
+    await writeFile(configFile, JSON.stringify({ ...parsed, inference: { ...parsed.inference, imageCreation: { ...parsed.inference.imageCreation, enabled: false } } }));
+    expect((await loadDeploymentConfig(configFile)).inference).not.toHaveProperty("imageCreation");
+    await writeFile(configFile, JSON.stringify({ ...parsed, inference: { ...parsed.inference, imageCreation: { ...parsed.inference.imageCreation, model: "dall-e" } } }));
+    await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+    // The allowlist holds up to 30 addresses (owner test plus 10 to 20 invitees); 31 refuse.
+    const emails = (n: number) => Array.from({ length: n }, (_, i) => `person${i}@example.test`);
+    await writeFile(configFile, JSON.stringify({ ...parsed, allowedEmails: emails(30) }));
+    expect((await loadDeploymentConfig(configFile)).allowedEmails).toHaveLength(30);
+    await writeFile(configFile, JSON.stringify({ ...parsed, allowedEmails: emails(31) }));
+    await expect(loadDeploymentConfig(configFile)).rejects.toThrow("Deployment configuration unavailable or invalid.");
+  } finally {
+    if (before === undefined) delete process.env.PRIVATEAI_CUSTODY_KEY;
+    else process.env.PRIVATEAI_CUSTODY_KEY = before;
   }
 });

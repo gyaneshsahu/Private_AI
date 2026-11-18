@@ -136,7 +136,9 @@ export function createRenderBridge(config: {
           method: health ? "GET" : req.method,
           path: health ? "/readyz" : req.url,
           headers,
-          timeout: 15_000,
+          // Socket idle limit. Image creation sends nothing until the picture is ready (the provider
+          // may take up to its 60 s limit), so that one path gets 75 s; streams are never quiet that long.
+          timeout: path === "/api/images/create" ? 75_000 : 15_000,
         },
         (answer) => {
           if (health) {

@@ -102,7 +102,7 @@ export function createProductionAccountCandidate(
       : z
           .array(z.email().max(254))
           .min(1)
-          .max(10)
+          .max(30) // the same bound as server/deployment-config.ts
           .parse(config.allowedEmails)
           .map((email) => email.toLowerCase());
   if (config.secret.length < 32)

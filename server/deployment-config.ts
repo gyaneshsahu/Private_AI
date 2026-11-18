@@ -17,7 +17,8 @@ const schema = z
     assets: path,
     secretFile: path,
     socialCredentialsFile: path.optional(),
-    allowedEmails: z.array(z.email().max(254)).min(1).max(10).optional(),
+    // The owner, a test account and the alpha's 10 to 20 invitees (owner, 18 November).
+    allowedEmails: z.array(z.email().max(254)).min(1).max(30).optional(),
     renderBridge: z
       .object({
         keyFile: path,
@@ -105,6 +106,20 @@ const schema = z
          * (docs/code-execution-20261114.md). The server must know: it grants the follow-up credit.
          */
         code: z.object({ enabled: z.boolean() }).strict().optional(),
+        /**
+         * Image creation, its own switch, off unless enabled (docs/image-creation-20261117.md). Black
+         * Forest Labs, EU endpoint; the key comes from its own secret file. `model` must be one the
+         * price list (shared/usage-weights.json) prices; `dailyImages` per account a day.
+         */
+        imageCreation: z
+          .object({
+            enabled: z.boolean(),
+            apiKeyFile: path,
+            model: z.enum(["flux-2-klein", "flux-2-pro"]),
+            dailyImages: z.number().int().min(1).max(50),
+          })
+          .strict()
+          .optional(),
         /**
          * Usage metering, its own switch, off unless enabled (docs/usage-metering-20261115.md): weights
          * from shared/usage-weights.json, a usage record per request, the usage meter. `plan` (default
@@ -442,6 +457,15 @@ export async function loadDeploymentConfig(file: string) {
                 ? { images: { maxBytes: inference.images.maxBytes, dailyImages: inference.images.dailyImages } }
                 : {}),
               ...(inference.code?.enabled ? { code: true } : {}),
+              ...(inference.imageCreation?.enabled
+                ? {
+                    imageCreation: {
+                      apiKey: (await boundedFile(inference.imageCreation.apiKeyFile)).toString("utf8").trim(),
+                      model: inference.imageCreation.model,
+                      dailyImages: inference.imageCreation.dailyImages,
+                    },
+                  }
+                : {}),
               ...(inference.vaultSync?.enabled
                 ? {
                     vaultSync: {

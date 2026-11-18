@@ -9,6 +9,7 @@ import {
 } from "./account-auth";
 import { consumerControl } from "./consumer-control";
 import { createApp } from "./app";
+import { bflImageProvider } from "./image-creation";
 import { PostgresUsageLedger } from "./usage-postgres";
 import { PostgresUsageRecords } from "./usage-records-postgres";
 import { PostgresBackgroundStore } from "./background-store";
@@ -83,6 +84,8 @@ export interface ProductionInferenceConfig {
   images?: { maxBytes: number; dailyImages: number };
   /** Code execution on the user's device; absent means off. */
   code?: boolean;
+  /** Image creation with Black Forest Labs (EU endpoint); absent means off. */
+  imageCreation?: { apiKey: string; model: string; dailyImages: number };
   /** Deep research cost, caps and optional account list; absent means off. */
   research?: import("./research-admission").ResearchSettings;
   /** Usage metering with this plan and an optional pinned weights version (docs/usage-metering-20261115.md); absent means off. */
@@ -142,6 +145,14 @@ export function createProductionConsumerCandidate(
           ...(inference.voice ? { voice: inference.voice } : {}),
           ...(inference.images ? { images: inference.images } : {}),
           ...(inference.code ? { code: true } : {}),
+          ...(inference.imageCreation
+            ? {
+                imageCreation: {
+                  provider: bflImageProvider({ apiKey: inference.imageCreation.apiKey, model: inference.imageCreation.model }),
+                  dailyImages: inference.imageCreation.dailyImages,
+                },
+              }
+            : {}),
           ...(inference.research ? { research: inference.research } : {}),
           ...(inference.metering
             ? { metering: { ...inference.metering, records: new PostgresUsageRecords(config.database) } }
