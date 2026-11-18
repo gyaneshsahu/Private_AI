@@ -263,9 +263,9 @@ for (const [name, viewport] of [["phone", phone], ["desktop", desktop]] as const
     await done(page);
   });
 
-it("the whole flow in German at phone width: the picture, the health question, and the consent card; saying no attaches nothing", async () => {
+it("the whole flow in German at phone width: the picture goes straight to covering, with no health question or consent card, and is attached as checked", async () => {
   const de = imageText.de;
-  const page = await open("view=flow&consent", phone, "de-DE");
+  const page = await open("view=flow", phone, "de-DE");
   // Owner, 17 November: no first-use notice; the picture dialog opens at once.
   const dialog = page.getByRole("dialog");
   for (const text of [de.note1, de.note2, de.note3, de.note4]) await ui(dialog.getByText(text)).toHaveCount(0);
@@ -282,49 +282,47 @@ it("the whole flow in German at phone width: the picture, the health question, a
   });
   await page.locator('input[type="file"]').setInputFiles({ name: "synthetic.png", mimeType: "image/png", buffer: Buffer.from(png) });
   await page.getByRole("button", { name: de.pickUse }).click();
-  // Consent was never given: the picture is asked about.
-  await ui(page.getByRole("heading", { name: de.healthTitle })).toBeVisible();
-  await page.getByRole("button", { name: de.healthYes, exact: true }).click();
-  // The existing consent card, unchanged.
-  await ui(page.getByRole("region", { name: "Gesundheit und andere sensible Angaben" })).toBeVisible();
-  await page.getByRole("button", { name: "Jetzt nicht" }).click();
-  await ui(page.getByTestId("notice")).toHaveText(de.healthDeclined);
-  await ui(page.getByTestId("consent")).toHaveText("declined");
+  // Owner, 18 November: the acceptance at sign-up covers pictures. Straight to covering.
+  await ui(page.locator("canvas.image-redact-canvas")).toBeVisible();
+  await ui(page.getByRole("heading", { name: de.healthTitle })).toHaveCount(0);
+  await ui(page.getByRole("button", { name: de.healthYes, exact: true })).toHaveCount(0);
+  await ui(page.getByRole("region", { name: "Gesundheit und andere sensible Angaben" })).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  // Check the exact picture, then attach it.
+  await page.getByRole("button", { name: de.preview }).click();
+  await page.getByRole("button", { name: de.attach }).click();
   await ui(page.getByRole("dialog")).toHaveCount(0);
-  await ui(page.getByRole("group", { name: de.attachedLabel })).toHaveCount(0);
+  await ui(page.getByRole("group", { name: de.attachedLabel })).toBeVisible();
+  await ui(page.getByTestId("notice")).toHaveText(de.attachedNotice);
   // Nothing about the picture is remembered in the browser.
-  expect(await page.evaluate(() => Object.entries(localStorage).filter(([key]) => key !== "cometrow.language" && key !== "cometrow.first-start-notice"))).toEqual([]);
+  expect(await page.evaluate(() => Object.entries(localStorage).filter(([key]) => key !== "cometrow.language"))).toEqual([]);
   expect(page.blocked).toEqual([]);
   await done(page);
 });
 
-it("the flow when the picture is not a health picture, or consent was already given: straight to covering; Escape discards the picture", async () => {
-  for (const query of ["view=flow&consent", "view=flow&consent&choice=accepted", "view=flow"]) {
-    const page = await open(query);
-    await page.locator('input[type="file"]').setInputFiles({
-      name: "synthetic.png",
-      mimeType: "image/png",
-      buffer: Buffer.from(await page.evaluate(async () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = 300;
-        canvas.height = 200;
-        canvas.getContext("2d")!.fillRect(0, 0, 300, 200);
-        const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), "image/png"));
-        return [...new Uint8Array(await blob.arrayBuffer())];
-      })),
-    });
-    await page.getByRole("button", { name: en.pickUse }).click();
-    if (query === "view=flow&consent") {
-      await ui(page.getByRole("heading", { name: en.healthTitle })).toBeVisible();
-      await page.getByRole("button", { name: en.healthNo }).click();
-    }
-    await ui(page.locator("canvas.image-redact-canvas")).toBeVisible();
-    await ui(page.getByRole("heading", { name: en.healthTitle })).toHaveCount(0);
-    await page.keyboard.press("Escape");
-    await ui(page.getByRole("dialog")).toHaveCount(0);
-    await ui(page.getByRole("group", { name: en.attachedLabel })).toHaveCount(0);
-    await done(page);
-  }
+it("the flow goes straight from the picture to covering, with no health question; Escape discards the picture", async () => {
+  const page = await open("view=flow");
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "synthetic.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(await page.evaluate(async () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 300;
+      canvas.height = 200;
+      canvas.getContext("2d")!.fillRect(0, 0, 300, 200);
+      const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), "image/png"));
+      return [...new Uint8Array(await blob.arrayBuffer())];
+    })),
+  });
+  await page.getByRole("button", { name: en.pickUse }).click();
+  await ui(page.locator("canvas.image-redact-canvas")).toBeVisible();
+  await ui(page.getByRole("heading", { name: en.healthTitle })).toHaveCount(0);
+  await ui(page.getByRole("button", { name: en.healthNo })).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await ui(page.getByRole("dialog")).toHaveCount(0);
+  await ui(page.getByRole("group", { name: en.attachedLabel })).toHaveCount(0);
+  expect(page.blocked).toEqual([]);
+  await done(page);
 });
 
 it("where the browser has its own on-device face finder, Cover faces puts a black box over each face found, a little larger than reported", async () => {

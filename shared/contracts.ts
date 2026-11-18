@@ -589,8 +589,6 @@ export interface AppStatus {
   publicPageHosts?: string[] | null;
   /** Plain-text notice the operator shows to everyone (outage, announced provider switch). */
   operatorNotice?: string;
-  /** Draft health-consent step (shared/health-consent.ts); off unless the server enables it. */
-  healthConsentDraft?: boolean;
   /** Draft provider section for the privacy policy (shared/provider-disclosure.ts); off unless set. */
   providerDisclosureDraft?: "tinfoil" | "privatemode";
   /** End-to-end encrypted sync is switched on (.local/sync-contract.md); absent means no sync screens. */

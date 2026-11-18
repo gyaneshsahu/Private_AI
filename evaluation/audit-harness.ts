@@ -89,7 +89,6 @@ export async function startServer(config: AuditConfig, client: string, fakesInSe
   const app = createApp({
     origin,
     dev: on,
-    healthConsentDraft: on,
     ...(on ? { providerDisclosureDraft: "privatemode" as const } : {}),
     ...(on ? { voice: { chunkSeconds: 30, maxTurnSeconds: 180, dailyUnits: 150 } } : {}),
     ...(on ? { images: { maxBytes: 280_000, dailyImages: 10 } } : {}),

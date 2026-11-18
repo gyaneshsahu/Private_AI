@@ -5,14 +5,14 @@ import { defineText } from "./core";
 export const searchNextText = defineText({
   en: {
     menu: "Search the web",
-    armed: "Your next message searches the web first. After Send you see and approve the exact search text.",
+    armed: "Your next message searches the web first.",
     cancel: "Do not search the web",
     heading: "Search the web first?",
     without: "Answer without searching",
   },
   de: {
     menu: "Im Web suchen",
-    armed: "Ihre nächste Nachricht sucht zuerst im Web. Nach dem Senden sehen Sie den genauen Suchtext und geben ihn frei.",
+    armed: "Ihre nächste Nachricht sucht zuerst im Web.",
     cancel: "Nicht im Web suchen",
     heading: "Zuerst im Web suchen?",
     without: "Ohne Websuche antworten",

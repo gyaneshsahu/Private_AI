@@ -1,8 +1,8 @@
 // Round 3 wiring of 16 November in the actual application, at 375, 768 and 1280 px, in English and
 // German: the skip link (SS-23), the keyboard shortcuts list from the account menu and from Help,
 // Help's documents, the footer (FE-19), the incognito caption, and "+" > "Search the web" (FE-07):
-// the next Send opens the in-chat approval card for exactly the typed text, nothing is searched
-// before its button. Offline: a Vite plugin replaces src/inference.ts, the status and the research
+// the next Send searches the web once for exactly the typed text, identifiers masked on the device,
+// then answers; no approval card (owner, 18 November). Offline: a Vite plugin replaces src/inference.ts, the status and the research
 // routes are answered here, nothing leaves the machine.
 import { afterAll, beforeAll, expect, it } from "vitest";
 import { chromium, expect as ui, type Browser, type Page } from "@playwright/test";
@@ -209,46 +209,28 @@ for (const lang of ["en", "de"] as const)
         await ui(page.locator(".tools-menu").getByRole("button", { name: sn.menu, exact: true })).toHaveAttribute("aria-pressed", "false");
         await page.locator(".tools-menu").getByRole("button", { name: sn.menu, exact: true }).click();
         await ui(armed).toBeVisible();
-        // A plain question (no suggestion of its own): Send opens the card for exactly this text, nothing is searched yet.
+        // A plain question (no suggestion of its own): Send searches exactly the masked text at once, then answers; no card.
         await page.getByLabel(t.messageInput).fill("SYNTHETIC PLAIN QUESTION about write@example.org");
         await page.getByRole("button", { name: t.sendLabel, exact: true }).click();
-        const card = page.getByRole("region", { name: t.searchSuggestion });
-        await ui(card).toContainText(sn.heading);
-        await ui(card.getByRole("button", { name: s.button })).toBeFocused();
-        await ui(armed).toHaveCount(0);
-        expect(searched).toEqual([]);
-        await ui(page.locator("article.assistant")).toHaveCount(0);
-        await tall(page, width, card.getByRole("button"));
-        await noSidewaysScroll(page);
-        // Send again changes nothing while the card is open; the card's button searches exactly the masked text.
-        await page.getByRole("button", { name: t.sendLabel, exact: true }).click();
-        expect(searched).toEqual([]);
-        await card.getByRole("button", { name: s.button }).click();
         await ui(page.locator("article.assistant").last()).toContainText("Synthetic answer with 1 sources.");
         expect(searched).toEqual(["SYNTHETIC PLAIN QUESTION about [email address removed]"]);
-        await ui(card).toHaveCount(0);
+        await ui(page.getByRole("status").filter({ hasText: s.searched("SYNTHETIC PLAIN QUESTION about [email address removed]") })).toBeVisible();
+        await ui(page.getByRole("region", { name: t.searchSuggestion })).toHaveCount(0);
+        await ui(page.getByRole("button", { name: sn.without })).toHaveCount(0);
+        await ui(armed).toHaveCount(0);
+        await noSidewaysScroll(page);
         // One-shot: the next message is sent without a card or a search.
         await page.getByLabel(t.messageInput).fill("SYNTHETIC SECOND PLAIN QUESTION");
         await page.getByRole("button", { name: t.sendLabel, exact: true }).click();
         await ui(page.locator("article.assistant")).toHaveCount(2);
         expect(searched).toHaveLength(1);
-        // Armed again: "Answer without searching" sends it as it is; Escape on the card drops it.
+        // Armed and then cancelled: the message is sent without a search.
         await tools.click();
         await page.locator(".tools-menu").getByRole("button", { name: sn.menu, exact: true }).click();
+        await armed.getByRole("button", { name: sn.cancel }).click();
         await page.getByLabel(t.messageInput).fill("SYNTHETIC THIRD PLAIN QUESTION");
         await page.getByRole("button", { name: t.sendLabel, exact: true }).click();
-        await card.getByRole("button", { name: sn.without }).click();
         await ui(page.locator("article.assistant")).toHaveCount(3);
-        // No new search (the earlier results stay in the chat's context, as after any search).
-        expect(searched).toHaveLength(1);
-        await tools.click();
-        await page.locator(".tools-menu").getByRole("button", { name: sn.menu, exact: true }).click();
-        await page.getByLabel(t.messageInput).fill("SYNTHETIC FOURTH PLAIN QUESTION");
-        await page.getByRole("button", { name: t.sendLabel, exact: true }).click();
-        await ui(card).toBeVisible();
-        await page.keyboard.press("Escape");
-        await ui(card).toHaveCount(0);
-        await ui(page.getByLabel(t.messageInput)).toBeFocused();
         expect(searched).toHaveLength(1);
 
         // An incognito chat is captioned with the incognito name used everywhere else.
@@ -264,7 +246,7 @@ for (const lang of ["en", "de"] as const)
       }
     }, 120_000);
 
-it("1280 px, en, automatic search on: Search the web still asks before searching (rule 7)", async () => {
+it("1280 px, en, automatic search on: Search the web searches the typed text once, with no card", async () => {
   const t = appText.en;
   const sn = searchNextText.en;
   const { page, searched } = await open("en", 1280);
@@ -273,16 +255,17 @@ it("1280 px, en, automatic search on: Search the web still asks before searching
     await page.reload();
     await page.getByLabel(t.tools, { exact: true }).click();
     await page.locator(".tools-menu").getByRole("button", { name: sn.menu, exact: true }).click();
-    await page.getByLabel(t.messageInput).fill("SYNTHETIC PLAIN QUESTION WITH AUTOMATIC SEARCH ON");
+    // A German-rules question the automatic search would also take (it would add " Deutschland").
+    const question = "Welche Kündigungsfrist habe ich als Mieter?";
+    await page.getByLabel(t.messageInput).fill(question);
     await page.getByRole("button", { name: t.sendLabel, exact: true }).click();
-    const card = page.getByRole("region", { name: t.searchSuggestion });
-    await ui(card).toContainText(sn.heading);
-    await page.waitForTimeout(500);
-    expect(searched).toEqual([]);
-    await ui(page.locator("article.assistant")).toHaveCount(0);
-    await card.getByRole("button", { name: WHEN_TO_SEARCH_TEXT.en.button }).click();
     await ui(page.locator("article.assistant").last()).toContainText("Synthetic answer with 1 sources.");
-    expect(searched).toEqual(["SYNTHETIC PLAIN QUESTION WITH AUTOMATIC SEARCH ON"]);
+    await ui(page.getByRole("region", { name: t.searchSuggestion })).toHaveCount(0);
+    // Exactly one search: the menu's text as typed, not a second automatic one.
+    await page.waitForTimeout(500);
+    expect(searched).toEqual([question]);
+    await ui(page.getByRole("status").filter({ hasText: WHEN_TO_SEARCH_TEXT.en.searched(question) })).toBeVisible();
+    await ui(page.locator("article.assistant")).toHaveCount(1);
   } finally {
     await page.context().close();
   }

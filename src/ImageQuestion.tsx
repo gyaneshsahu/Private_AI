@@ -1,19 +1,16 @@
 // Image questions in the composer (docs/images-20261114.md). Rendered only while the server says
 // image questions are switched on. The steps: first-upload notice, choose a picture (the existing
-// photo dialog: camera or file, turn, crop, metadata dropped), the health question when consent
-// was not given, cover private parts with black boxes, check the exact picture, attach.
+// photo dialog: camera or file, turn, crop, metadata dropped), cover private parts with black boxes,
+// check the exact picture, attach. No consent step: the one acceptance at sign-up covers it (owner, 18 November).
 // The picture lives in this component and then in one App state value. It is never stored.
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { containDialogFocus } from "./dialog-focus";
-import type { HealthConsentChoice } from "./health-consent";
-import { HealthConsentPrompt } from "./HealthConsent";
 import { useLang, useText } from "./i18n";
 import { KIND_LABELS, maskingText, type IdentifierKind } from "./identifier-masking";
 import {
   clampBox,
   encodeForSending,
   IMAGE_NOTE_KEY,
-  imageConsentStep,
   recogniseWords,
   sendSize,
   suggestRedactions,
@@ -417,9 +414,6 @@ export function ImageRedactor({
 export function ImageQuestion({
   maxBytes,
   thinkingChosen,
-  consentOn,
-  consentChoice,
-  onConsent,
   onAttach,
   onClose,
   notify,
@@ -429,19 +423,13 @@ export function ImageQuestion({
   initialFile?: File;
   maxBytes: number;
   thinkingChosen: boolean;
-  /** The health-consent step is switched on for this deployment. */
-  consentOn: boolean;
-  consentChoice: HealthConsentChoice | undefined;
-  onConsent(choice: HealthConsentChoice): void;
   onAttach(image: AttachedImage): void;
   onClose(): void;
   notify(text: string): void;
 }) {
   const t = useText(imageText);
-  // Owner, 17 November: no per-feature cautions; the first-start notice and the privacy page cover this.
-  const [step, setStep] = useState<"note" | "pick" | "health" | "consent" | "redact">(() =>
-    "pick",
-  );
+  // No notice, no health question (owner, 18 November): the acceptance at sign-up covers pictures.
+  const [step, setStep] = useState<"pick" | "redact">("pick");
   const [file, setFile] = useState<File>();
   const picked = useRef(false);
   if (step === "pick")
@@ -452,7 +440,7 @@ export function ImageQuestion({
         onUse={(next) => {
           picked.current = true;
           setFile(next);
-          setStep(imageConsentStep(consentOn, consentChoice) === "ask" ? "health" : "redact");
+          setStep("redact");
         }}
         // The photo dialog closes itself after handing over the picture; only a close without one ends the flow.
         onClose={() => picked.current || onClose()}
@@ -461,63 +449,11 @@ export function ImageQuestion({
   return (
     <Dialog label={t.title} onClose={onClose}>
       <div className="row">
-        <h2>{step === "note" ? t.noteTitle : t.title}</h2>
+        <h2>{t.title}</h2>
         <button type="button" aria-label={t.close} onClick={onClose}>
           ×
         </button>
       </div>
-      {step === "note" && (
-        <div className="photo-stage">
-          {[t.note1, t.note2, t.note3, t.note4].map((text) => (
-            <p key={text}>{text}</p>
-          ))}
-          <div className="photo-actions">
-            <button
-              type="button"
-              className="primary"
-              autoFocus
-              onClick={() => {
-                try {
-                  localStorage.setItem(IMAGE_NOTE_KEY, "1");
-                } catch {
-                  /* storage blocked */
-                }
-                setStep("pick");
-              }}
-            >
-              {t.noteContinue}
-            </button>
-            <button type="button" onClick={onClose}>
-              {t.noteLater}
-            </button>
-          </div>
-        </div>
-      )}
-      {step === "health" && (
-        <div className="photo-stage">
-          <h3>{t.healthTitle}</h3>
-          <p className="muted">{t.healthText}</p>
-          <div className="photo-actions">
-            <button type="button" onClick={() => setStep("consent")}>
-              {t.healthYes}
-            </button>
-            <button type="button" onClick={() => setStep("redact")}>
-              {t.healthNo}
-            </button>
-          </div>
-        </div>
-      )}
-      {step === "consent" && (
-        // The existing consent card, unchanged. "Not now" keeps the picture from being attached.
-        <HealthConsentPrompt
-          onChoose={(choice) => {
-            onConsent(choice);
-            if (choice === "accepted") return setStep("redact");
-            notify(t.healthDeclined);
-            onClose();
-          }}
-        />
-      )}
       {step === "redact" && file && (
         <ImageRedactor
           file={file}

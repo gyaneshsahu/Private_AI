@@ -1,6 +1,28 @@
-# Notices: one general notice, everything else listed (17 November 2026)
+# Notices, consent and prompts
 
-Owner's correction, 17 November: show exactly one general notice, once, at first start, with "Got it", never again. No per-feature cautions, popups or "less secure" tags. Keep only what must stay, each shown once: the health and sensitive-data consent (legally required) and the Secure Max confirmation. List every other notice and remove it or move it to the privacy page; mark anything where the law may require an in-context notice. Never write anything untrue.
+## 18 November 2026: the ChatGPT model (replaces the rules below)
+
+Owner's decision: consent for everything (sensitive and health data, web search, image partners, data flows) comes from ONE acceptance on the sign-in page: "By continuing, you agree to our Terms and Privacy Policy" (DE: "Indem Sie fortfahren, stimmen Sie unseren Nutzungsbedingungen und unserer Datenschutzerklärung zu."), with links to `/terms` and `/privacy`. Signing in there records the versions (`shared/legal-versions.ts`) with the time and the sign-in method (`server/account-consent.ts`, migration 0026). The Terms and the Privacy Policy carry all details (`shared/terms-of-use.ts`, `shared/privacy-policy.ts`). For the legal read: `docs/legal-read-consent-20261118.md`, including what the law may need beyond this acceptance.
+
+**Removed:** the health and sensitive-data consent (card before the first message, the "declined" note, the Settings choice, the picture question's health step, the server switch); the first-start notice; the web search approval card (search text, "Search and answer", "Answer without searching", the German-rules "search first?" choice, the "search again" offer); the scheduled "Run now" search card; the consent boxes of background (Auto) tasks (the server's per-task consent record is filled in by the app).
+
+**How search works now:** "+" > Search the web searches with the next message at once (identifiers masked on the device); with "search automatically" or "always search for rules" switched on in Settings, matching questions are searched without asking; otherwise a message is sent without a search.
+
+**The only thing that still asks:** the Secure Max confirmation (once).
+
+**Still on screen, not consent or warnings (owner to confirm they may stay):**
+
+| What | Why it is there |
+| --- | --- |
+| "Answers come from an AI, not a person. Check important answers." under the message box | possibly required by the EU AI Act Art. 50(1); the lawyer decides (see the legal-read doc) |
+| "Searched the web for …" line after a search | shows what was searched (a status line, not a question) |
+| Deep research: the plan to review and start, with its cost | a feature step (costs 15 units); it can be made to start at once if wanted |
+| "Remember that …" offers to save a memory; "Every day at …" offers a scheduled task | feature offers from the user's own words, nothing is sent until chosen |
+| Research page ("Review disclosure") | the manual research tool, opened on purpose |
+| Secure Max recovery-key and reset warnings | prevent losing data that only the user's devices can open |
+| Error messages (connection, limits, too large) | say why something did not work |
+
+## Earlier rules (17 November), replaced above
 
 ## The first-start notice (built; for the legal read)
 

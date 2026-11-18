@@ -25,7 +25,6 @@ import {
   ENCODE_STEPS,
   encodeForSending,
   IMAGE_DATA_URL_PREFIX,
-  imageConsentStep,
   sendSize,
   stripJpegMetadata,
   suggestRedactions,
@@ -340,11 +339,3 @@ it("the first-upload notice says what is not covered and does not claim full mas
   expect(imageText.en.notKept).toBe("[Picture: not kept]");
 });
 
-it("the health rule: while the consent step is on, every picture is asked about until the user has agreed", () => {
-  expect(imageConsentStep(true, undefined)).toBe("ask");
-  expect(imageConsentStep(true, "declined")).toBe("ask");
-  expect(imageConsentStep(true, "accepted")).toBe("none");
-  // The step is off (production today): the picture flow adds nothing and removes nothing.
-  expect(imageConsentStep(false, undefined)).toBe("none");
-  expect(imageConsentStep(false, "declined")).toBe("none");
-});

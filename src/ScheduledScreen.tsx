@@ -446,11 +446,8 @@ function TaskForm({
   const [useSearch, setUseSearch] = useState(!!status?.search && start.useSearch);
   const [searchText, setSearchText] = useState(start.searchText ?? "");
   // Consent is given at the choice, for this task: an existing background task already has it.
-  const [consent, setConsent] = useState(existing?.mode === "auto");
-  // The extra consents (docs/background-tasks-consent-draft-20261115.md): each unticked at first.
-  const [documentConsent, setDocumentConsent] = useState(false);
-  const [cvConsent, setCvConsent] = useState(false);
-  const [healthConsent, setHealthConsent] = useState(false);
+  // No consent boxes (owner, 18 November): the acceptance at sign-up covers background tasks; the
+  // server's per-task consent record is filled in with the server's current version and the time.
   // One document for a background task: extracted and masked on this device, never the file.
   const [document, setDocument] = useState<{ name: string; text: string; replaced: number; shortened: boolean; kept: KeptIdentifier[] }>();
   const [reading, setReading] = useState("");
@@ -496,7 +493,6 @@ function TaskForm({
         shortened: masked.length > ATTACHMENT_LIMIT,
         kept: [...session.kept],
       });
-      setDocumentConsent(false);
       setReading("");
     } catch (error) {
       // Extraction messages are already in the interface language.
@@ -514,10 +510,6 @@ function TaskForm({
     time: /^([01]\d|2[0-3]):[0-5]\d$/.test(time) ? "" : t.errorTime,
     search: useSearch && search.problem ? (search.problem === "long" ? t.errorSearchLong : t.errorSearch) : "",
     identifiers: identifiers ? t.errorIdentifiers : "",
-    consent: auto && !consent ? t.errorConsent : "",
-    document: asksDocument && !documentConsent ? t.errorConsent : "",
-    cv: asksCv && !cvConsent ? t.errorConsent : "",
-    health: asksHealth && !healthConsent ? t.errorConsent : "",
   };
   const shown = (key: keyof typeof errors) => (tried ? errors[key] : "");
   const described = (key: keyof typeof errors) => (shown(key) ? { "aria-invalid": true, "aria-describedby": `${id}-${key}-error` } : {});
@@ -735,61 +727,6 @@ function TaskForm({
                 )}
               </div>
               {error("identifiers")}
-              <h3>{t.consentTitle}</h3>
-              {t
-                .consentBody(RESULT_RETENTION_DAYS)
-                .split("\n\n")
-                .map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
-              <label className="scheduled-check">
-                <input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} {...described("consent")} />
-                {t.autoConsent}
-              </label>
-              {error("consent")}
-              {asksDocument && (
-                <>
-                  <h3>{t.documentTitle}</h3>
-                  <p>{t.documentBody}</p>
-                  <label className="scheduled-check">
-                    <input
-                      type="checkbox"
-                      checked={documentConsent}
-                      onChange={(event) => setDocumentConsent(event.target.checked)}
-                      {...described("document")}
-                    />
-                    {t.documentConsent}
-                  </label>
-                  {error("document")}
-                </>
-              )}
-              {asksCv && (
-                <>
-                  <h3>{t.cvTitle}</h3>
-                  <p>{t.cvBody}</p>
-                  <label className="scheduled-check">
-                    <input type="checkbox" checked={cvConsent} onChange={(event) => setCvConsent(event.target.checked)} {...described("cv")} />
-                    {t.cvConsent}
-                  </label>
-                  {error("cv")}
-                </>
-              )}
-              {asksHealth && (
-                <>
-                  <h3>{t.healthTitle}</h3>
-                  <p>{t.healthBody}</p>
-                  <label className="scheduled-check">
-                    <input
-                      type="checkbox"
-                      checked={healthConsent}
-                      onChange={(event) => setHealthConsent(event.target.checked)}
-                      {...described("health")}
-                    />
-                    {t.healthConsent}
-                  </label>
-                  {error("health")}
-                </>
-              )}
             </div>
           )}
         </fieldset>

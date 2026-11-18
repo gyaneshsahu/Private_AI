@@ -1,7 +1,9 @@
 // Scheduled tasks (docs/scheduled-20261115.md) in a real browser at phone, tablet and desktop
 // width, in English and German: the Scheduled screen, the New task form and its validation,
-// templates, the Due now strip and Run now, the chat card, the calendar download, and the Auto
-// flows against the contract fake of the server (tests/fixtures/background-tasks-fake.ts).
+// templates, the Due now strip and Run now (a task's search runs without asking), the chat card,
+// the calendar download, and the Auto flows against the contract fake of the server
+// (tests/fixtures/background-tasks-fake.ts). No consent boxes in the form (owner, 18 November): the
+// client fills the server's consent record itself.
 // Offline: a Vite plugin replaces src/inference.ts and counts what would be sent; the status and
 // the background routes are faked; the clock is Playwright's. Nothing here is live evidence.
 import { readFileSync } from "node:fs";
@@ -82,8 +84,9 @@ async function open(at: string, width: number, lang: "en" | "de") {
   // 08:58 in Berlin: a daily task at 09:00 becomes due two minutes later.
   await page.clock.install({ time: new Date("2026-11-16T07:58:00Z") });
   const fake = createBackgroundTasksFake();
-  const state = { auto: false };
+  const state = { auto: false, search: false };
   const outside: string[] = [];
+  const searches: unknown[] = [];
   await page.route("**/*", async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -96,6 +99,25 @@ async function open(at: string, width: number, lang: "en" | "de") {
       );
       return route.fulfill(status === 204 ? { status } : { status, json });
     }
+    if (url.origin === at && url.pathname === "/api/research/prepare") {
+      searches.push(request.postDataJSON());
+      return route.fulfill({ json: { id: "s".repeat(48) } });
+    }
+    if (url.origin === at && url.pathname === "/api/research/execute")
+      return route.fulfill({
+        json: {
+          sources: [
+            {
+              id: "synthetic-01",
+              title: "Synthetic page",
+              text: "Synthetic result text.",
+              url: "https://one.example/result",
+              retrievedAt: new Date().toISOString(),
+              evidenceKind: "search-excerpt",
+            },
+          ],
+        },
+      });
     if (url.origin !== at || request.method() !== "GET") {
       outside.push(`${request.method()} ${url.href}`);
       return route.abort();
@@ -105,7 +127,7 @@ async function open(at: string, width: number, lang: "en" | "de") {
         json: {
           csrf: "SYNTHETIC",
           inference: { ready: true, reason: "OFFLINE ONLY", qualification: { maxInputCharacters: 8000 } },
-          search: false,
+          search: state.search,
           ...(state.auto ? { backgroundTasks: FAKE_STATUS } : {}),
         },
       });
@@ -114,7 +136,7 @@ async function open(at: string, width: number, lang: "en" | "de") {
   await answerQuestions(page);
   await page.goto(at, { timeout: 30_000 });
   await ui(page.locator("html")).toHaveAttribute("lang", lang);
-  return { page, fake, state, outside };
+  return { page, fake, state, outside, searches };
 }
 
 const noSidewaysScroll = async (page: Page) =>
@@ -282,27 +304,29 @@ for (const width of WIDTHS)
         await panel.getByRole("button", { name: `${s.useTemplate}: ${s.templateJobsName}` }).click();
         const autoChoice = form.getByRole("radio", { name: new RegExp(s.modeAuto) });
         await ui(autoChoice).toBeChecked();
-        await ui(form.getByText(s.consentTitle)).toBeVisible();
         await ui(form.getByText(s.autoRunsFast)).toBeVisible();
         await ui(form.locator(".background-badge")).toBeVisible();
-        // One CV, read and masked on this device: the extra consent appears.
+        // One CV, read and masked on this device. No consent boxes: the sign-up acceptance covers it.
         await form.getByLabel(s.attach).setInputFiles({ name: "cv.txt", mimeType: "text/plain", buffer: Buffer.from(x.cv) });
-        await ui(form.getByText(s.documentTitle)).toBeVisible();
         await ui(form.getByText(/cv\.txt/)).toBeVisible();
-        // Consent required: nothing reaches the server without both ticks.
-        await form.getByRole("button", { name: s.create }).click();
-        await ui(form.getByText(s.errorConsent).first()).toBeVisible();
-        expect(fake.requests.filter((r) => r.method === "POST")).toHaveLength(0);
+        for (const text of [s.consentTitle, s.documentTitle, s.cvTitle, s.healthTitle])
+          await ui(form.getByText(text, { exact: true })).toHaveCount(0);
+        for (const label of [s.autoConsent, s.documentConsent, s.cvConsent, s.healthConsent])
+          await ui(form.getByLabel(label)).toHaveCount(0);
         await noSidewaysScroll(page);
-        await form.getByLabel(s.autoConsent).check();
-        await form.getByLabel(s.documentConsent).check();
+        // One Create saves it: the client fills the server's consent record (version, time, sensitive).
         await form.getByRole("button", { name: s.create }).click();
         await ui(form).toHaveCount(0);
+        await ui(form.getByText(s.errorConsent)).toHaveCount(0);
+        expect(fake.requests.filter((r) => r.method === "POST")).toHaveLength(1);
+        expect(fake.consents).toHaveLength(1);
         const posted = fake.requests.find((r) => r.method === "POST")!.body as {
-          consent: { version: string; sensitive: boolean };
+          consent: { version: string; acceptedAt: string; sensitive: boolean };
           attachment: { text: string };
         };
-        expect(posted.consent).toMatchObject({ version: "2026-11-15-draft", sensitive: true });
+        expect(posted.consent).toMatchObject({ version: FAKE_STATUS.consentVersion, sensitive: true });
+        // The time of saving, on the page's (Playwright's) clock: 16 November, shortly after 08:58 in Berlin.
+        expect(posted.consent.acceptedAt).toMatch(/^2026-11-16T0[78]:\d\d:\d\d\.\d{3}Z$/);
         expect(posted.attachment.text).toContain("{{EMAIL-1}}");
         expect(posted.attachment.text).not.toContain("anna.example@example.org");
         const jobs = panel.locator(".scheduled-list > li").filter({ hasText: s.templateJobsName });
@@ -341,6 +365,54 @@ for (const width of WIDTHS)
         await page.context().close();
       }
     }, 120_000);
+
+it("Run now of a task with a search text searches that text at once and answers: no card", async () => {
+  const a = appText.en;
+  const s = scheduledText.en;
+  const { page, state, outside, searches } = await open(origin, 1280, "en");
+  state.search = true;
+  try {
+    await page.reload();
+    const menu = page.locator(".conversation-menu");
+    const panel = page.locator("dialog.scheduled-dialog");
+    const form = page.locator("dialog.scheduled-form-dialog");
+    if ((await menu.getAttribute("open")) === null) await menu.locator("summary").click();
+    await menu.getByRole("button", { name: a.renameSave }).click();
+    await page.getByLabel(a.passphrase, { exact: true }).fill("synthetic scheduled ui passphrase");
+    await page.getByRole("button", { name: a.createOrUnlock }).click();
+    await ui(page.getByRole("button", { name: a.lockAndClear })).toBeVisible();
+    await menu.locator("summary").click();
+    if ((await menu.getAttribute("open")) !== null) await menu.locator("summary").click();
+    if ((await menu.getAttribute("open")) === null) await menu.locator("summary").click();
+    await menu.getByRole("button", { name: a.tabConversation, exact: true }).click();
+    await page.getByRole("button", { name: s.menu, exact: true }).click();
+    await panel.getByRole("button", { name: s.newTask }).first().click();
+    await form.getByLabel(s.name, { exact: true }).fill("Synthetic news");
+    await form.getByLabel(s.instruction, { exact: true }).fill("Summarise the synthetic news.");
+    await form.getByLabel(s.time, { exact: true }).fill("09:00");
+    // The search text, with an identifier: it is masked on this device when the task is saved.
+    const useSearch = form.getByLabel(s.search, { exact: true });
+    if (!(await useSearch.isVisible())) await form.locator("details > summary").click();
+    await useSearch.check();
+    await form.getByLabel(s.searchText, { exact: true }).fill("synthetic news write@example.org");
+    await form.getByRole("button", { name: s.create }).click();
+    await ui(form).toHaveCount(0);
+    await panel.getByRole("button", { name: s.close }).click();
+    // Due two minutes later: Run now searches the saved text once, then answers; nothing asks.
+    await page.clock.fastForward("02:30");
+    const strip = page.getByRole("region", { name: s.dueRegion });
+    await strip.getByRole("button", { name: new RegExp(`^${s.runNow}`) }).click();
+    await ui(page.locator("article.assistant").last()).toContainText("Synthetic answer.");
+    expect(searches).toEqual([{ kind: "search", value: "synthetic news [email address removed]" }]);
+    await ui(page.getByText(s.runSearchTitle)).toHaveCount(0);
+    await ui(page.getByRole("button", { name: s.runSearch })).toHaveCount(0);
+    expect(await sent(page)).toEqual([expect.stringContaining("Summarise the synthetic news.")]);
+    await ui(strip).toHaveCount(0);
+    expect(outside).toEqual([]);
+  } finally {
+    await page.context().close();
+  }
+}, 120_000);
 
 it("with VITE_SCHEDULED off nothing appears: no entry, no card, the message is sent", async () => {
   const { page } = await open(offOrigin, 1280, "en");

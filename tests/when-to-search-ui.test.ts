@@ -1,6 +1,7 @@
-// When to search in the real app (docs/when-to-search-20261112.md): the one-tap suggestion
-// shows the exact masked text and sends only that; Send alone searches nothing; automatic
-// search is off by default, remembered on the device, and shows what it sent.
+// When to search in the real app (docs/when-to-search-20261112.md; owner, 18 November: no card):
+// with automatic search off a time-sensitive question is simply sent, nothing asks and nothing is
+// searched; "+" > "Search the web" searches the masked typed text on Send; automatic search is off
+// by default, remembered on the device, and shows what it sent.
 // Offline: a Vite plugin replaces src/inference.ts, and the research routes are faked.
 import { it, expect } from "vitest";
 import { chromium, expect as ui } from "@playwright/test";
@@ -9,7 +10,7 @@ import { warmDevServer } from "./fixtures/dev-server-warmup";
 import { browserLaunchOptions } from "../scripts/browser-runtime.mjs";
 import { workspaceControl } from "../evaluation/workspace-navigation";
 
-it("suggests a one-tap search with the masked text, never searches on Send alone, and offers an opt-in automatic search", async () => {
+it("sends a time-sensitive question without a card or a search, searches the masked text from the + menu, and offers an opt-in automatic search", async () => {
   const vite = await createServer({
     configFile: false,
     logLevel: "silent",
@@ -93,96 +94,56 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
     const message = page.getByLabel("Message CometRow");
     const suggestion = page.getByRole("region", { name: "Search suggestion" });
     const send = page.getByRole("button", { name: "Send message", exact: true });
-    // The search text is an editable field labelled by the visible "Search the web for:".
-    const field = suggestion.getByRole("textbox", { name: "Search the web for:" });
+    const noCard = async () => {
+      await ui(suggestion).toHaveCount(0);
+      await ui(page.getByRole("button", { name: /^Search and answer/ })).toHaveCount(0);
+    };
 
-    // Timeless question: no suggestion.
+    // Timeless question: no card.
     await message.fill("Explain recursion");
-    await ui(suggestion).toHaveCount(0);
+    await noCard();
 
-    // Time-sensitive question: the exact masked text is shown. Send alone searches nothing.
+    // Time-sensitive question, automatic search off: no card, Send answers at once without a search.
     await message.fill("Who is the current CEO of Siemens, mail max.mustermann@example.com");
-    await ui(suggestion).toContainText("This question may need current information.");
-    await ui(field).toHaveValue(
-      "Who is the current CEO of Siemens, mail [email address removed]",
-    );
-    await ui(suggestion).toContainText(
-      "Removed from the search text before approval: 1 email address.",
-    );
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+    await noCard();
     await send.click();
     await ui(page.locator("article.assistant").last()).toContainText(
       "Synthetic answer from training data.",
     );
     expect(searches).toEqual([]);
+    // After that answer (no web results) nothing offers a search either.
+    await noCard();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 
-    // After that answer (no web results), the same text is offered to check it; nothing is
-    // sent until the tap. Typing a new question replaces the offer.
-    await ui(suggestion).toContainText("This answer did not use current information.");
-    await ui(suggestion.getByRole("button", { name: "Search and answer again" })).toBeVisible();
-    await ui(field).toHaveValue(
-      "Who is the current CEO of Siemens, mail [email address removed]",
-    );
-    expect(searches).toEqual([]);
-    const answers = await page.locator("article.assistant").count();
-    await suggestion.getByRole("button", { name: "Search and answer again" }).click();
+    // "+" > "Search the web": Send searches exactly the masked typed text once, then answers from
+    // the results; no card. The chat message itself is the question as typed.
+    const tools = page.getByLabel("Attachments and tools", { exact: true });
+    const armed = page.locator(".search-next");
+    await tools.click();
+    await page.locator(".tools-menu").getByRole("button", { name: "Search the web", exact: true }).click();
+    await ui(armed).toHaveText(/Your next message searches the web first\./);
+    await message.fill("Wer ist Bundeskanzler? Mail max.mustermann@example.com");
+    await send.click();
     await ui(page.locator("article.assistant").last()).toContainText(
       "Synthetic answer from the results",
     );
-    // The answer is replaced, not added; exactly the shown text was searched.
-    expect(await page.locator("article.assistant").count()).toBe(answers);
-    expect(searches).toEqual([
-      { kind: "search", value: "Who is the current CEO of Siemens, mail [email address removed]" },
-    ]);
-
-    // One tap runs exactly the shown text, then answers from the results.
-    await message.fill("Wer ist Bundeskanzler?");
-    await suggestion.getByRole("button", { name: "Search and answer" }).click();
-    await ui(page.locator("article.assistant").last()).toContainText(
-      "Synthetic answer from the results",
-    );
-    expect(searches.at(-1)).toEqual({ kind: "search", value: "Wer ist Bundeskanzler?" });
-    expect(searches).toHaveLength(2);
+    expect(searches).toEqual([{ kind: "search", value: "Wer ist Bundeskanzler? Mail [email address removed]" }]);
     await ui(
-      page.getByRole("status").filter({ hasText: 'Searched the web for: "Wer ist Bundeskanzler?"' }),
+      page.getByRole("status").filter({ hasText: 'Searched the web for: "Wer ist Bundeskanzler? Mail [email address removed]"' }),
     ).toContainText(
       "Our server also opened the top official result and read its text: https://www.example.gov/fees",
     );
-
-    // The shown text can be edited. What is typed is masked again on the device, the text that
-    // will be sent is shown, and an empty text cannot be sent.
-    const search = suggestion.getByRole("button", { name: "Search and answer", exact: true });
-    const edited = "Bundeskanzler Österreich [email address removed]";
-    await message.fill("Wer ist aktuell Bundeskanzler?");
-    await ui(field).toHaveValue("Wer ist aktuell Bundeskanzler?");
-    await ui(suggestion).not.toContainText("This text will be sent:");
-    await field.fill("Bundeskanzler Österreich max.mustermann@example.com");
-    await ui(suggestion).toContainText("This text will be sent:");
-    await ui(suggestion.locator("pre")).toHaveText(edited);
-    await ui(suggestion).toContainText("Removed from the search text before approval: 1 email address.");
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
-    const box = (await field.boundingBox())!;
-    expect(box.height).toBeGreaterThanOrEqual(24);
-    await field.fill(" ");
-    await ui(search).toBeDisabled();
-    await ui(suggestion).toContainText("The search text needs at least 2 characters.");
-    await field.press("Enter");
-    // Editing the question brings a new suggestion; the edit applied to the old one only.
-    await message.fill("Wer ist heute Bundeskanzler?");
-    await ui(field).toHaveValue("Wer ist heute Bundeskanzler?");
-    await ui(search).toBeEnabled();
-    // Enter in the field does what the button does: it searches exactly the shown masked text.
-    // The chat message itself is the question as typed.
-    await field.fill("Bundeskanzler Österreich max.mustermann@example.com");
-    await ui(suggestion.locator("pre")).toHaveText(edited);
-    await field.press("Enter");
+    await noCard();
+    await ui(armed).toHaveCount(0);
+    // Armed with a text too short to search: it is sent without a search.
+    await tools.click();
+    await page.locator(".tools-menu").getByRole("button", { name: "Search the web", exact: true }).click();
+    await message.fill("x");
+    await send.click();
     await ui(page.locator("article.assistant")).toHaveCount(3);
-    await ui(page.getByRole("status").filter({ hasText: `Searched the web for: "${edited}"` })).toBeVisible();
-    expect(searches).toHaveLength(3);
-    expect(searches.at(-1)).toEqual({ kind: "search", value: edited });
-    // The next question starts from its own suggestion again.
-    await message.fill("Wer ist Bundeskanzler?");
-    await ui(field).toHaveValue("Wer ist Bundeskanzler?");
+    await ui.poll(() => page.evaluate(() => (window as unknown as { __sent: unknown[] }).__sent.length)).toBe(3);
+    expect(searches).toHaveLength(1);
+    await noCard();
 
     // Switched on: Send on a detected question searches the masked text first and shows it.
     await workspaceControl(page, "Research").click();
@@ -197,14 +158,15 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
       kind: "search",
       value: "Wie hoch ist der Mindestlohn? Mail [email address removed] Deutschland",
     });
+    await noCard();
     // A timeless question is not searched even with the setting on.
     await ui(page.locator("article.assistant")).toHaveCount(4);
     const before = searches.length;
     await message.fill("Explain recursion");
     await send.click();
     await ui(page.locator("article.assistant")).toHaveCount(5);
-    // The reply placeholder can appear before the send is recorded; wait for the sixth send.
-    await ui.poll(() => page.evaluate(() => (window as unknown as { __sent: unknown[] }).__sent.length)).toBe(6);
+    // The reply placeholder can appear before the send is recorded; wait for the fifth send.
+    await ui.poll(() => page.evaluate(() => (window as unknown as { __sent: unknown[] }).__sent.length)).toBe(5);
     expect(searches.length).toBe(before);
     expect(
       (await page.evaluate(() => (window as unknown as { __sent: { question: string; sources: number }[] }).__sent)).map(
@@ -212,13 +174,11 @@ it("suggests a one-tap search with the masked text, never searches on Send alone
       ),
     ).toEqual([
       ["Who is the current CEO of Siemens, mail max.mustermann@example.com", 0],
-      // Asked again after the one-tap check, now with the web result.
-      ["Who is the current CEO of Siemens, mail max.mustermann@example.com", 1],
-      ["Wer ist Bundeskanzler?", 2],
-      // Searched with the edited text; the question is sent as typed.
-      ["Wer ist heute Bundeskanzler?", 3],
-      ["Wie hoch ist der Mindestlohn? Mail max.mustermann@example.com", 4],
-      ["Explain recursion", 4],
+      // Searched with the masked text; the question is sent as typed.
+      ["Wer ist Bundeskanzler? Mail max.mustermann@example.com", 1],
+      ["x", 1],
+      ["Wie hoch ist der Mindestlohn? Mail max.mustermann@example.com", 2],
+      ["Explain recursion", 2],
     ]);
   } finally {
     await browser.close();

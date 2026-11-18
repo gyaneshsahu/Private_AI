@@ -215,10 +215,3 @@ export async function toAttachedImage(encoded: { blob: Blob; width: number; heig
   };
 }
 
-/**
- * The health-consent rule for a picture. The app cannot know what a picture shows, so while the
- * consent step is on and the user has not agreed, every picture is asked about ("ask"). A user who
- * agreed is not asked again. With the consent step off nothing changes.
- */
-export const imageConsentStep = (consentOn: boolean, choice: "accepted" | "declined" | undefined) =>
-  consentOn && choice !== "accepted" ? "ask" : "none";

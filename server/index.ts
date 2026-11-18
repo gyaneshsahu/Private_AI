@@ -56,7 +56,6 @@ const app = createApp({
   origin,
   accessKey: process.env.PRIVATEAI_ACCESS_KEY,
   // Local review of the draft health-consent step only; the production composition never sets it.
-  healthConsentDraft: process.env.PRIVATEAI_HEALTH_CONSENT_DRAFT === "1",
   providerDisclosureDraft: (["tinfoil", "privatemode"] as const).find(
     (p) => p === process.env.PRIVATEAI_PROVIDER_DISCLOSURE_DRAFT,
   ),

@@ -9,7 +9,6 @@ import type { Browser, BrowserContext, BrowserType, Locator, Page } from "@playw
 import { randomUUID } from "node:crypto";
 import { appText } from "../src/text/app";
 import { deepResearchText } from "../src/text/deep-research";
-import { WHEN_TO_SEARCH_TEXT } from "../src/when-to-search";
 import { installFakes, type AnswerName, type AuditConfig, type Fakes } from "./audit-fakes";
 
 type Lang = "en" | "de";
@@ -42,9 +41,6 @@ export async function dictionary(): Promise<Map<string, string[]>> {
   const map = new Map<string, string[]>();
   const add = (en: string, de: string) => map.set(en, [...new Set([...(map.get(en) ?? []), de])]);
   const files = readdirSync("src/text").filter((f) => f.endsWith(".ts")).map((f) => `src/text/${f}`);
-  // The health consent keeps its two languages in two exports.
-  const { HEALTH_CONSENT, HEALTH_CONSENT_DE } = await import("../shared/health-consent");
-  for (const key of ["title", "accept", "decline"] as const) add(HEALTH_CONSENT[key], HEALTH_CONSENT_DE[key]);
   for (const file of files) {
     const module = (await import(pathToFileURL(resolve(file)).href)) as Record<string, unknown>;
     for (const value of Object.values(module)) {
@@ -140,19 +136,13 @@ async function answer(c: Ctx, name: AnswerName, shotName = `answer-${name}`) {
 
 const STEPS: Step[] = [
   ["empty-new-chat", async (c) => { await c.fresh(); await c.shot("empty-new-chat"); }],
-  ["first-send-consent", async (c) => {
-    // The health consent draft is asked on the first send in a fresh browser (switch on only).
+  ["first-send", async (c) => {
+    // The first message in a fresh browser goes straight out: no consent step (owner, 18 November).
     await c.fresh();
     await c.label("Message CometRow").fill("Hello, a first question.");
     await c.click("Send message");
     await pause(c.page, 800);
-    await c.shot("first-send-consent");
-    const agree = vis(c.page.getByRole("button", { name: c.tr("I agree"), exact: true }));
-    if (await agree.isVisible()) {
-      const reached = await agree.click({ timeout: 3000 }).then(() => true, () => false);
-      if (!reached) await agree.dispatchEvent("click");
-      c.clicked.push(reached ? "I agree" : "I agree (NOT CLICKABLE: dispatched a click event)");
-    }
+    await c.shot("first-send");
   }],
   ["answer-markdown", (c) => answer(c, "markdown")],
   ["answer-code", (c) => answer(c, "code")],
@@ -260,7 +250,7 @@ const STEPS: Step[] = [
     await pause(c.page, 1500);
     await c.shot("image-question-crop");
     // The steps after cropping; each only if the app shows it.
-    for (const [name, screen] of [["Next: cover private parts", "image-question-cover"], ["No, it does not", "image-question-health"], ["Next: check the picture", "image-question-check"], ["Attach to my message", "image-question-attached"]]) {
+    for (const [name, screen] of [["Next: cover private parts", "image-question-cover"], ["Next: check the picture", "image-question-check"], ["Attach to my message", "image-question-attached"]]) {
       const button = vis(c.page.getByRole("button", { name: c.tr(name), exact: true }));
       if (!(await button.waitFor({ timeout: 4000 }).then(() => true, () => false))) {
         c.skip(`"${name}" not shown by this build (the picture needs no such step)`);
@@ -316,19 +306,17 @@ const STEPS: Step[] = [
     await c.send("What does the source say? audit:citations", undefined, true);
     await c.shot("answer-citations");
   }, "on"], // search needs a search key: off in a build without switches
-  ["search-suggestion", async (c) => {
-    // A time-sensitive question: the composer offers a one-tap search with the exact text.
-    const t = WHEN_TO_SEARCH_TEXT[c.germanOff() ? "en" : c.lang];
+  ["web-search", async (c) => {
+    // "+" > Search the web, then Send: the search runs at once with the masked text (no approval card,
+    // owner, 18 November), then the answer.
     await c.fresh();
+    await tools(c, "Search the web");
     await c.label("Message CometRow").fill(c.lang === "de" && !c.germanOff() ? "Wer ist aktuell Bundeskanzler?" : "Who is the current chancellor of Germany?");
-    await pause(c.page, 800);
-    await c.shot("search-suggestion");
-    await vis(c.page.getByRole("button", { name: t.button, exact: true })).click();
-    c.clicked.push(t.button);
-    const agree = vis(c.page.getByRole("button", { name: c.tr("I agree"), exact: true }));
-    if (await agree.waitFor({ timeout: 1500 }).then(() => true, () => false)) await agree.click(), c.clicked.push("I agree");
+    await pause(c.page, 500);
+    await c.shot("web-search-armed");
+    await c.click("Send message");
     await pause(c.page, 2500);
-    await c.shot("search-suggestion-answer");
+    await c.shot("web-search-answer");
   }, "on"],
   ["deep-research", async (c) => {
     await c.fresh();
@@ -680,13 +668,6 @@ export async function runTour(o: {
               const before = await c.page.locator("article.assistant").count();
               await c.label("Message CometRow").fill(text);
               await c.click("Send message");
-              const agree = vis(c.page.getByRole("button", { name: tr("I agree"), exact: true }));
-              if (await agree.waitFor({ timeout: 1500 }).then(() => true, () => false)) {
-                // German at 375 px pushed this button out of reach (16 November): note it and go on.
-                const reached = await agree.click({ timeout: 3000 }).then(() => true, () => false);
-                if (!reached) await agree.dispatchEvent("click");
-                c.clicked.push(reached ? "I agree" : "I agree (NOT CLICKABLE: dispatched a click event)");
-              }
               if (!wait) return;
               await c.page.waitForFunction((n) => document.querySelectorAll("article.assistant").length > n, before, { timeout: 30000 });
               // Finished when the Stop button is gone (or after 30 s).

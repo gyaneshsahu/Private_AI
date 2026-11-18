@@ -116,9 +116,10 @@ it("creates an Auto task from the CV template, runs it on the server, saves the 
     await panel.getByRole("button", { name: `${s.useTemplate}: ${s.templateJobsName}` }).click();
     await ui(form.getByRole("radio", { name: new RegExp(s.modeAuto) })).toBeChecked();
     await form.getByLabel(s.attach).setInputFiles({ name: "cv.txt", mimeType: "text/plain", buffer: Buffer.from(CV) });
-    await ui(form.getByText(s.documentTitle)).toBeVisible();
-    await form.getByLabel(s.autoConsent).check();
-    await form.getByLabel(s.documentConsent).check();
+    // The CV is read and attached on this device before the task is created.
+    await ui(form.getByText("cv.txt", { exact: false })).toBeVisible();
+    // No consent boxes (owner, 18 November): the acceptance at sign-up covers background tasks.
+    await ui(form.getByLabel(s.autoConsent)).toHaveCount(0);
     const posted = page.waitForResponse((r) => new URL(r.url()).pathname === "/api/background-tasks" && r.request().method() === "POST");
     await form.getByRole("button", { name: s.create }).click();
     expect((await posted).status()).toBe(200);
@@ -136,8 +137,7 @@ it("creates an Auto task from the CV template, runs it on the server, saves the 
     await form.getByLabel(s.name, { exact: true }).fill("Synthetic job search");
     await form.locator("summary", { hasText: s.advanced }).click();
     await form.getByLabel(s.notifyInApp).uncheck();
-    // The name still says CV and no new document is attached: the CV consent is asked and sent.
-    await form.getByLabel(s.cvConsent).check();
+    // The name still says CV: the record says sensitive, filled in by the app without a consent box (owner, 18 November).
     const patched = page.waitForResponse((r) => r.request().method() === "PATCH");
     await form.getByRole("button", { name: s.save }).click();
     expect((await patched).status()).toBe(200);

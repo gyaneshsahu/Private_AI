@@ -38,7 +38,6 @@ import {
 } from "./conversation";
 import { DOCUMENT_ACCEPT } from "./document-formats";
 import { describeKept, prepareSearchQuery } from "./identifier-masking";
-import { SearchSuggestionField } from "./SearchSuggestionField";
 import {
   editedSearchText,
   readAutoSearch,
@@ -47,13 +46,6 @@ import {
   searchSuggestion,
   WHEN_TO_SEARCH,
 } from "./when-to-search";
-import { healthConsentCopy } from "../shared/health-consent";
-import {
-  readHealthConsent,
-  writeHealthConsent,
-  type HealthConsentChoice,
-} from "./health-consent";
-import { HealthConsentPrompt } from "./HealthConsent";
 import {
   checkArithmetic,
 } from "./arithmetic/check";
@@ -62,7 +54,6 @@ import {
   asksBeforeSending,
   checkUncheckedFigures,
   checkNoOfficialSource,
-  GERMAN_RULES,
 } from "./german-rules";
 import { expireMessages, type DisappearAfter } from "./conversation";
 import { textFor, useLang } from "./i18n";
@@ -72,7 +63,6 @@ import { deepResearchText } from "./text/deep-research";
 import { RESEARCH_MIN_SOURCE_CHARACTERS, researchSourceRoom } from "../shared/deep-research";
 import { serverMessage } from "./server-messages";
 import { appText } from "./text/app";
-import { privacyText } from "../shared/privacy-copy";
 import { privacyPolicyText } from "../shared/privacy-policy";
 import { disclosedProvider } from "../shared/provider-disclosure";
 import { imprintText } from "../shared/legal-identity";
@@ -179,7 +169,6 @@ import {
   changeTasks,
   deleteServerCopies,
   DueStrip,
-  RunSearchChoice,
   runMode,
   ScheduleCard,
   useBackgroundResults,
@@ -225,8 +214,6 @@ const SyncIndicator = lazyNamed(() => import("./SyncScreens"), "SyncIndicator");
 const START_KEY = "cometrow.openInSecureMax";
 /** SS-14: the unsent message of a session that ended, for this tab only. */
 const EXPIRED_DRAFT_KEY = "cometrow.expired-draft";
-/** The one general notice was seen in this browser (owner, 17 November). */
-export const FIRST_START_KEY = "cometrow.first-start-notice";
 
 export function App() {
   const { lang } = useLang();
@@ -357,18 +344,8 @@ export function App() {
   const [status, setStatus] = useState<AppStatus>();
   const [input, setInput] = useState("");
   const [modeChoice, setModeChoice] = useState(readModeChoice);
-  // Draft health consent (shared/health-consent.ts): only while the server enables it.
-  const [healthConsent, setHealthConsent] = useState(readHealthConsent);
   // Another conversation, a new one, a lock: the waiting picture is dropped.
   useEffect(() => setAttachedImage(undefined), [conversation.id]);
-  const [consentPending, setConsentPending] = useState<{
-    base: Conversation;
-    text: string;
-    consumeDraft: boolean;
-    modeOverride?: AnswerMode;
-  }>();
-  const chooseHealthConsent = (choice: HealthConsentChoice) =>
-    setHealthConsent(writeHealthConsent(choice));
   const [notice, setNotice] = useState("");
   // A notice is a finished sentence in one language: changing the language closes it rather than leave it untranslated.
   useEffect(() => setNotice(""), [lang]);
@@ -421,26 +398,9 @@ export function App() {
   };
   const [searchSent, setSearchSent] = useState("");
   useEffect(() => setSearchSent(""), [conversation.id]);
-  // FE-07: "+" > "Search the web" arms the next Send (`searchNext`); that Send opens the approval
-  // card for exactly the typed text (`searchFor`). Nothing is searched until the card's button.
+  // "+" > "Search the web" arms the next Send (`searchNext`): that Send searches the web for the typed
+  // text (identifiers masked on this device) and answers. No approval card (owner, 18 November).
   const [searchNext, setSearchNext] = useState(false);
-  // The first-start notice is seen once per browser; without storage it shows until "Got it".
-  const [firstStartSeen, setFirstStartSeen] = useState(() => {
-    try {
-      return localStorage.getItem(FIRST_START_KEY) === "1";
-    } catch {
-      return false;
-    }
-  });
-  const seeFirstStart = () => {
-    setFirstStartSeen(true);
-    try {
-      localStorage.setItem(FIRST_START_KEY, "1");
-    } catch {
-      /* storage blocked: it stays away for this page */
-    }
-  };
-  const [searchFor, setSearchFor] = useState<string>();
   // FE-07: "+" > "Deep research" arms the next Send the same way (`researchNext`); that Send opens
   // the deep research card in the conversation for this text (`researchFor`), drawn into
   // `researchSlot`. Nothing is planned before its button, nothing searched before the approval.
@@ -449,16 +409,13 @@ export function App() {
   const [researchSlot, setResearchSlot] = useState<HTMLDivElement | null>(null);
   useEffect(() => {
     setSearchNext(false);
-    setSearchFor(undefined);
     setResearchNext(false);
     setResearchFor(undefined);
   }, [conversation.id]);
   const researchReady =
-    !!status?.research && !!status.search && !!status.inference.ready && !(status.healthConsentDraft && !healthConsent);
-  const forced = searchFor !== undefined && searchFor === input && !!input.trim();
+    !!status?.research && !!status.search && !!status.inference.ready;
   const suggestion = useMemo(() => {
     if (!status?.search || !status.inference.ready) return undefined;
-    if (forced) return { ...prepareSearchQuery(input.replace(/\s+/g, " ")), rules: false, again: false };
     if (input.trim()) {
       const draft = searchSuggestion(input);
       return draft && { ...draft, again: false };
@@ -483,40 +440,16 @@ export function App() {
       !!last.uncheckedFigures,
     );
     return again && { ...again, again: true };
-  }, [status?.search, status?.inference.ready, input, conversation, forced]);
-  // The user may edit the shown search text. The edit belongs to one suggestion for one draft:
-  // changing the question, sending or another conversation drops it. It is masked again here,
-  // and `shown.value` is what a tap sends. The automatic paths keep the unedited suggestion.
-  const [searchEdit, setSearchEdit] = useState<{ for: string; text: string }>();
-  useEffect(
-    () => setSearchEdit(undefined),
-    [conversation.id, conversation.messages.length],
-  );
-  const editFor = `${input}\n${suggestion?.value}`;
-  const searchText =
-    searchEdit?.for === editFor ? searchEdit.text : suggestion?.value ?? "";
-  const shown = suggestion && {
-    ...suggestion,
-    ...(searchEdit?.for === editFor
-      ? editedSearchText(searchEdit.text, suggestion.removed)
-      : // Any typed text can be searched from the menu: its length is checked as an edited text is.
-        { problem: forced ? editedSearchText(suggestion.value).problem : undefined }),
-  };
-  // Search first for German rules (docs/german-rules-20261113.md): Send shows the choice for
-  // exactly this draft; editing the draft or Escape drops it, and nothing is remembered.
+  }, [status?.search, status?.inference.ready, input, conversation]);
+  // German rules, fees and deadlines (docs/german-rules-20261113.md): a question where the app used to ask
+  // "search first?". Now nothing asks: with the setting below it is searched, otherwise sent as it is.
   const askFirst = asksBeforeSending(
     suggestion,
     autoSearch,
     selectedSources(conversation).some((source) => !!source.url),
   );
-  // "Always search for rules, fees and deadlines": where Send would ask, it searches instead.
+  // "Always search for rules, fees and deadlines".
   const autoRules = autoSearchRules && askFirst;
-  const [choiceFor, setChoiceFor] = useState<string>();
-  const choosing = askFirst && choiceFor === input;
-  const choiceButton = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    if (choosing || forced) choiceButton.current?.focus();
-  }, [choosing, forced]);
   const sn = searchNextText[lang];
   const [proposalNote, setProposalNote] = useState<{
     note: string;
@@ -682,7 +615,6 @@ export function App() {
   const scheduledTasks = useScheduledVault(heldVault, heldReady);
   const [scheduledOpen, setScheduledOpen] = useState<{ draft?: TaskDraft }>();
   const [scheduleCard, setScheduleCard] = useState<{ text: string; found: DetectedSchedule }>();
-  const [runSearch, setRunSearch] = useState<ScheduledTask>();
   const background = useBackgroundResults({
     vault: vault.current,
     unlocked,
@@ -834,7 +766,6 @@ export function App() {
       setCalculation("");
       setPassphrase("");
       // A locked vault shows no scheduled task, not even a waiting run choice.
-      setRunSearch(undefined);
       setScheduledOpen(undefined);
       setNotice(textFor(appText).vaultChangedElsewhere);
       if (secureVault()) void refreshRef.current();
@@ -1128,7 +1059,7 @@ export function App() {
   // Ask the last question again, optionally in a chosen mode for this one request.
   function askAgain(modeOverride?: AnswerMode) {
     const retry = lastQuestion();
-    if (retry) void send(retry.base, retry.text, false, false, modeOverride);
+    if (retry) void send(retry.base, retry.text, false, modeOverride);
   }
   // Edit and send in one step (docs/chat-feature-gaps-20261114.md, package D): the old sequence is
   // kept as a branch, then the edited text goes through send() like any message. The edit box
@@ -1243,7 +1174,6 @@ export function App() {
     base = conversation,
     text = input,
     consumeDraft = true,
-    consentChosen = false,
     // The user's own one-off choice ("Answer again with Thinking"); it wins over Auto.
     modeOverride?: AnswerMode,
     // Deep research's answer request: the note kept on the answer and the run's own stop.
@@ -1263,11 +1193,6 @@ export function App() {
     const image = consumeDraft && status?.images ? (attachedImage ?? boardImage) : undefined;
     if (image && !text.trim()) return fail(imageText[lang].needQuestion);
     if (busy || !status?.inference.ready || !text.trim()) return;
-    if (status.healthConsentDraft && !healthConsent && !consentChosen) {
-      // Ask once before the first message; the message waits and is not sent yet.
-      setConsentPending({ base, text, consumeDraft, modeOverride });
-      return;
-    }
     // Project files synced from another device are downloaded before a question in their project;
     // without them the question goes only if the user says so.
     if (base.projectId && syncOn && syncFiles.enabled) {
@@ -1563,18 +1488,9 @@ export function App() {
   const liveVoiceOn =
     liveVoiceEnabled() && readAloudEnabled() && !!status?.voice && !!status.inference.ready;
   async function liveSend(text: string, signal: AbortSignal) {
-    const found = status?.search ? searchSuggestion(text) : undefined;
-    const web = selectedSources(conversationNow.current).some((source) => !!source.url);
-    if (found && (autoSearch ? !web : asksBeforeSending(found, false, web))) {
-      setInput(text);
-      setChoiceFor(text);
-      return "choice" as const;
-    }
-    const consent = !!status?.healthConsentDraft && !healthConsent;
-    const sent = send(conversationNow.current, text, false, false, liveMode);
+    const sent = send(conversationNow.current, text, false, liveMode);
     const running = controller.current;
     signal.addEventListener("abort", () => running?.abort(), { once: true });
-    if (consent) return "consent" as const;
     return (await sent) ? ("answered" as const) : ("failed" as const);
   }
   // Deep research (docs/deep-research-20261114.md): the plan request. One message to the Fast
@@ -1777,7 +1693,7 @@ export function App() {
     const outcome = await research({ kind: "search", value }, how);
     if (!outcome || (outcome === "failed" && how === "tap")) return;
     if (outcome === "failed") {
-      setSearchSent(WHEN_TO_SEARCH.automaticFailed);      return send(base, text, draft, false, asked?.mode);
+      setSearchSent(WHEN_TO_SEARCH.automaticFailed);      return send(base, text, draft, asked?.mode);
     }
     setSearchSent(outcome.note);
     return send(
@@ -1790,7 +1706,6 @@ export function App() {
         : base,
       text,
       draft,
-      false,
       asked?.mode,
     );
   }
@@ -1804,13 +1719,11 @@ export function App() {
       setResearchFor(input.trim());
       return;
     }
-    // FE-07: armed from the "+" menu, Send shows the approval card for this text (also with
-    // automatic search on: the menu is a request to search, the card is the approval).
-    // While that card is open, Send changes nothing: the card's buttons decide.
-    if (forced || (searchNext && status?.search && status.inference.ready && !picture && !busy)) {
+    // Armed from the "+" menu: this message searches the web first (masked here), then answers.
+    if (searchNext && status?.search && status.inference.ready && !picture && !busy) {
       setSearchNext(false);
-      setSearchFor(input);
-      return;
+      const query = prepareSearchQuery(input.replace(/\s+/g, " "));
+      if (!editedSearchText(query.value).problem) return void searchThenAnswer(query.value, "tap");
     }
     // "Remember that ...": ask to save it as a memory. Nothing is sent unless the user says so.
     const wanted =
@@ -1828,12 +1741,11 @@ export function App() {
     else if (picture && status?.images) void send();
     else if ((autoSearch || autoRules) && suggestion)
       void searchThenAnswer(suggestion.value, "auto");
-    else if (askFirst) setChoiceFor(input);
     else void send();
   }
   // "Run now" of a scheduled task: a new conversation with the instruction as its first message,
-  // through send() like any message. A task with an approved search text asks first, as the
-  // search suggestion does. Only an answered run moves the task on; a refusal leaves it due.
+  // through send() like any message. A task with a search text searches it first, without asking (owner,
+  // 18 November). Only an answered run moves the task on; a refusal leaves it due.
   async function runTask(task: ScheduledTask, search?: boolean) {
     if (busy || !status?.inference.ready) return;
     if (search === undefined) {
@@ -1842,13 +1754,13 @@ export function App() {
       setTab("Conversation");
       setScheduledOpen(undefined);
       setNavigationOpen(false);
-      if (task.useSearch && task.searchText && status.search) return setRunSearch(task);
+      // The search text was set when the task was made: it runs without asking again (owner, 18 November).
+      search = !!(task.useSearch && task.searchText && status.search);
     }
-    setRunSearch(undefined);
     const asked = { base: emptyConversation(), text: task.instruction, mode: runMode(task, status) };
     const run = search
       ? searchThenAnswer(task.searchText!, "tap", false, asked)
-      : send(asked.base, asked.text, false, false, asked.mode);
+      : send(asked.base, asked.text, false, asked.mode);
     void run.then((answered) => {
       if (answered && heldVault?.unlocked) changeTasks(heldVault, markRun(task.id)).catch(() => {});
     });
@@ -2452,7 +2364,6 @@ export function App() {
         },
         question,
         false,
-        false,
         "thinking",
         { note, abort },
       )),
@@ -2833,8 +2744,6 @@ export function App() {
             secureChats={saved.filter((c) => !inMax(c.id))}
             onDeleteAllSecure={deleteAllSecure}
             busy={!!busy}
-            healthConsent={healthConsent}
-            onHealthConsent={chooseHealthConsent}
             memoryVault={heldVault}
             memoryReady={heldReady}
             memoryStorage={storageOf(heldMode)}
@@ -3202,7 +3111,7 @@ export function App() {
                   ↓
                 </button>
               )}
-              {searchNext && !forced && !busy && (
+              {searchNext && !busy && (
                 <div className="notice composer-note search-next">
                   <span>{sn.armed}</span>
                   <button type="button" className="text-button" onClick={() => setSearchNext(false)}>
@@ -3218,129 +3127,11 @@ export function App() {
                   </button>
                 </div>
               )}
-              {suggestion && shown && (forced || (!autoSearch && !(autoRules && !choosing))) && !busy && researchFor === undefined && (
-                <div
-                  className="notice composer-note search-suggestion"
-                  role="region"
-                  aria-label={t.searchSuggestion}
-                  onKeyDown={(event) => {
-                    if (!(choosing || forced) || event.key !== "Escape") return;
-                    event.preventDefault();
-                    setChoiceFor(undefined);
-                    setSearchFor(undefined);
-                    document.getElementById("message-input")?.focus();
-                  }}
-                >
-                  <p>
-                    <strong>
-                      {suggestion.again
-                        ? WHEN_TO_SEARCH.againHeading
-                        : forced
-                          ? sn.heading
-                          : choosing
-                          ? GERMAN_RULES.choiceHeading
-                          : suggestion.rules
-                            ? GERMAN_RULES.heading
-                            : WHEN_TO_SEARCH.heading}
-                    </strong>{" "}
-                    <span id="search-text-label">{WHEN_TO_SEARCH.label}</span>
-                  </p>
-                  <SearchSuggestionField
-                    labelledBy="search-text-label"
-                    text={searchText}
-                    sent={shown.value}
-                    problem={shown.problem}
-                    onChange={(text) => setSearchEdit({ for: editFor, text })}
-                    onEnter={() => choiceButton.current?.click()}
-                  />
-                  {shown.note && (
-                    <p className="muted">{shown.note}</p>
-                  )}
-                  {shown.warning && (
-                    <p className="warning">{WHEN_TO_SEARCH.warning}</p>
-                  )}
-                  <p className="muted">
-                    {suggestion.again
-                      ? WHEN_TO_SEARCH.againExplanation
-                      : askFirst || forced
-                        ? GERMAN_RULES.explanation
-                        : WHEN_TO_SEARCH.explanation}
-                  </p>
-                  <div className="row">
-                    <button
-                      ref={choiceButton}
-                      type="button"
-                      className="primary"
-                      disabled={!!shown.problem}
-                      onClick={() => {
-                        setChoiceFor(undefined);
-                        setSearchFor(undefined);
-                        setSearchNext(false); // this search is the one the menu asked for
-                        void searchThenAnswer(
-                          shown.value,
-                          "tap",
-                          suggestion.again,
-                        );
-                      }}
-                    >
-                      {suggestion.again
-                        ? WHEN_TO_SEARCH.againButton
-                        : WHEN_TO_SEARCH.button}
-                    </button>
-                    {(choosing || forced) && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setChoiceFor(undefined);
-                          setSearchFor(undefined);
-                          void send();
-                        }}
-                      >
-                        {forced ? sn.without : GERMAN_RULES.without}
-                      </button>
-                    )}
-                  </div>
-                  {choosing && (
-                    <label className="muted">
-                      <input
-                        type="checkbox"
-                        checked={autoSearchRules}
-                        onChange={(e) => chooseAutoSearchRules(e.target.checked)}
-                      />{" "}
-                      {WHEN_TO_SEARCH.rulesSettingLabel}.{" "}
-                      {WHEN_TO_SEARCH.rulesSettingNote}
-                    </label>
-                  )}
-                </div>
-              )}
               {searchSent && (
                 <p className="notice composer-note" role="status">
                   {searchSent}
                 </p>
               )}
-              {status?.healthConsentDraft && consentPending && (
-                <HealthConsentPrompt
-                  onChoose={(choice) => {
-                    const pending = consentPending;
-                    chooseHealthConsent(choice);
-                    setConsentPending(undefined);
-                    if (pending)
-                      void send(
-                        pending.base,
-                        pending.text,
-                        pending.consumeDraft,
-                        true,
-                        pending.modeOverride,
-                      );
-                  }}
-                />
-              )}
-              {status?.healthConsentDraft &&
-                healthConsent?.choice === "declined" && (
-                  <p className="notice composer-note" role="note">
-                    {healthConsentCopy(lang).declinedNote}
-                  </p>
-                )}
               {boardGoes && (
                 <p className="board-chip" role="status">
                   <Icon name="whiteboard" />
@@ -3398,40 +3189,7 @@ export function App() {
                   }}
                 />
               )}
-              {runSearch && (
-                <RunSearchChoice
-                  task={runSearch}
-                  onSearch={() => runTask(runSearch, true)}
-                  onWithout={() => runTask(runSearch, false)}
-                  onClose={() => setRunSearch(undefined)}
-                />
-              )}
               {noticeLine}
-              {/* The one general notice (owner, 17 November): once, at first start, never again. */}
-              {/* One decision at a time: the notice waits while the health question is open. */}
-              {!firstStartSeen && !consentPending && (
-                <div className="first-start-notice" role="note">
-                  <p>{t.firstStart}</p>
-                  <div className="first-start-actions">
-                    <button
-                      type="button"
-                      className="text-button"
-                      onClick={() =>
-                        setSource({
-                          id: "privacy-policy",
-                          title: t.privacyPolicy,
-                          text: privacyPolicyText(disclosedProvider(status), lang),
-                        })
-                      }
-                    >
-                      {t.firstStartPrivacy}
-                    </button>
-                    <button type="button" className="primary" onClick={seeFirstStart}>
-                      {t.gotIt}
-                    </button>
-                  </div>
-                </div>
-              )}
               <ConnectionBanner />
               {!status?.inference.ready && connectionStatus}
               {/* Added files sit just above the message box, as chips (first-user pass, 18 November). */}
@@ -3486,7 +3244,7 @@ export function App() {
                         busy: !!busy,
                         text: input,
                         ready: !!status?.inference.ready && online,
-                        waiting: choosing || forced || !!consentPending || researchFor !== undefined,
+                        waiting: researchFor !== undefined,
                       })
                     )
                       event.currentTarget.form?.requestSubmit();
@@ -4206,8 +3964,9 @@ export function App() {
                     : id === "trial-safety"
                       ? { id, title: t.safetyTitle, text: t.safetyText }
                       : id === "privacy"
-                        ? // The statement for the provider in use (Privatemode's is a D17 draft).
-                          { id, title: t.privacyBoundariesTitle, text: privacyText(disclosedProvider(status), lang) }
+                        ? // One source for privacy details (owner, 18 November): the Privacy Policy, which also
+                          // corrects the older statement's sentences that are not true in Secure mode.
+                          { id, title: t.privacyBoundariesTitle, text: privacyPolicyText(disclosedProvider(status), lang) }
                         : { id, title: t.guideTitle, text: tm("settings").guideText },
               )
             }
@@ -4539,9 +4298,6 @@ export function App() {
         <ImageQuestion
           maxBytes={status.images.maxBytes}
           thinkingChosen={modeChoice === "thinking"}
-          consentOn={!!status.healthConsentDraft}
-          consentChoice={healthConsent?.choice}
-          onConsent={chooseHealthConsent}
           onAttach={setAttachedImage}
           onClose={() => {
             setImageOpen(false);

@@ -7,8 +7,6 @@ import { privacySummary } from "../shared/privacy-copy";
 import { AccountUsage } from "./AccountUsage";
 import { DataControls } from "./DataControls";
 import { memoryEnabled } from "./device-features";
-import type { HealthConsentChoice, HealthConsentRecord } from "./health-consent";
-import { HealthConsentSetting } from "./HealthConsent";
 import { germanEnabled, LanguageSwitch, useLang } from "./i18n";
 import { Icon } from "./Icon";
 import { MemorySettings } from "./MemorySettings";
@@ -41,8 +39,6 @@ export function SettingsBody({
   secureChats,
   onDeleteAllSecure,
   busy,
-  healthConsent,
-  onHealthConsent,
   memoryVault,
   memoryReady,
   memoryStorage,
@@ -73,8 +69,6 @@ export function SettingsBody({
   secureChats: Conversation[];
   onDeleteAllSecure: () => Promise<void>;
   busy: boolean;
-  healthConsent: HealthConsentRecord | undefined;
-  onHealthConsent: (choice: HealthConsentChoice) => void;
   memoryVault: Vault | null;
   memoryReady: boolean;
   memoryStorage: Storage;
@@ -180,7 +174,6 @@ export function SettingsBody({
                 </button>
               </p>
             )}
-            {status?.healthConsentDraft && <HealthConsentSetting record={healthConsent} onChoose={onHealthConsent} />}
             <p>{tm.footerNote}</p>
             {status?.inference.ready === false && <p className="muted">{t.privateChatGated}</p>}
           </>

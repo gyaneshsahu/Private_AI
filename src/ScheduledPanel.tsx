@@ -279,54 +279,6 @@ export function ScheduleCard({
   );
 }
 
-/** "Run now" of a task with an approved search text: the exact text, and the user's tap. */
-export function RunSearchChoice({
-  task,
-  onSearch,
-  onWithout,
-  onClose,
-}: {
-  task: ScheduledTask;
-  onSearch: () => void;
-  onWithout: () => void;
-  onClose: () => void;
-}) {
-  const { lang } = useLang();
-  const t = scheduledText[lang];
-  const button = useRef<HTMLButtonElement>(null);
-  useEffect(() => button.current?.focus(), []);
-  return (
-    <div
-      className="notice composer-note schedule-card"
-      role="region"
-      aria-label={t.runSearchTitle}
-      onKeyDown={(event) => {
-        if (event.key !== "Escape") return;
-        event.preventDefault();
-        onClose();
-      }}
-    >
-      <p>
-        <strong>{t.runSearchTitle}</strong> {task.name}
-      </p>
-      <p>
-        {t.runSearchLabel} <q className="schedule-search-text">{task.searchText}</q>
-      </p>
-      <div className="row">
-        <button ref={button} type="button" className="primary" onClick={onSearch}>
-          {t.runSearch}
-        </button>
-        <button type="button" onClick={onWithout}>
-          {t.runWithout}
-        </button>
-        <button type="button" className="icon-button" aria-label={t.closeCard} onClick={onClose}>
-          <Icon name="close" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
 /**
  * Background results (Auto mode): fetched on unlock and every five minutes while the app is open,
  * each finished one saved into the vault as a new conversation and then acknowledged, so the

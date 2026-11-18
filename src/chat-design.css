@@ -3752,21 +3752,7 @@
   overflow-wrap: break-word;
   word-break: normal;
 }
-/* Health consent and the in-chat search suggestion: stacked, never squeezed into columns. */
-.chat-design .notice:is(.health-consent, .search-suggestion) {
-  flex-direction: column;
-  align-items: stretch;
-}
-.chat-design .notice:is(.health-consent, .search-suggestion) > * {
-  min-width: 0;
-  margin-left: 0;
-}
-.chat-design .notice.search-suggestion textarea {
-  width: 100%;
-}
-.chat-design .notice.health-consent .row {
-  flex-wrap: wrap;
-}
+
 /* Composer toolbar (markup in src/App.tsx, checked on da864bf): wraps instead of pushing Send or Stop out while recording or streaming. */
 .chat-design .composer-footer {
   flex-wrap: wrap;
@@ -4009,8 +3995,7 @@
   min-height: 24px;
 }
 @media (max-width: 760px) {
-  .chat-design .search-next button,
-  .chat-design .search-suggestion .row button {
+  .chat-design .search-next button {
     min-height: 44px;
   }
 }
@@ -5206,12 +5191,7 @@
 .chat-design .photo-video {
   border-radius: 12px;
 }
-.chat-design .health-consent {
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
-  box-shadow: var(--shadow-1);
-}
+
 @media (max-width: 760px) {
   .chat-design .photo-actions button,
   .chat-design .photo-dialog > .row button {
@@ -5563,53 +5543,6 @@
 }
 
 /* The one general notice at first start (owner, 17 November): a calm card above the message box. */
-.chat-design .first-start-notice {
-  width: 100%;
-  max-width: 740px;
-  margin: 0 auto 10px;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
-  box-shadow: var(--shadow-1);
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  animation: message-in var(--slow) var(--ease);
-  /* On a short screen with large text it never covers the chat: it scrolls inside itself. */
-  max-height: 34dvh;
-  overflow-y: auto;
-}
-.chat-design .first-start-notice p {
-  margin: 0;
-  flex: 1;
-  font-size: 13.5px;
-  line-height: 1.5;
-  color: var(--ink2);
-}
-.chat-design .first-start-actions {
-  display: flex;
-  gap: 4px;
-  flex: none;
-}
-.chat-design .first-start-actions button {
-  min-height: 36px;
-  border-radius: 999px;
-  padding: 0 14px;
-  font-size: 13.5px;
-}
-@media (max-width: 650px) {
-  .chat-design .first-start-notice {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .chat-design .first-start-actions {
-    justify-content: flex-end;
-  }
-  .chat-design .first-start-actions button {
-    min-height: 44px;
-  }
-}
 
 /* ---------- Image creation (17 November): the describe dialog and the image card ---------- */
 .chat-design dialog.create-image-dialog {
@@ -5789,16 +5722,7 @@
   height: 18px;
   color: var(--accent);
 }
-/* Next to an open panel the chat is narrow: the first-start notice's buttons go under its text. */
-@media (min-width: 1100px) {
-  .chat-design.side-open .first-start-notice {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .chat-design.side-open .first-start-actions {
-    justify-content: flex-end;
-  }
-}
+
 /* Voice conversation: its three settings behind one small "Options" row (owner, 18 November). */
 .chat-design .live-voice-options {
   margin-top: 4px;
@@ -5821,40 +5745,7 @@
     min-height: 44px;
   }
 }
-/* First-user pass (18 November): the health question as calm as the other dialogs: compact text, the two
-   buttons together on the right, the primary one a pill. */
-.chat-design .notice.health-consent {
-  padding: 16px 18px;
-  gap: 0;
-}
-.chat-design .notice.health-consent h3 {
-  margin: 0 0 8px;
-  font-size: 15px;
-}
-.chat-design .notice.health-consent p {
-  margin: 0 0 8px;
-  font-size: 13.5px;
-  line-height: 1.5;
-  color: var(--ink2);
-}
-.chat-design .notice.health-consent .row {
-  display: flex;
-  flex-direction: row-reverse;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-}
-.chat-design .notice.health-consent .row .primary {
-  border-radius: 999px;
-  min-height: 36px;
-  padding: 0 18px;
-}
-@media (max-width: 760px) {
-  .chat-design .notice.health-consent .row .primary {
-    min-height: 44px;
-  }
-}
+
 /* Added files: small chips just above the message box, like the whiteboard chip (first-user pass). */
 .chat-design .composer-dock .composer-attachments {
   display: flex;
@@ -5929,45 +5820,7 @@
   display: inline-grid;
   text-align: left;
 }
-/* The search approval card laid out like the other cards: left-aligned, the question as a heading over a
-   small field label, the two buttons together on the right (first-user pass). Texts unchanged. */
-.chat-design .notice.search-suggestion {
-  padding: 16px 18px;
-  gap: 8px;
-  text-align: left;
-}
-.chat-design .notice.search-suggestion > p:first-child strong {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 15px;
-  color: var(--ink);
-}
-.chat-design .notice.search-suggestion > p:first-child span {
-  font-size: 13px;
-  color: var(--ink2);
-}
-.chat-design .notice.search-suggestion p {
-  margin: 0;
-}
-.chat-design .notice.search-suggestion .row {
-  display: flex;
-  flex-direction: row-reverse;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-}
-.chat-design .notice.search-suggestion .row .primary {
-  border-radius: 999px;
-  min-height: 36px;
-  padding: 0 18px;
-}
-@media (max-width: 760px) {
-  .chat-design .notice.search-suggestion .row .primary {
-    min-height: 44px;
-  }
-}
+
 /* Phones: the starter chips swipe sideways; a soft fade at the right edge shows there is more, and end
    padding lets the last chip scroll clear of it (first-user pass). */
 @media (max-width: 650px) {
@@ -6063,4 +5916,15 @@
   background: var(--ink);
   color: var(--bg);
   border-color: var(--ink);
+}
+/* Sign-in: the one acceptance line under the sign-in options (owner, 18 November). */
+.account-shell .account-agree {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink2);
+}
+.account-shell .account-agree a {
+  color: var(--accent);
 }

@@ -247,10 +247,6 @@ export const appText = defineText({
       `Messages older than ${after} are deleted from this device while the chat is open or when you open it again, including from its saved copy.`,
     operatorNoticeTitle: "Notice from CometRow:",
     dismissNotice: "Dismiss notice",
-    // The one general notice, shown once at first start; one text everywhere (owner, 18 November; for the legal read).
-    firstStart:
-      "CometRow protects your chats with sealed, encrypted processing in the EU. A few features, such as web search and image creation, use trusted partners instead, because they rarely involve personal details. Details are in Privacy.",
-    firstStartPrivacy: "Privacy",
     gotIt: "Got it",
     stop: "Stop",
     importStatus: (status: ImportStatus) => ({ queued: "waiting", reading: "reading …", added: "added", failed: "could not be read", cancelled: "cancelled" })[status],
@@ -635,9 +631,6 @@ export const appText = defineText({
       `Nachrichten, die älter als ${after} sind, werden von diesem Gerät gelöscht, solange der Chat geöffnet ist oder wenn Sie ihn wieder öffnen, auch aus der gespeicherten Kopie.`,
     operatorNoticeTitle: "Hinweis von CometRow:",
     dismissNotice: "Hinweis schließen",
-    firstStart:
-      "CometRow schützt Ihre Chats mit versiegelter, verschlüsselter Verarbeitung in der EU. Einige Funktionen, etwa die Websuche und die Bilderstellung, nutzen stattdessen vertrauenswürdige Partner, weil dabei selten persönliche Angaben vorkommen. Einzelheiten unter Datenschutz.",
-    firstStartPrivacy: "Datenschutz",
     gotIt: "Verstanden",
     stop: "Stoppen",
     importStatus: (status: ImportStatus) => ({ queued: "wartet", reading: "wird gelesen …", added: "hinzugefügt", failed: "konnte nicht gelesen werden", cancelled: "abgebrochen" })[status],

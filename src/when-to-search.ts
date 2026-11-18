@@ -147,7 +147,7 @@ export const WHEN_TO_SEARCH_TEXT = textBlock({
     warning:
       "This search text may still contain personal details, such as a name or a long number, that cannot be recognised automatically. The search provider will see exactly this text. Approve only if that is fine.",
     researchIntro:
-      "Nothing from your conversation goes into a search unless you approve the exact text here, tap a search suggestion that shows it, or switch on automatic search below.",
+      "Nothing from your conversation goes into a search unless you search the exact text here, choose Search the web in the + menu, or switch on automatic search below.",
     settingLabel: "Search automatically when a question needs current information",
     settingHelp:
       "Off unless you switch it on. When it is on, a question that looks time-sensitive or is about rules, fees or deadlines is searched before it is answered, without asking each time. Recognised personal details are removed from the search text on this device first, and the exact text sent is shown under the message box. This setting is kept only on this device.",
@@ -155,7 +155,7 @@ export const WHEN_TO_SEARCH_TEXT = textBlock({
     rulesSettingLabel: "Always search for rules, fees and deadlines",
     rulesSettingNote: "Kept only on this device. You can switch it off in Research.",
     rulesSettingHelp:
-      "Off unless you switch it on. When it is on, a question about rules, fees or deadlines is searched before it is answered, without asking each time; other questions still ask. Recognised personal details are removed from the search text on this device first, and the exact text sent is shown under the message box. This setting is kept only on this device.",
+      "Off unless you switch it on. When it is on, a question about rules, fees or deadlines is searched before it is answered, without asking each time; other questions are sent without a search. Recognised personal details are removed from the search text on this device first, and the exact text sent is shown under the message box. This setting is kept only on this device.",
     searched: (query: string) => `Searched the web for: "${query}"`,
     searchedAutomatically: (query: string) =>
       `Searched the web automatically for: "${query}"`,
@@ -178,14 +178,14 @@ export const WHEN_TO_SEARCH_TEXT = textBlock({
     warning:
       "Dieser Suchtext kann noch persönliche Angaben enthalten, etwa einen Namen oder eine lange Nummer, die nicht automatisch erkannt werden. Der Suchanbieter sieht genau diesen Text. Geben Sie ihn nur frei, wenn das für Sie in Ordnung ist.",
     researchIntro:
-      "Aus Ihrer Unterhaltung geht nichts in eine Suche, außer Sie geben hier den genauen Text frei, tippen auf einen Suchvorschlag, der ihn zeigt, oder schalten unten die automatische Suche ein.",
+      "Aus Ihrer Unterhaltung geht nichts in eine Suche, außer Sie suchen hier den genauen Text, wählen im +-Menü „Im Web suchen“ oder schalten unten die automatische Suche ein.",
     settingLabel: "Automatisch suchen, wenn eine Frage aktuelle Informationen braucht",
     settingHelp:
       "Aus, bis Sie es einschalten. Wenn es eingeschaltet ist, wird eine Frage, die zeitabhängig wirkt oder Regeln, Gebühren oder Fristen betrifft, vor der Antwort gesucht, ohne jedes Mal zu fragen. Erkannte persönliche Angaben werden zuerst auf diesem Gerät aus dem Suchtext entfernt, und der genau gesendete Text wird unter dem Eingabefeld angezeigt. Diese Einstellung wird nur auf diesem Gerät gespeichert.",
     rulesSettingLabel: "Bei Regeln, Gebühren und Fristen immer suchen",
     rulesSettingNote: "Nur auf diesem Gerät gespeichert. Sie können es unter Recherche ausschalten.",
     rulesSettingHelp:
-      "Aus, bis Sie es einschalten. Wenn es eingeschaltet ist, wird eine Frage zu Regeln, Gebühren oder Fristen vor der Antwort gesucht, ohne jedes Mal zu fragen; bei anderen Fragen wird weiterhin gefragt. Erkannte persönliche Angaben werden zuerst auf diesem Gerät aus dem Suchtext entfernt, und der genau gesendete Text wird unter dem Eingabefeld angezeigt. Diese Einstellung wird nur auf diesem Gerät gespeichert.",
+      "Aus, bis Sie es einschalten. Wenn es eingeschaltet ist, wird eine Frage zu Regeln, Gebühren oder Fristen vor der Antwort gesucht, ohne jedes Mal zu fragen; andere Fragen werden ohne Suche gesendet. Erkannte persönliche Angaben werden zuerst auf diesem Gerät aus dem Suchtext entfernt, und der genau gesendete Text wird unter dem Eingabefeld angezeigt. Diese Einstellung wird nur auf diesem Gerät gespeichert.",
     searched: (query: string) => `Im Web gesucht nach: „${query}“`,
     searchedAutomatically: (query: string) =>
       `Automatisch im Web gesucht nach: „${query}“`,

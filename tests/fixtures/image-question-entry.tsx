@@ -7,7 +7,6 @@ import { LangProvider } from "../../src/i18n";
 import { ImageQuestion, ImageRedactor, AttachedImageNote } from "../../src/ImageQuestion";
 import { encodeForSending, sendSize, toAttachedImage, type AttachedImage } from "../../src/image-upload";
 import { decodePhoto, renderPhoto, NO_CROP, type Rect } from "../../src/photo-capture";
-import type { HealthConsentChoice } from "../../src/health-consent";
 import "../../src/styles.css";
 import "../../src/chat-design.css";
 
@@ -81,23 +80,16 @@ function Fixture() {
   const [attached, setAttached] = useState<AttachedImage>();
   const [open, setOpen] = useState(true);
   const [notice, setNotice] = useState("");
-  const [consent, setConsent] = useState<HealthConsentChoice | undefined>(
-    (query.get("choice") as HealthConsentChoice | null) ?? undefined,
-  );
   React.useEffect(() => void syntheticPng().then(setFile), []);
   return (
     <main className="chat-design" style={{ padding: 12 }}>
       <p data-testid="notice">{notice}</p>
-      <p data-testid="consent">{consent ?? "none"}</p>
       {attached && <AttachedImageNote image={attached} onRemove={() => setAttached(undefined)} />}
       {query.get("view") === "flow"
         ? open && (
             <ImageQuestion
               maxBytes={280_000}
               thinkingChosen={query.has("thinking")}
-              consentOn={query.has("consent")}
-              consentChoice={consent}
-              onConsent={setConsent}
               onAttach={setAttached}
               onClose={() => setOpen(false)}
               notify={setNotice}

@@ -52,8 +52,6 @@ async function send(page: Page, text: string) {
   const before = await page.locator("article.assistant").count();
   await page.getByLabel("Message CometRow", { exact: true }).fill(text);
   await page.getByRole("button", { name: "Send message", exact: true }).click();
-  const agree = page.getByRole("button", { name: "I agree", exact: true });
-  if (await agree.waitFor({ timeout: 1500 }).then(() => true, () => false)) await agree.click();
   await page.waitForFunction((n) => document.querySelectorAll("article.assistant").length > n, before, { timeout: 30_000 });
   await page.getByRole("button", { name: "Stop response", exact: true }).waitFor({ state: "hidden", timeout: 30_000 });
 }
@@ -127,8 +125,6 @@ describe.each([375, 1280])("chat screen and message box at %i px", (width) => {
       // While the answer streams, Stop is a round square in the same place.
       await box.fill("SYNTHETIC what is two plus two?");
       await sendButton.click();
-      const agree = page.getByRole("button", { name: "I agree", exact: true });
-      if (await agree.waitFor({ timeout: 1500 }).then(() => true, () => false)) await agree.click();
       await page.waitForFunction(() => document.querySelectorAll("article.assistant").length > 0, undefined, { timeout: 30_000 });
       await page.getByRole("button", { name: "Stop response", exact: true }).waitFor({ state: "hidden", timeout: 30_000 });
       await ui(page.locator("article.assistant").last()).not.toBeEmpty();
@@ -695,20 +691,15 @@ it("whiteboard in the dark theme", async () => {
   }
 });
 
-it("first-start notice: one text naming web search and image creation; Privacy opens; Got it hides it for good (EN and DE)", async () => {
-  const { context, page } = await open(1280);
+it("a new user sees no notice, consent card or prompt: the first message goes straight out (owner, 18 November)", async () => {
+  const { context, page, fakes } = await open(1280);
   try {
-    const notice = page.locator(".first-start-notice");
-    await ui(notice).toHaveText(/CometRow protects your chats with sealed, encrypted processing in the EU\. A few features, such as web search and image creation, use trusted partners instead, because they rarely involve personal details\. Details are in Privacy\./);
-    await notice.getByRole("button", { name: "Got it", exact: true }).click();
-    await ui(notice).toBeHidden();
-    await page.reload();
-    await page.locator(".app-shell").waitFor({ state: "visible", timeout: 30_000 });
-    await ui(page.locator(".first-start-notice")).toHaveCount(0);
-    await page.evaluate(() => { localStorage.removeItem("cometrow.first-start-notice"); localStorage.setItem("cometrow.language", "de"); });
-    await page.reload();
-    await page.locator(".app-shell").waitFor({ state: "visible", timeout: 30_000 });
-    await ui(page.locator(".first-start-notice")).toContainText("Einige Funktionen, etwa die Websuche und die Bilderstellung, nutzen stattdessen vertrauenswürdige Partner");
+    await ui(page.locator(".first-start-notice, .health-consent, .search-suggestion")).toHaveCount(0);
+    await send(page, "SYNTHETIC I have a headache and a fever, what can I do?");
+    expect(fakes.log.replies.at(-1)!.request.question).toContain("headache");
+    // Nothing asked before or after: no consent card, no "search first?" card, no warning line.
+    await ui(page.locator(".first-start-notice, .health-consent, .search-suggestion, [role=dialog]")).toHaveCount(0);
+    await ui(page.getByRole("button", { name: /I agree|Got it|Search and answer/ })).toHaveCount(0);
   } finally {
     await context.close();
   }
