@@ -2,16 +2,16 @@
   "note": "SHA-256 of each English and German legal text. tests/legal-text-pairs.test.ts fails when a text no longer matches; check the other language, then re-record with node --import tsx scripts/record-legal-pairs.ts.",
   "texts": {
     "policy": {
-      "en": "48e12c817e428acf5c36571113ae4b174461900c7d003d2cfe83ddd466478bca",
-      "de": "1cc933ec849332a4442c6b81b5ce42c67a892f55481f00e64389babb54b41c90"
+      "en": "26708937ccb662b7f8fe91b1849699e7d15a7cb08f9ebab2130781c6defc78e6",
+      "de": "ebc1b1b9ec326444668a97d1a0546afdd0396301adb2fdbc460763b83055551e"
     },
     "policy.tinfoil": {
-      "en": "a80a72cafe9d8ce08204d9f836d353b4d7e2237869dceecfe166b8227f204642",
-      "de": "4fd6787f9cc9f5eda18bcf90514be98751e52c1946fb9c617a02770b274e3957"
+      "en": "feaa67dd6dd974b2a6505ee25b2f6bf745ffa1e7514ebf9625a2e4bdb36e3168",
+      "de": "76f2550537a1eaefda38f24931fbe63e9281cb9536b225adb97d36a636ba898d"
     },
     "policy.privatemode": {
-      "en": "a9d24593cca135dd788310231fe313384b26b36dda7696b00b864dd2930d5c45",
-      "de": "69f90c50199c3256aaf749045a20c592c5cd05746bb4e94526500a70d2e8c916"
+      "en": "644f0d1385ba5ff13cfbcf66dfb62ddebc50052a1a4ff560a3493ba431bb4ed8",
+      "de": "f9ee5cc149ceaf9c21b55aadf4de693901439a4d52e901e1305d691a83b29c5d"
     },
     "privacyCopy.tinfoil": {
       "en": "5125ab1c1d598a59dbed22fba15b96b4edc0ddbe0766673d5274cc4036d7bd25",
@@ -38,8 +38,8 @@
       "de": "c2069b32c43fdd4896fe21946215c5d5e5ddac4069c117aba192724ac855b5bb"
     },
     "terms": {
-      "en": "6c87988f91af8ace0b15d6574b9770f0e647f1e7b509c1cfed73ca249a42acb9",
-      "de": "1473fa17cdfbe87f992cf7381791499728b79f1b230a73168bd75d9aa820782b"
+      "en": "7633af2c2e3c99fcbe42ab3515f2bfadf7784ed375ff190dddabd817b89ae822",
+      "de": "47d08a75d06309658754ec9802b334f22c0b4da5d0f1c53f1012ea73d80d2a4c"
     },
     "acceptableUse": {
       "en": "0d07ea137655f022409b962ba62ff32870557e3416a717bd523292c2bc5a7f27",

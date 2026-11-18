@@ -36,9 +36,55 @@ For each feature: what is sent; to whom and where; how long it is kept; who can 
 • Request records: which account asked, when, how many times and which model, never content; at Render in Frankfurt; 90 days, then deleted; readable by CometRow.
 • Emails to our support address: as long as needed to answer [to confirm: email provider and retention].
 
+## Transfers outside the EU
+
+Most of CometRow runs in the EU: our servers and database are at Render in Frankfurt, Germany. Some partners may process data outside the EU and the European Economic Area (EEA). Where they do, the GDPR allows it only on a recognised basis: an adequacy decision of the European Commission (Art. 45 GDPR), for example for US companies certified under the EU-US Data Privacy Framework, or standard contractual clauses (Art. 46 GDPR).
+• AI answers: Privatemode (Edgeless Systems GmbH, Germany) processes your messages only in the EU and the European Economic Area; there is no transfer.
+• Web search and research: Brave Search, USA. Only the search text you approved is sent, after identifiers were replaced on your device, and it is sent by our server, not by your browser. Brave states it keeps search records for up to 90 days. [To confirm: Brave's transfer basis (Data Privacy Framework certification or standard contractual clauses); Brave states that its data processing agreement does not cover search queries.]
+• Sign-in with Google: Google, a US company, handles the sign-in on its own page. [To confirm: which Google company is responsible for users in the EU, where it processes the sign-in, and on which transfer basis.]
+• Hosting: Render's network edge is run by Cloudflare, a US company; Cloudflare may process connection data such as your IP address there, possibly outside the EU. [To confirm: Render's and Cloudflare's transfer bases and sub-processors.]
+• Image creation (off unless switched on): all candidates offer processing in the EU (Microsoft Foundry, EU Data Zone; Google Vertex AI, EU region; Black Forest Labs, EU endpoint). [To confirm before the feature is switched on: whether any data leaves the EU.]
+• Project files, when file storage is switched on: Hetzner, Germany; no transfer.
+• Emails to our support address: [to confirm: the email provider and where it processes email].
+You can ask for a copy of the safeguards that apply to a transfer at privacy@cometrow.com. [For the legal read: whether this section meets Art. 13(1)(f) GDPR.]
+
 ## Secure, Secure Max and Incognito
 
 Secure is the default. Your saved chats, memories, projects and files are stored encrypted on our servers, with a key CometRow creates for your account and keeps locked under a master key that is not in the database. This lets you use your chats on every device without a passphrase. Because CometRow holds the key, we could technically open this content; no part of the service does so, and our systems log no content. Secure Max is optional: content is encrypted on your devices with a key that only your devices and your recovery key hold. We cannot open it. If you lose your passphrase and your recovery key, nobody can recover it. Incognito chats are not saved anywhere. None of the three modes changes what is sent to the secure server for an answer, or the request records we keep. When your account is deleted, its key and the encrypted copies are deleted with it. [To confirm: whether, and for how long, database backups keep copies.]
+
+## How long we keep data
+
+In short; details per feature are in “Where your data goes, feature by feature” and in “What we cannot delete for you”.
+• Your account (email address, Google account identifier, sign-in methods): until you close it. After closure, sign-in stops at once, and the account is deleted after a grace period, so that a mistaken closure can be undone. [To confirm: the grace period; the deletion is built but not yet switched on, and 30 days are proposed.] A closure receipt with an internal identifier and the times, without your email address, stays as proof of the deletion. [To confirm: for how long.]
+• Sign-in sessions: 1 hour after last use.
+• Saved chats, memories, projects and files: until you delete them or your account is deleted. When you delete a synced chat, an encrypted deletion marker without readable content stays on our server for at least 90 days, so that your other devices learn of the deletion. [To confirm: older markers are removed at the account's next change, not on a fixed day.]
+• Request records (no content): 90 days, then deleted. Records that still count in an allowance period that has not ended are deleted once it ends. When an account is deleted, its request records stay until their own deletion date, without the email address.
+• The record of what you accepted at sign-in: deleted with your account. [For the legal read: see “How you agree to this policy”.]
+• What you send for an answer, a search or an image: CometRow does not keep it after the answer; partners keep what their own policies say (see “Transfers outside the EU” and “What we cannot delete for you”).
+• Database backups: [To confirm: whether backups exist, and how long copies outlive a deletion; our records disagree.]
+
+## How we protect your data
+
+• In transit: connections to CometRow are encrypted (TLS).
+• For an answer: your message is encrypted in your browser for the AI provider's sealed server, and your browser checks that server's proof of the software it runs (attestation). Our own servers pass the message on without being able to read it. What this check covers, and what it does not, is in the sections on the secure server.
+• Stored: in Secure, saved content is encrypted with a key we hold for your account and keep locked under a master key that is not in the database. In Secure Max, content is encrypted on your devices with a key that only they and your recovery key hold.
+• Before text leaves your device for an answer, a search or an image: identifiers such as email addresses, phone numbers, bank and card numbers are masked on your device; names, other details in your own words and anything you say aloud are not.
+• On our side: restricted database rights, logs without content, request limits per account, and sign-in only for invited people.
+No system is free of risk, and we cannot rule out every attack. If we learn of a personal data breach that is likely to put you at high risk, we tell you as the GDPR requires (Art. 33 and 34 GDPR). [For the legal read: the wording of this sentence.]
+
+## Cookies and storage on your device
+
+In your browser, CometRow stores only what it needs to work:
+• Sign-in cookies: when you sign in, our server sets a session cookie (privateai-account.session_token, with the prefix __Secure- on the live site) that keeps you signed in; scripts cannot read it, and the session ends 1 hour after last use. A short-lived cookie may also be set while you sign in. [To confirm on the live service: the exact list of cookies.] When you choose “Continue with Google”, Google's page sets Google's own cookies under Google's policies.
+• Settings in local storage (localStorage): your language, the appearance, the answer mode, the automatic-search switches, voice conversation settings, whether you have seen the Secure Max confirmation and a few similar notes, whether the app should open in Secure Max (stored with your account identifier), and the identifiers (not the names) of your devices that sync has seen.
+• Saved chats and keys in IndexedDB: the encrypted store for Secure and Secure Max and, when sync is switched on, this device's key and its sealed token. The language files for reading text in photos also stay in this browser's storage after the first use.
+• Session storage (sessionStorage): if your session expires while you are typing, the unsent text is kept for this browser tab until you sign in again, then removed; it is not encrypted there. Never for Incognito chats and never in Secure Max.
+No analytics, advertising or tracking cookies, and no third-party scripts: the app loads its code only from our own server (our Content Security Policy allows scripts only from CometRow itself). Because we store only what is strictly necessary for the service you asked for, we do not ask for consent to cookies and show no cookie banner (§ 25 (2) Nr. 2 TDDDG). [For the legal read: whether each item above is strictly necessary, in particular the language files and the notes that a hint was seen.]
+To remove it: sign out, which ends the session and deletes the Secure copy on this device. Or use “Delete everything on this device” in Saved, or “Delete all chats” in Data controls. Or clear this site's data in your browser settings, which removes all of it, settings included.
+
+## Children
+
+CometRow is for adults. You must be 18 or older to use it (Terms, “Who may use CometRow”), and the alpha is open only to people we invited personally. We do not knowingly process children's data. If we learn that an account belongs to someone under 18, we close it, delete its data on our servers, and ask the person to delete what is saved on their device. [To confirm: there is no tested procedure for this deletion yet; it is done by hand.] If you think a child is using CometRow, write to privacy@cometrow.com. [For the legal read: whether accepting the Terms is a sufficient confirmation of age (Art. 8 GDPR).]
 
 ## How you agree to this policy
 

@@ -68,31 +68,43 @@ function sectionsEn(): TermsSection[] {
       text: "What you write and upload stays yours. You allow us only what is needed to run the features you use, for example to send your message to the AI provider for an answer and to store your saved chats in the mode you chose. We do not use your content for advertising or to train any AI. You may use the answers and images you create, at your own responsibility. You must have the right to use what you upload. [For the legal read: rights in AI answers and created images, and the image provider's terms.]",
     },
     {
-      heading: "9. Allowances and limits",
+      heading: "9. Our rights in CometRow",
+      text: "The CometRow software, its design, the name CometRow and its logo belong to us or to those who licensed them to us. During the alpha you get a personal, non-transferable, non-exclusive and revocable right to use CometRow for yourself, within these terms. You may not copy, sell, rent out or pass on the app, or take it apart to build a competing service, unless the law allows it. Open-source parts of CometRow are under their own licences, which take precedence for those parts. [For the legal read: the scope of the right of use, and § 69d and § 69e UrhG.]",
+    },
+    {
+      heading: "10. Complaints about content",
+      text: `If you believe that content in CometRow infringes your rights or the law, for example an answer or a created image that someone shows you, tell us at ${id.supportContactEmail}. Please say what the content is, where you saw it, why you think it is unlawful, and how we can reach you. We look at every report. [To confirm: how reports are handled and answered, and in what time.] CometRow has no public area and no sharing feature: chats belong to the account that created them, and in Secure Max we cannot read them, so we may not be able to check a report ourselves. [For the legal read: whether the notice-and-action duties of the Digital Services Act (Art. 16 and 17 DSA) apply to a small, invite-only service without public content, and whether a point of contact under Art. 11 and 12 DSA is needed.]`,
+    },
+    {
+      heading: "11. Allowances and limits",
       text: "Your account has an allowance: a number of requests in a period, with a daily cap, and separate daily limits for voice, pictures and image creation. Some requests count more than one, for example Thinking answers; the app shows how much is left. When an allowance is used up, you wait until it renews. We may change allowances and limits during the alpha; the current numbers are shown in the app.",
     },
     {
-      heading: "10. Secure and Secure Max",
+      heading: "12. Secure and Secure Max",
       text: "Secure is the default: your saved chats are encrypted with a key we hold for your account, so you can use them on every device. Secure Max is optional: only your devices hold the key. If you lose your passphrase and your recovery key, your Secure Max content is lost for good, and we cannot recover it. Keep your recovery key safe.",
     },
     {
-      heading: "11. Availability and changes",
+      heading: "13. Availability and changes",
       text: "We provide CometRow as it is during the alpha. We do not promise that it is always available or free of errors. We may change, pause or end features, models, partners and the alpha itself, and we tell you about important changes in the app. When these terms change in substance, their version changes and your next sign-in asks you to accept the new version. [For the legal read: notice period and how users can object to changed terms (§ 308 Nr. 5 BGB).]",
     },
     {
-      heading: "12. Ending your account",
+      heading: "14. Ending your account",
       text: `You can close your account at any time on the account page, or by writing to ${id.supportContactEmail}. We then delete it as described in the Privacy Policy. We may end your access if you break these terms, or when the alpha ends; where we can, we tell you in advance so you can download your data. [To confirm: closing on the account page needs an email code, which is not available while email sign-in is off.] [For the legal read: notice periods.]`,
     },
     {
-      heading: "13. Liability",
+      heading: "15. Liability",
       text: "[For the legal read: this whole section, given that the alpha is free.] We are liable without limit for intent and gross negligence, for injury to life, body or health, and under the Product Liability Act. For slight negligence we are liable only for breach of essential duties, limited to the foreseeable, typical damage. Nothing in these terms limits your statutory rights as a consumer.",
     },
     {
-      heading: "14. Law",
+      heading: "16. Law",
       text: "German law applies. If you are a consumer, this does not take away the protection of the mandatory law of the country where you live. [For the legal read: venue, and the statement on consumer dispute resolution (§ 36 VSBG), which the imprint also covers.]",
     },
     {
-      heading: "15. Contact",
+      heading: "17. General terms",
+      text: "If a clause of these terms is invalid, the rest stays in force; the statutory rules take the place of the invalid clause (§ 306 BGB). When these terms change in substance, they get a new version and date; you accept the new version by continuing at your next sign-in, and we record it as described in section 2. If you do not agree, do not continue; you can close your account instead (section 14). Until your next sign-in, the version you accepted applies. These terms exist in German and English. [For the legal read: whether the German version governs if the two differ.]",
+    },
+    {
+      heading: "18. Contact",
       text: `Support: ${id.supportContactEmail}. Privacy requests: ${id.privacyContactEmail}. Security incidents: ${id.incidentContactEmail}.`,
     },
   ];
@@ -149,31 +161,43 @@ function sectionsDe(): TermsSection[] {
       text: "Was Sie schreiben und hochladen, bleibt Ihres. Sie erlauben uns nur, was nötig ist, um die Funktionen zu betreiben, die Sie nutzen, zum Beispiel Ihre Nachricht für eine Antwort an den KI-Anbieter zu senden und Ihre gespeicherten Chats in dem von Ihnen gewählten Modus zu speichern. Wir nutzen Ihre Inhalte nicht für Werbung und nicht zum Training einer KI. Sie dürfen die Antworten und Bilder, die Sie erstellen, auf eigene Verantwortung verwenden. Sie müssen das Recht haben, das zu verwenden, was Sie hochladen. [Für die rechtliche Prüfung: Rechte an KI-Antworten und erstellten Bildern sowie die Bedingungen des Bildanbieters.]",
     },
     {
-      heading: "9. Kontingente und Grenzen",
+      heading: "9. Unsere Rechte an CometRow",
+      text: "Die Software CometRow, ihre Gestaltung, der Name CometRow und sein Logo gehören uns oder denen, die sie uns lizenziert haben. Während der Alpha erhalten Sie ein persönliches, nicht übertragbares, nicht ausschließliches und widerrufliches Recht, CometRow im Rahmen dieser Bedingungen für sich zu nutzen. Sie dürfen die App nicht kopieren, verkaufen, vermieten oder weitergeben und sie nicht zerlegen, um einen konkurrierenden Dienst zu bauen, soweit das Gesetz es nicht erlaubt. Open-Source-Teile von CometRow stehen unter ihren eigenen Lizenzen, die für diese Teile Vorrang haben. [Für die rechtliche Prüfung: Umfang des Nutzungsrechts sowie § 69d und § 69e UrhG.]",
+    },
+    {
+      heading: "10. Beschwerden über Inhalte",
+      text: `Wenn Sie glauben, dass ein Inhalt in CometRow Ihre Rechte oder das Gesetz verletzt, zum Beispiel eine Antwort oder ein erstelltes Bild, das Ihnen jemand zeigt, melden Sie es uns unter ${id.supportContactEmail}. Nennen Sie bitte, um welchen Inhalt es geht, wo Sie ihn gesehen haben, warum Sie ihn für rechtswidrig halten und wie wir Sie erreichen. Wir sehen uns jede Meldung an. [Zu bestätigen: wie Meldungen bearbeitet und beantwortet werden, und in welcher Zeit.] CometRow hat keinen öffentlichen Bereich und keine Funktion zum Teilen: Chats gehören zu dem Konto, das sie erstellt hat, und in Secure Max können wir sie nicht lesen; deshalb können wir eine Meldung vielleicht nicht selbst prüfen. [Für die rechtliche Prüfung: ob die Melde- und Abhilfepflichten des Gesetzes über digitale Dienste (Art. 16 und 17 DSA) für einen kleinen Dienst nur auf Einladung ohne öffentliche Inhalte gelten und ob eine Kontaktstelle nach Art. 11 und 12 DSA nötig ist.]`,
+    },
+    {
+      heading: "11. Kontingente und Grenzen",
       text: "Ihr Konto hat ein Kontingent: eine Zahl von Anfragen in einem Zeitraum, mit einer Tagesgrenze, und eigene Tagesgrenzen für Sprache, Bilder und die Bilderstellung. Manche Anfragen zählen mehr als eine, zum Beispiel Antworten mit Nachdenken; die App zeigt, wie viel übrig ist. Wenn ein Kontingent aufgebraucht ist, warten Sie, bis es sich erneuert. Wir können Kontingente und Grenzen während der Alpha ändern; die aktuellen Zahlen zeigt die App.",
     },
     {
-      heading: "10. Secure und Secure Max",
+      heading: "12. Secure und Secure Max",
       text: "Secure ist der Standard: Ihre gespeicherten Chats werden mit einem Schlüssel verschlüsselt, den wir für Ihr Konto halten, damit Sie sie auf jedem Gerät nutzen können. Secure Max ist freiwillig: Nur Ihre Geräte haben den Schlüssel. Wenn Sie Ihre Passphrase und Ihren Wiederherstellungsschlüssel verlieren, sind Ihre Inhalte in Secure Max endgültig verloren, und wir können sie nicht wiederherstellen. Bewahren Sie Ihren Wiederherstellungsschlüssel sicher auf.",
     },
     {
-      heading: "11. Verfügbarkeit und Änderungen",
+      heading: "13. Verfügbarkeit und Änderungen",
       text: "Wir stellen CometRow während der Alpha so bereit, wie es ist. Wir versprechen nicht, dass es immer verfügbar oder fehlerfrei ist. Wir können Funktionen, Modelle, Partner und die Alpha selbst ändern, pausieren oder beenden, und wir informieren Sie in der App über wichtige Änderungen. Wenn sich diese Bedingungen wesentlich ändern, ändert sich ihre Version, und Ihre nächste Anmeldung bittet Sie, die neue Version anzunehmen. [Für die rechtliche Prüfung: Ankündigungsfrist und wie Nutzer geänderten Bedingungen widersprechen können (§ 308 Nr. 5 BGB).]",
     },
     {
-      heading: "12. Ihr Konto beenden",
+      heading: "14. Ihr Konto beenden",
       text: `Sie können Ihr Konto jederzeit auf der Kontoseite schließen oder indem Sie an ${id.supportContactEmail} schreiben. Wir löschen es dann, wie in der Datenschutzerklärung beschrieben. Wir können Ihren Zugang beenden, wenn Sie gegen diese Bedingungen verstoßen oder wenn die Alpha endet; wo wir können, sagen wir es Ihnen vorher, damit Sie Ihre Daten herunterladen können. [Zu bestätigen: Das Schließen auf der Kontoseite braucht einen E-Mail-Code, der nicht verfügbar ist, solange die Anmeldung per E-Mail ausgeschaltet ist.] [Für die rechtliche Prüfung: Fristen.]`,
     },
     {
-      heading: "13. Haftung",
+      heading: "15. Haftung",
       text: "[Für die rechtliche Prüfung: dieser ganze Abschnitt, da die Alpha kostenlos ist.] Wir haften unbeschränkt bei Vorsatz und grober Fahrlässigkeit, bei Verletzung von Leben, Körper oder Gesundheit und nach dem Produkthaftungsgesetz. Bei leichter Fahrlässigkeit haften wir nur für die Verletzung wesentlicher Pflichten, begrenzt auf den vorhersehbaren, typischen Schaden. Nichts in diesen Bedingungen schränkt Ihre gesetzlichen Rechte als Verbraucher ein.",
     },
     {
-      heading: "14. Recht",
+      heading: "16. Recht",
       text: "Es gilt deutsches Recht. Wenn Sie Verbraucher sind, entzieht Ihnen das nicht den Schutz der zwingenden Vorschriften des Landes, in dem Sie leben. [Für die rechtliche Prüfung: Gerichtsstand und die Erklärung zur Verbraucherstreitbeilegung (§ 36 VSBG), die auch im Impressum steht.]",
     },
     {
-      heading: "15. Kontakt",
+      heading: "17. Allgemeines",
+      text: "Ist eine Bestimmung dieser Bedingungen unwirksam, bleiben die übrigen wirksam; an die Stelle der unwirksamen Bestimmung tritt die gesetzliche Regelung (§ 306 BGB). Wenn sich diese Bedingungen wesentlich ändern, erhalten sie eine neue Version und ein neues Datum; Sie nehmen die neue Version an, indem Sie bei Ihrer nächsten Anmeldung fortfahren, und wir speichern das wie in Abschnitt 2 beschrieben. Wenn Sie nicht einverstanden sind, fahren Sie nicht fort; Sie können stattdessen Ihr Konto schließen (Abschnitt 14). Bis zu Ihrer nächsten Anmeldung gilt die Version, die Sie angenommen haben. Diese Bedingungen gibt es auf Deutsch und auf Englisch. [Für die rechtliche Prüfung: ob bei Abweichungen die deutsche Fassung maßgeblich ist.]",
+    },
+    {
+      heading: "18. Kontakt",
       text: `Support: ${id.supportContactEmail}. Datenschutzanfragen: ${id.privacyContactEmail}. Sicherheitsvorfälle: ${id.incidentContactEmail}.`,
     },
   ];
