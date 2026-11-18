@@ -6,9 +6,12 @@ Owner's correction, 17 November: show exactly one general notice, once, at first
 
 Shown once per browser above the message box, with "Privacy" (opens the privacy policy) and "Got it". Never again in that browser (`localStorage` key `cometrow.first-start-notice`; with storage blocked it shows until "Got it" on each visit).
 
-- EN: "CometRow protects your chats with sealed, encrypted processing in the EU. A few features, such as {web search | image creation}, use a trusted partner instead, because they rarely involve personal details. Details are in Privacy."
-- DE: "CometRow schützt Ihre Chats mit versiegelter, verschlüsselter Verarbeitung in der EU. Einige Funktionen, etwa {die Websuche | die Bilderstellung}, nutzen stattdessen einen vertrauenswürdigen Partner, weil dabei selten persönliche Angaben vorkommen. Einzelheiten unter Datenschutz."
-- The example is "image creation" only when that switch is on; otherwise "web search", so the sentence is always true.
+One text everywhere (owner, 18 November), whatever features a build has switched on:
+
+- EN: "CometRow protects your chats with sealed, encrypted processing in the EU. A few features, such as web search and image creation, use trusted partners instead, because they rarely involve personal details. Details are in Privacy."
+- DE: "CometRow schützt Ihre Chats mit versiegelter, verschlüsselter Verarbeitung in der EU. Einige Funktionen, etwa die Websuche und die Bilderstellung, nutzen stattdessen vertrauenswürdige Partner, weil dabei selten persönliche Angaben vorkommen. Einzelheiten unter Datenschutz."
+- **For the legal read, new point:** the text names web search and image creation as examples even in a build where one of them is switched off (image creation is off by default and has no provider yet). Is an example of a feature the user cannot use acceptable ("such as" / "etwa"), or must the text follow the switches?
+- Earlier version (17 November): the example was "image creation" only when that switch was on, otherwise "web search".
 - **Legal read:** whether this one notice, plus the privacy page, is enough information at first use (GDPR Art. 13), and whether "sealed" needs a word of explanation.
 
 ## Kept (each shown once, at the moment it matters)

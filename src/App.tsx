@@ -3394,7 +3394,7 @@ export function App() {
               {/* The one general notice (owner, 17 November): once, at first start, never again. */}
               {!firstStartSeen && (
                 <div className="first-start-notice" role="note">
-                  <p>{t.firstStart(status?.imageCreation ? t.firstStartImages : t.firstStartSearch)}</p>
+                  <p>{t.firstStart}</p>
                   <div className="first-start-actions">
                     <button
                       type="button"

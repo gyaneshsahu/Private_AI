@@ -28,7 +28,7 @@ The owner allowed changing his first suggestion (FLUX by Black Forest Labs) if s
 - **Masking:** the browser applies CometRow's identifier masking to the description before sending. If it found personal details (an email, a phone number, an IBAN...), they are replaced by placeholders and a quiet line under the result says so. There is no popup.
 - **Allowance:** own daily limit, one number for now (`IMAGE_DAILY`, default 3); limits per plan (proposal: free 3, Plus 10, Pro 30 a day) need the plan to be known at this route, a small follow-up once plans are live. Metered in the usage ledger as feature `image-create`, one record per attempt that reached the provider, priced from the price list. Clear messages: daily limit reached; spend cap or provider limit reached; prompt refused.
 - **In the chat:** "Create image" in the "+" menu and a small "Create image" button under suitable answers (an answer that describes something visual and is short). The user types a description; the result appears as an image card in the conversation with Download and Regenerate. It is saved with the conversation in the encrypted vault like other content. The image keeps any provenance metadata the provider adds (the bytes are not re-encoded).
-- **Notices:** none in the feature. A small neutral info icon next to the result opens the privacy page. The first-start notice names image creation as a partner feature when the switch is on.
+- **Notices:** none in the feature. A small neutral info icon next to the result opens the privacy page. The first-start notice names web search and image creation as partner features, with one text in every build (owner, 18 November; for the legal read).
 
 ## Cost
 
