@@ -312,6 +312,9 @@ export const appText = defineText({
     captionTemporary: "Temporary chat · Not saved",
     captionIncognito: "Incognito chat · Not saved",
     captionAi: "· Answers come from an AI, not a person · Check important answers.",
+    // In-context links under the message box, as other AI chats have them (owner's reference, 18 November).
+    captionTerms: "Terms",
+    captionPrivacy: "Privacy",
 
     // Included context dialog
     closeContext: "Close context",
@@ -697,6 +700,8 @@ export const appText = defineText({
     captionIncognito: "Inkognito-Chat · Nicht gespeichert",
     captionAi:
       "· Antworten stammen von einer KI, nicht von einem Menschen · Prüfen Sie wichtige Antworten.",
+    captionTerms: "Nutzungsbedingungen",
+    captionPrivacy: "Datenschutz",
 
     closeContext: "Kontext schließen",
     attachmentsNote:

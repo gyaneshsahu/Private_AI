@@ -3497,7 +3497,9 @@ export function App() {
                   : unlocked
                     ? t.captionVault
                     : t.captionTemporary}{" "}
-                {t.captionAi}
+                {t.captionAi}{" "}
+                · <a href={`/terms?lang=${lang}`} target="_blank" rel="noopener">{t.captionTerms}</a> ·{" "}
+                <a href={`/privacy?lang=${lang}`} target="_blank" rel="noopener">{t.captionPrivacy}</a>
                 <span className="composer-hint"> · {ct.enterHint}</span>
               </p>
             </div>

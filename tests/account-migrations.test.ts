@@ -20,7 +20,7 @@ it.skipIf(!enabled)(
       await db.pool.query("DROP TYPE preserved_type");
       expect(
         (await applyAccountMigrations(db.pool, { requireEmpty: true })).applied,
-      ).toHaveLength(19);
+      ).toHaveLength(20);
       await expect(
         applyAccountMigrations(db.pool, { requireEmpty: true }),
       ).rejects.toThrow("empty schema");
@@ -37,7 +37,7 @@ it.skipIf(!enabled)(
     try {
       const plan = await planAccountMigrations(db.pool);
       expect(plan.applied).toEqual([]);
-      expect(plan.pending).toHaveLength(19);
+      expect(plan.pending).toHaveLength(20);
       expect(
         (
           await db.pool.query(

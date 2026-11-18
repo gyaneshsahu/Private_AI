@@ -5928,3 +5928,9 @@
 .account-shell .account-agree a {
   color: var(--accent);
 }
+/* Terms and Privacy links in the line under the message box: quiet, like the line itself. */
+.chat-design .composer-caption a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
