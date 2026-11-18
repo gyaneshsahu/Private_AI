@@ -332,7 +332,7 @@ Stop and send the findings log whenever something blocks you.
 | 19.4 | Delete a chat on the phone | Gone on the PC after reload | |
 | 19.5 | Make a change, go offline at once, then sign out | It warns: "Some changes have not reached your account yet…" | |
 | 19.6 | After sign-out, look in the browser (sign in as B on the same browser) | Nothing of A's is visible | |
-| 19.7 | Settings and Help texts in Secure | They never say "we never can" read it or "only on this device". Help, "Your privacy boundaries", currently has the old sentence "We keep no copy of your conversations…": **known wrong in Secure**, already in the findings log | |
+| 19.7 | Settings and Help texts in Secure | They never say "we never can" read it or "only on this device". Help, "Your privacy boundaries", section "What we can see": four short lines; saved chats are readable by CometRow, Secure Max chats are not | |
 
 ## 20. Usage, allowance and limits
 
@@ -490,8 +490,8 @@ Severity: **1** blocks testing or loses data; **2** a feature does not work; **3
 
 | # | Test | Device and browser | What you did | What you saw | What you expected | Kind | Sev |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 19.7 | all | Help, Your privacy boundaries | "We keep no copy of your conversations; saved history lives only on your device…" | A Secure-mode text (CometRow holds the key in Secure) | Text | 3 |
+| 1 | | | | | | | |
 | 2 | | | | | | | |
 | 3 | | | | | | | |
 
-Row 1 is already known: the agent found it while writing this list. The sentence is in `shared/privacy-copy.ts`; changing it needs your approval of the new wording.
+The privacy statement was rewritten for Secure on 18 November (`docs/help-privacy-wording-draft-20261118.md`); test 19.7 checks it.
