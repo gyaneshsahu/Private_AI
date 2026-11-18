@@ -1,0 +1,28 @@
+# Dependabot (18 November 2026). GitHub reads this file from the default branch (main) only, so it
+# takes effect once this branch is merged. It opens pull requests; nothing merges on its own, and
+# every update still has to pass the Validate workflow and the rules in docs/dependency-exceptions.md.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    groups:
+      # Minor and patch updates in one pull request a week; major updates one by one.
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Europe/Berlin
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: Europe/Berlin

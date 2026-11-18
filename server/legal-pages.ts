@@ -4,6 +4,7 @@
 import { createHash } from "node:crypto";
 import express from "express";
 import { privacyPolicyText } from "../shared/privacy-policy";
+import { LEGAL_IDENTITY } from "../shared/legal-identity";
 import type { DisclosedProvider } from "../shared/provider-disclosure";
 import { termsText } from "../shared/terms-of-use";
 
@@ -36,6 +37,17 @@ export function legalHtml(text: string): string {
   return `<h1>${escape(title)}</h1>${body.join("")}`;
 }
 
+/** RFC 9116. Expires is fixed on purpose: renew it (and this date) before it passes; a test fails when it has. */
+export const SECURITY_TXT_EXPIRES = "2027-11-17T23:00:00.000Z";
+export const securityTxt = [
+  `Contact: mailto:${LEGAL_IDENTITY.incidentContactEmail}`,
+  `Expires: ${SECURITY_TXT_EXPIRES}`,
+  "Preferred-Languages: en, de",
+  "Canonical: https://app.cometrow.com/.well-known/security.txt",
+  "Policy: https://app.cometrow.com/terms",
+  "",
+].join("\n");
+
 export function legalPages(provider: () => DisclosedProvider | undefined) {
   const router = express.Router();
   const page = (kind: "terms" | "privacy") => (req: express.Request, res: express.Response) => {
@@ -61,5 +73,8 @@ export function legalPages(provider: () => DisclosedProvider | undefined) {
   };
   router.get("/terms", page("terms"));
   router.get("/privacy", page("privacy"));
+  router.get("/.well-known/security.txt", (_req, res) => {
+    res.type("text/plain").send(securityTxt);
+  });
   return router;
 }

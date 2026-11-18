@@ -6,7 +6,8 @@ import { createServer, type Server } from "node:http";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../server/app";
 import { InviteRegistry } from "../server/invite-registry";
-import { legalHtml } from "../server/legal-pages";
+import { legalHtml, SECURITY_TXT_EXPIRES } from "../server/legal-pages";
+import { LEGAL_IDENTITY } from "../shared/legal-identity";
 import { PRIVACY_VERSION, TERMS_VERSION } from "../shared/legal-versions";
 import { termsText } from "../shared/terms-of-use";
 
@@ -99,5 +100,20 @@ describe("legal pages", () => {
     const blocks = (text: string) => text.split("\n\n").map((b) => b.split("\n")[0].split(".")[0]);
     expect(blocks(termsText("de")).slice(1)).toEqual(blocks(termsText("en")).slice(1));
     expect(termsText("en").split("\n")[0]).toContain(TERMS_VERSION);
+  });
+
+  for (const mode of ["plain", "invites"] as const)
+    it(`/.well-known/security.txt answers without a session (${mode})`, async () => {
+      const r = await fetch(roots[mode] + "/.well-known/security.txt", { redirect: "manual" });
+      expect(r.status).toBe(200);
+      expect(r.headers.get("content-type")).toContain("text/plain");
+      const text = await r.text();
+      expect(text).toContain(`Contact: mailto:${LEGAL_IDENTITY.incidentContactEmail}\n`);
+      expect(text).toContain(`Expires: ${SECURITY_TXT_EXPIRES}\n`);
+    });
+
+  it("security.txt has not expired (RFC 9116: renew Expires in server/legal-pages.ts, at most a year ahead)", () => {
+    expect(Date.parse(SECURITY_TXT_EXPIRES)).toBeGreaterThan(Date.now());
+    expect(Date.parse(SECURITY_TXT_EXPIRES) - Date.now()).toBeLessThan(366 * 24 * 3600 * 1000);
   });
 });
