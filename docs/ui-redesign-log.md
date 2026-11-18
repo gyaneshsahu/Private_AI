@@ -12,6 +12,12 @@ State, 17 November evening: the owner approved the whiteboard next to the chat (
 4. **Waiting for the owner:** image provider choice and contract checklist (`docs/image-creation-20261117.md`); shorter texts (`docs/ui-text-shortening-proposal.md`); first-start notice and privacy partners draft for the legal read; whiteboard study decisions (`docs/whiteboard-study-20261117.md`).
 5. Owner asked: send a screenshot of every finished UI piece.
 
+## 18 November 2026: final pass and first-time-user pass
+
+Scripted final pass (`.local/final-pass-20261118/`): type-check clean; full unit suite 2,346 passed; end-to-end 64 of 64; screen tour with features on (564 screenshots) and off (378), English and German, 375, 768 and 1,280 px: 0 failed steps, 0 requests leaving the machine, 0 untranslated labels; skipped steps listed with reasons. Console errors only on the screens that test errors on purpose. The 404 page's "+1 px" at 375 px is measurement rounding (no element wider than the screen).
+
+First-time-user pass in a real browser (details and screenshots: `docs/first-user-pass-20261118.md`): 18 things fixed (sign-in note, health question, empty-chat icon, chat titles from starter chips, file chips above the message box, voice Options row, search card layout, the left menu folding for the whiteboard, the not-kept label on board questions, the chat menu cut off in the left menu, a duplicate icon, phone chip row, phone message box, phone "+" count, phone whiteboard switch band, inverted language buttons, notices in the old language, untranslated import statuses). Suggestions left for the owner listed there.
+
 ## 17 November 2026: whiteboard next to the chat, "In this chat"
 
 Details: `docs/whiteboard-20261117.md`. Built by me (storage, app wiring, layout) and two helpers in parallel (drawing surface; "In this chat" panel), each with its own tests. Tests: `tests/whiteboard.test.ts` 5, `tests/whiteboard-render.test.ts` 3, `tests/whiteboard-ui.test.ts` 11, `tests/outputs.test.ts` 6, `tests/outputs-panel-ui.test.ts` 7, `tests/redesign-ui.test.ts` "whiteboard" 5 (375 and 1,280 px, dark).
