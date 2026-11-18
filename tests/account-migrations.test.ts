@@ -52,7 +52,7 @@ it.skipIf(!enabled)(
       expect(
         results.every(
           (result) =>
-            result.applied.length === 19 && result.pending.length === 0,
+            result.applied.length === 20 && result.pending.length === 0,
         ),
       ).toBe(true);
       await db.pool.query(
