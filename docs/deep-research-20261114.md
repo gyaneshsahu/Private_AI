@@ -6,6 +6,23 @@ Status: **built and tested offline, switched off by default, nothing verified li
 
 Owner's words: "premium only, strict token caps, clear progress and cancel."
 
+## Update, 18 November: starts at once, charged once at the start
+
+Owner's words: "Deep research starts straight away. Remove the plan card and the approval step. Show only a simple progress line with a Stop button. Charge all 15 units at the start (no 5 + 10 split)." And for every feature: the allowance is checked only at the start of a request or run, never during it; a start is allowed while at least 1 unit is left; the balance stops at 0; at 0 the next start shows one calm "Limit reached. It resets at X." with no unit counts.
+
+What changed (this replaces the older sections below where they disagree):
+
+- **No plan card, no approval step.** In the chat, Send starts the run. In the Research tab, "Start research" starts it. The panel shows one progress line ("Planning", "Searching 2 of 4", "Reading 3 of 6 pages", "Writing the answer") with "Stop the research". The step list and the "counted N of 15" lines are gone.
+- **Search texts are still masked on the device**, but no longer shown for approval. `parsePlan` masks each proposed text, drops one the masking cannot make safe (too short, too long), drops repeats, and falls back to the masked question. `runResearch` checks every text against the masking again before the first search. This follows the consent model of 18 November (one acceptance at sign-in, no per-feature approvals).
+- **All 15 units are charged at the plan request.** The plan is charged `cost` (or what is left, see below); the answer is a continuation of that counted run and is never charged or refused for allowance. The ledger accepts up to 20 units per request now (`usageUnits`). `researchWeights` (the 5 + 10 split) is deleted.
+- **Start rule.** A run starts while at least 1 unit is left in the period and in the rolling day. It is charged 15 or what is left, whichever is smaller, so the balance never goes below 0 (`server/usage-charge.ts` `chargeStart`).
+- **The answer belongs to the counted run.** The relay still admits an answer only with the run's ticket (one per accepted plan, 30 minutes). The answer's ledger row is `run-<uuid>`: dispatched, settled and inside the spend guard like any request, but not an allowance unit, so it never counts toward the limit, the day or the balance (`COUNTED_ROW` in `server/usage-contract.ts`).
+- **The run's searches are counted at its start.** When the plan is accepted, up to 4 searches are taken from the day's search count and kept with the run; the run's searches use them, so the daily search cap can no longer refuse a search halfway through a run. Unused ones go back to the day when the answer is requested. A run does not start when no search is left in the day.
+- **The 8-minute clock no longer touches the answer.** It stops searching and reading; once the answer is being written only the user's Stop ends it (`src/deep-research.ts`). Before, a finished answer could be reported as "timeout".
+- **Calm limit message.** A refused start (relay 429 with `code: "limit"` and `resetsAt`) shows "Limit reached. It resets at 14:05." (German: "Limit erreicht. Es wird um 14:05 zurückgesetzt."), with the date when it is not today (`src/limit-message.ts`).
+
+Still true and still a limit: the ticket is in server memory, so a restart between plan and answer refuses the answer after the run was paid; the run count and the search count are per process.
+
 ## What it does
 
 One question. A few web searches. A few pages read. One answer with numbered sources.
@@ -62,7 +79,7 @@ Honest limits of these caps:
 - **The run and search counts are in the server's memory**, like the image count. A restart forgets them. On more than one server instance each instance counts for itself.
 - **Long pages.** The existing page fetch refuses a page whose text is over 60,000 characters. Such a page counts as "could not be opened". Not changed here.
 
-## Allowance: how 15 units are charged
+## Allowance: how 15 units are charged (before 18 November; see the update at the top)
 
 The usage ledger accepts 1 to 10 units per request (`usageUnits` in `server/usage-contract.ts`). No schema change was made. A run's cost is split over its two requests:
 
@@ -78,7 +95,7 @@ The browser declares each request with the header the image feature uses: `x-pri
 - admits an answer only after an accepted plan of the same account, once, within 30 minutes. So the answer's 10 units cannot be skipped and every answer belongs to a counted run;
 - gives the run back when the provider refused the plan before any reply, and does not charge the repeat twice (the existing retry credit).
 
-Choice made: the plan reserves 5 and the answer reserves 10 when it is sent. The alternative was to reserve all 15 at the plan. I did not do that, because a run the user stops after the plan would then cost 15 for nothing, and because a prepaid row with no request behind it would count as an unmetered request in the spend guard for the whole review window. The price of this choice: between the plan and the answer another tab of the same account can use up the allowance. Then the answer is refused and the plan's 5 units and the searches are spent. The panel says what was counted.
+**Superseded on 18 November** (see the update at the top): the whole run is charged at the plan, and the answer is a continuation. The older choice, kept for the record: the plan reserves 5 and the answer reserves 10 when it is sent. The alternative was to reserve all 15 at the plan. I did not do that, because a run the user stops after the plan would then cost 15 for nothing, and because a prepaid row with no request behind it would count as an unmetered request in the spend guard for the whole review window. The price of this choice: between the plan and the answer another tab of the same account can use up the allowance. Then the answer is refused and the plan's 5 units and the searches are spent. The panel says what was counted.
 
 ### What a modified browser gets
 
@@ -153,7 +170,7 @@ Also to know:
 - 3 runs a day need 45 allowance units a day per account. The owner sets `inference.allowance`; a daily limit under 15 makes deep research impossible, and under 45 makes the third run impossible.
 - The spend guard counts every request without metering at its worst case, as today. Nothing changed there.
 
-## Progress and stop
+## Progress and stop (before 18 November; now one progress line with Stop, see the update at the top)
 
 - The step list: Planning, Searching 2 of 4, Reading 3 of 6 pages, Writing the answer. Each finished step shows its outcome ("4 searches; 1 gave no results", "5 pages; 2 could not be opened").
 - "Stop the research" stops at once. The stop signal goes into every request. After it, nothing more is sent; a search that was approved but not yet executed is not executed. The app's ordinary Stop button does the same.
@@ -171,8 +188,9 @@ Nothing new. Research results follow the existing rule for searches (owner decis
 | File | Tests | What |
 |---|---|---|
 | `tests/deep-research.test.ts` | 19 | The pipeline: every cap, the source budget, stop while searching, while reading, between an approval and its use, while writing and before the start; failure of one search, of all searches, of pages, of the answer; the two time limits; plan parsing and re-masking; request bodies carry only approved masked texts; official pages first; source numbering, citations and the exported note. Search and model are doubles. |
-| `tests/deep-research-relay.test.ts` | 13 | The weights and the ledger's 1 to 10 rule; the declaration and the account list; one answer per plan; 14 units left refuses a plan and 15 admits it; the daily request limit counts the whole run; runs per day; a refused plan is given back; searches per day; no cap with the switch off. Upstream and search are doubles. |
-| `tests/deep-research-ui.test.ts` | 9 | Real headless Chromium against the test's own Vite server, model and research routes faked: a whole run at 375, 768 and 1280 px in English and German (approval step with edit, remove, re-masking and a blocked short text; running step and Stop button; result; answer with citation and note; no sideways scroll; button heights; focus moves to each stage); stop while searching at two sizes; cancel at approval; hidden without the switch. |
+| `tests/deep-research-relay.test.ts` | 15 | The declaration and the account list; the ticket and the run's searches; a run costs 15, all at the plan, and its answer is never charged; an answer is never refused for allowance even when the rest was spent meanwhile; 3 left admits a plan charged 3, then 0 refuses it calmly with the reset time and no unit counts; the daily request limit takes what the day has left; runs per day; a refused plan is given back and its repeat not charged twice; searches per day; a run's 4 searches are held at its start; unused ones go back, and a run cannot start with no search left; no cap with the switch off. Upstream and search are doubles. |
+| `tests/deep-research-ui.test.ts` | 9 | Real headless Chromium against the test's own Vite server, model and research routes faked: a whole run at 375, 768 and 1280 px in English and German (starts at once, no approval, the plan's address masked before sending, one progress line with Stop, result, answer with citations and note, no unit counts, no sideways scroll, button heights, focus); stop while searching at two sizes; at 0 left the calm limit message and nothing sent; hidden without the switch. |
+| `tests/deep-research-chat-ui.test.ts` | 10 | The same in the chat: "+" > Deep research, Send starts the run at once, progress line with Stop in the card, the answer lands in the conversation; a new chat stops the run; a too-long question keeps the draft; no item without the switch. |
 | `tests/deployment-inference-config.test.ts` | 1 (extended) | The switch: off, on, the account list, and six invalid forms. |
 
 ## Not verified
@@ -189,11 +207,11 @@ Nothing new. Research results follow the existing rule for searches (owner decis
 
 1. **Three synthetic questions through the app.** With the keys loaded as for the other benchmark runs:
    `$env:BENCH_DIR = "evaluation/deep-research"; npx tsx evaluation/blind-benchmark/run-ours.ts --privatemode --research --modes auto`
-   It switches deep research on in the local app, and for each question in `evaluation/deep-research/prompts.json` it plans, approves the proposed texts unchanged, waits for the end and writes `.local/deep-research/ours-privatemode-research/auto/<id>.json` with the planned texts, the searches sent, the pages opened, the step outcomes, the answer, its citations and the timings. Cost: at most 12 Brave searches and 6 model requests. The runner was type-checked, not run.
+   It switches deep research on in the local app, and for each question in `evaluation/deep-research/prompts.json` it starts a run (no approval since 18 November), waits for the end and writes `.local/deep-research/ours-privatemode-research/auto/<id>.json` with the planned texts, the searches sent, the pages opened, the step outcomes, the answer, its citations and the timings. Cost: at most 12 Brave searches and 6 model requests. The runner was type-checked, not run.
    Look at: are the planned texts real search texts (short, no sentences, no numbering left)? How many pages opened? Does the answer cite sources? Total time against the 8 minute limit. Tokens, to replace the estimates above.
 2. **By hand on the development server** (`PRIVATEAI_RESEARCH=1`, search key loaded): one run with a question that contains an email address. The address must not appear in any proposed text. Edit one text and type the address in: the text shown as "will be sent" must not contain it.
 3. **Stop** during "Searching" and during "Writing the answer". Expect: the panel says it was stopped and what was counted; the network panel shows no further request.
-4. **Allowance** with a real ledger: the usage page shows 5 after the plan and 15 after the answer. With under 15 left the plan is refused before anything is sent.
+4. **Allowance** with a real ledger: the usage page shows 15 right after the plan and still 15 after the answer. With 3 left a run starts and the page shows 0 after it; the next start shows "Limit reached. It resets at …".
 5. **Account list** on the production composition: an account on the list sees the panel; one that is not on it does not, and its usage page is unchanged.
 6. **Export**: PDF and "Copy conversation as text" of a research answer show the note and the numbered sources with addresses.
 7. **The input limit** in the report that will be deployed: it must be about 32,000 for the full source budget (see "The switch").
@@ -206,7 +224,7 @@ Nothing new. Research results follow the existing rule for searches (owner decis
 | Runs per account per day | 3, as proposed |
 | Searches per account per day (all searches) | 24: twice what 3 runs need, so ordinary searches still have room |
 | Who gets it in the alpha | Everyone on the deployment (no list), since the alpha must test what launch needs. Use the list if cost should be held down. |
-| Reserve all 15 units at the plan instead of 5 and 10 | No (see "Allowance") |
+| Reserve all 15 units at the plan instead of 5 and 10 | Decided 18 November: yes, all at the start |
 | `maxInputCharacters` in the deployed report | 32,000 |
 | Privacy wording | See `deep-research-privacy-wording-draft-20261114.md`; the binding texts were not touched |
 
