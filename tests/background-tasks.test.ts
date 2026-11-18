@@ -204,13 +204,14 @@ describe("background task runs", () => {
     await s.runAt("2026-11-17T07:11:00Z");
     expect((await s.service.results(ACCOUNT)).slice(3).map((r) => r.reason)).toEqual(["service_limit", "service_limit", "service_limit"]);
     s.state.spend = true;
-    // Daily cap 3 units: two Fast runs (1 each) and a Thinking run (3) never all fit in one day.
+    // Daily cap 3 units: two Fast runs (1 each) and a Thinking run (3). A run starts while 1 unit is
+    // left and is charged what is left (owner, 18 November), so in any order the day ends exactly at 3;
+    // a run that finds nothing left is skipped for the daily limit, never charged.
     await s.runAt("2026-11-18T07:11:00Z");
     const day = (await s.service.results(ACCOUNT)).slice(6);
-    expect(day.some((r) => r.reason === "daily_limit")).toBe(true);
     expect(day.filter((r) => r.status === "done")).toHaveLength(s.fake.calls.length);
-    expect(used(s)).toBeGreaterThan(0);
-    expect(used(s)).toBeLessThanOrEqual(3);
+    expect(day.filter((r) => r.status !== "done").every((r) => r.reason === "daily_limit")).toBe(true);
+    expect(used(s)).toBe(3);
     // Daily runs per account: a task moved back to due today is refused once three ran.
     const t = setup();
     for (let i = 0; i < 3; i++) await t.service.create(ACCOUNT, taskBody());
