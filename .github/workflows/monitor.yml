@@ -1,0 +1,39 @@
+# Daily external check of app.cometrow.com (docs/liveness-alerts-proposal-20261023.md, prepared
+# 18 November 2026): certificate, DNS and health, from GitHub's machines (outside Render and outside
+# the owner's PC). Content-free: one TLS handshake, one DNS lookup, one GET /healthz with no cookie.
+# Off until the owner approves: it runs only from the default branch (main) and only when the
+# repository variable COMETROW_MONITOR is "on". A failed run sends GitHub's usual failure e-mail
+# (and a push in the GitHub mobile app, if installed). The 5-minute liveness probe is UptimeRobot's
+# job; this daily run covers what its free plan may not (certificate expiry, DNS).
+name: Daily external check
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    if: vars.COMETROW_MONITOR == 'on'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5, Node 24
+        with:
+          sparse-checkout: scripts/certificate-expiry.ts
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5, Node 24
+        with:
+          node-version: 24
+      - name: Certificate valid and at least 14 days left
+        run: node scripts/certificate-expiry.ts app.cometrow.com 14
+      - name: DNS points at Render
+        run: |
+          target="$(dig +short CNAME app.cometrow.com)"
+          echo "CNAME: $target"
+          test "$target" = "private-ai-deployment.onrender.com."
+      - name: Health answers 200
+        run: |
+          code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 https://app.cometrow.com/healthz)"
+          echo "healthz: $code"
+          test "$code" = "200"
