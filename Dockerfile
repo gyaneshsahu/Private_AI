@@ -24,6 +24,12 @@ ARG VITE_READ_ALOUD=
 ARG VITE_PDF_EXPORT=
 # Whiteboard and "In this chat" (docs/whiteboard-20261117.md): off unless built with it set to 1.
 ARG VITE_WHITEBOARD=
+# Canvas, memory, projects, voice conversation and Scheduled: each off unless built with it set to 1.
+ARG VITE_CANVAS=
+ARG VITE_MEMORY=
+ARG VITE_PROJECTS=
+ARG VITE_LIVE_VOICE=
+ARG VITE_SCHEDULED=
 RUN npm run build
 
 # Supplier CLI for the relay-side attestation audit (server/attestation-audit.ts).
