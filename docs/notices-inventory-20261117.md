@@ -6,7 +6,7 @@ Owner's decision: consent for everything (sensitive and health data, web search,
 
 **Removed:** the health and sensitive-data consent (card before the first message, the "declined" note, the Settings choice, the picture question's health step, the server switch); the first-start notice; the web search approval card (search text, "Search and answer", "Answer without searching", the German-rules "search first?" choice, the "search again" offer); the scheduled "Run now" search card; the consent boxes of background (Auto) tasks (the server's per-task consent record is filled in by the app).
 
-**How search works now:** "+" > Search the web searches with the next message at once (identifiers masked on the device); with "search automatically" or "always search for rules" switched on in Settings, matching questions are searched without asking; otherwise a message is sent without a search.
+**How search works now (19 November 2026, `docs/owner-decisions.md`):** search is automatic. The app searches when a question needs current information, after masking identifiers on the device. One Settings switch, "Look things up online", on by default, turns it off. The "+" > "Search the web" item and the opt-in switches are removed.
 
 **The only thing that still asks:** the Secure Max confirmation (once).
 
@@ -15,10 +15,9 @@ Owner's decision: consent for everything (sensitive and health data, web search,
 | What | Why it is there |
 | --- | --- |
 | "Answers come from an AI, not a person. Check important answers." under the message box | possibly required by the EU AI Act Art. 50(1); the lawyer decides (see the legal-read doc) |
-| "Searched the web for …" line after a search | shows what was searched (a status line, not a question) |
+| "Searched the web" line under an answer after a search | opens to the exact searched text and the sources (a status line, not a question) |
 | Deep research: the plan to review and start, with its cost | a feature step (costs 15 units); it can be made to start at once if wanted |
 | "Remember that …" offers to save a memory; "Every day at …" offers a scheduled task | feature offers from the user's own words, nothing is sent until chosen |
-| Research page ("Review disclosure") | the manual research tool, opened on purpose |
 | Secure Max recovery-key and reset warnings | prevent losing data that only the user's devices can open |
 | Error messages (connection, limits, too large) | say why something did not work |
 
@@ -71,7 +70,7 @@ All of these facts belong on the privacy page (see `docs/privacy-partners-draft-
 | --- | --- | --- |
 | State lines of sign-in and account | `account.notice*`, `codeNote`, `introCode` | keep: they say what is happening |
 | Help texts inside Settings and Data controls | `secureLong`, `appearanceNote`, `languageNote`, `accountPageNote` | keep: Settings is the place for details |
-| Feature instructions | `attachmentsNote` (supported files and limits), `canvas.askNote`, `deepResearch.planNote`, `scheduled.searchNote`, `projects.instructionsIntro` | shorten in a later pass (`docs/ui-text-shortening-proposal.md`) |
+| Feature instructions | `attachmentsNote` (supported files and limits), `canvas.askNote`, `projects.instructionsIntro` | shorten in a later pass (`docs/ui-text-shortening-proposal.md`) |
 | Per-answer lines | `keptNote` (placeholders were used and put back), `images.attachedNote`, `images.thinkingNote` | keep `keptNote` as a positive fact; the picture lines can move to Help |
 | Sync and recovery-key warnings | `sync.keyWarning`, `promptWarning`, `modes.maxResetWarning` | keep: they prevent data loss in Secure Max |
 | Footer | `footerNote` "No advertising. No training on your data." | keep, true |

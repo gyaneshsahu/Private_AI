@@ -12,7 +12,7 @@
 - **Constraints:**
   - nothing that reads the user's text runs outside the device or the attested provider
   - no message content in logs or analytics
-  - search approval by default
+  - search approval by default (replaced on 19 November 2026: search is automatic, `docs/owner-decisions.md`)
   - the user's mode choice always wins
   - every switch or retry is labelled and stays within the provider
   - works on Tinfoil and Privatemode alike
@@ -68,21 +68,20 @@ The old rules beat neither single model, which is the failure the routing resear
   This is the remedy for a routing mistake that the research recommends; unlabelled or unwanted switches are what users punish.
 - Unchanged: one automatic retry on the same tier's backup model, at the same provider, only when no answer text arrived. It is labelled "Answered by the backup model".
 
-### 3. Search: approval by default, with three conveniences that keep it
+### 3. Search: automatic (changed 19 November 2026)
 
-1. **Before sending (built earlier today):** the device spots time-sensitive questions and shows the exact masked search text with "Search and answer". The tap is the approval because the text is shown.
-2. **New, after an answer without web results:** for a time-sensitive question answered from training data, the same box offers to check it. One tap searches exactly the shown text and answers the question again, replacing the old answer.
-3. **Opt-in automatic search** (off by default; built earlier today). Identifiers are masked on the device and the exact text sent is shown.
+Built on 12 November with approval: a one-tap suggestion before Send, a one-tap check after an unsearched answer, and an opt-in automatic search. Replaced on 19 November 2026 (`docs/owner-decisions.md`): search is automatic.
+
+- The device spots questions that need current information (`docs/when-to-search-20261112.md`) and the app searches before answering. No approval, no suggestion box, no check box after the answer.
+- Identifiers are masked on the device first.
+- "Look things up online" in Settings, on by default, turns searching off.
+- Under the answer, "Searched the web" opens to the exact searched text and the sources.
 
 **Also in place:**
 - The model is told the current date and that its knowledge comes from training data with an unpublished end date. It offers a search, and never claims it has no web access.
 - Neither mode model publishes a training cutoff, so no date is invented.
 
-**Why not search automatically by default?** The brief requires approval. The privacy-focused assistants studied (Proton Lumo, Kagi) also keep search behind a user action.
-
-**"No stale facts presented as current"** cannot be guaranteed without searching everything. What the design guarantees is the following:
-- a time-sensitive question is either searched, or answered on the mode that best says what it cannot know
-- every such answer offers the one-tap check
+**"No stale facts presented as current"** cannot be guaranteed: the detector misses some questions, and a user can switch searching off. A detected question is searched; a detected question answered without web results (searching off, or a failed search) goes to Thinking in Auto, the mode that best says what it cannot know.
 
 ### 4. Numbers: checks, not model choice, make errors visible
 
@@ -114,23 +113,18 @@ The old rules beat neither single model, which is the failure the routing resear
 - Routing, the search detector and the masking run on the device.
 - The relay sees only the mode header (`X-PrivateAI-Mode`) it already saw.
 - No message text, routing reason or search text is logged or sent to analytics.
-- Search text reaches Brave only after a tap or the opt-in.
+- Search text reaches Brave only after masking on the device, and only while "Look things up online" is on (changed 19 November 2026; no tap needed).
 
 ## Wording (new in this change)
 
 - **Button under a Fast answer:** "Answer again with Thinking". Tooltip: "Starts a new request and may incur another charge".
-- **After an answer without web results (time-sensitive questions):**
-  - Heading: "This answer did not use current information."
-  - Label: "Search the web for:" with the exact text
-  - Explanation: "One tap sends exactly this text to Brave Search through our server, our server opens the top result page, preferring an official site, and the question is answered again from the results. Nothing else from your conversation is sent."
-  - Button: "Search and answer again"
 - **Changed:**
   - The top-page note says "official" only for government, EU and central-bank sites; otherwise it says "the top result".
-  - The approval and suggestion texts say "the top result page, preferring an official site".
+- The after-answer search box and the approval texts of 12 November were removed on 19 November 2026 (search is automatic).
 
 ## Tests
 
 - **`tests/answer-modes.test.ts`:** every rule, in English and German. It includes the emergency override, rewrite tasks, code with and without a language name, word problems, and time-sensitive questions with and without web results.
 - **`tests/answer-modes-ui.test.ts`:** "Answer again with Thinking": the label, a one-request override, and the remembered choice left unchanged.
-- **`tests/when-to-search-ui.test.ts`:** the check after an answer. Nothing is sent before the tap, exactly the shown text is searched, and the answer is replaced rather than added.
+- **`tests/when-to-search-ui.test.ts`:** tested the after-answer check on 12 November. That check is removed; the test file still describes the 18 November design and is not yet updated for automatic search (19 November 2026).
 - **`evaluation/routing-sim.ts`:** the offline check above. Rerun it whenever the rules or the models change. Ship a rule change only if it beats always-Fast and always-Thinking.

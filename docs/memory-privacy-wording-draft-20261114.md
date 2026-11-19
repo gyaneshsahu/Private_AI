@@ -35,7 +35,7 @@ What stays true but must be said, so the claim is not read as more than it is:
 | 5 | `shared/privacy-copy.ts`, `PRIVACY_SUMMARY` and `PRIVACY_SUMMARY_DE` | "ID, bank and contact details stay on your device; everything else is sealed so only one checked secure server can read it, and we never can." | Still true: memories that are sent fall under "everything else is sealed" | No change needed |
 | 6 | `shared/privacy-copy.ts`, section `ours` | "We can see that your account asked something, when, how many times, which model answered, and afterwards how long the question and answer were ..." | Still true. The length includes the memories that were sent | No change needed. Optional clarification in 2.5 |
 
-If the corrections draft of 13 November (`docs/privacy-policy-corrections-draft-20261113.md`, the part on what the app stores in the browser) is adopted, add one line there: "Memories you saved: in the encrypted vault, until you delete them."
+The policy now has the part on what the app stores in the browser ("In your browser, CometRow stores only what it needs to work", `docs/legal-texts-side-by-side.md`). If the lawyer wants memories named there, add: "Memories you saved: in the encrypted vault, until you delete them."
 
 ### 2.1 Section "What is sealed and sent", first sentence
 

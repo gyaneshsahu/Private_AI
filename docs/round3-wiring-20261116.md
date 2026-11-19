@@ -18,9 +18,7 @@ Unchanged: an existing passphrase vault keeps its form; a device of an account t
 
 ## Search the web from the chat (FE-07)
 
-"+" > "Search the web" (only when search is on and chat is ready) arms the next Send. A note above the message box says so and has a button to undo it. Send then opens the in-chat approval card for exactly the typed text, masked as every search is. Nothing is searched before the card's "Search and answer". "Answer without searching" sends the message as it is; Escape or editing the text drops the card. While the card is open, Send does nothing more. It is one-shot: the next message is normal again. With automatic search on, the card still asks (the menu is a request, the card is the approval). The Research page stays for its other uses (page reads, settings, deep research).
-
-Rule 7 holds: one send path, the exact approved text only, allowance and masking unchanged.
+Built here on 16 November: "+" > "Search the web" armed the next Send, which opened an in-chat approval card. Removed on 19 November 2026 (`docs/owner-decisions.md`): search is automatic, so there is no "+" item, no card and no approval. Identifiers are still masked on the device first.
 
 ## Smaller items
 

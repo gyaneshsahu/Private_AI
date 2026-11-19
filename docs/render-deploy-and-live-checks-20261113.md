@@ -25,7 +25,7 @@ All of these must be done before the chat-on deploy (section 5). The code-only d
 | 1 | The allowance fix (section 0) is in the pushed commit you deploy, Validate (CI) is green on that exact commit, and you ran section 3.5 | agent, then you | [ ] |
 | 2 | Alpha key created in the Privatemode portal with a rate limit, an expiry date and a spend limit. Stored only on Render. You told the agent the limit and the expiry | row 2, checklist P10 | [ ] |
 | 3 | Privatemode spend budget set in the portal, with an alert. The app cap `approvedSpendUSD` chosen (read section 8 first). Allowance decided: 150 requests per 7 days | row 3, P12, D5, S6 | [ ] |
-| 4 | Privatemode privacy wording approved, including the "Always search" sentence and the Brave search sentences | rows 4 and 4b | [ ] |
+| 4 | Privatemode privacy wording approved, including the automatic web search sentences (search is automatic since 19 November 2026) and the Brave search sentences | rows 4 and 4b | [ ] |
 | 5 | Brave production key and its terms in hand (search is on) | row 4b, R5 | [ ] |
 | 6 | Four open report checks accepted in writing; repository name `edgelesssys/privatemode-public` confirmed | row 5, P9, D1 | [ ] |
 | 7 | Report finalised and signed by you. It must contain: `modes.thinking.allowanceCost: 5`, `maxInputCharacters: 32000` (row 8), `pricing`, `approvedSpendUSD`, `privatemode.portalKeyLimit` (with `expiresAt`), the **current** manifest digest in `releaseDigests` (after the rotation of 14 November: `d63eb5cf...f833`, see section 2.5), `reviewedAt` and `validUntil` (at most 7 days later) | rows 5 and 8 | [ ] |
@@ -330,10 +330,10 @@ Do these on the live site after section 5. Use your account (A) and the test acc
 | 2 | Pick **Thinking**, send a short reasoning question | "Still thinking" may show; answer arrives (within 120 s to the first word). Count goes down by 5 | |
 | 3 | Pick **Auto**, send a simple question, then a harder one | Auto picks a mode and says why; both answer. Count goes down by 1 or 5 matching the mode | |
 | 4 | Under a Fast answer, press **Answer again with Thinking** | A new Thinking answer arrives. Count goes down by 5 | |
-| 5 | Search: ask a time-sensitive question and approve the search ("Search the web for:", the exact text is shown) | Answer with sources. Only the approved text is sent. Next hourly `CometRow counts` line shows `search.executed` | |
-| 6 | German rules, search-first choice: with "Always search" off, ask "Wie hoch ist die Gebuehr fuer einen neuen Personalausweis?" | Before anything is sent, the app asks "This is about rules, fees or deadlines, which change. Search the official source first?" with **Search and answer** and **Answer without checking**. **Search and answer** gives an answer from the results, preferring an official site | |
-| 7 | German-rules warning: same question, press **Answer without checking** | If the answer has figures: "This answer gives figures or deadlines that were not checked against an official source." If the search found no official site: "No official source was found in the search results. Check the responsible authority before relying on these figures." | |
-| 8 | Settings: turn on **Always search for rules, fees and deadlines**, ask a rules question | No search-first question; it searches on its own and answers from the results. Turn the setting off again | |
+| 5 | Search: ask a time-sensitive question | Nothing asks; the app searches by itself. Answer with sources and a "Searched the web" line that opens to the exact searched text. Next hourly `CometRow counts` line shows `search.executed` | |
+| 6 | German rules: ask "Wie hoch ist die Gebuehr fuer einen neuen Personalausweis?" | Nothing asks; the app searches by itself and answers from the results, preferring an official site. If the search found no official site: "No official source was found in the search results. Check the responsible authority before relying on these figures." | |
+| 7 | German-rules warning: in Settings turn **Look things up online** off, ask the same question | No search. If the answer has figures: "This answer gives figures or deadlines that were not checked against an official source." | |
+| 8 | Settings: turn **Look things up online** back on (it is on by default) | The next time-sensitive question is searched again | |
 | 9 | Attachments: attach a small text or PDF file with a made-up email address in it, ask about it | Answer uses the file. A note like "Kept on this device: 1 email address" shows | |
 | 10 | **Photo to text**: take or choose a PNG or JPEG photo of printed text (at most 10 MB) | Text is read on the device and can be edited before sending. Camera works where offered | |
 | 11 | Vault: set a passphrase (at least 12 characters), save a conversation, lock, unlock | Saved conversation reopens after unlocking | |
@@ -385,7 +385,7 @@ Do these on the live site after section 5. Use your account (A) and the test acc
 | 40 | Accessibility: keyboard only (Tab, Shift+Tab, Enter, Esc) through sign-in, compose, send, mode picker, settings | Every control reachable; focus always visible | |
 | 41 | Screen reader: VoiceOver on iPhone, TalkBack on Android (`galaxy-a52-talkback-checks.md`) | Buttons have names; answers are read out | |
 | 42 | Browser zoom 200 % on a computer | Nothing overlaps or disappears | |
-| 43 | **Logs contain no message content**: send a message with a made-up word such as `zebracanary4817`, also approve a search with it. Then Render **Logs**, search for `zebracanary4817` and for your email address | No hits for either. Also search `callback/google?`: note whether Render's request logs show the Google callback query string **(unverified: Render's own request logging)** | |
+| 43 | **Logs contain no message content**: send a message with a made-up word such as `zebracanary4817`, also ask a time-sensitive question with it, so it is searched. Then Render **Logs**, search for `zebracanary4817` and for your email address | No hits for either. Also search `callback/google?`: note whether Render's request logs show the Google callback query string **(unverified: Render's own request logging)** | |
 
 ### 6.5 Rollback and roll forward (T4 hosted)
 
@@ -445,7 +445,7 @@ Not known: what Render does when a deploy never becomes healthy. With the legacy
 | **Database password** | Rotate the exposed one (S2) | Must |
 | **Render instance and no spin-down** | The service runs on 0.5 CPU / 512 MB at USD 7 a month (recorded 20 October). Paid instances do not spin down **(unverified: check the plan name on the dashboard)**. 512 MB under real load is untested | Check |
 | **Legacy disk** | The 1 GB disk at `/var/data` was kept for rolling back to the October runtime. A disk usually stops zero-downtime deploys, so every deploy or failed deploy can interrupt users **(unverified)**. Decide whether to remove it after a backup | Add-on |
-| **Log retention** | How long Render keeps logs is unknown (`privacy-policy-corrections-draft-20261113.md`, open point). Your weekly review reads a week of logs: read them before they are gone, or add a log stream | Add-on |
+| **Log retention** | How long Render keeps logs is unknown (`legal-texts-side-by-side.md`, policy, hosting line: "To confirm ... log retention"). Your weekly review reads a week of logs: read them before they are gone, or add a log stream | Add-on |
 | **DNS and TLS** | Cloudflare DNS: the `app` record should be "DNS only" (grey cloud) so that only Render terminates TLS **(unverified: current setting)**. Check the certificate weekly (`week-one-monitoring.md`) | Check |
 | **Status page** | A free status page from the uptime tool, linked in the invite email. The notice file covers messages inside the app. Prepare notice texts in English and German in advance | Add-on |
 | **Separate Privatemode organisation for development** | Tests and invitees share one attestation limit per organisation. A second organisation lets you test during the day (`week-one-monitoring.md`) | Add-on |

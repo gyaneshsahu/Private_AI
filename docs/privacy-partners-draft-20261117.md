@@ -16,14 +16,14 @@ Most of CometRow runs on sealed, encrypted processing in the EU: your message is
 | Ask about a picture | Privatemode, sealed, the Fast model | the picture (location and other hidden data removed on your device, areas you covered stay black) with your question, once | as chat; the picture is not stored by CometRow |
 | Dictation and voice conversation | Privatemode, sealed, a speech model in the EU | the recording of what you say; numbers you say aloud are part of the recording (masking works on the text only) | as chat; CometRow keeps no recording |
 | Photo to text, code runs, search within your chats, read aloud | your device only | nothing | nothing |
-| Web search and deep research | Brave Search (Brave Software, partner) | only the search text you approved, with identifiers removed | under Brave's policy |
+| Web search and deep research | Brave Search (Brave Software, partner) | only the search text, with identifiers removed on your device; searched automatically when a question needs current information, and shown under the answer as "Searched the web" [changed 19 November: search is automatic; for the legal read] | under Brave's policy |
 | Image creation (only when switched on) | {provider}, partner, {region} | only the description you typed, with identifiers masked; never your chats or photos | {retention as contracted}; not used for training, as contracted |
 | Saved chats, files and memories (Secure, the default) | CometRow on Render (EU), encrypted; CometRow holds the key | your saved content, encrypted | until you delete it |
 | Saved chats in Secure Max | CometRow on Render (EU), encrypted with a key only you hold | encrypted content we cannot read | until you delete it |
 | Sign-in | CometRow; Google if you choose "Continue with Google"; email codes through {email provider} when switched on | your email address | under each provider's policy |
 
 ### What "sealed" means and what it does not
-"Sealed" applies to the Privatemode rows above. Partner features (web search, image creation) are not sealed: the partner sees what is sent, which is why CometRow sends only the approved search text or the typed description, never your chats.
+"Sealed" applies to the Privatemode rows above. Partner features (web search, image creation) are not sealed: the partner sees what is sent, which is why CometRow sends only the masked search text or the typed description, never your chats. [changed 19 November: search is automatic; for the legal read]
 
 ### Incognito and disappearing messages
 They change what is kept on your device. They do not change what the secure server keeps for a short time or the request records we hold (time, model, counts).

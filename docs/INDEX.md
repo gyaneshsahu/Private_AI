@@ -8,6 +8,7 @@ This is a map of `docs/` for new sessions and for Graphify. Files dated 11 to 14
 | --- | --- |
 | `owner-live-test-setup-20261118.md` | **Current (18 November):** the one list of what the owner does before the owner-only live test on `app.cometrow.com`, then what waits until friends are invited |
 | `owner-live-test-list-20261118.md` | **Current (18 November):** the owner's live test, 31 sections with an index and a findings log |
+| `owner-decisions.md` (top block) | **Final (19 November):** web search is automatic; approval before search is removed |
 | `wake-up-report-20261114.md` | Read first: what was built, verified and spent on 14 November, what is half-done, and the risks |
 | `owner-test-list.md` | Everything the owner must test, do or decide, as a short checklist with ids (T-01 to T-110), kept up to date as features land |
 | `cost-weights-20261114.md` | What each feature really uses in tokens and euros, against its allowance weight; recommendations |
@@ -49,8 +50,8 @@ This is a map of `docs/` for new sessions and for Graphify. Files dated 11 to 14
 - `scheduled-tasks-design-20261114.md`: scheduled tasks and reminders (U11), design only, nothing built. Four designs compared on what the server stores; recommended: entries in the device vault plus a calendar file, with an empty Web Push as an optional second phase; owner decisions, privacy sentence drafts (English and German) and acceptance tests.
 - `canvas-20261114.md`: canvas, one editable document per conversation beside the chat (Markdown editor, preview, table grid with spreadsheet paste and CSV, "ask for changes" through the one send path with apply, discard and undo, PDF and Markdown export, saved in the vault). Built and tested offline, switched off by default (`VITE_CANVAS`), nothing verified live. HTML mini pages were analysed and left out as not airtight.
 - `chat-core-fixes-20261116.md`: chat core audit fixes on the App.tsx side: one plain sentence per failed answer, notices, offline and not-ready lines above the message box, one Stop, New chat asking during an answer, pasted pictures to Ask about a picture, no dead Coming later controls, plural counts, titles cut at a word, keyboard menus. Pure improvements, no switch; tested offline in Chromium.
-- `round3-wiring-20261116.md`: round 3 on the App.tsx side: the first Secure Max use sets up sync with its recovery key (FE-02), "+" > "Search the web" opens the in-chat approval card (FE-07), the skip link, the footer, keyboard shortcuts and Help wired, per-mode sidebar and account texts, the app's dialog on the account page and for canvas removal. No switch; tested offline in Chromium.
-- `deep-research-in-chat-20261116.md`: "+" > "Deep research" runs deep research in the conversation (cost, plan, approval of each search text, progress, the answer straight into the chat; FE-07), and the shorter failure notice above the message box (CC-06 follow-up). Behind the existing `inference.research` switch; tested offline in Chromium.
+- `round3-wiring-20261116.md`: round 3 on the App.tsx side: the first Secure Max use sets up sync with its recovery key (FE-02), "+" > "Search the web" (removed 19 November: search is automatic), the skip link, the footer, keyboard shortcuts and Help wired, per-mode sidebar and account texts, the app's dialog on the account page and for canvas removal. No switch; tested offline in Chromium.
+- `deep-research-in-chat-20261116.md`: "+" > "Deep research" runs deep research in the conversation (it starts at once with one progress line and Stop, the answer straight into the chat; FE-07), and the shorter failure notice above the message box (CC-06 follow-up). Behind the existing `inference.research` switch; tested offline in Chromium.
 - `settings-structure-20261116.md`: Settings reorganised into General, Personalization, Data controls, Security, Secure Max and Account; opened only from the account menu; guides and legal texts in Help; links to account page sections; first-load bundle split (SS-05, SS-15, SS-13).
 - `secure-fixes-round2-20261116.md`: Secure fixes on the App.tsx side before `inference.secureStore` goes on: search results kept in the open chat after saves, pulls and merges, autosave only with messages, searches outside the five-file limit, drops on Conversation files, the app's own questions instead of the browser's, session expiry with its reason and the kept draft, developer screens only in development builds, the Secure privacy summary, and the wiring of storage texts, data controls and loadInference. No switch; tested offline in Chromium.
 - `memory-20261114.md`: memory across chats, stored in the encrypted vault on the device; the server stores no profile. Built and tested offline, switched off by default (`VITE_MEMORY`); live probe passed. The decisions (created only when the user asks, what is sent, limits, sensitive data), the vault rules, the cost, the honest limits and the live checks for the lead. `memory-privacy-wording-draft-20261114.md` is the privacy wording draft for the owner (English and German).
@@ -81,7 +82,7 @@ This is a map of `docs/` for new sessions and for Graphify. Files dated 11 to 14
 ## Answer quality, routing and search
 
 - `routing-and-search-20261112.md`, `routing-research-20261112.md`: Auto routing and the search design.
-- `when-to-search-20261112.md`, `search-first-usability-20261113.md`: search suggestions and the search-first choice.
+- `when-to-search-20261112.md`: the on-device rules that decide when a question needs current information. Search is automatic since 19 November (`owner-decisions.md`, top block).
 - `german-rules-20261113.md`, `german-routing-20261113.md`: German rules, fees and deadlines, and German routing (known issue 2).
 - `search-comparison-20261112.md`, `tinfoil-search-terms-20261112.md`: Brave compared with Tinfoil's enclave search.
 - Evaluation summaries live outside `docs/`: `evaluation/german-rules-40-20261113/SUMMARY.md`, `evaluation/benchmark-privatemode-20261112/SUMMARY.md`, `evaluation/arithmetic-gate/results-v3-unseen-20261112.md`.
@@ -96,7 +97,7 @@ This is a map of `docs/` for new sessions and for Graphify. Files dated 11 to 14
 ## Privacy and legal (drafts need the owner and a legal read)
 
 - `privacy-policy-20261022.md`, `privacy-copy-20261022.md`: the approved texts.
-- `privacy-policy-corrections-draft-20261113.md`, `privacy-policy-corrections-de-draft-20261113.md`: corrections to the policy.
+- `legal-texts-side-by-side.md`: the current policy and terms in English and German, generated from the app (the older correction drafts were deleted on 19 November; their content is in the app).
 - `privacy-wording-privatemode-20261112.md`, `privacy-copy-privatemode-20261112.md`: the Privatemode wording.
 - `provider-disclosure-draft-20261112.md`, `health-consent-draft-20261112.md`: the provider section and the health consent.
 - `acceptable-use-draft-20261112.md`, `acceptable-use-de-draft-20261113.md`: acceptable use.

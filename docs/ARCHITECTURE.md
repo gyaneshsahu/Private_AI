@@ -23,7 +23,7 @@ This section describes the system as it stands on `codex/development-handoff` (`
    - Privatemode (primary): Fast `glm-5.3-flash` low, Thinking `glm-5.3` high.
    - Tinfoil (backup only).
    - Switching is manual and announced. There is no automatic fallback.
-4. **Search:** Brave through `server/providers/search.ts`, only after the user approves. Search text is masked on the device (`src/identifier-masking.ts`). In production it is on only when `inference.searchKeyFile` is set. Goggles are never used in production.
+4. **Search:** Brave through `server/providers/search.ts`, automatically when a question needs current information (since 19 November 2026, `docs/owner-decisions.md`; no approval; "Look things up online" in Settings, on by default, turns it off). Search text is masked on the device (`src/identifier-masking.ts`). In production it is on only when `inference.searchKeyFile` is set. Goggles are never used in production.
 
 ### Guards on every chat request (server)
 
@@ -39,7 +39,7 @@ This section describes the system as it stands on `codex/development-handoff` (`
 ### On-device logic (browser)
 
 - **Auto routing.** `src/answer-modes.ts` picks Fast or Thinking from on-device cues (English and German).
-- **Search cues.** `src/when-to-search.ts` detects time-sensitive questions. `src/german-rules.ts` detects German rules, fees and deadlines, offers search first, and adds the unchecked-figures warning.
+- **Search cues.** `src/when-to-search.ts` detects time-sensitive questions. `src/german-rules.ts` detects German rules, fees and deadlines, marks them for the automatic search, and adds the unchecked-figures warning.
 - **Answer checks.** `src/arithmetic/` holds the arithmetic post-check and the completeness check: every figure the question asks for must appear in the answer.
 - **Model instructions.** `src/conversation.ts` builds the product prompt, including the answer-language rule.
 
@@ -331,7 +331,7 @@ One product, with a limited-user release check before public opening. Preserve t
 | Browser content | Conversation workspace, local extraction, encrypted vault, explicit context selection and ephemeral research; verified browser-to-confidential-inference encryption | Reuse current modules. Split App.tsx by workflow; optional cross-device ciphertext sync requires versioned encrypted envelopes, conflict/tombstone and recovery review before activation. No server plaintext search index. |
 | Accounts/control | Node service, maintained authentication integration, PostgreSQL transactions for sessions, revocation, entitlements, request reservations and idempotency | Replace process-local state/custom credential lifecycle for production. Metadata only: IDs, plan, bounded usage, timestamps and status; no prompts, titles, source text or search queries in account/usage records. Retention schedule requires owner approval. |
 | Inference | Narrow provider adapter exposing verification state, encrypted request/stream, cancellation, capabilities and trustworthy usage; explicit reviewed model/configuration identity | Tinfoil current adapter reusable but unqualified. Qualification schema currently hardcodes Tinfoil; do not disguise another provider under it. Add provider-specific evidence/negative tests when implementing a real alternative. No plaintext fallback. |
-| Research | Existing consent-bound gateway obtains only approved public query/URL, returns bounded evidence to browser memory | Consent grants and limits need atomic account/session binding in shared state before multiple instances. Existing SSRF/redirect/source-taint tests retained. Search text stays out of durable history/logs/exports while rights unresolved. |
+| Research | Existing gateway obtains only the masked public query and the top result page, returns bounded evidence to browser memory | Grants and limits need atomic account/session binding in shared state before multiple instances. Existing SSRF/redirect/source-taint tests retained. Search text stays out of durable history/logs/exports while rights unresolved. |
 | Payments | Stripe-hosted Checkout and customer portal; verified webhook inbox and reconciliation feed local entitlements | New integration in test mode first. Dedupe events; handle out-of-order notifications, renewal, cancellation, failures/refunds/disputes; no card details or chat content in our payment payloads. Business/price/provider choices require founder decision before activation. |
 | Operations | One deployable service initially, managed database when provisioned, content-free metrics, encrypted backups, tested migration/rollback and staffed incident/support paths | Current local backup checks do not establish hosted recovery. Multi-instance operation requires shared atomic state first. Avoid microservices and orchestration frameworks without measured need. |
 
@@ -424,7 +424,7 @@ flowchart LR
   Verify -->|Encrypted request body| Relay
   Relay -->|Encrypted body| Router[Candidate protected router]
   Router -->|Protected downstream path requires evidence| Model[Confidential model worker]
-  UI -->|Only approved query or URL| Grants
+  UI -->|Only masked search text| Grants
   Grants --> Public[Public search service or website]
   Public -->|Untrusted source text| Grants
   Grants --> UI
@@ -449,7 +449,7 @@ One TypeScript application and gateway avoid separate queues, vector databases a
 1. The browser reads a selected file and extracts text locally. Raw file content is not deliberately uploaded or persisted by the application. Selected extracted text and provenance enter the conversation.
 2. The user chooses context. Complete included messages and selected source text form the request; oversized context is rejected without silent truncation. Each answer retains its source snapshot.
 3. Before inference, the client checks the configured qualification artifact and independently verifies provider evidence against approved software and keys. Only the approved encrypted request travels through the fixed relay.
-4. For research, the client first previews the exact disclosure locally. After approval, the gateway creates an immutable, session-bound, single-use grant, expiring after five minutes, and executes that request. Returned content remains untrusted.
+4. For research, the client masks the search text on the device (no approval since 19 November 2026; the text is shown afterwards under "Searched the web"). The gateway creates an immutable, session-bound, single-use grant, expiring after five minutes, and executes that request. Returned content remains untrusted.
 5. Temporary conversations stay in application memory. Manual save encrypts conversation content, including source snapshots, into browser storage. Locking removes application access to in-memory vault keys and saved views; it is not a forensic memory-erasure guarantee.
 6. Deletion removes the stored ciphertext and wrapped conversation key. A random-ID tombstone prevents stale tabs from saving the deleted record again. Vault salt/check metadata and deletion markers remain; browser/OS backups are outside the erasure promise.
 
@@ -460,10 +460,10 @@ Source removal cannot retract content already sent to a supplier or embedded in 
 | Party/boundary | Visibility and limits |
 | --- | --- |
 | User browser and delivered JavaScript | Plaintext files, prompts, answers, extracted sources and unlocked history. Compromised device, extensions or malicious application updates can defeat privacy before encryption. |
-| Local gateway/operator | Session/network metadata, timing, sizes, destination/model configuration, provider credentials and explicitly approved research queries/URLs/results. Intended inference bodies remain ciphertext; this must be confirmed live. An operator able to replace client code remains trusted. |
+| Local gateway/operator | Session/network metadata, timing, sizes, destination/model configuration, provider credentials and masked research queries, opened page addresses and results. Intended inference bodies remain ciphertext; this must be confirmed live. An operator able to replace client code remains trusted. |
 | Provider edge/control plane | Connection and billing metadata, encrypted body sizes, timing, model routing information and verification requests. Do not promise metadata anonymity. |
 | Qualified confidential runtime | Plaintext inference context and output while computing. Hardware, firmware, attested code, key binding and the entire downstream path must be trusted and reviewed. |
-| Public search service/website | Approved query or URL and request metadata. The query itself can reveal sensitive information even when approved. No automatic attachment or conversation disclosure is permitted. |
+| Public search service/website | Masked query or page address and our server's request metadata. The query itself can reveal sensitive information even after masking: names and details in the user's own words are not removed. No automatic attachment or conversation disclosure is permitted. |
 | Network or environment proxy | Destination/timing information and whatever its TLS configuration exposes. Provider requests remain body-encrypted if the end-to-end scheme is valid; ordinary research HTTPS depends on the configured transport/proxy trust. |
 | Browser storage reader | Encrypted saved content plus vault metadata and opaque deletion markers. Weak passphrases permit offline guessing; an unlocked/compromised browser is outside this protection. |
 
@@ -519,7 +519,7 @@ Restricted hosted deployment now includes individual invitations and account-sco
 Owner direction of 22 October: Tinfoil stays the supplier for now, but inference with its verification, web search and usage metering sit behind provider-neutral interfaces so any of them can be swapped later by adding an adapter and changing configuration. No second adapter is built.
 
 - **Relay (server).** `server/providers/inference-relay.ts` defines `InferenceRelayAdapter`: `verificationHosts` (for the content security policy), `admit` (routing headers and ciphertext checks against the qualification; the relay names the model, a client may choose only the qualified model or its fallback), `upstream` (URL and headers for the ciphertext body), `accept` and `classifyFailure` (encrypted success and the "rejected" versus "unavailable" class the browser sees), `usage` (completed-request metering from headers or trailers) and `guard` (a block-only middleware). `server/app.ts` keeps admission, allowances, concurrency and settlement and resolves the adapter from the qualification report's `provider` through a registry (`config.inferenceRelay` injects one in tests). `server/providers/tinfoil-relay.ts` holds every `X-Tinfoil-*` and `Ehbp-*` header, the model pin, the usage-metrics trailer format and the attestation-audit guard.
-- **Search (server).** `server/providers/search.ts` defines `SearchProvider` (`id`, `recipientLabel`, `search`). The research routes consume approved queries through it; the Brave adapter wraps the existing `searchWeb`. The approval dialog's recipient label comes from the adapter, so the approvals code names no supplier (`Approvals` takes the label).
+- **Search (server).** `server/providers/search.ts` defines `SearchProvider` (`id`, `recipientLabel`, `search`). The research routes consume masked queries through it; the Brave adapter wraps the existing `searchWeb`. The approval dialog's recipient label comes from the adapter, so the approvals code names no supplier (`Approvals` takes the label).
 - **Browser.** `src/providers/inference-client.ts` defines `InferenceClientAdapter`: `verify` (attestation fetch and verification, returning evidence and a factory for encrypted transports), `requestHeaders` (routing pins) and `modelOptions` (per-model reasoning switches). `src/verified-chat.ts` keeps masking, context composition, contracts and reply consumption and never names the supplier beyond importing the registry; `src/providers/tinfoil-client.ts` owns the maintained verifier and EHBP imports and the Tinfoil headers.
 - **Configuration.** The qualification report's `provider` selects both adapters. Adding a supplier means a new relay adapter, a new client adapter, registration, and a report naming it; the usage ledgers, approvals, masking and the UI are untouched. `tests/provider-interfaces.test.ts` pins the contracts and proves injection (an injected adapter's verification hosts appear in the policy header and nothing supplier-specific does).
 

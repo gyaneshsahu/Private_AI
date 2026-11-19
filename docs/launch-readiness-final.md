@@ -65,7 +65,7 @@ Status words: **done** = built and tested in this run; **later** = not now, with
 | SS-18, FE-13 | Account-wide custom instructions; global memory switch | later | |
 | SS-20..23 | Account headings, favicon, `?developmentTools`, skip link | done | The on-device calculator stays behind `?developmentTools`; figures only in development builds. |
 | FE-06 | Every search counted toward the 5-file cap | done | 5 searches per chat, oldest replaced. |
-| FE-07 | Search and deep research left the chat | done | "+" > Search the web and "+" > Deep research run inside the chat; every search text is still approved first; the Research page stays for its other uses. |
+| FE-07 | Search and deep research left the chat | done | "+" > Deep research runs inside the chat. Since 19 November 2026 search is automatic: no "+" > Search the web, no approval, and the Research page is removed (`docs/owner-decisions.md`). |
 | FE-08 | Projects hidden behind "···" | done | Row opens the project screen. |
 | FE-10 | Drops on the files page swallowed | done | |
 | FE-12 | A file attached but not sent was stored | done | |

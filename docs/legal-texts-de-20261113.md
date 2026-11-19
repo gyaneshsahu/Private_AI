@@ -1,6 +1,6 @@
 # German legal texts: note for the owner (13 November 2026)
 
-**Status: every German text is a DRAFT. It needs your approval and a legal read. Once approved, the German text is binding.** The English texts are unchanged, word for word, and so are their approvals. The corrections in `docs/privacy-policy-corrections-draft-20261113.md` are not applied, in either language, because you have not approved them.
+**Status: every German text is a DRAFT. It needs your approval and a legal read. Once approved, the German text is binding.** The English texts are unchanged, word for word, and so are their approvals. The 13 November correction drafts were deleted on 19 November because their content is now in the app's policy (`shared/privacy-policy.ts`); the current texts, in both languages, are in `docs/legal-texts-side-by-side.md`.
 
 ## What was translated
 
@@ -13,7 +13,7 @@
 | Imprint, and the identity fields in the policy | `shared/legal-identity.ts` (German imprint, `identityDe`) | in use |
 | Acceptable use | `docs/acceptable-use-de-draft-20261113.md` | draft |
 | 18+ rule (rule and wording) | `docs/age-rule-de-draft-20261113.md` | draft |
-| Policy corrections (proposals, new sections, open questions) | `docs/privacy-policy-corrections-de-draft-20261113.md` | draft, not approved |
+| Policy corrections (proposals, new sections, open questions) | `docs/legal-texts-side-by-side.md` (the correction drafts were deleted on 19 November) | draft, not approved |
 
 Read all in-app texts, English and German one after the other, in `docs/legal-texts-side-by-side.md` (generated from the code).
 

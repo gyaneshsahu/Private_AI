@@ -27,8 +27,8 @@
 | 2 | Sign-in, consent and sessions | 2.1 to 2.9 |
 | 3 | Permissions and account isolation | 3.1 to 3.8 |
 | 4 | Chat basics | 4.1 to 4.22 |
-| 5 | Web search | 5.1 to 5.6 |
-| 6 | Deep research | 6.1 to 6.8 |
+| 5 | Web search (automatic) | 5.1 to 5.11 |
+| 6 | Deep research | 6.1 to 6.8 (no 6.5) |
 | 7 | Files and documents | 7.1 to 7.10 |
 | 8 | Ask about a picture | 8.1 to 8.8 |
 | 9 | Image creation | 9.1 to 9.8 |
@@ -143,16 +143,23 @@ Stop and send the findings log whenever something blocks you.
 | 4.21 | Phone: Enter on the on-screen keyboard | Makes a new line; only the Send button sends | |
 | 4.22 | PC: Enter sends, Shift+Enter makes a new line | As described | |
 
-## 5. Web search
+## 5. Web search (automatic, like ChatGPT)
+
+Search is automatic (decision of 19 November, `docs/owner-decisions.md`). You never choose or approve a search. The app looks things up when a question needs current information; you see the answer, a small "Searched the web" line and the sources.
 
 | # | Do | Expect | P/F |
 | --- | --- | --- | --- |
-| 5.1 | "+" > **Search the web**, then "What is the current ticket price for the Hamburg Elbphilharmonie plaza?" | It searches at once (no approval card) and answers with numbered sources that open | |
-| 5.2 | Without "+": "What happened in the news today?" | It answers without a search, or searches if "Search automatically" is on; it never invents sources | |
-| 5.3 | Settings: turn on "Search automatically", ask a time-sensitive question | It searches without asking | |
-| 5.4 | Settings: "Always search for rules, fees and deadlines", then ask "Wie hoch ist die Gebühr für einen neuen Personalausweis?" | It searches and answers from the results, preferring an official site | |
-| 5.5 | Sources: click two of them | Each opens the right page in a new tab | |
-| 5.6 | Account usage page after 5.1 | "Web searches" went up by 1 | |
+| 5.1 | Ask "What is the current ticket price for the Hamburg Elbphilharmonie plaza?" | It searches by itself (no card, no button), then answers with numbered sources. Under the answer: one quiet line, "Searched the web" | |
+| 5.2 | Tap "Searched the web" | It opens: "Searched for: “…”" with the exact text that was searched, and the list of sources. Each source opens in a new tab | |
+| 5.3 | Ask "Explain how photosynthesis works" | No search, no "Searched the web" line: a timeless question is answered directly | |
+| 5.4 | Ask "Wie hoch ist die Gebühr für einen neuen Personalausweis?" | It searches by itself and answers from the results, preferring an official site | |
+| 5.5 | Ask "Search the web for heat pump subsidies 2026", then "Recherchiere die Öffnungszeiten des Bürgeramts Münster" | Both search: asking in words is enough | |
+| 5.6 | A question with a made-up email address: "What is the current fee for transfers to pia@example.test?" | It searches; tapping "Searched the web" shows the email address replaced, never the real one | |
+| 5.7 | Settings > General: **"Look things up online"** | The switch is ON by default, with one line explaining it. Turn it OFF, ask 5.1 again: no search, no "Searched the web" line. Turn it back ON | |
+| 5.8 | Open the "+" menu | No "Search the web" item and no "Research" item. Only things you choose yourself (files, pictures, deep research, …) | |
+| 5.9 | Reload the chat from 5.1, then open "Searched the web" | The searched text is still there; the results were not kept, so it says so. "Search again" on the chat searches at once and answers again | |
+| 5.10 | Account usage page | "Web searches" went up by one for each search above | |
+| 5.11 | Look at the line on a phone, in light and dark theme | Small, quiet, not cut off, easy to tap | |
 
 ## 6. Deep research
 
@@ -162,7 +169,6 @@ Stop and send the findings log whenever something blocks you.
 | 6.2 | Wait for it to finish (up to 8 minutes) | The answer appears in the conversation with numbered sources that open | |
 | 6.3 | Usage page | 15 units counted once, at the start. "Deep research runs" went up by 1 | |
 | 6.4 | Start another run and press **Stop the research** while it searches | It stops at once; nothing more is searched | |
-| 6.5 | Tools > Research > the Deep research panel, a question, "Start research" | The same progress line with Stop, then "The research is finished." and "Show the answer" | |
 | 6.6 | A question containing a made-up email address (for example "pia@example.test") | The email address never appears in a search text (the agent can check the counts); the answer still works | |
 | 6.7 | Export the research answer as PDF | The answer and its sources are in the PDF | |
 | 6.8 | Use up the daily research runs (premium 5, alpha 3), then start one more | The calm limit message; the question goes back into the box; no units counted | |
@@ -219,6 +225,7 @@ Stop and send the findings log whenever something blocks you.
 | 10.5 | Dictate past 2:40 | "Stops in 0:19", then it stops at 3:00 and keeps the text | |
 | 10.6 | Deny the microphone in the browser, then tap | "Microphone access was refused…" | |
 | 10.7 | **Voice conversation** (PC Chrome or iPhone): "Start talking", ask a question, stop talking | Sent about 1 second after you stop; the answer is read aloud sentence by sentence | |
+| 10.7a | In a voice conversation ask "What's the weather in Hamburg tomorrow?" | It searches by itself and reads the answer; it never stops to ask about searching | |
 | 10.8 | Talk over the answer | It stops reading and listens | |
 | 10.9 | Pause and Resume, then End | The microphone turns off at End and Pause | |
 | 10.10 | Switch to another tab during a voice conversation | "Paused because the page went to the background. The microphone is off." | |
@@ -317,7 +324,8 @@ Stop and send the findings log whenever something blocks you.
 | 18.4 | In chat: "can you give me a new German word to learn every 2 days" | The card "Create a scheduled task?" (it asks for a time); Create sends nothing | |
 | 18.5 | "what is a weekly schedule?" | No card; a normal answer | |
 | 18.6 | "Export to calendar" and import into your phone calendar | The entry says "CometRow task" and holds no instruction text | |
-| 18.7 | New task, **Auto: background task**, daily, 10 minutes ahead, "Search the web first" on | Created with "Background task", "Stored on our server and readable by it…" and its cost per run | |
+| 18.7 | New task, **Auto: background task**, daily, 10 minutes ahead, instruction "Tell me today's top news in Germany" | No search checkbox in the form. Created with "Background task", "Stored on our server and readable by it…" and its cost per run (it includes the search, decided from the instruction) | |
+| 18.7a | Manual task "What is the weather in Berlin today?", then Run now | It searches by itself like a chat message; the answer has "Searched the web" | |
 | 18.8 | After the due time (keep the app closed) | The result arrives as a new chat "<name> (background task)" when you open the app | |
 | 18.9 | Delete the Auto task | It asks first and says the server copy is deleted | |
 | 18.10 | Pause and Resume a task | Works; a paused task does not run | |
@@ -421,7 +429,7 @@ Stop and send the findings log whenever something blocks you.
 | --- | --- | --- | --- |
 | 26.1 | Shell: `node --import tsx server/deployment-database-entry.ts check /etc/secrets/render-config.json` | `"applied":20,"pending":0` | |
 | 26.2 | Shell: `... privileges-check /etc/secrets/render-config.json` | Role `cometrow_runtime`, `"restricted":true` | |
-| 26.3 | Send a message containing the made-up word `zebracanary4817`, search with it, then search Render **Logs** for that word and your email address | No hits for either | |
+| 26.3 | Send "What is the current news about zebracanary4817?" (it searches by itself), then search Render **Logs** for that word and your email address | No hits for either | |
 | 26.4 | Logs: the hourly `CometRow counts (last hour)` line | Counts only, no account or text | |
 | 26.5 | Logs: `CometRow model check: ... listed and unchanged` | Present once a day | |
 | 26.6 | Restart the service (Manual Deploy, the same commit) | Chats, memories and Secure data are all still there afterwards | |

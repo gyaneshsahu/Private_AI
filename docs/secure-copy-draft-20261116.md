@@ -63,7 +63,7 @@ Secure Max has no guide of its own: the Help guide is the account's (Secure) whe
   >
   > Save what you want to keep. Temporary work disappears on reload. To save, open Saved, create or unlock your vault with a passphrase, then choose Save encrypted snapshot. Save again after changes. Saved chats are encrypted in the vault on this device. Your passphrase cannot be recovered, so keep it safe. In Saved you can also download an encrypted backup and restore it later with its original passphrase. Incognito chats are never saved. Locking clears unsaved work.
   >
-  > Web search is your choice. CometRow first shows the exact search text or page address. Review the exact query before you approve it. Only the text you approve goes to the search service; your chat and files are not sent with it. Search results and source links are not saved.
+  > Current information. When a question needs it, CometRow looks it up online and shows the sources under the answer. Personal details such as email addresses and bank numbers are removed before the search. You can turn this off in Settings, General, “Look things up online”. [changed 19 November: search is automatic; for the legal read]
   >
   > Stay in control. Stop ends an answer, and an unfinished answer is not used later. Retry asks again as a new request. Edit an earlier message to start a new branch. Copy answer puts the text on your clipboard. Locking the vault does not clear the clipboard. To delete a chat, choose Delete in its menu in the chat list. Downloaded backups are not affected.
 
@@ -79,7 +79,7 @@ Secure Max has no guide of its own: the Help guide is the account's (Secure) whe
   >
   > Speichern Sie, was Sie behalten möchten. Vorübergehende Arbeit verschwindet beim Neuladen. Zum Speichern öffnen Sie Gespeichert, legen Ihren Tresor mit einer Passphrase an oder entsperren ihn und wählen dann Verschlüsselt speichern. Speichern Sie nach Änderungen erneut. Gespeicherte Chats liegen verschlüsselt im Tresor auf diesem Gerät. Ihre Passphrase kann nicht wiederhergestellt werden. Bewahren Sie sie gut auf. Unter Gespeichert können Sie auch eine verschlüsselte Sicherung herunterladen und später mit ihrer ursprünglichen Passphrase wiederherstellen. Inkognito-Chats werden nie gespeichert. Sperren entfernt ungespeicherte Arbeit.
   >
-  > Die Websuche ist Ihre Entscheidung. CometRow zeigt zuerst den genauen Suchtext oder die Seitenadresse. Prüfen Sie die genaue Suchanfrage, bevor Sie sie freigeben. Nur der Text, den Sie freigeben, geht an den Suchdienst; Ihr Chat und Ihre Dateien werden nicht mitgesendet. Suchergebnisse und Quellenlinks werden nicht gespeichert.
+  > Aktuelle Informationen. Wenn eine Frage sie braucht, schlägt CometRow online nach und zeigt die Quellen unter der Antwort. Persönliche Angaben wie E-Mail-Adressen und Kontonummern werden vor der Suche entfernt. Sie können das unter Einstellungen, Allgemein, „Online nachschlagen“ ausschalten. [changed 19 November: search is automatic; for the legal read]
   >
   > Sie behalten die Kontrolle. Stoppen beendet eine Antwort, und eine unvollständige Antwort wird später nicht verwendet. Eine Antwort neu anzufordern ist eine eigene Anfrage. Bearbeiten Sie eine frühere Nachricht, um einen neuen Zweig zu beginnen. Antwort kopieren legt den Text in Ihre Zwischenablage. Das Sperren des Tresors leert die Zwischenablage nicht. Um einen Chat zu löschen, wählen Sie Löschen in seinem Menü in der Chatliste. Heruntergeladene Sicherungen sind davon nicht betroffen.
 
@@ -95,7 +95,7 @@ Secure Max has no guide of its own: the Help guide is the account's (Secure) whe
   >
   > Your chats are saved automatically. They are saved to your account, encrypted while stored, and are on all your devices after sign-in. CometRow holds the key. Incognito chats are never saved. If your sidebar shows Secure Max, you can keep chats there with their own key and recovery key, which you keep yourself. Its rules are shown before you start.
   >
-  > Web search is your choice. CometRow first shows the exact search text or page address. Review the exact query before you approve it. Only the text you approve goes to the search service; your chat and files are not sent with it. Search results and source links are not saved.
+  > Current information. When a question needs it, CometRow looks it up online and shows the sources under the answer. Personal details such as email addresses and bank numbers are removed before the search. You can turn this off in Settings, General, “Look things up online”. [changed 19 November: search is automatic; for the legal read]
   >
   > Stay in control. Stop ends an answer, and an unfinished answer is not used later. Retry asks again as a new request. Edit an earlier message to start a new branch. Copy answer puts the text on your clipboard. To delete a chat, choose Delete in its menu in the chat list. It is deleted on all your devices.
 
@@ -111,7 +111,7 @@ Secure Max has no guide of its own: the Help guide is the account's (Secure) whe
   >
   > Ihre Chats werden automatisch gespeichert. Sie werden in Ihrem Konto gespeichert, verschlüsselt abgelegt, und sind nach der Anmeldung auf allen Ihren Geräten. CometRow verwahrt den Schlüssel. Inkognito-Chats werden nie gespeichert. Wenn Ihre Seitenleiste Secure Max zeigt, können Sie Chats dort mit einem eigenen Schlüssel und einem eigenen Wiederherstellungsschlüssel aufbewahren, die Sie selbst verwahren. Die Regeln dafür sehen Sie, bevor Sie beginnen.
   >
-  > Die Websuche ist Ihre Entscheidung. CometRow zeigt zuerst den genauen Suchtext oder die Seitenadresse. Prüfen Sie die genaue Suchanfrage, bevor Sie sie freigeben. Nur der Text, den Sie freigeben, geht an den Suchdienst; Ihr Chat und Ihre Dateien werden nicht mitgesendet. Suchergebnisse und Quellenlinks werden nicht gespeichert.
+  > Aktuelle Informationen. Wenn eine Frage sie braucht, schlägt CometRow online nach und zeigt die Quellen unter der Antwort. Persönliche Angaben wie E-Mail-Adressen und Kontonummern werden vor der Suche entfernt. Sie können das unter Einstellungen, Allgemein, „Online nachschlagen“ ausschalten. [changed 19 November: search is automatic; for the legal read]
   >
   > Sie behalten die Kontrolle. Stoppen beendet eine Antwort, und eine unvollständige Antwort wird später nicht verwendet. Eine Antwort neu anzufordern ist eine eigene Anfrage. Bearbeiten Sie eine frühere Nachricht, um einen neuen Zweig zu beginnen. Antwort kopieren legt den Text in Ihre Zwischenablage. Um einen Chat zu löschen, wählen Sie Löschen in seinem Menü in der Chatliste. Er wird auf allen Ihren Geräten gelöscht.
 
@@ -469,8 +469,8 @@ One text, true in every mode.
 
 #### `account.exportBody` (agent proposal)
 
-- Secure EN: One file with the records this service holds about your account: your account identity and contact email, sign-in methods (never their secret keys or tokens), active sessions, security notices, request and usage records with their published cost, billing operations and any closure request. Your saved chats, files and memories are listed only by number, size and time, without their content (search text you approve passes through the service on the way to the search provider).
-- Secure DE: Eine Datei mit den Daten, die dieser Dienst zu Ihrem Konto speichert: Ihre Kontoidentität und Kontakt-E-Mail-Adresse, Anmeldemethoden (niemals deren geheime Schlüssel oder Tokens), aktive Sitzungen, Sicherheitshinweise, Anfrage- und Nutzungsdaten mit ihren veröffentlichten Kosten, Abrechnungsvorgänge und einen etwaigen Antrag auf Schließung. Ihre gespeicherten Chats, Dateien und Erinnerungen sind nur mit Anzahl, Größe und Zeitpunkt aufgeführt, ohne ihren Inhalt (Suchtext, den Sie freigeben, läuft auf dem Weg zum Suchanbieter durch den Dienst hindurch).
+- Secure EN: One file with the records this service holds about your account: your account identity and contact email, sign-in methods (never their secret keys or tokens), active sessions, security notices, request and usage records with their published cost, billing operations and any closure request. Your saved chats, files and memories are listed only by number, size and time, without their content (the masked search text of an automatic web search passes through the service on the way to the search provider) [changed 19 November: search is automatic; for the legal read].
+- Secure DE: Eine Datei mit den Daten, die dieser Dienst zu Ihrem Konto speichert: Ihre Kontoidentität und Kontakt-E-Mail-Adresse, Anmeldemethoden (niemals deren geheime Schlüssel oder Tokens), aktive Sitzungen, Sicherheitshinweise, Anfrage- und Nutzungsdaten mit ihren veröffentlichten Kosten, Abrechnungsvorgänge und einen etwaigen Antrag auf Schließung. Ihre gespeicherten Chats, Dateien und Erinnerungen sind nur mit Anzahl, Größe und Zeitpunkt aufgeführt, ohne ihren Inhalt (der maskierte Suchtext einer automatischen Websuche läuft auf dem Weg zum Suchanbieter durch den Dienst hindurch) [changed 19 November: search is automatic; for the legal read].
 
 #### `account.vaultNote` (agent proposal)
 

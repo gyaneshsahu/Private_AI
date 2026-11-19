@@ -23,7 +23,7 @@
 | 7 | `shared/health-consent.ts`, second paragraph | "Your message is sent, locked, to the secure server ... Some identifiers, like account numbers, are replaced on your device before sending; health details are not." | A health picture is "part of your message" only by reading generously | See 2.7. Changing it needs a new consent version, so everyone is asked again |
 | 8 | `src/text/photo.ts`, "Photo to text" intro | "... Nothing is uploaded." | Still true: "Photo to text" is a separate entry and sends no picture. No change | None |
 
-If the corrections draft of 13 November (`docs/privacy-policy-corrections-draft-20261113.md`, part 2.3, "what the app stores in the browser") is adopted, add one line there: "`cometrow.images.note-seen`: that the note about pictures was shown."
+The policy now has the part on what the app stores in the browser ("In your browser, CometRow stores only what it needs to work", `docs/legal-texts-side-by-side.md`). Its local-storage line covers this as one of "a few similar notes". If the lawyer wants it named, add: "`cometrow.images.note-seen`: that the note about pictures was shown."
 
 ## 2. Proposed text, English and German
 

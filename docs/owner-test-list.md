@@ -31,7 +31,7 @@ This is everything only you can test, do or decide, from the start of the projec
 - Search is on, with Brave. Privatemode is primary, Tinfoil is backup only.
 - Large-document path stays on. It starts at 20,000 characters. The 10 MB file limit stays until the phone test (T-53).
 - OCR language data is kept in the browser. German OCR data is added.
-- "Germany" is added to the suggested search text for rules questions.
+- "Germany" is added to the search text for rules questions. Since 19 November 2026 search is automatic (`docs/owner-decisions.md`).
 - German interface: built, off by default. Erase also deletes request records.
 
 ---
@@ -62,12 +62,12 @@ No deploy needed. T-01 to T-22 block the first invitee.
   Tell the agent: "Brave key ready", the plan name, and anything in the terms that worries you.
 
 - [ ] **T-05 Approve the privacy wording for Privatemode.**
-  Do: read `docs/privacy-wording-privatemode-20261112.md`. It includes the "Always search" sentence and the search sentences. Decide on the sentence "does not use them to train any AI" (recommended: keep it). Also decide the 4 high rows in `docs/copy-audit-20261112.md`.
+  Do: read `docs/privacy-wording-privatemode-20261112.md`. Its search sentences are out of date since 19 November 2026 (search is automatic); the current search wording is in `docs/privacy-copy-privatemode-20261112.md`. Decide on the sentence "does not use them to train any AI" (recommended: keep it). Also decide the 4 high rows in `docs/copy-audit-20261112.md`.
   Expect: you agree with every sentence, or you mark changes.
   Tell the agent: "approved", or the sentences to change.
 
 - [ ] **T-06 Approve the privacy policy fixes and the provider section.**
-  Do: read `docs/privacy-policy-corrections-draft-20261113.md` and `docs/provider-disclosure-draft-20261112.md`. Also the new sentence of 14 November: text-recognition language files are kept in the browser (decisions doc, top paragraph).
+  Do: read the policy in `docs/legal-texts-side-by-side.md` (the 13 November corrections are applied there) and `docs/provider-disclosure-draft-20261112.md`. Also the new sentence of 14 November: text-recognition language files are kept in the browser (decisions doc, top paragraph).
   Expect: as T-05.
   Tell the agent: "approved" or changes, per file.
 
@@ -459,13 +459,13 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
   Expect: you can say yes or no to switching it on, to the limits (200 memories, 8 per question, 3 pinned), and to each proposed sentence.
   Tell the agent: your decision and any sentence to change. Recommended: on after T-89 and T-90 pass.
 - [ ] **T-94 Deep research: one whole run (only after the lead switched it on and ran the live checks).**
-  Do: open Research. Under "Deep research" type a question that needs several sources, for example about a notice period and where the law says so. Tap "Plan the research". Read the proposed search texts. Change one, remove one. Tap "Search for these texts". Watch the steps. At the end tap "Show the answer".
-  Expect: nothing is searched before you approve. The steps show Planning, Searching, Reading pages, Writing the answer, each with its outcome. The answer has source links, and a line above it says how many searches and pages were used. The panel says "Requests counted for this run: 15 of 15".
-  Tell the agent: the question, the proposed texts, how long it took, and whether the answer was worth 15 requests.
+  Do: in a chat, tap "+" > "Deep research". Type a question that needs several sources, for example about a notice period and where the law says so. Send. Watch the progress line.
+  Expect: the run starts at once (no plan to approve, since 18 November). One progress line shows Planning, Searching, Reading pages, Writing the answer, with "Stop the research". The answer arrives in the chat with source links, and a line above it says how many searches and pages were used and which texts were searched. 15 requests are counted at the start.
+  Tell the agent: the question, the searched texts, how long it took, and whether the answer was worth 15 requests.
 
 - [ ] **T-95 Deep research: a personal detail never reaches a search text.**
-  Do: ask a research question that contains an email address or a phone number. Look at the proposed texts. Then type the address into one of the texts yourself.
-  Expect: no proposed text contains the detail. After you type it in, the line "This text will be sent" shows the text without it.
+  Do: start a deep research with a question that contains an email address or a phone number.
+  Expect: none of the searched texts listed with the answer contains the detail.
   Tell the agent: any text that showed the detail as it would be sent.
 
 - [ ] **T-96 Deep research: stop.**
@@ -510,7 +510,7 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
 
 - [ ] **T-104 Live voice: interruptions.**
   Do: ask "Wie hoch ist der Rundfunkbeitrag?" by voice. Then start again and switch to another tab while it listens. Then start again and say nothing for 10 seconds.
-  Expect: the rules question ends the session and waits in the message box with the search choice. The other tab pauses it with the microphone off. Silence pauses it with "No speech was heard".
+  Expect: the rules question is searched and answered like a chat message, without stopping to ask (since 19 November 2026). The other tab pauses it with the microphone off. Silence pauses it with "No speech was heard".
   Tell the agent: any case that sent something you did not expect.
 
 - [ ] **T-105 Live voice: phone and screen reader.**
@@ -549,9 +549,9 @@ Say "T-xx: yes" to take the agent's default, or give your own value.
   Tell the agent: your answers. Recommended: on for invitees only after pay-as-you-go works and the legal read is done.
 
 - [ ] **T-112 Background tasks: the job search from a made-up CV (after the lead switched it on).**
-  Do: write a short made-up CV (no real person). In Scheduled, create a daily task at a time 10 minutes ahead with the CV attached, search on, mode Fast, and choose Background task. Close CometRow. Open it 20 minutes later.
-  Expect: the badge "Background task" on the task; both consent boxes before saving; the answer appears after opening and is saved in the vault; the allowance fell by 4; the next day either new offers or "no new results".
-  Tell the agent: the time it appeared, the allowance before and after, and a screenshot of the badge and the consent step.
+  Do: write a short made-up CV (no real person). In Scheduled, create a daily task at a time 10 minutes ahead with the CV attached, mode Fast, and choose Background task (no search checkbox since 19 November 2026: the task is decided once, at creation, from its instruction). Close CometRow. Open it 20 minutes later.
+  Expect: the badge "Background task" on the task; no consent boxes before saving (removed 18 November); the answer appears after opening and is saved in the vault; the allowance fell by 4; the next day either new offers or "no new results".
+  Tell the agent: the time it appeared, the allowance before and after, and a screenshot of the badge.
 
 - [ ] **T-113 Background tasks: delete really deletes.**
   Do: delete the task from T-112, or switch it to Manual. Then ask the lead to run `scripts/account-operator.ts show` for your test account.
@@ -691,7 +691,7 @@ What the 16 November run built or changed and only you can check. Everything was
   Expect: the deploy starts without migration or permission errors.
   Tell the agent: "migrations done" and the deploy log line, or the error.
 - [ ] **T-144 Secure on two devices (test deploy, Secure switched on).**
-  Do: sign in on a laptop and a phone; chat on one; ask a question that needs web search, approve it, wait for the answer with sources.
+  Do: sign in on a laptop and a phone; chat on one; ask a question that needs web search (it searches by itself), wait for the answer with sources and the "Searched the web" line.
   Expect: the chat appears on the other device after sign-in; the answer keeps its sources and shows no raw ids such as `[synthetic-0002]`; Settings never says "we never can" read it.
   Tell the agent: what you saw, with a screenshot of any wrong text.
 - [ ] **T-145 Secure Max first use on a phone.**

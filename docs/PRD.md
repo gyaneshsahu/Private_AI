@@ -105,7 +105,7 @@ Supported evaluation language: English. Use synthetic or non-sensitive inputs un
 | Everyday assistance | Real streaming answers for writing/revision, explanation/planning and personal discussion; preserve constraints and corrections across follow-ups; allow cancellation and explicit retry. |
 | Documents and screenshots | Extract locally from text PDFs, UTF-8 text and printed-English PNG/JPEG screenshots. Show editable extracted text and source/page provenance before use. Clearly reject unsupported or unreadable inputs. |
 | Evidence and calculations | Answer from selected sources with inspectable citations; preserve quantities, units, dates and attribution. Provide exact decimal calculations where appropriate; never claim an unperformed calculation or retrieval. |
-| Controlled research | Preview the exact public query or URL and obtain explicit approval before disclosure. Treat retrieved text as untrusted evidence. No model-triggered external requests without approval. |
+| Automatic web search | Replaced 19 November 2026 (owner, `docs/owner-decisions.md`): approval before search is removed. The app searches when a question needs current information, masks recognised identifiers on the device first, shows "Searched the web" with the exact searched text and the sources under the answer, and offers one switch, "Look things up online", on by default. Treat retrieved text as untrusted evidence. |
 | Conversation control | Show included context, preserve evidence behind earlier answers, and reject oversized requests rather than silently dropping context. Editing a prior question must invalidate dependent later answers. |
 | Temporary use and history | Temporary conversations default to application memory. Optional, manually saved browser history is encrypted with a user passphrase; support locking, loading and deletion. Explain recovery and erasure limits. |
 | Responsive use | Complete the same core workflows on desktop and basic phone layouts, with keyboard access, readable errors and visible progress. |
@@ -119,7 +119,7 @@ Removing a source prevents its inclusion as a selected attachment in future requ
 - Verify approved confidential software and its encryption key in the browser before sending private inference content. Qualification must cover the complete router-to-model processing chain, not just the first endpoint.
 - Fail closed on missing, invalid, expired or unapproved verification. No ordinary inference fallback, automatic disclosure or silent retry after ambiguous failure.
 - Keep extraction local. Keep provider credentials on the gateway. Keep private content out of application logs, URLs and telemetry.
-- External research approval covers only the displayed query or URL. Attachments, messages and other private context must not accompany that request implicitly.
+- A web search sends only its search text (identifiers masked on the device first); attachments, messages and other private context never accompany it. The searched text is shown under the answer. (Replaces the per-search approval requirement, 19 November 2026.)
 - Treat documents, websites and model text as untrusted. Prompt instructions are not a security boundary; enforce network permissions in application code.
 - Document supplier retention, metadata exposure and trust assumptions before claiming confidential inference. Temporary use is not anonymity.
 

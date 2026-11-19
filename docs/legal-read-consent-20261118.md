@@ -65,7 +65,7 @@ For each point: the risk, and a way to meet it without a popup, if there is one.
 
 - **Draft position:** account, answering, saving and features under Art. 6(1)(b) (contract); request records, limits and security logs under Art. 6(1)(f) (legitimate interest); the acceptance record under Art. 6(1)(c)/7(1) (policy section "Legal bases and your rights (draft)").
 - **Risk:** low for ordinary chats if (b) holds. Mixing consent and contract for the same processing is a known problem: if consent is the basis, withdrawal must stop the processing.
-- **Web search** was recorded as Art. 6(1)(a), consent per search (`docs/art30-record-draft-20261112.md` row 7). The user still approves the exact search text each time (or switches on automatic search, off by default), so either (a) or (b) may work. Lawyer to choose.
+- **Web search** was recorded as Art. 6(1)(a), consent per search (`docs/art30-record-draft-20261112.md` row 7). Since 19 November 2026 search is automatic: no approval, identifiers masked on the device first, "Look things up online" in Settings on by default, and "Searched the web" under the answer shows the searched text and the sources. There is no approval per search any more. Lawyer to choose the basis. [changed 19 November: search is automatic; for the legal read]
 
 ### 4.3 Information at the time of collection (Art. 13)
 
@@ -75,7 +75,7 @@ For each point: the risk, and a way to meet it without a popup, if there is one.
 
 ### 4.4 Storage on the device (§ 25 TDDDG)
 
-- **Facts (from code and docs):** the session cookie; the local vaults in the browser (IndexedDB) for Secure and Secure Max; settings such as language and automatic search; "seen" flags for a few notes; the OCR language files cached after first use. The first-start notice flag listed in `docs/notices-inventory-20261117.md` is no longer in `src` (the notice was removed). No analytics, no advertising, no tracking found. The full list is now in the policy section "Cookies and storage on your device" (section 6 below).
+- **Facts (from code and docs):** the session cookie; the local vaults in the browser (IndexedDB) for Secure and Secure Max; settings such as language and "Look things up online" [changed 19 November: search is automatic; for the legal read]; "seen" flags for a few notes; the OCR language files cached after first use. The first-start notice flag listed in `docs/notices-inventory-20261117.md` is no longer in `src` (the notice was removed). No analytics, no advertising, no tracking found. The full list is now in the policy section "Cookies and storage on your device" (section 6 below).
 - **Risk:** low. § 25(2) Nr. 2 TDDDG allows storage that is strictly necessary for a service the user explicitly asked for, without consent. Lawyer to confirm each item is strictly necessary (the OCR cache and the "seen" flags are the least obvious).
 - **No banner needed** while nothing non-essential is stored.
 
@@ -105,7 +105,7 @@ For each point: the risk, and a way to meet it without a popup, if there is one.
 
 ### 4.9 Transfers outside the EU (Chapter V, Art. 44 ff.)
 
-- **Brave Search:** US (`docs/eu-hosting-20261023.md`, `docs/art30-record-draft-20261112.md` row 7). Brave's API privacy notice: query records kept up to 90 days; query data is excluded from its DPA (`docs/search-provider-comparison.md`). Brave never answered our questions on retention and rights (same file). **To check:** Brave's transfer basis (EU-US Data Privacy Framework certification or Standard Contractual Clauses) and whether a processor relationship exists at all for queries. Only the approved search text is sent, after identifiers are replaced on the device; our server sends it, so Brave sees our server's address, not the user's.
+- **Brave Search:** US (`docs/eu-hosting-20261023.md`, `docs/art30-record-draft-20261112.md` row 7). Brave's API privacy notice: query records kept up to 90 days; query data is excluded from its DPA (`docs/search-provider-comparison.md`). Brave never answered our questions on retention and rights (same file). **To check:** Brave's transfer basis (EU-US Data Privacy Framework certification or Standard Contractual Clauses) and whether a processor relationship exists at all for queries. Only the search text is sent, after identifiers are replaced on the device (searched automatically since 19 November 2026) [changed 19 November: search is automatic; for the legal read]; our server sends it, so Brave sees our server's address, not the user's.
 - **Google sign-in:** the art. 30 draft lists Google's transfer basis as unknown. To check which Google company is the counterpart and the basis.
 - **Render and Cloudflare:** Render's service and database are in Frankfurt (`docs/eu-hosting-20261023.md`); responses carry `Server: cloudflare`, so Cloudflare acts for Render at the edge (`docs/art30-record-draft-20261112.md` row 5). To check: Render's sub-processors and transfer basis, log retention.
 - **Privatemode:** processing only in the EU/EEA (DPA of 24 July 2026, sections 9 and 10, per `shared/provider-disclosure.ts`). No transfer.

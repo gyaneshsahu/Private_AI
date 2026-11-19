@@ -8,29 +8,15 @@ Full result in `evaluation/german-rules-40-20261113/SUMMARY.md`; bars frozen bef
 | --- | --- | --- | --- |
 | Answer-side check | 8 of 40 reach the user unwarned | 1 of 40 (false alarms 0.6 %) | **Kept** |
 | Brave Goggles (20 searched questions) | 0 | 4 (official page read 18/20 instead of 5/20) | **Off** (`PRIVATEAI_SEARCH_GOGGLES` unset) |
-| "Always search" | 15 of 40 | 8 of 40 | **Shipped, off by default** |
+| "Always search" | 15 of 40 | 8 of 40 | **Shipped, off by default**; replaced on 19 November 2026: search is automatic |
 
-- **With always-search on and the answer-side check,** 1 of 40 confident errors reaches a user without a warning.
+- **With always-search on and the answer-side check,** (measured then; since 19 November 2026 search is automatic and on by default) 1 of 40 confident errors reaches a user without a warning.
 - **The question detector caught only 20 of the 40 fresh questions.** The answer-side check is now the real safety net. The detector is not tuned on these 40 questions.
 - **Next:** a masking false positive, "1 date of birth" on a parental-leave answer (a date in the web results).
 
-## "Always search for rules, fees and deadlines" — 13 November 2026
+## "Always search for rules, fees and deadlines" — 13 November 2026 (replaced)
 
-### What changed
-
-1. **A checkbox in the search-first choice:** "Always search for rules, fees and deadlines. Kept only on this device. You can switch it off in Research." It is off by default. Ticking it keeps the choice open for the current question, so the user still picks "Search and answer" or "Answer without checking" this time.
-2. **The matching setting in the Research tab,** under automatic search, with this help text:
-   > Off unless you switch it on. When it is on, a question about rules, fees or deadlines is searched before it is answered, without asking each time; other questions still ask. Recognised personal details are removed from the search text on this device first, and the exact text sent is shown under the message box. This setting is kept only on this device.
-3. **Storage:** `privateai.autoSearchRules` in this browser's storage only, like `privateai.autoSearch` (`readAutoSearch(RULES_KEY)` / `saveAutoSearch(on, RULES_KEY)` in `src/when-to-search.ts`). Never sent.
-4. **Behaviour:** where Send would show the choice (a German-rules question, no web results selected, automatic search off), it instead searches the masked text that the choice would have shown, then answers. The status line shows "Searched the web automatically for: …", as automatic search does. Other time-sensitive questions are not covered. The search-again box after an unsearched answer is unchanged.
-5. **Privacy copy (Privatemode draft variant only; the approved Tinfoil text is unchanged):**
-   > If you switch on automatic search, a question that looks time-sensitive or is about rules, fees or deadlines is searched without asking each time; if you switch on only "Always search for rules, fees and deadlines", just those questions are: recognised identifiers are removed on your device first and the exact text sent is shown to you. These settings are off until you switch them on and are kept only on this device.
-
-### Tests
-
-- `tests/when-to-search.test.ts`: the setting's own key, off by default, on and off again, blocked storage.
-- `tests/german-rules-ui.test.ts`, at phone width: the checkbox in the choice is off; ticking it stores the setting and keeps the choice; the next rules question is searched with its masked text without the choice and shown; a time-sensitive question that is not about rules is answered without a search; the Research tab shows the setting and switches it off.
-- `tests/privacy-copy.test.ts`: the Privatemode sentence changed; Tinfoil unchanged.
+Replaced on 19 November 2026 (`docs/owner-decisions.md`): search is automatic. The opt-in setting, its checkbox in the old search choice and its storage key are gone. A rules question is searched like any other question that needs current information, unless "Look things up online" is off in Settings.
 
 ## Brave Goggles — 13 November 2026
 
@@ -80,7 +66,7 @@ The owner's instruction (13 November): build the answer-side check first. The qu
    - A law the user named in the question (a text to translate, say).
    - "Frist" on its own is vocabulary, not a figure: "fristgerecht zum nächstmöglichen Termin" in a cancellation letter does not warn.
    - A § inside a document citation ("[d5ef4c4c, §4]") does not count.
-3. **When it fires.** An answer given without web results gets the existing warning ("This answer gives figures or deadlines that were not checked against an official source.") and the "Search and answer again" box, even when the question detector did not fire. `checkUncheckedFigures` is now "question detector and figures, or the answer-side check". The flag is the existing device-only `uncheckedFigures`: never model context, never sent. The search-again box takes the flag into account (`searchSuggestion(text, now, rulesAnswer)`), so it appears for a question that is neither time-sensitive nor recognised.
+3. **When it fires.** An answer given without web results gets the existing warning ("This answer gives figures or deadlines that were not checked against an official source."), even when the question detector did not fire. `checkUncheckedFigures` is now "question detector and figures, or the answer-side check". The flag is the existing device-only `uncheckedFigures`: never model context, never sent. The search-again box that used this flag was removed on 19 November 2026 (search is automatic).
 
 ### Calibration (older stored answers only)
 
@@ -185,50 +171,13 @@ On the 9 searched questions, the mean is 4.22 in both runs.
 
 **Next lever: the search side** (a second query the user sees, or an official-site hint in the shown text) **and detector coverage.** Both need the owner.
 
-## Search first by default — 13 November 2026 (later)
+## Search first by default — 13 November 2026 (later; replaced)
 
-### Decision
+Built on 13 November (`822a35e`): Send on a rules question first asked whether to search. Replaced on 19 November 2026 (`docs/owner-decisions.md`): search is automatic, so there is no choice and no approval. What stays from this round is the sourced-only rule. It is added to the default product prompt for that turn when the question is a German-rules question and web results are in context (`src/german-rules.ts`):
 
-The owner decided to build search first by default, after the first check: the one-tap search scored 4.25, and answers without it still had 2-3 confident wrong figures in 12.
+> For this question about German rules, fees or deadlines, state figures, deadlines and legal consequences only if they appear in the web results; for anything they do not cover, say so instead of filling it in.
 
-### What changed (`822a35e`)
-
-1. **Send asks first.** This applies when the detector fires, no web results are selected, automatic search is off, and the masked search text can be shown. Pressing Send then does not answer. The suggestion box turns into an inline choice that shows the exact masked search text, and the primary button gets the focus:
-   - heading: "This is about rules, fees or deadlines, which change. Search the official source first?" followed by "Search the web for:" and the text;
-   - explanation: "One tap sends exactly this text to Brave Search through our server, and our server opens the top result page, preferring an official site. Nothing else from your conversation is sent.";
-   - primary button "Search and answer": this tap is the approval, as before;
-   - secondary button "Answer without checking";
-   - Enter or Space on the focused button chooses. Escape goes back to editing with the draft kept. Editing the draft drops the choice. Nothing is remembered, and nothing new is stored on the server.
-   - Code: `asksBeforeSending` in `src/german-rules.ts`; the box in `src/App.tsx`.
-2. **The box before Send** now has the heading "Rules, fees and deadlines change. Check the official source first." The full stop fixes the double colon before "Search the web for:". Where Send asks first, the box drops "Press Send instead to answer without searching", which is no longer true.
-3. **Sourced-only rule.** It is added to the default product prompt for that turn when the question is a German-rules question and web results are in context:
-   > For this question about German rules, fees or deadlines, state figures, deadlines and legal consequences only if they appear in the web results; for anything they do not cover, say so instead of filling it in.
-
-   This changes the suggested text: "above" was dropped, because the web results come after the system prompt. The variants v1-v4 are unchanged (sha256 test). The web product prompt with the rule fits the 8,000 limit (test).
-4. **Automatic search help** (`src/when-to-search.ts`): "…a question that looks time-sensitive or is about rules, fees or deadlines is searched before it is answered…". The behaviour itself was already in place.
-5. **Privacy copy.**
-   - The automatic-search sentence is in the shared "When you search the web" section, so the approved Tinfoil text mentions it too.
-   - **The Tinfoil text is unchanged and now incomplete. Updating it needs the owner's approval.**
-   - Only the Privatemode draft variant says "a question that looks time-sensitive or is about rules, fees or deadlines is searched without asking each time". Its mirror `docs/privacy-copy-privatemode-20261112.md` is regenerated.
-6. **Runner:** `run-ours.ts --choice search|without`. The default is `without`, which is what Send did before.
-
-### Tests
-
-- `tests/german-rules.test.ts`:
-  - the choice logic (asks only without web results and without automatic search, not for the after-answer box, not without showable text);
-  - the sourced-only rule (with web results only, product prompt only, size limit);
-  - figures written in words.
-- `tests/german-rules-ui.test.ts`, at phone width with the Vite stub:
-  - a non-rules question sends directly;
-  - Send on a rules question shows the choice, focuses "Search and answer" and sends nothing;
-  - Escape goes back to editing;
-  - "Answer without checking" answers without a search, with the warning and the search-again box;
-  - with web results selected, a follow-up is answered directly;
-  - Enter on "Search and answer" searches exactly the shown masked text, then answers;
-  - with automatic search on, no choice is shown.
-- `tests/privacy-copy.test.ts`: Tinfoil unchanged; the Privatemode research sentence changed.
-
-### Measured (Privatemode, Auto, blind-graded; `evaluation/german-rules-20261113/SUMMARY.md`)
+Measured with the choice, kept as evidence (Privatemode, Auto, blind-graded; `evaluation/german-rules-20261113/SUMMARY.md`)
 
 | Run | Mean | Confident wrong | Bar |
 | --- | --- | --- | --- |
@@ -256,9 +205,9 @@ So the fix leads the user to the official source before the answer, makes the mo
 ## Constraints kept
 
 - Everything that reads the text runs on the device. No model call for classification.
-- Search still needs the user's approval: the one tap on the shown text is the approval, as before. Automatic search runs only for users who switched it on.
+- Search is automatic since 19 November 2026 (`docs/owner-decisions.md`): no approval; identifiers are masked on the device first; "Look things up online" in Settings, on by default, turns it off.
 - The user's mode choice wins; only Auto routes.
-- No silent switches: every added step is visible (suggestion, warning, mode label).
+- No silent switches: every added step is visible ("Searched the web" line, warning, mode label).
 - Provider-agnostic: nothing depends on Privatemode or Tinfoil.
 
 ## The parts
@@ -278,21 +227,17 @@ It does not count when:
 
 Why: the time-sensitive detector is about change over time; these questions are about rules that may be stable but that the models get wrong.
 
-### 2. Before sending: the search suggestion with its own heading
+### 2. Before sending: the search
 
-When the detector fires and no web results are selected, the existing one-tap suggestion in `src/App.tsx` appears even if the time-sensitive detector did not fire (`searchSuggestion` in `src/when-to-search.ts` now returns `rules: true`). Heading:
+When the detector fires and no web results are selected, `searchSuggestion` in `src/when-to-search.ts` returns a search text with `rules: true`, even if the time-sensitive detector did not fire. Since 19 November 2026 the app searches it before answering, without asking, unless "Look things up online" is off. A rules question that names no country gets "Germany" at the end. The "Searched the web" line under the answer shows the exact text and the sources.
 
-> Rules, fees and deadlines change. Check the official source first:
-
-The rest of the box is unchanged ("Search the web for:", the exact masked text, the explanation and "Search and answer"). The tap is the approval, as before. If the user has switched on automatic search, these questions are searched automatically too, and the exact text sent is shown.
-
-Why: the search path scored 4.0-4.4; this is the cheapest way to get users onto it.
+Why: the search path scored 4.0-4.4.
 
 ### 3. The scoped prompt rule (`composeContext` in `src/conversation.ts`)
 
 For the default product prompt only, when the latest question is a German-rules question and no web result is in the context, this is added for that turn:
 
-> This question is about German rules, fees, deadlines or legal consequences, and no official source is in this conversation. Do not state specific amounts, deadlines, point values or legal consequences as facts. Explain the general rule and what it depends on, name the official place to check (the law on gesetze-im-internet.de or the responsible authority), and offer a web search. If you mention a figure, say that it is unchecked.
+> This question is about German rules, fees, deadlines or legal consequences, and no official source is in this conversation. Do not state specific amounts, deadlines, point values or legal consequences as facts. Explain the general rule and what it depends on, and name the official place to check (the law on gesetze-im-internet.de or the responsible authority). If you mention a figure, say that it is unchecked.
 
 The frozen variants v1-v4 are unchanged (their sha256 test passes). With web results the rule is not added, because the answer should then use the figures from the sources.
 
@@ -304,9 +249,9 @@ For a German-rules question answered without web results, if the answer states a
 
 > This answer gives figures or deadlines that were not checked against an official source.
 
-The existing after-answer box ("This answer did not use current information." / "Search and answer again") now also appears for German-rules questions. The flag `uncheckedFigures` is stored on the message on the device only, like `arithmeticCheck` and `completenessCheck`: it is never model context and never sent or logged.
+The after-answer search box was removed on 19 November 2026: search is automatic, so a rules question is normally searched before the answer, and the warning shows when it was not (for example with "Look things up online" off, or after a failed search). The flag `uncheckedFigures` is stored on the message on the device only, like `arithmeticCheck` and `completenessCheck`: it is never model context and never sent or logged.
 
-Why: the prompt rule lowers, but cannot remove, the risk. The warning tells the user exactly when to check, and the box gives them the one tap to do it.
+Why: the prompt rule lowers, but cannot remove, the risk. The warning tells the user exactly when to check.
 
 ### 5. Auto routing (`src/answer-modes.ts`)
 
@@ -339,7 +284,7 @@ Details are in `evaluation/german-rules-20261113/SUMMARY.md`.
 
   Confident wrong answers across the three modes fell from 8 of 15 to 1 of 15.
 - **Deterministic parts:** the suggestion and the warning met their bars in every run.
-- **The search path** (one tap) met the score bar.
+- **The search path** (then one tap; automatic since 19 November 2026) met the score bar.
 - **Missed bars:**
-  - Answers without search still miss the hallucination bar in every mode, and so does the tapped run (2 side claims).
+  - Answers without search still miss the hallucination bar in every mode, and so does the searched run (2 side claims).
   - No unsearched mode reaches a mean of 3.8.

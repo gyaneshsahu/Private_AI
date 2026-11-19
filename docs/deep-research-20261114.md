@@ -6,13 +6,15 @@ Status: **built and tested offline, switched off by default, nothing verified li
 
 Owner's words: "premium only, strict token caps, clear progress and cancel."
 
+**19 November:** the Research page (and its deep research panel) was removed; deep research runs only from "+" > Deep research in the chat. Web search in ordinary chats is automatic (`docs/owner-decisions.md`, top block).
+
 ## Update, 18 November: starts at once, charged once at the start
 
 Owner's words: "Deep research starts straight away. Remove the plan card and the approval step. Show only a simple progress line with a Stop button. Charge all 15 units at the start (no 5 + 10 split)." And for every feature: the allowance is checked only at the start of a request or run, never during it; a start is allowed while at least 1 unit is left; the balance stops at 0; at 0 the next start shows one calm "Limit reached. It resets at X." with no unit counts.
 
 What changed (this replaces the older sections below where they disagree):
 
-- **No plan card, no approval step.** In the chat, Send starts the run. In the Research tab, "Start research" starts it. The panel shows one progress line ("Planning", "Searching 2 of 4", "Reading 3 of 6 pages", "Writing the answer") with "Stop the research". The step list and the "counted N of 15" lines are gone.
+- **No plan card, no approval step.** In the chat, Send starts the run. The panel shows one progress line ("Planning", "Searching 2 of 4", "Reading 3 of 6 pages", "Writing the answer") with "Stop the research". The step list and the "counted N of 15" lines are gone.
 - **Search texts are still masked on the device**, but no longer shown for approval. `parsePlan` masks each proposed text, drops one the masking cannot make safe (too short, too long), drops repeats, and falls back to the masked question. `runResearch` checks every text against the masking again before the first search. This follows the consent model of 18 November (one acceptance at sign-in, no per-feature approvals).
 - **All 15 units are charged at the plan request.** The plan is charged `cost` (or what is left, see below); the answer is a continuation of that counted run and is never charged or refused for allowance. The ledger accepts up to 20 units per request now (`usageUnits`). `researchWeights` (the 5 + 10 split) is deleted.
 - **Start rule.** A run starts while at least 1 unit is left in the period and in the rolling day. It is charged 15 or what is left, whichever is smaller, so the balance never goes below 0 (`server/usage-charge.ts` `chargeStart`).

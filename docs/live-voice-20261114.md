@@ -65,7 +65,7 @@ The transcript then goes through `send()` in `src/App.tsx` like typed text: iden
 
 | Case | Behaviour |
 | --- | --- |
-| Rules or current-facts question that would ask "search first?" (`asksBeforeSending`), or automatic search is on | **Decision: pause and ask on screen.** Nothing is searched silently and nothing is sent. The session ends, the text goes into the message box with the usual search choice, and the notice line says why. Questions that do not trigger the choice are sent without search, exactly as typed ones are |
+| Rules or current-facts question | **Changed 19 November 2026 (`docs/owner-decisions.md`):** searched the same way as a typed question, without stopping to ask; the session goes on. Identifiers are masked on the device first, and "Look things up online" off means no search |
 | Health consent not yet given | The session ends; the usual consent prompt is shown with the question waiting, as for typed text |
 | Allowance too low for a turn | Ends, with the units needed and left |
 | Daily request limit, daily voice budget, spend limit, stop switch | The relay's refusal ends the session with the voice input message. A used-up voice budget is also caught before listening |
@@ -127,7 +127,7 @@ Build with `VITE_LIVE_VOICE=1` and `VITE_READ_ALOUD=1`, voice input on (`PRIVATE
 3. Pause mid-sentence for about 1 s. Expect: it keeps listening.
 4. In a noisy room (music at low volume). Expect: it still ends; if not, "Done speaking" works.
 5. Press End while the answer is read and while it is answering. Expect: silence at once, no further request on the usage page.
-6. Ask "Wie hoch ist der Rundfunkbeitrag?". Expect: the session ends, the question is in the message box with the search choice.
+6. Ask "Wie hoch ist der Rundfunkbeitrag?". Expect: it is searched and answered like a typed question, and the session goes on.
 7. Count the units on the usage page after three Fast turns. Expect: 3 x (speech cost + 1).
 8. (15 November) Ask one question of about 45 seconds. Expect: two chunks, one joined text in "You said", "Voice today" grows by about 23 units.
 9. (15 November) While the answer is read, tap "Interrupt and speak". Expect: the reading stops at once, the microphone opens, the new question is answered.

@@ -240,7 +240,7 @@ Use your account (A) and the test account (B). Made-up content only.
 
 ### 14. Chat, search, files (T-32; deploy doc 6.1, rows 1 to 15 and 14a)
 
-**Do:** row by row: Fast (count down 1), Thinking (down 5), Auto twice, "Answer again with Thinking", a search you approve, the German rules question "Wie hoch ist die Gebuehr fuer einen neuen Personalausweis?" with "Search and answer" then with "Answer without checking", "Always search" on then off, a small text file with a made-up email address, photo to text, vault passphrase save and unlock, encrypted backup and restore in another browser, account page count, allowance used up on B (the `UPDATE usage_allowances ...` statement in row 14, then set it back to 150), privacy policy page names Privatemode. Row 14a (daily cap) is optional: set `"dailyLimit": 6` for one deploy, send Thinking, Fast, Fast; the third is refused; set it back.
+**Do:** row by row: Fast (count down 1), Thinking (down 5), Auto twice, "Answer again with Thinking", a time-sensitive question (it searches by itself; "Searched the web" under the answer), the German rules question "Wie hoch ist die Gebuehr fuer einen neuen Personalausweis?" (searched by itself), then the same with "Look things up online" off in Settings (the unchecked-figures warning) and back on, a small text file with a made-up email address, photo to text, vault passphrase save and unlock, encrypted backup and restore in another browser, account page count, allowance used up on B (the `UPDATE usage_allowances ...` statement in row 14, then set it back to 150), privacy policy page names Privatemode. Row 14a (daily cap) is optional: set `"dailyLimit": 6` for one deploy, send Thinking, Fast, Fast; the third is refused; set it back.
 
 **Expect:** as each row says.
 
@@ -292,7 +292,7 @@ Then **Logs**, search `CometRow model`. Row 27 (spend cap) is optional. Row 28: 
 
 ### 18. Download size, German off, logs (T-36; deploy doc 6.4, rows 37, 39, 43)
 
-**Do:** on a computer, DevTools, Network, filter `wasm`, reload: read the transferred size of the Privatemode file. Set the browser language to German, open the sign-in page and the app. Send a message with a made-up word such as `zebracanary4817`, approve a search with it, then **Logs**: search for that word, your email address and `callback/google?`. Run again:
+**Do:** on a computer, DevTools, Network, filter `wasm`, reload: read the transferred size of the Privatemode file. Set the browser language to German, open the sign-in page and the app. Send a message with a made-up word such as `zebracanary4817`, also a time-sensitive question with it so it is searched, then **Logs**: search for that word, your email address and `callback/google?`. Run again:
 
 ```bash
 node scripts/check-headers.mjs https://app.cometrow.com
@@ -330,7 +330,7 @@ Secure needs the master key from step 2 and migration 0025 from step 10; Secure 
 
 ### 20. Secure on two devices (T-144)
 
-**Do:** sign in on the laptop and on a phone; chat on one; ask a question that needs web search ("What is the weather in Hamburg tomorrow?"), approve it, wait for the answer with sources.
+**Do:** sign in on the laptop and on a phone; chat on one; ask a question that needs web search ("What is the weather in Hamburg tomorrow?"; it searches by itself), wait for the answer with sources.
 
 **Expect:** the chat appears on the other device after sign-in; the answer keeps its sources and shows no raw ids such as `[synthetic-0002]`; Settings never says "we never can" read it.
 
@@ -426,11 +426,11 @@ Each step costs a few cents at most. Note the account page figure ("N of 150 req
 
 ### 31. One web search
 
-**Do:** pick **Fast**. Type: "What is the current ticket price for the Hamburg Elbphilharmonie plaza?" Read the proposed search text in "Search the web for:", approve it.
+**Do:** pick **Fast**. Type: "What is the current ticket price for the Hamburg Elbphilharmonie plaza?" Send. Nothing asks: the app searches by itself (since 19 November 2026).
 
-**Expect:** an answer with source links; only the approved text was sent; the count goes down by 1.
+**Expect:** an answer with source links; under it a "Searched the web" line that opens to the exact searched text and the sources; the count goes down by 1.
 
-**Report back:** the proposed search text, whether sources appeared, and any error sentence verbatim.
+**Report back:** the searched text, whether sources appeared, and any error sentence verbatim.
 
 ### 32. One file
 

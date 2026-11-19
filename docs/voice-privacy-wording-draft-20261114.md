@@ -20,7 +20,7 @@
 | 6 | `shared/privacy-policy.ts` | No sentence about the microphone | The policy should say when the microphone is used and that no audio is kept | New short section, see 2.6 |
 | 7 | `src/text/app.ts`, `photoNote` (tools menu) | "Dictation, live voice, image creation and sharing are not connected: no permissions or media are collected for them." | Wrong for dictation once it is on | Already handled in code: while voice input is on, the app shows `photoNoteVoice` instead. No decision needed |
 
-If the corrections draft of 13 November (`docs/privacy-policy-corrections-draft-20261113.md`, part 2.3, "what the app stores in the browser") is adopted, add one line there: "`cometrow.voice.note-seen`: that the note about voice input was shown."
+The policy now has the part on what the app stores in the browser ("In your browser, CometRow stores only what it needs to work", `docs/legal-texts-side-by-side.md`). Its local-storage line covers this as one of "a few similar notes". If the lawyer wants it named, add: "`cometrow.voice.note-seen`: that the note about voice input was shown."
 
 ## 2. Proposed text, English and German
 

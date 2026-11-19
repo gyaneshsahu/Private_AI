@@ -57,7 +57,7 @@ Two tables in PostgreSQL (`server/migrations/0021-background-tasks.sql`), used b
 | Column | Content | Readable in a dump |
 | --- | --- | --- |
 | `task_id`, `account_id` | Ids; the account id references `"user"` with cascade delete | yes |
-| `payload` | Sealed JSON: the task (name, instruction, schedule, answer mode, search switch and approved search text, notify flags), the attached document's text, and up to 200 short hashes of search result addresses already reported | **no** |
+| `payload` | Sealed JSON: the task (name, instruction, schedule, answer mode, search text made from the instruction at creation (since 19 November 2026; before: a search switch and an approved search text), notify flags), the attached document's text, and up to 200 short hashes of search result addresses already reported | **no** |
 | `next_due_at`, `run_after`, `last_run_at`, `claimed_until` | Times (milliseconds) | yes |
 | `paused`, `skips` | Paused flag; allowance skips in a row | yes |
 | `consent_version`, `consent_at`, `consent_sensitive` | Which consent text, when (server clock), and whether the extra consent for documents or health-looking content was given. No content | yes |
